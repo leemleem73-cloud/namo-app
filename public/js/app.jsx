@@ -1,4 +1,48 @@
 /* QMES login entry point - restored for attendance testing */
+
+/* Register ERP routes before QMESApp mounts. The ERP implementation itself may load later,
+   but the router must know these ids from the first render so saved tabs are not reset and
+   the top menu does not appear late after refresh. */
+function qmesCreateDeferredErpRoute(componentName,label){
+  return function QMESDeferredErpRoute(){
+    const [Component,setComponent]=React.useState(()=>typeof window[componentName]==="function"?window[componentName]:null);
+    React.useEffect(()=>{
+      const sync=()=>{const next=window[componentName];if(typeof next==="function")setComponent(()=>next);};
+      sync();
+      window.addEventListener("qmes:erp-integrated-ready",sync);
+      return()=>window.removeEventListener("qmes:erp-integrated-ready",sync);
+    },[]);
+    return typeof Component==="function"
+      ? React.createElement(Component)
+      : React.createElement("div",{className:"rounded-xl border border-slate-200 bg-white p-6 text-sm font-bold text-slate-600"},`${label} 화면을 불러오는 중입니다.`);
+  };
+}
+
+const QMESErpSalesRoute=qmesCreateDeferredErpRoute("QMESErpSalesTab","수주 · 납기관리");
+const QMESErpPlanRoute=qmesCreateDeferredErpRoute("QMESErpPlanTab","생산계획 · MRP");
+const QMESErpPurchaseRoute=qmesCreateDeferredErpRoute("QMESErpPurchaseTab","구매 · 발주관리");
+const QMESErpMasterRoute=qmesCreateDeferredErpRoute("QMESErpMasterTab","Recipe / BOM");
+const QMESErpShippingRoute=qmesCreateDeferredErpRoute("QMESErpShippingTab","출하 · 납품관리");
+
+if(typeof TABS!=="undefined"&&Array.isArray(TABS)){
+  [
+    {id:"erpSales",label:"수주 · 납기관리",icon:ClipboardList,comp:QMESErpSalesRoute},
+    {id:"erpPlan",label:"생산계획 · MRP",icon:BarChart3,comp:QMESErpPlanRoute},
+    {id:"erpPurchase",label:"구매 · 발주관리",icon:ArrowDownToLine,comp:QMESErpPurchaseRoute},
+    {id:"erpMaster",label:"Recipe / BOM",icon:FlaskConical,comp:QMESErpMasterRoute},
+    {id:"erpShipping",label:"출하 · 납품관리",icon:ArrowUpFromLine,comp:QMESErpShippingRoute}
+  ].forEach(item=>{if(!TABS.some(existing=>existing.id===item.id))TABS.push(item);});
+}
+if(typeof TOP_MENUS!=="undefined"&&Array.isArray(TOP_MENUS)){
+  [
+    {id:"erpSales",label:"수주·납기",icon:ClipboardList},
+    {id:"erpPlan",label:"생산계획·MRP",icon:BarChart3},
+    {id:"erpPurchase",label:"구매·발주",icon:ArrowDownToLine},
+    {id:"erpMaster",label:"Recipe/BOM",icon:FlaskConical},
+    {id:"erpShipping",label:"출하·납품",icon:ArrowUpFromLine}
+  ].forEach(item=>{if(!TOP_MENUS.some(existing=>existing.id===item.id))TOP_MENUS.push(item);});
+}
+
 const QMES_LOGIN_SESSION_KEY = "qmes-current-user-v1";
 
 function loadLoginUsers() {
