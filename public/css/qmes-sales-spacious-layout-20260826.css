@@ -1,0 +1,115 @@
+/* NAMO QMES — Sales/Delivery spacious two-row entry layout — 2026-08-26 */
+
+/* Keep the input area visually separated from the order list. */
+.qerp:has(.qerp-title) .qerp-card:has(.qerp-sales-compact-form){
+  padding:18px 18px 20px!important;
+}
+
+.qerp-sales-compact-form{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  column-gap:14px!important;
+  row-gap:14px!important;
+  align-items:end!important;
+  margin:0 0 18px!important;
+  padding:2px 2px 16px!important;
+  border-bottom:1px solid #e2e8f0!important;
+}
+
+.qerp-sales-compact-form > .qerp-field{
+  min-width:0!important;
+}
+
+/* Row 1 — order basics */
+.qerp-sales-compact-form > .qerp-field:nth-child(1){grid-column:span 3!important;} /* 고객사 */
+.qerp-sales-compact-form > .qerp-field:nth-child(2){grid-column:span 3!important;} /* 고객 PO */
+.qerp-sales-compact-form > .qerp-field:nth-child(3){grid-column:span 2!important;} /* 요청 납기 */
+.qerp-sales-compact-form > .qerp-field:nth-child(4){grid-column:span 2!important;} /* 제품 */
+.qerp-sales-compact-form > .qerp-field:nth-child(5){grid-column:span 2!important;} /* 수량 */
+
+/* Row 2 — packaging / remarks */
+.qerp-sales-compact-form [data-qmes-sales-meta="type"]{grid-column:span 2!important;}
+.qerp-sales-compact-form [data-qmes-sales-meta="unitWeight"]{grid-column:span 2!important;}
+.qerp-sales-compact-form [data-qmes-sales-meta="packageQty"]{grid-column:span 2!important;}
+.qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{grid-column:span 4!important;}
+.qerp-sales-compact-form .qerp-form-actions{
+  grid-column:span 2!important;
+  align-self:end!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  margin:0!important;
+}
+
+.qerp-sales-compact-form .qerp-field label{
+  margin-bottom:6px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  color:#475569!important;
+  white-space:nowrap!important;
+}
+
+.qerp-sales-compact-form .qerp-field input,
+.qerp-sales-compact-form .qerp-field select{
+  height:40px!important;
+  padding:0 11px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+}
+
+.qerp-sales-compact-form .qerp-form-actions .qerp-btn{
+  height:40px!important;
+  min-width:72px!important;
+  padding:0 13px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+}
+
+.qerp-sales-compact-form .qerp-error{
+  grid-column:1/-1!important;
+  padding:8px 10px!important;
+  margin:0!important;
+}
+
+/* Give the result list more breathing room as well. */
+.qerp:has(.qerp-title) .qerp-table-wrap{
+  margin-top:2px!important;
+}
+.qerp:has(.qerp-title) .qerp-table th{
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+}
+.qerp:has(.qerp-title) .qerp-table td{
+  padding-top:13px!important;
+  padding-bottom:13px!important;
+}
+
+@media(max-width:1450px){
+  .qerp-sales-compact-form{grid-template-columns:repeat(6,minmax(0,1fr))!important;}
+  .qerp-sales-compact-form > .qerp-field:nth-child(1),
+  .qerp-sales-compact-form > .qerp-field:nth-child(2){grid-column:span 3!important;}
+  .qerp-sales-compact-form > .qerp-field:nth-child(3),
+  .qerp-sales-compact-form > .qerp-field:nth-child(4),
+  .qerp-sales-compact-form > .qerp-field:nth-child(5),
+  .qerp-sales-compact-form [data-qmes-sales-meta="type"],
+  .qerp-sales-compact-form [data-qmes-sales-meta="unitWeight"],
+  .qerp-sales-compact-form [data-qmes-sales-meta="packageQty"]{grid-column:span 2!important;}
+  .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{grid-column:span 4!important;}
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:span 2!important;}
+}
+
+@media(max-width:900px){
+  .qerp-sales-compact-form{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .qerp-sales-compact-form > .qerp-field,
+  .qerp-sales-compact-form [data-qmes-sales-meta],
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:span 1!important;}
+  .qerp-sales-compact-form [data-qmes-sales-meta="remarks"]{grid-column:1/-1!important;}
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:1/-1!important;}
+}
+
+@media(max-width:620px){
+  .qerp-sales-compact-form{grid-template-columns:1fr!important;}
+  .qerp-sales-compact-form > .qerp-field,
+  .qerp-sales-compact-form [data-qmes-sales-meta],
+  .qerp-sales-compact-form .qerp-form-actions{grid-column:1/-1!important;}
+}
