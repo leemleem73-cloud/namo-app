@@ -1,10 +1,11 @@
-/* QMES Stage 12 operational loader v4
- * Loads stable runtime helpers. Enterprise UI is the final visual layer, with a
- * dedicated shell-offset guard so an open sidebar never covers top navigation.
+/* QMES Stage 12 operational loader v5
+ * Loads stable runtime helpers. Enterprise UI, shell offset and readable density
+ * are always re-appended last so legacy scripts cannot shrink or shift the UI.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
   const SHELL_OFFSET_STYLE="./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1";
+  const READABLE_SIZE_STYLE="./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
@@ -24,6 +25,7 @@
   function ensureFinalStyles(moveToEnd){
     ensureStyle("qmes-enterprise-ui-20260826",ENTERPRISE_STYLE,moveToEnd);
     ensureStyle("qmes-shell-offset-fix-20260826",SHELL_OFFSET_STYLE,moveToEnd);
+    ensureStyle("qmes-enterprise-readable-size-20260826",READABLE_SIZE_STYLE,moveToEnd);
   }
 
   ensureFinalStyles(false);
