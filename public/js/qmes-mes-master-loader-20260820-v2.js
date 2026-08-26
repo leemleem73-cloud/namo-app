@@ -1,7 +1,7 @@
-/* QMES Stage 12 operational loader v9
- * Loads runtime helpers and enterprise visual layers.
- * Field input keeps the verified 2026-08-24 layout as the final startup-only layer.
- * No MutationObserver or click-time stylesheet reordering is used here.
+/* QMES Stage 12 operational loader v8
+ * Loads stable runtime helpers. Modern corporate UI is the final visual layer,
+ * with sidebar alignment, production-process refinement, work-order issued-list
+ * readability, global text sharpness, and SPC selected-tab contrast applied after it.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
@@ -13,23 +13,14 @@
   const WORKORDER_ISSUED_STYLE="./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1";
   const TEXT_SHARPNESS_STYLE="./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1";
   const SPC_READABILITY_STYLE="./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1";
-  const FIELD_STABLE_STYLE="./css/qmes-field-input-stable-20260824.css?v=20260826-fieldstable1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
-    if(!link){
-      link=document.createElement("link");
-      link.id=id;
-      link.rel="stylesheet";
-      link.href=href;
-      document.head.appendChild(link);
-      return link;
-    }
+    if(!link){link=document.createElement("link");link.id=id;link.rel="stylesheet";link.href=href;document.head.appendChild(link);return link;}
     if(String(link.getAttribute("href")||"")!==href)link.href=href;
     if(moveToEnd&&link.parentNode===document.head)document.head.appendChild(link);
     return link;
   }
-
   function ensureFinalStyles(moveToEnd){
     ensureStyle("qmes-enterprise-ui-20260826",ENTERPRISE_STYLE,moveToEnd);
     ensureStyle("qmes-shell-offset-fix-20260826",SHELL_OFFSET_STYLE,moveToEnd);
@@ -40,65 +31,13 @@
     ensureStyle("qmes-workorder-issued-clean-20260826",WORKORDER_ISSUED_STYLE,moveToEnd);
     ensureStyle("qmes-text-sharpness-20260826",TEXT_SHARPNESS_STYLE,moveToEnd);
     ensureStyle("qmes-spc-readability-fix-20260826",SPC_READABILITY_STYLE,moveToEnd);
-    ensureStyle("qmes-field-input-stable-20260824",FIELD_STABLE_STYLE,moveToEnd);
   }
-
   ensureFinalStyles(false);
-
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
-    "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
-    "./js/production-downtime-history-20260824.js?v=20260824-edit4",
-    "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
-    "./js/item-recipe-master-20260807.js?v=20260807-1",
-    "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
-    "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
-    "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260826-enterprise2",
-    "./js/production-process-link-fix-20260824.js?v=20260824-1",
-    "./js/production-process-initial-sync-20260824.js?v=20260824-2",
-    "./js/production-worklog-date-retry-20260824.js?v=20260824-1",
-    "./js/production-top-submenu-hide-20260824.js?v=20260824-1",
-    "./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2",
-    "./js/production-worker-live-name-sync-20260824.js?v=20260824-1",
-    "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
-    "./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-8",
-    "./js/ipad-pqc-oqc-lot-overlap-cleanup-20260824.js?v=20260824-1",
-    "./js/workorder-status-save-align-20260824.js?v=20260824-4",
-    "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
-    "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
-    "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
-    "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
-    "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
-    "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
-    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2","./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1","./js/production-downtime-history-20260824.js?v=20260824-edit4","./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1","./js/item-recipe-master-20260807.js?v=20260807-1","./js/workorder-recipe-bridge-20260807.js?v=20260807-1","./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1","./js/qmes-top-submenu-restore-20260820-v2.js?v=20260826-enterprise2","./js/production-process-link-fix-20260824.js?v=20260824-1","./js/production-process-initial-sync-20260824.js?v=20260824-2","./js/production-worklog-date-retry-20260824.js?v=20260824-1","./js/production-top-submenu-hide-20260824.js?v=20260824-1","./js/production-worker-normalize-delete-20260824.js?v=20260824-safe2","./js/production-worker-live-name-sync-20260824.js?v=20260824-1","./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1","./js/ipad-pqc-lot-completion-label-20260824.js?v=20260824-8","./js/ipad-pqc-oqc-lot-overlap-cleanup-20260824.js?v=20260824-1","./js/workorder-status-save-align-20260824.js?v=20260824-4","./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1","./js/qmes-side-search-topbar-enhancement.js?v=20260807-1","./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1","./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2","./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4","./js/inventory-api-fallback-20260819.js?v=20260819-fallback1","./js/inventory-qmes-integration-20260819.js?v=20260819-flow1","./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
   ];
-
-  function exists(src){
-    const base=src.split("?")[0];
-    return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
-  }
-
-  function finish(){
-    document.getElementById("qmes-global-menu-preview-theme-20260826")?.remove();
-    ensureFinalStyles(true);
-    window.dispatchEvent(new CustomEvent("qmes:enterprise-ui-ready"));
-    window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
-  }
-
-  function load(i){
-    if(i>=files.length){finish();return;}
-    const src=files[i];
-    if(exists(src)){ensureFinalStyles(true);load(i+1);return;}
-    const script=document.createElement("script");
-    script.src=src;
-    script.async=false;
-    script.onload=()=>{ensureFinalStyles(true);load(i+1);};
-    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);ensureFinalStyles(true);load(i+1);};
-    document.head.appendChild(script);
-  }
-
-  const start=()=>load(0);
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
-  else start();
+  function exists(src){const base=src.split("?")[0];return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);}
+  function finish(){document.getElementById("qmes-global-menu-preview-theme-20260826")?.remove();ensureFinalStyles(true);window.dispatchEvent(new CustomEvent("qmes:enterprise-ui-ready"));window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));}
+  function load(i){if(i>=files.length){finish();return;}const src=files[i];if(exists(src)){ensureFinalStyles(true);load(i+1);return;}const script=document.createElement("script");script.src=src;script.async=false;script.onload=()=>{ensureFinalStyles(true);load(i+1);};script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);ensureFinalStyles(true);load(i+1);};document.head.appendChild(script);}
+  const start=()=>load(0);if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
