@@ -8,7 +8,7 @@
   const READABLE_SIZE_STYLE="./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable1";
   const MODERN_CORPORATE_STYLE="./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern1";
   const SIDEBAR_LINE_STYLE="./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2";
-  const PROCESS_CORPORATE_STYLE="./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process1";
+  const PROCESS_CORPORATE_STYLE="./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
