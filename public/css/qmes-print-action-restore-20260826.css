@@ -1,0 +1,49 @@
+/* NAMO QMES — work-order action restore, 2026-08-26 */
+
+/* 사용자 요청: 작업지시서 발행내역의 별도 '미리보기' 버튼 제거. */
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.view{
+  display:none!important;
+}
+
+/* 출력 / 삭제 / 실적입력 모두 동일한 검정 윤곽 + 검정 글자. */
+html body #root#root#root main .qmes-workorder-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  flex-wrap:nowrap!important;
+}
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.print,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.edit,
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.delete{
+  min-height:32px!important;
+  height:32px!important;
+  padding:0 10px!important;
+  border:1px solid #111!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  background-image:none!important;
+  color:#111!important;
+  -webkit-text-fill-color:#111!important;
+  font-size:12px!important;
+  line-height:30px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn:hover{
+  background:#f3f4f6!important;
+  border-color:#000!important;
+  color:#000!important;
+  -webkit-text-fill-color:#000!important;
+}
+
+/* 출력 클릭 뒤 React가 만드는 중간 작업지시서 미리보기는 사용자에게 보이지 않게 한다.
+   JS가 곧바로 내부 인쇄 버튼을 실행하므로 인쇄 대화상자만 표시된다. */
+html body.qmes-direct-workorder-print-pending .qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
