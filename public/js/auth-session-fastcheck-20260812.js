@@ -20,10 +20,7 @@
   };
 })(window);
 
-/* Load the final corporate styles before the application components are evaluated.
- * The links are also re-ordered later by the master loader, but loading them here
- * prevents a dark/legacy first paint on F5.
- */
+/* Load the final corporate styles before the application components are evaluated. */
 (function installEnterpriseUiBeforeRender(){
   const styles=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2"],
@@ -33,8 +30,8 @@
     ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
     ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
     ["qmes-workorder-preview-light-20260826","./css/qmes-workorder-preview-light-20260826.css?v=20260826-workorderpreview1"],
-    ["qmes-workorder-print-outline-20260826","./css/qmes-workorder-print-outline-20260826.css?v=20260826-outline1"],
-    ["qmes-workorder-print-final-20260826","./css/qmes-workorder-print-final-20260826.css?v=20260826-printfinal1"]
+    ["qmes-workorder-print-outline-20260826","./css/qmes-workorder-print-outline-20260826.css?v=20260826-outline2"],
+    ["qmes-workorder-print-final-20260826","./css/qmes-workorder-print-final-20260826.css?v=20260826-restored1"]
   ];
   styles.forEach(([id,href])=>{
     let link=document.getElementById(id);
@@ -51,11 +48,19 @@
   document.documentElement.style.setProperty("color-scheme","light");
 })();
 
-/* Synchronous critical CSS for the production-process page.
- * React's component contains legacy navy CSS inline. These !important rules exist
- * before React renders, so users never see the old dark design while external CSS
- * files are still downloading/reordering.
- */
+/* Work-order print is taller than the inspection reports. Load its own print wrapper
+ * so the existing shared printDoc can stay unchanged for IQC/PQC/OQC/CoA. */
+(function loadWorkOrderPrintFit(){
+  if(document.querySelector('script[data-qmes-workorder-print-fit]')) return;
+  const script=document.createElement("script");
+  script.src="./js/qmes-workorder-print-fit-20260826.js?v=20260826-fit2";
+  script.async=false;
+  script.dataset.qmesWorkorderPrintFit="true";
+  script.onerror=()=>console.warn("[QMES] 작업지시서 A4 인쇄 보정 로드 실패");
+  document.head.appendChild(script);
+})();
+
+/* Synchronous critical CSS for the production-process page. */
 (function installProductionProcessFirstPaintGuard(){
   const id="qmes-production-process-firstpaint-20260826";
   if(document.getElementById(id)) return;
@@ -102,12 +107,7 @@
   document.head.appendChild(style);
 })();
 
-/* Avoid the false empty-state flash after F5.
- * qmes_sync_records and local work-order data arrive asynchronously. The React
- * component can briefly render "작업지시서가 없습니다" before those rows arrive.
- * Hide only that exact transient message and reveal it after a stabilization window
- * if the page is genuinely still empty. Real API/error messages are never hidden.
- */
+/* Avoid the false empty-state flash after F5. */
 (function installProductionProcessEmptyStateGuard(){
   if(window.__QMES_PROCESS_EMPTY_GUARD_20260826__) return;
   window.__QMES_PROCESS_EMPTY_GUARD_20260826__=true;
@@ -131,7 +131,6 @@
         if(!el.isConnected) return;
         const current=String(el.textContent||"").trim();
         if(!current.includes(EMPTY_TEXT)) return;
-        /* If actual process content appeared, keep this stale warning hidden. */
         if(document.querySelector(".qmes-prod-process .qpp-card .qpp-info")) return;
         el.dataset.qmesStableEmpty="1";
         el.style.removeProperty("display");
