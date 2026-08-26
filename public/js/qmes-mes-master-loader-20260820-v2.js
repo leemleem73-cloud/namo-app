@@ -32,6 +32,7 @@
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
+    "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
     "./js/partner-equipment-fix-20260805.js?v=20260814-partner-click-restore1",
