@@ -1,5 +1,6 @@
 /* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-26
  * Sales order numbers use SO-YYYYMMDD-NNN and production date remains a separate field.
+ * Shipment status is LOT/OQC based: OQC pass is 출하검사 완료, not actual shipment.
  */
 (function(){
   "use strict";
@@ -48,11 +49,13 @@
     const rows=Array.isArray(db?.insp?.OQC)?db.insp.OQC:[];
     return rows.filter(row=>text(row?.lot)===lot);
   }
+  function actualShipmentRecord(ship){
+    if(!ship||typeof ship!=="object") return false;
+    return ship.actualShipment===true || /ERP_SHIPPING|SHIPPING_MODULE/i.test(text(ship.source)) || Boolean(text(ship.invoice||ship.deliveryNo));
+  }
   function hasShipment(db,lot,batch){
     const lotRow=db?.lots?.[lot]||{};
-    const ship=lotRow.ship||batch?.ship||{};
-    const coa=db?.coa?.[lot]||{};
-    return Boolean(text(ship?.shipNo||ship?.customer||ship?.shipDate||ship?.date||coa?.shipNo||coa?.ship));
+    return actualShipmentRecord(lotRow.ship)||actualShipmentRecord(batch?.ship);
   }
   function shippingStatus(db,lot,status,batch){
     if(hasShipment(db,lot,batch)) return "출하완료";
@@ -65,7 +68,7 @@
     }
     const judges=oqcRows.map(row=>text(row?.judge)).filter(Boolean);
     if(judges.some(value=>/불합격|NG|FAIL/i.test(value))) return "출하차단";
-    if(judges.length===oqcRows.length&&judges.every(value=>/합격|PASS|OK/i.test(value))) return "출하 대기";
+    if(judges.length===oqcRows.length&&judges.every(value=>/합격|PASS|OK/i.test(value))) return "출하검사 완료";
     return "출하검사 중";
   }
 
