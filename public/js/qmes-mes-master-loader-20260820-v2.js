@@ -49,7 +49,7 @@
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-packaging1",
     "./js/qmes-sales-enterprise-print-20260826.js?v=20260826-1",
-    "./js/qmes-scroll-layer-guard-20260807.js?v=20260807-1",
+    "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
