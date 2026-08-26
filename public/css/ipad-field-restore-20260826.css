@@ -1,0 +1,132 @@
+/* Restore the pre-global-theme field-input appearance.
+   Important: typography/font sizes are intentionally untouched. */
+
+/* The global light theme is loaded late and was overriding the field-input shell. */
+html body #root#root#root > div:has(.qmes-ipad-pop){
+  background:
+    radial-gradient(ellipse at 7% 14%,rgba(28,48,66,.42) 0%,rgba(28,48,66,.16) 20%,transparent 43%),
+    radial-gradient(ellipse at 18% 48%,rgba(151,159,166,.38) 0%,rgba(151,159,166,.14) 23%,transparent 48%),
+    radial-gradient(ellipse at 8% 82%,rgba(55,74,90,.30) 0%,rgba(55,74,90,.11) 21%,transparent 45%),
+    radial-gradient(ellipse at 35% 24%,rgba(126,137,146,.27) 0%,rgba(126,137,146,.10) 24%,transparent 49%),
+    radial-gradient(ellipse at 57% 61%,rgba(88,102,114,.25) 0%,rgba(88,102,114,.09) 25%,transparent 50%),
+    radial-gradient(ellipse at 78% 16%,rgba(198,203,207,.33) 0%,rgba(198,203,207,.13) 24%,transparent 49%),
+    radial-gradient(ellipse at 93% 45%,rgba(95,111,124,.19) 0%,rgba(95,111,124,.07) 22%,transparent 46%),
+    radial-gradient(ellipse at 87% 84%,rgba(211,215,218,.30) 0%,rgba(211,215,218,.11) 24%,transparent 48%),
+    linear-gradient(158deg,#314553 0%,#485966 20%,#69757e 43%,#8e969c 66%,#aeb4b9 82%,#c4c8cb 100%)!important;
+  background-color:#69757e!important;
+  background-attachment:fixed!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-hero,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-work-head{
+  border:1px solid #27415f!important;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,#122841 0%,#0d1d31 68%,#113850 100%)!important;
+  box-shadow:0 18px 38px rgba(0,0,0,.2)!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-home-card{
+  min-height:230px!important;
+  padding:24px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#1f2937!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.12)!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-home-note{
+  padding:15px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#334155!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-mode-tabs button{
+  min-height:66px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#1f2937!important;
+  box-shadow:0 4px 12px rgba(15,23,42,.08)!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-mode-tabs button.is-active{
+  border-color:#0284c7!important;
+  background:#e0f2fe!important;
+  color:#0f172a!important;
+  box-shadow:0 5px 14px rgba(2,132,199,.14),inset 0 0 0 1px rgba(2,132,199,.18)!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-section{
+  padding:20px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.10)!important;
+  color:#1f2937!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-measure-card{
+  padding:18px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:14px!important;
+  background:#fff!important;
+}
+
+/* Restore original control dimensions/colors only. No font-size declarations here. */
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid input,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid select,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-triple input,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice input{
+  width:100%!important;
+  min-height:54px!important;
+  box-sizing:border-box!important;
+  padding:0 14px!important;
+  border:1px solid #b8c4d0!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#111827!important;
+  outline:none!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-triple input{min-height:72px!important;text-align:center!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice input{min-height:56px!important;text-align:center!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid input[readonly]{background:#f1f5f9!important;color:#475569!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid input:focus,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid select:focus,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-triple input:focus,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice input:focus{
+  border-color:#2bc3ec!important;
+  box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-choice button,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice button{
+  min-height:72px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#1f2937!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice button{min-height:56px!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-choice button.is-selected:first-child,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice button.is-selected:first-child{
+  border-color:#16a34a!important;background:#16a34a!important;color:#fff!important;box-shadow:0 4px 12px rgba(22,163,74,.18)!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-choice button.is-selected:last-child,
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-repeat-choice button.is-selected:last-child{
+  border-color:#dc2626!important;background:#dc2626!important;color:#fff!important;box-shadow:0 4px 12px rgba(220,38,38,.18)!important;
+}
+
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-item-tabs button{
+  min-height:72px!important;
+  padding:10px!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#334155!important;
+  box-shadow:0 3px 9px rgba(15,23,42,.06)!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-item-tabs button.is-active{border-color:#0284c7!important;background:#e0f2fe!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-item-tabs button.is-합격{border-color:#86efac!important;background:#f0fdf4!important;}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-item-tabs button.is-불합격{border-color:#fca5a5!important;background:#fef2f2!important;}
