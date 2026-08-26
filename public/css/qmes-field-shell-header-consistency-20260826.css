@@ -63,3 +63,24 @@ body #root > div:has(.qmes-ipad-pop) .qmes-top-menu-button[aria-current="page"] 
   color:#1769e0!important;
   border-bottom-color:#1769e0!important;
 }
+
+/* IQC/PQC/OQC mode tabs belong in normal document flow below the global top menu. */
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-mode-tabs {
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  inset:auto!important;
+  transform:none!important;
+  translate:none!important;
+  z-index:auto!important;
+  width:100%!important;
+  margin:14px 0!important;
+}
+html body #root#root#root main .qmes-ipad-pop .qmes-ipad-mode-tabs > button {
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  transform:none!important;
+}
