@@ -64,7 +64,20 @@ body #root > div:has(.qmes-ipad-pop) .qmes-top-menu-button[aria-current="page"] 
   border-bottom-color:#1769e0!important;
 }
 
-/* IQC/PQC/OQC mode tabs belong in normal document flow below the global top menu. */
+/* Field input content must begin below the complete two-row application header. */
+html body #root#root#root > div:has(.qmes-ipad-pop) > main {
+  padding-top:0!important;
+}
+html body #root#root#root > div:has(.qmes-ipad-pop) > main .qmes-ipad-pop {
+  position:relative!important;
+  top:auto!important;
+  inset:auto!important;
+  transform:none!important;
+  translate:none!important;
+  margin-top:108px!important;
+}
+
+/* IQC/PQC/OQC mode tabs stay in normal document flow inside Field Input. */
 html body #root#root#root main .qmes-ipad-pop .qmes-ipad-mode-tabs {
   position:relative!important;
   top:auto!important;
