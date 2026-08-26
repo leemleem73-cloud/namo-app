@@ -1,11 +1,11 @@
 /* Sidebar search/top navigation line alignment — 2026-08-26 */
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
   box-sizing:border-box!important;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
   margin:0!important;
-  padding:3px 12px!important;
+  padding:4px 12px!important;
   display:flex!important;
   align-items:center!important;
   background:#fff!important;
@@ -17,9 +17,9 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{
   box-sizing:border-box!important;
-  margin:-2px 0 0!important;
+  margin:0!important;
   border-top:0!important;
-  border-bottom:1px solid #e2e6ec!important;
+  border-bottom:0!important;
   box-shadow:none!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
@@ -29,85 +29,23 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
   margin:0!important;
 }
 html body #root#root#root .qmes-top-menu-bar{
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
   border-top:1px solid #e2e6ec!important;
   border-bottom:1px solid #e2e6ec!important;
+  box-shadow:none!important;
 }
 
 /* 공정검사 / 출하검사 검색필터를 수입검사와 동일 배치 */
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
-  display:flex!important;
-  align-items:flex-end!important;
-  justify-content:flex-start!important;
-  gap:8px!important;
-  flex-wrap:nowrap!important;
-  overflow:hidden!important;
-}
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{
-  flex:0 0 360px!important;
-  width:360px!important;
-  min-width:300px!important;
-  max-width:360px!important;
-}
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-oqc-record-filter-field{
-  flex:0 0 108px!important;
-  width:108px!important;
-  min-width:108px!important;
-  max-width:108px!important;
-}
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > button{
-  flex:0 0 88px!important;
-  width:88px!important;
-  min-width:88px!important;
-  max-width:88px!important;
-}
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box{
-  position:relative!important;
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  padding:0 10px!important;
-  width:100%!important;
-  height:36px!important;
-  box-sizing:border-box!important;
-  border:1px solid #cfd6df!important;
-  border-radius:6px!important;
-  box-shadow:none!important;
-  outline:0!important;
-  background:#fff!important;
-}
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-icon{
-  position:static!important;
-  inset:auto!important;
-  flex:0 0 auto!important;
-  margin:0!important;
-  pointer-events:none!important;
-}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;flex-wrap:nowrap!important;overflow:hidden!important;}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{flex:0 0 360px!important;width:360px!important;min-width:300px!important;max-width:360px!important;}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-oqc-record-filter-field{flex:0 0 108px!important;width:108px!important;min-width:108px!important;max-width:108px!important;}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > button{flex:0 0 88px!important;width:88px!important;min-width:88px!important;max-width:88px!important;}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box{position:relative!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 10px!important;width:100%!important;height:36px!important;box-sizing:border-box!important;border:1px solid #cfd6df!important;border-radius:6px!important;box-shadow:none!important;outline:0!important;background:#fff!important;}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-icon{position:static!important;inset:auto!important;flex:0 0 auto!important;margin:0!important;pointer-events:none!important;}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input,
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:hover,
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus,
-html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus-visible{
-  flex:1 1 auto!important;
-  width:0!important;
-  min-width:0!important;
-  height:100%!important;
-  padding:0!important;
-  margin:0!important;
-  background:transparent!important;
-  border:0!important;
-  border-width:0!important;
-  border-style:none!important;
-  border-color:transparent!important;
-  border-left:0!important;
-  border-right:0!important;
-  border-top:0!important;
-  border-bottom:0!important;
-  outline:0!important;
-  box-shadow:none!important;
-  border-radius:0!important;
-  appearance:none!important;
-  -webkit-appearance:none!important;
-}
-@media(max-width:900px){
-  html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important;}
-  html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{flex:1 1 100%!important;width:100%!important;max-width:none!important;min-width:0!important;}
-}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus-visible{flex:1 1 auto!important;width:0!important;min-width:0!important;height:100%!important;padding:0!important;margin:0!important;background:transparent!important;border:0!important;border-width:0!important;border-style:none!important;border-color:transparent!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;}
+@media(max-width:900px){html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important;}html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{flex:1 1 100%!important;width:100%!important;max-width:none!important;min-width:0!important;}}
