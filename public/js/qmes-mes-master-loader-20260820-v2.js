@@ -1,11 +1,12 @@
-/* QMES Stage 12 operational loader v5
- * Loads stable runtime helpers. Enterprise UI, shell offset and readable density
- * are always re-appended last so legacy scripts cannot shrink or shift the UI.
+/* QMES Stage 12 operational loader v6
+ * Loads stable runtime helpers. Modern corporate UI is the final visual layer,
+ * after the enterprise base, shell offset and readable density guards.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
   const SHELL_OFFSET_STYLE="./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1";
   const READABLE_SIZE_STYLE="./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable1";
+  const MODERN_CORPORATE_STYLE="./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
@@ -26,6 +27,7 @@
     ensureStyle("qmes-enterprise-ui-20260826",ENTERPRISE_STYLE,moveToEnd);
     ensureStyle("qmes-shell-offset-fix-20260826",SHELL_OFFSET_STYLE,moveToEnd);
     ensureStyle("qmes-enterprise-readable-size-20260826",READABLE_SIZE_STYLE,moveToEnd);
+    ensureStyle("qmes-modern-corporate-ui-20260826",MODERN_CORPORATE_STYLE,moveToEnd);
   }
 
   ensureFinalStyles(false);
