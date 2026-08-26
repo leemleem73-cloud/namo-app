@@ -1,66 +1,39 @@
 /* IQC bright-theme refinements — 2026-08-26 */
 
 /* 수입검사 상단 5개 KPI */
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) {
-  background:transparent !important;
-}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items {
-  gap:12px !important;
-}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item {
-  background:#ffffff !important;
-  border:1px solid #d7dee8 !important;
-  box-shadow:0 2px 7px rgba(15,23,42,.10) !important;
-  color:#111827 !important;
-}
-/* 글자 크기 확대는 유지 */
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label {
-  color:#111827 !important;
-  font-size:15px !important;
-  font-weight:800 !important;
-  letter-spacing:-.01em !important;
-}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong {
-  color:#050b14 !important;
-  font-size:30px !important;
-  line-height:1 !important;
-  font-weight:900 !important;
-}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small {
-  color:#111827 !important;
-  font-size:13px !important;
-  font-weight:800 !important;
-}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) { background:transparent !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items { gap:12px !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item { background:#ffffff !important;border:1px solid #d7dee8 !important;box-shadow:0 2px 7px rgba(15,23,42,.10) !important;color:#111827 !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label { color:#111827 !important;font-size:15px !important;font-weight:800 !important;letter-spacing:-.01em !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong { color:#050b14 !important;font-size:30px !important;line-height:1 !important;font-weight:900 !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small { color:#111827 !important;font-size:13px !important;font-weight:800 !important; }
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light { width:11px !important;height:11px !important;opacity:1 !important; }
 
-/* 원 색상은 기존 공통 CSS의 원래 tone을 그대로 사용.
-   흰 배경에서 보이도록 크기/불투명도만 소폭 보강 */
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light {
-  width:11px !important;
-  height:11px !important;
-  opacity:1 !important;
-}
+/* 업체별 IQC 합격률 */
+#root .qmes-iqc-rank-panel,#root .qmes-iqc-rank-panel > div,#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer { background:#ffffff !important;border-color:#d7dee8 !important;color:#111827 !important; }
+#root .qmes-iqc-rank-panel h3,#root .qmes-iqc-rank-panel strong {color:#111827 !important;}
+#root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {color:#4b5563 !important;}
+#root .qmes-iqc-rank-panel .qmes-iqc-donut-name {font-size:14px !important;font-weight:800 !important;}
+#root .qmes-iqc-rank-panel .qmes-iqc-donut-count {font-size:12px !important;font-weight:700 !important;}
 
-/* 업체별 IQC 합격률: 흰 배경만 유지하고 링의 기존 색상은 그대로 사용 */
-#root .qmes-iqc-rank-panel,
-#root .qmes-iqc-rank-panel > div,
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-card,
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-center,
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-head,
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {
+/* 관리대장 검색/연도/월 툴: 세 칸 동일한 밝은 색상 */
+#root .qmes-iqc-record-filter input[type="text"],
+#root .qmes-iqc-record-filter select {
   background:#ffffff !important;
-  border-color:#d7dee8 !important;
+  background-color:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
   color:#111827 !important;
+  box-shadow:none !important;
 }
-#root .qmes-iqc-rank-panel h3,
-#root .qmes-iqc-rank-panel strong {color:#111827 !important;}
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-count,
-#root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {color:#4b5563 !important;}
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-name {
-  font-size:14px !important;
-  font-weight:800 !important;
+#root .qmes-iqc-record-filter input[type="text"]::placeholder { color:#6b7280 !important;opacity:1 !important; }
+#root .qmes-iqc-record-filter select option { background:#ffffff !important;color:#111827 !important; }
+
+/* 초기화 버튼: 밝은 툴과 어울리게, 글자는 검정 */
+#root .qmes-iqc-record-filter button {
+  background:#ffffff !important;
+  background-color:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  color:#111827 !important;
+  box-shadow:none !important;
 }
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-count {
-  font-size:12px !important;
-  font-weight:700 !important;
-}
+#root .qmes-iqc-record-filter button:hover { background:#f3f4f6 !important;color:#000000 !important; }
