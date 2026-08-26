@@ -1,8 +1,5 @@
 /* Field-input basic info order. Scope strictly by the active IQC/PQC mode button so reused DOM/list metadata cannot leak order styles between modes. */
 
-/* PQC/OQC production LOT is linked by the shared selector. Hide the legacy direct-input control from first paint. IQC raw-material LOT has no qmes-ipad-lots list, so it is unaffected. */
-.qmes-ipad-pop .qmes-ipad-form-grid input.lot[list="qmes-ipad-lots"]{display:none!important;}
-
 /* IQC — 1행 입고일자/원자재명/업체명, 2행 원재료 LOT/검사일자/검사자, 3행 입고중량/검사수량/불량수량, 마지막 비고. */
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(1){order:1!important;grid-column:span 1!important;}
 .qmes-ipad-pop:has(.qmes-ipad-mode-tabs > button:nth-child(1).is-active) .qmes-ipad-form-grid > label:nth-of-type(2){order:2!important;grid-column:span 1!important;}
