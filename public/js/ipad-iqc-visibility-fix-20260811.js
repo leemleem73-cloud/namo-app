@@ -5,9 +5,33 @@
   global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V5__=true;
 
   const STYLE_ID="qmes-ipad-iqc-visibility-fix-style";
+  const RESTORE_LINK_ID="qmes-ipad-field-restore-20260826";
   const HIDDEN_IQC_FIELDS=new Set(["용기당 중량","계산중량","바코드 발행수량"]);
 
   function cleanText(node){return String(node?.textContent||"").replace(/\s+/g," ").trim();}
+
+  function ensureFieldRestoreCss(){
+    if(document.getElementById(RESTORE_LINK_ID)) return;
+    const link=document.createElement("link");
+    link.id=RESTORE_LINK_ID;
+    link.rel="stylesheet";
+    link.href="./css/ipad-field-restore-20260826.css?v=20260826-restore2";
+    document.head.appendChild(link);
+  }
+
+  function syncInspectionHeadings(){
+    const reference=document.querySelector(".qmes-iqc-quickbar .qmes-management-title-row strong");
+    if(!reference) return;
+    const style=getComputedStyle(reference);
+    document.querySelectorAll("main h1,main h2,main h3").forEach(node=>{
+      const text=cleanText(node);
+      if(text!=="수입검사 관리대장"&&text!=="검사 기록") return;
+      node.style.setProperty("font-size",style.fontSize,"important");
+      node.style.setProperty("font-weight",style.fontWeight,"important");
+      node.style.setProperty("line-height",style.lineHeight,"important");
+      node.style.setProperty("letter-spacing",style.letterSpacing,"important");
+    });
+  }
 
   function setReactInputValue(input,value){
     if(!input) return;
@@ -93,10 +117,11 @@
   function refresh(){
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;ensureStyle();cleanupIqcPackagingFields();});
+    requestAnimationFrame(()=>{scheduled=false;ensureFieldRestoreCss();ensureStyle();cleanupIqcPackagingFields();syncInspectionHeadings();});
   }
 
   function start(){
+    ensureFieldRestoreCss();
     refresh();
     new MutationObserver(refresh).observe(document.documentElement,{childList:true,subtree:true});
     document.addEventListener("input",event=>{
