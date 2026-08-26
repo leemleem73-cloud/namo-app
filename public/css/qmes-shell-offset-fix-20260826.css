@@ -1,0 +1,53 @@
+/* NAMO QMES shell offset fix — 2026-08-26
+ * Prevents the first top-menu items from rendering underneath the open sidebar.
+ */
+
+:root{--qmes-shell-sidebar-width:220px;--qmes-shell-menu-gutter:8px;}
+
+/* Closed sidebar: reserve only the hamburger/control area. */
+html body:not(.qmes-side-open) #root#root#root header .qmes-top-menu-bar .qmes-top-menu{
+  padding-left:46px!important;
+  padding-right:10px!important;
+  width:100%!important;
+  transform:none!important;
+  scroll-padding-left:46px!important;
+}
+
+/* Open sidebar: top navigation must begin AFTER the sidebar, never behind it. */
+html body.qmes-side-open #root#root#root header .qmes-top-menu-bar .qmes-top-menu{
+  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
+  padding-right:10px!important;
+  width:100%!important;
+  transform:none!important;
+  scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
+}
+
+/* Keep menu items intact; no clipped tail text at the sidebar edge. */
+html body #root#root#root header .qmes-top-menu-bar .qmes-top-menu-item,
+html body #root#root#root header .qmes-top-menu-bar .qmes-top-menu-button{
+  flex-shrink:0!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+html body #root#root#root header .qmes-top-menu-bar .qmes-top-menu-button span{
+  overflow:visible!important;
+  text-overflow:clip!important;
+  max-width:none!important;
+}
+
+/* Sidebar and content use the same width token so their vertical edge aligns. */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  width:var(--qmes-shell-sidebar-width)!important;
+}
+html body.qmes-side-open #root#root#root>div>main{
+  margin-left:calc(var(--qmes-shell-sidebar-width) - 1px)!important;
+  width:calc(100% - (var(--qmes-shell-sidebar-width) - 1px))!important;
+}
+
+@media(max-width:900px){
+  :root{--qmes-shell-sidebar-width:190px;--qmes-shell-menu-gutter:6px;}
+  html body:not(.qmes-side-open) #root#root#root header .qmes-top-menu-bar .qmes-top-menu{
+    padding-left:44px!important;
+    scroll-padding-left:44px!important;
+  }
+}
