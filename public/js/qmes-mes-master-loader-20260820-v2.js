@@ -1,5 +1,6 @@
-/* QMES Stage 12 operational loader v23
+/* QMES Stage 12 operational loader v24
  * Stable operational modules + single sales UI owner.
+ * Global UI styles stay enabled consistently; no field-input theme toggling.
  */
 (function(){
   const STYLE_DEFS=[
@@ -13,26 +14,25 @@
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
-    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"],
-    ["qmes-field-shell-header-consistency-20260826","./css/qmes-field-shell-header-consistency-20260826.css?v=20260826-1",true]
+    ["qmes-sales-final-table-cleanup-20260826","./css/qmes-sales-final-table-cleanup-20260826.css?v=20260826-final1"]
   ];
 
-  function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
   function ensureStyle(id,href){
     let link=document.getElementById(id);
-    if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
-    else if(String(link.getAttribute('href')||'')!==href)link.href=href;
+    if(!link){
+      link=document.createElement('link');
+      link.id=id;
+      link.rel='stylesheet';
+      link.href=href;
+      document.head.appendChild(link);
+    }else if(String(link.getAttribute('href')||'')!==href){
+      link.href=href;
+    }
+    link.media='all';
     return link;
   }
-  function syncThemeState(){
-    const disabled=fieldInputActive();
-    STYLE_DEFS.forEach(([id,href,keepDuringField])=>{
-      const link=ensureStyle(id,href);
-      link.media=disabled&&!keepDuringField?'not all':'all';
-    });
-  }
 
-  syncThemeState();
+  STYLE_DEFS.forEach(([id,href])=>ensureStyle(id,href));
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-4",
@@ -70,7 +70,6 @@
   function exists(src){const base=src.split('?')[0];return Array.from(document.scripts).some(s=>(s.getAttribute('src')||'').split('?')[0]===base);}
   function finish(){
     document.getElementById('qmes-global-menu-preview-theme-20260826')?.remove();
-    syncThemeState();
     window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));
     window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));
   }
@@ -78,16 +77,12 @@
     if(i>=files.length){finish();return;}
     const src=files[i];
     if(exists(src)){load(i+1);return;}
-    const script=document.createElement('script');script.src=src;script.async=false;
+    const script=document.createElement('script');
+    script.src=src;
+    script.async=false;
     script.onload=()=>load(i+1);
     script.onerror=()=>{console.error('[QMES] MES 마스터 모듈 로드 실패',src);load(i+1);};
     document.head.appendChild(script);
-  }
-
-  const root=document.getElementById('root');
-  if(root){
-    let queued=false;
-    new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncThemeState();});}).observe(root,{childList:true,subtree:true});
   }
 
   const start=()=>load(0);
