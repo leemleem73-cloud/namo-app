@@ -1,5 +1,5 @@
-/* QMES Stage 12 operational loader v19
- * Stable operational modules + enterprise sales detail/progress flow.
+/* QMES Stage 12 operational loader v20
+ * Stable operational modules + enterprise sales detail/progress + edit/delete fix.
  */
 (function(){
   const STYLE_DEFS=[
@@ -30,7 +30,7 @@
   syncThemeState();
 
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-3",
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-4",
     "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
@@ -54,6 +54,7 @@
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise3",
+    "./js/qmes-sales-enterprise-fields-fix-20260826.js?v=20260826-editdelete2",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260826-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
