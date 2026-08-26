@@ -1,0 +1,528 @@
+/* ============================================================================
+   NAMO QMES MODERN CORPORATE UI — 2026-08-26
+   Modern B2B/MES visual layer: restrained, flat, consistent, high-legibility.
+   Inspired by contemporary enterprise design systems, not by decorative dashboards.
+   ============================================================================ */
+
+:root{
+  --mc-bg:#f6f7f9;
+  --mc-surface:#ffffff;
+  --mc-surface-soft:#f9fafb;
+  --mc-line:#e2e6ec;
+  --mc-line-strong:#cfd6df;
+  --mc-text:#182230;
+  --mc-text-2:#344054;
+  --mc-muted:#667085;
+  --mc-muted-2:#98a2b3;
+  --mc-primary:#1769e0;
+  --mc-primary-hover:#1557b8;
+  --mc-primary-soft:#edf4ff;
+  --mc-success:#16794b;
+  --mc-success-soft:#edf8f2;
+  --mc-warning:#a15c07;
+  --mc-warning-soft:#fff7e8;
+  --mc-danger:#b42318;
+  --mc-danger-soft:#fff2f0;
+  --mc-radius:8px;
+  --mc-shadow:0 1px 2px rgba(16,24,40,.04);
+  --mc-shadow-menu:0 12px 32px rgba(16,24,40,.12);
+  --mc-font:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif;
+}
+
+html body,
+html body #root#root#root,
+html body #root#root#root>div{
+  background:var(--mc-bg)!important;
+  color:var(--mc-text)!important;
+  font-family:var(--mc-font)!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Header: clean, flat, utility-first                                          */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root>div>header{
+  background:#fff!important;
+  border-bottom:1px solid var(--mc-line)!important;
+  box-shadow:none!important;
+}
+html body #root#root#root>div>header>div:first-child{
+  background:#fff!important;
+  border:0!important;
+  padding-left:20px!important;
+  padding-right:18px!important;
+}
+html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+  height:38px!important;
+  max-height:38px!important;
+  filter:none!important;
+}
+html body #root#root#root .qmes-header-clock,
+html body #root#root#root .qmes-header-clock span{
+  color:#667085!important;
+  font-weight:550!important;
+}
+html body #root#root#root .qmes-header-action,
+html body #root#root#root button[aria-label*="NAMO Talk"]{
+  background:#fff!important;
+  color:#344054!important;
+  border:1px solid var(--mc-line-strong)!important;
+  border-radius:7px!important;
+  box-shadow:none!important;
+  font-weight:600!important;
+}
+html body #root#root#root .qmes-header-action:hover,
+html body #root#root#root button[aria-label*="NAMO Talk"]:hover{
+  background:#f9fafb!important;
+  border-color:#bfc7d2!important;
+  color:#182230!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]{
+  background:#fff!important;
+  border-radius:7px!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
+  background:#f1f3f6!important;
+  color:#344054!important;
+  border:1px solid #e3e7ed!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Top navigation: no button tiles, just text + subtle active rule             */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root .qmes-top-menu-bar{
+  background:#fff!important;
+  border-top:0!important;
+  border-bottom:1px solid var(--mc-line)!important;
+  box-shadow:none!important;
+}
+html body #root#root#root .qmes-top-menu{
+  background:#fff!important;
+  gap:4px!important;
+}
+html body #root#root#root .qmes-top-menu-button{
+  background:transparent!important;
+  border:0!important;
+  border-bottom:2px solid transparent!important;
+  border-radius:0!important;
+  color:#475467!important;
+  box-shadow:none!important;
+  font-weight:600!important;
+}
+html body #root#root#root .qmes-top-menu-button svg{
+  color:#7b8794!important;
+  stroke-width:1.8!important;
+}
+html body #root#root#root .qmes-top-menu-button:hover,
+html body #root#root#root .qmes-top-menu-button:focus-visible{
+  background:transparent!important;
+  color:#182230!important;
+  border-bottom-color:#d0d5dd!important;
+}
+html body #root#root#root .qmes-top-menu-button:hover svg{color:#475467!important}
+html body #root#root#root .qmes-top-menu-button.is-active,
+html body #root#root#root .qmes-top-menu-button[aria-current="page"]{
+  background:transparent!important;
+  color:var(--mc-primary)!important;
+  border-bottom-color:var(--mc-primary)!important;
+  font-weight:700!important;
+}
+html body #root#root#root .qmes-top-menu-button.is-active svg,
+html body #root#root#root .qmes-top-menu-button[aria-current="page"] svg{
+  color:var(--mc-primary)!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Menus: flat command menu, no bullets / decorative dots                      */
+/* -------------------------------------------------------------------------- */
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown,
+html body #qmes-user-dropdown#qmes-user-dropdown{
+  background:#fff!important;
+  border:1px solid var(--mc-line)!important;
+  border-radius:9px!important;
+  box-shadow:var(--mc-shadow-menu)!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
+  background:#fff!important;
+  color:#98a2b3!important;
+  border-bottom:1px solid #eef0f3!important;
+  font-weight:650!important;
+  text-transform:none!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{
+  padding-left:12px!important;
+  background:#fff!important;
+  color:#344054!important;
+  border-radius:6px!important;
+  font-weight:550!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{
+  display:none!important;
+  content:none!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover,
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible{
+  background:#f6f8fb!important;
+  color:#182230!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button{
+  background:#fff!important;
+  color:#344054!important;
+  border-radius:6px!important;
+  font-weight:550!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button:hover{background:#f6f8fb!important;color:#182230!important}
+html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{
+  color:var(--mc-danger)!important;
+  border-top:1px solid #eef0f3!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sidebar: calm navigation tree, no decorative bullets                        */
+/* -------------------------------------------------------------------------- */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  background:#fff!important;
+  border-right:1px solid var(--mc-line)!important;
+  box-shadow:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{
+  background:#fff!important;
+  border-color:#eef0f3!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  background:#fff!important;
+  border:1px solid var(--mc-line-strong)!important;
+  border-radius:7px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title{
+  color:#98a2b3!important;
+  font-size:11.5px!important;
+  font-weight:650!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+  background:#fff!important;
+  color:#475467!important;
+  border-radius:6px!important;
+  font-weight:550!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{
+  display:none!important;
+  content:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{
+  background:#f6f8fb!important;
+  color:#182230!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{
+  background:var(--mc-primary-soft)!important;
+  color:var(--mc-primary)!important;
+  font-weight:650!important;
+  box-shadow:inset 3px 0 0 var(--mc-primary)!important;
+}
+html body #qmes-sync-hamburger#qmes-sync-hamburger{
+  background:#fff!important;
+  border:1px solid var(--mc-line-strong)!important;
+  border-radius:7px!important;
+  box-shadow:none!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main canvas + page hierarchy                                                */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root>div>main{
+  background:var(--mc-bg)!important;
+  color:var(--mc-text)!important;
+}
+html body #root#root#root main h1{
+  color:#182230!important;
+  font-weight:720!important;
+  letter-spacing:-.03em!important;
+}
+html body #root#root#root main h2,
+html body #root#root#root main h3{
+  color:#243247!important;
+  font-weight:680!important;
+}
+html body #root#root#root main p,
+html body #root#root#root main small{
+  color:#667085;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Cards/panels: flatter, squarer, less dashboard-like                         */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main :is(
+  section[class*="rounded"],article[class*="rounded"],div[class*="rounded-xl"],div[class*="rounded-lg"],
+  .qmes-iqc-quickbar,.qmes-iqc-ledger-panel,.qmes-iqc-ledger-section,.qmes-iqc-chart-panel,
+  .qmes-equipment-alarm-panel,.qmes-prod-process .qpp-card
+){
+  border-radius:var(--mc-radius)!important;
+}
+html body #root#root#root main :is(
+  [class~="bg-slate-950"],[class~="bg-slate-900"],[class~="bg-slate-900/80"],
+  div[class~="bg-slate-900"][class~="border-slate-800"],
+  section[class~="bg-slate-900"][class~="border-slate-800"],
+  .qmes-iqc-quickbar,.qmes-iqc-ledger-panel,.qmes-iqc-ledger-section,.qmes-iqc-chart-panel,
+  .qmes-equipment-alarm-panel,.qmes-prod-process .qpp-card
+){
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--mc-text)!important;
+  border:1px solid var(--mc-line)!important;
+  box-shadow:var(--mc-shadow)!important;
+}
+html body #root#root#root main :is(
+  [class~="bg-slate-800"],[class~="bg-slate-800/70"],[class~="bg-slate-800/60"],[class~="bg-slate-800/50"],[class~="bg-slate-800/40"],[class~="bg-slate-700"]
+){
+  background:var(--mc-surface-soft)!important;
+  background-image:none!important;
+  color:var(--mc-text-2)!important;
+}
+
+/* Remove oversized ornamental section shadows */
+html body #root#root#root main [class*="shadow-xl"],
+html body #root#root#root main [class*="shadow-2xl"],
+html body #root#root#root main [class*="shadow-lg"]{
+  box-shadow:var(--mc-shadow)!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* KPI: executive summary, not gaming cards                                    */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-hybrid-kpi-card,
+html body #root#root#root main .qmes-text-kpi-card,
+html body #root#root#root main .qmes-iqc-kpi-card,
+html body #root#root#root main .qmes-pqc-kpi-grid>div,
+html body #root#root#root main .qmes-oqc-kpi-grid>div{
+  background:#fff!important;
+  background-image:none!important;
+  border:1px solid var(--mc-line)!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  -webkit-clip-path:none!important;
+  transform:none!important;
+}
+html body #root#root#root main .qmes-hybrid-kpi-card:before,
+html body #root#root#root main .qmes-hybrid-kpi-card:after,
+html body #root#root#root main .qmes-hybrid-copy:before,
+html body #root#root#root main .qmes-hybrid-copy:after{
+  display:none!important;
+  content:none!important;
+}
+html body #root#root#root main .qmes-hybrid-ring{
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:#f2f4f7!important;
+}
+html body #root#root#root main .qmes-hybrid-ring-inner{
+  background:#f2f4f7!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-hybrid-ring:before,
+html body #root#root#root main .qmes-hybrid-ring:after{
+  display:none!important;
+}
+html body #root#root#root main .qmes-hybrid-label{
+  color:#667085!important;
+  font-weight:550!important;
+}
+html body #root#root#root main .qmes-hybrid-value{
+  color:#182230!important;
+  font-weight:720!important;
+  text-shadow:none!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tables: crisp, flat, analytical                                              */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main table{
+  border-collapse:collapse!important;
+  background:#fff!important;
+}
+html body #root#root#root main table thead,
+html body #root#root#root main table thead tr,
+html body #root#root#root main table thead th{
+  background:#f7f8fa!important;
+  color:#667085!important;
+  border-color:#e4e7ec!important;
+  font-weight:650!important;
+}
+html body #root#root#root main table tbody tr,
+html body #root#root#root main table tbody td{
+  background:#fff!important;
+  color:#344054!important;
+  border-color:#edf0f3!important;
+}
+html body #root#root#root main table tbody tr:hover,
+html body #root#root#root main table tbody tr:hover td{
+  background:#f9fbfd!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Forms: restrained fields, low visual noise                                  */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main input:not([type="checkbox"]):not([type="radio"]),
+html body #root#root#root main select,
+html body #root#root#root main textarea{
+  background:#fff!important;
+  color:#344054!important;
+  border:1px solid var(--mc-line-strong)!important;
+  border-radius:6px!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main input:hover,
+html body #root#root#root main select:hover,
+html body #root#root#root main textarea:hover{
+  border-color:#b8c1cd!important;
+}
+html body #root#root#root main input:focus,
+html body #root#root#root main select:focus,
+html body #root#root#root main textarea:focus{
+  border-color:#84adf5!important;
+  box-shadow:0 0 0 3px rgba(23,105,224,.08)!important;
+}
+html body #root#root#root main label{
+  color:#475467!important;
+  font-weight:600!important;
+}
+
+/* Search/filter bars that used to look like dark panels */
+html body #root#root#root main :is([class*="filter"],[class*="search"])[class*="bg-slate"],
+html body #root#root#root main :is([class*="filter"],[class*="search"])[style*="background"]{
+  background:#f7f8fa!important;
+  background-image:none!important;
+  border-color:#e4e7ec!important;
+  box-shadow:none!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Buttons: one visual language                                                 */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main button{
+  border-radius:6px!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main button[class*="bg-sky"],
+html body #root#root#root main button[class*="bg-blue"],
+html body #root#root#root main .qerp-btn:not(.ghost){
+  background:var(--mc-primary)!important;
+  color:#fff!important;
+  border-color:var(--mc-primary)!important;
+}
+html body #root#root#root main button[class*="bg-sky"]:hover,
+html body #root#root#root main button[class*="bg-blue"]:hover,
+html body #root#root#root main .qerp-btn:not(.ghost):hover{
+  background:var(--mc-primary-hover)!important;
+  border-color:var(--mc-primary-hover)!important;
+}
+html body #root#root#root main button[class~="bg-slate-800"],
+html body #root#root#root main button[class~="bg-slate-700"],
+html body #root#root#root main button[class~="border-slate-700"],
+html body #root#root#root main .qerp-btn.ghost{
+  background:#fff!important;
+  color:#344054!important;
+  border:1px solid var(--mc-line-strong)!important;
+}
+html body #root#root#root main button[class~="bg-slate-800"]:hover,
+html body #root#root#root main button[class~="bg-slate-700"]:hover,
+html body #root#root#root main .qerp-btn.ghost:hover{
+  background:#f7f8fa!important;
+  color:#182230!important;
+}
+
+/* Destructive/status controls become restrained */
+html body #root#root#root main button[class*="bg-red"]{
+  background:#fff!important;
+  color:var(--mc-danger)!important;
+  border:1px solid #f3b7b2!important;
+}
+html body #root#root#root main button[class*="bg-red"]:hover{
+  background:var(--mc-danger-soft)!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Status tags                                                                  */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main [class~="bg-emerald-500/10"],
+html body #root#root#root main [class~="bg-emerald-500/20"]{background:var(--mc-success-soft)!important}
+html body #root#root#root main [class~="text-emerald-400"],
+html body #root#root#root main [class~="text-emerald-300"]{color:var(--mc-success)!important}
+html body #root#root#root main [class~="bg-amber-500/10"],
+html body #root#root#root main [class~="bg-amber-500/5"]{background:var(--mc-warning-soft)!important}
+html body #root#root#root main [class~="text-amber-400"],
+html body #root#root#root main [class~="text-amber-300"]{color:var(--mc-warning)!important}
+html body #root#root#root main [class~="bg-red-500/10"],
+html body #root#root#root main [class~="bg-red-500/20"]{background:var(--mc-danger-soft)!important}
+html body #root#root#root main [class~="text-red-400"],
+html body #root#root#root main [class~="text-red-300"]{color:var(--mc-danger)!important}
+
+/* -------------------------------------------------------------------------- */
+/* Production/process: remove presentation-style color bars                    */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-prod-process :is(section,div)[class*="bg-slate"]{
+  background:#fff!important;
+  background-image:none!important;
+  border-color:var(--mc-line)!important;
+}
+html body #root#root#root main .qmes-prod-process button{
+  border-radius:6px!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-prod-process button[style*="background"]{
+  background:#fff!important;
+  color:#344054!important;
+  border:1px solid var(--mc-line-strong)!important;
+}
+html body #root#root#root main .qmes-prod-process button[style*="background"]:hover{
+  background:#f7f8fa!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Equipment / quality modules                                                  */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-equipment-management-content>.qmes-equipment-management-summary>div,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div:first-child,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center,
+html body #root#root#root main [class*="qmes-equipment-"][class*="card"],
+html body #root#root#root main [class*="qmes-equipment-"][class*="panel"],
+html body #root#root#root main :is([class*="qmes-ncr-"],[class*="qmes-complaint-"],[class*="qmes-4m-"],[class*="qmes-lot-"],[class*="qmes-trace-"]):is([class*="card"],[class*="panel"],[class*="section"]){
+  background:#fff!important;
+  background-image:none!important;
+  color:#182230!important;
+  border:1px solid var(--mc-line)!important;
+  border-radius:8px!important;
+  box-shadow:var(--mc-shadow)!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dashboard: simpler, less promotional                                         */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-main-dash .qmd-card,
+html body #root#root#root main .qerp-card,
+html body #root#root#root main .qerp-kpi{
+  background:#fff!important;
+  border:1px solid var(--mc-line)!important;
+  border-radius:8px!important;
+  box-shadow:var(--mc-shadow)!important;
+}
+html body #root#root#root main .qerp-kpi:before{width:2px!important}
+html body #root#root#root main .qmd-flow-step{
+  background:#f8fafc!important;
+  border:1px solid #e4e7ec!important;
+  border-radius:7px!important;
+}
+html body #root#root#root main .qmd-flow-step:hover{
+  background:#f2f6fb!important;
+  border-color:#cfd6df!important;
+  transform:none!important;
+}
+
+/* Print output intentionally remains governed by print styles. */
+@media print{
+  body.print-doc #qmes-print-root,body.print-doc #qmes-print-root *{box-shadow:none!important}
+}
