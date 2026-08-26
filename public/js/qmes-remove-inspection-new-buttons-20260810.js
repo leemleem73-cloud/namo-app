@@ -76,18 +76,24 @@
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector{
         display:grid!important;
         grid-template-columns:max-content max-content 100px!important;
+        grid-template-rows:48px!important;
         align-items:center!important;
+        align-content:center!important;
         justify-content:center!important;
         column-gap:6px!important;
+        row-gap:0!important;
         flex:0 0 250px!important;
         width:250px!important;
         min-width:250px!important;
+        max-width:250px!important;
         height:48px!important;
         min-height:48px!important;
+        max-height:48px!important;
         padding:0 12px!important;
         box-sizing:border-box!important;
         text-align:center!important;
         white-space:nowrap!important;
+        overflow:visible!important;
       }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-ipad-inspector-label,
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-dept{
@@ -106,8 +112,13 @@
         word-spacing:0!important;
         text-align:center!important;
         white-space:nowrap!important;
+        align-self:center!important;
       }
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-ipad-inspector-label{grid-column:1!important;grid-row:1!important;}
+      .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-dept{grid-column:2!important;grid-row:1!important;}
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name{
+        grid-column:3!important;
+        grid-row:1!important;
         width:100px!important;
         min-width:100px!important;
         max-width:100px!important;
@@ -115,6 +126,7 @@
         min-height:32px!important;
         max-height:32px!important;
         padding:0 9px!important;
+        margin:0!important;
         align-self:center!important;
         box-sizing:border-box!important;
         border:1px solid #cbd5e1!important;
@@ -128,6 +140,8 @@
         font-weight:700!important;
         text-align:center!important;
         outline:none!important;
+        position:static!important;
+        transform:none!important;
       }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name::placeholder{
         color:#94a3b8!important;
@@ -138,7 +152,9 @@
       }
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector .qmes-field-inspector-name:focus{border-color:#38bdf8!important;box-shadow:0 0 0 3px rgba(56,189,248,.16)!important;}
       .qmes-ipad-inspection-head .qmes-ipad-field-inspector > strong:not(.qmes-field-inspector-dept){display:none!important;}
-      .qmes-ipad-form-grid label.qmes-field-inspector-duplicate{display:none!important;}
+      html body .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-field-inspector-duplicate{display:none!important;width:0!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;}
+      html body .qmes-ipad-pop .qmes-ipad-form-grid label.wide{grid-column:1/-1!important;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;}
+      html body .qmes-ipad-pop .qmes-ipad-form-grid label.wide>input{width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;}
       .qmes-equipment-tour-screen .qmes-equipment-tour-inspector{display:none!important;}
 
       /* 설비 점검 기록: 일시~관리까지 화면 안에 균형 있게 배치 */
@@ -194,21 +210,71 @@
     if (!header || !box) return;
     header.classList.add('qmes-ipad-inspection-head');
     box.classList.add('qmes-ipad-field-inspector');
-    if (!box.querySelector('.qmes-ipad-inspector-label')) {
-      const label = document.createElement('span');
+
+    /* React 원본의 직접 텍스트 '검사자'가 남으면 새 라벨과 중복되므로 제거 */
+    Array.from(box.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE && String(node.textContent || '').trim()) node.remove();
+    });
+    const labels = Array.from(box.querySelectorAll(':scope > .qmes-ipad-inspector-label'));
+    labels.slice(1).forEach((node) => node.remove());
+    let label = labels[0] || null;
+    if (!label) {
+      label = document.createElement('span');
       label.className = 'qmes-ipad-inspector-label';
-      label.textContent = '검사자 :';
       box.insertBefore(label, box.firstChild);
     }
-    const detailLabels = inspectorDetailInputs(); detailLabels.forEach((label) => label.classList.add('qmes-field-inspector-duplicate'));
-    const sourceInput = detailLabels.map((label) => label.querySelector('input')).find(Boolean) || null;
+    label.textContent = '검사자 :';
+
+    const detailLabels = inspectorDetailInputs();
+    detailLabels.forEach((detailLabel) => {
+      detailLabel.classList.add('qmes-field-inspector-duplicate');
+      detailLabel.style.setProperty('display','none','important');
+      detailLabel.setAttribute('aria-hidden','true');
+    });
+    const sourceInput = detailLabels.map((detailLabel) => detailLabel.querySelector('input')).find(Boolean) || null;
+
     let dept = box.querySelector('.qmes-field-inspector-dept');
-    if (!dept) { dept = document.createElement('strong'); dept.className = 'qmes-field-inspector-dept'; dept.textContent = '품질부'; const oldStrong = box.querySelector('strong'); if (oldStrong) box.insertBefore(dept, oldStrong); else box.appendChild(dept); } else dept.textContent = '품질부';
+    if (!dept) {
+      dept = document.createElement('strong');
+      dept.className = 'qmes-field-inspector-dept';
+      const oldStrong = box.querySelector('strong');
+      if (oldStrong) box.insertBefore(dept, oldStrong); else box.appendChild(dept);
+    }
+    dept.textContent = '품질부';
+
     let headerInput = box.querySelector('.qmes-field-inspector-name');
-    if (!headerInput) { headerInput = document.createElement('input'); headerInput.type='text'; headerInput.className='qmes-field-inspector-name'; headerInput.placeholder='이름 입력'; headerInput.autocomplete='off'; headerInput.setAttribute('aria-label', `${mode} 검사자 이름`); box.appendChild(headerInput); headerInput.addEventListener('input',()=>{ const currentSource=inspectorDetailInputs().map((label)=>label.querySelector('input')).find(Boolean); if(currentSource)setReactInputValue(currentSource,headerInput.value); }); }
-    const previousMode=header.dataset.qmesInspectorMode||''; if(previousMode!==mode){header.dataset.qmesInspectorMode=mode;headerInput.value='';}
+    if (!headerInput) {
+      headerInput = document.createElement('input');
+      headerInput.type='text';
+      headerInput.className='qmes-field-inspector-name';
+      headerInput.placeholder='이름 입력';
+      headerInput.autocomplete='off';
+      headerInput.setAttribute('aria-label', `${mode} 검사자 이름`);
+      box.appendChild(headerInput);
+      headerInput.addEventListener('input',()=>{
+        const currentSource=inspectorDetailInputs().map((detailLabel)=>detailLabel.querySelector('input')).find(Boolean);
+        if(currentSource)setReactInputValue(currentSource,headerInput.value);
+      });
+    }
+    const previousMode=header.dataset.qmesInspectorMode||'';
+    if(previousMode!==mode){header.dataset.qmesInspectorMode=mode;headerInput.value='';}
     if(sourceInput&&sourceInput.value!==headerInput.value)setReactInputValue(sourceInput,headerInput.value);
-    const oldStrong=Array.from(box.querySelectorAll(':scope > strong')).find((node)=>!node.classList.contains('qmes-field-inspector-dept')); if(oldStrong)oldStrong.style.display='none';
+
+    Array.from(box.querySelectorAll(':scope > strong')).forEach((node)=>{
+      if(!node.classList.contains('qmes-field-inspector-dept')) node.style.setProperty('display','none','important');
+    });
+
+    /* 비고는 검사자 숨김 여부와 무관하게 항상 전체 폭 유지 */
+    document.querySelectorAll('.qmes-ipad-pop .qmes-ipad-form-grid label').forEach((formLabel)=>{
+      const caption=String(formLabel.querySelector('span')?.textContent||'').replace(/\s+/g,' ').trim();
+      if(caption==='비고'){
+        formLabel.classList.add('wide');
+        formLabel.style.setProperty('grid-column','1 / -1','important');
+        formLabel.style.setProperty('width','100%','important');
+        const input=formLabel.querySelector('input');
+        if(input) input.style.setProperty('width','100%','important');
+      }
+    });
   }
 
   function syncHiddenTourInspector(){
