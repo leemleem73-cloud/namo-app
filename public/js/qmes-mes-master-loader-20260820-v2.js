@@ -1,6 +1,6 @@
-/* QMES Stage 12 operational loader v14
- * Keep the existing operational modules, but restore the field-input theme
- * isolation that was working before the shell-stability change.
+/* QMES Stage 12 operational loader v15
+ * Emergency stability revision: keep operational modules, disable the sales
+ * print observer layers that can cause repeated DOM mutations and UI lockup.
  */
 (function(){
   const STYLE_DEFS=[
@@ -31,8 +31,6 @@
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-3",
-    "./js/qmes-sales-enterprise-print-20260826.js?v=20260826-2",
-    "./js/qmes-sales-print-link-clean-20260826.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
