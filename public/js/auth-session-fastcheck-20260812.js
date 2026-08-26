@@ -11,12 +11,20 @@
   global.fetch=function(input,init){
     const url=typeof input==="string"?input:(input&&input.url)||"";
     if(!/\/api\/auth\/me(?:\?|$)/.test(url)) return nativeFetch(input,init);
+
+    // Do not force-abort the login-session check. A slow DB/network response must not
+    // be interpreted by app.jsx as an expired login and send the user back to login.
     const options={...(init||{})};
-    if(options.signal) return nativeFetch(input,options);
-    const controller=new AbortController();
-    const timer=global.setTimeout(()=>controller.abort(),5000);
-    options.signal=controller.signal;
-    return nativeFetch(input,options).finally(()=>global.clearTimeout(timer));
+    if(!options.credentials) options.credentials="same-origin";
+    options.cache="no-store";
+
+    // Retry only transport failures once. HTTP 401/403 responses are returned as-is so
+    // genuinely expired sessions are still handled normally by the application.
+    return nativeFetch(input,options).catch((firstError)=>
+      new Promise((resolve)=>global.setTimeout(resolve,700))
+        .then(()=>nativeFetch(input,options))
+        .catch(()=>Promise.reject(firstError))
+    );
   };
 })(window);
 
