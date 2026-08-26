@@ -1,25 +1,26 @@
 /* Sidebar search/top navigation line alignment — 2026-08-26 */
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
   box-sizing:border-box!important;
-  height:46px!important;
-  min-height:46px!important;
-  max-height:46px!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
   margin:0!important;
-  padding:4px 12px!important;
+  padding:3px 12px!important;
   display:flex!important;
   align-items:center!important;
   background:#fff!important;
-  border-top:1px solid #e2e6ec!important;
+  border-top:0!important;
   border-bottom:1px solid #e2e6ec!important;
   border-left:0!important;
   border-right:0!important;
   box-shadow:none!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{
-  border-top:0!important;
-  border-bottom:0!important;
+  box-sizing:border-box!important;
+  margin:-2px 0 0!important;
+  border-top:1px solid #e2e6ec!important;
+  border-bottom:1px solid #e2e6ec!important;
   box-shadow:none!important;
-  margin:0!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
   box-sizing:border-box!important;
