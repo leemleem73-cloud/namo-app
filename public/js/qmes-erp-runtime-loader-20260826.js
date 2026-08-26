@@ -26,12 +26,12 @@
       /* Sales/Delivery must be derived from the actual work-order DB before the ERP
          React module reads its local/shared rows. This prevents old demo SO rows from
          flashing or being restored after F5. */
-      await loadScript('./js/qmes-sales-demo-reset-20260826.js?v=20260826-workorder2','qmes-sales-from-workorder-20260826');
+      await loadScript('./js/qmes-sales-demo-reset-20260826.js?v=20260826-workorder3','qmes-sales-from-workorder-20260826');
       if(window.__QMES_SALES_FROM_WORKORDER_READY__){
         try{await window.__QMES_SALES_FROM_WORKORDER_READY__;}catch(_error){}
       }
 
-      const response=await fetch('./js/qmes-erp-integrated-20260826.jsx?v=20260826-workorder2',{cache:'no-store'});
+      const response=await fetch('./js/qmes-erp-integrated-20260826.jsx?v=20260826-workorder3',{cache:'no-store'});
       if(!response.ok) throw new Error('ERP module fetch failed: '+response.status);
       const source=await response.text();
       const compiled=window.Babel.transform(source,{presets:['react'],sourceType:'script',filename:'qmes-erp-integrated-20260826.jsx'}).code;
