@@ -32,3 +32,60 @@ html body #root#root#root .qmes-top-menu-bar{
   border-top:1px solid #e2e6ec!important;
   border-bottom:1px solid #e2e6ec!important;
 }
+
+/* 공정검사 / 출하검사 검색필터를 수입검사와 동일 배치 */
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+  overflow:hidden!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{
+  flex:0 0 360px!important;
+  width:360px!important;
+  min-width:300px!important;
+  max-width:360px!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-oqc-record-filter-field{
+  flex:0 0 108px!important;
+  width:108px!important;
+  min-width:108px!important;
+  max-width:108px!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > button{
+  flex:0 0 88px!important;
+  width:88px!important;
+  min-width:88px!important;
+  max-width:88px!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:0 10px!important;
+  width:100%!important;
+  height:36px!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-icon{
+  position:static!important;
+  inset:auto!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  pointer-events:none!important;
+}
+html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input{
+  flex:1 1 auto!important;
+  width:0!important;
+  min-width:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  margin:0!important;
+}
+@media(max-width:900px){
+  html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important;}
+  html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) > .flex.flex-col.gap-1{flex:1 1 100%!important;width:100%!important;max-width:none!important;min-width:0!important;}
+}
