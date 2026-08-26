@@ -1,0 +1,35 @@
+/* NAMO QMES — final sales list cleanup — 2026-08-26 */
+/* Final visible columns:
+   수주번호 | 고객사 | 고객 PO | 제품 | 수량 | 포장정보 | 납기일 | 납기상태 | 생산계획 | 출하상태 | 납품처 | (수정/삭제)
+*/
+
+/* Remove remarks from the list immediately, before late JS patches run. */
+.qerp-table th[data-qmes-sales-remark-head],
+.qerp-table td[data-qmes-sales-remark-cell]{display:none!important;}
+
+/* Remove any legacy Management column/header that a cached script may render. */
+.qerp-table th[data-qmes-sales-manage-head],
+.qerp-table td[data-qmes-sales-manage-cell]{display:none!important;}
+
+/* Visually rename legacy '납품정보' header to '납품처' without waiting for JS. */
+.qerp-table th[data-qmes-sales-delivery-head]{
+  font-size:0!important;
+}
+.qerp-table th[data-qmes-sales-delivery-head]::after{
+  content:'납품처';
+  font-size:11px;
+  font-weight:800;
+  color:inherit;
+}
+
+/* Final unlabeled action column. */
+.qerp-table th[data-qmes-sales-action-head]{
+  width:92px!important;
+  min-width:92px!important;
+  font-size:0!important;
+}
+.qerp-table td[data-qmes-sales-action-cell]{
+  width:92px!important;
+  min-width:92px!important;
+  text-align:center!important;
+}
