@@ -1,0 +1,254 @@
+/* NAMO QMES enterprise readable density — 2026-08-26
+ * Raises the UI from compact density to normal enterprise desktop density.
+ */
+
+:root{
+  --qmes-shell-sidebar-width:230px;
+  --qe-font-size-base:14px;
+  --qe-control-height:38px;
+  --qe-row-height:44px;
+}
+
+html body{
+  font-size:var(--qe-font-size-base)!important;
+  line-height:1.55!important;
+}
+
+/* Header */
+html body #root#root#root>div>header>div:first-child{
+  height:68px!important;
+  min-height:68px!important;
+  max-height:68px!important;
+  padding-left:18px!important;
+  padding-right:18px!important;
+}
+html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+  height:40px!important;
+  max-height:40px!important;
+  max-width:275px!important;
+}
+html body #root#root#root .qmes-header-clock,
+html body #root#root#root .qmes-header-clock span{
+  font-size:13px!important;
+}
+html body #root#root#root .qmes-header-action{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 11px!important;
+  font-size:13px!important;
+}
+html body #root#root#root button[aria-label*="NAMO Talk"]{
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 14px!important;
+  font-size:13.5px!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]{
+  min-height:40px!important;
+  font-size:13.5px!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
+  width:32px!important;
+  height:32px!important;
+  font-size:13px!important;
+}
+
+/* Top navigation */
+html body #root#root#root .qmes-top-menu-bar,
+html body #root#root#root .qmes-top-menu,
+html body #root#root#root .qmes-top-menu-item{
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+}
+html body #root#root#root .qmes-top-menu-button{
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  padding:0 12px!important;
+  gap:7px!important;
+  font-size:13.5px!important;
+  font-weight:650!important;
+}
+html body #root#root#root .qmes-top-menu-button svg{
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+}
+html body #root#root#root .qmes-top-menu-button .qmes-menu-arrow{
+  width:12px!important;
+  height:12px!important;
+}
+
+/* Sidebar */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  width:var(--qmes-shell-sidebar-width)!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
+  height:52px!important;
+  min-height:52px!important;
+  padding-top:8px!important;
+  padding-bottom:8px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  height:36px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
+  height:34px!important;
+  font-size:13px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
+  min-height:48px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
+  font-size:13px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+  min-height:42px!important;
+  padding:10px 11px 10px 13px!important;
+  font-size:13.5px!important;
+  line-height:20px!important;
+}
+
+/* Dropdown menus */
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{
+  min-width:232px!important;
+  max-width:290px!important;
+  padding:7px!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
+  font-size:12px!important;
+  padding:8px 10px 7px!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button,
+html body #qmes-user-dropdown#qmes-user-dropdown button{
+  min-height:40px!important;
+  font-size:13.5px!important;
+  line-height:20px!important;
+}
+
+/* Main content typography */
+html body #root#root#root>div>main{
+  padding-top:20px!important;
+  padding-bottom:32px!important;
+}
+html body #root#root#root main h1{
+  font-size:24px!important;
+  line-height:32px!important;
+  font-weight:750!important;
+}
+html body #root#root#root main h2{
+  font-size:17px!important;
+  line-height:25px!important;
+}
+html body #root#root#root main h3{
+  font-size:15px!important;
+  line-height:22px!important;
+}
+html body #root#root#root main h4{
+  font-size:14px!important;
+  line-height:21px!important;
+}
+html body #root#root#root main p,
+html body #root#root#root main .text-xs,
+html body #root#root#root main .text-sm{
+  line-height:1.55!important;
+}
+
+/* Forms */
+html body #root#root#root main input:not([type="checkbox"]):not([type="radio"]),
+html body #root#root#root main select,
+html body #root#root#root main textarea{
+  min-height:var(--qe-control-height)!important;
+  font-size:13.5px!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+html body #root#root#root main label{
+  font-size:12.5px!important;
+  line-height:18px!important;
+}
+
+/* Buttons */
+html body #root#root#root main button:not(.qmes-top-menu-button):not(.qmes-side-item):not(.qmes-side-close){
+  min-height:34px;
+  font-size:13px!important;
+  line-height:18px!important;
+}
+
+/* Tables */
+html body #root#root#root main table{
+  font-size:13.5px!important;
+}
+html body #root#root#root main table thead th{
+  padding-top:11px!important;
+  padding-bottom:11px!important;
+  font-size:12.5px!important;
+  line-height:18px!important;
+  font-weight:650!important;
+}
+html body #root#root#root main table tbody td{
+  padding-top:11px!important;
+  padding-bottom:11px!important;
+  font-size:13.5px!important;
+  line-height:20px!important;
+}
+html body #root#root#root main table tbody tr{
+  min-height:var(--qe-row-height)!important;
+}
+
+/* KPI and summary cards */
+html body #root#root#root main .qmes-hybrid-kpi-card,
+html body #root#root#root main .qmes-text-kpi-card,
+html body #root#root#root main .qmes-iqc-kpi-card,
+html body #root#root#root main .qmes-pqc-kpi-grid>div,
+html body #root#root#root main .qmes-oqc-kpi-grid>div{
+  min-height:100px!important;
+  padding:16px 18px!important;
+}
+html body #root#root#root main .qmes-hybrid-label{
+  font-size:12px!important;
+}
+html body #root#root#root main .qmes-hybrid-value{
+  font-size:24px!important;
+}
+html body #root#root#root main .qmes-hybrid-unit,
+html body #root#root#root main .qmes-hybrid-caption{
+  font-size:11px!important;
+}
+
+/* Production/process screens: avoid tiny compressed rows and captions. */
+html body #root#root#root main .qmes-prod-process,
+html body #root#root#root main .qmes-prod-process *{
+  letter-spacing:-.01em;
+}
+html body #root#root#root main .qmes-prod-process table th{
+  font-size:12.5px!important;
+}
+html body #root#root#root main .qmes-prod-process table td{
+  font-size:13.5px!important;
+}
+html body #root#root#root main .qmes-prod-process button{
+  font-size:13px!important;
+}
+
+@media(max-width:1400px){
+  :root{--qmes-shell-sidebar-width:220px;}
+  html body #root#root#root .qmes-top-menu-button{font-size:13px!important;padding:0 10px!important;gap:6px!important}
+  html body #root#root#root .qmes-top-menu-button svg{width:15px!important;height:15px!important;min-width:15px!important}
+  html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{font-size:13px!important}
+  html body #root#root#root main table{font-size:13px!important}
+  html body #root#root#root main table tbody td{font-size:13px!important}
+}
+
+@media(max-width:900px){
+  :root{--qmes-shell-sidebar-width:190px;}
+  html body #root#root#root>div>header>div:first-child{height:60px!important;min-height:60px!important;max-height:60px!important}
+  html body #root#root#root>div>header img[alt="NAMO Chemical"]{height:34px!important;max-height:34px!important}
+  html body #root#root#root .qmes-top-menu-bar,
+  html body #root#root#root .qmes-top-menu,
+  html body #root#root#root .qmes-top-menu-item,
+  html body #root#root#root .qmes-top-menu-button{height:44px!important;min-height:44px!important;max-height:44px!important}
+}
