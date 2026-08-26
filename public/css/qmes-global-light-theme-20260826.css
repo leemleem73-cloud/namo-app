@@ -27,4 +27,10 @@ html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filt
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:36px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;overflow:hidden!important;box-shadow:none!important;outline:0!important}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input{box-sizing:border-box!important;flex:1 1 auto!important;width:0!important;min-width:0!important;height:100%!important;margin:0!important;background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important}
 html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)::before,html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)::after{content:none!important;display:none!important}
+
+/* 수입 / 공정 / 출하 검사대장: 칸 안 글자를 살짝 키우고 행간·자간 통일 */
+html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) th{font-size:13px!important;line-height:1.35!important;letter-spacing:.01em!important;vertical-align:middle!important;}
+html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) td{font-size:13px!important;line-height:1.45!important;letter-spacing:.01em!important;vertical-align:middle!important;}
+html body #root#root#root main :is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table) td :is(span,strong,button){font-size:inherit;line-height:inherit;letter-spacing:inherit;}
+
 @media(max-width:1050px){html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;overflow:visible!important}html body #root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>.flex.flex-col.gap-1{flex:1 1 100%!important;min-width:0!important}}
