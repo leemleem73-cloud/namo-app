@@ -3,8 +3,8 @@
 /* 상단 KPI */
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar){background:transparent!important;border:0!important;outline:0!important;box-shadow:none!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-items{gap:0!important;padding:0!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;overflow:hidden!important;box-shadow:none!important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item{margin:0!important;background:#fff!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item+.qmes-simple-summary-item{box-shadow:inset 1px 0 0 #d7dee8!important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item{margin:0!important;background:#fff!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;color:#111827!important;box-sizing:border-box!important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-item+.qmes-simple-summary-item{box-shadow:none!important;border-left:1px solid #d7dee8!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label{color:#111827!important;font-size:15px!important;font-weight:800!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong{color:#050b14!important;font-size:30px!important;font-weight:900!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small{color:#111827!important;font-size:13px!important;font-weight:800!important;}
@@ -26,18 +26,19 @@ html body #root#root#root#root main .qmes-iqc-ledger-section::after{content:none
 html body #root#root#root#root main .qmes-iqc-ledger-panel > div{border-left:0!important;border-right:0!important;border-top:0!important;outline:0!important;box-shadow:none!important;}
 
 /* 검색/연도/월/초기화 */
-html body #root#root#root#root main .qmes-iqc-record-filter{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;display:flex!important;align-items:flex-end!important;gap:10px!important;flex-wrap:nowrap!important;overflow:hidden!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
-html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{flex:1 1 auto!important;width:auto!important;min-width:180px!important;max-width:none!important;}
-html body #root#root#root#root main .qmes-iqc-record-filter .qmes-oqc-record-filter-field{flex:0 0 112px!important;width:112px!important;min-width:112px!important;max-width:112px!important;}
-html body #root#root#root#root main .qmes-iqc-record-filter > button{flex:0 0 92px!important;width:92px!important;min-width:92px!important;max-width:92px!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;display:flex!important;align-items:flex-end!important;gap:8px!important;flex-wrap:nowrap!important;overflow:hidden!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{flex:0 1 360px!important;width:360px!important;min-width:260px!important;max-width:360px!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter .qmes-oqc-record-filter-field{flex:0 0 108px!important;width:108px!important;min-width:108px!important;max-width:108px!important;margin:0!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter > button{flex:0 0 90px!important;width:90px!important;min-width:90px!important;max-width:90px!important;}
 
 /* 검색창 */
-html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:36px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #cbd5e1!important;border-width:1px!important;border-style:solid!important;border-radius:8px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:36px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 10px!important;background:#fff!important;border:1px solid #cbd5e1!important;border-width:1px!important;border-style:solid!important;border-radius:8px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-icon{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;flex:0 0 auto!important;margin:0!important;}
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input,
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:hover,
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:active,
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus,
-html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{box-sizing:border-box!important;height:100%!important;flex:1 1 auto!important;width:0!important;min-width:0!important;margin:0!important;padding-top:0!important;padding-bottom:0!important;background:transparent!important;border:0!important;border-width:0!important;border-style:none!important;border-color:transparent!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;border-radius:0!important;outline:0!important;outline-width:0!important;box-shadow:none!important;color:#111827!important;appearance:none!important;-webkit-appearance:none!important;}
+html body #root#root#root#root main .qmes-iqc-record-filter .qmes-inspection-search-box input:focus-visible{box-sizing:border-box!important;height:100%!important;flex:1 1 auto!important;width:0!important;min-width:0!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;border-width:0!important;border-style:none!important;border-color:transparent!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;border-radius:0!important;outline:0!important;outline-width:0!important;box-shadow:none!important;color:#111827!important;appearance:none!important;-webkit-appearance:none!important;}
 html body #root#root#root#root main .qmes-iqc-record-filter select,
 html body #root#root#root#root main .qmes-iqc-record-filter>button{box-sizing:border-box!important;width:100%!important;height:36px!important;max-width:100%!important;background:#fff!important;border:1px solid #cbd5e1!important;border-radius:8px!important;outline:0!important;box-shadow:none!important;color:#111827!important;}
 #root .qmes-iqc-record-filter>button,#root .qmes-iqc-quickbar .qmes-iqc-new-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;}
@@ -61,39 +62,8 @@ html body #root#root#root#root main .qmes-iqc-chart-panel.qmes-iqc-rank-panel::a
 html body.qmes-side-open #root#root#root#root .qmes-top-menu-bar{margin-left:219px!important;width:calc(100% - 219px)!important;box-sizing:border-box!important;}
 html body.qmes-side-open #root#root#root#root .qmes-top-menu{width:100%!important;padding-left:10px!important;transform:none!important;box-sizing:border-box!important;}
 
-/* 사이드바 찾기 영역과 상단 메뉴바의 위/아래 선을 정확히 연결 */
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search,
-html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-search{
-  box-sizing:border-box!important;
-  height:46px!important;
-  min-height:46px!important;
-  max-height:46px!important;
-  padding:4px 12px!important;
-  display:flex!important;
-  align-items:center!important;
-  border-top:1px solid #d7dee8!important;
-  border-bottom:1px solid #d7dee8!important;
-  border-left:0!important;
-  border-right:0!important;
-  box-shadow:none!important;
-  background:#fff!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
-html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-head{
-  border-top:0!important;
-  border-bottom:0!important;
-  box-shadow:none!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box,
-html body .qmes-sync-sidebar.qmes-sync-sidebar .qmes-side-search-box{
-  height:36px!important;
-  min-height:36px!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-}
-
 @media(max-width:900px){
   html body.qmes-side-open #root#root#root#root .qmes-top-menu-bar{margin-left:189px!important;width:calc(100% - 189px)!important;}
   html body #root#root#root#root main .qmes-iqc-record-filter{flex-wrap:wrap!important;overflow:visible!important;}
-  html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{flex:1 1 100%!important;min-width:0!important;}
+  html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{flex:1 1 100%!important;width:100%!important;max-width:none!important;min-width:0!important;}
 }
