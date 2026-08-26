@@ -1,29 +1,13 @@
 /* QMES iPad inspection UI visibility fix + IQC packaging field cleanup. */
 (function(global){
   "use strict";
-  if(global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V6__) return;
-  global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V6__=true;
+  if(global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V5__) return;
+  global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V5__=true;
 
   const STYLE_ID="qmes-ipad-iqc-visibility-fix-style";
-  const RESTORE_LINK_ID="qmes-ipad-field-restore-20260826";
   const HIDDEN_IQC_FIELDS=new Set(["용기당 중량","계산중량","바코드 발행수량"]);
 
   function cleanText(node){return String(node?.textContent||"").replace(/\s+/g," ").trim();}
-
-  function ensureFieldRestoreCss(){
-    let link=document.getElementById(RESTORE_LINK_ID);
-    const href="./css/ipad-field-restore-20260826.css?v=20260826-lightrestore4";
-    if(link){
-      if(!String(link.href||"").includes("20260826-lightrestore4")) link.href=href;
-      document.head.appendChild(link);
-      return;
-    }
-    link=document.createElement("link");
-    link.id=RESTORE_LINK_ID;
-    link.rel="stylesheet";
-    link.href=href;
-    document.head.appendChild(link);
-  }
 
   function setReactInputValue(input,value){
     if(!input) return;
@@ -78,15 +62,15 @@
     style.id=STYLE_ID;
     style.textContent=`
       .qmes-ipad-mode-tabs button.is-active{
-        border:3px solid #9aabb9!important;
-        background:linear-gradient(90deg,#edf2f6 0%,#e3eaf0 52%,#d9e2e9 100%)!important;
-        color:#17212b!important;
-        box-shadow:0 5px 12px rgba(30,41,59,.11),inset 0 0 0 1px rgba(255,255,255,.42)!important;
+        border:3px solid #0284c7!important;
+        background:#dff4ff!important;
+        color:#0f172a!important;
+        box-shadow:0 0 0 3px rgba(2,132,199,.16),0 6px 16px rgba(15,23,42,.14)!important;
         transform:translateY(-1px);
       }
       .qmes-ipad-mode-tabs button.is-active strong,
       .qmes-ipad-mode-tabs button.is-active small{
-        color:#334155!important;
+        color:#075985!important;
         font-weight:950!important;
       }
       .qmes-ipad-mode-tabs button.is-active::before{
@@ -96,7 +80,7 @@
         width:24px;
         height:24px;
         border-radius:999px;
-        background:#64748b;
+        background:#0284c7;
         color:#fff;
         font-size:14px;
         font-weight:950;
@@ -109,11 +93,10 @@
   function refresh(){
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;ensureFieldRestoreCss();ensureStyle();cleanupIqcPackagingFields();});
+    requestAnimationFrame(()=>{scheduled=false;ensureStyle();cleanupIqcPackagingFields();});
   }
 
   function start(){
-    ensureFieldRestoreCss();
     refresh();
     new MutationObserver(refresh).observe(document.documentElement,{childList:true,subtree:true});
     document.addEventListener("input",event=>{
