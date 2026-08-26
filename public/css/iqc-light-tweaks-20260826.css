@@ -8,7 +8,7 @@ html body #root#root#root#root main .qmes-simple-summary:has(+ .qmes-iqc-quickba
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label{color:#111827!important;font-size:15px!important;font-weight:800!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value strong{color:#050b14!important;font-size:30px!important;font-weight:900!important;}
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-value small{color:#111827!important;font-size:13px!important;font-weight:800!important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light{width:11px!important;height:11px!important;opacity:1;animation:qmes-summary-dot-float 1.35s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;}
+#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light{width:11px!important;height:11px!important;animation:qmes-summary-dot-float 1.35s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;}
 
 /* 수입검사 관리 */
 #root .qmes-iqc-quickbar{background:#fff!important;border:1px solid #d7dee8!important;border-radius:14px!important;overflow:hidden!important;outline:0!important;box-shadow:none!important;}
@@ -25,8 +25,8 @@ html body #root#root#root#root main .qmes-iqc-ledger-section::before,
 html body #root#root#root#root main .qmes-iqc-ledger-section::after{content:none!important;display:none!important;}
 html body #root#root#root#root main .qmes-iqc-ledger-panel > div{border-left:0!important;border-right:0!important;border-top:0!important;outline:0!important;box-shadow:none!important;}
 
-/* 검색/연도/월/초기화 */
-html body #root#root#root#root main .qmes-iqc-record-filter{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;display:flex!important;align-items:flex-end!important;gap:8px!important;flex-wrap:nowrap!important;overflow:hidden!important;background:#fff!important;border:1px solid #d7dee8!important;border-radius:12px!important;outline:0!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;}
+/* 검색/연도/월/초기화: 큰 바깥 박스 제거 */
+html body #root#root#root#root main .qmes-iqc-record-filter{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;display:flex!important;align-items:flex-end!important;gap:8px!important;flex-wrap:nowrap!important;overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;padding:0!important;}
 html body #root#root#root#root main .qmes-iqc-record-filter > .flex.flex-col.gap-1{flex:0 1 360px!important;width:360px!important;min-width:260px!important;max-width:360px!important;}
 html body #root#root#root#root main .qmes-iqc-record-filter .qmes-oqc-record-filter-field{flex:0 0 108px!important;width:108px!important;min-width:108px!important;max-width:108px!important;margin:0!important;}
 html body #root#root#root#root main .qmes-iqc-record-filter > button{flex:0 0 90px!important;width:90px!important;min-width:90px!important;max-width:90px!important;}
