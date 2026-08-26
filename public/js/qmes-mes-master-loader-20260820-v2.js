@@ -27,6 +27,7 @@
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5",
     "./js/qmes-sales-remark-actions-20260826.js?v=20260826-final2",
+    "./js/qmes-sales-action-header-fix-20260827.js?v=20260827-1",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260826-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
