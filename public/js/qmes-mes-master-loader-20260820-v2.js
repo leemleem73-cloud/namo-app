@@ -3,6 +3,22 @@
  * show the old menu for several seconds before the integrated menus appear.
  */
 (function(){
+  const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise1";
+  function ensureEnterpriseStyle(moveToEnd){
+    let link=document.getElementById("qmes-enterprise-ui-20260826");
+    if(!link){
+      link=document.createElement("link");
+      link.id="qmes-enterprise-ui-20260826";
+      link.rel="stylesheet";
+      link.href=ENTERPRISE_STYLE;
+      document.head.appendChild(link);
+      return link;
+    }
+    if(moveToEnd&&link.parentNode===document.head)document.head.appendChild(link);
+    return link;
+  }
+  ensureEnterpriseStyle(false);
+
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
@@ -36,15 +52,20 @@
     const base=src.split("?")[0];
     return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
   }
+  function finish(){
+    ensureEnterpriseStyle(true);
+    window.dispatchEvent(new CustomEvent("qmes:enterprise-ui-ready"));
+    window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
+  }
   function load(i){
-    if(i>=files.length){window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));return;}
+    if(i>=files.length){finish();return;}
     const src=files[i];
     if(exists(src)){load(i+1);return;}
     const script=document.createElement("script");
     script.src=src;
     script.async=false;
-    script.onload=()=>load(i+1);
-    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);load(i+1);};
+    script.onload=()=>{ensureEnterpriseStyle(true);load(i+1);};
+    script.onerror=()=>{console.error("[QMES] MES 마스터 모듈 로드 실패",src);ensureEnterpriseStyle(true);load(i+1);};
     document.head.appendChild(script);
   }
   const start=()=>load(0);
