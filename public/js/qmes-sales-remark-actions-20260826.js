@@ -1,4 +1,4 @@
-/* NAMO QMES — final sales table cleanup: delivery place + unlabeled actions — 2026-08-26 */
+/* NAMO QMES — final sales table cleanup: delivery place + remarks/actions — 2026-08-27 */
 (function(){
   "use strict";
   if(window.__QMES_SALES_REMARK_ACTIONS_20260826__) return;
@@ -23,21 +23,20 @@
   }
 
   function ensureStyle(){
-    if(document.getElementById("qmes-sales-final-actions-style-20260826"))return;
-    const style=document.createElement("style");
-    style.id="qmes-sales-final-actions-style-20260826";
+    let style=document.getElementById("qmes-sales-final-actions-style-20260826");
+    if(!style){style=document.createElement("style");style.id="qmes-sales-final-actions-style-20260826";document.head.appendChild(style);}
     style.textContent=`
-      /* Keep compact UI's remark nodes present so it does not recreate them,
-         but remove the remarks column visually from the sales list. */
-      .qerp-table [data-qmes-sales-remark-head],
-      .qerp-table [data-qmes-sales-remark-cell]{display:none!important;}
-      .qmes-sales-action-cell{white-space:nowrap;text-align:center!important;min-width:86px!important;}
-      .qmes-sales-action-wrap{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
-      .qmes-sales-edit-btn,.qmes-sales-delete-btn{height:30px;border-radius:6px;padding:0 8px;font-size:10px;font-weight:900;cursor:pointer;background:#fff;}
-      .qmes-sales-edit-btn{border:1px solid #bfdbfe;color:#1d4ed8;background:#eff6ff;}
-      .qmes-sales-delete-btn{border:1px solid #fecaca;color:#b91c1c;}
+      .qerp.qmes-sales-tab [data-qmes-sales-remark-head],
+      .qerp.qmes-sales-tab [data-qmes-sales-remark-cell]{display:none!important;}
+      .qerp.qmes-sales-tab [data-qmes-sales-action-head]{display:table-cell!important;width:104px!important;min-width:104px!important;font-size:11px!important;text-align:center!important;white-space:nowrap!important;}
+      .qerp.qmes-sales-tab [data-qmes-sales-action-cell]{display:table-cell!important;width:104px!important;min-width:104px!important;text-align:center!important;white-space:nowrap!important;}
+      .qmes-sales-action-wrap{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;white-space:nowrap!important;}
+      .qmes-sales-edit-btn,.qmes-sales-delete-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:30px!important;border-radius:6px!important;padding:0 8px!important;font-size:10px!important;font-weight:900!important;cursor:pointer!important;background:#fff!important;}
+      .qmes-sales-edit-btn{border:1px solid #bfdbfe!important;color:#1d4ed8!important;background:#eff6ff!important;}
+      .qmes-sales-delete-btn{border:1px solid #fecaca!important;color:#b91c1c!important;}
+      .qerp.qmes-sales-tab .qerp-status{background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:0!important;}
+      .qerp.qmes-sales-tab .qmes-sales-packaging-empty{background:transparent!important;border-radius:0!important;padding:0!important;}
     `;
-    document.head.appendChild(style);
   }
 
   function editSales(id){
@@ -109,10 +108,13 @@
     if(!actionHead){
       actionHead=document.createElement("th");
       actionHead.dataset.qmesSalesActionHead="1";
-      actionHead.textContent="";
-      actionHead.setAttribute("aria-label","수주 작업");
       head.appendChild(actionHead);
     }
+    actionHead.textContent="비고";
+    actionHead.setAttribute("aria-label","비고");
+    actionHead.style.setProperty("display","table-cell","important");
+    actionHead.style.setProperty("font-size","11px","important");
+    actionHead.style.setProperty("text-align","center","important");
 
     t.querySelectorAll("tbody tr").forEach(tr=>{
       const id=clean(tr.children[0]?.textContent);if(!id)return;
@@ -123,6 +125,7 @@
         cell.className="qmes-sales-action-cell";
         tr.appendChild(cell);
       }
+      cell.style.setProperty("display","table-cell","important");
       let wrap=cell.querySelector(".qmes-sales-action-wrap");
       if(!wrap){cell.innerHTML="";wrap=document.createElement("div");wrap.className="qmes-sales-action-wrap";cell.appendChild(wrap);}
       let edit=wrap.querySelector(".qmes-sales-edit-btn");
@@ -134,15 +137,10 @@
     });
   }
 
-  function hideRemarkHeaderFallback(t){
-    const head=t.querySelector("thead tr");if(!head)return;
-    Array.from(head.children).forEach((th,index)=>{
-      if(clean(th.textContent)!=="비고")return;
-      th.style.setProperty("display","none","important");
-      t.querySelectorAll("tbody tr").forEach(tr=>{
-        const td=tr.children[index];if(td)td.style.setProperty("display","none","important");
-      });
-    });
+  function hideRealRemarkColumn(t){
+    const head=t.querySelector('[data-qmes-sales-remark-head]');
+    if(head)head.style.setProperty("display","none","important");
+    t.querySelectorAll('[data-qmes-sales-remark-cell]').forEach(td=>td.style.setProperty("display","none","important"));
   }
 
   let applying=false;
@@ -151,10 +149,11 @@
     const r=root(),t=table(r);if(!t)return;
     applying=true;
     try{
+      r.classList.add("qmes-sales-tab");
       ensureStyle();
       removeLegacyManage(t);
       normalizeDeliveryHeaderAndCells(t);
-      hideRemarkHeaderFallback(t);
+      hideRealRemarkColumn(t);
       ensureActionColumn(t);
     }finally{applying=false;}
   }
