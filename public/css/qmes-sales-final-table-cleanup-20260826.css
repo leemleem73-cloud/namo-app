@@ -1,35 +1,51 @@
-/* NAMO QMES — final sales list cleanup — 2026-08-26 */
+/* NAMO QMES — final sales list cleanup — 2026-08-27 */
 /* Final visible columns:
-   수주번호 | 고객사 | 고객 PO | 제품 | 수량 | 포장정보 | 납기일 | 납기상태 | 생산계획 | 출하상태 | 납품처 | (수정/삭제)
+   수주번호 | 고객사 | 고객 PO | 제품 | 수량 | 포장정보 | 납기일 | 납기상태 | 생산계획 | 출하상태 | 납품처 | 비고(수정/삭제)
 */
 
-/* Remove remarks from the list immediately, before late JS patches run. */
-.qerp-table th[data-qmes-sales-remark-head],
-.qerp-table td[data-qmes-sales-remark-cell]{display:none!important;}
+/* Hide only the real remarks data column. */
+.qerp.qmes-sales-tab .qerp-table th[data-qmes-sales-remark-head],
+.qerp.qmes-sales-tab .qerp-table td[data-qmes-sales-remark-cell]{display:none!important;}
 
 /* Remove any legacy Management column/header that a cached script may render. */
-.qerp-table th[data-qmes-sales-manage-head],
-.qerp-table td[data-qmes-sales-manage-cell]{display:none!important;}
+.qerp.qmes-sales-tab .qerp-table th[data-qmes-sales-manage-head],
+.qerp.qmes-sales-tab .qerp-table td[data-qmes-sales-manage-cell]{display:none!important;}
 
 /* Visually rename legacy '납품정보' header to '납품처' without waiting for JS. */
-.qerp-table th[data-qmes-sales-delivery-head]{
-  font-size:0!important;
-}
-.qerp-table th[data-qmes-sales-delivery-head]::after{
+.qerp.qmes-sales-tab .qerp-table th[data-qmes-sales-delivery-head]{font-size:0!important;}
+.qerp.qmes-sales-tab .qerp-table th[data-qmes-sales-delivery-head]::after{
   content:'납품처';
   font-size:11px;
   font-weight:800;
   color:inherit;
 }
 
-/* Final unlabeled action column. */
-.qerp-table th[data-qmes-sales-action-head]{
-  width:92px!important;
-  min-width:92px!important;
-  font-size:0!important;
-}
-.qerp-table td[data-qmes-sales-action-cell]{
-  width:92px!important;
-  min-width:92px!important;
+/* Final action column: visible header + visible Edit/Delete controls. */
+.qerp.qmes-sales-tab .qerp-table th[data-qmes-sales-action-head]{
+  display:table-cell!important;
+  width:104px!important;
+  min-width:104px!important;
+  font-size:11px!important;
   text-align:center!important;
+  white-space:nowrap!important;
+}
+.qerp.qmes-sales-tab .qerp-table td[data-qmes-sales-action-cell]{
+  display:table-cell!important;
+  width:104px!important;
+  min-width:104px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+
+/* No filled badge colors in the sales list. Keep text color only. */
+.qerp.qmes-sales-tab .qerp-table .qerp-status{
+  background:transparent!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  padding:0!important;
+}
+.qerp.qmes-sales-tab .qerp-table .qmes-sales-packaging-empty{
+  background:transparent!important;
+  border-radius:0!important;
+  padding:0!important;
 }
