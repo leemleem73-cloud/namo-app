@@ -1,6 +1,5 @@
-/* QMES Stage 12 operational loader v15
- * Emergency stability revision: keep operational modules, disable the sales
- * print observer layers that can cause repeated DOM mutations and UI lockup.
+/* QMES Stage 12 operational loader v16
+ * Stable operational modules + sales remarks/delete + one-time duplicate sales cleanup.
  */
 (function(){
   const STYLE_DEFS=[
@@ -31,6 +30,7 @@
 
   const files=[
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-3",
+    "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
@@ -50,7 +50,7 @@
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
-    "./js/qmes-sales-compact-ui-20260826.js?v=20260826-packaging1",
+    "./js/qmes-sales-compact-ui-20260826.js?v=20260826-remarksdelete1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
