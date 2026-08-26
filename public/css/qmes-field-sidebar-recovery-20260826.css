@@ -1,0 +1,114 @@
+/* QMES scoped recovery — field input + sidebar only, 2026-08-26 */
+
+/* 현장입력: LOT/저장 기능은 건드리지 않고 시각 스타일만 안정화 */
+html body #root#root#root .qmes-ipad-pop{
+  color:#1f2937!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-section{
+  background:#fff!important;
+  border-color:#d7dee8!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(220px,1fr))!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid>label{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid>.wide{
+  grid-column:1/-1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid input,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid select,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid textarea{
+  width:100%!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  box-sizing:border-box!important;
+  background:#fff!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid input[readonly]{
+  background:#f8fafc!important;
+  color:#334155!important;
+  -webkit-text-fill-color:#334155!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-mode-tabs button,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-item-tabs button,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-step-actions button{
+  box-sizing:border-box!important;
+}
+
+/* 설비점검 현장입력: 기존 밝은 전용 스타일 우선 */
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-equipment{
+  background:#fff!important;
+  color:#1f2937!important;
+  border-color:#d6dee6!important;
+}
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-equipment input,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-equipment select,
+html body #root#root#root .qmes-ipad-pop .qmes-ipad-equipment textarea{
+  background:#fff!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  border-color:#b8c4d0!important;
+}
+
+/* 왼쪽 메뉴: 선택/클릭 후에도 글자색이 배경에 묻히지 않도록 고정 */
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item *{
+  color:#1f2937!important;
+  -webkit-text-fill-color:#1f2937!important;
+  opacity:1!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover *{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  opacity:1!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active *,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item[aria-current="page"],
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item[aria-current="page"] *{
+  color:#1554b6!important;
+  -webkit-text-fill-color:#1554b6!important;
+  opacity:1!important;
+}
+
+/* 수입검사 관리 기준으로 공정/출하 검사 기록 제목 크기 고정 — 뒤 CSS 재로딩에도 변하지 않음 */
+html body #root#root#root main .qmes-management-heading,
+html body #root#root#root main div:has(> .qmes-pqc-record-filter)>div:first-child :is(h2,h3),
+html body #root#root#root main div:has(> .qmes-oqc-record-filter)>div:first-child :is(h2,h3){
+  font-size:18px!important;
+  font-weight:800!important;
+  line-height:1.35!important;
+  letter-spacing:-.01em!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+}
+
+@media(max-width:1000px){
+  html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid{
+    grid-template-columns:repeat(2,minmax(220px,1fr))!important;
+  }
+}
+@media(max-width:700px){
+  html body #root#root#root .qmes-ipad-pop .qmes-ipad-form-grid{
+    grid-template-columns:1fr!important;
+  }
+}
