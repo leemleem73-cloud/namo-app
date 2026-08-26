@@ -1,6 +1,5 @@
-/* QMES Stage 12 operational loader v28
- * Stable ERP first paint: the Sales page now renders its final layout directly.
- * Legacy delayed Sales DOM patchers are intentionally not loaded.
+/* QMES Stage 12 operational loader v29
+ * Stable ERP first paint + stable Sales table/edit.
  */
 (function(){
   const STYLE_DEFS=[
@@ -14,6 +13,7 @@
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
+    ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"],
     ["qmes-field-shell-header-consistency-20260826","./css/qmes-field-shell-header-consistency-20260826.css?v=20260827-restore1",true]
   ];
 
@@ -35,7 +35,8 @@
   syncThemeState();
 
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-stable-firstpaint2",
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-stable-firstpaint3",
+    "./js/qmes-sales-full-edit-20260827.js?v=20260827-full-edit1",
     "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
