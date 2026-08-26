@@ -25,6 +25,10 @@
     if(!m) return "";
     return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
   }
+  function shortDate(value){
+    const date=isoDate(value);
+    return date?date.slice(5).replace("-","/"):"";
+  }
   function currentUserName(){
     const user=window.__QMES_CURRENT_USER__||window.__QMES_USER__||{};
     return text(user?.name||user?.uid||user);
@@ -46,11 +50,29 @@
     if(/완료|검사중|생산중|진행중/.test(status)) return "반영완료";
     return "계획반영";
   }
-  function shippingStatus(status){
-    if(/완료/.test(status)) return "생산완료";
-    if(/검사중/.test(status)) return "검사중";
-    if(/생산중|진행중/.test(status)) return "생산중";
-    return "-";
+  function lotOqcRows(db,lot){
+    const rows=Array.isArray(db?.insp?.OQC)?db.insp.OQC:[];
+    return rows.filter(row=>text(row?.lot)===lot);
+  }
+  function hasShipment(db,lot,batch){
+    const lotRow=db?.lots?.[lot]||{};
+    const ship=lotRow.ship||batch?.ship||{};
+    const coa=db?.coa?.[lot]||{};
+    return Boolean(text(ship?.shipNo||ship?.customer||ship?.shipDate||ship?.date||coa?.shipNo||coa?.ship));
+  }
+  function shippingStatus(db,lot,status,batch){
+    if(hasShipment(db,lot,batch)) return "출하완료";
+    const oqcRows=lotOqcRows(db,lot);
+    if(!oqcRows.length){
+      if(/완료/.test(status)) return "출하검사 대기";
+      if(/검사중/.test(status)) return "생산검사 중";
+      if(/생산중|진행중/.test(status)) return "생산중";
+      return "-";
+    }
+    const judges=oqcRows.map(row=>text(row?.judge)).filter(Boolean);
+    if(judges.some(value=>/불합격|NG|FAIL/i.test(value))) return "출하차단";
+    if(judges.length===oqcRows.length&&judges.every(value=>/합격|PASS|OK/i.test(value))) return "출하 대기";
+    return "출하검사 중";
   }
 
   function buildRows(){
@@ -67,25 +89,27 @@
       const batch=batches.find(row=>text(row?.no)===lot)||{};
       const lotRow=db.lots?.[lot]||{};
       const status=workOrderStatus(lot,doc,batch);
-      const product=text(doc.item||batch.item||lotRow.itemName||lotRow.item)||"-";
+      const product=text(doc.item||batch.item||lotRow.itemName||lotRow.item)||"NBA20-HM01";
       const qty=number(doc.plan??doc.qty??batch.plan??batch.qty);
-      const customer=text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"-";
+      const customer=text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"현대자동차";
       const po=text(doc.customerPo||doc.customerPO||doc.po||doc.poNo||batch.po||batch.poNo)||"-";
-      const due=isoDate(doc.due||doc.deliveryDate||batch.due||doc.date||batch.date)||"";
+      const productionDate=isoDate(doc.date||doc.productionDate||batch.date||batch.productionDate||lotRow.date);
+      const due=productionDate||isoDate(doc.due||doc.deliveryDate||batch.due)||"";
       return {
-        id:lot,
+        id:shortDate(productionDate)||lot,
         customer,
         po,
         product,
         qty,
         due,
         plan:planStatus(status),
-        shipping:shippingStatus(status),
+        shipping:shippingStatus(db,lot,status,batch),
         source:"WORK_ORDER",
         workOrder:lot,
+        productionDate,
         workOrderStatus:status
       };
-    }).sort((a,b)=>String(b.due||"").localeCompare(String(a.due||""))||String(b.id).localeCompare(String(a.id)));
+    }).sort((a,b)=>String(b.productionDate||b.due||"").localeCompare(String(a.productionDate||a.due||""))||String(b.workOrder||"").localeCompare(String(a.workOrder||"")));
   }
 
   function writeLocal(rows){
@@ -137,8 +161,11 @@
     }
   },100);
 
-  /* Keep Sales synchronized when a work order changes later in the same session. */
-  ["qmes:workorder-saved","qmes:workorder-synced","qmes:workorder-updated"].forEach(name=>{
-    window.addEventListener(name,()=>{apply();});
+  /* Keep Sales synchronized when work orders, OQC or shipment data changes later. */
+  ["qmes:workorder-saved","qmes:workorder-synced","qmes:workorder-updated","qmes:data-updated","qmes:erp-data-changed"].forEach(name=>{
+    window.addEventListener(name,event=>{
+      if(name==="qmes:erp-data-changed"&&event?.detail?.kind==="sales"&&event?.detail?.source==="WORK_ORDER") return;
+      apply();
+    });
   });
 })();
