@@ -21,7 +21,7 @@
   const metaFor=id=>{const r=rowData(id),m=map(META_KEY),key=clean(r.workOrder)||id;return m[id]||m[key]||r.orderMeta||{};};
   const packagingFor=id=>{const r=rowData(id),m=map(PACK_KEY),key=clean(r.workOrder)||id;return m[id]||m[key]||r.packaging||null;};
   const remarkFor=id=>{const r=rowData(id),m=map(REMARK_KEY),key=clean(r.workOrder)||id;return clean(m[id]??m[key]??r.remarks??r.remark??r.note);};
-  const packageText=p=>{if(!p)return "포장정보 미입력";const type=clean(p.type||p.packagingType),u=Number(p.unitWeight??p.unitPackQty||0),q=Number(p.packageQty||0);return [type,u&&q?`${u}kg × ${q}EA`:u?`${u}kg/EA`:q?`${q}EA`:""].filter(Boolean).join(" · ")||"포장정보 미입력";};
+  const packageText=p=>{if(!p)return "포장정보 미입력";const type=clean(p.type||p.packagingType),u=Number((p.unitWeight??p.unitPackQty)??0),q=Number(p.packageQty||0);return [type,u&&q?`${u}kg × ${q}EA`:u?`${u}kg/EA`:q?`${q}EA`:""].filter(Boolean).join(" · ")||"포장정보 미입력";};
   const today=()=>new Date().toISOString().slice(0,10);
 
   function dueStatus(row){
