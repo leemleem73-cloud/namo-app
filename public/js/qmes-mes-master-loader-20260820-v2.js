@@ -1,9 +1,8 @@
-/* QMES Stage 12 operational loader v2
- * Loads stable runtime helpers. ERP navigation is loaded first so F5 does not
- * show the old menu for several seconds before the integrated menus appear.
+/* QMES Stage 12 operational loader v3
+ * Loads stable runtime helpers. The Enterprise UI is the ONLY final visual layer.
  */
 (function(){
-  const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise1";
+  const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
   function ensureEnterpriseStyle(moveToEnd){
     let link=document.getElementById("qmes-enterprise-ui-20260826");
     if(!link){
@@ -14,6 +13,7 @@
       document.head.appendChild(link);
       return link;
     }
+    if(!String(link.getAttribute("href")||"").includes("enterprise2"))link.href=ENTERPRISE_STYLE;
     if(moveToEnd&&link.parentNode===document.head)document.head.appendChild(link);
     return link;
   }
@@ -27,7 +27,7 @@
     "./js/item-recipe-master-20260807.js?v=20260807-1",
     "./js/workorder-recipe-bridge-20260807.js?v=20260807-1",
     "./js/workorder-recipe-ui-bridge-20260807.js?v=20260807-1",
-    "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260824-inventory-native2",
+    "./js/qmes-top-submenu-restore-20260820-v2.js?v=20260826-enterprise2",
     "./js/production-process-link-fix-20260824.js?v=20260824-1",
     "./js/production-process-initial-sync-20260824.js?v=20260824-2",
     "./js/production-worklog-date-retry-20260824.js?v=20260824-1",
@@ -45,14 +45,14 @@
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
-    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1",
-    "./js/qmes-global-menu-preview-theme-20260826.js?v=20260826-2"
+    "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
   ];
   function exists(src){
     const base=src.split("?")[0];
     return Array.from(document.scripts).some((s)=>(s.getAttribute("src")||"").split("?")[0]===base);
   }
   function finish(){
+    document.getElementById("qmes-global-menu-preview-theme-20260826")?.remove();
     ensureEnterpriseStyle(true);
     window.dispatchEvent(new CustomEvent("qmes:enterprise-ui-ready"));
     window.dispatchEvent(new CustomEvent("qmes:mes-master-ready"));
@@ -60,7 +60,7 @@
   function load(i){
     if(i>=files.length){finish();return;}
     const src=files[i];
-    if(exists(src)){load(i+1);return;}
+    if(exists(src)){ensureEnterpriseStyle(true);load(i+1);return;}
     const script=document.createElement("script");
     script.src=src;
     script.async=false;
@@ -69,6 +69,6 @@
     document.head.appendChild(script);
   }
   const start=()=>load(0);
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",start,{once:true});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
   else start();
 })();
