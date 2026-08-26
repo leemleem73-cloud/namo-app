@@ -1,7 +1,7 @@
 /* QMES Stage 12 operational loader v8
  * Loads stable runtime helpers. Modern corporate UI is the final visual layer,
  * with sidebar alignment, production-process refinement, work-order issued-list
- * readability, and global text sharpness applied after it.
+ * readability, global text sharpness, and SPC selected-tab contrast applied after it.
  */
 (function(){
   const ENTERPRISE_STYLE="./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise2";
@@ -12,6 +12,7 @@
   const PROCESS_CORPORATE_STYLE="./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2";
   const WORKORDER_ISSUED_STYLE="./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1";
   const TEXT_SHARPNESS_STYLE="./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1";
+  const SPC_READABILITY_STYLE="./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1";
 
   function ensureStyle(id,href,moveToEnd){
     let link=document.getElementById(id);
@@ -37,6 +38,7 @@
     ensureStyle("qmes-production-process-corporate-fix-20260826",PROCESS_CORPORATE_STYLE,moveToEnd);
     ensureStyle("qmes-workorder-issued-clean-20260826",WORKORDER_ISSUED_STYLE,moveToEnd);
     ensureStyle("qmes-text-sharpness-20260826",TEXT_SHARPNESS_STYLE,moveToEnd);
+    ensureStyle("qmes-spc-readability-fix-20260826",SPC_READABILITY_STYLE,moveToEnd);
   }
 
   ensureFinalStyles(false);
