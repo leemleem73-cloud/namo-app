@@ -1,0 +1,628 @@
+/* ============================================================================
+   NAMO QMES GLOBAL LIGHT THEME — 2026-08-26
+   Purpose: one common visual system for every QMES menu/module.
+   This file is intentionally loaded LAST in <head> and uses #root#root#root
+   specificity so old premium-dark !important rules cannot win later.
+   ============================================================================ */
+
+:root{
+  color-scheme:light;
+  --qmes-bg:#f5f7fb;
+  --qmes-surface:#ffffff;
+  --qmes-soft:#f8fafc;
+  --qmes-soft-blue:#eef6ff;
+  --qmes-line:#d7dee8;
+  --qmes-line-soft:#e5eaf0;
+  --qmes-text:#111827;
+  --qmes-text-2:#334155;
+  --qmes-muted:#64748b;
+  --qmes-muted-2:#94a3b8;
+  --qmes-blue:#2563eb;
+  --qmes-blue-2:#174ea6;
+  --qmes-green:#15803d;
+  --qmes-orange:#c2410c;
+  --qmes-red:#b91c1c;
+  --qmes-shadow:0 5px 16px rgba(15,23,42,.07);
+}
+
+html,
+html body{
+  background:var(--qmes-bg)!important;
+  color:var(--qmes-text)!important;
+}
+
+html body #root#root#root,
+html body #root#root#root>div{
+  background:var(--qmes-bg)!important;
+  color:var(--qmes-text)!important;
+}
+
+/* ---------- header ---------- */
+html body #root#root#root>div>header{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html body #root#root#root>div>header>div:first-child{
+  height:68px!important;
+  min-height:68px!important;
+  max-height:68px!important;
+  padding:0 20px!important;
+  background:#fff!important;
+  border-color:var(--qmes-line)!important;
+  box-sizing:border-box!important;
+  transition:none!important;
+}
+html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+  filter:none!important;
+  height:44px!important;
+  max-height:44px!important;
+  max-width:270px!important;
+  width:auto!important;
+  object-fit:contain!important;
+}
+html body #root#root#root .qmes-header-clock,
+html body #root#root#root .qmes-header-clock span,
+html body #root#root#root .qmes-header-controls,
+html body #root#root#root .qmes-header-controls *{
+  color:var(--qmes-text-2)!important;
+}
+html body #root#root#root .qmes-header-action,
+html body #root#root#root button[aria-label*="NAMO Talk"],
+html body #root#root#root button[aria-label^="계정 설정"]{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:#cbd5e1!important;
+  box-shadow:none!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
+  background:#eef2f7!important;
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"] div,
+html body #root#root#root button[aria-label^="계정 설정"] span{
+  color:var(--qmes-text)!important;
+}
+
+/* ---------- top menu ---------- */
+html body #root#root#root .qmes-top-menu-bar{
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  background:#fff!important;
+  border-top:1px solid var(--qmes-line)!important;
+  border-bottom:1px solid var(--qmes-line)!important;
+  box-shadow:none!important;
+  transition:none!important;
+}
+html body #root#root#root .qmes-top-menu{
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  padding-left:10px!important;
+  background:#fff!important;
+  align-items:stretch!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  flex-wrap:nowrap!important;
+  width:100%!important;
+  transform:none!important;
+  transition:none!important;
+}
+html body #root#root#root .qmes-top-menu-item{
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  flex:0 0 auto!important;
+  transition:none!important;
+}
+html body #root#root#root .qmes-top-menu-button{
+  height:46px!important;
+  min-height:46px!important;
+  max-height:46px!important;
+  padding:0 14px!important;
+  border:0!important;
+  border-bottom:3px solid transparent!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+  transition:none!important;
+}
+html body #root#root#root .qmes-top-menu-button span,
+html body #root#root#root .qmes-top-menu-button svg,
+html body #root#root#root .qmes-top-menu-button i,
+html body #root#root#root .qmes-top-menu-button b{
+  color:currentColor!important;
+}
+html body #root#root#root .qmes-top-menu-button:hover,
+html body #root#root#root .qmes-top-menu-button:focus-visible{
+  background:#f1f5f9!important;
+  color:var(--qmes-text)!important;
+  outline:none!important;
+}
+html body #root#root#root .qmes-top-menu-button.is-active,
+html body #root#root#root .qmes-top-menu-button[aria-current="page"]{
+  background:var(--qmes-soft-blue)!important;
+  color:var(--qmes-blue-2)!important;
+  border-bottom-color:var(--qmes-blue)!important;
+}
+html body:not(.qmes-side-open) #root#root#root .qmes-top-menu{
+  width:100%!important;
+  transform:none!important;
+  padding-left:10px!important;
+}
+
+/* ---------- submenu / dropdown ---------- */
+html body #root#root#root .qmes-submenu-row,
+html body #qmes-all-menu-dropdown,
+html body #qmes-user-dropdown{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.10)!important;
+}
+html body #root#root#root .qmes-submenu-title,
+html body #qmes-all-menu-dropdown .qmes-hover-title{
+  background:#fff!important;
+  color:var(--qmes-muted)!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #root#root#root .qmes-submenu-button,
+html body #qmes-all-menu-dropdown button,
+html body #qmes-user-dropdown button{
+  background:#fff!important;
+  color:var(--qmes-text-2)!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #root#root#root .qmes-submenu-button:hover,
+html body #qmes-all-menu-dropdown button:hover,
+html body #qmes-user-dropdown button:hover{
+  background:#f1f5f9!important;
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root .qmes-submenu-button.is-active{
+  background:#eaf3ff!important;
+  color:#1554b6!important;
+}
+html body #qmes-user-dropdown .qmes-dropdown-logout{
+  color:var(--qmes-red)!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+
+/* ---------- left sidebar ---------- */
+html body #qmes-sync-sidebar{
+  background:#fff!important;
+  color:var(--qmes-text-2)!important;
+  border-right:1px solid var(--qmes-line)!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+html body #qmes-sync-sidebar .qmes-side-search,
+html body #qmes-sync-sidebar .qmes-side-head{
+  background:#fff!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-search-box{
+  background:var(--qmes-soft)!important;
+  border-color:#d8e0ea!important;
+}
+html body #qmes-sync-sidebar .qmes-side-search-input{
+  background:var(--qmes-soft)!important;
+  color:var(--qmes-text-2)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-search-input::placeholder{
+  color:var(--qmes-muted-2)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-title{
+  color:var(--qmes-muted-2)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-item{
+  background:transparent!important;
+  color:var(--qmes-text-2)!important;
+  box-shadow:none!important;
+}
+html body #qmes-sync-sidebar .qmes-side-item:hover{
+  background:#f1f5f9!important;
+  color:var(--qmes-text)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-item.is-active{
+  background:#eaf3ff!important;
+  color:#1554b6!important;
+}
+html body #qmes-sync-hamburger{
+  background:#fff!important;
+  color:#263548!important;
+  border-color:#d8dee7!important;
+  box-shadow:none!important;
+}
+
+/* ---------- main canvas ---------- */
+html body #root#root#root>div>main{
+  background:var(--qmes-bg)!important;
+  color:var(--qmes-text)!important;
+}
+
+/* ---------- OLD TAILWIND DARK UTILITIES: force into common light palette ---------- */
+html body #root#root#root main [class~="bg-slate-950"],
+html body #root#root#root main [class~="bg-slate-900"],
+html body #root#root#root main [class~="bg-slate-900/80"]{
+  background:#fff!important;
+  background-color:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+html body #root#root#root main [class~="bg-slate-800"],
+html body #root#root#root main [class~="bg-slate-800/70"],
+html body #root#root#root main [class~="bg-slate-800/60"],
+html body #root#root#root main [class~="bg-slate-800/50"],
+html body #root#root#root main [class~="bg-slate-800/40"],
+html body #root#root#root main [class~="bg-slate-700"]{
+  background:var(--qmes-soft)!important;
+  background-color:var(--qmes-soft)!important;
+  background-image:none!important;
+  color:var(--qmes-text-2)!important;
+}
+html body #root#root#root main [class~="border-slate-900"],
+html body #root#root#root main [class~="border-slate-800"],
+html body #root#root#root main [class~="border-slate-800/70"],
+html body #root#root#root main [class~="border-slate-800/60"],
+html body #root#root#root main [class~="border-slate-700"],
+html body #root#root#root main [class~="border-slate-700/60"],
+html body #root#root#root main [class~="border-slate-600"]{
+  border-color:var(--qmes-line)!important;
+}
+html body #root#root#root main [class~="text-slate-100"],
+html body #root#root#root main [class~="text-slate-200"],
+html body #root#root#root main [class~="text-slate-300"]{
+  color:var(--qmes-text-2)!important;
+}
+html body #root#root#root main [class~="text-slate-400"],
+html body #root#root#root main [class~="text-slate-500"],
+html body #root#root#root main [class~="text-slate-600"]{
+  color:var(--qmes-muted)!important;
+}
+html body #root#root#root main [class~="bg-slate-950"][class~="text-white"],
+html body #root#root#root main [class~="bg-slate-900"][class~="text-white"],
+html body #root#root#root main [class~="bg-slate-800"][class~="text-white"],
+html body #root#root#root main [class~="bg-slate-950"] [class~="text-white"],
+html body #root#root#root main [class~="bg-slate-900"] [class~="text-white"],
+html body #root#root#root main [class~="bg-slate-800"] [class~="text-white"]{
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root main [class~="divide-slate-800/60"]>:not([hidden])~:not([hidden]){
+  border-color:var(--qmes-line-soft)!important;
+}
+
+/* ---------- shared Panel primitive ---------- */
+html body #root#root#root main div.bg-slate-900.border.border-slate-800.rounded-lg,
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"]{
+  background:#fff!important;
+  background-image:none!important;
+  border-color:var(--qmes-line)!important;
+  color:var(--qmes-text)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"]>div[class~="border-b"]{
+  background:#fff!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"] h1,
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"] h2,
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"] h3,
+html body #root#root#root main div[class~="bg-slate-900"][class~="border-slate-800"] h4{
+  color:var(--qmes-text)!important;
+}
+
+/* ---------- shared KPI cards ---------- */
+html body #root#root#root main .qmes-hybrid-kpi-card,
+html body #root#root#root main .qmes-text-kpi-card,
+html body #root#root#root main .qmes-iqc-kpi-card,
+html body #root#root#root main .qmes-pqc-kpi-grid>div,
+html body #root#root#root main .qmes-oqc-kpi-grid>div{
+  background:#fff!important;
+  background-color:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border:1px solid var(--qmes-line)!important;
+  border-top-color:var(--qmes-line)!important;
+  border-left-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+  clip-path:none!important;
+  -webkit-clip-path:none!important;
+  border-radius:12px!important;
+  transform:none!important;
+}
+html body #root#root#root main .qmes-hybrid-kpi-card:hover,
+html body #root#root#root main .qmes-text-kpi-card:hover,
+html body #root#root#root main .qmes-iqc-kpi-card:hover{
+  transform:none!important;
+  background:#fff!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+html body #root#root#root main .qmes-hybrid-kpi-card::before,
+html body #root#root#root main .qmes-hybrid-kpi-card::after,
+html body #root#root#root main .qmes-hybrid-copy::before,
+html body #root#root#root main .qmes-hybrid-copy::after{
+  display:none!important;
+  content:none!important;
+}
+html body #root#root#root main .qmes-hybrid-ring-inner{
+  background:#fff!important;
+  border-color:#dbe3ec!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main .qmes-hybrid-label,
+html body #root#root#root main .qmes-text-kpi-card .qmes-hybrid-label{
+  color:#475569!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main .qmes-hybrid-value,
+html body #root#root#root main .qmes-text-kpi-card .qmes-hybrid-value{
+  color:var(--qmes-text)!important;
+  text-shadow:none!important;
+}
+html body #root#root#root main .qmes-hybrid-unit,
+html body #root#root#root main .qmes-text-kpi-card .qmes-hybrid-unit,
+html body #root#root#root main .qmes-hybrid-caption,
+html body #root#root#root main .qmes-text-kpi-caption{
+  color:var(--qmes-muted)!important;
+}
+
+/* ---------- aggressive normalization for old custom dark cards/panels ---------- */
+html body #root#root#root main :is(
+  [class*="qmes-"][class*="panel"],
+  [class*="qmes-"][class*="card"],
+  [class*="qmes-"][class*="section"],
+  [class*="qmes-"][class*="ledger"],
+  [class*="qmes-"][class*="quickbar"],
+  .qpp-card
+){
+  border-color:var(--qmes-line)!important;
+}
+
+/* IQC */
+html body #root#root#root main .qmes-iqc-quickbar,
+html body #root#root#root main .qmes-iqc-ledger-panel,
+html body #root#root#root main .qmes-iqc-ledger-section,
+html body #root#root#root main .qmes-iqc-chart-panel,
+html body #root#root#root main .qmes-iqc-modal,
+html body #root#root#root main .qmes-iqc-modal-head,
+html body #root#root#root main .qmes-iqc-modal-section,
+html body #root#root#root main .qmes-iqc-modal-foot{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+html body #root#root#root main .qmes-iqc-quickbar strong,
+html body #root#root#root main .qmes-iqc-modal-head strong,
+html body #root#root#root main .qmes-iqc-modal-section h4{
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root main .qmes-iqc-quickbar p,
+html body #root#root#root main .qmes-iqc-modal-foot{
+  color:var(--qmes-muted)!important;
+}
+html body #root#root#root main .qmes-iqc-ledger-compact td,
+html body #root#root#root main .qmes-iqc-ledger-table td,
+html body #root#root#root main .qmes-iqc-ledger-compact td.qmes-date-cell,
+html body #root#root#root main .qmes-iqc-ledger-compact td.qmes-lot-cell{
+  color:var(--qmes-text-2)!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #root#root#root main .qmes-iqc-ledger-compact tbody tr:hover{
+  background:#f8fafc!important;
+}
+
+/* PQC / OQC */
+html body #root#root#root main .qmes-pqc-page,
+html body #root#root#root main .qmes-oqc-page{
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root main .qmes-pqc-page [class*="panel"],
+html body #root#root#root main .qmes-pqc-page [class*="card"],
+html body #root#root#root main .qmes-oqc-page [class*="panel"],
+html body #root#root#root main .qmes-oqc-page [class*="card"]{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+
+/* Production / work order / process */
+html body #root#root#root main .qmes-prod-process,
+html body #root#root#root main .qmes-prod-process .qpp-card,
+html body #root#root#root main [class*="qmes-production-"][class*="card"],
+html body #root#root#root main [class*="qmes-workorder-"][class*="card"]{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+
+/* Equipment */
+html body #root#root#root main .qmes-equipment-management-content>.qmes-equipment-management-summary>div,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div:first-child,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-tab>div.rounded-xl.text-center,
+html body #root#root#root main .qmes-equipment-alarm-panel,
+html body #root#root#root main [class*="qmes-equipment-"][class*="card"],
+html body #root#root#root main [class*="qmes-equipment-"][class*="panel"]{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-summary-number,
+html body #root#root#root main .qmes-equipment-management-content .qmes-equipment-summary-unit,
+html body #root#root#root main .qmes-equipment-alarm-title,
+html body #root#root#root main .qmes-equipment-alarm-time,
+html body #root#root#root main .qmes-equipment-alarm-eq,
+html body #root#root#root main .qmes-equipment-alarm-message{
+  color:var(--qmes-text)!important;
+  -webkit-text-fill-color:var(--qmes-text)!important;
+}
+
+/* LOT / Trace */
+html body #root#root#root main [class~="bg-slate-800/60"],
+html body #root#root#root main [class~="bg-slate-800/50"]{
+  background:#f8fafc!important;
+  background-image:none!important;
+}
+html body #root#root#root main table tr[class*="hover:bg-slate"]:hover{
+  background:#f8fafc!important;
+}
+
+/* NCR / GQMS / 4M */
+html body #root#root#root main [class*="qmes-ncr-"][class*="card"],
+html body #root#root#root main [class*="qmes-ncr-"][class*="panel"],
+html body #root#root#root main [class*="qmes-complaint-"][class*="card"],
+html body #root#root#root main [class*="qmes-complaint-"][class*="panel"],
+html body #root#root#root main [class*="qmes-4m-"][class*="card"],
+html body #root#root#root main [class*="qmes-4m-"][class*="panel"]{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+
+/* Partners / inventory / SPC / interlock / CoA / members */
+html body #root#root#root main [class*="partner"][class*="card"],
+html body #root#root#root main [class*="partner"][class*="panel"],
+html body #root#root#root main [class*="inventory"][class*="card"],
+html body #root#root#root main [class*="inventory"][class*="panel"],
+html body #root#root#root main [class*="spc"][class*="card"],
+html body #root#root#root main [class*="spc"][class*="panel"],
+html body #root#root#root main [class*="interlock"][class*="card"],
+html body #root#root#root main [class*="interlock"][class*="panel"],
+html body #root#root#root main [class*="member"][class*="card"],
+html body #root#root#root main [class*="member"][class*="panel"]{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+  box-shadow:var(--qmes-shadow)!important;
+}
+
+/* ---------- forms ---------- */
+html body #root#root#root main input:not([type="checkbox"]):not([type="radio"]),
+html body #root#root#root main select,
+html body #root#root#root main textarea{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:#cbd5e1!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main input::placeholder,
+html body #root#root#root main textarea::placeholder{
+  color:var(--qmes-muted-2)!important;
+  opacity:1!important;
+}
+html body #root#root#root main input:focus,
+html body #root#root#root main select:focus,
+html body #root#root#root main textarea:focus{
+  border-color:#60a5fa!important;
+  box-shadow:0 0 0 2px rgba(96,165,250,.13)!important;
+}
+
+/* ---------- tables ---------- */
+html body #root#root#root main table{
+  color:var(--qmes-text-2)!important;
+}
+html body #root#root#root main thead,
+html body #root#root#root main thead tr,
+html body #root#root#root main table thead th{
+  background:var(--qmes-soft)!important;
+  color:#475569!important;
+  border-color:var(--qmes-line)!important;
+}
+html body #root#root#root main tbody,
+html body #root#root#root main tbody tr,
+html body #root#root#root main tbody td{
+  background:#fff!important;
+  color:var(--qmes-text-2)!important;
+  border-color:var(--qmes-line-soft)!important;
+}
+html body #root#root#root main tbody tr:hover,
+html body #root#root#root main tbody tr:hover td{
+  background:#fbfdff!important;
+}
+
+/* ---------- neutral buttons ---------- */
+html body #root#root#root main button[class~="bg-slate-800"],
+html body #root#root#root main button[class~="bg-slate-700"],
+html body #root#root#root main button[class~="border-slate-700"]:not([class*="bg-sky"]):not([class*="bg-red"]):not([class*="bg-emerald"]):not([class*="bg-amber"]){
+  background:#fff!important;
+  color:var(--qmes-text-2)!important;
+  border-color:#cbd5e1!important;
+  box-shadow:none!important;
+}
+html body #root#root#root main button[class~="bg-slate-800"]:hover,
+html body #root#root#root main button[class~="bg-slate-700"]:hover{
+  background:#f1f5f9!important;
+  color:var(--qmes-text)!important;
+}
+
+/* ---------- semantic status colors stay visible ---------- */
+html body #root#root#root main [class~="bg-emerald-500/10"],
+html body #root#root#root main [class~="bg-emerald-500/20"]{background:rgba(16,185,129,.10)!important}
+html body #root#root#root main [class~="bg-red-500/10"],
+html body #root#root#root main [class~="bg-red-500/20"]{background:rgba(239,68,68,.10)!important}
+html body #root#root#root main [class~="bg-amber-500/10"],
+html body #root#root#root main [class~="bg-amber-500/5"]{background:rgba(245,158,11,.10)!important}
+html body #root#root#root main [class~="bg-sky-500/10"],
+html body #root#root#root main [class~="bg-sky-500/15"],
+html body #root#root#root main [class~="bg-sky-500/20"]{background:rgba(37,99,235,.09)!important}
+
+/* ---------- modal surfaces (not black backdrop) ---------- */
+html body #root#root#root [role="dialog"]>div[class~="bg-slate-900"],
+html body #root#root#root [role="dialog"]>form[class~="bg-slate-900"]{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:var(--qmes-line)!important;
+}
+html body #root#root#root [role="dialog"] [class~="text-white"]{
+  color:var(--qmes-text)!important;
+}
+html body #root#root#root [role="dialog"] input,
+html body #root#root#root [role="dialog"] select,
+html body #root#root#root [role="dialog"] textarea{
+  background:#fff!important;
+  color:var(--qmes-text)!important;
+  border-color:#cbd5e1!important;
+}
+
+/* ---------- print is intentionally untouched ---------- */
+@media print{
+  body.print-doc #qmes-print-root,
+  body.print-doc #qmes-print-root *{
+    color:initial;
+  }
+}
+
+@media(max-width:900px){
+  html body #root#root#root>div>header>div:first-child{
+    height:60px!important;
+    min-height:60px!important;
+    max-height:60px!important;
+    padding:0 14px!important;
+  }
+  html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+    height:36px!important;
+    max-height:36px!important;
+    max-width:190px!important;
+  }
+}
