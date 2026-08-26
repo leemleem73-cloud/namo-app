@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V13__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V13__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V14__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V14__=true;
 
   const REPORT_BACKDROP='.qmes-modal-backdrop:has(.qmes-iqc2-paper)';
   const REPORT_SELECTOR=`${REPORT_BACKDROP} .qmes-wo-viewer`;
@@ -9,6 +9,11 @@
   const style=document.createElement('style');
   style.id='qmes-scroll-layer-guard-style';
   style.textContent=`
+    /* Reserve the page scrollbar gutter at all times so opening a longer
+       IQC/PQC/OQC field screen does not change the viewport width or move
+       the header utilities horizontally. */
+    html{scrollbar-gutter:stable;}
+
     header{z-index:40!important;isolation:isolate!important;}
     .qmes-top-menu-bar{z-index:41!important;isolation:isolate!important;}
     .qmes-top-menu{z-index:42!important;isolation:isolate!important;}
