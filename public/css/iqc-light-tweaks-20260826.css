@@ -1,6 +1,6 @@
 /* IQC bright-theme refinements — 2026-08-26 */
 
-/* 수입검사 상단 5개 KPI만 타깃: 바로 다음 형제가 qmes-iqc-quickbar인 summary */
+/* 수입검사 상단 5개 KPI */
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) {
   background:transparent !important;
 }
@@ -13,6 +13,7 @@
   box-shadow:0 2px 7px rgba(15,23,42,.10) !important;
   color:#111827 !important;
 }
+/* 글자 크기 확대는 유지 */
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-label {
   color:#111827 !important;
   font-size:15px !important;
@@ -31,21 +32,15 @@
   font-weight:800 !important;
 }
 
-/* 움직이는 원을 흰 바탕에서 더 선명하게 */
+/* 원 색상은 기존 공통 CSS의 원래 tone을 그대로 사용.
+   흰 배경에서 보이도록 크기/불투명도만 소폭 보강 */
 #root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light {
-  width:12px !important;
-  height:12px !important;
+  width:11px !important;
+  height:11px !important;
   opacity:1 !important;
-  filter:saturate(1.55) contrast(1.18) !important;
-  box-shadow:0 0 0 3px rgba(15,23,42,.08),0 0 12px currentColor !important;
 }
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light.violet {background:#7c3aed !important;color:#7c3aed !important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light.sky {background:#0284c7 !important;color:#0284c7 !important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light.green {background:#059669 !important;color:#059669 !important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light.red {background:#dc2626 !important;color:#dc2626 !important;}
-#root .qmes-simple-summary:has(+ .qmes-iqc-quickbar) .qmes-simple-summary-light.amber {background:#d97706 !important;color:#d97706 !important;}
 
-/* 업체별 IQC 합격률 영역 — 흰 배경에서 링/텍스트 대비 강화 */
+/* 업체별 IQC 합격률: 흰 배경만 유지하고 링의 기존 색상은 그대로 사용 */
 #root .qmes-iqc-rank-panel,
 #root .qmes-iqc-rank-panel > div,
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-card,
@@ -61,10 +56,6 @@
 #root .qmes-iqc-rank-panel .qmes-iqc-rank-kicker,
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-count,
 #root .qmes-iqc-rank-panel .qmes-iqc-rank-footer {color:#4b5563 !important;}
-#root .qmes-iqc-rank-panel .qmes-iqc-donut-ring {
-  filter:saturate(1.35) contrast(1.12) !important;
-  box-shadow:0 0 0 1px #d7dee8,0 4px 12px rgba(15,23,42,.10) !important;
-}
 #root .qmes-iqc-rank-panel .qmes-iqc-donut-name {
   font-size:14px !important;
   font-weight:800 !important;
