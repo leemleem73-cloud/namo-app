@@ -1,5 +1,5 @@
-/* QMES Stage 12 operational loader v17
- * Stable operational modules + sales remarks/delete + spacious sales form layout.
+/* QMES Stage 12 operational loader v18
+ * Stable operational modules + enterprise sales fields/table alignment.
  */
 (function(){
   const STYLE_DEFS=[
@@ -12,7 +12,7 @@
     ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
-    ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-1"]
+    ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-2"]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
@@ -52,7 +52,8 @@
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
-    "./js/qmes-sales-compact-ui-20260826.js?v=20260826-remarksdelete1",
+    "./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise1",
+    "./js/qmes-sales-enterprise-fields-fix-20260826.js?v=20260826-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
