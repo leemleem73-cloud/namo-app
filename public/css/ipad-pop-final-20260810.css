@@ -52,33 +52,6 @@ body > #root > div:has(.qmes-ipad-pop){
 .qmes-ipad-equipment button.qmes-equipment-new-register{background:#fff!important;color:#111!important;border:1.5px solid #111!important;font-weight:900!important;box-shadow:0 2px 7px rgba(15,23,42,.08)!important;}
 .qmes-ipad-equipment button.qmes-equipment-new-register *{color:#111!important;}
 .qmes-ipad-equipment button.qmes-equipment-new-register:hover,.qmes-ipad-equipment button.qmes-equipment-new-register:focus-visible{background:#f8fafc!important;border-color:#111!important;color:#111!important;}
-
-/* 현장입력 보조 컨트롤은 기본 입력칸 높이(54px)에 정확히 맞춤 */
-.qmes-ipad-pop .qmes-ipad-material-field{position:relative!important;}
-.qmes-ipad-pop .qmes-ipad-material-add-btn{
-  top:auto!important;bottom:11px!important;right:7px!important;
-  height:32px!important;min-height:32px!important;max-height:32px!important;
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  margin:0!important;box-sizing:border-box!important;
-}
-.qmes-ipad-pop .qmes-ipad-number-field{position:relative!important;}
-.qmes-ipad-pop .qmes-ipad-number-field>input{height:54px!important;min-height:54px!important;max-height:54px!important;}
-.qmes-ipad-pop .qmes-ipad-number-stepper{
-  top:auto!important;bottom:0!important;right:0!important;
-  width:38px!important;height:54px!important;min-height:54px!important;max-height:54px!important;
-  border-radius:0 10px 10px 0!important;box-sizing:border-box!important;
-}
-.qmes-ipad-pop .qmes-ipad-number-stepper button{
-  height:27px!important;min-height:27px!important;max-height:27px!important;line-height:26px!important;
-}
-.qmes-ipad-pop .qmes-ipad-ship-stepper{
-  width:100%!important;height:54px!important;min-height:54px!important;max-height:54px!important;
-  box-sizing:border-box!important;
-}
-.qmes-ipad-pop .qmes-ipad-ship-stepper button{
-  height:27px!important;min-height:27px!important;max-height:27px!important;line-height:26px!important;
-}
-
 @media(max-width:620px){
   .qmes-ipad-pop .qmes-ipad-hero h1{font-size:28px!important;}.qmes-ipad-pop .qmes-ipad-home-code{font-size:48px!important;}.qmes-ipad-pop .qmes-ipad-home-card>strong{font-size:24px!important;}.qmes-ipad-pop .qmes-ipad-work-head>div:nth-child(2)>span{font-size:21px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs small,.qmes-ipad-pop .qmes-ipad-mode-tabs button>small{font-size:19px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs strong{font-size:17px!important;}.qmes-ipad-pop .qmes-ipad-mode-tabs + .qmes-ipad-section .qmes-ipad-section-title h2{font-size:22px!important;}.qmes-ipad-pop .qmes-ipad-form-grid label>span{font-size:15px!important;}.qmes-ipad-pop .qmes-ipad-item-tabs button strong{font-size:16px!important;}
 }
