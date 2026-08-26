@@ -1,0 +1,256 @@
+/* NAMO QMES work-order LOT click + detail preview fix — 2026-08-26
+ * 1) LOT No./item in issued list are display text only. Preview opens only from the
+ *    explicit management button.
+ * 2) The detail preview modal follows the current light enterprise visual system.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Issued list: LOT No. and product are no longer hidden preview triggers.      */
+/* -------------------------------------------------------------------------- */
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(1)>button,
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(2)>button{
+  pointer-events:none!important;
+  cursor:default!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+  opacity:1!important;
+}
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(1)>button{
+  color:#1456bd!important;
+  -webkit-text-fill-color:#1456bd!important;
+  font-weight:750!important;
+}
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(2)>button{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-weight:650!important;
+}
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(1)>button:hover,
+html body #root#root#root main .qmes-issued-table-v2 tbody td:nth-child(2)>button:hover{
+  text-decoration:none!important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Detail preview: light modal.                                                */
+/* -------------------------------------------------------------------------- */
+html body .qmes-modal-backdrop:has(.qmes-wo-detail-preview){
+  background:rgba(15,23,42,.38)!important;
+  backdrop-filter:blur(2px)!important;
+  -webkit-backdrop-filter:blur(2px)!important;
+}
+html body .qmes-wo-viewer.qmes-wo-detail-preview{
+  width:min(1240px,94vw)!important;
+  max-height:88vh!important;
+  padding:0!important;
+  overflow:auto!important;
+  background:#ffffff!important;
+  background-image:none!important;
+  color:#111827!important;
+  border:1px solid #d8dee8!important;
+  border-radius:10px!important;
+  box-shadow:0 22px 60px rgba(15,23,42,.18)!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:20!important;
+  min-height:66px!important;
+  padding:13px 18px!important;
+  margin:0!important;
+  background:#ffffff!important;
+  border-bottom:1px solid #e5e9ef!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head>div:first-child{
+  transform:none!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head>div:last-child{
+  transform:none!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-100,
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-200{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-weight:750!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-500{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  opacity:1!important;
+}
+
+/* Main preview content spacing. */
+html body .qmes-wo-detail-preview .qmes-detail-only{
+  color:#111827!important;
+}
+html body .qmes-wo-detail-preview>.qmes-detail-only,
+html body .qmes-wo-detail-preview .qmes-wo-summary,
+html body .qmes-wo-detail-preview .qmes-issued-extra-summary{
+  margin-left:18px!important;
+  margin-right:18px!important;
+}
+
+/* Summary information. */
+html body .qmes-wo-detail-preview .qmes-wo-summary{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:0!important;
+  margin-top:16px!important;
+  margin-bottom:16px!important;
+  background:#fff!important;
+  border:1px solid #e1e6ed!important;
+  border-radius:8px!important;
+  overflow:hidden!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-summary>div{
+  padding:12px 13px!important;
+  background:#fff!important;
+  border-right:1px solid #edf0f3!important;
+  border-bottom:0!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-summary>div:last-child{
+  border-right:0!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-summary span{
+  display:block!important;
+  margin-bottom:4px!important;
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  font-size:11px!important;
+  line-height:16px!important;
+  font-weight:650!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-summary strong{
+  display:block!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-size:13px!important;
+  line-height:19px!important;
+  font-weight:700!important;
+  opacity:1!important;
+}
+
+/* Section heading and table. */
+html body .qmes-wo-detail-preview .qmes-detail-only>.text-sm.font-semibold,
+html body .qmes-wo-detail-preview .qmes-detail-only .text-slate-200{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-weight:750!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview .qmes-detail-only .overflow-x-auto{
+  border:1px solid #e1e6ed!important;
+  border-radius:8px!important;
+  overflow:auto!important;
+  background:#fff!important;
+}
+html body .qmes-wo-detail-preview table{
+  width:100%!important;
+  border-collapse:collapse!important;
+  background:#fff!important;
+  color:#111827!important;
+}
+html body .qmes-wo-detail-preview table thead,
+html body .qmes-wo-detail-preview table thead tr,
+html body .qmes-wo-detail-preview table th{
+  background:#f6f8fa!important;
+  color:#374151!important;
+  -webkit-text-fill-color:#374151!important;
+  border-color:#dfe5ec!important;
+  font-size:11.5px!important;
+  font-weight:750!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview table th{
+  padding:10px 8px!important;
+  border-bottom:1px solid #dfe5ec!important;
+}
+html body .qmes-wo-detail-preview table tbody tr,
+html body .qmes-wo-detail-preview table td{
+  background:#fff!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  border-color:#edf0f3!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview table td{
+  padding:10px 8px!important;
+  border-bottom:1px solid #edf0f3!important;
+  font-size:12.5px!important;
+  font-weight:550!important;
+}
+html body .qmes-wo-detail-preview table tbody tr:last-child td{
+  background:#f8fafc!important;
+  font-weight:750!important;
+  border-bottom:0!important;
+}
+
+/* Remove old dark text utility colors inside detail preview. */
+html body .qmes-wo-detail-preview :is(.text-slate-100,.text-slate-200,.text-slate-300){
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview :is(.text-slate-400,.text-slate-500,.text-slate-600){
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  opacity:1!important;
+}
+html body .qmes-wo-detail-preview .text-sky-300,
+html body .qmes-wo-detail-preview .text-sky-400{
+  color:#1456bd!important;
+  -webkit-text-fill-color:#1456bd!important;
+}
+html body .qmes-wo-detail-preview .text-emerald-300,
+html body .qmes-wo-detail-preview .text-emerald-400{
+  color:#047857!important;
+  -webkit-text-fill-color:#047857!important;
+}
+html body .qmes-wo-detail-preview .text-amber-300,
+html body .qmes-wo-detail-preview .text-amber-400{
+  color:#a15c07!important;
+  -webkit-text-fill-color:#a15c07!important;
+}
+
+/* Header/action buttons. */
+html body .qmes-wo-detail-preview .qmes-wo-head-actions button,
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head button{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 11px!important;
+  border:1px solid #bfc8d4!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-head-actions button:first-child{
+  background:#1769e0!important;
+  border-color:#1769e0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-viewer-head button:hover{
+  filter:none!important;
+  background:#f3f5f7!important;
+}
+html body .qmes-wo-detail-preview .qmes-wo-head-actions button:first-child:hover{
+  background:#1557b8!important;
+  border-color:#1557b8!important;
+}
+
+/* Footer/close area if present. */
+html body .qmes-wo-detail-preview>div:last-child{
+  border-color:#e5e9ef!important;
+}
+
+@media(max-width:900px){
+  html body .qmes-wo-detail-preview .qmes-wo-summary{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
