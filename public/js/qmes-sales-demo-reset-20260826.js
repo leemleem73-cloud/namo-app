@@ -1,6 +1,11 @@
 /* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-26
  * Sales order numbers use SO-YYYYMMDD-NNN and production date remains separate.
  * Sales metadata overrides preserve user edits without changing the work-order source.
+ *
+ * IMPORTANT: Sales rows are derived from shared Work Orders. Do not persist the
+ * same derived snapshot again through the inventory qmes-sync channel. That
+ * duplicate write created unnecessary /api/qmes-sync/inventory POST traffic and
+ * could surface gateway failures even though the source Work Orders were valid.
  */
 (function(){
   "use strict";
@@ -11,8 +16,6 @@
   const PACK_KEY="qmes-sales-packaging-v1";
   const REMARK_KEY="qmes-sales-remarks-v1";
   const DELETED_KEY="qmes-sales-deleted-v1";
-  const SYNC_TYPE="inventory";
-  const RECORD_KEY="erp:sales";
   let resolveReady;
   window.__QMES_SALES_FROM_WORKORDER_READY__=new Promise(resolve=>{resolveReady=resolve;});
 
@@ -26,7 +29,6 @@
   function compactDate(value){return isoDate(value).replace(/-/g,"");}
   function readJson(key,fallback){try{const value=JSON.parse(localStorage.getItem(key)||"null");return value==null?fallback:value;}catch(_error){return fallback;}}
   function mapValue(key){const value=readJson(key,{});return value&&typeof value==="object"&&!Array.isArray(value)?value:{};}
-  function currentUserName(){const user=window.__QMES_CURRENT_USER__||window.__QMES_USER__||{};return text(user?.name||user?.uid||user);}
   function getDb(){
     try{if(typeof DB!=="undefined"&&DB&&typeof DB==="object")return DB;}catch(_error){}
     return window.DB&&typeof window.DB==="object"?window.DB:null;
@@ -121,18 +123,13 @@
   }
 
   function writeLocal(rows){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows));}catch(_error){}}
-  async function writeShared(rows){
-    if(typeof window.qmesSyncUpsert!=="function")return "local";
-    try{
-      await window.qmesSyncUpsert(SYNC_TYPE,RECORD_KEY,{module:"erp",schema:3,kind:"sales",rows,source:"WORK_ORDER",orderNumberFormat:"SO-YYYYMMDD-NNN",updatedAt:new Date().toISOString(),updatedBy:currentUserName()});
-      return "shared";
-    }catch(error){console.warn("[QMES] work-order sales shared sync failed",error);return "local";}
-  }
   async function apply(){
     const rows=buildRows();if(rows===null)return null;
-    writeLocal(rows);const status=await writeShared(rows);
+    /* Work Orders are already the shared source of truth. Keep this projection local
+       instead of duplicating it into the inventory sync record store. */
+    writeLocal(rows);
     window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"WORK_ORDER",rows:rows.length}}));
-    return {rows,status};
+    return {rows,status:"derived"};
   }
 
   let attempts=0;
