@@ -5,7 +5,7 @@ html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.view{
   display:none!important;
 }
 
-/* 출력 / 삭제 / 실적입력 모두 동일한 검정 윤곽 + 검정 글자. */
+/* 출력 / 삭제 / 실적입력 포함 관리열의 모든 버튼을 동일한 검정 윤곽 + 검정 글자로 통일. */
 html body #root#root#root main .qmes-workorder-actions{
   display:flex!important;
   align-items:center!important;
@@ -13,10 +13,9 @@ html body #root#root#root main .qmes-workorder-actions{
   gap:6px!important;
   flex-wrap:nowrap!important;
 }
+html body #root#root#root main .qmes-workorder-actions button,
 html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn,
-html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.print,
-html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.edit,
-html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.delete{
+html body #root#root#root main .qmes-issued-table-v2 tbody td:last-child button{
   min-height:32px!important;
   height:32px!important;
   padding:0 10px!important;
@@ -32,8 +31,10 @@ html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn.delete{
   box-shadow:none!important;
   text-shadow:none!important;
   opacity:1!important;
+  outline:none!important;
 }
-html body #root#root#root main .qmes-workorder-actions .qmes-manage-btn:hover{
+html body #root#root#root main .qmes-workorder-actions button:hover,
+html body #root#root#root main .qmes-issued-table-v2 tbody td:last-child button:hover{
   background:#f3f4f6!important;
   border-color:#000!important;
   color:#000!important;
