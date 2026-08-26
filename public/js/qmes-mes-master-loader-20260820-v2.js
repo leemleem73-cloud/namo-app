@@ -27,7 +27,9 @@
   ensureStyles();
 
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-2",
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260826-3",
+    "./js/qmes-sales-enterprise-print-20260826.js?v=20260826-2",
+    "./js/qmes-sales-print-link-clean-20260826.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/production-downtime-edit-recovery-20260824.js?v=20260824-hard1",
     "./js/production-downtime-history-20260824.js?v=20260824-edit4",
@@ -48,7 +50,6 @@
     "./js/qmes-side-search-topbar-enhancement.js?v=20260807-1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-compact-ui-20260826.js?v=20260826-packaging1",
-    "./js/qmes-sales-enterprise-print-20260826.js?v=20260826-1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
