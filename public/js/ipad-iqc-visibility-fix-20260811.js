@@ -1,8 +1,8 @@
 /* QMES iPad inspection UI visibility fix + IQC packaging field cleanup. */
 (function(global){
   "use strict";
-  if(global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V5__) return;
-  global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V5__=true;
+  if(global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V6__) return;
+  global.__QMES_IPAD_IQC_VISIBILITY_FIX_20260811_V6__=true;
 
   const STYLE_ID="qmes-ipad-iqc-visibility-fix-style";
   const RESTORE_LINK_ID="qmes-ipad-field-restore-20260826";
@@ -12,9 +12,9 @@
 
   function ensureFieldRestoreCss(){
     let link=document.getElementById(RESTORE_LINK_ID);
-    const href="./css/ipad-field-restore-20260826.css?v=20260826-lightrestore3";
+    const href="./css/ipad-field-restore-20260826.css?v=20260826-lightrestore4";
     if(link){
-      if(!String(link.href||"").includes("20260826-lightrestore3")) link.href=href;
+      if(!String(link.href||"").includes("20260826-lightrestore4")) link.href=href;
       document.head.appendChild(link);
       return;
     }
@@ -23,20 +23,6 @@
     link.rel="stylesheet";
     link.href=href;
     document.head.appendChild(link);
-  }
-
-  function syncInspectionHeadings(){
-    const reference=document.querySelector(".qmes-iqc-quickbar .qmes-management-title-row strong");
-    if(!reference) return;
-    const style=getComputedStyle(reference);
-    document.querySelectorAll("main h1,main h2,main h3").forEach(node=>{
-      const text=cleanText(node);
-      if(text!=="수입검사 관리대장"&&text!=="검사 기록") return;
-      node.style.setProperty("font-size",style.fontSize,"important");
-      node.style.setProperty("font-weight",style.fontWeight,"important");
-      node.style.setProperty("line-height",style.lineHeight,"important");
-      node.style.setProperty("letter-spacing",style.letterSpacing,"important");
-    });
   }
 
   function setReactInputValue(input,value){
@@ -123,7 +109,7 @@
   function refresh(){
     if(scheduled) return;
     scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;ensureFieldRestoreCss();ensureStyle();cleanupIqcPackagingFields();syncInspectionHeadings();});
+    requestAnimationFrame(()=>{scheduled=false;ensureFieldRestoreCss();ensureStyle();cleanupIqcPackagingFields();});
   }
 
   function start(){
