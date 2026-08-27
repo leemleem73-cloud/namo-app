@@ -1,6 +1,6 @@
-/* Field input stable layout — 2026-08-24 native baseline.
- * IMPORTANT: field order is owned by ipad-pop.jsx. Do not reorder native fields by nth-of-type.
- * This file only restores sizing/grid and prevents enhancement controls from appearing twice. */
+/* Field input recovery guard — keep only shell-safe width and duplicate prevention.
+ * Internal field order/sizing/buttons are owned by the preserved field UI files.
+ */
 html body #root#root#root main:has(.qmes-ipad-pop){
   width:100%!important;
   max-width:none!important;
@@ -13,152 +13,23 @@ html body #root#root#root main .qmes-ipad-pop{
   max-width:1120px!important;
   min-width:0!important;
   margin:0 auto!important;
-  padding:22px 0 44px!important;
   box-sizing:border-box!important;
 }
 
-/* Home: IQC / PQC / OQC / Equipment */
-html body #root#root#root main .qmes-ipad-home-grid{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:16px!important;
-  width:100%!important;
-  margin-top:18px!important;
-}
-html body #root#root#root main .qmes-ipad-home-card{
-  min-width:0!important;
-  width:auto!important;
-  min-height:230px!important;
-  height:auto!important;
-  padding:24px!important;
-  border:1px solid #cbd5e1!important;
-  border-radius:18px!important;
-  box-sizing:border-box!important;
-  align-items:flex-start!important;
-  justify-content:flex-end!important;
-}
-html body #root#root#root main .qmes-ipad-home-code{top:24px!important;right:24px!important;font-size:58px!important;}
-html body #root#root#root main .qmes-ipad-home-card>strong{font-size:28px!important;line-height:1.25!important;}
-html body #root#root#root main .qmes-ipad-home-card>small{font-size:14px!important;line-height:1.4!important;}
-html body #root#root#root main .qmes-ipad-home-card>i{font-size:14px!important;margin-top:22px!important;}
-
-html body #root#root#root main .qmes-ipad-section{
-  width:100%!important;
-  box-sizing:border-box!important;
-  padding:20px!important;
-  border-radius:16px!important;
-}
-
-/* Final native form grid. React DOM order is the source of truth. */
-html body #root#root#root main .qmes-ipad-form-grid{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:13px!important;
-  width:100%!important;
-  min-width:0!important;
-  align-items:end!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid>label{
-  display:flex!important;
-  min-width:0!important;
-  width:100%!important;
-  flex-direction:column!important;
-  gap:7px!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-  order:initial!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid>label.wide{grid-column:1/-1!important;}
-html body #root#root#root main .qmes-ipad-form-grid input,
-html body #root#root#root main .qmes-ipad-form-grid select{
-  width:100%!important;
-  min-width:0!important;
-  height:54px!important;
-  min-height:54px!important;
-  max-height:54px!important;
-  padding:0 14px!important;
-  box-sizing:border-box!important;
-  border-radius:10px!important;
-  font-size:16px!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid label>span{font-size:16px!important;line-height:1.35!important;font-weight:900!important;}
-
-/* 8/24 native grouped IQC wrappers: keep their own intended row order and widths. */
-html body #root#root#root main .qmes-ipad-form-grid>div.wide{
-  grid-column:1/-1!important;
-  width:100%!important;
-  min-width:0!important;
-  box-sizing:border-box!important;
-  order:initial!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid>div.wide:first-child{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:12px!important;
-  align-items:end!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid>div.wide:nth-child(2){
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:12px!important;
-  align-items:end!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid>div.wide>label{
-  display:flex!important;
-  flex-direction:column!important;
-  gap:7px!important;
-  width:100%!important;
-  min-width:0!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-}
-
-/* Linked PQC/OQC selector replaces the old direct LOT input. Never render both. */
+/* Do not duplicate legacy LOT input when the linked selector is present. */
 html body #root#root#root main .qmes-ipad-pop .qmes-ipad-form-grid input.lot[list="qmes-ipad-lots"]{display:none!important;}
 
-/* Unified quantity stepper replaces its React input visually. Global themes must not reveal the hidden input,
-   otherwise two rounded boxes appear for one field. */
+/* Unified stepper owns the visible quantity control. */
 html body #root#root#root main .qmes-ipad-form-grid label.qmes-ipad-unified-step-field>input{
-  position:absolute!important;
-  width:1px!important;
-  min-width:1px!important;
-  max-width:1px!important;
-  height:1px!important;
-  min-height:1px!important;
-  max-height:1px!important;
-  padding:0!important;
-  margin:0!important;
-  border:0!important;
-  opacity:0!important;
-  pointer-events:none!important;
-  overflow:hidden!important;
-}
-html body #root#root#root main .qmes-ipad-form-grid label.qmes-ipad-unified-step-field>.qmes-ipad-unified-stepper{
-  width:100%!important;
-  min-width:0!important;
-  margin:0!important;
+  position:absolute!important;width:1px!important;min-width:1px!important;max-width:1px!important;
+  height:1px!important;min-height:1px!important;max-height:1px!important;padding:0!important;margin:0!important;
+  border:0!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important;
 }
 
-/* Only one custom list surface per material/LOT field. */
+/* One enhancement surface per field. */
 html body #root#root#root main .qmes-ipad-custom-list-field>.qmes-ipad-custom-dropdown~.qmes-ipad-custom-dropdown{display:none!important;}
 html body #root#root#root main .qmes-ipad-material-field>.qmes-ipad-material-add-btn~.qmes-ipad-material-add-btn{display:none!important;}
 
-/* PQC/OQC remarks stay full width without changing any surrounding field order. */
-html body #root#root#root main .qmes-ipad-form-grid label.qmes-pqc-oqc-remarks-wide{
-  grid-column:1/-1!important;
-  width:100%!important;
-  min-width:0!important;
-}
-
 @media(max-width:900px){
-  html body #root#root#root main .qmes-ipad-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-}
-@media(max-width:620px){
-  html body #root#root#root main .qmes-ipad-home-grid{grid-template-columns:1fr!important;}
-  html body #root#root#root main .qmes-ipad-form-grid{grid-template-columns:1fr!important;}
-  html body #root#root#root main .qmes-ipad-form-grid>label,
-  html body #root#root#root main .qmes-ipad-form-grid>label.wide,
-  html body #root#root#root main .qmes-ipad-form-grid>div.wide{grid-column:1!important;}
-  html body #root#root#root main .qmes-ipad-form-grid>div.wide:first-child,
-  html body #root#root#root main .qmes-ipad-form-grid>div.wide:nth-child(2){grid-template-columns:1fr!important;}
+  html body #root#root#root main .qmes-ipad-pop{width:min(100%,calc(100% - 16px))!important;}
 }
