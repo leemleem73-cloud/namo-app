@@ -7,8 +7,22 @@ html{
 }
 
 html body #root#root#root>div>header{
+  position:sticky!important;
+  position:-webkit-sticky!important;
+  top:0!important;
+  z-index:14000!important;
+  align-self:stretch!important;
   font-family:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
 }
+
+/* Keep page-specific containers from becoming the sticky containing block.
+ * This does not move <main> and therefore does not affect preview/print or Field Input layout. */
+html body #root#root#root,
+html body #root#root#root>div{
+  overflow-y:visible!important;
+  overflow-x:visible!important;
+}
+
 html body #root#root#root>div>header>div:first-child{
   box-sizing:border-box!important;
   height:68px!important;
