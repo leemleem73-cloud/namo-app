@@ -1,47 +1,9 @@
 /* QMES shared shell readable density.
- * Exact shell-only subset of qmes-enterprise-readable-size-20260826.css.
- * It is safe on Field Input because it does not style <main> or .qmes-ipad-pop content.
+ * Top navigation / sidebar sizing only.
+ * The first utility header row is owned by qmes-header-stable-20260827.css.
  */
 :root{
   --qmes-shell-sidebar-width:230px;
-}
-
-html body #root#root#root>div>header>div:first-child{
-  height:68px!important;
-  min-height:68px!important;
-  max-height:68px!important;
-  padding-left:18px!important;
-  padding-right:18px!important;
-}
-html body #root#root#root>div>header img[alt="NAMO Chemical"]{
-  height:40px!important;
-  max-height:40px!important;
-  max-width:275px!important;
-}
-html body #root#root#root .qmes-header-clock,
-html body #root#root#root .qmes-header-clock span{
-  font-size:13px!important;
-}
-html body #root#root#root .qmes-header-action{
-  height:36px!important;
-  min-height:36px!important;
-  padding:0 11px!important;
-  font-size:13px!important;
-}
-html body #root#root#root button[aria-label*="NAMO Talk"]{
-  height:38px!important;
-  min-height:38px!important;
-  padding:0 14px!important;
-  font-size:13.5px!important;
-}
-html body #root#root#root button[aria-label^="계정 설정"]{
-  min-height:40px!important;
-  font-size:13.5px!important;
-}
-html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
-  width:32px!important;
-  height:32px!important;
-  font-size:13px!important;
 }
 
 html body #root#root#root .qmes-top-menu-bar,
@@ -115,15 +77,6 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
 
 @media(max-width:900px){
   :root{--qmes-shell-sidebar-width:190px;}
-  html body #root#root#root>div>header>div:first-child{
-    height:60px!important;
-    min-height:60px!important;
-    max-height:60px!important;
-  }
-  html body #root#root#root>div>header img[alt="NAMO Chemical"]{
-    height:34px!important;
-    max-height:34px!important;
-  }
   html body #root#root#root .qmes-top-menu-bar,
   html body #root#root#root .qmes-top-menu,
   html body #root#root#root .qmes-top-menu-item,
