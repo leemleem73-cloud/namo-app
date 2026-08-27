@@ -1,135 +1,28 @@
 /* 출하성적서 발행내역 — 실제 report.jsx DOM 기준 */
-html body #root#root#root#root main .qmes-issued-filter.qmes-coa-issued-filter{
-  display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
-  align-items:flex-end!important;
-  justify-content:flex-start!important;
-  gap:8px!important;
-  width:100%!important;
-  min-width:0!important;
-}
-
-/* 실제 필터는 label이 아니라 div > span + input 구조 */
-html body #root#root#root#root main .qmes-coa-issued-filter > div{
-  box-sizing:border-box!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:stretch!important;
-  flex:0 0 156px!important;
-  width:156px!important;
-  min-width:156px!important;
-  max-width:156px!important;
-  margin:0!important;
-  padding:0!important;
-}
-html body #root#root#root#root main .qmes-coa-issued-filter > div:nth-child(2){
-  flex:0 0 300px!important;
-  width:300px!important;
-  min-width:300px!important;
-  max-width:300px!important;
-}
-
-/* 발행일 / LOT No. / 고객사 제목 시작점을 아래 입력값 시작점과 동일하게 */
-html body #root#root#root#root main .qmes-coa-issued-filter > div > span{
-  box-sizing:border-box!important;
-  display:block!important;
-  width:100%!important;
-  margin:0 0 5px 0!important;
-  padding:0 10px!important;
-  text-align:left!important;
-  text-indent:0!important;
-  line-height:18px!important;
-}
-html body #root#root#root#root main .qmes-coa-issued-filter > div > input{
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:0!important;
-  max-width:100%!important;
-  height:36px!important;
-  margin:0!important;
-  padding:0 10px!important;
-  text-indent:0!important;
-}
-
-/* 검색 / 초기화: 36px 입력칸의 정확한 세로 중앙 */
-html body #root#root#root#root main .qmes-coa-issued-filter > button{
-  flex:0 0 52px!important;
-  box-sizing:border-box!important;
-  width:52px!important;
-  min-width:52px!important;
-  max-width:52px!important;
-  height:26px!important;
-  margin:0 0 5px 0!important;
-  padding:0 5px!important;
-  align-self:flex-end!important;
-  position:static!important;
-  top:auto!important;
-  transform:none!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  white-space:nowrap!important;
-  font-size:12px!important;
-  line-height:1!important;
-  background:#fff!important;
-  border:1px solid #e2e8f0!important;
-  color:#334155!important;
-  box-shadow:none!important;
-}
-html body #root#root#root#root main .qmes-coa-issued-filter > button:hover{
-  background:#f8fafc!important;
-  border-color:#cbd5e1!important;
-  color:#111827!important;
-}
-
-/* 안내 문구와 그 칸 전체 제거 */
+html body #root#root#root#root main .qmes-issued-filter.qmes-coa-issued-filter{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;width:100%!important;min-width:0!important;}
+html body #root#root#root#root main .qmes-coa-issued-filter > div{box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;flex:0 0 156px!important;width:156px!important;min-width:156px!important;max-width:156px!important;margin:0!important;padding:0!important;}
+/* LOT No. 검색칸은 실제 LOT 문자열이 여유 있게 보이도록 확장 */
+html body #root#root#root#root main .qmes-coa-issued-filter > div:nth-child(2){flex:0 0 380px!important;width:380px!important;min-width:380px!important;max-width:380px!important;}
+html body #root#root#root#root main .qmes-coa-issued-filter > div > span{box-sizing:border-box!important;display:block!important;width:100%!important;margin:0 0 5px 0!important;padding:0 10px!important;text-align:left!important;text-indent:0!important;line-height:18px!important;}
+html body #root#root#root#root main .qmes-coa-issued-filter > div > input{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:36px!important;margin:0!important;padding:0 10px!important;text-indent:0!important;}
+html body #root#root#root#root main .qmes-coa-issued-filter > button{flex:0 0 52px!important;box-sizing:border-box!important;width:52px!important;min-width:52px!important;max-width:52px!important;height:26px!important;margin:0 0 5px 0!important;padding:0 5px!important;align-self:flex-end!important;position:static!important;top:auto!important;transform:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;font-size:12px!important;line-height:1!important;background:#fff!important;border:1px solid #e2e8f0!important;color:#334155!important;box-shadow:none!important;}
+html body #root#root#root#root main .qmes-coa-issued-filter > button:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
 html body #root#root#root#root main .qmes-coa-issued-note{display:none!important;}
 
-/* 발행일 ~ 관리: 제목과 데이터 모두 각 열 정중앙 + 동일한 좌우 패딩 */
-html body #root#root#root#root main .qmes-coa-issued-table{
-  width:100%!important;
-  table-layout:fixed!important;
-  border-collapse:collapse!important;
-}
+/* 발행일~관리: 열 폭을 명시해 제목/데이터 중심축과 열 사이 간격을 안정적으로 통일 */
+html body #root#root#root#root main .qmes-coa-issued-table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
 html body #root#root#root#root main .qmes-coa-issued-table th,
-html body #root#root#root#root main .qmes-coa-issued-table td{
-  box-sizing:border-box!important;
-  text-align:center!important;
-  vertical-align:middle!important;
-  padding-left:10px!important;
-  padding-right:10px!important;
-}
-html body #root#root#root#root main .qmes-coa-issued-table th > *,
-html body #root#root#root#root main .qmes-coa-issued-table td > *{
-  margin-left:auto!important;
-  margin-right:auto!important;
-}
-
-/* 관리 버튼: IQC와 동일한 밝은 테두리 */
-html body #root#root#root#root .qmes-coa-issued-table button,
-html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn,
-html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-edit-btn,
-html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-delete-btn{
-  background:#fff!important;
-  background-image:none!important;
-  border:1px solid #cbd5e1!important;
-  color:#111827!important;
-  -webkit-text-fill-color:#111827!important;
-  box-shadow:none!important;
-  text-shadow:none!important;
-  filter:none!important;
-  opacity:1!important;
-  font-weight:600!important;
-}
+html body #root#root#root#root main .qmes-coa-issued-table td{box-sizing:border-box!important;text-align:center!important;vertical-align:middle!important;padding:10px 8px!important;white-space:nowrap!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(1),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(1){width:12%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(2),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(2){width:16%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(3),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(3){width:16%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(4),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(4){width:14%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(5),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(5){width:11%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(6),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(6){width:11%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(7),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(7){width:8%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th:nth-child(8),html body #root#root#root#root main .qmes-coa-issued-table td:nth-child(8){width:12%!important;}
+html body #root#root#root#root main .qmes-coa-issued-table th > *,html body #root#root#root#root main .qmes-coa-issued-table td > *{margin-left:auto!important;margin-right:auto!important;}
+html body #root#root#root#root .qmes-coa-issued-table button,html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn,html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-edit-btn,html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-delete-btn{background:#fff!important;background-image:none!important;border:1px solid #cbd5e1!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;text-shadow:none!important;filter:none!important;opacity:1!important;font-weight:600!important;}
 html body #root#root#root#root .qmes-coa-issued-table button svg{color:#111827!important;stroke:#111827!important;opacity:1!important;}
-html body #root#root#root#root .qmes-coa-issued-table button:hover,
-html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn:hover{
-  background:#f8fafc!important;
-  border-color:#cbd5e1!important;
-  color:#111827!important;
-}
-
-@media(max-width:760px){
-  html body #root#root#root#root main .qmes-coa-issued-filter{flex-wrap:wrap!important;}
-}
+html body #root#root#root#root .qmes-coa-issued-table button:hover,html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
+@media(max-width:760px){html body #root#root#root#root main .qmes-coa-issued-filter{flex-wrap:wrap!important;}}
