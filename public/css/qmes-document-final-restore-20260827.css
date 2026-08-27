@@ -4,15 +4,17 @@
  * Document body only. Header/sidebar/application shell are intentionally untouched.
  * Restores the preserved navy certificate family used by IQC / PQC / OQC / CoA / work order. */
 
-:root{--qmes-doc-navy:#244478;--qmes-doc-navy-dark:#1e3a6d;--qmes-doc-border:#64748b;--qmes-doc-grid:#94a3b8;--qmes-doc-text:#0f172a;--qmes-doc-soft:#f8fafc;}
+:root{--qmes-doc-navy:#244478;--qmes-doc-navy-dark:#1e3a6d;--qmes-doc-border:#475569;--qmes-doc-grid:#475569;--qmes-doc-text:#0f172a;--qmes-doc-soft:#f8fafc;}
 
 /* ===== IQC / PQC / OQC common document ===== */
-html body .doc-paper .qmes-iqc2-sec-title{box-sizing:border-box!important;width:100%!important;margin:0!important;padding:8px 12px!important;background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;border:1px solid var(--qmes-doc-navy)!important;border-bottom:0!important;border-radius:0!important;font-size:15.5px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:.01em!important;text-align:left!important;box-shadow:none!important;text-shadow:none!important;}
+html body .doc-paper .qmes-iqc2-sec-title{box-sizing:border-box!important;width:100%!important;margin:0 0 8px!important;padding:8px 12px!important;background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;border:1px solid var(--qmes-doc-navy)!important;border-radius:0!important;font-size:15.5px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:.01em!important;text-align:left!important;box-shadow:none!important;text-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-sec-title::before{content:"■\00A0"!important;font-size:8px!important;vertical-align:1px!important;}
 html body .doc-paper .qmes-iqc2-table{width:100%!important;margin:0!important;border:1px solid var(--qmes-doc-border)!important;border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;background:#fff!important;color:var(--qmes-doc-text)!important;font-size:15px!important;}
 html body .doc-paper .qmes-iqc2-table th,html body .doc-paper .qmes-iqc2-table td{box-sizing:border-box!important;height:46px!important;padding:10px 9px!important;border:1px solid var(--qmes-doc-grid)!important;background:#fff!important;background-image:none!important;color:var(--qmes-doc-text)!important;font-size:15px!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;word-break:break-word!important;}
 html body .doc-paper .qmes-iqc2-table thead th{background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;border-color:var(--qmes-doc-border)!important;font-weight:700!important;text-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-basic-table th,html body .doc-paper table.qmes-iqc2-basic-table thead th{background:var(--qmes-doc-soft)!important;color:var(--qmes-doc-text)!important;}
+html body .doc-paper .qmes-iqc2-pass{color:#059669!important;-webkit-text-fill-color:#059669!important;font-weight:800!important;}
+html body .doc-paper .qmes-iqc2-fail{color:#dc2626!important;-webkit-text-fill-color:#dc2626!important;font-weight:800!important;}
 html body .doc-paper .qmes-iqc2-remarks{box-sizing:border-box!important;border:1px solid var(--qmes-doc-border)!important;border-radius:0!important;background:#fff!important;color:var(--qmes-doc-text)!important;box-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-auth-row{display:flex!important;justify-content:space-between!important;align-items:stretch!important;gap:20px!important;margin-top:30px!important;width:100%!important;box-sizing:border-box!important;}
 html body .doc-paper .qmes-iqc2-code-box{box-sizing:border-box!important;display:flex!important;align-items:center!important;flex:1 1 auto!important;min-width:0!important;padding:10px 14px!important;border:1px solid var(--qmes-doc-border)!important;border-radius:0!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important;}
@@ -22,6 +24,14 @@ html body .doc-paper .qmes-iqc2-sign-table th{background:var(--qmes-doc-navy)!im
 html body .doc-paper .qmes-iqc2-sign-table td{background:#fff!important;color:var(--qmes-doc-text)!important;}
 html body .qmes-pqc-doc .qmes-iqc2-sec-title,html body .qmes-oqc-doc .qmes-iqc2-sec-title{text-align:left!important;padding-left:12px!important;border-left:1px solid var(--qmes-doc-navy)!important;}
 html body .qmes-pqc-doc .qmes-iqc2-table th,html body .qmes-pqc-doc .qmes-iqc2-table td,html body .qmes-oqc-doc .qmes-iqc2-table th,html body .qmes-oqc-doc .qmes-iqc2-table td{text-align:center!important;vertical-align:middle!important;}
+
+/* OQC final judgment: preserved final file used green PASS / red FAIL.
+   The first and third cells did not carry pass/fail classes in JSX, so restore them by row state. */
+html body .qmes-oqc-doc .qmes-iqc2-sec:has(.qmes-iqc2-sec-title:nth-child(1)) .qmes-iqc2-table tbody td.qmes-iqc2-pass{color:#059669!important;-webkit-text-fill-color:#059669!important;}
+html body .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-pass) td:first-child,
+html body .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-pass) td:nth-child(3){color:#059669!important;-webkit-text-fill-color:#059669!important;font-weight:800!important;}
+html body .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-fail) td:first-child,
+html body .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-fail) td:nth-child(3){color:#dc2626!important;-webkit-text-fill-color:#dc2626!important;font-weight:800!important;}
 
 /* ===== shipment certificate (CoA) preserved final design ===== */
 html body .qmes-coa-unified-doc{background:#fff!important;color:var(--qmes-doc-text)!important;box-shadow:none!important;}
@@ -58,6 +68,12 @@ html body .qmes-wo-cert input{box-sizing:border-box!important;min-width:0!import
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sec-title{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table thead th{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table th{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-pass{color:#059669!important;-webkit-text-fill-color:#059669!important;}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-fail{color:#dc2626!important;-webkit-text-fill-color:#dc2626!important;}
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-pass) td:first-child,
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-pass) td:nth-child(3){color:#059669!important;-webkit-text-fill-color:#059669!important;font-weight:800!important;}
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-fail) td:first-child,
+  body.print-doc #qmes-print-root .qmes-oqc-doc .qmes-iqc2-table tbody tr:has(.qmes-iqc2-fail) td:nth-child(3){color:#dc2626!important;-webkit-text-fill-color:#dc2626!important;font-weight:800!important;}
   body.print-doc #qmes-print-root .qmes-coa-unified-doc>table th,body.print-doc #qmes-print-root .qmes-coa-sign-table th{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table th,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table td,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table th,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table td,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-remarks,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-code-box{border-color:var(--qmes-doc-border)!important;border-style:solid!important;border-width:1px!important;}
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-auth-row{margin-top:48px!important;}
