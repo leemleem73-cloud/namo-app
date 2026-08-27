@@ -1,17 +1,31 @@
-/* Shared shell scroll ownership — keep logo/header/top menu visible on every QMES page.
- * Important: sticky ownership lives on the header only. Do not rewrite root/main overflow,
- * because Field Input relies on its established scroll geometry. */
-
-html body #root#root > div > header{
-  position:sticky!important;
-  position:-webkit-sticky!important;
-  top:0!important;
-  z-index:12020!important;
-  align-self:stretch!important;
+/* QMES shell header pin — keep the logo row and the top menu visible while content scrolls.
+ * The header is fixed to the viewport; content receives only the shell offset.
+ * No Field Input card/grid/overflow selectors are touched here. */
+:root{
+  --qmes-shell-fixed-header-offset:116px;
 }
 
-/* Keep the top menu as part of the same sticky header. */
+html body #root#root > div > header{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  z-index:12020!important;
+  box-sizing:border-box!important;
+}
+
 html body #root#root > div > header .qmes-top-menu-bar{
   position:relative!important;
   top:auto!important;
+}
+
+/* Header is removed from normal flow by position:fixed, so restore exactly one shell offset.
+ * This applies to the page container only and does not rewrite Field Input internals. */
+html body #root#root > div > main{
+  padding-top:calc(var(--qmes-shell-fixed-header-offset) + 20px)!important;
+}
+
+@media(max-width:900px){
+  :root{--qmes-shell-fixed-header-offset:108px;}
 }
