@@ -36,7 +36,8 @@
   syncThemeState();
 
   const files=[
-    "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-stable-firstpaint3",
+    "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-manual-product2",
+    "./js/qmes-sales-product-workorder-link-20260827.js?v=20260827-1",
     "./js/qmes-sales-full-edit-20260827.js?v=20260827-full-edit1",
     "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
