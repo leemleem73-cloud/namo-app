@@ -1,21 +1,23 @@
-/* NAMO QMES - Sales order ID display sync V1 - 2026-08-28
- * ADD-ONLY hotfix.
- * Keeps the Sales list's displayed order number aligned with the canonical
- * salesOrderIdOverride already used by the edit/detail screens.
+/* NAMO QMES - Sales order display/delivery sync V2 - 2026-08-28
+ * Keeps the displayed sales-order ID aligned with its canonical override.
+ * Delivery status is based on ACTUAL SHIPMENT, not today's date after shipment.
  * Stable data-qso-id / workOrder identity is intentionally not rewritten.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V1__)return;
-  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V1__=true;
+  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V2__)return;
+  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V2__=true;
 
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
+  const SHIPPING_KEY="qmes-erp-shipping-v1";
   const clean=value=>String(value==null?"":value).replace(/\s+/g," ").trim();
   const read=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key)||"null");return value==null?fallback:value;}catch(_error){return fallback;}};
   const salesRows=()=>{const value=read(SALES_KEY,[]);return Array.isArray(value)?value:[];};
   const metaMap=()=>{const value=read(META_KEY,{});return value&&typeof value==="object"&&!Array.isArray(value)?value:{};};
+  const shippingRows=()=>{const value=read(SHIPPING_KEY,[]);return Array.isArray(value)?value:[];};
   const rowKey=row=>clean(row?.workOrder)||clean(row?.id);
+  const isoDate=value=>{const m=clean(value).match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:"";};
 
   function metaFor(row,map){
     const id=clean(row?.id),key=rowKey(row);
@@ -44,9 +46,12 @@
     return key?id:"";
   }
 
-  function headerIndex(table){
-    const headers=Array.from(table?.querySelectorAll("thead th")||[]).map(th=>clean(th.textContent));
-    return headers.findIndex(text=>text==="수주번호"||text.includes("수주번호"));
+  function headers(table){
+    return Array.from(table?.querySelectorAll("thead th")||[]).map(th=>clean(th.textContent));
+  }
+
+  function headerIndex(table,label){
+    return headers(table).findIndex(text=>text===label||text.includes(label));
   }
 
   function salesTables(){
@@ -55,8 +60,19 @@
       return root.classList.contains("qmes-sales-stable")||(/수주/.test(title)&&/납기/.test(title));
     });
     const tables=[];
-    roots.forEach(root=>root.querySelectorAll("table").forEach(table=>{if(headerIndex(table)>=0&&!tables.includes(table))tables.push(table);}));
+    roots.forEach(root=>root.querySelectorAll("table").forEach(table=>{if(headerIndex(table,"수주번호")>=0&&!tables.includes(table))tables.push(table);}));
     return tables;
+  }
+
+  function setCellText(cell,text,tone){
+    if(!cell||!text)return false;
+    const target=cell.querySelector(".qmes-sales-plain-status,span,b,strong,a,button")||cell;
+    if(clean(target.textContent)!==text)target.textContent=text;
+    if(target.classList&&tone){
+      target.classList.remove("good","warn","bad","neutral");
+      target.classList.add("qmes-sales-plain-status",tone);
+    }
+    return true;
   }
 
   function setCellId(cell,canonical){
@@ -78,27 +94,68 @@
     return false;
   }
 
+  function isShipmentComplete(ship){
+    const state=`${clean(ship?.delivery)} ${clean(ship?.shipping)} ${clean(ship?.status)}`;
+    return ship?.actualShipment===true||/출하완료|납품완료/.test(state);
+  }
+
+  function shipmentFor(row,map,ships){
+    if(!row)return null;
+    const ids=new Set([clean(row.id),rowKey(row),visibleId(row,map)].filter(Boolean));
+    const workOrder=rowKey(row);
+    const matches=ships.filter(ship=>{
+      if(!isShipmentComplete(ship))return false;
+      const sales=clean(ship?.sales||ship?.salesOrder||ship?.salesOrderId);
+      const lot=clean(ship?.lot||ship?.workOrder);
+      return (sales&&ids.has(sales))||(workOrder&&lot===workOrder);
+    });
+    return matches.sort((a,b)=>isoDate(b?.date||b?.shipDate).localeCompare(isoDate(a?.date||a?.shipDate)))[0]||null;
+  }
+
+  function dueStateFromShipment(row,ship){
+    const due=isoDate(row?.due||metaFor(row,metaMap())?.requestedDue);
+    if(ship&&isShipmentComplete(ship)){
+      const shipped=isoDate(ship?.date||ship?.shipDate||ship?.actualShipDate||ship?.completedAt);
+      if(!due||!shipped)return {label:"납기완료",tone:"good"};
+      const diff=Math.round((new Date(shipped+"T00:00:00").getTime()-new Date(due+"T00:00:00").getTime())/86400000);
+      return diff<=0?{label:"납기완료",tone:"good"}:{label:`지연완료 ${diff}일`,tone:"bad"};
+    }
+    if(!due)return {label:"-",tone:"neutral"};
+    const today=new Date();today.setHours(0,0,0,0);
+    const diff=Math.round((new Date(due+"T00:00:00").getTime()-today.getTime())/86400000);
+    if(diff<0)return {label:`지연 ${Math.abs(diff)}일`,tone:"bad"};
+    if(diff<=7)return {label:`임박 D-${diff}`,tone:"warn"};
+    return {label:"정상",tone:"good"};
+  }
+
   let running=false;
   function sync(){
     if(running)return;
     running=true;
     try{
-      const list=salesRows(),map=metaMap();
+      const list=salesRows(),map=metaMap(),ships=shippingRows();
       salesTables().forEach(table=>{
-        const index=headerIndex(table);if(index<0)return;
+        const orderIndex=headerIndex(table,"수주번호");
+        const dueIndex=headerIndex(table,"납기상태");
+        const shipIndex=headerIndex(table,"출하상태");
+        if(orderIndex<0)return;
         table.querySelectorAll("tbody tr").forEach(tr=>{
-          const cell=tr.children?.[index];if(!cell)return;
-          const link=cell.querySelector(".qmes-sales-order-link,[data-qso-id]");
-          const candidates=[
-            link?.getAttribute?.("data-qso-id"),
-            link?.getAttribute?.("data-qso-visible-id"),
-            link?.textContent,
-            cell.querySelector("b,strong,a")?.textContent,
-            cell.textContent
-          ].map(clean).filter(Boolean);
-          let canonical="";
-          for(const candidate of candidates){canonical=canonicalId(candidate,list,map);if(canonical)break;}
-          if(canonical)setCellId(cell,canonical);
+          const orderCell=tr.children?.[orderIndex];if(!orderCell)return;
+          const link=orderCell.querySelector(".qmes-sales-order-link,[data-qso-id]");
+          const candidates=[link?.getAttribute?.("data-qso-id"),link?.getAttribute?.("data-qso-visible-id"),link?.textContent,orderCell.querySelector("b,strong,a")?.textContent,orderCell.textContent].map(clean).filter(Boolean);
+          let row=null,canonical="";
+          for(const candidate of candidates){
+            row=findRow(candidate,list,map)||row;
+            canonical=canonicalId(candidate,list,map)||canonical;
+            if(row&&canonical)break;
+          }
+          if(canonical)setCellId(orderCell,canonical);
+          if(!row&&canonical)row=findRow(canonical,list,map);
+          if(!row)return;
+          const ship=shipmentFor(row,map,ships);
+          const state=dueStateFromShipment(row,ship);
+          if(dueIndex>=0)setCellText(tr.children?.[dueIndex],state.label,state.tone);
+          if(ship&&shipIndex>=0)setCellText(tr.children?.[shipIndex],"출하완료","good");
         });
       });
     }finally{running=false;}
@@ -120,11 +177,11 @@
       if(document.querySelector(".qmes-sales-stable")||Array.from(document.querySelectorAll(".qerp-title")).some(node=>/수주/.test(clean(node.textContent))&&/납기/.test(clean(node.textContent))))schedule();
     });
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V1__=observer;
+    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V2__=observer;
   };
 
   ["qmes:erp-data-changed","qmes:erp-runtime-loaded","qmes:mes-master-ready"].forEach(name=>window.addEventListener(name,()=>schedule()));
-  window.addEventListener("storage",event=>{if(event.key===SALES_KEY||event.key===META_KEY)schedule();});
+  window.addEventListener("storage",event=>{if([SALES_KEY,META_KEY,SHIPPING_KEY].includes(event.key))schedule();});
   window.addEventListener("hashchange",()=>schedule(80));
   window.addEventListener("popstate",()=>schedule(80));
   document.addEventListener("click",()=>schedule(120),true);
