@@ -1,16 +1,13 @@
-/* Load the known-good 2026-08-12 field/equipment styling without extra runtime overrides. */
+/* Field input recovery helper.
+ * Keep only the remarks-width repair here.
+ * IMPORTANT: do not inject the old 2026-08-12 equipment stylesheet; the live page already carries the newer 2026-08-24 equipment design. */
 (function(){
   'use strict';
   if(window.__QMES_FIELD_INPUT_UI_FINAL_RESTORE_20260814__) return;
   window.__QMES_FIELD_INPUT_UI_FINAL_RESTORE_20260814__=true;
 
-  if(!document.querySelector('link[data-qmes-equipment-known-good]')){
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='./css/equipment-management-restored-20260812.css?v=20260814-restore2';
-    link.dataset.qmesEquipmentKnownGood='1';
-    document.head.appendChild(link);
-  }
+  /* Remove the legacy recovery sheet if a cached page injected it earlier. */
+  document.querySelectorAll('link[data-qmes-equipment-known-good]').forEach(node=>node.remove());
 
   function mode(){
     const active=document.querySelector('.qmes-ipad-mode-tabs button.is-active');
@@ -34,6 +31,7 @@
     html body .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-pqc-oqc-remarks-wide{grid-column:1/-1!important;width:100%!important;min-width:0!important;max-width:none!important;}
     html body .qmes-ipad-pop .qmes-ipad-form-grid label.qmes-pqc-oqc-remarks-wide input{width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;}
   `;
+  document.getElementById(style.id)?.remove();
   document.head.appendChild(style);
   applyRemarks();
   let queued=false;
