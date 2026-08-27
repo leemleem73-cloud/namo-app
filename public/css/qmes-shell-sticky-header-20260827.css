@@ -1,7 +1,9 @@
-/* Shared shell scroll ownership — keep logo/header/top menu visible on every page.
- * Legacy page CSS contains !important position rules; the shell owner must win them.
- * This stays sticky (not fixed), so no artificial content offset is introduced. */
-html body #root#root > div > header{
+/* Shared shell scroll ownership — keep logo/header/top menu visible on normal QMES pages.
+ * IMPORTANT: Field Input (.qmes-ipad-pop) owns its own full-page geometry and overflow.
+ * Do not force root overflow/sticky rules there or IQC/PQC/OQC field cards shift again. */
+
+/* Normal desktop QMES pages only. */
+html body:not(:has(.qmes-ipad-pop)) #root#root > div > header{
   position:sticky!important;
   position:-webkit-sticky!important;
   top:0!important;
@@ -9,14 +11,15 @@ html body #root#root > div > header{
   align-self:stretch!important;
 }
 
-/* Sticky must reference the viewport, not a page-specific overflow ancestor. */
-html body #root#root,
-html body #root#root > div{
+/* Sticky on ordinary pages must reference the viewport rather than legacy page overflow.
+ * Field Input is deliberately excluded because its established layout relies on its own
+ * root/container overflow ownership. */
+html body:not(:has(.qmes-ipad-pop)) #root#root,
+html body:not(:has(.qmes-ipad-pop)) #root#root > div{
   overflow-y:visible!important;
 }
 
-/* Top navigation remains part of the sticky header rather than becoming its own scroll layer. */
-html body #root#root > div > header .qmes-top-menu-bar{
+html body:not(:has(.qmes-ipad-pop)) #root#root > div > header .qmes-top-menu-bar{
   position:relative!important;
   top:auto!important;
 }
