@@ -49,6 +49,7 @@
       .find((button) => buttonText(button).includes(mode));
     if (modeButton) {
       try { sessionStorage.removeItem(TARGET_KEY); } catch (error) {}
+      if (modeButton.classList.contains('is-active')) return;
       modeButton.click();
     }
   }
