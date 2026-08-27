@@ -17,7 +17,8 @@
     ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"],
     ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1"],
     ["qmes-responsive-main-layout-20260827","./css/qmes-responsive-main-layout-20260827.css?v=20260827-1"],
-    ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1"]
+    ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1"],
+    ["qmes-coa-current-final-20260827","./css/qmes-coa-current-final-20260827.css?v=20260827-1"]
   ];
   function ensureStyle(id,href){let link=document.getElementById(id);if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}else if(String(link.getAttribute('href')||'')!==href)link.href=href;link.media='all';link.disabled=false;return link;}
   function syncThemeState(){STYLE_DEFS.forEach(([id,href])=>ensureStyle(id,href));}
