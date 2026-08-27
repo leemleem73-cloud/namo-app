@@ -92,7 +92,8 @@
       .qmes-process-remark-head,.qmes-process-remark-cell{width:15%!important;min-width:170px!important;max-width:260px!important}
       .qmes-process-remark-cell{color:#475569!important;font-size:12px!important}
       .qmes-process-remark-inline{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0!important}
-      .qmes-process-remark-text{min-width:20px!important;max-width:150px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#64748b!important}
+      .qmes-process-remark-text{max-width:150px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#64748b!important}
+      .qmes-process-remark-text.is-empty{display:none!important}
       .qmes-process-remark-inline-btn{height:30px!important;min-width:54px!important;padding:0 10px!important;border:1px solid #cbd5e1!important;border-radius:6px!important;background:#fff!important;color:#334155!important;font-size:11px!important;font-weight:800!important;cursor:pointer!important;box-shadow:none!important;outline:none!important}
       .qmes-process-remark-inline-btn:hover{background:#f8fafc!important}
       .qmes-process-remark-actions{display:none!important}
@@ -117,6 +118,18 @@
 
   function closeModal(){document.getElementById("qmes-process-remark-modal-20260827")?.remove();}
 
+  function updateRemarkCell(cell,note){
+    if(!cell) return;
+    const value=clean(note);
+    cell.dataset.remark=value;
+    cell.title=value;
+    const text=cell.querySelector(".qmes-process-remark-text");
+    if(text){
+      text.textContent=value;
+      text.classList.toggle("is-empty",!value);
+    }
+  }
+
   function openModalForRow(card,row){
     const table=card?.querySelector("table.qpp-table"),rows=Array.from(table?.querySelectorAll("tbody tr")||[]);
     const rowIndex=rows.indexOf(row),lot=currentLot();
@@ -133,9 +146,9 @@
       const button=modal.querySelector(".qpr-save"),textarea=modal.querySelector("textarea"),error=modal.querySelector(".qpr-error");
       button.disabled=true;button.textContent="저장 중";error.classList.remove("show");
       try{
-        const next=clean(textarea.value);await saveRemark(lot,rowIndex,next);
-        const cell=row.querySelector(".qmes-process-remark-cell"),text=cell?.querySelector(".qmes-process-remark-text");
-        if(cell){cell.dataset.remark=next;cell.title=next;}if(text)text.textContent=next||"-";
+        const next=clean(textarea.value);
+        await saveRemark(lot,rowIndex,next);
+        updateRemarkCell(row.querySelector(".qmes-process-remark-cell"),next);
         closeModal();
       }catch(saveError){error.textContent=saveError?.message||"비고 저장에 실패했습니다.";error.classList.add("show");button.disabled=false;button.textContent="저장";}
     });
@@ -151,12 +164,11 @@
     Array.from(table.querySelectorAll("tbody tr")).forEach((row,index)=>{
       let cell=row.querySelector(".qmes-process-remark-cell");if(!cell){cell=document.createElement("td");cell.className="qmes-process-remark-cell";row.appendChild(cell);}
       const stepKey=clean(row.children?.[0]?.textContent)||String(index+1),note=Object.prototype.hasOwnProperty.call(notes,stepKey)?clean(notes[stepKey]):clean(cell.dataset.remark);
-      cell.dataset.remark=note;cell.title=note;
       if(!cell.querySelector(".qmes-process-remark-inline")){
-        cell.innerHTML='<div class="qmes-process-remark-inline"><span class="qmes-process-remark-text">-</span><button type="button" class="qmes-process-remark-inline-btn">수정</button></div>';
+        cell.innerHTML='<div class="qmes-process-remark-inline"><span class="qmes-process-remark-text is-empty"></span><button type="button" class="qmes-process-remark-inline-btn">수정</button></div>';
         cell.querySelector("button")?.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();openModalForRow(card,row);});
       }
-      const text=cell.querySelector(".qmes-process-remark-text");if(text)text.textContent=note||"-";
+      updateRemarkCell(cell,note);
     });
   }
 
