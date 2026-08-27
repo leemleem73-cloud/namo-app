@@ -1,6 +1,6 @@
 /* NAMO QMES - Worker picker readability FORCE - 2026-08-27
  * Patch-only module. Does not replace the production process component.
- * Makes the worker-selection modal bright/readable and forces worker names visible,
+ * Makes the worker-selection modal readable and forces worker names visible,
  * including WebKit text-fill overrides from global theme layers.
  */
 (function(){
@@ -49,8 +49,9 @@
       const checked=!!card.querySelector('input[type="checkbox"]:checked');
       forceStyle(card,{
         "background":checked?"#eff6ff":"#ffffff",
-        "border-color":checked?"#2563eb":"#cbd5e1",
-        "box-shadow":checked?"inset 0 0 0 1px #2563eb":"none",
+        "border-color":"#cbd5e1",
+        "box-shadow":"none",
+        "outline":"none",
         "color":"#0f172a",
         "opacity":"1"
       });
