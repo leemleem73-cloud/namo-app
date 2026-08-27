@@ -1,0 +1,26 @@
+/* QMES shell layer base — first-paint ownership
+ * The application header/menu layers must exist before any runtime helper runs.
+ * Keep these rules here only; runtime preview helpers must not restyle the shell.
+ */
+html body #root > div > header{
+  z-index:40;
+  isolation:isolate;
+}
+html body #root .qmes-top-menu-bar{
+  z-index:41;
+  isolation:isolate;
+}
+html body #root .qmes-top-menu{
+  z-index:42;
+  isolation:isolate;
+}
+html body #qmes-all-menu-dropdown{z-index:120;}
+html body #qmes-user-dropdown{z-index:130;}
+html body #qmes-sync-hamburger{z-index:140;}
+html body #qmes-sync-sidebar{z-index:150;}
+
+@media print{
+  html body #root > div > header,
+  html body #root .qmes-top-menu-bar,
+  html body #root .qmes-top-menu{isolation:auto;}
+}
