@@ -1,7 +1,5 @@
-/* NAMO QMES - Worker picker readability FORCE - 2026-08-27
+/* NAMO QMES - Worker picker readability / neutral borders - 2026-08-27
  * Patch-only module. Does not replace the production process component.
- * Makes the worker-selection modal readable and forces worker names visible,
- * including WebKit text-fill overrides from global theme layers.
  */
 (function(){
   "use strict";
@@ -10,8 +8,8 @@
 
   const clean=value=>String(value==null?"":value).trim();
 
-  function isWorkerDialog(dialog){
-    return !!dialog && clean(dialog.querySelector(".qpp-dialog-head b")?.textContent)==="작업자 선택";
+  function dialogTitle(dialog){
+    return clean(dialog?.querySelector(".qpp-dialog-head b")?.textContent);
   }
 
   function forceStyle(node,styles){
@@ -19,49 +17,24 @@
     Object.entries(styles).forEach(([name,value])=>node.style.setProperty(name,value,"important"));
   }
 
-  function decorate(){
-    const dialog=Array.from(document.querySelectorAll(".qpp-dialog")).find(isWorkerDialog);
-    if(!dialog) return false;
-
-    const modal=dialog.closest(".qpp-modal");
-    forceStyle(modal,{"background":"rgba(15,23,42,.38)"});
-    forceStyle(dialog,{
-      "background":"#ffffff",
-      "border-color":"#cbd5e1",
-      "box-shadow":"0 24px 70px rgba(15,23,42,.26)",
-      "color":"#0f172a"
-    });
-
-    const head=dialog.querySelector(".qpp-dialog-head");
-    forceStyle(head,{"background":"#f8fafc","border-bottom-color":"#dbe4ee","color":"#0f172a"});
-    const title=head?.querySelector("b");
-    forceStyle(title,{"color":"#0f172a","-webkit-text-fill-color":"#0f172a","opacity":"1","visibility":"visible"});
-    const subtitle=head?.querySelector("div div");
-    if(subtitle) forceStyle(subtitle,{"color":"#64748b","-webkit-text-fill-color":"#64748b"});
-
-    const body=dialog.querySelector(".qpp-dialog-body");
-    forceStyle(body,{"background":"#ffffff"});
-    const foot=dialog.querySelector(".qpp-dialog-foot");
-    forceStyle(foot,{"background":"#f8fafc","border-top-color":"#dbe4ee"});
-
+  function decorateWorkerSelect(dialog){
     const cards=Array.from(dialog.querySelectorAll(".qpp-worker-item"));
     cards.forEach(card=>{
       const checked=!!card.querySelector('input[type="checkbox"]:checked');
       forceStyle(card,{
-        "background":checked?"#eff6ff":"#ffffff",
-        "border-color":"#cbd5e1",
+        "background":checked?"#173b59":"#142c47",
+        "border-color":"#2d4c67",
         "box-shadow":"none",
         "outline":"none",
-        "color":"#0f172a",
         "opacity":"1"
       });
       const span=card.querySelector("span");
-      forceStyle(span,{"display":"block","color":"#0f172a","-webkit-text-fill-color":"#0f172a","opacity":"1","visibility":"visible"});
+      forceStyle(span,{"display":"block","color":"#f8fafc","-webkit-text-fill-color":"#f8fafc","opacity":"1","visibility":"visible"});
       const name=card.querySelector("b");
       forceStyle(name,{
         "display":"block",
-        "color":"#0f172a",
-        "-webkit-text-fill-color":"#0f172a",
+        "color":"#ffffff",
+        "-webkit-text-fill-color":"#ffffff",
         "font-size":"14px",
         "font-weight":"900",
         "line-height":"1.4",
@@ -74,45 +47,68 @@
       forceStyle(dept,{
         "display":"block",
         "margin-top":"4px",
-        "color":"#475569",
-        "-webkit-text-fill-color":"#475569",
+        "color":"#9fb6ca",
+        "-webkit-text-fill-color":"#9fb6ca",
         "font-size":"11px",
         "font-weight":"700",
         "opacity":"1",
         "visibility":"visible"
       });
       const checkbox=card.querySelector('input[type="checkbox"]');
-      forceStyle(checkbox,{"accent-color":"#2563eb","opacity":"1","visibility":"visible"});
+      forceStyle(checkbox,{"accent-color":"#0ea5e9","opacity":"1","visibility":"visible"});
     });
+  }
 
-    dialog.querySelectorAll("button").forEach(button=>{
-      const label=clean(button.textContent);
-      if(label==="선택 적용"){
-        forceStyle(button,{"background":"#2563eb","border-color":"#2563eb","color":"#ffffff","-webkit-text-fill-color":"#ffffff"});
-      }else{
-        forceStyle(button,{"background":"#ffffff","border-color":"#cbd5e1","color":"#334155","-webkit-text-fill-color":"#334155"});
+  function decorateWorkerRegister(dialog){
+    /* Same rule as worker selection: no accent-colored outline/border. */
+    forceStyle(dialog,{
+      "border-color":"#365570",
+      "box-shadow":"0 28px 90px rgba(0,0,0,.42)",
+      "outline":"none"
+    });
+    const head=dialog.querySelector(".qpp-dialog-head");
+    const foot=dialog.querySelector(".qpp-dialog-foot");
+    forceStyle(head,{"border-bottom-color":"#28445e"});
+    forceStyle(foot,{"border-top-color":"#28445e"});
+
+    dialog.querySelectorAll(".qpp-form input").forEach(input=>{
+      forceStyle(input,{
+        "border-color":"#35516b",
+        "box-shadow":"none",
+        "outline":"none"
+      });
+      if(input.dataset.qmesNeutralFocus!=="1"){
+        input.dataset.qmesNeutralFocus="1";
+        input.addEventListener("focus",()=>forceStyle(input,{"border-color":"#35516b","box-shadow":"none","outline":"none"}));
+        input.addEventListener("blur",()=>forceStyle(input,{"border-color":"#35516b","box-shadow":"none","outline":"none"}));
       }
     });
-    return true;
   }
 
-  function decorateSoon(){
-    [0,40,100,220,450].forEach(delay=>setTimeout(decorate,delay));
+  function decorate(){
+    const dialogs=Array.from(document.querySelectorAll(".qpp-dialog"));
+    dialogs.forEach(dialog=>{
+      const title=dialogTitle(dialog);
+      if(title==="작업자 선택") decorateWorkerSelect(dialog);
+      if(title==="추가 작업자 등록") decorateWorkerRegister(dialog);
+    });
   }
+
+  function decorateSoon(){[0,40,100,220,450].forEach(delay=>setTimeout(decorate,delay));}
 
   document.addEventListener("click",event=>{
     const button=event.target?.closest?.("button");
     const text=clean(button?.textContent);
-    if(text==="작업자 선택"||text==="전체해제"||text==="선택 적용"||text==="닫기") decorateSoon();
+    if(["작업자 선택","추가 작업자 등록","전체해제","선택 적용","작업자 등록","닫기"].includes(text)) decorateSoon();
   },true);
 
   document.addEventListener("change",event=>{
-    if(event.target?.closest?.(".qpp-worker-item")) decorateSoon();
+    if(event.target?.closest?.(".qpp-worker-item,.qpp-form")) decorateSoon();
   },true);
 
   const observer=new MutationObserver(mutations=>{
     if(mutations.some(mutation=>Array.from(mutation.addedNodes||[]).some(node=>
-      node?.nodeType===1 && (node.matches?.(".qpp-modal,.qpp-dialog,.qpp-worker-item") || node.querySelector?.(".qpp-dialog,.qpp-worker-item"))
+      node?.nodeType===1 && (node.matches?.(".qpp-modal,.qpp-dialog,.qpp-worker-item,.qpp-form") || node.querySelector?.(".qpp-dialog,.qpp-worker-item,.qpp-form"))
     ))) decorateSoon();
   });
 
