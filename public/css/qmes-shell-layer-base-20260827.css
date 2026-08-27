@@ -1,26 +1,209 @@
-/* QMES shell layer base — first-paint ownership
- * The application header/menu layers must exist before any runtime helper runs.
- * Keep these rules here only; runtime preview helpers must not restyle the shell.
+/* QMES current shell core — first-paint ownership
+ * Header / top navigation / shell geometry live here only.
+ * Page-specific themes may style <main>, but must not replace this shell.
  */
-html body #root > div > header{
-  z-index:40;
-  isolation:isolate;
+:root{
+  --qmes-shell-sidebar-width:220px;
+  --qmes-shell-menu-gutter:8px;
+  --qmes-shell-line:#d8e0ea;
+  --qmes-shell-text:#344054;
+  --qmes-shell-blue:#2563eb;
+  --qmes-shell-blue-dark:#175cd3;
 }
-html body #root .qmes-top-menu-bar{
-  z-index:41;
+
+html body #root > div > header{
+  position:sticky;
+  top:0;
+  z-index:40!important;
   isolation:isolate;
+  background:#fff!important;
+  color:#172033!important;
+  border-bottom:1px solid var(--qmes-shell-line)!important;
+  box-shadow:0 1px 0 rgba(15,23,42,.025)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html body #root > div > header > div:first-child{
+  height:62px!important;
+  min-height:62px!important;
+  max-height:62px!important;
+  padding:0 16px!important;
+  gap:10px!important;
+  background:#fff!important;
+  border:0!important;
+  box-sizing:border-box!important;
+}
+html body #root > div > header img[alt="NAMO Chemical"]{
+  width:auto!important;
+  height:34px!important;
+  max-height:34px!important;
+  max-width:235px!important;
+  object-fit:contain!important;
+  filter:none!important;
+}
+html body #root .qmes-header-clock,
+html body #root .qmes-header-clock span{
+  color:#475467!important;
+  font-size:12px!important;
+  font-weight:600!important;
+}
+html body #root .qmes-header-action{
+  height:34px!important;
+  min-height:34px!important;
+  padding:0 10px!important;
+  border:1px solid #cfd8e3!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#344054!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+}
+html body #root button[aria-label*="NAMO Talk"]{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 12px!important;
+  border:1px solid #cfd8e3!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#172033!important;
+  font-size:12.5px!important;
+  font-weight:650!important;
+  box-shadow:none!important;
+}
+html body #root button[aria-label^="계정 설정"]{
+  min-height:38px!important;
+  padding:3px 5px!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#172033!important;
+}
+
+html body #root .qmes-top-menu-bar{
+  position:relative;
+  z-index:41!important;
+  isolation:isolate;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  background:#fff!important;
+  border-top:1px solid #eef2f6!important;
+  border-bottom:1px solid var(--qmes-shell-line)!important;
+  box-shadow:none!important;
 }
 html body #root .qmes-top-menu{
-  z-index:42;
+  position:relative;
+  z-index:42!important;
   isolation:isolate;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  padding:0 10px 0 46px!important;
+  gap:1px!important;
+  display:flex!important;
+  align-items:stretch!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  background:#fff!important;
+  width:100%!important;
+  transform:none!important;
+  transition:none!important;
+  scrollbar-width:none!important;
+  box-sizing:border-box!important;
+  scroll-padding-left:46px!important;
 }
-html body #qmes-all-menu-dropdown{z-index:120;}
-html body #qmes-user-dropdown{z-index:130;}
-html body #qmes-sync-hamburger{z-index:140;}
-html body #qmes-sync-sidebar{z-index:150;}
+html body #root .qmes-top-menu::-webkit-scrollbar{display:none!important;}
+html body #root .qmes-top-menu-item{
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  flex:0 0 auto!important;
+}
+html body #root .qmes-top-menu-button{
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  padding:0 10px!important;
+  gap:6px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:0!important;
+  border-bottom:2px solid transparent!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:var(--qmes-shell-text)!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:600!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+}
+html body #root .qmes-top-menu-button svg{
+  width:15px!important;
+  height:15px!important;
+  min-width:15px!important;
+  color:#667085!important;
+  stroke-width:1.9!important;
+  fill:none!important;
+}
+html body #root .qmes-top-menu-button span{
+  display:inline!important;
+  visibility:visible!important;
+  opacity:1!important;
+  color:inherit!important;
+  font:inherit!important;
+  white-space:nowrap!important;
+}
+html body #root .qmes-top-menu-button:hover,
+html body #root .qmes-top-menu-button:focus-visible{
+  background:#f7f9fc!important;
+  color:#172033!important;
+  outline:none!important;
+}
+html body #root .qmes-top-menu-button.is-active,
+html body #root .qmes-top-menu-button[aria-current="page"]{
+  background:#f5f9ff!important;
+  color:var(--qmes-shell-blue-dark)!important;
+  border-bottom-color:var(--qmes-shell-blue)!important;
+  font-weight:700!important;
+}
+html body #root .qmes-top-menu-button.is-active svg,
+html body #root .qmes-top-menu-button[aria-current="page"] svg{
+  color:var(--qmes-shell-blue)!important;
+}
+
+/* Reserve the hamburger lane from the first paint. */
+html body:not(.qmes-side-open) #root header .qmes-top-menu{
+  padding-left:46px!important;
+  width:100%!important;
+  transform:none!important;
+  scroll-padding-left:46px!important;
+}
+html body.qmes-side-open #root header .qmes-top-menu{
+  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
+  width:100%!important;
+  transform:none!important;
+  scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
+}
+
+html body #qmes-all-menu-dropdown{z-index:13050!important;}
+html body #qmes-user-dropdown{z-index:13060!important;}
+html body #qmes-sync-hamburger{z-index:12040!important;}
+html body #qmes-sync-sidebar{z-index:12050!important;}
+
+@media(max-width:900px){
+  :root{--qmes-shell-sidebar-width:190px;--qmes-shell-menu-gutter:6px;}
+  html body:not(.qmes-side-open) #root header .qmes-top-menu{
+    padding-left:44px!important;
+    scroll-padding-left:44px!important;
+  }
+}
 
 @media print{
   html body #root > div > header,
   html body #root .qmes-top-menu-bar,
-  html body #root .qmes-top-menu{isolation:auto;}
+  html body #root .qmes-top-menu{isolation:auto!important;}
 }
