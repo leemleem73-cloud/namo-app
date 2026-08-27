@@ -73,6 +73,24 @@ html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record
   appearance:none!important;
   -webkit-appearance:none!important;
 }
+
+/* PQC/OQC record table: the JSX wrapper uses -mx-4 + px-4, which leaves the
+ * table visually offset from the panel edges. Cancel that wrapper offset so
+ * numberLabel on the left and 관리 on the right have the same side inset. */
+html body #root#root#root#root main :is(.qmes-pqc-record-table,.qmes-oqc-record-table){
+  width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+html body #root#root#root#root main div.overflow-x-auto:has(> :is(.qmes-pqc-record-table,.qmes-oqc-record-table)){
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+
 @media(max-width:820px){
   html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>div:first-child{
     flex:1 1 100%!important;
