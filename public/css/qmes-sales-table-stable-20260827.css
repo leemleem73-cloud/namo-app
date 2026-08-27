@@ -11,7 +11,7 @@
 }
 .qmes-sales-stable .qerp-table{
   width:100%!important;
-  min-width:1480px!important;
+  min-width:1355px!important;
   table-layout:fixed!important;
   border-collapse:separate!important;
   border-spacing:0!important;
@@ -50,10 +50,13 @@
 .qmes-sales-stable .qerp-table tbody tr:hover td{background:#fbfdff!important;}
 .qmes-sales-stable .qerp-table td:first-child{text-align:left!important;}
 
-/* Fixed column widths. */
+/* Customer PO is optional reference data: keep it in input/edit forms, hide it from the main list. */
+.qmes-sales-stable .qerp-table th:nth-child(3),
+.qmes-sales-stable .qerp-table td:nth-child(3){display:none!important;}
+
+/* Fixed visible column widths. */
 .qmes-sales-stable .qerp-table th:nth-child(1), .qmes-sales-stable .qerp-table td:nth-child(1){width:150px!important;}
 .qmes-sales-stable .qerp-table th:nth-child(2), .qmes-sales-stable .qerp-table td:nth-child(2){width:125px!important;}
-.qmes-sales-stable .qerp-table th:nth-child(3), .qmes-sales-stable .qerp-table td:nth-child(3){width:125px!important;}
 .qmes-sales-stable .qerp-table th:nth-child(4), .qmes-sales-stable .qerp-table td:nth-child(4){width:140px!important;}
 .qmes-sales-stable .qerp-table th:nth-child(5), .qmes-sales-stable .qerp-table td:nth-child(5){width:115px!important;}
 .qmes-sales-stable .qerp-table th:nth-child(6), .qmes-sales-stable .qerp-table td:nth-child(6){width:150px!important;}
