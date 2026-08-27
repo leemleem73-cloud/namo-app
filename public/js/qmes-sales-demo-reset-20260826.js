@@ -1,11 +1,6 @@
-/* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-26
- * Sales order numbers use SO-YYYYMMDD-NNN and production date remains separate.
- * Sales metadata overrides preserve user edits without changing the work-order source.
- *
- * IMPORTANT: Sales rows are derived from shared Work Orders. Do not persist the
- * same derived snapshot again through the inventory qmes-sync channel. That
- * duplicate write created unnecessary /api/qmes-sync/inventory POST traffic and
- * could surface gateway failures even though the source Work Orders were valid.
+/* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-27
+ * Sales order numbers default to SO-YYYYMMDD-NNN.
+ * User-edited sales order numbers are preserved by work-order keyed metadata.
  */
 (function(){
   "use strict";
@@ -65,9 +60,9 @@
     (Array.isArray(list)?list:[]).forEach(item=>{const lot=text(item?.workOrder);if(lot)set.add(lot);});
     return set;
   }
-  function metaFor(id,lot){const m=mapValue(META_KEY);return m[id]||m[lot]||{};}
-  function packagingFor(id,lot){const m=mapValue(PACK_KEY);return m[id]||m[lot]||null;}
-  function remarkFor(id,lot){const m=mapValue(REMARK_KEY);return text(m[id]??m[lot]);}
+  function metaFor(id,lot){const m=mapValue(META_KEY);return m[lot]||m[id]||{};}
+  function packagingFor(id,lot){const m=mapValue(PACK_KEY);return m[lot]||m[id]||null;}
+  function remarkFor(id,lot){const m=mapValue(REMARK_KEY);return text(m[lot]??m[id]);}
 
   function buildRows(){
     const db=getDb();if(!db)return null;
@@ -83,7 +78,6 @@
       const status=workOrderStatus(lot,doc,batch);
       const productionDate=isoDate(doc.date||doc.productionDate||batch.date||batch.productionDate||lotRow.date);
       let due=isoDate(doc.due||doc.deliveryDate||batch.due||batch.deliveryDate);
-      /* Legacy records used production date in the delivery-date field. Do not call that overdue. */
       if(due&&productionDate&&due===productionDate)due="";
       return {
         customer:text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"현대자동차",
@@ -102,8 +96,9 @@
     raw.forEach(row=>{
       const dateKey=compactDate(row.productionDate)||compactDate(row.due)||new Date().toISOString().slice(0,10).replace(/-/g,"");
       counters[dateKey]=(counters[dateKey]||0)+1;
-      row.id=`SO-${dateKey}-${String(counters[dateKey]).padStart(3,"0")}`;
-      const meta=metaFor(row.id,row.workOrder);
+      const generatedId=`SO-${dateKey}-${String(counters[dateKey]).padStart(3,"0")}`;
+      const meta=metaFor(generatedId,row.workOrder);
+      row.id=text(meta.salesOrderIdOverride)||generatedId;
       if(text(meta.customerOverride))row.customer=text(meta.customerOverride);
       if(text(meta.poOverride))row.po=text(meta.poOverride);
       if(text(meta.productOverride))row.product=text(meta.productOverride);
@@ -125,8 +120,6 @@
   function writeLocal(rows){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows));}catch(_error){}}
   async function apply(){
     const rows=buildRows();if(rows===null)return null;
-    /* Work Orders are already the shared source of truth. Keep this projection local
-       instead of duplicating it into the inventory sync record store. */
     writeLocal(rows);
     window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"WORK_ORDER",rows:rows.length}}));
     return {rows,status:"derived"};
