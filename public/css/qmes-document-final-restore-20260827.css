@@ -1,3 +1,5 @@
+@import url("./qmes-shell-sticky-header-20260827.css?v=20260827-1");
+
 /* QMES final document restore — 2026-08-27
  * Document body only. Header/sidebar/application shell are intentionally untouched.
  * Restores the preserved navy certificate family used by IQC / PQC / OQC / CoA / work order. */
@@ -5,52 +7,25 @@
 :root{--qmes-doc-navy:#244478;--qmes-doc-navy-dark:#1e3a6d;--qmes-doc-border:#64748b;--qmes-doc-grid:#94a3b8;--qmes-doc-text:#0f172a;--qmes-doc-soft:#f8fafc;}
 
 /* ===== IQC / PQC / OQC common document ===== */
-html body .doc-paper .qmes-iqc2-sec-title{
-  box-sizing:border-box!important;width:100%!important;margin:0!important;padding:8px 12px!important;
-  background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;
-  border:1px solid var(--qmes-doc-navy)!important;border-bottom:0!important;border-radius:0!important;
-  font-size:15.5px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:.01em!important;text-align:left!important;
-  box-shadow:none!important;text-shadow:none!important;
-}
+html body .doc-paper .qmes-iqc2-sec-title{box-sizing:border-box!important;width:100%!important;margin:0!important;padding:8px 12px!important;background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;border:1px solid var(--qmes-doc-navy)!important;border-bottom:0!important;border-radius:0!important;font-size:15.5px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:.01em!important;text-align:left!important;box-shadow:none!important;text-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-sec-title::before{content:"■\00A0"!important;font-size:8px!important;vertical-align:1px!important;}
-html body .doc-paper .qmes-iqc2-table{
-  width:100%!important;margin:0!important;border:1px solid var(--qmes-doc-border)!important;border-collapse:collapse!important;
-  border-spacing:0!important;table-layout:fixed!important;background:#fff!important;color:var(--qmes-doc-text)!important;font-size:15px!important;
-}
-html body .doc-paper .qmes-iqc2-table th,
-html body .doc-paper .qmes-iqc2-table td{
-  box-sizing:border-box!important;height:46px!important;padding:10px 9px!important;border:1px solid var(--qmes-doc-grid)!important;
-  background:#fff!important;background-image:none!important;color:var(--qmes-doc-text)!important;
-  font-size:15px!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;word-break:break-word!important;
-}
-html body .doc-paper .qmes-iqc2-table thead th{
-  background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;
-  border-color:var(--qmes-doc-border)!important;font-weight:700!important;text-shadow:none!important;
-}
-/* basic-info tables keep label cells soft instead of turning every first row navy */
-html body .doc-paper .qmes-iqc2-basic-table th,
-html body .doc-paper table.qmes-iqc2-basic-table thead th{background:var(--qmes-doc-soft)!important;color:var(--qmes-doc-text)!important;}
+html body .doc-paper .qmes-iqc2-table{width:100%!important;margin:0!important;border:1px solid var(--qmes-doc-border)!important;border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;background:#fff!important;color:var(--qmes-doc-text)!important;font-size:15px!important;}
+html body .doc-paper .qmes-iqc2-table th,html body .doc-paper .qmes-iqc2-table td{box-sizing:border-box!important;height:46px!important;padding:10px 9px!important;border:1px solid var(--qmes-doc-grid)!important;background:#fff!important;background-image:none!important;color:var(--qmes-doc-text)!important;font-size:15px!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;word-break:break-word!important;}
+html body .doc-paper .qmes-iqc2-table thead th{background:var(--qmes-doc-navy)!important;background-image:none!important;color:#fff!important;border-color:var(--qmes-doc-border)!important;font-weight:700!important;text-shadow:none!important;}
+html body .doc-paper .qmes-iqc2-basic-table th,html body .doc-paper table.qmes-iqc2-basic-table thead th{background:var(--qmes-doc-soft)!important;color:var(--qmes-doc-text)!important;}
 html body .doc-paper .qmes-iqc2-remarks{box-sizing:border-box!important;border:1px solid var(--qmes-doc-border)!important;border-radius:0!important;background:#fff!important;color:var(--qmes-doc-text)!important;box-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-auth-row{display:flex!important;justify-content:space-between!important;align-items:stretch!important;gap:20px!important;margin-top:30px!important;width:100%!important;box-sizing:border-box!important;}
 html body .doc-paper .qmes-iqc2-code-box{box-sizing:border-box!important;display:flex!important;align-items:center!important;flex:1 1 auto!important;min-width:0!important;padding:10px 14px!important;border:1px solid var(--qmes-doc-border)!important;border-radius:0!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important;}
 html body .doc-paper .qmes-iqc2-sign-table{box-sizing:border-box!important;flex:0 1 42%!important;width:42%!important;max-width:42%!important;min-width:0!important;margin:0!important;border:1px solid var(--qmes-doc-border)!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:15px!important;}
-html body .doc-paper .qmes-iqc2-sign-table th,
-html body .doc-paper .qmes-iqc2-sign-table td{width:33.333%!important;border:1px solid var(--qmes-doc-border)!important;text-align:center!important;vertical-align:middle!important;}
+html body .doc-paper .qmes-iqc2-sign-table th,html body .doc-paper .qmes-iqc2-sign-table td{width:33.333%!important;border:1px solid var(--qmes-doc-border)!important;text-align:center!important;vertical-align:middle!important;}
 html body .doc-paper .qmes-iqc2-sign-table th{background:var(--qmes-doc-navy)!important;color:#fff!important;font-weight:700!important;}
 html body .doc-paper .qmes-iqc2-sign-table td{background:#fff!important;color:var(--qmes-doc-text)!important;}
-
-/* PQC/OQC share exactly the same table family */
-html body .qmes-pqc-doc .qmes-iqc2-sec-title,
-html body .qmes-oqc-doc .qmes-iqc2-sec-title{text-align:left!important;padding-left:12px!important;border-left:1px solid var(--qmes-doc-navy)!important;}
-html body .qmes-pqc-doc .qmes-iqc2-table th,html body .qmes-pqc-doc .qmes-iqc2-table td,
-html body .qmes-oqc-doc .qmes-iqc2-table th,html body .qmes-oqc-doc .qmes-iqc2-table td{text-align:center!important;vertical-align:middle!important;}
+html body .qmes-pqc-doc .qmes-iqc2-sec-title,html body .qmes-oqc-doc .qmes-iqc2-sec-title{text-align:left!important;padding-left:12px!important;border-left:1px solid var(--qmes-doc-navy)!important;}
+html body .qmes-pqc-doc .qmes-iqc2-table th,html body .qmes-pqc-doc .qmes-iqc2-table td,html body .qmes-oqc-doc .qmes-iqc2-table th,html body .qmes-oqc-doc .qmes-iqc2-table td{text-align:center!important;vertical-align:middle!important;}
 
 /* ===== shipment certificate (CoA) preserved final design ===== */
 html body .qmes-coa-unified-doc{background:#fff!important;color:var(--qmes-doc-text)!important;box-shadow:none!important;}
-html body .qmes-coa-unified-doc>div:nth-child(2){
-  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;margin-top:18px!important;padding:0!important;
-  border:1px solid var(--qmes-doc-border)!important;background:#fff!important;font-size:15px!important;
-}
+html body .qmes-coa-unified-doc>div:nth-child(2){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;margin-top:18px!important;padding:0!important;border:1px solid var(--qmes-doc-border)!important;background:#fff!important;font-size:15px!important;}
 html body .qmes-coa-unified-doc>div:nth-child(2)>div{box-sizing:border-box!important;min-height:46px!important;padding:11px 14px!important;border-bottom:1px solid var(--qmes-doc-grid)!important;align-items:center!important;background:#fff!important;}
 html body .qmes-coa-unified-doc>div:nth-child(2)>div:nth-child(odd){border-right:1px solid var(--qmes-doc-grid)!important;}
 html body .qmes-coa-unified-doc>div:nth-child(2)>div:nth-last-child(-n+2){border-bottom:0!important;}
@@ -79,7 +54,6 @@ html body .qmes-wo-cert input{box-sizing:border-box!important;min-width:0!import
 
 @media(max-width:640px){html body .qmes-coa-unified-doc>.qmes-coa-header{grid-template-columns:1fr!important;text-align:center!important;}html body .qmes-coa-footer{grid-template-columns:1fr!important;}html body .qmes-coa-sign-table{width:100%!important;}}
 
-/* print must use the exact same visual system; no alternate old theme */
 @media print{
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sec-title{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table thead th{background:var(--qmes-doc-navy)!important;color:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
