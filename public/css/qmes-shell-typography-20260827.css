@@ -1,0 +1,61 @@
+/* QMES shared shell typography — keep shell text identical on Field Input without changing page content. */
+:root{
+  --qmes-shell-font:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif;
+}
+
+html body #root > div > header,
+html body #root .qmes-top-menu-bar,
+html body #root .qmes-top-menu,
+html body #qmes-sync-sidebar,
+html body #qmes-all-menu-dropdown,
+html body #qmes-user-dropdown{
+  font-family:var(--qmes-shell-font)!important;
+  letter-spacing:-.012em;
+}
+
+/* Enterprise pages use html font-size:13px. Reproduce those rem results only inside the shell. */
+html body #root > div > header{
+  font-size:13px!important;
+  line-height:1.5!important;
+}
+html body #root > div > header .text-xs{
+  font-size:9.75px!important;
+  line-height:13px!important;
+}
+html body #root > div > header .text-sm{
+  font-size:11.375px!important;
+  line-height:16.25px!important;
+}
+html body #root > div > header .text-base{
+  font-size:13px!important;
+  line-height:19.5px!important;
+}
+html body #root > div > header .text-lg{
+  font-size:14.625px!important;
+  line-height:22.75px!important;
+}
+html body #root > div > header .text-xl{
+  font-size:16.25px!important;
+  line-height:22.75px!important;
+}
+
+html body #root .qmes-top-menu-button,
+html body #root .qmes-top-menu-button span{
+  font-size:13px!important;
+  line-height:1!important;
+}
+
+html body #qmes-sync-sidebar{
+  font-size:13px!important;
+  line-height:1.5!important;
+}
+html body #qmes-sync-sidebar .qmes-side-title{font-size:12px!important;line-height:18px!important;}
+html body #qmes-sync-sidebar .qmes-side-item{font-size:13px!important;line-height:18px!important;}
+html body #qmes-sync-sidebar .qmes-side-search-input{font-size:12.5px!important;line-height:18px!important;}
+
+html body #qmes-all-menu-dropdown button,
+html body #qmes-user-dropdown button{
+  font-family:var(--qmes-shell-font)!important;
+  font-size:13px!important;
+  line-height:18px!important;
+}
