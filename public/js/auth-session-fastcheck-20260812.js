@@ -1,6 +1,6 @@
 /* QMES auth/session + first-paint bootstrap
  * One owner for current global UI assets before React/Babel renders.
- * Field Input uses its own established UI from the first paint when it is the saved tab.
+ * Field Input keeps the shared shell from the first paint while page-content themes stay isolated.
  */
 (function installAuthSessionFastCheck(global){
   "use strict";
@@ -24,9 +24,9 @@
   };
 })(window);
 
-/* Load only the current UI assets, once, before application components render.
- * qmes_current_tab is already persisted by the router, so a Field Input refresh can
- * start with enterprise content styles disabled instead of waiting for post-render detection.
+/* Load the same shell/content ownership before application components render.
+ * qmes_current_tab is persisted by the router, so Field Input can isolate only
+ * page-content themes without changing header/top-nav/sidebar typography.
  */
 (function installCurrentUiBeforeRender(){
   "use strict";
@@ -37,18 +37,20 @@
   try{fieldInputFirstPaint=sessionStorage.getItem("qmes_current_tab")==="pop";}catch(_error){}
 
   const styles=[
-    ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3"],
-    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1"],
-    ["qmes-enterprise-readable-size-20260826","./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2"],
-    ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern2"],
-    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
-    ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
-    ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
-    ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
-    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"]
+    ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
+    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1",true],
+    ["qmes-shell-readable-size-20260827","./css/qmes-shell-readable-size-20260827.css?v=20260827-2",true],
+    ["qmes-enterprise-readable-size-20260826","./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2",false],
+    ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern2",false],
+    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2",true],
+    ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2",false],
+    ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1",false],
+    ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1",false],
+    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1",false],
+    ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1",true]
   ];
 
-  styles.forEach(([id,href])=>{
+  styles.forEach(([id,href,keepDuringField])=>{
     let link=document.getElementById(id);
     if(!link){
       link=document.createElement("link");
@@ -56,7 +58,9 @@
       link.rel="stylesheet";
       link.href=href;
       document.head.appendChild(link);
+    }else if(String(link.getAttribute("href")||"")!==href){
+      link.href=href;
     }
-    link.media=fieldInputFirstPaint?"not all":"all";
+    link.media=fieldInputFirstPaint&&!keepDuringField?"not all":"all";
   });
 })();
