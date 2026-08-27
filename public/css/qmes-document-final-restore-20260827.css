@@ -1,0 +1,62 @@
+/* QMES document final restore — sourced from preserved final document builds.
+   Scope is document bodies only; application shell/header/sidebar are untouched. */
+
+/* Final IQC/PQC/OQC document frame */
+.doc-paper .qmes-iqc2-sec-title{
+  background:#1e3a6d!important;
+  color:#fff!important;
+  font-size:15.5px!important;
+  font-weight:800!important;
+  letter-spacing:.02em!important;
+  padding:7px 12px!important;
+  border:1px solid #1e3a6d!important;
+  border-bottom:none!important;
+  border-radius:0!important;
+  text-align:left!important;
+}
+.doc-paper .qmes-iqc2-sec-title::before{content:"\25A0\00A0";font-size:9px;position:relative;top:-1.5px}
+.doc-paper .qmes-iqc2-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:15px!important;border:1px solid #475569!important}
+.doc-paper .qmes-iqc2-table th,.doc-paper .qmes-iqc2-table td{
+  border:1px solid #475569!important;padding:12px 10px!important;height:46px!important;
+  text-align:center!important;vertical-align:middle!important;word-break:break-word!important;
+  background:#fff!important;color:#0f172a!important;box-sizing:border-box!important;
+}
+.doc-paper .qmes-iqc2-table thead th{background:#f8fafc!important;font-weight:700!important;color:#0f172a!important}
+.doc-paper .qmes-iqc2-table th:first-child:nth-last-child(5),.doc-paper .qmes-iqc2-table th:first-child:nth-last-child(5)~th,.doc-paper .qmes-iqc2-table td:first-child:nth-last-child(5),.doc-paper .qmes-iqc2-table td:first-child:nth-last-child(5)~td{width:20%!important}
+.doc-paper .qmes-iqc2-table th:first-child:nth-last-child(4),.doc-paper .qmes-iqc2-table th:first-child:nth-last-child(4)~th,.doc-paper .qmes-iqc2-table td:first-child:nth-last-child(4),.doc-paper .qmes-iqc2-table td:first-child:nth-last-child(4)~td{width:25%!important}
+.doc-paper .qmes-iqc2-remarks{border:1px solid #475569!important;border-radius:0!important;background:#fff!important;color:#0f172a!important}
+.doc-paper .qmes-iqc2-auth-row{display:flex!important;justify-content:space-between!important;align-items:stretch!important;gap:20px!important;margin-top:30px!important;width:100%!important;box-sizing:border-box!important}
+.doc-paper .qmes-iqc2-code-box{border:1px solid #475569!important;border-radius:0!important;padding:10px 14px!important;display:flex!important;align-items:center!important;flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important}
+.doc-paper .qmes-iqc2-code-box>*{max-width:100%!important}
+.doc-paper .qmes-iqc2-sign-table{border-collapse:collapse!important;font-size:15px!important;table-layout:fixed!important;border:1px solid #475569!important;flex:0 1 42%!important;width:42%!important;max-width:42%!important;min-width:0!important;box-sizing:border-box!important}
+.doc-paper .qmes-iqc2-sign-table th,.doc-paper .qmes-iqc2-sign-table td{border:1px solid #475569!important;width:33.33%!important;text-align:center!important;vertical-align:middle!important}
+.qmes-pqc-doc .qmes-iqc2-table th,.qmes-pqc-doc .qmes-iqc2-table td,.qmes-oqc-doc .qmes-iqc2-table th,.qmes-oqc-doc .qmes-iqc2-table td,.qmes-pqc-doc .qmes-iqc2-item-cell,.qmes-oqc-doc .qmes-iqc2-item-cell{text-align:center!important;vertical-align:middle!important}
+.qmes-pqc-doc .qmes-iqc2-sec-title,.qmes-oqc-doc .qmes-iqc2-sec-title{text-align:center!important;padding-left:0!important;border-left:0!important}
+
+/* Final work-order document frame: same family as IQC */
+.qmes-wo-cert{width:100%!important;max-width:56rem!important;margin-left:auto!important;margin-right:auto!important}
+.qmes-wo-cert .qmes-wo-header{display:grid!important;grid-template-columns:minmax(210px,1fr) auto minmax(210px,1fr)!important;align-items:center!important}
+.qmes-wo-cert .qmes-wo-header-logo{width:205px!important;max-width:205px!important;max-height:58px!important;object-fit:contain!important;object-position:left center!important}
+.qmes-wo-cert .qmes-iqc2-sec-title{font-size:18px!important;line-height:1.25!important;padding:8px 10px!important}
+.qmes-wo-cert .qmes-iqc2-table th,.qmes-wo-cert .qmes-iqc2-table td{font-size:15px!important;line-height:1.35!important;padding:8px 6px!important;vertical-align:middle!important;text-align:center!important;word-break:keep-all!important}
+.qmes-wo-cert .qmes-wo-cert-total-row td{background:#f8fafc!important;border-top:2px solid #294a7d!important}
+.qmes-wo-cert .qmes-iqc2-remarks{font-size:16px!important}
+.qmes-wo-cert .qmes-iqc2-sign-table th,.qmes-wo-cert .qmes-iqc2-sign-table td{font-size:15px!important}
+.qmes-wo-cert input{min-width:0!important;width:100%!important;font-size:10px!important;padding:3px 4px!important;border:1px solid #cbd5e1!important;border-radius:2px!important;color:#111827!important;background:#fff!important}
+
+@media print{
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sec-title{font-size:15.5px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table th,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table td{font-size:15px!important;line-height:1.4!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-remarks{font-size:15px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table th{font-size:14.5px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table td{font-size:15px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table th,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-table td,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table th,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table td,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-remarks,body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-code-box{border-color:#475569!important;border-style:solid!important;border-width:1px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-auth-row{margin-top:48px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table th{height:38px!important}
+  body.print-doc #qmes-print-root .doc-paper .qmes-iqc2-sign-table td{height:94px!important}
+
+  body.print-doc #qmes-print-root .doc-paper.qmes-wo-cert{width:200mm!important;max-width:200mm!important;min-width:200mm!important;min-height:287mm!important;margin:0 auto!important;padding:7mm 6mm 5mm!important;box-sizing:border-box!important;transform:none!important;zoom:1!important;display:block!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-sec{margin-top:4mm!important;break-inside:avoid!important}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table th,body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-table td{font-size:11.5px!important;line-height:1.35!important;padding:2mm 1.4mm!important}
+  body.print-doc #qmes-print-root .qmes-wo-cert .qmes-iqc2-auth-row{break-inside:avoid!important;page-break-inside:avoid!important}
+}
