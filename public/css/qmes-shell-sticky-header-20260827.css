@@ -1,5 +1,5 @@
 /* QMES shell header pin — keep the logo row and the top menu visible while content scrolls.
- * The header is fixed to the viewport; content receives only the shell offset.
+ * The header is fixed to the viewport; main keeps its original internal padding.
  * No Field Input card/grid/overflow selectors are touched here. */
 :root{
   --qmes-shell-fixed-header-offset:116px;
@@ -20,10 +20,12 @@ html body #root#root > div > header .qmes-top-menu-bar{
   top:auto!important;
 }
 
-/* Header is removed from normal flow by position:fixed, so restore exactly one shell offset.
- * This applies to the page container only and does not rewrite Field Input internals. */
+/* position:fixed removes the header from normal flow.
+ * Offset the whole main block instead of replacing its padding-top: Field Input and other
+ * full-height pages depend on main's original padding/height geometry, and changing that
+ * padding made their first row appear clipped beneath the fixed shell. */
 html body #root#root > div > main{
-  padding-top:calc(var(--qmes-shell-fixed-header-offset) + 20px)!important;
+  margin-top:var(--qmes-shell-fixed-header-offset)!important;
 }
 
 @media(max-width:900px){
