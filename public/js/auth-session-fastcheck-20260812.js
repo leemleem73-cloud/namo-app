@@ -31,7 +31,8 @@
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1"],
     ["qmes-responsive-main-layout-20260827","./css/qmes-responsive-main-layout-20260827.css?v=20260827-1"],
-    ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1"]
+    ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1"],
+    ["qmes-field-input-stable-20260824","./css/qmes-field-input-stable-20260824.css?v=20260827-restore1"]
   ];
   styles.forEach(([id,href])=>{
     let link=document.getElementById(id);
