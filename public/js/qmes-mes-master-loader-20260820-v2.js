@@ -19,20 +19,8 @@
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
-  function ensureStyle(id,href){
-    let link=document.getElementById(id);
-    if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
-    else if(String(link.getAttribute('href')||'')!==href) link.href=href;
-    return link;
-  }
-  function syncThemeState(){
-    const field=fieldInputActive();
-    STYLE_DEFS.forEach(([id,href,keepDuringField])=>{
-      const link=ensureStyle(id,href);
-      link.media=field&&!keepDuringField?'not all':'all';
-    });
-  }
-
+  function ensureStyle(id,href){let link=document.getElementById(id);if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}else if(String(link.getAttribute('href')||'')!==href)link.href=href;return link;}
+  function syncThemeState(){const field=fieldInputActive();STYLE_DEFS.forEach(([id,href,keepDuringField])=>{const link=ensureStyle(id,href);link.media=field&&!keepDuringField?'not all':'all';});}
   syncThemeState();
 
   const files=[
@@ -58,7 +46,7 @@
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/qmes-erp-sidebar-sync-20260826.js?v=20260827-shared-shell2",
+    "./js/qmes-erp-sidebar-sync-20260826.js?v=20260827-active-lifecycle1",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260827-direct-render1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260827-preview-only1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
@@ -67,31 +55,9 @@
     "./js/inventory-qmes-integration-20260819.js?v=20260819-flow1",
     "./js/inventory-movement-action-restore-20260821.js?v=20260821-1"
   ];
-
   function exists(src){const base=src.split('?')[0];return Array.from(document.scripts).some(s=>(s.getAttribute('src')||'').split('?')[0]===base);}
-  function finish(){
-    document.getElementById('qmes-global-menu-preview-theme-20260826')?.remove();
-    syncThemeState();
-    window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));
-    window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));
-  }
-  function load(i){
-    if(i>=files.length){finish();return;}
-    const src=files[i];
-    if(exists(src)){load(i+1);return;}
-    const script=document.createElement('script');script.src=src;script.async=false;
-    script.onload=()=>load(i+1);
-    script.onerror=()=>{console.error('[QMES] MES master module load failed',src);load(i+1);};
-    document.head.appendChild(script);
-  }
-
-  const root=document.getElementById('root');
-  if(root){
-    let queued=false;
-    new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncThemeState();});}).observe(root,{childList:true,subtree:true});
-  }
-
-  const start=()=>load(0);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  function finish(){document.getElementById('qmes-global-menu-preview-theme-20260826')?.remove();syncThemeState();window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));}
+  function load(i){if(i>=files.length){finish();return;}const src=files[i];if(exists(src)){load(i+1);return;}const script=document.createElement('script');script.src=src;script.async=false;script.onload=()=>load(i+1);script.onerror=()=>{console.error('[QMES] MES master module load failed',src);load(i+1);};document.head.appendChild(script);}
+  const root=document.getElementById('root');if(root){let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncThemeState();});}).observe(root,{childList:true,subtree:true});}
+  const start=()=>load(0);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
