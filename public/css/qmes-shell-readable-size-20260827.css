@@ -1,0 +1,135 @@
+/* QMES shared shell readable density.
+ * Exact shell-only subset of qmes-enterprise-readable-size-20260826.css.
+ * It is safe on Field Input because it does not style <main> or .qmes-ipad-pop content.
+ */
+:root{
+  --qmes-shell-sidebar-width:230px;
+}
+
+html body #root#root#root>div>header>div:first-child{
+  height:68px!important;
+  min-height:68px!important;
+  max-height:68px!important;
+  padding-left:18px!important;
+  padding-right:18px!important;
+}
+html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+  height:40px!important;
+  max-height:40px!important;
+  max-width:275px!important;
+}
+html body #root#root#root .qmes-header-clock,
+html body #root#root#root .qmes-header-clock span{
+  font-size:13px!important;
+}
+html body #root#root#root .qmes-header-action{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 11px!important;
+  font-size:13px!important;
+}
+html body #root#root#root button[aria-label*="NAMO Talk"]{
+  height:38px!important;
+  min-height:38px!important;
+  padding:0 14px!important;
+  font-size:13.5px!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]{
+  min-height:40px!important;
+  font-size:13.5px!important;
+}
+html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
+  width:32px!important;
+  height:32px!important;
+  font-size:13px!important;
+}
+
+html body #root#root#root .qmes-top-menu-bar,
+html body #root#root#root .qmes-top-menu,
+html body #root#root#root .qmes-top-menu-item{
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+}
+html body #root#root#root .qmes-top-menu-button{
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  padding:0 12px!important;
+  gap:7px!important;
+  font-size:13.5px!important;
+  font-weight:650!important;
+}
+html body #root#root#root .qmes-top-menu-button span{
+  font-size:inherit!important;
+  font-weight:inherit!important;
+}
+html body #root#root#root .qmes-top-menu-button svg{
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+}
+
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  width:var(--qmes-shell-sidebar-width)!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
+  height:52px!important;
+  min-height:52px!important;
+  padding-top:8px!important;
+  padding-bottom:8px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  height:36px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
+  height:34px!important;
+  font-size:13px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
+  min-height:48px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
+  font-size:13px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+  min-height:42px!important;
+  padding:10px 11px 10px 13px!important;
+  font-size:13.5px!important;
+  line-height:20px!important;
+}
+
+@media(max-width:1400px){
+  :root{--qmes-shell-sidebar-width:220px;}
+  html body #root#root#root .qmes-top-menu-button{
+    font-size:13px!important;
+    padding:0 10px!important;
+    gap:6px!important;
+  }
+  html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+    font-size:13px!important;
+  }
+}
+
+@media(max-width:900px){
+  :root{--qmes-shell-sidebar-width:190px;}
+  html body #root#root#root>div>header>div:first-child{
+    height:60px!important;
+    min-height:60px!important;
+    max-height:60px!important;
+  }
+  html body #root#root#root>div>header img[alt="NAMO Chemical"]{
+    height:34px!important;
+    max-height:34px!important;
+  }
+  html body #root#root#root .qmes-top-menu-bar,
+  html body #root#root#root .qmes-top-menu,
+  html body #root#root#root .qmes-top-menu-item,
+  html body #root#root#root .qmes-top-menu-button{
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+  }
+}
