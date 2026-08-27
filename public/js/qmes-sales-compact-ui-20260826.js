@@ -1,15 +1,15 @@
-/* QMES Sales edit controller — direct, stable, no DOM column patching — 2026-08-27 */
+/* QMES Sales edit controller — stable sales-number override — 2026-08-27 */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_EDIT_DIRECT_V6__) return;
-  window.__QMES_SALES_EDIT_DIRECT_V6__=true;
+  if(window.__QMES_SALES_EDIT_DIRECT_V7__) return;
+  window.__QMES_SALES_EDIT_DIRECT_V7__=true;
   window.__QMES_SALES_COMPACT_UI_20260826__=true;
 
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const PACK_KEY="qmes-sales-packaging-v1";
   const REMARK_KEY="qmes-sales-remarks-v1";
-  const MODAL_ID="qmes-sales-edit-direct-v6";
+  const MODAL_ID="qmes-sales-edit-direct-v7";
 
   const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
   const num=v=>{const n=Number(String(v==null?"":v).replace(/[^0-9.+-]/g,""));return Number.isFinite(n)?n:0;};
@@ -21,10 +21,32 @@
   const rowById=id=>rows().find(r=>clean(r?.id)===clean(id))||null;
   const rowKey=r=>clean(r?.workOrder)||clean(r?.id);
 
+  /* Compatibility layer: even an older cached Work-Order projection may regenerate
+     SO-YYYYMMDD-NNN. Rewrite that local projection synchronously from the persisted
+     work-order keyed override before the Sales React page reads it. */
+  function reconcileSalesOrderIds(){
+    const list=rows();
+    if(!list.length) return false;
+    const metaMap=map(META_KEY);
+    let changed=false;
+    const used=new Set();
+    const next=list.map(row=>{
+      const current=clean(row?.id),key=clean(row?.workOrder)||current;
+      const meta=metaMap[key]||metaMap[current]||row?.orderMeta||{};
+      let wanted=clean(meta?.salesOrderIdOverride)||current;
+      if(!wanted||used.has(wanted)) wanted=current;
+      used.add(wanted);
+      if(wanted!==current){changed=true;return {...row,id:wanted,orderMeta:{...(row.orderMeta||{}),...meta,salesOrderIdOverride:wanted}};}
+      return row;
+    });
+    if(changed) write(SALES_KEY,next);
+    return changed;
+  }
+
   function ensureStyle(){
-    if(document.getElementById("qmes-sales-edit-direct-v6-style")) return;
+    if(document.getElementById("qmes-sales-edit-direct-v7-style")) return;
     const s=document.createElement("style");
-    s.id="qmes-sales-edit-direct-v6-style";
+    s.id="qmes-sales-edit-direct-v7-style";
     s.textContent=`
       #${MODAL_ID}{position:fixed!important;inset:0!important;z-index:2147483640!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:20px!important;background:rgba(15,23,42,.45)!important}
       #${MODAL_ID} .card{width:min(1120px,96vw)!important;max-height:92vh!important;overflow:auto!important;background:#fff!important;border:1px solid #d9e1ea!important;border-radius:16px!important;box-shadow:0 28px 90px rgba(15,23,42,.3)!important}
@@ -48,32 +70,30 @@
     const direct=target.closest(".qmes-sales-edit-btn");
     if(direct) return direct;
     const button=target.closest("button");
-    if(!button || clean(button.textContent)!=="수정") return null;
-    const salesRoot=button.closest(".qmes-sales-stable") || button.closest(".qerp");
-    const title=clean(salesRoot?.querySelector(".qerp-title")?.textContent);
-    return title==="수주 · 납기관리" ? button : null;
+    if(!button||clean(button.textContent)!=="수정") return null;
+    const root=button.closest(".qmes-sales-stable")||button.closest(".qerp");
+    return clean(root?.querySelector(".qerp-title")?.textContent)==="수주 · 납기관리"?button:null;
   }
 
   function rowFromButton(button){
-    const tr=button.closest("tr");
-    if(!tr) return null;
+    reconcileSalesOrderIds();
+    const tr=button.closest("tr");if(!tr)return null;
     const cell=i=>clean(tr.children?.[i]?.textContent);
     const id=clean(button.dataset.salesId||button.dataset.qmesSalesEdit||tr.querySelector("[data-qso-id]")?.getAttribute("data-qso-id")||cell(0));
-    const stored=rowById(id);
-    if(stored) return stored;
+    const stored=rowById(id);if(stored)return stored;
     return {id,customer:cell(1),po:cell(2),product:clean(tr.children?.[3]?.childNodes?.[0]?.textContent)||cell(3),qty:num(cell(4)),due:"",plan:cell(8),shipping:cell(9),deliveryPlace:cell(10),source:"SCREEN"};
   }
 
   function close(){document.getElementById(MODAL_ID)?.remove();}
 
   function open(row){
-    if(!row||!clean(row.id)) return false;
-    ensureStyle(); close();
-    const metaMap=map(META_KEY),packMap=map(PACK_KEY),remarkMap=map(REMARK_KEY),key=rowKey(row),id=clean(row.id);
-    const meta=metaMap[id]||metaMap[key]||row.orderMeta||{};
-    const pack=packMap[id]||packMap[key]||row.packaging||{};
-    const remarks=clean(remarkMap[id]??remarkMap[key]??row.remarks);
-    const modal=document.createElement("div"); modal.id=MODAL_ID;
+    if(!row||!clean(row.id))return false;
+    ensureStyle();close();
+    const id=clean(row.id),key=rowKey(row),metaMap=map(META_KEY),packMap=map(PACK_KEY),remarkMap=map(REMARK_KEY);
+    const meta=metaMap[key]||metaMap[id]||row.orderMeta||{};
+    const pack=packMap[key]||packMap[id]||row.packaging||{};
+    const remarks=clean(remarkMap[key]??remarkMap[id]??row.remarks);
+    const modal=document.createElement("div");modal.id=MODAL_ID;
     modal.innerHTML=`<div class="card" role="dialog" aria-modal="true" aria-label="수주 전체 수정"><div class="head"><div><h2>수주 전체 수정</h2><div class="sub">${esc(id)} · 작업지시/LOT ${esc(key||"-")}</div></div><button type="button" class="close" data-close="1">닫기</button></div><form class="body" data-sales-edit-form="1" data-id="${esc(id)}">
       <div class="status"><div><b>현재 수주번호</b><span>${esc(id)}</span></div><div><b>작업지시 / 생산 LOT</b><span>${esc(key||"-")}</span></div><div><b>생산계획</b><span>${esc(row.plan||"-")}</span></div><div><b>출하상태</b><span>${esc(row.shipping||"-")}</span></div></div>
       <h3 class="section">수주 기본정보</h3><div class="grid">
@@ -82,67 +102,46 @@
       <div class="field"><label>납품처</label><input name="deliveryPlace" value="${esc(meta.deliveryPlace||row.deliveryPlace||"")}"></div></div>
       <h3 class="section">포장정보</h3><div class="grid"><div class="field"><label>포장형태</label><select name="packagingType"><option value="">선택</option><option ${clean(pack.type||pack.packagingType)==="CAN"?"selected":""}>CAN</option><option ${clean(pack.type||pack.packagingType)==="DRUM"?"selected":""}>DRUM</option><option ${clean(pack.type||pack.packagingType)==="IBC"?"selected":""}>IBC</option><option ${clean(pack.type||pack.packagingType)==="기타"?"selected":""}>기타</option></select></div><div class="field"><label>단위 포장량 (kg)</label><input type="number" step="0.001" name="unitWeight" value="${esc(pack.unitWeight??pack.unitPackQty??"")}"></div><div class="field"><label>포장수량 (EA)</label><input type="number" step="1" name="packageQty" value="${esc(pack.packageQty??"")}"></div><div class="field wide"><label>비고</label><input name="remarks" value="${esc(remarks)}"></div></div>
       <div class="error" data-error="1"></div><div class="actions"><button type="button" class="cancel" data-close="1">취소</button><button type="submit" class="save">수정 저장</button></div></form></div>`;
-    document.body.appendChild(modal);
-    modal.__salesRow=row;
-    modal.querySelector('[name="salesOrderId"]')?.focus();
-    return true;
+    document.body.appendChild(modal);modal.__salesRow=row;modal.querySelector('[name="salesOrderId"]')?.focus();return true;
   }
 
   async function save(form){
-    const modal=document.getElementById(MODAL_ID),row=modal?.__salesRow;if(!row) return;
+    const modal=document.getElementById(MODAL_ID),row=modal?.__salesRow;if(!row)return;
     const fd=new FormData(form),get=n=>clean(fd.get(n)),qty=num(get("qty")),unit=num(get("unitWeight")),count=num(get("packageQty")),type=get("packagingType");
     const error=form.querySelector('[data-error="1"]'),fail=m=>{if(error){error.textContent=m;error.classList.add("show");}return false;};
-    const originalId=clean(row.id),newId=get("salesOrderId");
-    if(!newId) return fail("수주번호를 입력하세요.");
-    if(/\s/.test(String(fd.get("salesOrderId")||""))) return fail("수주번호에는 공백을 사용할 수 없습니다.");
-    if(rows().some(r=>clean(r.id)===newId&&clean(r.id)!==originalId)) return fail("이미 사용 중인 수주번호입니다.");
-    if(!get("customer")||!get("product")||qty<=0) return fail("고객사·제품·수량을 확인하세요.");
+    const originalId=clean(row.id),newId=get("salesOrderId"),rawId=String(fd.get("salesOrderId")||"");
+    if(!newId)return fail("수주번호를 입력하세요.");
+    if(/\s/.test(rawId))return fail("수주번호에는 공백을 사용할 수 없습니다.");
+    if(!/^SO-[A-Za-z0-9-]+$/.test(newId))return fail("수주번호는 SO- 형식으로 입력하세요.");
+    const metaMap=map(META_KEY),key=clean(row.workOrder)||originalId;
+    const duplicate=rows().some(r=>clean(r.id)===newId&&clean(r.id)!==originalId)||Object.entries(metaMap).some(([metaKey,m])=>metaKey!==key&&clean(m?.salesOrderIdOverride)===newId&&clean(m?.salesOrderIdOverride)!==originalId);
+    if(duplicate)return fail("이미 사용 중인 수주번호입니다.");
+    if(!get("customer")||!get("product")||qty<=0)return fail("고객사·제품·수량을 확인하세요.");
 
-    const key=clean(row.workOrder)||originalId;
-    const metaMap=map(META_KEY),packMap=map(PACK_KEY),remarkMap=map(REMARK_KEY),now=new Date().toISOString();
-    const previousMeta=metaMap[originalId]||metaMap[key]||row.orderMeta||{};
-    const meta={...previousMeta,salesOrderIdOverride:newId,customerOverride:get("customer"),poOverride:get("po")||"-",productOverride:get("product"),qtyOverride:qty,requestedDue:get("due"),customerItemCode:get("customerItemCode"),deliveryPlace:get("deliveryPlace"),orderType:get("orderType")||"양산",savedAt:now};
-    metaMap[originalId]=meta;
-    metaMap[newId]=meta;
-    if(key)metaMap[key]=meta;
-    write(META_KEY,metaMap);
+    const packMap=map(PACK_KEY),remarkMap=map(REMARK_KEY),now=new Date().toISOString();
+    const previous=metaMap[key]||metaMap[originalId]||row.orderMeta||{};
+    const meta={...previous,salesOrderIdOverride:newId,customerOverride:get("customer"),poOverride:get("po")||"-",productOverride:get("product"),qtyOverride:qty,requestedDue:get("due"),customerItemCode:get("customerItemCode"),deliveryPlace:get("deliveryPlace"),orderType:get("orderType")||"양산",savedAt:now};
+    metaMap[key]=meta;metaMap[originalId]=meta;metaMap[newId]=meta;write(META_KEY,metaMap);
 
-    let packaging=null;
-    const touched=Boolean(type||unit||count);
-    if(touched){
-      if(!type||unit<=0||count<=0)return fail("포장정보는 포장형태·단위 포장량·포장수량을 모두 입력하세요.");
-      packaging={type,unitWeight:unit,packageQty:count,total:Number((unit*count).toFixed(3)),savedAt:now};
-      packMap[newId]=packaging;
-      packMap[originalId]=packaging;
-      if(key)packMap[key]=packaging;
-    }else{
-      delete packMap[newId];delete packMap[originalId];if(key)delete packMap[key];
-    }
-    write(PACK_KEY,packMap);
-
-    const remarks=get("remarks");
-    if(remarks){remarkMap[newId]=remarks;remarkMap[originalId]=remarks;if(key)remarkMap[key]=remarks;}
-    else{delete remarkMap[newId];delete remarkMap[originalId];if(key)delete remarkMap[key];}
-    write(REMARK_KEY,remarkMap);
+    let packaging=null;const touched=Boolean(type||unit||count);
+    if(touched){if(!type||unit<=0||count<=0)return fail("포장정보는 포장형태·단위 포장량·포장수량을 모두 입력하세요.");packaging={type,unitWeight:unit,packageQty:count,total:Number((unit*count).toFixed(3)),savedAt:now};packMap[key]=packaging;packMap[originalId]=packaging;packMap[newId]=packaging;}else{delete packMap[key];delete packMap[originalId];delete packMap[newId];}write(PACK_KEY,packMap);
+    const remarks=get("remarks");if(remarks){remarkMap[key]=remarks;remarkMap[originalId]=remarks;remarkMap[newId]=remarks;}else{delete remarkMap[key];delete remarkMap[originalId];delete remarkMap[newId];}write(REMARK_KEY,remarkMap);
 
     const updated={...row,id:newId,customer:get("customer"),po:get("po")||"-",product:get("product"),qty,due:get("due"),customerItemCode:meta.customerItemCode,deliveryPlace:meta.deliveryPlace,orderType:meta.orderType,remarks,orderMeta:meta,packaging,packagingType:packaging?.type||"",unitPackQty:packaging?.unitWeight||0,packageQty:packaging?.packageQty||0};
-    const current=rows(),exists=current.some(r=>clean(r.id)===originalId),next=exists?current.map(r=>clean(r.id)===originalId?updated:r):[updated,...current];
-    write(SALES_KEY,next);
+    const current=rows(),exists=current.some(r=>clean(r.id)===originalId),next=exists?current.map(r=>clean(r.id)===originalId?updated:r):[updated,...current];write(SALES_KEY,next);
 
     if(typeof window.qmesSalesFromWorkOrderApply==="function"){try{await window.qmesSalesFromWorkOrderApply();}catch(_){}}
-    window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"DIRECT_EDIT_V6",oldId:originalId,newId}}));
-    close();setTimeout(()=>window.location.reload(),80);
+    reconcileSalesOrderIds();
+    close();setTimeout(()=>window.location.reload(),100);
   }
 
-  const handlePress=event=>{
-    const button=buttonFromTarget(event.target);if(!button)return;
-    event.preventDefault();event.stopImmediatePropagation();
-    const row=rowFromButton(button);if(row)open(row);
-  };
-
+  const handlePress=event=>{const button=buttonFromTarget(event.target);if(!button)return;event.preventDefault();event.stopImmediatePropagation();const row=rowFromButton(button);if(row)open(row);};
   window.addEventListener("pointerdown",handlePress,true);
   window.addEventListener("click",handlePress,true);
   document.addEventListener("click",event=>{const target=event.target;if(!(target instanceof Element))return;if(target.closest("[data-close]")){event.preventDefault();close();return;}if(target===document.getElementById(MODAL_ID))close();},true);
   document.addEventListener("submit",event=>{const form=event.target instanceof Element?event.target.closest('[data-sales-edit-form="1"]'):null;if(!form)return;event.preventDefault();event.stopImmediatePropagation();save(form);},true);
-  window.qmesSalesFullEdit20260827={open,openFromButton:button=>{const row=rowFromButton(button);return row?open(row):false;},close};
+  window.addEventListener("qmes:erp-data-changed",event=>{if(event?.detail?.kind==="sales")reconcileSalesOrderIds();});
+  window.addEventListener("storage",event=>{if(event.key===SALES_KEY||event.key===META_KEY)reconcileSalesOrderIds();});
+  reconcileSalesOrderIds();
+  window.qmesSalesFullEdit20260827={open,openFromButton:button=>{const row=rowFromButton(button);return row?open(row):false;},close,reconcileSalesOrderIds};
 })();
