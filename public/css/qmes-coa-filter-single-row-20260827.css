@@ -1,0 +1,44 @@
+/* 출하성적서 발행내역 조회조건: 발행일 / LOT No. / 고객사 / 초기화를 한 줄에 유지 */
+html body #root main :has(> .qmes-coa-issued-table) > div:has(input):has(button),
+html body #root main .qmes-coa-filter-row,
+html body #root main .qmes-coa-issued-filter{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+html body #root main :has(> .qmes-coa-issued-table) > div:has(input):has(button) > label,
+html body #root main .qmes-coa-filter-row > label,
+html body #root main .qmes-coa-issued-filter > label{
+  flex:0 1 190px!important;
+  width:auto!important;
+  min-width:135px!important;
+  max-width:210px!important;
+}
+html body #root main :has(> .qmes-coa-issued-table) > div:has(input):has(button) input,
+html body #root main .qmes-coa-filter-row input,
+html body #root main .qmes-coa-issued-filter input{
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  box-sizing:border-box!important;
+}
+html body #root main :has(> .qmes-coa-issued-table) > div:has(input):has(button) > button,
+html body #root main .qmes-coa-filter-row > button,
+html body #root main .qmes-coa-issued-filter > button{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:72px!important;
+  height:36px!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  white-space:nowrap!important;
+}
+@media(max-width:760px){
+  html body #root main :has(> .qmes-coa-issued-table) > div:has(input):has(button),
+  html body #root main .qmes-coa-filter-row,
+  html body #root main .qmes-coa-issued-filter{flex-wrap:wrap!important;}
+}
