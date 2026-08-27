@@ -1,24 +1,15 @@
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_LAYER_GUARD_V16__) return;
-  window.__QMES_SCROLL_LAYER_GUARD_V16__=true;
+  if(window.__QMES_SCROLL_LAYER_GUARD_V17__) return;
+  window.__QMES_SCROLL_LAYER_GUARD_V17__=true;
 
   const REPORT_BACKDROP='.qmes-modal-backdrop:has(.qmes-iqc2-paper)';
   const REPORT_SELECTOR=`${REPORT_BACKDROP} .qmes-wo-viewer`;
 
-  /* Preview-only rules plus the stable shell layer order used by Field Input. */
+  /* Preview-only rules. Application shell layer order is owned by first-paint CSS. */
   const style=document.createElement('style');
   style.id='qmes-scroll-layer-guard-style';
   style.textContent=`
-    /* Keep the fixed application shell above IQC/PQC/OQC Field Input content. */
-    header{z-index:40!important;isolation:isolate!important;}
-    .qmes-top-menu-bar{z-index:41!important;isolation:isolate!important;}
-    .qmes-top-menu{z-index:42!important;isolation:isolate!important;}
-    #qmes-all-menu-dropdown{z-index:120!important;}
-    #qmes-user-dropdown{z-index:130!important;}
-    #qmes-sync-hamburger{z-index:140!important;}
-    #qmes-sync-sidebar{z-index:150!important;}
-
     html.qmes-preview-scroll-lock,body.qmes-preview-scroll-lock{
       overflow:hidden!important;overscroll-behavior:none!important;height:100%!important;
     }
@@ -52,7 +43,6 @@
       ${REPORT_SELECTOR}{display:block!important;height:auto!important;min-height:0!important;}
       ${REPORT_SELECTOR} > .qmes-wo-viewer-head{position:static!important;min-height:0!important;margin:0!important;padding:0!important;border-bottom:0!important;}
       ${REPORT_SELECTOR} > .qmes-iqc2-paper{position:static!important;overflow:visible!important;padding:0!important;}
-      header,.qmes-top-menu-bar,.qmes-top-menu{isolation:auto!important;}
     }
   `;
   document.getElementById(style.id)?.remove();
@@ -64,20 +54,10 @@
     });
   }
 
-  function reinforceShellLayers(){
-    const header=document.querySelector('header');
-    const bar=document.querySelector('.qmes-top-menu-bar');
-    const menu=document.querySelector('.qmes-top-menu');
-    if(header) header.style.setProperty('z-index','40','important');
-    if(bar) bar.style.setProperty('z-index','41','important');
-    if(menu) menu.style.setProperty('z-index','42','important');
-  }
-
   function syncPreviewScrollLock(){
     const isOpen=!!document.querySelector(REPORT_SELECTOR);
     document.documentElement.classList.toggle('qmes-preview-scroll-lock',isOpen);
     document.body?.classList.toggle('qmes-preview-scroll-lock',isOpen);
-    reinforceShellLayers();
     fixLabels();
   }
 
@@ -90,7 +70,6 @@
 
   const observer=new MutationObserver(queueSync);
   const startObserver=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true});queueSync();};
-  reinforceShellLayers();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserver,{once:true});else startObserver();
   window.addEventListener('load',queueSync);
   document.addEventListener('qmes:data-updated',queueSync);
