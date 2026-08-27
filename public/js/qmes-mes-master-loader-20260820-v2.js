@@ -58,7 +58,7 @@
     "./js/ipad-pqc-oqc-date-field-sanitize-20260824.js?v=20260824-1",
     "./js/workorder-status-save-align-20260824.js?v=20260824-4",
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
-    "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
+    "./js/qmes-erp-sidebar-sync-20260826.js?v=20260827-shared-shell2",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260827-direct-render1",
     "./js/qmes-scroll-layer-guard-20260807.js?v=20260827-preview-only1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
