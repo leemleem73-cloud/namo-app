@@ -1,6 +1,7 @@
 /* NAMO QMES — Sales/Delivery rows derived from current Work Orders — 2026-08-27
  * Sales order numbers default to SO-YYYYMMDD-NNN.
  * User-edited sales order numbers are preserved by work-order keyed metadata.
+ * Sales product overrides are also pushed back to the linked Work Order.
  */
 (function(){
   "use strict";
@@ -11,6 +12,7 @@
   const PACK_KEY="qmes-sales-packaging-v1";
   const REMARK_KEY="qmes-sales-remarks-v1";
   const DELETED_KEY="qmes-sales-deleted-v1";
+  const pendingProductSyncLots=new Set();
   let resolveReady;
   window.__QMES_SALES_FROM_WORKORDER_READY__=new Promise(resolve=>{resolveReady=resolve;});
 
@@ -27,6 +29,42 @@
   function getDb(){
     try{if(typeof DB!=="undefined"&&DB&&typeof DB==="object")return DB;}catch(_error){}
     return window.DB&&typeof window.DB==="object"?window.DB:null;
+  }
+
+  function markWorkOrderProduct(db,lot,product){
+    const key=text(lot),value=text(product);
+    if(!db||!key||!value)return false;
+    let changed=false;
+    const doc=db.woDocs?.[key];
+    if(doc&&text(doc.item)!==value){doc.item=value;changed=true;}
+    const batch=Array.isArray(db.batches)?db.batches.find(row=>text(row?.no)===key):null;
+    if(batch&&text(batch.item)!==value){batch.item=value;changed=true;}
+    const lotRow=db.lots?.[key];
+    if(lotRow&&typeof lotRow==="object"){
+      if(text(lotRow.itemName)!==value){lotRow.itemName=value;changed=true;}
+      if(text(lotRow.item)!==value){lotRow.item=value;changed=true;}
+    }
+    if(changed)pendingProductSyncLots.add(key);
+    return changed;
+  }
+
+  async function flushProductSync(){
+    if(!pendingProductSyncLots.size)return [];
+    const lots=Array.from(pendingProductSyncLots);
+    pendingProductSyncLots.clear();
+    try{if(typeof dbSave==="function")dbSave();}catch(_error){}
+    for(const lot of lots){
+      try{if(typeof qmesSyncWorkOrder==="function")await qmesSyncWorkOrder(lot);}catch(error){console.warn("수주 제품 작업지시 연동 실패:",lot,error?.message||error);}
+    }
+    if(lots.length)window.dispatchEvent(new CustomEvent("qmes:workorder-product-linked",{detail:{lots,source:"SALES_PRODUCT"}}));
+    return lots;
+  }
+
+  async function syncProductToWorkOrder(lot,product){
+    const db=getDb();
+    if(!markWorkOrderProduct(db,lot,product))return false;
+    await flushProductSync();
+    return true;
   }
 
   function workOrderStatus(lot,doc,batch){
@@ -82,7 +120,7 @@
       return {
         customer:text(doc.customer||doc.customerName||doc.client||doc.clientName||batch.customer||batch.customerName)||"현대자동차",
         po:text(doc.customerPo||doc.customerPO||doc.po||doc.poNo||batch.po||batch.poNo)||"-",
-        product:text(doc.item||batch.item||lotRow.itemName||lotRow.item)||"NBA20-HM01",
+        product:text(doc.item||batch.item||lotRow.itemName||lotRow.item),
         qty:number(doc.plan??doc.qty??batch.plan??batch.qty),
         due,
         plan:planStatus(status),
@@ -101,7 +139,10 @@
       row.id=text(meta.salesOrderIdOverride)||generatedId;
       if(text(meta.customerOverride))row.customer=text(meta.customerOverride);
       if(text(meta.poOverride))row.po=text(meta.poOverride);
-      if(text(meta.productOverride))row.product=text(meta.productOverride);
+      if(text(meta.productOverride)){
+        row.product=text(meta.productOverride);
+        markWorkOrderProduct(db,row.workOrder,row.product);
+      }
       if(number(meta.qtyOverride)>0)row.qty=number(meta.qtyOverride);
       if(isoDate(meta.requestedDue))row.due=isoDate(meta.requestedDue);
       row.orderMeta={...meta};
@@ -120,6 +161,7 @@
   function writeLocal(rows){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows));}catch(_error){}}
   async function apply(){
     const rows=buildRows();if(rows===null)return null;
+    await flushProductSync();
     writeLocal(rows);
     window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{detail:{kind:"sales",source:"WORK_ORDER",rows:rows.length}}));
     return {rows,status:"derived"};
@@ -139,4 +181,5 @@
     });
   });
   window.qmesSalesFromWorkOrderApply=apply;
+  window.qmesSalesSyncProductToWorkOrder=syncProductToWorkOrder;
 })();
