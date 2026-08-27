@@ -1,5 +1,6 @@
 /* QMES ERP top-menu -> shared left-sidebar sync
  * ERP routes use the exact same top-nav/sidebar shell as the normal QMES routes.
+ * Active ERP side items are restored whenever the shared sidebar is recreated/rerendered.
  */
 (function(){
   "use strict";
@@ -25,6 +26,8 @@
   const clean=value=>String(value||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
   const topLabel=button=>clean(button?.querySelector(":scope > span")?.textContent||button?.querySelector("span")?.textContent||button?.textContent);
   const sidebar=()=>document.getElementById("qmes-sync-sidebar");
+  let activeGroup="";
+  let restoring=false;
 
   function ensureSharedShell(){
     SHARED_SHELL_STYLES.forEach(([id,href])=>{
@@ -45,7 +48,9 @@
 
   function syncTopActive(group){
     document.querySelectorAll(".qmes-top-menu-button").forEach(button=>{
-      const active=topLabel(button)===group;
+      const label=topLabel(button);
+      if(!ERP_GROUPS[label]) return;
+      const active=label===group;
       button.classList.toggle("is-active",active);
       if(active) button.setAttribute("aria-current","page");
       else button.removeAttribute("aria-current");
@@ -62,12 +67,13 @@
     return button;
   }
 
-  function showGroup(group){
+  function renderGroup(group,{openSidebar=true,emit=true}={}){
     const config=ERP_GROUPS[group];
     const side=sidebar();
-    if(!config||!side) return;
+    if(!config||!side) return false;
 
     ensureSharedShell();
+    activeGroup=group;
     syncTopActive(group);
     side.dataset.qmesErpGroup=group;
 
@@ -75,19 +81,36 @@
     const head=side.querySelector(".qmes-side-head");
     const items=side.querySelector(".qmes-side-items");
     const search=side.querySelector(".qmes-side-search-input");
-    if(search) search.value="";
+    if(search&&document.activeElement!==search) search.value="";
     if(title) title.textContent=group;
     head?.classList.add("is-group-active");
-    if(items) items.replaceChildren(makeSideButton(group,config));
+    if(items){
+      const current=items.querySelector(`[data-qmes-erp-side-tab="${config.tab}"]`);
+      if(!current||items.children.length!==1) items.replaceChildren(makeSideButton(group,config));
+      else current.classList.add("is-active");
+    }
 
     ["display","visibility","opacity","pointer-events","transform"].forEach(prop=>side.style.removeProperty(prop));
-    document.body.classList.add("qmes-side-open");
-    window.dispatchEvent(new CustomEvent("qmes:erp-sidebar-open",{detail:{group,tab:config.tab}}));
+    if(openSidebar) document.body.classList.add("qmes-side-open");
+    if(emit) window.dispatchEvent(new CustomEvent("qmes:erp-sidebar-open",{detail:{group,tab:config.tab}}));
+    return true;
+  }
+
+  function showGroup(group){
+    activeGroup=group;
+    if(renderGroup(group)) return;
+    let attempts=0;
+    const retry=()=>{
+      attempts++;
+      if(renderGroup(group)) return;
+      if(attempts<12) setTimeout(retry,50);
+    };
+    setTimeout(retry,0);
   }
 
   function filterCurrentGroup(query){
     const side=sidebar();
-    const group=side?.dataset.qmesErpGroup;
+    const group=activeGroup||side?.dataset.qmesErpGroup;
     const config=ERP_GROUPS[group];
     if(!side||!config) return false;
     const title=side.querySelector(".qmes-side-title");
@@ -115,6 +138,7 @@
       const label=topLabel(top);
       if(ERP_GROUPS[label]) requestAnimationFrame(()=>showGroup(label));
       else{
+        activeGroup="";
         const side=sidebar();
         if(side) delete side.dataset.qmesErpGroup;
       }
@@ -135,7 +159,7 @@
     const input=event.target.closest?.("#qmes-sync-sidebar .qmes-side-search-input");
     if(!input) return;
     const side=sidebar();
-    if(!side?.dataset.qmesErpGroup) return;
+    if(!activeGroup&&!side?.dataset.qmesErpGroup) return;
     event.stopImmediatePropagation();
     filterCurrentGroup(input.value||"");
   },true);
@@ -144,8 +168,25 @@
     const tab=String(event?.detail?.tab||"");
     const entry=Object.entries(ERP_GROUPS).find(([,config])=>config.tab===tab);
     if(!entry) return;
+    activeGroup=entry[0];
     requestAnimationFrame(()=>showGroup(entry[0]));
   });
+
+  const observer=new MutationObserver(()=>{
+    if(restoring||!activeGroup)return;
+    const side=sidebar();
+    const config=ERP_GROUPS[activeGroup];
+    if(!side||!config)return;
+    const title=clean(side.querySelector(".qmes-side-title")?.textContent);
+    const item=side.querySelector(`[data-qmes-erp-side-tab="${config.tab}"]`);
+    if(title===activeGroup&&item)return;
+    restoring=true;
+    queueMicrotask(()=>{
+      try{renderGroup(activeGroup,{openSidebar:document.body.classList.contains("qmes-side-open"),emit:false});}
+      finally{restoring=false;}
+    });
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
 
   ensureSharedShell();
 })();
