@@ -1,20 +1,19 @@
-/* QMES Stage 12 operational loader v30
- * Stable ERP first paint + stable Sales table/edit.
+/* QMES Stage 12 operational loader v31
+ * Shared shell stays active on every route; Field Input isolates only page-content themes.
  */
 (function(){
   const STYLE_DEFS=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3"],
-    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1"],
+    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1",true],
     ["qmes-enterprise-readable-size-20260826","./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2"],
     ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern2"],
-    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
+    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2",true],
     ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2"],
     ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1"],
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
-    ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"],
-    ["qmes-field-shell-header-consistency-20260826","./css/qmes-field-shell-header-consistency-20260826.css?v=20260827-restore1",true]
+    ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
@@ -25,10 +24,10 @@
     return link;
   }
   function syncThemeState(){
-    const disabled=fieldInputActive();
+    const field=fieldInputActive();
     STYLE_DEFS.forEach(([id,href,keepDuringField])=>{
       const link=ensureStyle(id,href);
-      link.media=disabled&&!keepDuringField?'not all':'all';
+      link.media=field&&!keepDuringField?'not all':'all';
     });
   }
 
