@@ -47,7 +47,7 @@
     const {rows,save,syncStatus}=useSharedRows("sales",SALES_DEFAULT);
     const [open,setOpen]=useState(false);
     const [error,setError]=useState("");
-    const [form,setForm]=useState({customer:"현대자동차",po:"",due:"",product:"NBA20-HM01",qty:"",customerItemCode:"",deliveryPlace:"",orderType:"양산",packagingType:"",unitWeight:"",packageQty:"",remarks:""});
+    const [form,setForm]=useState({customer:"현대자동차",po:"",due:"",product:"",qty:"",customerItemCode:"",deliveryPlace:"",orderType:"양산",packagingType:"",unitWeight:"",packageQty:"",remarks:""});
 
     const clean=value=>String(value==null?"":value).replace(/\s+/g," ").trim();
     const num=value=>{const n=Number(String(value==null?"":value).replace(/,/g,""));return Number.isFinite(n)?n:0;};
@@ -64,7 +64,7 @@
     const dueSoon=rows.filter(row=>{if(!row.due)return false;const time=new Date(row.due+"T23:59:59").getTime()-Date.now();return time>=0&&time<=7*86400000;}).length;
     const risk=rows.filter(row=>/위험|지연|차단/.test(String(row.shipping||""))).length;
 
-    const resetForm=()=>setForm({customer:"현대자동차",po:"",due:"",product:"NBA20-HM01",qty:"",customerItemCode:"",deliveryPlace:"",orderType:"양산",packagingType:"",unitWeight:"",packageQty:"",remarks:""});
+    const resetForm=()=>setForm({customer:"현대자동차",po:"",due:"",product:"",qty:"",customerItemCode:"",deliveryPlace:"",orderType:"양산",packagingType:"",unitWeight:"",packageQty:"",remarks:""});
 
     const submit=async event=>{
       event.preventDefault();setError("");
@@ -75,7 +75,7 @@
       let seq=1;while(rows.some(row=>clean(row.id)===("SO-"+stamp+"-"+String(seq).padStart(3,"0"))))seq++;
       const id="SO-"+stamp+"-"+String(seq).padStart(3,"0"),now=new Date().toISOString();
       const packaging=packTouched?{type:clean(form.packagingType),unitWeight:unit,packageQty:count,total:Number((unit*count).toFixed(3)),savedAt:now}:null;
-      const meta={customerItemCode:clean(form.customerItemCode),deliveryPlace:clean(form.deliveryPlace),orderType:clean(form.orderType)||"양산",orderDate:now.slice(0,10),savedAt:now,savedBy:currentUserName()};
+      const meta={customerItemCode:clean(form.customerItemCode),deliveryPlace:clean(form.deliveryPlace),orderType:clean(form.orderType)||"양산",orderDate:now.slice(0,10),productOverride:clean(form.product),savedAt:now,savedBy:currentUserName()};
       if(packaging){const map=readMap(PACK_KEY);map[id]=packaging;writeMap(PACK_KEY,map);}
       if(clean(form.remarks)){const map=readMap(REMARK_KEY);map[id]=clean(form.remarks);writeMap(REMARK_KEY,map);}
       {const map=readMap(META_KEY);map[id]=meta;writeMap(META_KEY,map);}
@@ -88,7 +88,7 @@
       const customer=window.prompt("고객사",clean(row.customer));if(customer===null)return;
       const po=window.prompt("고객 PO",clean(row.po));if(po===null)return;
       const due=window.prompt("요청 납기일 (YYYY-MM-DD)",clean(row.due));if(due===null)return;
-      const product=window.prompt("제품",clean(row.product));if(product===null)return;
+      const product=window.prompt("제품",clean(meta.productOverride)||clean(row.product));if(product===null)return;
       const qtyText=window.prompt("수량 (kg)",String(row.qty||""));if(qtyText===null)return;
       const deliveryPlace=window.prompt("납품처",clean(meta.deliveryPlace)||clean(row.deliveryPlace));if(deliveryPlace===null)return;
       const qty=num(qtyText);
@@ -96,6 +96,7 @@
       if(due.trim()&&!/^20\d{2}-\d{2}-\d{2}$/.test(due.trim())){window.alert("요청 납기일은 YYYY-MM-DD 형식으로 입력하세요.");return;}
       const id=clean(row.id),key=rowKey(row),metaMap=readMap(META_KEY),nextMeta={...meta,customerOverride:customer.trim(),poOverride:po.trim()||"-",productOverride:product.trim(),qtyOverride:qty,requestedDue:due.trim(),deliveryPlace:deliveryPlace.trim(),savedAt:new Date().toISOString(),savedBy:currentUserName()};
       metaMap[id]=nextMeta;if(key&&key!==id)metaMap[key]=nextMeta;writeMap(META_KEY,metaMap);
+      if(key&&key!==id&&typeof window.qmesSalesSyncProductToWorkOrder==="function"){try{await window.qmesSalesSyncProductToWorkOrder(key,product.trim());}catch(_error){}}
       const next=rows.map(item=>clean(item.id)===id?{...item,customer:customer.trim(),po:po.trim()||"-",product:product.trim(),qty,due:due.trim(),deliveryPlace:deliveryPlace.trim(),orderMeta:nextMeta}:item);
       await save(next);
     };
@@ -120,7 +121,7 @@
           <div className="qerp-field"><label>고객사</label><select value={form.customer} onChange={event=>setForm({...form,customer:event.target.value})}><option>현대자동차</option><option>삼성SDI</option><option>SK</option><option>기타</option></select></div>
           <div className="qerp-field"><label>고객 PO 번호</label><input value={form.po} onChange={event=>setForm({...form,po:event.target.value})} placeholder="고객 PO 번호"/></div>
           <div className="qerp-field"><label>요청 납기일</label><input type="date" value={form.due} onChange={event=>setForm({...form,due:event.target.value})}/></div>
-          <div className="qerp-field"><label>제품</label><select value={form.product} onChange={event=>setForm({...form,product:event.target.value})}><option>NBA20-HM01</option><option>전도 슬러리 A</option><option>전도 슬러리 B</option><option>Binder Solution</option></select></div>
+          <div className="qerp-field"><label>제품</label><input value={form.product} onChange={event=>setForm({...form,product:event.target.value})} placeholder="제품명 직접 입력" autoComplete="off"/></div>
           <div className="qerp-field"><label>수량 (kg)</label><input inputMode="decimal" value={form.qty} onChange={event=>setForm({...form,qty:event.target.value})}/></div>
           <div className="qerp-field qmes-sales-extra-field" data-qmes-sales-meta="customerItemCode"><label>고객 품목코드</label><input value={form.customerItemCode} onChange={event=>setForm({...form,customerItemCode:event.target.value})} placeholder="고객 품목코드"/></div>
           <div className="qerp-field qmes-sales-extra-field" data-qmes-sales-meta="deliveryPlace"><label>납품처</label><input value={form.deliveryPlace} onChange={event=>setForm({...form,deliveryPlace:event.target.value})} placeholder="납품처 / 공장"/></div>
@@ -132,7 +133,7 @@
           {error&&<div className="qerp-error">{error}</div>}
           <div className="qerp-form-actions"><button type="button" className="qerp-btn ghost" onClick={()=>{resetForm();setOpen(false);setError("");}}>취소</button><button type="submit" className="qerp-btn">수주 저장</button></div>
         </form>}
-        <div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>수주번호</th><th>고객사</th><th>고객 PO</th><th>제품</th><th>수량</th><th>포장정보</th><th>납기일</th><th>납기상태</th><th>생산계획</th><th>출하상태</th><th>납품처</th><th className="qmes-sales-action-head">비고</th></tr></thead><tbody>{rows.map(row=>{const meta=metaFor(row),pack=packText(row),due=dueState(row),code=clean(meta.customerItemCode)||clean(row.customerItemCode),delivery=clean(meta.deliveryPlace)||clean(row.deliveryPlace)||"-";return <tr key={row.id}><td><button type="button" className="qmes-sales-order-link" data-qso-id={row.id} onClick={()=>window.qmesSalesOrderDetail?.open?.(row.id)}>{row.id}</button></td><td>{row.customer}</td><td>{row.po||"-"}</td><td>{row.product}{code&&<span className="qmes-sales-subtext">고객품번 {code}</span>}</td><td>{fmtQty(row.qty)}</td><td>{pack?<span className="qmes-sales-packaging-text">{pack}</span>:<span className="qmes-sales-packaging-missing">포장정보 미입력</span>}</td><td>{shortDate(row.due)}</td><td><span className={"qmes-sales-plain-status "+due.tone}>{due.label}</span></td><td><span className={"qmes-sales-plain-status "+statusTone(row.plan)}>{row.plan||"-"}</span></td><td><span className={"qmes-sales-plain-status "+statusTone(row.shipping)}>{row.shipping||"-"}</span></td><td>{delivery}</td><td className="qmes-sales-action-cell"><div className="qmes-sales-action-wrap"><button type="button" className="qmes-sales-edit-btn" onClick={()=>editSales(row)}>수정</button><button type="button" className="qmes-sales-delete-btn" onClick={()=>deleteSales(row)}>삭제</button></div></td></tr>;})}</tbody></table></div>
+        <div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>수주번호</th><th>고객사</th><th>고객 PO</th><th>제품</th><th>수량</th><th>포장정보</th><th>납기일</th><th>납기상태</th><th>생산계획</th><th>출하상태</th><th>납품처</th><th className="qmes-sales-action-head">비고</th></tr></thead><tbody>{rows.map(row=>{const meta=metaFor(row),pack=packText(row),due=dueState(row),code=clean(meta.customerItemCode)||clean(row.customerItemCode),delivery=clean(meta.deliveryPlace)||clean(row.deliveryPlace)||"-";return <tr key={row.id}><td><button type="button" className="qmes-sales-order-link" data-qso-id={row.id} onClick={()=>window.qmesSalesOrderDetail?.open?.(row.id)}>{row.id}</button></td><td>{row.customer}</td><td>{row.po||"-"}</td><td>{row.product||"-"}{code&&<span className="qmes-sales-subtext">고객품번 {code}</span>}</td><td>{fmtQty(row.qty)}</td><td>{pack?<span className="qmes-sales-packaging-text">{pack}</span>:<span className="qmes-sales-packaging-missing">포장정보 미입력</span>}</td><td>{shortDate(row.due)}</td><td><span className={"qmes-sales-plain-status "+due.tone}>{due.label}</span></td><td><span className={"qmes-sales-plain-status "+statusTone(row.plan)}>{row.plan||"-"}</span></td><td><span className={"qmes-sales-plain-status "+statusTone(row.shipping)}>{row.shipping||"-"}</span></td><td>{delivery}</td><td className="qmes-sales-action-cell"><div className="qmes-sales-action-wrap"><button type="button" className="qmes-sales-edit-btn" onClick={()=>editSales(row)}>수정</button><button type="button" className="qmes-sales-delete-btn" onClick={()=>deleteSales(row)}>삭제</button></div></td></tr>;})}</tbody></table></div>
       </div>
     </div>;
   }
@@ -151,9 +152,9 @@
     if(!window.Babel){console.error('[QMES ERP] Babel runtime is not available.');return;}
     try{
       ensureStableSalesStyle();
-      await loadScript('./js/qmes-sales-demo-reset-20260826.js?v=20260827-stable1','qmes-sales-from-workorder-20260826');
+      await loadScript('./js/qmes-sales-demo-reset-20260826.js?v=20260827-manual-product2','qmes-sales-from-workorder-20260826');
       if(window.__QMES_SALES_FROM_WORKORDER_READY__){try{await window.__QMES_SALES_FROM_WORKORDER_READY__;}catch(_error){}}
-      const response=await fetch('./js/qmes-erp-integrated-20260826.jsx?v=20260827-stable-firstpaint1',{cache:'no-store'});
+      const response=await fetch('./js/qmes-erp-integrated-20260826.jsx?v=20260827-manual-product2',{cache:'no-store'});
       if(!response.ok) throw new Error('ERP module fetch failed: '+response.status);
       const originalSource=await response.text();
       const source=patchStableSales(originalSource);
