@@ -1,21 +1,9 @@
-/* QMES shared shell readable density + final text sharpness.
- * Shell-only subset of qmes-enterprise-readable-size and qmes-text-sharpness.
- * Safe on Field Input because it does not style <main> or .qmes-ipad-pop content.
+/* QMES shared shell readable density.
+ * Exact shell-only subset of qmes-enterprise-readable-size-20260826.css.
+ * It is safe on Field Input because it does not style <main> or .qmes-ipad-pop content.
  */
 :root{
   --qmes-shell-sidebar-width:230px;
-  --qmes-shell-font:Pretendard,"Pretendard Variable","Noto Sans KR","Malgun Gothic",Arial,sans-serif;
-}
-
-html body #root#root#root>div>header,
-html body #root#root#root .qmes-top-menu,
-html body #qmes-sync-sidebar,
-html body #qmes-all-menu-dropdown,
-html body #qmes-user-dropdown{
-  font-family:var(--qmes-shell-font)!important;
-  text-rendering:optimizeLegibility!important;
-  font-kerning:normal!important;
-  font-synthesis:none!important;
 }
 
 html body #root#root#root>div>header>div:first-child{
@@ -32,50 +20,28 @@ html body #root#root#root>div>header img[alt="NAMO Chemical"]{
 }
 html body #root#root#root .qmes-header-clock,
 html body #root#root#root .qmes-header-clock span{
-  color:#374151!important;
   font-size:13px!important;
-  font-weight:650!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 html body #root#root#root .qmes-header-action{
   height:36px!important;
   min-height:36px!important;
   padding:0 11px!important;
-  color:#111827!important;
   font-size:13px!important;
-  font-weight:700!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 html body #root#root#root button[aria-label*="NAMO Talk"]{
   height:38px!important;
   min-height:38px!important;
   padding:0 14px!important;
-  color:#111827!important;
   font-size:13.5px!important;
-  font-weight:700!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 html body #root#root#root button[aria-label^="계정 설정"]{
   min-height:40px!important;
-  color:#111827!important;
   font-size:13.5px!important;
-  font-weight:700!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 html body #root#root#root button[aria-label^="계정 설정"]>div:first-of-type{
   width:32px!important;
   height:32px!important;
   font-size:13px!important;
-}
-html body #root#root#root button[aria-label^="계정 설정"] div,
-html body #root#root#root button[aria-label^="계정 설정"] span{
-  color:#111827!important;
-  font-weight:700!important;
-  opacity:1!important;
 }
 
 html body #root#root#root .qmes-top-menu-bar,
@@ -91,35 +57,17 @@ html body #root#root#root .qmes-top-menu-button{
   max-height:48px!important;
   padding:0 12px!important;
   gap:7px!important;
-  color:#1f2937!important;
   font-size:13.5px!important;
-  font-weight:700!important;
-  letter-spacing:-.015em!important;
-  opacity:1!important;
+  font-weight:650!important;
 }
 html body #root#root#root .qmes-top-menu-button span{
-  color:inherit!important;
   font-size:inherit!important;
   font-weight:inherit!important;
-  letter-spacing:inherit!important;
-  opacity:1!important;
 }
 html body #root#root#root .qmes-top-menu-button svg{
   width:16px!important;
   height:16px!important;
   min-width:16px!important;
-  color:#475569!important;
-  stroke-width:2!important;
-  opacity:1!important;
-}
-html body #root#root#root .qmes-top-menu-button.is-active,
-html body #root#root#root .qmes-top-menu-button[aria-current="page"]{
-  color:#1456bd!important;
-  font-weight:800!important;
-}
-html body #root#root#root .qmes-top-menu-button.is-active svg,
-html body #root#root#root .qmes-top-menu-button[aria-current="page"] svg{
-  color:#1456bd!important;
 }
 
 html body #qmes-sync-sidebar#qmes-sync-sidebar{
@@ -131,62 +79,37 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
   padding-top:8px!important;
   padding-bottom:8px!important;
 }
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{height:36px!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  height:36px!important;
+}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
   height:34px!important;
-  color:#111827!important;
   font-size:13px!important;
-  font-weight:600!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{min-height:48px!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
+  min-height:48px!important;
+}
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
-  color:#374151!important;
-  font-size:12.5px!important;
-  font-weight:750!important;
-  letter-spacing:-.01em!important;
-  opacity:1!important;
+  font-size:13px!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
   min-height:42px!important;
   padding:10px 11px 10px 13px!important;
-  color:#1f2937!important;
   font-size:13.5px!important;
   line-height:20px!important;
-  font-weight:650!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{
-  color:#1456bd!important;
-  font-weight:800!important;
-}
-
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
-  color:#374151!important;
-  font-size:12px!important;
-  font-weight:750!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
-}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button,
-html body #qmes-user-dropdown#qmes-user-dropdown button{
-  color:#1f2937!important;
-  font-size:13.5px!important;
-  line-height:20px!important;
-  font-weight:650!important;
-  letter-spacing:-.012em!important;
-  opacity:1!important;
 }
 
 @media(max-width:1400px){
   :root{--qmes-shell-sidebar-width:220px;}
   html body #root#root#root .qmes-top-menu-button{
+    font-size:13px!important;
     padding:0 10px!important;
     gap:6px!important;
+  }
+  html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+    font-size:13px!important;
   }
 }
 
