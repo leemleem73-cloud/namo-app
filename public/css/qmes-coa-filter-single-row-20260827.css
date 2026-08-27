@@ -1,6 +1,6 @@
 /* 출하성적서 발행내역 — 실제 report.jsx DOM 기준 */
 html body #root#root#root#root main .qmes-issued-filter.qmes-coa-issued-filter{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;width:100%!important;min-width:0!important;}
-/* 위 검색영역은 다시 동일한 기본 폭: LOT 검색창만 길어지지 않게 함 */
+/* 위 검색영역은 동일한 기본 폭 유지 */
 html body #root#root#root#root main .qmes-coa-issued-filter > div{box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;flex:0 0 156px!important;width:156px!important;min-width:156px!important;max-width:156px!important;margin:0!important;padding:0!important;}
 html body #root#root#root#root main .qmes-coa-issued-filter > div > span{box-sizing:border-box!important;display:block!important;width:100%!important;margin:0 0 5px 0!important;padding:0 10px!important;text-align:left!important;text-indent:0!important;line-height:18px!important;}
 html body #root#root#root#root main .qmes-coa-issued-filter > div > input{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:36px!important;margin:0!important;padding:0 10px!important;text-indent:0!important;}
@@ -8,14 +8,44 @@ html body #root#root#root#root main .qmes-coa-issued-filter > button{flex:0 0 52
 html body #root#root#root#root main .qmes-coa-issued-filter > button:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
 html body #root#root#root#root main .qmes-coa-issued-note{display:none!important;}
 
-/* 발행일~관리 8개 열을 완전히 동일 폭으로 배치 */
+/* 발행일~관리 8개 열 동일 폭 */
 html body #root#root#root#root main .qmes-coa-issued-table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
 html body #root#root#root#root main .qmes-coa-issued-table th,
 html body #root#root#root#root main .qmes-coa-issued-table td{box-sizing:border-box!important;width:12.5%!important;min-width:0!important;max-width:none!important;text-align:center!important;vertical-align:middle!important;padding:10px 8px!important;white-space:nowrap!important;}
-/* 실제 DBD2101이 표시되는 LOT No. 셀: 검색창이 아니라 표의 데이터 칸 내부 공간을 확대 */
-html body #root#root#root#root main .qmes-coa-issued-table tbody td:nth-child(3){padding-left:18px!important;padding-right:18px!important;font-size:14px!important;letter-spacing:.2px!important;}
 html body #root#root#root#root main .qmes-coa-issued-table th > *,html body #root#root#root#root main .qmes-coa-issued-table td > *{margin-left:auto!important;margin-right:auto!important;}
+
+/* 관리 버튼 공통 스타일 */
 html body #root#root#root#root .qmes-coa-issued-table button,html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn,html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-edit-btn,html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-delete-btn{background:#fff!important;background-image:none!important;border:1px solid #cbd5e1!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;text-shadow:none!important;filter:none!important;opacity:1!important;font-weight:600!important;}
 html body #root#root#root#root .qmes-coa-issued-table button svg{color:#111827!important;stroke:#111827!important;opacity:1!important;}
 html body #root#root#root#root .qmes-coa-issued-table button:hover,html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
+
+/* LOT No. 실제 둥근칸: report.jsx의 3번째 td 안 button 자체를 직접 확대 */
+html body #root#root#root#root main .qmes-coa-issued-table tbody td:nth-child(3) > button{
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:112px!important;
+  min-width:112px!important;
+  max-width:112px!important;
+  height:32px!important;
+  padding:0 14px!important;
+  margin:0 auto!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  text-decoration:none!important;
+  white-space:nowrap!important;
+}
+html body #root#root#root#root main .qmes-coa-issued-table tbody td:nth-child(3) > button:hover{
+  background:#f8fafc!important;
+  color:#111827!important;
+  text-decoration:none!important;
+}
+
 @media(max-width:760px){html body #root#root#root#root main .qmes-coa-issued-filter{flex-wrap:wrap!important;}}
