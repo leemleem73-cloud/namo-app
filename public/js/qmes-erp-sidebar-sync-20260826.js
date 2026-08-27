@@ -1,6 +1,5 @@
 /* QMES ERP top-menu -> shared left-sidebar sync
- * ERP routes use the exact same top-nav/sidebar shell as the normal QMES routes.
- * Active ERP side items are restored whenever the shared sidebar is recreated/rerendered.
+ * ERP routes use the same active-state lifecycle as normal QMES routes.
  */
 (function(){
   "use strict";
@@ -14,6 +13,7 @@
     "Recipe/BOM":{label:"Recipe / BOM",tab:"erpMaster"},
     "출하·납품":{label:"출하 · 납품관리",tab:"erpShipping"}
   };
+  const ERP_TABS=new Set(Object.values(ERP_GROUPS).map(config=>config.tab));
 
   const SHARED_SHELL_STYLES=[
     ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1"],
@@ -32,18 +32,28 @@
   function ensureSharedShell(){
     SHARED_SHELL_STYLES.forEach(([id,href])=>{
       let link=document.getElementById(id);
-      if(!link){
-        link=document.createElement("link");
-        link.id=id;
-        link.rel="stylesheet";
-        link.href=href;
-        document.head.appendChild(link);
-      }else if(String(link.getAttribute("href")||"")!==href){
-        link.href=href;
-      }
+      if(!link){link=document.createElement("link");link.id=id;link.rel="stylesheet";link.href=href;document.head.appendChild(link);}
+      else if(String(link.getAttribute("href")||"")!==href) link.href=href;
       link.media="all";
       link.disabled=false;
     });
+  }
+
+  function clearErpTopActive(){
+    document.querySelectorAll(".qmes-top-menu-button").forEach(button=>{
+      if(!ERP_GROUPS[topLabel(button)]) return;
+      button.classList.remove("is-active");
+      button.removeAttribute("aria-current");
+    });
+  }
+
+  function clearErpState(){
+    activeGroup="";
+    clearErpTopActive();
+    const side=sidebar();
+    if(!side) return;
+    delete side.dataset.qmesErpGroup;
+    side.querySelectorAll("[data-qmes-erp-side-tab]").forEach(item=>item.classList.remove("is-active"));
   }
 
   function syncTopActive(group){
@@ -60,14 +70,15 @@
   function makeSideButton(group,config){
     const button=document.createElement("button");
     button.type="button";
-    button.className="qmes-side-item is-active qmes-erp-side-item";
+    /* Normal sidebar behavior: an item becomes active only after its route is active. */
+    button.className="qmes-side-item qmes-erp-side-item";
     button.dataset.qmesErpSideTab=config.tab;
     button.dataset.qmesErpGroup=group;
     button.textContent=config.label;
     return button;
   }
 
-  function renderGroup(group,{openSidebar=true,emit=true}={}){
+  function renderGroup(group,{openSidebar=true,emit=true,activateItem=false}={}){
     const config=ERP_GROUPS[group];
     const side=sidebar();
     if(!config||!side) return false;
@@ -85,9 +96,9 @@
     if(title) title.textContent=group;
     head?.classList.add("is-group-active");
     if(items){
-      const current=items.querySelector(`[data-qmes-erp-side-tab="${config.tab}"]`);
-      if(!current||items.children.length!==1) items.replaceChildren(makeSideButton(group,config));
-      else current.classList.add("is-active");
+      let current=items.querySelector(`[data-qmes-erp-side-tab="${config.tab}"]`);
+      if(!current||items.children.length!==1){items.replaceChildren(makeSideButton(group,config));current=items.firstElementChild;}
+      current?.classList.toggle("is-active",!!activateItem);
     }
 
     ["display","visibility","opacity","pointer-events","transform"].forEach(prop=>side.style.removeProperty(prop));
@@ -96,15 +107,11 @@
     return true;
   }
 
-  function showGroup(group){
+  function showGroup(group,activateItem=false){
     activeGroup=group;
-    if(renderGroup(group)) return;
+    if(renderGroup(group,{activateItem})) return;
     let attempts=0;
-    const retry=()=>{
-      attempts++;
-      if(renderGroup(group)) return;
-      if(attempts<12) setTimeout(retry,50);
-    };
+    const retry=()=>{attempts++;if(renderGroup(group,{activateItem}))return;if(attempts<12)setTimeout(retry,50);};
     setTimeout(retry,0);
   }
 
@@ -122,11 +129,7 @@
     head?.classList.toggle("is-group-active",!q);
     items.replaceChildren();
     if(q&&!(group+" "+config.label).toLowerCase().includes(q)){
-      const empty=document.createElement("div");
-      empty.className="qmes-side-empty";
-      empty.textContent="검색 결과 없음";
-      items.appendChild(empty);
-      return true;
+      const empty=document.createElement("div");empty.className="qmes-side-empty";empty.textContent="검색 결과 없음";items.appendChild(empty);return true;
     }
     items.appendChild(makeSideButton(group,config));
     return true;
@@ -136,12 +139,8 @@
     const top=event.target.closest?.(".qmes-top-menu-button");
     if(top){
       const label=topLabel(top);
-      if(ERP_GROUPS[label]) requestAnimationFrame(()=>showGroup(label));
-      else{
-        activeGroup="";
-        const side=sidebar();
-        if(side) delete side.dataset.qmesErpGroup;
-      }
+      if(ERP_GROUPS[label]) requestAnimationFrame(()=>showGroup(label,false));
+      else clearErpState();
       return;
     }
 
@@ -167,9 +166,13 @@
   window.addEventListener("qmes:navigate-tab",event=>{
     const tab=String(event?.detail?.tab||"");
     const entry=Object.entries(ERP_GROUPS).find(([,config])=>config.tab===tab);
-    if(!entry) return;
+    if(!entry){
+      /* This is the missing lifecycle step: leaving ERP must clear ERP-only active state. */
+      if(activeGroup&&!ERP_TABS.has(tab)) clearErpState();
+      return;
+    }
     activeGroup=entry[0];
-    requestAnimationFrame(()=>showGroup(entry[0]));
+    requestAnimationFrame(()=>showGroup(entry[0],true));
   });
 
   const observer=new MutationObserver(()=>{
@@ -181,10 +184,7 @@
     const item=side.querySelector(`[data-qmes-erp-side-tab="${config.tab}"]`);
     if(title===activeGroup&&item)return;
     restoring=true;
-    queueMicrotask(()=>{
-      try{renderGroup(activeGroup,{openSidebar:document.body.classList.contains("qmes-side-open"),emit:false});}
-      finally{restoring=false;}
-    });
+    queueMicrotask(()=>{try{renderGroup(activeGroup,{openSidebar:document.body.classList.contains("qmes-side-open"),emit:false,activateItem:false});}finally{restoring=false;}});
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
