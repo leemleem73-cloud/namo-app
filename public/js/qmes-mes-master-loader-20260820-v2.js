@@ -14,7 +14,8 @@
     ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1"],
     ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1"],
     ["qmes-sales-spacious-layout-20260826","./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5"],
-    ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"]
+    ["qmes-sales-table-stable-20260827","./css/qmes-sales-table-stable-20260827.css?v=20260827-grid1"],
+    ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1",true]
   ];
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
