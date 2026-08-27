@@ -1,0 +1,22 @@
+/* Shared shell scroll ownership — keep logo/header/top menu visible on every page.
+ * Legacy page CSS contains !important position rules; the shell owner must win them.
+ * This stays sticky (not fixed), so no artificial content offset is introduced. */
+html body #root#root > div > header{
+  position:sticky!important;
+  position:-webkit-sticky!important;
+  top:0!important;
+  z-index:12020!important;
+  align-self:stretch!important;
+}
+
+/* Sticky must reference the viewport, not a page-specific overflow ancestor. */
+html body #root#root,
+html body #root#root > div{
+  overflow-y:visible!important;
+}
+
+/* Top navigation remains part of the sticky header rather than becoming its own scroll layer. */
+html body #root#root > div > header .qmes-top-menu-bar{
+  position:relative!important;
+  top:auto!important;
+}
