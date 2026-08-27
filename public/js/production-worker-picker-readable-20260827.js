@@ -17,7 +17,18 @@
     Object.entries(styles).forEach(([name,value])=>node.style.setProperty(name,value,"important"));
   }
 
+  function removeOuterBorder(dialog){
+    forceStyle(dialog,{
+      "border-style":"none",
+      "border-width":"0",
+      "border-color":"transparent",
+      "outline":"none",
+      "box-shadow":"0 28px 90px rgba(0,0,0,.42)"
+    });
+  }
+
   function decorateWorkerSelect(dialog){
+    removeOuterBorder(dialog);
     const cards=Array.from(dialog.querySelectorAll(".qpp-worker-item"));
     cards.forEach(card=>{
       const checked=!!card.querySelector('input[type="checkbox"]:checked');
@@ -60,12 +71,8 @@
   }
 
   function decorateWorkerRegister(dialog){
-    /* Same rule as worker selection: no accent-colored outline/border. */
-    forceStyle(dialog,{
-      "border-color":"#365570",
-      "box-shadow":"0 28px 90px rgba(0,0,0,.42)",
-      "outline":"none"
-    });
+    /* Remove the colored outer border from the add-worker dialog too. */
+    removeOuterBorder(dialog);
     const head=dialog.querySelector(".qpp-dialog-head");
     const foot=dialog.querySelector(".qpp-dialog-foot");
     forceStyle(head,{"border-bottom-color":"#28445e"});
