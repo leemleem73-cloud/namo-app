@@ -4,41 +4,38 @@ html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(
   display:flex!important;grid-template-columns:none!important;flex-direction:row!important;flex-wrap:nowrap!important;
   align-items:flex-end!important;justify-content:flex-start!important;gap:8px!important;width:100%!important;min-width:0!important;
 }
-/* 필드 wrapper 자체에는 들여쓰기를 주지 않고, 라벨 글자만 입력칸 안쪽선으로 이동 */
 html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > label,
 html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > label{
-  box-sizing:border-box!important;flex:0 0 156px!important;width:156px!important;min-width:156px!important;max-width:156px!important;
-  margin:0!important;padding:0!important;
+  box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  flex:0 0 156px!important;width:156px!important;min-width:156px!important;max-width:156px!important;
+  margin:0!important;padding:0!important;text-indent:0!important;
 }
-/* LOT No.는 실제 값 DBD2101 등이 충분히 보이도록 확장 */
+/* LOT No. 입력칸은 옆으로 충분히 확장 */
 html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > label:nth-of-type(2),
 html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > label:nth-of-type(2){
-  flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+  flex:0 0 280px!important;width:280px!important;min-width:280px!important;max-width:280px!important;
 }
-/* label이 text node인 경우까지 포함해 label 전체의 텍스트 시작점을 input padding과 동일하게 맞춤 */
-html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > label,
-html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > label{
-  text-indent:10px!important;
+/* 발행일/LOT No./고객사 글자 시작점을 아래 입력값(년/L/고)의 시작점과 정확히 동일하게 */
+html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > label > :not(input),
+html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > label > :not(input){
+  box-sizing:border-box!important;width:100%!important;margin:0 0 5px 0!important;padding:0 10px!important;text-indent:0!important;text-align:left!important;
 }
 html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) input,
 html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) input{
   box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:36px!important;
   padding-left:10px!important;padding-right:10px!important;text-indent:0!important;
 }
-/* 검색/초기화: 옆 입력칸 높이 36px의 세로 가운데에 위치, 더 작고 연한 테두리 */
+/* 검색/초기화: 36px 입력칸의 정확한 세로 중앙. 28px 버튼 => 아래 여백 4px */
 html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > button,
 html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > button{
-  flex:0 0 56px!important;box-sizing:border-box!important;width:56px!important;min-width:56px!important;max-width:56px!important;
-  height:28px!important;margin-bottom:4px!important;padding:0 6px!important;white-space:nowrap!important;font-size:12px!important;
-  background:#fff!important;border:1px solid #dbe2ea!important;border-color:#dbe2ea!important;color:#334155!important;
-  box-shadow:none!important;align-self:flex-end!important;
+  flex:0 0 52px!important;box-sizing:border-box!important;width:52px!important;min-width:52px!important;max-width:52px!important;
+  height:26px!important;margin:0 0 5px 0!important;padding:0 5px!important;white-space:nowrap!important;font-size:12px!important;line-height:24px!important;
+  background:#fff!important;border:1px solid #e2e8f0!important;border-color:#e2e8f0!important;color:#334155!important;
+  box-shadow:none!important;align-self:flex-end!important;transform:none!important;position:relative!important;top:0!important;
 }
 html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter) > button:hover,
-html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > button:hover{
-  background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;
-}
+html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button) > button:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
 
-/* 출하성적서 관리 버튼: IQC와 동일 */
 html body #root#root#root#root .qmes-coa-issued-table button,
 html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn,
 html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-edit-btn,
@@ -49,7 +46,6 @@ html body #root#root#root#root .qmes-coa-issued-table .qmes-coa-delete-btn{
 html body #root#root#root#root .qmes-coa-issued-table button svg{color:#111827!important;stroke:#111827!important;opacity:1!important;}
 html body #root#root#root#root .qmes-coa-issued-table button:hover,
 html body #root#root#root#root .qmes-coa-issued-table .qmes-manage-btn:hover{background:#f8fafc!important;border-color:#cbd5e1!important;color:#111827!important;}
-
 html body #root main p:has(+ .qmes-coa-issued-table),html body #root main div:has(> .qmes-coa-issued-table) > p,
 html body #root main .qmes-coa-auto-issue-notice,html body #root main .qmes-coa-issued-notice{display:none!important;}
 @media(max-width:760px){html body #root#root#root#root main :is(.qmes-coa-filter-row,.qmes-coa-issued-filter),html body #root#root#root#root main div:has(> .qmes-coa-issued-table) > div:has(input):has(button){flex-wrap:wrap!important;}}
