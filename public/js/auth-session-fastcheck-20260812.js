@@ -14,8 +14,6 @@
   };
 })(window);
 
-/* Global shell/typography is route-invariant. Field Input already scopes its own
- * content rules under .qmes-ipad-pop, so no global stylesheet is toggled here. */
 (function installCurrentUiBeforeRender(){
   "use strict";
   if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
@@ -23,7 +21,7 @@
   const styles=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3"],
     ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1"],
-    ["qmes-shell-readable-size-20260827","./css/qmes-shell-readable-size-20260827.css?v=20260827-2"],
+    ["qmes-shell-readable-size-20260827","./css/qmes-shell-readable-size-20260827.css?v=20260827-3"],
     ["qmes-enterprise-readable-size-20260826","./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2"],
     ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern2"],
     ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
