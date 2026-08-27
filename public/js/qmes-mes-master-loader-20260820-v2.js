@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v36
+/* QMES Stage 12 operational loader v37
  * Global typography/shell layers stay active on every route.
  * Preserved final document styles load last and own document bodies only.
  */
@@ -19,7 +19,8 @@
     ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1"],
     ["qmes-responsive-main-layout-20260827","./css/qmes-responsive-main-layout-20260827.css?v=20260827-1"],
     ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1"],
-    ["qmes-document-final-restore-20260827","./css/qmes-document-final-restore-20260827.css?v=20260827-final1"]
+    ["qmes-document-final-restore-20260827","./css/qmes-document-final-restore-20260827.css?v=20260827-final1"],
+    ["qmes-inspection-search-single-field-20260827","./css/qmes-inspection-search-single-field-20260827.css?v=20260827-1"]
   ];
   function ensureStyle(id,href){let link=document.getElementById(id);if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}else if(String(link.getAttribute('href')||'')!==href)link.href=href;link.media='all';link.disabled=false;return link;}
   function syncThemeState(){document.getElementById('qmes-coa-current-final-20260827')?.remove();STYLE_DEFS.forEach(([id,href])=>ensureStyle(id,href));}
