@@ -1,0 +1,47 @@
+/* PQC/OQC inspection record search: one visual field boundary only.
+ * The wrapper owns the border; the nested input is intentionally borderless.
+ * This mirrors the already-correct IQC search control. */
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  height:36px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:0 10px!important;
+  background:#fff!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:8px!important;
+  overflow:hidden!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-icon{
+  position:static!important;
+  left:auto!important;right:auto!important;top:auto!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+}
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input,
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:hover,
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:active,
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus,
+html body #root#root#root#root main :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) .qmes-inspection-search-box input:focus-visible{
+  box-sizing:border-box!important;
+  height:100%!important;
+  flex:1 1 auto!important;
+  width:0!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  color:#111827!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+}
