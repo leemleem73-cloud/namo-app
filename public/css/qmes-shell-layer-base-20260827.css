@@ -1,5 +1,5 @@
 /* QMES current shell core — first-paint ownership
- * Header / top navigation / shell geometry live here only.
+ * Header / top navigation / shared left navigation live here on every route.
  * Page-specific themes may style <main>, but must not replace this shell.
  */
 :root{
@@ -47,6 +47,10 @@ html body #root .qmes-header-clock span{
   font-size:12px!important;
   font-weight:600!important;
 }
+html body #root .qmes-header-clock .animate-pulse{
+  width:7px!important;height:7px!important;background:#34d399!important;box-shadow:none!important;
+}
+html body #root .qmes-header-controls{gap:6px!important;color:#344054!important;}
 html body #root .qmes-header-action{
   height:34px!important;
   min-height:34px!important;
@@ -59,6 +63,7 @@ html body #root .qmes-header-action{
   font-weight:600!important;
   box-shadow:none!important;
 }
+html body #root .qmes-header-action:hover{background:#f8fafc!important;border-color:#b9c6d5!important;color:#172033!important;}
 html body #root button[aria-label*="NAMO Talk"]{
   height:36px!important;
   min-height:36px!important;
@@ -79,6 +84,12 @@ html body #root button[aria-label^="계정 설정"]{
   background:#fff!important;
   color:#172033!important;
 }
+html body #root button[aria-label^="계정 설정"]:hover{background:#f8fafc!important;}
+html body #root button[aria-label^="계정 설정"]>div:first-of-type{
+  width:30px!important;height:30px!important;background:#eef2f7!important;color:#263548!important;font-size:12px!important;font-weight:700!important;
+}
+html body #root button[aria-label^="계정 설정"] div,
+html body #root button[aria-label^="계정 설정"] span{color:#172033!important;}
 
 html body #root .qmes-top-menu-bar{
   position:relative;
@@ -157,12 +168,14 @@ html body #root .qmes-top-menu-button span{
   font:inherit!important;
   white-space:nowrap!important;
 }
+html body #root .qmes-top-menu-button .qmes-menu-arrow{width:11px!important;height:11px!important;color:#98a2b3!important;margin-left:-1px!important;}
 html body #root .qmes-top-menu-button:hover,
 html body #root .qmes-top-menu-button:focus-visible{
   background:#f7f9fc!important;
   color:#172033!important;
   outline:none!important;
 }
+html body #root .qmes-top-menu-button:hover svg{color:#475467!important;}
 html body #root .qmes-top-menu-button.is-active,
 html body #root .qmes-top-menu-button[aria-current="page"]{
   background:#f5f9ff!important;
@@ -171,35 +184,103 @@ html body #root .qmes-top-menu-button[aria-current="page"]{
   font-weight:700!important;
 }
 html body #root .qmes-top-menu-button.is-active svg,
-html body #root .qmes-top-menu-button[aria-current="page"] svg{
-  color:var(--qmes-shell-blue)!important;
+html body #root .qmes-top-menu-button[aria-current="page"] svg{color:var(--qmes-shell-blue)!important;}
+html body #root .qmes-submenu-row{display:none!important;}
+
+/* Keep current hover/user menus identical even while Field Input page themes are isolated. */
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{
+  position:fixed!important;z-index:13050!important;min-width:220px!important;max-width:270px!important;padding:6px!important;
+  border:1px solid #d9e1ea!important;border-radius:10px!important;background:#fff!important;color:#172033!important;
+  box-shadow:0 14px 34px rgba(15,23,42,.13)!important;overflow:hidden!important;
 }
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
+  position:static!important;margin:0 0 4px!important;padding:7px 9px 6px!important;border:0!important;border-bottom:1px solid #edf1f5!important;
+  background:#fff!important;color:#667085!important;font-size:11px!important;line-height:16px!important;font-weight:700!important;letter-spacing:0!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title:before{display:none!important;}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{
+  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:38px!important;
+  padding:8px 10px 8px 24px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;
+  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{
+  content:""!important;position:absolute!important;left:10px!important;top:50%!important;width:5px!important;height:5px!important;margin-top:-2.5px!important;
+  border-radius:50%!important;background:#cbd5e1!important;
+}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover,
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible{background:#f5f9ff!important;color:#175cd3!important;outline:none!important;}
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover:before,
+html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible:before{background:#2563eb!important;}
+html body #qmes-user-dropdown#qmes-user-dropdown{
+  z-index:13060!important;width:196px!important;padding:6px!important;border:1px solid #d9e1ea!important;border-radius:10px!important;
+  background:#fff!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button{
+  width:100%!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-radius:7px!important;background:#fff!important;
+  color:#344054!important;font-size:13px!important;line-height:18px!important;font-weight:600!important;text-align:left!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button:hover,
+html body #qmes-user-dropdown#qmes-user-dropdown button:focus-visible{background:#f7f9fc!important;color:#172033!important;outline:none!important;}
+html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;padding-top:9px!important;border-top:1px solid #edf1f5!important;color:#b42318!important;}
+
+/* Current left menu appearance. Double-id specificity intentionally owns shell visuals over the legacy sidebar helper. */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  width:220px!important;padding:0 10px 14px!important;background:#fff!important;color:#344054!important;
+  border-right:1px solid var(--qmes-shell-line)!important;box-shadow:4px 0 14px rgba(15,23,42,.035)!important;filter:none!important;z-index:12050!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
+  height:48px!important;min-height:48px!important;margin:0 -10px!important;padding:7px 10px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
+  height:34px!important;padding:0 9px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#f8fafc!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
+  height:32px!important;background:transparent!important;color:#344054!important;font-size:12.5px!important;font-weight:500!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder{color:#98a2b3!important;font-weight:450!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon{width:24px!important;height:24px!important;background:transparent!important;color:#667085!important;font-size:15px!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
+  min-height:46px!important;margin:0 -10px 8px!important;padding:0 13px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active:before{display:none!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
+  color:#475467!important;font-size:12px!important;line-height:18px!important;font-weight:700!important;letter-spacing:-.01em!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{
+  width:28px!important;height:28px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#98a2b3!important;font-size:18px!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9!important;color:#475467!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-items{padding:0 1px!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
+  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;margin:2px 0!important;
+  padding:9px 10px 9px 12px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#475467!important;
+  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{
+  content:""!important;position:static!important;display:block!important;flex:0 0 auto!important;width:5px!important;height:5px!important;margin-right:9px!important;
+  border-radius:50%!important;background:#cbd5e1!important;
+}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{background:#f7f9fc!important;color:#172033!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{background:#94a3b8!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{background:#eef5ff!important;color:#175cd3!important;font-weight:650!important;}
+html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{background:#2563eb!important;}
 
 /* Reserve the hamburger lane from the first paint. */
 html body:not(.qmes-side-open) #root header .qmes-top-menu{
-  padding-left:46px!important;
-  width:100%!important;
-  transform:none!important;
-  scroll-padding-left:46px!important;
+  padding-left:46px!important;width:100%!important;transform:none!important;scroll-padding-left:46px!important;
 }
 html body.qmes-side-open #root header .qmes-top-menu{
-  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
-  width:100%!important;
-  transform:none!important;
-  scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
+  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;width:100%!important;
+  transform:none!important;scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
 }
-
-html body #qmes-all-menu-dropdown{z-index:13050!important;}
-html body #qmes-user-dropdown{z-index:13060!important;}
 html body #qmes-sync-hamburger{z-index:12040!important;}
-html body #qmes-sync-sidebar{z-index:12050!important;}
 
 @media(max-width:900px){
   :root{--qmes-shell-sidebar-width:190px;--qmes-shell-menu-gutter:6px;}
-  html body:not(.qmes-side-open) #root header .qmes-top-menu{
-    padding-left:44px!important;
-    scroll-padding-left:44px!important;
-  }
+  html body #qmes-sync-sidebar#qmes-sync-sidebar{width:190px!important;}
+  html body:not(.qmes-side-open) #root header .qmes-top-menu{padding-left:44px!important;scroll-padding-left:44px!important;}
 }
 
 @media print{
