@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v29
+/* QMES Stage 12 operational loader v30
  * Stable ERP first paint + stable Sales table/edit.
  */
 (function(){
@@ -58,7 +58,7 @@
     "./js/workorder-management-actions-layout-fix-20260824.js?v=20260824-sidebar-fit1",
     "./js/qmes-erp-sidebar-sync-20260826.js?v=20260826-1",
     "./js/qmes-sales-order-detail-progress-20260826.js?v=20260827-direct-render1",
-    "./js/qmes-scroll-layer-guard-20260807.js?v=20260826-shellstable1",
+    "./js/qmes-scroll-layer-guard-20260807.js?v=20260827-preview-only1",
     "./js/qmes-ncr-delete-completed-20260810.js?v=20260810-2",
     "./js/partners-register-modal-recovery-20260814.js?v=20260814-click-layer-v4",
     "./js/inventory-api-fallback-20260819.js?v=20260819-fallback1",
