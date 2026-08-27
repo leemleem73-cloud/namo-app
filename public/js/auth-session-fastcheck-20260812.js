@@ -1,6 +1,6 @@
 /* QMES auth/session + first-paint bootstrap
  * One owner for current global UI assets before React/Babel renders.
- * No legacy print restore, no delayed DOM guards, no runtime theme swapping.
+ * Field Input uses its own established UI from the first paint when it is the saved tab.
  */
 (function installAuthSessionFastCheck(global){
   "use strict";
@@ -24,11 +24,17 @@
   };
 })(window);
 
-/* Load only the current UI assets, once, before application components render. */
+/* Load only the current UI assets, once, before application components render.
+ * qmes_current_tab is already persisted by the router, so a Field Input refresh can
+ * start with enterprise content styles disabled instead of waiting for post-render detection.
+ */
 (function installCurrentUiBeforeRender(){
   "use strict";
   if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
   window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__=true;
+
+  let fieldInputFirstPaint=false;
+  try{fieldInputFirstPaint=sessionStorage.getItem("qmes_current_tab")==="pop";}catch(_error){}
 
   const styles=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3"],
@@ -43,11 +49,14 @@
   ];
 
   styles.forEach(([id,href])=>{
-    if(document.getElementById(id)) return;
-    const link=document.createElement("link");
-    link.id=id;
-    link.rel="stylesheet";
-    link.href=href;
-    document.head.appendChild(link);
+    let link=document.getElementById(id);
+    if(!link){
+      link=document.createElement("link");
+      link.id=id;
+      link.rel="stylesheet";
+      link.href=href;
+      document.head.appendChild(link);
+    }
+    link.media=fieldInputFirstPaint?"not all":"all";
   });
 })();
