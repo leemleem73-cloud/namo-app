@@ -73,3 +73,11 @@
 .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-form-actions .qmes-equipment-cancel-register{color:#111827!important;-webkit-text-fill-color:#111827!important;font-weight:850!important;}
 .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-form-actions .qmes-equipment-save-register *,
 .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-form-actions .qmes-equipment-cancel-register *{color:#111827!important;-webkit-text-fill-color:#111827!important;}
+
+/* 날짜칸처럼 일반 입력값도 위·아래 가운데에 오도록 맞춤 */
+.qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-register-grid>label>input:not([type="date"]),
+.qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-register-grid>label>select{
+  padding-top:15px!important;
+  padding-bottom:10px!important;
+  line-height:27px!important;
+}
