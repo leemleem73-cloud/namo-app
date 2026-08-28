@@ -1,18 +1,19 @@
-/* NAMO QMES - Sales order display/delivery sync V3 - 2026-08-28
+/* NAMO QMES - Sales order display/delivery sync V4 - 2026-08-28
  * Delivery status is based on actual shipment.
+ * Shipment complete also closes production plan as 생산완료.
  * Confirmed correction: SO-20260114-001 shipped on 2026-01-15.
  * Stable data-qso-id / workOrder identity is intentionally not rewritten.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V3__)return;
-  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V3__=true;
+  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V4__)return;
+  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V4__=true;
 
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const SHIPPING_KEY="qmes-erp-shipping-v1";
   const CONFIRMED_SHIPMENTS={
-    "SO-20260114-001":{actualShipDate:"2026-01-15",status:"출하완료",delivery:"납품완료"}
+    "SO-20260114-001":{actualShipDate:"2026-01-15",status:"출하완료",delivery:"납품완료",plan:"생산완료"}
   };
 
   const clean=value=>String(value==null?"":value).replace(/\s+/g," ").trim();
@@ -69,6 +70,7 @@
         actualShipDate:fix.actualShipDate,
         shippingStatus:fix.status,
         deliveryStatus:fix.delivery,
+        productionPlanStatus:fix.plan,
         shipmentCorrectionSource:"confirmed-user-correction-20260828"
       };
       if(id&&!same(map[id],nextMeta)){map[id]=nextMeta;mapChanged=true;}
@@ -76,6 +78,7 @@
 
       const nextRow={
         ...row,
+        plan:fix.plan,
         shipping:fix.status,
         delivery:fix.delivery,
         actualShipment:true,
@@ -179,6 +182,7 @@
       salesTables().forEach(table=>{
         const orderIndex=headerIndex(table,"수주번호");
         const dueIndex=headerIndex(table,"납기상태");
+        const planIndex=headerIndex(table,"생산계획");
         const shipIndex=headerIndex(table,"출하상태");
         if(orderIndex<0)return;
         table.querySelectorAll("tbody tr").forEach(tr=>{
@@ -193,6 +197,7 @@
           const ship=shipmentFor(row,map,ships);
           const state=dueStateFromShipment(row,map,ship);
           if(dueIndex>=0)setCellText(tr.children?.[dueIndex],state.label,state.tone);
+          if(ship&&planIndex>=0)setCellText(tr.children?.[planIndex],"생산완료","good");
           if(ship&&shipIndex>=0)setCellText(tr.children?.[shipIndex],"출하완료","good");
         });
       });
@@ -215,7 +220,7 @@
       if(document.querySelector(".qmes-sales-stable")||Array.from(document.querySelectorAll(".qerp-title")).some(node=>/수주/.test(clean(node.textContent))&&/납기/.test(clean(node.textContent))))schedule();
     });
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V3__=observer;
+    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V4__=observer;
   };
 
   ["qmes:erp-data-changed","qmes:erp-runtime-loaded","qmes:mes-master-ready","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,()=>schedule()));
