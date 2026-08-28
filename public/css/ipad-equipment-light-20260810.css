@@ -81,3 +81,13 @@
 .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-register-box{
   box-shadow:none!important;
 }
+
+/* 설비 요약 4칸: 카드 밖으로 튀어나오는 흰색만 잘라냄 */
+.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{
+  overflow:hidden!important;
+}
+.qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>.qmes-equipment-summary-card{
+  overflow:hidden!important;
+  isolation:isolate!important;
+  background-clip:padding-box!important;
+}
