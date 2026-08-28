@@ -59,3 +59,12 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>d
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child>h3{position:absolute!important;left:6.25%!important;top:50%!important;margin:0!important;transform:translate(-50%,-50%)!important;text-align:center!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child button{position:absolute!important;right:6.25%!important;top:50%!important;transform:translate(50%,-50%)!important;height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child button:hover{border-color:#000!important;background:#f5f5f5!important;}
+
+/* 정기점검·교정 표: 설비명/관리 헤더 셀 정중앙 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:first-child,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child{
+  text-align:center!important;
+  vertical-align:middle!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
