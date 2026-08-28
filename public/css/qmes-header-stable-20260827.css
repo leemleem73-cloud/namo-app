@@ -49,28 +49,13 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table th{f
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td input,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td select{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;padding-left:5px!important;padding-right:5px!important;font-size:10px!important;text-align:center!important;}
 
-/* 설비대장 헤더만 표 첫/마지막 칸 기준으로 정렬 */
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-}
+/* 설비대장 헤더: 현재 화면 실측 기준 첫/마지막 열 중앙 정렬 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child{display:flex!important;align-items:center!important;justify-content:space-between!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>h3{
-  flex:0 0 11.111111%!important;
-  width:11.111111%!important;
-  margin:0!important;
-  text-align:center!important;
+  margin:0!important;transform:translateX(52px)!important;text-align:center!important;
 }
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>div{
-  display:flex!important;
-  justify-content:center!important;
-  align-items:center!important;
-  flex:0 0 11.111111%!important;
-  width:11.111111%!important;
-  margin:0!important;
-  transform:none!important;
+  margin-left:auto!important;margin-right:0!important;transform:translateX(-32px)!important;
 }
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button{
-  height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button{height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button:hover{border-color:#000!important;background:#f5f5f5!important;}
