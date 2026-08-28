@@ -1,8 +1,9 @@
-/* NAMO QMES - Enterprise Sales polish V1.1 - 2026-08-28
- * ADD-ONLY visual patch owner.
- * 1) Normalizes header/body row height, vertical alignment and column spacing.
- * 2) Keeps production-plan text fully visible instead of ellipsis.
- * 3) Forces every visible '신규 수주' action on the Sales page to the current NAMO new-order owner.
+/* NAMO QMES - Enterprise Sales polish V1.2 - 2026-08-28
+ * Visual-only patch.
+ * 1) Locks one shared column geometry for THEAD/TBODY.
+ * 2) Centers every header/value on the same axis.
+ * 3) Keeps production-plan text fully visible.
+ * 4) Routes visible '신규 수주' action to the current NAMO new-order owner.
  */
 (function(){
   "use strict";
@@ -12,6 +13,8 @@
   const HOST="qmes-sales-enterprise-module-v2";
   const STYLE="qmes-sales-enterprise-polish-style-20260828-v1";
   const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
+  let observedHost=null;
+  let queued=false;
 
   function installStyle(){
     if(document.getElementById(STYLE))return;
@@ -28,13 +31,16 @@
         border-spacing:0!important;
         margin:0!important;
       }
+      #${HOST} thead{display:table-header-group!important}
+      #${HOST} tbody{display:table-row-group!important}
+      #${HOST} tr{display:table-row!important}
       #${HOST} thead tr{height:48px!important}
       #${HOST} tbody tr{height:56px!important}
-      #${HOST} th,
-      #${HOST} td{
+      #${HOST} th,#${HOST} td{
+        display:table-cell!important;
         box-sizing:border-box!important;
         height:inherit!important;
-        padding:0 14px!important;
+        padding:0 12px!important;
         border-bottom:1px solid #edf0f4!important;
         vertical-align:middle!important;
         line-height:1.25!important;
@@ -57,26 +63,30 @@
       }
       #${HOST} tbody tr:last-child td{border-bottom:0!important}
       #${HOST} tbody tr:hover td{background:#fbfdff!important}
-      #${HOST} th:nth-child(1),#${HOST} td:nth-child(1){width:180px!important;text-align:left!important;padding-left:22px!important}
-      #${HOST} th:nth-child(2),#${HOST} td:nth-child(2){width:170px!important;text-align:left!important}
-      #${HOST} th:nth-child(3),#${HOST} td:nth-child(3){width:210px!important;text-align:left!important}
-      #${HOST} th:nth-child(4),#${HOST} td:nth-child(4){width:130px!important}
-      #${HOST} th:nth-child(5),#${HOST} td:nth-child(5){width:150px!important}
       #${HOST} th:nth-child(6),#${HOST} td:nth-child(6){
-        width:210px!important;
-        min-width:210px!important;
-        max-width:none!important;
+        padding-left:0!important;
+        padding-right:0!important;
         overflow:visible!important;
         text-overflow:clip!important;
         white-space:nowrap!important;
         text-align:center!important;
       }
-      #${HOST} td:nth-child(6){font-size:11.5px!important;font-weight:800!important;color:#253047!important}
-      #${HOST} th:nth-child(7),#${HOST} td:nth-child(7){width:150px!important}
-      #${HOST} th:nth-child(8),#${HOST} td:nth-child(8){width:130px!important}
+      #${HOST} td:nth-child(6){font-weight:800!important;color:#253047!important}
+      #${HOST} .nse-prod-wrap{
+        display:flex!important;
+        width:100%!important;
+        height:56px!important;
+        align-items:center!important;
+        justify-content:center!important;
+        margin:0!important;
+        padding:0!important;
+        text-align:center!important;
+        white-space:nowrap!important;
+      }
       #${HOST} .order{
         display:inline-flex!important;
         align-items:center!important;
+        justify-content:center!important;
         min-height:28px!important;
         height:auto!important;
         line-height:1.2!important;
@@ -98,24 +108,68 @@
       #${HOST} .tb{margin-bottom:14px!important;align-items:center!important}
       #${HOST} .g{align-items:center!important}
       #${HOST} .g>input,#${HOST} .g>select,#${HOST} .g>button{margin:0!important;vertical-align:middle!important}
-      @media(max-width:900px){
-        #${HOST} th,#${HOST} td{padding-left:10px!important;padding-right:10px!important}
-        #${HOST} th:nth-child(1),#${HOST} td:nth-child(1){padding-left:14px!important}
-        #${HOST} th:nth-child(6),#${HOST} td:nth-child(6){min-width:180px!important;width:180px!important}
-      }
+      @media(max-width:900px){#${HOST} th,#${HOST} td{padding-left:9px!important;padding-right:9px!important}#${HOST} th:nth-child(6),#${HOST} td:nth-child(6){padding-left:0!important;padding-right:0!important}}
     `;
     document.head.appendChild(s);
   }
 
+  function normalizeTable(){
+    const host=document.getElementById(HOST);
+    const table=host?.querySelector("table");
+    if(!host||!table)return;
+
+    table.style.setProperty("table-layout","fixed","important");
+    table.style.setProperty("width","100%","important");
+
+    let cols=table.querySelector(":scope > colgroup[data-nse-column-lock]");
+    if(!cols){
+      cols=document.createElement("colgroup");
+      cols.setAttribute("data-nse-column-lock","1");
+      [15,15,17,10,12,14,10,7].forEach(width=>{
+        const col=document.createElement("col");
+        col.style.width=width+"%";
+        cols.appendChild(col);
+      });
+      table.insertBefore(cols,table.firstChild);
+    }
+
+    table.querySelectorAll("th,td").forEach(cell=>{
+      cell.style.setProperty("text-align","center","important");
+      cell.style.setProperty("vertical-align","middle","important");
+    });
+
+    table.querySelectorAll("tbody tr").forEach(row=>{
+      const cell=row.children[5];
+      if(!(cell instanceof HTMLElement))return;
+      cell.style.setProperty("padding-left","0","important");
+      cell.style.setProperty("padding-right","0","important");
+      let wrap=cell.querySelector(":scope > .nse-prod-wrap");
+      if(!wrap){
+        const text=clean(cell.textContent);
+        cell.textContent="";
+        wrap=document.createElement("span");
+        wrap.className="nse-prod-wrap";
+        wrap.textContent=text||"-";
+        cell.appendChild(wrap);
+      }
+    });
+
+    if(observedHost!==host){
+      observedHost=host;
+      const observer=new MutationObserver(()=>scheduleNormalize());
+      observer.observe(host,{childList:true,subtree:true});
+    }
+  }
+
+  function scheduleNormalize(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;normalizeTable();});
+  }
+
   function openNewOrder(){
-    if(window.qmesSalesNewOrderNamoV5?.open){
-      window.qmesSalesNewOrderNamoV5.open();
-      return true;
-    }
-    if(window.qmesSalesNewOrderNamoV4?.open){
-      window.qmesSalesNewOrderNamoV4.open();
-      return true;
-    }
+    if(window.qmesSalesNewOrderNamoV5?.open){window.qmesSalesNewOrderNamoV5.open();return true;}
+    if(window.qmesSalesNewOrderNamoV4?.open){window.qmesSalesNewOrderNamoV4.open();return true;}
     return false;
   }
 
@@ -136,8 +190,10 @@
 
   function boot(){
     installStyle();
-    [80,200,500,1000].forEach(ms=>setTimeout(installStyle,ms));
+    normalizeTable();
+    [80,200,500,1000,1800,3000].forEach(ms=>setTimeout(()=>{installStyle();normalizeTable();},ms));
+    ["qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete","qmes:enterprise-ui-ready"].forEach(name=>window.addEventListener(name,scheduleNormalize));
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
-  window.qmesSalesEnterprisePolish={installStyle,openNewOrder};
+  window.qmesSalesEnterprisePolish={installStyle,normalizeTable,openNewOrder};
 })();
