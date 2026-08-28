@@ -22,16 +22,10 @@ html body #root#root#root button[aria-label^="계정 설정"] div,html body #roo
 html body #root .qmes-ipad-equipment .qmes-equipment-master-screen,
 html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div,
 html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen,
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen>div{
-  border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;
-}
+html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen>div{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
 html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:last-child,
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{
-  border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;
-}
-html body #root .qmes-ipad-equipment .qmes-equipment-master-table{
-  border-collapse:collapse!important;border-radius:0!important;box-shadow:none!important;
-}
+html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;}
+html body #root .qmes-ipad-equipment .qmes-equipment-master-table{border-collapse:collapse!important;border-radius:0!important;box-shadow:none!important;}
 html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important;}
 html body #root .qmes-ipad-equipment .qmes-equipment-repair-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
 
@@ -41,16 +35,20 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::before,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::after,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::before,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::after{
-  border:0!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-  outline:0!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::after{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen .overflow-x-auto{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;overflow-y:visible!important;}
+
+/* 설비대장: 좌우 여백 대칭 + 관리번호~비고 열/셀 간격 통일 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen .overflow-x-auto{
-  border:0!important;
-  border-radius:0!important;
-  box-shadow:none!important;
-  outline:0!important;
-  overflow-y:visible!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important;padding-left:6px!important;padding-right:6px!important;box-sizing:border-box!important;overflow-x:auto!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table{
+  width:100%!important;min-width:1050px!important;max-width:none!important;table-layout:fixed!important;box-sizing:border-box!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table th,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td{
+  box-sizing:border-box!important;text-align:center!important;vertical-align:middle!important;padding-left:4px!important;padding-right:4px!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td>.qmes-equipment-field{
+  width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;
 }
