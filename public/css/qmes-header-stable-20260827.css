@@ -77,3 +77,17 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table th
   content:none!important;
   display:none!important;
 }
+
+/* 고장·수리 이력: 정기점검 표와 동일한 글자 크기로 통일 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table th,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table td,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table button{
+  font-size:11.5px!important;
+  line-height:1.2!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label>input,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label>select{
+  font-size:11.5px!important;
+  line-height:1.2!important;
+}
