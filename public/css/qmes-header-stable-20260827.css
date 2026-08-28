@@ -34,3 +34,23 @@ html body #root .qmes-ipad-equipment .qmes-equipment-master-table{
 }
 html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important;}
 html body #root .qmes-ipad-equipment .qmes-equipment-repair-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
+
+/* 사진에서 남아 있던 마지막 한 겹: Panel 내부 content shell까지 평면화 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box),
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::before,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::after,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::before,
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::after{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen .overflow-x-auto{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  overflow-y:visible!important;
+}
