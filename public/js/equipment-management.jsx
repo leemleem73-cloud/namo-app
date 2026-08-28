@@ -73,6 +73,18 @@
     const nav=[["daily","일일점검"],["master","설비대장"],["schedule","정기점검·교정"],["repair","고장·수리 이력"]];
 
     return <div className="qmes-equipment-management-layout">
+      <style>{`
+        .qmes-ipad-equipment .qmes-equipment-repair-panel>div:first-child{position:relative!important;display:block!important;width:100%!important;min-height:56px!important;padding:0!important;box-sizing:border-box!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-panel>div:first-child>h3{position:absolute!important;left:8%!important;top:50%!important;margin:0!important;transform:translate(-50%,-50%)!important;font-size:14px!important;line-height:1!important;font-weight:600!important;white-space:nowrap!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-register-button{position:absolute!important;right:6%!important;top:50%!important;transform:translate(50%,-50%)!important;width:92px!important;min-width:92px!important;max-width:92px!important;height:38px!important;min-height:38px!important;padding:0 16px!important;font-size:13px!important;line-height:1!important;font-weight:800!important;white-space:nowrap!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{width:100%!important;max-width:100%!important;overflow:hidden!important;border:1px solid #dce4ec!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important;box-sizing:border-box!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:0!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table th,.qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table td{border-left:0!important;border-top:0!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table th{border-right:1px solid #e2e8f0!important;border-bottom:1px solid #cbd5e1!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table td{border-right:1px solid #e2e8f0!important;border-bottom:1px solid #e2e8f0!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table th:last-child,.qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table td:last-child{border-right:0!important;}
+        .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table tbody tr:last-child td{border-bottom:0!important;}
+      `}</style>
       <aside className="qmes-equipment-management-sidebar qmes-equipment-nav-block" aria-label="설비 관리 메뉴">
         {nav.map(([id,label])=><button key={id} type="button" onClick={()=>setSection(id)} aria-selected={section===id?"true":"false"} className={section===id?"is-active":""}>{label}</button>)}
       </aside>
@@ -108,7 +120,7 @@
           </Panel>
         </div>}
         {section==="repair"&&<div className="qmes-equipment-repair-screen">
-          <Panel title="고장·수리 이력" right={<button type="button" onClick={()=>setShowRepairForm(value=>!value)} className={`${smallButton} qmes-equipment-new-register border-slate-700 bg-white text-slate-900`}>{showRepairForm?"등록 닫기":"신규 등록"}</button>}>
+          <Panel className="qmes-equipment-repair-panel" title="고장·수리 이력" right={<button type="button" onClick={()=>setShowRepairForm(value=>!value)} className={`${smallButton} qmes-equipment-new-register qmes-equipment-repair-register-button border-slate-700 bg-white text-slate-900`}>{showRepairForm?"등록 닫기":"신규 등록"}</button>}>
             {showRepairForm&&<div className="qmes-equipment-register-box">
               <div className="qmes-equipment-repair-form qmes-equipment-register-grid">
                 <label>설비<select className={`${inputClass} mt-1`} value={repairForm.equipmentId} onChange={e=>setRepairForm({...repairForm,equipmentId:e.target.value})}>{master.map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
@@ -123,9 +135,9 @@
             <div className="qmes-equipment-table-wrap">
               <table className="qmes-equipment-unified-table qmes-equipment-repair-table" style={{tableLayout:"fixed",borderCollapse:"collapse"}}>
                 <colgroup><col style={{width:"16%"}}/><col style={{width:"14%"}}/><col style={{width:"18%"}}/><col style={{width:"18%"}}/><col style={{width:"12%"}}/><col style={{width:"10%"}}/><col style={{width:"12%"}}/></colgroup>
-                <thead><tr>{["설비명","발생일","이상 내용","조치 내용","담당","상태","관리"].map(label=><th key={label} style={{border:"1px solid #d1d5db",textAlign:"center"}}>{label}</th>)}</tr></thead>
+                <thead><tr>{["설비명","발생일","이상 내용","조치 내용","담당","상태","관리"].map(label=><th key={label}>{label}</th>)}</tr></thead>
                 <tbody>
-                  {repairs.map(row=><tr key={row.id}><td className="qmes-equipment-name-cell" style={{border:"1px solid #e5e7eb"}}>{masterById(row.equipmentId).name}</td><td style={{border:"1px solid #e5e7eb"}}>{row.occurredAt||"-"}</td><td className="qmes-equipment-detail-cell" style={{border:"1px solid #e5e7eb"}}>{row.issue||"-"}</td><td className="qmes-equipment-detail-cell" style={{border:"1px solid #e5e7eb"}}>{row.action||"-"}</td><td style={{border:"1px solid #e5e7eb"}}>{row.owner||"-"}</td><td style={{border:"1px solid #e5e7eb"}}><span className={`qmes-equipment-status-badge ${row.status==="완료"?"is-complete":"is-open"}`}>{row.status||"조치중"}</span></td><td style={{border:"1px solid #e5e7eb"}}>{row.status!=="완료"?<button type="button" onClick={()=>completeRepair(row)} className={`${smallButton} qmes-equipment-complete-repair border-emerald-500/50 text-emerald-300`}>수리 완료</button>:<span className="qmes-equipment-done-text">완료</span>}</td></tr>)}
+                  {repairs.map(row=><tr key={row.id}><td className="qmes-equipment-name-cell">{masterById(row.equipmentId).name}</td><td>{row.occurredAt||"-"}</td><td className="qmes-equipment-detail-cell">{row.issue||"-"}</td><td className="qmes-equipment-detail-cell">{row.action||"-"}</td><td>{row.owner||"-"}</td><td><span className={`qmes-equipment-status-badge ${row.status==="완료"?"is-complete":"is-open"}`}>{row.status||"조치중"}</span></td><td>{row.status!=="완료"?<button type="button" onClick={()=>completeRepair(row)} className={`${smallButton} qmes-equipment-complete-repair border-emerald-500/50 text-emerald-300`}>수리 완료</button>:<span className="qmes-equipment-done-text">완료</span>}</td></tr>)}
                   {!repairs.length&&<tr><td colSpan="7" className="qmes-equipment-empty-cell">등록된 고장·수리 이력이 없습니다.</td></tr>}
                 </tbody>
               </table>
