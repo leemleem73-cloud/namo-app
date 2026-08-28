@@ -226,3 +226,94 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
   window.qmesSalesComplianceOverlay={apply};
 })();
+
+/* APPEND-ONLY V3 - detail/modal guard for compliance overlay.
+ * Existing KPI and detail logic stays untouched. The body-level percentage overlay is
+ * forced behind normal content and hidden whenever the Sales detail panel or another
+ * visible modal/dialog is open. It is restored after the modal closes.
+ */
+(function(){
+  "use strict";
+  if(window.__QMES_SALES_COMPLIANCE_MODAL_GUARD_20260828_V3__)return;
+  window.__QMES_SALES_COMPLIANCE_MODAL_GUARD_20260828_V3__=true;
+
+  const OVERLAY_ID="qmes-sales-compliance-overlay-20260828-v2";
+  const SALES_DETAIL_ID="qmes-sales-order-detail-panel-20260826";
+  const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
+
+  function visible(el){
+    if(!(el instanceof Element))return false;
+    const style=getComputedStyle(el);
+    const rect=el.getBoundingClientRect();
+    return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)!==0&&rect.width>0&&rect.height>0;
+  }
+
+  function modalOpen(){
+    const detail=document.getElementById(SALES_DETAIL_ID);
+    if(detail&&visible(detail))return true;
+    if(Array.from(document.querySelectorAll('[role="dialog"],[aria-modal="true"],dialog[open]')).some(visible))return true;
+    return Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,[role='heading']")).some(node=>{
+      if(!visible(node))return false;
+      return /수주\s*상세\s*[·ㆍ•-]?\s*진행현황/.test(clean(node.textContent));
+    });
+  }
+
+  let enforcing=false;
+  function enforce(){
+    if(enforcing)return;
+    const overlay=document.getElementById(OVERLAY_ID);
+    if(!overlay)return;
+    enforcing=true;
+    try{
+      /* Never allow the KPI overlay to sit above application dialogs. */
+      overlay.style.setProperty("z-index","80","important");
+
+      if(modalOpen()){
+        overlay.style.setProperty("display","none","important");
+        overlay.style.setProperty("visibility","hidden","important");
+        overlay.style.setProperty("opacity","0","important");
+        overlay.setAttribute("data-qmes-modal-hidden","1");
+        return;
+      }
+
+      if(overlay.getAttribute("data-qmes-modal-hidden")==="1"){
+        overlay.removeAttribute("data-qmes-modal-hidden");
+        try{window.qmesSalesComplianceOverlay?.apply?.();}catch(_error){}
+        overlay.style.setProperty("z-index","80","important");
+      }
+    }finally{
+      enforcing=false;
+    }
+  }
+
+  let queued=false;
+  function schedule(){
+    if(queued)return;
+    queued=true;
+    queueMicrotask(()=>{queued=false;enforce();});
+  }
+
+  function boot(){
+    enforce();
+    [30,80,150,300,600,1000,1800].forEach(ms=>setTimeout(enforce,ms));
+    const observer=new MutationObserver(schedule);
+    observer.observe(document.body,{
+      childList:true,
+      subtree:true,
+      characterData:true,
+      attributes:true,
+      attributeFilter:["style","class","aria-modal","open","hidden"]
+    });
+    window.__QMES_SALES_COMPLIANCE_MODAL_GUARD_OBSERVER_20260828_V3__=observer;
+  }
+
+  document.addEventListener("click",schedule,true);
+  document.addEventListener("keydown",event=>{if(event.key==="Escape")schedule();},true);
+  window.addEventListener("resize",schedule,{passive:true});
+  window.addEventListener("hashchange",schedule);
+  window.addEventListener("popstate",schedule);
+  ["qmes:mes-master-ready","qmes:enterprise-ui-ready","qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,schedule));
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  window.qmesSalesComplianceModalGuard={enforce,schedule};
+})();
