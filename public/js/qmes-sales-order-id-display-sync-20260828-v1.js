@@ -1,150 +1,46 @@
-/* NAMO QMES - Sales order display/delivery sync V5 - 2026-08-28
- * Delivery status is based on actual shipment.
- * Shipment complete also closes production plan as 생산완료.
- * Adds a final runtime typography/alignment owner for the sales table.
- * Confirmed correction: SO-20260114-001 shipped on 2026-01-15.
- * Stable data-qso-id / workOrder identity is intentionally not rewritten.
+/* NAMO QMES - Sales/Delivery final UI owner V6 - 2026-08-28
+ * Final owner for Sales list status, KPI, equal cells, typography and alignment.
+ * Actual shipment closes due status and production plan.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V5__)return;
-  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V5__=true;
+  if(window.__QMES_SALES_FINAL_UI_OWNER_20260828_V6__)return;
+  window.__QMES_SALES_FINAL_UI_OWNER_20260828_V6__=true;
 
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const SHIPPING_KEY="qmes-erp-shipping-v1";
-  const STYLE_ID="qmes-sales-table-uniform-20260828-v5";
-  const CONFIRMED_SHIPMENTS={
-    "SO-20260114-001":{actualShipDate:"2026-01-15",status:"출하완료",delivery:"납품완료",plan:"생산완료"}
+  const STYLE_ID="qmes-sales-final-ui-owner-20260828-v6";
+  const DAY=86400000;
+
+  /* Confirmed historical correction supplied by the user. */
+  const CONFIRMED={
+    "SO-20260114-001":{
+      actualShipDate:"2026-01-15",
+      shipping:"출하완료",
+      delivery:"납품완료",
+      plan:"생산완료"
+    }
   };
 
-  const clean=value=>String(value==null?"":value).replace(/\s+/g," ").trim();
-  const read=(key,fallback)=>{try{const value=JSON.parse(localStorage.getItem(key)||"null");return value==null?fallback:value;}catch(_error){return fallback;}};
-  const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(_error){return false;}};
-  const salesRows=()=>{const value=read(SALES_KEY,[]);return Array.isArray(value)?value:[];};
-  const metaMap=()=>{const value=read(META_KEY,{});return value&&typeof value==="object"&&!Array.isArray(value)?value:{};};
-  const shippingRows=()=>{const value=read(SHIPPING_KEY,[]);return Array.isArray(value)?value:[];};
+  const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
+  const num=v=>{const n=Number(String(v==null?"":v).replace(/,/g,""));return Number.isFinite(n)?n:0;};
+  const read=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)||"null");return v==null?fallback:v;}catch(_){return fallback;}};
+  const write=(key,v)=>{try{localStorage.setItem(key,JSON.stringify(v));return true;}catch(_){return false;}};
+  const rows=()=>{const v=read(SALES_KEY,[]);return Array.isArray(v)?v:[];};
+  const metas=()=>{const v=read(META_KEY,{});return v&&typeof v==="object"&&!Array.isArray(v)?v:{};};
+  const ships=()=>{const v=read(SHIPPING_KEY,[]);return Array.isArray(v)?v:[];};
   const rowKey=row=>clean(row?.workOrder)||clean(row?.id);
-  const isoDate=value=>{const m=clean(value).match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:"";};
-  const same=(a,b)=>{try{return JSON.stringify(a)===JSON.stringify(b);}catch(_error){return a===b;}};
-
-  function ensureUniformTableStyle(){
-    let style=document.getElementById(STYLE_ID);
-    if(!style){
-      style=document.createElement("style");
-      style.id=STYLE_ID;
-      document.head.appendChild(style);
-    }
-    style.textContent=`
-      .qmes-sales-stable .qerp-table{
-        width:100%!important;
-        table-layout:fixed!important;
-        border-collapse:collapse!important;
-      }
-      .qmes-sales-stable .qerp-table thead tr,
-      .qmes-sales-stable .qerp-table tbody tr{
-        height:46px!important;
-      }
-      .qmes-sales-stable .qerp-table th,
-      .qmes-sales-stable .qerp-table td{
-        width:9.09%!important;
-        min-width:0!important;
-        max-width:none!important;
-        height:46px!important;
-        box-sizing:border-box!important;
-        padding:8px 6px!important;
-        font-family:inherit!important;
-        font-size:12px!important;
-        font-weight:700!important;
-        line-height:1.25!important;
-        letter-spacing:0!important;
-        text-align:center!important;
-        vertical-align:middle!important;
-        white-space:nowrap!important;
-        overflow:hidden!important;
-        text-overflow:ellipsis!important;
-      }
-      .qmes-sales-stable .qerp-table th *,
-      .qmes-sales-stable .qerp-table td *{
-        font-family:inherit!important;
-        font-size:12px!important;
-        font-weight:700!important;
-        line-height:1.25!important;
-        letter-spacing:0!important;
-        text-align:center!important;
-        vertical-align:middle!important;
-      }
-      .qmes-sales-stable .qerp-table td > span,
-      .qmes-sales-stable .qerp-table td > a,
-      .qmes-sales-stable .qerp-table td > b,
-      .qmes-sales-stable .qerp-table td > strong,
-      .qmes-sales-stable .qerp-table td > button,
-      .qmes-sales-stable .qerp-table .qmes-sales-order-link,
-      .qmes-sales-stable .qerp-table .qmes-sales-plain-status,
-      .qmes-sales-stable .qerp-table .qmes-sales-packaging-text,
-      .qmes-sales-stable .qerp-table .qmes-sales-packaging-missing{
-        display:inline-flex!important;
-        align-items:center!important;
-        justify-content:center!important;
-        max-width:100%!important;
-        margin-left:auto!important;
-        margin-right:auto!important;
-        text-align:center!important;
-      }
-      .qmes-sales-stable .qerp-table .qmes-sales-order-link{
-        width:auto!important;
-        padding:0!important;
-      }
-      .qmes-sales-stable .qerp-table .qmes-sales-subtext{
-        display:flex!important;
-        align-items:center!important;
-        justify-content:center!important;
-        width:100%!important;
-        margin:2px auto 0!important;
-        text-align:center!important;
-      }
-      .qmes-sales-stable .qerp-table .qmes-sales-action-head,
-      .qmes-sales-stable .qerp-table .qmes-sales-action-cell{
-        width:9.09%!important;
-        min-width:0!important;
-        max-width:none!important;
-        text-align:center!important;
-      }
-      .qmes-sales-stable .qerp-table .qmes-sales-action-wrap{
-        display:flex!important;
-        align-items:center!important;
-        justify-content:center!important;
-        gap:6px!important;
-        width:100%!important;
-        margin:0 auto!important;
-        text-align:center!important;
-      }
-      .qmes-sales-stable .qerp-table .qmes-sales-edit-btn,
-      .qmes-sales-stable .qerp-table .qmes-sales-delete-btn{
-        display:inline-flex!important;
-        align-items:center!important;
-        justify-content:center!important;
-        width:auto!important;
-        min-width:34px!important;
-        height:28px!important;
-        padding:0 7px!important;
-        margin:0!important;
-        font-size:12px!important;
-        font-weight:700!important;
-        line-height:1!important;
-        text-align:center!important;
-      }
-    `;
-  }
+  const isoDate=v=>{const m=clean(v).match(/(20\d{2})[-./]?(\d{1,2})[-./]?(\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:"";};
+  const dateMs=v=>{const d=isoDate(v);if(!d)return null;const t=new Date(d+"T00:00:00").getTime();return Number.isFinite(t)?t:null;};
+  const todayMs=()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();};
 
   function metaFor(row,map){
     const id=clean(row?.id),key=rowKey(row);
     return map[key]||map[id]||row?.orderMeta||{};
   }
 
-  function visibleId(row,map){
-    return clean(metaFor(row,map)?.salesOrderIdOverride)||clean(row?.id);
-  }
+  function visibleId(row,map){return clean(metaFor(row,map)?.salesOrderIdOverride)||clean(row?.id);}
 
   function findRow(candidate,list,map){
     const id=clean(candidate);if(!id)return null;
@@ -154,133 +50,193 @@
     })||null;
   }
 
-  function canonicalId(candidate,list,map){
-    const id=clean(candidate);if(!id)return "";
-    const direct=clean(map[id]?.salesOrderIdOverride);
-    if(direct)return direct;
-    const row=findRow(id,list,map);
-    if(row)return visibleId(row,map)||id;
-    const key=Object.keys(map).find(item=>clean(map[item]?.salesOrderIdOverride)===id);
-    return key?id:"";
-  }
-
-  function applyConfirmedCorrections(){
-    const list=salesRows();
-    const map=metaMap();
-    let rowsChanged=false,mapChanged=false;
-
-    const nextRows=list.map(row=>{
+  function applyConfirmed(){
+    const list=rows(),map=metas();
+    let changed=false,mapChanged=false;
+    const next=list.map(row=>{
       const id=clean(row?.id),key=rowKey(row),shown=visibleId(row,map);
-      const fix=CONFIRMED_SHIPMENTS[shown]||CONFIRMED_SHIPMENTS[id]||CONFIRMED_SHIPMENTS[key];
+      const fix=CONFIRMED[shown]||CONFIRMED[id]||CONFIRMED[key];
       if(!fix)return row;
-
       const base=metaFor(row,map);
       const nextMeta={
         ...base,
         actualShipment:true,
         actualShipDate:fix.actualShipDate,
-        shippingStatus:fix.status,
+        shippingStatus:fix.shipping,
         deliveryStatus:fix.delivery,
         productionPlanStatus:fix.plan,
         shipmentCorrectionSource:"confirmed-user-correction-20260828"
       };
-      if(id&&!same(map[id],nextMeta)){map[id]=nextMeta;mapChanged=true;}
-      if(key&&key!==id&&!same(map[key],nextMeta)){map[key]=nextMeta;mapChanged=true;}
-
+      if(id){map[id]=nextMeta;mapChanged=true;}
+      if(key&&key!==id){map[key]=nextMeta;mapChanged=true;}
       const nextRow={
         ...row,
         plan:fix.plan,
-        shipping:fix.status,
+        shipping:fix.shipping,
         delivery:fix.delivery,
         actualShipment:true,
         actualShipDate:fix.actualShipDate,
         shipDate:fix.actualShipDate,
         orderMeta:{...(row?.orderMeta||{}),...nextMeta}
       };
-      if(!same(row,nextRow))rowsChanged=true;
+      if(JSON.stringify(nextRow)!==JSON.stringify(row))changed=true;
       return nextRow;
     });
-
     if(mapChanged)write(META_KEY,map);
-    if(rowsChanged)write(SALES_KEY,nextRows);
-    return {list:rowsChanged?nextRows:list,map};
+    if(changed)write(SALES_KEY,next);
+    return {list:changed?next:list,map};
   }
 
-  function headers(table){return Array.from(table?.querySelectorAll("thead th")||[]).map(th=>clean(th.textContent));}
-  function headerIndex(table,label){return headers(table).findIndex(text=>text===label||text.includes(label));}
+  function isCompleteState(v){return /출하완료|납품완료|배송완료|출고완료/.test(clean(v));}
 
-  function salesTables(){
-    const roots=Array.from(document.querySelectorAll(".qmes-sales-stable,.qerp")).filter(root=>{
-      const title=clean(root.querySelector(".qerp-title")?.textContent);
-      return root.classList.contains("qmes-sales-stable")||(/수주/.test(title)&&/납기/.test(title));
-    });
-    const tables=[];
-    roots.forEach(root=>root.querySelectorAll("table").forEach(table=>{if(headerIndex(table,"수주번호")>=0&&!tables.includes(table))tables.push(table);}));
-    return tables;
-  }
-
-  function setCellText(cell,text,tone){
-    if(!cell||!text)return false;
-    const target=cell.querySelector(".qmes-sales-plain-status,span,b,strong,a,button")||cell;
-    if(clean(target.textContent)!==text)target.textContent=text;
-    if(target.classList&&tone){
-      target.classList.remove("good","warn","bad","neutral");
-      target.classList.add("qmes-sales-plain-status",tone);
-    }
-    return true;
-  }
-
-  function setCellId(cell,canonical){
-    if(!cell||!canonical)return false;
-    const preferred=cell.querySelector(".qmes-sales-order-link,[data-qso-id],a,b,strong");
-    const current=clean(preferred?.textContent||cell.textContent);
-    if(current===canonical){preferred?.setAttribute?.("data-qso-visible-id",canonical);return false;}
-    if(preferred){preferred.textContent=canonical;preferred.setAttribute?.("data-qso-visible-id",canonical);return true;}
-    if(cell.children.length===0){cell.textContent=canonical;return true;}
-    const textNode=Array.from(cell.childNodes).find(node=>node.nodeType===Node.TEXT_NODE&&clean(node.textContent));
-    if(textNode){textNode.textContent=canonical;return true;}
-    return false;
-  }
-
-  function isShipmentComplete(ship){
-    const state=`${clean(ship?.delivery)} ${clean(ship?.shipping)} ${clean(ship?.status)}`;
-    return ship?.actualShipment===true||/출하완료|납품완료/.test(state);
-  }
-
-  function shipmentFor(row,map,ships){
+  function shipmentFor(row,map,shippingRows){
     if(!row)return null;
     const meta=metaFor(row,map);
-    const rowState=`${clean(row?.delivery)} ${clean(row?.shipping)} ${clean(meta?.deliveryStatus)} ${clean(meta?.shippingStatus)}`;
-    if(row?.actualShipment===true||meta?.actualShipment===true||/출하완료|납품완료/.test(rowState)){
-      const date=isoDate(row?.actualShipDate||row?.shipDate||meta?.actualShipDate||meta?.shipDate||row?.due||meta?.requestedDue);
-      return {actualShipment:true,status:"출하완료",delivery:"납품완료",date,shipDate:date,actualShipDate:date,source:"SALES_CONFIRMED"};
+    const localState=[row?.shipping,row?.delivery,meta?.shippingStatus,meta?.deliveryStatus].map(clean).join(" ");
+    if(row?.actualShipment===true||meta?.actualShipment===true||isCompleteState(localState)){
+      const d=isoDate(row?.actualShipDate||row?.shipDate||meta?.actualShipDate||meta?.shipDate);
+      return {complete:true,date:d,source:"sales"};
     }
 
-    const ids=new Set([clean(row.id),rowKey(row),visibleId(row,map)].filter(Boolean));
-    const workOrder=rowKey(row);
-    const matches=ships.filter(ship=>{
-      if(!isShipmentComplete(ship))return false;
-      const sales=clean(ship?.sales||ship?.salesOrder||ship?.salesOrderId);
-      const lot=clean(ship?.lot||ship?.workOrder);
-      return (sales&&ids.has(sales))||(workOrder&&lot===workOrder);
+    const ids=new Set([clean(row?.id),rowKey(row),visibleId(row,map)].filter(Boolean));
+    const wo=rowKey(row);
+    const matches=shippingRows.filter(ship=>{
+      const state=[ship?.delivery,ship?.shipping,ship?.status].map(clean).join(" ");
+      if(!(ship?.actualShipment===true||isCompleteState(state)))return false;
+      const sid=clean(ship?.sales||ship?.salesOrder||ship?.salesOrderId);
+      const swo=clean(ship?.workOrder||ship?.lot);
+      return (sid&&ids.has(sid))||(wo&&swo===wo);
     });
-    return matches.sort((a,b)=>isoDate(b?.date||b?.shipDate).localeCompare(isoDate(a?.date||a?.shipDate)))[0]||null;
+    if(!matches.length)return null;
+    matches.sort((a,b)=>String(isoDate(b?.actualShipDate||b?.shipDate||b?.actualDate||b?.date||b?.completedAt)).localeCompare(String(isoDate(a?.actualShipDate||a?.shipDate||a?.actualDate||a?.date||a?.completedAt))));
+    const ship=matches[0];
+    return {complete:true,date:isoDate(ship?.actualShipDate||ship?.shipDate||ship?.actualDate||ship?.date||ship?.completedAt),source:"shipping"};
   }
 
-  function dueStateFromShipment(row,map,ship){
-    const due=isoDate(row?.due||metaFor(row,map)?.requestedDue);
-    if(ship&&isShipmentComplete(ship)){
-      const shipped=isoDate(ship?.date||ship?.shipDate||ship?.actualShipDate||ship?.completedAt);
-      if(!due||!shipped)return {label:"납기완료",tone:"good"};
-      const diff=Math.round((new Date(shipped+"T00:00:00").getTime()-new Date(due+"T00:00:00").getTime())/86400000);
+  function dueFor(row,map){return isoDate(row?.due||metaFor(row,map)?.requestedDue);}
+
+  function dueState(row,map,ship){
+    const due=dueFor(row,map);
+    if(ship?.complete){
+      const actual=isoDate(ship.date);
+      if(!due||!actual)return {label:"납기완료",tone:"good"};
+      const diff=Math.round((dateMs(actual)-dateMs(due))/DAY);
       return diff<=0?{label:"납기완료",tone:"good"}:{label:`지연완료 ${diff}일`,tone:"bad"};
     }
     if(!due)return {label:"-",tone:"neutral"};
-    const today=new Date();today.setHours(0,0,0,0);
-    const diff=Math.round((new Date(due+"T00:00:00").getTime()-today.getTime())/86400000);
+    const diff=Math.round((dateMs(due)-todayMs())/DAY);
     if(diff<0)return {label:`지연 ${Math.abs(diff)}일`,tone:"bad"};
     if(diff<=7)return {label:`임박 D-${diff}`,tone:"warn"};
     return {label:"정상",tone:"good"};
+  }
+
+  function ensureStyle(){
+    let style=document.getElementById(STYLE_ID);
+    if(!style){style=document.createElement("style");style.id=STYLE_ID;document.head.appendChild(style);}
+    style.textContent=`
+      .qmes-sales-stable .qerp-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+      .qmes-sales-stable .qerp-table thead tr,.qmes-sales-stable .qerp-table tbody tr{height:46px!important}
+      .qmes-sales-stable .qerp-table th,.qmes-sales-stable .qerp-table td{height:46px!important;padding:8px 6px!important;font-family:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1.25!important;letter-spacing:0!important;text-align:center!important;vertical-align:middle!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;box-sizing:border-box!important}
+      .qmes-sales-stable .qerp-table th *,.qmes-sales-stable .qerp-table td *{font-family:inherit!important;font-size:12px!important;line-height:1.25!important;text-align:center!important;vertical-align:middle!important}
+      .qmes-sales-stable .qerp-table td:first-child{ text-align:center!important }
+      .qmes-sales-stable .qerp-table .qmes-sales-order-link,.qmes-sales-stable .qerp-table .qmes-sales-plain-status,.qmes-sales-stable .qerp-table .qmes-sales-packaging-text,.qmes-sales-stable .qerp-table .qmes-sales-packaging-missing{font-size:12px!important;text-align:center!important}
+      .qmes-sales-stable .qerp-table .qmes-sales-action-wrap{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important}
+      .qmes-sales-stable .qerp-table .qmes-sales-edit-btn,.qmes-sales-stable .qerp-table .qmes-sales-delete-btn{font-size:12px!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:28px!important;padding:0 7px!important}
+    `;
+    if(style.parentNode===document.head)document.head.appendChild(style);
+  }
+
+  function setImportant(el,prop,value){try{el?.style?.setProperty(prop,value,"important");}catch(_){}}
+
+  function forceTableGeometry(table){
+    if(!table)return;
+    setImportant(table,"width","100%");
+    setImportant(table,"min-width","0");
+    setImportant(table,"table-layout","fixed");
+    setImportant(table,"border-collapse","collapse");
+
+    const headers=Array.from(table.querySelectorAll("thead th"));
+    const poIndex=headers.findIndex(th=>clean(th.textContent)==="고객 PO");
+    if(poIndex>=0){
+      setImportant(headers[poIndex],"display","none");
+      table.querySelectorAll("tbody tr").forEach(tr=>setImportant(tr.children?.[poIndex],"display","none"));
+    }
+
+    const visibleHeaders=headers.filter(th=>getComputedStyle(th).display!=="none");
+    const count=Math.max(1,visibleHeaders.length);
+    const width=(100/count).toFixed(6)+"%";
+
+    headers.forEach((th,index)=>{
+      if(index===poIndex)return;
+      ["width","min-width","max-width"].forEach(prop=>setImportant(th,prop,width));
+      setImportant(th,"height","46px");
+      setImportant(th,"padding","8px 6px");
+      setImportant(th,"font-size","12px");
+      setImportant(th,"font-weight","700");
+      setImportant(th,"line-height","1.25");
+      setImportant(th,"text-align","center");
+      setImportant(th,"vertical-align","middle");
+    });
+
+    table.querySelectorAll("tbody tr").forEach(tr=>{
+      setImportant(tr,"height","46px");
+      Array.from(tr.children).forEach((td,index)=>{
+        if(index===poIndex)return;
+        ["width","min-width","max-width"].forEach(prop=>setImportant(td,prop,width));
+        setImportant(td,"height","46px");
+        setImportant(td,"padding","8px 6px");
+        setImportant(td,"font-size","12px");
+        setImportant(td,"font-weight","700");
+        setImportant(td,"line-height","1.25");
+        setImportant(td,"text-align","center");
+        setImportant(td,"vertical-align","middle");
+        td.querySelectorAll("a,button,span,b,strong,div").forEach(node=>{
+          setImportant(node,"font-size","12px");
+          setImportant(node,"line-height","1.25");
+          setImportant(node,"text-align","center");
+        });
+      });
+    });
+  }
+
+  function tableHeaders(table){return Array.from(table?.querySelectorAll("thead th")||[]).map(th=>clean(th.textContent));}
+  function hIndex(table,label){return tableHeaders(table).findIndex(v=>v===label||v.includes(label));}
+  function salesTables(){
+    return Array.from(document.querySelectorAll(".qmes-sales-stable table")).filter(table=>hIndex(table,"수주번호")>=0);
+  }
+
+  function setStatus(cell,text,tone){
+    if(!cell)return;
+    const target=cell.querySelector(".qmes-sales-plain-status,span,b,strong,a,button")||cell;
+    if(clean(target.textContent)!==text)target.textContent=text;
+    if(target.classList){target.classList.remove("good","warn","bad","neutral");target.classList.add("qmes-sales-plain-status",tone||"neutral");}
+  }
+
+  function syncKpis(list,map,shippingRows){
+    const root=document.querySelector(".qmes-sales-stable");if(!root)return;
+    const info=list.map(row=>({row,ship:shipmentFor(row,map,shippingRows)}));
+    const incomplete=info.filter(x=>!x.ship?.complete);
+    const now=todayMs();
+    const dueSoon=incomplete.filter(x=>{const due=dateMs(dueFor(x.row,map));if(due==null)return false;const diff=Math.round((due-now)/DAY);return diff>=0&&diff<=7;}).length;
+    const risk=incomplete.filter(x=>{const due=dateMs(dueFor(x.row,map));return (due!=null&&now>due)||/위험|지연|차단/.test(clean(x.row?.shipping));}).length;
+    const samples=info.filter(x=>x.ship?.complete&&dateMs(dueFor(x.row,map))!=null&&dateMs(x.ship.date)!=null);
+    const compliant=samples.filter(x=>dateMs(x.ship.date)<=dateMs(dueFor(x.row,map))).length;
+    const compliance=samples.length?(compliant/samples.length*100).toFixed(1)+"%":"-";
+    const kg=list.reduce((sum,row)=>sum+num(row?.qty),0);
+    const tons=(kg/1000).toFixed(2).replace(/0+$/,"" ).replace(/\.$/,"")+"t";
+
+    const values={
+      "진행 수주":incomplete.length+"건",
+      "7일 이내 납기":dueSoon+"건",
+      "납기 준수율":compliance,
+      "지연 위험":risk+"건",
+      "수주량 합계":tons
+    };
+    root.querySelectorAll(".qerp-kpi").forEach(card=>{
+      const label=clean(card.querySelector("span")?.textContent);
+      const value=card.querySelector("b");
+      if(value&&Object.prototype.hasOwnProperty.call(values,label)&&clean(value.textContent)!==values[label])value.textContent=values[label];
+    });
   }
 
   let running=false;
@@ -288,55 +244,65 @@
     if(running)return;
     running=true;
     try{
-      ensureUniformTableStyle();
-      const corrected=applyConfirmedCorrections();
-      const list=corrected.list,map=corrected.map,ships=shippingRows();
+      ensureStyle();
+      const corrected=applyConfirmed();
+      const list=corrected.list,map=corrected.map,shippingRows=ships();
+
       salesTables().forEach(table=>{
-        const orderIndex=headerIndex(table,"수주번호");
-        const dueIndex=headerIndex(table,"납기상태");
-        const planIndex=headerIndex(table,"생산계획");
-        const shipIndex=headerIndex(table,"출하상태");
-        if(orderIndex<0)return;
+        const orderIndex=hIndex(table,"수주번호");
+        const dueIndex=hIndex(table,"납기상태");
+        const planIndex=hIndex(table,"생산계획");
+        const shipIndex=hIndex(table,"출하상태");
+        forceTableGeometry(table);
+
         table.querySelectorAll("tbody tr").forEach(tr=>{
           const orderCell=tr.children?.[orderIndex];if(!orderCell)return;
-          const link=orderCell.querySelector(".qmes-sales-order-link,[data-qso-id]");
-          const candidates=[link?.getAttribute?.("data-qso-id"),link?.getAttribute?.("data-qso-visible-id"),link?.textContent,orderCell.querySelector("b,strong,a")?.textContent,orderCell.textContent].map(clean).filter(Boolean);
-          let row=null,canonical="";
-          for(const candidate of candidates){row=findRow(candidate,list,map)||row;canonical=canonicalId(candidate,list,map)||canonical;if(row&&canonical)break;}
-          if(canonical)setCellId(orderCell,canonical);
-          if(!row&&canonical)row=findRow(canonical,list,map);
+          const anchor=orderCell.querySelector("[data-qso-id],.qmes-sales-order-link,a,b,strong");
+          const candidates=[anchor?.getAttribute?.("data-qso-id"),anchor?.getAttribute?.("data-qso-visible-id"),anchor?.textContent,orderCell.textContent].map(clean).filter(Boolean);
+          let row=null;
+          for(const id of candidates){row=findRow(id,list,map);if(row)break;}
           if(!row)return;
-          const ship=shipmentFor(row,map,ships);
-          const state=dueStateFromShipment(row,map,ship);
-          if(dueIndex>=0)setCellText(tr.children?.[dueIndex],state.label,state.tone);
-          if(ship&&planIndex>=0)setCellText(tr.children?.[planIndex],"생산완료","good");
-          if(ship&&shipIndex>=0)setCellText(tr.children?.[shipIndex],"출하완료","good");
+
+          const shown=visibleId(row,map);
+          if(anchor&&shown&&clean(anchor.textContent)!==shown)anchor.textContent=shown;
+          anchor?.setAttribute?.("data-qso-visible-id",shown);
+
+          const ship=shipmentFor(row,map,shippingRows);
+          const state=dueState(row,map,ship);
+          if(dueIndex>=0)setStatus(tr.children?.[dueIndex],state.label,state.tone);
+          if(ship?.complete&&planIndex>=0)setStatus(tr.children?.[planIndex],"생산완료","good");
+          if(ship?.complete&&shipIndex>=0)setStatus(tr.children?.[shipIndex],"출하완료","good");
         });
+
+        /* Apply once more after status DOM updates. */
+        forceTableGeometry(table);
       });
+
+      syncKpis(list,map,shippingRows);
     }finally{running=false;}
   }
 
   let queued=false;
   function schedule(delay=0){
     if(delay){setTimeout(()=>schedule(0),delay);return;}
-    if(queued)return;queued=true;
+    if(queued)return;
+    queued=true;
     const run=()=>{queued=false;sync();};
     if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0);
   }
 
-  const start=()=>{
-    ensureUniformTableStyle();
+  function start(){
+    ensureStyle();
     sync();
-    [80,180,350,700,1200,2200].forEach(schedule);
+    [80,180,350,700,1200,2200,4000].forEach(ms=>schedule(ms));
     const observer=new MutationObserver(mutations=>{
-      if(!mutations.some(item=>item.type==="childList"||item.type==="characterData"))return;
-      if(document.querySelector(".qmes-sales-stable")||Array.from(document.querySelectorAll(".qerp-title")).some(node=>/수주/.test(clean(node.textContent))&&/납기/.test(clean(node.textContent))))schedule();
+      if(mutations.some(m=>m.type==="childList"||m.type==="characterData"))schedule();
     });
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V5__=observer;
-  };
+    window.__QMES_SALES_FINAL_UI_OBSERVER_20260828_V6__=observer;
+  }
 
-  ["qmes:erp-data-changed","qmes:erp-runtime-loaded","qmes:mes-master-ready","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,()=>schedule()));
+  ["qmes:erp-data-changed","qmes:erp-runtime-loaded","qmes:mes-master-ready","qmes:enterprise-ui-ready","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,()=>schedule()));
   window.addEventListener("storage",event=>{if([SALES_KEY,META_KEY,SHIPPING_KEY].includes(event.key))schedule();});
   window.addEventListener("hashchange",()=>schedule(80));
   window.addEventListener("popstate",()=>schedule(80));
