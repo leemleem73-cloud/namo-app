@@ -21,7 +21,6 @@ html body #root#root#root>div>header>div:first-child{
   border:0!important;
 }
 html body #root#root#root>div>header img[alt="NAMO Chemical"]{
-  content:url("/assets/namo-header-logo.svg?v=20260731-white2")!important;
   width:auto!important;
   height:38px!important;
   max-height:38px!important;
