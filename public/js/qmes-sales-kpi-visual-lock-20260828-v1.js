@@ -161,3 +161,159 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
   window.qmesSalesKpiVisualLock={apply,values};
 })();
+
+/* APPEND-ONLY V2 - compliance KPI dedicated visual owner.
+ * The original <b> remains in the DOM for React/legacy scripts, but is hidden.
+ * A separate sibling <b> owns the visible value, so legacy text rewrites cannot flicker on screen.
+ * No existing sales/runtime/traceability source is changed.
+ */
+(function(){
+  "use strict";
+  if(window.__QMES_SALES_COMPLIANCE_VISUAL_OWNER_20260828_V2__)return;
+  window.__QMES_SALES_COMPLIANCE_VISUAL_OWNER_20260828_V2__=true;
+
+  const STYLE_ID="qmes-sales-compliance-visual-owner-20260828-v2";
+  const OWNER_CLASS="qmes-compliance-visual-owner";
+  const LAST_GOOD_KEY="qmes-sales-compliance-last-good-v2";
+  const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
+
+  function isComplianceLabel(value){
+    const key=clean(value).replace(/\s+/g,"");
+    return key==="납기준수율"||key==="납기준율";
+  }
+
+  function ensureStyle(){
+    if(document.getElementById(STYLE_ID))return;
+    const style=document.createElement("style");
+    style.id=STYLE_ID;
+    style.textContent=`
+      .qmes-sales-stable .qerp-kpi[data-qmes-compliance-owner="1"] > b:not(.${OWNER_CLASS}){
+        display:none!important;
+        visibility:hidden!important;
+      }
+      .qmes-sales-stable .qerp-kpi > b.${OWNER_CLASS}{
+        display:block!important;
+        visibility:visible!important;
+        position:static!important;
+        width:auto!important;
+        height:auto!important;
+        margin:0!important;
+        padding:0!important;
+        color:#0f172a!important;
+        opacity:1!important;
+        text-shadow:none!important;
+        font:inherit!important;
+        font-size:inherit!important;
+        font-weight:inherit!important;
+        line-height:inherit!important;
+        white-space:nowrap!important;
+        pointer-events:none!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function complianceFromVisibleTable(root){
+    const table=root.querySelector("table");
+    if(!table)return "";
+    const heads=Array.from(table.querySelectorAll("thead th")).map(th=>clean(th.textContent));
+    const dueIndex=heads.findIndex(v=>v.includes("납기상태"));
+    const shipIndex=heads.findIndex(v=>v.includes("출하상태"));
+    if(dueIndex<0||shipIndex<0)return "";
+
+    let samples=0,compliant=0;
+    table.querySelectorAll("tbody tr").forEach(tr=>{
+      const due=clean(tr.children?.[dueIndex]?.textContent);
+      const ship=clean(tr.children?.[shipIndex]?.textContent);
+      if(!/출하완료|납품완료|배송완료|출고완료/.test(ship))return;
+      samples++;
+      if(/납기완료|^완료$/.test(due)&&!/지연/.test(due))compliant++;
+    });
+    return samples?(compliant/samples*100).toFixed(1)+"%":"";
+  }
+
+  function fallbackValue(){
+    try{
+      const value=window.qmesSalesKpiVisualLock?.values?.()?.["납기 준수율"];
+      if(/^\d+(?:\.\d+)?%$/.test(clean(value)))return clean(value);
+    }catch(_error){}
+    try{
+      const saved=sessionStorage.getItem(LAST_GOOD_KEY)||"";
+      if(/^\d+(?:\.\d+)?%$/.test(saved))return saved;
+    }catch(_error){}
+    return "";
+  }
+
+  let applying=false;
+  function apply(){
+    if(applying)return;
+    const root=document.querySelector(".qmes-sales-stable");
+    if(!root)return;
+    const card=Array.from(root.querySelectorAll(".qerp-kpi")).find(node=>isComplianceLabel(node.querySelector("span")?.textContent));
+    if(!card)return;
+
+    applying=true;
+    try{
+      ensureStyle();
+      let value=complianceFromVisibleTable(root)||fallbackValue();
+      if(!value)return;
+      try{sessionStorage.setItem(LAST_GOOD_KEY,value);}catch(_error){}
+
+      const original=Array.from(card.querySelectorAll(":scope > b")).find(node=>!node.classList.contains(OWNER_CLASS))||card.querySelector("b");
+      let owner=card.querySelector(":scope > b."+OWNER_CLASS);
+      if(!owner){
+        owner=document.createElement("b");
+        owner.className=OWNER_CLASS;
+        owner.setAttribute("aria-live","off");
+        if(original?.nextSibling)card.insertBefore(owner,original.nextSibling);else card.appendChild(owner);
+      }
+      card.setAttribute("data-qmes-compliance-owner","1");
+      card.setAttribute("data-qmes-compliance-value",value);
+      if(owner.textContent!==value)owner.textContent=value;
+      owner.setAttribute("aria-label",value);
+      card.title="실제 출하 완료건의 납기 준수 여부를 기준으로 산정합니다.";
+    }finally{applying=false;}
+  }
+
+  let queued=false;
+  function schedule(){
+    if(queued)return;
+    queued=true;
+    queueMicrotask(()=>{queued=false;apply();});
+  }
+
+  function stabilizeFrames(count){
+    let left=count;
+    const tick=()=>{
+      apply();
+      left--;
+      if(left>0)requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function boot(){
+    ensureStyle();
+    apply();
+    [50,120,250,500,900,1500,2500,4000,7000].forEach(ms=>setTimeout(apply,ms));
+    const observer=new MutationObserver(mutations=>{
+      const touched=mutations.some(m=>{
+        const el=m.target?.nodeType===1?m.target:m.target?.parentElement;
+        if(el?.closest?.(".qmes-sales-stable"))return true;
+        return Array.from(m.addedNodes||[]).some(n=>n.nodeType===1&&(n.matches?.(".qmes-sales-stable")||n.querySelector?.(".qmes-sales-stable")));
+      });
+      if(touched)schedule();
+    });
+    observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+    window.__QMES_SALES_COMPLIANCE_VISUAL_OWNER_OBSERVER_20260828_V2__=observer;
+  }
+
+  window.addEventListener("qmes:mes-master-ready",()=>{apply();stabilizeFrames(120);});
+  window.addEventListener("qmes:enterprise-ui-ready",()=>{apply();stabilizeFrames(60);});
+  ["qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete","qmes:sales-workorder-linked"].forEach(name=>window.addEventListener(name,schedule));
+  window.addEventListener("hashchange",schedule);
+  window.addEventListener("popstate",schedule);
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  window.qmesSalesComplianceVisualOwner={apply};
+})();
