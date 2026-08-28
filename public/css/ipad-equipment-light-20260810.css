@@ -134,3 +134,60 @@ html body .qmes-ipad-equipment .qmes-equipment-master-screen>[class*="panel"]{
   background:transparent!important;
   background-color:transparent!important;
 }
+
+/* 설비대장/고장·수리 이력: 정기점검·교정과 동일하게 바깥 Panel 외곽 제거 */
+html body .qmes-ipad-equipment .qmes-equipment-master-screen>div,
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen>div{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  background-color:transparent!important;
+}
+
+/* 고장·수리 이력: 가로 드래그 없이 현재 화면 폭 안에 표 전체 맞춤 */
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen{
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow-x:hidden!important;
+  box-sizing:border-box!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+  box-sizing:border-box!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table th,
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table td{
+  box-sizing:border-box!important;
+  padding-left:5px!important;
+  padding-right:5px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  word-break:keep-all!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table .qmes-equipment-detail-cell{
+  text-align:center!important;
+}
