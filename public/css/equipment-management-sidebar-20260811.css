@@ -1242,14 +1242,16 @@ html body .qmes-ipad-equipment .qmes-equipment-mode-history .qmes-equipment-hist
   padding:0!important;
 }
 
-/* 고장·수리 이력: 정기점검·교정과 같은 표 여백 + 7칸 균등 배치 */
+/* 고장·수리 이력: 정기점검·교정과 동일한 바깥 테두리 기준 여백 + 7칸 균등 배치 */
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{
   width:100%!important;
   max-width:100%!important;
   margin:0!important;
-  padding:0!important;
+  padding:20px 22px!important;
   box-sizing:border-box!important;
   overflow-x:hidden!important;
+  border:0!important;
+  border-radius:0!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{
   width:100%!important;
