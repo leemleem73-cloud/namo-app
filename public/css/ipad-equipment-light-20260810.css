@@ -81,3 +81,20 @@
   padding-bottom:10px!important;
   line-height:27px!important;
 }
+
+/* 정기점검·교정 상단 요약 4칸: 가로로 튀어나오는 흰 배경 완전 차단 */
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{
+  overflow:hidden!important;
+  clip-path:inset(0 round 10px)!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>.qmes-equipment-summary-card{
+  overflow:hidden!important;
+  contain:paint!important;
+  isolation:isolate!important;
+  background-clip:padding-box!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>.qmes-equipment-summary-card::before,
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>.qmes-equipment-summary-card::after{
+  content:none!important;
+  display:none!important;
+}
