@@ -97,7 +97,7 @@
             </div>}
             <div className="qmes-equipment-table-wrap">
               <table className="qmes-equipment-unified-table qmes-equipment-schedule-table">
-                <colgroup><col style={{width:"22%"}}/><col style={{width:"10%"}}/><col style={{width:"9%"}}/><col style={{width:"13%"}}/><col style={{width:"13%"}}/><col style={{width:"12%"}}/><col style={{width:"9%"}}/><col style={{width:"12%"}}/></colgroup>
+                <colgroup><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/><col style={{width:"12.5%"}}/></colgroup>
                 <thead><tr>{["설비명","구분","주기(일)","마지막 실시일","다음 예정일","담당","상태","관리"].map(label=><th key={label}>{label}</th>)}</tr></thead>
                 <tbody>
                   {scheduleRows.map(row=><tr key={row.id}><td className="qmes-equipment-name-cell">{masterById(row.equipmentId).name}</td><td>{row.type}</td><td>{row.cycleDays}</td><td>{row.lastDate||"-"}</td><td>{row.nextDate||"-"}</td><td>{row.owner||"-"}</td><td><span className={`qmes-equipment-status-badge ${row.status==="완료"?"is-complete":""}`}>{row.status||"예정"}</span></td><td><div className="qmes-equipment-row-actions"><button type="button" onClick={()=>completeSchedule(row)} className={`${smallButton} border-emerald-500/50 text-emerald-300`}>완료</button><button type="button" onClick={()=>removeSchedule(row)} className={`${smallButton} border-red-500/40 text-red-300`}>삭제</button></div></td></tr>)}
