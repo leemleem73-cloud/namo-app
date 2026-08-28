@@ -1,16 +1,16 @@
-/* 고장·수리 이력: 안쪽 표 자체를 넓고 높게 표시 */
+/* 고장·수리 이력: 정기점검·교정과 동일한 표 바깥 여백 */
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel{
   overflow:hidden!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel>.qmes-equipment-table-wrap{
-  width:100%!important;
-  max-width:100%!important;
-  margin:0!important;
+  width:calc(100% - 40px)!important;
+  max-width:none!important;
+  margin:20px 20px 20px!important;
   padding:0!important;
   box-sizing:border-box!important;
   overflow:hidden!important;
-  border:1px solid #dce4ec!important;
-  border-radius:8px!important;
+  border:0!important;
+  border-radius:0!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{
   width:100%!important;
