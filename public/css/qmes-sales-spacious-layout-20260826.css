@@ -96,6 +96,22 @@
 .qerp:has(.qerp-title) .qerp-table th{padding-top:10px!important;padding-bottom:10px!important;}
 .qerp:has(.qerp-title) .qerp-table td{padding-top:13px!important;padding-bottom:13px!important;}
 
+/* Sales table typography normalization - 2026-08-28
+ * All header/body/status/link/packaging/action texts use the same 11px size.
+ */
+.qmes-sales-stable .qerp-table th,
+.qmes-sales-stable .qerp-table td,
+.qmes-sales-stable .qerp-table .qmes-sales-order-link,
+.qmes-sales-stable .qerp-table .qmes-sales-plain-status,
+.qmes-sales-stable .qerp-table .qmes-sales-packaging-text,
+.qmes-sales-stable .qerp-table .qmes-sales-packaging-missing,
+.qmes-sales-stable .qerp-table .qmes-sales-subtext,
+.qmes-sales-stable .qerp-table .qmes-sales-edit-btn,
+.qmes-sales-stable .qerp-table .qmes-sales-delete-btn{
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+
 @media(max-width:1350px){
   .qerp-sales-compact-form{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
   .qerp-sales-compact-form > .qerp-field,
