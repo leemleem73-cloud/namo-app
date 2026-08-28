@@ -1,17 +1,19 @@
-/* NAMO QMES - Sales order display/delivery sync V4 - 2026-08-28
+/* NAMO QMES - Sales order display/delivery sync V5 - 2026-08-28
  * Delivery status is based on actual shipment.
  * Shipment complete also closes production plan as 생산완료.
+ * Adds a final runtime typography/alignment owner for the sales table.
  * Confirmed correction: SO-20260114-001 shipped on 2026-01-15.
  * Stable data-qso-id / workOrder identity is intentionally not rewritten.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V4__)return;
-  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V4__=true;
+  if(window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V5__)return;
+  window.__QMES_SALES_ORDER_ID_DISPLAY_SYNC_20260828_V5__=true;
 
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const SHIPPING_KEY="qmes-erp-shipping-v1";
+  const STYLE_ID="qmes-sales-table-uniform-20260828-v5";
   const CONFIRMED_SHIPMENTS={
     "SO-20260114-001":{actualShipDate:"2026-01-15",status:"출하완료",delivery:"납품완료",plan:"생산완료"}
   };
@@ -25,6 +27,115 @@
   const rowKey=row=>clean(row?.workOrder)||clean(row?.id);
   const isoDate=value=>{const m=clean(value).match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`:"";};
   const same=(a,b)=>{try{return JSON.stringify(a)===JSON.stringify(b);}catch(_error){return a===b;}};
+
+  function ensureUniformTableStyle(){
+    let style=document.getElementById(STYLE_ID);
+    if(!style){
+      style=document.createElement("style");
+      style.id=STYLE_ID;
+      document.head.appendChild(style);
+    }
+    style.textContent=`
+      .qmes-sales-stable .qerp-table{
+        width:100%!important;
+        table-layout:fixed!important;
+        border-collapse:collapse!important;
+      }
+      .qmes-sales-stable .qerp-table thead tr,
+      .qmes-sales-stable .qerp-table tbody tr{
+        height:46px!important;
+      }
+      .qmes-sales-stable .qerp-table th,
+      .qmes-sales-stable .qerp-table td{
+        width:9.09%!important;
+        min-width:0!important;
+        max-width:none!important;
+        height:46px!important;
+        box-sizing:border-box!important;
+        padding:8px 6px!important;
+        font-family:inherit!important;
+        font-size:12px!important;
+        font-weight:700!important;
+        line-height:1.25!important;
+        letter-spacing:0!important;
+        text-align:center!important;
+        vertical-align:middle!important;
+        white-space:nowrap!important;
+        overflow:hidden!important;
+        text-overflow:ellipsis!important;
+      }
+      .qmes-sales-stable .qerp-table th *,
+      .qmes-sales-stable .qerp-table td *{
+        font-family:inherit!important;
+        font-size:12px!important;
+        font-weight:700!important;
+        line-height:1.25!important;
+        letter-spacing:0!important;
+        text-align:center!important;
+        vertical-align:middle!important;
+      }
+      .qmes-sales-stable .qerp-table td > span,
+      .qmes-sales-stable .qerp-table td > a,
+      .qmes-sales-stable .qerp-table td > b,
+      .qmes-sales-stable .qerp-table td > strong,
+      .qmes-sales-stable .qerp-table td > button,
+      .qmes-sales-stable .qerp-table .qmes-sales-order-link,
+      .qmes-sales-stable .qerp-table .qmes-sales-plain-status,
+      .qmes-sales-stable .qerp-table .qmes-sales-packaging-text,
+      .qmes-sales-stable .qerp-table .qmes-sales-packaging-missing{
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        max-width:100%!important;
+        margin-left:auto!important;
+        margin-right:auto!important;
+        text-align:center!important;
+      }
+      .qmes-sales-stable .qerp-table .qmes-sales-order-link{
+        width:auto!important;
+        padding:0!important;
+      }
+      .qmes-sales-stable .qerp-table .qmes-sales-subtext{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        width:100%!important;
+        margin:2px auto 0!important;
+        text-align:center!important;
+      }
+      .qmes-sales-stable .qerp-table .qmes-sales-action-head,
+      .qmes-sales-stable .qerp-table .qmes-sales-action-cell{
+        width:9.09%!important;
+        min-width:0!important;
+        max-width:none!important;
+        text-align:center!important;
+      }
+      .qmes-sales-stable .qerp-table .qmes-sales-action-wrap{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        gap:6px!important;
+        width:100%!important;
+        margin:0 auto!important;
+        text-align:center!important;
+      }
+      .qmes-sales-stable .qerp-table .qmes-sales-edit-btn,
+      .qmes-sales-stable .qerp-table .qmes-sales-delete-btn{
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        width:auto!important;
+        min-width:34px!important;
+        height:28px!important;
+        padding:0 7px!important;
+        margin:0!important;
+        font-size:12px!important;
+        font-weight:700!important;
+        line-height:1!important;
+        text-align:center!important;
+      }
+    `;
+  }
 
   function metaFor(row,map){
     const id=clean(row?.id),key=rowKey(row);
@@ -177,6 +288,7 @@
     if(running)return;
     running=true;
     try{
+      ensureUniformTableStyle();
       const corrected=applyConfirmedCorrections();
       const list=corrected.list,map=corrected.map,ships=shippingRows();
       salesTables().forEach(table=>{
@@ -213,6 +325,7 @@
   }
 
   const start=()=>{
+    ensureUniformTableStyle();
     sync();
     [80,180,350,700,1200,2200].forEach(schedule);
     const observer=new MutationObserver(mutations=>{
@@ -220,7 +333,7 @@
       if(document.querySelector(".qmes-sales-stable")||Array.from(document.querySelectorAll(".qerp-title")).some(node=>/수주/.test(clean(node.textContent))&&/납기/.test(clean(node.textContent))))schedule();
     });
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V4__=observer;
+    window.__QMES_SALES_ORDER_ID_DISPLAY_OBSERVER_20260828_V5__=observer;
   };
 
   ["qmes:erp-data-changed","qmes:erp-runtime-loaded","qmes:mes-master-ready","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,()=>schedule()));
