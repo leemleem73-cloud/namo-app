@@ -94,3 +94,135 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
   window.qmesSalesKpiFontMatch={apply};
 })();
+
+/* APPEND-ONLY V2 - dedicated compliance overlay.
+ * Do not change existing KPI/runtime logic. The normal React value stays hidden in the
+ * compliance card while a body-level overlay renders the final percentage with the
+ * exact typography and vertical position of the normal KPI value.
+ */
+(function(){
+  "use strict";
+  if(window.__QMES_SALES_COMPLIANCE_OVERLAY_20260828_V2__)return;
+  window.__QMES_SALES_COMPLIANCE_OVERLAY_20260828_V2__=true;
+
+  const STYLE_ID="qmes-sales-compliance-overlay-style-20260828-v2";
+  const OVERLAY_ID="qmes-sales-compliance-overlay-20260828-v2";
+  const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
+  const isCompliance=v=>{const x=clean(v).replace(/\s+/g,"");return x==="납기준수율"||x==="납기준율";};
+
+  function ensureStyle(){
+    if(document.getElementById(STYLE_ID))return;
+    const style=document.createElement("style");
+    style.id=STYLE_ID;
+    style.textContent=`
+      .qmes-sales-stable .qerp-kpis > .qerp-kpi:nth-child(3) > b{
+        visibility:hidden!important;
+        opacity:0!important;
+      }
+      #${OVERLAY_ID}{
+        position:fixed!important;
+        z-index:2147483000!important;
+        display:none;
+        margin:0!important;
+        padding:0!important;
+        border:0!important;
+        background:transparent!important;
+        pointer-events:none!important;
+        white-space:nowrap!important;
+        color:#0f172a!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureOverlay(){
+    let node=document.getElementById(OVERLAY_ID);
+    if(!node){
+      node=document.createElement("div");
+      node.id=OVERLAY_ID;
+      node.setAttribute("aria-hidden","true");
+      document.body.appendChild(node);
+    }
+    return node;
+  }
+
+  function getValue(){
+    try{
+      const v=clean(window.qmesSalesKpiVisualLock?.values?.()?.["납기 준수율"]);
+      if(/^\d+(?:\.\d+)?%$/.test(v))return v;
+    }catch(_error){}
+    try{
+      const v=clean(sessionStorage.getItem("qmes-sales-compliance-last-good-v2")||"");
+      if(/^\d+(?:\.\d+)?%$/.test(v))return v;
+    }catch(_error){}
+    return "";
+  }
+
+  function apply(){
+    ensureStyle();
+    const overlay=ensureOverlay();
+    const root=document.querySelector(".qmes-sales-stable");
+    if(!root){overlay.style.display="none";return;}
+
+    const cards=Array.from(root.querySelectorAll(".qerp-kpi"));
+    const compliance=cards.find(card=>isCompliance(card.querySelector("span")?.textContent));
+    const reference=cards.find(card=>clean(card.querySelector("span")?.textContent)==="진행 수주")||cards.find(card=>card!==compliance);
+    const refValue=reference?.querySelector(":scope > b");
+    if(!compliance||!reference||!refValue){return;}
+
+    const value=getValue();
+    if(!value)return;
+
+    const refCardRect=reference.getBoundingClientRect();
+    const refValueRect=refValue.getBoundingClientRect();
+    const compRect=compliance.getBoundingClientRect();
+    if(!refCardRect.width||!compRect.width)return;
+
+    const cs=getComputedStyle(refValue);
+    const left=compRect.left+(refValueRect.left-refCardRect.left);
+    const top=compRect.top+(refValueRect.top-refCardRect.top);
+
+    overlay.textContent=value;
+    overlay.style.setProperty("display","block","important");
+    overlay.style.setProperty("left",left+"px","important");
+    overlay.style.setProperty("top",top+"px","important");
+    overlay.style.setProperty("font-family",cs.fontFamily,"important");
+    overlay.style.setProperty("font-size",cs.fontSize,"important");
+    overlay.style.setProperty("font-weight",cs.fontWeight,"important");
+    overlay.style.setProperty("font-style",cs.fontStyle,"important");
+    overlay.style.setProperty("font-stretch",cs.fontStretch,"important");
+    overlay.style.setProperty("font-variant",cs.fontVariant,"important");
+    overlay.style.setProperty("font-variant-numeric",cs.fontVariantNumeric,"important");
+    overlay.style.setProperty("line-height",cs.lineHeight,"important");
+    overlay.style.setProperty("letter-spacing",cs.letterSpacing,"important");
+    overlay.style.setProperty("text-transform",cs.textTransform,"important");
+    overlay.style.setProperty("text-align",cs.textAlign,"important");
+    overlay.style.setProperty("color","#0f172a","important");
+    overlay.style.setProperty("opacity","1","important");
+    overlay.style.setProperty("visibility","visible","important");
+  }
+
+  let queued=false;
+  function schedule(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;apply();});
+  }
+
+  function boot(){
+    apply();
+    [30,80,150,300,600,1000,1800,3000,5000].forEach(ms=>setTimeout(apply,ms));
+    const observer=new MutationObserver(schedule);
+    observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+    window.__QMES_SALES_COMPLIANCE_OVERLAY_OBSERVER_20260828_V2__=observer;
+    window.addEventListener("resize",schedule,{passive:true});
+    window.addEventListener("scroll",schedule,{passive:true,capture:true});
+  }
+
+  ["qmes:mes-master-ready","qmes:enterprise-ui-ready","qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete"].forEach(name=>window.addEventListener(name,schedule));
+  window.addEventListener("hashchange",schedule);
+  window.addEventListener("popstate",schedule);
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  window.qmesSalesComplianceOverlay={apply};
+})();
