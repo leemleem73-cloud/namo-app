@@ -20,22 +20,14 @@ html body #root#root#root button[aria-label^="계정 설정"] div,html body #roo
 
 /* 설비관리 최종 표 외곽 정리 */
 html body #root .qmes-ipad-equipment .qmes-equipment-master-screen,
-html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div,
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen,
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen>div{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
-html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:last-child,
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;}
+html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
+html body #root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:last-child{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;background:transparent!important;}
 html body #root .qmes-ipad-equipment .qmes-equipment-master-table{border-collapse:collapse!important;border-radius:0!important;box-shadow:none!important;}
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important;}
-html body #root .qmes-ipad-equipment .qmes-equipment-repair-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
 
 /* Panel 내부 content shell 평면화 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box),
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::before,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::after,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::before,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:not(.qmes-equipment-register-box)::after{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div::after{border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;}
 
 /* 설비대장: 한 화면 + 9개 열 균등 + 우측 사용폭 확장 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen{width:calc(100% + 12px)!important;max-width:calc(100% + 12px)!important;margin-right:-12px!important;box-sizing:border-box!important;}
@@ -48,46 +40,37 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table th{f
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td input,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td select{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;padding-left:5px!important;padding-right:5px!important;font-size:10px!important;text-align:center!important;}
 
-/* 설비대장 헤더: 실제 첫/마지막 셀 중앙에 미세 조정 */
+/* 설비대장 헤더 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child{position:relative!important;display:block!important;width:100%!important;min-height:56px!important;padding:0!important;box-sizing:border-box!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>h3{position:absolute!important;left:7.14%!important;top:50%!important;margin:0!important;transform:translate(-50%,-50%)!important;text-align:center!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button{position:absolute!important;right:7.22%!important;top:50%!important;transform:translate(50%,-50%)!important;height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;}
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button:hover{border-color:#000!important;background:#f5f5f5!important;}
 
-/* 정기점검·교정 헤더: 미세 위치 조정 + 신규 등록 가로폭 축소 */
+/* 정기점검·교정 헤더 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child{position:relative!important;display:block!important;width:100%!important;min-height:56px!important;padding:0!important;box-sizing:border-box!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child>h3{position:absolute!important;left:7.85%!important;top:50%!important;margin:0!important;transform:translate(-50%,-50%)!important;text-align:center!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child button{position:absolute!important;right:8.30%!important;top:50%!important;transform:translate(50%,-50%)!important;height:34px!important;min-height:34px!important;padding:0 10px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-screen>div>div:first-child button:hover{border-color:#000!important;background:#f5f5f5!important;}
 
-/* 정기점검·교정 표: 셀 자체를 flex 중앙정렬해 기존 th 내부 정렬 규칙까지 제거 */
+/* 정기점검·교정 표 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:first-child,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child{
-  padding:0!important;
-  text-align:center!important;
-  vertical-align:middle!important;
-}
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:first-child,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child{
-  position:relative!important;
-  text-indent:0!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child{padding:0!important;text-align:center!important;vertical-align:middle!important;position:relative!important;text-indent:0!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:first-child::before,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child::before{
-  content:none!important;
-  display:none!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-schedule-table thead th:last-child::before{content:none!important;display:none!important;}
+
+/* 고장·수리 이력: 정기점검 카드 외곽/헤더/신규등록과 동일한 형태 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen{margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div{position:relative!important;overflow:hidden!important;border:1px solid #d9e0e7!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important;outline:0!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:first-child{position:relative!important;display:block!important;width:100%!important;min-height:56px!important;padding:0!important;box-sizing:border-box!important;border-bottom:1px solid #d9e0e7!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:first-child>h3{position:absolute!important;left:8%!important;top:50%!important;margin:0!important;transform:translate(-50%,-50%)!important;text-align:center!important;white-space:nowrap!important;font-size:14px!important;font-weight:900!important;color:#111827!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:first-child button{position:absolute!important;right:8%!important;top:50%!important;transform:translate(50%,-50%)!important;height:34px!important;min-height:34px!important;padding:0 10px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div>div:first-child button:hover{border-color:#000!important;background:#f5f5f5!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:20px 22px!important;box-sizing:border-box!important;overflow-x:hidden!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;}
 
 /* 고장·수리 이력: 정기점검 표와 동일한 글자 크기로 통일 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table th,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table td,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table button{
-  font-size:11.5px!important;
-  line-height:1.2!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-table button{font-size:11.5px!important;line-height:1.2!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label>input,
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label>select{
-  font-size:11.5px!important;
-  line-height:1.2!important;
-}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-register-grid>label>select{font-size:11.5px!important;line-height:1.2!important;}
