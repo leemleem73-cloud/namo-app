@@ -1,7 +1,8 @@
-/* NAMO QMES - Enterprise Sales polish V1 - 2026-08-28
- * ADD-ONLY patch.
+/* NAMO QMES - Enterprise Sales polish V1.1 - 2026-08-28
+ * ADD-ONLY visual patch owner.
  * 1) Normalizes header/body row height, vertical alignment and column spacing.
- * 2) Forces every visible '신규 수주' action on the Sales page to the NAMO V4 form.
+ * 2) Keeps production-plan text fully visible instead of ellipsis.
+ * 3) Forces every visible '신규 수주' action on the Sales page to the current NAMO new-order owner.
  */
 (function(){
   "use strict";
@@ -21,7 +22,7 @@
       #${HOST} .wrap{overflow-x:auto!important;overflow-y:hidden!important}
       #${HOST} table{
         width:100%!important;
-        min-width:1080px!important;
+        min-width:1160px!important;
         table-layout:fixed!important;
         border-collapse:separate!important;
         border-spacing:0!important;
@@ -36,7 +37,7 @@
         padding:0 14px!important;
         border-bottom:1px solid #edf0f4!important;
         vertical-align:middle!important;
-        line-height:1.2!important;
+        line-height:1.25!important;
         white-space:nowrap!important;
         overflow:hidden!important;
         text-overflow:ellipsis!important;
@@ -60,8 +61,17 @@
       #${HOST} th:nth-child(2),#${HOST} td:nth-child(2){width:170px!important;text-align:left!important}
       #${HOST} th:nth-child(3),#${HOST} td:nth-child(3){width:210px!important;text-align:left!important}
       #${HOST} th:nth-child(4),#${HOST} td:nth-child(4){width:130px!important}
-      #${HOST} th:nth-child(5),#${HOST} td:nth-child(5){width:140px!important}
-      #${HOST} th:nth-child(6),#${HOST} td:nth-child(6){width:170px!important}
+      #${HOST} th:nth-child(5),#${HOST} td:nth-child(5){width:150px!important}
+      #${HOST} th:nth-child(6),#${HOST} td:nth-child(6){
+        width:210px!important;
+        min-width:210px!important;
+        max-width:none!important;
+        overflow:visible!important;
+        text-overflow:clip!important;
+        white-space:nowrap!important;
+        text-align:center!important;
+      }
+      #${HOST} td:nth-child(6){font-size:11.5px!important;font-weight:800!important;color:#253047!important}
       #${HOST} th:nth-child(7),#${HOST} td:nth-child(7){width:150px!important}
       #${HOST} th:nth-child(8),#${HOST} td:nth-child(8){width:130px!important}
       #${HOST} .order{
@@ -91,12 +101,17 @@
       @media(max-width:900px){
         #${HOST} th,#${HOST} td{padding-left:10px!important;padding-right:10px!important}
         #${HOST} th:nth-child(1),#${HOST} td:nth-child(1){padding-left:14px!important}
+        #${HOST} th:nth-child(6),#${HOST} td:nth-child(6){min-width:180px!important;width:180px!important}
       }
     `;
     document.head.appendChild(s);
   }
 
   function openNewOrder(){
+    if(window.qmesSalesNewOrderNamoV5?.open){
+      window.qmesSalesNewOrderNamoV5.open();
+      return true;
+    }
     if(window.qmesSalesNewOrderNamoV4?.open){
       window.qmesSalesNewOrderNamoV4.open();
       return true;
