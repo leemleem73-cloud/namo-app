@@ -40,8 +40,6 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-repair-screen>div
 /* 설비대장: 한 화면 + 9개 열 균등 + 우측 사용폭 확장 */
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen{width:calc(100% + 12px)!important;max-width:calc(100% + 12px)!important;margin-right:-12px!important;box-sizing:border-box!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child{padding-left:0!important;padding-right:0!important;box-sizing:border-box!important;}
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>h3{margin-left:0!important;}
-html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>div{margin-left:auto!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen .overflow-x-auto{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:visible!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;box-sizing:border-box!important;margin:0!important;}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table col{width:11.111111%!important;}
@@ -51,10 +49,26 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table th{f
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td input,
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td select{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;padding-left:5px!important;padding-right:5px!important;font-size:10px!important;text-align:center!important;}
 
-/* 전체 저장 버튼만 왼쪽 이동 — 설비대장 표/영역은 그대로 */
+/* 설비대장 헤더만 표 첫/마지막 칸 기준으로 정렬 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>h3{
+  flex:0 0 11.111111%!important;
+  width:11.111111%!important;
+  margin:0!important;
+  text-align:center!important;
+}
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>div{
-  margin-right:0!important;
-  transform:translateX(-42px)!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  flex:0 0 11.111111%!important;
+  width:11.111111%!important;
+  margin:0!important;
+  transform:none!important;
 }
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button{
   height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;
