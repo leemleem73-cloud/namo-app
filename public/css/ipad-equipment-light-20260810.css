@@ -51,3 +51,33 @@
 /* EM 설비점검 현장입력 상단 제목: EM만 주황색 */
 .qmes-ipad-pop:has(.qmes-ipad-equipment) .qmes-ipad-work-head > div:nth-child(2) > span{color:#d97706!important;-webkit-text-fill-color:#d97706!important;}
 @media(max-width:700px){.qmes-ipad-equipment{padding:16px!important;border-radius:15px!important;}.qmes-ipad-equipment .qmes-equipment-nav-block{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}.qmes-ipad-equipment .qmes-equipment-nav-block>button{min-height:46px!important;height:46px!important;font-size:13px!important;}}
+
+/* 정기점검·교정: 바깥 흰 껍데기/겹친 둥근 테두리 제거 */
+.qmes-ipad-equipment .qmes-equipment-schedule-screen{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-screen>section,
+.qmes-ipad-equipment .qmes-equipment-schedule-screen>.panel,
+.qmes-ipad-equipment .qmes-equipment-schedule-screen>[class*="panel"]{
+  margin:0!important;
+  box-shadow:none!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-table-wrap{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  overflow-x:auto!important;
+}
+.qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-register-box{
+  box-shadow:none!important;
+}
