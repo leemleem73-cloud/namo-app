@@ -1,24 +1,30 @@
-/* 고장·수리 이력 표: 바깥 테두리 기준 여백 축소 + 표 자체 확대 */
-html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{
-  width:calc(100% + 20px)!important;
+/* 고장·수리 이력: 바깥 카드 안에서 표를 조금 더 넓고 위로 배치 */
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel{
+  overflow:hidden!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel>.qmes-equipment-table-wrap{
+  width:calc(100% - 20px)!important;
   max-width:none!important;
-  margin:-10px -10px 0!important;
-  padding:10px 12px 18px!important;
+  margin:8px 10px 12px!important;
+  padding:0!important;
   box-sizing:border-box!important;
-  overflow-x:hidden!important;
+  overflow:hidden!important;
+  border:1px solid #dce4ec!important;
+  border-radius:8px!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{
   width:100%!important;
   min-width:0!important;
   max-width:100%!important;
+  table-layout:fixed!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table th{
-  height:50px!important;
-  padding-top:12px!important;
-  padding-bottom:12px!important;
+  height:48px!important;
+  padding:10px 5px!important;
+  box-sizing:border-box!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table td{
-  height:50px!important;
-  padding-top:12px!important;
-  padding-bottom:12px!important;
+  height:48px!important;
+  padding:10px 5px!important;
+  box-sizing:border-box!important;
 }
