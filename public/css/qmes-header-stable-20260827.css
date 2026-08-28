@@ -62,3 +62,11 @@ html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td i
 html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-table td select{
   display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important;padding-left:5px!important;padding-right:5px!important;font-size:10px!important;text-align:center!important;
 }
+
+/* 설비대장 전체 저장: 표 확장과 분리해서 안쪽 배치 + 정기점검 신규등록 버튼과 동일 크기 */
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child>div{
+  margin-right:14px!important;
+}
+html body #root#root#root .qmes-ipad-equipment .qmes-equipment-master-screen>div>div:first-child button{
+  height:34px!important;min-height:34px!important;padding:0 14px!important;border:1.5px solid #111!important;border-radius:6px!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;box-shadow:none!important;font-size:12px!important;line-height:1!important;font-weight:900!important;white-space:nowrap!important;
+}
