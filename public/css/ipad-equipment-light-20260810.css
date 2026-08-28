@@ -108,3 +108,17 @@ html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipmen
   box-shadow:none!important;
   clip-path:none!important;
 }
+
+/* 4칸 사이 아래로 번져 이어지는 얇은 선은 개별 카드 그림자에서 발생하므로 완전히 제거 */
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary>.qmes-equipment-summary-card{
+  box-shadow:none!important;
+}
+
+/* 정기점검·교정 본문 박스: 바깥 겹침은 없애되 실제 패널 윗 테두리는 복구 */
+html body .qmes-ipad-equipment .qmes-equipment-schedule-screen>section,
+html body .qmes-ipad-equipment .qmes-equipment-schedule-screen>.panel,
+html body .qmes-ipad-equipment .qmes-equipment-schedule-screen>[class*="panel"]{
+  border-top:1px solid #dce4ec!important;
+  border-top-left-radius:10px!important;
+  border-top-right-radius:10px!important;
+}
