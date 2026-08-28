@@ -1,0 +1,14 @@
+/* 고장·수리 이력 표: 바깥 테두리 기준 여백만 미세 축소 */
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-table-wrap{
+  width:calc(100% + 12px)!important;
+  max-width:none!important;
+  margin:-6px -6px 0!important;
+  padding:14px 16px 20px!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+}
+html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
