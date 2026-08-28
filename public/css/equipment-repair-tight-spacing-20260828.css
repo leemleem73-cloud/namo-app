@@ -1,11 +1,11 @@
-/* 고장·수리 이력: 정기점검·교정과 동일한 표 바깥 여백 */
+/* 고장·수리 이력: 바깥 둥근 테두리와 표 사이 여백 축소 */
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel{
   overflow:hidden!important;
 }
 html body .qmes-ipad-equipment .qmes-equipment-repair-screen .qmes-equipment-repair-panel>.qmes-equipment-table-wrap{
-  width:calc(100% - 40px)!important;
+  width:calc(100% - 20px)!important;
   max-width:none!important;
-  margin:20px 20px 20px!important;
+  margin:10px 10px 14px!important;
   padding:0!important;
   box-sizing:border-box!important;
   overflow:hidden!important;
