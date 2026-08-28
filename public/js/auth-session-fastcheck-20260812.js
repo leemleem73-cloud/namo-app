@@ -1,6 +1,6 @@
 /* QMES auth/session + first-paint bootstrap
- * One owner for current global UI assets before React/Babel renders.
- * Field Input keeps the shared shell from the first paint while page-content themes stay isolated.
+ * Keep auth handling minimal and avoid repeated fetch retries that can
+ * bounce the login state or trigger visible first-paint flicker.
  */
 (function installAuthSessionFastCheck(global){
   "use strict";
@@ -16,16 +16,16 @@
     if(!options.credentials) options.credentials="same-origin";
     options.cache="no-store";
 
-    return nativeFetch(input,options).catch((firstError)=>
-      new Promise((resolve)=>global.setTimeout(resolve,700))
-        .then(()=>nativeFetch(input,options))
-        .catch(()=>Promise.reject(firstError))
-    );
+    // Do not auto-retry auth/me here. A delayed second auth request can race
+    // the initial app bootstrap and make the login/main screen flash or bounce.
+    return nativeFetch(input,options);
   };
 })(window);
 
-/* Restore the confirmed 10:08 Field Input ownership model:
- * shared shell stays active; page-content themes are disabled on POP first paint. */
+/* Restore the confirmed Field Input ownership model without toggling styles
+ * that are already present in the document. This keeps the shared shell
+ * stable during first paint and avoids visible stylesheet on/off flashes.
+ */
 (function installCurrentUiBeforeRender(){
   "use strict";
   if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
@@ -52,9 +52,18 @@
 
   styles.forEach(([id,href,keepDuringField])=>{
     let link=document.getElementById(id);
-    if(!link){link=document.createElement("link");link.id=id;link.rel="stylesheet";link.href=href;document.head.appendChild(link);}
-    else if(String(link.getAttribute("href")||"")!==href)link.href=href;
-    link.media=fieldInputFirstPaint&&!keepDuringField?"not all":"all";
-    link.disabled=false;
+    if(!link){
+      link=document.createElement("link");
+      link.id=id;
+      link.rel="stylesheet";
+      link.href=href;
+      if(fieldInputFirstPaint&&!keepDuringField) link.media="not all";
+      document.head.appendChild(link);
+      return;
+    }
+
+    // Existing styles are left untouched during bootstrap so the browser does
+    // not repaint the whole app because of media/disabled flips.
+    if(String(link.getAttribute("href")||"")!==href) link.href=href;
   });
 })();
