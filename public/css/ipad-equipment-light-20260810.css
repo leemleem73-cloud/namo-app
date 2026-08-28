@@ -98,3 +98,13 @@ html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipmen
   content:none!important;
   display:none!important;
 }
+
+/* 요약 4칸 사이에 이어져 보이던 바깥 가로선 제거: 부모 요약박스 자체는 투명/무테 */
+html body .qmes-ipad-equipment .qmes-equipment-management-content>.qmes-equipment-management-summary{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+}
