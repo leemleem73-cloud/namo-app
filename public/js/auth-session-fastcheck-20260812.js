@@ -1,6 +1,6 @@
 /* QMES auth/session + first-paint bootstrap
- * Keep auth handling minimal and avoid repeated fetch retries that can
- * bounce the login state or trigger visible first-paint flicker.
+ * Keep the login screen visually stable. QMES shell/theme styles are loaded
+ * only after the server confirms a valid session or a login succeeds.
  */
 (function installAuthSessionFastCheck(global){
   "use strict";
@@ -8,31 +8,8 @@
   global.__QMES_AUTH_FASTCHECK_20260812__=true;
 
   const nativeFetch=global.fetch.bind(global);
-  global.fetch=function(input,init){
-    const url=typeof input==="string"?input:(input&&input.url)||"";
-    if(!/\/api\/auth\/me(?:\?|$)/.test(url)) return nativeFetch(input,init);
-
-    const options={...(init||{})};
-    if(!options.credentials) options.credentials="same-origin";
-    options.cache="no-store";
-
-    // Do not auto-retry auth/me here. A delayed second auth request can race
-    // the initial app bootstrap and make the login/main screen flash or bounce.
-    return nativeFetch(input,options);
-  };
-})(window);
-
-/* Restore the confirmed Field Input ownership model without toggling styles
- * that are already present in the document. This keeps the shared shell
- * stable during first paint and avoids visible stylesheet on/off flashes.
- */
-(function installCurrentUiBeforeRender(){
-  "use strict";
-  if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
-  window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__=true;
-
-  let fieldInputFirstPaint=false;
-  try{fieldInputFirstPaint=sessionStorage.getItem("qmes_current_tab")==="pop";}catch(_error){}
+  let authMeInFlight=null;
+  let uiStylesPromise=null;
 
   const styles=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
@@ -50,20 +27,86 @@
     ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1",true]
   ];
 
-  styles.forEach(([id,href,keepDuringField])=>{
-    let link=document.getElementById(id);
-    if(!link){
-      link=document.createElement("link");
-      link.id=id;
-      link.rel="stylesheet";
-      link.href=href;
-      if(fieldInputFirstPaint&&!keepDuringField) link.media="not all";
-      document.head.appendChild(link);
-      return;
+  function fieldInputFirstPaint(){
+    try{return sessionStorage.getItem("qmes_current_tab")==="pop";}catch(_error){return false;}
+  }
+
+  function waitForStyle(link){
+    if(link.sheet) return Promise.resolve();
+    return new Promise(resolve=>{
+      let done=false;
+      const finish=()=>{
+        if(done) return;
+        done=true;
+        link.removeEventListener("load",finish);
+        link.removeEventListener("error",finish);
+        resolve();
+      };
+      link.addEventListener("load",finish,{once:true});
+      link.addEventListener("error",finish,{once:true});
+      global.setTimeout(finish,900);
+    });
+  }
+
+  function installCurrentUiBeforeRender(){
+    if(global.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return Promise.resolve();
+    if(uiStylesPromise) return uiStylesPromise;
+
+    uiStylesPromise=Promise.all(styles.map(([id,href,keepDuringField])=>{
+      let link=document.getElementById(id);
+      if(!link){
+        link=document.createElement("link");
+        link.id=id;
+        link.rel="stylesheet";
+        link.href=href;
+        if(fieldInputFirstPaint()&&!keepDuringField) link.media="not all";
+        document.head.appendChild(link);
+      }else if(String(link.getAttribute("href")||"")!==href){
+        link.href=href;
+      }
+      return waitForStyle(link);
+    })).then(()=>{
+      global.__QMES_CURRENT_UI_BOOTSTRAP_20260826__=true;
+    }).catch(error=>{
+      console.warn("[QMES] UI style bootstrap warning",error);
+      global.__QMES_CURRENT_UI_BOOTSTRAP_20260826__=true;
+    });
+
+    return uiStylesPromise;
+  }
+
+  global.__QMES_INSTALL_CURRENT_UI_STYLES__=installCurrentUiBeforeRender;
+
+  function authOptions(init){
+    const options={...(init||{})};
+    if(!options.credentials) options.credentials="same-origin";
+    options.cache="no-store";
+    return options;
+  }
+
+  global.fetch=function(input,init){
+    const url=typeof input==="string"?input:(input&&input.url)||"";
+
+    if(/\/api\/auth\/me(?:\?|$)/.test(url)){
+      const options=authOptions(init);
+      if(!authMeInFlight){
+        authMeInFlight=nativeFetch(input,options)
+          .then(async response=>{
+            if(response.ok) await installCurrentUiBeforeRender();
+            return response;
+          })
+          .finally(()=>{global.setTimeout(()=>{authMeInFlight=null;},0);});
+      }
+      return authMeInFlight.then(response=>response.clone());
     }
 
-    // Existing styles are left untouched during bootstrap so the browser does
-    // not repaint the whole app because of media/disabled flips.
-    if(String(link.getAttribute("href")||"")!==href) link.href=href;
-  });
-})();
+    if(/\/api\/auth\/login(?:\?|$)/.test(url)){
+      return nativeFetch(input,authOptions(init)).then(async response=>{
+        if(response.ok) await installCurrentUiBeforeRender();
+        return response;
+      });
+    }
+
+    return nativeFetch(input,init);
+  };
+})(window);
