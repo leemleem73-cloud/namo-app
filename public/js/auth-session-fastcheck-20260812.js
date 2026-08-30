@@ -7,6 +7,18 @@
   if(global.__QMES_AUTH_FASTCHECK_20260812__) return;
   global.__QMES_AUTH_FASTCHECK_20260812__=true;
 
+  /* qmes-sync.js reloads the whole page on any 401. Several shared modules are
+     loaded before React decides whether the user is authenticated, so a normal
+     pre-login 401 can otherwise become a reload loop. Keep that reload guard on
+     until QMESApp has actually published a verified current user. */
+  global.__QMES_AUTH_RELOAD_PENDING__=true;
+  const authReadyTimer=global.setInterval(()=>{
+    const user=global.__QMES_CURRENT_USER__;
+    if(!user||typeof user!=="object"||!(user.id||user.uid||user.name)) return;
+    delete global.__QMES_AUTH_RELOAD_PENDING__;
+    global.clearInterval(authReadyTimer);
+  },100);
+
   const nativeFetch=global.fetch.bind(global);
   global.fetch=function(input,init){
     const url=typeof input==="string"?input:(input&&input.url)||"";
