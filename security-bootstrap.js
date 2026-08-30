@@ -40,29 +40,14 @@ function hardenedSession(options = {}) {
 Object.assign(hardenedSession, session);
 require.cache[sessionModulePath].exports = hardenedSession;
 
-// Render/reverse-proxy environments can present the same proxy IP to Express when
-// app.set('trust proxy') is not configured. Use the first forwarded client IP for
-// rate-limit bucketing so one employee cannot accidentally block everyone else.
-function clientKey(req) {
-  const forwarded = String(req.headers['x-forwarded-for'] || '')
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean)[0];
-  return forwarded || String(req.socket?.remoteAddress || req.ip || 'unknown');
-}
-
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
+  limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  keyGenerator: clientKey,
-  // Valid logins must not consume the failure budget. This is important for an
-  // internal QMES where operators frequently refresh/re-enter during testing.
-  skipSuccessfulRequests: true,
   message: {
     success: false,
-    message: '로그인 실패가 반복되었습니다. 잠시 후 다시 시도해 주세요.',
+    message: '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.',
     data: null,
   },
 });
@@ -72,7 +57,6 @@ const resetLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  keyGenerator: clientKey,
   message: {
     success: false,
     message: '비밀번호 초기화 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
