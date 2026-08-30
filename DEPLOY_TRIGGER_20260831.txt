@@ -1,0 +1,4 @@
+QMES clean deploy trigger
+2026-08-31 08:37 KST
+Reason: redeploy exact Aug 28 stable login/runtime/security state after login flicker regression.
+No application logic changed by this file.
