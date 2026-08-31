@@ -1,13 +1,8 @@
 /* NAMO QMES - login/sync bootstrap coordinator - 2026-09-01
  *
- * Keep app.jsx as the single UI/auth owner. This guard only coordinates network
- * ordering so background QMES sync cannot race the initial /api/auth/me check.
- *
- * Rules:
- * 1) A saved browser login is verified exactly once with /api/auth/me.
- * 2) Concurrent /api/auth/me callers share that one response.
- * 3) Authenticated QMES sync waits for the initial auth verdict before starting.
- * 4) This file never renders, removes, or replaces the React login screen.
+ * Keep app.jsx as the single UI/auth owner. This guard coordinates initial auth,
+ * prevents sync/auth races, and blocks the sidebar DOM observer until login is
+ * fully authenticated.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -15,10 +10,44 @@
   global.__QMES_LOGIN_SYNC_COORDINATOR_20260901__=true;
 
   const SESSION_KEY="qmes-current-user-v1";
+  const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
+  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
   const nativeFetch=global.fetch.bind(global);
 
   let hasSavedSession=false;
   try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
+
+  /* qmes-collapsible-side-menu.js otherwise starts a whole-body MutationObserver
+     and an endless requestAnimationFrame boot loop while the login screen has no
+     top-menu buttons. Mark it as already installed until auth is actually ready. */
+  let sidebarDeferred=true;
+  global[SIDEBAR_GUARD]=true;
+
+  function currentUserReady(){
+    const user=global.__QMES_CURRENT_USER__;
+    return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));
+  }
+
+  function releaseSidebarAfterLogin(){
+    if(!sidebarDeferred) return;
+    let attempts=0;
+    const release=()=>{
+      if(!sidebarDeferred) return;
+      attempts+=1;
+      if(!currentUserReady()){
+        if(attempts<200) global.setTimeout(release,50);
+        return;
+      }
+      sidebarDeferred=false;
+      try{delete global[SIDEBAR_GUARD];}catch(_error){global[SIDEBAR_GUARD]=false;}
+      if(Array.from(document.scripts).some(script=>String(script.src||"").includes("20260901-authgate1"))) return;
+      const script=document.createElement("script");
+      script.src=SIDEBAR_SRC;
+      script.async=false;
+      document.head.appendChild(script);
+    };
+    global.setTimeout(release,0);
+  }
 
   let authState=hasSavedSession?"pending":"anonymous";
   let authCheckPromise=null;
@@ -32,10 +61,7 @@
     return null;
   }
 
-  function isSameOrigin(url){
-    return Boolean(url&&url.origin===global.location.origin);
-  }
-
+  function isSameOrigin(url){return Boolean(url&&url.origin===global.location.origin);}
   function isAuthMe(url){return isSameOrigin(url)&&url.pathname==="/api/auth/me";}
   function isAuthLogin(url){return isSameOrigin(url)&&url.pathname==="/api/auth/login";}
   function isAuthLogout(url){return isSameOrigin(url)&&url.pathname==="/api/auth/logout";}
@@ -46,6 +72,7 @@
     try{payload=await response.clone().json();}catch(_error){}
     authState=(response.ok&&payload?.success&&payload?.data)?"authenticated":"anonymous";
     global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;
+    if(authState==="authenticated") releaseSidebarAfterLogin();
     try{global.dispatchEvent(new CustomEvent("qmes:auth-bootstrap-settled",{detail:{state:authState}}));}catch(_error){}
     return response;
   }
@@ -59,10 +86,7 @@
         headers:{Accept:"application/json"}
       })
         .then(inspectAuthResponse)
-        .then(response=>{
-          authCheckResponse=response.clone();
-          return response;
-        })
+        .then(response=>{authCheckResponse=response.clone();return response;})
         .catch(error=>{
           authState="anonymous";
           global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;
@@ -96,11 +120,15 @@
       hasSavedSession=true;
       authCheckResponse=null;
       global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;
+      releaseSidebarAfterLogin();
     }else if(isAuthLogout(url)&&response.ok){
       authState="anonymous";
       hasSavedSession=false;
       authCheckResponse=null;
       global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;
+      document.getElementById("qmes-sync-sidebar")?.remove();
+      document.getElementById("qmes-sync-hamburger")?.remove();
+      document.body?.classList.remove("qmes-side-open");
     }
 
     return response;
