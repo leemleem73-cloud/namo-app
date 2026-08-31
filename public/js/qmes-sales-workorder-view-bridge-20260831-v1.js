@@ -8,6 +8,18 @@
   if(window.__QMES_SALES_WORKORDER_VIEW_BRIDGE_20260831_V2__) return;
   window.__QMES_SALES_WORKORDER_VIEW_BRIDGE_20260831_V2__=true;
 
+  /* Chrome/Windows native date popups can render as a blank white panel.
+     Load the QMES in-app date picker once and let it patch all current/future date fields. */
+  try{
+    if(!window.__QMES_DATE_PICKER_STABLE_20260831_V1__&&!document.querySelector('script[data-qmes-date-picker-stable="1"]')){
+      const script=document.createElement("script");
+      script.src="./js/qmes-date-picker-stable-20260831-v1.js?v=20260831-1";
+      script.async=false;
+      script.dataset.qmesDatePickerStable="1";
+      document.head.appendChild(script);
+    }
+  }catch(_){ }
+
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const LINK_KEY="qmes-sales-workorder-link-v1";
