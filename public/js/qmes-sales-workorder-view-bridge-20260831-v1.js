@@ -18,6 +18,16 @@
     }
   }catch(_){ }
 
+  try{
+    if(!window.__QMES_SALES_ORDER_CLASSIFICATION_20260831_V1__&&!document.querySelector('script[data-qmes-sales-classification="1"]')){
+      const script=document.createElement("script");
+      script.src="./js/qmes-sales-order-classification-20260831-v1.js?v=20260831-1";
+      script.async=false;
+      script.dataset.qmesSalesClassification="1";
+      document.head.appendChild(script);
+    }
+  }catch(_){ }
+
   const SALES_KEY="qmes-erp-sales-v1";
   const META_KEY="qmes-sales-order-meta-v1";
   const LINK_KEY="qmes-sales-workorder-link-v1";
@@ -67,9 +77,7 @@
     return clean(row.workOrder)||clean(m.workOrder)||clean(links?.bySales?.[wanted])||clean(links?.bySales?.[raw]);
   }
 
-  function resolveWorkOrder(root){
-    return workOrderFromCards(root)||workOrderFromStorage(salesId(root));
-  }
+  function resolveWorkOrder(root){return workOrderFromCards(root)||workOrderFromStorage(salesId(root));}
 
   function resolveLot(workOrder){
     const wo=clean(workOrder);
@@ -92,9 +100,7 @@
   function navigate(tab,detail){
     try{sessionStorage.setItem("qmes_current_tab",tab);}catch(_){ }
     const fire=()=>window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab,...detail}}));
-    fire();
-    requestAnimationFrame(fire);
-    setTimeout(fire,80);
+    fire();requestAnimationFrame(fire);setTimeout(fire,80);
   }
 
   function openWorkOrder(wo){
@@ -102,15 +108,13 @@
     if(!wanted||wanted==="-"){alert("연결된 작업지시서가 없습니다.");return;}
     try{localStorage.setItem("qmes-focus-workorder",wanted);}catch(_){ }
     navigate("wo",{openMenu:"productionMenu",workOrder:wanted,source:"sales-detail"});
-
     let attempt=0;
     const tick=()=>{
       attempt++;
       const row=Array.from(document.querySelectorAll("table.qmes-wo-list-table tbody tr")).find(tr=>clean(tr.querySelector("td:first-child")?.textContent)===wanted);
       if(row){
         const view=Array.from(row.querySelectorAll("button")).find(btn=>clean(btn.textContent)==="보기")||row.querySelector("button");
-        view?.click();
-        row.scrollIntoView({block:"center",behavior:"auto"});
+        view?.click();row.scrollIntoView({block:"center",behavior:"auto"});
         setTimeout(()=>document.querySelector(".qmes-wo-cert")?.scrollIntoView({block:"start",behavior:"smooth"}),120);
         try{localStorage.removeItem("qmes-focus-workorder");}catch(_){ }
         return;
@@ -126,38 +130,22 @@
     if(!wanted||wanted==="-"){alert("연결된 생산 LOT가 없습니다.");return;}
     try{localStorage.setItem("qmes-focus-lot",wanted);}catch(_){ }
     navigate("trace",{lot:wanted,workOrder:clean(wo),source:"sales-detail"});
-
     let attempt=0;
     const tick=()=>{
       attempt++;
-      const buttons=Array.from(document.querySelectorAll("button"));
-      const match=buttons.find(btn=>{
-        const text=clean(btn.textContent);
-        return text===wanted||text.startsWith(wanted+" ")||text.startsWith(wanted+"·");
-      });
-      if(match){
-        match.click();
-        match.scrollIntoView({block:"center",behavior:"auto"});
-        try{localStorage.removeItem("qmes-focus-lot");}catch(_){ }
-        return;
-      }
+      const match=Array.from(document.querySelectorAll("button")).find(btn=>{const text=clean(btn.textContent);return text===wanted||text.startsWith(wanted+" ")||text.startsWith(wanted+"·");});
+      if(match){match.click();match.scrollIntoView({block:"center",behavior:"auto"});try{localStorage.removeItem("qmes-focus-lot");}catch(_){ }return;}
       if(attempt<160)setTimeout(tick,50);else alert(`LOT ${wanted}를 LOT 추적 화면에서 찾지 못했습니다.`);
     };
     setTimeout(tick,50);
   }
 
   document.addEventListener("click",event=>{
-    const target=event.target;
-    if(!(target instanceof Element))return;
-    const button=target.closest("button");
-    const action=actionOf(button);
-    if(!action)return;
-    const root=drawerRoot(button);
-    if(!root)return;
+    const target=event.target;if(!(target instanceof Element))return;
+    const button=target.closest("button");const action=actionOf(button);if(!action)return;
+    const root=drawerRoot(button);if(!root)return;
     const wo=resolveWorkOrder(root);
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     closeDrawer(root);
     if(action==="workorder")openWorkOrder(wo);else openLot(wo);
   },true);
