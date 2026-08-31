@@ -1,53 +1,54 @@
-/* QMES startup hotfix - force Sales Order V6 on legacy V5 URL.
- * 2026-08-31
+/* QMES startup static-asset optimizer - 2026-08-31
+ * Historical filename kept because package.json preloads this module.
  *
- * Why this exists:
- * Some clients/deploy layers keep requesting the historical V5 asset URL.
- * At process startup, copy the current V6 implementation over the legacy V5
- * runtime file so even an old loader receives the new UI. Also disable cache
- * for the affected sales-order assets through express.static.
+ * Fixes:
+ * 1) DO NOT copy V6 over V5 at server startup anymore.
+ * 2) Keep index / master loader / current Sales Order V8 uncached so deployments appear immediately.
+ * 3) Allow the remaining dated JS/CSS assets to be browser-cached and revalidated,
+ *    reducing F5 reload time without changing runtime execution order.
  */
 'use strict';
-
-const fs = require('fs');
-const path = require('path');
-
-const root = __dirname;
-const source = path.join(root, 'public', 'js', 'qmes-sales-new-order-namo-modal-20260831-v6.js');
-const legacy = path.join(root, 'public', 'js', 'qmes-sales-new-order-namo-modal-20260828-v5.js');
-
-try {
-  if (fs.existsSync(source)) {
-    fs.copyFileSync(source, legacy);
-    console.log('[QMES] Sales Order V6 forced onto legacy V5 runtime asset');
-  } else {
-    console.warn('[QMES] Sales Order V6 source asset not found:', source);
-  }
-} catch (err) {
-  console.error('[QMES] Failed to force Sales Order V6 runtime asset:', err && err.message ? err.message : err);
-}
 
 try {
   const express = require('express');
   const originalStatic = express.static;
-  if (typeof originalStatic === 'function' && !express.__qmesSalesV6StaticPatched) {
-    express.__qmesSalesV6StaticPatched = true;
-    express.static = function qmesStatic(rootDir, options) {
+
+  if (typeof originalStatic === 'function' && !express.__qmesStaticCacheOptimized20260831) {
+    express.__qmesStaticCacheOptimized20260831 = true;
+
+    express.static = function qmesOptimizedStatic(rootDir, options) {
       const opts = Object.assign({}, options || {});
       const originalSetHeaders = opts.setHeaders;
+
       opts.setHeaders = function setQmesHeaders(res, filePath, stat) {
-        if (/qmes-sales-new-order-namo-modal-202608(28-v5|31-v6)\.js$|qmes-mes-master-loader-20260820-v2\.js$|[\\/]index\.html$/i.test(String(filePath || ''))) {
+        const file = String(filePath || '');
+        const isHtml = /[\\/]index\.html$/i.test(file) || /\.html$/i.test(file);
+        const isMasterLoader = /qmes-mes-master-loader-20260820-v2\.js$/i.test(file);
+        const isCurrentSalesOrder = /qmes-sales-new-order-namo-modal-20260831-v8\.js$/i.test(file);
+        const isStaticAsset = /\.(?:js|jsx|css)$/i.test(file);
+
+        if (isHtml || isMasterLoader || isCurrentSalesOrder) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
           res.setHeader('Surrogate-Control', 'no-store');
+        } else if (isStaticAsset) {
+          // Dated/versioned QMES assets can be reused on normal reloads.
+          // F5 may revalidate, but ETag/Last-Modified can return 304 instead of full payloads.
+          res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+          res.removeHeader('Pragma');
+          res.removeHeader('Expires');
+          res.removeHeader('Surrogate-Control');
         }
+
         if (typeof originalSetHeaders === 'function') originalSetHeaders(res, filePath, stat);
       };
+
       return originalStatic.call(express, rootDir, opts);
     };
-    console.log('[QMES] Sales Order V6 cache-bypass headers enabled');
+
+    console.log('[QMES] Static cache optimization enabled; obsolete Sales V6 force-copy disabled');
   }
 } catch (err) {
-  console.error('[QMES] Failed to patch static cache headers:', err && err.message ? err.message : err);
+  console.error('[QMES] Failed to optimize static cache:', err && err.message ? err.message : err);
 }
