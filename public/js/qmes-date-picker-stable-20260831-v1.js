@@ -1,16 +1,17 @@
 /* NAMO QMES - stable date picker - 2026-08-31
- * ADD-ONLY UI owner for date fields.
- * Converts every QMES <input type="date"> into a text-backed YYYY-MM-DD field
- * and always opens the same visible in-app calendar on click/focus.
+ * ADD-ONLY UI owner for every QMES date field.
+ * Chrome/Windows native date popups can render as a large blank white panel.
+ * This patch prevents the native popup and uses one visible QMES calendar instead.
  */
 (function(){
   "use strict";
-  if(window.__QMES_DATE_PICKER_STABLE_20260831_V2__) return;
+  if(window.__QMES_DATE_PICKER_STABLE_20260831_V3__) return;
+  window.__QMES_DATE_PICKER_STABLE_20260831_V3__=true;
   window.__QMES_DATE_PICKER_STABLE_20260831_V2__=true;
   window.__QMES_DATE_PICKER_STABLE_20260831_V1__=true;
 
-  const STYLE_ID="qmes-date-picker-stable-style-20260831-v2";
-  const POP_ID="qmes-date-picker-stable-pop-20260831-v2";
+  const STYLE_ID="qmes-date-picker-stable-style-20260831-v3";
+  const POP_ID="qmes-date-picker-stable-pop-20260831-v3";
   const clean=v=>String(v==null?"":v).trim();
   const pad=n=>String(n).padStart(2,"0");
   const iso=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;
@@ -18,6 +19,7 @@
   let activeInput=null;
   let viewYear=0;
   let viewMonth=0;
+  let scanQueued=false;
 
   function ensureStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -61,27 +63,41 @@
     }
     return new Date();
   }
+
   function minMaxOk(value,input){
     const min=clean(input?.dataset?.qmesDateMin||""),max=clean(input?.dataset?.qmesDateMax||"");
     if(min&&valid(min)&&value<min)return false;
     if(max&&valid(max)&&value>max)return false;
     return true;
   }
+
+  function close(){
+    document.getElementById(POP_ID)?.remove();
+    activeInput=null;
+  }
+
   function setValue(value){
     const input=activeInput;
     if(!input)return;
-    input.value=value;
+    const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")?.set;
+    try{setter?setter.call(input,value):(input.value=value);}catch(_){input.value=value;}
     input.dispatchEvent(new Event("input",{bubbles:true}));
     input.dispatchEvent(new Event("change",{bubbles:true}));
     close();
-    setTimeout(()=>input.focus({preventScroll:true}),0);
+    setTimeout(()=>{try{input.focus({preventScroll:true});}catch(_){input.focus();}},0);
   }
-  function close(){document.getElementById(POP_ID)?.remove();activeInput=null;}
 
   function render(){
     if(!activeInput||!document.documentElement.contains(activeInput)){close();return;}
     let pop=document.getElementById(POP_ID);
-    if(!pop){pop=document.createElement("div");pop.id=POP_ID;pop.setAttribute("role","dialog");pop.setAttribute("aria-label","날짜 선택");document.body.appendChild(pop);}
+    if(!pop){
+      pop=document.createElement("div");
+      pop.id=POP_ID;
+      pop.setAttribute("role","dialog");
+      pop.setAttribute("aria-label","날짜 선택");
+      document.body.appendChild(pop);
+    }
+
     const first=new Date(viewYear,viewMonth,1),days=new Date(viewYear,viewMonth+1,0).getDate(),offset=first.getDay();
     const now=new Date(),todayIso=iso(now.getFullYear(),now.getMonth()+1,now.getDate()),selected=valid(activeInput.value)?activeInput.value:"";
     const cells=[];
@@ -90,49 +106,73 @@
       const value=iso(viewYear,viewMonth+1,d),disabled=!minMaxOk(value,activeInput);
       cells.push(`<button type="button" class="qdp-day${value===todayIso?' is-today':''}${value===selected?' is-selected':''}" data-qdp-date="${value}"${disabled?' disabled':''}>${d}</button>`);
     }
+
     pop.innerHTML=`<div class="qdp-head"><button type="button" class="qdp-nav" data-qdp-prev aria-label="이전 달">‹</button><div class="qdp-title">${viewYear}년 ${viewMonth+1}월</div><button type="button" class="qdp-nav" data-qdp-next aria-label="다음 달">›</button></div><div class="qdp-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="qdp-grid">${cells.join("")}</div><div class="qdp-actions"><button type="button" class="qdp-action" data-qdp-clear>지우기</button><button type="button" class="qdp-action" data-qdp-close>닫기</button><button type="button" class="qdp-action primary" data-qdp-today>오늘</button></div>`;
 
     const r=activeInput.getBoundingClientRect(),w=304,h=390;
     let left=Math.min(Math.max(8,r.left),Math.max(8,window.innerWidth-w-8));
     let top=r.bottom+7;
     if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-7);
-    pop.style.left=`${left}px`;pop.style.top=`${top}px`;
+    pop.style.left=`${left}px`;
+    pop.style.top=`${top}px`;
+  }
+
+  function patch(input){
+    if(!(input instanceof HTMLInputElement))return false;
+    const isNativeDate=input.type==="date";
+    const isMarked=input.dataset.qmesDateField==="1"||input.dataset.qmesDateStable==="1";
+    if(!isNativeDate&&!isMarked)return false;
+
+    if(!input.dataset.qmesDateMin)input.dataset.qmesDateMin=input.min||"";
+    if(!input.dataset.qmesDateMax)input.dataset.qmesDateMax=input.max||"";
+    input.dataset.qmesDateOriginalType="date";
+    input.dataset.qmesDateStable="1";
+
+    /* React can re-apply type=date after a render. Force it back every time. */
+    if(input.type!=="text"){
+      try{input.type="text";}catch(_){input.setAttribute("type","text");}
+    }
+    input.inputMode="numeric";
+    input.placeholder=input.placeholder||"YYYY-MM-DD";
+    input.setAttribute("autocomplete","off");
+    input.setAttribute("aria-haspopup","dialog");
+    if(!input.getAttribute("aria-label"))input.setAttribute("aria-label",input.name||"날짜 선택");
+    return true;
   }
 
   function open(input){
     if(!(input instanceof HTMLInputElement))return;
+    patch(input);
     activeInput=input;
     const d=parseDate(input.value);
-    viewYear=d.getFullYear();viewMonth=d.getMonth();
+    viewYear=d.getFullYear();
+    viewMonth=d.getMonth();
     render();
   }
 
-  function patch(input){
-    if(!(input instanceof HTMLInputElement)||input.dataset.qmesDateStable==="1")return;
-    if(input.type!=="date"&&!input.matches('[data-qmes-date-field="1"]'))return;
-    input.dataset.qmesDateStable="1";
-    input.dataset.qmesDateMin=input.min||"";
-    input.dataset.qmesDateMax=input.max||"";
-    input.dataset.qmesDateOriginalType=input.type;
-    input.type="text";
-    input.inputMode="numeric";
-    input.placeholder="YYYY-MM-DD";
-    input.setAttribute("autocomplete","off");
-    input.setAttribute("aria-haspopup","dialog");
-    input.setAttribute("aria-label",input.getAttribute("aria-label")||input.name||"날짜 선택");
-  }
   function scan(root=document){
-    root.querySelectorAll?.('input[type="date"],input[data-qmes-date-field="1"]').forEach(patch);
+    if(root instanceof HTMLInputElement)patch(root);
+    root.querySelectorAll?.('input[type="date"],input[data-qmes-date-field="1"],input[data-qmes-date-stable="1"]').forEach(patch);
+  }
+
+  function scheduleScan(){
+    if(scanQueued)return;
+    scanQueued=true;
+    queueMicrotask(()=>{scanQueued=false;scan();});
   }
 
   function dateInputFromTarget(target){
-    return target instanceof HTMLInputElement&&target.dataset.qmesDateStable==="1"?target:null;
+    if(!(target instanceof HTMLInputElement))return null;
+    if(target.type==="date")patch(target);
+    return target.dataset.qmesDateStable==="1"?target:null;
   }
 
+  /* Capture pointerdown before Chrome has a chance to open the broken native popup. */
   document.addEventListener("pointerdown",e=>{
     const input=dateInputFromTarget(e.target);
     if(input){
-      e.preventDefault();e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
       try{input.focus({preventScroll:true});}catch(_){input.focus();}
       open(input);
       return;
@@ -141,36 +181,64 @@
     if(!inside&&activeInput)close();
   },true);
 
+  document.addEventListener("mousedown",e=>{
+    const input=dateInputFromTarget(e.target);
+    if(input){e.preventDefault();e.stopPropagation();open(input);}
+  },true);
+
   document.addEventListener("click",e=>{
     const input=dateInputFromTarget(e.target);
     if(input){e.preventDefault();e.stopPropagation();open(input);return;}
     const t=e.target instanceof Element?e.target:null;
     const pop=t?.closest(`#${POP_ID}`);
     if(!pop)return;
-    e.preventDefault();e.stopPropagation();
-    const date=t.closest("[data-qdp-date]");if(date){setValue(date.dataset.qdpDate||"");return;}
+    e.preventDefault();
+    e.stopPropagation();
+    const date=t.closest("[data-qdp-date]");
+    if(date){setValue(date.dataset.qdpDate||"");return;}
     if(t.closest("[data-qdp-prev]")){viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}render();return;}
     if(t.closest("[data-qdp-next]")){viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++;}render();return;}
     if(t.closest("[data-qdp-clear]")){setValue("");return;}
     if(t.closest("[data-qdp-close]")){close();return;}
-    if(t.closest("[data-qdp-today]")){const d=new Date(),v=iso(d.getFullYear(),d.getMonth()+1,d.getDate());if(minMaxOk(v,activeInput))setValue(v);return;}
+    if(t.closest("[data-qdp-today]")){
+      const d=new Date(),v=iso(d.getFullYear(),d.getMonth()+1,d.getDate());
+      if(minMaxOk(v,activeInput))setValue(v);
+    }
   },true);
 
-  document.addEventListener("focusin",e=>{const input=dateInputFromTarget(e.target);if(input)open(input);});
+  document.addEventListener("focusin",e=>{
+    const input=dateInputFromTarget(e.target);
+    if(input)open(input);
+  },true);
+
   document.addEventListener("keydown",e=>{
     if(e.key==="Escape"&&activeInput){e.preventDefault();close();return;}
     const input=dateInputFromTarget(e.target);
     if(input&&(e.key==="Enter"||e.key==="ArrowDown")){e.preventDefault();open(input);}
-  });
+  },true);
+
   window.addEventListener("resize",()=>{if(activeInput)render();});
   window.addEventListener("scroll",()=>{if(activeInput)render();},true);
 
-  ensureStyle();scan();
-  const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{
-    if(n.nodeType!==1)return;
-    if(n.matches?.('input[type="date"],input[data-qmes-date-field="1"]'))patch(n);
-    scan(n);
-  })));
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-  window.qmesDatePickerStable={scan,open,close};
+  ensureStyle();
+  scan();
+
+  const observer=new MutationObserver(records=>{
+    for(const record of records){
+      if(record.type==="attributes"){
+        if(record.target instanceof HTMLInputElement)patch(record.target);
+        continue;
+      }
+      for(const node of record.addedNodes){
+        if(node.nodeType!==1)continue;
+        scan(node);
+      }
+    }
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["type"]});
+
+  /* Periodic light scan covers React replacements that happen between observer turns. */
+  setInterval(scheduleScan,1200);
+
+  window.qmesDatePickerStable={scan,open,close,patch};
 })();
