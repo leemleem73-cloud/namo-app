@@ -8,12 +8,10 @@
   if(window.__QMES_SALES_WORKORDER_VIEW_BRIDGE_20260831_V2__) return;
   window.__QMES_SALES_WORKORDER_VIEW_BRIDGE_20260831_V2__=true;
 
-  /* Chrome/Windows native date popups can render as a blank white panel.
-     Load the QMES in-app date picker once and let it patch all current/future date fields. */
   try{
-    if(!window.__QMES_DATE_PICKER_STABLE_20260831_V1__&&!document.querySelector('script[data-qmes-date-picker-stable="1"]')){
+    if(!window.__QMES_DATE_PICKER_STABLE_20260831_V2__&&!document.querySelector('script[data-qmes-date-picker-stable="1"]')){
       const script=document.createElement("script");
-      script.src="./js/qmes-date-picker-stable-20260831-v1.js?v=20260831-1";
+      script.src="./js/qmes-date-picker-stable-20260831-v1.js?v=20260831-calendar2";
       script.async=false;
       script.dataset.qmesDatePickerStable="1";
       document.head.appendChild(script);
