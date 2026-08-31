@@ -4,6 +4,13 @@
   let closeTimer = null;
   let allowNativeProfileClick = false;
   let boundButton = null;
+  let observer = null;
+  let started = false;
+
+  function currentUserReady(){
+    const user = window.__QMES_CURRENT_USER__;
+    return Boolean(user && typeof user === "object" && (user.id || user.uid || user.name));
+  }
 
   function getProfileButton(){
     return document.querySelector(PROFILE_BUTTON_SELECTOR);
@@ -135,26 +142,48 @@
     }, true);
   }
 
-  document.addEventListener("mousedown", function(event){
-    const dropdown = document.getElementById(DROPDOWN_ID);
-    const button = getProfileButton();
-    if(!dropdown?.classList.contains("is-open")) return;
-    if(dropdown.contains(event.target) || button?.contains(event.target)) return;
-    closeDropdown();
-  });
+  function startAuthenticatedRuntime(){
+    if(started || !currentUserReady()) return false;
+    started = true;
 
-  document.addEventListener("keydown", function(event){
-    if(event.key === "Escape") closeDropdown();
-  });
+    document.addEventListener("mousedown", function(event){
+      const dropdown = document.getElementById(DROPDOWN_ID);
+      const button = getProfileButton();
+      if(!dropdown?.classList.contains("is-open")) return;
+      if(dropdown.contains(event.target) || button?.contains(event.target)) return;
+      closeDropdown();
+    });
 
-  window.addEventListener("resize", function(){
-    if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
-  });
-  window.addEventListener("scroll", function(){
-    if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
-  }, true);
+    document.addEventListener("keydown", function(event){
+      if(event.key === "Escape") closeDropdown();
+    });
 
-  const observer = new MutationObserver(bindProfileButton);
-  observer.observe(document.documentElement, { childList:true, subtree:true });
-  bindProfileButton();
+    window.addEventListener("resize", function(){
+      if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
+    });
+    window.addEventListener("scroll", function(){
+      if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
+    }, true);
+
+    observer = new MutationObserver(bindProfileButton);
+    observer.observe(document.documentElement, { childList:true, subtree:true });
+    bindProfileButton();
+    return true;
+  }
+
+  function waitForAuthenticatedRuntime(){
+    if(startAuthenticatedRuntime()) return;
+    let attempts = 0;
+    const retry = function(){
+      if(startAuthenticatedRuntime()) return;
+      attempts += 1;
+      if(attempts < 120) setTimeout(retry, 50);
+    };
+    setTimeout(retry, 0);
+  }
+
+  if(currentUserReady()) startAuthenticatedRuntime();
+  else window.addEventListener("qmes:auth-bootstrap-settled", function(event){
+    if(event?.detail?.state === "authenticated") waitForAuthenticatedRuntime();
+  });
 })();
