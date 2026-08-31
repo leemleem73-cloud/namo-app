@@ -1,14 +1,14 @@
-/* QMES Stage 12 operational loader v69
+/* QMES Stage 12 operational loader v70
  * Login-safe runtime gate - 2026-08-31.
  * F5 optimization: only one New Sales Order implementation is loaded.
  * V9 owns the New Sales Order screen directly.
- * Live Production MRP V2: Sample / Development / Mass Production.
+ * Live Production MRP V3: Sample / Development / Mass Production.
  * Current NAMO product: 절연슬러리(NBA20-HM01).
  */
 (function(){
   "use strict";
-  if(window.__QMES_STAGE12_RUNTIME_V69__) return;
-  window.__QMES_STAGE12_RUNTIME_V69__=true;
+  if(window.__QMES_STAGE12_RUNTIME_V70__) return;
+  window.__QMES_STAGE12_RUNTIME_V70__=true;
 
   const STYLE_DEFS=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
@@ -38,8 +38,7 @@
     "./js/qmes-sales-workorder-view-bridge-20260831-v1.js?v=20260831-1",
     "./js/qmes-sales-detail-drawer-20260828-v1.js?v=20260828-1",
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-manual-product2",
-    "./js/qmes-sample-development-mrp-live-20260831-v1.js?v=20260831-live2",
-    "./js/qmes-mrp-product-nba20-hm01-20260831-v1.js?v=20260831-product1",
+    "./js/qmes-sample-development-mrp-live-20260831-v1.js?v=20260831-live3",
     "./js/qmes-sales-enterprise-module-20260828-v2.js?v=20260828-2",
     "./js/qmes-sales-enterprise-polish-20260828-v1.js?v=20260828-2",
     "./js/qmes-sales-font-unify-20260828-v1.js?v=20260828-query3",
