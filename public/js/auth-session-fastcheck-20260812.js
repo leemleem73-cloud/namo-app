@@ -1,120 +1,69 @@
-/* QMES authentication boundary - stable login 2026-08-31
- * One server-session verification promise is shared by app.jsx and qmes-sync.
- * No fake empty data and no automatic page reloads.
+/* QMES auth/session + first-paint bootstrap
+ * Keep auth handling minimal and avoid repeated fetch retries that can
+ * bounce the login state or trigger visible first-paint flicker.
  */
-(function installQmesAuthBoundary(global){
+(function installAuthSessionFastCheck(global){
   "use strict";
-  if(global.__QMES_AUTH_BOUNDARY_20260831__) return;
-  global.__QMES_AUTH_BOUNDARY_20260831__=true;
+  if(global.__QMES_AUTH_FASTCHECK_20260812__) return;
   global.__QMES_AUTH_FASTCHECK_20260812__=true;
 
   const nativeFetch=global.fetch.bind(global);
-  let verified=false;
-  let verifyInFlight=null;
+  global.fetch=function(input,init){
+    const url=typeof input==="string"?input:(input&&input.url)||"";
+    if(!/\/api\/auth\/me(?:\?|$)/.test(url)) return nativeFetch(input,init);
 
-  const urlOf=input=>typeof input==="string"?input:String(input?.url||"");
-  const authOptions=init=>({
-    ...(init||{}),
-    credentials:"same-origin",
-    cache:"no-store",
-    headers:{"Accept":"application/json",...((init&&init.headers)||{})}
-  });
+    const options={...(init||{})};
+    if(!options.credentials) options.credentials="same-origin";
+    options.cache="no-store";
 
-  async function payloadOf(response){
-    try{return await response.clone().json();}catch(_error){return null;}
-  }
-
-  function setVerified(value,user){
-    verified=Boolean(value);
-    global.__QMES_AUTH_VERIFIED__=verified;
-    if(verified) global.__QMES_AUTH_VERIFIED_USER__=user||null;
-    else delete global.__QMES_AUTH_VERIFIED_USER__;
-  }
-
-  async function verifyServerSession(force=false){
-    if(verified&&!force) return global.__QMES_AUTH_VERIFIED_USER__||null;
-    if(verifyInFlight) return verifyInFlight;
-    verifyInFlight=(async()=>{
-      const response=await nativeFetch("/api/auth/me",authOptions({method:"GET"}));
-      const payload=await payloadOf(response);
-      if(!response.ok||!payload?.success||!payload?.data){
-        setVerified(false);
-        const error=new Error(payload?.message||"로그인 세션을 확인할 수 없습니다.");
-        error.status=response.status;
-        throw error;
-      }
-      setVerified(true,payload.data);
-      try{global.dispatchEvent(new CustomEvent("qmes:auth-verified",{detail:{user:payload.data}}));}catch(_error){}
-      return payload.data;
-    })().finally(()=>{verifyInFlight=null;});
-    return verifyInFlight;
-  }
-
-  global.fetch=async function qmesAuthSafeFetch(input,init){
-    const url=urlOf(input);
-
-    if(/\/api\/auth\/login(?:\?|$)/.test(url)){
-      setVerified(false);
-      const response=await nativeFetch(input,authOptions(init));
-      const payload=await payloadOf(response);
-      if(response.ok&&payload?.success&&payload?.data?.user){
-        /* Login response is authoritative. Do not perform a second /auth/me
-           request here; app.jsx will enter the authenticated UI immediately. */
-        setVerified(true,payload.data.user);
-      }
-      return response;
-    }
-
-    if(/\/api\/auth\/me(?:\?|$)/.test(url)){
-      /* Reuse an already-running verification instead of issuing a competing
-         request during first paint. */
-      if(verifyInFlight){
-        try{
-          const user=await verifyInFlight;
-          return new Response(JSON.stringify({success:true,message:"OK",data:user}),{
-            status:200,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}
-          });
-        }catch(_error){
-          return nativeFetch(input,authOptions(init));
-        }
-      }
-      const response=await nativeFetch(input,authOptions(init));
-      const payload=await payloadOf(response);
-      setVerified(Boolean(response.ok&&payload?.success&&payload?.data),payload?.data);
-      return response;
-    }
-
-    if(/\/api\/auth\/logout(?:\?|$)/.test(url)){
-      try{return await nativeFetch(input,authOptions(init));}
-      finally{setVerified(false);}
-    }
-
-    if(/\/api\/qmes-sync\//.test(url)){
-      if(!verified){
-        try{await verifyServerSession(false);}catch(_error){
-          return nativeFetch(input,authOptions(init));
-        }
-      }
-      let response=await nativeFetch(input,authOptions(init));
-      if(response.status!==401) return response;
-      try{
-        await verifyServerSession(true);
-        response=await nativeFetch(input,authOptions(init));
-      }catch(_error){}
-      if(response.status===401){
-        setVerified(false);
-        try{global.dispatchEvent(new CustomEvent("qmes:auth-expired"));}catch(_error){}
-      }
-      return response;
-    }
-
-    return nativeFetch(input,init);
+    // Do not auto-retry auth/me here. A delayed second auth request can race
+    // the initial app bootstrap and make the login/main screen flash or bounce.
+    return nativeFetch(input,options);
   };
-
-  global.qmesVerifyServerSession=verifyServerSession;
-  setVerified(false);
-
-  /* Single early check. app.jsx can reuse this promise through the wrapped
-     /api/auth/me path, avoiding login/dashboard/login paint races. */
-  Promise.resolve().then(()=>verifyServerSession(false)).catch(()=>{});
 })(window);
+
+/* Restore the confirmed Field Input ownership model without toggling styles
+ * that are already present in the document. This keeps the shared shell
+ * stable during first paint and avoids visible stylesheet on/off flashes.
+ */
+(function installCurrentUiBeforeRender(){
+  "use strict";
+  if(window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__) return;
+  window.__QMES_CURRENT_UI_BOOTSTRAP_20260826__=true;
+
+  let fieldInputFirstPaint=false;
+  try{fieldInputFirstPaint=sessionStorage.getItem("qmes_current_tab")==="pop";}catch(_error){}
+
+  const styles=[
+    ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
+    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1",true],
+    ["qmes-shell-readable-size-20260827","./css/qmes-shell-readable-size-20260827.css?v=20260827-2",true],
+    ["qmes-enterprise-readable-size-20260826","./css/qmes-enterprise-readable-size-20260826.css?v=20260826-readable2",false],
+    ["qmes-modern-corporate-ui-20260826","./css/qmes-modern-corporate-ui-20260826.css?v=20260826-modern2",false],
+    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2",true],
+    ["qmes-production-process-corporate-fix-20260826","./css/qmes-production-process-corporate-fix-20260826.css?v=20260826-process2",false],
+    ["qmes-workorder-issued-clean-20260826","./css/qmes-workorder-issued-clean-20260826.css?v=20260826-workorder1",false],
+    ["qmes-text-sharpness-20260826","./css/qmes-text-sharpness-20260826.css?v=20260826-sharp1",false],
+    ["qmes-spc-readability-fix-20260826","./css/qmes-spc-readability-fix-20260826.css?v=20260826-spc1",false],
+    ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1",true],
+    ["qmes-responsive-main-layout-20260827","./css/qmes-responsive-main-layout-20260827.css?v=20260827-1",false],
+    ["qmes-header-stable-20260827","./css/qmes-header-stable-20260827.css?v=20260827-1",true]
+  ];
+
+  styles.forEach(([id,href,keepDuringField])=>{
+    let link=document.getElementById(id);
+    if(!link){
+      link=document.createElement("link");
+      link.id=id;
+      link.rel="stylesheet";
+      link.href=href;
+      if(fieldInputFirstPaint&&!keepDuringField) link.media="not all";
+      document.head.appendChild(link);
+      return;
+    }
+
+    // Existing styles are left untouched during bootstrap so the browser does
+    // not repaint the whole app because of media/disabled flips.
+    if(String(link.getAttribute("href")||"")!==href) link.href=href;
+  });
+})();
