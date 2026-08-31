@@ -3,16 +3,24 @@
   const NAMES=['박도훈','문지훈'];
   const STORAGE_KEY='qmes-equipment-inspector';
   const STYLE_ID='qmes-equipment-inspector-selector-style';
-  let selected=String(localStorage.getItem(STORAGE_KEY)||'').trim();
+  const EQUIPMENT_SELECTOR='.qmes-ipad-equipment,.qmes-equipment-schedule-screen,.qmes-ipad-equipment-inspector';
+  let selected='';
+  try{selected=String(localStorage.getItem(STORAGE_KEY)||'').trim();}catch(_error){}
+
+  function equipmentRoot(){
+    return document.querySelector(EQUIPMENT_SELECTOR);
+  }
+
   function ensureStyle(){
-    let style=document.getElementById(STYLE_ID);if(!style){style=document.createElement('style');style.id=STYLE_ID;document.head.appendChild(style);}
+    if(document.getElementById(STYLE_ID))return;
+    const style=document.createElement('style');
+    style.id=STYLE_ID;
     style.textContent=`
       .qmes-ipad-equipment-inspector{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;}
       .qmes-ipad-equipment-inspector-row{display:grid!important;grid-template-columns:auto auto minmax(135px,165px)!important;align-items:center!important;gap:9px!important;width:auto!important;min-width:0!important;max-width:100%!important;padding:12px 14px!important;border:1px solid #cbd5e1!important;border-radius:12px!important;box-sizing:border-box!important;background:#fff!important;box-shadow:0 8px 22px rgba(15,23,42,.12)!important;overflow:hidden!important;white-space:nowrap!important;}
       .qmes-ipad-equipment-inspector-row>.qmes-ipad-inspector-label,.qmes-ipad-equipment-inspector-row>strong{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;display:block!important;margin:0!important;padding:0!important;max-width:100%!important;color:#111827!important;-webkit-text-fill-color:#111827!important;white-space:nowrap!important;font-size:14px!important;font-weight:850!important;line-height:34px!important;}
       .qmes-ipad-equipment-inspector-row>input[placeholder='이름 입력']{display:none!important;}
       .qmes-equipment-inspector-select{position:static!important;display:block!important;width:100%!important;min-width:0!important;max-width:165px!important;height:36px!important;margin:0!important;padding:0 32px 0 11px!important;border:1px solid #b8c4d0!important;border-radius:8px!important;box-sizing:border-box!important;background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:13px!important;font-weight:700!important;line-height:36px!important;cursor:pointer!important;}
-
       html body .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-register-box{margin:14px 16px!important;padding:14px!important;border:1px solid #dce4ec!important;border-radius:10px!important;background:#f8fafc!important;box-shadow:none!important;}
       html body .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-schedule-form{display:grid!important;grid-template-columns:1fr 1fr .62fr!important;column-gap:14px!important;row-gap:12px!important;align-items:start!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;}
       html body .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-schedule-form>label{position:static!important;display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;color:#334155!important;font-size:12px!important;font-weight:700!important;line-height:18px!important;z-index:auto!important;}
@@ -22,11 +30,85 @@
       @media(max-width:900px){html body .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-schedule-form{grid-template-columns:1fr 1fr!important;}}
       @media(max-width:620px){html body .qmes-ipad-equipment .qmes-equipment-schedule-screen .qmes-equipment-schedule-form{grid-template-columns:1fr!important;}}
     `;
+    document.head.appendChild(style);
   }
-  function setNativeValue(el,value){if(!el)return;const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');if(descriptor&&descriptor.set)descriptor.set.call(el,value);else el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}
-  function syncOwnerFields(){document.querySelectorAll('.qmes-equipment-schedule-form>label,.qmes-equipment-repair-form>label').forEach(label=>{const text=String(label.childNodes[0]&&label.childNodes[0].textContent||'').trim();if(text!=='담당')return;const field=label.querySelector('input');if(field&&field.value!==selected)setNativeValue(field,selected);});}
-  function choose(name){selected=name;if(name)localStorage.setItem(STORAGE_KEY,name);else localStorage.removeItem(STORAGE_KEY);document.dispatchEvent(new CustomEvent('qmes:equipment-inspector-change',{detail:{name}}));syncOwnerFields();}
-  function replaceNameInput(){document.querySelectorAll('.qmes-ipad-equipment-inspector-row').forEach(row=>{const parent=row.closest('.qmes-ipad-equipment-inspector');const label=parent&&parent.querySelector(':scope > .qmes-ipad-inspector-label');if(label&&label.parentElement!==row)row.insertBefore(label,row.firstChild);const input=row.querySelector('input[placeholder="이름 입력"]');if(!input)return;let select=row.querySelector('.qmes-equipment-inspector-select');if(!select){select=document.createElement('select');select.className='qmes-equipment-inspector-select';select.setAttribute('aria-label','설비 점검자 이름 선택');select.innerHTML='<option value="">이름 선택</option>'+NAMES.map(name=>'<option value="'+name+'">'+name+'</option>').join('');select.addEventListener('change',()=>choose(select.value));input.insertAdjacentElement('afterend',select);}if(select.value!==selected)select.value=selected;if(input.value!==selected)setNativeValue(input,selected);});}
-  let queued=false;function apply(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;ensureStyle();replaceNameInput();syncOwnerFields();});}
-  apply();new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('load',apply,{once:true});
+
+  function setNativeValue(el,value){
+    if(!el)return;
+    const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+    if(descriptor&&descriptor.set)descriptor.set.call(el,value);else el.value=value;
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+
+  function syncOwnerFields(){
+    document.querySelectorAll('.qmes-equipment-schedule-form>label,.qmes-equipment-repair-form>label').forEach(label=>{
+      const text=String(label.childNodes[0]&&label.childNodes[0].textContent||'').trim();
+      if(text!=='담당')return;
+      const field=label.querySelector('input');
+      if(field&&field.value!==selected)setNativeValue(field,selected);
+    });
+  }
+
+  function choose(name){
+    selected=name;
+    try{if(name)localStorage.setItem(STORAGE_KEY,name);else localStorage.removeItem(STORAGE_KEY);}catch(_error){}
+    document.dispatchEvent(new CustomEvent('qmes:equipment-inspector-change',{detail:{name}}));
+    syncOwnerFields();
+  }
+
+  function replaceNameInput(){
+    document.querySelectorAll('.qmes-ipad-equipment-inspector-row').forEach(row=>{
+      const parent=row.closest('.qmes-ipad-equipment-inspector');
+      const label=parent&&parent.querySelector(':scope > .qmes-ipad-inspector-label');
+      if(label&&label.parentElement!==row)row.insertBefore(label,row.firstChild);
+      const input=row.querySelector('input[placeholder="이름 입력"]');
+      if(!input)return;
+      let select=row.querySelector('.qmes-equipment-inspector-select');
+      if(!select){
+        select=document.createElement('select');
+        select.className='qmes-equipment-inspector-select';
+        select.setAttribute('aria-label','설비 점검자 이름 선택');
+        select.innerHTML='<option value="">이름 선택</option>'+NAMES.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
+        select.addEventListener('change',()=>choose(select.value));
+        input.insertAdjacentElement('afterend',select);
+      }
+      if(select.value!==selected)select.value=selected;
+      if(input.value!==selected)setNativeValue(input,selected);
+    });
+  }
+
+  let queued=false;
+  function apply(){
+    if(queued||!equipmentRoot())return;
+    queued=true;
+    requestAnimationFrame(()=>{
+      queued=false;
+      if(!equipmentRoot())return;
+      ensureStyle();
+      replaceNameInput();
+      syncOwnerFields();
+    });
+  }
+
+  function mutationTouchesEquipment(mutations){
+    if(equipmentRoot())return true;
+    return mutations.some(mutation=>Array.from(mutation.addedNodes||[]).some(node=>{
+      if(!(node instanceof Element))return false;
+      return node.matches(EQUIPMENT_SELECTOR)||Boolean(node.querySelector(EQUIPMENT_SELECTOR));
+    }));
+  }
+
+  function start(){
+    const appRoot=document.getElementById('root');
+    if(!appRoot)return;
+    apply();
+    const observer=new MutationObserver(mutations=>{
+      if(mutationTouchesEquipment(mutations))apply();
+    });
+    observer.observe(appRoot,{childList:true,subtree:true});
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
 })();
