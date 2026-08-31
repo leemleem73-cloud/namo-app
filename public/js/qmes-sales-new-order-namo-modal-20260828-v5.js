@@ -1,22 +1,18 @@
 /* NAMO QMES - Sales new-order single owner bridge - 2026-08-31
- * ADD-ONLY compatibility owner. Original historical implementations remain in Git.
- *
- * Fixes the current conflict where the visible '+ 신규 수주' button can still be
- * handled by a legacy/simple modal even though V6 is loaded. The V6 click handler
- * only owned buttons inside .qmes-sales-stable, while the current Sales page can be
- * rendered by a different root. This bridge captures every real '신규 수주' button
- * before the legacy owners and always opens V6.
+ * Keeps all historical files but makes V6 the only visible '+ 신규 수주' modal.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_NEW_ORDER_SINGLE_OWNER_20260831__)return;
+  if(window.__QMES_SALES_NEW_ORDER_SINGLE_OWNER_20260831_V2__)return;
+  window.__QMES_SALES_NEW_ORDER_SINGLE_OWNER_20260831_V2__=true;
   window.__QMES_SALES_NEW_ORDER_SINGLE_OWNER_20260831__=true;
   window.__QMES_SALES_NEW_ORDER_V5_TO_V6_BRIDGE_20260831__=true;
 
-  const TARGET="./js/qmes-sales-new-order-namo-modal-20260831-v6.js?v=20260831-owner4";
-  const CLASSIFICATION="./js/qmes-sales-order-classification-20260831-v2.js?v=20260831-owner1";
+  const TARGET="./js/qmes-sales-new-order-namo-modal-20260831-v6.js?v=20260831-owner6";
+  const CLASSIFICATION="./js/qmes-sales-order-classification-20260831-v2.js?v=20260831-owner3";
   const clean=v=>String(v==null?"":v).replace(/\s+/g," ").trim();
   let loadPromise=null;
+  let replacing=false;
 
   function bindAliases(){
     const api=window.qmesSalesNewOrderNamoV6;
@@ -47,10 +43,7 @@
     if(bindAliases())return Promise.resolve(window.qmesSalesNewOrderNamoV6);
     if(loadPromise)return loadPromise;
     loadPromise=new Promise((resolve,reject)=>{
-      const existing=Array.from(document.scripts).find(script=>{
-        const src=String(script.getAttribute("src")||"").split("?")[0];
-        return /qmes-sales-new-order-namo-modal-20260831-v6\.js$/.test(src);
-      });
+      const existing=Array.from(document.scripts).find(script=>/qmes-sales-new-order-namo-modal-20260831-v6\.js$/.test(String(script.getAttribute("src")||"").split("?")[0]));
       const done=()=>{
         if(bindAliases())resolve(window.qmesSalesNewOrderNamoV6);
         else reject(new Error("V6 신규 수주 화면 API가 준비되지 않았습니다."));
@@ -75,22 +68,18 @@
   }
 
   function removeLegacyModals(){
-    const ids=[
+    [
       "qmes-sales-new-order-modal-v5",
       "qmes-sales-new-order-namo-20260828-v4",
       "qmes-sales-new-order-namo-20260828-v3",
       "qmes-sales-new-order-namo-20260828-v2",
       "qmes-sales-new-order-enterprise-20260828-v1"
-    ];
-    ids.forEach(id=>document.getElementById(id)?.remove());
+    ].forEach(id=>document.getElementById(id)?.remove());
 
     Array.from(document.querySelectorAll('[role="dialog"][aria-label="신규 수주 등록"]')).forEach(dialog=>{
       if(dialog.closest("#qmes-sales-new-order-modal-v6"))return;
       let root=dialog;
-      for(let i=0;i<3&&root.parentElement;i++){
-        if(root.parentElement===document.body)break;
-        root=root.parentElement;
-      }
+      for(let i=0;i<5&&root.parentElement&&root.parentElement!==document.body;i++)root=root.parentElement;
       try{(root.parentElement===document.body?root:dialog).remove();}catch(_){ }
     });
   }
@@ -102,6 +91,8 @@
   }
 
   async function openV6(){
+    if(replacing)return;
+    replacing=true;
     try{
       removeLegacyModals();
       const api=await ensureV6();
@@ -113,10 +104,12 @@
     }catch(error){
       console.error("[QMES Sales New Order Owner]",error);
       alert("신규 수주 화면을 열지 못했습니다. 새로고침 후 다시 시도해 주세요.");
+    }finally{
+      setTimeout(()=>{replacing=false;},120);
     }
   }
 
-  /* Capture on window runs before document-level legacy handlers. */
+  /* Button ownership: block legacy click handlers before they can open old popups. */
   window.addEventListener("click",event=>{
     const target=event.target;
     if(!(target instanceof Element))return;
@@ -128,7 +121,29 @@
     openV6();
   },true);
 
-  /* Keep all legacy public APIs pointing to V6 even if later modules rewrite them. */
+  /* Safety net: if any old owner still creates its popup, remove it immediately
+     and replace it with V6. This fixes the current screen even when a direct
+     onclick/React handler bypasses the capture owner above. */
+  let queued=false;
+  const observer=new MutationObserver(records=>{
+    if(queued||replacing)return;
+    const added=records.some(record=>Array.from(record.addedNodes||[]).some(node=>{
+      if(!(node instanceof Element))return false;
+      if(node.id==="qmes-sales-new-order-modal-v6"||node.closest?.("#qmes-sales-new-order-modal-v6"))return false;
+      if(node.matches?.('[role="dialog"][aria-label="신규 수주 등록"]'))return true;
+      if(node.querySelector?.('[role="dialog"][aria-label="신규 수주 등록"]'))return true;
+      return /신규\s*수주\s*등록/.test(clean(node.textContent))&&!!node.querySelector?.("form");
+    }));
+    if(!added)return;
+    queued=true;
+    queueMicrotask(()=>{
+      queued=false;
+      const legacy=Array.from(document.querySelectorAll('[role="dialog"][aria-label="신규 수주 등록"]')).some(d=>!d.closest("#qmes-sales-new-order-modal-v6"));
+      if(legacy)openV6();
+    });
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+
   const rebind=()=>{bindAliases();ensureClassification();};
   [0,80,220,600,1200,2200].forEach(ms=>setTimeout(rebind,ms));
   ["qmes:erp-runtime-loaded","qmes:enterprise-ui-ready","qmes:mes-master-ready"].forEach(name=>window.addEventListener(name,rebind));
