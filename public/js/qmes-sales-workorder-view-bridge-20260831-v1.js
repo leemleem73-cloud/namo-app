@@ -19,11 +19,11 @@
   }catch(_){ }
 
   try{
-    if(!window.__QMES_SALES_ORDER_CLASSIFICATION_20260831_V1__&&!document.querySelector('script[data-qmes-sales-classification="1"]')){
+    if(!window.__QMES_SALES_ORDER_CLASSIFICATION_20260831_V2__&&!document.querySelector('script[data-qmes-sales-classification-v2="1"]')){
       const script=document.createElement("script");
-      script.src="./js/qmes-sales-order-classification-20260831-v1.js?v=20260831-1";
+      script.src="./js/qmes-sales-order-classification-20260831-v2.js?v=20260831-visible2";
       script.async=false;
-      script.dataset.qmesSalesClassification="1";
+      script.dataset.qmesSalesClassificationV2="1";
       document.head.appendChild(script);
     }
   }catch(_){ }
