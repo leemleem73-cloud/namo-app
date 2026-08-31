@@ -1,14 +1,13 @@
 /* NAMO QMES - login/sync bootstrap coordinator - 2026-09-01
  *
  * Keep app.jsx as the single UI/auth owner. This guard only coordinates network
- * ordering and stabilizes the very first browser paint before React mounts.
+ * ordering so background QMES sync cannot race the initial /api/auth/me check.
  *
  * Rules:
  * 1) A saved browser login is verified exactly once with /api/auth/me.
  * 2) Concurrent /api/auth/me callers share that one response.
  * 3) Authenticated QMES sync waits for the initial auth verdict before starting.
- * 4) A non-interactive first-paint placeholder lives only inside #root and is
- *    automatically replaced by React. No overlay/login owner is introduced.
+ * 4) This file never renders, removes, or replaces the React login screen.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -20,31 +19,6 @@
 
   let hasSavedSession=false;
   try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
-
-  function installFirstPaint(){
-    const root=document.getElementById("root");
-    if(!root||root.childNodes.length) return;
-
-    document.documentElement.style.background="#07162b";
-    document.body.style.margin="0";
-    document.body.style.background="#07162b";
-    document.body.style.minHeight="100vh";
-
-    const shell=document.createElement("div");
-    shell.id="qmes-auth-first-paint-20260901";
-    shell.setAttribute("aria-hidden","true");
-    shell.style.cssText="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#07162b,#0c3156);font-family:Pretendard,'Noto Sans KR',sans-serif;padding:20px;box-sizing:border-box;";
-
-    if(hasSavedSession){
-      shell.innerHTML='<div style="color:#fff;font-size:14px;font-weight:800;letter-spacing:-.02em">로그인 상태 확인 중...</div>';
-    }else{
-      shell.innerHTML='<div style="width:min(420px,100%);background:#fff;border-radius:22px;padding:36px 32px;box-shadow:0 24px 70px rgba(0,0,0,.32);box-sizing:border-box"><div style="font-size:25px;font-weight:950;color:#0f2740;text-align:center;margin-bottom:28px">나모케미칼 QMES</div><div style="font-size:12px;font-weight:800;color:#334155;margin-bottom:6px">아이디 또는 사번</div><div style="height:46px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;box-sizing:border-box"></div><div style="font-size:12px;font-weight:800;color:#334155;margin-top:15px;margin-bottom:6px">비밀번호</div><div style="height:46px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;box-sizing:border-box"></div><div style="height:48px;border-radius:11px;background:#0f5d8f;margin-top:20px"></div><div style="font-size:12px;color:#64748b;text-align:center;margin-top:16px">초기 비밀번호 : 1234</div></div>';
-    }
-
-    root.appendChild(shell);
-  }
-
-  installFirstPaint();
 
   let authState=hasSavedSession?"pending":"anonymous";
   let authCheckPromise=null;
