@@ -1,11 +1,12 @@
-/* QMES Stage 12 operational loader v63
+/* QMES Stage 12 operational loader v64
  * Login-safe runtime gate - 2026-08-31.
- * F5 optimization: remove obsolete duplicate New Sales Order implementations.
+ * F5 optimization: only one New Sales Order implementation is loaded.
+ * V9 force-owns the New Sales Order click and replaces any legacy/demo popup.
  */
 (function(){
   "use strict";
-  if(window.__QMES_STAGE12_RUNTIME_V63__) return;
-  window.__QMES_STAGE12_RUNTIME_V63__=true;
+  if(window.__QMES_STAGE12_RUNTIME_V64__) return;
+  window.__QMES_STAGE12_RUNTIME_V64__=true;
 
   const STYLE_DEFS=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
@@ -28,9 +29,8 @@
     ["qmes-production-worker-name-visible-20260827","./css/qmes-production-worker-name-visible-20260827.css?v=20260827-2",false]
   ];
 
-  /* V8 is the single New Sales Order implementation. Historical V1-V7 files remain in Git but are not downloaded on F5. */
   const files=[
-    "./js/qmes-sales-new-order-namo-modal-20260831-v8.js?v=20260831-enterprise2",
+    "./js/qmes-sales-new-order-namo-modal-20260831-v9.js?v=20260831-force1",
     "./js/qmes-sales-bootstrap-stability-20260828-v1.js?v=20260828-1",
     "./js/qmes-sales-detail-drawer-safe-20260828-v2.js?v=20260828-1",
     "./js/qmes-sales-workorder-view-bridge-20260831-v1.js?v=20260831-1",
@@ -87,90 +87,40 @@
 
   function authenticated(){
     const user=window.__QMES_CURRENT_USER__;
-    return !!(user&&typeof user==="object"&&(user.id||user.uid||user.name));
+    return !!(user&&typeof user==='object'&&(user.id||user.uid||user.name));
   }
 
   function fieldInputActive(){return !!document.querySelector('.qmes-ipad-pop');}
-
   function ensureStyle(id,href){
     let link=document.getElementById(id);
-    if(!link){
-      link=document.createElement('link');
-      link.id=id;
-      link.rel='stylesheet';
-      link.href=href;
-      document.head.appendChild(link);
-    }else if(String(link.getAttribute('href')||'')!==href){
-      link.href=href;
-    }
+    if(!link){link=document.createElement('link');link.id=id;link.rel='stylesheet';link.href=href;document.head.appendChild(link);}
+    else if(String(link.getAttribute('href')||'')!==href)link.href=href;
     link.disabled=false;
     return link;
   }
-
   function syncThemeState(){
-    if(!authenticated()) return;
+    if(!authenticated())return;
     document.getElementById('qmes-coa-current-final-20260827')?.remove();
     const field=fieldInputActive();
-    STYLE_DEFS.forEach(([id,href,keepDuringField])=>{
-      const link=ensureStyle(id,href);
-      link.media=field&&!keepDuringField?'not all':'all';
-    });
+    STYLE_DEFS.forEach(([id,href,keepDuringField])=>{const link=ensureStyle(id,href);link.media=field&&!keepDuringField?'not all':'all';});
   }
-
-  function exists(src){
-    const base=src.split('?')[0];
-    return Array.from(document.scripts).some(s=>(s.getAttribute('src')||'').split('?')[0]===base);
-  }
-
-  function finish(){
-    syncThemeState();
-    window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));
-    window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));
-  }
-
+  function exists(src){const base=src.split('?')[0];return Array.from(document.scripts).some(s=>(s.getAttribute('src')||'').split('?')[0]===base);}
+  function finish(){syncThemeState();window.dispatchEvent(new CustomEvent('qmes:enterprise-ui-ready'));window.dispatchEvent(new CustomEvent('qmes:mes-master-ready'));}
   function load(i){
     if(i>=files.length){finish();return;}
-    const src=files[i];
-    if(exists(src)){load(i+1);return;}
-    const script=document.createElement('script');
-    script.src=src;
-    script.async=false;
-    script.onload=()=>load(i+1);
-    script.onerror=()=>{
-      console.error('[QMES] MES master module load failed',src);
-      load(i+1);
-    };
-    document.head.appendChild(script);
+    const src=files[i];if(exists(src)){load(i+1);return;}
+    const script=document.createElement('script');script.src=src;script.async=false;script.onload=()=>load(i+1);script.onerror=()=>{console.error('[QMES] MES master module load failed',src);load(i+1);};document.head.appendChild(script);
   }
 
-  let runtimeStarted=false;
-  let rootObserver=null;
-
+  let runtimeStarted=false,rootObserver=null;
   function startRuntime(){
-    if(runtimeStarted) return;
-    if(!authenticated()){
-      window.setTimeout(startRuntime,150);
-      return;
-    }
-
-    runtimeStarted=true;
-    syncThemeState();
-
+    if(runtimeStarted)return;
+    if(!authenticated()){window.setTimeout(startRuntime,150);return;}
+    runtimeStarted=true;syncThemeState();
     const root=document.getElementById('root');
-    if(root&&!rootObserver){
-      let queued=false;
-      rootObserver=new MutationObserver(()=>{
-        if(queued) return;
-        queued=true;
-        queueMicrotask(()=>{queued=false;syncThemeState();});
-      });
-      rootObserver.observe(root,{childList:true,subtree:true});
-    }
-
-    /* Start immediately after login instead of adding the previous 80 ms delay. */
+    if(root&&!rootObserver){let queued=false;rootObserver=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;syncThemeState();});});rootObserver.observe(root,{childList:true,subtree:true});}
     load(0);
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startRuntime,{once:true});
-  else startRuntime();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startRuntime,{once:true});else startRuntime();
 })();
