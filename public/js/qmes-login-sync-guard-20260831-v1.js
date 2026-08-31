@@ -1,8 +1,8 @@
 /* NAMO QMES - login/sync bootstrap coordinator - 2026-09-01
  *
  * Keep app.jsx as the single UI/auth owner. This guard coordinates initial auth,
- * prevents sync/auth races, and blocks the sidebar DOM observer until login is
- * fully authenticated.
+ * prevents sync/auth races, blocks the sidebar DOM observer until login is fully
+ * authenticated, and isolates the login screen from the global light theme.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -13,6 +13,30 @@
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
   const nativeFetch=global.fetch.bind(global);
+
+  /* The global light theme forces html/body/#root backgrounds to white with
+     !important. That also catches the login component and creates the visible
+     white/background repaint. Override it only while the authenticated QMES
+     shell (direct header under #root > div) does not exist. */
+  const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
+  if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
+    const style=document.createElement("style");
+    style.id=LOGIN_THEME_STYLE_ID;
+    style.textContent=`
+      html body:not(:has(#root > div > header)){
+        background:#07162b!important;
+      }
+      html body:not(:has(#root > div > header)) #root#root#root#root{
+        min-height:100vh!important;
+        background:linear-gradient(135deg,#07162b,#0c3156)!important;
+      }
+      html body:not(:has(#root > div > header)) #root#root#root#root > div{
+        min-height:100vh!important;
+        background:linear-gradient(135deg,#07162b,#0c3156)!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   let hasSavedSession=false;
   try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
