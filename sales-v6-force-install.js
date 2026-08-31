@@ -1,11 +1,12 @@
 /* QMES startup static-asset optimizer - 2026-08-31
  * Historical filename kept because package.json preloads this module.
  *
- * Fixes:
+ * Stability rules:
  * 1) DO NOT copy historical Sales modules over current files.
- * 2) Keep index / master loader / current Sales Order V9 / current Live MRP uncached
- *    so deployments appear immediately.
- * 3) Allow the remaining dated JS/CSS assets to be browser-cached and revalidated.
+ * 2) Login/auth critical runtime files are NEVER browser-cached. Different PCs
+ *    must not run different auth/bootstrap/observer revisions.
+ * 3) Current Sales Order / MRP / master loader are also uncached.
+ * 4) Remaining dated JS/CSS assets may be cached and revalidated.
  */
 'use strict';
 
@@ -26,16 +27,20 @@ try {
         const isMasterLoader = /qmes-mes-master-loader-20260820-v2\.js$/i.test(file);
         const isCurrentSalesOrder = /qmes-sales-new-order-namo-modal-20260831-v9\.js$/i.test(file);
         const isCurrentLiveMrp = /qmes-sample-development-mrp-live-20260831-v1\.js$/i.test(file);
+
+        // Login stability: these files control first paint, server-session check,
+        // authenticated app ownership, and the observer that previously caused
+        // a whole-document repaint loop on some PCs. Never allow stale copies.
+        const isLoginCritical = /(?:auth-session-fastcheck-20260812\.js|qmes-login-sync-guard-20260831-v1\.js|qmes-sync\.js|app\.jsx|router\.jsx|equipment-inspector-selector-20260828\.js)$/i.test(file);
         const isStaticAsset = /\.(?:js|jsx|css)$/i.test(file);
 
-        if (isHtml || isMasterLoader || isCurrentSalesOrder || isCurrentLiveMrp) {
+        if (isHtml || isMasterLoader || isCurrentSalesOrder || isCurrentLiveMrp || isLoginCritical) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
           res.setHeader('Surrogate-Control', 'no-store');
         } else if (isStaticAsset) {
-          // Dated/versioned QMES assets can be reused on normal reloads.
-          // F5 may revalidate, but ETag/Last-Modified can return 304 instead of full payloads.
+          // Other dated/versioned QMES assets can be reused on normal reloads.
           res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
           res.removeHeader('Pragma');
           res.removeHeader('Expires');
@@ -48,7 +53,7 @@ try {
       return originalStatic.call(express, rootDir, opts);
     };
 
-    console.log('[QMES] Static cache optimization enabled; current Sales V9 and Live MRP are no-store');
+    console.log('[QMES] Static cache optimization enabled; login-critical runtime is no-store');
   }
 } catch (err) {
   console.error('[QMES] Failed to optimize static cache:', err && err.message ? err.message : err);
