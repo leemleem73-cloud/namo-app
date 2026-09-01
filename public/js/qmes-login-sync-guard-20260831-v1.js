@@ -3,7 +3,7 @@
  * Keep app.jsx as the single UI/auth owner. This guard coordinates initial auth,
  * prevents sync/auth races, blocks the sidebar DOM observer until login is fully
  * authenticated, isolates the login screen from the global light theme, and
- * normalizes native select colors so dark-theme flashes do not appear on open.
+ * normalizes native select rendering so dark-theme flashes do not appear on open.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -15,15 +15,6 @@
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
   const nativeFetch=global.fetch.bind(global);
 
-  /* The global light theme forces html/body/#root backgrounds to white with
-     !important. That also catches the login component and creates the visible
-     white/background repaint. Override it only while the authenticated QMES
-     shell (direct header under #root > div) does not exist.
-
-     Native <select> controls still inherit old dark component colors in a few
-     modules. Chromium/Windows can paint that dark state for one frame before the
-     popup list opens. Force the control, its popup options and active/focus state
-     to the same light palette across the whole application. */
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
   if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
     const style=document.createElement("style");
@@ -44,20 +35,37 @@
       html,body,#root,select,option,optgroup{
         color-scheme:light!important;
       }
+
+      /* Windows/Chromium can briefly paint the native dark select button before
+         its popup opens. Remove that native button skin completely and draw a
+         stable light control instead. */
       html body #root select,
       html body #root select:hover,
       html body #root select:focus,
       html body #root select:focus-visible,
       html body #root select:active{
+        -webkit-appearance:none!important;
+        appearance:none!important;
+        color-scheme:light!important;
+        forced-color-adjust:none!important;
         background-color:#fff!important;
-        background-image:none!important;
+        background-image:linear-gradient(45deg,transparent 50%,#64748b 50%),linear-gradient(135deg,#64748b 50%,transparent 50%)!important;
+        background-position:calc(100% - 12px) 50%,calc(100% - 7px) 50%!important;
+        background-size:5px 5px,5px 5px!important;
+        background-repeat:no-repeat!important;
         color:#111827!important;
         border-color:#cbd5e1!important;
+        outline:none!important;
         box-shadow:none!important;
+        filter:none!important;
+        transition:none!important;
         -webkit-text-fill-color:#111827!important;
+        padding-right:28px!important;
       }
+      html body #root select::-ms-expand{display:none!important;}
       html body #root select option,
       html body #root select optgroup{
+        color-scheme:light!important;
         background:#fff!important;
         background-color:#fff!important;
         color:#111827!important;
@@ -65,11 +73,12 @@
       }
       html body #root select option:checked{
         background:#eaf3ff!important;
+        background-color:#eaf3ff!important;
         color:#111827!important;
       }
       html body #root select:disabled,
       html body #root select:disabled option{
-        background:#f1f5f9!important;
+        background-color:#f1f5f9!important;
         color:#64748b!important;
         -webkit-text-fill-color:#64748b!important;
       }
@@ -80,9 +89,6 @@
   let hasSavedSession=false;
   try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
 
-  /* qmes-collapsible-side-menu.js otherwise starts a whole-body MutationObserver
-     and an endless requestAnimationFrame boot loop while the login screen has no
-     top-menu buttons. Mark it as already installed until auth is actually ready. */
   let sidebarDeferred=true;
   global[SIDEBAR_GUARD]=true;
 
