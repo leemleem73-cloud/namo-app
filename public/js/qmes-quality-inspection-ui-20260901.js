@@ -73,7 +73,7 @@
     const r=select.getBoundingClientRect();
     const width=Math.max(112,Math.round(r.width));
     menu.style.width=`${width}px`;
-    let left=Math.min(Math.max(8,r.left),Math.max(8,global.innerWidth-width-8));
+    const left=Math.min(Math.max(8,r.left),Math.max(8,global.innerWidth-width-8));
     menu.style.left=`${left}px`;
     menu.style.top=`${Math.min(r.bottom+4,global.innerHeight-8)}px`;
     const mr=menu.getBoundingClientRect();
@@ -106,12 +106,19 @@
     selected?.focus({preventScroll:true});
   }
 
+  function blockNativeSelectActivation(event){
+    const select=event.target instanceof HTMLSelectElement?event.target:null;
+    if(!select||!isQualityDateFilter(select)) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+
   document.addEventListener("pointerdown",event=>{
     const select=event.target instanceof HTMLSelectElement?event.target:null;
     if(select&&isQualityDateFilter(select)){
-      /* Capture before Chromium hands the click to the OS native picker. */
-      event.preventDefault();
-      event.stopPropagation();
+      /* Capture before Chromium hands the interaction to the OS native picker. */
+      blockNativeSelectActivation(event);
       openMenu(select);
       return;
     }
@@ -119,23 +126,33 @@
     if(!inside&&activeSelect) closeMenu();
   },true);
 
+  document.addEventListener("mousedown",event=>{
+    blockNativeSelectActivation(event);
+  },true);
+
   document.addEventListener("click",event=>{
+    const select=event.target instanceof HTMLSelectElement?event.target:null;
+    if(select&&isQualityDateFilter(select)){
+      blockNativeSelectActivation(event);
+      if(activeSelect!==select) openMenu(select);
+      return;
+    }
     const button=event.target instanceof Element?event.target.closest(`#${MENU_ID} button[data-value]`):null;
     if(!button||!activeSelect) return;
     event.preventDefault();
     event.stopPropagation();
-    const select=activeSelect;
+    const targetSelect=activeSelect;
     const value=button.dataset.value||"";
     closeMenu();
-    setReactSelectValue(select,value);
-    try{select.focus({preventScroll:true});}catch(_error){select.focus();}
+    setReactSelectValue(targetSelect,value);
+    try{targetSelect.focus({preventScroll:true});}catch(_error){targetSelect.focus();}
   },true);
 
   document.addEventListener("keydown",event=>{
     if(event.key==="Escape"&&activeSelect){event.preventDefault();closeMenu();return;}
     const select=event.target instanceof HTMLSelectElement?event.target:null;
     if(select&&isQualityDateFilter(select)&&(event.key==="Enter"||event.key===" "||event.key==="ArrowDown")){
-      event.preventDefault();openMenu(select);
+      event.preventDefault();event.stopPropagation();openMenu(select);
     }
   },true);
 
