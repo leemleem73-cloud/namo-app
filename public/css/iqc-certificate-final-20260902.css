@@ -1,152 +1,247 @@
-/* IQC certificate — clean OQC mirror, 2026-09-02.
-   No legacy IQC sizing is retained here. The shared report layout remains the base;
-   this file mirrors only the final OQC visual values for IQC. */
+/* IQC certificate — mirror the ACTUALLY LOADED OQC report styles.
+   Important: the old 12px / 35px / #94a3b8 values came from an unused OQC JS file.
+   This file now mirrors the active shared/OQC CSS instead, while keeping IQC data and QR/barcode. */
 
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert){
-  background:#fff!important;
-  color:#0f172a!important;
-  box-shadow:none!important;
-}
-
-/* Match OQC final logo treatment. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc-header-logo{
+/* Header: use the same visible sizing as the active common OQC document. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc-header-logo{
+  display:block!important;
+  width:205px!important;
+  max-width:100%!important;
+  max-height:58px!important;
+  height:auto!important;
+  margin:0!important;
   object-fit:contain!important;
-  image-rendering:auto!important;
+  object-position:left center!important;
   filter:none!important;
   opacity:1!important;
-  transform:scale(.88)!important;
-  transform-origin:left center!important;
-  max-width:88%!important;
+  transform:none!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc-centered-title .text-xl{
+  position:static!important;
+  top:auto!important;
+  margin:0!important;
+  color:#0f172a!important;
+  font-size:32px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+
+/* OQC centers every report section title. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec-title{
   height:auto!important;
+  margin:0!important;
+  padding:7px 12px!important;
+  padding-left:0!important;
+  border:1px solid #1e3a6d!important;
+  border-left:0!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  background:#1e3a6d!important;
+  color:#fff!important;
+  font-size:15.5px!important;
+  line-height:1.4!important;
+  font-weight:800!important;
+  text-align:center!important;
+  letter-spacing:.02em!important;
 }
 
-/* Match OQC section/header border treatment. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec-title{
-  border-bottom:1.5px solid #243b5a!important;
-  border-color:#243b5a!important;
-  font-size:12px!important;
-  line-height:1.25!important;
-}
-
-/* Match OQC final report typography. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec table.qmes-iqc2-table th,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec table.qmes-iqc2-table td,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec table.qmes-iqc2-table th *,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec table.qmes-iqc2-table td *,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks *{
-  font-size:12px!important;
-  line-height:1.25!important;
-  font-family:inherit!important;
-}
-
-/* Match OQC final 35px grid and light border. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table{
+/* Active OQC/common table grid: 15px text, 46px rows, #475569 single grid. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table{
+  width:100%!important;
+  margin:0!important;
+  border:1px solid #475569!important;
   border-collapse:collapse!important;
   border-spacing:0!important;
-  border-color:#94a3b8!important;
+  table-layout:fixed!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:15px!important;
+  line-height:1.4!important;
 }
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table tr{
-  height:35px!important;
-  min-height:35px!important;
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table tr{
+  height:46px!important;
+  min-height:46px!important;
 }
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table th,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table td{
-  height:35px!important;
-  min-height:35px!important;
-  padding-top:3px!important;
-  padding-bottom:3px!important;
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table th,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table td,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table th *,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table td *{
+  height:46px!important;
+  min-height:46px!important;
+  padding:12px 10px!important;
+  border:1px solid #475569!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:15px!important;
+  line-height:1.4!important;
+  text-align:center!important;
   vertical-align:middle!important;
-  border:1px solid #94a3b8!important;
-  outline:0!important;
-  box-shadow:none!important;
+  box-sizing:border-box!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table thead th{
+  background:#f8fafc!important;
+  color:#0f172a!important;
+  font-size:15px!important;
+  font-weight:700!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-item-cell,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-spec-cell{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-spec-cell{
+  padding:12px 10px!important;
+}
+
+/* Remarks use the same active common report box as OQC. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks *{
+  min-height:52px!important;
+  padding:13px 12px!important;
+  border:1px solid #475569!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  font-size:15px!important;
+  line-height:1.4!important;
   box-sizing:border-box!important;
 }
 
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks{
-  min-height:35px!important;
-  padding-top:3px!important;
-  padding-bottom:3px!important;
-  border:1px solid #94a3b8!important;
-  box-sizing:border-box!important;
-}
-
-/* IQC keeps its barcode/QR content, but its box uses the same final border family. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-code-box{
-  border:1px solid #94a3b8!important;
+/* IQC keeps its barcode/QR, but border family matches the active OQC grid. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-code-box{
+  border:1px solid #475569!important;
   border-radius:0!important;
   box-shadow:none!important;
+  box-sizing:border-box!important;
+  background:#fff!important;
 }
 
-/* Match OQC final approval grid: 35px heading + 55px name row. */
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table{
+/* Active OQC/common approval table sizing. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table{
   border-collapse:collapse!important;
   border-spacing:0!important;
-  border:1px solid #94a3b8!important;
-}
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table th,
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table td{
-  height:35px!important;
-  min-height:35px!important;
-  padding-top:3px!important;
-  padding-bottom:3px!important;
-  vertical-align:middle!important;
-  border:1px solid #94a3b8!important;
-  outline:0!important;
-  box-shadow:none!important;
+  border:1px solid #475569!important;
+  font-size:15px!important;
+  table-layout:fixed!important;
+  flex:0 1 42%!important;
+  width:42%!important;
+  max-width:42%!important;
+  min-width:0!important;
   box-sizing:border-box!important;
-  font-size:12px!important;
-  line-height:1.25!important;
 }
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table tbody tr:nth-child(2),
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{
-  height:55px!important;
-  min-height:55px!important;
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table th,
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table td{
+  border:1px solid #475569!important;
+  width:33.33%!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  background:#fff!important;
+  color:#0f172a!important;
+  box-sizing:border-box!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table th{
+  height:36px!important;
+  min-height:36px!important;
+  padding:6px!important;
+  background:#f8fafc!important;
+  font-weight:700!important;
+  font-size:14.5px!important;
+  line-height:1.4!important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table td{
+  height:78px!important;
+  min-height:78px!important;
+  padding:6px!important;
+  font-size:15px!important;
+  line-height:1.4!important;
 }
 
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-pass{
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-pass{
   color:#059669!important;
   -webkit-text-fill-color:#059669!important;
   font-weight:800!important;
 }
-html body #root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-fail{
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-fail{
   color:#dc2626!important;
   -webkit-text-fill-color:#dc2626!important;
   font-weight:800!important;
 }
 
 @media print{
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table tr,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table td{
-    height:35px!important;
-    min-height:35px!important;
-    padding-top:3px!important;
-    padding-bottom:3px!important;
+  /* Match the active OQC/common A4 inner spacing instead of the obsolete compact IQC override. */
+  body.print-doc #qmes-print-root>.doc-paper.qmes-iqc-doc:not(.qmes-wo-cert),
+  body.print-doc #qmes-print-root>.qmes-screen-print-copy.doc-paper.qmes-iqc-doc:not(.qmes-wo-cert),
+  body.qmes-screen-exact-print #qmes-print-root>.doc-paper.qmes-iqc-doc:not(.qmes-wo-cert),
+  body.qmes-screen-exact-print #qmes-print-root>.qmes-screen-print-copy.doc-paper.qmes-iqc-doc:not(.qmes-wo-cert){
+    position:relative!important;
+    left:0!important;
+    right:auto!important;
+    top:0!important;
+    transform:none!important;
+    width:210mm!important;
+    max-width:210mm!important;
+    min-width:0!important;
+    min-height:271mm!important;
+    margin:0!important;
+    padding:5mm 6mm!important;
+    border-radius:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc-centered-title .text-xl{
+    font-size:32px!important;
+    line-height:1.2!important;
+    font-weight:800!important;
+    letter-spacing:.06em!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec-title{
+    font-size:15.5px!important;
+    line-height:1.4!important;
+    text-align:center!important;
+    padding-left:0!important;
+    border-left:0!important;
+    background:#1e3a6d!important;
+    color:#fff!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table td{
+    height:52px!important;
+    min-height:52px!important;
+    padding:13px 10px!important;
+    border:1px solid #475569!important;
+    font-size:15px!important;
+    line-height:1.4!important;
+    text-align:center!important;
     vertical-align:middle!important;
   }
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table th,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table td,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks,
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-remarks{
+    min-height:66px!important;
+    padding:15px 12px!important;
+    border:1px solid #475569!important;
+    font-size:15px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-auth-row{
+    margin-top:48px!important;
+  }
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table,
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table th,
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table td,
   body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-code-box{
-    border-color:#94a3b8!important;
+    border-color:#475569!important;
     border-style:solid!important;
     border-width:1px!important;
   }
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table tbody tr:nth-child(2),
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{
-    height:55px!important;
-    min-height:55px!important;
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table th{
+    height:38px!important;
+    min-height:38px!important;
+    font-size:14.5px!important;
   }
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sec-title{
-    border-bottom:1.5px solid #243b5a!important;
-    -webkit-print-color-adjust:exact!important;
-    print-color-adjust:exact!important;
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-sign-table td{
+    height:94px!important;
+    min-height:94px!important;
+    font-size:15px!important;
   }
 }
