@@ -9,6 +9,7 @@
   const STYLE_ID = 'qmes-iqc-standalone-edit-style-20260826';
   const OVERLAY_ID = 'qmes-iqc-standalone-edit-overlay-20260826';
   let currentRecord = null;
+  let purchaseOrders = [];
 
   function ensureStyle(){
     if (document.getElementById(STYLE_ID)) return;
@@ -86,6 +87,40 @@
     return `<label class="qmes-iqc-edit-field"><span>${label}</span><select name="${name}">${html}</select></label>`;
   }
 
+  async function loadPurchaseOrders(){
+    try {
+      const response = await fetch('/api/purchase-orders',{credentials:'same-origin'});
+      const result = await response.json();
+      if (!response.ok || result?.ok === false) throw new Error(result?.message || '발주현황 조회 실패');
+      purchaseOrders = Array.isArray(result?.data) ? result.data : [];
+    } catch (error) {
+      purchaseOrders = [];
+      console.warn('발주현황 조회 실패:', error.message);
+    }
+    return purchaseOrders;
+  }
+
+  function purchaseNoOf(order){
+    return String(order?.purchaseNo || order?.purchase_no || order?.no || '').trim();
+  }
+
+  function purchaseRemaining(order){
+    return Math.max(0, Number(order?.qty || 0) - Number(order?.receivedQty || order?.received_qty || 0));
+  }
+
+  function purchaseSelectField(record){
+    const current = val(record,'purchaseOrderNo',val(record,'purchaseOrder'));
+    const options = ['<option value="">발주현황에서 선택</option>'];
+    purchaseOrders.forEach((order) => {
+      const no = purchaseNoOf(order);
+      if (!no || /취소/.test(String(order?.status || ''))) return;
+      const remaining = purchaseRemaining(order);
+      const selected = no === current ? ' selected' : '';
+      options.push(`<option value="${escapeHtml(no)}"${selected}>${escapeHtml(no)} · ${escapeHtml(order?.supplier || '-')} · ${escapeHtml(order?.item || '-')} · 잔량 ${remaining.toLocaleString()} ${escapeHtml(order?.unit || 'kg')}</option>`);
+    });
+    return `<label class="qmes-iqc-edit-field"><span>발주번호 *</span><select name="purchaseOrderNo">${options.join('')}</select></label>`;
+  }
+
   function closeEdit(){
     document.getElementById(OVERLAY_ID)?.remove();
     currentRecord = null;
@@ -100,7 +135,7 @@
     if (target) target.textContent = `종합판정: ${overallFromForm(form)}`;
   }
 
-  function saveEdit(form){
+  async function saveEdit(form){
     if (!currentRecord || !global.DB || !Array.isArray(DB.iqc)) return;
     const originalInNo = String(currentRecord.inNo || '');
     const data = new FormData(form);
@@ -110,6 +145,8 @@
     const judge = overallFromForm(form);
     const nextRecord = {
       ...currentRecord,
+      purchaseOrderNo:String(data.get('purchaseOrderNo') || '').trim(),
+      purchaseLinkStatus:'발주연결',
       recv:String(data.get('recvDate') || '').trim(),
       inspectedAt:String(data.get('inspectDate') || '').trim(),
       lot:String(data.get('lot') || '').trim(),
@@ -135,8 +172,8 @@
       note:judge === '불합격' ? '즉시 격리 → 사용차단 → 업체 통보' : ''
     };
 
-    if (!nextRecord.recv || !nextRecord.inspectedAt || !nextRecord.lot || !nextRecord.name || !nextRecord.inspector) {
-      global.alert('입고일자, 검사일자, LOT No., 원재료명, 검사자는 반드시 입력하세요.');
+    if (!nextRecord.purchaseOrderNo || !nextRecord.recv || !nextRecord.inspectedAt || !nextRecord.lot || !nextRecord.name || !nextRecord.inspector) {
+      global.alert('발주번호, 입고일자, 검사일자, LOT No., 원재료명, 검사자는 반드시 입력하세요.');
       return;
     }
 
@@ -150,25 +187,31 @@
     try { if (typeof global.dbSave === 'function') global.dbSave(); } catch (_e) {}
     try {
       if (typeof global.qmesSyncUpsert === 'function') {
-        global.qmesSyncUpsert('iqc', nextRecord.inNo, {
+        await global.qmesSyncUpsert('iqc', nextRecord.inNo, {
           mode:'IQC', lotNo:nextRecord.lot, rows:[nextRecord],
           lotRecord:DB.lots?.[nextRecord.lot] || null,
           holds:(DB.holds || []).filter((item) => String(item.target || '').includes(nextRecord.lot)),
           savedAt:new Date().toISOString(), savedBy:nextRecord.inspector || ''
-        }).catch((error) => console.warn('IQC 수정 공용 DB 저장 실패:', error.message));
+        });
       }
-    } catch (_e) {}
+    } catch (error) {
+      DB.iqc[index] = currentRecord;
+      try { if (typeof global.dbSave === 'function') global.dbSave(); } catch (_e) {}
+      global.alert(`발주현황 연동에 실패하여 수정하지 않았습니다.\n${error.message}`);
+      return;
+    }
     try { document.dispatchEvent(new CustomEvent('qmes:data-updated',{detail:{type:'iqc',key:nextRecord.inNo,action:'update'}})); } catch (_e) {}
     closeEdit();
     global.location.reload();
   }
 
-  function openEdit(record){
+  async function openEdit(record){
     if (!record) {
       global.alert('수정할 수입검사 데이터를 찾지 못했습니다.');
       return;
     }
     ensureStyle();
+    await loadPurchaseOrders();
     document.getElementById(OVERLAY_ID)?.remove();
     currentRecord = record;
     const overlay = document.createElement('div');
@@ -181,15 +224,16 @@
         </div>
         <div class="qmes-iqc-edit-body">
           <section class="qmes-iqc-edit-section"><h4>기본정보</h4><div class="qmes-iqc-edit-grid">
+            ${purchaseSelectField(record)}
             ${field('입고번호','inNo',val(record,'inNo'), 'text', 'readonly')}
             ${field('입고일자','recvDate',val(record,'recv').slice(0,10),'date')}
             ${field('검사일자','inspectDate',val(record,'inspectedAt',val(record,'recv')).slice(0,10),'date')}
             ${field('LOT No.','lot',val(record,'lot'))}
-            ${field('원재료명','name',val(record,'name'))}
-            ${field('업체명','supplier',val(record,'supplier') === '-' ? '' : val(record,'supplier'))}
+            ${field('원재료명','name',val(record,'name'),'text','readonly')}
+            ${field('업체명','supplier',val(record,'supplier') === '-' ? '' : val(record,'supplier'),'text','readonly')}
           </div></section>
           <section class="qmes-iqc-edit-section"><h4>수량</h4><div class="qmes-iqc-edit-grid">
-            ${field('입고수량 (kg)','qty',stripUnit(val(record,'qty')),'text','inputmode="decimal"')}
+            ${field('입고수량 (kg)','qty',stripUnit(val(record,'qty')),'text','inputmode="decimal" readonly')}
             ${field('검사수량 (EA)','inspectQty',stripUnit(val(record,'inspectQty')),'text','inputmode="decimal"')}
             ${field('불량수량 (EA)','defectQty',stripUnit(val(record,'defectQty','0')),'text','inputmode="decimal"')}
           </div></section>
@@ -215,8 +259,17 @@
     overlay.querySelector('.qmes-iqc-edit-close').addEventListener('click', closeEdit);
     overlay.querySelector('.qmes-iqc-edit-cancel').addEventListener('click', closeEdit);
     overlay.addEventListener('mousedown', (event) => { if (event.target === overlay) closeEdit(); });
+    form.elements.purchaseOrderNo?.addEventListener('change', (event) => {
+      const order = purchaseOrders.find((item) => purchaseNoOf(item) === event.target.value);
+      if (!order) return;
+      const remaining = purchaseRemaining(order);
+      const linkedQty = remaining > 0 ? remaining : Number(order?.receivedQty || order?.received_qty || order?.qty || 0);
+      form.elements.name.value = String(order?.item || '');
+      form.elements.supplier.value = String(order?.supplier || '');
+      form.elements.qty.value = linkedQty > 0 ? String(linkedQty) : '';
+    });
     form.addEventListener('change', () => updateJudgePreview(form));
-    form.addEventListener('submit', (event) => { event.preventDefault(); saveEdit(form); });
+    form.addEventListener('submit', async (event) => { event.preventDefault(); await saveEdit(form); });
   }
 
   document.addEventListener('click', function interceptIqcEdit(event){
