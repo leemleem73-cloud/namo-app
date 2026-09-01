@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V16__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V16__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V17__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V17__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v16";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v17";
 
   function ensureLightSchemeMeta(){
     let meta=document.querySelector('meta[name="color-scheme"]');
@@ -18,23 +18,50 @@
     style.id=STYLE_ID;
     style.textContent=`
       html,body,#root{color-scheme:only light!important;}
+
+      /* Keep the current quality page visible behind registration. The outer layer itself never scrolls. */
       html body #root .qmes-modal-backdrop.qmes-iqc-modal-backdrop,
-      html body #root .qmes-inspection-modal-backdrop{position:fixed!important;inset:0!important;z-index:2147483000!important;padding:20px!important;background:#fff!important;background-color:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow:auto!important;align-items:flex-start!important;justify-content:center!important;}
+      html body #root .qmes-inspection-modal-backdrop{
+        position:fixed!important;inset:0!important;z-index:2147483000!important;padding:20px!important;
+        background:rgba(15,23,42,.18)!important;background-color:rgba(15,23,42,.18)!important;
+        backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+        overflow:hidden!important;align-items:center!important;justify-content:center!important;
+        overscroll-behavior:none!important;
+      }
+
+      /* Header/footer stay still; only the modal body scrolls. */
       html body #root .qmes-iqc-modal,
-      html body #root .qmes-inspection-modal{position:relative!important;z-index:1!important;margin:0 auto!important;max-height:calc(100vh - 40px)!important;background:#fff!important;background-color:#fff!important;color:#111827!important;}
+      html body #root .qmes-inspection-modal{
+        position:relative!important;z-index:1!important;margin:0 auto!important;
+        max-height:calc(100vh - 40px)!important;height:auto!important;
+        display:flex!important;flex-direction:column!important;overflow:hidden!important;
+        background:#fff!important;background-color:#fff!important;color:#111827!important;
+        border-color:#cbd5e1!important;
+      }
       html body #root .qmes-iqc-modal-head,
-      html body #root .qmes-inspection-modal-head{position:sticky!important;top:0!important;z-index:20!important;flex:0 0 auto!important;background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
+      html body #root .qmes-inspection-modal-head{
+        position:relative!important;top:auto!important;z-index:20!important;flex:0 0 auto!important;
+        background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;
+      }
       html body #root .qmes-iqc-modal-head strong,html body #root .qmes-iqc-modal-head span,
       html body #root .qmes-inspection-modal-head strong,html body #root .qmes-inspection-modal-head span{color:#111827!important;}
+
       html body #root .qmes-iqc-modal-body,
-      html body #root .qmes-inspection-modal-body,
+      html body #root .qmes-inspection-modal-body{
+        min-height:0!important;flex:1 1 auto!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain!important;scrollbar-gutter:stable!important;
+        touch-action:pan-y!important;-webkit-overflow-scrolling:touch;
+        background:#fff!important;background-color:#fff!important;
+      }
       html body #root .qmes-iqc-modal-section,
       html body #root .qmes-iqc-modal-grid,
       html body #root .qmes-pqc-entry-form,
       html body #root .qmes-oqc-entry-form,
-      html body #root .qmes-inspection-modal-body .qmes-panel{background:#fff!important;background-color:#fff!important;background-image:none!important;}
-      html body #root .qmes-iqc-modal,
-      html body #root .qmes-inspection-modal,
+      html body #root .qmes-inspection-modal-body .qmes-panel{
+        background:#fff!important;background-color:#fff!important;background-image:none!important;
+      }
+
       html body #root .qmes-iqc-modal-section,
       html body #root .qmes-inspection-modal-body .qmes-panel,
       html body #root .qmes-inspection-modal-body fieldset,
@@ -44,25 +71,48 @@
       html body #root .qmes-iqc-modal table,
       html body #root .qmes-iqc-modal th,
       html body #root .qmes-iqc-modal td{border-color:#cbd5e1!important;}
+
       html body #root .qmes-iqc-modal input,
       html body #root .qmes-iqc-modal select,
       html body #root .qmes-iqc-modal textarea,
       html body #root .qmes-inspection-modal input,
       html body #root .qmes-inspection-modal select,
-      html body #root .qmes-inspection-modal textarea{background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
-      html body #root .qmes-iqc-modal-foot{background:#fff!important;background-color:#fff!important;border-color:#cbd5e1!important;}
-      .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;background:#fff!important;}
+      html body #root .qmes-inspection-modal textarea{
+        background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;
+      }
 
-      .qmes-quality-modal-actions{display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important;position:relative!important;z-index:21!important;flex:0 0 auto!important;}
+      html body #root .qmes-iqc-modal-foot{
+        flex:0 0 auto!important;background:#fff!important;background-color:#fff!important;border-color:#cbd5e1!important;
+      }
+
+      .qmes-quality-modal-actions{
+        display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important;
+        position:relative!important;z-index:21!important;flex:0 0 auto!important;
+      }
+
+      /* Close and Cancel use exactly the same light-gray border. */
       html body #root .qmes-quality-modal-close,
+      html body #root .qmes-iqc-modal-cancel,
+      html body #root .qmes-inspection-cancel-btn,
       html body #root .qmes-quality-modal-close:hover,
       html body #root .qmes-quality-modal-close:focus,
-      html body #root .qmes-quality-modal-close:active{
-        height:34px!important;min-width:58px!important;padding:0 13px!important;border:1px solid #cbd5e1!important;border-radius:7px!important;
-        background:#fff!important;background-color:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;
-        font-size:13px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
-        visibility:visible!important;opacity:1!important;cursor:pointer!important;text-shadow:none!important;
+      html body #root .qmes-quality-modal-close:active,
+      html body #root .qmes-iqc-modal-cancel:hover,
+      html body #root .qmes-iqc-modal-cancel:focus,
+      html body #root .qmes-iqc-modal-cancel:active,
+      html body #root .qmes-inspection-cancel-btn:hover,
+      html body #root .qmes-inspection-cancel-btn:focus,
+      html body #root .qmes-inspection-cancel-btn:active{
+        border:1px solid #cbd5e1!important;border-color:#cbd5e1!important;border-radius:7px!important;
+        background:#fff!important;background-color:#fff!important;
+        color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;
       }
+      html body #root .qmes-quality-modal-close{
+        height:34px!important;min-width:58px!important;padding:0 13px!important;
+        font-size:13px!important;font-weight:700!important;display:inline-flex!important;
+        align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;cursor:pointer!important;
+      }
+
       .qmes-wo-viewer-head{position:sticky;top:0;z-index:5;flex:0 0 auto;background:#0b1728;}
     `;
     document.head.appendChild(style);
@@ -82,9 +132,30 @@
     head.appendChild(actions);
   }
 
-  function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);}
+  function enhanceOpenModals(){
+    document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);
+  }
 
-  ensureLightSchemeMeta();ensureStyle();enhanceOpenModals();
+  ensureLightSchemeMeta();
+  ensureStyle();
+  enhanceOpenModals();
+
   const root=document.getElementById("root")||document.body;
-  new MutationObserver(enhanceOpenModals).observe(root,{childList:true,subtree:true});
+  let enhanceQueued=false;
+  new MutationObserver((mutations)=>{
+    let modalChanged=false;
+    for(const mutation of mutations){
+      for(const node of mutation.addedNodes){
+        if(!(node instanceof Element)) continue;
+        if(node.matches?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head,.qmes-iqc-modal,.qmes-inspection-modal") ||
+           node.querySelector?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head")){
+          modalChanged=true;break;
+        }
+      }
+      if(modalChanged) break;
+    }
+    if(!modalChanged||enhanceQueued) return;
+    enhanceQueued=true;
+    global.requestAnimationFrame(()=>{enhanceQueued=false;enhanceOpenModals();});
+  }).observe(root,{childList:true,subtree:true});
 })(window);
