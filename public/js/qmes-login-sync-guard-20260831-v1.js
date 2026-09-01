@@ -2,7 +2,8 @@
  *
  * Keep app.jsx as the single UI/auth owner. This guard coordinates initial auth,
  * prevents sync/auth races, blocks the sidebar DOM observer until login is fully
- * authenticated, and isolates the login screen from the global light theme.
+ * authenticated, isolates the login screen from the global light theme, and
+ * normalizes native select colors so dark-theme flashes do not appear on open.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -17,7 +18,12 @@
   /* The global light theme forces html/body/#root backgrounds to white with
      !important. That also catches the login component and creates the visible
      white/background repaint. Override it only while the authenticated QMES
-     shell (direct header under #root > div) does not exist. */
+     shell (direct header under #root > div) does not exist.
+
+     Native <select> controls still inherit old dark component colors in a few
+     modules. Chromium/Windows can paint that dark state for one frame before the
+     popup list opens. Force the control, its popup options and active/focus state
+     to the same light palette across the whole application. */
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
   if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
     const style=document.createElement("style");
@@ -33,6 +39,39 @@
       html body:not(:has(#root > div > header)) #root#root#root#root > div{
         min-height:100vh!important;
         background:linear-gradient(135deg,#07162b,#0c3156)!important;
+      }
+
+      html,body,#root,select,option,optgroup{
+        color-scheme:light!important;
+      }
+      html body #root select,
+      html body #root select:hover,
+      html body #root select:focus,
+      html body #root select:focus-visible,
+      html body #root select:active{
+        background-color:#fff!important;
+        background-image:none!important;
+        color:#111827!important;
+        border-color:#cbd5e1!important;
+        box-shadow:none!important;
+        -webkit-text-fill-color:#111827!important;
+      }
+      html body #root select option,
+      html body #root select optgroup{
+        background:#fff!important;
+        background-color:#fff!important;
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+      }
+      html body #root select option:checked{
+        background:#eaf3ff!important;
+        color:#111827!important;
+      }
+      html body #root select:disabled,
+      html body #root select:disabled option{
+        background:#f1f5f9!important;
+        color:#64748b!important;
+        -webkit-text-fill-color:#64748b!important;
       }
     `;
     document.head.appendChild(style);
