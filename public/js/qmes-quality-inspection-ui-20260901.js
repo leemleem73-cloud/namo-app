@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V21__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V21__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V22__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V22__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v21";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v22";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -25,10 +25,10 @@
       html body #root .qmes-quality-modal-close,html body #root .qmes-iqc-modal-cancel,html body #root .qmes-inspection-cancel-btn,html body #root .qmes-quality-modal-close:hover,html body #root .qmes-quality-modal-close:focus,html body #root .qmes-quality-modal-close:active,html body #root .qmes-iqc-modal-cancel:hover,html body #root .qmes-iqc-modal-cancel:focus,html body #root .qmes-iqc-modal-cancel:active,html body #root .qmes-inspection-cancel-btn:hover,html body #root .qmes-inspection-cancel-btn:focus,html body #root .qmes-inspection-cancel-btn:active{border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;}
       html body #root .qmes-quality-modal-close{height:34px!important;min-width:58px!important;padding:0 13px!important;font-size:13px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;cursor:pointer!important;}
 
-      /* Quality output viewer: leave room for the app top menu so Print / Close are never hidden behind it. */
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){top:64px!important;bottom:0!important;height:auto!important;padding:12px 20px 20px!important;align-items:flex-start!important;overflow-y:auto!important;}
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:sticky!important;top:0!important;z-index:2147483001!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;background:#0b1728!important;}
-      html body #root .qmes-wo-viewer-head button{visibility:visible!important;opacity:1!important;}
+      /* Output viewer only: cover the app header and sit above every app menu layer. */
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;top:0!important;bottom:0!important;height:100vh!important;z-index:2147483640!important;padding:12px 20px 20px!important;align-items:flex-start!important;overflow-y:auto!important;}
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:sticky!important;top:0!important;z-index:2147483641!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;background:#0b1728!important;}
+      html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:2147483642!important;visibility:visible!important;opacity:1!important;}
     `;document.head.appendChild(style);
   }
   function enhanceModalHead(head){if(!head)return;const oldClose=Array.from(head.children).find(node=>node instanceof HTMLButtonElement)||head.querySelector('button[aria-label="닫기"],button.qmes-modal-close');if(!oldClose)return;const existingActions=head.querySelector(":scope > .qmes-quality-modal-actions");if(existingActions)return;const actions=document.createElement("div");actions.className="qmes-quality-modal-actions";oldClose.classList.add("qmes-quality-modal-close");oldClose.textContent="닫기";oldClose.setAttribute("aria-label","닫기");actions.appendChild(oldClose);head.appendChild(actions);}
