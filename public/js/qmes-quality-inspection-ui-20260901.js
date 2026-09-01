@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V34__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V34__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V35__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V35__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v34";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v35";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){if(document.getElementById(STYLE_ID))return;const style=document.createElement("style");style.id=STYLE_ID;style.textContent=`
 html,body,#root{color-scheme:only light!important;}
@@ -25,14 +25,13 @@ html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-ins
 html body #root .qmes-output-scroll-body{position:relative!important;z-index:1!important;min-height:0!important;flex:1 1 0%!important;overflow-x:auto!important;overflow-y:auto!important;background:#0b1728!important;}
 html body #root .qmes-output-scroll-body > *{position:relative!important;z-index:1!important;}
 html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;}
+.qmes-inspection-period-label{display:inline-flex!important;align-items:center!important;justify-content:center!important;vertical-align:middle!important;position:relative!important;top:2px!important;line-height:1!important;}
 /* IQC official report */
 html body #root .qmes-iqc-doc{background:#fff!important;color:#000!important;border-radius:0!important;box-shadow:none!important;}
 html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-centered-header{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-header-logo{object-fit:contain!important;image-rendering:auto!important;filter:none!important;}
-/* Section headings use the same size as table headings such as '입고번호'. */
 html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:inherit!important;line-height:inherit!important;}
-/* Keep every inspection-result heading and value at one consistent size. */
 html body #root .qmes-iqc-doc .qmes-iqc2-result-table,html body #root .qmes-iqc-doc .qmes-iqc2-result-table th,html body #root .qmes-iqc-doc .qmes-iqc2-result-table td,html body #root .qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-item-cell,html body #root .qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-spec-cell{font-size:inherit!important;line-height:inherit!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box>*{border-radius:0!important;box-shadow:none!important;}
@@ -40,25 +39,12 @@ html body #root .qmes-iqc-doc .qmes-iqc2-auth-row{display:flex!important;visibil
 html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;visibility:visible!important;border-collapse:collapse!important;border:1px solid #000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-sign-table th,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table td{border:1px solid #000!important;color:#000!important;}
 @page{size:A4 portrait;margin:10mm;}
-@media print{
-  html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;}
-  body *{visibility:hidden!important;}
-  html body #root .qmes-iqc-doc,html body #root .qmes-iqc-doc *{visibility:visible!important;}
-  html body #root .qmes-iqc-doc{position:absolute!important;left:0!important;top:0!important;width:190mm!important;max-width:190mm!important;min-width:190mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;}
-  html body #root .qmes-iqc-doc table{width:100%!important;border-collapse:collapse!important;}
-  html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:inherit!important;line-height:inherit!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-result-table,html body #root .qmes-iqc-doc .qmes-iqc2-result-table th,html body #root .qmes-iqc-doc .qmes-iqc2-result-table td{font-size:inherit!important;line-height:inherit!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-code-box{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-auth-row,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:flex!important;visibility:visible!important;opacity:1!important;break-inside:avoid!important;page-break-inside:avoid!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc-header-logo{max-width:100%!important;height:auto!important;}
-  html body #root header,html body #root aside,html body #root nav,html body #root .qmes-wo-viewer-head{display:none!important;}
-}
+@media print{html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;}body *{visibility:hidden!important;}html body #root .qmes-iqc-doc,html body #root .qmes-iqc-doc *{visibility:visible!important;}html body #root .qmes-iqc-doc{position:absolute!important;left:0!important;top:0!important;width:190mm!important;max-width:190mm!important;min-width:190mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;}html body #root .qmes-iqc-doc table{width:100%!important;border-collapse:collapse!important;}html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;}html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:inherit!important;line-height:inherit!important;}html body #root .qmes-iqc-doc .qmes-iqc2-result-table,html body #root .qmes-iqc-doc .qmes-iqc2-result-table th,html body #root .qmes-iqc-doc .qmes-iqc2-result-table td{font-size:inherit!important;line-height:inherit!important;}html body #root .qmes-iqc-doc .qmes-iqc2-code-box{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}html body #root .qmes-iqc-doc .qmes-iqc2-auth-row,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:flex!important;visibility:visible!important;opacity:1!important;break-inside:avoid!important;page-break-inside:avoid!important;}html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;}html body #root .qmes-iqc-doc .qmes-iqc-header-logo{max-width:100%!important;height:auto!important;}html body #root header,html body #root aside,html body #root nav,html body #root .qmes-wo-viewer-head{display:none!important;}}
 `;document.head.appendChild(style);}
 function enhanceModalHead(head){if(!head)return;const oldClose=Array.from(head.children).find(node=>node instanceof HTMLButtonElement)||head.querySelector('button[aria-label="닫기"],button.qmes-modal-close');if(!oldClose)return;if(head.querySelector(":scope > .qmes-quality-modal-actions"))return;const actions=document.createElement("div");actions.className="qmes-quality-modal-actions";oldClose.classList.add("qmes-quality-modal-close");oldClose.textContent="닫기";oldClose.setAttribute("aria-label","닫기");actions.appendChild(oldClose);head.appendChild(actions);}
 function enhanceOutputViewer(viewer){if(!viewer||viewer.querySelector(":scope > .qmes-output-scroll-body"))return;const head=viewer.querySelector(":scope > .qmes-wo-viewer-head");if(!head)return;const body=document.createElement("div");body.className="qmes-output-scroll-body";Array.from(viewer.children).filter(node=>node!==head).forEach(node=>body.appendChild(node));viewer.appendChild(body);}
 function enhanceIqcReport(doc){if(!doc)return;const logo=doc.querySelector(".qmes-iqc-header-logo");if(logo&&logo.getAttribute("src")!=="./logo.png"){logo.setAttribute("src","./logo.png");logo.setAttribute("alt","나모케미칼(주) 로고");}}
-function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);document.querySelectorAll(".qmes-wo-viewer").forEach(enhanceOutputViewer);document.querySelectorAll(".qmes-iqc-doc").forEach(enhanceIqcReport);}
+function alignInspectionPeriodLabels(){document.querySelectorAll("#root *").forEach(el=>{if(el.children.length!==0)return;const text=String(el.textContent||"").trim();if(text!=="연도"&&text!=="월")return;const area=el.parentElement;if(!area)return;const nearby=String(area.parentElement?.textContent||area.textContent||"");if(!nearby.includes("출하번호")&&!nearby.includes("LOT")&&!nearby.includes("검사자"))return;el.classList.add("qmes-inspection-period-label");});}
+function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);document.querySelectorAll(".qmes-wo-viewer").forEach(enhanceOutputViewer);document.querySelectorAll(".qmes-iqc-doc").forEach(enhanceIqcReport);alignInspectionPeriodLabels();}
 ensureLightSchemeMeta();ensureStyle();enhanceOpenModals();const root=document.getElementById("root")||document.body;new MutationObserver(()=>enhanceOpenModals()).observe(root,{childList:true,subtree:true});
 })(window);
