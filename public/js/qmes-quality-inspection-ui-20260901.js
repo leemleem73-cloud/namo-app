@@ -5,7 +5,6 @@
   global.__QMES_QUALITY_INSPECTION_UI_20260901__=true;
 
   const STYLE_ID="qmes-quality-inspection-ui-style-20260901";
-  const activeNative=new WeakSet();
 
   function ensureLightSchemeMeta(){
     let meta=document.querySelector('meta[name="color-scheme"]');
@@ -23,67 +22,48 @@
     style.id=STYLE_ID;
     style.textContent=`
       html,body,#root{color-scheme:only light!important;}
-      .qmes-iqc-record-filter .qmes-oqc-record-filter-field select,
-      .qmes-pqc-record-filter .qmes-oqc-record-filter-field select,
-      .qmes-oqc-record-filter .qmes-oqc-record-filter-field select,
-      .qmes-iqc-record-filter .qmes-oqc-record-filter-field option,
-      .qmes-pqc-record-filter .qmes-oqc-record-filter-field option,
-      .qmes-oqc-record-filter .qmes-oqc-record-filter-field option{
-        color-scheme:only light!important;
-      }
-      .qmes-quality-native-open{
+
+      /* Quality year/month use one stable native rendering mode at all times.
+         Do not switch appearance on click: that was causing the text to jump. */
+      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select,
+      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select,
+      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select,
+      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select:hover,
+      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select:hover,
+      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select:hover,
+      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select:focus,
+      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select:focus,
+      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select:focus,
+      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select:active,
+      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select:active,
+      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select:active{
         -webkit-appearance:menulist!important;
         appearance:auto!important;
-        background-image:none!important;
         color-scheme:only light!important;
+        background-color:#fff!important;
+        background-image:none!important;
+        color:#111827!important;
+        border-color:#cbd5e1!important;
+        box-shadow:none!important;
+        outline:none!important;
+        transition:none!important;
+        box-sizing:border-box!important;
       }
-      .qmes-quality-native-open option{
+      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field option,
+      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field option,
+      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field option{
+        color-scheme:only light!important;
         background:#fff!important;
         background-color:#fff!important;
         color:#111827!important;
-        color-scheme:only light!important;
       }
+
       .qmes-inspection-modal-head,.qmes-iqc-modal-head{flex:0 0 auto;}
       .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;}
       .qmes-wo-viewer-head{position:sticky;top:0;z-index:5;flex:0 0 auto;background:#0b1728;}
     `;
     document.head.appendChild(style);
   }
-
-  function isQualityDateSelect(select){
-    if(!(select instanceof HTMLSelectElement)) return false;
-    const filter=select.closest(".qmes-iqc-record-filter,.qmes-pqc-record-filter,.qmes-oqc-record-filter");
-    if(!filter) return false;
-    const field=select.closest(".qmes-oqc-record-filter-field");
-    const label=String(field?.querySelector("span")?.textContent||"").trim();
-    return label==="연도"||label==="월";
-  }
-
-  function prepare(select){
-    ensureLightSchemeMeta();
-    document.documentElement.style.setProperty("color-scheme","only light","important");
-    document.body?.style.setProperty("color-scheme","only light","important");
-    select.style.setProperty("color-scheme","only light","important");
-    select.classList.add("qmes-quality-native-open");
-    activeNative.add(select);
-  }
-
-  function restore(select){
-    if(!(select instanceof HTMLSelectElement)||!activeNative.has(select)) return;
-    select.classList.remove("qmes-quality-native-open");
-    activeNative.delete(select);
-  }
-
-  document.addEventListener("pointerdown",event=>{
-    const select=event.target instanceof HTMLSelectElement?event.target:null;
-    if(select&&isQualityDateSelect(select)&&!select.disabled) prepare(select);
-  },true);
-
-  document.addEventListener("change",event=>restore(event.target),true);
-  document.addEventListener("focusout",event=>restore(event.target),true);
-  document.addEventListener("keydown",event=>{
-    if(event.key==="Escape") restore(event.target);
-  },true);
 
   ensureLightSchemeMeta();
   ensureStyle();
