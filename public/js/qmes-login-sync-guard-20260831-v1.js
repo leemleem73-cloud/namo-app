@@ -7,7 +7,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality14-light-gray-borders";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality15-print-close-hover";
   const nativeFetch=global.fetch.bind(global);
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
@@ -33,7 +33,7 @@
   function currentUserReady(){const user=global.__QMES_CURRENT_USER__;return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));}
   function loadQualityInspectionUi(){
     const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260901.js"));
-    if(current&&String(current.src||"").includes("quality14-light-gray-borders")) return;
+    if(current&&String(current.src||"").includes("quality15-print-close-hover")) return;
     if(current) current.remove();
     const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;document.head.appendChild(script);
   }
