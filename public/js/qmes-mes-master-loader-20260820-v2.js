@@ -1,14 +1,14 @@
-/* QMES Stage 12 operational loader v77
+/* QMES Stage 12 operational loader v78
  * Login-safe runtime gate - 2026-08-31.
  * F5 optimization: only one New Sales Order implementation is loaded.
  * V11 owns the four-step integrated New Sales Order screen directly.
- * Live Production MRP V3: D-양산 / C-Pilot / B-Lab.
+ * Live Production MRP V4: completed-work-order reconciliation.
  * Current NAMO product: 절연슬러리(NBA20-HM01).
  */
 (function(){
   "use strict";
-  if(window.__QMES_STAGE12_RUNTIME_V77__) return;
-  window.__QMES_STAGE12_RUNTIME_V77__=true;
+  if(window.__QMES_STAGE12_RUNTIME_V78__) return;
+  window.__QMES_STAGE12_RUNTIME_V78__=true;
 
   const STYLE_DEFS=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
@@ -41,7 +41,7 @@
     "./js/qmes-sales-workorder-view-bridge-20260831-v1.js?v=20260831-1",
     "./js/qmes-sales-detail-drawer-20260828-v1.js?v=20260828-1",
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-manual-product2",
-    "./js/qmes-sample-development-mrp-live-20260831-v1.js?v=20260831-live3",
+    "./js/qmes-production-mrp-live-20260901-v4.js?v=20260901-workordercomplete4",
     "./js/qmes-production-stage-bcd-hotfix-20260901-v2.js?v=20260901-stagebcd2",
     "./js/qmes-sales-enterprise-module-20260828-v2.js?v=20260828-2",
     "./js/qmes-sales-enterprise-polish-20260828-v1.js?v=20260828-2",
