@@ -222,11 +222,231 @@
   }
 
   function QMESErpPurchaseTab(){
-    const {rows,save,syncStatus}=useSharedRows("purchase",PURCHASE_DEFAULT);
-    const [open,setOpen]=useState(false);const [error,setError]=useState("");
-    const [form,setForm]=useState({supplier:"Supplier A",material:"NMP",qty:"500",due:"2026-08-30",expected:""});
-    const submit=async e=>{e.preventDefault();setError("");const qty=Number(String(form.qty).replace(/,/g,""));if(!form.supplier||!form.material||!form.due||!Number.isFinite(qty)||qty<=0){setError("협력사·원료·발주량·요청납기를 확인하세요.");return;}const d=new Date();const stamp=`${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`;let seq=1;while(rows.some(r=>r.id===`PO-${stamp}-${String(seq).padStart(2,"0")}`))seq++;await save([{id:`PO-${stamp}-${String(seq).padStart(2,"0")}`,supplier:form.supplier,material:form.material,qty,due:form.due,expected:form.expected,iqc:"예정",status:"발주완료"},...rows]);setOpen(false);};
-    return <div className="qerp"><Header title="구매 · 발주관리" subtitle="MRP 부족분을 구매요청 → 발주 → 입고예정 → IQC로 연결" status={syncStatus} actionLabel={open?"입력 닫기":"+ 발주서 생성"} onAction={()=>setOpen(v=>!v)}/><div className="qerp-card">{open&&<form className="qerp-form" onSubmit={submit}><div className="qerp-field"><label>협력사</label><input value={form.supplier} onChange={e=>setForm({...form,supplier:e.target.value})}/></div><div className="qerp-field"><label>원료</label><select value={form.material} onChange={e=>setForm({...form,material:e.target.value})}><option>NMP</option><option>PVDF</option><option>SBR</option><option>첨가제</option></select></div><div className="qerp-field"><label>발주량 (kg)</label><input value={form.qty} onChange={e=>setForm({...form,qty:e.target.value})}/></div><div className="qerp-field"><label>요청납기</label><input type="date" value={form.due} onChange={e=>setForm({...form,due:e.target.value})}/></div><div className="qerp-field"><label>입고예정</label><input type="date" value={form.expected} onChange={e=>setForm({...form,expected:e.target.value})}/></div>{error&&<div className="qerp-error">{error}</div>}<div className="qerp-form-actions"><button type="button" className="qerp-btn ghost" onClick={()=>setOpen(false)}>취소</button><button type="submit" className="qerp-btn">발주 저장</button></div></form>}<div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>발주번호</th><th>협력사</th><th>원료</th><th>발주량</th><th>요청납기</th><th>입고예정</th><th>IQC 연계</th><th>상태</th></tr></thead><tbody>{rows.map(row=><tr key={row.id}><td><b>{row.id}</b></td><td>{row.supplier}</td><td>{row.material}</td><td>{fmtQty(row.qty)}</td><td>{shortDate(row.due)}</td><td>{shortDate(row.expected)}</td><td>{row.iqc==="-"?"-":<Status>{row.iqc}</Status>}</td><td><Status>{row.status}</Status></td></tr>)}</tbody></table></div></div></div>;
+    const {rows:sharedRows,save,syncStatus}=useSharedRows("purchase",PURCHASE_DEFAULT);
+    const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+    const emptyForm=()=>({
+      purchaseType:"MRP 자동발주",productionType:"D-양산",supplier:"",supplierGrade:"",
+      orderDate:today(),due:"",expected:"",priority:"일반",mrp:"",workOrderNo:"",
+      warehouse:"시화공장 · 원료창고",terms:"월 마감 후 30일",requester:"",
+      item:"",itemCode:"",spec:"",qty:"",unit:"kg",price:"",
+      iqcRequired:true,coaRequired:true,msdsRequired:false,lotRequired:true,
+      deliveryAddress:"나모케미칼 시화공장 원료 입고장",notes:""
+    });
+    const [rows,setRows]=useState([]);
+    const [open,setOpen]=useState(false);
+    const [selected,setSelected]=useState(null);
+    const [error,setError]=useState("");
+    const [query,setQuery]=useState("");
+    const [statusFilter,setStatusFilter]=useState("all");
+    const [form,setForm]=useState(emptyForm);
+    const clean=value=>String(value==null?"":value).replace(/\s+/g," ").trim();
+    const number=value=>{const parsed=Number(clean(value).replace(/,/g,""));return Number.isFinite(parsed)?parsed:0;};
+    const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(clean(value));
+    const isDemo=row=>(clean(row?.id)==="PO-260824-01"&&/^Supplier A$/i.test(clean(row?.supplier)))||(clean(row?.id)==="PO-260824-02"&&/^Supplier B$/i.test(clean(row?.supplier)));
+    const esc=value=>clean(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    const fmtWon=value=>Number(value||0).toLocaleString("ko-KR")+"원";
+    const rowNo=row=>clean(row?.purchaseNo||row?.no||row?.id);
+    const rowItem=row=>clean(row?.item||row?.material);
+    const rowDue=row=>clean(row?.requestedDueDate||row?.due||row?.dueDate);
+    const rowExpected=row=>clean(row?.confirmedDueDate||row?.expected||row?.expectedDate);
+    const rowReceived=row=>number(row?.receivedQty??row?.received);
+    const rowAmount=row=>number(row?.amount)||number(row?.qty)*number(row?.unitPrice??row?.price);
+    const pass=value=>/합격|적합|PASS|OK/i.test(clean(value));
+    const fail=value=>/불합격|부적합|FAIL|NG|REJECT/i.test(clean(value));
+    const stateFor=row=>{
+      const manual=clean(row?.status),approval=clean(row?.approvalStatus||row?.approval),iqc=clean(row?.iqcStatus||row?.iqc);
+      const qty=number(row?.qty),received=rowReceived(row);
+      if(/취소/.test(manual))return "발주취소";
+      if(fail(iqc))return "IQC 부적합";
+      if(received>0&&received<qty)return "부분입고";
+      if(qty>0&&received>=qty)return row?.iqcRequired!==false&&!pass(iqc)?"IQC대기":"입고완료";
+      if(/검토|대기|미승인/.test(approval)&&!/승인완료|발주확정/.test(approval))return "결재대기";
+      const due=rowExpected(row)||rowDue(row);
+      if(validDate(due)){
+        const base=new Date(today()+"T00:00:00").getTime(),target=new Date(due+"T00:00:00").getTime();
+        const days=Math.round((target-base)/86400000);
+        if(days<0)return "입고지연";
+        if(days<=2||/긴급|최우선/.test(clean(row?.priority)))return "납기임박";
+      }
+      return manual&&manual!=="발주완료"?manual:"발주확정";
+    };
+    const toneFor=value=>/부적합|지연|임박|취소/.test(value)?"red":/완료|확정|합격/.test(value)?"green":/부분/.test(value)?"blue":/대기/.test(value)?"orange":"slate";
+    const StatusPill=({value})=><span className={"qerp-status "+toneFor(value)}>{value}</span>;
+
+    useEffect(()=>{
+      const source=Array.isArray(sharedRows)?sharedRows:[];
+      const cleaned=source.filter(row=>!isDemo(row));
+      setRows(cleaned);
+      if(syncStatus!=="loading"&&cleaned.length!==source.length)save(cleaned);
+    },[sharedRows,syncStatus]);
+
+    useEffect(()=>{
+      if(document.getElementById("qmes-purchase-premium-style"))return;
+      const style=document.createElement("style");
+      style.id="qmes-purchase-premium-style";
+      style.textContent=".qp-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 13px;padding:15px 18px;background:#0f1d32;border:1px solid #1e3049;border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.12)}.qp-stage{position:relative;display:flex;align-items:center;gap:9px;min-width:0}.qp-stage:not(:last-child):after{content:'';position:absolute;left:30px;right:5px;top:14px;height:2px;background:#2dd4bf}.qp-stage:nth-child(4):after{background:#334155}.qp-dot{position:relative;z-index:1;width:29px;height:29px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:#0f766e;color:white;font-size:10px;font-weight:900}.qp-stage.active .qp-dot{background:#162238;color:#fbbf24;border:2px solid #f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.14)}.qp-stage.wait .qp-dot{background:#162238;color:#94a3b8;border:2px solid #334155}.qp-copy{position:relative;z-index:2;background:#0f1d32;padding-right:7px}.qp-copy b{display:block;color:#f8fafc;font-size:10px;white-space:nowrap}.qp-copy small{display:block;color:#8291a8;font-size:8px;white-space:nowrap;margin-top:2px}.qp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:13px}.qp-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;box-shadow:0 6px 18px rgba(15,23,42,.05)}.qp-kpi span{display:block;color:#64748b;font-size:10px;font-weight:800}.qp-kpi b{display:block;margin-top:5px;color:#0f172a;font-size:20px}.qp-kpi.red b{color:#dc2626}.qp-kpi.orange b{color:#c2410c}.qp-kpi.green b{color:#15803d}.qp-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px}.qp-toolbar input,.qp-toolbar select{height:35px;border:1px solid #cbd5e1;border-radius:7px;padding:0 10px;background:#fff;color:#1e293b;font-size:11px}.qp-toolbar input{min-width:260px}.qp-count{margin-left:auto;color:#64748b;font-size:10px;font-weight:800}.qp-po-link{border:0;background:transparent;color:#1d4ed8;font:inherit;font-weight:900;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}.qp-actions{display:flex;gap:5px}.qp-mini{height:27px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#334155;padding:0 7px;font-size:9px;font-weight:900;cursor:pointer}.qp-mini.primary{border-color:#99f6e4;background:#f0fdfa;color:#0f766e}.qp-modal-bg{position:fixed;inset:0;z-index:10080;background:rgba(15,23,42,.62);display:grid;place-items:center;padding:18px}.qp-modal{width:min(1100px,calc(100vw - 30px));max-height:calc(100vh - 36px);overflow:auto;background:#f8fafc;border:1px solid #dbe3ec;border-radius:15px;box-shadow:0 28px 80px rgba(15,23,42,.3)}.qp-modal-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:17px 20px;background:#fff;border-bottom:1px solid #e2e8f0}.qp-modal-head h2{margin:0;color:#0f172a;font-size:18px}.qp-modal-head p{margin:4px 0 0;color:#64748b;font-size:10px}.qp-close{width:32px;height:32px;border:0;border-radius:8px;background:#f1f5f9;color:#475569;font-size:18px;cursor:pointer}.qp-body{padding:17px 20px}.qp-section{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:11px}.qp-section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.qp-section-title h3{margin:0;font-size:13px;color:#172033}.qp-section-title span{font-size:9px;color:#94a3b8}.qp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.qp-grid.items{grid-template-columns:1.35fr .75fr .75fr .7fr .65fr .8fr}.qp-field label{display:block;margin-bottom:5px;color:#475569;font-size:9px;font-weight:900}.qp-field input,.qp-field select,.qp-field textarea{width:100%;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#111827;padding:0 9px;font-size:11px;outline:none}.qp-field input,.qp-field select{height:35px}.qp-field textarea{min-height:62px;padding-top:8px;resize:vertical}.qp-field input:focus,.qp-field select:focus,.qp-field textarea:focus{border-color:#14b8a6;box-shadow:0 0 0 2px rgba(20,184,166,.12)}.qp-checks{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}.qp-checks label{display:flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #cbd5e1;border-radius:999px;color:#334155;font-size:9px;font-weight:800;background:#fff}.qp-summary{display:grid;grid-template-columns:repeat(3,1fr);margin-top:11px;border:1px solid #dbe3ec;border-radius:8px;overflow:hidden}.qp-summary div{padding:10px 12px;background:#f8fafc;border-right:1px solid #dbe3ec}.qp-summary div:last-child{border:0;background:#0f1d32;color:#fff}.qp-summary small{display:block;color:#64748b;font-size:8px}.qp-summary b{display:block;margin-top:3px;font-size:12px}.qp-modal-foot{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:7px;padding:12px 20px;background:#fff;border-top:1px solid #e2e8f0}.qp-drawer-bg{position:fixed;inset:0;z-index:10070;background:rgba(15,23,42,.3)}.qp-drawer{position:absolute;right:0;top:0;bottom:0;width:min(470px,95vw);overflow:auto;background:#fff;box-shadow:-20px 0 55px rgba(15,23,42,.2);padding:20px}.qp-drawer h2{margin:0 0 5px;font-size:17px}.qp-detail{margin-top:14px;border:1px solid #e2e8f0;border-radius:9px;overflow:hidden}.qp-detail div{display:flex;justify-content:space-between;gap:15px;padding:9px 11px;border-bottom:1px solid #edf2f7;font-size:10px}.qp-detail div:last-child{border:0}.qp-detail span{color:#64748b}.qp-detail b{text-align:right;color:#1e293b}.qp-drawer-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}@media(max-width:1050px){.qp-kpis{grid-template-columns:1fr 1fr}.qp-grid,.qp-grid.items{grid-template-columns:1fr 1fr}.qp-flow{overflow:auto}.qp-stage{min-width:150px}}@media(max-width:650px){.qp-kpis,.qp-grid,.qp-grid.items{grid-template-columns:1fr}.qp-toolbar{flex-wrap:wrap}.qp-toolbar input{min-width:100%;width:100%}.qp-modal-bg{padding:6px}.qp-modal{width:100%;max-height:calc(100vh - 12px)}}";
+      document.head.appendChild(style);
+    },[]);
+
+    const amount=number(form.qty)*number(form.price);
+    const persist=async next=>{setRows(next);return save(next);};
+    const nextPurchaseNo=()=>{
+      const stamp=today().slice(2,7).replace("-","");
+      const prefix="PUR-"+stamp+"-";
+      const max=rows.reduce((value,row)=>{const id=rowNo(row);const seq=id.startsWith(prefix)?Number(id.slice(prefix.length)):0;return Number.isFinite(seq)?Math.max(value,seq):value;},0);
+      return prefix+String(max+1).padStart(3,"0");
+    };
+    const reset=()=>{setForm(emptyForm());setError("");};
+    const openCreate=()=>{reset();setOpen(true);};
+    const submit=async event=>{
+      event.preventDefault();
+      setError("");
+      const qty=number(form.qty),price=number(form.price);
+      if(!clean(form.supplier)||!clean(form.item)||qty<=0||price<0||!validDate(form.orderDate)||!validDate(form.due)){
+        setError("협력사·품목·발주수량·발주일·요청납기를 확인하세요.");return;
+      }
+      if(form.due<form.orderDate){setError("요청납기일은 발주일보다 빠를 수 없습니다.");return;}
+      if(clean(form.expected)&&!validDate(form.expected)){setError("협력사 확정 납기일을 확인하세요.");return;}
+      const no=nextPurchaseNo();
+      const nextRow={
+        id:no,purchaseNo:no,purchaseType:form.purchaseType,productionType:form.productionType,
+        supplier:clean(form.supplier),supplierGrade:clean(form.supplierGrade),
+        item:clean(form.item),material:clean(form.item),itemCode:clean(form.itemCode),spec:clean(form.spec),
+        qty:qty,unit:form.unit,unitPrice:price,price:price,amount:qty*price,
+        orderDate:form.orderDate,requestedDueDate:form.due,due:form.due,
+        confirmedDueDate:form.expected,expected:form.expected,priority:form.priority,
+        mrpNo:clean(form.mrp),mrp:clean(form.mrp),workOrderNo:clean(form.workOrderNo),
+        warehouse:form.warehouse,paymentTerms:form.terms,terms:form.terms,
+        approvalStatus:"구매검토",approval:"구매검토",receiptStatus:"미입고",receiving:"미입고",
+        receivedQty:0,received:0,iqcRequired:form.iqcRequired,iqcStatus:"계획 대기",iqc:"계획 대기",
+        coaRequired:form.coaRequired,msdsRequired:form.msdsRequired,lotRequired:form.lotRequired,
+        deliveryAddress:clean(form.deliveryAddress),requester:clean(form.requester),owner:clean(form.requester),
+        notes:clean(form.notes),status:"결재대기",createdAt:new Date().toISOString(),createdBy:currentUserName()
+      };
+      await persist([nextRow,...rows]);setOpen(false);reset();
+    };
+    const cancelOrder=async row=>{
+      if(!window.confirm(rowNo(row)+" 발주를 취소하시겠습니까?"))return;
+      try{
+        const response=await fetch("/api/purchase-orders/"+encodeURIComponent(rowNo(row))+"/cancel",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"});
+        const result=await response.json();
+        if(!response.ok||!result.success)throw new Error(result.message||"발주 취소 실패");
+        const changed=result.data||{...row,status:"발주취소"};
+        setRows(rows.map(item=>rowNo(item)===rowNo(row)?{...item,...changed}:item));
+        setSelected(null);
+      }catch(apiError){
+        const next=rows.map(item=>rowNo(item)===rowNo(row)?{...item,status:"발주취소",updatedAt:new Date().toISOString(),updatedBy:currentUserName()}:item);
+        await persist(next);setSelected(null);
+      }
+    };
+    const registerReceipt=async row=>{
+      const qtyText=window.prompt("입고수량 ("+(row.unit||"kg")+")",String(Math.max(0,number(row.qty)-rowReceived(row))));
+      if(qtyText===null)return;
+      const qty=number(qtyText);if(qty<=0){window.alert("입고수량을 확인하세요.");return;}
+      const lot=window.prompt("원료 LOT를 입력하세요.","");if(lot===null)return;
+      if(row.lotRequired!==false&&!clean(lot)){window.alert("원료 LOT를 입력하세요.");return;}
+      try{
+        const response=await fetch("/api/purchase-orders/"+encodeURIComponent(rowNo(row))+"/receipts",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({qty:qty,materialLot:clean(lot),receiptDate:today()})});
+        const result=await response.json();
+        if(!response.ok||!result.success)throw new Error(result.message||"입고 등록 실패");
+        const changed=result.data?.purchaseOrder;
+        if(changed){
+          const next=rows.map(item=>rowNo(item)===rowNo(row)?{...item,...changed}:item);
+          setRows(next);setSelected({...row,...changed});
+          try{localStorage.setItem("qmes-erp-purchase-v1",JSON.stringify(next));}catch(_error){}
+        }
+      }catch(apiError){window.alert(apiError.message);}
+    };
+    const printOrder=row=>{
+      const win=window.open("","_blank","width=980,height=780");
+      if(!win){window.alert("팝업 차단을 해제해 주세요.");return;}
+      const supply=rowAmount(row),vat=Math.round(supply*.1),total=supply+vat;
+      const quality=[row.iqcRequired!==false?"IQC 필수":"IQC 비대상",row.coaRequired!==false?"CoA 동봉":"",row.msdsRequired?"MSDS 동봉":"",row.lotRequired!==false?"제조 LOT·유효기한 표시":""].filter(Boolean).join(" · ");
+      const html=["<!doctype html><html lang='ko'><head><meta charset='utf-8'><title>"+esc(rowNo(row))+" 구매 발주서</title><style>body{font-family:Arial,'Malgun Gothic',sans-serif;color:#111;padding:28px}h1{text-align:center;letter-spacing:.25em;margin:0 0 24px}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #555;padding:9px;font-size:12px}th{background:#f1f5f9;text-align:center}.meta{display:flex;justify-content:space-between;font-size:12px}.total{text-align:right;margin-top:12px;font-size:14px;font-weight:800}.note{border:1px solid #777;min-height:70px;padding:10px;margin-top:16px;font-size:11px}.sign{display:grid;grid-template-columns:repeat(3,1fr);width:330px;margin:25px 0 0 auto}.sign div{border:1px solid #777;min-height:58px;padding:7px;text-align:center;font-size:10px}@media print{button{display:none}}</style></head><body><h1>구매 발주서</h1><div class='meta'><b>발주번호 "+esc(rowNo(row))+"</b><span>발주일 "+esc(row.orderDate||"-")+"</span></div><table><tr><th>협력사</th><td>"+esc(row.supplier)+"</td><th>구매구분</th><td>"+esc(row.purchaseType||row.type||"-")+"</td></tr><tr><th>생산구분</th><td>"+esc(row.productionType||"D-양산")+"</td><th>MRP/작업지시</th><td>"+esc((row.mrpNo||row.mrp||"-")+" / "+(row.workOrderNo||"-"))+"</td></tr><tr><th>품목</th><td>"+esc(rowItem(row))+"</td><th>품목코드/규격</th><td>"+esc((row.itemCode||"-")+" / "+(row.spec||"-"))+"</td></tr><tr><th>수량</th><td>"+esc(Number(row.qty||0).toLocaleString("ko-KR")+" "+(row.unit||"kg"))+"</td><th>단가</th><td>"+esc(fmtWon(row.unitPrice??row.price))+"</td></tr><tr><th>요청납기</th><td>"+esc(rowDue(row)||"-")+"</td><th>입고장소</th><td>"+esc(row.warehouse||"-")+"</td></tr><tr><th>결제조건</th><td>"+esc(row.paymentTerms||row.terms||"-")+"</td><th>품질요구</th><td>"+esc(quality)+"</td></tr></table><div class='total'>공급가액 "+fmtWon(supply)+" · VAT "+fmtWon(vat)+" · 합계 "+fmtWon(total)+"</div><div class='note'><b>특기사항</b><br><br>"+esc(row.notes||"")+"</div><div class='sign'><div>작성<br><br>"+esc(row.requester||row.owner||"")+"</div><div>검토</div><div>승인</div></div><script>setTimeout(function(){window.print()},250)<\/script></body></html>"].join("");
+      win.document.open();win.document.write(html);win.document.close();
+    };
+
+    const visible=useMemo(()=>rows.filter(row=>{
+      const matches=!query||[rowNo(row),row.supplier,rowItem(row),row.itemCode,row.spec,row.mrpNo,row.mrp].some(value=>clean(value).toLowerCase().includes(query.toLowerCase()));
+      return matches&&(statusFilter==="all"||stateFor(row)===statusFilter);
+    }),[rows,query,statusFilter]);
+    const month=today().slice(0,7);
+    const monthAmount=rows.filter(row=>clean(row.orderDate).startsWith(month)).reduce((sum,row)=>sum+rowAmount(row),0);
+    const approvalCount=rows.filter(row=>stateFor(row)==="결재대기").length;
+    const riskCount=rows.filter(row=>/납기임박|입고지연/.test(stateFor(row))).length;
+    const incoming=rows.reduce((sum,row)=>sum+Math.max(0,number(row.qty)-rowReceived(row)),0);
+
+    return <div className="qerp qp-root">
+      <Header title="구매 · 발주관리" subtitle="MRP 부족수량 → 구매검토·결재 → 협력사 발주 → 입고·IQC까지 연결" status={syncStatus} actionLabel="+ 신규 구매 발주" onAction={openCreate}/>
+      <div className="qp-flow" aria-label="구매 발주 표준 흐름">
+        <div className="qp-stage"><span className="qp-dot">✓</span><div className="qp-copy"><b>구매요청 · MRP</b><small>부족수량·소요 확인</small></div></div>
+        <div className="qp-stage"><span className="qp-dot">✓</span><div className="qp-copy"><b>견적 · 협력사</b><small>단가·공급능력 검토</small></div></div>
+        <div className="qp-stage"><span className="qp-dot">✓</span><div className="qp-copy"><b>전자결재</b><small>구매 검토·승인</small></div></div>
+        <div className="qp-stage active"><span className="qp-dot">4</span><div className="qp-copy"><b>발주 · 납기</b><small>발주서 송부·추적</small></div></div>
+        <div className="qp-stage wait"><span className="qp-dot">5</span><div className="qp-copy"><b>입고 · IQC</b><small>LOT 검사·재고 반영</small></div></div>
+      </div>
+      <div className="qp-kpis">
+        <div className="qp-kpi green"><span>이번 달 발주금액</span><b>{fmtWon(monthAmount)}</b></div>
+        <div className="qp-kpi orange"><span>결재 대기</span><b>{approvalCount}건</b></div>
+        <div className="qp-kpi red"><span>납기 위험</span><b>{riskCount}건</b></div>
+        <div className="qp-kpi"><span>미입고 수량</span><b>{Number(incoming).toLocaleString("ko-KR")} kg</b></div>
+      </div>
+      <div className="qerp-card">
+        <div className="qerp-card-head"><div><h2>구매 발주 현황</h2><div className="qerp-muted">실제 발주번호 기준 결재·납기·입고·IQC 상태</div></div></div>
+        <div className="qp-toolbar"><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="발주번호, 협력사, 품목, MRP 검색"/><select value={statusFilter} onChange={event=>setStatusFilter(event.target.value)}><option value="all">전체 상태</option><option>결재대기</option><option>발주확정</option><option>납기임박</option><option>입고지연</option><option>부분입고</option><option>IQC대기</option><option>입고완료</option><option>IQC 부적합</option><option>발주취소</option></select><button type="button" className="qerp-btn ghost" onClick={()=>{setQuery("");setStatusFilter("all");}}>초기화</button><span className="qp-count">총 {visible.length}건</span></div>
+        <div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>발주번호 / 생산구분</th><th>협력사</th><th>품목 / 규격</th><th>발주수량</th><th>발주금액</th><th>발주일 / 요청납기</th><th>결재</th><th>입고 · IQC</th><th>상태</th><th>관리</th></tr></thead><tbody>
+          {visible.map(row=>{const state=stateFor(row);return <tr key={rowNo(row)}><td><button type="button" className="qp-po-link" onClick={()=>setSelected(row)}>{rowNo(row)}</button><div className="qerp-muted">{row.productionType||"D-양산"} · {row.purchaseType||row.type||"정기발주"}</div></td><td><b>{row.supplier||"-"}</b><div className="qerp-muted">{row.supplierGrade||row.grade||"-"}</div></td><td><b>{rowItem(row)||"-"}</b><div className="qerp-muted">{row.itemCode||row.spec||"-"}</div></td><td><b>{Number(row.qty||0).toLocaleString("ko-KR")} {row.unit||"kg"}</b></td><td>{fmtWon(rowAmount(row))}</td><td>{row.orderDate||"-"}<div className="qerp-muted">납기 {rowDue(row)||"-"}</div></td><td><StatusPill value={row.approvalStatus||row.approval||"구매검토"}/></td><td>{Number(rowReceived(row)).toLocaleString("ko-KR")} / {Number(row.qty||0).toLocaleString("ko-KR")} {row.unit||"kg"}<div className="qerp-muted">IQC · {row.iqcStatus||row.iqc||"계획 대기"}</div></td><td><StatusPill value={state}/></td><td><div className="qp-actions"><button type="button" className="qp-mini primary" onClick={()=>setSelected(row)}>상세</button><button type="button" className="qp-mini" onClick={()=>printOrder(row)}>인쇄</button></div></td></tr>;})}
+          {!visible.length&&<tr><td colSpan="10" style={{textAlign:"center",padding:"30px",color:"#94a3b8"}}>등록된 실제 구매 발주가 없습니다. 신규 구매 발주를 등록하세요.</td></tr>}
+        </tbody></table></div>
+      </div>
+
+      {open&&<div className="qp-modal-bg" onMouseDown={event=>{if(event.target===event.currentTarget)setOpen(false);}}><form className="qp-modal" onSubmit={submit}>
+        <div className="qp-modal-head"><div><h2>신규 구매 발주 등록</h2><p>나모케미칼 MRP·작업지시·협력사·IQC를 하나의 발주번호로 연결합니다.</p></div><button type="button" className="qp-close" onClick={()=>setOpen(false)}>×</button></div>
+        <div className="qp-body">
+          <section className="qp-section"><div className="qp-section-title"><h3>1. 발주 기본 정보</h3><span>* 필수 입력</span></div><div className="qp-grid">
+            <div className="qp-field"><label>발주번호</label><input value={nextPurchaseNo()} readOnly/></div>
+            <div className="qp-field"><label>구매 구분</label><select value={form.purchaseType} onChange={event=>setForm({...form,purchaseType:event.target.value})}><option>MRP 자동발주</option><option>정기발주</option><option>긴급발주</option><option>설비·소모품</option></select></div>
+            <div className="qp-field"><label>생산 구분</label><select value={form.productionType} onChange={event=>setForm({...form,productionType:event.target.value})}><option>D-양산</option><option>C-Pilot</option><option>B-Lab</option></select></div>
+            <div className="qp-field"><label>협력사 *</label><input value={form.supplier} onChange={event=>setForm({...form,supplier:event.target.value})} placeholder="실제 협력사명 직접 입력"/></div>
+            <div className="qp-field"><label>발주일 *</label><input type="date" value={form.orderDate} onChange={event=>setForm({...form,orderDate:event.target.value})}/></div>
+            <div className="qp-field"><label>요청납기 *</label><input type="date" value={form.due} onChange={event=>setForm({...form,due:event.target.value})}/></div>
+            <div className="qp-field"><label>협력사 확정 납기</label><input type="date" value={form.expected} onChange={event=>setForm({...form,expected:event.target.value})}/></div>
+            <div className="qp-field"><label>납기 우선순위</label><select value={form.priority} onChange={event=>setForm({...form,priority:event.target.value})}><option>일반</option><option>긴급</option><option>최우선</option></select></div>
+            <div className="qp-field"><label>연결 MRP / 구매요청</label><input value={form.mrp} onChange={event=>setForm({...form,mrp:event.target.value})} placeholder="MRP- 또는 PR-"/></div>
+            <div className="qp-field"><label>연결 작업지시</label><input value={form.workOrderNo} onChange={event=>setForm({...form,workOrderNo:event.target.value})} placeholder="WO-"/></div>
+            <div className="qp-field"><label>입고 창고</label><select value={form.warehouse} onChange={event=>setForm({...form,warehouse:event.target.value})}><option>시화공장 · 원료창고</option><option>시화공장 · 포장자재창고</option><option>검사대기 구역</option></select></div>
+            <div className="qp-field"><label>결제 조건</label><select value={form.terms} onChange={event=>setForm({...form,terms:event.target.value})}><option>월 마감 후 30일</option><option>입고 후 30일</option><option>검수 후 60일</option><option>선급 30% · 잔금 70%</option></select></div>
+          </div></section>
+          <section className="qp-section"><div className="qp-section-title"><h3>2. 발주 품목 및 금액</h3><span>실제 품목 기준</span></div><div className="qp-grid items">
+            <div className="qp-field"><label>품목 *</label><input value={form.item} onChange={event=>setForm({...form,item:event.target.value})} placeholder="실제 원료·포장재명"/></div>
+            <div className="qp-field"><label>품목코드</label><input value={form.itemCode} onChange={event=>setForm({...form,itemCode:event.target.value})} placeholder="RM- / PK-"/></div>
+            <div className="qp-field"><label>규격</label><input value={form.spec} onChange={event=>setForm({...form,spec:event.target.value})}/></div>
+            <div className="qp-field"><label>발주수량 *</label><input inputMode="decimal" value={form.qty} onChange={event=>setForm({...form,qty:event.target.value})} placeholder="0"/></div>
+            <div className="qp-field"><label>단위</label><select value={form.unit} onChange={event=>setForm({...form,unit:event.target.value})}><option>kg</option><option>EA</option><option>Drum</option><option>LOT</option></select></div>
+            <div className="qp-field"><label>단가 (원)</label><input inputMode="numeric" value={form.price} onChange={event=>setForm({...form,price:event.target.value})} placeholder="0"/></div>
+          </div><div className="qp-summary"><div><small>공급가액</small><b>{fmtWon(amount)}</b></div><div><small>부가세 10%</small><b>{fmtWon(Math.round(amount*.1))}</b></div><div><small>합계금액</small><b>{fmtWon(Math.round(amount*1.1))}</b></div></div></section>
+          <section className="qp-section"><div className="qp-section-title"><h3>3. 입고 · 품질 요구사항</h3><span>발주서 및 IQC 계획에 반영</span></div><div className="qp-checks">
+            <label><input type="checkbox" checked={form.iqcRequired} onChange={event=>setForm({...form,iqcRequired:event.target.checked})}/>IQC 필수</label>
+            <label><input type="checkbox" checked={form.coaRequired} onChange={event=>setForm({...form,coaRequired:event.target.checked})}/>CoA 동봉</label>
+            <label><input type="checkbox" checked={form.msdsRequired} onChange={event=>setForm({...form,msdsRequired:event.target.checked})}/>MSDS 동봉</label>
+            <label><input type="checkbox" checked={form.lotRequired} onChange={event=>setForm({...form,lotRequired:event.target.checked})}/>제조 LOT·유효기한 표시</label>
+          </div><div className="qp-grid">
+            <div className="qp-field"><label>납품 장소</label><input value={form.deliveryAddress} onChange={event=>setForm({...form,deliveryAddress:event.target.value})}/></div>
+            <div className="qp-field"><label>협력사 등급</label><input value={form.supplierGrade} onChange={event=>setForm({...form,supplierGrade:event.target.value})} placeholder="예: A등급"/></div>
+            <div className="qp-field"><label>구매 담당 / 원가부서</label><input value={form.requester} onChange={event=>setForm({...form,requester:event.target.value})} placeholder="담당자 · 부서"/></div>
+            <div className="qp-field"><label>특기사항</label><textarea value={form.notes} onChange={event=>setForm({...form,notes:event.target.value})} placeholder="CoA 사전 송부, 포장·납품 조건 등"/></div>
+          </div></section>
+          {error&&<div className="qerp-error">{error}</div>}
+        </div><div className="qp-modal-foot"><button type="button" className="qerp-btn ghost" onClick={()=>setOpen(false)}>취소</button><button type="submit" className="qerp-btn">결재 상신 및 저장</button></div>
+      </form></div>}
+
+      {selected&&<div className="qp-drawer-bg" onMouseDown={event=>{if(event.target===event.currentTarget)setSelected(null);}}><aside className="qp-drawer">
+        <div style={{display:"flex",justifyContent:"space-between",gap:"10px"}}><div><div className="qerp-muted">PURCHASE ORDER DETAIL</div><h2>{rowNo(selected)} · {selected.supplier}</h2><div className="qerp-muted">{rowItem(selected)} · {Number(selected.qty||0).toLocaleString("ko-KR")} {selected.unit||"kg"} · 납기 {rowDue(selected)||"-"}</div></div><button type="button" className="qp-close" onClick={()=>setSelected(null)}>×</button></div>
+        <div style={{marginTop:"13px"}}><StatusPill value={stateFor(selected)}/></div>
+        <div className="qp-detail"><div><span>구매 / 생산 구분</span><b>{selected.purchaseType||selected.type||"-"} · {selected.productionType||"D-양산"}</b></div><div><span>MRP / 작업지시</span><b>{selected.mrpNo||selected.mrp||"-"} · {selected.workOrderNo||"-"}</b></div><div><span>품목 / 규격</span><b>{rowItem(selected)} · {selected.itemCode||selected.spec||"-"}</b></div><div><span>발주금액</span><b>{fmtWon(rowAmount(selected))}</b></div><div><span>요청 / 확정 납기</span><b>{rowDue(selected)||"-"} · {rowExpected(selected)||"미확정"}</b></div><div><span>입고수량</span><b>{rowReceived(selected).toLocaleString("ko-KR")} / {Number(selected.qty||0).toLocaleString("ko-KR")} {selected.unit||"kg"}</b></div><div><span>원료 LOT</span><b>{selected.materialLot||selected.lot||"입고 시 생성"}</b></div><div><span>IQC</span><b>{selected.iqcStatus||selected.iqc||"계획 대기"}</b></div><div><span>결제조건</span><b>{selected.paymentTerms||selected.terms||"-"}</b></div><div><span>담당</span><b>{selected.requester||selected.owner||"-"}</b></div></div>
+        <div className="qp-drawer-buttons"><button type="button" className="qerp-btn ghost" onClick={()=>printOrder(selected)}>구매 발주서 인쇄</button><button type="button" className="qerp-btn" onClick={()=>registerReceipt(selected)}>입고 등록</button><button type="button" className="qerp-btn ghost" style={{gridColumn:"1/-1",color:"#b91c1c"}} onClick={()=>cancelOrder(selected)}>발주 취소</button></div>
+      </aside></div>}
+    </div>;
   }
 
   function QMESErpMasterTab(){
