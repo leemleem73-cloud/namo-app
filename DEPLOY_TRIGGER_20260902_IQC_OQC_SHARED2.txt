@@ -1,0 +1,8 @@
+QMES IQC/OQC shared certificate runtime deploy trigger
+2026-09-02 KST
+Reason: IQC and OQC must use the same final post-render styling path.
+Changes:
+- qmes-quality-report-fix-20260902.js now applies identical final visual runtime to IQC and OQC
+- OQC shipment-number-only handling remains OQC-only
+- login bootstrap loads cache-busted shared2 runtime URL
+- no inspection data or PQC behavior changed
