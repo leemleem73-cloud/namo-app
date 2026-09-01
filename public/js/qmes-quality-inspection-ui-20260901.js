@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V24__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V24__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V25__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V25__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v24";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v25";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -25,15 +25,26 @@
       html body #root .qmes-quality-modal-close,html body #root .qmes-iqc-modal-cancel,html body #root .qmes-inspection-cancel-btn,html body #root .qmes-quality-modal-close:hover,html body #root .qmes-quality-modal-close:focus,html body #root .qmes-quality-modal-close:active,html body #root .qmes-iqc-modal-cancel:hover,html body #root .qmes-iqc-modal-cancel:focus,html body #root .qmes-iqc-modal-cancel:active,html body #root .qmes-inspection-cancel-btn:hover,html body #root .qmes-inspection-cancel-btn:focus,html body #root .qmes-inspection-cancel-btn:active{border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;}
       html body #root .qmes-quality-modal-close{height:34px!important;min-width:58px!important;padding:0 13px!important;font-size:13px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;cursor:pointer!important;}
 
-      /* Quality output only: taller card; backdrop stays fixed and only the viewer scrolls. */
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;z-index:2147483640!important;padding:18px 20px!important;align-items:flex-start!important;overflow:hidden!important;overscroll-behavior:none!important;}
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) > .qmes-wo-viewer{height:calc(100vh - 36px)!important;max-height:calc(100vh - 36px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain!important;scroll-behavior:auto!important;}
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:sticky!important;top:0!important;z-index:2147483641!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;min-height:88px!important;background:#0b1728!important;isolation:isolate!important;}
-      html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:2147483642!important;visibility:visible!important;opacity:1!important;}
+      /* Output viewer: header is outside the only scroll container, so report content cannot pass over it. */
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;z-index:2147483640!important;padding:10px 20px!important;align-items:flex-start!important;overflow:hidden!important;overscroll-behavior:none!important;}
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) > .qmes-wo-viewer{height:calc(100vh - 20px)!important;max-height:calc(100vh - 20px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:relative!important;top:auto!important;z-index:10!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;min-height:88px!important;background:#0b1728!important;isolation:isolate!important;overflow:hidden!important;}
+      html body #root .qmes-output-scroll-body{position:relative!important;z-index:1!important;min-height:0!important;flex:1 1 0%!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;scroll-behavior:auto!important;background:#0b1728!important;}
+      html body #root .qmes-output-scroll-body > *{position:relative!important;z-index:1!important;}
+      html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;}
     `;document.head.appendChild(style);
   }
   function enhanceModalHead(head){if(!head)return;const oldClose=Array.from(head.children).find(node=>node instanceof HTMLButtonElement)||head.querySelector('button[aria-label="닫기"],button.qmes-modal-close');if(!oldClose)return;const existingActions=head.querySelector(":scope > .qmes-quality-modal-actions");if(existingActions)return;const actions=document.createElement("div");actions.className="qmes-quality-modal-actions";oldClose.classList.add("qmes-quality-modal-close");oldClose.textContent="닫기";oldClose.setAttribute("aria-label","닫기");actions.appendChild(oldClose);head.appendChild(actions);}
-  function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);}
+  function enhanceOutputViewer(viewer){
+    if(!viewer||viewer.querySelector(":scope > .qmes-output-scroll-body"))return;
+    const head=viewer.querySelector(":scope > .qmes-wo-viewer-head");
+    if(!head)return;
+    const body=document.createElement("div");body.className="qmes-output-scroll-body";
+    const movable=Array.from(viewer.children).filter(node=>node!==head);
+    movable.forEach(node=>body.appendChild(node));
+    viewer.appendChild(body);
+  }
+  function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);document.querySelectorAll(".qmes-wo-viewer").forEach(enhanceOutputViewer);}
   ensureLightSchemeMeta();ensureStyle();enhanceOpenModals();
-  const root=document.getElementById("root")||document.body;new MutationObserver((mutations)=>{for(const mutation of mutations){for(const node of mutation.addedNodes){if(!(node instanceof Element))continue;if(node.matches?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head")||node.querySelector?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head")){enhanceOpenModals();return;}}}}).observe(root,{childList:true,subtree:true});
+  const root=document.getElementById("root")||document.body;new MutationObserver((mutations)=>{for(const mutation of mutations){for(const node of mutation.addedNodes){if(!(node instanceof Element))continue;if(node.matches?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head,.qmes-wo-viewer")||node.querySelector?.(".qmes-iqc-modal-head,.qmes-inspection-modal-head,.qmes-wo-viewer")){enhanceOpenModals();return;}}}}).observe(root,{childList:true,subtree:true});
 })(window);
