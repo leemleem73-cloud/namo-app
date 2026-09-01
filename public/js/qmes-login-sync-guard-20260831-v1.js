@@ -7,7 +7,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality9-specificity-fix";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality10-stable-native";
   const nativeFetch=global.fetch.bind(global);
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
@@ -67,26 +67,6 @@
         background-color:#f1f5f9!important;
         color:#64748b!important;
         -webkit-text-fill-color:#64748b!important;
-      }
-
-      /* Quality year/month: while the real native picker is open, this MUST beat
-         the global select skin above. Closed-state design remains unchanged. */
-      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open,
-      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open,
-      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open,
-      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:hover,
-      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:hover,
-      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:hover,
-      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:focus,
-      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:focus,
-      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:focus,
-      html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:active,
-      html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:active,
-      html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select.qmes-quality-native-open:active{
-        -webkit-appearance:menulist!important;
-        appearance:auto!important;
-        background-image:none!important;
-        color-scheme:only light!important;
       }
     `;
     document.head.appendChild(style);
