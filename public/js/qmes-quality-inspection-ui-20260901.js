@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V27__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V27__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V28__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V28__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v27";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v28";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -25,9 +25,9 @@
       html body #root .qmes-quality-modal-close,html body #root .qmes-iqc-modal-cancel,html body #root .qmes-inspection-cancel-btn,html body #root .qmes-quality-modal-close:hover,html body #root .qmes-quality-modal-close:focus,html body #root .qmes-quality-modal-close:active,html body #root .qmes-iqc-modal-cancel:hover,html body #root .qmes-iqc-modal-cancel:focus,html body #root .qmes-iqc-modal-cancel:active,html body #root .qmes-inspection-cancel-btn:hover,html body #root .qmes-inspection-cancel-btn:focus,html body #root .qmes-inspection-cancel-btn:active{border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;}
       html body #root .qmes-quality-modal-close{height:34px!important;min-width:58px!important;padding:0 13px!important;font-size:13px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;cursor:pointer!important;}
 
-      /* Output viewer: narrow only the dark viewer frame; keep report document sizing untouched. */
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;z-index:2147483640!important;padding:10px 42px!important;align-items:flex-start!important;overflow:hidden!important;overscroll-behavior:none!important;}
-      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) > .qmes-wo-viewer{width:calc(100% - 44px)!important;max-width:1440px!important;margin-left:auto!important;margin-right:auto!important;height:calc(100vh - 20px)!important;max-height:calc(100vh - 20px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+      /* Output viewer: reduce only the outer dark frame width; report document itself is untouched. */
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;z-index:2147483640!important;padding:10px 20px!important;align-items:flex-start!important;overflow:hidden!important;overscroll-behavior:none!important;}
+      html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) > .qmes-wo-viewer{width:86vw!important;max-width:1280px!important;margin-left:auto!important;margin-right:auto!important;height:calc(100vh - 20px)!important;max-height:calc(100vh - 20px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
       html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:relative!important;top:auto!important;z-index:10!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;min-height:68px!important;height:auto!important;padding:8px 24px!important;background:#0b1728!important;isolation:isolate!important;overflow:hidden!important;}
       html body #root .qmes-output-scroll-body{position:relative!important;z-index:1!important;min-height:0!important;flex:1 1 0%!important;overflow-x:auto!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;scroll-behavior:auto!important;background:#0b1728!important;}
       html body #root .qmes-output-scroll-body > *{position:relative!important;z-index:1!important;}
