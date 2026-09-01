@@ -1,21 +1,22 @@
 /* NAMO QMES - IQC report typography/barcode refinement - 2026-09-01 */
 (function installIqcReportTypeFix(global){
   "use strict";
-  if(global.__QMES_IQC_REPORT_TYPE_FIX_V35__) return;
-  global.__QMES_IQC_REPORT_TYPE_FIX_V35__=true;
+  if(global.__QMES_IQC_REPORT_TYPE_FIX_V36__) return;
+  global.__QMES_IQC_REPORT_TYPE_FIX_V36__=true;
 
-  const STYLE_ID="qmes-iqc-report-type-fix-v35";
+  const STYLE_ID="qmes-iqc-report-type-fix-v36";
   function installStyle(){
     if(document.getElementById(STYLE_ID)) return;
     const style=document.createElement("style");
     style.id=STYLE_ID;
     style.textContent=`
 html body #root .qmes-iqc-doc .qmes-iqc2-sec-title,
-html body #root .qmes-iqc-doc .qmes-iqc2-table th,
-html body #root .qmes-iqc-doc .qmes-iqc2-table td,
+html body #root .qmes-iqc-doc .qmes-iqc2-table,
+html body #root .qmes-iqc-doc .qmes-iqc2-table *,
 html body #root .qmes-iqc-doc .qmes-iqc2-remarks,
-html body #root .qmes-iqc-doc .qmes-iqc2-sign-table th,
-html body #root .qmes-iqc-doc .qmes-iqc2-sign-table td,
+html body #root .qmes-iqc-doc .qmes-iqc2-remarks *,
+html body #root .qmes-iqc-doc .qmes-iqc2-sign-table,
+html body #root .qmes-iqc-doc .qmes-iqc2-sign-table *,
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box *{
   font-size:var(--qmes-iqc-ref-font-size,inherit)!important;
   line-height:var(--qmes-iqc-ref-line-height,inherit)!important;
@@ -28,11 +29,12 @@ html body #root .qmes-iqc-doc .qmes-iqc2-code-box [class*="rounded"]{
 }
 @media print{
   html body #root .qmes-iqc-doc .qmes-iqc2-sec-title,
-  html body #root .qmes-iqc-doc .qmes-iqc2-table th,
-  html body #root .qmes-iqc-doc .qmes-iqc2-table td,
+  html body #root .qmes-iqc-doc .qmes-iqc2-table,
+  html body #root .qmes-iqc-doc .qmes-iqc2-table *,
   html body #root .qmes-iqc-doc .qmes-iqc2-remarks,
-  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table th,
-  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table td,
+  html body #root .qmes-iqc-doc .qmes-iqc2-remarks *,
+  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table,
+  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table *,
   html body #root .qmes-iqc-doc .qmes-iqc2-code-box *{
     font-size:var(--qmes-iqc-ref-font-size,inherit)!important;
     line-height:var(--qmes-iqc-ref-line-height,inherit)!important;
@@ -43,12 +45,12 @@ html body #root .qmes-iqc-doc .qmes-iqc2-code-box [class*="rounded"]{
   }
 
   function restoreOuterBarcodeBox(){
-    const v34=document.getElementById("qmes-quality-inspection-ui-style-20260901-v34");
-    if(!v34 || v34.dataset.iqcOuterRestored==="1") return;
-    v34.textContent=v34.textContent
+    const qualityStyle=document.querySelector('style[id^="qmes-quality-inspection-ui-style-20260901-v"]');
+    if(!qualityStyle || qualityStyle.dataset.iqcOuterRestored==="1") return;
+    qualityStyle.textContent=qualityStyle.textContent
       .replace(/html body #root \.qmes-iqc-doc \.qmes-iqc2-code-box\{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;\}\n?/g,"")
       .replace(/  html body #root \.qmes-iqc-doc \.qmes-iqc2-code-box\{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;\}\n?/g,"");
-    v34.dataset.iqcOuterRestored="1";
+    qualityStyle.dataset.iqcOuterRestored="1";
   }
 
   function syncReferenceType(doc){
