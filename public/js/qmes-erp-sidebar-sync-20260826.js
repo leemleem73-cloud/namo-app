@@ -10,7 +10,6 @@
     "수주·납기":{label:"수주 · 납기관리",tab:"erpSales"},
     "생산계획·MRP":{label:"생산계획 · MRP",tab:"erpPlan"},
     "구매·발주":{label:"구매 · 발주관리",tab:"erpPurchase"},
-    "Recipe/BOM":{label:"Recipe / BOM",tab:"erpMaster"},
     "출하·납품":{label:"출하 · 납품관리",tab:"erpShipping"}
   };
   const ERP_TABS=new Set(Object.values(ERP_GROUPS).map(config=>config.tab));

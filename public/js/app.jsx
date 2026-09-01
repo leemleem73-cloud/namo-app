@@ -21,7 +21,6 @@ function qmesCreateDeferredErpRoute(componentName,label){
 const QMESErpSalesRoute=qmesCreateDeferredErpRoute("QMESErpSalesTab","수주 · 납기관리");
 const QMESErpPlanRoute=qmesCreateDeferredErpRoute("QMESErpPlanTab","생산계획 · MRP");
 const QMESErpPurchaseRoute=qmesCreateDeferredErpRoute("QMESErpPurchaseTab","구매 · 발주관리");
-const QMESErpMasterRoute=qmesCreateDeferredErpRoute("QMESErpMasterTab","Recipe / BOM");
 const QMESErpShippingRoute=qmesCreateDeferredErpRoute("QMESErpShippingTab","출하 · 납품관리");
 
 if(typeof TABS!=="undefined"&&Array.isArray(TABS)){
@@ -29,7 +28,6 @@ if(typeof TABS!=="undefined"&&Array.isArray(TABS)){
     {id:"erpSales",label:"수주 · 납기관리",icon:ClipboardList,comp:QMESErpSalesRoute},
     {id:"erpPlan",label:"생산계획 · MRP",icon:BarChart3,comp:QMESErpPlanRoute},
     {id:"erpPurchase",label:"구매 · 발주관리",icon:ArrowDownToLine,comp:QMESErpPurchaseRoute},
-    {id:"erpMaster",label:"Recipe / BOM",icon:FlaskConical,comp:QMESErpMasterRoute},
     {id:"erpShipping",label:"출하 · 납품관리",icon:ArrowUpFromLine,comp:QMESErpShippingRoute}
   ].forEach(item=>{if(!TABS.some(existing=>existing.id===item.id))TABS.push(item);});
 }
@@ -38,10 +36,14 @@ if(typeof TOP_MENUS!=="undefined"&&Array.isArray(TOP_MENUS)){
     {id:"erpSales",label:"수주·납기",icon:ClipboardList},
     {id:"erpPlan",label:"생산계획·MRP",icon:BarChart3},
     {id:"erpPurchase",label:"구매·발주",icon:ArrowDownToLine},
-    {id:"erpMaster",label:"Recipe/BOM",icon:FlaskConical},
     {id:"erpShipping",label:"출하·납품",icon:ArrowUpFromLine}
   ].forEach(item=>{if(!TOP_MENUS.some(existing=>existing.id===item.id))TOP_MENUS.push(item);});
 }
+
+try{
+  if(sessionStorage.getItem("qmes_current_tab")==="erpMaster") sessionStorage.setItem("qmes_current_tab","dash");
+  if(sessionStorage.getItem("qmes_open_menu")==="erpMaster") sessionStorage.removeItem("qmes_open_menu");
+}catch(_error){}
 
 const QMES_LOGIN_SESSION_KEY = "qmes-current-user-v1";
 

@@ -131,25 +131,6 @@
     {id:"PO-260824-01",supplier:"Supplier A",material:"NMP",qty:500,due:"2026-08-26",expected:"2026-08-25",iqc:"예정",status:"공급사 출고"},
     {id:"PO-260824-02",supplier:"Supplier B",material:"첨가제",qty:100,due:"2026-08-27",expected:"",iqc:"-",status:"납기확인"}
   ];
-  const MASTER_DEFAULT=[{
-    revision:"Rev.03",effectiveDate:"2026-08-20",customer:"현대자동차 / 공용",baseQty:1000,status:"승인",
-    items:[
-      {material:"NMP",ratio:80,qty:800,seq:1,control:"-"},
-      {material:"PVDF",ratio:5,qty:50,seq:2,control:"점도"},
-      {material:"SBR",ratio:6,qty:60,seq:3,control:"고형분"},
-      {material:"첨가제",ratio:9,qty:90,seq:4,control:"입도"}
-    ],
-    note:"NMP 79% → 80%"
-  },{
-    revision:"Rev.02",effectiveDate:"2026-08-01",customer:"현대자동차 / 공용",baseQty:1000,status:"이력",
-    items:[
-      {material:"NMP",ratio:79,qty:790,seq:1,control:"-"},
-      {material:"PVDF",ratio:5,qty:50,seq:2,control:"점도"},
-      {material:"SBR",ratio:6,qty:60,seq:3,control:"고형분"},
-      {material:"첨가제",ratio:10,qty:100,seq:4,control:"입도"}
-    ],
-    note:"첨가제 B 추가"
-  }];
   const SHIPPING_DEFAULT=[
     {date:"2026-08-26",sales:"SO-260824-01",customer:"현대자동차",product:"전도 슬러리 A",lot:"FG-260824-01",qty:2000,oqc:"합격",coa:"발행",delivery:"배차완료"},
     {date:"2026-08-27",sales:"SO-260823-02",customer:"삼성SDI",product:"Binder Solution",lot:"FG-260825-01",qty:1500,oqc:"검사대기",coa:"-",delivery:"-"}
@@ -598,15 +579,6 @@
     </div>;
   }
 
-  function QMESErpMasterTab(){
-    const {rows,save,syncStatus}=useSharedRows("master",MASTER_DEFAULT);
-    const current=rows[0]||MASTER_DEFAULT[0];const [open,setOpen]=useState(false);const [error,setError]=useState("");
-    const [ratios,setRatios]=useState({NMP:"80",PVDF:"5",SBR:"6",첨가제:"9"});
-    useEffect(()=>{const map={};(current.items||[]).forEach(i=>{map[i.material]=String(i.ratio)});setRatios({NMP:map.NMP||"80",PVDF:map.PVDF||"5",SBR:map.SBR||"6",첨가제:map.첨가제||"9"});},[current.revision]);
-    const createRevision=async e=>{e.preventDefault();setError("");const values=["NMP","PVDF","SBR","첨가제"].map(k=>Number(ratios[k]));const total=values.reduce((s,v)=>s+v,0);if(values.some(v=>!Number.isFinite(v)||v<0)||Math.abs(total-100)>.001){setError(`배합비 합계가 100%가 되도록 입력하세요. 현재 ${total.toFixed(1)}%입니다.`);return;}const revNo=Math.max(0,...rows.map(r=>Number(String(r.revision||"").replace(/\D/g,""))||0))+1;const base=1000;const items=["NMP","PVDF","SBR","첨가제"].map((material,index)=>({material,ratio:values[index],qty:base*values[index]/100,seq:index+1,control:["-","점도","고형분","입도"][index]}));const next={revision:`Rev.${String(revNo).padStart(2,"0")}`,effectiveDate:new Date().toISOString().slice(0,10),customer:current.customer||"공용",baseQty:base,status:"승인",items,note:`${current.revision}에서 신규 개정`};await save([next,...rows]);setOpen(false);};
-    return <div className="qerp"><Header title="Recipe / BOM Master" subtitle="제품별 표준 배합비·표준투입량·Revision·적용일·승인이력 관리" status={syncStatus} actionLabel={open?"입력 닫기":"+ 신규 Revision"} onAction={()=>setOpen(v=>!v)}/>{open&&<div className="qerp-card"><form className="qerp-form" onSubmit={createRevision}>{["NMP","PVDF","SBR","첨가제"].map(k=><div className="qerp-field" key={k}><label>{k} 배합비 (%)</label><input inputMode="decimal" value={ratios[k]} onChange={e=>setRatios({...ratios,[k]:e.target.value})}/></div>)}{error&&<div className="qerp-error">{error}</div>}<div className="qerp-form-actions"><button type="button" className="qerp-btn ghost" onClick={()=>setOpen(false)}>취소</button><button type="submit" className="qerp-btn">Revision 저장</button></div></form></div>}<div className="qerp-grid2"><div className="qerp-card"><h2>제품 Recipe</h2><div className="qerp-box"><h3>Binder Solution · {current.revision}</h3><div className="qerp-note">적용일: <b>{current.effectiveDate}</b><br/>고객사: {current.customer}<br/>기준 생산량: <b>{fmtQty(current.baseQty)}</b><br/>상태: <Status>{current.status}</Status><br/>작성/검토/승인 이력 관리</div></div><div className="qerp-box"><h3>개정 이력</h3><div className="qerp-note">{rows.map((r,i)=><div key={r.revision}>{r.revision} — {r.note||"개정"}{i===0?" (현재)":""}</div>)}</div></div></div><div className="qerp-card"><h2>표준 배합표</h2><div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>No</th><th>원료</th><th>배합비</th><th>{Number(current.baseQty||1000).toLocaleString("ko-KR")}kg 기준</th><th>투입순서</th><th>관리항목</th></tr></thead><tbody>{(current.items||[]).map((row,index)=><tr key={row.material}><td>{index+1}</td><td><b>{row.material}</b></td><td>{Number(row.ratio).toFixed(1)}%</td><td>{fmtQty(row.qty)}</td><td>{row.seq}</td><td>{row.control}</td></tr>)}</tbody></table></div></div></div></div>;
-  }
-
   function QMESErpShippingTab(){
     const {rows,save,syncStatus}=useSharedRows("shipping",SHIPPING_DEFAULT);const [open,setOpen]=useState(false);const [error,setError]=useState("");
     const [form,setForm]=useState({date:"2026-08-28",sales:"",customer:"현대자동차",product:"전도 슬러리 A",lot:"",qty:"1000"});
@@ -618,7 +590,6 @@
   window.QMESErpSalesTab=QMESErpSalesTab;
   window.QMESErpPlanTab=QMESErpPlanTab;
   window.QMESErpPurchaseTab=QMESErpPurchaseTab;
-  window.QMESErpMasterTab=QMESErpMasterTab;
   window.QMESErpShippingTab=QMESErpShippingTab;
 
   try{
@@ -627,7 +598,6 @@
         {id:"erpSales",label:"수주 · 납기관리",icon:ClipboardList,comp:QMESErpSalesTab},
         {id:"erpPlan",label:"생산계획 · MRP",icon:BarChart3,comp:QMESErpPlanTab},
         {id:"erpPurchase",label:"구매 · 발주관리",icon:ArrowDownToLine,comp:QMESErpPurchaseTab},
-        {id:"erpMaster",label:"Recipe / BOM",icon:FlaskConical,comp:QMESErpMasterTab},
         {id:"erpShipping",label:"출하 · 납품관리",icon:ArrowUpFromLine,comp:QMESErpShippingTab}
       ];
       additions.forEach(item=>{if(!TABS.some(existing=>existing.id===item.id))TABS.push(item);});
@@ -637,7 +607,6 @@
         {id:"erpSales",label:"수주·납기",icon:ClipboardList},
         {id:"erpPlan",label:"생산계획·MRP",icon:BarChart3},
         {id:"erpPurchase",label:"구매·발주",icon:ArrowDownToLine},
-        {id:"erpMaster",label:"Recipe/BOM",icon:FlaskConical},
         {id:"erpShipping",label:"출하·납품",icon:ArrowUpFromLine}
       ];
       additions.forEach(item=>{if(!TOP_MENUS.some(existing=>existing.id===item.id))TOP_MENUS.push(item);});
