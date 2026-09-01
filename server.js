@@ -1624,6 +1624,113 @@ async function ensurePurchaseIqcReconciliation() {
   }
 }
 
+async function ensurePendingIqcFromUnmatchedPurchases() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const marker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-iqc-pending-v2'`
+    );
+    if (marker.rowCount) {
+      await client.query('COMMIT');
+      return;
+    }
+
+    const ordersResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       ORDER BY order_date, purchase_no`
+    );
+    const iqcRecords = await client.query(
+      `SELECT record_key, payload
+       FROM qmes_sync_records
+       WHERE record_type = 'iqc'
+       ORDER BY updated_at, record_key`
+    );
+    const iqcKeys = new Set(iqcRecords.rows.map((record) => txt(record.record_key)));
+    const linkedPurchaseNos = new Set();
+    for (const record of iqcRecords.rows) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {};
+      if (payload.deleted) continue;
+      for (const row of arr(payload.rows)) {
+        const purchaseNo = txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo);
+        if (purchaseNo) linkedPurchaseNos.add(purchaseNo);
+      }
+    }
+
+    let pendingCreated = 0;
+    for (const order of ordersResult.rows) {
+      if (linkedPurchaseNos.has(order.purchase_no)) continue;
+      const receiptDate = purchaseDate(order.order_date, new Date().toISOString().slice(0, 10));
+      const dateKey = receiptDate.replace(/-/g, '').slice(2);
+      let sequence = 9001;
+      let inspectionNo = `IQC-${dateKey}-${String(sequence).padStart(4, '0')}`;
+      while (iqcKeys.has(inspectionNo)) {
+        sequence += 1;
+        inspectionNo = `IQC-${dateKey}-${String(sequence).padStart(4, '0')}`;
+      }
+      iqcKeys.add(inspectionNo);
+      const pendingRow = {
+        inNo: inspectionNo,
+        purchaseOrderNo: order.purchase_no,
+        purchaseLinkStatus: '발주연결',
+        recv: receiptDate,
+        inspectedAt: '',
+        lot: '',
+        code: txt(order.item_code) || '-',
+        name: txt(order.item),
+        supplier: txt(order.supplier) || '-',
+        qty: `${Number(order.qty || 0).toLocaleString('ko-KR')} ${txt(order.unit) || 'kg'}`,
+        inspectQty: '0 EA',
+        defectQty: '0 EA',
+        visual: '검사대기',
+        label: '검사대기',
+        weight: '검사대기',
+        coa: '검사대기',
+        judge: '검사대기',
+        status: '검사대기',
+        note: '발주현황에서 자동 생성 · 검사결과 입력 필요',
+        remarks: '발주현황에서 자동 생성 · LOT 및 검사결과 입력 필요',
+        inspector: '-',
+        by: '-',
+      };
+      const pendingPayload = {
+        mode: 'IQC',
+        kind: 'purchase-iqc-pending',
+        schema: 2,
+        lotNo: '',
+        rows: [pendingRow],
+        savedAt: new Date().toISOString(),
+        savedBy: 'SYSTEM',
+      };
+      await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('iqc', $1, $2::jsonb, 'SYSTEM', NOW())
+         ON CONFLICT (record_type, record_key) DO NOTHING`,
+        [inspectionNo, JSON.stringify(pendingPayload)]
+      );
+      await syncIqcPayloadToPurchase(client, pendingPayload, 'SYSTEM');
+      linkedPurchaseNos.add(order.purchase_no);
+      pendingCreated += 1;
+    }
+
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ('purchase', 'seed:purchase-iqc-pending-v2', $1::jsonb, 'SYSTEM', NOW())
+       ON CONFLICT (record_type, record_key) DO NOTHING`,
+      [JSON.stringify({ version: 2, pendingCreated })]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   const type = qmesSyncType(req, res);
   if (!type) return;
@@ -3302,6 +3409,7 @@ ensureSchema()
   .then(async () => {
     await ensurePurchaseHistory();
     await ensurePurchaseIqcReconciliation();
+    await ensurePendingIqcFromUnmatchedPurchases();
 
     const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const adminPassword = String(process.env.ADMIN_PASSWORD || '');
