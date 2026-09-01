@@ -7,7 +7,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality10-stable-native";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality11-modal-header";
   const nativeFetch=global.fetch.bind(global);
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
