@@ -6,7 +6,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality7-native-only-light";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality8-native-conflict-fix";
   const nativeFetch=global.fetch.bind(global);
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
   if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
