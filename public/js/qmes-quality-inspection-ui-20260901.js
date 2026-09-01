@@ -1,17 +1,17 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V31__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V31__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V32__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V32__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v31";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v32";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){if(document.getElementById(STYLE_ID))return;const style=document.createElement("style");style.id=STYLE_ID;style.textContent=`
 html,body,#root{color-scheme:only light!important;}
 html body #root .qmes-modal-backdrop.qmes-iqc-modal-backdrop,html body #root .qmes-inspection-modal-backdrop{position:fixed!important;inset:0!important;z-index:2147483000!important;padding:20px!important;background:rgba(15,23,42,.18)!important;overflow:hidden!important;align-items:center!important;justify-content:center!important;}
 html body #root .qmes-iqc-modal,html body #root .qmes-inspection-modal{position:relative!important;z-index:1!important;margin:0 auto!important;height:calc(100vh - 40px)!important;max-height:calc(100vh - 40px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
 html body #root .qmes-iqc-modal-head,html body #root .qmes-inspection-modal-head{position:relative!important;z-index:20!important;flex:0 0 auto!important;background:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
-html body #root .qmes-iqc-modal-body,html body #root .qmes-inspection-modal-body{position:relative!important;min-height:0!important;height:0!important;flex:1 1 0%!important;overflow-x:hidden!important;overflow-y:auto!important;background:#fff!important;contain:none!important;transform:none!important;will-change:auto!important;}
+html body #root .qmes-iqc-modal-body,html body #root .qmes-inspection-modal-body{position:relative!important;min-height:0!important;height:0!important;flex:1 1 0%!important;overflow-x:hidden!important;overflow-y:auto!important;background:#fff!important;}
 html body #root .qmes-iqc-modal-section,html body #root .qmes-iqc-modal-grid,html body #root .qmes-pqc-entry-form,html body #root .qmes-oqc-entry-form,html body #root .qmes-inspection-modal-body .qmes-panel{background:#fff!important;background-image:none!important;}
 html body #root .qmes-iqc-modal-section,html body #root .qmes-inspection-modal-body .qmes-panel,html body #root .qmes-inspection-modal-body fieldset,html body #root .qmes-inspection-modal-body table,html body #root .qmes-inspection-modal-body th,html body #root .qmes-inspection-modal-body td,html body #root .qmes-iqc-modal table,html body #root .qmes-iqc-modal th,html body #root .qmes-iqc-modal td{border-color:#cbd5e1!important;}
 html body #root .qmes-iqc-modal input,html body #root .qmes-iqc-modal textarea,html body #root .qmes-inspection-modal input,html body #root .qmes-inspection-modal textarea{background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
@@ -19,26 +19,30 @@ html body #root .qmes-iqc-modal-foot{flex:0 0 auto!important;background:#fff!imp
 .qmes-quality-modal-actions{display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important;position:relative!important;z-index:21!important;}
 html body #root .qmes-quality-modal-close,html body #root .qmes-iqc-modal-cancel,html body #root .qmes-inspection-cancel-btn{border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#000!important;}
 html body #root .qmes-quality-modal-close{height:34px!important;min-width:58px!important;padding:0 13px!important;font-size:13px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}
-/* Output viewer */
 html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop){position:fixed!important;inset:0!important;z-index:2147483640!important;padding:10px 20px!important;align-items:flex-start!important;overflow:hidden!important;}
 html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) > .qmes-wo-viewer{width:68vw!important;max-width:1060px!important;margin:0 auto!important;height:calc(100vh - 20px)!important;max-height:calc(100vh - 20px)!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
 html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-inspection-modal-backdrop) .qmes-wo-viewer-head{position:relative!important;z-index:10!important;display:flex!important;visibility:visible!important;opacity:1!important;flex:0 0 auto!important;min-height:68px!important;padding:8px 24px!important;background:#0b1728!important;overflow:hidden!important;}
 html body #root .qmes-output-scroll-body{position:relative!important;z-index:1!important;min-height:0!important;flex:1 1 0%!important;overflow-x:auto!important;overflow-y:auto!important;background:#0b1728!important;}
 html body #root .qmes-output-scroll-body > *{position:relative!important;z-index:1!important;}
 html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;}
-/* IQC report: use clean current logo and black report borders. */
-html body #root .qmes-iqc-doc{background:#fff!important;color:#000!important;}
+/* IQC official report: square white sheet, clean logo, black rules. */
+html body #root .qmes-iqc-doc{background:#fff!important;color:#000!important;border-radius:0!important;box-shadow:none!important;}
 html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-centered-header{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-header-logo{object-fit:contain!important;image-rendering:auto!important;filter:none!important;}
+html body #root .qmes-iqc-doc .qmes-iqc2-auth-row{display:flex!important;visibility:visible!important;opacity:1!important;margin-top:8px!important;break-inside:avoid!important;page-break-inside:avoid!important;}
+html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;visibility:visible!important;border-collapse:collapse!important;border:1px solid #000!important;}
+html body #root .qmes-iqc-doc .qmes-iqc2-sign-table th,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table td{border:1px solid #000!important;color:#000!important;}
 @page{size:A4 portrait;margin:10mm;}
 @media print{
-  html,body{width:210mm!important;min-height:297mm!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;}
+  html,body{margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important;}
   body *{visibility:hidden!important;}
   html body #root .qmes-iqc-doc,html body #root .qmes-iqc-doc *{visibility:visible!important;}
-  html body #root .qmes-iqc-doc{position:absolute!important;left:10mm!important;top:10mm!important;width:190mm!important;max-width:190mm!important;min-width:190mm!important;margin:0!important;padding:0!important;box-shadow:none!important;border-radius:0!important;transform:none!important;overflow:visible!important;}
+  html body #root .qmes-iqc-doc{position:absolute!important;left:0!important;top:0!important;width:190mm!important;max-width:190mm!important;min-width:190mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;}
   html body #root .qmes-iqc-doc table{width:100%!important;border-collapse:collapse!important;}
   html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;}
+  html body #root .qmes-iqc-doc .qmes-iqc2-auth-row,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:flex!important;visibility:visible!important;opacity:1!important;break-inside:avoid!important;page-break-inside:avoid!important;}
+  html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;}
   html body #root .qmes-iqc-doc .qmes-iqc-header-logo{max-width:100%!important;height:auto!important;}
   html body #root header,html body #root aside,html body #root nav,html body #root .qmes-wo-viewer-head{display:none!important;}
 }
