@@ -23,8 +23,6 @@
     style.textContent=`
       html,body,#root{color-scheme:only light!important;}
 
-      /* Quality year/month use one stable native rendering mode at all times.
-         Do not switch appearance on click: that was causing the text to jump. */
       html body #root .qmes-iqc-record-filter .qmes-oqc-record-filter-field select,
       html body #root .qmes-pqc-record-filter .qmes-oqc-record-filter-field select,
       html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field select,
@@ -54,12 +52,54 @@
       html body #root .qmes-oqc-record-filter .qmes-oqc-record-filter-field option{
         color-scheme:only light!important;
         background:#fff!important;
-        background-color:#fff!important;
         color:#111827!important;
       }
 
-      .qmes-inspection-modal-head,.qmes-iqc-modal-head{flex:0 0 auto;}
-      .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;}
+      /* Registration modal belongs above the fixed QMES shell, not underneath it. */
+      html body #root .qmes-modal-backdrop.qmes-iqc-modal-backdrop,
+      html body #root .qmes-inspection-modal-backdrop{
+        position:fixed!important;
+        inset:0!important;
+        z-index:2147483000!important;
+        padding:20px!important;
+        background:transparent!important;
+        backdrop-filter:none!important;
+        -webkit-backdrop-filter:none!important;
+        overflow:auto!important;
+        align-items:flex-start!important;
+        justify-content:center!important;
+      }
+      html body #root .qmes-iqc-modal,
+      html body #root .qmes-inspection-modal{
+        position:relative!important;
+        z-index:1!important;
+        margin:0 auto!important;
+        max-height:calc(100vh - 40px)!important;
+        background:#fff!important;
+        color:#111827!important;
+      }
+      html body #root .qmes-iqc-modal-head,
+      html body #root .qmes-inspection-modal-head{
+        position:sticky!important;
+        top:0!important;
+        z-index:20!important;
+        flex:0 0 auto!important;
+        background:#fff!important;
+        color:#111827!important;
+      }
+      html body #root .qmes-iqc-modal-head strong,
+      html body #root .qmes-iqc-modal-head span,
+      html body #root .qmes-inspection-modal-head strong,
+      html body #root .qmes-inspection-modal-head span{color:#111827!important;}
+      html body #root .qmes-iqc-modal-head .qmes-modal-close,
+      html body #root .qmes-inspection-modal-head .qmes-modal-close{
+        display:inline-flex!important;
+        visibility:visible!important;
+        opacity:1!important;
+        position:relative!important;
+        z-index:21!important;
+      }
+      .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;background:#fff!important;}
       .qmes-wo-viewer-head{position:sticky;top:0;z-index:5;flex:0 0 auto;background:#0b1728;}
     `;
     document.head.appendChild(style);
