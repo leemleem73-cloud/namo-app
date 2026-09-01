@@ -231,6 +231,73 @@ async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS qmes_sync_records_type_updated_idx
       ON qmes_sync_records (record_type, updated_at DESC);
 
+    CREATE TABLE IF NOT EXISTS purchase_orders (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      purchase_no TEXT UNIQUE NOT NULL,
+      purchase_type TEXT NOT NULL DEFAULT '정기발주',
+      production_type TEXT NOT NULL DEFAULT 'D-양산',
+      supplier TEXT NOT NULL,
+      supplier_grade TEXT DEFAULT '',
+      item TEXT NOT NULL,
+      item_code TEXT DEFAULT '',
+      spec TEXT DEFAULT '',
+      qty NUMERIC NOT NULL CHECK (qty > 0),
+      unit TEXT NOT NULL DEFAULT 'kg',
+      unit_price NUMERIC NOT NULL DEFAULT 0 CHECK (unit_price >= 0),
+      amount NUMERIC NOT NULL DEFAULT 0 CHECK (amount >= 0),
+      order_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      requested_due_date DATE NOT NULL,
+      confirmed_due_date DATE,
+      priority TEXT NOT NULL DEFAULT '일반',
+      mrp_no TEXT DEFAULT '',
+      work_order_no TEXT DEFAULT '',
+      purpose TEXT DEFAULT '',
+      warehouse TEXT DEFAULT '시화공장 · 원료창고',
+      delivery_address TEXT DEFAULT '나모케미칼 시화공장 원료 입고장',
+      payment_terms TEXT DEFAULT '',
+      approval_status TEXT NOT NULL DEFAULT '구매검토',
+      receipt_status TEXT NOT NULL DEFAULT '미입고',
+      received_qty NUMERIC NOT NULL DEFAULT 0 CHECK (received_qty >= 0),
+      receipt_date DATE,
+      material_lot TEXT DEFAULT '',
+      iqc_required BOOLEAN NOT NULL DEFAULT TRUE,
+      iqc_status TEXT NOT NULL DEFAULT '계획 대기',
+      coa_required BOOLEAN NOT NULL DEFAULT TRUE,
+      msds_required BOOLEAN NOT NULL DEFAULT FALSE,
+      lot_required BOOLEAN NOT NULL DEFAULT TRUE,
+      status TEXT NOT NULL DEFAULT '결재대기',
+      requester TEXT DEFAULT '',
+      notes TEXT DEFAULT '',
+      created_by TEXT DEFAULT '',
+      updated_by TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CHECK (received_qty <= qty)
+    );
+
+    CREATE INDEX IF NOT EXISTS purchase_orders_order_date_idx
+      ON purchase_orders (order_date DESC, created_at DESC);
+    CREATE INDEX IF NOT EXISTS purchase_orders_supplier_idx
+      ON purchase_orders (supplier, created_at DESC);
+    CREATE INDEX IF NOT EXISTS purchase_orders_due_idx
+      ON purchase_orders (requested_due_date, status);
+
+    CREATE TABLE IF NOT EXISTS purchase_receipts (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      purchase_order_id UUID NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
+      receipt_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      qty NUMERIC NOT NULL CHECK (qty > 0),
+      material_lot TEXT DEFAULT '',
+      expiry_date DATE,
+      iqc_status TEXT NOT NULL DEFAULT '검사 대기',
+      note TEXT DEFAULT '',
+      created_by TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS purchase_receipts_order_idx
+      ON purchase_receipts (purchase_order_id, receipt_date DESC, created_at DESC);
+
     CREATE TABLE IF NOT EXISTS iqc (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       date DATE NOT NULL,
@@ -781,7 +848,313 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder', 'equipment', 'inventory']);
+const PURCHASE_PRODUCTION_TYPES = new Set(['D-양산', 'C-Pilot', 'B-Lab']);
+
+function purchaseValue(source, keys, fallback = '') {
+  for (const key of keys) {
+    if (source && Object.prototype.hasOwnProperty.call(source, key) && source[key] !== undefined) {
+      return source[key];
+    }
+  }
+  return fallback;
+}
+
+function purchaseBoolean(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'boolean') return value;
+  return !['false', '0', 'no', 'n', '아니오'].includes(txt(value).toLowerCase());
+}
+
+function normalizePurchaseProductionType(value) {
+  const raw = txt(value);
+  if (PURCHASE_PRODUCTION_TYPES.has(raw)) return raw;
+  if (/^(d|mass|양산)$/i.test(raw)) return 'D-양산';
+  if (/^(c|pilot|파일럿|개발)$/i.test(raw)) return 'C-Pilot';
+  if (/^(b|lab|랩|샘플)$/i.test(raw)) return 'B-Lab';
+  return 'D-양산';
+}
+
+function purchaseDate(value, fallback = '') {
+  const raw = txt(value || fallback);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw.slice(0, 10)) ? raw.slice(0, 10) : '';
+}
+
+function derivePurchaseStatus(row) {
+  const manual = txt(row.status);
+  const approval = txt(row.approval_status ?? row.approvalStatus ?? row.approval);
+  const receipt = txt(row.receipt_status ?? row.receiptStatus ?? row.receiving);
+  const iqc = txt(row.iqc_status ?? row.iqcStatus ?? row.iqc);
+  const ordered = Number(row.qty || 0);
+  const received = Number(row.received_qty ?? row.receivedQty ?? row.received ?? 0);
+
+  if (/취소/.test(manual)) return '발주취소';
+  if (/불합격|부적합|FAIL|NG|REJECT/i.test(iqc)) return 'IQC 부적합';
+  if (received > 0 && received < ordered) return '부분입고';
+  if (ordered > 0 && received >= ordered) {
+    if (purchaseBoolean(row.iqc_required ?? row.iqcRequired, true) && !/합격|적합|PASS|OK/i.test(iqc)) {
+      return 'IQC대기';
+    }
+    return '입고완료';
+  }
+  if (/미승인|검토|대기/.test(approval) && !/승인완료|발주확정/.test(approval)) {
+    return '결재대기';
+  }
+
+  const due = purchaseDate(
+    row.confirmed_due_date ?? row.confirmedDueDate ?? row.expected ?? row.expectedDate
+      ?? row.requested_due_date ?? row.requestedDueDate ?? row.due ?? row.dueDate
+  );
+  if (due && !/입고완료/.test(receipt)) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(`${due}T00:00:00`);
+    const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (days < 0) return '입고지연';
+    if (days <= 2 || /긴급|최우선/.test(txt(row.priority))) return '납기임박';
+  }
+  return '발주확정';
+}
+
+function mapPurchaseOrder(row, receipts = undefined) {
+  const mapped = {
+    id: row.purchase_no,
+    uuid: row.id,
+    purchaseNo: row.purchase_no,
+    no: row.purchase_no,
+    purchaseType: row.purchase_type,
+    type: row.purchase_type,
+    productionType: row.production_type,
+    supplier: row.supplier,
+    supplierGrade: row.supplier_grade,
+    grade: row.supplier_grade,
+    item: row.item,
+    material: row.item,
+    itemCode: row.item_code,
+    spec: row.spec || row.item_code,
+    qty: Number(row.qty || 0),
+    unit: row.unit,
+    unitPrice: Number(row.unit_price || 0),
+    price: Number(row.unit_price || 0),
+    amount: Number(row.amount || 0),
+    orderDate: purchaseDate(row.order_date),
+    requestedDueDate: purchaseDate(row.requested_due_date),
+    due: purchaseDate(row.requested_due_date),
+    confirmedDueDate: purchaseDate(row.confirmed_due_date),
+    expected: purchaseDate(row.confirmed_due_date),
+    priority: row.priority,
+    mrpNo: row.mrp_no,
+    mrp: row.mrp_no,
+    workOrderNo: row.work_order_no,
+    purpose: row.purpose,
+    warehouse: row.warehouse,
+    deliveryAddress: row.delivery_address,
+    paymentTerms: row.payment_terms,
+    terms: row.payment_terms,
+    approvalStatus: row.approval_status,
+    approval: row.approval_status,
+    receiptStatus: row.receipt_status,
+    receiving: row.receipt_status,
+    receivedQty: Number(row.received_qty || 0),
+    received: Number(row.received_qty || 0),
+    receiptDate: purchaseDate(row.receipt_date),
+    materialLot: row.material_lot,
+    lot: row.material_lot,
+    iqcRequired: Boolean(row.iqc_required),
+    iqcStatus: row.iqc_status,
+    iqc: row.iqc_status,
+    coaRequired: Boolean(row.coa_required),
+    msdsRequired: Boolean(row.msds_required),
+    lotRequired: Boolean(row.lot_required),
+    requester: row.requester,
+    owner: row.requester,
+    notes: row.notes,
+    createdBy: row.created_by,
+    updatedBy: row.updated_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+  mapped.status = derivePurchaseStatus({ ...row, ...mapped });
+  if (receipts !== undefined) mapped.receipts = receipts;
+  return mapped;
+}
+
+function normalizePurchaseInput(input, current = {}) {
+  const source = input || {};
+  const fallback = current || {};
+  const value = (keys, fallbackKeys = keys, defaultValue = '') => purchaseValue(
+    source,
+    keys,
+    purchaseValue(fallback, fallbackKeys, defaultValue)
+  );
+  const quantity = num(value(['qty', 'quantity'], ['qty'])) ?? 0;
+  const unitPrice = num(value(['unitPrice', 'price'], ['unit_price'], 0)) ?? 0;
+  const receivedQty = num(value(['receivedQty', 'received'], ['received_qty'], 0)) ?? 0;
+  const orderDate = purchaseDate(value(['orderDate', 'date'], ['order_date']), new Date().toISOString().slice(0, 10));
+  const requestedDueDate = purchaseDate(value(
+    ['requestedDueDate', 'due', 'dueDate'],
+    ['requested_due_date']
+  ));
+
+  return {
+    purchase_type: txt(value(['purchaseType', 'type'], ['purchase_type'], '정기발주')) || '정기발주',
+    production_type: normalizePurchaseProductionType(value(['productionType'], ['production_type'], 'D-양산')),
+    supplier: txt(value(['supplier', 'vendor'], ['supplier'])),
+    supplier_grade: txt(value(['supplierGrade', 'grade'], ['supplier_grade'])),
+    item: txt(value(['item', 'material', 'materialName'], ['item'])),
+    item_code: txt(value(['itemCode', 'materialCode'], ['item_code'])),
+    spec: txt(value(['spec'], ['spec'])),
+    qty: quantity,
+    unit: txt(value(['unit'], ['unit'], 'kg')) || 'kg',
+    unit_price: unitPrice,
+    amount: Math.max(0, num(value(['amount'], ['amount'], quantity * unitPrice)) ?? quantity * unitPrice),
+    order_date: orderDate,
+    requested_due_date: requestedDueDate,
+    confirmed_due_date: purchaseDate(value(
+      ['confirmedDueDate', 'expected', 'expectedDate'],
+      ['confirmed_due_date']
+    )) || null,
+    priority: txt(value(['priority'], ['priority'], '일반')) || '일반',
+    mrp_no: txt(value(['mrpNo', 'mrp', 'requestNo'], ['mrp_no'])),
+    work_order_no: txt(value(['workOrderNo', 'workOrder'], ['work_order_no'])),
+    purpose: txt(value(['purpose'], ['purpose'])),
+    warehouse: txt(value(['warehouse'], ['warehouse'], '시화공장 · 원료창고')),
+    delivery_address: txt(value(
+      ['deliveryAddress', 'address'],
+      ['delivery_address'],
+      '나모케미칼 시화공장 원료 입고장'
+    )),
+    payment_terms: txt(value(['paymentTerms', 'terms'], ['payment_terms'])),
+    approval_status: txt(value(['approvalStatus', 'approval'], ['approval_status'], '구매검토')) || '구매검토',
+    receipt_status: txt(value(['receiptStatus', 'receiving'], ['receipt_status'], '미입고')) || '미입고',
+    received_qty: receivedQty,
+    receipt_date: purchaseDate(value(['receiptDate', 'receivedAt'], ['receipt_date'])) || null,
+    material_lot: txt(value(['materialLot', 'lot'], ['material_lot'])),
+    iqc_required: purchaseBoolean(value(['iqcRequired'], ['iqc_required'], true), true),
+    iqc_status: txt(value(['iqcStatus', 'iqc'], ['iqc_status'], '계획 대기')) || '계획 대기',
+    coa_required: purchaseBoolean(value(['coaRequired'], ['coa_required'], true), true),
+    msds_required: purchaseBoolean(value(['msdsRequired'], ['msds_required'], false), false),
+    lot_required: purchaseBoolean(value(['lotRequired'], ['lot_required'], true), true),
+    status: txt(value(['status'], ['status'], '결재대기')) || '결재대기',
+    requester: txt(value(['requester', 'owner'], ['requester'])),
+    notes: txt(value(['notes', 'note'], ['notes'])),
+  };
+}
+
+function validatePurchaseInput(body) {
+  if (!body.supplier || !body.item) return '협력사와 품목을 입력하세요.';
+  if (!Number.isFinite(body.qty) || body.qty <= 0) return '발주수량은 0보다 커야 합니다.';
+  if (!body.order_date || !body.requested_due_date) return '발주일과 납기 요청일을 확인하세요.';
+  if (body.requested_due_date < body.order_date) return '납기 요청일은 발주일보다 빠를 수 없습니다.';
+  if (!Number.isFinite(body.unit_price) || body.unit_price < 0) return '단가를 확인하세요.';
+  if (!Number.isFinite(body.received_qty) || body.received_qty < 0 || body.received_qty > body.qty) {
+    return '입고수량은 0 이상, 발주수량 이하여야 합니다.';
+  }
+  return '';
+}
+
+function normalizeLegacyPurchasePayload(payload) {
+  const parsed = jsonObj(payload, {});
+  const rows = arr(parsed.rows)
+    .filter((row) => !(
+      (txt(row?.id) === 'PO-260824-01' && /^Supplier A$/i.test(txt(row?.supplier)))
+      || (txt(row?.id) === 'PO-260824-02' && /^Supplier B$/i.test(txt(row?.supplier)))
+    ))
+    .map((row) => {
+      const normalized = {
+        ...row,
+        id: txt(row.id || row.purchaseNo || row.no),
+        purchaseNo: txt(row.purchaseNo || row.no || row.id),
+        productionType: normalizePurchaseProductionType(row.productionType),
+        supplier: txt(row.supplier || row.vendor),
+        material: txt(row.material || row.item),
+        item: txt(row.item || row.material),
+        qty: Math.max(0, num(row.qty ?? row.quantity) ?? 0),
+        unit: txt(row.unit) || 'kg',
+        orderDate: purchaseDate(row.orderDate || row.date) || new Date().toISOString().slice(0, 10),
+        due: purchaseDate(row.due || row.requestedDueDate || row.dueDate),
+        expected: purchaseDate(row.expected || row.confirmedDueDate || row.expectedDate),
+        received: Math.max(0, num(row.received ?? row.receivedQty) ?? 0),
+      };
+      normalized.status = derivePurchaseStatus(normalized);
+      return normalized;
+    });
+  return { ...parsed, module: 'erp', kind: 'purchase', schema: 3, rows };
+}
+
+async function nextPurchaseNo(client, orderDate) {
+  const date = purchaseDate(orderDate) || new Date().toISOString().slice(0, 10);
+  const prefix = `PUR-${date.slice(2, 7).replace('-', '')}-`;
+  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`purchase:${prefix}`]);
+  const result = await client.query(
+    `SELECT purchase_no FROM purchase_orders
+     WHERE purchase_no LIKE $1
+     ORDER BY purchase_no DESC`,
+    [`${prefix}%`]
+  );
+  const max = result.rows.reduce((value, row) => {
+    const sequence = Number(txt(row.purchase_no).slice(prefix.length));
+    return Number.isInteger(sequence) ? Math.max(value, sequence) : value;
+  }, 0);
+  return `${prefix}${String(max + 1).padStart(3, '0')}`;
+}
+
+async function syncPurchaseOrdersToLegacy(client, userName) {
+  const result = await client.query('SELECT * FROM purchase_orders ORDER BY created_at DESC');
+  const rows = result.rows.map((row) => mapPurchaseOrder(row));
+  const payload = {
+    module: 'erp',
+    kind: 'purchase',
+    schema: 3,
+    rows,
+    updatedAt: new Date().toISOString(),
+    updatedBy: userName,
+  };
+  await client.query(
+    `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+     VALUES ('inventory', 'erp:purchase', $1::jsonb, $2, NOW())
+     ON CONFLICT (record_type, record_key)
+     DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+    [JSON.stringify(payload), userName]
+  );
+}
+
+async function upsertLegacyPurchaseRows(rows, userName) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const row of arr(rows)) {
+      const requestedNo = txt(row?.purchaseNo || row?.no || row?.id);
+      const currentResult = requestedNo
+        ? await client.query('SELECT * FROM purchase_orders WHERE purchase_no = $1', [requestedNo])
+        : { rows: [] };
+      const current = currentResult.rows[0] || {};
+      const body = normalizePurchaseInput(row, current);
+      if (validatePurchaseInput(body)) continue;
+      const purchaseNo = requestedNo || await nextPurchaseNo(client, body.order_date);
+      const keys = Object.keys(body);
+      const values = Object.values(body);
+      const columns = ['purchase_no', ...keys, 'created_by', 'updated_by'];
+      const params = [purchaseNo, ...values, userName, userName];
+      const marks = params.map((_, index) => `$${index + 1}`).join(', ');
+      const updates = keys.map((key) => `${key} = EXCLUDED.${key}`).join(', ');
+      await client.query(
+        `INSERT INTO purchase_orders (${columns.join(', ')})
+         VALUES (${marks})
+         ON CONFLICT (purchase_no)
+         DO UPDATE SET ${updates}, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+        params
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder', 'equipment', 'inventory', 'purchase']);
 
 function qmesSyncType(req, res) {
   const type = txt(req.params.type).toLowerCase();
@@ -803,7 +1176,12 @@ app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
        ORDER BY updated_at DESC`,
       [type]
     );
-    ok(res, result.rows);
+    const rows = result.rows.map((row) => (
+      type === 'inventory' && row.record_key === 'erp:purchase'
+        ? { ...row, payload: normalizeLegacyPurchasePayload(row.payload) }
+        : row
+    ));
+    ok(res, rows);
   } catch (err) {
     fail(res, 500, err.message);
   }
@@ -813,11 +1191,14 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   const type = qmesSyncType(req, res);
   if (!type) return;
   const key = txt(req.body?.key);
-  const payload = req.body?.payload;
-  if (!key || !payload || typeof payload !== 'object' || Array.isArray(payload)) {
+  const inputPayload = req.body?.payload;
+  if (!key || !inputPayload || typeof inputPayload !== 'object' || Array.isArray(inputPayload)) {
     return fail(res, 400, '기록 키와 저장 데이터를 확인하세요.');
   }
   try {
+    const payload = type === 'inventory' && key === 'erp:purchase'
+      ? normalizeLegacyPurchasePayload(inputPayload)
+      : inputPayload;
     const before = await db(
       'SELECT payload FROM qmes_sync_records WHERE record_type = $1 AND record_key = $2',
       [type, key]
@@ -839,7 +1220,296 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
       before.rows[0]?.payload || null,
       payload
     );
+    if (type === 'inventory' && key === 'erp:purchase') {
+      await upsertLegacyPurchaseRows(payload.rows, userName);
+    }
     ok(res, result.rows[0], '공용 DB에 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+function purchaseOrderWhere(id, param = '$1') {
+  return `(id::text = ${param} OR purchase_no = ${param})`;
+}
+
+function mapPurchaseReceipt(row) {
+  return {
+    id: row.id,
+    purchaseOrderId: row.purchase_order_id,
+    receiptDate: purchaseDate(row.receipt_date),
+    qty: Number(row.qty || 0),
+    materialLot: row.material_lot,
+    expiryDate: purchaseDate(row.expiry_date),
+    iqcStatus: row.iqc_status,
+    note: row.note,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+  };
+}
+
+app.get('/api/purchase-orders', requireLogin, async (req, res) => {
+  try {
+    const clauses = [];
+    const params = [];
+    const search = txt(req.query.q);
+    const supplier = txt(req.query.supplier);
+    if (search) {
+      params.push(`%${search}%`);
+      clauses.push(`CONCAT_WS(' ', purchase_no, supplier, item, item_code, spec, mrp_no, work_order_no) ILIKE $${params.length}`);
+    }
+    if (supplier) {
+      params.push(supplier);
+      clauses.push(`supplier = $${params.length}`);
+    }
+    const result = await db(
+      `SELECT * FROM purchase_orders
+       ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
+       ORDER BY order_date DESC, created_at DESC
+       LIMIT 500`,
+      params
+    );
+    let rows = result.rows.map((row) => mapPurchaseOrder(row));
+    const status = txt(req.query.status);
+    if (status && status !== 'all') rows = rows.filter((row) => row.status === status);
+    ok(res, rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+  try {
+    const result = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
+    if (!result.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    const receipts = await db(
+      `SELECT * FROM purchase_receipts
+       WHERE purchase_order_id = $1
+       ORDER BY receipt_date DESC, created_at DESC`,
+      [result.rows[0].id]
+    );
+    ok(res, mapPurchaseOrder(result.rows[0], receipts.rows.map(mapPurchaseReceipt)));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/purchase-orders', requireLogin, async (req, res) => {
+  const body = normalizePurchaseInput(req.body);
+  const validation = validatePurchaseInput(body);
+  if (validation) return fail(res, 400, validation);
+
+  const client = await pool.connect();
+  let created;
+  try {
+    await client.query('BEGIN');
+    const requestedNo = txt(req.body?.purchaseNo || req.body?.no || req.body?.id);
+    const purchaseNo = requestedNo || await nextPurchaseNo(client, body.order_date);
+    const keys = Object.keys(body);
+    const userName = txt(req.session.user?.name);
+    const columns = ['purchase_no', ...keys, 'created_by', 'updated_by'];
+    const values = [purchaseNo, ...Object.values(body), userName, userName];
+    const marks = values.map((_, index) => `$${index + 1}`).join(', ');
+    const result = await client.query(
+      `INSERT INTO purchase_orders (${columns.join(', ')})
+       VALUES (${marks})
+       RETURNING *`,
+      values
+    );
+    created = result.rows[0];
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    if (err.code === '23505') return fail(res, 409, '이미 사용 중인 발주번호입니다.');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'CREATE', 'purchase_orders', created.id, null, created);
+  ok(res, mapPurchaseOrder(created), '구매 발주서가 저장되었습니다.');
+});
+
+app.put('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+  const client = await pool.connect();
+  let before;
+  let updated;
+  try {
+    await client.query('BEGIN');
+    const current = await client.query(
+      `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)} FOR UPDATE`,
+      [req.params.id]
+    );
+    if (!current.rowCount) {
+      await client.query('ROLLBACK');
+      return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    }
+    before = current.rows[0];
+    const body = normalizePurchaseInput(req.body, before);
+    const validation = validatePurchaseInput(body);
+    if (validation) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, validation);
+    }
+    const keys = Object.keys(body);
+    const values = Object.values(body);
+    const sets = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
+    const userName = txt(req.session.user?.name);
+    const result = await client.query(
+      `UPDATE purchase_orders
+       SET ${sets}, updated_by = $${keys.length + 1}, updated_at = NOW()
+       WHERE id = $${keys.length + 2}
+       RETURNING *`,
+      [...values, userName, before.id]
+    );
+    updated = result.rows[0];
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'UPDATE', 'purchase_orders', updated.id, before, updated);
+  ok(res, mapPurchaseOrder(updated), '구매 발주서가 수정되었습니다.');
+});
+
+app.post('/api/purchase-orders/:id/receipts', requireLogin, async (req, res) => {
+  const receiptQty = num(req.body?.qty ?? req.body?.receivedQty);
+  const receiptDate = purchaseDate(req.body?.receiptDate, new Date().toISOString().slice(0, 10));
+  const materialLot = txt(req.body?.materialLot || req.body?.lot);
+  const expiryDate = purchaseDate(req.body?.expiryDate) || null;
+  if (!receiptQty || receiptQty <= 0 || !receiptDate) {
+    return fail(res, 400, '입고일과 입고수량을 확인하세요.');
+  }
+
+  const client = await pool.connect();
+  let before;
+  let updated;
+  let receipt;
+  try {
+    await client.query('BEGIN');
+    const current = await client.query(
+      `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)} FOR UPDATE`,
+      [req.params.id]
+    );
+    if (!current.rowCount) {
+      await client.query('ROLLBACK');
+      return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    }
+    before = current.rows[0];
+    if (/취소/.test(txt(before.status))) {
+      await client.query('ROLLBACK');
+      return fail(res, 409, '취소된 발주는 입고 등록할 수 없습니다.');
+    }
+    const remaining = Number(before.qty) - Number(before.received_qty || 0);
+    if (receiptQty > remaining) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, `입고수량은 미입고 잔량 ${remaining.toLocaleString('ko-KR')} ${before.unit}를 초과할 수 없습니다.`);
+    }
+    if (before.lot_required && !materialLot) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, '원료 LOT를 입력하세요.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const iqcStatus = before.iqc_required ? '검사 대기' : '비대상';
+    const receiptResult = await client.query(
+      `INSERT INTO purchase_receipts
+       (purchase_order_id, receipt_date, qty, material_lot, expiry_date, iqc_status, note, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING *`,
+      [before.id, receiptDate, receiptQty, materialLot, expiryDate, iqcStatus, txt(req.body?.note), userName]
+    );
+    receipt = receiptResult.rows[0];
+    const totalReceived = Number(before.received_qty || 0) + receiptQty;
+    const receiptStatus = totalReceived >= Number(before.qty) ? '입고완료' : '부분입고';
+    const updateResult = await client.query(
+      `UPDATE purchase_orders
+       SET received_qty = $1, receipt_status = $2, receipt_date = $3,
+           material_lot = $4, iqc_status = $5, updated_by = $6, updated_at = NOW()
+       WHERE id = $7
+       RETURNING *`,
+      [totalReceived, receiptStatus, receiptDate, materialLot, iqcStatus, userName, before.id]
+    );
+    updated = updateResult.rows[0];
+
+    if (before.iqc_required) {
+      const iqcPayload = {
+        module: 'purchase',
+        kind: 'purchase-receipt-iqc',
+        schema: 1,
+        rows: [{
+          id: `IQC-${before.purchase_no}-${receipt.id}`,
+          purchaseOrder: before.purchase_no,
+          purchaseOrderNo: before.purchase_no,
+          date: receiptDate,
+          lot: materialLot,
+          supplier: before.supplier,
+          item: before.item,
+          itemCode: before.item_code,
+          incomingQty: receiptQty,
+          qty: receiptQty,
+          judge: '',
+          status: '검사대기',
+          createdBy: userName,
+        }],
+      };
+      await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('iqc', $1, $2::jsonb, $3, NOW())
+         ON CONFLICT (record_type, record_key)
+         DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+        [`purchase:${before.purchase_no}:receipt:${receipt.id}`, JSON.stringify(iqcPayload), userName]
+      );
+    }
+
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'RECEIPT', 'purchase_orders', updated.id, before, { purchase: updated, receipt });
+  ok(res, { purchaseOrder: mapPurchaseOrder(updated), receipt: mapPurchaseReceipt(receipt) }, '입고가 등록되고 IQC 계획이 연결되었습니다.');
+});
+
+app.post('/api/purchase-orders/:id/cancel', requireLogin, async (req, res) => {
+  try {
+    const before = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
+    if (!before.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    if (Number(before.rows[0].received_qty || 0) > 0) {
+      return fail(res, 409, '입고 이력이 있는 발주는 취소할 수 없습니다.');
+    }
+    const userName = txt(req.session.user?.name);
+    const client = await pool.connect();
+    let updated;
+    try {
+      await client.query('BEGIN');
+      const result = await client.query(
+        `UPDATE purchase_orders
+         SET status = '발주취소', updated_by = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING *`,
+        [userName, before.rows[0].id]
+      );
+      updated = result.rows[0];
+      await syncPurchaseOrdersToLegacy(client, userName);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+    await auditLog(req, 'CANCEL', 'purchase_orders', updated.id, before.rows[0], updated);
+    ok(res, mapPurchaseOrder(updated), '발주가 취소되었습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
@@ -2078,7 +2748,7 @@ app.post('/api/namo-talk/reads', requireLogin, async (req, res) => {
 
 app.get('/api/backup', requireLogin, async (_req, res) => {
   try {
-    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments, supplierScores, equipments, auditLogs] = await Promise.all([
+    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments, supplierScores, equipments, purchaseOrders, purchaseReceipts, auditLogs] = await Promise.all([
       db('SELECT * FROM iqc ORDER BY created_at DESC'),
       db('SELECT * FROM pqc ORDER BY created_at DESC'),
       db('SELECT * FROM oqc ORDER BY created_at DESC'),
@@ -2090,6 +2760,8 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       db('SELECT * FROM instruments ORDER BY created_at ASC'),
       db('SELECT * FROM supplier_scores ORDER BY created_at DESC'),
       db('SELECT * FROM equipments ORDER BY created_at DESC'),
+      db('SELECT * FROM purchase_orders ORDER BY created_at DESC'),
+      db('SELECT * FROM purchase_receipts ORDER BY created_at DESC'),
       db('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 1000'),
     ]);
 
@@ -2105,6 +2777,8 @@ app.get('/api/backup', requireLogin, async (_req, res) => {
       instruments: instruments.rows,
       supplierScores: supplierScores.rows,
       equipments: equipments.rows,
+      purchaseOrders: purchaseOrders.rows,
+      purchaseReceipts: purchaseReceipts.rows,
       auditLogs: auditLogs.rows,
     };
 
