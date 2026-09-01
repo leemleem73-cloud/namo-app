@@ -1152,45 +1152,56 @@ async function ensurePurchaseHistory() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
-      const note = `기존 ERP 거래내역 · 원본번호 ${originalNo} · 수량·금액 상세 반영 v2${amount > 0 ? '' : ' · 금액 미입력'}`;
-      await client.query(
-        `INSERT INTO purchase_orders (
-           purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
-           order_date, requested_due_date, warehouse, delivery_address, payment_terms,
-           approval_status, receipt_status, received_qty, iqc_required, iqc_status,
-           coa_required, msds_required, lot_required, status, notes, created_by, updated_by
-         )
-         VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, $4, 'kg', $5, $6,
-                 $7, NULL, $8, '', '부가세율 적용',
-                 '승인완료', '입고완료', $4, FALSE, '기존 ERP 반영',
-                 FALSE, FALSE, FALSE, '입고완료', $9, 'SYSTEM', 'SYSTEM')
-         ON CONFLICT (purchase_no)
-         DO UPDATE SET
-           supplier = EXCLUDED.supplier,
-           item = EXCLUDED.item,
-           qty = EXCLUDED.qty,
-           unit_price = EXCLUDED.unit_price,
-           amount = EXCLUDED.amount,
-           order_date = EXCLUDED.order_date,
-           warehouse = EXCLUDED.warehouse,
-           payment_terms = EXCLUDED.payment_terms,
-           approval_status = EXCLUDED.approval_status,
-           receipt_status = EXCLUDED.receipt_status,
-           received_qty = EXCLUDED.received_qty,
-           iqc_required = EXCLUDED.iqc_required,
-           iqc_status = EXCLUDED.iqc_status,
-           coa_required = EXCLUDED.coa_required,
-           msds_required = EXCLUDED.msds_required,
-           lot_required = EXCLUDED.lot_required,
-           status = EXCLUDED.status,
-           notes = EXCLUDED.notes,
-           updated_at = NOW()
-         WHERE purchase_orders.created_by = 'SYSTEM'
-           AND purchase_orders.updated_by = 'SYSTEM'
-           AND purchase_orders.notes LIKE '기존 ERP 거래내역%'
-           AND purchase_orders.notes NOT LIKE '%수량·금액 상세 반영 v2%'`,
-        [purchaseNo, supplier, item, qty, unitPrice, amount, orderDate, warehouse, note]
+    const seedMarker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-history-v2'`
+    );
+    if (!seedMarker.rowCount) {
+      for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
+        const note = `기존 ERP 거래내역 · 원본번호 ${originalNo} · 수량·금액 상세 반영 v2${amount > 0 ? '' : ' · 금액 미입력'}`;
+        await client.query(
+          `INSERT INTO purchase_orders (
+             purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
+             order_date, requested_due_date, warehouse, delivery_address, payment_terms,
+             approval_status, receipt_status, received_qty, iqc_required, iqc_status,
+             coa_required, msds_required, lot_required, status, notes, created_by, updated_by
+           )
+           VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, $4, 'kg', $5, $6,
+                   $7, NULL, $8, '', '부가세율 적용',
+                   '승인완료', '입고완료', $4, FALSE, '기존 ERP 반영',
+                   FALSE, FALSE, FALSE, '입고완료', $9, 'SYSTEM', 'SYSTEM')
+           ON CONFLICT (purchase_no)
+           DO UPDATE SET
+             supplier = EXCLUDED.supplier,
+             item = EXCLUDED.item,
+             qty = EXCLUDED.qty,
+             unit_price = EXCLUDED.unit_price,
+             amount = EXCLUDED.amount,
+             order_date = EXCLUDED.order_date,
+             warehouse = EXCLUDED.warehouse,
+             payment_terms = EXCLUDED.payment_terms,
+             approval_status = EXCLUDED.approval_status,
+             receipt_status = EXCLUDED.receipt_status,
+             received_qty = EXCLUDED.received_qty,
+             iqc_required = EXCLUDED.iqc_required,
+             iqc_status = EXCLUDED.iqc_status,
+             coa_required = EXCLUDED.coa_required,
+             msds_required = EXCLUDED.msds_required,
+             lot_required = EXCLUDED.lot_required,
+             status = EXCLUDED.status,
+             notes = EXCLUDED.notes,
+             updated_at = NOW()
+           WHERE purchase_orders.created_by = 'SYSTEM'
+             AND purchase_orders.updated_by = 'SYSTEM'
+             AND purchase_orders.notes LIKE '기존 ERP 거래내역%'
+             AND purchase_orders.notes NOT LIKE '%수량·금액 상세 반영 v2%'`,
+          [purchaseNo, supplier, item, qty, unitPrice, amount, orderDate, warehouse, note]
+        );
+      }
+        await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('purchase', 'seed:purchase-history-v2', '{"version":2,"count":18}'::jsonb, 'SYSTEM', NOW())
+         ON CONFLICT (record_type, record_key) DO NOTHING`
       );
     }
     await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
@@ -1598,6 +1609,31 @@ app.post('/api/purchase-orders/:id/cancel', requireLogin, async (req, res) => {
   } catch (err) {
     fail(res, 500, err.message);
   }
+});
+
+
+app.delete('/api/purchase-orders/:id', requireAdmin, async (req, res) => {
+  const before = await db(
+    `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`,
+    [req.params.id]
+  );
+  if (!before.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM purchase_orders WHERE id = $1', [before.rows[0].id]);
+    await syncPurchaseOrdersToLegacy(client, txt(req.session.user?.name) || '관리자');
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'DELETE', 'purchase_orders', before.rows[0].purchase_no, before.rows[0], null);
+  ok(res, null, '구매 발주가 삭제되었습니다.');
 });
 
 function bindCrud(table, mapper) {
