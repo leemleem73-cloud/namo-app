@@ -1,9 +1,9 @@
 /* NAMO QMES - quality report refinements - 2026-09-01 */
 (function installQualityReportFix(global){
   "use strict";
-  if(global.__QMES_QUALITY_REPORT_FIX_V48__) return;
-  global.__QMES_QUALITY_REPORT_FIX_V48__=true;
-  const STYLE_ID="qmes-quality-report-fix-v48";
+  if(global.__QMES_QUALITY_REPORT_FIX_V49__) return;
+  global.__QMES_QUALITY_REPORT_FIX_V49__=true;
+  const STYLE_ID="qmes-quality-report-fix-v49";
 
   function important(el, prop, value){
     if(el) el.style.setProperty(prop,value,"important");
@@ -21,6 +21,12 @@ html body #root .qmes-iqc-doc .qmes-iqc2-sign-table td{font-size:11px!important;
 html body #root .qmes-iqc-doc .font-mono,html body #root .qmes-iqc-doc .font-semibold,html body #root .qmes-iqc-doc .qmes-iqc2-pass,html body #root .qmes-iqc-doc .qmes-iqc2-fail{font-size:11px!important;line-height:1.3!important;font-family:inherit!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box > *{border:0!important;outline:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;}
 
+/* OQC section dividers: one consistent navy rule under every section heading. */
+html body #root .qmes-oqc-doc .qmes-iqc2-sec-title{
+  border-bottom:1.5px solid #243b5a!important;
+  border-color:#243b5a!important;
+}
+
 /* OQC shipment-number value cell */
 html body #root .qmes-oqc-doc .qmes-oqc-shipment-value{
   white-space:nowrap!important;
@@ -28,18 +34,20 @@ html body #root .qmes-oqc-doc .qmes-oqc-shipment-value{
   overflow-wrap:normal!important;
   text-align:center!important;
   vertical-align:middle!important;
-  font-size:10px!important;
-  letter-spacing:-0.15px!important;
-  padding-left:3px!important;
-  padding-right:3px!important;
+  font-size:11px!important;
+  line-height:1.3!important;
+  letter-spacing:-0.1px!important;
+  padding-left:2px!important;
+  padding-right:2px!important;
 }
 html body #root .qmes-oqc-doc .qmes-oqc-shipment-value *{
   white-space:nowrap!important;
   word-break:normal!important;
   overflow-wrap:normal!important;
   text-align:center!important;
-  font-size:10px!important;
-  letter-spacing:-0.15px!important;
+  font-size:11px!important;
+  line-height:1.3!important;
+  letter-spacing:-0.1px!important;
 }
 
 /* Exact PQC/OQC approval table used by report.jsx. Header and name row use one identical thin black grid. */
@@ -61,8 +69,9 @@ html body #root .qmes-iqc-doc table.qmes-iqc2-sign-table td{
   box-sizing:border-box!important;
 }
 @media print{
+  html body #root .qmes-oqc-doc .qmes-iqc2-sec-title{border-bottom:1.5px solid #243b5a!important;border-color:#243b5a!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   html body #root .qmes-oqc-doc .qmes-oqc-shipment-value,
-  html body #root .qmes-oqc-doc .qmes-oqc-shipment-value *{white-space:nowrap!important;text-align:center!important;vertical-align:middle!important;font-size:10px!important;letter-spacing:-0.15px!important;}
+  html body #root .qmes-oqc-doc .qmes-oqc-shipment-value *{white-space:nowrap!important;text-align:center!important;vertical-align:middle!important;font-size:11px!important;line-height:1.3!important;letter-spacing:-0.1px!important;}
   html body #root .qmes-oqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table th,
   html body #root .qmes-oqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table td,
   html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table th,
@@ -89,15 +98,17 @@ html body #root .qmes-iqc-doc table.qmes-iqc2-sign-table td{
       important(cell,"overflow-wrap","normal");
       important(cell,"text-align","center");
       important(cell,"vertical-align","middle");
-      important(cell,"font-size","10px");
-      important(cell,"letter-spacing","-0.15px");
-      important(cell,"padding-left","3px");
-      important(cell,"padding-right","3px");
+      important(cell,"font-size","11px");
+      important(cell,"line-height","1.3");
+      important(cell,"letter-spacing","-0.1px");
+      important(cell,"padding-left","2px");
+      important(cell,"padding-right","2px");
       Array.from(cell.querySelectorAll("*")).forEach(child=>{
         important(child,"white-space","nowrap");
         important(child,"text-align","center");
-        important(child,"font-size","10px");
-        important(child,"letter-spacing","-0.15px");
+        important(child,"font-size","11px");
+        important(child,"line-height","1.3");
+        important(child,"letter-spacing","-0.1px");
       });
       break;
     }
