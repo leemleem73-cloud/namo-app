@@ -1,9 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01
- * Root fixes for quality inspection only:
- * 1) Year/month filters keep the existing closed select appearance, but do not
- *    open the Windows/Chromium native picker that causes a one-frame black flash.
- * 2) Inspection/viewer headers are non-shrinking/sticky so title and actions
- *    remain in the visible header instead of being lost inside the scroll area.
+ * Quality inspection only.
+ * - Year/month filters keep their original closed-control appearance.
+ * - The Windows/Chromium native select popup is never opened, avoiding its
+ *   one-frame dark flash. A compact QMES list is attached directly below the
+ *   original field instead of appearing as a separate floating popup.
+ * - Inspection/viewer headers remain visible while their body scrolls.
  */
 (function installQmesQualityInspectionUi(global){
   "use strict";
@@ -12,6 +13,7 @@
 
   const MENU_ID="qmes-quality-filter-menu-20260901";
   const STYLE_ID="qmes-quality-inspection-ui-style-20260901";
+  const OPEN_CLASS="qmes-quality-date-select-open";
   let activeSelect=null;
 
   function ensureStyle(){
@@ -20,23 +22,69 @@
     style.id=STYLE_ID;
     style.textContent=`
       #${MENU_ID}{
-        position:fixed;z-index:2147483600;min-width:112px;max-height:280px;
-        overflow:auto;padding:5px;border:1px solid #cbd5e1;border-radius:8px;
-        background:#fff;color:#111827;box-shadow:0 10px 26px rgba(15,23,42,.14);
-        box-sizing:border-box;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;
-        color-scheme:light;
+        position:fixed!important;
+        z-index:2147483600!important;
+        overflow-y:auto!important;
+        overflow-x:hidden!important;
+        max-height:244px!important;
+        padding:3px!important;
+        border:1px solid #cbd5e1!important;
+        border-top-color:#d7dee8!important;
+        border-radius:0 0 8px 8px!important;
+        background:#fff!important;
+        color:#111827!important;
+        box-shadow:0 4px 10px rgba(15,23,42,.08)!important;
+        box-sizing:border-box!important;
+        font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;
+        color-scheme:light!important;
       }
       #${MENU_ID} button{
-        display:block;width:100%;height:34px;padding:0 10px;border:0;border-radius:6px;
-        background:#fff;color:#111827;text-align:left;font:inherit;font-size:13px;
-        white-space:nowrap;cursor:pointer;
+        display:flex!important;
+        align-items:center!important;
+        width:100%!important;
+        min-width:0!important;
+        height:32px!important;
+        margin:0!important;
+        padding:0 9px!important;
+        border:0!important;
+        border-radius:5px!important;
+        background:#fff!important;
+        background-image:none!important;
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+        box-shadow:none!important;
+        text-shadow:none!important;
+        text-align:left!important;
+        font:inherit!important;
+        font-size:13px!important;
+        font-weight:500!important;
+        line-height:32px!important;
+        white-space:nowrap!important;
+        cursor:pointer!important;
       }
-      #${MENU_ID} button:hover,#${MENU_ID} button:focus-visible{background:#eef4ff;color:#174ea6;outline:0;}
-      #${MENU_ID} button[aria-selected="true"]{background:#eaf3ff;color:#174ea6;font-weight:700;}
+      #${MENU_ID} button:hover,
+      #${MENU_ID} button:focus-visible{
+        background:#f3f6fa!important;
+        color:#111827!important;
+        -webkit-text-fill-color:#111827!important;
+        outline:0!important;
+      }
+      #${MENU_ID} button[aria-selected="true"]{
+        background:#eef5ff!important;
+        color:#174ea6!important;
+        -webkit-text-fill-color:#174ea6!important;
+        font-weight:700!important;
+      }
+      html body #root select.${OPEN_CLASS}{
+        border-color:#94a3b8!important;
+        border-bottom-left-radius:0!important;
+        border-bottom-right-radius:0!important;
+        box-shadow:none!important;
+        outline:none!important;
+      }
 
-      /* The header and body are separate flex regions. The previous modal CSS
-         allowed the header to shrink with a tall form, and viewer headers lived
-         inside the scroll container. Keep the header as the fixed chrome. */
+      /* Header/body are separate flex regions. Keep the real header visible;
+         only the form/document body is allowed to scroll. */
       .qmes-inspection-modal-head,.qmes-iqc-modal-head{flex:0 0 auto;}
       .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;}
       .qmes-wo-viewer-head{position:sticky;top:0;z-index:5;flex:0 0 auto;background:#0b1728;}
@@ -58,6 +106,7 @@
   }
 
   function closeMenu(){
+    activeSelect?.classList.remove(OPEN_CLASS);
     document.getElementById(MENU_ID)?.remove();
     activeSelect=null;
   }
@@ -71,25 +120,48 @@
 
   function positionMenu(menu,select){
     const r=select.getBoundingClientRect();
-    const width=Math.max(112,Math.round(r.width));
+    const width=Math.max(80,Math.round(r.width));
     menu.style.width=`${width}px`;
-    const left=Math.min(Math.max(8,r.left),Math.max(8,global.innerWidth-width-8));
+    const left=Math.min(Math.max(6,r.left),Math.max(6,global.innerWidth-width-6));
     menu.style.left=`${left}px`;
-    menu.style.top=`${Math.min(r.bottom+4,global.innerHeight-8)}px`;
+    menu.style.top=`${Math.round(r.bottom-1)}px`;
+
     const mr=menu.getBoundingClientRect();
-    if(mr.bottom>global.innerHeight-8){
-      menu.style.top=`${Math.max(8,r.top-mr.height-4)}px`;
+    if(mr.bottom>global.innerHeight-6){
+      menu.style.top=`${Math.max(6,Math.round(r.top-mr.height+1))}px`;
+      menu.style.borderRadius="8px 8px 0 0";
+      select.style.setProperty("border-top-left-radius","0","important");
+      select.style.setProperty("border-top-right-radius","0","important");
+      select.style.removeProperty("border-bottom-left-radius");
+      select.style.removeProperty("border-bottom-right-radius");
     }
+  }
+
+  function restoreSelectRadius(select){
+    if(!select) return;
+    select.style.removeProperty("border-top-left-radius");
+    select.style.removeProperty("border-top-right-radius");
+    select.style.removeProperty("border-bottom-left-radius");
+    select.style.removeProperty("border-bottom-right-radius");
   }
 
   function openMenu(select){
     if(!isQualityDateFilter(select)||select.disabled) return;
+    if(activeSelect===select&&document.getElementById(MENU_ID)){
+      closeMenu();
+      restoreSelectRadius(select);
+      return;
+    }
+
     closeMenu();
     activeSelect=select;
+    select.classList.add(OPEN_CLASS);
+
     const menu=document.createElement("div");
     menu.id=MENU_ID;
     menu.setAttribute("role","listbox");
     menu.setAttribute("aria-label",`${fieldLabel(select)} 선택`);
+
     Array.from(select.options).forEach((option,index)=>{
       const button=document.createElement("button");
       button.type="button";
@@ -100,10 +172,12 @@
       button.textContent=option.textContent||option.value;
       menu.appendChild(button);
     });
+
     document.body.appendChild(menu);
     positionMenu(menu,select);
-    const selected=menu.querySelector('[aria-selected="true"]')||menu.querySelector("button");
-    selected?.focus({preventScroll:true});
+
+    const selected=menu.querySelector('[aria-selected="true"]');
+    if(selected) selected.scrollIntoView({block:"nearest"});
   }
 
   function blockNativeSelectActivation(event){
@@ -117,13 +191,17 @@
   document.addEventListener("pointerdown",event=>{
     const select=event.target instanceof HTMLSelectElement?event.target:null;
     if(select&&isQualityDateFilter(select)){
-      /* Capture before Chromium hands the interaction to the OS native picker. */
+      /* Capture before Chromium delegates the click to the Windows native picker. */
       blockNativeSelectActivation(event);
       openMenu(select);
       return;
     }
     const inside=event.target instanceof Element&&event.target.closest(`#${MENU_ID}`);
-    if(!inside&&activeSelect) closeMenu();
+    if(!inside&&activeSelect){
+      const previous=activeSelect;
+      closeMenu();
+      restoreSelectRadius(previous);
+    }
   },true);
 
   document.addEventListener("mousedown",event=>{
@@ -134,29 +212,60 @@
     const select=event.target instanceof HTMLSelectElement?event.target:null;
     if(select&&isQualityDateFilter(select)){
       blockNativeSelectActivation(event);
-      if(activeSelect!==select) openMenu(select);
       return;
     }
+
     const button=event.target instanceof Element?event.target.closest(`#${MENU_ID} button[data-value]`):null;
     if(!button||!activeSelect) return;
     event.preventDefault();
     event.stopPropagation();
+
     const targetSelect=activeSelect;
     const value=button.dataset.value||"";
     closeMenu();
+    restoreSelectRadius(targetSelect);
     setReactSelectValue(targetSelect,value);
     try{targetSelect.focus({preventScroll:true});}catch(_error){targetSelect.focus();}
   },true);
 
   document.addEventListener("keydown",event=>{
-    if(event.key==="Escape"&&activeSelect){event.preventDefault();closeMenu();return;}
+    if(event.key==="Escape"&&activeSelect){
+      event.preventDefault();
+      const previous=activeSelect;
+      closeMenu();
+      restoreSelectRadius(previous);
+      return;
+    }
+
     const select=event.target instanceof HTMLSelectElement?event.target:null;
     if(select&&isQualityDateFilter(select)&&(event.key==="Enter"||event.key===" "||event.key==="ArrowDown")){
-      event.preventDefault();event.stopPropagation();openMenu(select);
+      event.preventDefault();
+      event.stopPropagation();
+      openMenu(select);
+      return;
     }
+
+    const option=event.target instanceof Element?event.target.closest(`#${MENU_ID} button`):null;
+    if(!option) return;
+    const buttons=Array.from(document.querySelectorAll(`#${MENU_ID} button`));
+    const index=buttons.indexOf(option);
+    if(event.key==="ArrowDown"&&index< buttons.length-1){event.preventDefault();buttons[index+1]?.focus();}
+    else if(event.key==="ArrowUp"&&index>0){event.preventDefault();buttons[index-1]?.focus();}
+    else if(event.key==="Enter"||event.key===" "){event.preventDefault();option.click();}
   },true);
 
-  global.addEventListener("resize",closeMenu);
-  global.addEventListener("scroll",()=>{if(activeSelect)closeMenu();},true);
+  global.addEventListener("resize",()=>{
+    if(!activeSelect) return;
+    const previous=activeSelect;
+    closeMenu();
+    restoreSelectRadius(previous);
+  });
+  global.addEventListener("scroll",()=>{
+    if(!activeSelect) return;
+    const previous=activeSelect;
+    closeMenu();
+    restoreSelectRadius(previous);
+  },true);
+
   ensureStyle();
 })(window);
