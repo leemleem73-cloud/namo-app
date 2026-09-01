@@ -227,7 +227,7 @@
     const emptyForm=()=>({
       purchaseType:"MRP 자동발주",productionType:"D-양산",supplier:"",supplierGrade:"",
       orderDate:today(),due:"",expected:"",priority:"일반",mrp:"",workOrderNo:"",
-      warehouse:"시화공장 · 원료창고",terms:"월 마감 후 30일",requester:"",
+      warehouse:"",terms:"월 마감 후 30일",requester:"",
       item:"",itemCode:"",spec:"",qty:"",unit:"kg",price:"",
       iqcRequired:true,coaRequired:true,msdsRequired:false,lotRequired:true,
       deliveryAddress:"나모케미칼 시화공장 원료 입고장",notes:""
@@ -414,7 +414,7 @@
             <div className="qp-field"><label>납기 우선순위</label><select value={form.priority} onChange={event=>setForm({...form,priority:event.target.value})}><option>일반</option><option>긴급</option><option>최우선</option></select></div>
             <div className="qp-field"><label>연결 MRP / 구매요청</label><input value={form.mrp} onChange={event=>setForm({...form,mrp:event.target.value})} placeholder="MRP- 또는 PR-"/></div>
             <div className="qp-field"><label>연결 작업지시</label><input value={form.workOrderNo} onChange={event=>setForm({...form,workOrderNo:event.target.value})} placeholder="WO-"/></div>
-            <div className="qp-field"><label>입고 창고</label><select value={form.warehouse} onChange={event=>setForm({...form,warehouse:event.target.value})}><option>시화공장 · 원료창고</option><option>시화공장 · 포장자재창고</option><option>검사대기 구역</option></select></div>
+            <div className="qp-field"><label>입고 창고</label><input value={form.warehouse} onChange={event=>setForm({...form,warehouse:event.target.value})} placeholder="입고 창고 직접 입력"/></div>
             <div className="qp-field"><label>결제 조건</label><select value={form.terms} onChange={event=>setForm({...form,terms:event.target.value})}><option>월 마감 후 30일</option><option>입고 후 30일</option><option>검수 후 60일</option><option>선급 30% · 잔금 70%</option></select></div>
           </div></section>
           <section className="qp-section"><div className="qp-section-title"><h3>2. 발주 품목 및 금액</h3><span>실제 품목 기준</span></div><div className="qp-grid items">
