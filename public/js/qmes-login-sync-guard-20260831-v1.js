@@ -7,7 +7,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality12-white-print";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality13-registration-finish";
   const nativeFetch=global.fetch.bind(global);
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
@@ -31,7 +31,12 @@
   let hasSavedSession=false;try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
   let sidebarDeferred=true;global[SIDEBAR_GUARD]=true;
   function currentUserReady(){const user=global.__QMES_CURRENT_USER__;return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));}
-  function loadQualityInspectionUi(){if(Array.from(document.scripts).some(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260901.js"))) return;const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;document.head.appendChild(script);}
+  function loadQualityInspectionUi(){
+    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260901.js"));
+    if(current&&String(current.src||"").includes("quality13-registration-finish")) return;
+    if(current) current.remove();
+    const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;document.head.appendChild(script);
+  }
   function releaseSidebarAfterLogin(){if(!sidebarDeferred) return;let attempts=0;const release=()=>{if(!sidebarDeferred)return;attempts+=1;if(!currentUserReady()){if(attempts<200)global.setTimeout(release,50);return;}sidebarDeferred=false;loadQualityInspectionUi();try{delete global[SIDEBAR_GUARD];}catch(_error){global[SIDEBAR_GUARD]=false;}if(Array.from(document.scripts).some(script=>String(script.src||"").includes("20260901-authgate1")))return;const script=document.createElement("script");script.src=SIDEBAR_SRC;script.async=false;document.head.appendChild(script);};global.setTimeout(release,0);}
   let authState=hasSavedSession?"pending":"anonymous",authCheckPromise=null,authCheckResponse=null;
   function urlOf(input){try{if(typeof input==="string")return new URL(input,global.location.href);if(input&&input.url)return new URL(input.url,global.location.href);}catch(_error){}return null;}
