@@ -19,6 +19,10 @@ function qmesDashDate(value){
   return /^\d{4}-\d{2}-\d{2}$/.test(normalized)?normalized.slice(5).replace("-","-"):normalized;
 }
 function qmesDashQty(value){return `${qmesDashNum(value).toLocaleString("ko-KR",{maximumFractionDigits:3})} kg`;}
+function qmesDashShippingQty(value){
+  const truncated=Math.trunc((qmesDashNum(value)+Number.EPSILON)*100)/100;
+  return `${truncated.toLocaleString("ko-KR",{minimumFractionDigits:2,maximumFractionDigits:2})} kg`;
+}
 function qmesDashCompleted(status){return /완료|생산완료|출하완료/.test(qmesDashClean(status));}
 function qmesDashNavigate(tab,openMenu){
   window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab,openMenu:openMenu||null}}));
@@ -165,7 +169,7 @@ function DashboardTab(){
       <div className="qmd-summary-item orange"><span>생산 예정</span><b>{qmesDashQty(summary.plannedKg)}</b></div>
       <div className="qmd-summary-item green"><span>생산 완료율</span><b>{completion.toFixed(1)}%</b></div>
       <div className="qmd-summary-item red"><span>품질/자재 확인</span><b>{summary.qualityCount}건</b></div>
-      <div className="qmd-summary-item"><span>출하 대기</span><b>{qmesDashQty(summary.shippingWaitKg)}</b></div>
+      <div className="qmd-summary-item"><span>출하 대기</span><b>{qmesDashShippingQty(summary.shippingWaitKg)}</b></div>
     </section>
 
     <div className="qmd-grid">
