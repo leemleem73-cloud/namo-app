@@ -75,6 +75,27 @@ function install(app) {
     }
   });
 
+  // OQC inspection history is also read by work-order completion status checks.
+  // Returning the entire historical payload can exceed the reverse-proxy limit
+  // and causes /api/qmes-sync/oqc to surface as 502 in the browser. Preserve
+  // all DB rows while limiting the operational screen sync to recent records.
+  app.get('/api/qmes-sync/oqc', async (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
+    try {
+      const result = await pool.query(
+        `SELECT record_type, record_key, payload, updated_by, updated_at
+           FROM qmes_sync_records
+          WHERE record_type = 'oqc'
+          ORDER BY updated_at DESC
+          LIMIT 1000`
+      );
+      return res.json({ success:true, message:'OK', data:result.rows });
+    } catch (error) {
+      console.error('qmes oqc sync GET failed:', error);
+      return res.status(500).json({ success:false, message:'출하검사 공용 DB 조회에 실패했습니다.', data:null });
+    }
+  });
+
   // Work-order sync payloads are much larger than the other shared records.
   // The previous generic GET returned the entire historical set at once, which
   // could exceed the upstream response/time limit and surface as 502. Keep the
