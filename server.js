@@ -1128,31 +1128,32 @@ async function syncPurchaseOrdersToLegacy(client, userName) {
 
 
 const PURCHASE_HISTORY_SEED = [
-  ['2026-06-25-1', '2026-06-25', '금호석유화학(주)', 'SBS(KTR-201) [KG]', 1688500, '내부창고(충주)', '2026/06/25 -1'],
-  ['2026-06-08-2', '2026-06-08', 'LG화학', 'ADC30G(SBR) [KG]', 3708210, '내부창고(충주)', '2026/06/08 -2'],
-  ['2026-06-08-1', '2026-06-08', '한국 사이언스코(주)', 'Solef5140 [KG]', 806278, '내부창고(충주)', '2026/06/08 -1'],
-  ['2026-05-15-1', '2026-05-15', '한국 사이언스코(주)', 'Solef5140 [KG]', 806278, '내부창고(충주)', '2026/05/15 -1'],
-  ['2026-04-28-1', '2026-04-28', '금호석유화학(주)', 'SBS(KTR-201) [KG]', 1623710, '내부창고(충주)', '2026/04/28 -1'],
-  ['2026-04-14-1', '2026-04-14', '한국 사이언스코(주)', 'Solef5130(PVdF)', 1603712, '내부창고(충주)', '2026/04/14 -1'],
-  ['2026-03-30-1', '2026-03-30', 'LG Chemical', 'ADC30G(SBR) [KG]', 3708210, '내부창고(충주)', '2026/03/30 -1'],
-  ['2026-01-26-1', '2026-01-26', '강신산업(주)', 'AOH30(Boehmite) [KG]', 3201000, '내부창고(충주)', '2026/01/26 -1'],
-  ['2026-01-23-1', '2026-01-23', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [KG]', 6985617, '내부창고(충주)', '2026/01/23 -1'],
-  ['2026-01-13-1', '2026-01-13', '(주)케미렉스', 'NMP(PUYANG GUANGMING CHEMICAL) [KG]', 9735000, '내부창고(충주)', '2026/01/13 -1'],
-  ['2025-12-03-1', '2025-12-03', '삼화페인트(주)', '스피롤터(a부, b부) [KG]', 616000, '외부창고(충주)', '2025/12/03 -1'],
-  ['2025-11-11-1', '2025-11-11', '강신산업(주)', 'AOH30(Boehmite) [kg]', 1067000, '외부창고(충주)', '2025/11/11 -1'],
-  ['2025-11-10-1', '2025-11-10', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [kg]', 3637411, '외부창고(충주)', '2025/11/10 -1'],
-  ['2025-10-01-2', '2025-10-01', '한국 사이언스코(주)', 'Solef5130(PVdF) [KG]', 0, '내부창고(충주)', '2025/10/01 -2'],
-  ['2025-10-01-1', '2025-10-01', '코오롱인더스트리', 'PAI [KG]', 0, '내부창고(충주)', '2025/10/01 -1'],
-  ['2025-09-30-1', '2025-09-30', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [kg]', 3192778, '외부창고(충주)', '2025/09/30 -1'],
-  ['2025-09-16-2', '2025-09-16', 'LG Chemical', 'ADC30G(sbr) [kg]', 5503080, '외부창고(충주)', '2025/09/16 -2'],
-  ['2025-09-12-1', '2025-09-12', '유니소재(주)', 'BYK180(Dispersant) [KG]', 1004300, '외부창고(충주)', '2025/09/12 -1'],
+  ["2026-06-25-1","2026-06-25","금호석유화학(주)","SBS(KTR-201) [KG]",50,30700,1535000,"내부창고(충주)","2026/06/25 -1"],
+  ["2026-06-08-2","2026-06-08","LG화학","ADC30G(SBR) [KG]",300,11237,3371100,"내부창고(충주)","2026/06/08 -2"],
+  ["2026-06-08-1","2026-06-08","한국 사이언스코(주)","Solef5140 [KG]",20,36649,732980,"내부창고(충주)","2026/06/08 -1"],
+  ["2026-05-15-1","2026-05-15","한국 사이언스코(주)","Solef5140 [KG]",20,36649,732980,"내부창고(충주)","2026/05/15 -1"],
+  ["2026-04-28-1","2026-04-28","금호석유화학(주)","SBS(KTR-201) [KG]",50,29522,1476100,"내부창고(충주)","2026/04/28 -1"],
+  ["2026-04-14-1","2026-04-14","한국 사이언스코(주)","Solef5130(PVdF)",40,36448,1457920,"내부창고(충주)","2026/04/14 -1"],
+  ["2026-03-30-1","2026-03-30","LG Chemical","ADC30G(SBR) [KG]",300,11237,3371100,"내부창고(충주)","2026/03/30 -1"],
+  ["2026-01-26-1","2026-01-26","강신산업(주)","AOH30(Boehmite) [KG]",300,9700,2910000,"내부창고(충주)","2026/01/26 -1"],
+  ["2026-01-23-1","2026-01-23","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [KG]",2000,0,6350561,"내부창고(충주)","2026/01/23 -1"],
+  ["2026-01-13-1","2026-01-13","(주)케미렉스","NMP(PUYANG GUANGMING CHEMICAL) [KG]",3000,2950,8850000,"내부창고(충주)","2026/01/13 -1"],
+  ["2025-12-03-1","2025-12-03","삼화페인트(주)","스피롤터(a부, b부) [KG]",100,5600,560000,"외부창고(충주)","2025/12/03 -1"],
+  ["2025-11-11-1","2025-11-11","강신산업(주)","AOH30(Boehmite) [kg]",100,9700,970000,"외부창고(충주)","2025/11/11 -1"],
+  ["2025-11-10-1","2025-11-10","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [kg]",1000,3307,3306737,"외부창고(충주)","2025/11/10 -1"],
+  ["2025-10-01-2","2025-10-01","한국 사이언스코(주)","Solef5130(PVdF) [KG]",36,0,0,"내부창고(충주)","2025/10/01 -2"],
+  ["2025-10-01-1","2025-10-01","코오롱인더스트리","PAI [KG]",160,0,0,"내부창고(충주)","2025/10/01 -1"],
+  ["2025-09-30-1","2025-09-30","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [kg]",1000,2903,2902525,"외부창고(충주)","2025/09/30 -1"],
+  ["2025-09-16-2","2025-09-16","LG Chemical","ADC30G(sbr) [kg]",400,12507,5002800,"외부창고(충주)","2025/09/16 -2"],
+  ["2025-09-12-1","2025-09-12","유니소재(주)","BYK180(Dispersant) [KG]",25,36520,913000,"외부창고(충주)","2025/09/12 -1"],
 ];
 
 async function ensurePurchaseHistory() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    for (const [purchaseNo, orderDate, supplier, item, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
+    for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
+      const note = `기존 ERP 거래내역 · 원본번호 ${originalNo} · 수량·금액 상세 반영 v2${amount > 0 ? '' : ' · 금액 미입력'}`;
       await client.query(
         `INSERT INTO purchase_orders (
            purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
@@ -1160,20 +1161,36 @@ async function ensurePurchaseHistory() {
            approval_status, receipt_status, received_qty, iqc_required, iqc_status,
            coa_required, msds_required, lot_required, status, notes, created_by, updated_by
          )
-         VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, 0, 'kg', 0, $4,
-                 $5, NULL, $6, '', '부가세율 적용',
-                 '승인완료', '입고완료', 0, FALSE, '기존 ERP 반영',
-                 FALSE, FALSE, FALSE, '입고완료', $7, 'SYSTEM', 'SYSTEM')
-         ON CONFLICT (purchase_no) DO NOTHING`,
-        [
-          purchaseNo,
-          supplier,
-          item,
-          amount,
-          orderDate,
-          warehouse,
-          `기존 ERP 거래내역 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`,
-        ]
+         VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, $4, 'kg', $5, $6,
+                 $7, NULL, $8, '', '부가세율 적용',
+                 '승인완료', '입고완료', $4, FALSE, '기존 ERP 반영',
+                 FALSE, FALSE, FALSE, '입고완료', $9, 'SYSTEM', 'SYSTEM')
+         ON CONFLICT (purchase_no)
+         DO UPDATE SET
+           supplier = EXCLUDED.supplier,
+           item = EXCLUDED.item,
+           qty = EXCLUDED.qty,
+           unit_price = EXCLUDED.unit_price,
+           amount = EXCLUDED.amount,
+           order_date = EXCLUDED.order_date,
+           warehouse = EXCLUDED.warehouse,
+           payment_terms = EXCLUDED.payment_terms,
+           approval_status = EXCLUDED.approval_status,
+           receipt_status = EXCLUDED.receipt_status,
+           received_qty = EXCLUDED.received_qty,
+           iqc_required = EXCLUDED.iqc_required,
+           iqc_status = EXCLUDED.iqc_status,
+           coa_required = EXCLUDED.coa_required,
+           msds_required = EXCLUDED.msds_required,
+           lot_required = EXCLUDED.lot_required,
+           status = EXCLUDED.status,
+           notes = EXCLUDED.notes,
+           updated_at = NOW()
+         WHERE purchase_orders.created_by = 'SYSTEM'
+           AND purchase_orders.updated_by = 'SYSTEM'
+           AND purchase_orders.notes LIKE '기존 ERP 거래내역%'
+           AND purchase_orders.notes NOT LIKE '%수량·금액 상세 반영 v2%'`,
+        [purchaseNo, supplier, item, qty, unitPrice, amount, orderDate, warehouse, note]
       );
     }
     await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
