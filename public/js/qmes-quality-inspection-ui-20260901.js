@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V33__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V33__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V34__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V34__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v33";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v34";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){if(document.getElementById(STYLE_ID))return;const style=document.createElement("style");style.id=STYLE_ID;style.textContent=`
 html,body,#root{color-scheme:only light!important;}
@@ -25,12 +25,15 @@ html body #root .qmes-modal-backdrop:not(.qmes-iqc-modal-backdrop):not(.qmes-ins
 html body #root .qmes-output-scroll-body{position:relative!important;z-index:1!important;min-height:0!important;flex:1 1 0%!important;overflow-x:auto!important;overflow-y:auto!important;background:#0b1728!important;}
 html body #root .qmes-output-scroll-body > *{position:relative!important;z-index:1!important;}
 html body #root .qmes-wo-viewer-head button{position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;}
-/* IQC official report: square white sheet, compact section labels, borderless barcode area. */
+/* IQC official report */
 html body #root .qmes-iqc-doc{background:#fff!important;color:#000!important;border-radius:0!important;box-shadow:none!important;}
 html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-centered-header{border-color:#000!important;}
 html body #root .qmes-iqc-doc .qmes-iqc-header-logo{object-fit:contain!important;image-rendering:auto!important;filter:none!important;}
-html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:11px!important;line-height:1.25!important;}
+/* Section headings use the same size as table headings such as '입고번호'. */
+html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:inherit!important;line-height:inherit!important;}
+/* Keep every inspection-result heading and value at one consistent size. */
+html body #root .qmes-iqc-doc .qmes-iqc2-result-table,html body #root .qmes-iqc-doc .qmes-iqc2-result-table th,html body #root .qmes-iqc-doc .qmes-iqc2-result-table td,html body #root .qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-item-cell,html body #root .qmes-iqc-doc .qmes-iqc2-result-table .qmes-iqc2-spec-cell{font-size:inherit!important;line-height:inherit!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-code-box>*{border-radius:0!important;box-shadow:none!important;}
 html body #root .qmes-iqc-doc .qmes-iqc2-auth-row{display:flex!important;visibility:visible!important;opacity:1!important;margin-top:8px!important;break-inside:avoid!important;page-break-inside:avoid!important;}
@@ -44,7 +47,8 @@ html body #root .qmes-iqc-doc .qmes-iqc2-sign-table th,html body #root .qmes-iqc
   html body #root .qmes-iqc-doc{position:absolute!important;left:0!important;top:0!important;width:190mm!important;max-width:190mm!important;min-width:190mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;}
   html body #root .qmes-iqc-doc table{width:100%!important;border-collapse:collapse!important;}
   html body #root .qmes-iqc-doc table,html body #root .qmes-iqc-doc th,html body #root .qmes-iqc-doc td,html body #root .qmes-iqc-doc [class*="border-"]{border-color:#000!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;}
-  html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:11px!important;line-height:1.25!important;}
+  html body #root .qmes-iqc-doc .qmes-iqc2-sec-title{font-size:inherit!important;line-height:inherit!important;}
+  html body #root .qmes-iqc-doc .qmes-iqc2-result-table,html body #root .qmes-iqc-doc .qmes-iqc2-result-table th,html body #root .qmes-iqc-doc .qmes-iqc2-result-table td{font-size:inherit!important;line-height:inherit!important;}
   html body #root .qmes-iqc-doc .qmes-iqc2-code-box{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;outline:0!important;}
   html body #root .qmes-iqc-doc .qmes-iqc2-auth-row,html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:flex!important;visibility:visible!important;opacity:1!important;break-inside:avoid!important;page-break-inside:avoid!important;}
   html body #root .qmes-iqc-doc .qmes-iqc2-sign-table{display:table!important;}
