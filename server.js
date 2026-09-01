@@ -241,19 +241,19 @@ async function ensureSchema() {
       item TEXT NOT NULL,
       item_code TEXT DEFAULT '',
       spec TEXT DEFAULT '',
-      qty NUMERIC NOT NULL CHECK (qty > 0),
+      qty NUMERIC NOT NULL CHECK (qty >= 0),
       unit TEXT NOT NULL DEFAULT 'kg',
       unit_price NUMERIC NOT NULL DEFAULT 0 CHECK (unit_price >= 0),
       amount NUMERIC NOT NULL DEFAULT 0 CHECK (amount >= 0),
       order_date DATE NOT NULL DEFAULT CURRENT_DATE,
-      requested_due_date DATE NOT NULL,
+      requested_due_date DATE,
       confirmed_due_date DATE,
       priority TEXT NOT NULL DEFAULT '일반',
       mrp_no TEXT DEFAULT '',
       work_order_no TEXT DEFAULT '',
       purpose TEXT DEFAULT '',
-      warehouse TEXT DEFAULT '시화공장 · 원료창고',
-      delivery_address TEXT DEFAULT '나모케미칼 시화공장 원료 입고장',
+      warehouse TEXT DEFAULT '',
+      delivery_address TEXT DEFAULT '',
       payment_terms TEXT DEFAULT '',
       approval_status TEXT NOT NULL DEFAULT '구매검토',
       receipt_status TEXT NOT NULL DEFAULT '미입고',
@@ -579,6 +579,13 @@ async function ensureSchema() {
 
   await db(`
     ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED';
+
+    ALTER TABLE purchase_orders ALTER COLUMN requested_due_date DROP NOT NULL;
+    ALTER TABLE purchase_orders ALTER COLUMN warehouse SET DEFAULT '';
+    ALTER TABLE purchase_orders ALTER COLUMN delivery_address SET DEFAULT '';
+    ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_qty_check;
+    ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_qty_nonnegative_check;
+    ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_qty_nonnegative_check CHECK (qty >= 0);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS uid TEXT DEFAULT '';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE;
@@ -889,6 +896,7 @@ function derivePurchaseStatus(row) {
 
   if (/취소/.test(manual)) return '발주취소';
   if (/불합격|부적합|FAIL|NG|REJECT/i.test(iqc)) return 'IQC 부적합';
+  if (/입고\s*완료/.test(receipt) && ordered <= 0) return '입고완료';
   if (received > 0 && received < ordered) return '부분입고';
   if (ordered > 0 && received >= ordered) {
     if (purchaseBoolean(row.iqc_required ?? row.iqcRequired, true) && !/합격|적합|PASS|OK/i.test(iqc)) {
@@ -1017,11 +1025,11 @@ function normalizePurchaseInput(input, current = {}) {
     mrp_no: txt(value(['mrpNo', 'mrp', 'requestNo'], ['mrp_no'])),
     work_order_no: txt(value(['workOrderNo', 'workOrder'], ['work_order_no'])),
     purpose: txt(value(['purpose'], ['purpose'])),
-    warehouse: txt(value(['warehouse'], ['warehouse'], '시화공장 · 원료창고')),
+    warehouse: txt(value(['warehouse'], ['warehouse'], '')),
     delivery_address: txt(value(
       ['deliveryAddress', 'address'],
       ['delivery_address'],
-      '나모케미칼 시화공장 원료 입고장'
+      ''
     )),
     payment_terms: txt(value(['paymentTerms', 'terms'], ['payment_terms'])),
     approval_status: txt(value(['approvalStatus', 'approval'], ['approval_status'], '구매검토')) || '구매검토',
@@ -1116,6 +1124,66 @@ async function syncPurchaseOrdersToLegacy(client, userName) {
      DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
     [JSON.stringify(payload), userName]
   );
+}
+
+
+const PURCHASE_HISTORY_SEED = [
+  ['2026-06-25-1', '2026-06-25', '금호석유화학(주)', 'SBS(KTR-201) [KG]', 1688500, '내부창고(충주)', '2026/06/25 -1'],
+  ['2026-06-08-2', '2026-06-08', 'LG화학', 'ADC30G(SBR) [KG]', 3708210, '내부창고(충주)', '2026/06/08 -2'],
+  ['2026-06-08-1', '2026-06-08', '한국 사이언스코(주)', 'Solef5140 [KG]', 806278, '내부창고(충주)', '2026/06/08 -1'],
+  ['2026-05-15-1', '2026-05-15', '한국 사이언스코(주)', 'Solef5140 [KG]', 806278, '내부창고(충주)', '2026/05/15 -1'],
+  ['2026-04-28-1', '2026-04-28', '금호석유화학(주)', 'SBS(KTR-201) [KG]', 1623710, '내부창고(충주)', '2026/04/28 -1'],
+  ['2026-04-14-1', '2026-04-14', '한국 사이언스코(주)', 'Solef5130(PVdF)', 1603712, '내부창고(충주)', '2026/04/14 -1'],
+  ['2026-03-30-1', '2026-03-30', 'LG Chemical', 'ADC30G(SBR) [KG]', 3708210, '내부창고(충주)', '2026/03/30 -1'],
+  ['2026-01-26-1', '2026-01-26', '강신산업(주)', 'AOH30(Boehmite) [KG]', 3201000, '내부창고(충주)', '2026/01/26 -1'],
+  ['2026-01-23-1', '2026-01-23', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [KG]', 6985617, '내부창고(충주)', '2026/01/23 -1'],
+  ['2026-01-13-1', '2026-01-13', '(주)케미렉스', 'NMP(PUYANG GUANGMING CHEMICAL) [KG]', 9735000, '내부창고(충주)', '2026/01/13 -1'],
+  ['2025-12-03-1', '2025-12-03', '삼화페인트(주)', '스피롤터(a부, b부) [KG]', 616000, '외부창고(충주)', '2025/12/03 -1'],
+  ['2025-11-11-1', '2025-11-11', '강신산업(주)', 'AOH30(Boehmite) [kg]', 1067000, '외부창고(충주)', '2025/11/11 -1'],
+  ['2025-11-10-1', '2025-11-10', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [kg]', 3637411, '외부창고(충주)', '2025/11/10 -1'],
+  ['2025-10-01-2', '2025-10-01', '한국 사이언스코(주)', 'Solef5130(PVdF) [KG]', 0, '내부창고(충주)', '2025/10/01 -2'],
+  ['2025-10-01-1', '2025-10-01', '코오롱인더스트리', 'PAI [KG]', 0, '내부창고(충주)', '2025/10/01 -1'],
+  ['2025-09-30-1', '2025-09-30', '모리토루 케미칼즈 한국 주식회사', 'NMP(SNET) [kg]', 3192778, '외부창고(충주)', '2025/09/30 -1'],
+  ['2025-09-16-2', '2025-09-16', 'LG Chemical', 'ADC30G(sbr) [kg]', 5503080, '외부창고(충주)', '2025/09/16 -2'],
+  ['2025-09-12-1', '2025-09-12', '유니소재(주)', 'BYK180(Dispersant) [KG]', 1004300, '외부창고(충주)', '2025/09/12 -1'],
+];
+
+async function ensurePurchaseHistory() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const [purchaseNo, orderDate, supplier, item, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
+      await client.query(
+        `INSERT INTO purchase_orders (
+           purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
+           order_date, requested_due_date, warehouse, delivery_address, payment_terms,
+           approval_status, receipt_status, received_qty, iqc_required, iqc_status,
+           coa_required, msds_required, lot_required, status, notes, created_by, updated_by
+         )
+         VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, 0, 'kg', 0, $4,
+                 $5, NULL, $6, '', '부가세율 적용',
+                 '승인완료', '입고완료', 0, FALSE, '기존 ERP 반영',
+                 FALSE, FALSE, FALSE, '입고완료', $7, 'SYSTEM', 'SYSTEM')
+         ON CONFLICT (purchase_no) DO NOTHING`,
+        [
+          purchaseNo,
+          supplier,
+          item,
+          amount,
+          orderDate,
+          warehouse,
+          `기존 ERP 거래내역 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`,
+        ]
+      );
+    }
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 async function upsertLegacyPurchaseRows(rows, userName) {
@@ -2796,6 +2864,8 @@ app.get('*', (_req, res) => {
 
 ensureSchema()
   .then(async () => {
+    await ensurePurchaseHistory();
+
     const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const adminPassword = String(process.env.ADMIN_PASSWORD || '');
 
