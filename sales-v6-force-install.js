@@ -25,7 +25,7 @@ try {
         const file = String(filePath || '');
         const isHtml = /[\\/]index\.html$/i.test(file) || /\.html$/i.test(file);
         const isMasterLoader = /qmes-mes-master-loader-20260820-v2\.js$/i.test(file);
-        const isCurrentSalesOrder = /qmes-sales-new-order-namo-modal-20260831-v9\.js$/i.test(file);
+        const isCurrentSalesOrder = /qmes-sales-new-order-integrated-20260901-v11\.js$/i.test(file);
         const isCurrentLiveMrp = /qmes-sample-development-mrp-live-20260831-v1\.js$/i.test(file);
 
         // Login stability: these files control first paint, server-session check,
