@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V14__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V14__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V15__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V15__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v14";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v15";
 
   function ensureLightSchemeMeta(){
     let meta=document.querySelector('meta[name="color-scheme"]');
@@ -53,8 +53,7 @@
       html body #root .qmes-iqc-modal-head,
       html body #root .qmes-inspection-modal-head{
         position:sticky!important;top:0!important;z-index:20!important;flex:0 0 auto!important;
-        background:#fff!important;background-color:#fff!important;color:#111827!important;
-        border-color:#cbd5e1!important;
+        background:#fff!important;background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;
       }
       html body #root .qmes-iqc-modal-head strong,html body #root .qmes-iqc-modal-head span,
       html body #root .qmes-inspection-modal-head strong,html body #root .qmes-inspection-modal-head span{color:#111827!important;}
@@ -79,7 +78,6 @@
         background:#fff!important;background-color:#fff!important;background-image:none!important;
       }
 
-      /* Registration borders: match the light gray print-button border. */
       html body #root .qmes-iqc-modal,
       html body #root .qmes-inspection-modal,
       html body #root .qmes-iqc-modal-section,
@@ -90,9 +88,8 @@
       html body #root .qmes-inspection-modal-body td,
       html body #root .qmes-iqc-modal table,
       html body #root .qmes-iqc-modal th,
-      html body #root .qmes-iqc-modal td{
-        border-color:#cbd5e1!important;
-      }
+      html body #root .qmes-iqc-modal td{border-color:#cbd5e1!important;}
+
       html body #root .qmes-iqc-modal input,
       html body #root .qmes-iqc-modal select,
       html body #root .qmes-iqc-modal textarea,
@@ -106,51 +103,64 @@
       html body #root .qmes-iqc-modal [class*="border-slate"],
       html body #root .qmes-inspection-modal [class*="border-slate"],
       html body #root .qmes-iqc-modal [style*="border"],
-      html body #root .qmes-inspection-modal [style*="border"]{
-        border-color:#cbd5e1!important;
-      }
+      html body #root .qmes-inspection-modal [style*="border"]{border-color:#cbd5e1!important;}
       html body #root .qmes-iqc-modal-foot{background:#fff!important;background-color:#fff!important;border-color:#cbd5e1!important;}
       .qmes-inspection-modal-body,.qmes-iqc-modal-body{min-height:0;flex:1 1 auto;background:#fff!important;}
 
       .qmes-quality-modal-actions{display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important;position:relative!important;z-index:21!important;flex:0 0 auto!important;}
       .qmes-quality-modal-print,.qmes-quality-modal-close{
         height:34px!important;min-width:58px!important;padding:0 13px!important;border:1px solid #cbd5e1!important;border-radius:7px!important;
-        background:#fff!important;color:#111827!important;font-size:13px!important;font-weight:700!important;
+        background:#fff!important;color:#111827!important;-webkit-text-fill-color:#111827!important;font-size:13px!important;font-weight:700!important;
         display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;cursor:pointer!important;
       }
-      .qmes-quality-modal-print:hover,.qmes-quality-modal-close:hover{background:#f8fafc!important;}
-
-      @media print{
-        body.qmes-print-quality-registration{background:#fff!important;}
-        body.qmes-print-quality-registration *{visibility:hidden!important;}
-        body.qmes-print-quality-registration .qmes-iqc-modal,
-        body.qmes-print-quality-registration .qmes-iqc-modal *,
-        body.qmes-print-quality-registration .qmes-inspection-modal,
-        body.qmes-print-quality-registration .qmes-inspection-modal *{visibility:visible!important;}
-        body.qmes-print-quality-registration .qmes-iqc-modal,
-        body.qmes-print-quality-registration .qmes-inspection-modal{
-          position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:none!important;
-          max-height:none!important;height:auto!important;overflow:visible!important;margin:0!important;box-shadow:none!important;border:0!important;
-        }
-        body.qmes-print-quality-registration .qmes-iqc-modal-head,
-        body.qmes-print-quality-registration .qmes-inspection-modal-head{position:static!important;}
-        body.qmes-print-quality-registration .qmes-quality-modal-actions{display:none!important;}
-        body.qmes-print-quality-registration .qmes-iqc-modal-body,
-        body.qmes-print-quality-registration .qmes-inspection-modal-body{overflow:visible!important;max-height:none!important;height:auto!important;}
+      .qmes-quality-modal-print:hover,.qmes-quality-modal-print:focus,.qmes-quality-modal-print:active,
+      .qmes-quality-modal-close:hover,.qmes-quality-modal-close:focus,.qmes-quality-modal-close:active{
+        background:#f8fafc!important;color:#111827!important;-webkit-text-fill-color:#111827!important;border-color:#cbd5e1!important;
       }
-
       .qmes-wo-viewer-head{position:sticky;top:0;z-index:5;flex:0 0 auto;background:#0b1728;}
     `;
     document.head.appendChild(style);
   }
 
+  function copyFormValues(source,clone){
+    const sourceFields=source.querySelectorAll("input,select,textarea");
+    const cloneFields=clone.querySelectorAll("input,select,textarea");
+    sourceFields.forEach((field,index)=>{
+      const target=cloneFields[index];
+      if(!target) return;
+      if(field instanceof HTMLInputElement){
+        if(field.type==="checkbox"||field.type==="radio") target.checked=field.checked;
+        else target.setAttribute("value",field.value);
+      }else if(field instanceof HTMLTextAreaElement){
+        target.textContent=field.value;
+      }else if(field instanceof HTMLSelectElement){
+        Array.from(target.options).forEach((option,i)=>{option.selected=field.options[i]?.selected||false;});
+      }
+    });
+  }
+
   function printRegistrationModal(){
     const modal=document.querySelector(".qmes-iqc-modal,.qmes-inspection-modal");
     if(!modal) return;
-    document.body.classList.add("qmes-print-quality-registration");
-    const cleanup=()=>document.body.classList.remove("qmes-print-quality-registration");
-    global.addEventListener("afterprint",cleanup,{once:true});
-    global.setTimeout(()=>{try{global.print();}finally{global.setTimeout(cleanup,300);}},0);
+
+    const clone=modal.cloneNode(true);
+    copyFormValues(modal,clone);
+    clone.querySelectorAll(".qmes-quality-modal-actions,.qmes-iqc-modal-foot,.qmes-inspection-modal-foot").forEach(node=>node.remove());
+    clone.style.maxHeight="none";
+    clone.style.height="auto";
+    clone.style.overflow="visible";
+    clone.style.margin="0";
+    clone.style.boxShadow="none";
+
+    const printWindow=global.open("","_blank","width=1200,height=900");
+    if(!printWindow){global.alert("인쇄 창을 열 수 없습니다. 팝업 차단을 확인해주세요.");return;}
+
+    const styles=Array.from(document.querySelectorAll('link[rel="stylesheet"],style')).map(node=>node.outerHTML).join("\n");
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="light"><title>검사 신규등록 인쇄</title>${styles}<style>html,body{margin:0!important;padding:16px!important;background:#fff!important;color:#111827!important;} .qmes-iqc-modal,.qmes-inspection-modal{position:static!important;width:100%!important;max-width:none!important;max-height:none!important;height:auto!important;overflow:visible!important;margin:0!important;box-shadow:none!important;background:#fff!important;} .qmes-iqc-modal-head,.qmes-inspection-modal-head{position:static!important;} .qmes-iqc-modal-body,.qmes-inspection-modal-body{overflow:visible!important;max-height:none!important;height:auto!important;} .qmes-quality-modal-actions,.qmes-iqc-modal-foot,.qmes-inspection-modal-foot{display:none!important;} @page{size:A4;margin:10mm;}</style></head><body>${clone.outerHTML}</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload=()=>{printWindow.setTimeout(()=>{printWindow.print();},150);};
   }
 
   function enhanceModalHead(head){
