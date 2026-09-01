@@ -3,7 +3,7 @@
  * Keep app.jsx as the single UI/auth owner. This guard coordinates initial auth,
  * prevents sync/auth races, blocks the sidebar DOM observer until login is fully
  * authenticated, isolates the login screen from the global light theme, and
- * normalizes select rendering so native dark picker flashes do not appear.
+ * normalizes native select rendering so dark-theme flashes do not appear on open.
  */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
@@ -36,7 +36,9 @@
         color-scheme:light!important;
       }
 
-      /* Fallback for older engines: remove the native dark select button skin. */
+      /* Windows/Chromium can briefly paint the native dark select button before
+         its popup opens. Remove that native button skin completely and draw a
+         stable light control instead. */
       html body #root select,
       html body #root select:hover,
       html body #root select:focus,
@@ -79,58 +81,6 @@
         background-color:#f1f5f9!important;
         color:#64748b!important;
         -webkit-text-fill-color:#64748b!important;
-      }
-
-      /* Chromium's customizable select keeps the popup in the page rendering
-         pipeline instead of handing it to the Windows dark native popup. This
-         removes the one-frame black rectangle seen when a select is opened. */
-      @supports (appearance:base-select){
-        html body #root select,
-        html body #root select:hover,
-        html body #root select:focus,
-        html body #root select:focus-visible,
-        html body #root select:active,
-        html body #root select::picker(select){
-          appearance:base-select!important;
-          -webkit-appearance:base-select!important;
-          color-scheme:light!important;
-        }
-        html body #root select{
-          background:#fff!important;
-          background-image:none!important;
-          color:#111827!important;
-          border:1px solid #cbd5e1!important;
-          outline:none!important;
-          box-shadow:none!important;
-          transition:none!important;
-          padding-right:28px!important;
-        }
-        html body #root select::picker(select){
-          background:#fff!important;
-          color:#111827!important;
-          border:1px solid #cbd5e1!important;
-          border-radius:8px!important;
-          box-shadow:0 8px 22px rgba(15,23,42,.12)!important;
-          outline:none!important;
-        }
-        html body #root select::picker-icon{
-          color:#64748b!important;
-          transition:none!important;
-        }
-        html body #root select:open::picker-icon{
-          transform:none!important;
-        }
-        html body #root select option{
-          background:#fff!important;
-          color:#111827!important;
-          padding:8px 10px!important;
-        }
-        html body #root select option:hover,
-        html body #root select option:focus,
-        html body #root select option:checked{
-          background:#eaf3ff!important;
-          color:#111827!important;
-        }
       }
     `;
     document.head.appendChild(style);
