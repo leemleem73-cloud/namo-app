@@ -1107,7 +1107,7 @@ async function nextPurchaseNo(client, orderDate) {
 }
 
 async function syncPurchaseOrdersToLegacy(client, userName) {
-  const result = await client.query('SELECT * FROM purchase_orders ORDER BY created_at DESC');
+  const result = await client.query('SELECT * FROM purchase_orders ORDER BY order_date DESC, created_at DESC');
   const rows = result.rows.map((row) => mapPurchaseOrder(row));
   const payload = {
     module: 'erp',
