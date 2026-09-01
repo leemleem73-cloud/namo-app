@@ -1,10 +1,10 @@
 /* NAMO QMES - quality inspection UI stability - 2026-09-01 */
 (function installQmesQualityInspectionUi(global){
   "use strict";
-  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V35__) return;
-  global.__QMES_QUALITY_INSPECTION_UI_20260901_V35__=true;
+  if(global.__QMES_QUALITY_INSPECTION_UI_20260901_V36__) return;
+  global.__QMES_QUALITY_INSPECTION_UI_20260901_V36__=true;
 
-  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v35";
+  const STYLE_ID="qmes-quality-inspection-ui-style-20260901-v36";
   function ensureLightSchemeMeta(){let meta=document.querySelector('meta[name="color-scheme"]');if(!meta){meta=document.createElement("meta");meta.name="color-scheme";document.head.prepend(meta);}meta.content="only light";}
   function ensureStyle(){if(document.getElementById(STYLE_ID))return;const style=document.createElement("style");style.id=STYLE_ID;style.textContent=`
 html,body,#root{color-scheme:only light!important;}
@@ -15,6 +15,9 @@ html body #root .qmes-iqc-modal-body,html body #root .qmes-inspection-modal-body
 html body #root .qmes-iqc-modal-section,html body #root .qmes-iqc-modal-grid,html body #root .qmes-pqc-entry-form,html body #root .qmes-oqc-entry-form,html body #root .qmes-inspection-modal-body .qmes-panel{background:#fff!important;background-image:none!important;}
 html body #root .qmes-iqc-modal-section,html body #root .qmes-inspection-modal-body .qmes-panel,html body #root .qmes-inspection-modal-body fieldset,html body #root .qmes-inspection-modal-body table,html body #root .qmes-inspection-modal-body th,html body #root .qmes-inspection-modal-body td,html body #root .qmes-iqc-modal table,html body #root .qmes-iqc-modal th,html body #root .qmes-iqc-modal td{border-color:#cbd5e1!important;}
 html body #root .qmes-iqc-modal input,html body #root .qmes-iqc-modal textarea,html body #root .qmes-inspection-modal input,html body #root .qmes-inspection-modal textarea{background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}
+html body #root .qmes-measurement-summary-white,html body #root .qmes-measurement-summary-white *{background-color:#fff!important;background-image:none!important;color:#000!important;}
+html body #root .qmes-measurement-summary-white{border-color:#cbd5e1!important;}
+html body #root .qmes-measurement-summary-white th,html body #root .qmes-measurement-summary-white td,html body #root .qmes-measurement-summary-white [class*="border"]{border-color:#cbd5e1!important;}
 html body #root .qmes-iqc-modal-foot{flex:0 0 auto!important;background:#fff!important;border-color:#cbd5e1!important;}
 .qmes-quality-modal-actions{display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important;position:relative!important;z-index:21!important;}
 html body #root .qmes-quality-modal-close,html body #root .qmes-iqc-modal-cancel,html body #root .qmes-inspection-cancel-btn{border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#000!important;}
@@ -45,6 +48,7 @@ function enhanceModalHead(head){if(!head)return;const oldClose=Array.from(head.c
 function enhanceOutputViewer(viewer){if(!viewer||viewer.querySelector(":scope > .qmes-output-scroll-body"))return;const head=viewer.querySelector(":scope > .qmes-wo-viewer-head");if(!head)return;const body=document.createElement("div");body.className="qmes-output-scroll-body";Array.from(viewer.children).filter(node=>node!==head).forEach(node=>body.appendChild(node));viewer.appendChild(body);}
 function enhanceIqcReport(doc){if(!doc)return;const logo=doc.querySelector(".qmes-iqc-header-logo");if(logo&&logo.getAttribute("src")!=="./logo.png"){logo.setAttribute("src","./logo.png");logo.setAttribute("alt","나모케미칼(주) 로고");}}
 function alignInspectionPeriodLabels(){document.querySelectorAll("#root *").forEach(el=>{if(el.children.length!==0)return;const text=String(el.textContent||"").trim();if(text!=="연도"&&text!=="월")return;const area=el.parentElement;if(!area)return;const nearby=String(area.parentElement?.textContent||area.textContent||"");if(!nearby.includes("출하번호")&&!nearby.includes("LOT")&&!nearby.includes("검사자"))return;el.classList.add("qmes-inspection-period-label");});}
-function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);document.querySelectorAll(".qmes-wo-viewer").forEach(enhanceOutputViewer);document.querySelectorAll(".qmes-iqc-doc").forEach(enhanceIqcReport);alignInspectionPeriodLabels();}
+function whitenMeasurementSummary(){document.querySelectorAll("#root *").forEach(el=>{if(el.children.length===0)return;const text=String(el.textContent||"");if(!text.includes("출하번호")||!text.includes("최종판정"))return;if(text.length>1200)return;const hasMeasureContext=text.includes("측정")||String(el.closest('[class*="measure"],[class*="inspection"],[class*="modal"]')?.textContent||"").includes("측정");if(!hasMeasureContext)return;el.classList.add("qmes-measurement-summary-white");});}
+function enhanceOpenModals(){document.querySelectorAll(".qmes-iqc-modal-head,.qmes-inspection-modal-head").forEach(enhanceModalHead);document.querySelectorAll(".qmes-wo-viewer").forEach(enhanceOutputViewer);document.querySelectorAll(".qmes-iqc-doc").forEach(enhanceIqcReport);alignInspectionPeriodLabels();whitenMeasurementSummary();}
 ensureLightSchemeMeta();ensureStyle();enhanceOpenModals();const root=document.getElementById("root")||document.body;new MutationObserver(()=>enhanceOpenModals()).observe(root,{childList:true,subtree:true});
 })(window);
