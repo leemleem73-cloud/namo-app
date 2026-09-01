@@ -22,6 +22,7 @@ function IqcTab() {
     inspectDate: today,
     inNoMode: "auto",
     manualInNo: "",
+    purchaseOrderNo: "",
     lot: "",
     name: "NMP",
     supplier: "",
@@ -52,6 +53,53 @@ function IqcTab() {
   const [selectedJudge, setSelectedJudge] = useState("전체");
   const [selectedMaterial, setSelectedMaterial] = useState("전체");
   const [materialOptions, setMaterialOptions] = useState(() => [...new Set([...IQC_MATERIALS, ...(DB.iqcMaterials || [])])]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [purchaseLoadError, setPurchaseLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/purchase-orders", { credentials:"same-origin" })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!active) return;
+        const data = Array.isArray(result?.data) ? result.data : [];
+        setPurchaseOrders(data);
+        setPurchaseLoadError("");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setPurchaseOrders([]);
+        setPurchaseLoadError(error.message || "발주현황을 불러오지 못했습니다.");
+      });
+    return () => { active = false; };
+  }, []);
+
+  const purchaseNoOf = (order) => String(order?.purchaseNo || order?.purchase_no || order?.no || "").trim();
+  const purchaseRemaining = (order) => Math.max(0, Number(order?.qty || 0) - Number(order?.receivedQty || order?.received_qty || 0));
+  const purchaseChoices = purchaseOrders.filter((order) => {
+    const no = purchaseNoOf(order);
+    if (!no || /취소/.test(String(order?.status || ""))) return false;
+    if (no === form.purchaseOrderNo) return true;
+    const completed = purchaseRemaining(order) <= 0 && /합격/.test(String(order?.iqcStatus || order?.iqc_status || ""));
+    return !completed;
+  });
+  const selectPurchaseOrder = (purchaseOrderNo) => {
+    const order = purchaseOrders.find((item) => purchaseNoOf(item) === purchaseOrderNo);
+    if (!order) {
+      setForm((prev) => ({ ...prev, purchaseOrderNo:"", supplier:"", qty:"" }));
+      return;
+    }
+    const remaining = purchaseRemaining(order);
+    const linkedQty = remaining > 0 ? remaining : Number(order?.receivedQty || order?.received_qty || order?.qty || 0);
+    setForm((prev) => ({
+      ...prev,
+      purchaseOrderNo,
+      supplier:String(order?.supplier || ""),
+      name:String(order?.item || order?.material || prev.name),
+      qty:linkedQty > 0 ? String(linkedQty) : "",
+      lot:prev.lot || String(order?.materialLot || order?.material_lot || ""),
+    }));
+  };
 
   const addMaterialOption = () => {
     const value = window.prompt("추가할 원재료명을 입력하세요.");
@@ -96,7 +144,7 @@ function IqcTab() {
     const materialMatch = selectedMaterial === "전체" || String(r.name || "") === selectedMaterial;
     const q = searchTerm.trim().toLowerCase();
     const searchMatch = !q || [
-      r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
+      r.inNo, r.purchaseOrderNo, r.purchaseOrder, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
       r.inspector, r.by, r.judge, r.remarks, r.note, r.packagingType, r.packagingTypeOther
     ].some((v)=>String(v || "").toLowerCase().includes(q));
     return monthMatch && supplierMatch && judgeMatch && materialMatch && searchMatch;
@@ -115,9 +163,9 @@ function IqcTab() {
       window.alert("다운로드할 수입검사 데이터가 없습니다.");
       return;
     }
-    const headers = ["입고번호","입고일자","검사일자","LOT No.","원재료명","업체명","입고수량","검사수량","불량수량","포장형태","기타 포장형태","입고 포장수량","용기당 중량","계산중량","바코드 발행수량","외관","라벨","중량","COA","검사자","종합판정","특이사항"];
+    const headers = ["입고번호","발주번호","입고일자","검사일자","LOT No.","원재료명","업체명","입고수량","검사수량","불량수량","포장형태","기타 포장형태","입고 포장수량","용기당 중량","계산중량","바코드 발행수량","외관","라벨","중량","COA","검사자","종합판정","특이사항"];
     const csvRows = filteredRows.map((r)=>[
-      r.inNo, r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
+      r.inNo, r.purchaseOrderNo || r.purchaseOrder || "", r.recv, r.inspectedAt, r.lot, r.name, r.supplier,
       r.qty, r.inspectQty, r.defectQty, r.packagingType || "", r.packagingTypeOther || "",
       r.packageQty ?? "", r.unitWeight ?? "", r.calculatedWeight ?? "", r.barcodeQty ?? "",
       r.visual, r.label, r.weight, r.coa, r.inspector || r.by, r.judge, r.remarks || r.note || ""
@@ -166,6 +214,7 @@ function IqcTab() {
     r.inNo !== editingInNo &&
     String(r.inNo || "").toUpperCase() === String(displayedInNo || "").trim().toUpperCase()
   );
+  const purchaseOrderOk = Boolean(String(form.purchaseOrderNo || "").trim());
   const lotOk = form.lot.trim().length >= 2;
   const qtyPattern = /^\d+(\.\d+)?(?:\s?(kg|g|t|EA|L|매|장|캔))?$/i;
   const qtyOk = qtyPattern.test(form.qty.trim());
@@ -188,6 +237,7 @@ function IqcTab() {
   const defectRangeOk = Number.isFinite(inspectNum) && Number.isFinite(defectNum) ? defectNum <= inspectNum : false;
   const inspectorOk = form.inspector.trim().length >= 1;
   const iqcErrors = [];
+  if (tried && !purchaseOrderOk) iqcErrors.push("발주번호를 선택하세요 — 발주현황과 연결해야 저장할 수 있습니다");
   if (tried && !inNoOk) iqcErrors.push(form.inNoMode === "auto" ? "입고번호를 생성할 수 없습니다 — 입고일자를 확인하세요" : "직접 입력할 입고번호를 2자 이상 입력하세요");
   if (tried && duplicateInNo) iqcErrors.push("이미 등록된 입고번호입니다 — 다른 번호를 입력하세요");
   if (form.lot.trim() !== "" && !lotOk) iqcErrors.push("LOT No.가 너무 짧습니다 — 2자 이상 입력");
@@ -206,15 +256,16 @@ function IqcTab() {
   if (tried && !form.recvDate) iqcErrors.push("입고일자를 선택하세요");
   if (tried && !form.inspectDate) iqcErrors.push("검사일자를 선택하세요");
   if (tried && !inspectorOk) iqcErrors.push("검사자를 입력하세요");
-  const iqcReady = Boolean(form.recvDate) && Boolean(form.inspectDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && packagingTypeOk && packageCountOk && packageUnitWeightOk && inspectorOk;
+  const iqcReady = purchaseOrderOk && Boolean(form.recvDate) && Boolean(form.inspectDate) && inNoOk && !duplicateInNo && lotOk && qtyOk && inspectQtyOk && defectQtyOk && defectRangeOk && packagingTypeOk && packageCountOk && packageUnitWeightOk && inspectorOk;
 
-  const addRow = () => {
+  const addRow = async () => {
     if (!iqcReady) { setTried(true); return; }
     const recv = form.recvDate;
     const previousInNo = editingInNo;
     const inNo = String(displayedInNo).trim();
     const rowData = {
-      inNo, recv, inspectedAt: form.inspectDate, lot: form.lot.trim(), code: "-", name: form.name,
+      inNo, purchaseOrderNo:String(form.purchaseOrderNo || "").trim(), purchaseLinkStatus:"발주연결",
+      recv, inspectedAt: form.inspectDate, lot: form.lot.trim(), code: "-", name: form.name,
       supplier: form.supplier.trim() || "-", qty: qmesQuantityWithUnit(form.qty, "kg"),
       inspectQty: qmesQuantityWithUnit(form.inspectQty, "EA"), defectQty: qmesQuantityWithUnit(form.defectQty, "EA"),
       packagingType:String(form.packagingType || "").trim(),
@@ -240,10 +291,19 @@ function IqcTab() {
     if (typeof window.qmesSyncUpsert === "function") {
       const lotRecord = DB.lots?.[rowData.lot] || null;
       const holds = (DB.holds || []).filter((item) => String(item.target || "").includes(rowData.lot));
-      window.qmesSyncUpsert("iqc", rowData.inNo, {
-        mode:"IQC", lotNo:rowData.lot, rows:[rowData], lotRecord, holds,
-        savedAt:new Date().toISOString(), savedBy:rowData.inspector || rowData.by || ""
-      }).catch((error) => console.warn("IQC 공용 DB 저장 실패:", error.message));
+      try {
+        await window.qmesSyncUpsert("iqc", rowData.inNo, {
+          mode:"IQC", lotNo:rowData.lot, rows:[rowData], lotRecord, holds,
+          previousInspectionNo:previousInNo && previousInNo !== rowData.inNo ? previousInNo : "",
+          savedAt:new Date().toISOString(), savedBy:rowData.inspector || rowData.by || ""
+        });
+      } catch (error) {
+        setRows(rows);
+        DB.iqc = rows;
+        dbSave();
+        window.alert(`발주현황 연동에 실패하여 저장하지 않았습니다.\n${error.message}`);
+        return;
+      }
     }
     document.dispatchEvent(new CustomEvent("qmes:data-updated", {
       detail:{type:"iqc", key:rowData.inNo, action:editingInNo ? "update" : "create"}
@@ -267,6 +327,7 @@ function IqcTab() {
     setEditingInNo(r.inNo);
     setForm({
       recvDate:(r.recv || today).slice(0,10), inspectDate:(r.inspectedAt || r.recv || today).slice(0,10), inNoMode:"auto", manualInNo:"",
+      purchaseOrderNo:r.purchaseOrderNo || r.purchaseOrder || "",
       lot:r.lot, name:r.name, supplier:r.supplier === "-" ? "" : (r.supplier || ""),
       qty:qmesStripQuantityUnit(r.qty || ""), inspectQty:qmesStripQuantityUnit(r.inspectQty || ""), defectQty:qmesStripQuantityUnit(r.defectQty || "0"),
       packagingType:r.packagingType || "", packagingTypeOther:r.packagingTypeOther || "",
@@ -382,13 +443,13 @@ function IqcTab() {
                 <col style={{width:"15%"}} /><col style={{width:"9%"}} /><col style={{width:"10%"}} /><col style={{width:"23%"}} />
               </colgroup>
               <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-                <th>입고일자</th><th>원재료명</th><th>업체명</th><th>LOT No.</th><th>검사자</th><th>판정</th><th className="text-center">관리</th>
+                <th>입고일자 / 발주번호</th><th>원재료명</th><th>업체명</th><th>LOT No.</th><th>검사자</th><th>판정</th><th className="text-center">관리</th>
               </tr></thead>
               <tbody>
                 {filteredRows.length === 0 && <tr><td colSpan={7} className="qmes-iqc-empty-row">검색 조건에 맞는 수입출하검사 검사 기록이 없습니다.</td></tr>}
                 {filteredRows.map((r) => (
                   <tr key={r.inNo || r.lot}>
-                    <td className="qmes-date-cell">{(r.recv || "-").slice(0,10)}</td>
+                    <td className="qmes-date-cell"><strong>{(r.recv || "-").slice(0,10)}</strong><small style={{display:"block",marginTop:3,color:r.purchaseOrderNo?"#0f8a83":"#dc2626",fontWeight:800}}>{r.purchaseOrderNo || r.purchaseOrder || "발주 미연결"}</small></td>
                     <td title={r.name}>{r.name || "-"}</td>
                     <td title={r.supplier}>{r.supplier || "-"}</td>
                     <td className="qmes-lot-cell" title={r.lot}>{r.lot || "-"}</td>
@@ -468,18 +529,19 @@ function IqcTab() {
               <div className="qmes-iqc-modal-section">
                 <h4>기본정보</h4>
                 <div className="qmes-iqc-modal-grid">
+                  <div className="qmes-iqc-field"><span>발주번호 *</span><select value={form.purchaseOrderNo} onChange={(e)=>selectPurchaseOrder(e.target.value)}><option value="">{purchaseLoadError || "발주현황에서 선택"}</option>{purchaseChoices.map((order)=>{const no=purchaseNoOf(order);const remaining=purchaseRemaining(order);return <option key={no} value={no}>{no} · {order.supplier || "-"} · {order.item || "-"} · 잔량 {remaining.toLocaleString()} {order.unit || "kg"} · {order.iqcStatus || order.receiptStatus || "미입고"}</option>;})}</select></div>
                   <div className="qmes-iqc-field"><span>입고번호</span><div className="qmes-iqc-inno-row"><select value={form.inNoMode} disabled={Boolean(editingInNo)} onChange={(e)=>setForm({...form,inNoMode:e.target.value,manualInNo:""})}><option value="auto">자동</option><option value="manual">직접</option></select><input value={displayedInNo} readOnly={Boolean(editingInNo)||form.inNoMode==="auto"} onChange={(e)=>setForm({...form,manualInNo:e.target.value})}/></div></div>
                   <div className="qmes-iqc-field"><span>입고일자</span><input type="date" value={form.recvDate} onChange={(e)=>setForm({...form,recvDate:e.target.value})}/></div>
                   <div className="qmes-iqc-field"><span>검사일자</span><input type="date" value={form.inspectDate} onChange={(e)=>setForm({...form,inspectDate:e.target.value})}/></div>
                   <div className="qmes-iqc-field"><span>LOT No.</span><input value={form.lot} onChange={(e)=>setForm({...form,lot:e.target.value})} placeholder="LOT No. 입력"/></div>
-                  <div className="qmes-iqc-field"><span>원재료명</span><div className="qmes-material-select-wrap"><select value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}>{materialOptions.map((m)=><option key={m}>{m}</option>)}</select><button type="button" onClick={addMaterialOption} className="qmes-material-add">+ 추가</button></div></div>
-                  <div className="qmes-iqc-field"><span>업체명</span><input value={form.supplier} onChange={(e)=>setForm({...form,supplier:e.target.value})} placeholder="업체명 입력"/></div>
+                  <div className="qmes-iqc-field"><span>원재료명</span>{form.purchaseOrderNo?<input value={form.name} readOnly/>:<div className="qmes-material-select-wrap"><select value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}>{[...new Set([...materialOptions,form.name].filter(Boolean))].map((m)=><option key={m}>{m}</option>)}</select><button type="button" onClick={addMaterialOption} className="qmes-material-add">+ 추가</button></div>}</div>
+                  <div className="qmes-iqc-field"><span>업체명</span><input value={form.supplier} readOnly={Boolean(form.purchaseOrderNo)} onChange={(e)=>setForm({...form,supplier:e.target.value})} placeholder="발주 선택 시 자동 입력"/></div>
                 </div>
               </div>
               <div className="qmes-iqc-modal-section">
                 <h4>수량</h4>
                 <div className="qmes-iqc-modal-grid qmes-iqc-modal-grid-qty">
-                  <div className="qmes-iqc-field"><span>입고수량</span><input inputMode="decimal" value={form.qty} onFocus={(e)=>setForm({...form,qty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,qty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,qty:qmesQuantityWithUnit(e.target.value,"kg")}))} placeholder="kg"/></div>
+                  <div className="qmes-iqc-field"><span>입고수량</span><input inputMode="decimal" value={form.qty} readOnly={Boolean(form.purchaseOrderNo)} onFocus={(e)=>setForm({...form,qty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,qty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,qty:qmesQuantityWithUnit(e.target.value,"kg")}))} placeholder="kg"/></div>
                   <div className="qmes-iqc-field"><span>검사수량</span><input inputMode="decimal" value={form.inspectQty} onFocus={(e)=>setForm({...form,inspectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,inspectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,inspectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
                   <div className="qmes-iqc-field"><span>불량수량</span><input inputMode="decimal" value={form.defectQty} onFocus={(e)=>setForm({...form,defectQty:qmesStripQuantityUnit(e.target.value)})} onChange={(e)=>setForm({...form,defectQty:e.target.value.replace(/[^0-9.]/g,"")})} onBlur={(e)=>setForm((prev)=>({...prev,defectQty:qmesQuantityWithUnit(e.target.value,"EA")}))} placeholder="EA"/></div>
                 </div>
