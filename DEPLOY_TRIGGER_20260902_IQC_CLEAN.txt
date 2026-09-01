@@ -1,0 +1,9 @@
+QMES IQC clean runtime deploy trigger
+2026-09-02 KST
+Reason: live IQC certificate remained on legacy styling because post-login runtime scripts re-injected old certificate CSS and inline styles.
+Deploy set:
+- new quality inspection UI script with no official certificate styling
+- new OQC-only report refinement script
+- legacy IQC certificate override scripts removed
+- IQC final CSS remains the sole certificate style owner
+No database rows or inspection records are modified.
