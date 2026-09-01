@@ -1049,10 +1049,15 @@ function normalizePurchaseInput(input, current = {}) {
 }
 
 function validatePurchaseInput(body) {
+  const importedHistory = body.purchase_type === 'ERP 이관';
   if (!body.supplier || !body.item) return '협력사와 품목을 입력하세요.';
   if (!Number.isFinite(body.qty) || body.qty <= 0) return '발주수량은 0보다 커야 합니다.';
-  if (!body.order_date || !body.requested_due_date) return '발주일과 납기 요청일을 확인하세요.';
-  if (body.requested_due_date < body.order_date) return '납기 요청일은 발주일보다 빠를 수 없습니다.';
+  if (!body.order_date || (!importedHistory && !body.requested_due_date)) {
+    return importedHistory ? '발주일을 확인하세요.' : '발주일과 납기 요청일을 확인하세요.';
+  }
+  if (body.requested_due_date && body.requested_due_date < body.order_date) {
+    return '납기 요청일은 발주일보다 빠를 수 없습니다.';
+  }
   if (!Number.isFinite(body.unit_price) || body.unit_price < 0) return '단가를 확인하세요.';
   if (!Number.isFinite(body.received_qty) || body.received_qty < 0 || body.received_qty > body.qty) {
     return '입고수량은 0 이상, 발주수량 이하여야 합니다.';
