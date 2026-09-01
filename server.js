@@ -298,6 +298,13 @@ async function ensureSchema() {
     CREATE INDEX IF NOT EXISTS purchase_receipts_order_idx
       ON purchase_receipts (purchase_order_id, receipt_date DESC, created_at DESC);
 
+    ALTER TABLE purchase_receipts
+      ADD COLUMN IF NOT EXISTS inspection_no TEXT DEFAULT '';
+
+    CREATE UNIQUE INDEX IF NOT EXISTS purchase_receipts_inspection_no_uq
+      ON purchase_receipts (inspection_no)
+      WHERE COALESCE(inspection_no, '') <> '';
+
     CREATE TABLE IF NOT EXISTS iqc (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       date DATE NOT NULL,
@@ -1288,6 +1295,335 @@ app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   }
 });
 
+
+function parseIqcQuantity(value) {
+  const match = String(value == null ? '' : value).replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function iqcResultStatus(row) {
+  const values = [
+    row?.judge, row?.status, row?.visual, row?.label, row?.weight, row?.coa
+  ].map((value) => txt(value));
+  if (values.some((value) => /불합격|부적합|반품/.test(value))) return '불합격';
+  if (txt(row?.judge) === '합격' || values.filter(Boolean).some((value) => value === '합격')) return '합격';
+  return '검사대기';
+}
+
+function purchaseMaterialFamily(value) {
+  const source = txt(value).toLowerCase().replace(/\s+/g, '');
+  if (/boehmite|aoh30/.test(source)) return 'BOEHMITE';
+  if (/solef|pvdf/.test(source)) return 'PVDF';
+  if (/adc30|sbr/.test(source)) return 'SBR';
+  if (/ktr|sbs/.test(source)) return 'SBS';
+  if (/pai/.test(source)) return 'PAI';
+  if (/nmp/.test(source)) return 'NMP';
+  if (/byk.?180/.test(source)) return 'BYK180';
+  return source.replace(/[^a-z0-9가-힣]/g, '').toUpperCase();
+}
+
+function purchaseSupplierAffinity(left, right) {
+  const a = txt(left).toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+  const b = txt(right).toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+  if (!a || !b) return false;
+  if (a.includes(b) || b.includes(a)) return true;
+  return [
+    ['lg', 'lgchemical', 'lg화학'],
+    ['금호'],
+    ['강신'],
+    ['모리토루'],
+    ['코오롱'],
+    ['solvay', '한국사이언스코'],
+    ['푸양', 'puyang', '케미렉스'],
+  ].some((group) => group.some((key) => a.includes(key)) && group.some((key) => b.includes(key)));
+}
+
+function purchaseDateDistance(left, right) {
+  const a = Date.parse(String(left || '').slice(0, 10));
+  const b = Date.parse(String(right || '').slice(0, 10));
+  return Number.isFinite(a) && Number.isFinite(b) ? Math.abs(a - b) / 86400000 : Number.POSITIVE_INFINITY;
+}
+
+async function refreshPurchaseFromReceipts(client, purchaseOrderId, userName) {
+  const orderResult = await client.query('SELECT * FROM purchase_orders WHERE id = $1 FOR UPDATE', [purchaseOrderId]);
+  if (!orderResult.rowCount) return null;
+  const order = orderResult.rows[0];
+  const receiptResult = await client.query(
+    'SELECT * FROM purchase_receipts WHERE purchase_order_id = $1 ORDER BY receipt_date, created_at',
+    [purchaseOrderId]
+  );
+  const receipts = receiptResult.rows;
+  const total = receipts.reduce((sum, receipt) => sum + Number(receipt.qty || 0), 0);
+  const receivedQty = Math.min(Number(order.qty || 0), total);
+  const statuses = receipts.map((receipt) => txt(receipt.iqc_status));
+  const hasFailure = statuses.some((status) => status === '불합격');
+  const allPassed = receipts.length > 0 && statuses.every((status) => status === '합격');
+  const receiptStatus = receipts.length === 0
+    ? (order.purchase_type === 'ERP 이관' ? '미연결' : '미입고')
+    : (receivedQty >= Number(order.qty || 0) ? '입고완료' : '부분입고');
+  const iqcStatus = receipts.length === 0
+    ? '검사 미연결'
+    : hasFailure
+      ? '불합격'
+      : allPassed
+        ? (receivedQty >= Number(order.qty || 0) ? '합격' : '부분합격')
+        : '검사대기';
+  const status = hasFailure
+    ? '입고보류'
+    : receiptStatus === '입고완료' && iqcStatus === '합격'
+      ? '입고완료'
+      : receiptStatus === '미연결' || receiptStatus === '미입고'
+        ? '입고확인대기'
+        : '입고진행';
+  const latest = receipts[receipts.length - 1] || {};
+  const updated = await client.query(
+    `UPDATE purchase_orders
+     SET received_qty = $1, receipt_status = $2, receipt_date = $3,
+         material_lot = $4, iqc_required = TRUE, iqc_status = $5,
+         status = $6, updated_by = $7, updated_at = NOW()
+     WHERE id = $8
+     RETURNING *`,
+    [
+      receivedQty,
+      receiptStatus,
+      latest.receipt_date || null,
+      txt(latest.material_lot),
+      iqcStatus,
+      status,
+      userName,
+      purchaseOrderId,
+    ]
+  );
+  return updated.rows[0] || null;
+}
+
+async function syncIqcPayloadToPurchase(client, payload, userName) {
+  const touched = new Set();
+  const deleted = Boolean(payload?.deleted);
+  for (const row of arr(payload?.rows)) {
+    const inspectionNo = txt(row?.inNo || row?.inspectionNo || row?.id);
+    const previousInspectionNo = txt(payload?.previousInspectionNo || row?.previousInspectionNo);
+    if (!inspectionNo) continue;
+
+    const existingResult = await client.query(
+      `SELECT * FROM purchase_receipts
+       WHERE inspection_no = $1
+          OR ($2 <> '' AND inspection_no = $2)
+       ORDER BY CASE WHEN inspection_no = $1 THEN 0 ELSE 1 END
+       LIMIT 1`,
+      [inspectionNo, previousInspectionNo]
+    );
+    const existing = existingResult.rows[0] || null;
+
+    if (deleted) {
+      if (existing) {
+        touched.add(existing.purchase_order_id);
+        await client.query('DELETE FROM purchase_receipts WHERE id = $1', [existing.id]);
+      }
+      continue;
+    }
+
+    const purchaseNo = txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo);
+    if (!purchaseNo) continue;
+    const orderResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_no = $1
+       FOR UPDATE`,
+      [purchaseNo]
+    );
+    if (!orderResult.rowCount) throw new Error(`발주번호 ${purchaseNo}를 찾을 수 없습니다.`);
+    const order = orderResult.rows[0];
+    if (/취소/.test(txt(order.status))) throw new Error(`취소된 발주 ${purchaseNo}에는 수입검사를 연결할 수 없습니다.`);
+
+    if (existing && String(existing.purchase_order_id) !== String(order.id)) {
+      touched.add(existing.purchase_order_id);
+    }
+
+    let receipt = existing;
+    if (!receipt) {
+      const placeholderResult = await client.query(
+        `SELECT * FROM purchase_receipts
+         WHERE purchase_order_id = $1
+           AND COALESCE(inspection_no, '') = ''
+         ORDER BY
+           CASE
+             WHEN COALESCE(material_lot, '') <> '' AND material_lot = $2 THEN 0
+             WHEN receipt_date = $3 THEN 1
+             ELSE 2
+           END,
+           created_at DESC
+         LIMIT 1
+         FOR UPDATE`,
+        [
+          order.id,
+          txt(row?.lot || row?.materialLot),
+          purchaseDate(row?.recv || row?.receiptDate || row?.date || row?.inspectedAt, new Date().toISOString().slice(0, 10)),
+        ]
+      );
+      receipt = placeholderResult.rows[0] || null;
+    }
+
+    const otherTotals = await client.query(
+      `SELECT COALESCE(SUM(qty), 0) AS total
+       FROM purchase_receipts
+       WHERE purchase_order_id = $1
+         AND ($2::uuid IS NULL OR id <> $2::uuid)`,
+      [order.id, receipt?.id || null]
+    );
+    const remaining = Math.max(0, Number(order.qty || 0) - Number(otherTotals.rows[0]?.total || 0));
+    if (remaining <= 0) throw new Error(`발주 ${purchaseNo}의 미입고 잔량이 없습니다.`);
+    const requestedQty = parseIqcQuantity(row?.qty ?? row?.incomingQty ?? row?.receivedQty) || remaining;
+    const receiptQty = Math.min(requestedQty, remaining);
+    const receiptDate = purchaseDate(
+      row?.recv || row?.receiptDate || row?.date || row?.inspectedAt,
+      new Date().toISOString().slice(0, 10)
+    );
+    const materialLot = txt(row?.lot || row?.materialLot);
+    const iqcStatus = iqcResultStatus(row);
+    const note = `수입검사 연계 · ${inspectionNo}`;
+
+    if (receipt) {
+      await client.query(
+        `UPDATE purchase_receipts
+         SET purchase_order_id = $1, receipt_date = $2, qty = $3,
+             material_lot = $4, iqc_status = $5, note = $6,
+             inspection_no = $7
+         WHERE id = $8`,
+        [order.id, receiptDate, receiptQty, materialLot, iqcStatus, note, inspectionNo, receipt.id]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO purchase_receipts
+         (purchase_order_id, receipt_date, qty, material_lot, iqc_status, note, created_by, inspection_no)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [order.id, receiptDate, receiptQty, materialLot, iqcStatus, note, userName, inspectionNo]
+      );
+    }
+    touched.add(order.id);
+  }
+
+  for (const purchaseOrderId of touched) {
+    await refreshPurchaseFromReceipts(client, purchaseOrderId, userName);
+  }
+  return touched.size;
+}
+
+async function ensurePurchaseIqcReconciliation() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const marker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-iqc-link-v1'`
+    );
+    if (marker.rowCount) {
+      await client.query('COMMIT');
+      return;
+    }
+
+    for (const [purchaseNo, orderDate] of PURCHASE_HISTORY_SEED) {
+      await client.query(
+        `UPDATE purchase_orders
+         SET order_date = $2, receipt_status = '미연결', received_qty = 0,
+             receipt_date = NULL, material_lot = '', iqc_required = TRUE,
+             iqc_status = '검사 미연결', status = '입고확인대기',
+             updated_by = 'SYSTEM', updated_at = NOW()
+         WHERE purchase_no = $1
+           AND purchase_type = 'ERP 이관'
+           AND created_by = 'SYSTEM'`,
+        [purchaseNo, orderDate]
+      );
+    }
+    await client.query(
+      `DELETE FROM purchase_receipts
+       WHERE purchase_order_id IN (
+         SELECT id FROM purchase_orders
+         WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       )`
+    );
+
+    const ordersResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       ORDER BY order_date, purchase_no`
+    );
+    const orders = ordersResult.rows;
+    const byNo = new Map(orders.map((order) => [order.purchase_no, order]));
+    const used = new Set();
+    const iqcRecords = await client.query(
+      `SELECT record_key, payload
+       FROM qmes_sync_records
+       WHERE record_type = 'iqc'
+       ORDER BY updated_at, record_key`
+    );
+    let matched = 0;
+    let unmatched = 0;
+
+    for (const record of iqcRecords.rows) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {};
+      if (payload.deleted) continue;
+      const nextRows = [];
+      for (const row of arr(payload.rows)) {
+        let order = byNo.get(txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo)) || null;
+        if (order && used.has(order.purchase_no)) order = null;
+        if (!order) {
+          const family = purchaseMaterialFamily(row?.name || row?.item);
+          const rowDate = row?.recv || row?.date || row?.inspectedAt;
+          const candidates = orders
+            .filter((candidate) => !used.has(candidate.purchase_no))
+            .filter((candidate) => family && purchaseMaterialFamily(candidate.item) === family)
+            .map((candidate) => ({
+              candidate,
+              distance: purchaseDateDistance(rowDate, candidate.order_date),
+              supplier: purchaseSupplierAffinity(row?.supplier, candidate.supplier),
+            }))
+            .filter((entry) => entry.distance <= 14)
+            .sort((a, b) => a.distance - b.distance || Number(b.supplier) - Number(a.supplier));
+          order = candidates[0]?.candidate || null;
+        }
+        if (order) {
+          used.add(order.purchase_no);
+          matched += 1;
+          nextRows.push({
+            ...row,
+            purchaseOrderNo: order.purchase_no,
+            purchaseLinkStatus: '발주연결',
+          });
+        } else {
+          unmatched += 1;
+          nextRows.push({
+            ...row,
+            purchaseOrderNo: '',
+            purchaseLinkStatus: '미연결',
+          });
+        }
+      }
+      const nextPayload = { ...payload, rows: nextRows, purchaseLinkedAt: new Date().toISOString() };
+      await client.query(
+        `UPDATE qmes_sync_records
+         SET payload = $1::jsonb, updated_by = 'SYSTEM', updated_at = NOW()
+         WHERE record_type = 'iqc' AND record_key = $2`,
+        [JSON.stringify(nextPayload), record.record_key]
+      );
+      await syncIqcPayloadToPurchase(client, nextPayload, 'SYSTEM');
+    }
+
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ('purchase', 'seed:purchase-iqc-link-v1', $1::jsonb, 'SYSTEM', NOW())
+       ON CONFLICT (record_type, record_key) DO NOTHING`,
+      [JSON.stringify({ version: 1, matched, unmatched })]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   const type = qmesSyncType(req, res);
   if (!type) return;
@@ -1296,6 +1632,47 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   if (!key || !inputPayload || typeof inputPayload !== 'object' || Array.isArray(inputPayload)) {
     return fail(res, 400, '기록 키와 저장 데이터를 확인하세요.');
   }
+  if (type === 'iqc') {
+    const client = await pool.connect();
+    let beforePayload = null;
+    let saved = null;
+    try {
+      await client.query('BEGIN');
+      const before = await client.query(
+        'SELECT payload FROM qmes_sync_records WHERE record_type = $1 AND record_key = $2',
+        [type, key]
+      );
+      beforePayload = before.rows[0]?.payload || null;
+      const userName = txt(req.session?.user?.name);
+      const result = await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ($1, $2, $3::jsonb, $4, NOW())
+         ON CONFLICT (record_type, record_key)
+         DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+         RETURNING record_type, record_key, payload, updated_by, updated_at`,
+        [type, key, JSON.stringify(inputPayload), userName]
+      );
+      saved = result.rows[0];
+      await syncIqcPayloadToPurchase(client, inputPayload, userName);
+      await syncPurchaseOrdersToLegacy(client, userName);
+      await client.query('COMMIT');
+      await auditLog(
+        req,
+        before.rowCount ? 'UPDATE' : 'CREATE',
+        'qmes_sync_records',
+        `${type}:${key}`,
+        beforePayload,
+        inputPayload
+      );
+      return ok(res, saved, '수입검사와 발주현황이 함께 저장되었습니다.');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      return fail(res, 500, err.message);
+    } finally {
+      client.release();
+    }
+  }
+
   try {
     const payload = type === 'inventory' && key === 'erp:purchase'
       ? normalizeLegacyPurchasePayload(inputPayload)
@@ -1343,6 +1720,7 @@ function mapPurchaseReceipt(row) {
     materialLot: row.material_lot,
     expiryDate: purchaseDate(row.expiry_date),
     iqcStatus: row.iqc_status,
+    inspectionNo: row.inspection_no || '',
     note: row.note,
     createdBy: row.created_by,
     createdAt: row.created_at,
@@ -2923,6 +3301,7 @@ app.get('*', (_req, res) => {
 ensureSchema()
   .then(async () => {
     await ensurePurchaseHistory();
+    await ensurePurchaseIqcReconciliation();
 
     const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const adminPassword = String(process.env.ADMIN_PASSWORD || '');
