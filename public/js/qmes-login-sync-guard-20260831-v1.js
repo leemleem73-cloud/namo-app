@@ -13,6 +13,7 @@
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260901-authgate1";
+  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260901.js?v=20260901-quality1";
   const nativeFetch=global.fetch.bind(global);
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
@@ -97,6 +98,14 @@
     return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));
   }
 
+  function loadQualityInspectionUi(){
+    if(Array.from(document.scripts).some(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260901.js"))) return;
+    const script=document.createElement("script");
+    script.src=QUALITY_UI_SRC;
+    script.async=false;
+    document.head.appendChild(script);
+  }
+
   function releaseSidebarAfterLogin(){
     if(!sidebarDeferred) return;
     let attempts=0;
@@ -108,6 +117,7 @@
         return;
       }
       sidebarDeferred=false;
+      loadQualityInspectionUi();
       try{delete global[SIDEBAR_GUARD];}catch(_error){global[SIDEBAR_GUARD]=false;}
       if(Array.from(document.scripts).some(script=>String(script.src||"").includes("20260901-authgate1"))) return;
       const script=document.createElement("script");
