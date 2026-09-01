@@ -1,4 +1,4 @@
-/* QMES Stage 12 operational loader v72
+/* QMES Stage 12 operational loader v73
  * Login-safe runtime gate - 2026-08-31.
  * F5 optimization: only one New Sales Order implementation is loaded.
  * V11 owns the four-step integrated New Sales Order screen directly.
@@ -7,8 +7,8 @@
  */
 (function(){
   "use strict";
-  if(window.__QMES_STAGE12_RUNTIME_V72__) return;
-  window.__QMES_STAGE12_RUNTIME_V72__=true;
+  if(window.__QMES_STAGE12_RUNTIME_V73__) return;
+  window.__QMES_STAGE12_RUNTIME_V73__=true;
 
   const STYLE_DEFS=[
     ["qmes-enterprise-ui-20260826","./css/qmes-enterprise-ui-20260826.css?v=20260826-enterprise3",false],
@@ -33,6 +33,7 @@
 
   const files=[
     "./js/qmes-sales-new-order-integrated-20260901-v11.js?v=20260901-integrated1",
+    "./js/qmes-sales-new-order-layout-hotfix-20260901-v12.js?v=20260901-layoutfix1",
     "./js/qmes-sales-bootstrap-stability-20260828-v1.js?v=20260828-1",
     "./js/qmes-sales-detail-drawer-safe-20260828-v2.js?v=20260828-1",
     "./js/qmes-sales-workorder-view-bridge-20260831-v1.js?v=20260831-1",
