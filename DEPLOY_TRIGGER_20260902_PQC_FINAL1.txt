@@ -1,0 +1,7 @@
+2026-09-02 PQC certificate visual alignment
+
+- Added PQC-only runtime styling: public/js/qmes-pqc-report-fix-20260902.js
+- PQC logo, table row height, typography and border colors aligned to the final shipment-report visual baseline.
+- PQC 작성/검토/승인 uses the same sign-table proportions as OQC.
+- IQC and OQC runtime styling remains unchanged.
+- Login bootstrap loads PQC final1 after the existing IQC/OQC shared6 runtime.
