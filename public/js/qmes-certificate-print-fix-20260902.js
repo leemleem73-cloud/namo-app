@@ -1,10 +1,10 @@
 /* NAMO QMES - IQC/PQC/OQC certificate print isolation - 2026-09-02 */
 (function installCertificatePrintFix(global){
   "use strict";
-  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V9__) return;
-  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V9__=true;
+  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V10__) return;
+  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V10__=true;
 
-  const STYLE_ID="qmes-cert-print-isolation-20260902-v9";
+  const STYLE_ID="qmes-cert-print-isolation-20260902-v10";
   const SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";
   let target=null;
 
@@ -46,7 +46,6 @@
     overflow:visible!important;box-shadow:none!important;
   }
 
-  /* IQC + PQC only: remove grey wrapper/background artifacts. OQC is intentionally untouched. */
   body.qmes-cert-print-iqc,
   body.qmes-cert-print-pqc,
   body.qmes-cert-print-iqc #root,
@@ -68,7 +67,6 @@
     content:none!important;display:none!important;background:none!important;box-shadow:none!important;
   }
 
-  /* IQC only: keep current vertical centering behavior. */
   body.qmes-cert-print-iqc{width:200mm!important;min-height:287mm!important;}
   body.qmes-cert-print-iqc .qmes-cert-print-iqc-stage{
     width:200mm!important;min-height:287mm!important;margin:0 auto!important;padding:0!important;
@@ -79,10 +77,8 @@
     margin:auto!important;transform:translateY(4mm)!important;
   }
 
-  /* PQC only: move the certificate slightly down for visual A4 centering. */
-  body.qmes-cert-print-pqc .qmes-cert-print-target{
-    transform:translateY(5mm)!important;
-  }
+  /* PQC only: lower than V9 for visual A4 centering. */
+  body.qmes-cert-print-pqc .qmes-cert-print-target{transform:translateY(10mm)!important;}
 
   body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,
   body.qmes-cert-print-live .qmes-cert-print-target button,
@@ -98,24 +94,8 @@
 
   function visible(el){if(!el)return false;const r=el.getBoundingClientRect(),s=global.getComputedStyle(el);return s.display!=="none"&&s.visibility!=="hidden"&&r.width>0&&r.height>0;}
   function findActiveCertificate(){const docs=Array.from(document.querySelectorAll(SELECTOR));return docs.find(visible)||docs[docs.length-1]||null;}
-  function clearMarks(){
-    document.querySelectorAll(".qmes-cert-print-path,.qmes-cert-print-target,.qmes-cert-print-iqc-stage").forEach(el=>el.classList.remove("qmes-cert-print-path","qmes-cert-print-target","qmes-cert-print-iqc-stage"));
-    document.body.classList.remove("qmes-cert-print-live","qmes-cert-print-iqc","qmes-cert-print-pqc","qmes-cert-print-oqc");
-  }
-  function prepare(){
-    clearMarks();installStyle();target=findActiveCertificate();if(!target)return;
-    target.classList.add("qmes-cert-print-target","qmes-cert-print-path");
-    let node=target.parentElement;while(node&&node!==document.body){node.classList.add("qmes-cert-print-path");node=node.parentElement;}
-    document.body.classList.add("qmes-cert-print-live");
-    if(target.classList.contains("qmes-iqc-doc")){
-      document.body.classList.add("qmes-cert-print-iqc");
-      const parent=target.parentElement;if(parent)parent.classList.add("qmes-cert-print-iqc-stage");
-    }else if(target.classList.contains("qmes-pqc-doc")){
-      document.body.classList.add("qmes-cert-print-pqc");
-    }else{
-      document.body.classList.add("qmes-cert-print-oqc");
-    }
-  }
+  function clearMarks(){document.querySelectorAll(".qmes-cert-print-path,.qmes-cert-print-target,.qmes-cert-print-iqc-stage").forEach(el=>el.classList.remove("qmes-cert-print-path","qmes-cert-print-target","qmes-cert-print-iqc-stage"));document.body.classList.remove("qmes-cert-print-live","qmes-cert-print-iqc","qmes-cert-print-pqc","qmes-cert-print-oqc");}
+  function prepare(){clearMarks();installStyle();target=findActiveCertificate();if(!target)return;target.classList.add("qmes-cert-print-target","qmes-cert-print-path");let node=target.parentElement;while(node&&node!==document.body){node.classList.add("qmes-cert-print-path");node=node.parentElement;}document.body.classList.add("qmes-cert-print-live");if(target.classList.contains("qmes-iqc-doc")){document.body.classList.add("qmes-cert-print-iqc");const parent=target.parentElement;if(parent)parent.classList.add("qmes-cert-print-iqc-stage");}else if(target.classList.contains("qmes-pqc-doc")){document.body.classList.add("qmes-cert-print-pqc");}else{document.body.classList.add("qmes-cert-print-oqc");}}
   function cleanup(){clearMarks();target=null;}
   installStyle();global.addEventListener("beforeprint",prepare);global.addEventListener("afterprint",cleanup);
 })(window);
