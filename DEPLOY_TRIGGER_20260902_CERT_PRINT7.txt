@@ -1,0 +1,7 @@
+NAMO QMES CERTIFICATE PRINT7 DEPLOY TRIGGER
+- Hard isolate certificate print from application/sidebar tree
+- Always hide sync sidebar, hamburger, and top menu in print
+- Reset sidebar-induced main margin/width during print
+- Preserve live certificate styling
+- IQC vertical centering remains IQC-only
+- PQC/OQC keep existing certificate layout
