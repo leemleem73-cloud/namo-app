@@ -2,10 +2,10 @@
    PQC only. IQC/OQC are intentionally untouched. */
 (function installPqcReportFix(global){
   "use strict";
-  if(global.__QMES_PQC_REPORT_FIX_20260902_V2__) return;
-  global.__QMES_PQC_REPORT_FIX_20260902_V2__=true;
+  if(global.__QMES_PQC_REPORT_FIX_20260902_V3__) return;
+  global.__QMES_PQC_REPORT_FIX_20260902_V3__=true;
 
-  const STYLE_ID="qmes-pqc-report-fix-20260902-v2";
+  const STYLE_ID="qmes-pqc-report-fix-20260902-v3";
   const DOC_SELECTOR=".qmes-pqc-doc";
   function important(el,prop,value){if(el)el.style.setProperty(prop,value,"important");}
 
@@ -22,18 +22,20 @@ html body #root .qmes-pqc-doc table.qmes-iqc2-table tr{height:35px!important;min
 html body #root .qmes-pqc-doc table.qmes-iqc2-table th,html body #root .qmes-pqc-doc table.qmes-iqc2-table td{height:35px!important;min-height:35px!important;padding-top:3px!important;padding-bottom:3px!important;vertical-align:middle!important;text-align:center!important;border:1px solid #94a3b8!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;}
 html body #root .qmes-pqc-doc .qmes-iqc2-item-cell,html body #root .qmes-pqc-doc .qmes-iqc2-spec-cell{text-align:center!important;vertical-align:middle!important;}
 html body #root .qmes-pqc-doc .qmes-iqc2-remarks{min-height:35px!important;padding-top:3px!important;padding-bottom:3px!important;border-color:#94a3b8!important;}
+html body #root .qmes-pqc-doc .qmes-iqc2-first table.qmes-iqc2-table tbody td:first-child{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;font-size:11.5px!important;letter-spacing:-.15px!important;padding-left:2px!important;padding-right:2px!important;}
 html body #root .qmes-pqc-doc .qmes-iqc2-auth-row.qmes-pqo-sign-only{display:flex!important;justify-content:flex-end!important;align-items:stretch!important;width:100%!important;box-sizing:border-box!important;}
 html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table{border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;flex:0 1 42%!important;width:42%!important;max-width:42%!important;min-width:0!important;box-sizing:border-box!important;}
 html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table th,html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table td{padding-top:1px!important;padding-bottom:1px!important;vertical-align:middle!important;text-align:center!important;border:1px solid #94a3b8!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;font-size:12px!important;line-height:1.25!important;}
 html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:first-child,html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:first-child th{height:22px!important;min-height:22px!important;}
-html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2),html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{height:38px!important;min-height:38px!important;}
+html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2),html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{height:46px!important;min-height:46px!important;}
 @media print{
 html body #root .qmes-pqc-doc table.qmes-iqc2-table{border-collapse:collapse!important;border-spacing:0!important;}
 html body #root .qmes-pqc-doc table.qmes-iqc2-table tr,html body #root .qmes-pqc-doc table.qmes-iqc2-table th,html body #root .qmes-pqc-doc table.qmes-iqc2-table td{height:35px!important;min-height:35px!important;padding-top:3px!important;padding-bottom:3px!important;vertical-align:middle!important;}
 html body #root .qmes-pqc-doc table.qmes-iqc2-table th,html body #root .qmes-pqc-doc table.qmes-iqc2-table td,html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table th,html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table td{border:1px solid #94a3b8!important;}
 html body #root .qmes-pqc-doc .qmes-iqc2-remarks{border-color:#94a3b8!important;}
+html body #root .qmes-pqc-doc .qmes-iqc2-first table.qmes-iqc2-table tbody td:first-child{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;font-size:11.5px!important;letter-spacing:-.15px!important;padding-left:2px!important;padding-right:2px!important;}
 html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:first-child,html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:first-child th{height:22px!important;min-height:22px!important;padding-top:1px!important;padding-bottom:1px!important;}
-html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2),html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{height:38px!important;min-height:38px!important;}
+html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2),html body #root .qmes-pqc-doc .qmes-pqo-sign-only table.qmes-iqc2-sign-table tbody tr:nth-child(2) td{height:46px!important;min-height:46px!important;}
 html body #root .qmes-pqc-doc .qmes-iqc2-sec-title{border-bottom:1.5px solid #243b5a!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
 `;
@@ -41,8 +43,7 @@ html body #root .qmes-pqc-doc .qmes-iqc2-sec-title{border-bottom:1.5px solid #24
   }
 
   function fixLogo(doc){
-    const logo=doc.querySelector(".qmes-iqc-header-logo");
-    if(!logo)return;
+    const logo=doc.querySelector(".qmes-iqc-header-logo");if(!logo)return;
     if(!String(logo.getAttribute("src")||"").includes("logo.png")) logo.setAttribute("src","./logo.png");
     important(logo,"filter","none");important(logo,"opacity","1");important(logo,"transform","scale(.98)");important(logo,"transform-origin","left center");important(logo,"max-width","98%");important(logo,"height","auto");
   }
@@ -58,6 +59,16 @@ html body #root .qmes-pqc-doc .qmes-iqc2-sec-title{border-bottom:1.5px solid #24
     doc.querySelectorAll(".qmes-iqc2-remarks").forEach(el=>{important(el,"min-height","35px");important(el,"padding-top","3px");important(el,"padding-bottom","3px");important(el,"border-color","#94a3b8");});
   }
 
+  function fixProcessNumber(doc){
+    const firstCell=doc.querySelector(".qmes-iqc2-first table.qmes-iqc2-table tbody tr:first-child td:first-child");
+    if(!firstCell)return;
+    important(firstCell,"white-space","nowrap");important(firstCell,"word-break","keep-all");important(firstCell,"overflow-wrap","normal");important(firstCell,"font-size","11.5px");important(firstCell,"letter-spacing","-.15px");important(firstCell,"padding-left","2px");important(firstCell,"padding-right","2px");
+  }
+
+  function clearEmptyRemarks(doc){
+    doc.querySelectorAll(".qmes-iqc2-remarks").forEach(el=>{if(String(el.textContent||"").trim()==="-")el.textContent="";});
+  }
+
   function fixApproval(doc){
     const row=doc.querySelector(".qmes-iqc2-auth-row.qmes-pqo-sign-only");if(!row)return;
     important(row,"display","flex");important(row,"justify-content","flex-end");important(row,"align-items","stretch");important(row,"width","100%");
@@ -66,10 +77,10 @@ html body #root .qmes-pqc-doc .qmes-iqc2-sec-title{border-bottom:1.5px solid #24
     table.querySelectorAll("th,td").forEach(cell=>{important(cell,"border","1px solid #94a3b8");important(cell,"box-sizing","border-box");important(cell,"font-size","12px");important(cell,"line-height","1.25");important(cell,"text-align","center");important(cell,"vertical-align","middle");important(cell,"padding-top","1px");important(cell,"padding-bottom","1px");});
     const rows=table.querySelectorAll("tbody tr");
     if(rows[0]){important(rows[0],"height","22px");important(rows[0],"min-height","22px");rows[0].querySelectorAll("th").forEach(cell=>{important(cell,"height","22px");important(cell,"min-height","22px");});}
-    if(rows[1]){important(rows[1],"height","38px");important(rows[1],"min-height","38px");rows[1].querySelectorAll("td").forEach(cell=>{important(cell,"height","38px");important(cell,"min-height","38px");});}
+    if(rows[1]){important(rows[1],"height","46px");important(rows[1],"min-height","46px");rows[1].querySelectorAll("td").forEach(cell=>{important(cell,"height","46px");important(cell,"min-height","46px");});}
   }
 
   function fixSectionHeader(doc){doc.querySelectorAll(".qmes-iqc2-sec-title").forEach(el=>{important(el,"border-bottom","1.5px solid #243b5a");important(el,"border-color","#243b5a");important(el,"text-align","center");important(el,"padding-left","0");important(el,"border-left","0");});}
-  function apply(){installStyle();document.querySelectorAll(DOC_SELECTOR).forEach(doc=>{fixLogo(doc);fixTypography(doc);fixRowsAndBorders(doc);fixApproval(doc);fixSectionHeader(doc);});}
+  function apply(){installStyle();document.querySelectorAll(DOC_SELECTOR).forEach(doc=>{fixLogo(doc);fixTypography(doc);fixRowsAndBorders(doc);fixProcessNumber(doc);clearEmptyRemarks(doc);fixApproval(doc);fixSectionHeader(doc);});}
   apply();new MutationObserver(apply).observe(document.getElementById("root")||document.body,{childList:true,subtree:true});
 })(window);
