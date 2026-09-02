@@ -1,0 +1,10 @@
+Force deploy for IQC certificate shared4 refinements.
+
+Changes:
+- Keep barcode and QR contents unchanged.
+- Remove only the inner rounded frame (.qmes-iqc-code-area) inside the certificate code box.
+- Lighten the outer square code-box border to #cbd5e1.
+- Reduce IQC 작성/검토/승인 lower row height from 42px to 32px.
+- Bump post-login runtime URL to 20260902-iqc-oqc-shared4.
+
+No inspection data, DB, PQC, or OQC business logic changes.
