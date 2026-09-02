@@ -1,0 +1,2 @@
+Deploy trigger: certificate print v26 removes hamburger/menu toggle controls from PQC/OQC print output.
+2026-09-02 11:35 KST
