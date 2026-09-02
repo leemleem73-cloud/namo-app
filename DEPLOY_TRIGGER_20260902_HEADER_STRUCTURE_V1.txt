@@ -1,0 +1,1 @@
+Deploy trigger: rebuilt QMES top header structure to match uploaded NAMO ONE ERP·MES reference. Header-only structural adapter + isolated CSS. 2026-09-02
