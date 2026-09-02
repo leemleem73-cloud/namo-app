@@ -832,6 +832,40 @@ app.get('/js/qmes-sales-detail-drawer-safe-20260828-v2.js', (req, res, next) => 
   });
 });
 
+
+// QMES Namo One navigation palette and dashboard notices (2026-09-02).
+const qmesNamoOneNavigationThemeCss = "\n/* QMES_NAMO_ONE_NAV_THEME_20260902 */\nhtml body #root#root#root#root > div > header,\nhtml body #root#root#root#root > div > header > div:first-child{\n  background:#0f2038!important;\n  border-color:#263c59!important;\n  color:#f8fafc!important;\n  box-shadow:none!important;\n}\nhtml body #root#root#root#root > div > header img[alt=\"NAMO Chemical\"]{\n  filter:brightness(0) invert(1)!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-clock,\nhtml body #root#root#root#root > div > header .qmes-header-clock span,\nhtml body #root#root#root#root > div > header .qmes-header-controls button,\nhtml body #root#root#root#root > div > header .qmes-header-controls button div,\nhtml body #root#root#root#root > div > header .qmes-header-controls button span{\n  color:#eef5ff!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-action{\n  background:#162e4d!important;\n  border-color:#35516f!important;\n  color:#eef5ff!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-controls button:hover,\nhtml body #root#root#root#root > div > header .qmes-header-action:hover{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-bar,\nhtml body #root#root#root#root .qmes-top-menu{\n  background:#0f2038!important;\n  border-color:#263c59!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button{\n  background:#0f2038!important;\n  color:#d9e7f7!important;\n  border-bottom-color:transparent!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button svg,\nhtml body #root#root#root#root .qmes-top-menu-button .qmes-menu-arrow{\n  color:#a9bfd8!important;\n  stroke:#a9bfd8!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button:hover,\nhtml body #root#root#root#root .qmes-top-menu-button:focus-visible{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button:hover svg,\nhtml body #root#root#root#root .qmes-top-menu-button:focus-visible svg{\n  color:#fff!important;\n  stroke:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button.is-active,\nhtml body #root#root#root#root .qmes-top-menu-button[aria-current=\"page\"]{\n  background:#297aed!important;\n  color:#fff!important;\n  border-bottom-color:#75b5ff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button.is-active svg,\nhtml body #root#root#root#root .qmes-top-menu-button[aria-current=\"page\"] svg{\n  color:#fff!important;\n  stroke:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar{\n  background:#162e4d!important;\n  color:#d9e7f7!important;\n  border-color:#263c59!important;\n  box-shadow:none!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{\n  background:#162e4d!important;\n  border-color:#263c59!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{\n  background:#213d60!important;\n  border-color:#35516f!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{\n  background:transparent!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{\n  color:#a9bfd8!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title{\n  color:#8fa9c8!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{\n  background:transparent!important;\n  color:#d9e7f7!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{\n  background:#6885a5!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{\n  background:#9dc9ff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{\n  background:#297aed!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{\n  background:#d2f1ff!important;\n}\n";
+const qmesNamoOneThemeCssPath = path.join(__dirname, 'public', 'css', 'qmes-global-light-theme-20260826.css');
+
+app.get('/css/qmes-global-light-theme-20260826.css', (req, res, next) => {
+  fs.readFile(qmesNamoOneThemeCssPath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.type('text/css; charset=utf-8');
+    res.send(`${source}\n${qmesNamoOneNavigationThemeCss}`);
+  });
+});
+
+function patchQmesDashboardNoticeSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    '  const alerts=qmesDashAlerts();',
+    '  const alerts=[{tone:"blue",text:"메뉴 UI 업그레이드: 상단·사이드 메뉴에 Namo One 네이비 테마를 적용했습니다.",action:"2026-09-02"},{tone:"green",text:"출하·물류 하위 메뉴와 출하·납품 상세 연동을 개선했습니다.",action:"업데이트"},{tone:"orange",text:"작업지시서·수입검사·출하완료의 LOT 및 상태 기준을 통일했습니다.",action:"업데이트"}];'
+  );
+  patched = patched.replace('<h2>실행 필요 알림</h2>', '<h2>공지사항</h2>');
+  patched = patched.replace('현재 실행이 필요한 알림이 없습니다.', '등록된 공지사항이 없습니다.');
+  return patched;
+}
+
+const qmesDashboardModulePath = path.join(__dirname, 'public', 'js', 'dashboard.jsx');
+app.get('/js/dashboard.jsx', (req, res, next) => {
+  fs.readFile(qmesDashboardModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesDashboardNoticeSource(source));
+  });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 function ok(res, data = null, message = 'OK') {
