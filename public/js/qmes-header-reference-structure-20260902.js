@@ -1,8 +1,8 @@
 /* QMES header structure adapter — stable reference version */
 (function(){
   "use strict";
-  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V5_STABLE__) return;
-  window.__QMES_HEADER_REFERENCE_STRUCTURE_V5_STABLE__=true;
+  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V6_STABLE__) return;
+  window.__QMES_HEADER_REFERENCE_STRUCTURE_V6_STABLE__=true;
 
   function ensureHeader(){
     const header=document.querySelector('#root > div > header');
@@ -14,11 +14,14 @@
     header.classList.add('qmes-ref-topbar');
     row.classList.add('qmes-ref-toprow');
     brand.classList.add('qmes-ref-brand');
-
-    /* Remove the problematic authority style from the previous version if it exists. */
     document.getElementById('qmes-header-authority-v4')?.remove();
 
     const originalLogo=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
+    if(originalLogo){
+      originalLogo.style.setProperty('display','none','important');
+      originalLogo.style.setProperty('visibility','hidden','important');
+    }
+
     let brandCopy=brand.querySelector('.qmes-ref-brand-copy');
     if(!brandCopy){
       brandCopy=document.createElement('span');
@@ -27,11 +30,23 @@
       brand.appendChild(brandCopy);
     }
     const slot=brandCopy.querySelector('.qmes-ref-logo-slot');
-    if(slot && !slot.querySelector('img') && originalLogo){
-      const logoClone=originalLogo.cloneNode(true);
+    let logoClone=slot?.querySelector('img.qmes-ref-brand-logo');
+    if(slot && !logoClone && originalLogo){
+      logoClone=originalLogo.cloneNode(true);
       logoClone.className='qmes-ref-brand-logo';
       logoClone.removeAttribute('style');
       slot.appendChild(logoClone);
+    }
+    if(logoClone){
+      logoClone.style.setProperty('display','block','important');
+      logoClone.style.setProperty('visibility','visible','important');
+      logoClone.style.setProperty('width','auto','important');
+      logoClone.style.setProperty('height','14px','important');
+      logoClone.style.setProperty('max-width','100px','important');
+      logoClone.style.setProperty('object-fit','contain','important');
+      logoClone.style.setProperty('filter','grayscale(1) brightness(0)','important');
+      logoClone.style.setProperty('opacity','1','important');
+      logoClone.style.setProperty('margin','0','important');
     }
 
     let search=document.getElementById('qmes-ref-global-search');
