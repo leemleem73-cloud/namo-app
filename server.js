@@ -322,6 +322,23 @@ app.get('/js/qmes-shipping-enterprise-module-20260828-v1.js', (req, res, next) =
   });
 });
 
+const qmesTopSubmenuModulePath = path.join(__dirname, 'public', 'js', 'qmes-top-submenu-restore-20260820-v2.js');
+
+app.get('/js/qmes-top-submenu-restore-20260820-v2.js', (req, res, next) => {
+  fs.readFile(qmesTopSubmenuModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    const shippingMenu = '"출하·납품":[{label:"출하 · 납품관리",tab:"erpShipping"}]';
+    const patchedSource = source.includes('"출하·물류"')
+      ? source
+      : source.replace(
+          shippingMenu,
+          `${shippingMenu},\n    "출하·물류":[{label:"출하 · 물류",tab:"erpShipping"}]`
+        );
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchedSource);
+  });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 function ok(res, data = null, message = 'OK') {
