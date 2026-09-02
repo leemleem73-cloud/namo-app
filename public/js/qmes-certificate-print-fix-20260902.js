@@ -1,10 +1,10 @@
 /* NAMO QMES - IQC/PQC/OQC certificate live-DOM print fix - 2026-09-02 */
 (function installCertificatePrintFix(global){
   "use strict";
-  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V2__) return;
-  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V2__=true;
+  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V3__) return;
+  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V3__=true;
 
-  const STYLE_ID="qmes-cert-print-live-style-20260902-v2";
+  const STYLE_ID="qmes-cert-print-live-style-20260902-v3";
   const SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";
   let hidden=[];
   let kept=[];
@@ -24,14 +24,17 @@
     transform:none!important;float:none!important;
     width:100%!important;max-width:none!important;min-width:0!important;
     height:auto!important;min-height:0!important;max-height:none!important;
-    margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;
+    margin:0 auto!important;padding:0!important;overflow:visible!important;background:#fff!important;
+    box-sizing:border-box!important;
   }
   body.qmes-cert-print-live .qmes-cert-print-target{
     position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
     float:none!important;clear:both!important;
+    width:calc(100% - 8mm)!important;max-width:202mm!important;min-width:0!important;
     height:auto!important;min-height:0!important;max-height:none!important;
-    margin-left:auto!important;margin-right:auto!important;
+    margin:5mm auto 0 auto!important;
     overflow:visible!important;box-shadow:none!important;
+    box-sizing:border-box!important;
   }
   body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,
   body.qmes-cert-print-live .qmes-cert-print-target button,
