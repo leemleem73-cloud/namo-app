@@ -1,0 +1,4 @@
+Deploy trigger: isolated QMES header authority V4.
+Bright blue top header, white borderless hamburger, smaller black NAMO Chemical logo.
+No certificate/report/print changes.
+2026-09-02
