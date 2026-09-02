@@ -311,6 +311,337 @@ function qmesShippingDetailClientPatch() {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true }); else schedule();
 }
 
+function patchQmesShippingEnterpriseSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    'if(!(row?.actualShipment===true||meta?.actualShipment===true||completedText(state)))return;',
+    'const shippingNo=clean(meta?.shippingNo||row?.shipNo||row?.shippingNo||row?.deliveryNo||row?.invoice);if(!shippingNo||!(row?.actualShipment===true||meta?.actualShipment===true||completedText(state)))return;'
+  );
+  patched = patched.replace(
+    '    const existing=shippingRows().find(row=>clean(row?.lot||row?.workOrder)===clean(lot));\n    if(oqc==="-"&&existing)oqc=clean(existing.oqc)||"-";\n    if(coa==="-"&&existing)coa=clean(existing.coa)||"-";\n    return {oqc,coa,available};',
+    '    return {oqc,coa,available};'
+  );
+  patched = patched.replace(
+    'if(available>0&&qty>available+0.0001)return showModalError(form,"출하량이 가용수량을 초과합니다.");',
+    'if(!(available>0))return showModalError(form,"생산실적과 OQC 합격이 확인된 가용 LOT만 출하할 수 있습니다.");if(qty>available+0.0001)return showModalError(form,"출하량이 가용수량을 초과합니다.");'
+  );
+  return patched;
+}
+
+function patchQmesProductionSource(source) {
+  const replacement = String.raw`function qmesRecordedWoActual(lotNo) {
+  const doc = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo) || {};
+  const inputActual = (doc.inputs || []).reduce((sum, row) => sum + Math.max(0, Number(row.act ?? row.actual ?? 0) || 0), 0);
+  const candidates = [doc.productionActual, batch.done, batch.actualQty, batch.productionQty, inputActual]
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  return candidates.length ? Math.max(...candidates) : 0;
+}
+
+function qmesWoInspectionPassed(rows, required) {
+  const latest = new Map();
+  (rows || []).forEach((row) => {
+    const check = String(row.check || "").trim() === "입도" ? "입도(Dmax)" : String(row.check || "").trim();
+    if (!check) return;
+    const previous = latest.get(check);
+    const currentKey = String(row.date || "") + " " + String(row.time || "") + " " + String(row.id || "");
+    const previousKey = previous ? String(previous.date || "") + " " + String(previous.time || "") + " " + String(previous.id || "") : "";
+    if (!previous || currentKey >= previousKey) latest.set(check, row);
+  });
+  const isPass = (value) => ["OK", "합격", "적합", "PASS"].includes(String(value || "").toUpperCase());
+  return required.every((check) => latest.get(check) && isPass(latest.get(check).judge));
+}
+
+function getAutoWoStatus(lotNo) {
+  const doc = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo) || {};
+  const inputs = doc.inputs || [];
+  const pqc = (DB.insp?.PQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const oqc = (DB.insp?.OQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const actual = qmesRecordedWoActual(lotNo);
+  const pqcPassed = qmesWoInspectionPassed(pqc, ["외관","입도(Dmax)","점도","고형분"]);
+  const oqcPassed = qmesWoInspectionPassed(oqc, ["외관","입도(Dmax)","점도","고형분","접착력","절연저항","수분","전해액 안정성"]);
+  if (actual > 0 && pqcPassed && oqcPassed) return "완료";
+  if (actual <= 0 && (
+    ["완료", "생산완료", "출하완료"].includes(String(doc.manualStatus || doc.status || batch.status || "").trim())
+    || pqc.length > 0 || oqc.length > 0
+  )) return "실적대기";
+  if (actual > 0 && (pqc.length > 0 || oqc.length > 0)) return "검사중";
+  if (actual > 0 || inputs.some((row) => Number(row.act ?? row.actual) > 0)) return "생산중";
+  if (doc.manualStatus && doc.manualStatus !== "완료") return doc.manualStatus;
+  return "발행";
+}
+
+function saveWoManualStatus(lotNo, status) {
+  const current = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo);
+  const plan = Math.max(0, Number(current.plan ?? batch?.plan ?? 0));
+  const actual = qmesRecordedWoActual(lotNo);
+  const oqc = (DB.insp?.OQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const pqc = (DB.insp?.PQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const pqcPassed = qmesWoInspectionPassed(pqc, ["외관","입도(Dmax)","점도","고형분"]);
+  const oqcPassed = qmesWoInspectionPassed(oqc, ["외관","입도(Dmax)","점도","고형분","접착력","절연저항","수분","전해액 안정성"]);
+
+  if (status === "완료" && actual <= 0) {
+    window.alert("생산실적이 없습니다. 실적입력 후 완료 처리하세요.");
+    return;
+  }
+  if (status === "완료" && (!pqcPassed || !oqcPassed)) {
+    window.alert("동일 LOT의 PQC·OQC 필수항목 합격 후 완료 처리할 수 있습니다.");
+    return;
+  }
+
+  const prev = getAutoWoStatus(lotNo);
+  const progress = plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0;
+  DB.woDocs[lotNo] = {
+    ...current,
+    manualStatus: status,
+    status,
+    productionActual: actual,
+    productionProgress: progress,
+    statusHistory: [
+      ...(current.statusHistory || []),
+      { from: prev, to: status, changedAt: new Date().toISOString() },
+    ],
+  };
+
+  if (batch) {
+    batch.status = status === "생산중" ? "진행중" : status;
+    batch.done = actual;
+    batch.updatedAt = new Date().toISOString();
+  }
+
+  const lot = DB.lots?.[lotNo];
+  if (lot && !String(lot.status || "").includes("홀드")) {
+    lot.stage = "생산";
+    lot.productionActual = actual;
+    lot.qty = actual.toLocaleString() + " kg / 계획 " + plan.toLocaleString() + " kg";
+    lot.status = status === "완료"
+      ? "생산완료 — 검사 완료"
+      : status === "검사중"
+        ? "검사중"
+        : status === "실적대기"
+          ? "생산실적 입력 대기"
+          : status === "생산중"
+            ? "생산중"
+            : "발행 — 생산 대기";
+  }
+
+  dbSave();
+  if (typeof qmesSyncWorkOrder === "function") {
+    qmesSyncWorkOrder(lotNo).catch((error) => console.warn("작업지시 상태 공용 동기화 실패:", error.message));
+  }
+}
+
+function woStatusTone`;
+  let patched = source.replace(
+    /function getAutoWoStatus\(lotNo\) \{[\s\S]*?\n\}\n\nfunction saveWoManualStatus\(lotNo, status\) \{[\s\S]*?\n\}\n\nfunction woStatusTone/,
+    replacement
+  );
+  patched = patched.replace(
+    /<option value="완료">완료<\/option>/g,
+    '<option value="실적대기">실적대기</option>\n                        <option value="완료">완료</option>'
+  );
+  return patched;
+}
+
+function patchQmesInventoryProductionSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    /  function lotQc\(lot\)\{[\s\S]*?\n  \}\n\n  function statusOf\(row,qc\)\{[\s\S]*?\n  \}/,
+String.raw`  function latestInspectionState(kind,lot,required){
+    const key=upper(lot);
+    const rows=Array.isArray(window.DB?.insp?.[kind])?window.DB.insp[kind].filter(row=>upper(row?.lot)===key):[];
+    const groups=new Map();
+    rows.forEach(row=>{const group=text(row?.groupId)||text(row?.id).replace(/-\d+$/,'')||'default';if(!groups.has(group))groups.set(group,[]);groups.get(group).push(row);});
+    const latest=Array.from(groups.values()).sort((a,b)=>{const av=a[0]||{},bv=b[0]||{};return (text(bv.date)+' '+text(bv.time)+' '+text(bv.id)).localeCompare(text(av.date)+' '+text(av.time)+' '+text(av.id));})[0]||[];
+    const byCheck=new Map();
+    latest.forEach(row=>byCheck.set(text(row?.check)==='입도'?'입도(Dmax)':text(row?.check),row));
+    if(latest.some(row=>/불합격|NG|FAIL/i.test(text(row?.judge))))return '불합격';
+    if(required.every(check=>byCheck.get(check)&&/합격|PASS|OK/i.test(text(byCheck.get(check).judge))))return '합격';
+    return latest.length?'진행중':'대기';
+  }
+
+  function lotQc(lot){
+    return {
+      pqc:latestInspectionState('PQC',lot,['외관','입도(Dmax)','점도','고형분']),
+      oqc:latestInspectionState('OQC',lot,['외관','입도(Dmax)','점도','고형분','접착력','절연저항','수분','전해액 안정성'])
+    };
+  }
+
+  function productionState(row){
+    const wanted=upper(row.workOrder||row.lot);
+    const docs=window.DB?.woDocs||{};
+    const doc=docs[wanted]||Object.entries(docs).find(([key])=>upper(key)===wanted)?.[1]||{};
+    const batch=(window.DB?.batches||[]).find(item=>upper(item?.no||item?.lot||item?.workOrder)===wanted)||{};
+    const linked=Boolean(Object.keys(doc).length||Object.keys(batch).length);
+    const inputActual=(doc.inputs||[]).reduce((sum,item)=>sum+Math.max(0,Number(item?.act??item?.actual??0)||0),0);
+    const actual=Math.max(0,...[doc.productionActual,batch.done,batch.actualQty,batch.productionQty,inputActual].map(Number).filter(Number.isFinite));
+    return {linked,actual};
+  }
+
+  function statusOf(row,qc,production){
+    if(!production.linked) return '작업지시 확인';
+    if(!(production.actual>0)) return '실적대기';
+    if(qc.oqc==='불합격'||qc.pqc==='불합격') return '품질차단';
+    if(qc.pqc==='합격'&&qc.oqc==='합격') return '출하가능';
+    if(qc.pqc==='합격') return 'OQC 대기';
+    if(row.quality_status==='OQC_PENDING') return 'PQC 대기';
+    if(row.category==='FG') return 'PQC 대기';
+    if(row.category==='WIP') return '생산중';
+    return '생산대기';
+  }`
+  );
+  patched = patched.replace(
+    "const rows=Array.from(map.values()).map(r=>{const qc=lotQc(r.lot);return {...r,qc,status:statusOf(r,qc)};}).sort((a,b)=>a.lot.localeCompare(b.lot)*-1);",
+    "const rows=Array.from(map.values()).map(r=>{const qc=lotQc(r.lot),production=productionState(r);return {...r,qc,production,status:statusOf(r,qc,production)};}).sort((a,b)=>a.lot.localeCompare(b.lot)*-1);"
+  );
+  patched = patched.replace(
+    "const stages=['생산대기','생산중','PQC 대기','OQC 대기','출하가능'];",
+    "const stages=['작업지시 확인','실적대기','생산중','PQC 대기','OQC 대기','출하가능'];"
+  );
+  patched = patched.replace("gridTemplateColumns:'repeat(5,minmax(0,1fr))'","gridTemplateColumns:'repeat(6,minmax(0,1fr))'");
+  return patched;
+}
+
+function patchQmesLotLinkageSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    '  function isIntermediate(row){',
+String.raw`  function productionActualQty(doc,batch){
+    const inputs=Array.isArray(doc?.inputs)?doc.inputs:[];
+    const inputActual=inputs.reduce((sum,row)=>sum+Math.max(0,number(row?.act??row?.actual??0)),0);
+    const result=doc?.productionResult||batch?.productionResult||{};
+    return Math.max(0,inputActual,number(doc?.productionActual),number(batch?.done),number(batch?.actualQty),number(batch?.productionQty),number(result?.actualQty),number(result?.productionQty),number(result?.goodQty),number(result?.totalQty));
+  }
+  function isIntermediate(row){`
+  );
+  patched = patched.replace(
+    '    const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);',
+    '    const productionQty=productionActualQty(doc,batch);\n    const rawPqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    const rawOqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    const pqc=productionQty>0?rawPqc:{...rawPqc,status:"실적대기"};\n    const oqc=productionQty<=0?{...rawOqc,status:"실적대기"}:pqc.status!=="합격"?{...rawOqc,status:"PQC 대기"}:rawOqc;'
+  );
+  patched = patched.replace(
+    '      coa:{status:db.coa?.[lot]?"발행":"미발행",no:text(db.coa?.[lot]?.no)}\n    };',
+    '      coa:{status:db.coa?.[lot]?"발행":"미발행",no:text(db.coa?.[lot]?.no)}\n    };\n    next.productionActual=productionQty;\n    next.availableQty=productionQty>0&&oqc.status==="합격"&&!actualShipment(next.ship)?productionQty:0;'
+  );
+  patched = patched.replace(
+    '      const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);',
+    '      const productionQty=productionActualQty(doc,batch);\n      const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n      const rawOqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n      const oqc=productionQty<=0?{...rawOqc,status:"실적대기"}:pqc.status!=="합격"?{...rawOqc,status:"PQC 대기"}:rawOqc;'
+  );
+  patched = patched.replace(
+    '      const qty=number(lotRow.ship?.shipQty??lotRow.ship?.qty??lotRow.oqcCompletion?.qty??oqcRow.shipQty??doc.plan??batch.plan??lotRow.qty);',
+    '      const qty=actual?number(lotRow.ship?.shipQty??lotRow.ship?.qty):productionQty;'
+  );
+  patched = patched.replace(
+    '      const delivery=actual?"납품완료":oqc.status==="불합격"?"출하차단":oqc.status==="합격"&&db.coa?.[lot]?"출하대기":"-";',
+    '      const delivery=productionQty<=0?"생산실적 대기":actual?"납품완료":oqc.status==="불합격"?"출하차단":oqc.status==="합격"&&db.coa?.[lot]?"출하대기":"검사대기";'
+  );
+  patched = patched.replace(
+    '        source:"WORK_ORDER_QUALITY",\n        workOrder:lot',
+    '        source:actual?"ERP_SHIPPING":"WORK_ORDER_QUALITY",\n        shipNo:text(lotRow.ship?.shipNo||lotRow.ship?.no),\n        actualShipment:actual,availableQty:number(lotRow.availableQty),productionQty,\n        workOrder:lot'
+  );
+  patched = patched.replace(
+    '    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    if(oqc.status!=="합격")',
+    '    const entry=orderMap(db).find(row=>row.lot===lot)||{doc:{},batch:{},sales:""};\n    const productionQty=productionActualQty(entry.doc,entry.batch);\n    if(!(productionQty>0)){window.alert("생산실적 입력 후 출하완료 처리할 수 있습니다.");return;}\n    const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    if(pqc.status!=="합격"){window.alert("공정검사(PQC) 필수항목 합격 후 출하완료 처리할 수 있습니다.");return;}\n    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    if(oqc.status!=="합격")'
+  );
+  patched = patched.replace(
+    '    const entry=entries.find(row=>row.lot===lot)||{doc:{},batch:{},sales:""};',
+    ''
+  );
+  return patched;
+}
+
+function patchQmesInventoryIntegrationSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    "const finishedQty=num(first(batch,['actualQty','actualQuantity','productionQty','resultQty','qty','quantity','실투입량','생산량','완료수량']));",
+    "const inputActual=materialRows(doc).reduce((sum,row)=>sum+Math.max(0,num(first(row,['actualQty','actualQuantity','usedQty','inputQty','실투입량','사용량']))),0);\n      const result=doc.productionResult||batch.productionResult||{};\n      const finishedQty=Math.max(0,inputActual,num(first(result,['actualQty','actualQuantity','productionQty','resultQty','goodQty','totalQty','생산량','완료수량'])),num(first(doc,['productionActual','actualQty','productionQty','resultQty'])),num(first(batch,['actualQty','actualQuantity','productionQty','resultQty','생산량','완료수량'])));"
+  );
+  patched = patched.replace(
+    "const firstRow=rows[0];if(!rows.some(r=>pass(judgeOf(r))))continue;",
+    "const firstRow=rows[0],required=['외관','입도(Dmax)','점도','고형분','접착력','절연저항','수분','전해액 안정성'],byCheck=new Map();rows.forEach(r=>byCheck.set(txt(r?.check)==='입도'?'입도(Dmax)':txt(r?.check),r));if(!required.every(check=>byCheck.get(check)&&pass(judgeOf(byCheck.get(check)))))continue;"
+  );
+  patched = patched.replace(
+    '  async function syncOQC(records){',
+    '  async function syncOQC(records,pqcRecords){\n    const pqcPassLots=new Set();\n    for(const rec of pqcRecords||[]){const p=parse(rec),rows=Array.isArray(p.rows)?p.rows:[],required=["외관","입도(Dmax)","점도","고형분"],byCheck=new Map();rows.forEach(r=>byCheck.set(txt(r?.check)==="입도"?"입도(Dmax)":txt(r?.check),r));const lot=lotOf(rows[0]||{})||txt(p.lotNo);if(lot&&required.every(check=>byCheck.get(check)&&pass(judgeOf(byCheck.get(check)))))pqcPassLots.add(txt(lot).toUpperCase());}'
+  );
+  patched = patched.replace(
+    "const relKey='auto:oqc-release:'",
+    "if(!pqcPassLots.has(txt(lot).toUpperCase()))continue;\n      const relKey='auto:oqc-release:'"
+  );
+  patched = patched.replace(
+    "const [iqc,wo,oqc]=await Promise.all([list('iqc'),list('workorder'),list('oqc')]);const result={iqc:await syncIQC(iqc),workorder:await syncWorkorders(wo),oqc:await syncOQC(oqc)};",
+    "const [iqc,wo,pqc,oqc]=await Promise.all([list('iqc'),list('workorder'),list('pqc'),list('oqc')]);const result={iqc:await syncIQC(iqc),workorder:await syncWorkorders(wo),oqc:await syncOQC(oqc,pqc)};"
+  );
+  return patched;
+}
+
+function patchQmesMrpSource(source) {
+  const replacement = String.raw`  function workorderCompleted(workorder,oqcRows){
+    const localBatch=(window.DB?.batches||[]).find(row=>norm(row?.no||row?.lot||row?.workOrder)===norm(workorder.wo))||{};
+    const localLot=window.DB?.lots?.[workorder.wo]||{};
+    const result=workorder.doc?.productionResult||workorder.batch?.productionResult||workorder.lotRecord?.productionResult||localBatch.productionResult||localLot.productionResult||{};
+    const inputs=materialRows(workorder.doc);
+    const inputActual=inputs.reduce((sum,row)=>sum+Math.max(0,num(first(row,['actualQty','actualQuantity','usedQty','inputQty','act','실투입량','사용량']))),0);
+    const actual=Math.max(0,inputActual,num(first(result,['actualQty','productionQty','resultQty','goodQty','totalQty'])),num(first(workorder.doc,['productionActual','actualQty','productionQty'])),num(first(workorder.batch,['done','actualQty','productionQty'])),num(first(localBatch,['done','actualQty','productionQty'])));
+    if(!(actual>0))return false;
+    const statuses=[workorder.state,workorder.batch?.status,workorder.doc?.status,workorder.lotRecord?.status,localBatch.status,localLot.status,localLot.productionStatus];
+    if(statuses.some(complete))return true;
+    return (oqcRows||[]).some(row=>norm(first(row,['lot','lotNo','productionLot','workOrderNo']))===norm(workorder.wo)&&pass(first(row,['judge','judgment','result','inspectionResult','status'])));
+  }
+  const workorderProduct`;
+  return source.replace(
+    /  function workorderCompleted\(workorder,oqcRows\)\{[\s\S]*?\n  \}\n  const workorderProduct/,
+    replacement
+  );
+}
+
+const qmesProductionModulePath = path.join(__dirname, 'public', 'js', 'production.jsx');
+app.get('/js/production.jsx', (req, res, next) => {
+  fs.readFile(qmesProductionModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesProductionSource(source));
+  });
+});
+
+const qmesInventoryProductionModulePath = path.join(__dirname, 'public', 'js', 'inventory-production-lot-flow-20260819.jsx');
+app.get('/js/inventory-production-lot-flow-20260819.jsx', (req, res, next) => {
+  fs.readFile(qmesInventoryProductionModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesInventoryProductionSource(source));
+  });
+});
+
+const qmesInventoryIntegrationModulePath = path.join(__dirname, 'public', 'js', 'inventory-qmes-integration-20260819.js');
+app.get('/js/inventory-qmes-integration-20260819.js', (req, res, next) => {
+  fs.readFile(qmesInventoryIntegrationModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesInventoryIntegrationSource(source));
+  });
+});
+
+const qmesLotLinkageModulePath = path.join(__dirname, 'public', 'js', 'qmes-lot-quality-shipping-linkage-20260826.js');
+app.get('/js/qmes-lot-quality-shipping-linkage-20260826.js', (req, res, next) => {
+  fs.readFile(qmesLotLinkageModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesLotLinkageSource(source));
+  });
+});
+
+const qmesMrpModulePath = path.join(__dirname, 'public', 'js', 'qmes-production-mrp-live-20260901-v5.js');
+app.get('/js/qmes-production-mrp-live-20260901-v5.js', (req, res, next) => {
+  fs.readFile(qmesMrpModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesMrpSource(source));
+  });
+});
+
 const qmesShippingDetailPatchSource = `;(${qmesShippingDetailClientPatch.toString()})();`;
 const qmesShippingModulePath = path.join(__dirname, 'public', 'js', 'qmes-shipping-enterprise-module-20260828-v1.js');
 
@@ -318,7 +649,7 @@ app.get('/js/qmes-shipping-enterprise-module-20260828-v1.js', (req, res, next) =
   fs.readFile(qmesShippingModulePath, 'utf8', (err, source) => {
     if (err) return next(err);
     res.type('application/javascript; charset=utf-8');
-    res.send(`${source}\n${qmesShippingDetailPatchSource}`);
+    res.send(`${patchQmesShippingEnterpriseSource(source)}\n${qmesShippingDetailPatchSource}`);
   });
 });
 
