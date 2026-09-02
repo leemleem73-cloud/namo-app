@@ -1,0 +1,153 @@
+/*
+ * NAMO QMES reference design v2 — 2026-09-03
+ * Applies the supplied NAMO ONE ERP/MES visual language to the CURRENT QMES shell.
+ * Screen-only. Existing functions, data flows, certificate layouts and print CSS are untouched.
+ */
+@media screen {
+  html body.qmes-reference-theme {
+    --namo-v2-blue:#2f78b7;
+    --namo-v2-blue-deep:#2d70a5;
+    --namo-v2-blue-soft:#e7f2fa;
+    --namo-v2-ink:#22384a;
+    --namo-v2-muted:#687c8d;
+    --namo-v2-line:#cbd8e2;
+    --namo-v2-panel:#ffffff;
+    --namo-v2-bg:#edf2f6;
+    --namo-v2-sidebar:#f8fafb;
+    background:var(--namo-v2-bg)!important;
+    color:var(--namo-v2-ink)!important;
+  }
+
+  /* CURRENT header: preserve structure/functions, refine only the supplied ERP/MES look. */
+  html body.qmes-reference-theme #root > div > header,
+  html body.qmes-reference-theme #root > div > header > div:first-child {
+    background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
+    border-bottom:1px solid #235f8e!important;
+    box-shadow:0 2px 6px rgba(30,73,105,.22)!important;
+  }
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand {
+    background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
+    border-right:1px solid #b9c9d5!important;
+    box-shadow:none!important;
+  }
+  html body.qmes-reference-theme #root > div > header .qmes-ref-global-search input {
+    border:1px solid rgba(255,255,255,.44)!important;
+    background:rgba(255,255,255,.96)!important;
+    color:#263d4f!important;
+    border-radius:6px!important;
+    box-shadow:none!important;
+  }
+
+  /* LEFT MENU — current accordion/menu hierarchy is kept exactly as-is. */
+  html body.qmes-reference-theme #qmes-sync-sidebar {
+    background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;
+    border-right:1px solid #bfcdd8!important;
+    box-shadow:2px 0 5px rgba(51,82,103,.08)!important;
+    color:#344d60!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-ref-company-meta {
+    background:#fff!important;
+    border:1px solid #c9d8e3!important;
+    border-radius:8px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-toggle {
+    min-height:40px!important;
+    margin:2px 0!important;
+    padding:0 11px!important;
+    border:1px solid #c7d7e2!important;
+    border-radius:3px!important;
+    background:#dfeaf2!important;
+    color:#2f6f9f!important;
+    font-weight:800!important;
+    box-shadow:none!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-toggle:hover {
+    background:#d4e5f0!important;
+    color:#1f5f8d!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group.is-open > .qmes-side-group-toggle,
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active {
+    background:linear-gradient(180deg,#3d8ac0 0%,#2f76ad 100%)!important;
+    color:#fff!important;
+    border-color:#286b9e!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item {
+    min-height:36px!important;
+    border-radius:3px!important;
+    color:#3d5264!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item:hover {
+    background:#e2edf5!important;
+    color:#1d5681!important;
+  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active:hover {
+    color:#fff!important;
+  }
+
+  /* MAIN WORKSPACE — supplied light ERP/MES panel language. */
+  html body.qmes-reference-theme #root > div > main {
+    background:var(--namo-v2-bg)!important;
+    color:var(--namo-v2-ink)!important;
+  }
+  html body.qmes-reference-theme #root > div > main > div:first-child,
+  html body.qmes-reference-theme #root > div > main .qmes-page-head,
+  html body.qmes-reference-theme #root > div > main .qmd-page-head {
+    background:linear-gradient(180deg,#fff 0%,#f4f7f9 100%)!important;
+    border-bottom-color:#becdd8!important;
+  }
+
+  /* Shared dashboard/work cards. Exclude report/certificate paper. */
+  html body.qmes-reference-theme #root > div > main :is(.qmd-card,.qerp-card,.qmes-card,.qmd-summary-item,.qmd-flow-card,.qmd-panel):not(.doc-paper):not([class*="cert"]) {
+    background:#fff!important;
+    border:1px solid #c7d5df!important;
+    border-radius:7px!important;
+    box-shadow:0 3px 12px rgba(28,47,75,.05)!important;
+  }
+  html body.qmes-reference-theme #root > div > main :is(.qmd-card-head,.qerp-card-head,.qmes-card-head,.qmd-panel-head) {
+    background:linear-gradient(180deg,#fbfdfe 0%,#edf4f8 100%)!important;
+    border-bottom:1px solid #c7d5df!important;
+    color:#244f70!important;
+  }
+
+  /* Dashboard workflow tiles and summary metrics. */
+  html body.qmes-reference-theme #root > div > main :is(.qmd-flow-step,.qmd-process-step,.qmd-summary-item,.qmd-kpi) {
+    border-color:#cfdbe5!important;
+    background:#fff!important;
+    box-shadow:none!important;
+  }
+  html body.qmes-reference-theme #root > div > main :is(.qmd-flow-step,.qmd-process-step):hover {
+    border-color:#9fc2db!important;
+    background:#f5faff!important;
+  }
+
+  /* Screen tables only. */
+  html body.qmes-reference-theme #root > div > main table:not(.qmes-iqc2-table):not(.qmes-wo-cert table):not(.qmes-iqc2-sign-table) thead th {
+    background:linear-gradient(180deg,#3d87bd 0%,#2e72a9 100%)!important;
+    color:#fff!important;
+    border-color:#2a6897!important;
+    font-weight:800!important;
+    text-shadow:0 1px 0 rgba(0,0,0,.12)!important;
+  }
+  html body.qmes-reference-theme #root > div > main table:not(.qmes-iqc2-table):not(.qmes-wo-cert table) tbody tr:nth-child(even) {
+    background:#f7fafc!important;
+  }
+  html body.qmes-reference-theme #root > div > main table:not(.qmes-iqc2-table):not(.qmes-wo-cert table) tbody tr:hover {
+    background:#eaf4fb!important;
+  }
+
+  /* Inputs/buttons in normal work screens; certificate/report controls remain untouched. */
+  html body.qmes-reference-theme #root > div > main :is(input,select,textarea):not(.qmes-iqc2-doc input):not(.qmes-wo-cert input) {
+    border-color:#b9c9d5!important;
+    border-radius:4px!important;
+  }
+  html body.qmes-reference-theme #root > div > main :is(input,select,textarea):focus {
+    border-color:#4d91c2!important;
+    box-shadow:0 0 0 2px rgba(47,120,183,.12)!important;
+  }
+}
+
+@media print {
+  /* Explicitly neutral: v2 never changes certificate/print output. */
+}
