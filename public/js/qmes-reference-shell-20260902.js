@@ -52,6 +52,13 @@
     else sidebar.appendChild(meta);
   }
 
+  function normalizeDashboardLinks(){
+    document.querySelectorAll('.namo-enterprise-dashboard [data-tab="inventory"]').forEach(element=>{
+      element.setAttribute("data-tab","inv");
+      element.removeAttribute("data-menu");
+    });
+  }
+
   function syncShell(){
     const host=document.querySelector("#root > div");
     const header=host?.querySelector(":scope > header");
@@ -64,6 +71,7 @@
     document.body.classList.add("qmes-reference-theme");
     ensureBrand(header);
     ensureCompanyMeta(sidebar);
+    normalizeDashboardLinks();
     document.documentElement.style.setProperty("--qmes-side-top","64px");
     document.documentElement.style.setProperty("--qmes-header-hamburger-top","16px");
     if(desktop()&&getPreference()!=="closed") document.body.classList.add("qmes-side-open");
