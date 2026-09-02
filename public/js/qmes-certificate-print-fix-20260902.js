@@ -1,10 +1,10 @@
 /* NAMO QMES - IQC/PQC/OQC certificate print isolation - 2026-09-02 */
 (function installCertificatePrintFix(global){
   "use strict";
-  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V8__) return;
-  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V8__=true;
+  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V9__) return;
+  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V9__=true;
 
-  const STYLE_ID="qmes-cert-print-isolation-20260902-v8";
+  const STYLE_ID="qmes-cert-print-isolation-20260902-v9";
   const SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";
   let target=null;
 
@@ -68,7 +68,7 @@
     content:none!important;display:none!important;background:none!important;box-shadow:none!important;
   }
 
-  /* IQC only: keep the current vertical centering behavior. */
+  /* IQC only: keep current vertical centering behavior. */
   body.qmes-cert-print-iqc{width:200mm!important;min-height:287mm!important;}
   body.qmes-cert-print-iqc .qmes-cert-print-iqc-stage{
     width:200mm!important;min-height:287mm!important;margin:0 auto!important;padding:0!important;
@@ -77,6 +77,11 @@
   body.qmes-cert-print-iqc .qmes-cert-print-target{
     width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;
     margin:auto!important;transform:translateY(4mm)!important;
+  }
+
+  /* PQC only: move the certificate slightly down for visual A4 centering. */
+  body.qmes-cert-print-pqc .qmes-cert-print-target{
+    transform:translateY(5mm)!important;
   }
 
   body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,
