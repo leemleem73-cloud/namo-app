@@ -5,6 +5,8 @@
   window.__QMES_REFERENCE_SHELL_20260902_V1__=true;
 
   const STORAGE_KEY="qmes-reference-sidebar-state-v1";
+  const V2_THEME_ID="qmes-reference-theme-20260903-v2";
+  const V2_THEME_HREF="./css/qmes-reference-theme-20260903-v2.css?v=20260903-1";
   let frame=0;
 
   function getPreference(){
@@ -14,6 +16,17 @@
     try{localStorage.setItem(STORAGE_KEY,value);}catch(_error){}
   }
   function desktop(){return window.matchMedia("(min-width:821px)").matches;}
+
+  function ensureV2Theme(){
+    let link=document.getElementById(V2_THEME_ID);
+    if(link) return link;
+    link=document.createElement("link");
+    link.id=V2_THEME_ID;
+    link.rel="stylesheet";
+    link.href=V2_THEME_HREF;
+    document.head.appendChild(link);
+    return link;
+  }
 
   function ensureBrand(header){
     const row=header.firstElementChild;
@@ -61,6 +74,7 @@
       document.body.classList.remove("qmes-reference-theme","qmes-side-open");
       return false;
     }
+    ensureV2Theme();
     document.body.classList.add("qmes-reference-theme");
     ensureBrand(header);
     ensureCompanyMeta(sidebar);
