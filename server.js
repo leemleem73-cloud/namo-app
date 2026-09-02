@@ -2,6 +2,7 @@ process.env.TZ = 'Asia/Seoul';
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
@@ -89,6 +90,236 @@ app.use((req, res, next) => {
     res.setHeader('Expires', '0');
   }
   next();
+});
+
+function qmesShippingDetailClientPatch() {
+  "use strict";
+  if (window.__QMES_SHIPPING_DETAIL_20260902__) return;
+  window.__QMES_SHIPPING_DETAIL_20260902__ = true;
+
+  const HOST = "qmes-shipping-enterprise-module-20260828-v1";
+  const MODAL = "qmes-shipping-detail-modal-20260902";
+  const STYLE = "qmes-shipping-detail-style-20260902";
+  const KEY = "qmes-erp-shipping-v1";
+  let queued = false;
+  const clean = value => String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+  const esc = value => String(value == null ? "" : value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+  const first = (row, keys, fallback = "-") => {
+    for (const key of keys) {
+      const value = clean(row && row[key]);
+      if (value) return value;
+    }
+    return fallback;
+  };
+  const numberValue = value => {
+    const parsed = Number(String(value == null ? "" : value).replace(/[^0-9.+-]/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const quantity = (value, unit = "kg") => {
+    const amount = numberValue(value);
+    return amount ? `${amount.toLocaleString("ko-KR", { maximumFractionDigits: 3 })} ${clean(unit) || "kg"}` : "-";
+  };
+  const isPassed = value => /합격|PASS|OK/i.test(clean(value));
+  const isDone = (value, pattern) => pattern.test(clean(value));
+  const localRows = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch (_error) {
+      return [];
+    }
+  };
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE)) return;
+    const style = document.createElement("style");
+    style.id = STYLE;
+    style.textContent = `
+      #${HOST} table{min-width:1080px!important}
+      #${HOST} [data-qsd-head],#${HOST} [data-qsd-cell]{width:72px!important}
+      #${HOST} .qsd-open{height:27px!important;padding:0 10px!important;border:1px solid #bfd0f3!important;border-radius:7px!important;background:#f4f7ff!important;color:#2457d6!important;font:900 10px Pretendard,"Noto Sans KR",sans-serif!important;cursor:pointer!important}
+      #${HOST} .qsd-open:hover,#${HOST} .qsd-open:focus-visible{background:#2457d6!important;color:#fff!important;outline:none!important}
+      #${MODAL}{position:fixed!important;inset:0!important;z-index:2147483600!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:22px!important;background:rgba(15,23,42,.42)!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important}
+      #${MODAL} *{box-sizing:border-box!important}
+      #${MODAL} .qsd-card{width:min(1040px,96vw)!important;max-height:92vh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border:1px solid #dfe5ed!important;border-radius:16px!important;background:#f7f9fc!important;box-shadow:0 28px 90px rgba(15,23,42,.3)!important}
+      #${MODAL} .qsd-head{display:flex!important;align-items:flex-start!important;gap:14px!important;padding:18px 20px!important;border-bottom:1px solid #e5eaf1!important;background:#fff!important}
+      #${MODAL} .qsd-title{margin:0!important;color:#172033!important;font-size:18px!important;font-weight:950!important}
+      #${MODAL} .qsd-sub{margin-top:4px!important;color:#7a8799!important;font-size:10.5px!important;font-weight:650!important}
+      #${MODAL} .qsd-close{margin-left:auto!important;width:36px!important;height:36px!important;border:0!important;border-radius:9px!important;background:#f0f3f7!important;color:#334155!important;font-size:22px!important;cursor:pointer!important}
+      #${MODAL} .qsd-body{overflow:auto!important;padding:16px 18px 18px!important}
+      #${MODAL} .qsd-loading{padding:52px 16px!important;text-align:center!important;color:#6f7d90!important;font-size:12px!important;font-weight:750!important}
+      #${MODAL} .qsd-section{margin-bottom:12px!important;overflow:hidden!important;border:1px solid #e0e6ee!important;border-radius:11px!important;background:#fff!important}
+      #${MODAL} .qsd-section:last-child{margin-bottom:0!important}
+      #${MODAL} .qsd-section h4{margin:0!important;padding:11px 13px!important;border-bottom:1px solid #edf0f4!important;background:#fafbfd!important;color:#344054!important;font-size:11px!important;font-weight:900!important}
+      #${MODAL} .qsd-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+      #${MODAL} .qsd-field{min-height:64px!important;padding:11px 13px!important;border-right:1px solid #edf0f4!important;border-bottom:1px solid #edf0f4!important}
+      #${MODAL} .qsd-field:nth-child(4n){border-right:0!important}
+      #${MODAL} .qsd-field label{display:block!important;margin-bottom:5px!important;color:#8994a5!important;font-size:9px!important;font-weight:800!important}
+      #${MODAL} .qsd-field strong{display:block!important;color:#253047!important;font-size:11px!important;font-weight:800!important;line-height:1.45!important;word-break:break-word!important}
+      #${MODAL} .qsd-status{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:60px!important;height:24px!important;padding:0 9px!important;border-radius:999px!important;background:#edf3ff!important;color:#2457d6!important;font-size:9.5px!important;font-weight:900!important}
+      #${MODAL} .qsd-status.ok{background:#eaf7ef!important;color:#187b43!important}#${MODAL} .qsd-status.warn{background:#fff6df!important;color:#9a6500!important}
+      #${MODAL} .qsd-progress{display:grid!important;grid-template-columns:repeat(5,minmax(100px,1fr))!important;padding:17px 12px 14px!important;overflow:auto!important}
+      #${MODAL} .qsd-step{position:relative!important;text-align:center!important}
+      #${MODAL} .qsd-step:not(:last-child):after{content:""!important;position:absolute!important;top:14px!important;left:58%!important;width:84%!important;height:2px!important;background:#dce3ed!important}
+      #${MODAL} .qsd-step.done:not(:last-child):after{background:#72cbae!important}
+      #${MODAL} .qsd-dot{position:relative!important;z-index:1!important;display:grid!important;place-items:center!important;width:29px!important;height:29px!important;margin:auto!important;border:1px solid #d2dae6!important;border-radius:50%!important;background:#edf1f6!important;color:#8591a3!important;font-size:10px!important;font-weight:950!important}
+      #${MODAL} .qsd-step.done .qsd-dot{border-color:#20a66a!important;background:#20a66a!important;color:#fff!important}#${MODAL} .qsd-step.current .qsd-dot{border-color:#2457d6!important;background:#2457d6!important;color:#fff!important;box-shadow:0 0 0 4px #e8efff!important}
+      #${MODAL} .qsd-step span{display:block!important;margin-top:7px!important;color:#5d697c!important;font-size:9.5px!important;font-weight:850!important}
+      #${MODAL} .qsd-docs{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:9px!important;padding:13px!important}
+      #${MODAL} .qsd-doc{padding:11px!important;border:1px solid #e2e7ee!important;border-radius:8px!important;background:#fbfcfe!important}.qsd-doc span{display:block!important;margin-bottom:5px!important;color:#8994a5!important;font-size:9px!important}.qsd-doc strong{color:#253047!important;font-size:10.5px!important}
+      #${MODAL} .qsd-note{padding:12px 13px!important;color:#4f5d72!important;font-size:10.5px!important;line-height:1.65!important;white-space:pre-wrap!important}
+      #${MODAL} .qsd-foot{display:flex!important;justify-content:flex-end!important;padding:13px 18px 16px!important;border-top:1px solid #e5eaf1!important;background:#fff!important}.qsd-confirm{height:38px!important;padding:0 15px!important;border:1px solid #2457d6!important;border-radius:8px!important;background:#2457d6!important;color:#fff!important;font-size:10.5px!important;font-weight:900!important;cursor:pointer!important}
+      @media(max-width:780px){#${MODAL}{padding:8px!important;align-items:flex-start!important}#${MODAL} .qsd-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#${MODAL} .qsd-field:nth-child(4n){border-right:1px solid #edf0f4!important}#${MODAL} .qsd-field:nth-child(2n){border-right:0!important}}
+      @media(max-width:520px){#${MODAL} .qsd-grid,#${MODAL} .qsd-docs{grid-template-columns:1fr!important}#${MODAL} .qsd-field{border-right:0!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function rowMeta(row) {
+    const cells = Array.from(row.cells);
+    return {
+      shipmentNo: clean(cells[0]?.textContent),
+      salesOrderNo: clean(cells[1]?.textContent),
+      customer: clean(cells[2]?.textContent),
+      finishedLot: clean(cells[3]?.textContent),
+      shipmentQty: clean(cells[4]?.textContent),
+      oqcStatus: clean(cells[5]?.textContent),
+      shipmentDate: clean(cells[6]?.textContent),
+      status: clean(cells[7]?.textContent)
+    };
+  }
+
+  function localDetail(meta) {
+    const raw = localRows().find(row => first(row, ["shipNo", "shippingNo", "no", "deliveryNo", "invoice"], "") === meta.shipmentNo)
+      || localRows().find(row => first(row, ["sales", "salesOrder", "salesOrderId"], "") === meta.salesOrderNo && first(row, ["lot", "workOrder"], "") === meta.finishedLot)
+      || {};
+    const status = first(raw, ["delivery", "status", "shipping"], meta.status);
+    return { shipment: {
+      shipmentNo: first(raw, ["shipNo", "shippingNo", "no", "deliveryNo", "invoice"], meta.shipmentNo),
+      salesOrderNo: first(raw, ["sales", "salesOrder", "salesOrderId"], meta.salesOrderNo),
+      customer: first(raw, ["customer"], meta.customer),
+      product: first(raw, ["product", "item", "productName"]),
+      finishedLot: first(raw, ["lot", "finishedLot", "workOrder"], meta.finishedLot),
+      workOrderNo: first(raw, ["workOrderNo", "workOrder"]),
+      shipmentQty: raw.shipQty ?? raw.qty ?? raw.actualQty ?? meta.shipmentQty,
+      unit: first(raw, ["unit"], "kg"),
+      shipmentDate: first(raw, ["actualShipDate", "shipDate", "date"], meta.shipmentDate),
+      status,
+      oqcStatus: first(raw, ["oqc", "oqcStatus"], meta.oqcStatus),
+      coaStatus: first(raw, ["coa", "coaStatus"]),
+      packageInfo: first(raw, ["packageInfo", "package", "packaging"]),
+      destination: first(raw, ["destination", "deliveryPlace"]),
+      carrier: first(raw, ["carrier", "logisticsCompany"]),
+      vehicle: first(raw, ["vehicle", "carNo"]),
+      driver: first(raw, ["driver", "driverName"]),
+      driverPhone: first(raw, ["driverPhone", "driverTel"]),
+      departureAt: first(raw, ["departureAt", "departure", "dispatchAt"]),
+      deliveryStatus: first(raw, ["deliveryStatus"], status),
+      deliveredAt: first(raw, ["deliveredAt", "deliveryAt"]),
+      statementStatus: first(raw, ["statementStatus", "statement"], "미발행"),
+      invoiceStatus: first(raw, ["invoiceStatus", "invoice"], "미발행"),
+      owner: first(raw, ["owner", "manager", "savedBy"]),
+      note: first(raw, ["remark", "note"], "등록된 비고가 없습니다."),
+      savedAt: first(raw, ["savedAt", "updatedAt"], "")
+    }, quality: {}, documents: {}, progress: [], timeline: [] };
+  }
+
+  function badgeClass(value) {
+    if (isPassed(value) || isDone(value, /완료|발행/)) return "ok";
+    if (isDone(value, /대기|미정|미배정|미발행/)) return "warn";
+    return "";
+  }
+  const field = (label, value, badge = false) => `<div class="qsd-field"><label>${esc(label)}</label>${badge ? `<span class="qsd-status ${badgeClass(value)}">${esc(clean(value) || "-")}</span>` : `<strong>${esc(clean(value) || "-")}</strong>`}</div>`;
+
+  function renderDetail(detail) {
+    const s = detail.shipment || {}, q = detail.quality || {}, docs = detail.documents || {};
+    const progress = Array.isArray(detail.progress) && detail.progress.length ? detail.progress : [
+      { name: "수주확정", done: Boolean(clean(s.salesOrderNo) && clean(s.salesOrderNo) !== "-") },
+      { name: "OQC 합격", done: isPassed(s.oqcStatus) },
+      { name: "배차확정", done: Boolean(clean(s.vehicle) && clean(s.vehicle) !== "-" || clean(s.driver) && clean(s.driver) !== "-" || isDone(s.status, /배차완료|출하완료|납품완료/)) },
+      { name: "출하완료", done: isDone(s.status, /출하완료|납품완료/) },
+      { name: "납품완료", done: isDone(`${s.deliveryStatus} ${s.status}`, /납품완료/) }
+    ];
+    const current = progress.findIndex(step => !step.done);
+    const timeline = Array.isArray(detail.timeline) ? detail.timeline : [];
+    return `
+      <section class="qsd-section"><h4>출하 기본정보</h4><div class="qsd-grid">${field("출하번호",s.shipmentNo)}${field("수주번호",s.salesOrderNo)}${field("고객사",s.customer)}${field("제품",s.product)}${field("완제품 LOT",s.finishedLot)}${field("작업지시번호",s.workOrderNo)}${field("출하량",quantity(s.shipmentQty,s.unit))}${field("출하일",s.shipmentDate)}${field("담당자",s.owner)}${field("진행상태",s.status,true)}</div></section>
+      <section class="qsd-section"><h4>출하 진행단계</h4><div class="qsd-progress">${progress.map((step,index)=>`<div class="qsd-step ${step.done?"done":index===current?"current":""}"><div class="qsd-dot">${step.done?"✓":index+1}</div><span>${esc(step.name)}</span></div>`).join("")}</div></section>
+      <section class="qsd-section"><h4>OQC · 포장정보</h4><div class="qsd-grid">${field("OQC 번호",q.oqcNo)}${field("검사결과",q.status||s.oqcStatus,true)}${field("검사일",q.date)}${field("검사자",q.inspector)}${field("포장정보",s.packageInfo)}${field("CoA 상태",docs.coa||s.coaStatus,true)}</div></section>
+      <section class="qsd-section"><h4>배차 · 납품정보</h4><div class="qsd-grid">${field("납품처",s.destination)}${field("운송사",s.carrier)}${field("차량번호",s.vehicle)}${field("기사명",s.driver)}${field("기사 연락처",s.driverPhone)}${field("출발일시",s.departureAt)}${field("납품상태",s.deliveryStatus,true)}${field("납품완료일시",s.deliveredAt)}</div></section>
+      <section class="qsd-section"><h4>출하 문서</h4><div class="qsd-docs"><div class="qsd-doc"><span>검사성적서(CoA)</span><strong>${esc(docs.coa||s.coaStatus||"-")}</strong></div><div class="qsd-doc"><span>거래명세서</span><strong>${esc(docs.statement||s.statementStatus||"-")}</strong></div><div class="qsd-doc"><span>매출전표 / 세금계산서</span><strong>${esc(docs.invoice||s.invoiceStatus||"-")}</strong></div></div><div class="qsd-note"><b>비고</b><br>${esc(s.note||"등록된 비고가 없습니다.")}${timeline.length?`<br><br><b>처리 이력</b><br>${timeline.map(item=>`${esc(item.label)} · ${esc(item.at||"대기")}`).join("<br>")}`:""}</div></section>`;
+  }
+
+  function closeModal() {
+    document.getElementById(MODAL)?.remove();
+    document.documentElement.style.overflow = "";
+  }
+  async function openDetail(meta) {
+    ensureStyle(); closeModal();
+    const modal = document.createElement("div");
+    modal.id = MODAL;
+    modal.innerHTML = `<section class="qsd-card" role="dialog" aria-modal="true" aria-label="출하·납품 상세"><header class="qsd-head"><div><h3 class="qsd-title">출하·납품 상세</h3><div class="qsd-sub">${esc(meta.shipmentNo)} · ${esc(meta.salesOrderNo)} · ${esc(meta.customer)}</div></div><button class="qsd-close" data-qsd-close aria-label="닫기">×</button></header><div class="qsd-body"><div class="qsd-loading">출하·납품 상세정보를 불러오는 중입니다.</div></div><footer class="qsd-foot"><button class="qsd-confirm" data-qsd-close>확인</button></footer></section>`;
+    document.body.appendChild(modal); document.documentElement.style.overflow = "hidden";
+    let detail = localDetail(meta);
+    try {
+      const response = await fetch(`/api/shipping-details/${encodeURIComponent(meta.shipmentNo)}`, { credentials: "same-origin" });
+      const payload = await response.json();
+      if (response.ok && payload?.success && payload.data) detail = payload.data;
+    } catch (_error) {}
+    const body = modal.querySelector(".qsd-body");
+    if (body) body.innerHTML = renderDetail(detail);
+  }
+
+  function addButtons() {
+    ensureStyle();
+    const table = document.querySelector(`#${HOST} table`);
+    if (!table) return;
+    const header = table.querySelector("thead tr");
+    if (header && !header.querySelector("[data-qsd-head]")) {
+      const th = document.createElement("th"); th.textContent = "상세"; th.setAttribute("data-qsd-head",""); header.appendChild(th);
+      const colgroup = table.querySelector("colgroup");
+      if (colgroup && !colgroup.querySelector("[data-qsd-col]")) {
+        const col = document.createElement("col"); col.style.width = "7%"; col.setAttribute("data-qsd-col",""); colgroup.appendChild(col);
+      }
+    }
+    table.querySelectorAll("tbody tr").forEach(row => {
+      if (row.querySelector(".nsh-empty") || row.querySelector("[data-qsd-cell]")) return;
+      const meta = rowMeta(row);
+      if (!meta.shipmentNo || meta.shipmentNo === "-") return;
+      const td = document.createElement("td"); td.setAttribute("data-qsd-cell","");
+      td.innerHTML = `<button class="qsd-open" data-qsd-open="${esc(meta.shipmentNo)}">상세</button>`; row.appendChild(td);
+    });
+  }
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; addButtons(); });
+  }
+
+  document.addEventListener("click", event => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest(`#${MODAL} [data-qsd-close]`)) { event.preventDefault(); closeModal(); return; }
+    const button = target.closest(`#${HOST} [data-qsd-open]`);
+    if (button) { event.preventDefault(); const row = button.closest("tr"); if (row) openDetail(rowMeta(row)); }
+  }, true);
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && document.getElementById(MODAL)) closeModal(); }, true);
+  new MutationObserver(schedule).observe(document.getElementById("root") || document.body, { childList: true, subtree: true });
+  ["qmes:mes-master-ready","qmes:enterprise-ui-ready","qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete"].forEach(name => window.addEventListener(name, schedule));
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true }); else schedule();
+}
+
+const qmesShippingDetailPatchSource = `;(${qmesShippingDetailClientPatch.toString()})();`;
+const qmesShippingModulePath = path.join(__dirname, 'public', 'js', 'qmes-shipping-enterprise-module-20260828-v1.js');
+
+app.get('/js/qmes-shipping-enterprise-module-20260828-v1.js', (req, res, next) => {
+  fs.readFile(qmesShippingModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(`${source}\n${qmesShippingDetailPatchSource}`);
+  });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -1813,6 +2044,103 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
     fail(res, 500, err.message);
   }
 });
+
+function installShippingDetailApi() {
+  const valueOf = (row, keys, fallback = '') => {
+    for (const key of keys) {
+      const value = txt(row?.[key]);
+      if (value) return value;
+    }
+    return fallback;
+  };
+  const numberOf = row => {
+    const value = row?.shipQty ?? row?.qty ?? row?.actualQty;
+    const parsed = Number(String(value == null ? '' : value).replace(/[^0-9.+-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const rowsOf = payload => Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : [];
+  const numberKey = row => valueOf(row, ['shipNo','shippingNo','no','deliveryNo','invoice']);
+
+  app.get('/api/shipping-details/:shipmentNo', requireLogin, async (req, res) => {
+    const wanted = txt(req.params.shipmentNo);
+    if (!wanted) return fail(res, 400, '출하번호를 확인하세요.');
+    try {
+      const [shippingRecord, oqcTable, oqcSync] = await Promise.all([
+        db(`SELECT payload, updated_by, updated_at FROM qmes_sync_records WHERE record_type = 'inventory' AND record_key = 'erp:shipping' LIMIT 1`),
+        db('SELECT * FROM oqc ORDER BY created_at DESC'),
+        db(`SELECT payload FROM qmes_sync_records WHERE record_type = 'oqc' ORDER BY updated_at DESC`)
+      ]);
+      const row = rowsOf(shippingRecord.rows[0]?.payload).find(item => numberKey(item) === wanted);
+      if (!row) return fail(res, 404, '출하·납품 상세정보를 찾을 수 없습니다.');
+
+      const finishedLot = valueOf(row, ['lot','finishedLot','productionLot','workOrder']);
+      const oqcRows = [...oqcTable.rows, ...oqcSync.rows.flatMap(record => rowsOf(record.payload))];
+      const oqc = oqcRows.find(item => valueOf(item, ['lot','finishedLot','productionLot','workOrder']) === finishedLot) || {};
+      const status = valueOf(row, ['delivery','status','shipping'], '배차대기');
+      const deliveryStatus = valueOf(row, ['deliveryStatus'], status);
+      const oqcStatus = valueOf(row, ['oqc','oqcStatus'], valueOf(oqc, ['judge','status'], '검사대기'));
+      const coaStatus = valueOf(row, ['coa','coaStatus'], '미발행');
+      const shipment = {
+        shipmentNo: wanted,
+        salesOrderNo: valueOf(row, ['sales','salesOrder','salesOrderId'], '-'),
+        customer: valueOf(row, ['customer'], '-'),
+        product: valueOf(row, ['product','item','productName'], '-'),
+        finishedLot: finishedLot || '-',
+        workOrderNo: valueOf(row, ['workOrderNo','workOrder'], '-'),
+        shipmentQty: numberOf(row),
+        unit: valueOf(row, ['unit'], 'kg'),
+        shipmentDate: valueOf(row, ['actualShipDate','shipDate','date'], '-'),
+        status,
+        oqcStatus,
+        coaStatus,
+        packageInfo: valueOf(row, ['packageInfo','package','packaging'], valueOf(oqc, ['package'], '-')),
+        destination: valueOf(row, ['destination','deliveryPlace'], '-'),
+        carrier: valueOf(row, ['carrier','logisticsCompany'], '-'),
+        vehicle: valueOf(row, ['vehicle','carNo'], '-'),
+        driver: valueOf(row, ['driver','driverName'], '-'),
+        driverPhone: valueOf(row, ['driverPhone','driverTel'], '-'),
+        departureAt: valueOf(row, ['departureAt','departure','dispatchAt'], '-'),
+        deliveryStatus,
+        deliveredAt: valueOf(row, ['deliveredAt','deliveryAt'], '-'),
+        statementStatus: valueOf(row, ['statementStatus','statement'], '미발행'),
+        invoiceStatus: valueOf(row, ['invoiceStatus','invoice'], '미발행'),
+        owner: valueOf(row, ['owner','manager','savedBy'], shippingRecord.rows[0]?.updated_by || '-'),
+        note: valueOf(row, ['remark','note'], '등록된 비고가 없습니다.'),
+        savedAt: valueOf(row, ['savedAt','updatedAt'], shippingRecord.rows[0]?.updated_at || '')
+      };
+      const quality = {
+        oqcNo: valueOf(row, ['oqcNo','inspectionNo'], valueOf(oqc, ['oqcNo','inspectionNo','id'], '-')),
+        status: oqcStatus,
+        date: valueOf(oqc, ['date','inspectedAt'], '-'),
+        inspector: valueOf(oqc, ['inspector','by'], '-')
+      };
+      const progress = [
+        { name:'수주확정', done:Boolean(shipment.salesOrderNo && shipment.salesOrderNo !== '-') },
+        { name:'OQC 합격', done:/합격|PASS|OK/i.test(oqcStatus) },
+        { name:'배차확정', done:Boolean((shipment.vehicle && shipment.vehicle !== '-') || (shipment.driver && shipment.driver !== '-') || /배차완료|출하완료|납품완료/.test(status)) },
+        { name:'출하완료', done:/출하완료|납품완료/.test(status) },
+        { name:'납품완료', done:/납품완료/.test(`${deliveryStatus} ${status}`) }
+      ];
+      const timeline = [
+        { label:'출하요청 등록', at:shipment.savedAt || shipment.shipmentDate },
+        { label:'OQC 승인', at:progress[1].done ? quality.date : '대기' },
+        { label:'배차 확정', at:progress[2].done ? shipment.departureAt : '대기' },
+        { label:'고객 납품', at:progress[4].done ? shipment.deliveredAt : '대기' }
+      ];
+      ok(res, {
+        shipment,
+        quality,
+        documents:{ coa:coaStatus, statement:shipment.statementStatus, invoice:shipment.invoiceStatus },
+        progress,
+        timeline
+      }, '출하·납품 상세정보입니다.');
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+}
+
+installShippingDetailApi();
 
 function purchaseOrderWhere(id, param = '$1') {
   return `(id::text = ${param} OR purchase_no = ${param})`;
