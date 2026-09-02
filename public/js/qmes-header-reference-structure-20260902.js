@@ -1,8 +1,8 @@
 /* QMES header structure adapter — stable reference version */
 (function(){
   "use strict";
-  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V7_SINGLE_LOGO__) return;
-  window.__QMES_HEADER_REFERENCE_STRUCTURE_V7_SINGLE_LOGO__=true;
+  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V8_COMPANY_LOGO__) return;
+  window.__QMES_HEADER_REFERENCE_STRUCTURE_V8_COMPANY_LOGO__=true;
 
   function ensureHeader(){
     const header=document.querySelector('#root > div > header');
@@ -16,17 +16,22 @@
     brand.classList.add('qmes-ref-brand');
     document.getElementById('qmes-header-authority-v4')?.remove();
 
-    /* Single logo authority: keep only the original React-rendered NAMO Chemical logo. */
+    /* The React-rendered logo remains the source element only; visible branding below is controlled here. */
     const originalLogo=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
     if(originalLogo){
       originalLogo.classList.add('qmes-ref-original-logo');
-      originalLogo.style.removeProperty('display');
-      originalLogo.style.removeProperty('visibility');
-      originalLogo.style.removeProperty('opacity');
+      originalLogo.style.setProperty('display','none','important');
+      originalLogo.style.setProperty('visibility','hidden','important');
     }
 
-    /* Remove legacy injected copies so MutationObservers cannot stack logos. */
-    brand.querySelectorAll('.qmes-ref-brand-copy').forEach(node=>node.remove());
+    /* Single controlled brand block: N mark + official NAMO Chemical logo + ERP/MES subtitle. */
+    let brandCopy=brand.querySelector('.qmes-ref-brand-copy');
+    if(!brandCopy){
+      brandCopy=document.createElement('span');
+      brandCopy.className='qmes-ref-brand-copy';
+      brand.appendChild(brandCopy);
+    }
+    brandCopy.innerHTML='<span class="qmes-ref-brand-mark">N</span><span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"><img class="qmes-ref-brand-logo qmes-ref-company-logo" src="./assets/namo-header-logo.svg" alt="나모케미칼(주)" /></span><small>ERP · MES INTEGRATED</small></span>';
 
     let search=document.getElementById('qmes-ref-global-search');
     if(!search){
