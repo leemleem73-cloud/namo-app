@@ -1,79 +1,42 @@
 /* NAMO QMES reference design v2 — current production shell. Screen only. */
 @media screen {
-  html body.qmes-reference-theme {
-    --namo-v2-blue:#2f78b7;--namo-v2-ink:#294a63;--namo-v2-line:#c9d9e5;--namo-v2-bg:#edf2f6;
-    background:var(--namo-v2-bg)!important;color:var(--namo-v2-ink)!important;
-  }
+  html body.qmes-reference-theme {--namo-v2-blue:#2f78b7;--namo-v2-ink:#294a63;--namo-v2-line:#c9d9e5;--namo-v2-bg:#edf2f6;background:var(--namo-v2-bg)!important;color:var(--namo-v2-ink)!important;}
 
-  /* Keep the company's existing NAMO Chemical logo/brand. Do not introduce NAMO ONE. */
+  /* Keep the ORIGINAL company logo visible. The injected NAMO ONE copy stays removed. */
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-mark,
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small {display:none!important;}
-  html body.qmes-reference-theme #root > div > header .qmes-ref-original-logo {display:block!important;visibility:visible!important;}
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small,
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-copy {display:none!important;}
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand .qmes-ref-original-logo,
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand > img[alt="NAMO Chemical"] {
+    display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;height:auto!important;max-height:44px!important;
+  }
 
-  /* LEFT SIDEBAR: reproduce the supplied clean ERP/MES menu language. */
-  html body.qmes-reference-theme #qmes-sync-sidebar#qmes-sync-sidebar {
-    padding:0!important;background:#f4f8fb!important;border-right:1px solid #bfd1de!important;
-    box-shadow:2px 0 8px rgba(40,78,105,.08)!important;color:#294a63!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-toolbar {
-    height:54px!important;margin:0!important;padding:9px 10px!important;column-gap:7px!important;
-    background:#f4f8fb!important;border-bottom:1px solid #cbdbe6!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-search-box {
-    height:36px!important;padding:0 9px 0 12px!important;border:1px solid #c5d7e4!important;border-radius:8px!important;
-    background:#fff!important;box-shadow:none!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-search-input {
-    height:34px!important;color:#294a63!important;font-size:12px!important;font-weight:650!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-close {
-    width:30px!important;height:30px!important;border:0!important;background:transparent!important;color:#9cb1c1!important;box-shadow:none!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-ref-company-meta {
-    margin:10px 16px 16px!important;padding:13px 14px!important;min-height:42px!important;box-sizing:border-box!important;
-    background:#fff!important;border:1px solid #c7d9e6!important;border-radius:10px!important;box-shadow:none!important;
-    color:#36556d!important;font-size:12px!important;font-weight:700!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-ref-company-meta b {
-    padding:4px 8px!important;border:1px solid #cbe4c5!important;border-radius:14px!important;background:#f1faee!important;
-    color:#4f9847!important;font-size:10px!important;
-  }
+  /* LEFT SIDEBAR */
+  html body.qmes-reference-theme #qmes-sync-sidebar#qmes-sync-sidebar {padding:0!important;background:#f4f8fb!important;border-right:1px solid #bfd1de!important;box-shadow:2px 0 8px rgba(40,78,105,.08)!important;color:#294a63!important;}
+
+  /* User request: remove the menu-search area completely. */
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-toolbar {display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-search-box,
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-search-input,
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-search-icon,
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-close {display:none!important;}
+
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-ref-company-meta {margin:14px 16px 16px!important;padding:13px 14px!important;min-height:42px!important;box-sizing:border-box!important;background:#fff!important;border:1px solid #c7d9e6!important;border-radius:10px!important;box-shadow:none!important;color:#36556d!important;font-size:12px!important;font-weight:700!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-ref-company-meta b {padding:4px 8px!important;border:1px solid #cbe4c5!important;border-radius:14px!important;background:#f1faee!important;color:#4f9847!important;font-size:10px!important;}
   html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-groups {padding:0 0 18px!important;}
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group {
-    margin:0!important;border:0!important;background:#f4f8fb!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-toggle {
-    min-height:47px!important;margin:0!important;padding:0 16px!important;border:0!important;border-top:1px solid #c7d8e4!important;
-    border-radius:0!important;background:#dceaf4!important;color:#2d719f!important;font-size:12.5px!important;font-weight:850!important;
-    letter-spacing:.05px!important;box-shadow:none!important;
-  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group {margin:0!important;border:0!important;background:#f4f8fb!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-toggle {min-height:47px!important;margin:0!important;padding:0 16px!important;border:0!important;border-top:1px solid #c7d8e4!important;border-radius:0!important;background:#dceaf4!important;color:#2d719f!important;font-size:12.5px!important;font-weight:850!important;letter-spacing:.05px!important;box-shadow:none!important;}
   html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group:last-child .qmes-side-group-toggle {border-bottom:1px solid #c7d8e4!important;}
   html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-toggle:hover {background:#d5e6f1!important;color:#23658f!important;}
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group.is-open > .qmes-side-group-toggle {
-    background:#dceaf4!important;color:#2d719f!important;border-color:#c7d8e4!important;box-shadow:none!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-arrow {color:#2d719f!important;font-size:14px!important;}
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group.is-open .qmes-side-group-arrow {color:#2d719f!important;}
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-items {
-    padding:5px 10px 8px!important;background:#f4f8fb!important;
-  }
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item {
-    width:100%!important;min-height:43px!important;margin:1px 0!important;padding:0 14px 0 16px!important;box-sizing:border-box!important;
-    border:0!important;border-radius:3px!important;background:transparent!important;color:#36556d!important;font-size:12.5px!important;font-weight:650!important;
-  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group.is-open > .qmes-side-group-toggle {background:#dceaf4!important;color:#2d719f!important;border-color:#c7d8e4!important;box-shadow:none!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-arrow,html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group.is-open .qmes-side-group-arrow {color:#2d719f!important;font-size:14px!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-group-items {padding:5px 10px 8px!important;background:#f4f8fb!important;}
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item {width:100%!important;min-height:43px!important;margin:1px 0!important;padding:0 14px 0 16px!important;box-sizing:border-box!important;border:0!important;border-radius:3px!important;background:transparent!important;color:#36556d!important;font-size:12.5px!important;font-weight:650!important;}
   html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item:before {display:none!important;content:none!important;}
   html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item:hover {background:#e7f1f7!important;color:#23658f!important;}
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active,
-  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active:hover {
-    background:linear-gradient(180deg,#3e8fc5 0%,#2f79b2 100%)!important;color:#fff!important;font-weight:800!important;
-    border:0!important;border-radius:3px!important;box-shadow:none!important;
-  }
+  html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active,html body.qmes-reference-theme #qmes-sync-sidebar .qmes-side-item.is-active:hover {background:linear-gradient(180deg,#3e8fc5 0%,#2f79b2 100%)!important;color:#fff!important;font-weight:800!important;border:0!important;border-radius:3px!important;box-shadow:none!important;}
 
-  /* Main screen styling remains light; no report/print selectors here. */
   html body.qmes-reference-theme #root > div > main {background:#edf2f6!important;color:#22384a!important;}
-  html body.qmes-reference-theme #root > div > main :is(.qmd-card,.qerp-card,.qmes-card,.qmd-summary-item,.qmd-flow-card,.qmd-panel):not(.doc-paper):not([class*="cert"]) {
-    background:#fff!important;border-color:#c7d5df!important;border-radius:7px!important;box-shadow:0 3px 12px rgba(28,47,75,.05)!important;
-  }
+  html body.qmes-reference-theme #root > div > main :is(.qmd-card,.qerp-card,.qmes-card,.qmd-summary-item,.qmd-flow-card,.qmd-panel):not(.doc-paper):not([class*="cert"]) {background:#fff!important;border-color:#c7d5df!important;border-radius:7px!important;box-shadow:0 3px 12px rgba(28,47,75,.05)!important;}
 }
 @media print { }
