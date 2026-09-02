@@ -1,290 +1,359 @@
-/* QMES current shell core — first-paint ownership
- * Header / top navigation / shared left navigation live here on every route.
- * Page-specific themes may style <main>, but must not replace this shell.
+/* NAMO QMES native application shell — 2026-09-02
+ * One owner only: router.jsx renders the header/sidebar and this file styles it.
+ * Legacy qmes-top-menu / qmes-sync-sidebar selectors are intentionally not used.
  */
 :root{
-  --qmes-shell-sidebar-width:220px;
-  --qmes-shell-menu-gutter:8px;
-  --qmes-shell-line:#d8e0ea;
-  --qmes-shell-text:#344054;
-  --qmes-shell-blue:#2563eb;
-  --qmes-shell-blue-dark:#175cd3;
+  --namo-shell-sidebar:248px;
+  --namo-shell-header:64px;
+  --namo-shell-blue:#2f78b7;
+  --namo-shell-blue-dark:#2d70a5;
+  --namo-shell-blue-deep:#235f8e;
+  --namo-shell-bg:#edf2f6;
+  --namo-shell-panel:#ffffff;
+  --namo-shell-line:#cbd8e2;
+  --namo-shell-ink:#22384a;
+  --namo-shell-muted:#687c8d;
 }
 
-html body #root > div > header{
+.qmes-native-shell{
+  min-height:100vh;
+  background:var(--namo-shell-bg);
+  color:var(--namo-shell-ink);
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;
+}
+.qmes-native-shell *{box-sizing:border-box}
+
+.qmes-native-header{
   position:sticky;
   top:0;
-  z-index:40!important;
-  isolation:isolate;
-  background:#fff!important;
-  color:#172033!important;
-  border-bottom:1px solid var(--qmes-shell-line)!important;
-  box-shadow:0 1px 0 rgba(15,23,42,.025)!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+  z-index:9000;
+  display:grid;
+  grid-template-columns:var(--namo-shell-sidebar) minmax(0,1fr);
+  height:var(--namo-shell-header);
+  border-bottom:1px solid var(--namo-shell-blue-deep);
+  box-shadow:0 2px 6px rgba(30,73,105,.20);
 }
-html body #root > div > header > div:first-child{
-  height:62px!important;
-  min-height:62px!important;
-  max-height:62px!important;
-  padding:0 16px!important;
-  gap:10px!important;
-  background:#fff!important;
-  border:0!important;
-  box-sizing:border-box!important;
+.qmes-native-brand{
+  height:var(--namo-shell-header);
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+  background:linear-gradient(180deg,#fbfcfd 0%,#e8eef3 100%);
+  border-right:1px solid #b9c9d5;
 }
-html body #root > div > header img[alt="NAMO Chemical"]{
-  width:auto!important;
-  height:34px!important;
-  max-height:34px!important;
-  max-width:235px!important;
-  object-fit:contain!important;
-  filter:none!important;
+.qmes-native-brand-button{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  border:0;
+  padding:0;
+  background:transparent;
+  cursor:pointer;
 }
-html body #root .qmes-header-clock,
-html body #root .qmes-header-clock span{
-  color:#475467!important;
-  font-size:12px!important;
-  font-weight:600!important;
+.qmes-native-brand-button img{
+  display:block;
+  width:auto;
+  height:30px;
+  max-width:205px;
+  object-fit:contain;
+  filter:none;
 }
-html body #root .qmes-header-clock .animate-pulse{
-  width:7px!important;height:7px!important;background:#34d399!important;box-shadow:none!important;
+.qmes-native-topbar{
+  min-width:0;
+  height:var(--namo-shell-header);
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:0 18px 0 12px;
+  background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%);
+  color:#fff;
 }
-html body #root .qmes-header-controls{gap:6px!important;color:#344054!important;}
-html body #root .qmes-header-action{
-  height:34px!important;
-  min-height:34px!important;
-  padding:0 10px!important;
-  border:1px solid #cfd8e3!important;
-  border-radius:8px!important;
-  background:#fff!important;
-  color:#344054!important;
-  font-size:12px!important;
-  font-weight:600!important;
-  box-shadow:none!important;
+.qmes-native-hamburger{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#fff;
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
 }
-html body #root .qmes-header-action:hover{background:#f8fafc!important;border-color:#b9c6d5!important;color:#172033!important;}
-html body #root button[aria-label*="NAMO Talk"]{
-  height:36px!important;
-  min-height:36px!important;
-  padding:0 12px!important;
-  border:1px solid #cfd8e3!important;
-  border-radius:9px!important;
-  background:#fff!important;
-  color:#172033!important;
-  font-size:12.5px!important;
-  font-weight:650!important;
-  box-shadow:none!important;
-}
-html body #root button[aria-label^="계정 설정"]{
-  min-height:38px!important;
-  padding:3px 5px!important;
-  border:0!important;
-  border-radius:9px!important;
-  background:#fff!important;
-  color:#172033!important;
-}
-html body #root button[aria-label^="계정 설정"]:hover{background:#f8fafc!important;}
-html body #root button[aria-label^="계정 설정"]>div:first-of-type{
-  width:30px!important;height:30px!important;background:#eef2f7!important;color:#263548!important;font-size:12px!important;font-weight:700!important;
-}
-html body #root button[aria-label^="계정 설정"] div,
-html body #root button[aria-label^="계정 설정"] span{color:#172033!important;}
-
-html body #root .qmes-top-menu-bar{
+.qmes-native-hamburger:hover,.qmes-native-hamburger:focus-visible{background:rgba(255,255,255,.14);outline:none}
+.qmes-native-search{
   position:relative;
-  z-index:41!important;
-  isolation:isolate;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  background:#fff!important;
-  border-top:1px solid #eef2f6!important;
-  border-bottom:1px solid var(--qmes-shell-line)!important;
-  box-shadow:none!important;
+  flex:0 1 420px;
+  width:min(420px,38vw);
+  min-width:180px;
 }
-html body #root .qmes-top-menu{
+.qmes-native-search input{
+  width:100%;
+  height:36px;
+  padding:0 40px 0 13px;
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:7px;
+  outline:0;
+  background:rgba(255,255,255,.96);
+  color:#263d4f;
+  font-size:13px;
+  font-weight:650;
+}
+.qmes-native-search input::placeholder{color:#7c8e9d}
+.qmes-native-search input:focus{background:#fff;border-color:#e7f4fc;box-shadow:0 0 0 2px rgba(255,255,255,.16)}
+.qmes-native-search-icon{
+  position:absolute;
+  top:50%;
+  right:11px;
+  transform:translateY(-50%);
+  display:grid;
+  place-items:center;
+  color:#5f7e94;
+  pointer-events:none;
+}
+.qmes-native-top-spacer{flex:1 1 auto;min-width:10px}
+.qmes-native-date{
+  flex:0 0 auto;
+  height:34px;
+  display:flex;
+  align-items:center;
+  padding:0 11px;
+  border:1px solid rgba(255,255,255,.38);
+  border-radius:6px;
+  background:rgba(0,0,0,.08);
+  color:#fff;
+  font-size:12px;
+  font-weight:750;
+  white-space:nowrap;
+}
+.qmes-native-bell{
   position:relative;
-  z-index:42!important;
-  isolation:isolate;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  padding:0 10px 0 46px!important;
-  gap:1px!important;
-  display:flex!important;
-  align-items:stretch!important;
-  flex-wrap:nowrap!important;
-  overflow-x:auto!important;
-  overflow-y:hidden!important;
-  background:#fff!important;
-  width:100%!important;
-  transform:none!important;
-  transition:none!important;
-  scrollbar-width:none!important;
-  box-sizing:border-box!important;
-  scroll-padding-left:46px!important;
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#fff;
+  cursor:pointer;
 }
-html body #root .qmes-top-menu::-webkit-scrollbar{display:none!important;}
-html body #root .qmes-top-menu-item{
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  flex:0 0 auto!important;
+.qmes-native-bell:hover,.qmes-native-bell:focus-visible{background:rgba(255,255,255,.14);outline:none}
+.qmes-native-bell svg{color:#fff;stroke:#fff}
+.qmes-native-badge{
+  position:absolute;
+  top:1px;
+  right:0;
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid var(--namo-shell-blue-dark);
+  border-radius:999px;
+  background:#df5151;
+  color:#fff;
+  font-size:9px;
+  font-weight:900;
 }
-html body #root .qmes-top-menu-button{
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  padding:0 10px!important;
-  gap:6px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  border:0!important;
-  border-bottom:2px solid transparent!important;
-  border-radius:0!important;
-  background:#fff!important;
-  color:var(--qmes-shell-text)!important;
-  font-size:13px!important;
-  line-height:1!important;
-  font-weight:600!important;
-  white-space:nowrap!important;
-  box-shadow:none!important;
+.qmes-native-user{
+  flex:0 0 auto;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-left:2px;
+  padding:0 4px 0 14px;
+  border:0;
+  border-left:1px solid rgba(255,255,255,.30);
+  border-radius:0;
+  background:transparent;
+  color:#fff;
+  cursor:pointer;
 }
-html body #root .qmes-top-menu-button svg{
-  width:15px!important;
-  height:15px!important;
-  min-width:15px!important;
-  color:#667085!important;
-  stroke-width:1.9!important;
-  fill:none!important;
+.qmes-native-user:hover,.qmes-native-user:focus-visible{background:rgba(255,255,255,.10);outline:none}
+.qmes-native-avatar{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.55);
+  border-radius:50%;
+  background:#f4f8fb;
+  color:#2f6f9f;
+  font-size:12px;
+  font-weight:900;
 }
-html body #root .qmes-top-menu-button span{
-  display:inline!important;
-  visibility:visible!important;
-  opacity:1!important;
-  color:inherit!important;
-  font:inherit!important;
-  white-space:nowrap!important;
-}
-html body #root .qmes-top-menu-button .qmes-menu-arrow{width:11px!important;height:11px!important;color:#98a2b3!important;margin-left:-1px!important;}
-html body #root .qmes-top-menu-button:hover,
-html body #root .qmes-top-menu-button:focus-visible{
-  background:#f7f9fc!important;
-  color:#172033!important;
-  outline:none!important;
-}
-html body #root .qmes-top-menu-button:hover svg{color:#475467!important;}
-html body #root .qmes-top-menu-button.is-active,
-html body #root .qmes-top-menu-button[aria-current="page"]{
-  background:#f5f9ff!important;
-  color:var(--qmes-shell-blue-dark)!important;
-  border-bottom-color:var(--qmes-shell-blue)!important;
-  font-weight:700!important;
-}
-html body #root .qmes-top-menu-button.is-active svg,
-html body #root .qmes-top-menu-button[aria-current="page"] svg{color:var(--qmes-shell-blue)!important;}
-html body #root .qmes-submenu-row{display:none!important;}
+.qmes-native-user-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}
+.qmes-native-user-copy strong{color:#fff;font-size:12px;font-weight:850;white-space:nowrap}
+.qmes-native-user-copy small{margin-top:3px;color:#d9e8f2;font-size:10px;font-weight:650;white-space:nowrap}
+.qmes-native-user-arrow{color:#d9e8f2;font-size:10px}
 
-/* Keep current hover/user menus identical even while Field Input page themes are isolated. */
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{
-  position:fixed!important;z-index:13050!important;min-width:220px!important;max-width:270px!important;padding:6px!important;
-  border:1px solid #d9e1ea!important;border-radius:10px!important;background:#fff!important;color:#172033!important;
-  box-shadow:0 14px 34px rgba(15,23,42,.13)!important;overflow:hidden!important;
+.qmes-native-body{
+  min-height:calc(100vh - var(--namo-shell-header));
+  display:grid;
+  grid-template-columns:var(--namo-shell-sidebar) minmax(0,1fr);
+  background:var(--namo-shell-bg);
+  transition:grid-template-columns .16s ease;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
-  position:static!important;margin:0 0 4px!important;padding:7px 9px 6px!important;border:0!important;border-bottom:1px solid #edf1f5!important;
-  background:#fff!important;color:#667085!important;font-size:11px!important;line-height:16px!important;font-weight:700!important;letter-spacing:0!important;
+.qmes-native-shell.is-sidebar-closed .qmes-native-body{grid-template-columns:0 minmax(0,1fr)}
+.qmes-native-sidebar{
+  position:sticky;
+  top:var(--namo-shell-header);
+  align-self:start;
+  width:var(--namo-shell-sidebar);
+  height:calc(100vh - var(--namo-shell-header));
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:12px 11px 24px;
+  border-right:1px solid var(--namo-shell-line);
+  background:#fff;
+  box-shadow:3px 0 10px rgba(47,91,124,.04);
+  transition:transform .16s ease,opacity .16s ease;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title:before{display:none!important;}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{
-  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:38px!important;
-  padding:8px 10px 8px 24px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;
-  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+.qmes-native-shell.is-sidebar-closed .qmes-native-sidebar{transform:translateX(-100%);opacity:0;pointer-events:none}
+.qmes-native-company{
+  margin-bottom:15px;
+  padding:12px 12px 11px;
+  border:1px solid #d8e2e9;
+  border-radius:10px;
+  background:#f8fafc;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{
-  content:""!important;position:absolute!important;left:10px!important;top:50%!important;width:5px!important;height:5px!important;margin-top:-2.5px!important;
-  border-radius:50%!important;background:#cbd5e1!important;
+.qmes-native-company-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qmes-native-company strong{color:#2d465a;font-size:13px;font-weight:900}
+.qmes-native-company-status{display:inline-flex;align-items:center;gap:5px;color:#4d8f3b;font-size:10px;font-weight:850;white-space:nowrap}
+.qmes-native-company-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#58a842;box-shadow:0 0 0 3px #edf7e9}
+.qmes-native-company small{display:block;margin-top:5px;color:#7b8d9c;font-size:10px;font-weight:650}
+.qmes-native-group{margin-top:15px}
+.qmes-native-group:first-of-type{margin-top:0}
+.qmes-native-group-title{
+  padding:0 10px 7px;
+  color:#8a9aa8;
+  font-size:10px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.08em;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover,
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible{background:#f5f9ff!important;color:#175cd3!important;outline:none!important;}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover:before,
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible:before{background:#2563eb!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown{
-  z-index:13060!important;width:196px!important;padding:6px!important;border:1px solid #d9e1ea!important;border-radius:10px!important;
-  background:#fff!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important;
+.qmes-native-item{
+  width:100%;
+  min-height:39px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:2px 0;
+  padding:8px 10px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#4e6272;
+  font-size:12.5px;
+  line-height:1.25;
+  font-weight:700;
+  text-align:left;
+  cursor:pointer;
+  transition:background .12s ease,color .12s ease,transform .12s ease;
 }
-html body #qmes-user-dropdown#qmes-user-dropdown button{
-  width:100%!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-radius:7px!important;background:#fff!important;
-  color:#344054!important;font-size:13px!important;line-height:18px!important;font-weight:600!important;text-align:left!important;
+.qmes-native-item:hover,.qmes-native-item:focus-visible{background:#f0f5f9;color:#245f8b;outline:none}
+.qmes-native-item.is-active{
+  background:linear-gradient(90deg,#3d87bd 0%,#2f76ad 100%);
+  color:#fff;
+  box-shadow:0 2px 5px rgba(47,118,173,.20);
 }
-html body #qmes-user-dropdown#qmes-user-dropdown button:hover,
-html body #qmes-user-dropdown#qmes-user-dropdown button:focus-visible{background:#f7f9fc!important;color:#172033!important;outline:none!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;padding-top:9px!important;border-top:1px solid #edf1f5!important;color:#b42318!important;}
+.qmes-native-item-icon{width:18px;min-width:18px;height:18px;display:grid;place-items:center}
+.qmes-native-item-icon svg{width:16px;height:16px;stroke-width:2}
+.qmes-native-item.is-active svg{color:#fff;stroke:#fff}
+.qmes-native-item-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qmes-native-divider{height:1px;margin:14px 7px;background:#edf1f4}
 
-/* Current left menu appearance. Double-id specificity intentionally owns shell visuals over the legacy sidebar helper. */
-html body #qmes-sync-sidebar#qmes-sync-sidebar{
-  width:220px!important;padding:0 10px 14px!important;background:#fff!important;color:#344054!important;
-  border-right:1px solid var(--qmes-shell-line)!important;box-shadow:4px 0 14px rgba(15,23,42,.035)!important;filter:none!important;z-index:12050!important;
+.qmes-native-content{
+  min-width:0;
+  width:100%;
+  padding:20px 24px 32px;
+  background:var(--namo-shell-bg);
+  color:var(--namo-shell-ink);
 }
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
-  height:48px!important;min-height:48px!important;margin:0 -10px!important;padding:7px 10px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
-  height:34px!important;padding:0 9px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#f8fafc!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
-  height:32px!important;background:transparent!important;color:#344054!important;font-size:12.5px!important;font-weight:500!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder{color:#98a2b3!important;font-weight:450!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon{width:24px!important;height:24px!important;background:transparent!important;color:#667085!important;font-size:15px!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
-  min-height:46px!important;margin:0 -10px 8px!important;padding:0 13px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active:before{display:none!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
-  color:#475467!important;font-size:12px!important;line-height:18px!important;font-weight:700!important;letter-spacing:-.01em!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{
-  width:28px!important;height:28px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#98a2b3!important;font-size:18px!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9!important;color:#475467!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-items{padding:0 1px!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
-  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;margin:2px 0!important;
-  padding:9px 10px 9px 12px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#475467!important;
-  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{
-  content:""!important;position:static!important;display:block!important;flex:0 0 auto!important;width:5px!important;height:5px!important;margin-right:9px!important;
-  border-radius:50%!important;background:#cbd5e1!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{background:#f7f9fc!important;color:#172033!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{background:#94a3b8!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{background:#eef5ff!important;color:#175cd3!important;font-weight:650!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{background:#2563eb!important;}
+.qmes-native-content:focus{outline:none}
 
-/* Reserve the hamburger lane from the first paint. */
-html body:not(.qmes-side-open) #root header .qmes-top-menu{
-  padding-left:46px!important;width:100%!important;transform:none!important;scroll-padding-left:46px!important;
-}
-html body.qmes-side-open #root header .qmes-top-menu{
-  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;width:100%!important;
-  transform:none!important;scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
-}
-html body #qmes-sync-hamburger{z-index:12040!important;}
+.qmes-native-shade{display:none}
 
-@media(max-width:900px){
-  :root{--qmes-shell-sidebar-width:190px;--qmes-shell-menu-gutter:6px;}
-  html body #qmes-sync-sidebar#qmes-sync-sidebar{width:190px!important;}
-  html body:not(.qmes-side-open) #root header .qmes-top-menu{padding-left:44px!important;scroll-padding-left:44px!important;}
+.qmes-native-modal-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:15000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(20,39,55,.48);
 }
+.qmes-native-modal{
+  width:min(420px,100%);
+  border:1px solid #d4dee6;
+  border-radius:14px;
+  background:#fff;
+  color:#24384a;
+  box-shadow:0 24px 70px rgba(24,55,78,.25);
+  overflow:hidden;
+}
+.qmes-native-modal-head{display:flex;align-items:center;justify-content:space-between;padding:17px 18px;border-bottom:1px solid #e7edf2;background:#f9fbfc}
+.qmes-native-modal-head h2{margin:0;color:#24384a;font-size:18px;font-weight:900}
+.qmes-native-modal-close{width:34px;height:34px;border:0;border-radius:8px;background:#eef3f7;color:#526779;font-size:21px;cursor:pointer}
+.qmes-native-modal-body{padding:18px}
+.qmes-native-modal-primary,.qmes-native-modal-secondary,.qmes-native-modal-danger{
+  width:100%;height:44px;border-radius:9px;font-size:13px;font-weight:850;cursor:pointer
+}
+.qmes-native-modal-primary{border:1px solid #2f78b7;background:#2f78b7;color:#fff}
+.qmes-native-modal-secondary{margin-top:9px;border:1px solid #cbd8e2;background:#fff;color:#4d6070}
+.qmes-native-modal-danger{margin-top:9px;border:1px solid #e7b3b3;background:#fff3f3;color:#b33c3c}
+.qmes-native-field{display:block;margin-top:13px;color:#53697a;font-size:12px;font-weight:800}
+.qmes-native-field:first-child{margin-top:0}
+.qmes-native-field input{display:block;width:100%;height:42px;margin-top:6px;padding:0 11px;border:1px solid #cbd8e2;border-radius:8px;background:#fff;color:#22384a;font-size:13px;outline:none}
+.qmes-native-field input:focus{border-color:#4f9bc7;box-shadow:0 0 0 2px #e7f2fa}
+.qmes-native-error{margin-top:11px;padding:9px 10px;border:1px solid #efc4c4;border-radius:8px;background:#fff3f3;color:#b33c3c;font-size:12px;font-weight:750}
 
+@media(max-width:1180px){
+  .qmes-native-search{flex-basis:330px;width:min(330px,34vw)}
+  .qmes-native-user-copy{display:none}
+}
+@media(max-width:980px){
+  :root{--namo-shell-sidebar:230px}
+  .qmes-native-header{grid-template-columns:72px minmax(0,1fr)}
+  .qmes-native-brand{padding:0 8px;justify-content:center}
+  .qmes-native-brand-button{justify-content:center}
+  .qmes-native-brand-button img{max-width:56px;height:27px;object-position:left}
+  .qmes-native-body,.qmes-native-shell.is-sidebar-closed .qmes-native-body{grid-template-columns:minmax(0,1fr)}
+  .qmes-native-sidebar{
+    position:fixed;
+    top:var(--namo-shell-header);
+    left:0;
+    bottom:0;
+    z-index:9100;
+    height:auto;
+    transform:translateX(0);
+    box-shadow:12px 0 30px rgba(27,55,75,.20);
+  }
+  .qmes-native-shell.is-sidebar-closed .qmes-native-sidebar{transform:translateX(-102%)}
+  .qmes-native-shade{position:fixed;inset:var(--namo-shell-header) 0 0 0;z-index:9050;display:block;background:rgba(30,50,67,.32)}
+  .qmes-native-shell.is-sidebar-closed .qmes-native-shade{display:none}
+  .qmes-native-search{flex:1 1 auto;width:auto;min-width:120px}
+  .qmes-native-date{display:none}
+  .qmes-native-content{padding:18px 16px 28px}
+}
+@media(max-width:620px){
+  .qmes-native-topbar{padding-right:8px;gap:5px}
+  .qmes-native-search input{font-size:12px}
+  .qmes-native-user{padding-left:7px}
+  .qmes-native-user-arrow{display:none}
+  .qmes-native-bell{width:34px;flex-basis:34px}
+}
 @media print{
-  html body #root > div > header,
-  html body #root .qmes-top-menu-bar,
-  html body #root .qmes-top-menu{isolation:auto!important;}
+  .qmes-native-header,.qmes-native-sidebar,.qmes-native-shade{display:none!important}
+  .qmes-native-body,.qmes-native-shell.is-sidebar-closed .qmes-native-body{display:block}
+  .qmes-native-content{padding:0;background:#fff}
 }
