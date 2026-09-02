@@ -1,290 +1,215 @@
-/* QMES current shell core — first-paint ownership
- * Header / top navigation / shared left navigation live here on every route.
- * Page-specific themes may style <main>, but must not replace this shell.
+/* QMES native shell — rebuilt 2026-09-02
+ * This file styles the actual React shell structure. No runtime DOM/CSS overlay injection.
  */
 :root{
-  --qmes-shell-sidebar-width:220px;
-  --qmes-shell-menu-gutter:8px;
-  --qmes-shell-line:#d8e0ea;
-  --qmes-shell-text:#344054;
-  --qmes-shell-blue:#2563eb;
-  --qmes-shell-blue-dark:#175cd3;
+  --qmes-shell-sidebar-width:248px;
+  --qmes-shell-header-height:64px;
+  --qmes-shell-nav-height:44px;
+  --qmes-shell-blue:#2f78b7;
+  --qmes-shell-blue-dark:#2d70a5;
+  --qmes-shell-blue-soft:#e7f2fa;
+  --qmes-shell-green:#58a842;
+  --qmes-shell-red:#df5151;
+  --qmes-shell-orange:#eea32f;
+  --qmes-shell-ink:#22384a;
+  --qmes-shell-muted:#687c8d;
+  --qmes-shell-line:#cbd8e2;
+  --qmes-shell-panel:#ffffff;
+  --qmes-shell-bg:#edf2f6;
+  --qmes-shell-shadow:0 2px 7px rgba(47,91,124,.12);
 }
 
-html body #root > div > header{
+html,body,#root{min-height:100%;}
+body{margin:0;background:var(--qmes-shell-bg);color:var(--qmes-shell-ink);}
+button,input,select,textarea{font:inherit;}
+
+.qmes-app-shell{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:var(--qmes-shell-bg);
+  color:var(--qmes-shell-ink);
+  font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;
+}
+
+.qmes-app-header{
   position:sticky;
   top:0;
-  z-index:40!important;
-  isolation:isolate;
-  background:#fff!important;
-  color:#172033!important;
-  border-bottom:1px solid var(--qmes-shell-line)!important;
-  box-shadow:0 1px 0 rgba(15,23,42,.025)!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+  z-index:80;
+  background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%);
+  color:#fff;
+  border-bottom:1px solid #235f8e;
+  box-shadow:0 2px 6px rgba(30,73,105,.24);
 }
-html body #root > div > header > div:first-child{
-  height:62px!important;
-  min-height:62px!important;
-  max-height:62px!important;
-  padding:0 16px!important;
-  gap:10px!important;
-  background:#fff!important;
-  border:0!important;
-  box-sizing:border-box!important;
+.qmes-app-header-main{
+  height:var(--qmes-shell-header-height);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 18px;
+  box-sizing:border-box;
 }
-html body #root > div > header img[alt="NAMO Chemical"]{
-  width:auto!important;
-  height:34px!important;
-  max-height:34px!important;
-  max-width:235px!important;
-  object-fit:contain!important;
-  filter:none!important;
+.qmes-app-header-spacer{flex:1;}
+.qmes-brand-button,
+.qmes-mobile-menu-button,
+.qmes-header-icon-button,
+.qmes-talk-button,
+.qmes-account-button,
+.qmes-header-action{
+  appearance:none;
+  border:0;
+  font:inherit;
+  cursor:pointer;
 }
-html body #root .qmes-header-clock,
-html body #root .qmes-header-clock span{
-  color:#475467!important;
-  font-size:12px!important;
-  font-weight:600!important;
-}
-html body #root .qmes-header-clock .animate-pulse{
-  width:7px!important;height:7px!important;background:#34d399!important;box-shadow:none!important;
-}
-html body #root .qmes-header-controls{gap:6px!important;color:#344054!important;}
-html body #root .qmes-header-action{
-  height:34px!important;
-  min-height:34px!important;
-  padding:0 10px!important;
-  border:1px solid #cfd8e3!important;
-  border-radius:8px!important;
-  background:#fff!important;
-  color:#344054!important;
-  font-size:12px!important;
-  font-weight:600!important;
-  box-shadow:none!important;
-}
-html body #root .qmes-header-action:hover{background:#f8fafc!important;border-color:#b9c6d5!important;color:#172033!important;}
-html body #root button[aria-label*="NAMO Talk"]{
-  height:36px!important;
-  min-height:36px!important;
-  padding:0 12px!important;
-  border:1px solid #cfd8e3!important;
-  border-radius:9px!important;
-  background:#fff!important;
-  color:#172033!important;
-  font-size:12.5px!important;
-  font-weight:650!important;
-  box-shadow:none!important;
-}
-html body #root button[aria-label^="계정 설정"]{
-  min-height:38px!important;
-  padding:3px 5px!important;
-  border:0!important;
-  border-radius:9px!important;
-  background:#fff!important;
-  color:#172033!important;
-}
-html body #root button[aria-label^="계정 설정"]:hover{background:#f8fafc!important;}
-html body #root button[aria-label^="계정 설정"]>div:first-of-type{
-  width:30px!important;height:30px!important;background:#eef2f7!important;color:#263548!important;font-size:12px!important;font-weight:700!important;
-}
-html body #root button[aria-label^="계정 설정"] div,
-html body #root button[aria-label^="계정 설정"] span{color:#172033!important;}
+.qmes-brand-button{display:flex;align-items:center;padding:0;background:transparent;border-radius:6px;}
+.qmes-brand-button img{height:34px;width:auto;max-width:235px;object-fit:contain;filter:none;display:block;}
+.qmes-mobile-menu-button{display:none;width:36px;height:36px;border:1px solid rgba(255,255,255,.36);border-radius:7px;background:rgba(0,0,0,.08);color:#fff;font-size:19px;align-items:center;justify-content:center;}
+.qmes-header-clock{display:flex;align-items:center;gap:7px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;}
+.qmes-online-dot{width:7px;height:7px;border-radius:50%;background:#86efac;box-shadow:0 0 0 3px rgba(134,239,172,.14);}
+.qmes-header-icon-button{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.34);border-radius:8px;background:rgba(0,0,0,.08);color:#fff;}
+.qmes-unread-badge{position:absolute;right:-5px;top:-5px;min-width:18px;height:18px;padding:0 4px;display:flex;align-items:center;justify-content:center;border:2px solid #2d70a5;border-radius:10px;background:#df5151;color:#fff;font-size:10px;font-weight:900;box-sizing:border-box;}
+.qmes-talk-button{height:36px;display:flex;align-items:center;gap:7px;padding:0 12px;border:1px solid rgba(255,255,255,.36);border-radius:8px;background:rgba(0,0,0,.08);color:#fff;font-size:12.5px;font-weight:750;}
+.qmes-talk-button:hover,.qmes-talk-button.is-active,.qmes-header-icon-button:hover{background:rgba(255,255,255,.15);}
+.qmes-header-controls{display:flex;align-items:center;gap:6px;}
+.qmes-account-button{height:38px;display:flex;align-items:center;gap:7px;padding:3px 8px;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:rgba(0,0,0,.08);color:#fff;}
+.qmes-account-button:hover{background:rgba(255,255,255,.15);}
+.qmes-account-avatar{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f4f8fb;color:#2f6f9f;font-size:12px;font-weight:900;}
+.qmes-account-name{font-size:13px;font-weight:800;white-space:nowrap;}
+.qmes-account-arrow{font-size:10px;opacity:.8;}
+.qmes-header-action{height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.34);border-radius:7px;background:rgba(0,0,0,.08);color:#fff;font-size:12px;font-weight:700;}
+.qmes-header-action:hover,.qmes-header-action.is-active{background:rgba(255,255,255,.15);}
 
-html body #root .qmes-top-menu-bar{
-  position:relative;
-  z-index:41!important;
-  isolation:isolate;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  background:#fff!important;
-  border-top:1px solid #eef2f6!important;
-  border-bottom:1px solid var(--qmes-shell-line)!important;
-  box-shadow:none!important;
+.qmes-top-menu{
+  min-height:var(--qmes-shell-nav-height);
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:0 10px;
+  background:linear-gradient(180deg,#3d87bd 0%,#2f76ad 100%);
+  border-top:1px solid rgba(255,255,255,.16);
+  scrollbar-width:none;
 }
-html body #root .qmes-top-menu{
-  position:relative;
-  z-index:42!important;
-  isolation:isolate;
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  padding:0 10px 0 46px!important;
-  gap:1px!important;
-  display:flex!important;
-  align-items:stretch!important;
-  flex-wrap:nowrap!important;
-  overflow-x:auto!important;
-  overflow-y:hidden!important;
-  background:#fff!important;
-  width:100%!important;
-  transform:none!important;
-  transition:none!important;
-  scrollbar-width:none!important;
-  box-sizing:border-box!important;
-  scroll-padding-left:46px!important;
+.qmes-top-menu::-webkit-scrollbar{display:none;}
+.qmes-top-menu-button{
+  min-height:var(--qmes-shell-nav-height);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  flex:0 0 auto;
+  padding:0 12px;
+  border:0;
+  border-bottom:3px solid transparent;
+  background:transparent;
+  color:rgba(255,255,255,.88);
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+  cursor:pointer;
 }
-html body #root .qmes-top-menu::-webkit-scrollbar{display:none!important;}
-html body #root .qmes-top-menu-item{
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  flex:0 0 auto!important;
-}
-html body #root .qmes-top-menu-button{
-  height:44px!important;
-  min-height:44px!important;
-  max-height:44px!important;
-  padding:0 10px!important;
-  gap:6px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  border:0!important;
-  border-bottom:2px solid transparent!important;
-  border-radius:0!important;
-  background:#fff!important;
-  color:var(--qmes-shell-text)!important;
-  font-size:13px!important;
-  line-height:1!important;
-  font-weight:600!important;
-  white-space:nowrap!important;
-  box-shadow:none!important;
-}
-html body #root .qmes-top-menu-button svg{
-  width:15px!important;
-  height:15px!important;
-  min-width:15px!important;
-  color:#667085!important;
-  stroke-width:1.9!important;
-  fill:none!important;
-}
-html body #root .qmes-top-menu-button span{
-  display:inline!important;
-  visibility:visible!important;
-  opacity:1!important;
-  color:inherit!important;
-  font:inherit!important;
-  white-space:nowrap!important;
-}
-html body #root .qmes-top-menu-button .qmes-menu-arrow{width:11px!important;height:11px!important;color:#98a2b3!important;margin-left:-1px!important;}
-html body #root .qmes-top-menu-button:hover,
-html body #root .qmes-top-menu-button:focus-visible{
-  background:#f7f9fc!important;
-  color:#172033!important;
-  outline:none!important;
-}
-html body #root .qmes-top-menu-button:hover svg{color:#475467!important;}
-html body #root .qmes-top-menu-button.is-active,
-html body #root .qmes-top-menu-button[aria-current="page"]{
-  background:#f5f9ff!important;
-  color:var(--qmes-shell-blue-dark)!important;
-  border-bottom-color:var(--qmes-shell-blue)!important;
-  font-weight:700!important;
-}
-html body #root .qmes-top-menu-button.is-active svg,
-html body #root .qmes-top-menu-button[aria-current="page"] svg{color:var(--qmes-shell-blue)!important;}
-html body #root .qmes-submenu-row{display:none!important;}
+.qmes-top-menu-button:hover{background:rgba(255,255,255,.10);color:#fff;}
+.qmes-top-menu-button.is-active{background:rgba(0,0,0,.08);border-bottom-color:#fff;color:#fff;}
+.qmes-menu-arrow{transition:transform .15s ease;}
+.qmes-menu-arrow.is-open{transform:rotate(90deg);}
 
-/* Keep current hover/user menus identical even while Field Input page themes are isolated. */
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown{
-  position:fixed!important;z-index:13050!important;min-width:220px!important;max-width:270px!important;padding:6px!important;
-  border:1px solid #d9e1ea!important;border-radius:10px!important;background:#fff!important;color:#172033!important;
-  box-shadow:0 14px 34px rgba(15,23,42,.13)!important;overflow:hidden!important;
+.qmes-app-workspace{
+  flex:1;
+  min-height:0;
+  display:flex;
+  align-items:stretch;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title{
-  position:static!important;margin:0 0 4px!important;padding:7px 9px 6px!important;border:0!important;border-bottom:1px solid #edf1f5!important;
-  background:#fff!important;color:#667085!important;font-size:11px!important;line-height:16px!important;font-weight:700!important;letter-spacing:0!important;
+.qmes-app-sidebar{
+  width:var(--qmes-shell-sidebar-width);
+  flex:0 0 var(--qmes-shell-sidebar-width);
+  min-height:calc(100vh - var(--qmes-shell-header-height) - var(--qmes-shell-nav-height));
+  background:linear-gradient(180deg,#f5f8fb 0%,#edf3f7 100%);
+  border-right:1px solid var(--qmes-shell-line);
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:calc(var(--qmes-shell-header-height) + var(--qmes-shell-nav-height));
+  height:calc(100vh - var(--qmes-shell-header-height) - var(--qmes-shell-nav-height));
+  overflow:hidden;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown .qmes-hover-title:before{display:none!important;}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button{
-  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:38px!important;
-  padding:8px 10px 8px 24px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;
-  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
+.qmes-sidebar-title{height:52px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--qmes-shell-line);color:#2e668f;font-size:14px;font-weight:900;letter-spacing:-.01em;}
+.qmes-sidebar-list{flex:1;overflow:auto;padding:10px 8px 14px;}
+.qmes-sidebar-group{margin:2px 0;}
+.qmes-sidebar-group-button,.qmes-sidebar-child{
+  width:100%;
+  border:0;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  color:#425a6b;
 }
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:before{
-  content:""!important;position:absolute!important;left:10px!important;top:50%!important;width:5px!important;height:5px!important;margin-top:-2.5px!important;
-  border-radius:50%!important;background:#cbd5e1!important;
-}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover,
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible{background:#f5f9ff!important;color:#175cd3!important;outline:none!important;}
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:hover:before,
-html body #qmes-all-menu-dropdown#qmes-all-menu-dropdown button:focus-visible:before{background:#2563eb!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown{
-  z-index:13060!important;width:196px!important;padding:6px!important;border:1px solid #d9e1ea!important;border-radius:10px!important;
-  background:#fff!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important;
-}
-html body #qmes-user-dropdown#qmes-user-dropdown button{
-  width:100%!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-radius:7px!important;background:#fff!important;
-  color:#344054!important;font-size:13px!important;line-height:18px!important;font-weight:600!important;text-align:left!important;
-}
-html body #qmes-user-dropdown#qmes-user-dropdown button:hover,
-html body #qmes-user-dropdown#qmes-user-dropdown button:focus-visible{background:#f7f9fc!important;color:#172033!important;outline:none!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;padding-top:9px!important;border-top:1px solid #edf1f5!important;color:#b42318!important;}
+.qmes-sidebar-group-button{min-height:42px;gap:9px;padding:8px 10px;border-radius:6px;background:transparent;font-size:13px;font-weight:800;}
+.qmes-sidebar-group-button:hover{background:#e7f2fa;color:#2f6f9f;}
+.qmes-sidebar-group-button.is-active{background:linear-gradient(180deg,#3d8ac0 0%,#2f76ad 100%);color:#fff;box-shadow:0 1px 2px rgba(47,118,173,.2);}
+.qmes-sidebar-group-button span:nth-child(2){flex:1;}
+.qmes-sidebar-chevron{margin-left:auto;transition:transform .15s ease;}
+.qmes-sidebar-chevron.is-open{transform:rotate(90deg);}
+.qmes-sidebar-children{padding:4px 0 5px 22px;}
+.qmes-sidebar-child{min-height:36px;gap:8px;padding:7px 9px;border-radius:5px;background:transparent;font-size:12.5px;font-weight:650;}
+.qmes-sidebar-child:hover{background:#e7f2fa;color:#2f6f9f;}
+.qmes-sidebar-child.is-active{background:#dcecf7;color:#256b9e;font-weight:850;}
+.qmes-sidebar-footer{display:flex;flex-direction:column;gap:3px;padding:13px 16px;border-top:1px solid var(--qmes-shell-line);color:#7890a1;font-size:10.5px;}
+.qmes-sidebar-footer span:first-child{color:#2f76ad;font-size:12px;font-weight:900;}
+.qmes-sidebar-backdrop{display:none;}
 
-/* Current left menu appearance. Double-id specificity intentionally owns shell visuals over the legacy sidebar helper. */
-html body #qmes-sync-sidebar#qmes-sync-sidebar{
-  width:220px!important;padding:0 10px 14px!important;background:#fff!important;color:#344054!important;
-  border-right:1px solid var(--qmes-shell-line)!important;box-shadow:4px 0 14px rgba(15,23,42,.035)!important;filter:none!important;z-index:12050!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search{
-  height:48px!important;min-height:48px!important;margin:0 -10px!important;padding:7px 10px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{
-  height:34px!important;padding:0 9px!important;border:1px solid #d8e0ea!important;border-radius:8px!important;background:#f8fafc!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{
-  height:32px!important;background:transparent!important;color:#344054!important;font-size:12.5px!important;font-weight:500!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder{color:#98a2b3!important;font-weight:450!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon{width:24px!important;height:24px!important;background:transparent!important;color:#667085!important;font-size:15px!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active{
-  min-height:46px!important;margin:0 -10px 8px!important;padding:0 13px!important;background:#fff!important;border-bottom:1px solid #edf1f5!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active:before{display:none!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head.is-group-active .qmes-side-title{
-  color:#475467!important;font-size:12px!important;line-height:18px!important;font-weight:700!important;letter-spacing:-.01em!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{
-  width:28px!important;height:28px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#98a2b3!important;font-size:18px!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close:hover{background:#f1f5f9!important;color:#475467!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-items{padding:0 1px!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{
-  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:40px!important;margin:2px 0!important;
-  padding:9px 10px 9px 12px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#475467!important;
-  font-size:13px!important;line-height:18px!important;font-weight:550!important;text-align:left!important;box-shadow:none!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{
-  content:""!important;position:static!important;display:block!important;flex:0 0 auto!important;width:5px!important;height:5px!important;margin-right:9px!important;
-  border-radius:50%!important;background:#cbd5e1!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{background:#f7f9fc!important;color:#172033!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{background:#94a3b8!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{background:#eef5ff!important;color:#175cd3!important;font-weight:650!important;}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{background:#2563eb!important;}
+.qmes-app-content{min-width:0;flex:1;display:flex;flex-direction:column;background:var(--qmes-shell-bg);}
+.qmes-page-heading{height:72px;min-height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#fff;border-bottom:1px solid var(--qmes-shell-line);box-sizing:border-box;}
+.qmes-page-breadcrumb{margin-bottom:3px;color:var(--qmes-shell-muted);font-size:11px;font-weight:650;}
+.qmes-page-heading h1{margin:0;color:var(--qmes-shell-ink);font-size:20px;line-height:1.25;font-weight:900;letter-spacing:-.02em;}
+.qmes-page-status{padding:6px 9px;border:1px solid #b9d6e8;border-radius:5px;background:#eef7fc;color:#2f76ad;font-size:11px;font-weight:800;white-space:nowrap;}
+.qmes-page-main{flex:1;min-width:0;padding:18px 20px 28px;box-sizing:border-box;overflow-x:auto;}
 
-/* Reserve the hamburger lane from the first paint. */
-html body:not(.qmes-side-open) #root header .qmes-top-menu{
-  padding-left:46px!important;width:100%!important;transform:none!important;scroll-padding-left:46px!important;
+.qmes-modal-backdrop{position:fixed;inset:0;z-index:15000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(34,56,74,.44);box-sizing:border-box;}
+.qmes-account-modal,.qmes-password-modal{width:min(420px,100%);padding:22px;border:1px solid var(--qmes-shell-line);border-radius:8px;background:#fff;box-shadow:0 18px 50px rgba(34,56,74,.22);color:var(--qmes-shell-ink);box-sizing:border-box;}
+.qmes-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.qmes-modal-head h2{margin:0;font-size:19px;font-weight:900;}
+.qmes-modal-head button{width:34px;height:34px;border:1px solid var(--qmes-shell-line);border-radius:5px;background:#fff;color:#687c8d;font-size:20px;cursor:pointer;}
+.qmes-password-modal label{display:block;margin-top:13px;color:#425a6b;font-size:12px;font-weight:800;}
+.qmes-password-modal input{width:100%;height:42px;margin-top:6px;padding:0 10px;border:1px solid #b9c9d5;border-radius:5px;background:#fff;color:#22384a;box-sizing:border-box;outline:none;}
+.qmes-password-modal input:focus{border-color:#2f78b7;box-shadow:0 0 0 2px rgba(47,120,183,.12);}
+.qmes-modal-primary,.qmes-modal-secondary,.qmes-modal-danger{width:100%;height:42px;margin-top:10px;border-radius:5px;font-size:13px;font-weight:850;cursor:pointer;}
+.qmes-modal-primary{border:1px solid #2d70a5;background:linear-gradient(180deg,#4a93c7 0%,#2f78b7 100%);color:#fff;}
+.qmes-modal-secondary{border:1px solid #cbd8e2;background:linear-gradient(180deg,#fff 0%,#e8eef3 100%);color:#425a6b;}
+.qmes-modal-danger{border:1px solid #df5151;background:#fff;color:#c94646;}
+.qmes-modal-error{margin-top:12px;padding:8px 10px;border:1px solid #f0bcbc;border-radius:5px;background:#fdeaea;color:#b84040;font-size:12px;font-weight:750;}
+
+@media(max-width:1180px){
+  .qmes-account-name{display:none;}
+  .qmes-header-action{display:none;}
 }
-html body.qmes-side-open #root header .qmes-top-menu{
-  padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;width:100%!important;
-  transform:none!important;scroll-padding-left:calc(var(--qmes-shell-sidebar-width) + var(--qmes-shell-menu-gutter))!important;
-}
-html body #qmes-sync-hamburger{z-index:12040!important;}
 
 @media(max-width:900px){
-  :root{--qmes-shell-sidebar-width:190px;--qmes-shell-menu-gutter:6px;}
-  html body #qmes-sync-sidebar#qmes-sync-sidebar{width:190px!important;}
-  html body:not(.qmes-side-open) #root header .qmes-top-menu{padding-left:44px!important;scroll-padding-left:44px!important;}
+  :root{--qmes-shell-sidebar-width:248px;}
+  .qmes-mobile-menu-button{display:flex;}
+  .qmes-app-header-main{padding:0 10px;}
+  .qmes-header-clock{display:none;}
+  .qmes-talk-button span:last-child{display:none;}
+  .qmes-talk-button{width:36px;padding:0;justify-content:center;}
+  .qmes-account-arrow{display:none;}
+  .qmes-app-sidebar{position:fixed;left:0;top:calc(var(--qmes-shell-header-height) + var(--qmes-shell-nav-height));bottom:0;z-index:130;width:var(--qmes-shell-sidebar-width);height:auto;transform:translateX(-100%);transition:transform .18s ease;box-shadow:8px 0 24px rgba(34,56,74,.16);}
+  .qmes-app-sidebar.is-open{transform:translateX(0);}
+  .qmes-sidebar-backdrop{display:block;position:fixed;inset:calc(var(--qmes-shell-header-height) + var(--qmes-shell-nav-height)) 0 0 0;z-index:120;border:0;background:rgba(34,56,74,.25);}
+  .qmes-page-heading{padding:0 14px;}
+  .qmes-page-main{padding:14px 10px 22px;}
+}
+
+@media(max-width:620px){
+  .qmes-brand-button img{height:28px;max-width:172px;}
+  .qmes-app-header-main{gap:6px;}
+  .qmes-account-button{padding:3px 4px;}
+  .qmes-account-avatar{width:28px;height:28px;}
+  .qmes-page-heading h1{font-size:17px;}
+  .qmes-page-status{display:none;}
 }
 
 @media print{
-  html body #root > div > header,
-  html body #root .qmes-top-menu-bar,
-  html body #root .qmes-top-menu{isolation:auto!important;}
+  .qmes-app-header,.qmes-app-sidebar,.qmes-page-heading,.qmes-sidebar-backdrop{display:none!important;}
+  .qmes-app-workspace,.qmes-app-content,.qmes-page-main{display:block!important;width:100%!important;padding:0!important;margin:0!important;background:#fff!important;}
 }
