@@ -1,87 +1,18 @@
-/* QMES top header — structure matched to uploaded NAMO ONE ERP·MES reference, isolated 2026-09-02 */
+/* QMES top header — reference layout, isolated 2026-09-02 */
 @media screen {
-  html body #root > div > header.qmes-ref-topbar,
-  html body #root > div > header {
-    height:64px!important;
-    min-height:64px!important;
-    background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
-    color:#fff!important;
-    border-bottom:1px solid #235f8e!important;
-    box-shadow:0 2px 6px rgba(30,73,105,.24)!important;
-    backdrop-filter:none!important;
-    -webkit-backdrop-filter:none!important;
-  }
-  html body #root > div > header > .qmes-ref-toprow,
-  html body #root > div > header > div:first-child {
-    height:64px!important;
-    min-height:64px!important;
-    padding:0 18px 0 0!important;
-    gap:10px!important;
-    align-items:center!important;
-    flex-wrap:nowrap!important;
-  }
-
-  /* Reference brand block: fixed light panel on the far left */
-  html body #root > div > header .qmes-ref-brand,
-  html body #root > div > header > div:first-child > button:first-child {
-    width:248px!important;
-    min-width:248px!important;
-    height:64px!important;
-    margin:0!important;
-    padding:0 18px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    border:0!important;
-    border-right:1px solid #b9c9d5!important;
-    border-radius:0!important;
-    background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
-    box-shadow:none!important;
-    overflow:hidden!important;
-  }
-  html body #root > div > header .qmes-ref-brand:hover {background:linear-gradient(180deg,#fff 0%,#edf2f6 100%)!important;}
-  html body #root > div > header .qmes-ref-brand > img[alt="NAMO Chemical"] {display:none!important;}
-  html body #root > div > header .qmes-ref-brand-copy{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;color:#244f70!important;}
-  html body #root > div > header .qmes-ref-brand-mark{width:34px!important;height:34px!important;min-width:34px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:linear-gradient(145deg,#63a4cf,#2f78b7)!important;color:#fff!important;font-size:17px!important;font-weight:950!important;box-shadow:0 2px 6px rgba(47,120,183,.28)!important;}
-  html body #root > div > header .qmes-ref-brand-text{display:block!important;min-width:0!important;line-height:1.05!important;text-align:left!important;}
-  html body #root > div > header .qmes-ref-brand-text strong{display:block!important;color:#244f70!important;font-size:15px!important;font-weight:900!important;letter-spacing:.2px!important;white-space:nowrap!important;}
-  html body #root > div > header .qmes-ref-brand-text small{display:block!important;margin-top:5px!important;color:#688196!important;font-size:9px!important;font-weight:650!important;letter-spacing:.15px!important;white-space:nowrap!important;}
-
-  /* hamburger belongs to blue area, immediately right of brand */
-  html body #qmes-sync-hamburger{
-    left:254px!important;
-    top:var(--qmes-header-hamburger-top,16px)!important;
-    width:36px!important;
-    height:32px!important;
-    padding:0!important;
-    border:0!important;
-    border-radius:5px!important;
-    background:transparent!important;
-    color:#fff!important;
-    box-shadow:none!important;
-    font-size:21px!important;
-    font-weight:700!important;
-    line-height:1!important;
-  }
-  html body #qmes-sync-hamburger:hover,html body #qmes-sync-hamburger:focus-visible{background:rgba(255,255,255,.14)!important;color:#fff!important;outline:none!important;}
-
-  /* global search created by the isolated structure adapter */
-  html body #root > div > header .qmes-ref-global-search{
-    position:relative!important;
-    width:min(390px,31vw)!important;
-    min-width:245px!important;
-    height:36px!important;
-    margin-left:42px!important;
-    flex:0 1 390px!important;
-  }
-  html body #root > div > header .qmes-ref-global-search input{
-    width:100%!important;height:36px!important;border:1px solid rgba(255,255,255,.42)!important;background:rgba(255,255,255,.94)!important;border-radius:7px!important;padding:0 38px 0 13px!important;color:#263d4f!important;outline:0!important;font-size:12px!important;font-weight:650!important;box-shadow:none!important;
-  }
-  html body #root > div > header .qmes-ref-global-search input::placeholder{color:#7c8e9d!important;}
-  html body #root > div > header .qmes-ref-global-search input:focus{border-color:#d9edf9!important;background:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.18)!important;}
-  html body #root > div > header .qmes-ref-search-icon{position:absolute!important;right:12px!important;top:7px!important;color:#5f7e94!important;font-size:17px!important;cursor:pointer!important;}
-
-  /* right-side controls compact like reference */
+  html body #root > div > header.qmes-ref-topbar,html body #root > div > header{height:64px!important;min-height:64px!important;background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;color:#fff!important;border-bottom:1px solid #235f8e!important;box-shadow:0 2px 6px rgba(30,73,105,.24)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+  html body #root > div > header > .qmes-ref-toprow,html body #root > div > header > div:first-child{height:64px!important;min-height:64px!important;padding:0 18px 0 0!important;gap:10px!important;align-items:center!important;flex-wrap:nowrap!important;}
+  html body #root > div > header .qmes-ref-brand,html body #root > div > header > div:first-child > button:first-child{width:248px!important;min-width:248px!important;height:64px!important;margin:0!important;padding:0 18px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:0!important;border-right:1px solid #b9c9d5!important;border-radius:0!important;background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;box-shadow:none!important;overflow:hidden!important;}
+  html body #root > div > header .qmes-ref-brand:hover{background:linear-gradient(180deg,#fff 0%,#edf2f6 100%)!important;}
+  html body #root > div > header .qmes-ref-brand > img[alt="NAMO Chemical"],html body #root > div > header img.qmes-ref-real-logo{display:block!important;width:auto!important;height:34px!important;max-width:205px!important;object-fit:contain!important;filter:none!important;margin:0!important;}
+  html body #root > div > header .qmes-ref-brand-copy{display:none!important;}
+  html body #qmes-sync-hamburger{left:254px!important;top:var(--qmes-header-hamburger-top,16px)!important;width:36px!important;height:32px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#fff!important;box-shadow:none!important;font-size:21px!important;font-weight:700!important;line-height:1!important;}
+  html body #qmes-sync-hamburger:hover,html body #qmes-sync-hamburger:focus-visible{background:transparent!important;color:#fff!important;outline:none!important;}
+  html body #root > div > header .qmes-ref-global-search{position:relative!important;width:min(390px,31vw)!important;min-width:245px!important;height:36px!important;margin-left:42px!important;flex:0 1 390px!important;background:#2d70a5!important;border-radius:7px!important;}
+  html body #root > div > header .qmes-ref-global-search input{width:100%!important;height:36px!important;border:1px solid rgba(255,255,255,.38)!important;background:#4f8fbd!important;border-radius:7px!important;padding:0 38px 0 13px!important;color:#fff!important;outline:0!important;font-size:12px!important;font-weight:650!important;box-shadow:inset 0 1px 2px rgba(17,57,86,.14)!important;}
+  html body #root > div > header .qmes-ref-global-search input::placeholder{color:#e6f1f8!important;opacity:.95!important;}
+  html body #root > div > header .qmes-ref-global-search input:focus{border-color:#d8edf9!important;background:#5a99c5!important;box-shadow:0 0 0 2px rgba(255,255,255,.14)!important;}
+  html body #root > div > header .qmes-ref-search-icon{position:absolute!important;right:12px!important;top:7px!important;color:#fff!important;font-size:17px!important;cursor:pointer!important;}
   html body #root > div > header .qmes-header-clock{height:30px!important;padding:0 10px!important;border:1px solid rgba(255,255,255,.38)!important;border-radius:6px!important;background:rgba(0,0,0,.08)!important;color:#fff!important;font-size:11px!important;font-weight:750!important;white-space:nowrap!important;}
   html body #root > div > header button[aria-label^="NAMO Talk 알림"]{width:32px!important;height:32px!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;border:0!important;border-radius:5px!important;background:transparent!important;color:#fff!important;}
   html body #root > div > header button[aria-label^="NAMO Talk 알림"]:hover{background:rgba(255,255,255,.14)!important;}
@@ -94,22 +25,7 @@
   html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > span{color:#d9e8f2!important;font-size:10px!important;}
   html body #root > div > header .qmes-header-action{height:30px!important;padding:0 9px!important;border:1px solid rgba(255,255,255,.32)!important;border-radius:4px!important;background:rgba(255,255,255,.07)!important;color:#fff!important;font-size:10.5px!important;font-weight:750!important;white-space:nowrap!important;}
   html body #root > div > header .qmes-header-action:hover{background:rgba(255,255,255,.15)!important;}
-
-  @media(max-width:1180px){
-    html body #root > div > header .qmes-ref-brand{width:210px!important;min-width:210px!important;}
-    html body #qmes-sync-hamburger{left:216px!important;}
-    html body #root > div > header .qmes-ref-global-search{margin-left:42px!important;width:min(310px,28vw)!important;min-width:190px!important;}
-    html body #root > div > header .qmes-header-action{display:none!important;}
-  }
-  @media(max-width:820px){
-    html body #root > div > header .qmes-ref-brand{width:170px!important;min-width:170px!important;padding:0 12px!important;}
-    html body #root > div > header .qmes-ref-brand-text small{display:none!important;}
-    html body #qmes-sync-hamburger{left:176px!important;}
-    html body #root > div > header .qmes-ref-global-search{display:none!important;}
-    html body #root > div > header .qmes-header-clock{display:none!important;}
-  }
+  @media(max-width:1180px){html body #root > div > header .qmes-ref-brand{width:210px!important;min-width:210px!important;}html body #qmes-sync-hamburger{left:216px!important;}html body #root > div > header .qmes-ref-global-search{margin-left:42px!important;width:min(310px,28vw)!important;min-width:190px!important;}html body #root > div > header .qmes-header-action{display:none!important;}}
+  @media(max-width:820px){html body #root > div > header .qmes-ref-brand{width:170px!important;min-width:170px!important;padding:0 12px!important;}html body #root > div > header img.qmes-ref-real-logo{max-width:145px!important;height:30px!important;}html body #qmes-sync-hamburger{left:176px!important;}html body #root > div > header .qmes-ref-global-search{display:none!important;}html body #root > div > header .qmes-header-clock{display:none!important;}}
 }
-@media print{
-  html body #root > div > header{height:auto!important;min-height:0!important;box-shadow:none!important;}
-  html body #root > div > header .qmes-ref-global-search,.qmes-ref-brand-copy{display:none!important;}
-}
+@media print{html body #root > div > header{height:auto!important;min-height:0!important;box-shadow:none!important;}html body #root > div > header .qmes-ref-global-search{display:none!important;}}
