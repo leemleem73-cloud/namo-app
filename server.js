@@ -328,11 +328,11 @@ app.get('/js/qmes-top-submenu-restore-20260820-v2.js', (req, res, next) => {
   fs.readFile(qmesTopSubmenuModulePath, 'utf8', (err, source) => {
     if (err) return next(err);
     const shippingMenu = '"출하·납품":[{label:"출하 · 납품관리",tab:"erpShipping"}]';
-    const patchedSource = source.includes('"출하·물류"')
+    const patchedSource = source.includes('"출하 · 물류"')
       ? source
       : source.replace(
           shippingMenu,
-          `${shippingMenu},\n    "출하·물류":[{label:"출하 · 물류",tab:"erpShipping"}]`
+          `${shippingMenu},\n    "출하·물류":[{label:"출하 · 물류",tab:"erpShipping"}],\n    "출하 · 물류":[{label:"출하 · 물류",tab:"erpShipping"}]`
         );
     res.type('application/javascript; charset=utf-8');
     res.send(patchedSource);
