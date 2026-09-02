@@ -1,0 +1,4367 @@
+process.env.TZ = 'Asia/Seoul';
+
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
+
+class PostgresSessionStore extends session.Store {
+  constructor(dbPool) {
+    super();
+    this.dbPool = dbPool;
+  }
+
+  get(sid, callback) {
+    this.dbPool
+      .query('SELECT sess FROM qmes_sessions WHERE sid = $1 AND expire > NOW()', [sid])
+      .then(result => callback(null, result.rows[0]?.sess || null))
+      .catch(callback);
+  }
+
+  set(sid, sess, callback = () => {}) {
+    const expire = sess?.cookie?.expires
+      ? new Date(sess.cookie.expires)
+      : new Date(Date.now() + 1000 * 60 * 60 * 8);
+    this.dbPool
+      .query(
+        `INSERT INTO qmes_sessions (sid, sess, expire)
+         VALUES ($1,$2::jsonb,$3)
+         ON CONFLICT (sid)
+         DO UPDATE SET sess = EXCLUDED.sess, expire = EXCLUDED.expire`,
+        [sid, JSON.stringify(sess), expire]
+      )
+      .then(() => callback(null))
+      .catch(callback);
+  }
+
+  destroy(sid, callback = () => {}) {
+    this.dbPool
+      .query('DELETE FROM qmes_sessions WHERE sid = $1', [sid])
+      .then(() => callback(null))
+      .catch(callback);
+  }
+
+  touch(sid, sess, callback = () => {}) {
+    const expire = sess?.cookie?.expires
+      ? new Date(sess.cookie.expires)
+      : new Date(Date.now() + 1000 * 60 * 60 * 8);
+    this.dbPool
+      .query('UPDATE qmes_sessions SET expire = $1 WHERE sid = $2', [expire, sid])
+      .then(() => callback(null))
+      .catch(callback);
+  }
+}
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    store: new PostgresSessionStore(pool),
+    secret: process.env.SESSION_SECRET || require('crypto').randomBytes(48).toString('hex'),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 8,
+    },
+  })
+);
+
+// Register PostgreSQL inventory APIs even when production starts with `node server.js` directly.
+require('./inventory-server').installInventoryRoutes(app);
+
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html' || /\.(?:js|jsx|html)$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
+function qmesShippingDetailClientPatch() {
+  "use strict";
+  if (window.__QMES_SHIPPING_DETAIL_20260902__) return;
+  window.__QMES_SHIPPING_DETAIL_20260902__ = true;
+
+  const HOST = "qmes-shipping-enterprise-module-20260828-v1";
+  const MODAL = "qmes-shipping-detail-modal-20260902";
+  const STYLE = "qmes-shipping-detail-style-20260902";
+  const KEY = "qmes-erp-shipping-v1";
+  let queued = false;
+  const clean = value => String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+  const esc = value => String(value == null ? "" : value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+  const first = (row, keys, fallback = "-") => {
+    for (const key of keys) {
+      const value = clean(row && row[key]);
+      if (value) return value;
+    }
+    return fallback;
+  };
+  const numberValue = value => {
+    const parsed = Number(String(value == null ? "" : value).replace(/[^0-9.+-]/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const quantity = (value, unit = "kg") => {
+    const amount = numberValue(value);
+    return amount ? `${amount.toLocaleString("ko-KR", { maximumFractionDigits: 3 })} ${clean(unit) || "kg"}` : "-";
+  };
+  const isPassed = value => /합격|PASS|OK/i.test(clean(value));
+  const isDone = (value, pattern) => pattern.test(clean(value));
+  const localRows = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch (_error) {
+      return [];
+    }
+  };
+
+  function ensureStyle() {
+    if (document.getElementById(STYLE)) return;
+    const style = document.createElement("style");
+    style.id = STYLE;
+    style.textContent = `
+      #${HOST} table{min-width:1080px!important}
+      #${HOST} [data-qsd-head],#${HOST} [data-qsd-cell]{width:72px!important}
+      #${HOST} .qsd-open{height:27px!important;padding:0 10px!important;border:1px solid #bfd0f3!important;border-radius:7px!important;background:#f4f7ff!important;color:#2457d6!important;font:900 10px Pretendard,"Noto Sans KR",sans-serif!important;cursor:pointer!important}
+      #${HOST} .qsd-open:hover,#${HOST} .qsd-open:focus-visible{background:#2457d6!important;color:#fff!important;outline:none!important}
+      #${MODAL}{position:fixed!important;inset:0!important;z-index:2147483600!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:22px!important;background:rgba(15,23,42,.42)!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important}
+      #${MODAL} *{box-sizing:border-box!important}
+      #${MODAL} .qsd-card{width:min(1040px,96vw)!important;max-height:92vh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border:1px solid #dfe5ed!important;border-radius:16px!important;background:#f7f9fc!important;box-shadow:0 28px 90px rgba(15,23,42,.3)!important}
+      #${MODAL} .qsd-head{display:flex!important;align-items:flex-start!important;gap:14px!important;padding:18px 20px!important;border-bottom:1px solid #e5eaf1!important;background:#fff!important}
+      #${MODAL} .qsd-title{margin:0!important;color:#172033!important;font-size:18px!important;font-weight:950!important}
+      #${MODAL} .qsd-sub{margin-top:4px!important;color:#7a8799!important;font-size:10.5px!important;font-weight:650!important}
+      #${MODAL} .qsd-close{margin-left:auto!important;width:36px!important;height:36px!important;border:0!important;border-radius:9px!important;background:#f0f3f7!important;color:#334155!important;font-size:22px!important;cursor:pointer!important}
+      #${MODAL} .qsd-body{overflow:auto!important;padding:16px 18px 18px!important}
+      #${MODAL} .qsd-loading{padding:52px 16px!important;text-align:center!important;color:#6f7d90!important;font-size:12px!important;font-weight:750!important}
+      #${MODAL} .qsd-section{margin-bottom:12px!important;overflow:hidden!important;border:1px solid #e0e6ee!important;border-radius:11px!important;background:#fff!important}
+      #${MODAL} .qsd-section:last-child{margin-bottom:0!important}
+      #${MODAL} .qsd-section h4{margin:0!important;padding:11px 13px!important;border-bottom:1px solid #edf0f4!important;background:#fafbfd!important;color:#344054!important;font-size:11px!important;font-weight:900!important}
+      #${MODAL} .qsd-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+      #${MODAL} .qsd-field{min-height:64px!important;padding:11px 13px!important;border-right:1px solid #edf0f4!important;border-bottom:1px solid #edf0f4!important}
+      #${MODAL} .qsd-field:nth-child(4n){border-right:0!important}
+      #${MODAL} .qsd-field label{display:block!important;margin-bottom:5px!important;color:#8994a5!important;font-size:9px!important;font-weight:800!important}
+      #${MODAL} .qsd-field strong{display:block!important;color:#253047!important;font-size:11px!important;font-weight:800!important;line-height:1.45!important;word-break:break-word!important}
+      #${MODAL} .qsd-status{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:60px!important;height:24px!important;padding:0 9px!important;border-radius:999px!important;background:#edf3ff!important;color:#2457d6!important;font-size:9.5px!important;font-weight:900!important}
+      #${MODAL} .qsd-status.ok{background:#eaf7ef!important;color:#187b43!important}#${MODAL} .qsd-status.warn{background:#fff6df!important;color:#9a6500!important}
+      #${MODAL} .qsd-progress{display:grid!important;grid-template-columns:repeat(5,minmax(100px,1fr))!important;padding:17px 12px 14px!important;overflow:auto!important}
+      #${MODAL} .qsd-step{position:relative!important;text-align:center!important}
+      #${MODAL} .qsd-step:not(:last-child):after{content:""!important;position:absolute!important;top:14px!important;left:58%!important;width:84%!important;height:2px!important;background:#dce3ed!important}
+      #${MODAL} .qsd-step.done:not(:last-child):after{background:#72cbae!important}
+      #${MODAL} .qsd-dot{position:relative!important;z-index:1!important;display:grid!important;place-items:center!important;width:29px!important;height:29px!important;margin:auto!important;border:1px solid #d2dae6!important;border-radius:50%!important;background:#edf1f6!important;color:#8591a3!important;font-size:10px!important;font-weight:950!important}
+      #${MODAL} .qsd-step.done .qsd-dot{border-color:#20a66a!important;background:#20a66a!important;color:#fff!important}#${MODAL} .qsd-step.current .qsd-dot{border-color:#2457d6!important;background:#2457d6!important;color:#fff!important;box-shadow:0 0 0 4px #e8efff!important}
+      #${MODAL} .qsd-step span{display:block!important;margin-top:7px!important;color:#5d697c!important;font-size:9.5px!important;font-weight:850!important}
+      #${MODAL} .qsd-docs{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:9px!important;padding:13px!important}
+      #${MODAL} .qsd-doc{padding:11px!important;border:1px solid #e2e7ee!important;border-radius:8px!important;background:#fbfcfe!important}.qsd-doc span{display:block!important;margin-bottom:5px!important;color:#8994a5!important;font-size:9px!important}.qsd-doc strong{color:#253047!important;font-size:10.5px!important}
+      #${MODAL} .qsd-note{padding:12px 13px!important;color:#4f5d72!important;font-size:10.5px!important;line-height:1.65!important;white-space:pre-wrap!important}
+      #${MODAL} .qsd-foot{display:flex!important;justify-content:flex-end!important;padding:13px 18px 16px!important;border-top:1px solid #e5eaf1!important;background:#fff!important}.qsd-confirm{height:38px!important;padding:0 15px!important;border:1px solid #2457d6!important;border-radius:8px!important;background:#2457d6!important;color:#fff!important;font-size:10.5px!important;font-weight:900!important;cursor:pointer!important}
+      @media(max-width:780px){#${MODAL}{padding:8px!important;align-items:flex-start!important}#${MODAL} .qsd-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#${MODAL} .qsd-field:nth-child(4n){border-right:1px solid #edf0f4!important}#${MODAL} .qsd-field:nth-child(2n){border-right:0!important}}
+      @media(max-width:520px){#${MODAL} .qsd-grid,#${MODAL} .qsd-docs{grid-template-columns:1fr!important}#${MODAL} .qsd-field{border-right:0!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function rowMeta(row) {
+    const cells = Array.from(row.cells);
+    return {
+      shipmentNo: clean(cells[0]?.textContent),
+      salesOrderNo: clean(cells[1]?.textContent),
+      customer: clean(cells[2]?.textContent),
+      finishedLot: clean(cells[3]?.textContent),
+      shipmentQty: clean(cells[4]?.textContent),
+      oqcStatus: clean(cells[5]?.textContent),
+      shipmentDate: clean(cells[6]?.textContent),
+      status: clean(cells[7]?.textContent)
+    };
+  }
+
+  function localDetail(meta) {
+    const raw = localRows().find(row => first(row, ["shipNo", "shippingNo", "no", "deliveryNo", "invoice"], "") === meta.shipmentNo)
+      || localRows().find(row => first(row, ["sales", "salesOrder", "salesOrderId"], "") === meta.salesOrderNo && first(row, ["lot", "workOrder"], "") === meta.finishedLot)
+      || {};
+    const status = first(raw, ["delivery", "status", "shipping"], meta.status);
+    return { shipment: {
+      shipmentNo: first(raw, ["shipNo", "shippingNo", "no", "deliveryNo", "invoice"], meta.shipmentNo),
+      salesOrderNo: first(raw, ["sales", "salesOrder", "salesOrderId"], meta.salesOrderNo),
+      customer: first(raw, ["customer"], meta.customer),
+      product: first(raw, ["product", "item", "productName"]),
+      finishedLot: first(raw, ["lot", "finishedLot", "workOrder"], meta.finishedLot),
+      workOrderNo: first(raw, ["workOrderNo", "workOrder"]),
+      shipmentQty: raw.shipQty ?? raw.qty ?? raw.actualQty ?? meta.shipmentQty,
+      unit: first(raw, ["unit"], "kg"),
+      shipmentDate: first(raw, ["actualShipDate", "shipDate", "date"], meta.shipmentDate),
+      status,
+      oqcStatus: first(raw, ["oqc", "oqcStatus"], meta.oqcStatus),
+      coaStatus: first(raw, ["coa", "coaStatus"]),
+      packageInfo: first(raw, ["packageInfo", "package", "packaging"]),
+      destination: first(raw, ["destination", "deliveryPlace"]),
+      carrier: first(raw, ["carrier", "logisticsCompany"]),
+      vehicle: first(raw, ["vehicle", "carNo"]),
+      driver: first(raw, ["driver", "driverName"]),
+      driverPhone: first(raw, ["driverPhone", "driverTel"]),
+      departureAt: first(raw, ["departureAt", "departure", "dispatchAt"]),
+      deliveryStatus: first(raw, ["deliveryStatus"], status),
+      deliveredAt: first(raw, ["deliveredAt", "deliveryAt"]),
+      statementStatus: first(raw, ["statementStatus", "statement"], "미발행"),
+      invoiceStatus: first(raw, ["invoiceStatus", "invoice"], "미발행"),
+      owner: first(raw, ["owner", "manager", "savedBy"]),
+      note: first(raw, ["remark", "note"], "등록된 비고가 없습니다."),
+      savedAt: first(raw, ["savedAt", "updatedAt"], "")
+    }, quality: {}, documents: {}, progress: [], timeline: [] };
+  }
+
+  function badgeClass(value) {
+    if (isPassed(value) || isDone(value, /완료|발행/)) return "ok";
+    if (isDone(value, /대기|미정|미배정|미발행/)) return "warn";
+    return "";
+  }
+  const field = (label, value, badge = false) => `<div class="qsd-field"><label>${esc(label)}</label>${badge ? `<span class="qsd-status ${badgeClass(value)}">${esc(clean(value) || "-")}</span>` : `<strong>${esc(clean(value) || "-")}</strong>`}</div>`;
+
+  function renderDetail(detail) {
+    const s = detail.shipment || {}, q = detail.quality || {}, docs = detail.documents || {};
+    const progress = Array.isArray(detail.progress) && detail.progress.length ? detail.progress : [
+      { name: "수주확정", done: Boolean(clean(s.salesOrderNo) && clean(s.salesOrderNo) !== "-") },
+      { name: "OQC 합격", done: isPassed(s.oqcStatus) },
+      { name: "배차확정", done: Boolean(clean(s.vehicle) && clean(s.vehicle) !== "-" || clean(s.driver) && clean(s.driver) !== "-" || isDone(s.status, /배차완료|출하완료|납품완료/)) },
+      { name: "출하완료", done: isDone(s.status, /출하완료|납품완료/) },
+      { name: "납품완료", done: isDone(`${s.deliveryStatus} ${s.status}`, /납품완료/) }
+    ];
+    const current = progress.findIndex(step => !step.done);
+    const timeline = Array.isArray(detail.timeline) ? detail.timeline : [];
+    return `
+      <section class="qsd-section"><h4>출하 기본정보</h4><div class="qsd-grid">${field("출하번호",s.shipmentNo)}${field("수주번호",s.salesOrderNo)}${field("고객사",s.customer)}${field("제품",s.product)}${field("완제품 LOT",s.finishedLot)}${field("작업지시번호",s.workOrderNo)}${field("출하량",quantity(s.shipmentQty,s.unit))}${field("출하일",s.shipmentDate)}${field("담당자",s.owner)}${field("진행상태",s.status,true)}</div></section>
+      <section class="qsd-section"><h4>출하 진행단계</h4><div class="qsd-progress">${progress.map((step,index)=>`<div class="qsd-step ${step.done?"done":index===current?"current":""}"><div class="qsd-dot">${step.done?"✓":index+1}</div><span>${esc(step.name)}</span></div>`).join("")}</div></section>
+      <section class="qsd-section"><h4>OQC · 포장정보</h4><div class="qsd-grid">${field("OQC 번호",q.oqcNo)}${field("검사결과",q.status||s.oqcStatus,true)}${field("검사일",q.date)}${field("검사자",q.inspector)}${field("포장정보",s.packageInfo)}${field("CoA 상태",docs.coa||s.coaStatus,true)}</div></section>
+      <section class="qsd-section"><h4>배차 · 납품정보</h4><div class="qsd-grid">${field("납품처",s.destination)}${field("운송사",s.carrier)}${field("차량번호",s.vehicle)}${field("기사명",s.driver)}${field("기사 연락처",s.driverPhone)}${field("출발일시",s.departureAt)}${field("납품상태",s.deliveryStatus,true)}${field("납품완료일시",s.deliveredAt)}</div></section>
+      <section class="qsd-section"><h4>출하 문서</h4><div class="qsd-docs"><div class="qsd-doc"><span>검사성적서(CoA)</span><strong>${esc(docs.coa||s.coaStatus||"-")}</strong></div><div class="qsd-doc"><span>거래명세서</span><strong>${esc(docs.statement||s.statementStatus||"-")}</strong></div><div class="qsd-doc"><span>매출전표 / 세금계산서</span><strong>${esc(docs.invoice||s.invoiceStatus||"-")}</strong></div></div><div class="qsd-note"><b>비고</b><br>${esc(s.note||"등록된 비고가 없습니다.")}${timeline.length?`<br><br><b>처리 이력</b><br>${timeline.map(item=>`${esc(item.label)} · ${esc(item.at||"대기")}`).join("<br>")}`:""}</div></section>`;
+  }
+
+  function closeModal() {
+    document.getElementById(MODAL)?.remove();
+    document.documentElement.style.overflow = "";
+  }
+  async function openDetail(meta) {
+    ensureStyle(); closeModal();
+    const modal = document.createElement("div");
+    modal.id = MODAL;
+    modal.innerHTML = `<section class="qsd-card" role="dialog" aria-modal="true" aria-label="출하·납품 상세"><header class="qsd-head"><div><h3 class="qsd-title">출하·납품 상세</h3><div class="qsd-sub">${esc(meta.shipmentNo)} · ${esc(meta.salesOrderNo)} · ${esc(meta.customer)}</div></div><button class="qsd-close" data-qsd-close aria-label="닫기">×</button></header><div class="qsd-body"><div class="qsd-loading">출하·납품 상세정보를 불러오는 중입니다.</div></div><footer class="qsd-foot"><button class="qsd-confirm" data-qsd-close>확인</button></footer></section>`;
+    document.body.appendChild(modal); document.documentElement.style.overflow = "hidden";
+    let detail = localDetail(meta);
+    try {
+      const response = await fetch(`/api/shipping-details/${encodeURIComponent(meta.shipmentNo)}`, { credentials: "same-origin" });
+      const payload = await response.json();
+      if (response.ok && payload?.success && payload.data) detail = payload.data;
+    } catch (_error) {}
+    const body = modal.querySelector(".qsd-body");
+    if (body) body.innerHTML = renderDetail(detail);
+  }
+
+  function addButtons() {
+    ensureStyle();
+    const table = document.querySelector(`#${HOST} table`);
+    if (!table) return;
+    const header = table.querySelector("thead tr");
+    if (header && !header.querySelector("[data-qsd-head]")) {
+      const th = document.createElement("th"); th.textContent = "상세"; th.setAttribute("data-qsd-head",""); header.appendChild(th);
+      const colgroup = table.querySelector("colgroup");
+      if (colgroup && !colgroup.querySelector("[data-qsd-col]")) {
+        const col = document.createElement("col"); col.style.width = "7%"; col.setAttribute("data-qsd-col",""); colgroup.appendChild(col);
+      }
+    }
+    table.querySelectorAll("tbody tr").forEach(row => {
+      if (row.querySelector(".nsh-empty") || row.querySelector("[data-qsd-cell]")) return;
+      const meta = rowMeta(row);
+      if (!meta.shipmentNo || meta.shipmentNo === "-") return;
+      const td = document.createElement("td"); td.setAttribute("data-qsd-cell","");
+      td.innerHTML = `<button class="qsd-open" data-qsd-open="${esc(meta.shipmentNo)}">상세</button>`; row.appendChild(td);
+    });
+  }
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; addButtons(); });
+  }
+
+  document.addEventListener("click", event => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest(`#${MODAL} [data-qsd-close]`)) { event.preventDefault(); closeModal(); return; }
+    const button = target.closest(`#${HOST} [data-qsd-open]`);
+    if (button) { event.preventDefault(); const row = button.closest("tr"); if (row) openDetail(rowMeta(row)); }
+  }, true);
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && document.getElementById(MODAL)) closeModal(); }, true);
+  new MutationObserver(schedule).observe(document.getElementById("root") || document.body, { childList: true, subtree: true });
+  ["qmes:mes-master-ready","qmes:enterprise-ui-ready","qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete"].forEach(name => window.addEventListener(name, schedule));
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true }); else schedule();
+}
+
+function patchQmesShippingEnterpriseSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    'if(!(row?.actualShipment===true||meta?.actualShipment===true||completedText(state)))return;',
+    'const shippingNo=clean(meta?.shippingNo||row?.shipNo||row?.shippingNo||row?.deliveryNo||row?.invoice);if(!shippingNo||!(row?.actualShipment===true||meta?.actualShipment===true||completedText(state)))return;'
+  );
+  patched = patched.replace(
+    '    const existing=shippingRows().find(row=>clean(row?.lot||row?.workOrder)===clean(lot));\n    if(oqc==="-"&&existing)oqc=clean(existing.oqc)||"-";\n    if(coa==="-"&&existing)coa=clean(existing.coa)||"-";\n    return {oqc,coa,available};',
+    '    return {oqc,coa,available};'
+  );
+  patched = patched.replace(
+    'if(available>0&&qty>available+0.0001)return showModalError(form,"출하량이 가용수량을 초과합니다.");',
+    'if(!(available>0))return showModalError(form,"생산실적과 OQC 합격이 확인된 가용 LOT만 출하할 수 있습니다.");if(qty>available+0.0001)return showModalError(form,"출하량이 가용수량을 초과합니다.");'
+  );
+  return patched;
+}
+
+function patchQmesProductionSource(source) {
+  const replacement = String.raw`function qmesRecordedWoActual(lotNo) {
+  const doc = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo) || {};
+  const inputActual = (doc.inputs || []).reduce((sum, row) => sum + Math.max(0, Number(row.act ?? row.actual ?? 0) || 0), 0);
+  const candidates = [doc.productionActual, batch.done, batch.actualQty, batch.productionQty, inputActual]
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  return candidates.length ? Math.max(...candidates) : 0;
+}
+
+function qmesWoInspectionPassed(rows, required) {
+  const latest = new Map();
+  (rows || []).forEach((row) => {
+    const check = String(row.check || "").trim() === "입도" ? "입도(Dmax)" : String(row.check || "").trim();
+    if (!check) return;
+    const previous = latest.get(check);
+    const currentKey = String(row.date || "") + " " + String(row.time || "") + " " + String(row.id || "");
+    const previousKey = previous ? String(previous.date || "") + " " + String(previous.time || "") + " " + String(previous.id || "") : "";
+    if (!previous || currentKey >= previousKey) latest.set(check, row);
+  });
+  const isPass = (value) => ["OK", "합격", "적합", "PASS"].includes(String(value || "").toUpperCase());
+  return required.every((check) => latest.get(check) && isPass(latest.get(check).judge));
+}
+
+function getAutoWoStatus(lotNo) {
+  const doc = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo) || {};
+  const inputs = doc.inputs || [];
+  const pqc = (DB.insp?.PQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const oqc = (DB.insp?.OQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const actual = qmesRecordedWoActual(lotNo);
+  const pqcPassed = qmesWoInspectionPassed(pqc, ["외관","입도(Dmax)","점도","고형분"]);
+  const oqcPassed = qmesWoInspectionPassed(oqc, ["외관","입도(Dmax)","점도","고형분","접착력","절연저항","수분","전해액 안정성"]);
+  if (actual > 0 && pqcPassed && oqcPassed) return "완료";
+  if (actual <= 0 && (
+    ["완료", "생산완료", "출하완료"].includes(String(doc.manualStatus || doc.status || batch.status || "").trim())
+    || pqc.length > 0 || oqc.length > 0
+  )) return "실적대기";
+  if (actual > 0 && (pqc.length > 0 || oqc.length > 0)) return "검사중";
+  if (actual > 0 || inputs.some((row) => Number(row.act ?? row.actual) > 0)) return "생산중";
+  if (doc.manualStatus && doc.manualStatus !== "완료") return doc.manualStatus;
+  return "발행";
+}
+
+function saveWoManualStatus(lotNo, status) {
+  const current = DB.woDocs[lotNo] || {};
+  const batch = (DB.batches || []).find((row) => row.no === lotNo);
+  const plan = Math.max(0, Number(current.plan ?? batch?.plan ?? 0));
+  const actual = qmesRecordedWoActual(lotNo);
+  const oqc = (DB.insp?.OQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const pqc = (DB.insp?.PQC || []).filter((row) => String(row.lot || "").trim() === String(lotNo).trim());
+  const pqcPassed = qmesWoInspectionPassed(pqc, ["외관","입도(Dmax)","점도","고형분"]);
+  const oqcPassed = qmesWoInspectionPassed(oqc, ["외관","입도(Dmax)","점도","고형분","접착력","절연저항","수분","전해액 안정성"]);
+
+  if (status === "완료" && actual <= 0) {
+    window.alert("생산실적이 없습니다. 실적입력 후 완료 처리하세요.");
+    return;
+  }
+  if (status === "완료" && (!pqcPassed || !oqcPassed)) {
+    window.alert("동일 LOT의 PQC·OQC 필수항목 합격 후 완료 처리할 수 있습니다.");
+    return;
+  }
+
+  const prev = getAutoWoStatus(lotNo);
+  const progress = plan > 0 ? Math.min(100, Math.round((actual / plan) * 100)) : 0;
+  DB.woDocs[lotNo] = {
+    ...current,
+    manualStatus: status,
+    status,
+    productionActual: actual,
+    productionProgress: progress,
+    statusHistory: [
+      ...(current.statusHistory || []),
+      { from: prev, to: status, changedAt: new Date().toISOString() },
+    ],
+  };
+
+  if (batch) {
+    batch.status = status === "생산중" ? "진행중" : status;
+    batch.done = actual;
+    batch.updatedAt = new Date().toISOString();
+  }
+
+  const lot = DB.lots?.[lotNo];
+  if (lot && !String(lot.status || "").includes("홀드")) {
+    lot.stage = "생산";
+    lot.productionActual = actual;
+    lot.qty = actual.toLocaleString() + " kg / 계획 " + plan.toLocaleString() + " kg";
+    lot.status = status === "완료"
+      ? "생산완료 — 검사 완료"
+      : status === "검사중"
+        ? "검사중"
+        : status === "실적대기"
+          ? "생산실적 입력 대기"
+          : status === "생산중"
+            ? "생산중"
+            : "발행 — 생산 대기";
+  }
+
+  dbSave();
+  if (typeof qmesSyncWorkOrder === "function") {
+    qmesSyncWorkOrder(lotNo).catch((error) => console.warn("작업지시 상태 공용 동기화 실패:", error.message));
+  }
+}
+
+function woStatusTone`;
+  let patched = source.replace(
+    /function getAutoWoStatus\(lotNo\) \{[\s\S]*?\n\}\n\nfunction saveWoManualStatus\(lotNo, status\) \{[\s\S]*?\n\}\n\nfunction woStatusTone/,
+    replacement
+  );
+  patched = patched.replace(
+    /<option value="완료">완료<\/option>/g,
+    '<option value="실적대기">실적대기</option>\n                        <option value="완료">완료</option>'
+  );
+  return patched;
+}
+
+function patchQmesInventoryProductionSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    /  function lotQc\(lot\)\{[\s\S]*?\n  \}\n\n  function statusOf\(row,qc\)\{[\s\S]*?\n  \}/,
+String.raw`  function latestInspectionState(kind,lot,required){
+    const key=upper(lot);
+    const rows=Array.isArray(window.DB?.insp?.[kind])?window.DB.insp[kind].filter(row=>upper(row?.lot)===key):[];
+    const groups=new Map();
+    rows.forEach(row=>{const group=text(row?.groupId)||text(row?.id).replace(/-\d+$/,'')||'default';if(!groups.has(group))groups.set(group,[]);groups.get(group).push(row);});
+    const latest=Array.from(groups.values()).sort((a,b)=>{const av=a[0]||{},bv=b[0]||{};return (text(bv.date)+' '+text(bv.time)+' '+text(bv.id)).localeCompare(text(av.date)+' '+text(av.time)+' '+text(av.id));})[0]||[];
+    const byCheck=new Map();
+    latest.forEach(row=>byCheck.set(text(row?.check)==='입도'?'입도(Dmax)':text(row?.check),row));
+    if(latest.some(row=>/불합격|NG|FAIL/i.test(text(row?.judge))))return '불합격';
+    if(required.every(check=>byCheck.get(check)&&/합격|PASS|OK/i.test(text(byCheck.get(check).judge))))return '합격';
+    return latest.length?'진행중':'대기';
+  }
+
+  function lotQc(lot){
+    return {
+      pqc:latestInspectionState('PQC',lot,['외관','입도(Dmax)','점도','고형분']),
+      oqc:latestInspectionState('OQC',lot,['외관','입도(Dmax)','점도','고형분','접착력','절연저항','수분','전해액 안정성'])
+    };
+  }
+
+  function productionState(row){
+    const wanted=upper(row.workOrder||row.lot);
+    const docs=window.DB?.woDocs||{};
+    const doc=docs[wanted]||Object.entries(docs).find(([key])=>upper(key)===wanted)?.[1]||{};
+    const batch=(window.DB?.batches||[]).find(item=>upper(item?.no||item?.lot||item?.workOrder)===wanted)||{};
+    const linked=Boolean(Object.keys(doc).length||Object.keys(batch).length);
+    const inputActual=(doc.inputs||[]).reduce((sum,item)=>sum+Math.max(0,Number(item?.act??item?.actual??0)||0),0);
+    const actual=Math.max(0,...[doc.productionActual,batch.done,batch.actualQty,batch.productionQty,inputActual].map(Number).filter(Number.isFinite));
+    return {linked,actual};
+  }
+
+  function statusOf(row,qc,production){
+    if(!production.linked) return '작업지시 확인';
+    if(!(production.actual>0)) return '실적대기';
+    if(qc.oqc==='불합격'||qc.pqc==='불합격') return '품질차단';
+    if(qc.pqc==='합격'&&qc.oqc==='합격') return '출하가능';
+    if(qc.pqc==='합격') return 'OQC 대기';
+    if(row.quality_status==='OQC_PENDING') return 'PQC 대기';
+    if(row.category==='FG') return 'PQC 대기';
+    if(row.category==='WIP') return '생산중';
+    return '생산대기';
+  }`
+  );
+  patched = patched.replace(
+    "const rows=Array.from(map.values()).map(r=>{const qc=lotQc(r.lot);return {...r,qc,status:statusOf(r,qc)};}).sort((a,b)=>a.lot.localeCompare(b.lot)*-1);",
+    "const rows=Array.from(map.values()).map(r=>{const qc=lotQc(r.lot),production=productionState(r);return {...r,qc,production,status:statusOf(r,qc,production)};}).sort((a,b)=>a.lot.localeCompare(b.lot)*-1);"
+  );
+  patched = patched.replace(
+    "const stages=['생산대기','생산중','PQC 대기','OQC 대기','출하가능'];",
+    "const stages=['작업지시 확인','실적대기','생산중','PQC 대기','OQC 대기','출하가능'];"
+  );
+  patched = patched.replace("gridTemplateColumns:'repeat(5,minmax(0,1fr))'","gridTemplateColumns:'repeat(6,minmax(0,1fr))'");
+  return patched;
+}
+
+function patchQmesLotLinkageSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    '  function isIntermediate(row){',
+String.raw`  function productionActualQty(doc,batch){
+    const inputs=Array.isArray(doc?.inputs)?doc.inputs:[];
+    const inputActual=inputs.reduce((sum,row)=>sum+Math.max(0,number(row?.act??row?.actual??0)),0);
+    const result=doc?.productionResult||batch?.productionResult||{};
+    return Math.max(0,inputActual,number(doc?.productionActual),number(batch?.done),number(batch?.actualQty),number(batch?.productionQty),number(result?.actualQty),number(result?.productionQty),number(result?.goodQty),number(result?.totalQty));
+  }
+  function isIntermediate(row){`
+  );
+  patched = patched.replace(
+    '    const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);',
+    '    const productionQty=productionActualQty(doc,batch);\n    const rawPqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    const rawOqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    const pqc=productionQty>0?rawPqc:{...rawPqc,status:"실적대기"};\n    const oqc=productionQty<=0?{...rawOqc,status:"실적대기"}:pqc.status!=="합격"?{...rawOqc,status:"PQC 대기"}:rawOqc;'
+  );
+  patched = patched.replace(
+    '      coa:{status:db.coa?.[lot]?"발행":"미발행",no:text(db.coa?.[lot]?.no)}\n    };',
+    '      coa:{status:db.coa?.[lot]?"발행":"미발행",no:text(db.coa?.[lot]?.no)}\n    };\n    next.productionActual=productionQty;\n    next.availableQty=productionQty>0&&oqc.status==="합격"&&!actualShipment(next.ship)?productionQty:0;'
+  );
+  patched = patched.replace(
+    '      const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);',
+    '      const productionQty=productionActualQty(doc,batch);\n      const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n      const rawOqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n      const oqc=productionQty<=0?{...rawOqc,status:"실적대기"}:pqc.status!=="합격"?{...rawOqc,status:"PQC 대기"}:rawOqc;'
+  );
+  patched = patched.replace(
+    '      const qty=number(lotRow.ship?.shipQty??lotRow.ship?.qty??lotRow.oqcCompletion?.qty??oqcRow.shipQty??doc.plan??batch.plan??lotRow.qty);',
+    '      const qty=actual?number(lotRow.ship?.shipQty??lotRow.ship?.qty):productionQty;'
+  );
+  patched = patched.replace(
+    '      const delivery=actual?"납품완료":oqc.status==="불합격"?"출하차단":oqc.status==="합격"&&db.coa?.[lot]?"출하대기":"-";',
+    '      const delivery=productionQty<=0?"생산실적 대기":actual?"납품완료":oqc.status==="불합격"?"출하차단":oqc.status==="합격"&&db.coa?.[lot]?"출하대기":"검사대기";'
+  );
+  patched = patched.replace(
+    '        source:"WORK_ORDER_QUALITY",\n        workOrder:lot',
+    '        source:actual?"ERP_SHIPPING":"WORK_ORDER_QUALITY",\n        shipNo:text(lotRow.ship?.shipNo||lotRow.ship?.no),\n        actualShipment:actual,availableQty:number(lotRow.availableQty),productionQty,\n        workOrder:lot'
+  );
+  patched = patched.replace(
+    '    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    if(oqc.status!=="합격")',
+    '    const entry=orderMap(db).find(row=>row.lot===lot)||{doc:{},batch:{},sales:""};\n    const productionQty=productionActualQty(entry.doc,entry.batch);\n    if(!(productionQty>0)){window.alert("생산실적 입력 후 출하완료 처리할 수 있습니다.");return;}\n    const pqc=inspectionState(db,"PQC",lot,PQC_ITEMS);\n    if(pqc.status!=="합격"){window.alert("공정검사(PQC) 필수항목 합격 후 출하완료 처리할 수 있습니다.");return;}\n    const oqc=inspectionState(db,"OQC",lot,OQC_ITEMS);\n    if(oqc.status!=="합격")'
+  );
+  patched = patched.replace(
+    '    const entry=entries.find(row=>row.lot===lot)||{doc:{},batch:{},sales:""};',
+    ''
+  );
+  return patched;
+}
+
+function patchQmesInventoryIntegrationSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    "const finishedQty=num(first(batch,['actualQty','actualQuantity','productionQty','resultQty','qty','quantity','실투입량','생산량','완료수량']));",
+    "const inputActual=materialRows(doc).reduce((sum,row)=>sum+Math.max(0,num(first(row,['actualQty','actualQuantity','usedQty','inputQty','실투입량','사용량']))),0);\n      const result=doc.productionResult||batch.productionResult||{};\n      const finishedQty=Math.max(0,inputActual,num(first(result,['actualQty','actualQuantity','productionQty','resultQty','goodQty','totalQty','생산량','완료수량'])),num(first(doc,['productionActual','actualQty','productionQty','resultQty'])),num(first(batch,['actualQty','actualQuantity','productionQty','resultQty','생산량','완료수량'])));"
+  );
+  patched = patched.replace(
+    "const firstRow=rows[0];if(!rows.some(r=>pass(judgeOf(r))))continue;",
+    "const firstRow=rows[0],required=['외관','입도(Dmax)','점도','고형분','접착력','절연저항','수분','전해액 안정성'],byCheck=new Map();rows.forEach(r=>byCheck.set(txt(r?.check)==='입도'?'입도(Dmax)':txt(r?.check),r));if(!required.every(check=>byCheck.get(check)&&pass(judgeOf(byCheck.get(check)))))continue;"
+  );
+  patched = patched.replace(
+    '  async function syncOQC(records){',
+    '  async function syncOQC(records,pqcRecords){\n    const pqcPassLots=new Set();\n    for(const rec of pqcRecords||[]){const p=parse(rec),rows=Array.isArray(p.rows)?p.rows:[],required=["외관","입도(Dmax)","점도","고형분"],byCheck=new Map();rows.forEach(r=>byCheck.set(txt(r?.check)==="입도"?"입도(Dmax)":txt(r?.check),r));const lot=lotOf(rows[0]||{})||txt(p.lotNo);if(lot&&required.every(check=>byCheck.get(check)&&pass(judgeOf(byCheck.get(check)))))pqcPassLots.add(txt(lot).toUpperCase());}'
+  );
+  patched = patched.replace(
+    "const relKey='auto:oqc-release:'",
+    "if(!pqcPassLots.has(txt(lot).toUpperCase()))continue;\n      const relKey='auto:oqc-release:'"
+  );
+  patched = patched.replace(
+    "const [iqc,wo,oqc]=await Promise.all([list('iqc'),list('workorder'),list('oqc')]);const result={iqc:await syncIQC(iqc),workorder:await syncWorkorders(wo),oqc:await syncOQC(oqc)};",
+    "const [iqc,wo,pqc,oqc]=await Promise.all([list('iqc'),list('workorder'),list('pqc'),list('oqc')]);const result={iqc:await syncIQC(iqc),workorder:await syncWorkorders(wo),oqc:await syncOQC(oqc,pqc)};"
+  );
+  return patched;
+}
+
+function patchQmesMrpSource(source) {
+  const replacement = String.raw`  function workorderCompleted(workorder,oqcRows){
+    const localBatch=(window.DB?.batches||[]).find(row=>norm(row?.no||row?.lot||row?.workOrder)===norm(workorder.wo))||{};
+    const localLot=window.DB?.lots?.[workorder.wo]||{};
+    const result=workorder.doc?.productionResult||workorder.batch?.productionResult||workorder.lotRecord?.productionResult||localBatch.productionResult||localLot.productionResult||{};
+    const inputs=materialRows(workorder.doc);
+    const inputActual=inputs.reduce((sum,row)=>sum+Math.max(0,num(first(row,['actualQty','actualQuantity','usedQty','inputQty','act','실투입량','사용량']))),0);
+    const actual=Math.max(0,inputActual,num(first(result,['actualQty','productionQty','resultQty','goodQty','totalQty'])),num(first(workorder.doc,['productionActual','actualQty','productionQty'])),num(first(workorder.batch,['done','actualQty','productionQty'])),num(first(localBatch,['done','actualQty','productionQty'])));
+    if(!(actual>0))return false;
+    const statuses=[workorder.state,workorder.batch?.status,workorder.doc?.status,workorder.lotRecord?.status,localBatch.status,localLot.status,localLot.productionStatus];
+    if(statuses.some(complete))return true;
+    return (oqcRows||[]).some(row=>norm(first(row,['lot','lotNo','productionLot','workOrderNo']))===norm(workorder.wo)&&pass(first(row,['judge','judgment','result','inspectionResult','status'])));
+  }
+  const workorderProduct`;
+  return source.replace(
+    /  function workorderCompleted\(workorder,oqcRows\)\{[\s\S]*?\n  \}\n  const workorderProduct/,
+    replacement
+  );
+}
+
+const qmesProductionModulePath = path.join(__dirname, 'public', 'js', 'production.jsx');
+app.get('/js/production.jsx', (req, res, next) => {
+  fs.readFile(qmesProductionModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesProductionSource(source));
+  });
+});
+
+const qmesInventoryProductionModulePath = path.join(__dirname, 'public', 'js', 'inventory-production-lot-flow-20260819.jsx');
+app.get('/js/inventory-production-lot-flow-20260819.jsx', (req, res, next) => {
+  fs.readFile(qmesInventoryProductionModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesInventoryProductionSource(source));
+  });
+});
+
+const qmesInventoryIntegrationModulePath = path.join(__dirname, 'public', 'js', 'inventory-qmes-integration-20260819.js');
+app.get('/js/inventory-qmes-integration-20260819.js', (req, res, next) => {
+  fs.readFile(qmesInventoryIntegrationModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesInventoryIntegrationSource(source));
+  });
+});
+
+const qmesLotLinkageModulePath = path.join(__dirname, 'public', 'js', 'qmes-lot-quality-shipping-linkage-20260826.js');
+app.get('/js/qmes-lot-quality-shipping-linkage-20260826.js', (req, res, next) => {
+  fs.readFile(qmesLotLinkageModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesLotLinkageSource(source));
+  });
+});
+
+const qmesMrpModulePath = path.join(__dirname, 'public', 'js', 'qmes-production-mrp-live-20260901-v5.js');
+app.get('/js/qmes-production-mrp-live-20260901-v5.js', (req, res, next) => {
+  fs.readFile(qmesMrpModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchQmesMrpSource(source));
+  });
+});
+
+const qmesShippingDetailPatchSource = `;(${qmesShippingDetailClientPatch.toString()})();`;
+const qmesShippingModulePath = path.join(__dirname, 'public', 'js', 'qmes-shipping-enterprise-module-20260828-v1.js');
+
+app.get('/js/qmes-shipping-enterprise-module-20260828-v1.js', (req, res, next) => {
+  fs.readFile(qmesShippingModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(`${patchQmesShippingEnterpriseSource(source)}\n${qmesShippingDetailPatchSource}`);
+  });
+});
+
+const qmesTopSubmenuModulePath = path.join(__dirname, 'public', 'js', 'qmes-top-submenu-restore-20260820-v2.js');
+
+app.get('/js/qmes-top-submenu-restore-20260820-v2.js', (req, res, next) => {
+  fs.readFile(qmesTopSubmenuModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    const shippingMenu = '"출하·납품":[{label:"출하 · 납품관리",tab:"erpShipping"}]';
+    const patchedSource = source.includes('"출하 · 물류"')
+      ? source
+      : source.replace(
+          shippingMenu,
+          `${shippingMenu},\n    "출하·물류":[{label:"출하 · 물류",tab:"erpShipping"}],\n    "출하 · 물류":[{label:"출하 · 물류",tab:"erpShipping"}]`
+        );
+    res.type('application/javascript; charset=utf-8');
+    res.send(patchedSource);
+  });
+});
+
+function qmesSalesWorkOrderNavigationFix() {
+  "use strict";
+  if (window.__QMES_SALES_WORKORDER_NAV_FIX_20260902__) return;
+  window.__QMES_SALES_WORKORDER_NAV_FIX_20260902__ = true;
+
+  const clean = value => String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+  const DRAWER_IDS = [
+    "qmes-sales-detail-drawer-safe-20260828-v2",
+    "qmes-sales-detail-drawer-20260828-v1",
+    "qmes-sales-order-detail-panel-20260826"
+  ];
+
+  function drawerRoot(button) {
+    for (const id of DRAWER_IDS) {
+      const root = button.closest(`#${id}`);
+      if (root) return root;
+    }
+    return button.closest('[role="dialog"][aria-label="통합 상세 정보"]')?.parentElement || null;
+  }
+
+  function workOrderFromDrawer(root) {
+    for (const card of Array.from(root?.querySelectorAll(".qsd2-card,.qsd-card,.qso-item") || [])) {
+      const label = clean(card.querySelector("small,b,label")?.textContent);
+      if (!/작업지시/.test(label)) continue;
+      const value = clean(card.querySelector("strong,span")?.textContent);
+      if (value && value !== "-") return value;
+    }
+    const salesId = clean(root?.dataset?.salesId);
+    if (!salesId) return "";
+    try {
+      const rows = JSON.parse(localStorage.getItem("qmes-erp-sales-v1") || "[]");
+      const meta = JSON.parse(localStorage.getItem("qmes-sales-order-meta-v1") || "{}");
+      const links = JSON.parse(localStorage.getItem("qmes-sales-workorder-link-v1") || "{}");
+      const row = (Array.isArray(rows) ? rows : []).find(item => {
+        const raw = clean(item?.id);
+        const key = clean(item?.workOrder) || raw;
+        const info = meta[key] || meta[raw] || item?.orderMeta || {};
+        const shown = clean(info?.salesOrderIdOverride) || raw;
+        return salesId === raw || salesId === key || salesId === shown;
+      });
+      if (!row) return clean(links?.bySales?.[salesId]);
+      const raw = clean(row.id);
+      const key = clean(row.workOrder) || raw;
+      const info = meta[key] || meta[raw] || row.orderMeta || {};
+      return clean(row.workOrder) || clean(info.workOrder) || clean(links?.bySales?.[salesId]) || clean(links?.bySales?.[raw]);
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  function clearBlockingLayers() {
+    DRAWER_IDS.forEach(id => document.getElementById(id)?.remove());
+    document.getElementById("qmes-business-extension-host")?.remove();
+    document.querySelectorAll('[data-qbe-hidden="1"]').forEach(element => {
+      element.style.removeProperty("display");
+      delete element.dataset.qbeHidden;
+    });
+    document.documentElement.style.removeProperty("overflow");
+    document.documentElement.style.removeProperty("pointer-events");
+    document.body?.style.removeProperty("overflow");
+    document.body?.style.removeProperty("pointer-events");
+    try {
+      sessionStorage.removeItem("qmes_business_extension_tab");
+    } catch (_error) {}
+    if (location.hash === "#page-workorder-list") {
+      history.replaceState(null, "", `${location.pathname}${location.search}`);
+    }
+  }
+
+  function navigateToWorkOrders(workOrder) {
+    const wanted = clean(workOrder);
+    if (!wanted || wanted === "-") {
+      alert("연결된 작업지시서를 찾을 수 없습니다.");
+      return;
+    }
+    clearBlockingLayers();
+    try {
+      sessionStorage.setItem("qmes_current_tab", "woIssue");
+      sessionStorage.setItem("qmes_open_menu", "productionMenu");
+      localStorage.setItem("qmes-focus-workorder", wanted);
+    } catch (_error) {}
+
+    const fire = () => window.dispatchEvent(new CustomEvent("qmes:navigate-tab", {
+      detail: {
+        tab: "woIssue",
+        openMenu: "productionMenu",
+        workOrder: wanted,
+        source: "sales-workorder-navigation-fix-20260902"
+      }
+    }));
+    fire();
+    requestAnimationFrame(fire);
+    setTimeout(fire, 80);
+
+    let attempt = 0;
+    const openPreview = () => {
+      attempt += 1;
+      clearBlockingLayers();
+      const row = Array.from(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(item => {
+        const lot = clean(item.querySelector("td:first-child")?.textContent);
+        return lot === wanted;
+      });
+      if (row) {
+        const view = row.querySelector(".qmes-manage-btn.view")
+          || row.querySelector("td:first-child button")
+          || Array.from(row.querySelectorAll("button")).find(button => /미리보기|보기/.test(clean(button.textContent)));
+        if (view) {
+          view.click();
+          row.scrollIntoView({ block: "center", behavior: "auto" });
+          try { localStorage.removeItem("qmes-focus-workorder"); } catch (_error) {}
+          return;
+        }
+      }
+      if (attempt === 8 && typeof window.qmesSyncPullWorkOrders === "function") {
+        try { Promise.resolve(window.qmesSyncPullWorkOrders()).catch(() => {}); } catch (_error) {}
+      }
+      if (attempt < 120) {
+        setTimeout(openPreview, 50);
+      } else {
+        try { localStorage.removeItem("qmes-focus-workorder"); } catch (_error) {}
+        alert(`작업지시서 ${wanted}를 목록에서 찾지 못했습니다. 작업지시서 화면에서 확인해 주세요.`);
+      }
+    };
+    setTimeout(openPreview, 120);
+  }
+
+  window.addEventListener("click", event => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-qsd2-workorder],[data-qsd-workorder]");
+    if (!button) return;
+    const root = drawerRoot(button);
+    if (!root) return;
+    const workOrder = workOrderFromDrawer(root);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    navigateToWorkOrders(workOrder);
+  }, true);
+
+  window.addEventListener("hashchange", () => {
+    if (location.hash !== "#page-workorder-list") return;
+    const drawer = DRAWER_IDS.map(id => document.getElementById(id)).find(Boolean);
+    if (!drawer) return;
+    const workOrder = workOrderFromDrawer(drawer);
+    navigateToWorkOrders(workOrder);
+  }, true);
+
+  window.qmesOpenSalesWorkOrderSafe = navigateToWorkOrders;
+}
+
+const qmesSalesWorkOrderNavigationFixSource = `;(${qmesSalesWorkOrderNavigationFix.toString()})();`;
+const qmesSalesDetailDrawerSafePath = path.join(__dirname, 'public', 'js', 'qmes-sales-detail-drawer-safe-20260828-v2.js');
+
+app.get('/js/qmes-sales-detail-drawer-safe-20260828-v2.js', (req, res, next) => {
+  fs.readFile(qmesSalesDetailDrawerSafePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(`${source}\n${qmesSalesWorkOrderNavigationFixSource}`);
+  });
+});
+
+
+// QMES Namo One navigation palette and dashboard notices (2026-09-02).
+const qmesNamoOneNavigationThemeCss = "\n/* QMES_NAMO_ONE_NAV_THEME_20260902 */\nhtml body #root#root#root#root > div > header,\nhtml body #root#root#root#root > div > header > div:first-child{\n  background:#0f2038!important;\n  border-color:#263c59!important;\n  color:#f8fafc!important;\n  box-shadow:none!important;\n}\nhtml body #root#root#root#root > div > header img[alt=\"NAMO Chemical\"]{\n  filter:brightness(0) invert(1)!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-clock,\nhtml body #root#root#root#root > div > header .qmes-header-clock span,\nhtml body #root#root#root#root > div > header .qmes-header-controls button,\nhtml body #root#root#root#root > div > header .qmes-header-controls button div,\nhtml body #root#root#root#root > div > header .qmes-header-controls button span{\n  color:#eef5ff!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-action{\n  background:#162e4d!important;\n  border-color:#35516f!important;\n  color:#eef5ff!important;\n}\nhtml body #root#root#root#root > div > header .qmes-header-controls button:hover,\nhtml body #root#root#root#root > div > header .qmes-header-action:hover{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-bar,\nhtml body #root#root#root#root .qmes-top-menu{\n  background:#0f2038!important;\n  border-color:#263c59!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button{\n  background:#0f2038!important;\n  color:#d9e7f7!important;\n  border-bottom-color:transparent!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button svg,\nhtml body #root#root#root#root .qmes-top-menu-button .qmes-menu-arrow{\n  color:#a9bfd8!important;\n  stroke:#a9bfd8!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button:hover,\nhtml body #root#root#root#root .qmes-top-menu-button:focus-visible{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button:hover svg,\nhtml body #root#root#root#root .qmes-top-menu-button:focus-visible svg{\n  color:#fff!important;\n  stroke:#fff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button.is-active,\nhtml body #root#root#root#root .qmes-top-menu-button[aria-current=\"page\"]{\n  background:#297aed!important;\n  color:#fff!important;\n  border-bottom-color:#75b5ff!important;\n}\nhtml body #root#root#root#root .qmes-top-menu-button.is-active svg,\nhtml body #root#root#root#root .qmes-top-menu-button[aria-current=\"page\"] svg{\n  color:#fff!important;\n  stroke:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar{\n  background:#162e4d!important;\n  color:#d9e7f7!important;\n  border-color:#263c59!important;\n  box-shadow:none!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-head{\n  background:#162e4d!important;\n  border-color:#263c59!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-box{\n  background:#213d60!important;\n  border-color:#35516f!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input{\n  background:transparent!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-input::placeholder,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-search-icon,\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-close{\n  color:#a9bfd8!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-title{\n  color:#8fa9c8!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item{\n  background:transparent!important;\n  color:#d9e7f7!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:before{\n  background:#6885a5!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover{\n  background:#1f4b75!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover:before{\n  background:#9dc9ff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active{\n  background:#297aed!important;\n  color:#fff!important;\n}\nhtml body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active:before{\n  background:#d2f1ff!important;\n}\n";
+const qmesNamoOneThemeCssPath = path.join(__dirname, 'public', 'css', 'qmes-global-light-theme-20260826.css');
+
+app.get('/css/qmes-global-light-theme-20260826.css', (req, res, next) => {
+  fs.readFile(qmesNamoOneThemeCssPath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.type('text/css; charset=utf-8');
+    res.send(`${source}\n${qmesNamoOneNavigationThemeCss}`);
+  });
+});
+
+function patchQmesDashboardNoticeSource(source) {
+  let patched = source;
+  patched = patched.replace(
+    '  const alerts=qmesDashAlerts();',
+    '  const alerts=[{tone:"blue",text:"메뉴 UI 업그레이드: 상단·사이드 메뉴에 Namo One 네이비 테마를 적용했습니다.",action:"2026-09-02"},{tone:"green",text:"출하·물류 하위 메뉴와 출하·납품 상세 연동을 개선했습니다.",action:"업데이트"},{tone:"orange",text:"작업지시서·수입검사·출하완료의 LOT 및 상태 기준을 통일했습니다.",action:"업데이트"}];'
+  );
+  patched = patched.replace('<h2>실행 필요 알림</h2>', '<h2>공지사항</h2>');
+  patched = patched.replace('현재 실행이 필요한 알림이 없습니다.', '등록된 공지사항이 없습니다.');
+  return patched;
+}
+
+const qmesDashboardModulePath = path.join(__dirname, 'public', 'js', 'dashboard.jsx');
+app.get('/js/dashboard.jsx', (req, res, next) => {
+  fs.readFile(qmesDashboardModulePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('text/babel; charset=utf-8');
+    res.send(patchQmesDashboardNoticeSource(source));
+  });
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+function ok(res, data = null, message = 'OK') {
+  return res.json({ success: true, message, data });
+}
+
+function fail(res, status, message) {
+  return res.status(status).json({ success: false, message, data: null });
+}
+
+function txt(v) {
+  return (v ?? '').toString().trim();
+}
+
+function num(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function arr(v) {
+  return Array.isArray(v) ? v : [];
+}
+
+function sign(v) {
+  return JSON.stringify(v || {});
+}
+
+async function db(sql, params = []) {
+  return pool.query(sql, params);
+}
+
+
+function jsonObj(v, fallback = {}) {
+  if (v === null || v === undefined || v === '') return fallback;
+  if (typeof v === 'object') return v;
+  try {
+    return JSON.parse(v);
+  } catch (_err) {
+    return fallback;
+  }
+}
+
+async function auditLog(req, action, targetTable, targetId, beforeData = null, afterData = null) {
+  try {
+    const user = req.session?.user || {};
+    await db(
+      `INSERT INTO audit_logs
+       (user_id, user_name, user_email, action, target_table, target_id, before_data, after_data)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        user.id || null,
+        user.name || '',
+        user.email || '',
+        action,
+        targetTable,
+        targetId ? String(targetId) : '',
+        beforeData ? JSON.stringify(beforeData) : null,
+        afterData ? JSON.stringify(afterData) : null,
+      ]
+    );
+  } catch (err) {
+    console.warn('auditLog failed:', err.message);
+  }
+}
+
+function requireLogin(req, res, next) {
+  if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return fail(res, 403, '관리자 권한이 필요합니다.');
+  }
+  next();
+}
+
+function buildSessionUser(user) {
+  return {
+    id: user.id,
+    uid: user.uid || '',
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    department: user.department,
+    title: user.title || '',
+    status: user.status,
+    mustChangePassword: Boolean(user.must_change_password),
+  };
+}
+
+function calcJudgeFromItems(items = []) {
+  const rows = arr(items);
+  if (!rows.length) return '합격';
+  if (rows.some((x) => txt(x.judge) === '불합격')) return '불합격';
+  if (rows.some((x) => txt(x.judge) === '보류')) return '보류';
+  return '합격';
+}
+
+async function ensureSchema() {
+  await db(`
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+    CREATE TABLE IF NOT EXISTS users (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      department TEXT DEFAULT '',
+      title TEXT DEFAULT '',
+      role TEXT NOT NULL DEFAULT 'user',
+      status TEXT NOT NULL DEFAULT 'APPROVED',
+      must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS qmes_sessions (
+      sid TEXT PRIMARY KEY,
+      sess JSONB NOT NULL,
+      expire TIMESTAMPTZ NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS qmes_sessions_expire_idx
+      ON qmes_sessions (expire);
+
+    DELETE FROM qmes_sessions WHERE expire <= NOW();
+
+    CREATE TABLE IF NOT EXISTS qmes_sync_records (
+      record_type TEXT NOT NULL,
+      record_key TEXT NOT NULL,
+      payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_by TEXT DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (record_type, record_key)
+    );
+
+    CREATE INDEX IF NOT EXISTS qmes_sync_records_type_updated_idx
+      ON qmes_sync_records (record_type, updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS purchase_orders (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      purchase_no TEXT UNIQUE NOT NULL,
+      purchase_type TEXT NOT NULL DEFAULT '정기발주',
+      production_type TEXT NOT NULL DEFAULT 'D-양산',
+      supplier TEXT NOT NULL,
+      supplier_grade TEXT DEFAULT '',
+      item TEXT NOT NULL,
+      item_code TEXT DEFAULT '',
+      spec TEXT DEFAULT '',
+      qty NUMERIC NOT NULL CHECK (qty >= 0),
+      unit TEXT NOT NULL DEFAULT 'kg',
+      unit_price NUMERIC NOT NULL DEFAULT 0 CHECK (unit_price >= 0),
+      amount NUMERIC NOT NULL DEFAULT 0 CHECK (amount >= 0),
+      order_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      requested_due_date DATE,
+      confirmed_due_date DATE,
+      priority TEXT NOT NULL DEFAULT '일반',
+      mrp_no TEXT DEFAULT '',
+      work_order_no TEXT DEFAULT '',
+      purpose TEXT DEFAULT '',
+      warehouse TEXT DEFAULT '',
+      delivery_address TEXT DEFAULT '',
+      payment_terms TEXT DEFAULT '',
+      approval_status TEXT NOT NULL DEFAULT '구매검토',
+      receipt_status TEXT NOT NULL DEFAULT '미입고',
+      received_qty NUMERIC NOT NULL DEFAULT 0 CHECK (received_qty >= 0),
+      receipt_date DATE,
+      material_lot TEXT DEFAULT '',
+      iqc_required BOOLEAN NOT NULL DEFAULT TRUE,
+      iqc_status TEXT NOT NULL DEFAULT '계획 대기',
+      coa_required BOOLEAN NOT NULL DEFAULT TRUE,
+      msds_required BOOLEAN NOT NULL DEFAULT FALSE,
+      lot_required BOOLEAN NOT NULL DEFAULT TRUE,
+      status TEXT NOT NULL DEFAULT '결재대기',
+      requester TEXT DEFAULT '',
+      notes TEXT DEFAULT '',
+      created_by TEXT DEFAULT '',
+      updated_by TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CHECK (received_qty <= qty)
+    );
+
+    CREATE INDEX IF NOT EXISTS purchase_orders_order_date_idx
+      ON purchase_orders (order_date DESC, created_at DESC);
+    CREATE INDEX IF NOT EXISTS purchase_orders_supplier_idx
+      ON purchase_orders (supplier, created_at DESC);
+    CREATE INDEX IF NOT EXISTS purchase_orders_due_idx
+      ON purchase_orders (requested_due_date, status);
+
+    CREATE TABLE IF NOT EXISTS purchase_receipts (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      purchase_order_id UUID NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
+      receipt_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      qty NUMERIC NOT NULL CHECK (qty > 0),
+      material_lot TEXT DEFAULT '',
+      expiry_date DATE,
+      iqc_status TEXT NOT NULL DEFAULT '검사 대기',
+      note TEXT DEFAULT '',
+      created_by TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS purchase_receipts_order_idx
+      ON purchase_receipts (purchase_order_id, receipt_date DESC, created_at DESC);
+
+    ALTER TABLE purchase_receipts
+      ADD COLUMN IF NOT EXISTS inspection_no TEXT DEFAULT '';
+
+    CREATE UNIQUE INDEX IF NOT EXISTS purchase_receipts_inspection_no_uq
+      ON purchase_receipts (inspection_no)
+      WHERE COALESCE(inspection_no, '') <> '';
+
+    CREATE TABLE IF NOT EXISTS iqc (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      lot TEXT NOT NULL,
+      supplier TEXT NOT NULL,
+      item TEXT NOT NULL,
+      inspector TEXT NOT NULL,
+      incoming_qty NUMERIC,
+      qty NUMERIC,
+      fail NUMERIC DEFAULT 0,
+      packaging_type TEXT DEFAULT '',
+      packaging_type_other TEXT DEFAULT '',
+      package_qty INTEGER,
+      unit_weight NUMERIC,
+      calculated_weight NUMERIC,
+      barcode_qty INTEGER,
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS pqc (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      product TEXT NOT NULL,
+      lot TEXT NOT NULL,
+      visual TEXT DEFAULT '',
+      viscosity TEXT DEFAULT '',
+      solid TEXT DEFAULT '',
+      particle TEXT DEFAULT '',
+      judge TEXT DEFAULT '',
+      incoming_qty NUMERIC,
+      qty NUMERIC,
+      fail NUMERIC DEFAULT 0,
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS oqc (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      customer TEXT NOT NULL,
+      product TEXT NOT NULL,
+      lot TEXT NOT NULL,
+      visual TEXT DEFAULT '',
+      package TEXT DEFAULT '',
+      viscosity TEXT DEFAULT '',
+      solid TEXT DEFAULT '',
+      particle TEXT DEFAULT '',
+      adhesion TEXT DEFAULT '',
+      resistance TEXT DEFAULT '',
+      swelling TEXT DEFAULT '',
+      moisture TEXT DEFAULT '',
+      qty TEXT DEFAULT '',
+      fail NUMERIC DEFAULT 0,
+      judge TEXT DEFAULT '',
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS suppliers (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT UNIQUE NOT NULL,
+      manager TEXT DEFAULT '',
+      phone TEXT DEFAULT '',
+      category TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS nonconform (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      type TEXT NOT NULL,
+      lot TEXT DEFAULT '',
+      item TEXT DEFAULT '',
+      issue TEXT DEFAULT '',
+      cause TEXT DEFAULT '',
+      action TEXT DEFAULT '',
+      owner TEXT DEFAULT '',
+      status TEXT DEFAULT '',
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS worklog (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      work_date DATE NOT NULL,
+      finished_lot TEXT NOT NULL,
+      worker TEXT NOT NULL,
+      plan_qty TEXT DEFAULT '',
+      prod_qty TEXT DEFAULT '',
+      fail_qty TEXT DEFAULT '',
+      remark TEXT DEFAULT '',
+      flow_set TEXT DEFAULT '',
+      flow_actual TEXT DEFAULT '',
+      temp_set TEXT DEFAULT '',
+      temp_actual TEXT DEFAULT '',
+      press_set TEXT DEFAULT '',
+      press_actual TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS worklog_materials (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      worklog_id UUID NOT NULL REFERENCES worklog(id) ON DELETE CASCADE,
+      seq INTEGER NOT NULL,
+      material TEXT DEFAULT '',
+      sup_name TEXT DEFAULT '',
+      lot_no TEXT DEFAULT '',
+      input_qty TEXT DEFAULT '',
+      input_time TEXT DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS certificates (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      cert_type TEXT NOT NULL,
+      date DATE NOT NULL,
+      lot TEXT NOT NULL,
+      inspector TEXT DEFAULT '',
+      item TEXT DEFAULT '',
+      company TEXT DEFAULT '',
+      incoming_qty TEXT DEFAULT '',
+      check_qty TEXT DEFAULT '',
+      fail_qty TEXT DEFAULT '',
+      judge TEXT DEFAULT '',
+      remark TEXT DEFAULT '',
+      items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS training_reports (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      date DATE NOT NULL,
+      report_no TEXT DEFAULT '',
+      type TEXT DEFAULT '',
+      title TEXT NOT NULL,
+      place TEXT DEFAULT '',
+      instructor TEXT DEFAULT '',
+      dept TEXT DEFAULT '',
+      hours TEXT DEFAULT '',
+      attendees TEXT DEFAULT '',
+      absentees TEXT DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      eval_method TEXT DEFAULT '',
+      result TEXT DEFAULT '완료',
+      remark TEXT DEFAULT '',
+      photos JSONB NOT NULL DEFAULT '[]'::jsonb,
+      sign_writer JSONB DEFAULT '{}'::jsonb,
+      sign_reviewer JSONB DEFAULT '{}'::jsonb,
+      sign_approver JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS instruments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      no TEXT NOT NULL,
+      name TEXT NOT NULL,
+      model TEXT DEFAULT '',
+      maker TEXT DEFAULT '',
+      location TEXT DEFAULT '',
+      cycle TEXT DEFAULT '12',
+      last_cal DATE,
+      next_cal DATE,
+      status TEXT DEFAULT '정상',
+      remark TEXT DEFAULT '',
+      photo TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS namo_talk_messages (
+      id BIGSERIAL PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      sender_name TEXT NOT NULL,
+      sender_uid TEXT DEFAULT '',
+      sender_dept TEXT DEFAULT '',
+      message_kind TEXT NOT NULL DEFAULT 'text',
+      message_text TEXT DEFAULT '',
+      file_name TEXT,
+      file_type TEXT,
+      file_data TEXT,
+      reply_to_id BIGINT,
+      reply_sender TEXT DEFAULT '',
+      reply_text TEXT DEFAULT '',
+      pinned BOOLEAN NOT NULL DEFAULT FALSE,
+      edited_at TIMESTAMPTZ,
+      deleted_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS namo_talk_messages_room_created_idx
+      ON namo_talk_messages (room_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS namo_talk_reads (
+      room_id TEXT NOT NULL,
+      user_uid TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (room_id, user_uid)
+    );
+
+    CREATE INDEX IF NOT EXISTS namo_talk_reads_room_idx
+      ON namo_talk_reads (room_id, last_read_at);
+
+    CREATE TABLE IF NOT EXISTS namo_talk_presence (
+      user_name TEXT PRIMARY KEY,
+      department TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'online',
+      status_message TEXT DEFAULT '',
+      last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS namo_talk_profiles (
+      user_name TEXT PRIMARY KEY,
+      avatar_type TEXT NOT NULL DEFAULT 'preset',
+      avatar_value TEXT NOT NULL DEFAULT 'drop-blue',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID,
+      user_name TEXT DEFAULT '',
+      user_email TEXT DEFAULT '',
+      action TEXT NOT NULL,
+      target_table TEXT NOT NULL,
+      target_id TEXT DEFAULT '',
+      before_data JSONB,
+      after_data JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS supplier_scores (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      supplier_id UUID,
+      supplier_name TEXT DEFAULT '',
+      score_month TEXT NOT NULL,
+      quality_score NUMERIC DEFAULT 0,
+      delivery_score NUMERIC DEFAULT 0,
+      response_score NUMERIC DEFAULT 0,
+      defect_rate NUMERIC DEFAULT 0,
+      ncr_count INTEGER DEFAULT 0,
+      capa_delay_count INTEGER DEFAULT 0,
+      total_score NUMERIC DEFAULT 0,
+      grade TEXT DEFAULT 'C',
+      remark TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS equipments (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      no TEXT NOT NULL,
+      name TEXT NOT NULL,
+      maker TEXT DEFAULT '',
+      model TEXT DEFAULT '',
+      location TEXT DEFAULT '',
+      pm_cycle TEXT DEFAULT '월간',
+      last_pm DATE,
+      next_pm DATE,
+      status TEXT DEFAULT '정상',
+      remark TEXT DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await db(`
+    ALTER TABLE users ALTER COLUMN status SET DEFAULT 'APPROVED';
+
+    ALTER TABLE purchase_orders ALTER COLUMN requested_due_date DROP NOT NULL;
+    ALTER TABLE purchase_orders ALTER COLUMN warehouse SET DEFAULT '';
+    ALTER TABLE purchase_orders ALTER COLUMN delivery_address SET DEFAULT '';
+    ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_qty_check;
+    ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_qty_nonnegative_check;
+    ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_qty_nonnegative_check CHECK (qty >= 0);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS title TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS uid TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS users_uid_unique_idx
+      ON users (uid) WHERE uid IS NOT NULL AND uid <> '';
+
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS packaging_type TEXT DEFAULT '';
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS packaging_type_other TEXT DEFAULT '';
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS package_qty INTEGER;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS unit_weight NUMERIC;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS calculated_weight NUMERIC;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS barcode_qty INTEGER;
+
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS package TEXT DEFAULT '';
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE oqc ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS nc_no TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS dept TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS qty NUMERIC DEFAULT 0;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS severity TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS action_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verify TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verify_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS capa_status TEXT DEFAULT 'OPEN';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS containment TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS impact_scope TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS correction TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS preventive_action TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS verification_result TEXT DEFAULT '';
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS due_date DATE;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS progress NUMERIC DEFAULT 0;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS photos JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS why_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS fishbone_json JSONB NOT NULL DEFAULT '{}'::jsonb;
+    ALTER TABLE nonconform ADD COLUMN IF NOT EXISTS capa_actions JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
+    ALTER TABLE certificates ADD COLUMN IF NOT EXISTS sign_approver JSONB DEFAULT '{}'::jsonb;
+
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS sender_uid TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS sender_dept TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS message_kind TEXT NOT NULL DEFAULT 'text';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS message_text TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_name TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_type TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS file_data TEXT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS reply_to_id BIGINT;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS reply_sender TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS reply_text TEXT DEFAULT '';
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ;
+    ALTER TABLE namo_talk_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+    ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS user_name TEXT DEFAULT '';
+    ALTER TABLE namo_talk_reads ADD COLUMN IF NOT EXISTS last_read_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+  `);
+}
+
+app.get('/api/test-db', async (_req, res) => {
+  try {
+    const r = await db(`
+      SELECT
+        NOW() AS db_now,
+        NOW() AT TIME ZONE 'Asia/Seoul' AS korea_now
+    `);
+    ok(res, r.rows[0], 'DB 연결 성공');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const password = txt(req.body.password);
+    const department = txt(req.body.department);
+    const title = txt(req.body.title);
+
+    if (!name || !email || !password) {
+      return fail(res, 400, '성명, 이메일, 비밀번호는 필수입니다.');
+    }
+
+    const exists = await db('SELECT id FROM users WHERE email = $1', [email]);
+    if (exists.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
+
+    const hash = await bcrypt.hash(password, 10);
+
+    await db(
+      `INSERT INTO users (name, email, password_hash, department, title, role, status)
+       VALUES ($1, $2, $3, $4, $5, 'user', 'APPROVED')`,
+      [name, email, hash, department, title]
+    );
+
+    ok(res, null, '회원가입이 완료되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const loginId = txt(req.body.loginId || req.body.email);
+    const password = txt(req.body.password);
+
+    if (!loginId || !password) {
+      return fail(res, 400, '아이디와 비밀번호를 입력해 주세요.');
+    }
+
+    const r = await db(
+      `SELECT *
+       FROM users
+       WHERE LOWER(email) = LOWER($1)
+          OR LOWER(name) = LOWER($1)
+          OR LOWER(COALESCE(uid, '')) = LOWER($1)
+       LIMIT 1`,
+      [loginId]
+    );
+    if (!r.rowCount) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
+
+    const user = r.rows[0];
+    const matched = await bcrypt.compare(password, user.password_hash);
+    if (!matched) return fail(res, 401, '아이디 또는 비밀번호가 올바르지 않습니다.');
+    if (user.status !== 'APPROVED') return fail(res, 403, '승인된 계정만 로그인할 수 있습니다.');
+
+    // 새 로그인은 기존/손상된 세션 ID를 재사용하지 않고 새 세션으로 교체합니다.
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
+    req.session.user = buildSessionUser(user);
+
+    // 로그인 응답 전에 PostgreSQL 세션 저장을 끝내 다른 PC의 즉시 401을 방지합니다.
+    await new Promise((resolve, reject) => {
+      req.session.save((sessionError) => {
+        if (sessionError) reject(sessionError);
+        else resolve();
+      });
+    });
+
+    return ok(res, { user: req.session.user }, '로그인 성공');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy(() => ok(res, null, '로그아웃 완료'));
+});
+
+app.get('/api/auth/me', (req, res) => {
+  if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
+  ok(res, req.session.user);
+});
+
+app.put('/api/auth/password', requireLogin, async (req, res) => {
+  try {
+    const currentPassword = txt(req.body.currentPassword);
+    const newPassword = txt(req.body.newPassword);
+    if (!currentPassword || newPassword.length < 4) {
+      return fail(res, 400, '현재 비밀번호와 4자 이상의 새 비밀번호를 입력해 주세요.');
+    }
+
+    const r = await db('SELECT password_hash FROM users WHERE id = $1', [req.session.user.id]);
+    if (!r.rowCount) return fail(res, 404, '사용자 정보를 찾을 수 없습니다.');
+
+    const matched = await bcrypt.compare(currentPassword, r.rows[0].password_hash);
+    if (!matched) return fail(res, 401, '현재 비밀번호가 일치하지 않습니다.');
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db(
+      'UPDATE users SET password_hash = $1, must_change_password = FALSE WHERE id = $2',
+      [hash, req.session.user.id]
+    );
+    req.session.user.mustChangePassword = false;
+    ok(res, null, '비밀번호가 변경되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/users/signable', requireLogin, async (_req, res) => {
+  try {
+    const r = await db(`
+      SELECT id, name, email, department, title, role, status
+      FROM users
+      WHERE status = 'APPROVED'
+      ORDER BY name ASC, created_at DESC
+    `);
+    ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/auth/change-password', requireLogin, async (req, res) => {
+  try {
+    const currentPassword = txt(req.body.currentPassword);
+    const newPassword = txt(req.body.newPassword);
+
+    if (!currentPassword || !newPassword) {
+      return fail(res, 400, '현재 비밀번호와 새 비밀번호를 입력하세요.');
+    }
+
+    const r = await db('SELECT * FROM users WHERE id = $1', [req.session.user.id]);
+    if (!r.rowCount) return fail(res, 404, '사용자를 찾을 수 없습니다.');
+
+    const user = r.rows[0];
+    const matched = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!matched) return fail(res, 400, '현재 비밀번호가 올바르지 않습니다.');
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, user.id]);
+
+    ok(res, null, '비밀번호가 변경되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const department = txt(req.body.department);
+    const newPassword = txt(req.body.newPassword);
+
+    if (!name || !email || !department || !newPassword) {
+      return fail(res, 400, '성명, 이메일, 부서명, 새 비밀번호를 입력하세요.');
+    }
+
+    const r = await db(
+      'SELECT * FROM users WHERE name = $1 AND email = $2 AND department = $3',
+      [name, email, department]
+    );
+
+    if (!r.rowCount) return fail(res, 404, '일치하는 사용자를 찾을 수 없습니다.');
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, r.rows[0].id]);
+
+    ok(res, null, '비밀번호가 초기화되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+const PURCHASE_PRODUCTION_TYPES = new Set(['D-양산', 'C-Pilot', 'B-Lab']);
+
+function purchaseValue(source, keys, fallback = '') {
+  for (const key of keys) {
+    if (source && Object.prototype.hasOwnProperty.call(source, key) && source[key] !== undefined) {
+      return source[key];
+    }
+  }
+  return fallback;
+}
+
+function purchaseBoolean(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'boolean') return value;
+  return !['false', '0', 'no', 'n', '아니오'].includes(txt(value).toLowerCase());
+}
+
+function normalizePurchaseProductionType(value) {
+  const raw = txt(value);
+  if (PURCHASE_PRODUCTION_TYPES.has(raw)) return raw;
+  if (/^(d|mass|양산)$/i.test(raw)) return 'D-양산';
+  if (/^(c|pilot|파일럿|개발)$/i.test(raw)) return 'C-Pilot';
+  if (/^(b|lab|랩|샘플)$/i.test(raw)) return 'B-Lab';
+  return 'D-양산';
+}
+
+function purchaseDate(value, fallback = '') {
+  const raw = txt(value || fallback);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw.slice(0, 10)) ? raw.slice(0, 10) : '';
+}
+
+function derivePurchaseStatus(row) {
+  const manual = txt(row.status);
+  const approval = txt(row.approval_status ?? row.approvalStatus ?? row.approval);
+  const receipt = txt(row.receipt_status ?? row.receiptStatus ?? row.receiving);
+  const iqc = txt(row.iqc_status ?? row.iqcStatus ?? row.iqc);
+  const ordered = Number(row.qty || 0);
+  const received = Number(row.received_qty ?? row.receivedQty ?? row.received ?? 0);
+
+  if (/취소/.test(manual)) return '발주취소';
+  if (/불합격|부적합|FAIL|NG|REJECT/i.test(iqc)) return 'IQC 부적합';
+  if (/입고\s*완료/.test(receipt) && ordered <= 0) return '입고완료';
+  if (received > 0 && received < ordered) return '부분입고';
+  if (ordered > 0 && received >= ordered) {
+    if (purchaseBoolean(row.iqc_required ?? row.iqcRequired, true) && !/합격|적합|PASS|OK/i.test(iqc)) {
+      return 'IQC대기';
+    }
+    return '입고완료';
+  }
+  if (/미승인|검토|대기/.test(approval) && !/승인완료|발주확정/.test(approval)) {
+    return '결재대기';
+  }
+
+  const due = purchaseDate(
+    row.confirmed_due_date ?? row.confirmedDueDate ?? row.expected ?? row.expectedDate
+      ?? row.requested_due_date ?? row.requestedDueDate ?? row.due ?? row.dueDate
+  );
+  if (due && !/입고완료/.test(receipt)) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(`${due}T00:00:00`);
+    const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+    if (days < 0) return '입고지연';
+    if (days <= 2 || /긴급|최우선/.test(txt(row.priority))) return '납기임박';
+  }
+  return '발주확정';
+}
+
+function mapPurchaseOrder(row, receipts = undefined) {
+  const mapped = {
+    id: row.purchase_no,
+    uuid: row.id,
+    purchaseNo: row.purchase_no,
+    no: row.purchase_no,
+    purchaseType: row.purchase_type,
+    type: row.purchase_type,
+    productionType: row.production_type,
+    supplier: row.supplier,
+    supplierGrade: row.supplier_grade,
+    grade: row.supplier_grade,
+    item: row.item,
+    material: row.item,
+    itemCode: row.item_code,
+    spec: row.spec || row.item_code,
+    qty: Number(row.qty || 0),
+    unit: row.unit,
+    unitPrice: Number(row.unit_price || 0),
+    price: Number(row.unit_price || 0),
+    amount: Number(row.amount || 0),
+    orderDate: purchaseDate(row.order_date),
+    requestedDueDate: purchaseDate(row.requested_due_date),
+    due: purchaseDate(row.requested_due_date),
+    confirmedDueDate: purchaseDate(row.confirmed_due_date),
+    expected: purchaseDate(row.confirmed_due_date),
+    priority: row.priority,
+    mrpNo: row.mrp_no,
+    mrp: row.mrp_no,
+    workOrderNo: row.work_order_no,
+    purpose: row.purpose,
+    warehouse: row.warehouse,
+    deliveryAddress: row.delivery_address,
+    paymentTerms: row.payment_terms,
+    terms: row.payment_terms,
+    approvalStatus: row.approval_status,
+    approval: row.approval_status,
+    receiptStatus: row.receipt_status,
+    receiving: row.receipt_status,
+    receivedQty: Number(row.received_qty || 0),
+    received: Number(row.received_qty || 0),
+    receiptDate: purchaseDate(row.receipt_date),
+    materialLot: row.material_lot,
+    lot: row.material_lot,
+    iqcRequired: Boolean(row.iqc_required),
+    iqcStatus: row.iqc_status,
+    iqc: row.iqc_status,
+    coaRequired: Boolean(row.coa_required),
+    msdsRequired: Boolean(row.msds_required),
+    lotRequired: Boolean(row.lot_required),
+    requester: row.requester,
+    owner: row.requester,
+    notes: row.notes,
+    createdBy: row.created_by,
+    updatedBy: row.updated_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+  mapped.status = derivePurchaseStatus({ ...row, ...mapped });
+  if (receipts !== undefined) mapped.receipts = receipts;
+  return mapped;
+}
+
+function normalizePurchaseInput(input, current = {}) {
+  const source = input || {};
+  const fallback = current || {};
+  const value = (keys, fallbackKeys = keys, defaultValue = '') => purchaseValue(
+    source,
+    keys,
+    purchaseValue(fallback, fallbackKeys, defaultValue)
+  );
+  const quantity = num(value(['qty', 'quantity'], ['qty'])) ?? 0;
+  const unitPrice = num(value(['unitPrice', 'price'], ['unit_price'], 0)) ?? 0;
+  const receivedQty = num(value(['receivedQty', 'received'], ['received_qty'], 0)) ?? 0;
+  const orderDate = purchaseDate(value(['orderDate', 'date'], ['order_date']), new Date().toISOString().slice(0, 10));
+  const requestedDueDate = purchaseDate(value(
+    ['requestedDueDate', 'due', 'dueDate'],
+    ['requested_due_date']
+  ));
+
+  return {
+    purchase_type: txt(value(['purchaseType', 'type'], ['purchase_type'], '정기발주')) || '정기발주',
+    production_type: normalizePurchaseProductionType(value(['productionType'], ['production_type'], 'D-양산')),
+    supplier: txt(value(['supplier', 'vendor'], ['supplier'])),
+    supplier_grade: txt(value(['supplierGrade', 'grade'], ['supplier_grade'])),
+    item: txt(value(['item', 'material', 'materialName'], ['item'])),
+    item_code: txt(value(['itemCode', 'materialCode'], ['item_code'])),
+    spec: txt(value(['spec'], ['spec'])),
+    qty: quantity,
+    unit: txt(value(['unit'], ['unit'], 'kg')) || 'kg',
+    unit_price: unitPrice,
+    amount: Math.max(0, num(value(['amount'], ['amount'], quantity * unitPrice)) ?? quantity * unitPrice),
+    order_date: orderDate,
+    requested_due_date: requestedDueDate,
+    confirmed_due_date: purchaseDate(value(
+      ['confirmedDueDate', 'expected', 'expectedDate'],
+      ['confirmed_due_date']
+    )) || null,
+    priority: txt(value(['priority'], ['priority'], '일반')) || '일반',
+    mrp_no: txt(value(['mrpNo', 'mrp', 'requestNo'], ['mrp_no'])),
+    work_order_no: txt(value(['workOrderNo', 'workOrder'], ['work_order_no'])),
+    purpose: txt(value(['purpose'], ['purpose'])),
+    warehouse: txt(value(['warehouse'], ['warehouse'], '')),
+    delivery_address: txt(value(
+      ['deliveryAddress', 'address'],
+      ['delivery_address'],
+      ''
+    )),
+    payment_terms: txt(value(['paymentTerms', 'terms'], ['payment_terms'])),
+    approval_status: txt(value(['approvalStatus', 'approval'], ['approval_status'], '구매검토')) || '구매검토',
+    receipt_status: txt(value(['receiptStatus', 'receiving'], ['receipt_status'], '미입고')) || '미입고',
+    received_qty: receivedQty,
+    receipt_date: purchaseDate(value(['receiptDate', 'receivedAt'], ['receipt_date'])) || null,
+    material_lot: txt(value(['materialLot', 'lot'], ['material_lot'])),
+    iqc_required: purchaseBoolean(value(['iqcRequired'], ['iqc_required'], true), true),
+    iqc_status: txt(value(['iqcStatus', 'iqc'], ['iqc_status'], '계획 대기')) || '계획 대기',
+    coa_required: purchaseBoolean(value(['coaRequired'], ['coa_required'], true), true),
+    msds_required: purchaseBoolean(value(['msdsRequired'], ['msds_required'], false), false),
+    lot_required: purchaseBoolean(value(['lotRequired'], ['lot_required'], true), true),
+    status: txt(value(['status'], ['status'], '결재대기')) || '결재대기',
+    requester: txt(value(['requester', 'owner'], ['requester'])),
+    notes: txt(value(['notes', 'note'], ['notes'])),
+  };
+}
+
+function validatePurchaseInput(body) {
+  const importedHistory = body.purchase_type === 'ERP 이관';
+  if (!body.supplier || !body.item) return '협력사와 품목을 입력하세요.';
+  if (!Number.isFinite(body.qty) || body.qty <= 0) return '발주수량은 0보다 커야 합니다.';
+  if (!body.order_date || (!importedHistory && !body.requested_due_date)) {
+    return importedHistory ? '발주일을 확인하세요.' : '발주일과 납기 요청일을 확인하세요.';
+  }
+  if (body.requested_due_date && body.requested_due_date < body.order_date) {
+    return '납기 요청일은 발주일보다 빠를 수 없습니다.';
+  }
+  if (!Number.isFinite(body.unit_price) || body.unit_price < 0) return '단가를 확인하세요.';
+  if (!Number.isFinite(body.received_qty) || body.received_qty < 0 || body.received_qty > body.qty) {
+    return '입고수량은 0 이상, 발주수량 이하여야 합니다.';
+  }
+  return '';
+}
+
+function normalizeLegacyPurchasePayload(payload) {
+  const parsed = jsonObj(payload, {});
+  const rows = arr(parsed.rows)
+    .filter((row) => !(
+      (txt(row?.id) === 'PO-260824-01' && /^Supplier A$/i.test(txt(row?.supplier)))
+      || (txt(row?.id) === 'PO-260824-02' && /^Supplier B$/i.test(txt(row?.supplier)))
+    ))
+    .map((row) => {
+      const normalized = {
+        ...row,
+        id: txt(row.id || row.purchaseNo || row.no),
+        purchaseNo: txt(row.purchaseNo || row.no || row.id),
+        productionType: normalizePurchaseProductionType(row.productionType),
+        supplier: txt(row.supplier || row.vendor),
+        material: txt(row.material || row.item),
+        item: txt(row.item || row.material),
+        qty: Math.max(0, num(row.qty ?? row.quantity) ?? 0),
+        unit: txt(row.unit) || 'kg',
+        orderDate: purchaseDate(row.orderDate || row.date) || new Date().toISOString().slice(0, 10),
+        due: purchaseDate(row.due || row.requestedDueDate || row.dueDate),
+        expected: purchaseDate(row.expected || row.confirmedDueDate || row.expectedDate),
+        received: Math.max(0, num(row.received ?? row.receivedQty) ?? 0),
+      };
+      normalized.status = derivePurchaseStatus(normalized);
+      return normalized;
+    });
+  return { ...parsed, module: 'erp', kind: 'purchase', schema: 3, rows };
+}
+
+async function nextPurchaseNo(client, orderDate) {
+  const date = purchaseDate(orderDate) || new Date().toISOString().slice(0, 10);
+  const prefix = `PUR-${date.slice(2, 7).replace('-', '')}-`;
+  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`purchase:${prefix}`]);
+  const result = await client.query(
+    `SELECT purchase_no FROM purchase_orders
+     WHERE purchase_no LIKE $1
+     ORDER BY purchase_no DESC`,
+    [`${prefix}%`]
+  );
+  const max = result.rows.reduce((value, row) => {
+    const sequence = Number(txt(row.purchase_no).slice(prefix.length));
+    return Number.isInteger(sequence) ? Math.max(value, sequence) : value;
+  }, 0);
+  return `${prefix}${String(max + 1).padStart(3, '0')}`;
+}
+
+async function syncPurchaseOrdersToLegacy(client, userName) {
+  const result = await client.query('SELECT * FROM purchase_orders ORDER BY order_date DESC, created_at DESC');
+  const rows = result.rows.map((row) => mapPurchaseOrder(row));
+  const payload = {
+    module: 'erp',
+    kind: 'purchase',
+    schema: 3,
+    rows,
+    updatedAt: new Date().toISOString(),
+    updatedBy: userName,
+  };
+  await client.query(
+    `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+     VALUES ('inventory', 'erp:purchase', $1::jsonb, $2, NOW())
+     ON CONFLICT (record_type, record_key)
+     DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+    [JSON.stringify(payload), userName]
+  );
+}
+
+
+const PURCHASE_HISTORY_SEED = [
+  ["2026-06-25-1","2026-06-25","금호석유화학(주)","SBS(KTR-201) [KG]",50,30700,1535000,"내부창고(충주)","2026/06/25 -1"],
+  ["2026-06-08-2","2026-06-08","LG화학","ADC30G(SBR) [KG]",300,11237,3371100,"내부창고(충주)","2026/06/08 -2"],
+  ["2026-06-08-1","2026-06-08","한국 사이언스코(주)","Solef5140 [KG]",20,36649,732980,"내부창고(충주)","2026/06/08 -1"],
+  ["2026-05-15-1","2026-05-15","한국 사이언스코(주)","Solef5140 [KG]",20,36649,732980,"내부창고(충주)","2026/05/15 -1"],
+  ["2026-04-28-1","2026-04-28","금호석유화학(주)","SBS(KTR-201) [KG]",50,29522,1476100,"내부창고(충주)","2026/04/28 -1"],
+  ["2026-04-14-1","2026-04-14","한국 사이언스코(주)","Solef5130(PVdF)",40,36448,1457920,"내부창고(충주)","2026/04/14 -1"],
+  ["2026-03-30-1","2026-03-30","LG Chemical","ADC30G(SBR) [KG]",300,11237,3371100,"내부창고(충주)","2026/03/30 -1"],
+  ["2026-01-26-1","2026-01-26","강신산업(주)","AOH30(Boehmite) [KG]",300,9700,2910000,"내부창고(충주)","2026/01/26 -1"],
+  ["2026-01-23-1","2026-01-23","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [KG]",2000,0,6350561,"내부창고(충주)","2026/01/23 -1"],
+  ["2026-01-13-1","2026-01-13","(주)케미렉스","NMP(PUYANG GUANGMING CHEMICAL) [KG]",3000,2950,8850000,"내부창고(충주)","2026/01/13 -1"],
+  ["2025-12-03-1","2025-12-03","삼화페인트(주)","스피롤터(a부, b부) [KG]",100,5600,560000,"외부창고(충주)","2025/12/03 -1"],
+  ["2025-11-11-1","2025-11-11","강신산업(주)","AOH30(Boehmite) [kg]",100,9700,970000,"외부창고(충주)","2025/11/11 -1"],
+  ["2025-11-10-1","2025-11-10","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [kg]",1000,3307,3306737,"외부창고(충주)","2025/11/10 -1"],
+  ["2025-10-01-2","2025-10-01","한국 사이언스코(주)","Solef5130(PVdF) [KG]",36,0,0,"내부창고(충주)","2025/10/01 -2"],
+  ["2025-10-01-1","2025-10-01","코오롱인더스트리","PAI [KG]",160,0,0,"내부창고(충주)","2025/10/01 -1"],
+  ["2025-09-30-1","2025-09-30","모리토루 케미칼즈 한국 주식회사","NMP(SNET) [kg]",1000,2903,2902525,"외부창고(충주)","2025/09/30 -1"],
+  ["2025-09-16-2","2025-09-16","LG Chemical","ADC30G(sbr) [kg]",400,12507,5002800,"외부창고(충주)","2025/09/16 -2"],
+  ["2025-09-12-1","2025-09-12","유니소재(주)","BYK180(Dispersant) [KG]",25,36520,913000,"외부창고(충주)","2025/09/12 -1"],
+];
+
+async function ensurePurchaseHistory() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const seedMarker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-history-v2'`
+    );
+    if (!seedMarker.rowCount) {
+      for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_SEED) {
+        const note = `기존 ERP 거래내역 · 원본번호 ${originalNo} · 수량·금액 상세 반영 v2${amount > 0 ? '' : ' · 금액 미입력'}`;
+        await client.query(
+          `INSERT INTO purchase_orders (
+             purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
+             order_date, requested_due_date, warehouse, delivery_address, payment_terms,
+             approval_status, receipt_status, received_qty, iqc_required, iqc_status,
+             coa_required, msds_required, lot_required, status, notes, created_by, updated_by
+           )
+           VALUES ($1, 'ERP 이관', 'D-양산', $2, $3, $4, 'kg', $5, $6,
+                   $7, NULL, $8, '', '부가세율 적용',
+                   '승인완료', '입고완료', $4, FALSE, '기존 ERP 반영',
+                   FALSE, FALSE, FALSE, '입고완료', $9, 'SYSTEM', 'SYSTEM')
+           ON CONFLICT (purchase_no)
+           DO UPDATE SET
+             supplier = EXCLUDED.supplier,
+             item = EXCLUDED.item,
+             qty = EXCLUDED.qty,
+             unit_price = EXCLUDED.unit_price,
+             amount = EXCLUDED.amount,
+             order_date = EXCLUDED.order_date,
+             warehouse = EXCLUDED.warehouse,
+             payment_terms = EXCLUDED.payment_terms,
+             approval_status = EXCLUDED.approval_status,
+             receipt_status = EXCLUDED.receipt_status,
+             received_qty = EXCLUDED.received_qty,
+             iqc_required = EXCLUDED.iqc_required,
+             iqc_status = EXCLUDED.iqc_status,
+             coa_required = EXCLUDED.coa_required,
+             msds_required = EXCLUDED.msds_required,
+             lot_required = EXCLUDED.lot_required,
+             status = EXCLUDED.status,
+             notes = EXCLUDED.notes,
+             updated_at = NOW()
+           WHERE purchase_orders.created_by = 'SYSTEM'
+             AND purchase_orders.updated_by = 'SYSTEM'
+             AND purchase_orders.notes LIKE '기존 ERP 거래내역%'
+             AND purchase_orders.notes NOT LIKE '%수량·금액 상세 반영 v2%'`,
+          [purchaseNo, supplier, item, qty, unitPrice, amount, orderDate, warehouse, note]
+        );
+      }
+        await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('purchase', 'seed:purchase-history-v2', '{"version":2,"count":18}'::jsonb, 'SYSTEM', NOW())
+         ON CONFLICT (record_type, record_key) DO NOTHING`
+      );
+    }
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function upsertLegacyPurchaseRows(rows, userName) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const row of arr(rows)) {
+      const requestedNo = txt(row?.purchaseNo || row?.no || row?.id);
+      const currentResult = requestedNo
+        ? await client.query('SELECT * FROM purchase_orders WHERE purchase_no = $1', [requestedNo])
+        : { rows: [] };
+      const current = currentResult.rows[0] || {};
+      const body = normalizePurchaseInput(row, current);
+      if (validatePurchaseInput(body)) continue;
+      const purchaseNo = requestedNo || await nextPurchaseNo(client, body.order_date);
+      const keys = Object.keys(body);
+      const values = Object.values(body);
+      const columns = ['purchase_no', ...keys, 'created_by', 'updated_by'];
+      const params = [purchaseNo, ...values, userName, userName];
+      const marks = params.map((_, index) => `$${index + 1}`).join(', ');
+      const updates = keys.map((key) => `${key} = EXCLUDED.${key}`).join(', ');
+      await client.query(
+        `INSERT INTO purchase_orders (${columns.join(', ')})
+         VALUES (${marks})
+         ON CONFLICT (purchase_no)
+         DO UPDATE SET ${updates}, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+        params
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+const QMES_SYNC_TYPES = new Set(['iqc', 'pqc', 'oqc', 'workorder', 'equipment', 'inventory', 'purchase']);
+
+function qmesSyncType(req, res) {
+  const type = txt(req.params.type).toLowerCase();
+  if (!QMES_SYNC_TYPES.has(type)) {
+    fail(res, 400, '지원하지 않는 동기화 유형입니다.');
+    return null;
+  }
+  return type;
+}
+
+app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
+  const type = qmesSyncType(req, res);
+  if (!type) return;
+  try {
+    const result = await db(
+      `SELECT record_type, record_key, payload, updated_by, updated_at
+       FROM qmes_sync_records
+       WHERE record_type = $1
+       ORDER BY updated_at DESC`,
+      [type]
+    );
+    const rows = result.rows.map((row) => (
+      type === 'inventory' && row.record_key === 'erp:purchase'
+        ? { ...row, payload: normalizeLegacyPurchasePayload(row.payload) }
+        : row
+    ));
+    ok(res, rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+
+function parseIqcQuantity(value) {
+  const match = String(value == null ? '' : value).replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function iqcResultStatus(row) {
+  const values = [
+    row?.judge, row?.status, row?.visual, row?.label, row?.weight, row?.coa
+  ].map((value) => txt(value));
+  if (values.some((value) => /불합격|부적합|반품/.test(value))) return '불합격';
+  if (txt(row?.judge) === '합격' || values.filter(Boolean).some((value) => value === '합격')) return '합격';
+  return '검사대기';
+}
+
+function purchaseMaterialFamily(value) {
+  const source = txt(value).toLowerCase().replace(/\s+/g, '');
+  if (/boehmite|aoh30/.test(source)) return 'BOEHMITE';
+  if (/solef|pvdf/.test(source)) return 'PVDF';
+  if (/adc30|sbr/.test(source)) return 'SBR';
+  if (/ktr|sbs/.test(source)) return 'SBS';
+  if (/pai/.test(source)) return 'PAI';
+  if (/nmp/.test(source)) return 'NMP';
+  if (/byk.?180/.test(source)) return 'BYK180';
+  return source.replace(/[^a-z0-9가-힣]/g, '').toUpperCase();
+}
+
+function purchaseSupplierAffinity(left, right) {
+  const a = txt(left).toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+  const b = txt(right).toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+  if (!a || !b) return false;
+  if (a.includes(b) || b.includes(a)) return true;
+  return [
+    ['lg', 'lgchemical', 'lg화학'],
+    ['금호'],
+    ['강신'],
+    ['모리토루'],
+    ['코오롱'],
+    ['solvay', '한국사이언스코'],
+    ['푸양', 'puyang', '케미렉스'],
+  ].some((group) => group.some((key) => a.includes(key)) && group.some((key) => b.includes(key)));
+}
+
+function purchaseDateDistance(left, right) {
+  const a = Date.parse(String(left || '').slice(0, 10));
+  const b = Date.parse(String(right || '').slice(0, 10));
+  return Number.isFinite(a) && Number.isFinite(b) ? Math.abs(a - b) / 86400000 : Number.POSITIVE_INFINITY;
+}
+
+async function refreshPurchaseFromReceipts(client, purchaseOrderId, userName) {
+  const orderResult = await client.query('SELECT * FROM purchase_orders WHERE id = $1 FOR UPDATE', [purchaseOrderId]);
+  if (!orderResult.rowCount) return null;
+  const order = orderResult.rows[0];
+  const receiptResult = await client.query(
+    'SELECT * FROM purchase_receipts WHERE purchase_order_id = $1 ORDER BY receipt_date, created_at',
+    [purchaseOrderId]
+  );
+  const receipts = receiptResult.rows;
+  const total = receipts.reduce((sum, receipt) => sum + Number(receipt.qty || 0), 0);
+  const receivedQty = Math.min(Number(order.qty || 0), total);
+  const statuses = receipts.map((receipt) => txt(receipt.iqc_status));
+  const hasFailure = statuses.some((status) => status === '불합격');
+  const allPassed = receipts.length > 0 && statuses.every((status) => status === '합격');
+  const receiptStatus = receipts.length === 0
+    ? (order.purchase_type === 'ERP 이관' ? '미연결' : '미입고')
+    : (receivedQty >= Number(order.qty || 0) ? '입고완료' : '부분입고');
+  const iqcStatus = receipts.length === 0
+    ? '검사 미연결'
+    : hasFailure
+      ? '불합격'
+      : allPassed
+        ? (receivedQty >= Number(order.qty || 0) ? '합격' : '부분합격')
+        : '검사대기';
+  const status = hasFailure
+    ? '입고보류'
+    : receiptStatus === '입고완료' && iqcStatus === '합격'
+      ? '입고완료'
+      : receiptStatus === '미연결' || receiptStatus === '미입고'
+        ? '입고확인대기'
+        : '입고진행';
+  const latest = receipts[receipts.length - 1] || {};
+  const updated = await client.query(
+    `UPDATE purchase_orders
+     SET received_qty = $1, receipt_status = $2, receipt_date = $3,
+         material_lot = $4, iqc_required = TRUE, iqc_status = $5,
+         status = $6, updated_by = $7, updated_at = NOW()
+     WHERE id = $8
+     RETURNING *`,
+    [
+      receivedQty,
+      receiptStatus,
+      latest.receipt_date || null,
+      txt(latest.material_lot),
+      iqcStatus,
+      status,
+      userName,
+      purchaseOrderId,
+    ]
+  );
+  return updated.rows[0] || null;
+}
+
+async function syncIqcPayloadToPurchase(client, payload, userName) {
+  const touched = new Set();
+  const deleted = Boolean(payload?.deleted);
+  for (const row of arr(payload?.rows)) {
+    const inspectionNo = txt(row?.inNo || row?.inspectionNo || row?.id);
+    const previousInspectionNo = txt(payload?.previousInspectionNo || row?.previousInspectionNo);
+    if (!inspectionNo) continue;
+
+    const existingResult = await client.query(
+      `SELECT * FROM purchase_receipts
+       WHERE inspection_no = $1
+          OR ($2 <> '' AND inspection_no = $2)
+       ORDER BY CASE WHEN inspection_no = $1 THEN 0 ELSE 1 END
+       LIMIT 1`,
+      [inspectionNo, previousInspectionNo]
+    );
+    const existing = existingResult.rows[0] || null;
+
+    if (deleted) {
+      if (existing) {
+        touched.add(existing.purchase_order_id);
+        await client.query('DELETE FROM purchase_receipts WHERE id = $1', [existing.id]);
+      }
+      continue;
+    }
+
+    const purchaseNo = txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo);
+    if (!purchaseNo) continue;
+    const orderResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_no = $1
+       FOR UPDATE`,
+      [purchaseNo]
+    );
+    if (!orderResult.rowCount) throw new Error(`발주번호 ${purchaseNo}를 찾을 수 없습니다.`);
+    const order = orderResult.rows[0];
+    if (/취소/.test(txt(order.status))) throw new Error(`취소된 발주 ${purchaseNo}에는 수입검사를 연결할 수 없습니다.`);
+
+    if (existing && String(existing.purchase_order_id) !== String(order.id)) {
+      touched.add(existing.purchase_order_id);
+    }
+
+    let receipt = existing;
+    if (!receipt) {
+      const placeholderResult = await client.query(
+        `SELECT * FROM purchase_receipts
+         WHERE purchase_order_id = $1
+           AND COALESCE(inspection_no, '') = ''
+         ORDER BY
+           CASE
+             WHEN COALESCE(material_lot, '') <> '' AND material_lot = $2 THEN 0
+             WHEN receipt_date = $3 THEN 1
+             ELSE 2
+           END,
+           created_at DESC
+         LIMIT 1
+         FOR UPDATE`,
+        [
+          order.id,
+          txt(row?.lot || row?.materialLot),
+          purchaseDate(row?.recv || row?.receiptDate || row?.date || row?.inspectedAt, new Date().toISOString().slice(0, 10)),
+        ]
+      );
+      receipt = placeholderResult.rows[0] || null;
+    }
+
+    const otherTotals = await client.query(
+      `SELECT COALESCE(SUM(qty), 0) AS total
+       FROM purchase_receipts
+       WHERE purchase_order_id = $1
+         AND ($2::uuid IS NULL OR id <> $2::uuid)`,
+      [order.id, receipt?.id || null]
+    );
+    const remaining = Math.max(0, Number(order.qty || 0) - Number(otherTotals.rows[0]?.total || 0));
+    if (remaining <= 0) throw new Error(`발주 ${purchaseNo}의 미입고 잔량이 없습니다.`);
+    const requestedQty = parseIqcQuantity(row?.qty ?? row?.incomingQty ?? row?.receivedQty) || remaining;
+    const receiptQty = Math.min(requestedQty, remaining);
+    const receiptDate = purchaseDate(
+      row?.recv || row?.receiptDate || row?.date || row?.inspectedAt,
+      new Date().toISOString().slice(0, 10)
+    );
+    const materialLot = txt(row?.lot || row?.materialLot);
+    const iqcStatus = iqcResultStatus(row);
+    const note = `수입검사 연계 · ${inspectionNo}`;
+
+    if (receipt) {
+      await client.query(
+        `UPDATE purchase_receipts
+         SET purchase_order_id = $1, receipt_date = $2, qty = $3,
+             material_lot = $4, iqc_status = $5, note = $6,
+             inspection_no = $7
+         WHERE id = $8`,
+        [order.id, receiptDate, receiptQty, materialLot, iqcStatus, note, inspectionNo, receipt.id]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO purchase_receipts
+         (purchase_order_id, receipt_date, qty, material_lot, iqc_status, note, created_by, inspection_no)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [order.id, receiptDate, receiptQty, materialLot, iqcStatus, note, userName, inspectionNo]
+      );
+    }
+    touched.add(order.id);
+  }
+
+  for (const purchaseOrderId of touched) {
+    await refreshPurchaseFromReceipts(client, purchaseOrderId, userName);
+  }
+  return touched.size;
+}
+
+async function ensurePurchaseIqcReconciliation() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const marker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-iqc-link-v1'`
+    );
+    if (marker.rowCount) {
+      await client.query('COMMIT');
+      return;
+    }
+
+    for (const [purchaseNo, orderDate] of PURCHASE_HISTORY_SEED) {
+      await client.query(
+        `UPDATE purchase_orders
+         SET order_date = $2, receipt_status = '미연결', received_qty = 0,
+             receipt_date = NULL, material_lot = '', iqc_required = TRUE,
+             iqc_status = '검사 미연결', status = '입고확인대기',
+             updated_by = 'SYSTEM', updated_at = NOW()
+         WHERE purchase_no = $1
+           AND purchase_type = 'ERP 이관'
+           AND created_by = 'SYSTEM'`,
+        [purchaseNo, orderDate]
+      );
+    }
+    await client.query(
+      `DELETE FROM purchase_receipts
+       WHERE purchase_order_id IN (
+         SELECT id FROM purchase_orders
+         WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       )`
+    );
+
+    const ordersResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       ORDER BY order_date, purchase_no`
+    );
+    const orders = ordersResult.rows;
+    const byNo = new Map(orders.map((order) => [order.purchase_no, order]));
+    const used = new Set();
+    const iqcRecords = await client.query(
+      `SELECT record_key, payload
+       FROM qmes_sync_records
+       WHERE record_type = 'iqc'
+       ORDER BY updated_at, record_key`
+    );
+    let matched = 0;
+    let unmatched = 0;
+
+    for (const record of iqcRecords.rows) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {};
+      if (payload.deleted) continue;
+      const nextRows = [];
+      for (const row of arr(payload.rows)) {
+        let order = byNo.get(txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo)) || null;
+        if (order && used.has(order.purchase_no)) order = null;
+        if (!order) {
+          const family = purchaseMaterialFamily(row?.name || row?.item);
+          const rowDate = row?.recv || row?.date || row?.inspectedAt;
+          const candidates = orders
+            .filter((candidate) => !used.has(candidate.purchase_no))
+            .filter((candidate) => family && purchaseMaterialFamily(candidate.item) === family)
+            .map((candidate) => ({
+              candidate,
+              distance: purchaseDateDistance(rowDate, candidate.order_date),
+              supplier: purchaseSupplierAffinity(row?.supplier, candidate.supplier),
+            }))
+            .filter((entry) => entry.distance <= 14)
+            .sort((a, b) => a.distance - b.distance || Number(b.supplier) - Number(a.supplier));
+          order = candidates[0]?.candidate || null;
+        }
+        if (order) {
+          used.add(order.purchase_no);
+          matched += 1;
+          nextRows.push({
+            ...row,
+            purchaseOrderNo: order.purchase_no,
+            purchaseLinkStatus: '발주연결',
+          });
+        } else {
+          unmatched += 1;
+          nextRows.push({
+            ...row,
+            purchaseOrderNo: '',
+            purchaseLinkStatus: '미연결',
+          });
+        }
+      }
+      const nextPayload = { ...payload, rows: nextRows, purchaseLinkedAt: new Date().toISOString() };
+      await client.query(
+        `UPDATE qmes_sync_records
+         SET payload = $1::jsonb, updated_by = 'SYSTEM', updated_at = NOW()
+         WHERE record_type = 'iqc' AND record_key = $2`,
+        [JSON.stringify(nextPayload), record.record_key]
+      );
+      await syncIqcPayloadToPurchase(client, nextPayload, 'SYSTEM');
+    }
+
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ('purchase', 'seed:purchase-iqc-link-v1', $1::jsonb, 'SYSTEM', NOW())
+       ON CONFLICT (record_type, record_key) DO NOTHING`,
+      [JSON.stringify({ version: 1, matched, unmatched })]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function ensurePendingIqcFromUnmatchedPurchases() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const marker = await client.query(
+      `SELECT 1 FROM qmes_sync_records
+       WHERE record_type = 'purchase' AND record_key = 'seed:purchase-iqc-pending-v2'`
+    );
+    if (marker.rowCount) {
+      await client.query('COMMIT');
+      return;
+    }
+
+    const ordersResult = await client.query(
+      `SELECT * FROM purchase_orders
+       WHERE purchase_type = 'ERP 이관' AND created_by = 'SYSTEM'
+       ORDER BY order_date, purchase_no`
+    );
+    const iqcRecords = await client.query(
+      `SELECT record_key, payload
+       FROM qmes_sync_records
+       WHERE record_type = 'iqc'
+       ORDER BY updated_at, record_key`
+    );
+    const iqcKeys = new Set(iqcRecords.rows.map((record) => txt(record.record_key)));
+    const linkedPurchaseNos = new Set();
+    for (const record of iqcRecords.rows) {
+      const payload = record.payload && typeof record.payload === 'object' ? record.payload : {};
+      if (payload.deleted) continue;
+      for (const row of arr(payload.rows)) {
+        const purchaseNo = txt(row?.purchaseOrderNo || row?.purchaseOrder || row?.purchaseNo);
+        if (purchaseNo) linkedPurchaseNos.add(purchaseNo);
+      }
+    }
+
+    let pendingCreated = 0;
+    for (const order of ordersResult.rows) {
+      if (linkedPurchaseNos.has(order.purchase_no)) continue;
+      const receiptDate = purchaseDate(order.order_date, new Date().toISOString().slice(0, 10));
+      const dateKey = receiptDate.replace(/-/g, '').slice(2);
+      let sequence = 9001;
+      let inspectionNo = `IQC-${dateKey}-${String(sequence).padStart(4, '0')}`;
+      while (iqcKeys.has(inspectionNo)) {
+        sequence += 1;
+        inspectionNo = `IQC-${dateKey}-${String(sequence).padStart(4, '0')}`;
+      }
+      iqcKeys.add(inspectionNo);
+      const pendingRow = {
+        inNo: inspectionNo,
+        purchaseOrderNo: order.purchase_no,
+        purchaseLinkStatus: '발주연결',
+        recv: receiptDate,
+        inspectedAt: '',
+        lot: '',
+        code: txt(order.item_code) || '-',
+        name: txt(order.item),
+        supplier: txt(order.supplier) || '-',
+        qty: `${Number(order.qty || 0).toLocaleString('ko-KR')} ${txt(order.unit) || 'kg'}`,
+        inspectQty: '0 EA',
+        defectQty: '0 EA',
+        visual: '검사대기',
+        label: '검사대기',
+        weight: '검사대기',
+        coa: '검사대기',
+        judge: '검사대기',
+        status: '검사대기',
+        note: '발주현황에서 자동 생성 · 검사결과 입력 필요',
+        remarks: '발주현황에서 자동 생성 · LOT 및 검사결과 입력 필요',
+        inspector: '-',
+        by: '-',
+      };
+      const pendingPayload = {
+        mode: 'IQC',
+        kind: 'purchase-iqc-pending',
+        schema: 2,
+        lotNo: '',
+        rows: [pendingRow],
+        savedAt: new Date().toISOString(),
+        savedBy: 'SYSTEM',
+      };
+      await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('iqc', $1, $2::jsonb, 'SYSTEM', NOW())
+         ON CONFLICT (record_type, record_key) DO NOTHING`,
+        [inspectionNo, JSON.stringify(pendingPayload)]
+      );
+      await syncIqcPayloadToPurchase(client, pendingPayload, 'SYSTEM');
+      linkedPurchaseNos.add(order.purchase_no);
+      pendingCreated += 1;
+    }
+
+    await syncPurchaseOrdersToLegacy(client, 'SYSTEM');
+    await client.query(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ('purchase', 'seed:purchase-iqc-pending-v2', $1::jsonb, 'SYSTEM', NOW())
+       ON CONFLICT (record_type, record_key) DO NOTHING`,
+      [JSON.stringify({ version: 2, pendingCreated })]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
+  const type = qmesSyncType(req, res);
+  if (!type) return;
+  const key = txt(req.body?.key);
+  const inputPayload = req.body?.payload;
+  if (!key || !inputPayload || typeof inputPayload !== 'object' || Array.isArray(inputPayload)) {
+    return fail(res, 400, '기록 키와 저장 데이터를 확인하세요.');
+  }
+  if (type === 'iqc') {
+    const client = await pool.connect();
+    let beforePayload = null;
+    let saved = null;
+    try {
+      await client.query('BEGIN');
+      const before = await client.query(
+        'SELECT payload FROM qmes_sync_records WHERE record_type = $1 AND record_key = $2',
+        [type, key]
+      );
+      beforePayload = before.rows[0]?.payload || null;
+      const userName = txt(req.session?.user?.name);
+      const result = await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ($1, $2, $3::jsonb, $4, NOW())
+         ON CONFLICT (record_type, record_key)
+         DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+         RETURNING record_type, record_key, payload, updated_by, updated_at`,
+        [type, key, JSON.stringify(inputPayload), userName]
+      );
+      saved = result.rows[0];
+      await syncIqcPayloadToPurchase(client, inputPayload, userName);
+      await syncPurchaseOrdersToLegacy(client, userName);
+      await client.query('COMMIT');
+      await auditLog(
+        req,
+        before.rowCount ? 'UPDATE' : 'CREATE',
+        'qmes_sync_records',
+        `${type}:${key}`,
+        beforePayload,
+        inputPayload
+      );
+      return ok(res, saved, '수입검사와 발주현황이 함께 저장되었습니다.');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      return fail(res, 500, err.message);
+    } finally {
+      client.release();
+    }
+  }
+
+  try {
+    const payload = type === 'inventory' && key === 'erp:purchase'
+      ? normalizeLegacyPurchasePayload(inputPayload)
+      : inputPayload;
+    const before = await db(
+      'SELECT payload FROM qmes_sync_records WHERE record_type = $1 AND record_key = $2',
+      [type, key]
+    );
+    const userName = txt(req.session?.user?.name);
+    const result = await db(
+      `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+       VALUES ($1, $2, $3::jsonb, $4, NOW())
+       ON CONFLICT (record_type, record_key)
+       DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+       RETURNING record_type, record_key, payload, updated_by, updated_at`,
+      [type, key, JSON.stringify(payload), userName]
+    );
+    await auditLog(
+      req,
+      before.rowCount ? 'UPDATE' : 'CREATE',
+      'qmes_sync_records',
+      `${type}:${key}`,
+      before.rows[0]?.payload || null,
+      payload
+    );
+    if (type === 'inventory' && key === 'erp:purchase') {
+      await upsertLegacyPurchaseRows(payload.rows, userName);
+    }
+    ok(res, result.rows[0], '공용 DB에 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+function installShippingDetailApi() {
+  const valueOf = (row, keys, fallback = '') => {
+    for (const key of keys) {
+      const value = txt(row?.[key]);
+      if (value) return value;
+    }
+    return fallback;
+  };
+  const numberOf = row => {
+    const value = row?.shipQty ?? row?.qty ?? row?.actualQty;
+    const parsed = Number(String(value == null ? '' : value).replace(/[^0-9.+-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const rowsOf = payload => Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : [];
+  const numberKey = row => valueOf(row, ['shipNo','shippingNo','no','deliveryNo','invoice']);
+
+  app.get('/api/shipping-details/:shipmentNo', requireLogin, async (req, res) => {
+    const wanted = txt(req.params.shipmentNo);
+    if (!wanted) return fail(res, 400, '출하번호를 확인하세요.');
+    try {
+      const [shippingRecord, oqcTable, oqcSync] = await Promise.all([
+        db(`SELECT payload, updated_by, updated_at FROM qmes_sync_records WHERE record_type = 'inventory' AND record_key = 'erp:shipping' LIMIT 1`),
+        db('SELECT * FROM oqc ORDER BY created_at DESC'),
+        db(`SELECT payload FROM qmes_sync_records WHERE record_type = 'oqc' ORDER BY updated_at DESC`)
+      ]);
+      const row = rowsOf(shippingRecord.rows[0]?.payload).find(item => numberKey(item) === wanted);
+      if (!row) return fail(res, 404, '출하·납품 상세정보를 찾을 수 없습니다.');
+
+      const finishedLot = valueOf(row, ['lot','finishedLot','productionLot','workOrder']);
+      const oqcRows = [...oqcTable.rows, ...oqcSync.rows.flatMap(record => rowsOf(record.payload))];
+      const oqc = oqcRows.find(item => valueOf(item, ['lot','finishedLot','productionLot','workOrder']) === finishedLot) || {};
+      const status = valueOf(row, ['delivery','status','shipping'], '배차대기');
+      const deliveryStatus = valueOf(row, ['deliveryStatus'], status);
+      const oqcStatus = valueOf(row, ['oqc','oqcStatus'], valueOf(oqc, ['judge','status'], '검사대기'));
+      const coaStatus = valueOf(row, ['coa','coaStatus'], '미발행');
+      const shipment = {
+        shipmentNo: wanted,
+        salesOrderNo: valueOf(row, ['sales','salesOrder','salesOrderId'], '-'),
+        customer: valueOf(row, ['customer'], '-'),
+        product: valueOf(row, ['product','item','productName'], '-'),
+        finishedLot: finishedLot || '-',
+        workOrderNo: valueOf(row, ['workOrderNo','workOrder'], '-'),
+        shipmentQty: numberOf(row),
+        unit: valueOf(row, ['unit'], 'kg'),
+        shipmentDate: valueOf(row, ['actualShipDate','shipDate','date'], '-'),
+        status,
+        oqcStatus,
+        coaStatus,
+        packageInfo: valueOf(row, ['packageInfo','package','packaging'], valueOf(oqc, ['package'], '-')),
+        destination: valueOf(row, ['destination','deliveryPlace'], '-'),
+        carrier: valueOf(row, ['carrier','logisticsCompany'], '-'),
+        vehicle: valueOf(row, ['vehicle','carNo'], '-'),
+        driver: valueOf(row, ['driver','driverName'], '-'),
+        driverPhone: valueOf(row, ['driverPhone','driverTel'], '-'),
+        departureAt: valueOf(row, ['departureAt','departure','dispatchAt'], '-'),
+        deliveryStatus,
+        deliveredAt: valueOf(row, ['deliveredAt','deliveryAt'], '-'),
+        statementStatus: valueOf(row, ['statementStatus','statement'], '미발행'),
+        invoiceStatus: valueOf(row, ['invoiceStatus','invoice'], '미발행'),
+        owner: valueOf(row, ['owner','manager','savedBy'], shippingRecord.rows[0]?.updated_by || '-'),
+        note: valueOf(row, ['remark','note'], '등록된 비고가 없습니다.'),
+        savedAt: valueOf(row, ['savedAt','updatedAt'], shippingRecord.rows[0]?.updated_at || '')
+      };
+      const quality = {
+        oqcNo: valueOf(row, ['oqcNo','inspectionNo'], valueOf(oqc, ['oqcNo','inspectionNo','id'], '-')),
+        status: oqcStatus,
+        date: valueOf(oqc, ['date','inspectedAt'], '-'),
+        inspector: valueOf(oqc, ['inspector','by'], '-')
+      };
+      const progress = [
+        { name:'수주확정', done:Boolean(shipment.salesOrderNo && shipment.salesOrderNo !== '-') },
+        { name:'OQC 합격', done:/합격|PASS|OK/i.test(oqcStatus) },
+        { name:'배차확정', done:Boolean((shipment.vehicle && shipment.vehicle !== '-') || (shipment.driver && shipment.driver !== '-') || /배차완료|출하완료|납품완료/.test(status)) },
+        { name:'출하완료', done:/출하완료|납품완료/.test(status) },
+        { name:'납품완료', done:/납품완료/.test(`${deliveryStatus} ${status}`) }
+      ];
+      const timeline = [
+        { label:'출하요청 등록', at:shipment.savedAt || shipment.shipmentDate },
+        { label:'OQC 승인', at:progress[1].done ? quality.date : '대기' },
+        { label:'배차 확정', at:progress[2].done ? shipment.departureAt : '대기' },
+        { label:'고객 납품', at:progress[4].done ? shipment.deliveredAt : '대기' }
+      ];
+      ok(res, {
+        shipment,
+        quality,
+        documents:{ coa:coaStatus, statement:shipment.statementStatus, invoice:shipment.invoiceStatus },
+        progress,
+        timeline
+      }, '출하·납품 상세정보입니다.');
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+}
+
+installShippingDetailApi();
+
+function purchaseOrderWhere(id, param = '$1') {
+  return `(id::text = ${param} OR purchase_no = ${param})`;
+}
+
+function mapPurchaseReceipt(row) {
+  return {
+    id: row.id,
+    purchaseOrderId: row.purchase_order_id,
+    receiptDate: purchaseDate(row.receipt_date),
+    qty: Number(row.qty || 0),
+    materialLot: row.material_lot,
+    expiryDate: purchaseDate(row.expiry_date),
+    iqcStatus: row.iqc_status,
+    inspectionNo: row.inspection_no || '',
+    note: row.note,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+  };
+}
+
+app.get('/api/purchase-orders', requireLogin, async (req, res) => {
+  try {
+    const clauses = [];
+    const params = [];
+    const search = txt(req.query.q);
+    const supplier = txt(req.query.supplier);
+    if (search) {
+      params.push(`%${search}%`);
+      clauses.push(`CONCAT_WS(' ', purchase_no, supplier, item, item_code, spec, mrp_no, work_order_no) ILIKE $${params.length}`);
+    }
+    if (supplier) {
+      params.push(supplier);
+      clauses.push(`supplier = $${params.length}`);
+    }
+    const result = await db(
+      `SELECT * FROM purchase_orders
+       ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
+       ORDER BY order_date DESC, created_at DESC
+       LIMIT 500`,
+      params
+    );
+    let rows = result.rows.map((row) => mapPurchaseOrder(row));
+    const status = txt(req.query.status);
+    if (status && status !== 'all') rows = rows.filter((row) => row.status === status);
+    ok(res, rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+  try {
+    const result = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
+    if (!result.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    const receipts = await db(
+      `SELECT * FROM purchase_receipts
+       WHERE purchase_order_id = $1
+       ORDER BY receipt_date DESC, created_at DESC`,
+      [result.rows[0].id]
+    );
+    ok(res, mapPurchaseOrder(result.rows[0], receipts.rows.map(mapPurchaseReceipt)));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/purchase-orders', requireLogin, async (req, res) => {
+  const body = normalizePurchaseInput(req.body);
+  const validation = validatePurchaseInput(body);
+  if (validation) return fail(res, 400, validation);
+
+  const client = await pool.connect();
+  let created;
+  try {
+    await client.query('BEGIN');
+    const requestedNo = txt(req.body?.purchaseNo || req.body?.no || req.body?.id);
+    const purchaseNo = requestedNo || await nextPurchaseNo(client, body.order_date);
+    const keys = Object.keys(body);
+    const userName = txt(req.session.user?.name);
+    const columns = ['purchase_no', ...keys, 'created_by', 'updated_by'];
+    const values = [purchaseNo, ...Object.values(body), userName, userName];
+    const marks = values.map((_, index) => `$${index + 1}`).join(', ');
+    const result = await client.query(
+      `INSERT INTO purchase_orders (${columns.join(', ')})
+       VALUES (${marks})
+       RETURNING *`,
+      values
+    );
+    created = result.rows[0];
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    if (err.code === '23505') return fail(res, 409, '이미 사용 중인 발주번호입니다.');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'CREATE', 'purchase_orders', created.id, null, created);
+  ok(res, mapPurchaseOrder(created), '구매 발주서가 저장되었습니다.');
+});
+
+app.put('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+  const client = await pool.connect();
+  let before;
+  let updated;
+  try {
+    await client.query('BEGIN');
+    const current = await client.query(
+      `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)} FOR UPDATE`,
+      [req.params.id]
+    );
+    if (!current.rowCount) {
+      await client.query('ROLLBACK');
+      return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    }
+    before = current.rows[0];
+    const body = normalizePurchaseInput(req.body, before);
+    const validation = validatePurchaseInput(body);
+    if (validation) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, validation);
+    }
+    const keys = Object.keys(body);
+    const values = Object.values(body);
+    const sets = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
+    const userName = txt(req.session.user?.name);
+    const result = await client.query(
+      `UPDATE purchase_orders
+       SET ${sets}, updated_by = $${keys.length + 1}, updated_at = NOW()
+       WHERE id = $${keys.length + 2}
+       RETURNING *`,
+      [...values, userName, before.id]
+    );
+    updated = result.rows[0];
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'UPDATE', 'purchase_orders', updated.id, before, updated);
+  ok(res, mapPurchaseOrder(updated), '구매 발주서가 수정되었습니다.');
+});
+
+app.post('/api/purchase-orders/:id/receipts', requireLogin, async (req, res) => {
+  const receiptQty = num(req.body?.qty ?? req.body?.receivedQty);
+  const receiptDate = purchaseDate(req.body?.receiptDate, new Date().toISOString().slice(0, 10));
+  const materialLot = txt(req.body?.materialLot || req.body?.lot);
+  const expiryDate = purchaseDate(req.body?.expiryDate) || null;
+  if (!receiptQty || receiptQty <= 0 || !receiptDate) {
+    return fail(res, 400, '입고일과 입고수량을 확인하세요.');
+  }
+
+  const client = await pool.connect();
+  let before;
+  let updated;
+  let receipt;
+  try {
+    await client.query('BEGIN');
+    const current = await client.query(
+      `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)} FOR UPDATE`,
+      [req.params.id]
+    );
+    if (!current.rowCount) {
+      await client.query('ROLLBACK');
+      return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    }
+    before = current.rows[0];
+    if (/취소/.test(txt(before.status))) {
+      await client.query('ROLLBACK');
+      return fail(res, 409, '취소된 발주는 입고 등록할 수 없습니다.');
+    }
+    const remaining = Number(before.qty) - Number(before.received_qty || 0);
+    if (receiptQty > remaining) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, `입고수량은 미입고 잔량 ${remaining.toLocaleString('ko-KR')} ${before.unit}를 초과할 수 없습니다.`);
+    }
+    if (before.lot_required && !materialLot) {
+      await client.query('ROLLBACK');
+      return fail(res, 400, '원료 LOT를 입력하세요.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const iqcStatus = before.iqc_required ? '검사 대기' : '비대상';
+    const receiptResult = await client.query(
+      `INSERT INTO purchase_receipts
+       (purchase_order_id, receipt_date, qty, material_lot, expiry_date, iqc_status, note, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING *`,
+      [before.id, receiptDate, receiptQty, materialLot, expiryDate, iqcStatus, txt(req.body?.note), userName]
+    );
+    receipt = receiptResult.rows[0];
+    const totalReceived = Number(before.received_qty || 0) + receiptQty;
+    const receiptStatus = totalReceived >= Number(before.qty) ? '입고완료' : '부분입고';
+    const updateResult = await client.query(
+      `UPDATE purchase_orders
+       SET received_qty = $1, receipt_status = $2, receipt_date = $3,
+           material_lot = $4, iqc_status = $5, updated_by = $6, updated_at = NOW()
+       WHERE id = $7
+       RETURNING *`,
+      [totalReceived, receiptStatus, receiptDate, materialLot, iqcStatus, userName, before.id]
+    );
+    updated = updateResult.rows[0];
+
+    if (before.iqc_required) {
+      const iqcPayload = {
+        module: 'purchase',
+        kind: 'purchase-receipt-iqc',
+        schema: 1,
+        rows: [{
+          id: `IQC-${before.purchase_no}-${receipt.id}`,
+          purchaseOrder: before.purchase_no,
+          purchaseOrderNo: before.purchase_no,
+          date: receiptDate,
+          lot: materialLot,
+          supplier: before.supplier,
+          item: before.item,
+          itemCode: before.item_code,
+          incomingQty: receiptQty,
+          qty: receiptQty,
+          judge: '',
+          status: '검사대기',
+          createdBy: userName,
+        }],
+      };
+      await client.query(
+        `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
+         VALUES ('iqc', $1, $2::jsonb, $3, NOW())
+         ON CONFLICT (record_type, record_key)
+         DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+        [`purchase:${before.purchase_no}:receipt:${receipt.id}`, JSON.stringify(iqcPayload), userName]
+      );
+    }
+
+    await syncPurchaseOrdersToLegacy(client, userName);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'RECEIPT', 'purchase_orders', updated.id, before, { purchase: updated, receipt });
+  ok(res, { purchaseOrder: mapPurchaseOrder(updated), receipt: mapPurchaseReceipt(receipt) }, '입고가 등록되고 IQC 계획이 연결되었습니다.');
+});
+
+app.post('/api/purchase-orders/:id/cancel', requireLogin, async (req, res) => {
+  try {
+    const before = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
+    if (!before.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+    if (Number(before.rows[0].received_qty || 0) > 0) {
+      return fail(res, 409, '입고 이력이 있는 발주는 취소할 수 없습니다.');
+    }
+    const userName = txt(req.session.user?.name);
+    const client = await pool.connect();
+    let updated;
+    try {
+      await client.query('BEGIN');
+      const result = await client.query(
+        `UPDATE purchase_orders
+         SET status = '발주취소', updated_by = $1, updated_at = NOW()
+         WHERE id = $2
+         RETURNING *`,
+        [userName, before.rows[0].id]
+      );
+      updated = result.rows[0];
+      await syncPurchaseOrdersToLegacy(client, userName);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+    await auditLog(req, 'CANCEL', 'purchase_orders', updated.id, before.rows[0], updated);
+    ok(res, mapPurchaseOrder(updated), '발주가 취소되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+
+app.delete('/api/purchase-orders/:id', requireAdmin, async (req, res) => {
+  const before = await db(
+    `SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`,
+    [req.params.id]
+  );
+  if (!before.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM purchase_orders WHERE id = $1', [before.rows[0].id]);
+    await syncPurchaseOrdersToLegacy(client, txt(req.session.user?.name) || '관리자');
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+
+  await auditLog(req, 'DELETE', 'purchase_orders', before.rows[0].purchase_no, before.rows[0], null);
+  ok(res, null, '구매 발주가 삭제되었습니다.');
+});
+
+function bindCrud(table, mapper) {
+  app.get(`/api/${table}`, requireLogin, async (_req, res) => {
+    try {
+      const r = await db(`SELECT * FROM ${table} ORDER BY created_at DESC`);
+      ok(res, r.rows);
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+
+  app.post(`/api/${table}`, requireLogin, async (req, res) => {
+    try {
+      const body = mapper(req.body);
+      const keys = Object.keys(body);
+      const vals = Object.values(body);
+      const marks = keys.map((_, i) => `$${i + 1}`).join(',');
+
+      const r = await db(
+        `INSERT INTO ${table} (${keys.join(',')})
+         VALUES (${marks})
+         RETURNING *`,
+        vals
+      );
+
+      await auditLog(req, 'CREATE', table, r.rows[0]?.id, null, r.rows[0]);
+      ok(res, r.rows[0], '저장되었습니다.');
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+
+  app.put(`/api/${table}/:id`, requireLogin, async (req, res) => {
+    try {
+      const before = await db(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+      if (!before.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+
+      const body = mapper(req.body);
+      const keys = Object.keys(body);
+      const vals = Object.values(body);
+      const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+
+      const r = await db(
+        `UPDATE ${table} SET ${sets} WHERE id = $${keys.length + 1} RETURNING *`,
+        [...vals, req.params.id]
+      );
+
+      await auditLog(req, 'UPDATE', table, req.params.id, before.rows[0], r.rows[0]);
+      ok(res, r.rows[0], '수정되었습니다.');
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+
+  app.delete(`/api/${table}/:id`, requireLogin, async (req, res) => {
+    try {
+      const before = await db(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+      if (!before.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
+
+      const r = await db(`DELETE FROM ${table} WHERE id = $1 RETURNING id`, [req.params.id]);
+      await auditLog(req, 'DELETE', table, req.params.id, before.rows[0], null);
+      ok(res, null, '삭제되었습니다.');
+    } catch (err) {
+      fail(res, 500, err.message);
+    }
+  });
+}
+
+bindCrud('iqc', (b) => ({
+  date: txt(b.date),
+  lot: txt(b.lot),
+  supplier: txt(b.supplier),
+  item: txt(b.item),
+  inspector: txt(b.inspector),
+  incoming_qty: num(b.incomingQty),
+  qty: num(b.qty ?? b.checkQty),
+  fail: num(b.fail ?? b.failQty) ?? 0,
+  packaging_type: txt(b.packagingType),
+  packaging_type_other: txt(b.packagingTypeOther),
+  package_qty: num(b.packageQty),
+  unit_weight: num(b.unitWeight),
+  calculated_weight: num(b.calculatedWeight),
+  barcode_qty: num(b.barcodeQty),
+  items_json: JSON.stringify(arr(b.items)),
+  sign_writer: sign(b.signWriter),
+  sign_reviewer: sign(b.signReviewer),
+  sign_approver: sign(b.signApprover),
+}));
+
+bindCrud('pqc', (b) => {
+  const items = arr(b.items);
+  return {
+    date: txt(b.date),
+    product: txt(b.product),
+    lot: txt(b.lot),
+    visual: txt(b.visual),
+    viscosity: txt(b.viscosity),
+    solid: txt(b.solid),
+    particle: txt(b.particle),
+    judge: txt(b.judge) || calcJudgeFromItems(items),
+    incoming_qty: num(b.incomingQty),
+    qty: num(b.qty ?? b.checkQty),
+    fail: num(b.fail ?? b.failQty) ?? 0,
+    items_json: JSON.stringify(items),
+    sign_writer: sign(b.signWriter),
+    sign_reviewer: sign(b.signReviewer),
+    sign_approver: sign(b.signApprover),
+  };
+});
+
+bindCrud('oqc', (b) => {
+  const items = arr(b.items);
+  return {
+    date: txt(b.date),
+    customer: txt(b.customer),
+    product: txt(b.product),
+    lot: txt(b.lot),
+    visual: txt(b.visual),
+    package: txt(b.package),
+    viscosity: txt(b.viscosity),
+    solid: txt(b.solid),
+    particle: txt(b.particle),
+    adhesion: txt(b.adhesion),
+    resistance: txt(b.resistance),
+    swelling: txt(b.swelling),
+    moisture: txt(b.moisture),
+    qty: txt(b.qty ?? b.checkQty),
+    fail: num(b.fail ?? b.failQty) ?? 0,
+    judge: txt(b.judge) || calcJudgeFromItems(items),
+    items_json: JSON.stringify(items),
+    sign_writer: sign(b.signWriter),
+    sign_reviewer: sign(b.signReviewer),
+    sign_approver: sign(b.signApprover),
+  };
+});
+
+bindCrud('suppliers', (b) => ({
+  name: txt(b.name),
+  manager: txt(b.manager),
+  phone: txt(b.phone),
+  category: txt(b.category),
+  status: txt(b.status),
+}));
+
+bindCrud('nonconform', (b) => ({
+  date: txt(b.date ?? b.ncDate),
+  type: txt(b.type ?? b.ncType),
+  lot: txt(b.lot),
+  item: txt(b.item),
+  issue: txt(b.issue),
+  cause: txt(b.cause),
+  action: txt(b.action),
+  owner: txt(b.owner),
+  status: txt(b.status),
+  sign_writer: sign(b.signWriter),
+  sign_reviewer: sign(b.signReviewer),
+  sign_approver: sign(b.signApprover),
+  nc_no: txt(b.ncNo ?? b.no ?? b.reportNo),
+  dept: txt(b.dept ?? b.department),
+  qty: num(b.qty ?? b.ncQty) ?? 0,
+  severity: txt(b.severity),
+  priority: txt(b.priority),
+  action_date: txt(b.actionDate) || null,
+  verify: txt(b.verify),
+  verify_date: txt(b.verifyDate) || null,
+  capa_status: txt(b.capaStatus) || 'OPEN',
+  containment: txt(b.containment),
+  impact_scope: txt(b.impactScope),
+  correction: txt(b.correction),
+  preventive_action: txt(b.preventiveAction),
+  verification_result: txt(b.verificationResult),
+  due_date: txt(b.dueDate) || null,
+  progress: num(b.progress) ?? 0,
+  photos: JSON.stringify(arr(b.photos)),
+  why_json: JSON.stringify(arr(b.whyList ?? b.whys)),
+  fishbone_json: JSON.stringify(jsonObj(b.fishbone)),
+  capa_actions: JSON.stringify(arr(b.capaActions)),
+}));
+
+app.get('/api/worklog', requireLogin, async (_req, res) => {
+  try {
+    const r = await db('SELECT * FROM worklog ORDER BY created_at DESC');
+    const ids = r.rows.map((x) => x.id);
+
+    let materials = [];
+    if (ids.length) {
+      const m = await db(
+        'SELECT * FROM worklog_materials WHERE worklog_id = ANY($1::uuid[]) ORDER BY seq ASC',
+        [ids]
+      );
+      materials = m.rows;
+    }
+
+    const data = r.rows.map((row) => ({
+      id: row.id,
+      workDate: row.work_date,
+      finishedLot: row.finished_lot,
+      worker: row.worker,
+      planQty: row.plan_qty,
+      prodQty: row.prod_qty,
+      failQty: row.fail_qty,
+      remark: row.remark,
+      flowSet: row.flow_set,
+      flowActual: row.flow_actual,
+      tempSet: row.temp_set,
+      tempActual: row.temp_actual,
+      pressSet: row.press_set,
+      pressActual: row.press_actual,
+      materials: materials
+        .filter((m) => m.worklog_id === row.id)
+        .map((m) => ({
+          seq: m.seq,
+          material: m.material,
+          supName: m.sup_name,
+          lotNo: m.lot_no,
+          inputQty: m.input_qty,
+          inputTime: m.input_time,
+        })),
+    }));
+
+    ok(res, data);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/worklog', requireLogin, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const b = req.body || {};
+
+    const inserted = await client.query(
+      `INSERT INTO worklog
+      (work_date, finished_lot, worker, plan_qty, prod_qty, fail_qty, remark, flow_set, flow_actual, temp_set, temp_actual, press_set, press_actual)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      RETURNING id`,
+      [
+        txt(b.workDate),
+        txt(b.finishedLot),
+        txt(b.worker),
+        txt(b.planQty),
+        txt(b.prodQty),
+        txt(b.failQty),
+        txt(b.remark),
+        txt(b.flowSet),
+        txt(b.flowActual),
+        txt(b.tempSet),
+        txt(b.tempActual),
+        txt(b.pressSet),
+        txt(b.pressActual),
+      ]
+    );
+
+    const worklogId = inserted.rows[0].id;
+    const materials = arr(b.materials);
+
+    for (let i = 0; i < materials.length; i += 1) {
+      const m = materials[i];
+      await client.query(
+        `INSERT INTO worklog_materials
+        (worklog_id, seq, material, sup_name, lot_no, input_qty, input_time)
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          worklogId,
+          i + 1,
+          txt(m.material),
+          txt(m.supName),
+          txt(m.lotNo),
+          txt(m.inputQty),
+          txt(m.inputTime),
+        ]
+      );
+    }
+
+    await client.query('COMMIT');
+    ok(res, { id: worklogId }, '작업일지가 저장되었습니다.');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+});
+
+app.put('/api/worklog/:id', requireLogin, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const b = req.body || {};
+
+    const updated = await client.query(
+      `UPDATE worklog
+       SET work_date=$1, finished_lot=$2, worker=$3, plan_qty=$4, prod_qty=$5, fail_qty=$6,
+           remark=$7, flow_set=$8, flow_actual=$9, temp_set=$10, temp_actual=$11, press_set=$12, press_actual=$13
+       WHERE id=$14
+       RETURNING id`,
+      [
+        txt(b.workDate),
+        txt(b.finishedLot),
+        txt(b.worker),
+        txt(b.planQty),
+        txt(b.prodQty),
+        txt(b.failQty),
+        txt(b.remark),
+        txt(b.flowSet),
+        txt(b.flowActual),
+        txt(b.tempSet),
+        txt(b.tempActual),
+        txt(b.pressSet),
+        txt(b.pressActual),
+        req.params.id,
+      ]
+    );
+
+    if (!updated.rowCount) {
+      await client.query('ROLLBACK');
+      return fail(res, 404, '작업일지를 찾을 수 없습니다.');
+    }
+
+    await client.query('DELETE FROM worklog_materials WHERE worklog_id = $1', [req.params.id]);
+
+    const materials = arr(b.materials);
+    for (let i = 0; i < materials.length; i += 1) {
+      const m = materials[i];
+      await client.query(
+        `INSERT INTO worklog_materials
+        (worklog_id, seq, material, sup_name, lot_no, input_qty, input_time)
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          req.params.id,
+          i + 1,
+          txt(m.material),
+          txt(m.supName),
+          txt(m.lotNo),
+          txt(m.inputQty),
+          txt(m.inputTime),
+        ]
+      );
+    }
+
+    await client.query('COMMIT');
+    ok(res, { id: req.params.id }, '작업일지가 수정되었습니다.');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    fail(res, 500, err.message);
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/api/worklog/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db('DELETE FROM worklog WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!r.rowCount) return fail(res, 404, '작업일지를 찾을 수 없습니다.');
+    ok(res, null, '작업일지가 삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/certificate', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const items = arr(b.items);
+    const judge = txt(b.judge) || calcJudgeFromItems(items);
+
+    const r = await db(
+      `INSERT INTO certificates
+      (cert_type, date, lot, inspector, item, company, incoming_qty, check_qty, fail_qty, judge, remark, items_json,
+       sign_writer, sign_reviewer, sign_approver)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      RETURNING *`,
+      [
+        txt(b.type),
+        txt(b.date),
+        txt(b.lot),
+        txt(b.inspector),
+        txt(b.item),
+        txt(b.company),
+        txt(b.incomingQty),
+        txt(b.checkQty),
+        txt(b.failQty),
+        judge,
+        txt(b.remark),
+        JSON.stringify(items),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
+      ]
+    );
+
+    ok(res, r.rows[0], '성적서가 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/certificate/:type/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db(
+      'SELECT * FROM certificates WHERE cert_type = $1 AND id = $2',
+      [req.params.type, req.params.id]
+    );
+    if (!r.rowCount) return fail(res, 404, '성적서를 찾을 수 없습니다.');
+    ok(res, r.rows[0]);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/trace', requireLogin, async (req, res) => {
+  try {
+    const keyword = `%${txt(req.query.keyword).toLowerCase()}%`;
+
+    const r = await db(
+      `SELECT
+         w.work_date,
+         w.finished_lot,
+         w.worker,
+         m.seq,
+         m.material,
+         m.sup_name,
+         m.lot_no,
+         m.input_qty,
+         m.input_time
+       FROM worklog w
+       LEFT JOIN worklog_materials m ON w.id = m.worklog_id
+       WHERE LOWER(w.finished_lot) LIKE $1
+          OR LOWER(m.lot_no) LIKE $1
+          OR LOWER(m.material) LIKE $1
+       ORDER BY w.work_date DESC, m.seq ASC`,
+      [keyword]
+    );
+
+    ok(
+      res,
+      r.rows.map((x) => ({
+        workDate: x.work_date,
+        finishedLot: x.finished_lot,
+        worker: x.worker,
+        seq: x.seq,
+        material: x.material,
+        supName: x.sup_name,
+        lotNo: x.lot_no,
+        inputQty: x.input_qty,
+        inputTime: x.input_time,
+      }))
+    );
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+/* ───────────────────────────────────────
+   교육 보고서 API  /api/training
+─────────────────────────────────────── */
+app.get('/api/training', requireLogin, async (_req, res) => {
+  try {
+    const r = await db('SELECT * FROM training_reports ORDER BY created_at DESC');
+    ok(res, r.rows.map(row => ({
+      id: row.id,
+      date: row.date,
+      no: row.report_no,
+      type: row.type,
+      title: row.title,
+      place: row.place,
+      instructor: row.instructor,
+      dept: row.dept,
+      hours: row.hours,
+      attendees: row.attendees,
+      absentees: row.absentees,
+      content: row.content,
+      evalMethod: row.eval_method,
+      result: row.result,
+      remark: row.remark,
+      photos: Array.isArray(row.photos) ? row.photos : [],
+      signWriter: row.sign_writer,
+      signReviewer: row.sign_reviewer,
+      signApprover: row.sign_approver,
+      createdAt: row.created_at,
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/training', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.date) || !txt(b.title)) {
+      return fail(res, 400, '교육일자와 교육명은 필수입니다.');
+    }
+    const r = await db(
+      `INSERT INTO training_reports
+        (date, report_no, type, title, place, instructor, dept, hours,
+         attendees, absentees, content, eval_method, result, remark, photos,
+         sign_writer, sign_reviewer, sign_approver)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       RETURNING id`,
+      [
+        txt(b.date),
+        txt(b.no || b.reportNo),
+        txt(b.type),
+        txt(b.title),
+        txt(b.place),
+        txt(b.instructor),
+        txt(b.dept),
+        txt(b.hours),
+        txt(b.attendees),
+        txt(b.absentees),
+        txt(b.content),
+        txt(b.evalMethod || b.eval_method),
+        txt(b.result) || '완료',
+        txt(b.remark),
+        JSON.stringify(arr(b.photos)),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
+      ]
+    );
+    ok(res, { id: r.rows[0].id }, '교육 보고서가 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/training/:id', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const r = await db(
+      `UPDATE training_reports SET
+        date=$1, report_no=$2, type=$3, title=$4, place=$5, instructor=$6,
+        dept=$7, hours=$8, attendees=$9, absentees=$10, content=$11,
+        eval_method=$12, result=$13, remark=$14, photos=$15,
+        sign_writer=$16, sign_reviewer=$17, sign_approver=$18
+       WHERE id=$19 RETURNING id`,
+      [
+        txt(b.date),
+        txt(b.no || b.reportNo),
+        txt(b.type),
+        txt(b.title),
+        txt(b.place),
+        txt(b.instructor),
+        txt(b.dept),
+        txt(b.hours),
+        txt(b.attendees),
+        txt(b.absentees),
+        txt(b.content),
+        txt(b.evalMethod || b.eval_method),
+        txt(b.result) || '완료',
+        txt(b.remark),
+        JSON.stringify(arr(b.photos)),
+        sign(b.signWriter),
+        sign(b.signReviewer),
+        sign(b.signApprover),
+        req.params.id,
+      ]
+    );
+    if (!r.rowCount) return fail(res, 404, '교육 보고서를 찾을 수 없습니다.');
+    ok(res, null, '수정되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.delete('/api/training/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db('DELETE FROM training_reports WHERE id=$1 RETURNING id', [req.params.id]);
+    if (!r.rowCount) return fail(res, 404, '교육 보고서를 찾을 수 없습니다.');
+    ok(res, null, '삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+/* ───────────────────────────────────────
+   측정기 관리 API  /api/instruments
+─────────────────────────────────────── */
+app.get('/api/instruments', requireLogin, async (_req, res) => {
+  try {
+    const r = await db('SELECT * FROM instruments ORDER BY created_at ASC');
+    ok(res, r.rows.map(row => ({
+      id: row.id,
+      no: row.no,
+      name: row.name,
+      model: row.model,
+      maker: row.maker,
+      location: row.location,
+      cycle: row.cycle,
+      lastCal: row.last_cal,
+      nextCal: row.next_cal,
+      status: row.status,
+      remark: row.remark,
+      photo: row.photo,
+      createdAt: row.created_at,
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/instruments', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.no) || !txt(b.name)) return fail(res, 400, '관리번호와 측정기명은 필수입니다.');
+    const r = await db(
+      `INSERT INTO instruments (no, name, model, maker, location, cycle, last_cal, next_cal, status, remark, photo)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING id`,
+      [
+        txt(b.no),
+        txt(b.name),
+        txt(b.model),
+        txt(b.maker),
+        txt(b.location),
+        txt(b.cycle) || '12',
+        txt(b.lastCal) || null,
+        txt(b.nextCal) || null,
+        txt(b.status) || '정상',
+        txt(b.remark),
+        txt(b.photo),
+      ]
+    );
+    ok(res, { id: r.rows[0].id }, '측정기가 저장되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/instruments/:id', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!txt(b.no) || !txt(b.name)) return fail(res, 400, '관리번호와 측정기명은 필수입니다.');
+    const r = await db(
+      `UPDATE instruments SET
+        no=$1, name=$2, model=$3, maker=$4, location=$5, cycle=$6,
+        last_cal=$7, next_cal=$8, status=$9, remark=$10, photo=$11
+       WHERE id=$12 RETURNING id`,
+      [
+        txt(b.no),
+        txt(b.name),
+        txt(b.model),
+        txt(b.maker),
+        txt(b.location),
+        txt(b.cycle) || '12',
+        txt(b.lastCal) || null,
+        txt(b.nextCal) || null,
+        txt(b.status) || '정상',
+        txt(b.remark),
+        txt(b.photo),
+        req.params.id,
+      ]
+    );
+    if (!r.rowCount) return fail(res, 404, '측정기를 찾을 수 없습니다.');
+    ok(res, null, '수정되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.delete('/api/instruments/:id', requireLogin, async (req, res) => {
+  try {
+    const r = await db('DELETE FROM instruments WHERE id=$1 RETURNING id', [req.params.id]);
+    if (!r.rowCount) return fail(res, 404, '측정기를 찾을 수 없습니다.');
+    ok(res, null, '삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/admin/users', requireAdmin, async (_req, res) => {
+  try {
+    const r = await db(`
+      SELECT id, name, email, department, title, role, status, created_at
+      FROM users
+      ORDER BY created_at DESC
+    `);
+    ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const department = txt(req.body.department);
+    const title = txt(req.body.title);
+    const role = txt(req.body.role) || 'user';
+    const status = txt(req.body.status) || 'APPROVED';
+    const password = txt(req.body.password) || '1234';
+
+    if (!name || !email) {
+      return fail(res, 400, '성명과 이메일은 필수입니다.');
+    }
+
+    const exists = await db('SELECT id FROM users WHERE email = $1', [email]);
+    if (exists.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const r = await db(
+      `INSERT INTO users (name, email, password_hash, department, title, role, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING id, name, email, department, title, role, status, created_at`,
+      [name, email, hash, department, title, role, status]
+    );
+
+    ok(res, r.rows[0], '회원이 추가되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const name = txt(req.body.name);
+    const email = txt(req.body.email).toLowerCase();
+    const department = txt(req.body.department);
+    const title = txt(req.body.title);
+    const role = txt(req.body.role) || 'user';
+    const status = txt(req.body.status) || 'APPROVED';
+
+    if (!name || !email) {
+      return fail(res, 400, '성명과 이메일은 필수입니다.');
+    }
+
+    const dup = await db(
+      'SELECT id FROM users WHERE email = $1 AND id <> $2',
+      [email, req.params.id]
+    );
+    if (dup.rowCount) return fail(res, 409, '이미 사용 중인 이메일입니다.');
+
+    const r = await db(
+      `UPDATE users
+       SET name = $1,
+           email = $2,
+           department = $3,
+           title = $4,
+           role = $5,
+           status = $6
+       WHERE id = $7
+       RETURNING id, name, email, department, title, role, status, created_at`,
+      [name, email, department, title, role, status, req.params.id]
+    );
+
+    if (!r.rowCount) return fail(res, 404, '회원을 찾을 수 없습니다.');
+
+    if (req.session.user && req.session.user.id === req.params.id) {
+      req.session.user = {
+        ...req.session.user,
+        name,
+        email,
+        department,
+        title,
+        role,
+        status,
+      };
+    }
+
+    ok(res, r.rows[0], '회원정보가 수정되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    await db(`UPDATE users SET status = 'APPROVED' WHERE id = $1`, [req.params.id]);
+    ok(res, null, '승인되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    await db(`UPDATE users SET status = 'REJECTED' WHERE id = $1`, [req.params.id]);
+    ok(res, null, '반려되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    await db('DELETE FROM users WHERE id = $1', [req.params.id]);
+    ok(res, null, '회원이 삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/admin/delete-all', requireAdmin, async (req, res) => {
+  if (txt(req.body.confirm) !== 'DELETE') {
+    return fail(res, 400, '확인 문자열이 일치하지 않습니다.');
+  }
+
+  try {
+    await db(`
+      TRUNCATE TABLE
+        certificates,
+        worklog_materials,
+        worklog,
+        nonconform,
+        suppliers,
+        oqc,
+        pqc,
+        iqc,
+        training_reports,
+        instruments
+      RESTART IDENTITY CASCADE
+    `);
+    ok(res, null, '전체 데이터가 삭제되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+
+app.get('/api/audit-logs', requireAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || 200), 1000);
+    const r = await db(
+      `SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT $1`,
+      [limit]
+    );
+    ok(res, r.rows);
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/dashboard/kpi', requireLogin, async (_req, res) => {
+  try {
+    const [iqc, pqc, oqc, ncOpen, suppliers, instruments, training] = await Promise.all([
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM iqc'),
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM pqc'),
+      db('SELECT COUNT(*)::int AS count, COALESCE(SUM(fail),0)::numeric AS fail FROM oqc'),
+      db(`SELECT COUNT(*)::int AS count FROM nonconform WHERE COALESCE(status,'') <> '완결'`),
+      db('SELECT COUNT(*)::int AS count FROM suppliers'),
+      db(`SELECT COUNT(*)::int AS count FROM instruments WHERE status IN ('교정예정','교정초과')`),
+      db('SELECT COUNT(*)::int AS count FROM training_reports'),
+    ]);
+
+    ok(res, {
+      iqcCount: iqc.rows[0].count,
+      pqcCount: pqc.rows[0].count,
+      oqcCount: oqc.rows[0].count,
+      iqcFailQty: Number(iqc.rows[0].fail || 0),
+      pqcFailQty: Number(pqc.rows[0].fail || 0),
+      oqcFailQty: Number(oqc.rows[0].fail || 0),
+      ncrOpen: ncOpen.rows[0].count,
+      supplierCount: suppliers.rows[0].count,
+      instrumentDue: instruments.rows[0].count,
+      trainingCount: training.rows[0].count,
+    });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+bindCrud('supplier_scores', (b) => ({
+  supplier_id: txt(b.supplierId) || null,
+  supplier_name: txt(b.supplierName),
+  score_month: txt(b.month || b.scoreMonth),
+  quality_score: num(b.qualityScore) ?? 0,
+  delivery_score: num(b.deliveryScore) ?? 0,
+  response_score: num(b.responseScore) ?? 0,
+  defect_rate: num(b.defectRate) ?? 0,
+  ncr_count: num(b.ncrCount) ?? 0,
+  capa_delay_count: num(b.capaDelayCount) ?? 0,
+  total_score: num(b.totalScore) ?? 0,
+  grade: txt(b.grade) || 'C',
+  remark: txt(b.remark),
+}));
+
+bindCrud('equipments', (b) => ({
+  no: txt(b.no),
+  name: txt(b.name),
+  maker: txt(b.maker),
+  model: txt(b.model),
+  location: txt(b.location),
+  pm_cycle: txt(b.pmCycle) || '월간',
+  last_pm: txt(b.lastPm) || null,
+  next_pm: txt(b.nextPm) || null,
+  status: txt(b.status) || '정상',
+  remark: txt(b.remark),
+}));
+
+function mapNamoTalkMessage(row) {
+  const createdAt = new Date(row.created_at);
+  return {
+    id: row.id,
+    roomId: row.room_id,
+    createdAt: createdAt.getTime(),
+    sender: row.sender_name,
+    dept: row.sender_dept || '',
+    text: row.message_text || '',
+    time: createdAt.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Seoul',
+    }),
+    kind: row.message_kind || 'text',
+    fileName: row.file_name || '',
+    fileType: row.file_type || '',
+    fileData: row.file_data || '',
+    replyToId: row.reply_to_id || null,
+    replySender: row.reply_sender || '',
+    replyText: row.reply_text || '',
+    pinned: Boolean(row.pinned),
+    edited: Boolean(row.edited_at),
+    deleted: Boolean(row.deleted_at),
+  };
+}
+
+app.get('/api/namo-talk/messages', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.query.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const r = await db(
+      `SELECT id, room_id, sender_name, sender_uid, sender_dept,
+              message_kind, message_text, file_name, file_type, file_data,
+              reply_to_id, reply_sender, reply_text, pinned, edited_at, deleted_at, created_at
+       FROM namo_talk_messages
+       WHERE room_id = $1 AND deleted_at IS NULL
+       ORDER BY created_at ASC, id ASC
+       LIMIT 2000`,
+      [roomId]
+    );
+
+    ok(res, r.rows.map(mapNamoTalkMessage));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/notifications', requireLogin, async (req, res) => {
+  try {
+    const requestedAfterId = Number(req.query.afterId);
+    const cursorResult = await db('SELECT COALESCE(MAX(id), 0) AS cursor FROM namo_talk_messages');
+    const currentCursor = Number(cursorResult.rows[0]?.cursor || 0);
+    if (!Number.isFinite(requestedAfterId)) {
+      return res.json({ success: true, message: 'OK', data: [], cursor: currentCursor });
+    }
+    const afterId = Math.max(0, requestedAfterId);
+    const user = req.session.user;
+    const userName = txt(user.name);
+    const result = await db(
+      `SELECT id, room_id, sender_name, sender_uid, sender_dept,
+              message_kind, message_text, file_name, file_type, file_data,
+              reply_to_id, reply_sender, reply_text, pinned, edited_at, deleted_at, created_at
+         FROM namo_talk_messages
+        WHERE id > $1 AND sender_name <> $2 AND deleted_at IS NULL
+        ORDER BY id ASC
+        LIMIT 30`,
+      [afterId, userName]
+    );
+    const departmentRoom = `dept:${txt(user.department)}`;
+    const visible = result.rows.filter(row => {
+      if (row.room_id === '전체공지' || row.room_id === departmentRoom) return true;
+      if (!String(row.room_id).startsWith('dm:')) return false;
+      return String(row.room_id).slice(3).split('|').includes(userName);
+    });
+    const nextCursor = result.rows.length ? Number(result.rows[result.rows.length - 1].id) : afterId;
+    return res.json({ success: true, message: 'OK', data: visible.map(mapNamoTalkMessage), cursor: nextCursor });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/presence', requireLogin, async (_req, res) => {
+  try {
+    const result = await db(
+      `SELECT user_name, department, status, status_message, last_seen
+         FROM namo_talk_presence
+        ORDER BY user_name`
+    );
+    const now = Date.now();
+    ok(res, result.rows.map(row => ({
+      name: row.user_name,
+      department: row.department || '',
+      status: now - new Date(row.last_seen).getTime() > 120000 ? 'offline' : row.status,
+      statusMessage: row.status_message || '',
+      lastSeen: new Date(row.last_seen).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/presence', requireLogin, async (req, res) => {
+  try {
+    const user = req.session.user;
+    const allowed = new Set(['online', 'away', 'busy', 'meeting', 'offline']);
+    const status = allowed.has(txt(req.body?.status)) ? txt(req.body.status) : 'online';
+    const statusMessage = txt(req.body?.statusMessage).slice(0, 60);
+    await db(
+      `INSERT INTO namo_talk_presence (user_name, department, status, status_message, last_seen)
+       VALUES ($1,$2,$3,$4,NOW())
+       ON CONFLICT (user_name)
+       DO UPDATE SET department = EXCLUDED.department, status = EXCLUDED.status,
+                     status_message = EXCLUDED.status_message, last_seen = NOW()`,
+      [txt(user.name), txt(user.department), status, statusMessage]
+    );
+    ok(res, { name: txt(user.name), status, statusMessage }, '상태가 변경되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/profiles', requireLogin, async (_req, res) => {
+  try {
+    const result = await db(
+      `SELECT user_name, avatar_type, avatar_value, updated_at
+         FROM namo_talk_profiles
+        ORDER BY user_name`
+    );
+    ok(res, result.rows.map(row => ({
+      name: row.user_name,
+      type: row.avatar_type,
+      value: row.avatar_value,
+      updatedAt: new Date(row.updated_at).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/profiles', requireLogin, async (req, res) => {
+  try {
+    const allowedPresets = new Set([
+      'drop-blue', 'drop-purple', 'drop-mint', 'drop-pink',
+      'drop-yellow', 'drop-sky', 'drop-navy', 'drop-coral',
+      'drop-angry', 'drop-surprise', 'drop-laugh', 'drop-sleepy',
+      'drop-curious', 'drop-cheer', 'drop-focus', 'drop-thanks',
+    ]);
+    const type = txt(req.body?.type);
+    const value = txt(req.body?.value);
+    if (!['preset', 'image'].includes(type)) return fail(res, 400, '지원하지 않는 프로필 형식입니다.');
+    if (type === 'preset' && !allowedPresets.has(value)) return fail(res, 400, '프로필 캐릭터를 다시 선택해 주세요.');
+    if (type === 'image' && (!value.startsWith('data:image/') || value.length > 1400000)) {
+      return fail(res, 400, '프로필 이미지는 1MB 이하의 그림 파일만 사용할 수 있습니다.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const result = await db(
+      `INSERT INTO namo_talk_profiles (user_name, avatar_type, avatar_value, updated_at)
+       VALUES ($1,$2,$3,NOW())
+       ON CONFLICT (user_name)
+       DO UPDATE SET avatar_type = EXCLUDED.avatar_type,
+                     avatar_value = EXCLUDED.avatar_value,
+                     updated_at = NOW()
+       RETURNING user_name, avatar_type, avatar_value, updated_at`,
+      [userName, type, value]
+    );
+    const row = result.rows[0];
+    ok(res, {
+      name: row.user_name,
+      type: row.avatar_type,
+      value: row.avatar_value,
+      updatedAt: new Date(row.updated_at).getTime(),
+    }, '프로필을 저장했습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/messages', requireLogin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const roomId = txt(b.roomId);
+    const kind = txt(b.kind) || 'text';
+    const allowedKinds = new Set(['text', 'notice', 'emoticon', 'sticker', 'image', 'file']);
+
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+    if (!allowedKinds.has(kind)) return fail(res, 400, '지원하지 않는 메시지 형식입니다.');
+    if (!txt(b.text) && !txt(b.fileData)) {
+      return fail(res, 400, '메시지 내용이 필요합니다.');
+    }
+
+    const user = req.session.user;
+    const r = await db(
+      `INSERT INTO namo_talk_messages
+        (room_id, sender_name, sender_uid, sender_dept, message_kind,
+         message_text, file_name, file_type, file_data,
+         reply_to_id, reply_sender, reply_text)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id, room_id, sender_name, sender_uid, sender_dept,
+                 message_kind, message_text, file_name, file_type, file_data,
+                 reply_to_id, reply_sender, reply_text, pinned, edited_at, deleted_at, created_at`,
+      [
+        roomId,
+        txt(user.name) || '사용자',
+        txt(user.id),
+        txt(user.department),
+        kind,
+        txt(b.text),
+        txt(b.fileName) || null,
+        txt(b.fileType) || null,
+        txt(b.fileData) || null,
+        b.replyToId != null && Number.isInteger(Number(b.replyToId)) ? Number(b.replyToId) : null,
+        txt(b.replySender).slice(0, 100),
+        txt(b.replyText).slice(0, 300),
+      ]
+    );
+
+    ok(res, mapNamoTalkMessage(r.rows[0]), '메시지가 전송되었습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/messages/:id/action', requireLogin, async (req, res) => {
+  try {
+    const messageId = Number(req.params.id);
+    const action = txt(req.body?.action);
+    if (!Number.isInteger(messageId) || messageId <= 0) {
+      return fail(res, 400, '메시지 정보가 올바르지 않습니다.');
+    }
+    if (!['delete', 'edit', 'pin'].includes(action)) {
+      return fail(res, 400, '지원하지 않는 메시지 처리입니다.');
+    }
+
+    const userName = txt(req.session.user?.name);
+    const found = await db(
+      `SELECT id, room_id, sender_name FROM namo_talk_messages
+        WHERE id = $1 AND deleted_at IS NULL`,
+      [messageId]
+    );
+    if (!found.rowCount) return fail(res, 404, '메시지를 찾을 수 없습니다.');
+    const target = found.rows[0];
+    const roomId = String(target.room_id || '');
+    const departmentRoom = `dept:${txt(req.session.user?.department)}`;
+    const canAccess = roomId === '전체공지'
+      || roomId === departmentRoom
+      || (roomId.startsWith('dm:') && roomId.slice(3).split('|').includes(userName));
+    if (!canAccess) return fail(res, 403, '이 대화방의 메시지를 처리할 권한이 없습니다.');
+
+    if (action === 'delete') {
+      if (target.sender_name !== userName) return fail(res, 403, '본인이 작성한 메시지만 삭제할 수 있습니다.');
+      await db('DELETE FROM namo_talk_messages WHERE id = $1', [messageId]);
+      return ok(res, { id: messageId }, '메시지가 완전히 삭제되었습니다.');
+    }
+
+    if (action === 'edit') {
+      if (target.sender_name !== userName) return fail(res, 403, '본인이 작성한 메시지만 수정할 수 있습니다.');
+      const nextText = txt(req.body?.text);
+      if (!nextText) return fail(res, 400, '수정할 메시지 내용이 필요합니다.');
+      const edited = await db(
+        `UPDATE namo_talk_messages SET message_text = $2, edited_at = NOW()
+          WHERE id = $1
+        RETURNING id, room_id, sender_name, sender_uid, sender_dept,
+                  message_kind, message_text, file_name, file_type, file_data,
+                  reply_to_id, reply_sender, reply_text, pinned, edited_at, deleted_at, created_at`,
+        [messageId, nextText]
+      );
+      return ok(res, mapNamoTalkMessage(edited.rows[0]), '메시지가 수정되었습니다.');
+    }
+
+    const pinned = await db(
+      `UPDATE namo_talk_messages SET pinned = $2
+        WHERE id = $1
+      RETURNING id, room_id, sender_name, sender_uid, sender_dept,
+                message_kind, message_text, file_name, file_type, file_data,
+                reply_to_id, reply_sender, reply_text, pinned, edited_at, deleted_at, created_at`,
+      [messageId, Boolean(req.body?.pinned)]
+    );
+    return ok(res, mapNamoTalkMessage(pinned.rows[0]), pinned.rows[0].pinned ? '메시지를 고정했습니다.' : '고정을 해제했습니다.');
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/namo-talk/reads', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.query.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const r = await db(
+      `SELECT room_id, user_uid, user_name, last_read_at
+       FROM namo_talk_reads
+       WHERE room_id = $1
+       ORDER BY last_read_at DESC`,
+      [roomId]
+    );
+
+    ok(res, r.rows.map(row => ({
+      roomId: row.room_id,
+      userUid: row.user_uid,
+      userName: row.user_name,
+      readAt: new Date(row.last_read_at).getTime(),
+    })));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/namo-talk/reads', requireLogin, async (req, res) => {
+  try {
+    const roomId = txt(req.body?.roomId);
+    if (!roomId) return fail(res, 400, '대화방 정보가 필요합니다.');
+
+    const user = req.session.user;
+    const userUid = txt(user.uid || user.id);
+    const userName = txt(user.name);
+    const r = await db(
+      `INSERT INTO namo_talk_reads (room_id, user_uid, user_name, last_read_at)
+       VALUES ($1,$2,$3,NOW())
+       ON CONFLICT (room_id, user_uid)
+       DO UPDATE SET user_name = EXCLUDED.user_name, last_read_at = NOW()
+       RETURNING room_id, user_uid, user_name, last_read_at`,
+      [roomId, userUid, userName]
+    );
+    const row = r.rows[0];
+
+    ok(res, {
+      roomId: row.room_id,
+      userUid: row.user_uid,
+      userName: row.user_name,
+      readAt: new Date(row.last_read_at).getTime(),
+    });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('/api/backup', requireLogin, async (_req, res) => {
+  try {
+    const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments, supplierScores, equipments, purchaseOrders, purchaseReceipts, auditLogs] = await Promise.all([
+      db('SELECT * FROM iqc ORDER BY created_at DESC'),
+      db('SELECT * FROM pqc ORDER BY created_at DESC'),
+      db('SELECT * FROM oqc ORDER BY created_at DESC'),
+      db('SELECT * FROM suppliers ORDER BY created_at DESC'),
+      db('SELECT * FROM nonconform ORDER BY created_at DESC'),
+      db('SELECT * FROM worklog ORDER BY created_at DESC'),
+      db('SELECT * FROM certificates ORDER BY created_at DESC'),
+      db('SELECT * FROM training_reports ORDER BY created_at DESC'),
+      db('SELECT * FROM instruments ORDER BY created_at ASC'),
+      db('SELECT * FROM supplier_scores ORDER BY created_at DESC'),
+      db('SELECT * FROM equipments ORDER BY created_at DESC'),
+      db('SELECT * FROM purchase_orders ORDER BY created_at DESC'),
+      db('SELECT * FROM purchase_receipts ORDER BY created_at DESC'),
+      db('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 1000'),
+    ]);
+
+    const payload = {
+      iqc: iqc.rows,
+      pqc: pqc.rows,
+      oqc: oqc.rows,
+      suppliers: suppliers.rows,
+      nonconform: nonconform.rows,
+      worklog: worklog.rows,
+      certificates: certificates.rows,
+      training: training.rows,
+      instruments: instruments.rows,
+      supplierScores: supplierScores.rows,
+      equipments: equipments.rows,
+      purchaseOrders: purchaseOrders.rows,
+      purchaseReceipts: purchaseReceipts.rows,
+      auditLogs: auditLogs.rows,
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="qms-backup.json"');
+    res.send(JSON.stringify(payload, null, 2));
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+ensureSchema()
+  .then(async () => {
+    await ensurePurchaseHistory();
+    await ensurePurchaseIqcReconciliation();
+    await ensurePendingIqcFromUnmatchedPurchases();
+
+    const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+    const adminPassword = String(process.env.ADMIN_PASSWORD || '');
+
+    if (adminEmail && adminPassword) {
+
+    const existing = await db('SELECT id FROM users WHERE email = $1', [adminEmail]);
+    const hash = await bcrypt.hash(adminPassword, 10);
+
+    if (!existing.rowCount) {
+      await db(
+        `INSERT INTO users (name, email, password_hash, department, title, role, status, uid)
+         VALUES ($1,$2,$3,$4,$5,'admin','APPROVED',$6)`,
+        ['관리자', adminEmail, hash, '관리부', '관리자', 'U-0001']
+      );
+    } else {
+      // 관리자 권한 403 방지:
+      // 서버 시작 시 ADMIN_EMAIL 계정을 항상 관리자(admin)로 고정하고,
+      // .env의 ADMIN_PASSWORD 값으로 비밀번호도 동기화합니다.
+      await db(
+        `UPDATE users
+         SET password_hash = $1,
+             name = $2,
+             department = $3,
+             title = $4,
+             role = 'admin',
+             status = 'APPROVED',
+             uid = $5
+         WHERE email = $6`,
+        [hash, '관리자', '관리부', '관리자', 'U-0001', adminEmail]
+      );
+    }
+
+    }
+
+    const defaultUsers = [
+      ['U-0002', '김종혁', '대표', '대표이사'],
+      ['U-0003', '김세희', '연구소', '이사'],
+      ['U-0004', '정영기', '연구소', '이사'],
+      ['U-0005', '박지헌', '연구소', '연구원'],
+      ['U-0006', '박도훈', '생산부', '대리'],
+      ['U-0007', '문지훈', '생산부', '주임'],
+      ['U-0008', '김현진', '영업부', '과장'],
+      ['U-0009', '임흥배', '품질부', '부장'],
+      ['U-0010', '박현아', '품질부', '사원'],
+    ];
+    const defaultPassword = String(process.env.DEFAULT_USER_PASSWORD || '');
+
+    if (defaultPassword) {
+      const defaultHash = await bcrypt.hash(defaultPassword, 10);
+
+      for (const [uid, name, department, title] of defaultUsers) {
+      const found = await db('SELECT id FROM users WHERE name = $1 OR uid = $2 LIMIT 1', [name, uid]);
+      if (found.rowCount) {
+        await db(
+          `UPDATE users
+           SET uid = $1,
+               department = CASE WHEN COALESCE(department, '') = '' THEN $2 ELSE department END,
+               title = CASE WHEN COALESCE(title, '') = '' THEN $3 ELSE title END,
+               status = 'APPROVED'
+           WHERE id = $4`,
+          [uid, department, title, found.rows[0].id]
+        );
+      } else {
+        await db(
+          `INSERT INTO users
+            (name, email, password_hash, department, title, role, status, uid, must_change_password)
+           VALUES ($1,$2,$3,$4,$5,'user','APPROVED',$6,TRUE)`,
+          [name, `${uid.toLowerCase()}@namochemical.local`, defaultHash, department, title, uid]
+        );
+      }
+    }
+
+    }
+
+    app.listen(port, () => {
+      console.log(`QMS server listening on ${port} (Asia/Seoul)`);
+    });
+  })
+  .catch((err) => {
+    console.error('Schema initialization failed:', err);
+    process.exit(1);
+  });
