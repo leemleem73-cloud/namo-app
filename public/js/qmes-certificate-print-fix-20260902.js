@@ -1,13 +1,11 @@
-/* NAMO QMES - IQC/PQC/OQC certificate live-DOM print fix - 2026-09-02 */
+/* NAMO QMES - IQC/PQC/OQC certificate print isolation - 2026-09-02 */
 (function installCertificatePrintFix(global){
   "use strict";
-  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V6__) return;
-  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V6__=true;
+  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V7__) return;
+  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V7__=true;
 
-  const STYLE_ID="qmes-cert-print-live-style-20260902-v6";
+  const STYLE_ID="qmes-cert-print-isolation-20260902-v7";
   const SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";
-  let hidden=[];
-  let kept=[];
   let target=null;
 
   function installStyle(){
@@ -17,44 +15,54 @@
     style.textContent=`
 @media print{
   @page{size:A4 portrait;margin:5mm;}
-  html,body{margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;}
-  body.qmes-cert-print-live .qmes-cert-print-hide{display:none!important;}
+  html,body,#root{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important;}
 
-  /* PQC/OQC: keep the certificate itself as-is; only remove surrounding UI/sidebar. */
-  body.qmes-cert-print-pqo .qmes-cert-print-keep{
+  /* Hard print isolation: hide the whole application tree, then reveal only the active certificate path. */
+  body.qmes-cert-print-live *{visibility:hidden!important;}
+  body.qmes-cert-print-live .qmes-cert-print-path,
+  body.qmes-cert-print-live .qmes-cert-print-path *{visibility:visible!important;}
+  body.qmes-cert-print-live #qmes-sync-sidebar,
+  body.qmes-cert-print-live #qmes-sync-sidebar *,
+  body.qmes-cert-print-live #qmes-sync-hamburger,
+  body.qmes-cert-print-live .qmes-top-menu,
+  body.qmes-cert-print-live .qmes-top-menu *,
+  body.qmes-cert-print-live .qmes-top-menu-bar,
+  body.qmes-cert-print-live .qmes-top-menu-bar *{display:none!important;visibility:hidden!important;}
+
+  body.qmes-cert-print-live.qmes-side-open #root>div>main,
+  body.qmes-cert-print-live #root>div>main{
+    margin-left:0!important;left:0!important;transform:none!important;width:100%!important;max-width:none!important;padding-left:0!important;
+  }
+
+  body.qmes-cert-print-live .qmes-cert-print-path{
     position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
     transform:none!important;float:none!important;
-    width:100%!important;max-width:none!important;min-width:0!important;
+    max-width:none!important;min-width:0!important;
     height:auto!important;min-height:0!important;max-height:none!important;
-    margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;
+    overflow:visible!important;background:#fff!important;
   }
-  body.qmes-cert-print-pqo .qmes-cert-print-target{
+
+  body.qmes-cert-print-live .qmes-cert-print-target{
+    position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    float:none!important;clear:both!important;
     margin-left:auto!important;margin-right:auto!important;
     overflow:visible!important;box-shadow:none!important;
   }
 
-  /* IQC: center on the A4 printable area and compensate the visual high bias. */
-  body.qmes-cert-print-iqc{width:200mm!important;height:287mm!important;min-height:287mm!important;display:flex!important;align-items:center!important;justify-content:center!important;}
-  body.qmes-cert-print-iqc .qmes-cert-print-keep{
-    position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-    transform:none!important;float:none!important;
-    width:200mm!important;max-width:200mm!important;min-width:200mm!important;
-    height:287mm!important;min-height:287mm!important;max-height:287mm!important;
-    margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;
-    box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  /* IQC only: A4 printable-area vertical centering. PQC/OQC keep their existing certificate layout. */
+  body.qmes-cert-print-iqc{width:200mm!important;min-height:287mm!important;}
+  body.qmes-cert-print-iqc .qmes-cert-print-iqc-stage{
+    width:200mm!important;min-height:287mm!important;margin:0 auto!important;padding:0!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
   }
   body.qmes-cert-print-iqc .qmes-cert-print-target{
-    position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-    float:none!important;clear:both!important;
-    width:100%!important;max-width:100%!important;min-width:0!important;
-    height:auto!important;min-height:0!important;max-height:none!important;
-    margin:auto!important;overflow:visible!important;box-shadow:none!important;box-sizing:border-box!important;
-    transform:translateY(4mm)!important;
+    width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;
+    margin:auto!important;transform:translateY(4mm)!important;
   }
 
   body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,
   body.qmes-cert-print-live .qmes-cert-print-target button,
-  body.qmes-cert-print-live .qmes-cert-print-target .no-print{display:none!important;}
+  body.qmes-cert-print-live .qmes-cert-print-target .no-print{display:none!important;visibility:hidden!important;}
   body.qmes-cert-print-live .qmes-cert-print-target table{page-break-inside:auto!important;}
   body.qmes-cert-print-live .qmes-cert-print-target tr{page-break-inside:avoid!important;page-break-after:auto!important;}
   body.qmes-cert-print-live .qmes-cert-print-target .qmes-iqc2-sec,
@@ -68,52 +76,45 @@
     if(!el) return false;
     const r=el.getBoundingClientRect();
     const s=global.getComputedStyle(el);
-    return s.display!=="none" && s.visibility!=="hidden" && r.width>0 && r.height>0;
+    return s.display!=="none"&&s.visibility!=="hidden"&&r.width>0&&r.height>0;
   }
 
   function findActiveCertificate(){
     const docs=Array.from(document.querySelectorAll(SELECTOR));
-    return docs.find(visible) || docs[docs.length-1] || null;
+    return docs.find(visible)||docs[docs.length-1]||null;
   }
 
-  function markSiblings(node,parent){
-    Array.from(parent.children||[]).forEach(child=>{
-      if(child===node) return;
-      child.classList.add("qmes-cert-print-hide");
-      hidden.push(child);
+  function clearMarks(){
+    document.querySelectorAll(".qmes-cert-print-path,.qmes-cert-print-target,.qmes-cert-print-iqc-stage").forEach(el=>{
+      el.classList.remove("qmes-cert-print-path","qmes-cert-print-target","qmes-cert-print-iqc-stage");
     });
+    document.body.classList.remove("qmes-cert-print-live","qmes-cert-print-iqc","qmes-cert-print-pqo");
   }
 
   function prepare(){
-    cleanup();
+    clearMarks();
     installStyle();
     target=findActiveCertificate();
     if(!target) return;
 
-    target.classList.add("qmes-cert-print-target");
-    let node=target;
-    let parent=node.parentElement;
-    while(parent){
-      if(parent===document.body){markSiblings(node,parent);break;}
-      markSiblings(node,parent);
-      parent.classList.add("qmes-cert-print-keep");
-      kept.push(parent);
-      node=parent;
-      parent=node.parentElement;
+    target.classList.add("qmes-cert-print-target","qmes-cert-print-path");
+    let node=target.parentElement;
+    while(node&&node!==document.body){
+      node.classList.add("qmes-cert-print-path");
+      node=node.parentElement;
     }
     document.body.classList.add("qmes-cert-print-live");
-    if(target.classList.contains("qmes-iqc-doc")) document.body.classList.add("qmes-cert-print-iqc");
-    else document.body.classList.add("qmes-cert-print-pqo");
+
+    if(target.classList.contains("qmes-iqc-doc")){
+      document.body.classList.add("qmes-cert-print-iqc");
+      const parent=target.parentElement;
+      if(parent) parent.classList.add("qmes-cert-print-iqc-stage");
+    }else{
+      document.body.classList.add("qmes-cert-print-pqo");
+    }
   }
 
-  function cleanup(){
-    document.body.classList.remove("qmes-cert-print-live","qmes-cert-print-iqc","qmes-cert-print-pqo");
-    hidden.forEach(el=>el&&el.classList&&el.classList.remove("qmes-cert-print-hide"));
-    kept.forEach(el=>el&&el.classList&&el.classList.remove("qmes-cert-print-keep"));
-    hidden=[];kept=[];
-    if(target&&target.classList)target.classList.remove("qmes-cert-print-target");
-    target=null;
-  }
+  function cleanup(){clearMarks();target=null;}
 
   installStyle();
   global.addEventListener("beforeprint",prepare);
