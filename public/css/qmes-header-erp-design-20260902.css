@@ -1,0 +1,132 @@
+/* QMES header only — ERP/iCUBE reference design, isolated 2026-09-02 */
+@media screen {
+  html body #root > div > header {
+    height:64px!important;
+    min-height:64px!important;
+    background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
+    color:#fff!important;
+    border-bottom:1px solid #235f8e!important;
+    box-shadow:0 2px 6px rgba(30,73,105,.24)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  html body #root > div > header > div:first-child {
+    height:64px!important;
+    min-height:64px!important;
+    padding:0 22px 0 0!important;
+    gap:14px!important;
+    align-items:center!important;
+  }
+  html body #root > div > header > div:first-child > button:first-child {
+    width:248px!important;
+    min-width:248px!important;
+    height:64px!important;
+    margin:0!important;
+    padding:0 20px 0 54px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:11px!important;
+    border:0!important;
+    border-right:1px solid #b9c9d5!important;
+    border-radius:0!important;
+    background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
+    box-shadow:none!important;
+  }
+  html body #root > div > header > div:first-child > button:first-child:hover {
+    background:linear-gradient(180deg,#ffffff 0%,#edf2f6 100%)!important;
+  }
+  html body #root > div > header img[alt="NAMO Chemical"] {
+    height:27px!important;
+    width:auto!important;
+    max-width:174px!important;
+    object-fit:contain!important;
+    filter:none!important;
+  }
+  html body #root > div > header .qmes-header-clock {
+    height:30px!important;
+    padding:0 10px!important;
+    border:1px solid rgba(255,255,255,.38)!important;
+    border-radius:6px!important;
+    background:rgba(0,0,0,.08)!important;
+    color:#fff!important;
+    font-size:12px!important;
+    font-weight:700!important;
+  }
+  html body #root > div > header button[aria-label^="NAMO Talk 알림"] {
+    width:34px!important;
+    height:34px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:0!important;
+    border-radius:6px!important;
+    background:transparent!important;
+    color:#fff!important;
+  }
+  html body #root > div > header button[aria-label^="NAMO Talk 알림"]:hover {background:rgba(255,255,255,.15)!important;}
+  html body #root > div > header button[aria-label^="NAMO Talk 열기"],
+  html body #root > div > header button[aria-label^="NAMO Talk 닫기"] {
+    height:34px!important;
+    padding:0 11px!important;
+    border:1px solid rgba(255,255,255,.38)!important;
+    border-radius:6px!important;
+    background:rgba(0,0,0,.08)!important;
+    color:#fff!important;
+    box-shadow:none!important;
+    font-size:12px!important;
+  }
+  html body #root > div > header .qmes-header-controls {gap:7px!important;}
+  html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] {
+    height:40px!important;
+    padding:0 10px 0 15px!important;
+    gap:9px!important;
+    border-left:1px solid rgba(255,255,255,.30)!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"]:hover {background:rgba(255,255,255,.10)!important;}
+  html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > div:first-child {
+    width:34px!important;
+    height:34px!important;
+    border-radius:50%!important;
+    border:1px solid rgba(255,255,255,.50)!important;
+    background:#f4f8fb!important;
+    color:#2f6f9f!important;
+    font-size:12px!important;
+    font-weight:800!important;
+  }
+  html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > div:nth-child(2) {
+    color:#fff!important;
+    font-size:12px!important;
+    font-weight:800!important;
+  }
+  html body #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > span {color:#d9e8f2!important;}
+  html body #root > div > header .qmes-header-action {
+    height:31px!important;
+    padding:0 9px!important;
+    border:1px solid rgba(255,255,255,.38)!important;
+    border-radius:3px!important;
+    background:rgba(255,255,255,.07)!important;
+    color:#fff!important;
+    font-size:11px!important;
+    font-weight:700!important;
+  }
+  html body #root > div > header .qmes-header-action:hover {background:rgba(255,255,255,.15)!important;}
+  html body #qmes-sync-hamburger {
+    left:12px!important;
+    width:30px!important;
+    height:30px!important;
+    border:0!important;
+    border-radius:4px!important;
+    background:transparent!important;
+    color:#2f6f9f!important;
+    box-shadow:none!important;
+    font-size:21px!important;
+  }
+  html body #qmes-sync-hamburger:hover {background:#dfeaf2!important;color:#205e8c!important;}
+}
+@media print {
+  html body #root > div > header {height:auto!important;min-height:0!important;box-shadow:none!important;}
+}
