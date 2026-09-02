@@ -1,8 +1,8 @@
 /* QMES header structure adapter — match uploaded reference without touching page modules */
 (function(){
   "use strict";
-  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V2__) return;
-  window.__QMES_HEADER_REFERENCE_STRUCTURE_V2__=true;
+  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V3__) return;
+  window.__QMES_HEADER_REFERENCE_STRUCTURE_V3__=true;
 
   function ensureHeader(){
     const header=document.querySelector('#root > div > header');
@@ -15,10 +15,21 @@
     row.classList.add('qmes-ref-toprow');
     brand.classList.add('qmes-ref-brand');
 
-    /* Keep the site's real NAMO Chemical logo; remove only the temporary NAMO ONE copy. */
-    brand.querySelector('.qmes-ref-brand-copy')?.remove();
-    const logo=brand.querySelector('img[alt="NAMO Chemical"]');
-    if(logo) logo.classList.add('qmes-ref-real-logo');
+    const originalLogo=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
+    let brandCopy=brand.querySelector('.qmes-ref-brand-copy');
+    if(!brandCopy){
+      brandCopy=document.createElement('span');
+      brandCopy.className='qmes-ref-brand-copy';
+      brandCopy.innerHTML='<span class="qmes-ref-brand-mark">N</span><span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"></span><small>ERP · MES INTEGRATED</small></span>';
+      brand.appendChild(brandCopy);
+    }
+    const slot=brandCopy.querySelector('.qmes-ref-logo-slot');
+    if(slot && !slot.querySelector('img') && originalLogo){
+      const logoClone=originalLogo.cloneNode(true);
+      logoClone.className='qmes-ref-brand-logo';
+      logoClone.removeAttribute('style');
+      slot.appendChild(logoClone);
+    }
 
     let search=document.getElementById('qmes-ref-global-search');
     if(!search){
