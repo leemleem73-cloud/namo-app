@@ -1,8 +1,8 @@
 /* QMES header structure adapter — stable reference version */
 (function(){
   "use strict";
-  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V6_STABLE__) return;
-  window.__QMES_HEADER_REFERENCE_STRUCTURE_V6_STABLE__=true;
+  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V7_SINGLE_LOGO__) return;
+  window.__QMES_HEADER_REFERENCE_STRUCTURE_V7_SINGLE_LOGO__=true;
 
   function ensureHeader(){
     const header=document.querySelector('#root > div > header');
@@ -16,38 +16,17 @@
     brand.classList.add('qmes-ref-brand');
     document.getElementById('qmes-header-authority-v4')?.remove();
 
+    /* Single logo authority: keep only the original React-rendered NAMO Chemical logo. */
     const originalLogo=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
     if(originalLogo){
-      originalLogo.style.setProperty('display','none','important');
-      originalLogo.style.setProperty('visibility','hidden','important');
+      originalLogo.classList.add('qmes-ref-original-logo');
+      originalLogo.style.removeProperty('display');
+      originalLogo.style.removeProperty('visibility');
+      originalLogo.style.removeProperty('opacity');
     }
 
-    let brandCopy=brand.querySelector('.qmes-ref-brand-copy');
-    if(!brandCopy){
-      brandCopy=document.createElement('span');
-      brandCopy.className='qmes-ref-brand-copy';
-      brandCopy.innerHTML='<span class="qmes-ref-brand-mark">N</span><span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"></span><small>ERP · MES INTEGRATED</small></span>';
-      brand.appendChild(brandCopy);
-    }
-    const slot=brandCopy.querySelector('.qmes-ref-logo-slot');
-    let logoClone=slot?.querySelector('img.qmes-ref-brand-logo');
-    if(slot && !logoClone && originalLogo){
-      logoClone=originalLogo.cloneNode(true);
-      logoClone.className='qmes-ref-brand-logo';
-      logoClone.removeAttribute('style');
-      slot.appendChild(logoClone);
-    }
-    if(logoClone){
-      logoClone.style.setProperty('display','block','important');
-      logoClone.style.setProperty('visibility','visible','important');
-      logoClone.style.setProperty('width','auto','important');
-      logoClone.style.setProperty('height','14px','important');
-      logoClone.style.setProperty('max-width','100px','important');
-      logoClone.style.setProperty('object-fit','contain','important');
-      logoClone.style.setProperty('filter','grayscale(1) brightness(0)','important');
-      logoClone.style.setProperty('opacity','1','important');
-      logoClone.style.setProperty('margin','0','important');
-    }
+    /* Remove legacy injected copies so MutationObservers cannot stack logos. */
+    brand.querySelectorAll('.qmes-ref-brand-copy').forEach(node=>node.remove());
 
     let search=document.getElementById('qmes-ref-global-search');
     if(!search){
@@ -75,7 +54,7 @@
   }
 
   let runs=0;
-  const install=()=>{runs++;ensureHeader();if(runs<80)setTimeout(install,runs<20?50:300);};
+  const install=()=>{runs++;ensureHeader();if(runs<40)setTimeout(install,runs<12?80:500);};
   install();
   let raf=0;
   const observer=new MutationObserver(()=>{
