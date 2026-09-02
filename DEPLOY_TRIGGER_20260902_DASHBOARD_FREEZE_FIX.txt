@@ -1,0 +1,2 @@
+Emergency deploy trigger: remove header MutationObserver feedback loop that froze the dashboard after login.
+2026-09-02
