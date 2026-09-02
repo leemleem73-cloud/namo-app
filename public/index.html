@@ -6,7 +6,7 @@
   <title>나모케미칼 QMES</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
   <link rel="stylesheet" href="./css/common.css?v=20260824-workorder-equal1" />
-  <link rel="stylesheet" href="./css/qmes-shell-layer-base-20260827.css?v=20260827-shellcore1" />
+  <link rel="stylesheet" href="./css/qmes-shell-layer-base-20260827.css?v=20260902-native2" />
   <link rel="stylesheet" href="./css/layout.css?v=20260821-partners-sidebar2" />
   <link rel="stylesheet" href="./css/workorder-note-cell-alignment-20260820.css?v=20260820-1" />
   <link rel="stylesheet" href="./css/dashboard.css?v=20260810-kpi-unit1" />
@@ -33,20 +33,6 @@
     .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2),.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3) {width:17.125%!important;}
     .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4) {width:7.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5),.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6) {width:10.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7) {width:12.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8) {width:8.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9) {width:14.125%!important;}
     .qmes-wo-form-field:has(> input[placeholder="원료 계획량 합계"]) {display:none!important;}
-    [role="dialog"][aria-label="계정 설정"] {display:none!important;}
-    [role="dialog"][aria-label="비밀번호 변경"] {position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;overflow:auto!important;}
-    [role="dialog"][aria-label="비밀번호 변경"] > form {position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;margin:auto!important;transform:none!important;max-height:calc(100vh - 32px)!important;overflow-y:auto!important;}
-    #qmes-user-dropdown {position:fixed;z-index:12000;width:190px;padding:7px;border:1px solid rgba(71,85,105,.95);border-radius:10px;background:#132238;box-shadow:0 14px 35px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .15s ease,transform .15s ease,visibility .15s;}
-    #qmes-user-dropdown.is-open {opacity:1;visibility:visible;transform:translateY(0);}
-    #qmes-user-dropdown button {display:flex;align-items:center;gap:9px;width:100%;min-height:42px;padding:9px 12px;border:0;border-radius:7px;background:transparent;color:#e2e8f0;font:inherit;font-size:14px;font-weight:700;text-align:left;cursor:pointer;}
-    #qmes-user-dropdown button:hover,#qmes-user-dropdown button:focus-visible {background:#243a57;outline:none;}
-    #qmes-user-dropdown .qmes-dropdown-logout {color:#fda4af;border-top:1px solid rgba(71,85,105,.7);border-radius:0 0 7px 7px;}
-    .qmes-submenu-row {display:none!important;}
-    #qmes-all-menu-dropdown {position:fixed;z-index:11900;min-width:210px;max-width:280px;padding:7px;border:1px solid rgba(71,85,105,.95);border-radius:10px;background:#132238;box-shadow:0 14px 35px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-5px);transition:opacity .12s ease,transform .12s ease,visibility .12s;}
-    #qmes-all-menu-dropdown.is-open {opacity:1;visibility:visible;transform:translateY(0);}
-    #qmes-all-menu-dropdown .qmes-hover-title {padding:8px 11px 7px;color:#7dd3fc;font-size:12px;font-weight:900;border-bottom:1px solid rgba(71,85,105,.7);margin-bottom:4px;}
-    #qmes-all-menu-dropdown button {display:flex;align-items:center;width:100%!important;min-height:39px;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:#e2e8f0;font:inherit;font-size:13px;font-weight:750;text-align:left;cursor:pointer;}
-    #qmes-all-menu-dropdown button:hover,#qmes-all-menu-dropdown button:focus-visible {background:#243a57;color:#fff;outline:none;}
     .qmes-prod-process .qpp-grid>section.qpp-card:first-child{width:100%!important;max-width:none!important;}
   </style>
   <link rel="stylesheet" href="./css/qmes-global-light-theme-20260826.css?v=20260826-fieldstable4" />
@@ -128,10 +114,8 @@
   <script src="./js/qmes-attendance-reminder.js?v=20260814-restore1"></script>
   <script>var useRef=React.useRef;</script>
   <script type="text/babel" data-presets="react" src="./js/production-process-management-20260824.jsx?v=20260824-production-direct5"></script>
-  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260831-pcflicker1"></script>
+  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260902-native2"></script>
   <script type="text/babel" data-presets="react" src="./js/app.jsx?v=20260831-pcflicker1"></script>
-  <script src="./js/qmes-user-dropdown-restore-20260812.js?v=20260812-1"></script>
-  <script src="./js/qmes-collapsible-side-menu.js?v=20260827-shell-owner2"></script>
   <script src="./js/qmes-remove-inspection-new-buttons-20260810.js?v=20260827-no-repeat-click1"></script>
   <script src="./js/qmes-sales-master-source-guard-20260828-v1.js?v=20260828-1"></script>
   <script src="./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5"></script>
