@@ -1,97 +1,55 @@
 /* NAMO QMES reference shell adapter — isolated and reversible. */
 (function(){
   "use strict";
-  if(window.__QMES_REFERENCE_SHELL_20260902_V1__) return;
-  window.__QMES_REFERENCE_SHELL_20260902_V1__=true;
+  if(window.__QMES_REFERENCE_SHELL_20260902_V2__) return;
+  window.__QMES_REFERENCE_SHELL_20260902_V2__=true;
 
   const STORAGE_KEY="qmes-reference-sidebar-state-v1";
   const V2_THEME_ID="qmes-reference-theme-20260903-v2";
-  const V2_THEME_HREF="./css/qmes-reference-theme-20260903-v2.css?v=20260903-1";
+  const V2_THEME_HREF="./css/qmes-reference-theme-20260903-v2.css?v=20260903-2";
   const MOBILE_HOME="/mobile.html?v=20260903-0845";
   let frame=0;
 
-  function safeSessionGet(key){
-    try{return sessionStorage.getItem(key);}catch(_error){return null;}
-  }
-  function safeSessionRemove(key){
-    try{sessionStorage.removeItem(key);}catch(_error){}
-  }
-  function mobileDevice(){
-    return window.matchMedia("(max-width:820px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||"");
-  }
+  function safeSessionGet(key){try{return sessionStorage.getItem(key);}catch(_error){return null;}}
+  function safeSessionRemove(key){try{sessionStorage.removeItem(key);}catch(_error){}}
+  function mobileDevice(){return window.matchMedia("(max-width:820px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||"");}
   function mobileRootRoute(){
     if(!mobileDevice()) return;
     if(location.pathname!=="/"&&location.pathname!=="/index.html") return;
     const params=new URLSearchParams(location.search||"");
     if(params.get("desktop")==="1"||params.get("view")==="desktop") return;
-    if(safeSessionGet("qmes_mobile_open_tab_once")==="1"){
-      safeSessionRemove("qmes_mobile_open_tab_once");
-      return;
-    }
-    let stopped=false;
-    let attempts=0;
+    if(safeSessionGet("qmes_mobile_open_tab_once")==="1"){safeSessionRemove("qmes_mobile_open_tab_once");return;}
+    let stopped=false,attempts=0;
     const check=()=>{
       if(stopped||location.pathname!=="/"&&location.pathname!=="/index.html") return;
       attempts+=1;
-      fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"})
-        .then(response=>{
-          if(response.ok){
-            stopped=true;
-            location.replace(MOBILE_HOME);
-            return;
-          }
-          if(attempts<40) setTimeout(check,1200);
-        })
-        .catch(()=>{if(attempts<40)setTimeout(check,1200);});
+      fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"}).then(response=>{
+        if(response.ok){stopped=true;location.replace(MOBILE_HOME);return;}
+        if(attempts<40) setTimeout(check,1200);
+      }).catch(()=>{if(attempts<40)setTimeout(check,1200);});
     };
     check();
   }
-
   mobileRootRoute();
 
-  function getPreference(){
-    try{return localStorage.getItem(STORAGE_KEY)||"open";}catch(_error){return "open";}
-  }
-  function setPreference(value){
-    try{localStorage.setItem(STORAGE_KEY,value);}catch(_error){}
-  }
+  function getPreference(){try{return localStorage.getItem(STORAGE_KEY)||"open";}catch(_error){return "open";}}
+  function setPreference(value){try{localStorage.setItem(STORAGE_KEY,value);}catch(_error){}}
   function desktop(){return window.matchMedia("(min-width:821px)").matches;}
 
   function ensureV2Theme(){
     let link=document.getElementById(V2_THEME_ID);
     if(link) return link;
-    link=document.createElement("link");
-    link.id=V2_THEME_ID;
-    link.rel="stylesheet";
-    link.href=V2_THEME_HREF;
-    document.head.appendChild(link);
-    return link;
+    link=document.createElement("link");link.id=V2_THEME_ID;link.rel="stylesheet";link.href=V2_THEME_HREF;document.head.appendChild(link);return link;
   }
 
-  function ensureBrand(header){
+  /* Header ownership is intentionally left to qmes-header-reference-structure. */
+  function markHeader(header){
     const row=header.firstElementChild;
     const brand=row?.querySelector(":scope > button:first-child");
     if(!row||!brand) return;
     header.classList.add("qmes-ref-topbar");
     row.classList.add("qmes-ref-toprow");
     brand.classList.add("qmes-ref-brand");
-
-    const original=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
-    if(original) original.classList.add("qmes-ref-original-logo");
-    let copy=brand.querySelector(".qmes-ref-brand-copy");
-    if(!copy){
-      copy=document.createElement("span");
-      copy.className="qmes-ref-brand-copy";
-      copy.innerHTML='<span class="qmes-ref-brand-mark">N</span><span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"></span><small>ERP · MES INTEGRATED</small></span>';
-      brand.appendChild(copy);
-    }
-    const slot=copy.querySelector(".qmes-ref-logo-slot");
-    if(slot&&!slot.firstElementChild&&original){
-      const logo=original.cloneNode(true);
-      logo.className="qmes-ref-brand-logo";
-      logo.removeAttribute("style");
-      slot.appendChild(logo);
-    }
   }
 
   function ensureCompanyMeta(sidebar){
@@ -101,8 +59,7 @@
     meta.className="qmes-ref-company-meta";
     meta.innerHTML="<span>㈜나모케미칼</span><b>정상운영</b>";
     const groups=sidebar.querySelector(".qmes-side-groups");
-    if(groups) sidebar.insertBefore(meta,groups);
-    else sidebar.appendChild(meta);
+    if(groups) sidebar.insertBefore(meta,groups); else sidebar.appendChild(meta);
   }
 
   function syncShell(){
@@ -110,13 +67,10 @@
     const header=host?.querySelector(":scope > header");
     const main=host?.querySelector(":scope > main");
     const sidebar=document.getElementById("qmes-sync-sidebar");
-    if(!header||!main||!sidebar){
-      document.body.classList.remove("qmes-reference-theme","qmes-side-open");
-      return false;
-    }
+    if(!header||!main||!sidebar){document.body.classList.remove("qmes-reference-theme","qmes-side-open");return false;}
     ensureV2Theme();
     document.body.classList.add("qmes-reference-theme");
-    ensureBrand(header);
+    markHeader(header);
     ensureCompanyMeta(sidebar);
     document.documentElement.style.setProperty("--qmes-side-top","64px");
     document.documentElement.style.setProperty("--qmes-header-hamburger-top","16px");
@@ -125,11 +79,7 @@
     return true;
   }
 
-  function scheduleSync(){
-    if(frame) return;
-    frame=requestAnimationFrame(()=>{frame=0;syncShell();});
-  }
-
+  function scheduleSync(){if(frame) return;frame=requestAnimationFrame(()=>{frame=0;syncShell();});}
   document.addEventListener("click",event=>{
     if(event.target.closest?.("#qmes-sync-sidebar .qmes-side-close")) setPreference("closed");
     if(event.target.closest?.("#qmes-sync-hamburger")) setPreference("open");
