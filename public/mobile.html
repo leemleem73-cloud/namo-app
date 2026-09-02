@@ -25,14 +25,17 @@
     button{font:inherit}
     .phone{min-height:100dvh;max-width:560px;margin:0 auto;background:var(--bg);padding-bottom:calc(78px + var(--safe-bottom));box-shadow:0 0 36px rgba(15,35,65,.08)}
     .top{position:sticky;top:0;z-index:20;padding:calc(14px + env(safe-area-inset-top)) 18px 16px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 8px 24px rgba(15,111,214,.22)}
-    .topline{display:flex;align-items:center;gap:12px}
+    .topline{display:flex;align-items:center;gap:10px}
     .brand{min-width:0;flex:1}
     .brand strong{display:block;font-size:18px;font-weight:900;letter-spacing:-.3px}
     .brand span{display:block;margin-top:3px;font-size:11px;font-weight:700;color:rgba(255,255,255,.78)}
-    .top-actions{display:flex;align-items:center;gap:8px}
+    .top-actions{display:flex;align-items:center;gap:7px;flex:none}
     .icon-btn{width:36px;height:36px;border:1px solid rgba(255,255,255,.24);border-radius:12px;background:rgba(255,255,255,.10);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:17px}
-    .hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:17px}
-    .hello .user{font-size:13px;font-weight:800}
+    .logout-btn{height:36px;padding:0 11px;border:1px solid rgba(255,255,255,.28);border-radius:12px;background:rgba(255,255,255,.13);color:#fff;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}
+    .logout-btn:disabled{opacity:.6;cursor:wait}
+    .hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:17px;min-height:43px}
+    .hello .user{font-size:13px;font-weight:800;transition:opacity .12s ease}
+    .hello .user.is-loading{opacity:0;pointer-events:none}
     .hello .user b{font-size:16px}
     .hello .clock{text-align:right;font-variant-numeric:tabular-nums}
     .hello .clock strong{display:block;font-size:15px;font-weight:900}
@@ -62,10 +65,13 @@
     .nav{border:0;background:transparent;color:#8a96a5;min-height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:800;cursor:pointer}
     .nav i{font-style:normal;font-size:20px;line-height:1}
     .nav.active{color:var(--blue);background:#eef6ff}
-    .login-note{display:none;margin:0 13px 12px;padding:11px 12px;border-radius:12px;background:#fff7e8;border:1px solid #f1d7a5;color:#825f1c;font-size:11px;font-weight:800}
+    .login-note{display:none;margin:12px 13px 0;padding:11px 12px;border-radius:12px;background:#fff7e8;border:1px solid #f1d7a5;color:#825f1c;font-size:11px;font-weight:800}
     .login-note.show{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .login-note a{color:#075fb8;text-decoration:none;white-space:nowrap}
-    @media (max-width:360px){.content{padding-left:9px;padding-right:9px}.grid{gap:7px}.card{padding:10px 9px;gap:8px}.tile{width:39px;height:39px;flex-basis:39px}.copy strong{font-size:12px}.copy span{font-size:9px}}
+    .opening{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(15,28,48,.28);backdrop-filter:blur(2px)}
+    .opening.show{display:flex}
+    .opening div{padding:14px 18px;border-radius:14px;background:#fff;color:#173353;font-size:12px;font-weight:900;box-shadow:0 12px 36px rgba(15,35,65,.22)}
+    @media (max-width:390px){.brand strong{font-size:16px}.brand span{font-size:10px}.logout-btn{padding:0 8px;font-size:10px}.content{padding-left:9px;padding-right:9px}.grid{gap:7px}.card{padding:10px 9px;gap:8px}.tile{width:39px;height:39px;flex-basis:39px}.copy strong{font-size:12px}.copy span{font-size:9px}}
     @media (min-width:700px){body{padding:24px}.phone{min-height:calc(100dvh - 48px);border-radius:26px;overflow:hidden}.bottom{width:560px;bottom:24px;border-radius:0 0 26px 26px}.top{padding-top:18px}}
   </style>
 </head>
@@ -78,17 +84,17 @@
           <span>나모케미칼 생산 · 품질 통합관리</span>
         </div>
         <div class="top-actions">
-          <button class="icon-btn" type="button" id="refreshBtn" aria-label="새로고침">↻</button>
+          <button class="logout-btn" type="button" id="logoutBtn">로그아웃</button>
           <button class="icon-btn" type="button" id="desktopBtn" aria-label="PC 화면 열기">☰</button>
         </div>
       </div>
       <div class="hello">
-        <div class="user">안녕하세요, <b id="userName">사용자</b>님</div>
+        <div class="user is-loading" id="userGreeting">안녕하세요, <b id="userName"></b>님</div>
         <div class="clock"><strong id="timeText">--:--</strong><span id="dateText">----</span></div>
       </div>
     </header>
 
-    <div id="loginNote" class="login-note">로그인 정보가 없습니다. <a href="/">로그인 화면으로</a></div>
+    <div id="loginNote" class="login-note">로그인 세션을 확인할 수 없습니다. <a href="/index.html?desktop=1">로그인 화면으로</a></div>
 
     <main class="content">
       <div class="section-title">
@@ -96,7 +102,7 @@
         <span>터치하여 바로 이동</span>
       </div>
       <section class="grid" id="menuGrid" aria-label="QMES 모바일 메뉴"></section>
-      <div class="hint">휴대폰에서는 이 화면을 홈으로 사용하고, 각 업무 화면은 기존 QMES 데이터와 같은 계정·세션을 사용합니다. 브라우저의 ‘홈 화면에 추가’를 사용하면 앱처럼 실행할 수 있습니다.</div>
+      <div class="hint">카드를 누르면 선택한 QMES 업무 화면으로 바로 이동합니다. 휴대폰의 뒤로가기를 누르면 다시 모바일 홈으로 돌아올 수 있습니다.</div>
     </main>
   </div>
 
@@ -108,8 +114,11 @@
     <button class="nav" type="button" data-bottom="trace"><i>☷</i><span>추적</span></button>
   </nav>
 
+  <div class="opening" id="opening" aria-live="polite"><div id="openingText">화면을 여는 중입니다.</div></div>
+
   <script>
     (() => {
+      const SESSION_KEY = 'qmes-current-user-v1';
       const items = [
         {tab:'dash',       title:'종합현황',  sub:'KPI · 생산 · 품질 현황', icon:'📊', tone:'blue'},
         {tab:'woIssue',    title:'작업지시',  sub:'작업지시 등록 · 조회', icon:'📝', tone:'purple'},
@@ -128,12 +137,34 @@
       ];
 
       const grid = document.getElementById('menuGrid');
-      const go = (tab) => {
+      const greeting = document.getElementById('userGreeting');
+      const userName = document.getElementById('userName');
+      const loginNote = document.getElementById('loginNote');
+      const opening = document.getElementById('opening');
+      const openingText = document.getElementById('openingText');
+
+      const showUser = user => {
+        const name = String(user && (user.name || user.loginId || user.email) || '').trim();
+        if (!name) return false;
+        userName.textContent = name;
+        greeting.classList.remove('is-loading');
+        return true;
+      };
+
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+        showUser(cached);
+      } catch (_) {}
+
+      const go = (tab, label) => {
         try {
           sessionStorage.setItem('qmes_current_tab', tab);
           sessionStorage.setItem('qmes_mobile_last_tab', tab);
         } catch (_) {}
-        location.href = '/';
+        openingText.textContent = `${label || '업무'} 화면을 여는 중입니다.`;
+        opening.classList.add('show');
+        const url = `/index.html?desktop=1&fromMobile=1&tab=${encodeURIComponent(tab)}&v=20260903-2`;
+        location.assign(url);
       };
 
       items.forEach(item => {
@@ -142,7 +173,7 @@
         button.className = 'card';
         button.dataset.tone = item.tone;
         button.innerHTML = `<span class="tile" aria-hidden="true">${item.icon}</span><span class="copy"><strong>${item.title}</strong><span>${item.sub}</span></span>`;
-        button.addEventListener('click', () => go(item.tab));
+        button.addEventListener('click', () => go(item.tab, item.title));
         grid.appendChild(button);
       });
 
@@ -153,7 +184,8 @@
             window.scrollTo({top:0, behavior:'smooth'});
             return;
           }
-          go(tab);
+          const labels = {prod:'생산',pop:'현장입력',inv:'재고관리',trace:'LOT 추적'};
+          go(tab, labels[tab]);
         });
       });
 
@@ -166,16 +198,46 @@
       setInterval(updateClock, 30000);
 
       fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'})
-        .then(response => response.ok ? response.json() : Promise.reject(new Error('unauthorized')))
-        .then(payload => {
-          const user = payload && payload.data ? payload.data : payload;
-          const name = String(user && (user.name || user.loginId || user.email) || '사용자').trim();
-          document.getElementById('userName').textContent = name || '사용자';
+        .then(async response => {
+          const payload = await response.json().catch(() => null);
+          if (!response.ok || !payload || payload.success === false) throw new Error('unauthorized');
+          return payload.data && payload.data.user ? payload.data.user : (payload.data || payload);
         })
-        .catch(() => document.getElementById('loginNote').classList.add('show'));
+        .then(user => {
+          if (!showUser(user)) throw new Error('invalid user');
+          loginNote.classList.remove('show');
+          try {
+            const normalized = {
+              id:user.id, uid:user.uid || '', name:user.name || user.loginId || user.email || '',
+              email:user.email || '', dept:user.department || user.dept || '', position:user.title || user.position || '',
+              role:user.role || 'user', mustChangePassword:Boolean(user.mustChangePassword)
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(normalized));
+          } catch (_) {}
+        })
+        .catch(() => {
+          greeting.classList.add('is-loading');
+          loginNote.classList.add('show');
+        });
 
-      document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
-      document.getElementById('desktopBtn').addEventListener('click', () => location.href = '/');
+      const logout = async () => {
+        const buttons = [document.getElementById('logoutBtn')].filter(Boolean);
+        buttons.forEach(button => { button.disabled = true; button.textContent = '로그아웃 중'; });
+        try {
+          await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',cache:'no-store'});
+        } catch (_) {}
+        try {
+          [SESSION_KEY,'qmes_current_tab','qmes_mobile_last_tab','qmes_open_menu','qmes_namo_talk_open'].forEach(key => sessionStorage.removeItem(key));
+        } catch (_) {}
+        location.replace('/index.html?desktop=1&logout=1&v=20260903-2');
+      };
+
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+      document.getElementById('desktopBtn').addEventListener('click', () => {
+        openingText.textContent = 'PC 화면을 여는 중입니다.';
+        opening.classList.add('show');
+        location.assign('/index.html?desktop=1&fromMobile=1&v=20260903-2');
+      });
     })();
   </script>
 </body>
