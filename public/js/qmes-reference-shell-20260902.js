@@ -7,7 +7,47 @@
   const STORAGE_KEY="qmes-reference-sidebar-state-v1";
   const V2_THEME_ID="qmes-reference-theme-20260903-v2";
   const V2_THEME_HREF="./css/qmes-reference-theme-20260903-v2.css?v=20260903-1";
+  const MOBILE_HOME="/mobile.html?v=20260903-0845";
   let frame=0;
+
+  function safeSessionGet(key){
+    try{return sessionStorage.getItem(key);}catch(_error){return null;}
+  }
+  function safeSessionRemove(key){
+    try{sessionStorage.removeItem(key);}catch(_error){}
+  }
+  function mobileDevice(){
+    return window.matchMedia("(max-width:820px)").matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||"");
+  }
+  function mobileRootRoute(){
+    if(!mobileDevice()) return;
+    if(location.pathname!=="/"&&location.pathname!=="/index.html") return;
+    const params=new URLSearchParams(location.search||"");
+    if(params.get("desktop")==="1"||params.get("view")==="desktop") return;
+    if(safeSessionGet("qmes_mobile_open_tab_once")==="1"){
+      safeSessionRemove("qmes_mobile_open_tab_once");
+      return;
+    }
+    let stopped=false;
+    let attempts=0;
+    const check=()=>{
+      if(stopped||location.pathname!=="/"&&location.pathname!=="/index.html") return;
+      attempts+=1;
+      fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"})
+        .then(response=>{
+          if(response.ok){
+            stopped=true;
+            location.replace(MOBILE_HOME);
+            return;
+          }
+          if(attempts<40) setTimeout(check,1200);
+        })
+        .catch(()=>{if(attempts<40)setTimeout(check,1200);});
+    };
+    check();
+  }
+
+  mobileRootRoute();
 
   function getPreference(){
     try{return localStorage.getItem(STORAGE_KEY)||"open";}catch(_error){return "open";}
