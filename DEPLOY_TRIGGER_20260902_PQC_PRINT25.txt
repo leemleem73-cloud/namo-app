@@ -1,0 +1,2 @@
+Deploy trigger: PQC print v25 hard-isolates left sidebar/navigation and resets print main layout.
+2026-09-02 11:35 KST
