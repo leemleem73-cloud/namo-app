@@ -16,6 +16,17 @@
     return document.querySelector(PROFILE_BUTTON_SELECTOR);
   }
 
+  function syncHeaderActionClasses(){
+    const targets = [
+      ...document.querySelectorAll('button[aria-label^="NAMO Talk 알림"]'),
+      ...document.querySelectorAll('button[aria-label="NAMO Talk 열기"],button[aria-label="NAMO Talk 닫기"]'),
+      ...document.querySelectorAll(PROFILE_BUTTON_SELECTOR)
+    ];
+    targets.forEach(function(button){
+      button.classList.add("qmes-header-action");
+    });
+  }
+
   function ensureDropdown(){
     let dropdown = document.getElementById(DROPDOWN_ID);
     if(dropdown) return dropdown;
@@ -66,6 +77,7 @@
 
   function openDropdown(){
     cancelClose();
+    syncHeaderActionClasses();
     const dropdown = ensureDropdown();
     positionDropdown();
     dropdown.classList.add("is-open");
@@ -125,6 +137,7 @@
   }
 
   function bindProfileButton(){
+    syncHeaderActionClasses();
     const button = getProfileButton();
     if(!button || button === boundButton) return;
     boundButton = button;
@@ -146,6 +159,8 @@
     if(started || !currentUserReady()) return false;
     started = true;
 
+    syncHeaderActionClasses();
+
     document.addEventListener("mousedown", function(event){
       const dropdown = document.getElementById(DROPDOWN_ID);
       const button = getProfileButton();
@@ -159,13 +174,17 @@
     });
 
     window.addEventListener("resize", function(){
+      syncHeaderActionClasses();
       if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
     });
     window.addEventListener("scroll", function(){
       if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open")) positionDropdown();
     }, true);
 
-    observer = new MutationObserver(bindProfileButton);
+    observer = new MutationObserver(function(){
+      syncHeaderActionClasses();
+      bindProfileButton();
+    });
     observer.observe(document.documentElement, { childList:true, subtree:true });
     bindProfileButton();
     return true;
