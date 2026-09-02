@@ -1,13 +1,13 @@
 /* NAMO QMES - IQC/PQC/OQC certificate print isolation - 2026-09-02 */
 (function installCertificatePrintFix(global){
   "use strict";
-  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V11__) return;
-  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V11__=true;
-  const STYLE_ID="qmes-cert-print-isolation-20260902-v11",SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";let target=null;
+  if(global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V12__) return;
+  global.__QMES_CERTIFICATE_PRINT_FIX_20260902_V12__=true;
+  const STYLE_ID="qmes-cert-print-isolation-20260902-v12",SELECTOR=".qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc";let target=null;
   function installStyle(){if(document.getElementById(STYLE_ID))return;const style=document.createElement("style");style.id=STYLE_ID;style.textContent=`
-/* PQC/OQC title only: align upward like IQC without moving the rest of the certificate. */
+/* PQC/OQC title only: raise further to match IQC title position. */
 html body #root .qmes-pqc-doc .qmes-iqc-centered-title,
-html body #root .qmes-oqc-doc .qmes-iqc-centered-title{transform:translateY(-5px)!important;}
+html body #root .qmes-oqc-doc .qmes-iqc-centered-title{transform:translateY(-10px)!important;}
 @media print{
  @page{size:A4 portrait;margin:5mm;}
  html,body,#root{margin:0!important;padding:0!important;width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important;}
@@ -22,10 +22,8 @@ html body #root .qmes-oqc-doc .qmes-iqc-centered-title{transform:translateY(-5px
  body.qmes-cert-print-iqc{width:200mm!important;min-height:287mm!important;}
  body.qmes-cert-print-iqc .qmes-cert-print-iqc-stage{width:200mm!important;min-height:287mm!important;margin:0 auto!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;background:#fff!important;}
  body.qmes-cert-print-iqc .qmes-cert-print-target{width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;margin:auto!important;transform:translateY(4mm)!important;}
- /* PQC only: move the whole printed certificate further down. */
  body.qmes-cert-print-pqc .qmes-cert-print-target{transform:translateY(16mm)!important;}
- /* Keep the title itself slightly higher inside PQC/OQC. */
- body.qmes-cert-print-pqc .qmes-cert-print-target .qmes-iqc-centered-title,body.qmes-cert-print-oqc .qmes-cert-print-target .qmes-iqc-centered-title{transform:translateY(-5px)!important;}
+ body.qmes-cert-print-pqc .qmes-cert-print-target .qmes-iqc-centered-title,body.qmes-cert-print-oqc .qmes-cert-print-target .qmes-iqc-centered-title{transform:translateY(-10px)!important;}
  body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,body.qmes-cert-print-live .qmes-cert-print-target button,body.qmes-cert-print-live .qmes-cert-print-target .no-print{display:none!important;visibility:hidden!important;}
  body.qmes-cert-print-live .qmes-cert-print-target table{page-break-inside:auto!important;}body.qmes-cert-print-live .qmes-cert-print-target tr{page-break-inside:avoid!important;page-break-after:auto!important;}body.qmes-cert-print-live .qmes-cert-print-target .qmes-iqc2-sec,body.qmes-cert-print-live .qmes-cert-print-target .qmes-iqc2-auth-row{break-inside:avoid!important;page-break-inside:avoid!important;}
 }`;document.head.appendChild(style);}
