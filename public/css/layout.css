@@ -226,7 +226,7 @@ html body.qmes-side-open #root > div > main {
   }
 }
 
-/* 2026-09-02: header controls — same visual language as backup/restore, account menu restored */
+/* 2026-09-02: header controls share the exact backup/restore action styling */
 html body #root > div > header button[aria-label^="NAMO Talk 알림"],
 html body #root > div > header button[aria-label="NAMO Talk 열기"],
 html body #root > div > header button[aria-label="NAMO Talk 닫기"],
@@ -273,24 +273,4 @@ html body #root > div > header button[aria-label="계정 설정 열기"]:hover,
 html body #root > div > header .qmes-header-action:hover {
   background: #f1f5f9 !important;
   border-color: #b9c6d3 !important;
-}
-
-/* index.html contains an older display:none rule for this dialog; this higher-specificity rule restores it. */
-html body #root > div [role="dialog"][aria-label="계정 설정"] {
-  display: flex !important;
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 10000 !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-html body #root > div [role="dialog"][aria-label="계정 설정"] > div {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #111827 !important;
-  box-shadow: 0 18px 50px rgba(15,23,42,.22) !important;
-}
-html body #root > div [role="dialog"][aria-label="계정 설정"] h2,
-html body #root > div [role="dialog"][aria-label="계정 설정"] button:not([class*="red"]) {
-  color: #111827 !important;
 }
