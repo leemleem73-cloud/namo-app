@@ -1,10 +1,9 @@
 /* NAMO QMES - certificate print isolation - 2026-09-02 */
 (function(global){
 'use strict';
-if(global.__QMES_CERT_PRINT_V24__)return;global.__QMES_CERT_PRINT_V24__=true;
-var id='qmes-cert-print-v24',sel='.qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc',target=null;
+if(global.__QMES_CERT_PRINT_V25__)return;global.__QMES_CERT_PRINT_V25__=true;
+var id='qmes-cert-print-v25',sel='.qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc',target=null;
 function install(){if(document.getElementById(id))return;var s=document.createElement('style');s.id=id;s.textContent=`
-/* PQC/OQC title text only: 3px lower. */
 html body #root .qmes-pqc-doc .qmes-iqc-centered-title{transform:translateY(-13px)!important;}
 html body #root .qmes-oqc-doc .qmes-iqc-centered-title{position:relative!important;top:-13px!important;transform:none!important;z-index:5!important;visibility:visible!important;opacity:1!important;}
 @media print{
@@ -12,8 +11,8 @@ html body #root .qmes-oqc-doc .qmes-iqc-centered-title{position:relative!importa
 html,body,#root{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;overflow:visible!important;}
 body.qmes-cert-print-live *{visibility:hidden!important;}
 body.qmes-cert-print-live .qmes-cert-print-path,body.qmes-cert-print-live .qmes-cert-print-path *{visibility:visible!important;}
-body.qmes-cert-print-live #qmes-sync-sidebar,body.qmes-cert-print-live #qmes-sync-hamburger,body.qmes-cert-print-live .qmes-top-menu,body.qmes-cert-print-live .qmes-top-menu-bar{display:none!important;visibility:hidden!important;}
-body.qmes-cert-print-live #root>div>main{margin-left:0!important;left:0!important;width:100%!important;max-width:none!important;padding-left:0!important;}
+body.qmes-cert-print-live #qmes-sync-sidebar,body.qmes-cert-print-live #qmes-sync-sidebar *,body.qmes-cert-print-live #qmes-sync-hamburger,body.qmes-cert-print-live #qmes-sync-hamburger *,body.qmes-cert-print-live aside:not(.qmes-cert-print-path),body.qmes-cert-print-live nav:not(.qmes-cert-print-path),body.qmes-cert-print-live .qmes-sidebar:not(.qmes-cert-print-path),body.qmes-cert-print-live .qmes-side-menu:not(.qmes-cert-print-path),body.qmes-cert-print-live .qmes-top-menu,body.qmes-cert-print-live .qmes-top-menu-bar{display:none!important;visibility:hidden!important;width:0!important;min-width:0!important;max-width:0!important;margin:0!important;padding:0!important;}
+body.qmes-cert-print-live.qmes-cert-print-pqc #root>div,body.qmes-cert-print-live.qmes-cert-print-pqc #root>div>main,body.qmes-cert-print-live.qmes-cert-print-pqc main.qmes-cert-print-path{margin-left:0!important;left:0!important;right:auto!important;width:100%!important;max-width:none!important;padding-left:0!important;transform:none!important;}
 body.qmes-cert-print-live .qmes-cert-print-target{margin-left:auto!important;margin-right:auto!important;box-shadow:none!important;overflow:visible!important;}
 body.qmes-cert-print-live,body.qmes-cert-print-live #root,body.qmes-cert-print-live #root>div,body.qmes-cert-print-live #root>div>main,body.qmes-cert-print-live .qmes-cert-print-path:not(.qmes-cert-print-target){background:#fff!important;background-color:#fff!important;background-image:none!important;box-shadow:none!important;filter:none!important;opacity:1!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 body.qmes-cert-print-live .qmes-cert-print-path:not(.qmes-cert-print-target)::before,body.qmes-cert-print-live .qmes-cert-print-path:not(.qmes-cert-print-target)::after{content:none!important;display:none!important;background:none!important;box-shadow:none!important;}
