@@ -1,0 +1,2 @@
+Deploy trigger: IQC certificate preview isolation v2. Hide app shell while preview is open and keep preview title/print/close header visible.
+2026-09-02 KST
