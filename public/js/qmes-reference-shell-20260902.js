@@ -29,7 +29,7 @@
     if(!copy){
       copy=document.createElement("span");
       copy.className="qmes-ref-brand-copy";
-      copy.innerHTML='<span class="qmes-ref-brand-mark">N</span><span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"></span><small>ERP · MES INTEGRATED</small></span>';
+      copy.innerHTML='<span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"></span><small>ERP · MES INTEGRATED</small></span>';
       brand.appendChild(copy);
     }
     const slot=copy.querySelector(".qmes-ref-logo-slot");
