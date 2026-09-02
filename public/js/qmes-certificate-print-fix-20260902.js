@@ -1,12 +1,11 @@
 /* NAMO QMES - certificate print isolation - 2026-09-02 */
 (function(global){
 'use strict';
-if(global.__QMES_CERT_PRINT_V22__)return;global.__QMES_CERT_PRINT_V22__=true;
-var id='qmes-cert-print-v22',sel='.qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc',target=null;
+if(global.__QMES_CERT_PRINT_V23__)return;global.__QMES_CERT_PRINT_V23__=true;
+var id='qmes-cert-print-v23',sel='.qmes-iqc-doc:not(.qmes-wo-cert),.qmes-pqc-doc,.qmes-oqc-doc',target=null;
 function install(){if(document.getElementById(id))return;var s=document.createElement('style');s.id=id;s.textContent=`
 html body #root .qmes-pqc-doc .qmes-iqc-centered-title{transform:translateY(-16px)!important;}
-/* OQC title: only 3px lower than the approved visible position. */
-html body #root .qmes-oqc-doc .qmes-iqc-centered-title{position:relative!important;top:-19px!important;transform:none!important;z-index:5!important;visibility:visible!important;opacity:1!important;}
+html body #root .qmes-oqc-doc .qmes-iqc-centered-title{position:relative!important;top:-16px!important;transform:none!important;z-index:5!important;visibility:visible!important;opacity:1!important;}
 @media print{
 @page{size:A4 portrait;margin:5mm;}
 html,body,#root{margin:0!important;padding:0!important;width:100%!important;background:#fff!important;overflow:visible!important;}
@@ -21,7 +20,7 @@ body.qmes-cert-print-iqc .qmes-cert-print-iqc-stage{width:200mm!important;min-he
 body.qmes-cert-print-iqc .qmes-cert-print-target{width:100%!important;max-width:100%!important;margin:auto!important;transform:translateY(4mm)!important;}
 body.qmes-cert-print-pqc .qmes-cert-print-target{transform:translateY(36mm)!important;}
 body.qmes-cert-print-pqc .qmes-cert-print-target .qmes-iqc-centered-title{transform:translateY(-16px)!important;}
-body.qmes-cert-print-oqc .qmes-cert-print-target .qmes-iqc-centered-title{position:relative!important;top:-19px!important;transform:none!important;z-index:5!important;visibility:visible!important;opacity:1!important;}
+body.qmes-cert-print-oqc .qmes-cert-print-target .qmes-iqc-centered-title{position:relative!important;top:-16px!important;transform:none!important;z-index:5!important;visibility:visible!important;opacity:1!important;}
 body.qmes-cert-print-live .qmes-cert-print-target .qmes-wo-viewer-head,body.qmes-cert-print-live .qmes-cert-print-target button,body.qmes-cert-print-live .qmes-cert-print-target .no-print{display:none!important;visibility:hidden!important;}
 body.qmes-cert-print-live .qmes-cert-print-target tr{page-break-inside:avoid!important;}
 }`;document.head.appendChild(s);}
