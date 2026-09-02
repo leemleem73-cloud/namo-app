@@ -1,0 +1,2 @@
+Deploy trigger: top menu hover opens submenu only; left sidebar remains click-driven.
+2026-09-02 14:07 KST
