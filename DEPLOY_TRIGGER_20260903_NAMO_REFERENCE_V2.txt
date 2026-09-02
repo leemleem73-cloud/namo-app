@@ -1,0 +1,5 @@
+2026-09-03 NAMO reference design v2
+- current production QMES shell only
+- keeps existing left-menu/navigation behavior
+- applies supplied ERP/MES visual theme via isolated screen-only CSS
+- no inspection/report/print logic changes
