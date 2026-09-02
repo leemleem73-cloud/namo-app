@@ -1,0 +1,5 @@
+2026-09-02 left navigation accordion deploy trigger.
+Scope: qmes-collapsible-side-menu.js only.
+Top navigation is visually hidden while its DOM remains for legacy routing safety.
+Left menu now contains collapsible groups including 수주납기, 생산계획, 구매발주, 출하물류.
+No certificate, report, quality inspection, print, login, or business screen code changed.
