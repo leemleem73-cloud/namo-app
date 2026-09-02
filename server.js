@@ -5,6 +5,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// Always install mobile root routing before the legacy Express app is created.
+// This works whether production starts with `npm start` or `node server.js`.
+require('./mobile-static-preload.js');
+
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
