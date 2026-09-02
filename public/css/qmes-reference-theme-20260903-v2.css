@@ -2,14 +2,13 @@
 @media screen {
   html body.qmes-reference-theme {--namo-v2-blue:#2f78b7;--namo-v2-ink:#294a63;--namo-v2-line:#c9d9e5;--namo-v2-bg:#edf2f6;background:var(--namo-v2-bg)!important;color:var(--namo-v2-ink)!important;}
 
-  /* Keep the ORIGINAL company logo visible. The injected NAMO ONE copy stays removed. */
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-mark,
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small,
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-copy {display:none!important;}
+  /* Header brand: use one controlled block — N mark + official NAMO Chemical logo. */
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-copy {display:flex!important;visibility:visible!important;opacity:1!important;}
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-mark {display:grid!important;}
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small {display:block!important;}
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand .qmes-ref-original-logo,
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand > img[alt="NAMO Chemical"] {
-    display:block!important;visibility:visible!important;opacity:1!important;width:auto!important;height:auto!important;max-height:44px!important;
-  }
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand > img[alt="NAMO Chemical"] {display:none!important;visibility:hidden!important;}
+  html body.qmes-reference-theme #root > div > header .qmes-ref-company-logo {display:block!important;visibility:visible!important;opacity:1!important;}
 
   /* LEFT SIDEBAR */
   html body.qmes-reference-theme #qmes-sync-sidebar#qmes-sync-sidebar {padding:0!important;background:#f4f8fb!important;border-right:1px solid #bfd1de!important;box-shadow:2px 0 8px rgba(40,78,105,.08)!important;color:#294a63!important;}
