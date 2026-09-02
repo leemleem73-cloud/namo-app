@@ -1,0 +1,4 @@
+Trigger deploy for QMES staged shell redesign.
+Scope: public/js/qmes-collapsible-side-menu.js V18 ERP theme only.
+No report, certificate, quality inspection, print, or login logic changes.
+Date: 2026-09-02
