@@ -1,0 +1,5 @@
+PQC certificate final3 deploy trigger
+- Keep PQC process number such as PQC-260115 on one horizontal line.
+- Clear only the automatic '-' placeholder in empty PQC remarks; preserve real remarks.
+- Increase PQC approval name/signature row from 38px to 46px while keeping header row 22px.
+- IQC/OQC untouched.
