@@ -1,0 +1,2 @@
+Deploy trigger: reload shell runtime fixes for immediate top-menu hover, IQC preview header visibility, and PQC/OQC print hamburger removal.
+2026-09-02 KST
