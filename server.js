@@ -339,6 +339,168 @@ app.get('/js/qmes-top-submenu-restore-20260820-v2.js', (req, res, next) => {
   });
 });
 
+function qmesSalesWorkOrderNavigationFix() {
+  "use strict";
+  if (window.__QMES_SALES_WORKORDER_NAV_FIX_20260902__) return;
+  window.__QMES_SALES_WORKORDER_NAV_FIX_20260902__ = true;
+
+  const clean = value => String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+  const DRAWER_IDS = [
+    "qmes-sales-detail-drawer-safe-20260828-v2",
+    "qmes-sales-detail-drawer-20260828-v1",
+    "qmes-sales-order-detail-panel-20260826"
+  ];
+
+  function drawerRoot(button) {
+    for (const id of DRAWER_IDS) {
+      const root = button.closest(`#${id}`);
+      if (root) return root;
+    }
+    return button.closest('[role="dialog"][aria-label="통합 상세 정보"]')?.parentElement || null;
+  }
+
+  function workOrderFromDrawer(root) {
+    for (const card of Array.from(root?.querySelectorAll(".qsd2-card,.qsd-card,.qso-item") || [])) {
+      const label = clean(card.querySelector("small,b,label")?.textContent);
+      if (!/작업지시/.test(label)) continue;
+      const value = clean(card.querySelector("strong,span")?.textContent);
+      if (value && value !== "-") return value;
+    }
+    const salesId = clean(root?.dataset?.salesId);
+    if (!salesId) return "";
+    try {
+      const rows = JSON.parse(localStorage.getItem("qmes-erp-sales-v1") || "[]");
+      const meta = JSON.parse(localStorage.getItem("qmes-sales-order-meta-v1") || "{}");
+      const links = JSON.parse(localStorage.getItem("qmes-sales-workorder-link-v1") || "{}");
+      const row = (Array.isArray(rows) ? rows : []).find(item => {
+        const raw = clean(item?.id);
+        const key = clean(item?.workOrder) || raw;
+        const info = meta[key] || meta[raw] || item?.orderMeta || {};
+        const shown = clean(info?.salesOrderIdOverride) || raw;
+        return salesId === raw || salesId === key || salesId === shown;
+      });
+      if (!row) return clean(links?.bySales?.[salesId]);
+      const raw = clean(row.id);
+      const key = clean(row.workOrder) || raw;
+      const info = meta[key] || meta[raw] || row.orderMeta || {};
+      return clean(row.workOrder) || clean(info.workOrder) || clean(links?.bySales?.[salesId]) || clean(links?.bySales?.[raw]);
+    } catch (_error) {
+      return "";
+    }
+  }
+
+  function clearBlockingLayers() {
+    DRAWER_IDS.forEach(id => document.getElementById(id)?.remove());
+    document.getElementById("qmes-business-extension-host")?.remove();
+    document.querySelectorAll('[data-qbe-hidden="1"]').forEach(element => {
+      element.style.removeProperty("display");
+      delete element.dataset.qbeHidden;
+    });
+    document.documentElement.style.removeProperty("overflow");
+    document.documentElement.style.removeProperty("pointer-events");
+    document.body?.style.removeProperty("overflow");
+    document.body?.style.removeProperty("pointer-events");
+    try {
+      sessionStorage.removeItem("qmes_business_extension_tab");
+    } catch (_error) {}
+    if (location.hash === "#page-workorder-list") {
+      history.replaceState(null, "", `${location.pathname}${location.search}`);
+    }
+  }
+
+  function navigateToWorkOrders(workOrder) {
+    const wanted = clean(workOrder);
+    if (!wanted || wanted === "-") {
+      alert("연결된 작업지시서를 찾을 수 없습니다.");
+      return;
+    }
+    clearBlockingLayers();
+    try {
+      sessionStorage.setItem("qmes_current_tab", "woIssue");
+      sessionStorage.setItem("qmes_open_menu", "productionMenu");
+      localStorage.setItem("qmes-focus-workorder", wanted);
+    } catch (_error) {}
+
+    const fire = () => window.dispatchEvent(new CustomEvent("qmes:navigate-tab", {
+      detail: {
+        tab: "woIssue",
+        openMenu: "productionMenu",
+        workOrder: wanted,
+        source: "sales-workorder-navigation-fix-20260902"
+      }
+    }));
+    fire();
+    requestAnimationFrame(fire);
+    setTimeout(fire, 80);
+
+    let attempt = 0;
+    const openPreview = () => {
+      attempt += 1;
+      clearBlockingLayers();
+      const row = Array.from(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(item => {
+        const lot = clean(item.querySelector("td:first-child")?.textContent);
+        return lot === wanted;
+      });
+      if (row) {
+        const view = row.querySelector(".qmes-manage-btn.view")
+          || row.querySelector("td:first-child button")
+          || Array.from(row.querySelectorAll("button")).find(button => /미리보기|보기/.test(clean(button.textContent)));
+        if (view) {
+          view.click();
+          row.scrollIntoView({ block: "center", behavior: "auto" });
+          try { localStorage.removeItem("qmes-focus-workorder"); } catch (_error) {}
+          return;
+        }
+      }
+      if (attempt === 8 && typeof window.qmesSyncPullWorkOrders === "function") {
+        try { Promise.resolve(window.qmesSyncPullWorkOrders()).catch(() => {}); } catch (_error) {}
+      }
+      if (attempt < 120) {
+        setTimeout(openPreview, 50);
+      } else {
+        try { localStorage.removeItem("qmes-focus-workorder"); } catch (_error) {}
+        alert(`작업지시서 ${wanted}를 목록에서 찾지 못했습니다. 작업지시서 화면에서 확인해 주세요.`);
+      }
+    };
+    setTimeout(openPreview, 120);
+  }
+
+  window.addEventListener("click", event => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("[data-qsd2-workorder],[data-qsd-workorder]");
+    if (!button) return;
+    const root = drawerRoot(button);
+    if (!root) return;
+    const workOrder = workOrderFromDrawer(root);
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    navigateToWorkOrders(workOrder);
+  }, true);
+
+  window.addEventListener("hashchange", () => {
+    if (location.hash !== "#page-workorder-list") return;
+    const drawer = DRAWER_IDS.map(id => document.getElementById(id)).find(Boolean);
+    if (!drawer) return;
+    const workOrder = workOrderFromDrawer(drawer);
+    navigateToWorkOrders(workOrder);
+  }, true);
+
+  window.qmesOpenSalesWorkOrderSafe = navigateToWorkOrders;
+}
+
+const qmesSalesWorkOrderNavigationFixSource = `;(${qmesSalesWorkOrderNavigationFix.toString()})();`;
+const qmesSalesDetailDrawerSafePath = path.join(__dirname, 'public', 'js', 'qmes-sales-detail-drawer-safe-20260828-v2.js');
+
+app.get('/js/qmes-sales-detail-drawer-safe-20260828-v2.js', (req, res, next) => {
+  fs.readFile(qmesSalesDetailDrawerSafePath, 'utf8', (err, source) => {
+    if (err) return next(err);
+    res.type('application/javascript; charset=utf-8');
+    res.send(`${source}\n${qmesSalesWorkOrderNavigationFixSource}`);
+  });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 function ok(res, data = null, message = 'OK') {
