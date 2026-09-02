@@ -15,6 +15,13 @@
   }
   function desktop(){return window.matchMedia("(min-width:821px)").matches;}
 
+  function ensureThemeRevision(){
+    const link=document.getElementById("qmes-reference-theme-20260902");
+    if(!link) return;
+    const next="./css/qmes-reference-theme-20260902.css?v=20260902-2";
+    if(link.getAttribute("href")!==next) link.setAttribute("href",next);
+  }
+
   function ensureBrand(header){
     const row=header.firstElementChild;
     const brand=row?.querySelector(":scope > button:first-child");
@@ -60,6 +67,7 @@
   }
 
   function syncShell(){
+    ensureThemeRevision();
     const host=document.querySelector("#root > div");
     const header=host?.querySelector(":scope > header");
     const main=host?.querySelector(":scope > main");
