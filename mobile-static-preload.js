@@ -68,6 +68,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
             '<script src="/js/qmes-mobile-production-20260903.js?v=20260903-prod1"></script>\n</body>'
           );
         }
+
+        // Dedicated IQC workspace is loaded only inside mobile-work.html.
+        // Desktop IQC React source remains untouched.
+        if (!html.includes('qmes-mobile-iqc-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-iqc-20260903.js?v=20260903-iqc1"></script>\n</body>'
+          );
+        }
       }
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
