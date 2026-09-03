@@ -1,0 +1,125 @@
+/* NAMO QMES mobile workspace - 2026-09-03
+   Activated only when index.html is opened with ?fromMobile=1.
+   Desktop layout remains untouched. */
+html.qmes-mobile-workspace,html.qmes-mobile-workspace body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important;background:#f2f5f9!important}
+html.qmes-mobile-workspace body{padding:0!important;margin:0!important;color:#17243a!important}
+html.qmes-mobile-workspace body.qmes-side-open{padding-left:0!important;margin-left:0!important}
+
+/* Remove desktop chrome. A dedicated mobile bar is injected by qmes-reference-shell. */
+html.qmes-mobile-workspace #root>div>header,
+html.qmes-mobile-workspace #qmes-sync-sidebar,
+html.qmes-mobile-workspace #qmes-sync-hamburger,
+html.qmes-mobile-workspace .qmes-top-menu-bar,
+html.qmes-mobile-workspace .qmes-top-menu,
+html.qmes-mobile-workspace .qmes-submenu-row,
+html.qmes-mobile-workspace #qmes-user-dropdown,
+html.qmes-mobile-workspace #qmes-all-menu-dropdown{display:none!important}
+
+html.qmes-mobile-workspace #root,
+html.qmes-mobile-workspace #root>div{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;background:#f2f5f9!important}
+html.qmes-mobile-workspace #root>div>main{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:66px 10px 92px!important;background:#f2f5f9!important;overflow:visible!important}
+html.qmes-mobile-workspace #root>div>main>*{max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important}
+
+/* Fixed mobile work header */
+#qmes-mobile-workbar{position:fixed;z-index:2147482000;top:0;left:0;right:0;height:58px;padding:0 10px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0f6fd6,#1686ea);box-shadow:0 5px 18px rgba(13,73,139,.24);color:#fff;font-family:Pretendard,"Noto Sans KR",sans-serif}
+#qmes-mobile-workbar button{border:0;cursor:pointer;font:inherit}
+#qmes-mobile-workbar .qmwb-back{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.13);color:#fff;font-size:21px;font-weight:800}
+#qmes-mobile-workbar .qmwb-copy{min-width:0;flex:1}
+#qmes-mobile-workbar .qmwb-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:950;letter-spacing:-.3px}
+#qmes-mobile-workbar .qmwb-copy span{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(255,255,255,.75);font-size:9.5px;font-weight:750}
+#qmes-mobile-workbar .qmwb-home,#qmes-mobile-workbar .qmwb-logout{height:36px;padding:0 10px;border:1px solid rgba(255,255,255,.25);border-radius:11px;background:rgba(255,255,255,.11);color:#fff;font-size:10.5px;font-weight:900;white-space:nowrap}
+
+/* Fixed mobile bottom navigation */
+#qmes-mobile-worknav{position:fixed;z-index:2147481900;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);min-height:67px;padding:6px 5px max(8px,env(safe-area-inset-bottom));border-top:1px solid #dce4ec;background:rgba(255,255,255,.97);box-shadow:0 -7px 22px rgba(28,48,75,.09);backdrop-filter:blur(12px);font-family:Pretendard,"Noto Sans KR",sans-serif}
+#qmes-mobile-worknav button{min-width:0;border:0;border-radius:12px;background:transparent;color:#7e8b9b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:800 9px/1.2 Pretendard,"Noto Sans KR",sans-serif;cursor:pointer}
+#qmes-mobile-worknav button i{font-style:normal;font-size:20px;line-height:1}
+#qmes-mobile-worknav button.is-active{background:#edf6ff;color:#0f6fd6}
+
+/* General mobile rules for legacy modules */
+html.qmes-mobile-workspace main h1{font-size:20px!important;line-height:1.25!important;letter-spacing:-.5px!important}
+html.qmes-mobile-workspace main h2{font-size:16px!important;line-height:1.3!important}
+html.qmes-mobile-workspace main h3{font-size:14px!important}
+html.qmes-mobile-workspace main p{max-width:100%!important}
+html.qmes-mobile-workspace main button,
+html.qmes-mobile-workspace main [role="button"]{max-width:100%}
+html.qmes-mobile-workspace main input:not([type="checkbox"]):not([type="radio"]),
+html.qmes-mobile-workspace main select,
+html.qmes-mobile-workspace main textarea{max-width:100%!important;min-height:42px!important;font-size:14px!important}
+html.qmes-mobile-workspace main textarea{min-height:84px!important}
+html.qmes-mobile-workspace main form{max-width:100%!important;min-width:0!important}
+html.qmes-mobile-workspace main .grid{grid-template-columns:minmax(0,1fr)!important}
+html.qmes-mobile-workspace main .flex{max-width:100%!important}
+html.qmes-mobile-workspace main .overflow-x-auto,
+html.qmes-mobile-workspace main .overflow-auto,
+html.qmes-mobile-workspace main [class*="table-wrap"],
+html.qmes-mobile-workspace main [class*="table-container"]{max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+html.qmes-mobile-workspace main table{font-size:11px!important}
+html.qmes-mobile-workspace main th,html.qmes-mobile-workspace main td{padding:8px 7px!important}
+html.qmes-mobile-workspace main table:not(.qmes-wo-basic-info-table):not(.qmes-wo-cert-material-table){min-width:620px!important}
+html.qmes-mobile-workspace main [class*="modal"],
+html.qmes-mobile-workspace main [role="dialog"]{max-width:calc(100vw - 16px)!important}
+
+/* Enterprise dashboard: convert the desktop dashboard into a compact mobile dashboard. */
+html.qmes-mobile-workspace .namo-enterprise-dashboard{min-height:0!important;margin:0!important;padding:0 0 10px!important;background:transparent!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-page-head{display:none!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0 0 9px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis article{min-height:113px!important;border-radius:14px!important;padding:13px 12px!important;box-shadow:0 2px 9px rgba(36,65,93,.07)!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis article>span{padding-right:34px;font-size:10.5px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis strong{margin-top:10px!important;font-size:24px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis strong small{font-size:10px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis p{white-space:normal!important;line-height:1.45!important;font-size:8.8px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis article>i{right:10px!important;top:10px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-layout{display:block!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel{border-radius:14px!important;margin:0 0 9px!important;box-shadow:0 2px 9px rgba(36,65,93,.06)!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel>header{min-height:52px!important;padding:10px 12px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel h2{font-size:13px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel header p{font-size:9px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel header button{height:33px!important;padding:0 9px!important;font-size:9.5px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-flow{grid-template-columns:repeat(7,86px)!important;padding:13px 7px 15px!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-flow-step{min-width:82px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-flow-dot{width:40px!important;height:40px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-split{grid-template-columns:minmax(0,1fr)!important;gap:9px!important;margin-top:0!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-panel table{min-width:560px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-chart{height:155px!important;padding:10px 8px 17px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-right{margin-top:0!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-tasks{gap:7px!important;padding:9px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-task{border-radius:10px!important;padding:11px 9px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-task b{font-size:10.5px!important}
+html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-task small{font-size:9px!important}
+
+/* Work order / production documents */
+html.qmes-mobile-workspace .qmes-wo-cert,
+html.qmes-mobile-workspace .qmes-production,
+html.qmes-mobile-workspace .qmes-prod-process{width:100%!important;max-width:100%!important;margin:0!important;padding-left:0!important;padding-right:0!important}
+html.qmes-mobile-workspace .qmes-wo-cert table{display:table!important;min-width:760px!important}
+html.qmes-mobile-workspace .qmes-wo-cert>div:has(table){max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+html.qmes-mobile-workspace .qmes-prod-process .qpp-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+html.qmes-mobile-workspace .qmes-prod-process .qpp-card{width:100%!important;max-width:100%!important}
+
+/* Inspection and POP */
+html.qmes-mobile-workspace .iqc-page,
+html.qmes-mobile-workspace .pqc-page,
+html.qmes-mobile-workspace .oqc-page,
+html.qmes-mobile-workspace .ipad-pop,
+html.qmes-mobile-workspace [class*="iqc-"],
+html.qmes-mobile-workspace [class*="pqc-"],
+html.qmes-mobile-workspace [class*="oqc-"]{max-width:100%!important}
+html.qmes-mobile-workspace .ipad-pop{padding-left:0!important;padding-right:0!important}
+
+/* Inventory / partner / equipment / SPC / trace cards */
+html.qmes-mobile-workspace #qmes-inventory-host,
+html.qmes-mobile-workspace [class*="inventory"],
+html.qmes-mobile-workspace [class*="partner"],
+html.qmes-mobile-workspace [class*="equipment"],
+html.qmes-mobile-workspace [class*="trace"],
+html.qmes-mobile-workspace [class*="spc"]{max-width:100%!important;min-width:0!important}
+
+@media(max-width:390px){
+  #qmes-mobile-workbar .qmwb-copy span{display:none}
+  #qmes-mobile-workbar .qmwb-home{display:none}
+  html.qmes-mobile-workspace #root>div>main{padding-left:7px!important;padding-right:7px!important}
+  html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis{grid-template-columns:1fr 1fr!important;gap:6px!important}
+  html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis article{min-height:108px!important;padding:11px 9px!important}
+  html.qmes-mobile-workspace .namo-enterprise-dashboard .ned-kpis strong{font-size:21px!important}
+}
