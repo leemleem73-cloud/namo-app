@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V3__) return;
-  window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V3__=true;
+  if(window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V4__) return;
+  window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V4__=true;
 
   const clean=v=>String(v||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
   const sections=[
@@ -10,25 +10,38 @@
     {label:'MES · QMS',items:[{label:'생산 진행',icon:'M',group:'생산관리',sub:'생산 (배치)'},{label:'작업지시서',icon:'W',group:'생산관리',sub:'작업지시서'},{label:'생산공정 관리',icon:'P',tab:'prodProcess',openMenu:'productionMenu'},{label:'수입검사 (IQC)',icon:'Q',group:'품질검사',sub:'수입검사 (IQC)'},{label:'공정검사 (PQC)',icon:'Q',group:'품질검사',sub:'공정검사 (PQC)'},{label:'출하검사 (OQC)',icon:'Q',group:'품질검사',sub:'출하검사 (OQC)'},{label:'SPC (Cpk)',icon:'C',group:'품질검사',sub:'SPC (Cpk)'},{label:'품질 인터락',icon:'!',group:'품질검사',sub:'품질 인터락 (차단)'},{label:'출하성적서',icon:'R',group:'품질검사',sub:'출하성적서'},{label:'LOT 통합추적',icon:'L',direct:'LOT 추적'},{label:'출하 · 납품관리',icon:'O',tab:'erpShipping'},{label:'부적합 (8D)',icon:'8',group:'부적합관리',sub:'부적합 (8D)'},{label:'고객불만 (GQMS)',icon:'G',group:'부적합관리',sub:'고객불만 (GQMS)'},{label:'4M 변경관리',icon:'4',group:'부적합관리',sub:'4M 변경관리'},{label:'현장 입력 (iPad)',icon:'T',direct:'현장입력'},{label:'설비 모니터링',icon:'E',direct:'설비관리'}]}
   ];
 
-  /* Remove every previous shell-side menu artifact before creating the one owner. */
-  [
-    'qmes-sync-sidebar','qmes-sync-hamburger','qmes-left-menu','qmes-left-native-menu',
-    'qmes-context-side-menu','qmes-stable-sidebar','qmes-safe-sidebar'
-  ].forEach(id=>document.getElementById(id)?.remove());
-  [
+  const currentSideId='qmes-sync-sidebar';
+  const currentHamburgerId='qmes-sync-hamburger';
+  const legacyMenuIds=[
+    'qmes-left-menu','qmes-left-native-menu','qmes-context-side-menu',
+    'qmes-stable-sidebar','qmes-safe-sidebar'
+  ];
+  const legacyStyleIds=[
     'qmes-left-nav-runtime-style','qmes-sync-sidebar-style','qmes-left-menu-style',
     'qmes-left-native-menu-style','qmes-context-side-menu-style','qmes-stable-sidebar-style',
     'qmes-safe-sidebar-style','qmes-top-submenu-fix-style','qmes-restore-vertical-dropdown-style'
-  ].forEach(id=>document.getElementById(id)?.remove());
+  ];
+
+  function removeLegacyArtifacts(){
+    legacyMenuIds.forEach(id=>document.getElementById(id)?.remove());
+    legacyStyleIds.forEach(id=>document.getElementById(id)?.remove());
+    document.querySelectorAll('[data-qmes-sidebar-owner]').forEach(node=>{
+      if(node.id!==currentSideId) node.remove();
+    });
+  }
+
+  document.getElementById(currentSideId)?.remove();
+  document.getElementById(currentHamburgerId)?.remove();
+  removeLegacyArtifacts();
 
   const side=document.createElement('aside');
-  side.id='qmes-sync-sidebar';
-  side.dataset.qmesSidebarOwner='shell-core-20260903-v3';
+  side.id=currentSideId;
+  side.dataset.qmesSidebarOwner='shell-core-20260903-v4';
   side.innerHTML='<div class="qmes-side-meta"><div class="qmes-company-pill"><span>㈜나모케미칼</span><b class="qmes-company-status">정상운영</b></div></div><div class="qmes-side-groups"></div>';
   document.body.appendChild(side);
 
   const hamburger=document.createElement('button');
-  hamburger.id='qmes-sync-hamburger';
+  hamburger.id=currentHamburgerId;
   hamburger.type='button';
   hamburger.setAttribute('aria-label','왼쪽 메뉴');
   hamburger.textContent='☰';
@@ -89,5 +102,17 @@
     navigate(sections[+b.dataset.s]?.items?.[+b.dataset.i]);
   });
   hamburger.addEventListener('click',()=>document.body.classList.toggle('qmes-side-open'));
+
+  /* React and legacy patches may mount after this file. Remove only known old shell artifacts
+     whenever they are reinserted; the current sidebar and feature-specific module sidebars stay intact. */
+  const observer=new MutationObserver(()=>{
+    removeLegacyArtifacts();
+    const duplicateSides=Array.from(document.querySelectorAll('#'+currentSideId));
+    duplicateSides.slice(1).forEach(node=>node.remove());
+    const duplicateHamburgers=Array.from(document.querySelectorAll('#'+currentHamburgerId));
+    duplicateHamburgers.slice(1).forEach(node=>node.remove());
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+
   render();
 })();
