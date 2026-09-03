@@ -35,13 +35,19 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
           '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260903-ipad3") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
         );
 
-        // Load the mobile-only adapter after the workspace shell. It transforms the
-        // same-origin iframe module UI into touch-friendly phone/iPad forms and cards
-        // without changing any PC source files.
         if (!html.includes('qmes-mobile-native-adapter-20260903.js')) {
           html = html.replace(
             '</body>',
             '<script src="/js/qmes-mobile-native-adapter-20260903.js?v=20260903-native1"></script>\n</body>'
+          );
+        }
+
+        // PQC/OQC native editor is loaded only inside mobile-work.html.
+        // It never touches or executes in the desktop index.html source path.
+        if (!html.includes('qmes-mobile-quality-entry-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-quality-entry-20260903.js?v=20260903-quality1"></script>\n</body>'
           );
         }
       }
@@ -62,10 +68,6 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     return queryDesktop || refererDesktop || embeddedMobile;
   }
 
-  // app.jsx is a SPA: after a successful login it calls setCurrentUser() and stays
-  // on the already-loaded PC page, so an HTTP redirect never gets a chance to run.
-  // Inject only a tiny runtime detector into the served JS. It recognizes modern
-  // iPadOS desktop-mode Safari via MacIntel + touch points, while a real Mac stays PC.
   function servePatchedLoginApp(root, req, res, next) {
     const pathname = String(req.path || '').toLowerCase();
     if (pathname !== '/js/app.jsx' || isExplicitDesktopRequest(req)) return false;
@@ -78,14 +80,11 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
       let patched = runtimeHelper + source;
 
-      // Normal login and initial-password completion both go through handleLogin.
       patched = patched.replace(
         '    setCheckingSession(false);\n    setCurrentUser(user);',
         '    setCheckingSession(false);\n    if (qmesGoMobileWorkspace()) return;\n    setCurrentUser(user);'
       );
 
-      // Existing saved login sessions are verified through /api/auth/me and then
-      // call setCurrentUser directly, so redirect there as well.
       patched = patched.replace(
         '        saveLoginSession(normalized);\n        setCurrentUser(normalized);',
         '        saveLoginSession(normalized);\n        if (qmesGoMobileWorkspace()) return;\n        setCurrentUser(normalized);'
