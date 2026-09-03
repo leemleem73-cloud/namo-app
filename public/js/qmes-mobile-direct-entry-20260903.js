@@ -6,8 +6,16 @@
   if(!location.pathname.toLowerCase().endsWith('/mobile-work.html'))return;
 
   const params=new URLSearchParams(location.search);
-  if(params.get('new')!=='1')return;
   const tab=String(params.get('tab')||'').toLowerCase();
+
+  // Mobile SPC is a dedicated Cpk/SPC dashboard. Never render the generic
+  // PQC/OQC record-list view for tab=spc.
+  if(tab==='spc'){
+    location.replace('/mobile-spc.html?v=20260904-spc1');
+    return;
+  }
+
+  if(params.get('new')!=='1')return;
   const docType=String(params.get('doctype')||'').trim();
   const requestedTitle=String(params.get('title')||'').trim();
   let finished=false;
