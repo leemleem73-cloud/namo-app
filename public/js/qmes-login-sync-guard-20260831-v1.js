@@ -1,14 +1,14 @@
-/* NAMO QMES - login/sync bootstrap coordinator - unified shell 2026-09-03 */
+/* NAMO QMES - login/sync bootstrap coordinator - clean shell 2026-09-03 */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
-  if(global.__QMES_LOGIN_SYNC_COORDINATOR_UNIFIED_20260903__) return;
-  global.__QMES_LOGIN_SYNC_COORDINATOR_UNIFIED_20260903__=true;
+  if(global.__QMES_LOGIN_SYNC_COORDINATOR_CLEAN_20260903__) return;
+  global.__QMES_LOGIN_SYNC_COORDINATOR_CLEAN_20260903__=true;
 
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
   const THEME_ID="qmes-reference-unified-20260903";
-  const THEME_SRC="./css/qmes-reference-unified-20260903.css?v=20260903-clean1";
-  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260903-clean1";
+  const THEME_SRC="./css/qmes-reference-unified-20260903.css?v=20260903-clean3";
+  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260903-flat3";
   const HEADER_STRUCTURE_SRC="./js/qmes-header-reference-structure-20260902.js?v=20260903-clean1";
   const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260902.js?v=20260902-iqc-edit-isolated3";
   const OQC_REPORT_FIX_SRC="./js/qmes-quality-report-fix-20260902.js?v=20260902-iqc-oqc-shared6";
@@ -21,8 +21,9 @@
   function ensureTheme(){
     ['qmes-reference-theme-20260902','qmes-header-logo-final-20260903','qmes-header-erp-design-20260902','qmes-reference-theme-20260903-v2'].forEach(id=>document.getElementById(id)?.remove());
     let link=document.getElementById(THEME_ID);
-    if(link) return;
-    link=document.createElement('link');link.id=THEME_ID;link.rel='stylesheet';link.href=THEME_SRC;document.head.appendChild(link);
+    if(link&&String(link.href||'').includes('clean3')) return link;
+    if(link) link.remove();
+    link=document.createElement('link');link.id=THEME_ID;link.rel='stylesheet';link.href=THEME_SRC;document.head.appendChild(link);return link;
   }
   ensureTheme();
 
@@ -34,7 +35,11 @@
   }
 
   let hasSavedSession=false;try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
-  let sidebarDeferred=true;global[SIDEBAR_GUARD]=true;
+  let sidebarDeferred=true;
+  global[SIDEBAR_GUARD]=true;
+  /* Block any cached pre-clean sidebar loaded later from index.html. */
+  global.__QMES_SYNC_SIDEBAR_CLEAN_20260903__=true;
+
   function currentUserReady(){const user=global.__QMES_CURRENT_USER__;return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));}
 
   function loadHeaderStructure(){
@@ -44,38 +49,12 @@
     try{delete global.__QMES_HEADER_REFERENCE_STRUCTURE_V11_CLEAN_LOGO__;document.getElementById('qmes-header-authority-v4')?.remove();}catch(_error){}
     const script=document.createElement("script");script.src=HEADER_STRUCTURE_SRC;script.async=false;document.head.appendChild(script);
   }
-  function loadShellFix(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-shell-runtime-fix-20260902.js"));
-    if(current&&String(current.src||"").includes("iqc-preview4"))return;
-    if(current)current.remove();
-    try{delete global.__QMES_SHELL_RUNTIME_FIX_20260902_V4__;}catch(_error){}
-    const script=document.createElement("script");script.src=SHELL_FIX_SRC;script.async=false;document.head.appendChild(script);
-  }
-  function loadCertificatePrintFix(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-certificate-print-fix-20260902.js"));
-    if(current&&String(current.src||"").includes("cert-print26")){loadShellFix();return;}
-    if(current)current.remove();const fix=document.createElement("script");fix.src=CERT_PRINT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(fix);
-  }
-  function loadPqcReportFix(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-pqc-report-fix-20260902.js"));
-    if(current&&String(current.src||"").includes("pqc-final8")){loadCertificatePrintFix();return;}
-    if(current)current.remove();const fix=document.createElement("script");fix.src=PQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadCertificatePrintFix,{once:true});document.head.appendChild(fix);
-  }
-  function loadOqcReportFix(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-report-fix-20260902.js"));
-    if(current&&String(current.src||"").includes("iqc-oqc-shared6")){loadPqcReportFix();return;}
-    if(current)current.remove();const fix=document.createElement("script");fix.src=OQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadPqcReportFix,{once:true});document.head.appendChild(fix);
-  }
-  function loadQualityInspectionUi(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260902.js"));
-    if(current&&String(current.src||"").includes("iqc-edit-isolated3")){loadOqcReportFix();return;}
-    if(current)current.remove();const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;script.addEventListener("load",loadOqcReportFix,{once:true});document.head.appendChild(script);
-  }
-  function loadPurchaseTerminologyFix(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-purchase-terminology-fix-20260901.js"));
-    if(current&&String(current.src||"").includes("v1-special-notes"))return;
-    if(current)current.remove();const fix=document.createElement("script");fix.src=PURCHASE_TERM_SRC;fix.async=false;document.head.appendChild(fix);
-  }
+  function loadShellFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-shell-runtime-fix-20260902.js"));if(current&&String(current.src||"").includes("iqc-preview4"))return;if(current)current.remove();try{delete global.__QMES_SHELL_RUNTIME_FIX_20260902_V4__;}catch(_error){}const script=document.createElement("script");script.src=SHELL_FIX_SRC;script.async=false;document.head.appendChild(script);}
+  function loadCertificatePrintFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-certificate-print-fix-20260902.js"));if(current&&String(current.src||"").includes("cert-print26")){loadShellFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=CERT_PRINT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(fix);}
+  function loadPqcReportFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-pqc-report-fix-20260902.js"));if(current&&String(current.src||"").includes("pqc-final8")){loadCertificatePrintFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=PQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadCertificatePrintFix,{once:true});document.head.appendChild(fix);}
+  function loadOqcReportFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-report-fix-20260902.js"));if(current&&String(current.src||"").includes("iqc-oqc-shared6")){loadPqcReportFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=OQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadPqcReportFix,{once:true});document.head.appendChild(fix);}
+  function loadQualityInspectionUi(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260902.js"));if(current&&String(current.src||"").includes("iqc-edit-isolated3")){loadOqcReportFix();return;}if(current)current.remove();const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;script.addEventListener("load",loadOqcReportFix,{once:true});document.head.appendChild(script);}
+  function loadPurchaseTerminologyFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-purchase-terminology-fix-20260901.js"));if(current&&String(current.src||"").includes("v1-special-notes"))return;if(current)current.remove();const fix=document.createElement("script");fix.src=PURCHASE_TERM_SRC;fix.async=false;document.head.appendChild(fix);}
 
   function releaseSidebarAfterLogin(){
     if(!sidebarDeferred)return;
@@ -84,8 +63,9 @@
       if(!sidebarDeferred)return;attempts+=1;
       if(!currentUserReady()){if(attempts<200)global.setTimeout(release,50);return;}
       sidebarDeferred=false;ensureTheme();loadHeaderStructure();loadQualityInspectionUi();loadPurchaseTerminologyFix();
-      try{delete global[SIDEBAR_GUARD];delete global.__QMES_SYNC_SIDEBAR_CLEAN_20260903__;delete global.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__;}catch(_error){global[SIDEBAR_GUARD]=false;}
+      try{delete global[SIDEBAR_GUARD];delete global.__QMES_SYNC_SIDEBAR_CLEAN_20260903__;delete global.__QMES_SIDEBAR_FLAT_REFERENCE_20260903__;delete global.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__;}catch(_error){global[SIDEBAR_GUARD]=false;}
       const existing=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-collapsible-side-menu.js"));if(existing)existing.remove();
+      document.getElementById('qmes-sync-sidebar')?.remove();document.getElementById('qmes-sync-hamburger')?.remove();
       const script=document.createElement("script");script.src=SIDEBAR_SRC;script.async=false;script.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(script);
     };
     global.setTimeout(release,0);
