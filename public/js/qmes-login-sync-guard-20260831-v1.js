@@ -6,8 +6,10 @@
 
   const SESSION_KEY="qmes-current-user-v1";
   const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
-  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260903-master-ui1";
-  const HEADER_STRUCTURE_SRC="./js/qmes-header-reference-structure-20260902.js?v=20260903-master-ui1";
+  const MASTER_THEME_ID="qmes-namo-one-master-20260903";
+  const MASTER_THEME_SRC="./css/qmes-namo-one-master-20260903.css?v=20260903-master2";
+  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260903-master-ui2";
+  const HEADER_STRUCTURE_SRC="./js/qmes-header-reference-structure-20260902.js?v=20260903-master-ui2";
   const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260902.js?v=20260902-iqc-edit-isolated3";
   const OQC_REPORT_FIX_SRC="./js/qmes-quality-report-fix-20260902.js?v=20260902-iqc-oqc-shared6";
   const PQC_REPORT_FIX_SRC="./js/qmes-pqc-report-fix-20260902.js?v=20260902-pqc-final8";
@@ -15,6 +17,11 @@
   const SHELL_FIX_SRC="./js/qmes-shell-runtime-fix-20260902.js?v=20260902-iqc-preview4";
   const PURCHASE_TERM_SRC="./js/qmes-purchase-terminology-fix-20260901.js?v=20260901-v1-special-notes";
   const nativeFetch=global.fetch.bind(global);
+
+  /* One authoritative screen theme. Old theme files may remain on disk, but no longer own the UI. */
+  Array.from(document.querySelectorAll('link#qmes-reference-theme-20260902,link#qmes-header-logo-final-20260903,link#qmes-header-erp-design-20260902,link#qmes-reference-theme-20260903-v2')).forEach(node=>node.remove());
+  let master=document.getElementById(MASTER_THEME_ID);
+  if(!master){master=document.createElement('link');master.id=MASTER_THEME_ID;master.rel='stylesheet';master.href=MASTER_THEME_SRC;document.head.appendChild(master);}
 
   const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
   if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
@@ -24,12 +31,14 @@
   }
 
   let hasSavedSession=false;try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
-  let sidebarDeferred=true;global[SIDEBAR_GUARD]=true;
+  let sidebarDeferred=true;
+  global[SIDEBAR_GUARD]=true;
+  global.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__=true;
   function currentUserReady(){const user=global.__QMES_CURRENT_USER__;return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));}
 
   function loadHeaderStructure(){
     const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-header-reference-structure-20260902.js"));
-    if(current&&String(current.src||"").includes("master-ui1"))return;
+    if(current&&String(current.src||"").includes("master-ui2"))return;
     if(current)current.remove();
     try{delete global.__QMES_HEADER_REFERENCE_STRUCTURE_V9_COMPANY_LOGO__;delete global.__QMES_HEADER_REFERENCE_STRUCTURE_V10_COMPANY_LOGO_ONLY__;}catch(_error){}
     const script=document.createElement("script");script.src=HEADER_STRUCTURE_SRC;script.async=false;document.head.appendChild(script);
@@ -74,7 +83,7 @@
       if(!currentUserReady()){if(attempts<200)global.setTimeout(release,50);return;}
       sidebarDeferred=false;
       loadHeaderStructure();loadQualityInspectionUi();loadPurchaseTerminologyFix();
-      try{delete global[SIDEBAR_GUARD];delete global.__QMES_SYNC_SIDEBAR_MASTER_20260903__;}catch(_error){global[SIDEBAR_GUARD]=false;}
+      try{delete global[SIDEBAR_GUARD];delete global.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__;delete global.__QMES_SYNC_SIDEBAR_MASTER_20260903__;}catch(_error){global[SIDEBAR_GUARD]=false;}
       const existing=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-collapsible-side-menu.js"));if(existing)existing.remove();
       const script=document.createElement("script");script.src=SIDEBAR_SRC;script.async=false;script.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(script);
     };
