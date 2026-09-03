@@ -15,10 +15,11 @@ require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
+const publicRouter = path.resolve(__dirname, 'public', 'js', 'router.jsx');
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
-const SHELL_BUILD = '20260903-shell-final4';
+const SHELL_BUILD = '20260903-shell-mobile-button1';
 
 if (!fs.existsSync(enterpriseDashboard)) {
   console.error('[QMES] Enterprise dashboard module is missing:', enterpriseDashboard);
@@ -38,6 +39,22 @@ try {
   if (normalized !== source) fs.writeFileSync(publicIndex, normalized, 'utf8');
 } catch (error) {
   console.error('[QMES] Failed to normalize shell asset URLs:', error);
+  process.exit(1);
+}
+
+// Desktop header shortcut: place a dedicated mobile-workspace button immediately
+// to the left of NAMO Talk. The original router source remains unchanged in Git;
+// this startup patch only normalizes the deployed working copy.
+try {
+  const source = fs.readFileSync(publicRouter, 'utf8');
+  const mobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일용 화면 열기"><span aria-hidden="true">📱</span><span>모바일용</span></button>';
+  const talkButton = '<button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>';
+  const patched = source.includes(mobileButton)
+    ? source
+    : source.replace(talkButton, `${mobileButton}\n          ${talkButton}`);
+  if (patched !== source) fs.writeFileSync(publicRouter, patched, 'utf8');
+} catch (error) {
+  console.error('[QMES] Failed to install mobile header shortcut:', error);
   process.exit(1);
 }
 
