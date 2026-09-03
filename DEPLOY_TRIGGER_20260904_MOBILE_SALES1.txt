@@ -1,0 +1,4 @@
+Force production redeploy for mobile sales/delivery management.
+Adds public/mobile-sales.html and routes ERP sales menu directly to it.
+Desktop PC source is unchanged.
+2026-09-04
