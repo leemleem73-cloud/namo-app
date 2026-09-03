@@ -76,7 +76,7 @@ html body #qmes-sync-sidebar#qmes-sync-sidebar{
   box-shadow:1px 0 4px rgba(51,82,103,.05)!important;z-index:12050!important;
   font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
   transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-  transition:.22s ease!important;scrollbar-width:none!important;-ms-overflow-style:none!important;
+  transition:none!important;scrollbar-width:none!important;-ms-overflow-style:none!important;
 }
 html body #qmes-sync-sidebar#qmes-sync-sidebar::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
 html body.qmes-side-open #qmes-sync-sidebar#qmes-sync-sidebar{
@@ -139,7 +139,7 @@ html body #qmes-sync-hamburger:hover{background:rgba(255,255,255,.15)!important;
 html body{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
 html body #root>div>main{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
 html body.qmes-side-open #root>div>main{
-  margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:.22s ease!important;
+  margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:none!important;
 }
 
 html body #qmes-user-dropdown#qmes-user-dropdown{
