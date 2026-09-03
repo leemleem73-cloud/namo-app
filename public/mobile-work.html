@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a67b7" />
+  <title>NAMO QMES Mobile Work</title>
+  <style>
+    :root{--navy:#0b2845;--blue:#0a67b7;--blue2:#1689e6;--line:#dde6ef;--bg:#edf3f8;--ink:#102238;--muted:#738295;--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;color:var(--ink)}
+    button{font:inherit}
+    .app{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;background:var(--bg)}
+    .head{z-index:20;padding:calc(10px + var(--safe-top)) 12px 11px;background:linear-gradient(135deg,#0b5fa9 0%,#1589e4 100%);color:#fff;box-shadow:0 6px 22px rgba(15,80,138,.22)}
+    .headrow{display:flex;align-items:center;gap:9px;min-height:45px}
+    .back,.more{flex:0 0 42px;width:42px;height:42px;border:1px solid rgba(255,255,255,.25);border-radius:13px;background:rgba(255,255,255,.11);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:900;cursor:pointer}
+    .title{min-width:0;flex:1}
+    .title small{display:block;font-size:10px;font-weight:800;letter-spacing:.02em;color:rgba(255,255,255,.74);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .title strong{display:block;margin-top:2px;font-size:19px;font-weight:950;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .userline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:0 2px;font-size:10.5px;color:rgba(255,255,255,.82);font-weight:750}
+    .userline b{color:#fff;font-weight:900}
+    .status{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+    .dot{width:7px;height:7px;border-radius:50%;background:#79f1b7;box-shadow:0 0 0 3px rgba(121,241,183,.14)}
+    .work{position:relative;min-height:0;background:#f4f7fa}
+    .frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#f4f7fa;opacity:0;transition:opacity .15s ease}
+    .frame.ready{opacity:1}
+    .loading{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#f8fbfd,#edf3f8);transition:opacity .15s ease}
+    .loading.hide{opacity:0;pointer-events:none}
+    .loadcard{width:min(260px,78vw);padding:22px 18px;border:1px solid #dfe8f1;border-radius:18px;background:#fff;text-align:center;box-shadow:0 12px 34px rgba(31,62,97,.08)}
+    .spinner{width:30px;height:30px;margin:0 auto 12px;border:3px solid #dce9f4;border-top-color:#1689e6;border-radius:50%;animation:spin .8s linear infinite}
+    .loadcard strong{display:block;font-size:13px;font-weight:950;color:#18314d}.loadcard span{display:block;margin-top:5px;font-size:10px;font-weight:700;color:#8491a2}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .bottom{z-index:20;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:7px 8px calc(7px + var(--safe-bottom));border-top:1px solid var(--line);background:rgba(255,255,255,.97);backdrop-filter:blur(14px);box-shadow:0 -7px 22px rgba(31,62,97,.08)}
+    .nav{min-height:53px;border:0;border-radius:13px;background:transparent;color:#7f8da0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:850;cursor:pointer}
+    .nav i{font-style:normal;font-size:20px;line-height:1}.nav.active{background:#eaf4fd;color:#0a67b7}
+    .sheet{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;background:rgba(10,28,47,.36);backdrop-filter:blur(2px)}
+    .sheet.open{display:flex}
+    .sheetcard{width:100%;padding:10px 12px calc(14px + var(--safe-bottom));border-radius:22px 22px 0 0;background:#fff;box-shadow:0 -20px 60px rgba(10,30,50,.2)}
+    .grab{width:42px;height:4px;margin:0 auto 12px;border-radius:999px;background:#d6dde5}
+    .sheethead{display:flex;align-items:center;justify-content:space-between;padding:0 3px 9px}.sheethead strong{font-size:16px;font-weight:950}.sheethead span{font-size:10px;color:#8491a2;font-weight:750}
+    .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .action{min-height:50px;border:1px solid #dfe7ef;border-radius:13px;background:#f9fbfd;color:#20354d;font-size:12px;font-weight:900;cursor:pointer}.action.danger{color:#b32635;background:#fff8f8;border-color:#f0d6d9}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="head">
+      <div class="headrow">
+        <button class="back" id="homeBtn" type="button" aria-label="모바일 홈">‹</button>
+        <div class="title"><small>NAMO QMES · MOBILE WORKSPACE</small><strong id="pageTitle">업무 화면</strong></div>
+        <button class="more" id="moreBtn" type="button" aria-label="더보기">⋮</button>
+      </div>
+      <div class="userline"><span id="userText">로그인 사용자 확인 중</span><span class="status"><i class="dot"></i>실시간 업무 연결</span></div>
+    </header>
+
+    <main class="work">
+      <div class="loading" id="loading"><div class="loadcard"><div class="spinner"></div><strong id="loadingTitle">업무 화면을 준비하고 있습니다</strong><span>모바일 화면에 맞게 자동 최적화합니다.</span></div></div>
+      <iframe class="frame" id="workFrame" title="QMES 업무 화면"></iframe>
+    </main>
+
+    <nav class="bottom">
+      <button class="nav" data-tab="home"><i>⌂</i><span>홈</span></button>
+      <button class="nav" data-tab="prod"><i>🏭</i><span>생산</span></button>
+      <button class="nav" data-tab="pop"><i>🧪</i><span>검사</span></button>
+      <button class="nav" data-tab="inv"><i>▣</i><span>재고</span></button>
+      <button class="nav" data-tab="trace"><i>⌘</i><span>추적</span></button>
+    </nav>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheetcard">
+      <div class="grab"></div>
+      <div class="sheethead"><strong>모바일 메뉴</strong><span>NAMO QMES</span></div>
+      <div class="actions">
+        <button class="action" id="reloadBtn" type="button">화면 새로고침</button>
+        <button class="action" id="desktopBtn" type="button">PC 화면으로 보기</button>
+        <button class="action" id="mobileHomeBtn" type="button">모바일 홈</button>
+        <button class="action danger" id="logoutBtn" type="button">로그아웃</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const TAB_META = {
+    dash:['종합현황','KPI · 생산 · 품질 현황'],
+    woIssue:['작업지시','작업지시 등록 · 조회'],
+    prod:['생산배치','생산 계획 · 배치 진행'],
+    prodProcess:['생산공정','공정 진행 · 생산 실적'],
+    iqc:['수입검사','원자재 입고 품질검사'],
+    pqc:['공정검사','공정 중 품질검사'],
+    oqc:['출하검사','출하 전 최종 품질검사'],
+    pop:['현장입력','모바일 · iPad POP'],
+    inv:['재고관리','원자재 · 완제품 재고'],
+    trace:['LOT 추적','원자재 → 생산 → 출하'],
+    eq:['설비관리','설비 점검 · 상태 관리'],
+    partners:['거래처','고객사 · 공급사 현황'],
+    spc:['SPC','공정능력 · Cpk 분석'],
+    lock:['품질 인터락','품질 차단 · 해제 관리']
+  };
+
+  const params = new URLSearchParams(location.search);
+  let tab = params.get('tab') || (() => { try{return sessionStorage.getItem('qmes_current_tab') || 'dash';}catch(_){return 'dash';} })();
+  if (!TAB_META[tab]) tab = 'dash';
+
+  const frame = document.getElementById('workFrame');
+  const loading = document.getElementById('loading');
+  const pageTitle = document.getElementById('pageTitle');
+  const loadingTitle = document.getElementById('loadingTitle');
+  const sheet = document.getElementById('sheet');
+
+  const setTitle = nextTab => {
+    const meta = TAB_META[nextTab] || TAB_META.dash;
+    pageTitle.textContent = meta[0];
+    loadingTitle.textContent = `${meta[0]} 화면을 준비하고 있습니다`;
+    document.title = `${meta[0]} · NAMO QMES`;
+  };
+
+  const markNav = nextTab => {
+    document.querySelectorAll('.nav').forEach(btn => btn.classList.remove('active'));
+    const group = nextTab === 'inv' ? 'inv' : nextTab === 'trace' ? 'trace' : ['iqc','pqc','oqc','pop','spc','lock'].includes(nextTab) ? 'pop' : ['prod','prodProcess','woIssue'].includes(nextTab) ? 'prod' : 'home';
+    document.querySelector(`.nav[data-tab="${group}"]`)?.classList.add('active');
+  };
+
+  function injectEnterpriseMobile(doc){
+    if (!doc || !doc.head || !doc.body) return;
+    doc.body.classList.add('qmes-mobile-enterprise-work');
+    let style = doc.getElementById('qmes-mobile-enterprise-injected-style');
+    if (!style) {
+      style = doc.createElement('style');
+      style.id = 'qmes-mobile-enterprise-injected-style';
+      style.textContent = `
+        html,body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important;background:#f4f7fa!important;color:#14263b!important}
+        body.qmes-mobile-enterprise-work{font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important}
+        body.qmes-mobile-enterprise-work *{box-sizing:border-box!important;min-width:0}
+        body.qmes-mobile-enterprise-work #root>div>header,
+        body.qmes-mobile-enterprise-work #qmes-sync-sidebar,
+        body.qmes-mobile-enterprise-work #qmes-sync-hamburger,
+        body.qmes-mobile-enterprise-work #qmes-all-menu-dropdown,
+        body.qmes-mobile-enterprise-work #qmes-user-dropdown{display:none!important}
+        body.qmes-mobile-enterprise-work #root>div{min-height:100vh!important;background:#f4f7fa!important;color:#14263b!important}
+        body.qmes-mobile-enterprise-work main,
+        body.qmes-mobile-enterprise-work #root>div>main{width:100%!important;max-width:none!important;margin:0!important;padding:12px!important;overflow:visible!important;background:#f4f7fa!important}
+        body.qmes-mobile-enterprise-work main>div{width:100%!important;max-width:none!important;margin:0!important}
+        body.qmes-mobile-enterprise-work h1{font-size:22px!important;line-height:1.25!important;letter-spacing:-.035em!important}
+        body.qmes-mobile-enterprise-work h2{font-size:18px!important;line-height:1.3!important;letter-spacing:-.03em!important}
+        body.qmes-mobile-enterprise-work h3{font-size:15px!important;line-height:1.35!important}
+        body.qmes-mobile-enterprise-work p,body.qmes-mobile-enterprise-work label,body.qmes-mobile-enterprise-work span,body.qmes-mobile-enterprise-work td,body.qmes-mobile-enterprise-work th{line-height:1.45!important}
+        body.qmes-mobile-enterprise-work section,
+        body.qmes-mobile-enterprise-work .rounded-xl,
+        body.qmes-mobile-enterprise-work .rounded-lg,
+        body.qmes-mobile-enterprise-work [class*="card"]{border-radius:15px!important}
+        body.qmes-mobile-enterprise-work input,
+        body.qmes-mobile-enterprise-work select,
+        body.qmes-mobile-enterprise-work textarea{max-width:100%!important;font-size:16px!important;border-radius:10px!important}
+        body.qmes-mobile-enterprise-work input,body.qmes-mobile-enterprise-work select{min-height:42px!important}
+        body.qmes-mobile-enterprise-work textarea{min-height:86px!important}
+        body.qmes-mobile-enterprise-work button{min-height:40px!important;border-radius:10px!important;touch-action:manipulation!important}
+        body.qmes-mobile-enterprise-work .grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+        body.qmes-mobile-enterprise-work [class*="grid-cols-2"],body.qmes-mobile-enterprise-work [class*="grid-cols-3"],body.qmes-mobile-enterprise-work [class*="grid-cols-4"],body.qmes-mobile-enterprise-work [class*="grid-cols-5"],body.qmes-mobile-enterprise-work [class*="grid-cols-6"]{grid-template-columns:minmax(0,1fr)!important}
+        body.qmes-mobile-enterprise-work .qmw-table-scroll{width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;border-radius:13px!important;background:#fff!important;box-shadow:0 1px 0 rgba(21,44,69,.05)!important}
+        body.qmes-mobile-enterprise-work table{width:max-content!important;min-width:100%!important;max-width:none!important;border-collapse:separate!important;border-spacing:0!important;font-size:12px!important;white-space:nowrap!important}
+        body.qmes-mobile-enterprise-work th{position:sticky!important;top:0!important;z-index:2!important;background:#eef5fb!important;color:#24425f!important;font-size:11px!important;font-weight:900!important}
+        body.qmes-mobile-enterprise-work td,body.qmes-mobile-enterprise-work th{padding:10px 9px!important;vertical-align:middle!important}
+        body.qmes-mobile-enterprise-work [role="dialog"]{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:8px!important;border-radius:0!important;overflow:auto!important;align-items:flex-start!important}
+        body.qmes-mobile-enterprise-work [role="dialog"]>div,body.qmes-mobile-enterprise-work [role="dialog"]>form{width:100%!important;max-width:none!important;margin:0!important;border-radius:16px!important}
+        body.qmes-mobile-enterprise-work .qmes-wo-cert,body.qmes-mobile-enterprise-work .qmes-prod-process,body.qmes-mobile-enterprise-work .inv-enterprise-root,body.qmes-mobile-enterprise-work .ipad-pop{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important}
+        body.qmes-mobile-enterprise-work .qpp-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+        body.qmes-mobile-enterprise-work .qmes-dashboard-workflow,body.qmes-mobile-enterprise-work .namo-enterprise-dashboard{overflow-x:hidden!important}
+        body.qmes-mobile-enterprise-work .namo-enterprise-dashboard *{max-width:100%!important}
+        body.qmes-mobile-enterprise-work .namo-enterprise-dashboard table{max-width:none!important}
+        body.qmes-mobile-enterprise-work .qmes-side-open{margin-left:0!important;padding-left:0!important}
+        body.qmes-mobile-enterprise-work .hidden{display:none!important}
+        body.qmes-mobile-enterprise-work .sm\\:flex,body.qmes-mobile-enterprise-work .md\\:flex,body.qmes-mobile-enterprise-work .lg\\:flex{display:flex!important}
+        @media(max-width:560px){
+          body.qmes-mobile-enterprise-work main,body.qmes-mobile-enterprise-work #root>div>main{padding:9px!important}
+          body.qmes-mobile-enterprise-work .flex{flex-wrap:wrap!important}
+          body.qmes-mobile-enterprise-work .gap-4{gap:8px!important}
+          body.qmes-mobile-enterprise-work .px-6,body.qmes-mobile-enterprise-work .p-6{padding-left:12px!important;padding-right:12px!important}
+          body.qmes-mobile-enterprise-work [style*="min-width"]{min-width:0!important}
+        }
+      `;
+      doc.head.appendChild(style);
+    }
+
+    const wrapTables = root => {
+      (root || doc).querySelectorAll('table').forEach(table => {
+        if (table.parentElement && table.parentElement.classList.contains('qmw-table-scroll')) return;
+        const wrap = doc.createElement('div');
+        wrap.className = 'qmw-table-scroll';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      });
+    };
+    wrapTables();
+
+    if (!doc.defaultView.__QMES_MOBILE_ENTERPRISE_OBSERVER__) {
+      doc.defaultView.__QMES_MOBILE_ENTERPRISE_OBSERVER__ = true;
+      const observer = new MutationObserver(records => {
+        records.forEach(record => record.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          if (node.matches?.('table')) wrapTables(node.parentElement);
+          else if (node.querySelector?.('table')) wrapTables(node);
+        }));
+      });
+      observer.observe(doc.body,{childList:true,subtree:true});
+    }
+    doc.documentElement.scrollTop = 0;
+    doc.body.scrollTop = 0;
+  }
+
+  function loadTab(nextTab){
+    tab = TAB_META[nextTab] ? nextTab : 'dash';
+    setTitle(tab); markNav(tab);
+    loading.classList.remove('hide'); frame.classList.remove('ready');
+    try { sessionStorage.setItem('qmes_current_tab',tab); sessionStorage.setItem('qmes_mobile_last_tab',tab); } catch (_) {}
+    const inner = `/index.html?desktop=1&embeddedMobile=1&tab=${encodeURIComponent(tab)}&v=20260903-mobile-work-v1`;
+    frame.src = inner;
+  }
+
+  frame.addEventListener('load', () => {
+    const apply = () => {
+      try {
+        const doc = frame.contentDocument;
+        injectEnterpriseMobile(doc);
+        frame.classList.add('ready');
+        loading.classList.add('hide');
+      } catch (_) {
+        frame.classList.add('ready');
+        loading.classList.add('hide');
+      }
+    };
+    apply(); setTimeout(apply,250); setTimeout(apply,900);
+  });
+
+  document.getElementById('homeBtn').addEventListener('click',()=>location.replace('/mobile.html?v=20260903-mobile-work-v1'));
+  document.getElementById('mobileHomeBtn').addEventListener('click',()=>location.replace('/mobile.html?v=20260903-mobile-work-v1'));
+  document.getElementById('moreBtn').addEventListener('click',()=>sheet.classList.add('open'));
+  sheet.addEventListener('click',event=>{if(event.target===sheet)sheet.classList.remove('open');});
+  document.getElementById('reloadBtn').addEventListener('click',()=>{sheet.classList.remove('open');loading.classList.remove('hide');frame.classList.remove('ready');frame.contentWindow?.location.reload();});
+  document.getElementById('desktopBtn').addEventListener('click',()=>location.href=`/index.html?desktop=1&tab=${encodeURIComponent(tab)}&v=20260903-mobile-work-v1`);
+  document.getElementById('logoutBtn').addEventListener('click',async()=>{
+    try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'});}catch(_){}
+    try{['qmes-current-user-v1','qmes_current_tab','qmes_mobile_last_tab','qmes_open_menu'].forEach(key=>sessionStorage.removeItem(key));}catch(_){}
+    location.replace('/index.html?desktop=1&logout=1');
+  });
+
+  document.querySelectorAll('.nav').forEach(btn=>btn.addEventListener('click',()=>{
+    const next=btn.dataset.tab;
+    if(next==='home'){location.replace('/mobile.html?v=20260903-mobile-work-v1');return;}
+    loadTab(next);
+  }));
+
+  fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'})
+    .then(r=>r.ok?r.json():Promise.reject())
+    .then(payload=>{
+      const user=payload?.data?.user||payload?.data||payload;
+      const name=String(user?.name||user?.loginId||user?.email||'').trim();
+      document.getElementById('userText').innerHTML=name?`<b>${name}</b>님 · 모바일 업무`: '로그인 사용자';
+    }).catch(()=>{document.getElementById('userText').textContent='로그인 세션 확인 필요';});
+
+  setTitle(tab); markNav(tab); loadTab(tab);
+})();
+</script>
+</body>
+</html>
