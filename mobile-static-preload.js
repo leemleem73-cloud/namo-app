@@ -93,6 +93,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
             '<script src="/js/qmes-mobile-direct-entry-20260903.js?v=20260903-direct1"></script>\n</body>'
           );
         }
+
+        // Current PC IssueWoTab parity implementation, mobile-work only.
+        // Loaded last so it replaces the older simplified mobile work-order UI without touching PC source.
+        if (!html.includes('qmes-mobile-workorder-pc-parity-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-workorder-pc-parity-20260903.js?v=20260903-wopc1"></script>\n</body>'
+          );
+        }
       }
 
       // Mobile document authoring center is available from both the mobile home
