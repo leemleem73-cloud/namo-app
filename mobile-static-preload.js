@@ -34,6 +34,16 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
           '</style>',
           '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260903-ipad3") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
         );
+
+        // Load the mobile-only adapter after the workspace shell. It transforms the
+        // same-origin iframe module UI into touch-friendly phone/iPad forms and cards
+        // without changing any PC source files.
+        if (!html.includes('qmes-mobile-native-adapter-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-native-adapter-20260903.js?v=20260903-native1"></script>\n</body>'
+          );
+        }
       }
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
