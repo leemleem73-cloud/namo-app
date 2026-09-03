@@ -5,6 +5,11 @@
 const fs = require('fs');
 const path = require('path');
 
+// Hard mobile guard must load before any other mobile/static patch so a phone or
+// iPad can never boot the desktop React login/sidebar shell, even from stale
+// cached entry pages or in-app browsers with unusual User-Agent strings.
+require('./mobile-hard-entry-preload.js');
+
 // Always install mobile root routing before the legacy Express app is created.
 // This works whether production starts with `npm start` or `node server.js`.
 require('./mobile-static-preload.js');
