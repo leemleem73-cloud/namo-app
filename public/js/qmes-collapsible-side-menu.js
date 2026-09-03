@@ -43,6 +43,10 @@
     ]}
   ];
 
+  /* Set the final shell state before inserting the sidebar DOM.
+     This prevents first-paint width/slide transitions from older cached CSS. */
+  document.body.classList.add('qmes-side-open');
+
   const side=document.createElement('aside');
   side.id='qmes-sync-sidebar';
   side.dataset.qmesSidebarOwner='single-clean-owner-20260903';
@@ -56,7 +60,6 @@
   hamburger.textContent='☰';
   document.body.appendChild(hamburger);
 
-  document.body.classList.add('qmes-side-open');
   const wrap=side.querySelector('.qmes-side-groups');
   let activeLabel='통합 대시보드';
 
