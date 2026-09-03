@@ -56,8 +56,10 @@
   function syncHeaderActions(){
     const reference=getReferenceAction();
     if(!reference)return false;
+    const noticeTargets=Array.from(document.querySelectorAll('button[aria-label^="NAMO Talk 알림"]'))
+      .filter(button=>!button.closest("#qmes-erp-header"));
     const targets=[
-      ...document.querySelectorAll('button[aria-label^="NAMO Talk 알림"]:not(#qmes-erp-header .qmes-erp-notice)'),
+      ...noticeTargets,
       ...document.querySelectorAll('button[aria-label="NAMO Talk 열기"],button[aria-label="NAMO Talk 닫기"]'),
       ...document.querySelectorAll(PROFILE_BUTTON_SELECTOR)
     ];
