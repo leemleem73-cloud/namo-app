@@ -79,6 +79,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         }
       }
 
+      // Mobile document authoring center is available from both the mobile home
+      // and mobile-work shell. It is never injected into the desktop index.html.
+      if (!html.includes('qmes-mobile-documents-20260903.js')) {
+        html = html.replace(
+          '</body>',
+          '<script src="/js/qmes-mobile-documents-20260903.js?v=20260903-docs1"></script>\n</body>'
+        );
+      }
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store, max-age=0');
       return res.send(html);
