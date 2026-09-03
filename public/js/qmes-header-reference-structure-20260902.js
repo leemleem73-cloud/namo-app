@@ -1,8 +1,8 @@
 /* QMES header structure adapter — stable reference version */
 (function(){
   "use strict";
-  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V10_COMPANY_LOGO_ONLY__) return;
-  window.__QMES_HEADER_REFERENCE_STRUCTURE_V10_COMPANY_LOGO_ONLY__=true;
+  if(window.__QMES_HEADER_REFERENCE_STRUCTURE_V11_CLEAN_LOGO__) return;
+  window.__QMES_HEADER_REFERENCE_STRUCTURE_V11_CLEAN_LOGO__=true;
 
   function ensureHeader(){
     const header=document.querySelector('#root > div > header');
@@ -16,7 +16,6 @@
     brand.classList.add('qmes-ref-brand');
     document.getElementById('qmes-header-authority-v4')?.remove();
 
-    /* Keep the React-rendered logo as a hidden source only. */
     const originalLogo=brand.querySelector(':scope > img[alt="NAMO Chemical"]');
     if(originalLogo){
       originalLogo.classList.add('qmes-ref-original-logo');
@@ -24,14 +23,13 @@
       originalLogo.style.setProperty('visibility','hidden','important');
     }
 
-    /* Single controlled brand block: official NAMO Chemical logo only. */
     let brandCopy=brand.querySelector('.qmes-ref-brand-copy');
     if(!brandCopy){
       brandCopy=document.createElement('span');
       brandCopy.className='qmes-ref-brand-copy';
       brand.appendChild(brandCopy);
     }
-    brandCopy.innerHTML='<span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"><img class="qmes-ref-brand-logo qmes-ref-company-logo" src="./assets/namo-header-logo.svg?v=20260903-logo-only1" alt="나모케미칼(주)" /></span></span>';
+    brandCopy.innerHTML='<span class="qmes-ref-brand-text"><span class="qmes-ref-logo-slot"><img class="qmes-ref-brand-logo qmes-ref-company-logo" src="./assets/namo-header-logo.svg?v=20260903-logo-clean3" alt="나모케미칼(주)" /></span></span>';
 
     let search=document.getElementById('qmes-ref-global-search');
     if(!search){
