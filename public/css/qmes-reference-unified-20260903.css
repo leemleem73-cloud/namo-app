@@ -1,155 +1,46 @@
-/* NAMO QMES unified shell design — supplied ERP/MES reference, screen only. */
+/* NAMO QMES clean shell — supplied ERP/MES reference, screen only. */
 @media screen {
-  :root{
-    --namo-side:248px;
-    --namo-head:64px;
-    --namo-blue:#2f76ad;
-    --namo-blue-top:#3d87bd;
-    --namo-blue-active:#3d8ac0;
-    --namo-blue-text:#2f6f9f;
-    --namo-ink:#22384a;
-    --namo-text:#3d5264;
-    --namo-muted:#687c8d;
-    --namo-line:#cbd8e2;
-    --namo-side-bg:#eef3f7;
-    --namo-side-bg2:#f8fafb;
-    --namo-section:#dfeaf2;
-    --namo-page:#edf2f6;
-  }
-  html,body{background:var(--namo-page)!important;color:var(--namo-ink)!important;}
+  :root{--namo-side:248px;--namo-head:64px;--namo-blue:#2f76ad;--namo-blue-top:#3d87bd;--namo-ink:#22384a;--namo-muted:#687c8d;--namo-line:#cbd8e2;--namo-page:#edf2f6;}
+  html,body{background:#edf2f6!important;color:#22384a!important;}
 
-  /* Top navigation is never used. */
-  .qmes-top-menu-bar,.qmes-top-menu,.qmes-submenu-row,#qmes-all-menu-dropdown{
-    display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;
-    margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;
-  }
+  .qmes-top-menu-bar,.qmes-top-menu,.qmes-submenu-row,#qmes-all-menu-dropdown{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;}
 
-  /* Header */
-  #root>div>header{
-    height:64px!important;min-height:64px!important;margin:0!important;padding:0!important;
-    background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
-    color:#fff!important;border-bottom:1px solid #235f8e!important;
-    box-shadow:0 2px 6px rgba(30,73,105,.24)!important;
-  }
-  #root>div>header>div:first-child{
-    height:64px!important;min-height:64px!important;margin:0!important;padding:0 22px 0 0!important;
-    display:flex!important;align-items:center!important;gap:14px!important;flex-wrap:nowrap!important;
-  }
-  #root>div>header>div:first-child>button:first-child,
-  #root>div>header .qmes-ref-brand{
-    position:relative!important;left:0!important;transform:none!important;
-    width:248px!important;min-width:248px!important;height:64px!important;
-    margin:0!important;padding:0 18px!important;box-sizing:border-box!important;
-    display:flex!important;align-items:center!important;justify-content:flex-start!important;
-    border:0!important;border-right:1px solid #b9c9d5!important;border-radius:0!important;
-    background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
-    box-shadow:none!important;overflow:hidden!important;
-  }
-  #root>div>header .qmes-ref-original-logo,
-  #root>div>header .qmes-ref-brand>img[alt="NAMO Chemical"]{display:none!important;visibility:hidden!important;}
-  #root>div>header .qmes-ref-brand-copy,
-  #root>div>header .qmes-ref-brand-text,
-  #root>div>header .qmes-ref-logo-slot{display:flex!important;align-items:center!important;visibility:visible!important;opacity:1!important;}
-  #root>div>header .qmes-ref-brand-mark,
-  #root>div>header .qmes-ref-brand-text small{display:none!important;}
-  #root>div>header .qmes-ref-company-logo{
-    display:block!important;visibility:visible!important;opacity:1!important;
-    width:180px!important;max-width:180px!important;height:auto!important;max-height:42px!important;
-    object-fit:contain!important;filter:none!important;
-  }
+  #root>div>header{height:64px!important;min-height:64px!important;margin:0!important;padding:0!important;background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;color:#fff!important;border-bottom:1px solid #235f8e!important;box-shadow:0 2px 6px rgba(30,73,105,.24)!important;}
+  #root>div>header>div:first-child{height:64px!important;min-height:64px!important;margin:0!important;padding:0 22px 0 0!important;display:flex!important;align-items:center!important;gap:14px!important;flex-wrap:nowrap!important;}
+  #root>div>header>div:first-child>button:first-child,#root>div>header .qmes-ref-brand{position:relative!important;left:0!important;transform:none!important;width:248px!important;min-width:248px!important;height:64px!important;margin:0!important;padding:0 20px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;border:0!important;border-right:1px solid #b9c9d5!important;border-radius:0!important;background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;box-shadow:none!important;overflow:hidden!important;}
+  #root>div>header .qmes-ref-original-logo,#root>div>header .qmes-ref-brand>img[alt="NAMO Chemical"]{display:none!important;visibility:hidden!important;}
+  #root>div>header .qmes-ref-brand-copy,#root>div>header .qmes-ref-brand-text,#root>div>header .qmes-ref-logo-slot{display:flex!important;align-items:center!important;visibility:visible!important;opacity:1!important;}
+  #root>div>header .qmes-ref-brand-mark,#root>div>header .qmes-ref-brand-text small{display:none!important;}
+  #root>div>header .qmes-ref-company-logo{display:block!important;visibility:visible!important;opacity:1!important;width:180px!important;max-width:180px!important;height:auto!important;max-height:42px!important;object-fit:contain!important;filter:none!important;}
+
   #qmes-ref-global-search{position:relative!important;width:min(390px,36vw)!important;display:flex!important;align-items:center!important;}
-  #qmes-ref-global-search input{
-    width:100%!important;height:36px!important;border:1px solid rgba(255,255,255,.42)!important;
-    background:rgba(255,255,255,.94)!important;border-radius:7px!important;padding:0 38px 0 13px!important;
-    color:#263d4f!important;outline:0!important;font-size:12px!important;
-  }
+  #qmes-ref-global-search input{width:100%!important;height:36px!important;border:1px solid rgba(255,255,255,.42)!important;background:rgba(255,255,255,.94)!important;border-radius:7px!important;padding:0 38px 0 13px!important;color:#263d4f!important;outline:0!important;font-size:12px!important;}
   #qmes-ref-global-search input::placeholder{color:#7c8e9d!important;}
   #qmes-ref-global-search input:focus{border-color:#d9edf9!important;background:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.18)!important;}
   #qmes-ref-global-search .qmes-ref-search-icon{position:absolute!important;right:12px!important;color:#5f7e94!important;font-size:17px!important;cursor:pointer!important;}
 
-  /* Sidebar */
-  #qmes-sync-sidebar{
-    display:block!important;position:fixed!important;left:0!important;top:64px!important;bottom:0!important;
-    width:248px!important;box-sizing:border-box!important;padding:0 0 18px!important;
-    overflow-y:auto!important;overflow-x:hidden!important;background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;
-    color:#344d60!important;border-right:1px solid #bfcdd8!important;box-shadow:2px 0 5px rgba(51,82,103,.08)!important;
-    z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;
-    pointer-events:none!important;transition:none!important;scrollbar-gutter:stable!important;
-  }
+  #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:262px!important;top:16px!important;z-index:2147482000!important;width:32px!important;height:32px!important;padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#fff!important;box-shadow:none!important;font-size:21px!important;font-weight:800!important;line-height:1!important;cursor:pointer!important;visibility:visible!important;opacity:1!important;}
+  #qmes-sync-hamburger:hover{background:rgba(255,255,255,.1)!important;}
+
+  #qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:64px!important;bottom:0!important;width:248px!important;box-sizing:border-box!important;padding:0!important;overflow-y:auto!important;overflow-x:hidden!important;background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;color:#344d60!important;border-right:1px solid #bfcdd8!important;box-shadow:2px 0 5px rgba(51,82,103,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:none!important;scrollbar-gutter:stable!important;}
   body.qmes-side-open #qmes-sync-sidebar{transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
-  #qmes-sync-sidebar .qmes-side-toolbar,#qmes-sync-sidebar .qmes-side-search-box,#qmes-sync-sidebar .qmes-side-search-input,
-  #qmes-sync-sidebar .qmes-side-search-icon,#qmes-sync-sidebar .qmes-side-close{display:none!important;}
-
-  #qmes-sync-sidebar .qmes-ref-company-meta{
-    margin:16px 18px 13px!important;padding:10px 11px!important;min-height:44px!important;
-    display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;
-    background:#fff!important;border:1px solid #c9d8e3!important;border-radius:8px!important;
-    color:#2d4b61!important;font-size:12px!important;font-weight:700!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
-  }
-  #qmes-sync-sidebar .qmes-ref-company-meta b{
-    padding:3px 6px!important;border:1px solid #cde4c6!important;border-radius:12px!important;
-    background:#eef7eb!important;color:#4d9140!important;font-size:11px!important;white-space:nowrap!important;
-  }
-  #qmes-sync-sidebar .qmes-side-groups{padding:0 0 20px!important;}
-  #qmes-sync-sidebar .qmes-side-section-label{
-    display:block!important;margin-top:7px!important;padding:8px 20px!important;
-    background:#dfeaf2!important;border-top:1px solid #c7d7e2!important;border-bottom:1px solid #c7d7e2!important;
-    color:#2f6f9f!important;font-size:10px!important;font-weight:800!important;letter-spacing:1px!important;
-  }
-  #qmes-sync-sidebar .qmes-side-group{margin:0!important;border:0!important;background:transparent!important;}
-  #qmes-sync-sidebar .qmes-side-group-toggle{
-    width:calc(100% - 14px)!important;min-height:40px!important;margin:1px 7px!important;padding:9px 10px!important;
-    display:flex!important;align-items:center!important;justify-content:space-between!important;
-    border:0!important;border-radius:2px!important;background:transparent!important;color:#3d5264!important;
-    font-size:13px!important;font-weight:700!important;text-align:left!important;box-shadow:none!important;
-  }
-  #qmes-sync-sidebar .qmes-side-group-toggle:hover{background:#e2edf5!important;color:#1d5681!important;}
-  #qmes-sync-sidebar .qmes-side-group.is-open>.qmes-side-group-toggle{background:#e2edf5!important;color:#1d5681!important;}
-  #qmes-sync-sidebar .qmes-side-group-arrow{width:18px!important;color:#6f8798!important;font-size:14px!important;transform:rotate(0deg)!important;}
-  #qmes-sync-sidebar .qmes-side-group.is-open .qmes-side-group-arrow{transform:rotate(90deg)!important;}
-  #qmes-sync-sidebar .qmes-side-group-items{display:none!important;padding:1px 7px 5px!important;background:transparent!important;}
-  #qmes-sync-sidebar .qmes-side-group.is-open>.qmes-side-group-items{display:block!important;}
-  #qmes-sync-sidebar .qmes-side-item{
-    width:calc(100% - 8px)!important;min-height:38px!important;margin:1px 4px!important;padding:8px 12px 8px 22px!important;
-    border:0!important;border-radius:2px!important;background:transparent!important;color:#526879!important;
-    font-size:12px!important;font-weight:650!important;text-align:left!important;position:relative!important;
-  }
-  #qmes-sync-sidebar .qmes-side-item:before{content:'·'!important;position:absolute!important;left:11px!important;color:#7b96aa!important;font-weight:900!important;}
+  #qmes-sync-sidebar .qmes-ref-company-meta{margin:16px 18px 13px!important;padding:10px 11px!important;min-height:44px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;background:#fff!important;border:1px solid #c9d8e3!important;border-radius:8px!important;color:#2d4b61!important;font-size:12px!important;font-weight:700!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;}
+  #qmes-sync-sidebar .qmes-ref-company-meta b{padding:3px 6px!important;border:1px solid #cde4c6!important;border-radius:12px!important;background:#eef7eb!important;color:#4d9140!important;font-size:11px!important;white-space:nowrap!important;}
+  #qmes-sync-sidebar .qmes-side-groups{padding:0 0 23px!important;}
+  #qmes-sync-sidebar .qmes-side-section-label{display:block!important;margin-top:7px!important;padding:8px 20px!important;background:#dfeaf2!important;border-top:1px solid #c7d7e2!important;border-bottom:1px solid #c7d7e2!important;color:#2f6f9f!important;font-size:10px!important;font-weight:800!important;letter-spacing:1px!important;}
+  #qmes-sync-sidebar .qmes-side-item{width:calc(100% - 14px)!important;min-height:42px!important;margin:2px 7px!important;padding:9px 10px!important;display:flex!important;align-items:center!important;gap:11px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#3d5264!important;font-size:13px!important;font-weight:650!important;text-align:left!important;box-shadow:none!important;cursor:pointer!important;}
+  #qmes-sync-sidebar .qmes-side-item:before{display:none!important;content:none!important;}
   #qmes-sync-sidebar .qmes-side-item:hover{background:#e2edf5!important;color:#1d5681!important;}
-  #qmes-sync-sidebar .qmes-side-item.is-active{
-    background:linear-gradient(180deg,#3d8ac0 0%,#2f76ad 100%)!important;color:#fff!important;
-    font-weight:800!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;
-  }
-  #qmes-sync-sidebar .qmes-side-item.is-active:before{color:#fff!important;}
-
-  #qmes-sync-hamburger{
-    display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;
-    left:10px!important;top:16px!important;z-index:2147482000!important;width:32px!important;height:32px!important;
-    padding:0!important;border:0!important;border-radius:4px!important;background:transparent!important;color:#fff!important;
-    box-shadow:none!important;font-size:21px!important;font-weight:800!important;line-height:1!important;cursor:pointer!important;
-  }
-  body.qmes-side-open #qmes-sync-hamburger{display:none!important;}
+  #qmes-sync-sidebar .qmes-side-item.is-active{background:linear-gradient(90deg,#3d8ac0 0%,#2f76ad 100%)!important;color:#fff!important;font-weight:800!important;box-shadow:0 5px 14px rgba(47,91,124,.20)!important;}
+  #qmes-sync-sidebar .qmes-side-icon{width:22px!important;height:22px!important;min-width:22px!important;display:grid!important;place-items:center!important;border:1px solid #c5d4df!important;border-radius:3px!important;background:#dfe9f0!important;color:#356f99!important;font-size:10px!important;font-weight:900!important;line-height:1!important;}
+  #qmes-sync-sidebar .qmes-side-item.is-active .qmes-side-icon{background:rgba(255,255,255,.18)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important;}
+  #qmes-sync-sidebar .qmes-side-text{min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 
   body.qmes-side-open #root>div>main{margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:none!important;}
-
-  /* Page tone only. Reports/certificates are intentionally excluded. */
   #root>div>main{background:#edf2f6!important;color:#22384a!important;}
-  #root>div>main :is(.qmd-card,.qerp-card,.qmes-card,.qmd-summary-item,.qmd-flow-card,.qmd-panel):not(.doc-paper):not([class*="cert"]){
-    background:#fff!important;border-color:#c7d5df!important;border-radius:4px!important;box-shadow:0 2px 7px rgba(47,91,124,.12)!important;
-  }
+  #root>div>main :is(.qmd-card,.qerp-card,.qmes-card,.qmd-summary-item,.qmd-flow-card,.qmd-panel):not(.doc-paper):not([class*="cert"]){background:#fff!important;border-color:#c7d5df!important;border-radius:4px!important;box-shadow:0 2px 7px rgba(47,91,124,.12)!important;}
 
-  @media(max-width:1180px){
-    #qmes-sync-sidebar{width:220px!important;}
-    #root>div>header>div:first-child>button:first-child,#root>div>header .qmes-ref-brand{width:220px!important;min-width:220px!important;}
-    body.qmes-side-open #root>div>main{margin-left:220px!important;width:calc(100% - 220px)!important;}
-  }
-  @media(max-width:820px){
-    #root>div>header>div:first-child>button:first-child,#root>div>header .qmes-ref-brand{width:170px!important;min-width:170px!important;padding:0 10px!important;}
-    #root>div>header .qmes-ref-company-logo{width:145px!important;max-width:145px!important;}
-    #qmes-ref-global-search{display:none!important;}
-  }
+  @media(max-width:1180px){#qmes-sync-sidebar{width:220px!important;}#root>div>header>div:first-child>button:first-child,#root>div>header .qmes-ref-brand{width:220px!important;min-width:220px!important;}#qmes-sync-hamburger{left:234px!important;}body.qmes-side-open #root>div>main{margin-left:220px!important;width:calc(100% - 220px)!important;}}
+  @media(max-width:820px){#root>div>header>div:first-child>button:first-child,#root>div>header .qmes-ref-brand{width:170px!important;min-width:170px!important;padding:0 10px!important;}#root>div>header .qmes-ref-company-logo{width:145px!important;max-width:145px!important;}#qmes-sync-hamburger{left:184px!important;}#qmes-ref-global-search{display:none!important;}}
 }
-@media print{
-  #qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}
-  body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important;}
-}
+@media print{#qmes-sync-sidebar,#qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important;}}
