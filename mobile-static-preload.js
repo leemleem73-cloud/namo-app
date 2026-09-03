@@ -59,6 +59,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
             '<script src="/js/qmes-mobile-inventory-trace-20260903.js?v=20260903-invtrace1"></script>\n</body>'
           );
         }
+
+        // Work order and production process native workspace is mobile-work only.
+        // Desktop index.html and production React modules remain unchanged.
+        if (!html.includes('qmes-mobile-production-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-production-20260903.js?v=20260903-prod1"></script>\n</body>'
+          );
+        }
       }
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
