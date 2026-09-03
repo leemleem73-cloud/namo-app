@@ -5,8 +5,14 @@
  * Existing certificate/print styles are intentionally untouched.
  */
 @media screen {
-  /* First paint guard: hide the legacy React logo before the shell adapter mounts. */
-  html body #root > div > header > div:first-child > button:first-child > img[alt="NAMO Chemical"] {
+  /* First paint guard: suppress every legacy header logo/copy until the final shell is active. */
+  html body #root header img[alt="NAMO Chemical"],
+  html body #root > div > header img[alt="NAMO Chemical"] {
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+  }
+  html body #root header .qmes-ref-brand-copy {
     display:none!important;
     visibility:hidden!important;
     opacity:0!important;
@@ -64,6 +70,8 @@
   }
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-copy {
     display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
     align-items:center!important;
     gap:10px!important;
     min-width:0!important;
@@ -97,6 +105,7 @@
   }
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-logo {
     display:block!important;
+    visibility:visible!important;
     width:128px!important;
     height:auto!important;
     max-height:28px!important;
