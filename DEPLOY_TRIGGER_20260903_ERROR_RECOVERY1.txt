@@ -1,0 +1,2 @@
+Deploy trigger: force production refresh after restoring the valid desktop runtime script manifest and removing nonexistent JS references.
+2026-09-03 KST
