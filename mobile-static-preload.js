@@ -10,6 +10,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
   express.__NAMO_MOBILE_STATIC_PATCHED__ = true;
   const originalStatic = express.static;
 
+  function rewriteMobileAuthTargets(source) {
+    return String(source || '')
+      // Always use the dedicated mobile login page from mobile-only code.
+      // This prevents the desktop React shell/sidebar from ever becoming the
+      // logout/session-expiry destination on a phone or iPad.
+      .replace(/\/index\.html\?logout=1&mobileLogin=1/g, '/mobile-login.html?logout=1')
+      .replace(/\/index\.html\?mobileLogin=1/g, '/mobile-login.html?mobile=1');
+  }
+
   function servePatchedMobileFile(root, req, res, next) {
     const pathname = String(req.path || '').toLowerCase();
     if (pathname !== '/mobile.html' && pathname !== '/mobile-work.html' && pathname !== '/mobile-login.html') return false;
@@ -24,7 +33,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     fs.readFile(filePath, 'utf8', (error, source) => {
       if (error) return next(error);
 
-      let html = source;
+      let html = rewriteMobileAuthTargets(source);
 
       if (fileName === 'mobile.html') {
         html = html
@@ -117,11 +126,37 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         );
       }
 
+      // Re-apply auth-target rewrite after script injection so every inline path
+      // remains mobile-only even when the underlying file still contains an old
+      // /index.html?mobileLogin=1 destination.
+      html = rewriteMobileAuthTargets(html);
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-store, max-age=0');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
       return res.send(html);
     });
 
+    return true;
+  }
+
+  function servePatchedMobileScript(root, req, res, next) {
+    const pathname = String(req.path || '').toLowerCase();
+    if (!/^\/js\/qmes-mobile-[a-z0-9._-]+\.js$/.test(pathname)) return false;
+
+    const relativePath = pathname.replace(/^\//, '');
+    const filePath = path.join(root, relativePath);
+    fs.readFile(filePath, 'utf8', (error, source) => {
+      if (error) {
+        if (error.code === 'ENOENT') return next();
+        return next(error);
+      }
+      const patched = rewriteMobileAuthTargets(source);
+      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      return res.send(patched);
+    });
     return true;
   }
 
@@ -133,6 +168,12 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     return queryDesktop || refererDesktop || embeddedMobile;
   }
 
+  function isCurrentRequestExplicitDesktop(req) {
+    return String(req.query?.desktop || '') === '1'
+      || String(req.query?.view || '') === 'desktop'
+      || String(req.query?.embeddedMobile || '') === '1';
+  }
+
   function servePatchedLoginApp(root, req, res, next) {
     const pathname = String(req.path || '').toLowerCase();
     if (pathname !== '/js/app.jsx' || isExplicitDesktopRequest(req)) return false;
@@ -141,18 +182,16 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     fs.readFile(filePath, 'utf8', (error, source) => {
       if (error) return next(error);
 
-      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile.html?v=20260903-ipad-login3');\n  return true;\n}\n`;
+      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile-login.html?v=20260903-mobile-entry3');\n  return true;\n}\n`;
 
       let patched = runtimeHelper + source;
 
-      // Critical mobile login guard: even when an in-app browser User-Agent is
-      // not recognized by the server middleware, browser-side detection runs
-      // before the desktop login component can render. The dedicated mobile
-      // login page checks /api/auth/me and immediately forwards an active session
-      // to mobile.html, so both logged-in and logged-out flows stay mobile-only.
+      // Critical mobile login guard: browser-side detection runs before the
+      // desktop login component can render. This prevents the persistent PC
+      // sidebar/dashboard DOM from appearing behind the login form.
       patched = patched.replace(
         'function QMESApp() {',
-        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260903-mobile-entry2');\n    return null;\n  }`
+        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260903-mobile-entry3');\n    return null;\n  }`
       );
 
       patched = patched.replace(
@@ -166,7 +205,8 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       );
 
       res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-store, max-age=0');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
       return res.send(patched);
     });
 
@@ -175,7 +215,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
   function isMobileOrIPadRequest(req) {
     const ua = String(req.headers['user-agent'] || '');
-    return /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);
+    return /Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);
   }
 
   function isEntryPageRequest(req) {
@@ -190,18 +230,18 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       const originalUrl = req.url;
 
       if (servePatchedMobileFile(root, req, res, next)) return;
+      if (servePatchedMobileScript(root, req, res, next)) return;
       if (servePatchedLoginApp(root, req, res, next)) return;
 
       try {
         const mobileOrIPad = isMobileOrIPadRequest(req);
         const entryPage = isEntryPageRequest(req);
-        const explicitDesktop = isExplicitDesktopRequest(req);
+        // For a fresh root/index request, only the CURRENT query may explicitly
+        // request desktop mode. A stale desktop referer must never force a phone
+        // back into the PC shell after logout.
+        const explicitDesktop = isCurrentRequestExplicitDesktop(req);
         const loggedIn = Boolean(req.session && req.session.user);
 
-        // Mobile/iPad entry requests now stay entirely inside the mobile shell.
-        // Logged-out users go to mobile-login.html instead of rendering the desktop
-        // React login shell, preventing the PC sidebar/dashboard from leaking into
-        // the phone view after logout or session expiry.
         if (mobileOrIPad && entryPage && !explicitDesktop) {
           req.url = loggedIn ? '/mobile.html' : '/mobile-login.html';
           return servePatchedMobileFile(root, req, res, next) || staticMiddleware(req, res, err => {
