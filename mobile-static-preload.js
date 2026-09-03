@@ -95,11 +95,20 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         }
 
         // Current PC IssueWoTab parity implementation, mobile-work only.
-        // Loaded last so it replaces the older simplified mobile work-order UI without touching PC source.
+        // Loaded after the older simplified mobile work-order UI without touching PC source.
         if (!html.includes('qmes-mobile-workorder-pc-parity-20260903.js')) {
           html = html.replace(
             '</body>',
             '<script src="/js/qmes-mobile-workorder-pc-parity-20260903.js?v=20260903-wopc1"></script>\n</body>'
+          );
+        }
+
+        // Current PC screenshot-aligned work-order presentation, mobile-work only.
+        // Loaded last so the mobile/iPad form follows the actual PC field order and visual structure.
+        if (!html.includes('qmes-mobile-workorder-pc-screen-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-workorder-pc-screen-20260903.js?v=20260903-wopc-screen1"></script>\n</body>'
           );
         }
       }
