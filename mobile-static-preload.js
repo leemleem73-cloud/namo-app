@@ -1,6 +1,7 @@
 'use strict';
 
-// Small, reversible production hook for NAMO QMES mobile routing and branding.
+// Small, reversible production hook for NAMO QMES mobile/iPad routing and branding.
+// Desktop requests are left untouched unless the user is actually on a mobile/tablet user agent.
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -21,19 +22,19 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
       let html = source;
 
-      // Mobile home: use the official NAMO mobile symbol only.
+      // Mobile/iPad home: always use the dedicated NAMO mobile symbol.
       if (fileName === 'mobile.html') {
         html = html
-          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-symbol-official.png?v=20260903-ipad1')
-          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-symbol-official.png?v=20260903-ipad1');
+          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260903-ipad2')
+          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260903-ipad2');
       }
 
-      // Mobile work screens: remove the temporary letter N and show only the NAMO symbol.
+      // Mobile/iPad work screens: remove the temporary letter N and show the NAMO symbol.
       if (fileName === 'mobile-work.html') {
         html = html.replace('.brandmark{display:none}', '.brandmark{display:grid}');
         html = html.replace(
           '</style>',
-          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-symbol-official.png?v=20260903-ipad1") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
+          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260903-ipad2") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
         );
       }
 
@@ -45,12 +46,16 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     return true;
   }
 
-  function isMobileRequest(req) {
+  function isMobileOrIPadRequest(req) {
     const ua = String(req.headers['user-agent'] || '');
-    const mobileUa = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);
-    // Modern iPadOS can identify itself as Macintosh in Safari.
-    const iPadOsDesktopUa = /Macintosh/i.test(ua) && /Safari/i.test(ua) && !/Chrome|Chromium|Edg/i.test(ua);
-    return mobileUa || iPadOsDesktopUa;
+    // iPhone/iPad/iPod, Android mobile/tablet, and iPadOS Safari all include one
+    // of these tokens in the deployed browsers used by QMES.
+    return /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua);
+  }
+
+  function isEntryPageRequest(req) {
+    const pathname = String(req.path || '').toLowerCase();
+    return pathname === '/' || pathname === '/index.html';
   }
 
   express.static = function namoMobileAwareStatic(root, options) {
@@ -63,12 +68,16 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       if (servePatchedMobileFile(root, req, res, next)) return;
 
       try {
-        const mobile = isMobileRequest(req);
-        const rootRequest = req.path === '/' || req.url === '/';
+        const mobileOrIPad = isMobileOrIPadRequest(req);
+        const entryPage = isEntryPageRequest(req);
         const forceDesktop = String(req.query?.desktop || '') === '1' || String(req.query?.view || '') === 'desktop';
+        const embeddedMobile = String(req.query?.embeddedMobile || '') === '1';
         const loggedIn = Boolean(req.session && req.session.user);
 
-        if (mobile && rootRequest && loggedIn && !forceDesktop) {
+        // Login may redirect to /index.html rather than /. Treat both as the same
+        // mobile/iPad landing page after authentication. embeddedMobile and
+        // desktop=1 are intentional exceptions used by mobile-work.html.
+        if (mobileOrIPad && entryPage && loggedIn && !forceDesktop && !embeddedMobile) {
           req.url = '/mobile.html';
           return servePatchedMobileFile(root, req, res, next) || staticMiddleware(req, res, err => {
             req.url = originalUrl;
