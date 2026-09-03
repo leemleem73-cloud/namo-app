@@ -1,0 +1,4 @@
+Force production restart/redeploy after mobile-static-preload response-time routing fix.
+Mobile-only: mobile sales/SPC/dashboard pages are now explicitly served no-cache and legacy sales placeholder is rewritten at response time.
+Desktop React/PC source files are unchanged.
+2026-09-04
