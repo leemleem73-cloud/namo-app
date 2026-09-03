@@ -1,0 +1,5 @@
+2026-09-03 left navigation deployment refresh
+- force latest public/index.html
+- force qmes-shell-layer-base-20260827.css
+- left navigation background: #f8fbfd
+- cache key: 20260903-left-light-force1
