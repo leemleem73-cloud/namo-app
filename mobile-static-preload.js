@@ -77,6 +77,22 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
             '<script src="/js/qmes-mobile-iqc-20260903.js?v=20260903-iqc1"></script>\n</body>'
           );
         }
+
+        // Writable production/equipment/partner/POP overlays stay mobile-work only.
+        if (!html.includes('qmes-mobile-operation-write-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-operation-write-20260903.js?v=20260903-write1"></script>\n</body>'
+          );
+        }
+
+        // ?new=1 opens the correct native create editor immediately.
+        if (!html.includes('qmes-mobile-direct-entry-20260903.js')) {
+          html = html.replace(
+            '</body>',
+            '<script src="/js/qmes-mobile-direct-entry-20260903.js?v=20260903-direct1"></script>\n</body>'
+          );
+        }
       }
 
       // Mobile document authoring center is available from both the mobile home
