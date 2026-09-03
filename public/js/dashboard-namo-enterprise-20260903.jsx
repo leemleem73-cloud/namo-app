@@ -8,307 +8,43 @@
 
   var h = React.createElement;
   var clean = function(value){ return String(value == null ? "" : value).trim(); };
-  var esc = function(value){
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
-    });
-  };
-  var num = function(value){
-    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-    var match = clean(value).replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
-    return match ? Number(match[0]) : 0;
-  };
-  var fmt = function(value, digits){
-    return num(value).toLocaleString("ko-KR", {maximumFractionDigits: digits == null ? 1 : digits});
-  };
-  var dateOnly = function(value){ return clean(value).slice(0, 10); };
-  var isDone = function(value){ return /완료|생산완료|출하완료|납품완료|마감/.test(clean(value)); };
-  var isPass = function(value){ return /합격|적합|PASS|OK/i.test(clean(value)); };
-  var db = function(){
-    try { return typeof DB !== "undefined" && DB ? DB : {}; } catch (_error) { return {}; }
-  };
-  var storageRows = function(key){
-    try {
-      var value = JSON.parse(localStorage.getItem(key) || "[]");
-      if (Array.isArray(value)) return value;
-      if (Array.isArray(value && value.rows)) return value.rows;
-    } catch (_error) {}
-    return [];
-  };
-  var batchLot = function(row){ return clean(row && (row.no || row.lot || row.lotNo || row.finishedLot || row.workOrder)); };
-  var batchProduct = function(row){ return clean(row && (row.product || row.item || row.productName || row.name)) || "-"; };
-  var batchPlan = function(row){ return num(row && (row.plan != null ? row.plan : row.plannedQty != null ? row.plannedQty : row.targetQty != null ? row.targetQty : row.qty)); };
-  var batchActual = function(row){
-    var lot = batchLot(row);
-    var store = db();
-    var doc = store.woDocs && lot ? store.woDocs[lot] || {} : {};
-    var inputActual = Array.isArray(doc.inputs) ? doc.inputs.reduce(function(sum, item){
-      return sum + Math.max(0, num(item && (item.act != null ? item.act : item.actual)));
-    }, 0) : 0;
-    return Math.max(0,
-      num(row && row.done), num(row && row.productionQty), num(row && row.prodQty), num(row && row.actualQty),
-      num(doc.productionActual), num(doc.actualQty), inputActual
-    );
-  };
-  var navigate = function(tab, openMenu){
-    window.dispatchEvent(new CustomEvent("qmes:navigate-tab", {detail:{tab:tab, openMenu:openMenu || null}}));
-  };
-  var monthKey = function(date){
-    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-  };
-  var tone = function(status){
-    var text = clean(status);
-    if (/지연|불합격|부적합|차단|취소|이상/.test(text)) return "red";
-    if (/완료|합격|마감|출하가능/.test(text)) return "green";
-    if (/대기|예정|부분|검사/.test(text)) return "orange";
-    if (/진행|생산|발주|확정|발행/.test(text)) return "blue";
-    return "gray";
-  };
-
-  function latestOqcPassedLots(){
-    var store = db();
-    var rows = Array.isArray(store.insp && store.insp.OQC) ? store.insp.OQC : [];
-    var byLot = new Map();
-    rows.forEach(function(row){
-      var lot = clean(row && row.lot);
-      if (!lot) return;
-      var key = dateOnly(row.date || row.shipDate) + " " + clean(row.time) + " " + clean(row.groupId || row.id);
-      var prev = byLot.get(lot);
-      if (!prev || key >= prev.key) byLot.set(lot, {key:key, pass:isPass(row.judge || row.status)});
-    });
-    return new Set(Array.from(byLot.entries()).filter(function(entry){ return entry[1].pass; }).map(function(entry){ return entry[0]; }));
+  var esc = function(value){ return String(value == null ? "" : value).replace(/[&<>"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];}); };
+  var num = function(value){ if(typeof value==="number") return Number.isFinite(value)?value:0; var match=clean(value).replace(/,/g,"").match(/-?\d+(?:\.\d+)?/); return match?Number(match[0]):0; };
+  var fmt = function(value,digits){ return num(value).toLocaleString("ko-KR",{maximumFractionDigits:digits==null?1:digits}); };
+  var dateOnly=function(value){return clean(value).slice(0,10);};
+  var isDone=function(value){return /완료|생산완료|출하완료|납품완료|마감/.test(clean(value));};
+  var isPass=function(value){return /합격|적합|PASS|OK/i.test(clean(value));};
+  var db=function(){try{return typeof DB!=="undefined"&&DB?DB:{}}catch(_error){return {}}};
+  var storageRows=function(key){try{var value=JSON.parse(localStorage.getItem(key)||"[]");if(Array.isArray(value))return value;if(Array.isArray(value&&value.rows))return value.rows;}catch(_error){}return [];};
+  var batchLot=function(row){return clean(row&&(row.no||row.lot||row.lotNo||row.finishedLot||row.workOrder));};
+  var batchProduct=function(row){return clean(row&&(row.product||row.item||row.productName||row.name))||"-";};
+  var batchPlan=function(row){return num(row&&(row.plan!=null?row.plan:row.plannedQty!=null?row.plannedQty:row.targetQty!=null?row.targetQty:row.qty));};
+  var batchActual=function(row){var lot=batchLot(row),store=db(),doc=store.woDocs&&lot?store.woDocs[lot]||{}:{};var inputActual=Array.isArray(doc.inputs)?doc.inputs.reduce(function(sum,item){return sum+Math.max(0,num(item&&(item.act!=null?item.act:item.actual)));},0):0;return Math.max(0,num(row&&row.done),num(row&&row.productionQty),num(row&&row.prodQty),num(row&&row.actualQty),num(doc.productionActual),num(doc.actualQty),inputActual);};
+  var navigate=function(tab,openMenu){window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab:tab,openMenu:openMenu||null}}));};
+  var monthKey=function(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0");};
+  var tone=function(status){var text=clean(status);if(/지연|불합격|부적합|차단|취소|이상/.test(text))return "red";if(/완료|합격|마감|출하가능/.test(text))return "green";if(/대기|예정|부분|검사/.test(text))return "orange";if(/진행|생산|발주|확정|발행/.test(text))return "blue";return "gray";};
+  function latestOqcPassedLots(){var store=db(),rows=Array.isArray(store.insp&&store.insp.OQC)?store.insp.OQC:[],byLot=new Map();rows.forEach(function(row){var lot=clean(row&&row.lot);if(!lot)return;var key=dateOnly(row.date||row.shipDate)+" "+clean(row.time)+" "+clean(row.groupId||row.id),prev=byLot.get(lot);if(!prev||key>=prev.key)byLot.set(lot,{key:key,pass:isPass(row.judge||row.status)});});return new Set(Array.from(byLot.entries()).filter(function(entry){return entry[1].pass;}).map(function(entry){return entry[0];}));}
+  function shippingRows(){var rows=storageRows("qmes-erp-shipping-v1");if(rows.length)return rows;try{var store=db();if(Array.isArray(store.shipping))return store.shipping;}catch(_error){}return [];}
+  function salesRows(){return storageRows("qmes-erp-sales-v1");}
+  function shippingDate(row){return dateOnly(row&&(row.actualShipDate||row.shipDate||row.deliveredAt||row.deliveryAt||row.date||row.createdAt));}
+  function shippingQty(row){return Math.max(0,num(row&&(row.shipQty!=null?row.shipQty:row.shippingQty!=null?row.shippingQty:row.deliveryQty!=null?row.deliveryQty:row.deliveredQty!=null?row.deliveredQty:row.quantity!=null?row.quantity:row.qty)));}
+  function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}var map=new Map(months.map(function(item){return [item.key,item];}));rows.forEach(function(row){var key=shippingDate(row).slice(0,7);if(map.has(key))map.get(key).value+=shippingQty(row);});return months;}
+  function onTimeRate(rows){var measured=rows.filter(function(row){var actual=dateOnly(row.actualShipDate||row.shipDate||row.deliveredAt||row.deliveryAt),due=dateOnly(row.due||row.requestedDueDate||row.deliveryDue||row.expectedDate);return actual&&due&&/\d{4}-\d{2}-\d{2}/.test(actual)&&/\d{4}-\d{2}-\d{2}/.test(due);});if(!measured.length)return null;var ok=measured.filter(function(row){return dateOnly(row.actualShipDate||row.shipDate||row.deliveredAt||row.deliveryAt)<=dateOnly(row.due||row.requestedDueDate||row.deliveryDue||row.expectedDate);}).length;return ok/measured.length*100;}
+  function qmesEnterpriseDashboardData(purchases){var store=db(),batches=Array.isArray(store.batches)?store.batches.slice():[],lots=store.lots&&typeof store.lots==="object"?Object.values(store.lots):[],oqcPassed=latestOqcPassedLots(),activeBatches=batches.filter(function(row){return !isDone(row&&row.status);}),activeActual=activeBatches.reduce(function(sum,row){return sum+batchActual(row);},0),activePlan=activeBatches.reduce(function(sum,row){return sum+batchPlan(row);},0),iqcPending=purchases.filter(function(row){if(row.iqcRequired===false||/취소/.test(clean(row.status)))return false;return !isPass(row.iqcStatus||row.iqc)&&!/비대상/.test(clean(row.iqcStatus||row.iqc));}),ship=shippingRows(),shipPending=ship.filter(function(row){return !isDone(row.delivery||row.status||row.shipping);}),rate=onTimeRate(ship),qcPending=batches.filter(function(row){return batchActual(row)>0&&!oqcPassed.has(batchLot(row));}),sales=salesRows(),inventoryLotCount=lots.filter(function(row){return num(row&&(row.currentQty!=null?row.currentQty:row.qty!=null?row.qty:row.amount))>0;}).length,today=new Date().toISOString().slice(0,10),overdue=purchases.filter(function(row){var due=dateOnly(row.confirmedDueDate||row.expected||row.requestedDueDate||row.due);return due&&due<today&&!/입고완료|마감|취소/.test(clean(row.status));}),notices=[];
+    if(overdue[0])notices.push({tone:"red",title:"발주 납기 지연 확인",detail:[overdue[0].purchaseNo||overdue[0].id,overdue[0].supplier,overdue[0].item].filter(Boolean).join(" · "),action:"구매관리",tab:"erpPurchase"});
+    if(iqcPending[0])notices.push({tone:"orange",title:"수입검사 대기",detail:[iqcPending[0].purchaseNo||iqcPending[0].id,iqcPending[0].supplier,iqcPending[0].item].filter(Boolean).join(" · "),action:"IQC",tab:"iqc",openMenu:"qualityMenu"});
+    if(activeBatches[0])notices.push({tone:"blue",title:"생산 진행 LOT",detail:[batchLot(activeBatches[0]),batchProduct(activeBatches[0]),fmt(batchActual(activeBatches[0]),3)+" / "+fmt(batchPlan(activeBatches[0]),3)+" kg"].filter(Boolean).join(" · "),action:"생산",tab:"prod",openMenu:"productionMenu"});
+    if(qcPending[0])notices.push({tone:"purple",title:"출하검사 확인 필요",detail:[batchLot(qcPending[0]),batchProduct(qcPending[0]),"생산실적 "+fmt(batchActual(qcPending[0]),3)+" kg"].join(" · "),action:"OQC",tab:"oqc",openMenu:"qualityMenu"});
+    if(shipPending[0]&&notices.length<4)notices.push({tone:"green",title:"출하·납품 진행 확인",detail:[clean(shipPending[0].shipNo||shipPending[0].shippingNo||shipPending[0].no),clean(shipPending[0].customer),clean(shipPending[0].lot||shipPending[0].workOrder)].filter(Boolean).join(" · "),action:"출하",tab:"erpShipping"});
+    return {activeBatches:activeBatches,activeActual:activeActual,activePlan:activePlan,iqcPending:iqcPending,shipPending:shipPending,onTimeRate:rate,qcPending:qcPending,salesCount:sales.length,purchaseCount:purchases.filter(function(row){return !/취소/.test(clean(row.status));}).length,inventoryLotCount:inventoryLotCount,notices:notices,months:monthlyShipping(ship)};
   }
-
-  function shippingRows(){
-    var rows = storageRows("qmes-erp-shipping-v1");
-    if (rows.length) return rows;
-    try {
-      var store = db();
-      if (Array.isArray(store.shipping)) return store.shipping;
-    } catch (_error) {}
-    return [];
+  function statusBadge(status){return '<span class="ned-status '+tone(status)+'">'+esc(status||"-")+'</span>';}
+  function qmesEnterpriseDashboardMarkup(data,purchases){var maxMonthly=Math.max(1,Math.max.apply(null,data.months.map(function(item){return item.value;}))),purchaseRows=purchases.slice().sort(function(a,b){return dateOnly(b.orderDate||b.date).localeCompare(dateOnly(a.orderDate||a.date));}).slice(0,4),flow=[["SO","수주",data.salesCount?data.salesCount+"건":"연결","erpSales",""],["PO","구매발주",data.purchaseCount+"건","erpPurchase",""],["IQC","입고·검사","대기 "+data.iqcPending.length+"건","iqc","qualityMenu"],["WO","작업지시","진행 "+data.activeBatches.length+" LOT","prod","productionMenu"],["QC","공정·출하검사","대기 "+data.qcPending.length+"건","oqc","qualityMenu"],["INV","재고입고",data.inventoryLotCount+" LOT","inventory","inventoryMenu"],["SHIP","출하·납품","대기 "+data.shipPending.length+"건","erpShipping",""]],flowHtml=flow.map(function(item,index){var cls=index<2?"done":(item[0]==="IQC"||item[0]==="WO")?"current":"";return '<button type="button" class="ned-flow-step '+cls+'" data-tab="'+esc(item[3])+'" data-menu="'+esc(item[4])+'"><span class="ned-flow-dot">'+esc(item[0])+'</span><b>'+esc(item[1])+'</b><small>'+esc(item[2])+'</small></button>';}).join(""),purchaseHtml=purchaseRows.length?purchaseRows.map(function(row){var due=dateOnly(row.confirmedDueDate||row.expected||row.requestedDueDate||row.due);return '<tr><td><button type="button" class="ned-link" data-tab="erpPurchase">'+esc(row.purchaseNo||row.id||"-")+'</button></td><td>'+esc(row.supplier||"-")+'</td><td>'+esc(row.item||row.material||"-")+'</td><td>'+esc(due?due.slice(5):"-")+'</td><td>'+statusBadge(row.status||row.receiptStatus||"진행")+'</td></tr>';}).join(""):'<tr><td colspan="5" class="ned-empty">등록된 구매발주가 없습니다.</td></tr>',bars=data.months.map(function(item){var height=Math.max(3,Math.round(item.value/maxMonthly*116));return '<div class="ned-bar-col"><span>'+esc(fmt(item.value/1000,2))+'</span><div class="ned-bar" style="height:'+height+'px"></div><b>'+esc(item.label)+'</b></div>';}).join(""),notices=data.notices.length?data.notices.map(function(item){return '<button type="button" class="ned-task" data-tab="'+esc(item.tab||"dash")+'" data-menu="'+esc(item.openMenu||"")+'"><i class="'+esc(item.tone)+'"></i><span><b>'+esc(item.title)+'</b><small>'+esc(item.detail||"확인 필요")+'</small></span><em>'+esc(item.action||"열기")+'</em></button>';}).join(""):'<div class="ned-task-empty">등록된 공지사항이 없습니다.</div>',otdValue=data.onTimeRate==null?"-":data.onTimeRate.toFixed(1),otdUnit=data.onTimeRate==null?"":"%",progress=data.activePlan>0?Math.min(100,data.activeActual/data.activePlan*100):0;
+    return '<div class="ned-page-head"><div><div class="ned-breadcrumb">홈 〉 통합 대시보드</div><h1>통합 경영 대시보드</h1></div><div class="ned-head-actions"><button type="button" data-refresh>↻ 새로고침</button><button type="button" data-tab="erpPurchase" class="primary">＋ 신규 발주</button></div></div>'+
+      '<section class="ned-kpis"><article style="--accent:#eea32f"><span>수입검사 대기</span><strong>'+esc(data.iqcPending.length)+'<small>건</small></strong><p>발주·입고 연계 검사 기준</p><i>IQC</i></article><article style="--accent:#4f9bc7"><span>생산 진행 LOT</span><strong>'+esc(data.activeBatches.length)+'<small>LOT</small></strong><p>계획 '+esc(fmt(data.activePlan,3))+'kg · 실적 '+esc(fmt(data.activeActual,3))+'kg ('+esc(progress.toFixed(1))+'%)</p><i>MES</i></article><article style="--accent:#58a842"><span>납기 준수율</span><strong>'+esc(otdValue)+'<small>'+esc(otdUnit)+'</small></strong><p>'+(data.onTimeRate==null?'완료 출하의 납기 데이터가 필요합니다.':'출하 완료일과 요청납기 기준')+'</p><i>OTD</i></article></section>'+
+      '<section class="ned-layout"><div class="ned-left"><div class="ned-panel"><header><div><h2>ERP → MES 통합 업무 흐름</h2><p>문서번호와 LOT 기준으로 전 단계가 연결됩니다.</p></div><button type="button" data-tab="erpPurchase">구매현황 보기</button></header><div class="ned-flow">'+flowHtml+'</div></div><div class="ned-split"><div class="ned-panel"><header><h2>구매·입고 진행현황</h2><button type="button" data-tab="erpPurchase">전체보기</button></header><div class="ned-table-wrap"><table><thead><tr><th>발주번호</th><th>거래처</th><th>품목</th><th>납기</th><th>진행</th></tr></thead><tbody>'+purchaseHtml+'</tbody></table></div></div><div class="ned-panel"><header><div><h2>월간 출하량</h2><p>실출하 수량 · 단위 ton</p></div><button type="button" data-tab="erpShipping">출하현황</button></header><div class="ned-chart">'+bars+'</div></div></div></div><div class="ned-right"><div class="ned-panel ned-task-panel"><header><div><h2>공지사항</h2><p>'+esc(new Date().toLocaleDateString("ko-KR"))+'</p></div><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+notices+'</div></div></div></section>';
   }
-
-  function salesRows(){ return storageRows("qmes-erp-sales-v1"); }
-
-  function shippingDate(row){
-    return dateOnly(row && (row.actualShipDate || row.shipDate || row.deliveredAt || row.deliveryAt || row.date || row.createdAt));
-  }
-
-  function shippingQty(row){
-    return Math.max(0, num(row && (
-      row.shipQty != null ? row.shipQty :
-      row.shippingQty != null ? row.shippingQty :
-      row.deliveryQty != null ? row.deliveryQty :
-      row.deliveredQty != null ? row.deliveredQty :
-      row.quantity != null ? row.quantity : row.qty
-    )));
-  }
-
-  function monthlyShipping(rows){
-    var now = new Date();
-    var months = [];
-    for (var i = 5; i >= 0; i -= 1) {
-      var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({key:monthKey(d), label:(d.getMonth() + 1) + "월", value:0});
-    }
-    var map = new Map(months.map(function(item){ return [item.key, item]; }));
-    rows.forEach(function(row){
-      var key = shippingDate(row).slice(0, 7);
-      if (map.has(key)) map.get(key).value += shippingQty(row);
-    });
-    return months;
-  }
-
-  function onTimeRate(rows){
-    var measured = rows.filter(function(row){
-      var actual = dateOnly(row.actualShipDate || row.shipDate || row.deliveredAt || row.deliveryAt);
-      var due = dateOnly(row.due || row.requestedDueDate || row.deliveryDue || row.expectedDate);
-      return actual && due && /\d{4}-\d{2}-\d{2}/.test(actual) && /\d{4}-\d{2}-\d{2}/.test(due);
-    });
-    if (!measured.length) return null;
-    var ok = measured.filter(function(row){
-      var actual = dateOnly(row.actualShipDate || row.shipDate || row.deliveredAt || row.deliveryAt);
-      var due = dateOnly(row.due || row.requestedDueDate || row.deliveryDue || row.expectedDate);
-      return actual <= due;
-    }).length;
-    return ok / measured.length * 100;
-  }
-
-  function qmesEnterpriseDashboardData(purchases){
-    var store = db();
-    var batches = Array.isArray(store.batches) ? store.batches.slice() : [];
-    var lots = store.lots && typeof store.lots === "object" ? Object.values(store.lots) : [];
-    var oqcPassed = latestOqcPassedLots();
-    var activeBatches = batches.filter(function(row){ return !isDone(row && row.status); });
-    var activeActual = activeBatches.reduce(function(sum, row){ return sum + batchActual(row); }, 0);
-    var activePlan = activeBatches.reduce(function(sum, row){ return sum + batchPlan(row); }, 0);
-    var iqcPending = purchases.filter(function(row){
-      if (row.iqcRequired === false || /취소/.test(clean(row.status))) return false;
-      return !isPass(row.iqcStatus || row.iqc) && !/비대상/.test(clean(row.iqcStatus || row.iqc));
-    });
-    var ship = shippingRows();
-    var shipPending = ship.filter(function(row){ return !isDone(row.delivery || row.status || row.shipping); });
-    var rate = onTimeRate(ship);
-    var qcPending = batches.filter(function(row){ return batchActual(row) > 0 && !oqcPassed.has(batchLot(row)); });
-    var sales = salesRows();
-    var inventoryLotCount = lots.filter(function(row){
-      return num(row && (row.currentQty != null ? row.currentQty : row.qty != null ? row.qty : row.amount)) > 0;
-    }).length;
-
-    var today = new Date().toISOString().slice(0, 10);
-    var overdue = purchases.filter(function(row){
-      var due = dateOnly(row.confirmedDueDate || row.expected || row.requestedDueDate || row.due);
-      return due && due < today && !/입고완료|마감|취소/.test(clean(row.status));
-    });
-
-    var notices = [];
-    if (overdue[0]) notices.push({tone:"red", title:"발주 납기 지연 확인", detail:[overdue[0].purchaseNo || overdue[0].id, overdue[0].supplier, overdue[0].item].filter(Boolean).join(" · "), action:"구매관리", tab:"erpPurchase"});
-    if (iqcPending[0]) notices.push({tone:"orange", title:"수입검사 대기", detail:[iqcPending[0].purchaseNo || iqcPending[0].id, iqcPending[0].supplier, iqcPending[0].item].filter(Boolean).join(" · "), action:"IQC", tab:"iqc", openMenu:"qualityMenu"});
-    if (activeBatches[0]) notices.push({tone:"blue", title:"생산 진행 LOT", detail:[batchLot(activeBatches[0]), batchProduct(activeBatches[0]), fmt(batchActual(activeBatches[0]), 3) + " / " + fmt(batchPlan(activeBatches[0]), 3) + " kg"].filter(Boolean).join(" · "), action:"생산", tab:"prod", openMenu:"productionMenu"});
-    if (qcPending[0]) notices.push({tone:"purple", title:"출하검사 확인 필요", detail:[batchLot(qcPending[0]), batchProduct(qcPending[0]), "생산실적 " + fmt(batchActual(qcPending[0]), 3) + " kg"].join(" · "), action:"OQC", tab:"oqc", openMenu:"qualityMenu"});
-    if (shipPending[0] && notices.length < 4) notices.push({tone:"green", title:"출하·납품 진행 확인", detail:[clean(shipPending[0].shipNo || shipPending[0].shippingNo || shipPending[0].no), clean(shipPending[0].customer), clean(shipPending[0].lot || shipPending[0].workOrder)].filter(Boolean).join(" · "), action:"출하", tab:"erpShipping"});
-
-    return {
-      activeBatches:activeBatches,
-      activeActual:activeActual,
-      activePlan:activePlan,
-      iqcPending:iqcPending,
-      shipPending:shipPending,
-      onTimeRate:rate,
-      qcPending:qcPending,
-      salesCount:sales.length,
-      purchaseCount:purchases.filter(function(row){ return !/취소/.test(clean(row.status)); }).length,
-      inventoryLotCount:inventoryLotCount,
-      notices:notices,
-      months:monthlyShipping(ship)
-    };
-  }
-
-  function statusBadge(status){
-    return '<span class="ned-status ' + tone(status) + '">' + esc(status || "-") + '</span>';
-  }
-
-  function qmesEnterpriseDashboardMarkup(data, purchases){
-    var maxMonthly = Math.max(1, Math.max.apply(null, data.months.map(function(item){ return item.value; })));
-    var purchaseRows = purchases.slice().sort(function(a,b){
-      return dateOnly(b.orderDate || b.date).localeCompare(dateOnly(a.orderDate || a.date));
-    }).slice(0, 4);
-
-    var flow = [
-      ["SO","수주", data.salesCount ? data.salesCount + "건" : "연결","erpSales",""],
-      ["PO","구매발주", data.purchaseCount + "건","erpPurchase",""],
-      ["IQC","입고·검사", "대기 " + data.iqcPending.length + "건","iqc","qualityMenu"],
-      ["WO","작업지시", "진행 " + data.activeBatches.length + " LOT","prod","productionMenu"],
-      ["QC","공정·출하검사", "대기 " + data.qcPending.length + "건","oqc","qualityMenu"],
-      ["INV","재고입고", data.inventoryLotCount + " LOT","inventory","inventoryMenu"],
-      ["SHIP","출하·납품", "대기 " + data.shipPending.length + "건","erpShipping",""]
-    ];
-    var flowHtml = flow.map(function(item,index){
-      var cls = index < 2 ? "done" : (item[0] === "IQC" || item[0] === "WO") ? "current" : "";
-      return '<button type="button" class="ned-flow-step ' + cls + '" data-tab="' + esc(item[3]) + '" data-menu="' + esc(item[4]) + '"><span class="ned-flow-dot">' + esc(item[0]) + '</span><b>' + esc(item[1]) + '</b><small>' + esc(item[2]) + '</small></button>';
-    }).join("");
-
-    var purchaseHtml = purchaseRows.length ? purchaseRows.map(function(row){
-      var due = dateOnly(row.confirmedDueDate || row.expected || row.requestedDueDate || row.due);
-      return '<tr><td><button type="button" class="ned-link" data-tab="erpPurchase">' + esc(row.purchaseNo || row.id || "-") + '</button></td><td>' + esc(row.supplier || "-") + '</td><td>' + esc(row.item || row.material || "-") + '</td><td>' + esc(due ? due.slice(5) : "-") + '</td><td>' + statusBadge(row.status || row.receiptStatus || "진행") + '</td></tr>';
-    }).join("") : '<tr><td colspan="5" class="ned-empty">등록된 구매발주가 없습니다.</td></tr>';
-
-    var bars = data.months.map(function(item){
-      var height = Math.max(3, Math.round(item.value / maxMonthly * 116));
-      return '<div class="ned-bar-col"><span>' + esc(fmt(item.value / 1000, 2)) + '</span><div class="ned-bar" style="height:' + height + 'px"></div><b>' + esc(item.label) + '</b></div>';
-    }).join("");
-
-    var notices = data.notices.length ? data.notices.map(function(item){
-      return '<button type="button" class="ned-task" data-tab="' + esc(item.tab || "dash") + '" data-menu="' + esc(item.openMenu || "") + '"><i class="' + esc(item.tone) + '"></i><span><b>' + esc(item.title) + '</b><small>' + esc(item.detail || "확인 필요") + '</small></span><em>' + esc(item.action || "열기") + '</em></button>';
-    }).join("") : '<div class="ned-task-empty">등록된 공지사항이 없습니다.</div>';
-
-    var otdValue = data.onTimeRate == null ? "-" : data.onTimeRate.toFixed(1);
-    var otdUnit = data.onTimeRate == null ? "" : "%";
-    var progress = data.activePlan > 0 ? Math.min(100, data.activeActual / data.activePlan * 100) : 0;
-
-    return '' +
-      '<div class="ned-page-head"><div><div class="ned-breadcrumb">홈 〉 통합 대시보드</div><h1>통합 경영 대시보드</h1><p>나모케미칼 ERP · MES · QMS 실시간 운영 현황</p></div><div class="ned-head-actions"><button type="button" data-refresh>↻ 새로고침</button><button type="button" data-tab="erpPurchase" class="primary">＋ 신규 발주</button></div></div>' +
-      '<section class="ned-kpis">' +
-        '<article style="--accent:#eea32f"><span>수입검사 대기</span><strong>' + esc(data.iqcPending.length) + '<small>건</small></strong><p>발주·입고 연계 검사 기준</p><i>IQC</i></article>' +
-        '<article style="--accent:#4f9bc7"><span>생산 진행 LOT</span><strong>' + esc(data.activeBatches.length) + '<small>LOT</small></strong><p>계획 ' + esc(fmt(data.activePlan,3)) + 'kg · 실적 ' + esc(fmt(data.activeActual,3)) + 'kg (' + esc(progress.toFixed(1)) + '%)</p><i>MES</i></article>' +
-        '<article style="--accent:#58a842"><span>납기 준수율</span><strong>' + esc(otdValue) + '<small>' + esc(otdUnit) + '</small></strong><p>' + (data.onTimeRate == null ? '완료 출하의 납기 데이터가 필요합니다.' : '출하 완료일과 요청납기 기준') + '</p><i>OTD</i></article>' +
-      '</section>' +
-      '<section class="ned-layout"><div class="ned-left">' +
-        '<div class="ned-panel"><header><div><h2>ERP → MES 통합 업무 흐름</h2><p>문서번호와 LOT 기준으로 전 단계가 연결됩니다.</p></div><button type="button" data-tab="erpPurchase">구매현황 보기</button></header><div class="ned-flow">' + flowHtml + '</div></div>' +
-        '<div class="ned-split">' +
-          '<div class="ned-panel"><header><h2>구매·입고 진행현황</h2><button type="button" data-tab="erpPurchase">전체보기</button></header><div class="ned-table-wrap"><table><thead><tr><th>발주번호</th><th>거래처</th><th>품목</th><th>납기</th><th>진행</th></tr></thead><tbody>' + purchaseHtml + '</tbody></table></div></div>' +
-          '<div class="ned-panel"><header><div><h2>월간 출하량</h2><p>실출하 수량 · 단위 ton</p></div><button type="button" data-tab="erpShipping">출하현황</button></header><div class="ned-chart">' + bars + '</div></div>' +
-        '</div>' +
-      '</div><div class="ned-right"><div class="ned-panel ned-task-panel"><header><div><h2>공지사항</h2><p>' + esc(new Date().toLocaleDateString("ko-KR")) + '</p></div><span>' + esc(data.notices.length) + '건</span></header><div class="ned-tasks">' + notices + '</div></div></div></section>';
-  }
-
-  var dashboardCss = `
-    .namo-enterprise-dashboard{--ned-blue:#2f78b7;--ned-ink:#22384a;--ned-muted:#687c8d;--ned-line:#cbd8e2;--ned-bg:#edf2f6;min-height:calc(100vh - 120px);margin:-20px -24px -34px;padding:0 26px 38px;background:var(--ned-bg);color:var(--ned-ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
-    .namo-enterprise-dashboard *{box-sizing:border-box}
-    .qmes-ref-brand-mark{display:none!important}
-    .ned-page-head{min-height:84px;margin:0 -26px 18px;padding:14px 26px;background:linear-gradient(180deg,#fff,#f4f7f9);border-bottom:1px solid #becdd8;display:flex;align-items:center;gap:18px}
-    .ned-breadcrumb{font-size:10px;color:#718696;margin-bottom:4px}.ned-page-head h1{margin:0;color:#244f70;font-size:21px;font-weight:950;letter-spacing:-.4px}.ned-page-head p{margin:4px 0 0;font-size:10.5px;color:#748896}
-    .ned-head-actions{margin-left:auto;display:flex;gap:7px}.ned-head-actions button,.ned-panel header button{height:31px;border:1px solid #b7c8d4;border-radius:4px;background:linear-gradient(180deg,#fff,#e8eef3);color:#365269;font-size:10.5px;font-weight:850;padding:0 11px;cursor:pointer}.ned-head-actions button.primary{background:linear-gradient(180deg,#4a93c7,#2f78b7);border-color:#286b9e;color:#fff}
-    .ned-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}.ned-kpis article{position:relative;overflow:hidden;background:#fff;border:1px solid #c7d5df;border-radius:6px;box-shadow:0 2px 7px rgba(47,91,124,.09);padding:15px 17px 14px}.ned-kpis article:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent)}.ned-kpis article>span{display:block;color:#687c8d;font-size:11px;font-weight:850}.ned-kpis strong{display:block;margin-top:7px;color:#22384a;font-size:25px;font-weight:950;line-height:1}.ned-kpis strong small{font-size:11px;margin-left:4px;color:#6d778b}.ned-kpis p{min-height:16px;margin:7px 0 0;color:#7b8797;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ned-kpis article>i{position:absolute;right:14px;top:13px;display:grid;place-items:center;width:33px;height:33px;border-radius:5px;background:#eef5fa;color:var(--accent);font-size:9.5px;font-style:normal;font-weight:950}
-    .ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}.ned-panel{background:#fff;border:1px solid #c7d5df;border-radius:6px;box-shadow:0 2px 7px rgba(47,91,124,.08);overflow:hidden}.ned-panel>header{min-height:49px;padding:8px 14px;background:linear-gradient(180deg,#fbfdfe,#edf4f8);border-bottom:1px solid #c7d5df;display:flex;align-items:center;gap:10px}.ned-panel h2{margin:0;color:#244f70;font-size:13px;font-weight:950}.ned-panel header p{margin:3px 0 0;color:#748896;font-size:9.5px}.ned-panel header button,.ned-panel header>span{margin-left:auto}.ned-panel header>span{display:inline-flex;align-items:center;height:23px;padding:0 8px;border-radius:4px;background:#e8f3fa;color:#1f699d;font-size:9.5px;font-weight:900}
-    .ned-flow{display:grid;grid-template-columns:repeat(7,minmax(86px,1fr));padding:15px 10px 18px;overflow:auto}.ned-flow-step{position:relative;border:0;background:transparent;min-width:88px;text-align:center;cursor:pointer;color:#334a5f}.ned-flow-step:not(:last-child):after{content:"";position:absolute;top:21px;left:62%;width:76%;height:2px;background:#d8e0ec;z-index:0}.ned-flow-dot{position:relative;z-index:1;margin:auto;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#edf2fa;border:4px solid #fff;box-shadow:0 0 0 1px #ccd7e7;color:#55708f;font-size:10px;font-weight:950}.ned-flow-step.done .ned-flow-dot{background:#58a842;color:#fff;box-shadow:0 0 0 1px #58a842}.ned-flow-step.current .ned-flow-dot{background:#2f78b7;color:#fff;box-shadow:0 0 0 4px #dce8ff}.ned-flow-step b{display:block;margin-top:7px;font-size:10px}.ned-flow-step small{display:block;margin-top:3px;color:#7a8797;font-size:8.8px}
-    .ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}.ned-table-wrap{overflow:auto}.ned-panel table{width:100%;border-collapse:collapse;font-size:10.5px}.ned-panel th{padding:9px 8px;background:linear-gradient(180deg,#7fb4d6,#619bc2);border-right:1px solid rgba(255,255,255,.3);color:#fff;text-align:left;font-weight:900;white-space:nowrap}.ned-panel td{padding:9px 8px;border-bottom:1px solid #dce5eb;white-space:nowrap;color:#405569}.ned-panel tbody tr:nth-child(even){background:#f7fafc}.ned-link{border:0;background:transparent;padding:0;color:#1267a6;font:inherit;font-weight:900;cursor:pointer}
-    .ned-status{display:inline-flex;height:21px;align-items:center;padding:0 7px;border:1px solid transparent;border-radius:4px;font-size:9px;font-weight:900}.ned-status.blue{color:#1f699d;background:#e8f3fa;border-color:#bcd9eb}.ned-status.green{color:#4e8b3c;background:#edf7e9;border-color:#cae3c2}.ned-status.orange{color:#a46b10;background:#fff4df;border-color:#efd5a2}.ned-status.red{color:#b54242;background:#fdeaea;border-color:#efbcbc}.ned-status.gray{color:#667986;background:#edf1f4;border-color:#d4dde4}
-    .ned-chart{height:178px;padding:13px 10px 20px;display:flex;align-items:flex-end;gap:8px}.ned-bar-col{height:100%;flex:1;min-width:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.ned-bar-col>span{font-size:8px;color:#718196;margin-bottom:4px}.ned-bar{width:min(29px,75%);min-height:3px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#8fc1df,#62a2c8)}.ned-bar-col>b{margin-top:5px;color:#748095;font-size:8.5px}
-    .ned-task-panel{min-height:100%}.ned-tasks{display:grid;gap:8px;padding:12px}.ned-task{width:100%;display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid #dfe6ec;border-radius:5px;background:#fff;text-align:left;cursor:pointer}.ned-task:hover{background:#f6fafd;border-color:#b8cfdf}.ned-task>i{width:8px;height:8px;border-radius:50%;margin-top:4px;flex:none;background:#2f78b7}.ned-task>i.orange{background:#eea32f}.ned-task>i.red{background:#df5151}.ned-task>i.green{background:#58a842}.ned-task>i.purple{background:#7188b6}.ned-task>span{min-width:0}.ned-task b{display:block;color:#304b61;font-size:10.5px}.ned-task small{display:block;margin-top:4px;color:#788898;font-size:9.2px;line-height:1.45;white-space:normal}.ned-task em{margin-left:auto;color:#2f78b7;font-size:9px;font-style:normal;font-weight:900;white-space:nowrap}.ned-task-empty,.ned-empty{padding:28px 10px!important;text-align:center;color:#8694a2;font-size:10px}.ned-task-empty{margin:12px;background:#f7fafc;border:1px dashed #cbd8e2;border-radius:5px}
-    @media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}
-    @media(max-width:760px){.namo-enterprise-dashboard{padding-left:10px;padding-right:10px}.ned-page-head{margin-left:-10px;margin-right:-10px;padding:12px 10px;align-items:flex-start}.ned-page-head h1{font-size:18px}.ned-head-actions{margin-left:auto}.ned-head-actions button:not(.primary){display:none}.ned-kpis{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr}.ned-flow{grid-template-columns:repeat(7,100px)}.ned-layout{display:block}.ned-right{margin-top:14px}}
-  `;
-
-  function DashboardTab(){
-    var rootRef = React.useRef(null);
-    var _state = React.useState([]), purchases = _state[0], setPurchases = _state[1];
-    var _rev = React.useState(0), revision = _rev[0], setRevision = _rev[1];
-
-    var loadPurchases = React.useCallback(function(){
-      return fetch("/api/purchase-orders", {credentials:"same-origin"})
-        .then(function(response){ return response.ok ? response.json() : Promise.reject(new Error("purchase api")); })
-        .then(function(payload){ if (payload && payload.success && Array.isArray(payload.data)) setPurchases(payload.data); })
-        .catch(function(){
-          var fallback = storageRows("qmes-erp-purchase-v1");
-          if (!fallback.length) fallback = storageRows("erp:purchase");
-          if (fallback.length) setPurchases(fallback);
-        });
-    }, []);
-
-    React.useEffect(function(){
-      loadPurchases();
-      var refresh = function(){ setRevision(function(value){ return value + 1; }); loadPurchases(); };
-      var events = ["qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete","qmes:mes-master-ready"];
-      events.forEach(function(name){ window.addEventListener(name, refresh); });
-      var timer = window.setInterval(refresh, 30000);
-      return function(){ events.forEach(function(name){ window.removeEventListener(name, refresh); }); window.clearInterval(timer); };
-    }, [loadPurchases]);
-
-    var data = React.useMemo(function(){ return qmesEnterpriseDashboardData(purchases); }, [purchases, revision]);
-    var markup = React.useMemo(function(){ return qmesEnterpriseDashboardMarkup(data, purchases); }, [data, purchases]);
-
-    React.useEffect(function(){
-      var root = rootRef.current;
-      if (!root) return;
-      var click = function(event){
-        var refreshButton = event.target.closest("[data-refresh]");
-        if (refreshButton) { event.preventDefault(); setRevision(function(value){ return value + 1; }); loadPurchases(); return; }
-        var target = event.target.closest("[data-tab]");
-        if (!target) return;
-        event.preventDefault();
-        navigate(target.getAttribute("data-tab"), target.getAttribute("data-menu"));
-      };
-      root.addEventListener("click", click);
-      return function(){ root.removeEventListener("click", click); };
-    }, [loadPurchases, markup]);
-
-    return h("div", {className:"namo-enterprise-dashboard", ref:rootRef},
-      h("style", {dangerouslySetInnerHTML:{__html:dashboardCss}}),
-      h("div", {dangerouslySetInnerHTML:{__html:markup}})
-    );
-  }
-
-  window.DashboardTab = DashboardTab;
+  var dashboardCss=`.namo-enterprise-dashboard{--ned-blue:#2f78b7;--ned-ink:#22384a;--ned-muted:#687c8d;--ned-line:#cbd8e2;--ned-bg:#edf2f6;min-height:calc(100vh - 120px);margin:-20px -24px -34px;padding:0 26px 38px;background:var(--ned-bg);color:var(--ned-ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}.namo-enterprise-dashboard *{box-sizing:border-box}.qmes-ref-brand-mark{display:none!important}.ned-page-head{min-height:68px;margin:0 -26px 18px;padding:10px 26px;background:linear-gradient(180deg,#fff,#f4f7f9);border-bottom:1px solid #becdd8;display:flex;align-items:center;gap:18px}.ned-breadcrumb{font-size:10px;color:#718696;margin-bottom:3px}.ned-page-head h1{margin:0;color:#244f70;font-size:21px;font-weight:950;letter-spacing:-.4px}.ned-head-actions{margin-left:auto;display:flex;gap:7px}.ned-head-actions button,.ned-panel header button{height:31px;border:1px solid #b7c8d4;border-radius:4px;background:linear-gradient(180deg,#fff,#e8eef3);color:#365269;font-size:10.5px;font-weight:850;padding:0 11px;cursor:pointer}.ned-head-actions button.primary{background:linear-gradient(180deg,#4a93c7,#2f78b7);border-color:#286b9e;color:#fff}.ned-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}.ned-kpis article{position:relative;overflow:hidden;background:#fff;border:1px solid #c7d5df;border-radius:6px;box-shadow:0 2px 7px rgba(47,91,124,.09);padding:15px 17px 14px}.ned-kpis article:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent)}.ned-kpis article>span{display:block;color:#687c8d;font-size:11px;font-weight:850}.ned-kpis strong{display:block;margin-top:7px;color:#22384a;font-size:25px;font-weight:950;line-height:1}.ned-kpis strong small{font-size:11px;margin-left:4px;color:#6d778b}.ned-kpis p{min-height:16px;margin:7px 0 0;color:#7b8797;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ned-kpis article>i{position:absolute;right:14px;top:13px;display:grid;place-items:center;width:33px;height:33px;border-radius:5px;background:#eef5fa;color:var(--accent);font-size:9.5px;font-style:normal;font-weight:950}.ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}.ned-panel{background:#fff;border:1px solid #c7d5df;border-radius:6px;box-shadow:0 2px 7px rgba(47,91,124,.08);overflow:hidden}.ned-panel>header{min-height:49px;padding:8px 14px;background:linear-gradient(180deg,#fbfdfe,#edf4f8);border-bottom:1px solid #c7d5df;display:flex;align-items:center;gap:10px}.ned-panel h2{margin:0;color:#244f70;font-size:13px;font-weight:950}.ned-panel header p{margin:3px 0 0;color:#748896;font-size:9.5px}.ned-panel header button,.ned-panel header>span{margin-left:auto}.ned-panel header>span{display:inline-flex;align-items:center;height:23px;padding:0 8px;border-radius:4px;background:#e8f3fa;color:#1f699d;font-size:9.5px;font-weight:900}.ned-flow{display:grid;grid-template-columns:repeat(7,minmax(86px,1fr));padding:15px 10px 18px;overflow:auto}.ned-flow-step{position:relative;border:0;background:transparent;min-width:88px;text-align:center;cursor:pointer;color:#334a5f}.ned-flow-step:not(:last-child):after{content:"";position:absolute;top:21px;left:62%;width:76%;height:2px;background:#d8e0ec;z-index:0}.ned-flow-dot{position:relative;z-index:1;margin:auto;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#edf2fa;border:4px solid #fff;box-shadow:0 0 0 1px #ccd7e7;color:#55708f;font-size:10px;font-weight:950}.ned-flow-step.done .ned-flow-dot{background:#58a842;color:#fff;box-shadow:0 0 0 1px #58a842}.ned-flow-step.current .ned-flow-dot{background:#2f78b7;color:#fff;box-shadow:0 0 0 4px #dce8ff}.ned-flow-step b{display:block;margin-top:7px;font-size:10px}.ned-flow-step small{display:block;margin-top:3px;color:#7a8797;font-size:8.8px}.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}.ned-table-wrap{overflow:auto}.ned-panel table{width:100%;border-collapse:collapse;font-size:10.5px}.ned-panel th{padding:9px 8px;background:linear-gradient(180deg,#7fb4d6,#619bc2);border-right:1px solid rgba(255,255,255,.3);color:#fff;text-align:left;font-weight:900;white-space:nowrap}.ned-panel td{padding:9px 8px;border-bottom:1px solid #dce5eb;white-space:nowrap;color:#405569}.ned-panel tbody tr:nth-child(even){background:#f7fafc}.ned-link{border:0;background:transparent;padding:0;color:#1267a6;font:inherit;font-weight:900;cursor:pointer}.ned-status{display:inline-flex;height:21px;align-items:center;padding:0 7px;border:1px solid transparent;border-radius:4px;font-size:9px;font-weight:900}.ned-status.blue{color:#1f699d;background:#e8f3fa;border-color:#bcd9eb}.ned-status.green{color:#4e8b3c;background:#edf7e9;border-color:#cae3c2}.ned-status.orange{color:#a46b10;background:#fff4df;border-color:#efd5a2}.ned-status.red{color:#b54242;background:#fdeaea;border-color:#efbcbc}.ned-status.gray{color:#667986;background:#edf1f4;border-color:#d4dde4}.ned-chart{height:178px;padding:13px 10px 20px;display:flex;align-items:flex-end;gap:8px}.ned-bar-col{height:100%;flex:1;min-width:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.ned-bar-col>span{font-size:8px;color:#718196;margin-bottom:4px}.ned-bar{width:min(29px,75%);min-height:3px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#8fc1df,#62a2c8)}.ned-bar-col>b{margin-top:5px;color:#748095;font-size:8.5px}.ned-task-panel{min-height:100%}.ned-tasks{display:grid;gap:8px;padding:12px}.ned-task{width:100%;display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid #dfe6ec;border-radius:5px;background:#fff;text-align:left;cursor:pointer}.ned-task:hover{background:#f6fafd;border-color:#b8cfdf}.ned-task>i{width:8px;height:8px;border-radius:50%;margin-top:4px;flex:none;background:#2f78b7}.ned-task>i.orange{background:#eea32f}.ned-task>i.red{background:#df5151}.ned-task>i.green{background:#58a842}.ned-task>i.purple{background:#7188b6}.ned-task>span{min-width:0}.ned-task b{display:block;color:#304b61;font-size:10.5px}.ned-task small{display:block;margin-top:4px;color:#788898;font-size:9.2px;line-height:1.45;white-space:normal}.ned-task em{margin-left:auto;color:#2f78b7;font-size:9px;font-style:normal;font-weight:900;white-space:nowrap}.ned-task-empty,.ned-empty{padding:28px 10px!important;text-align:center;color:#8694a2;font-size:10px}.ned-task-empty{margin:12px;background:#f7fafc;border:1px dashed #cbd8e2;border-radius:5px}@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}@media(max-width:760px){.namo-enterprise-dashboard{padding-left:10px;padding-right:10px}.ned-page-head{margin-left:-10px;margin-right:-10px;padding:12px 10px;align-items:flex-start}.ned-page-head h1{font-size:18px}.ned-head-actions{margin-left:auto}.ned-head-actions button:not(.primary){display:none}.ned-kpis{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr}.ned-flow{grid-template-columns:repeat(7,100px)}.ned-layout{display:block}.ned-right{margin-top:14px}}`;
+  function DashboardTab(){var rootRef=React.useRef(null),_state=React.useState([]),purchases=_state[0],setPurchases=_state[1],_rev=React.useState(0),revision=_rev[0],setRevision=_rev[1];var loadPurchases=React.useCallback(function(){return fetch("/api/purchase-orders",{credentials:"same-origin"}).then(function(response){return response.ok?response.json():Promise.reject(new Error("purchase api"));}).then(function(payload){if(payload&&payload.success&&Array.isArray(payload.data))setPurchases(payload.data);}).catch(function(){var fallback=storageRows("qmes-erp-purchase-v1");if(!fallback.length)fallback=storageRows("erp:purchase");if(fallback.length)setPurchases(fallback);});},[]);React.useEffect(function(){loadPurchases();var refresh=function(){setRevision(function(value){return value+1;});loadPurchases();},events=["qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete","qmes:mes-master-ready"];events.forEach(function(name){window.addEventListener(name,refresh);});var timer=window.setInterval(refresh,30000);return function(){events.forEach(function(name){window.removeEventListener(name,refresh);});window.clearInterval(timer);};},[loadPurchases]);var data=React.useMemo(function(){return qmesEnterpriseDashboardData(purchases);},[purchases,revision]),markup=React.useMemo(function(){return qmesEnterpriseDashboardMarkup(data,purchases);},[data,purchases]);React.useEffect(function(){var root=rootRef.current;if(!root)return;var click=function(event){var refreshButton=event.target.closest("[data-refresh]");if(refreshButton){event.preventDefault();setRevision(function(value){return value+1;});loadPurchases();return;}var target=event.target.closest("[data-tab]");if(!target)return;event.preventDefault();navigate(target.getAttribute("data-tab"),target.getAttribute("data-menu"));};root.addEventListener("click",click);return function(){root.removeEventListener("click",click);};},[loadPurchases,markup]);return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},h("style",{dangerouslySetInnerHTML:{__html:dashboardCss}}),h("div",{dangerouslySetInnerHTML:{__html:markup}}));}
+  window.DashboardTab=DashboardTab;
 })();
