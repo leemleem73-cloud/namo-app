@@ -1,7 +1,7 @@
 (function(){
   "use strict";
-  if(window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V2__) return;
-  window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V2__=true;
+  if(window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V3__) return;
+  window.__QMES_LEFT_NAV_BEHAVIOR_20260903_V3__=true;
 
   const clean=v=>String(v||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
   const sections=[
@@ -10,22 +10,21 @@
     {label:'MES · QMS',items:[{label:'생산 진행',icon:'M',group:'생산관리',sub:'생산 (배치)'},{label:'작업지시서',icon:'W',group:'생산관리',sub:'작업지시서'},{label:'생산공정 관리',icon:'P',tab:'prodProcess',openMenu:'productionMenu'},{label:'수입검사 (IQC)',icon:'Q',group:'품질검사',sub:'수입검사 (IQC)'},{label:'공정검사 (PQC)',icon:'Q',group:'품질검사',sub:'공정검사 (PQC)'},{label:'출하검사 (OQC)',icon:'Q',group:'품질검사',sub:'출하검사 (OQC)'},{label:'SPC (Cpk)',icon:'C',group:'품질검사',sub:'SPC (Cpk)'},{label:'품질 인터락',icon:'!',group:'품질검사',sub:'품질 인터락 (차단)'},{label:'출하성적서',icon:'R',group:'품질검사',sub:'출하성적서'},{label:'LOT 통합추적',icon:'L',direct:'LOT 추적'},{label:'출하 · 납품관리',icon:'O',tab:'erpShipping'},{label:'부적합 (8D)',icon:'8',group:'부적합관리',sub:'부적합 (8D)'},{label:'고객불만 (GQMS)',icon:'G',group:'부적합관리',sub:'고객불만 (GQMS)'},{label:'4M 변경관리',icon:'4',group:'부적합관리',sub:'4M 변경관리'},{label:'현장 입력 (iPad)',icon:'T',direct:'현장입력'},{label:'설비 모니터링',icon:'E',direct:'설비관리'}]}
   ];
 
-  const legacyMenuIds=[
+  /* Remove every previous shell-side menu artifact before creating the one owner. */
+  [
     'qmes-sync-sidebar','qmes-sync-hamburger','qmes-left-menu','qmes-left-native-menu',
     'qmes-context-side-menu','qmes-stable-sidebar','qmes-safe-sidebar'
-  ];
-  const legacyStyleIds=[
+  ].forEach(id=>document.getElementById(id)?.remove());
+  [
     'qmes-left-nav-runtime-style','qmes-sync-sidebar-style','qmes-left-menu-style',
     'qmes-left-native-menu-style','qmes-context-side-menu-style','qmes-stable-sidebar-style',
     'qmes-safe-sidebar-style','qmes-top-submenu-fix-style','qmes-restore-vertical-dropdown-style'
-  ];
-  legacyMenuIds.forEach(id=>document.getElementById(id)?.remove());
-  legacyStyleIds.forEach(id=>document.getElementById(id)?.remove());
+  ].forEach(id=>document.getElementById(id)?.remove());
 
   const side=document.createElement('aside');
   side.id='qmes-sync-sidebar';
-  side.dataset.qmesSidebarOwner='shell-core-20260903';
-  side.innerHTML='<div class="qmes-side-groups"></div>';
+  side.dataset.qmesSidebarOwner='shell-core-20260903-v3';
+  side.innerHTML='<div class="qmes-side-meta"><div class="qmes-company-pill"><span>㈜나모케미칼</span><b class="qmes-company-status">정상운영</b></div></div><div class="qmes-side-groups"></div>';
   document.body.appendChild(side);
 
   const hamburger=document.createElement('button');
@@ -47,24 +46,48 @@
   function render(){
     wrap.replaceChildren();
     sections.forEach((section,si)=>{
-      const h=document.createElement('div');h.className='qmes-side-section-label';h.textContent=section.label;wrap.appendChild(h);
+      const h=document.createElement('div');
+      h.className='qmes-side-section-label';
+      h.textContent=section.label;
+      wrap.appendChild(h);
       section.items.forEach((item,ii)=>{
-        const b=document.createElement('button');b.type='button';b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');b.dataset.s=si;b.dataset.i=ii;
+        const b=document.createElement('button');
+        b.type='button';
+        b.className='qmes-side-item'+(activeLabel===item.label?' is-active':'');
+        b.dataset.s=si;b.dataset.i=ii;
         b.innerHTML='<span class="qmes-side-icon"></span><span class="qmes-side-text"></span>';
-        b.querySelector('.qmes-side-icon').textContent=item.icon;b.querySelector('.qmes-side-text').textContent=item.label;wrap.appendChild(b);
+        b.querySelector('.qmes-side-icon').textContent=item.icon;
+        b.querySelector('.qmes-side-text').textContent=item.label;
+        wrap.appendChild(b);
       });
     });
   }
 
   function navigate(item){
-    if(!item)return;activeLabel=item.label;render();
-    if(item.inventory){try{sessionStorage.setItem('qmes_inventory_section',item.inventory)}catch(e){}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv',openMenu:null}}));window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventory}}));return;}
+    if(!item)return;
+    activeLabel=item.label;
+    render();
+    if(item.inventory){
+      try{sessionStorage.setItem('qmes_inventory_section',item.inventory)}catch(e){}
+      window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv',openMenu:null}}));
+      window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventory}}));
+      return;
+    }
     if(item.tab){window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:item.tab,openMenu:item.openMenu||null}}));return;}
     if(item.direct){findTop(item.direct)?.click();return;}
-    if(item.sub){const sub=findSub(item.sub);if(sub){sub.click();return;}findTop(item.group)?.click();requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()));}
+    if(item.sub){
+      const sub=findSub(item.sub);
+      if(sub){sub.click();return;}
+      findTop(item.group)?.click();
+      requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()));
+    }
   }
 
-  side.addEventListener('click',e=>{const b=e.target.closest('.qmes-side-item');if(!b)return;navigate(sections[+b.dataset.s]?.items?.[+b.dataset.i]);});
+  side.addEventListener('click',e=>{
+    const b=e.target.closest('.qmes-side-item');
+    if(!b)return;
+    navigate(sections[+b.dataset.s]?.items?.[+b.dataset.i]);
+  });
   hamburger.addEventListener('click',()=>document.body.classList.toggle('qmes-side-open'));
   render();
 })();
