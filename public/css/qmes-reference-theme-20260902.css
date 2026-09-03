@@ -5,6 +5,13 @@
  * Existing certificate/print styles are intentionally untouched.
  */
 @media screen {
+  /* First paint guard: hide the legacy React logo before the shell adapter mounts. */
+  html body #root > div > header > div:first-child > button:first-child > img[alt="NAMO Chemical"] {
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+  }
+
   html body.qmes-reference-theme {
     --namo-ref-blue:#2f78b7;
     --namo-ref-blue-dark:#2d70a5;
@@ -18,7 +25,6 @@
     color:var(--namo-ref-ink)!important;
   }
 
-  /* Header: use a selector stronger than the legacy #root#root#root#root rule. */
   html body.qmes-reference-theme #root#root#root#root#root > div > header,
   html body.qmes-reference-theme #root#root#root#root#root > div > header > div:first-child {
     height:64px!important;
@@ -86,30 +92,24 @@
   html body.qmes-reference-theme #root > div > header .qmes-ref-logo-slot {
     display:flex!important;
     align-items:center!important;
-    height:18px!important;
-    overflow:hidden!important;
+    height:28px!important;
+    overflow:visible!important;
   }
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-logo {
     display:block!important;
-    width:auto!important;
-    height:15px!important;
-    max-width:108px!important;
+    width:128px!important;
+    height:auto!important;
+    max-height:28px!important;
+    max-width:128px!important;
     margin:0!important;
     object-fit:contain!important;
-    filter:grayscale(1) brightness(0)!important;
+    filter:none!important;
     opacity:1!important;
   }
   html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small {
-    display:block!important;
-    margin-top:4px!important;
-    color:#688196!important;
-    font-size:8.5px!important;
-    font-weight:650!important;
-    letter-spacing:.12px!important;
-    white-space:nowrap!important;
+    display:none!important;
   }
 
-  /* Global search and header controls. */
   html body.qmes-reference-theme #root > div > header .qmes-ref-global-search {
     position:relative!important;
     width:min(390px,31vw)!important;
@@ -147,7 +147,6 @@
     color:#fff!important;
   }
 
-  /* Fixed left workspace. The old top menu stays available to the navigation bridge only. */
   html body.qmes-reference-theme #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar {
     top:64px!important;
     width:248px!important;
@@ -204,7 +203,6 @@
     color:#fff!important;
   }
 
-  /* Main working surface and shared screen-only tables/cards. */
   html body.qmes-reference-theme #root#root#root#root#root > div > main {
     min-height:calc(100vh - 64px)!important;
     background:var(--namo-ref-bg)!important;
