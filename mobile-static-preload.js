@@ -145,6 +145,16 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
       let patched = runtimeHelper + source;
 
+      // Critical mobile login guard: even when an in-app browser User-Agent is
+      // not recognized by the server middleware, browser-side detection runs
+      // before the desktop login component can render. The dedicated mobile
+      // login page checks /api/auth/me and immediately forwards an active session
+      // to mobile.html, so both logged-in and logged-out flows stay mobile-only.
+      patched = patched.replace(
+        'function QMESApp() {',
+        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260903-mobile-entry2');\n    return null;\n  }`
+      );
+
       patched = patched.replace(
         '    setCheckingSession(false);\n    setCurrentUser(user);',
         '    setCheckingSession(false);\n    if (qmesGoMobileWorkspace()) return;\n    setCurrentUser(user);'
