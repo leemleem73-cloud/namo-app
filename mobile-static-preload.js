@@ -12,128 +12,123 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
   function rewriteMobileAuthTargets(source) {
     return String(source || '')
-      // Always use the dedicated mobile login page from mobile-only code.
-      // This prevents the desktop React shell/sidebar from ever becoming the
-      // logout/session-expiry destination on a phone or iPad.
       .replace(/\/index\.html\?logout=1&mobileLogin=1/g, '/mobile-login.html?logout=1')
       .replace(/\/index\.html\?mobileLogin=1/g, '/mobile-login.html?mobile=1');
   }
 
+  function forceLatestMobileMenuRoutes(source) {
+    let html = String(source || '');
+
+    // Even if production still has an older mobile.html in memory/on disk,
+    // convert the old placeholder ERP sales route into the real mobile page.
+    html = html
+      .replace("['수주 · 납기관리','▤','pending:erpSales']", "['수주 · 납기관리','▤','erpSales']")
+      .replace("['수주·납기관리','▤','pending:erpSales']", "['수주·납기관리','▤','erpSales']");
+
+    // Force SPC to the dedicated Cpk screen and sales to the dedicated ERP screen.
+    // This is intentionally response-time mobile-only code and does not modify PC React files.
+    if (!html.includes("if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales2');return}")) {
+      const spcRoute = "if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}";
+      if (html.includes(spcRoute)) {
+        html = html.replace(
+          spcRoute,
+          spcRoute + "\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales2');return}"
+        );
+      } else {
+        html = html.replace(
+          "openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');",
+          "if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales2');return}\n    openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');"
+        );
+      }
+    }
+
+    // If an old placeholder code still survives for any reason, intercept it before showNotice().
+    if (!html.includes("if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales2');return}")) {
+      html = html.replace(
+        "if(code.startsWith('pending:')){showNotice(label);return}",
+        "if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales2');return}\n    if(code.startsWith('pending:')){showNotice(label);return}"
+      );
+    }
+
+    return html;
+  }
+
   function servePatchedMobileFile(root, req, res, next) {
     const pathname = String(req.path || '').toLowerCase();
-    if (pathname !== '/mobile.html' && pathname !== '/mobile-work.html' && pathname !== '/mobile-login.html') return false;
+    const mobileFiles = new Set([
+      '/mobile.html',
+      '/mobile-work.html',
+      '/mobile-login.html',
+      '/mobile-spc.html',
+      '/mobile-sales.html',
+      '/mobile-dashboard.html'
+    ]);
+    if (!mobileFiles.has(pathname)) return false;
 
-    const fileName = pathname === '/mobile-work.html'
-      ? 'mobile-work.html'
-      : pathname === '/mobile-login.html'
-        ? 'mobile-login.html'
-        : 'mobile.html';
+    const fileName = pathname.replace(/^\//, '');
     const filePath = path.join(root, fileName);
 
     fs.readFile(filePath, 'utf8', (error, source) => {
-      if (error) return next(error);
+      if (error) {
+        if (error.code === 'ENOENT') return next();
+        return next(error);
+      }
 
       let html = rewriteMobileAuthTargets(source);
 
       if (fileName === 'mobile.html') {
-        html = html
-          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260903-ipad3')
-          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260903-ipad3');
+        html = forceLatestMobileMenuRoutes(html)
+          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force2')
+          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force2');
       }
 
       if (fileName === 'mobile-work.html') {
         html = html.replace('.brandmark{display:none}', '.brandmark{display:grid}');
         html = html.replace(
           '</style>',
-          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260903-ipad3") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
+          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260904-mobile-force2") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
         );
 
         if (!html.includes('qmes-mobile-native-adapter-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-native-adapter-20260903.js?v=20260903-native1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-native-adapter-20260903.js?v=20260903-native1"></script>\n</body>');
         }
-
-        // PQC/OQC native editor is loaded only inside mobile-work.html.
-        // It never touches or executes in the desktop index.html source path.
         if (!html.includes('qmes-mobile-quality-entry-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-quality-entry-20260903.js?v=20260903-quality1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-quality-entry-20260903.js?v=20260903-quality1"></script>\n</body>');
         }
-
-        // Inventory and LOT trace native workspace is also mobile-work only.
-        // Desktop index.html and its React modules remain unchanged.
         if (!html.includes('qmes-mobile-inventory-trace-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-inventory-trace-20260903.js?v=20260903-invtrace1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-inventory-trace-20260903.js?v=20260903-invtrace1"></script>\n</body>');
         }
-
-        // Work order and production process native workspace is mobile-work only.
-        // Desktop index.html and production React modules remain unchanged.
         if (!html.includes('qmes-mobile-production-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-production-20260903.js?v=20260903-prod1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-production-20260903.js?v=20260903-prod1"></script>\n</body>');
         }
-
-        // Dedicated IQC workspace is loaded only inside mobile-work.html.
-        // Desktop IQC React source remains untouched.
         if (!html.includes('qmes-mobile-iqc-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-iqc-20260903.js?v=20260903-iqc1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-iqc-20260903.js?v=20260903-iqc1"></script>\n</body>');
         }
-
-        // Writable production/equipment/partner/POP overlays stay mobile-work only.
         if (!html.includes('qmes-mobile-operation-write-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-operation-write-20260903.js?v=20260903-write1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-operation-write-20260903.js?v=20260903-write1"></script>\n</body>');
         }
-
-        // ?new=1 opens the correct native create editor immediately.
         if (!html.includes('qmes-mobile-direct-entry-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-direct-entry-20260903.js?v=20260903-direct1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-direct-entry-20260903.js?v=20260903-direct1"></script>\n</body>');
         }
-
-        // Current PC IssueWoTab parity implementation, mobile-work only.
-        // Loaded last so it replaces the older simplified mobile work-order UI without touching PC source.
         if (!html.includes('qmes-mobile-workorder-pc-parity-20260903.js')) {
-          html = html.replace(
-            '</body>',
-            '<script src="/js/qmes-mobile-workorder-pc-parity-20260903.js?v=20260903-wopc1"></script>\n</body>'
-          );
+          html = html.replace('</body>', '<script src="/js/qmes-mobile-workorder-pc-parity-20260903.js?v=20260903-wopc1"></script>\n</body>');
         }
       }
 
-      // Mobile document authoring center is available from both the mobile home
-      // and mobile-work shell. It is never injected into the desktop index.html.
-      if (fileName !== 'mobile-login.html' && !html.includes('qmes-mobile-documents-20260903.js')) {
-        html = html.replace(
-          '</body>',
-          '<script src="/js/qmes-mobile-documents-20260903.js?v=20260903-docs1"></script>\n</body>'
-        );
+      if (fileName !== 'mobile-login.html'
+          && fileName !== 'mobile-spc.html'
+          && fileName !== 'mobile-sales.html'
+          && fileName !== 'mobile-dashboard.html'
+          && !html.includes('qmes-mobile-documents-20260903.js')) {
+        html = html.replace('</body>', '<script src="/js/qmes-mobile-documents-20260903.js?v=20260903-docs1"></script>\n</body>');
       }
 
-      // Re-apply auth-target rewrite after script injection so every inline path
-      // remains mobile-only even when the underlying file still contains an old
-      // /index.html?mobileLogin=1 destination.
       html = rewriteMobileAuthTargets(html);
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.send(html);
     });
 
@@ -155,6 +150,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.send(patched);
     });
     return true;
@@ -182,23 +178,17 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     fs.readFile(filePath, 'utf8', (error, source) => {
       if (error) return next(error);
 
-      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile-login.html?v=20260903-mobile-entry3');\n  return true;\n}\n`;
+      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile-login.html?v=20260904-mobile-force2');\n  return true;\n}\n`;
 
       let patched = runtimeHelper + source;
-
-      // Critical mobile login guard: browser-side detection runs before the
-      // desktop login component can render. This prevents the persistent PC
-      // sidebar/dashboard DOM from appearing behind the login form.
       patched = patched.replace(
         'function QMESApp() {',
-        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260903-mobile-entry3');\n    return null;\n  }`
+        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260904-mobile-force2');\n    return null;\n  }`
       );
-
       patched = patched.replace(
         '    setCheckingSession(false);\n    setCurrentUser(user);',
         '    setCheckingSession(false);\n    if (qmesGoMobileWorkspace()) return;\n    setCurrentUser(user);'
       );
-
       patched = patched.replace(
         '        saveLoginSession(normalized);\n        setCurrentUser(normalized);',
         '        saveLoginSession(normalized);\n        if (qmesGoMobileWorkspace()) return;\n        setCurrentUser(normalized);'
@@ -207,6 +197,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.send(patched);
     });
 
@@ -236,14 +227,11 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       try {
         const mobileOrIPad = isMobileOrIPadRequest(req);
         const entryPage = isEntryPageRequest(req);
-        // For a fresh root/index request, only the CURRENT query may explicitly
-        // request desktop mode. A stale desktop referer must never force a phone
-        // back into the PC shell after logout.
         const explicitDesktop = isCurrentRequestExplicitDesktop(req);
         const loggedIn = Boolean(req.session && req.session.user);
 
         if (mobileOrIPad && entryPage && !explicitDesktop) {
-          req.url = loggedIn ? '/mobile.html' : '/mobile-login.html';
+          req.url = loggedIn ? '/mobile.html?v=20260904-mobile-force2' : '/mobile-login.html?v=20260904-mobile-force2';
           return servePatchedMobileFile(root, req, res, next) || staticMiddleware(req, res, err => {
             req.url = originalUrl;
             if (err) return next(err);
