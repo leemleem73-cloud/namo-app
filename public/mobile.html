@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NAMO QMES" />
-  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260903-simple1" type="image/svg+xml" />
+  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260903-write1" type="image/svg+xml" />
   <title>NAMO QMES Mobile</title>
   <style>
     :root{color-scheme:light;--blue:#0d5eb8;--ink:#152d42;--muted:#718195;--line:#dce4eb;--bg:#f5f7f9;--surface:#fff;--safe-top:env(safe-area-inset-top);--safe-bottom:max(12px,env(safe-area-inset-bottom))}
@@ -22,11 +22,11 @@
 <body>
 <div class="app">
   <header class="head">
-    <div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260903-simple1" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC 메뉴와 같은 업무 순서</span></div></div>
+    <div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260903-write1" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC 메뉴와 같은 업무 순서</span></div></div>
     <button class="user" id="userBtn" type="button">로그인 확인</button>
     <button class="logout" id="logoutBtn" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
   </header>
-  <section class="intro"><h1>업무 메뉴</h1><p>PC와 같은 업무 구분으로 단순화했습니다. 작성 가능한 항목은 누르면 바로 등록·수정 화면으로 이동합니다.</p><label class="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="menuSearch" type="search" placeholder="작업지시, 검사, 재고, 표준서 검색" autocomplete="off"></label></section>
+  <section class="intro"><h1>업무 메뉴</h1><p>PC 메뉴 순서로 단순화했습니다. 작성·입력 항목은 누르면 바로 신규작성 화면이 열립니다.</p><label class="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="menuSearch" type="search" placeholder="작업지시, 검사, 재고, 표준서 검색" autocomplete="off"></label></section>
   <main class="content" id="menuRoot"></main>
   <div class="empty" id="empty">검색 결과가 없습니다.</div>
 </div>
@@ -34,26 +34,28 @@
 <script>
 (()=>{
   'use strict';
-  const VERSION='20260903-simple1', LOGIN=`/index.html?mobileLogin=1&v=${VERSION}`;
+  const VERSION='20260903-write1', LOGIN=`/index.html?mobileLogin=1&v=${VERSION}`;
+  const WRITE_TABS=new Set(['prod','woIssue','prodProcess','iqc','pqc','oqc','inv','eq','partners']);
   const groups=[
     {title:'생산관리',items:[
-      ['생산(배치)','생산계획·배치 등록/수정','prod','작성','PR'],
+      ['생산(배치)','생산계획·배치 신규작성/수정','prod','작성','PR'],
       ['작업지시서','작업지시 신규작성·수정·실적','woIssue','작성','WO'],
-      ['생산공정 관리','생산실적·진행상태 입력','prodProcess','입력','PP']
+      ['생산공정 관리','7단계 공정·작업자·실적 입력','prodProcess','입력','PP']
     ]},
     {title:'품질검사',items:[
       ['수입검사','IQC 신규등록·수정','iqc','작성','IQ'],
       ['공정검사','PQC 측정값 신규등록·수정','pqc','작성','PQ'],
       ['출하검사','OQC 측정값·출하정보 등록','oqc','작성','OQ'],
+      ['출하성적서(CoA)','검사기록 연동 성적서 작성','docs:oqccert','작성','CA'],
       ['SPC','품질 데이터 분석','spc','조회','SP'],
       ['품질 인터락','HOLD·차단 현황 관리','lock','관리','HL']
     ]},
     {title:'현장 · 재고 · 추적',items:[
-      ['현장입력','모바일/iPad 현장 기록','pop','입력','PO'],
+      ['현장입력','생산·IQC·PQC·OQC 입력 바로가기','pop','입력','PO'],
       ['재고관리','입고·출고·이동·잔량','inv','작성','IV'],
       ['LOT 통합추적','원료↔생산↔검사↔출하','trace','조회','LT'],
-      ['설비관리','설비 점검·상태 현황','eq','관리','EQ'],
-      ['거래처 현황','고객사·공급사 기준정보','partners','조회','PT']
+      ['설비관리','설비 점검 신규등록·현황','eq','작성','EQ'],
+      ['거래처 현황','고객사·공급사 신규등록','partners','작성','PT']
     ]},
     {title:'표준서 · 성적서',items:[
       ['작업표준서','새 작업표준서 바로 작성','docs:workstandard','작성','WI'],
@@ -73,7 +75,13 @@
   ];
   const root=document.getElementById('menuRoot'),opening=document.getElementById('opening'),openingText=document.getElementById('openingText');let authenticated=false;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function route(code,label){if(!authenticated){location.assign(LOGIN);return}openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');if(code.startsWith('docs:')){const parts=code.split(':');const type=parts[1]||'other',title=parts.slice(2).join(':');let url=`/mobile-work.html?tab=docs&new=1&doctype=${encodeURIComponent(type)}&v=${VERSION}`;if(title)url+=`&title=${encodeURIComponent(title)}`;location.assign(url);return}location.assign(`/mobile-work.html?tab=${encodeURIComponent(code)}&v=${VERSION}`)}
+  function route(code,label){
+    if(!authenticated){location.assign(LOGIN);return}
+    openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');
+    if(code.startsWith('docs:')){const parts=code.split(':');const type=parts[1]||'other',title=parts.slice(2).join(':');let url=`/mobile-work.html?tab=docs&new=1&doctype=${encodeURIComponent(type)}&v=${VERSION}`;if(title)url+=`&title=${encodeURIComponent(title)}`;location.assign(url);return}
+    const direct=WRITE_TABS.has(code)?'&new=1':'';
+    location.assign(`/mobile-work.html?tab=${encodeURIComponent(code)}${direct}&v=${VERSION}`)
+  }
   function render(query=''){const q=String(query||'').trim().toLowerCase();let visible=0;root.innerHTML=groups.map((group,gi)=>{const items=group.items.filter(item=>!q||item.slice(0,2).join(' ').toLowerCase().includes(q));if(!items.length)return'';visible+=items.length;return`<section class="group ${gi===4?'full':''}"><div class="group-title">${esc(group.title)}</div>${items.map(([label,desc,code,action,icon])=>`<button class="menu" type="button" data-code="${esc(code)}" data-label="${esc(label)}"><span class="icon">${esc(icon)}</span><span class="copy"><strong>${esc(label)}</strong><span>${esc(desc)}</span></span><span class="action ${['작성','입력'].includes(action)?'write':''}">${esc(action)}</span><span class="chev">›</span></button>`).join('')}</section>`}).join('');document.getElementById('empty').classList.toggle('show',visible===0);root.querySelectorAll('.menu').forEach(btn=>btn.addEventListener('click',()=>route(btn.dataset.code,btn.dataset.label)))}
   async function init(){render();document.getElementById('menuSearch').addEventListener('input',e=>render(e.target.value));try{const response=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});const payload=await response.json().catch(()=>null);if(response.status===401){authenticated=false;document.getElementById('userBtn').textContent='로그인';return}const user=payload?.data?.user||payload?.data||payload?.user||payload;const name=String(user?.name||user?.loginId||user?.email||'').trim();authenticated=Boolean(name);document.getElementById('userBtn').textContent=name?`${name}님`:'로그인'}catch(_){document.getElementById('userBtn').textContent='로그인'}}
   document.getElementById('userBtn').addEventListener('click',()=>{if(!authenticated)location.assign(LOGIN)});document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',cache:'no-store'})}catch(_){}location.replace('/index.html?logout=1&mobileLogin=1')});init();
