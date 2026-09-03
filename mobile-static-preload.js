@@ -12,9 +12,13 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
   function servePatchedMobileFile(root, req, res, next) {
     const pathname = String(req.path || '').toLowerCase();
-    if (pathname !== '/mobile.html' && pathname !== '/mobile-work.html') return false;
+    if (pathname !== '/mobile.html' && pathname !== '/mobile-work.html' && pathname !== '/mobile-login.html') return false;
 
-    const fileName = pathname === '/mobile-work.html' ? 'mobile-work.html' : 'mobile.html';
+    const fileName = pathname === '/mobile-work.html'
+      ? 'mobile-work.html'
+      : pathname === '/mobile-login.html'
+        ? 'mobile-login.html'
+        : 'mobile.html';
     const filePath = path.join(root, fileName);
 
     fs.readFile(filePath, 'utf8', (error, source) => {
@@ -106,7 +110,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
       // Mobile document authoring center is available from both the mobile home
       // and mobile-work shell. It is never injected into the desktop index.html.
-      if (!html.includes('qmes-mobile-documents-20260903.js')) {
+      if (fileName !== 'mobile-login.html' && !html.includes('qmes-mobile-documents-20260903.js')) {
         html = html.replace(
           '</body>',
           '<script src="/js/qmes-mobile-documents-20260903.js?v=20260903-docs1"></script>\n</body>'
@@ -184,8 +188,12 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         const explicitDesktop = isExplicitDesktopRequest(req);
         const loggedIn = Boolean(req.session && req.session.user);
 
-        if (mobileOrIPad && entryPage && loggedIn && !explicitDesktop) {
-          req.url = '/mobile.html';
+        // Mobile/iPad entry requests now stay entirely inside the mobile shell.
+        // Logged-out users go to mobile-login.html instead of rendering the desktop
+        // React login shell, preventing the PC sidebar/dashboard from leaking into
+        // the phone view after logout or session expiry.
+        if (mobileOrIPad && entryPage && !explicitDesktop) {
+          req.url = loggedIn ? '/mobile.html' : '/mobile-login.html';
           return servePatchedMobileFile(root, req, res, next) || staticMiddleware(req, res, err => {
             req.url = originalUrl;
             if (err) return next(err);
