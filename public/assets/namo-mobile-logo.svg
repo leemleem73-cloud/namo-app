@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">NAMO Chemical Mobile Logo</title>
+  <desc id="desc">Mobile-optimized NAMO Chemical NM symbol</desc>
+  <rect width="128" height="128" rx="28" fill="#ffffff"/>
+  <g transform="translate(16 24)">
+    <path d="M0 0h18l14 58V0h16v76H29L15 22v54H0z" fill="#1f2b8f"/>
+    <path d="M18 0h17l14 57L63 0h17v76H63V22L49 76H34z" fill="#73be28"/>
+    <path d="M34 0h16l14 57L79 0h16v76H79V22L64 76H49z" fill="#263692"/>
+    <path d="M79 0h17v76H79z" fill="#75bf2a"/>
+  </g>
+</svg>
