@@ -1,15 +1,14 @@
 /* QMES desktop shell core — single visual owner.
-   Adapted to the uploaded ERP reference palette while preserving QMES routing and behavior. */
+   Fixed ERP sidebar rebuilt from the uploaded reference design. */
 :root{
-  --qmes-shell-sidebar-width:248px;
+  --qmes-shell-sidebar-width:236px;
   --qmes-shell-header-height:64px;
   --qmes-shell-blue:#2f78b7;
   --qmes-shell-blue-dark:#2f76ad;
   --qmes-shell-blue-top:#3d87bd;
-  --qmes-shell-blue-soft:#f2f8fc;
   --qmes-shell-ink:#22384a;
   --qmes-shell-muted:#687c8d;
-  --qmes-shell-line:#dbe6ed;
+  --qmes-shell-line:#cbd8e2;
   --qmes-shell-bg:#edf2f6;
 }
 
@@ -18,7 +17,7 @@ html body #root>div>header{
   height:64px!important;min-height:64px!important;
   background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
   color:#fff!important;border-bottom:1px solid #235f8e!important;
-  box-shadow:0 2px 6px rgba(30,73,105,.24)!important;
+  box-shadow:0 2px 6px rgba(30,73,105,.20)!important;
   backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 html body #root>div>header>div:first-child{
@@ -28,11 +27,11 @@ html body #root>div>header>div:first-child{
   background:transparent!important;border:0!important;box-sizing:border-box!important;
 }
 html body #root>div>header>div:first-child>button:first-child{
-  width:248px!important;min-width:248px!important;height:64px!important;
-  margin:0!important;padding:0 18px!important;display:flex!important;
+  width:236px!important;min-width:236px!important;height:64px!important;
+  margin:0!important;padding:0 16px!important;display:flex!important;
   align-items:center!important;justify-content:flex-start!important;
-  border:0!important;border-right:1px solid #dbe6ed!important;border-radius:0!important;
-  background:#f8fbfd!important;
+  border:0!important;border-right:1px solid #cbd8e2!important;border-radius:0!important;
+  background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
   box-shadow:none!important;box-sizing:border-box!important;overflow:hidden!important;
 }
 html body #root>div>header img[alt="NAMO Chemical"]{
@@ -57,7 +56,7 @@ html body #root .qmes-header-action:hover,
 html body #root button[aria-label*="NAMO Talk"]:hover,
 html body #root button[aria-label^="계정 설정"]:hover{background:rgba(255,255,255,.15)!important;}
 
-/* Native top navigation remains hidden; only the left QMES navigation is visible. */
+/* Native top navigation is not used in the rebuilt desktop shell. */
 html body #root .qmes-top-menu-bar,
 html body #root .qmes-top-menu,
 html body #root .qmes-submenu-row,
@@ -66,80 +65,88 @@ html body #qmes-all-menu-dropdown{
   margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;
 }
 
-/* LEFT NAV — extra-light QMES palette */
-html body #qmes-sync-sidebar#qmes-sync-sidebar{
-  display:block!important;position:fixed!important;left:0!important;top:64px!important;bottom:0!important;
-  width:248px!important;padding:0!important;box-sizing:border-box!important;
-  overflow-y:auto!important;overflow-x:hidden!important;
-  background:#f8fbfd!important;
-  color:#111827!important;border-right:1px solid #dbe6ed!important;
-  box-shadow:1px 0 4px rgba(51,82,103,.05)!important;z-index:12050!important;
+/* Rebuilt ERP navigation — new ID, no legacy collapse state. */
+html body #qmes-erp-sidebar{
+  position:fixed!important;left:0!important;top:64px!important;bottom:0!important;
+  width:236px!important;display:flex!important;flex-direction:column!important;
+  box-sizing:border-box!important;overflow:hidden!important;
+  background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;
+  color:#111827!important;border-right:1px solid #bfcdd8!important;
+  box-shadow:2px 0 5px rgba(51,82,103,.08)!important;z-index:12050!important;
   font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
-  transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
-  transition:none!important;scrollbar-width:none!important;-ms-overflow-style:none!important;
 }
-html body #qmes-sync-sidebar#qmes-sync-sidebar::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
-html body.qmes-side-open #qmes-sync-sidebar#qmes-sync-sidebar{
-  transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+html body #qmes-erp-sidebar .qmes-erp-company{
+  flex:none!important;padding:14px 14px 12px!important;
+  border-bottom:1px solid #cbd7e0!important;background:#eef4f8!important;
 }
-html body #qmes-sync-sidebar .qmes-side-meta{
-  padding:16px 18px 13px!important;border-bottom:1px solid #e1eaf0!important;background:#f8fbfd!important;
+html body #qmes-erp-sidebar .qmes-erp-company-row{
+  min-height:38px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:8px!important;padding:8px 9px!important;background:#fff!important;border:1px solid #c9d8e3!important;
+  border-radius:5px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
 }
-html body #qmes-sync-sidebar .qmes-company-pill{
-  display:flex!important;align-items:center!important;justify-content:space-between!important;
-  padding:10px 11px!important;border:1px solid #dce7ee!important;border-radius:8px!important;
-  background:#fff!important;color:#111827!important;box-shadow:none!important;
-  font-size:12px!important;font-weight:400!important;
+html body #qmes-erp-sidebar .qmes-erp-company-name{
+  min-width:0!important;color:#2d4b61!important;font-size:12px!important;font-weight:700!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
 }
-html body #qmes-sync-sidebar .qmes-company-status{
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  padding:3px 6px!important;border:1px solid #d9ead4!important;border-radius:12px!important;
-  background:#f4faf2!important;color:#4d9140!important;font-size:11px!important;font-weight:700!important;
+html body #qmes-erp-sidebar .qmes-erp-status{
+  flex:none!important;padding:3px 6px!important;color:#4d9140!important;background:#eef7eb!important;
+  border:1px solid #cde4c6!important;border-radius:10px!important;font-size:10px!important;font-weight:800!important;
 }
-html body #qmes-sync-sidebar .qmes-side-groups{padding:0 0 23px!important;}
-html body #qmes-sync-sidebar .qmes-side-section-label{
-  display:block!important;margin:7px 0 0!important;padding:8px 20px!important;
-  background:#f1f7fb!important;border:0!important;border-top:1px solid #e2ebf1!important;border-bottom:1px solid #e2ebf1!important;
-  border-radius:0!important;color:#315f7f!important;font-size:10px!important;line-height:14px!important;font-weight:800!important;letter-spacing:.6px!important;text-transform:uppercase!important;
+html body #qmes-erp-sidebar .qmes-erp-company-sub{
+  margin-top:7px!important;padding-left:2px!important;color:#708596!important;font-size:10px!important;font-weight:650!important;letter-spacing:.2px!important;
 }
-html body #qmes-sync-sidebar .qmes-side-item{
-  width:calc(100% - 14px)!important;min-height:0!important;margin:1px 7px!important;padding:9px 10px!important;
-  display:flex!important;align-items:center!important;gap:11px!important;border:0!important;border-radius:2px!important;
-  background:transparent!important;color:#111827!important;
-  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;font-size:13px!important;line-height:1.5!important;font-weight:400!important;
-  text-align:left!important;box-shadow:none!important;cursor:pointer!important;transition:.15s!important;
+html body #qmes-erp-sidebar .qmes-erp-nav{
+  flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+  padding:0 0 18px!important;scrollbar-width:none!important;-ms-overflow-style:none!important;
 }
-html body #qmes-sync-sidebar .qmes-side-item:before,
-html body #qmes-sync-sidebar .qmes-side-item:after{display:none!important;content:none!important;}
-html body #qmes-sync-sidebar .qmes-side-item:hover{background:#f0f7fb!important;color:#111827!important;}
-html body #qmes-sync-sidebar .qmes-side-item.is-active{
-  background:#eaf4fa!important;color:#111827!important;border:0!important;font-weight:500!important;
-  box-shadow:inset 3px 0 0 #75a9ca!important;
+html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+html body #qmes-erp-sidebar .qmes-erp-section{
+  margin:7px 0 0!important;padding:8px 14px!important;
+  color:#2f6f9f!important;background:#dfeaf2!important;
+  border-top:1px solid #c7d7e2!important;border-bottom:1px solid #c7d7e2!important;
+  font-size:10px!important;line-height:14px!important;font-weight:850!important;letter-spacing:.6px!important;
 }
-html body #qmes-sync-sidebar .qmes-side-icon{
-  width:22px!important;height:22px!important;min-width:22px!important;flex:none!important;display:grid!important;place-items:center!important;
-  border:1px solid #d8e5ed!important;border-radius:3px!important;background:#f2f7fa!important;color:#315f7f!important;font-size:10px!important;font-weight:900!important;line-height:1!important;
+html body #qmes-erp-sidebar .qmes-erp-item{
+  width:calc(100% - 14px)!important;min-height:38px!important;margin:1px 7px!important;padding:8px 10px!important;
+  display:flex!important;align-items:center!important;gap:10px!important;
+  border:0!important;border-radius:2px!important;background:transparent!important;color:#111827!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:13px!important;line-height:1.45!important;font-weight:500!important;text-align:left!important;
+  box-shadow:none!important;cursor:pointer!important;transition:none!important;
 }
-html body #qmes-sync-sidebar .qmes-side-item.is-active .qmes-side-icon{
-  background:#e2f0f7!important;color:#315f7f!important;border-color:#cfe0ea!important;
+html body #qmes-erp-sidebar .qmes-erp-item:before,
+html body #qmes-erp-sidebar .qmes-erp-item:after{display:none!important;content:none!important;}
+html body #qmes-erp-sidebar .qmes-erp-item:hover{
+  background:#e2edf5!important;color:#111827!important;
 }
-html body #qmes-sync-sidebar .qmes-side-text,
-html body #qmes-sync-sidebar .qmes-side-item.is-active .qmes-side-text,
-html body #qmes-sync-sidebar .qmes-side-item:hover .qmes-side-text{
-  min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#111827!important;
+html body #qmes-erp-sidebar .qmes-erp-item.is-active{
+  background:linear-gradient(180deg,#3d8ac0,#2f76ad)!important;color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;font-weight:700!important;
+}
+html body #qmes-erp-sidebar .qmes-erp-icon{
+  width:22px!important;height:22px!important;min-width:22px!important;flex:none!important;
+  display:grid!important;place-items:center!important;border:1px solid #c5d4df!important;border-radius:3px!important;
+  background:#dfe9f0!important;color:#356f99!important;font-size:10px!important;font-weight:900!important;line-height:1!important;
+}
+html body #qmes-erp-sidebar .qmes-erp-item.is-active .qmes-erp-icon{
+  background:rgba(255,255,255,.18)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important;
+}
+html body #qmes-erp-sidebar .qmes-erp-text{
+  min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:inherit!important;
+}
+html body #qmes-erp-sidebar .qmes-erp-foot{
+  flex:none!important;padding:10px 12px!important;border-top:1px solid #d5dfe7!important;background:#f6f8fa!important;
+  color:#708596!important;font-size:9.5px!important;font-weight:650!important;text-align:center!important;
 }
 
-html body #qmes-sync-hamburger{
-  display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:260px!important;top:16px!important;z-index:12070!important;
-  width:32px!important;height:32px!important;padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#fff!important;box-shadow:none!important;
-  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;font-size:21px!important;font-weight:400!important;line-height:1!important;cursor:pointer!important;visibility:visible!important;opacity:1!important;
-}
-html body #qmes-sync-hamburger:hover{background:rgba(255,255,255,.15)!important;}
+/* Legacy sidebar/toggle are retired and can never appear over the new menu. */
+html body #qmes-sync-sidebar,
+html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
 
 html body{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
-html body #root>div>main{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
-html body.qmes-side-open #root>div>main{
-  margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:none!important;
+html body #root>div>main{
+  margin-left:236px!important;width:calc(100% - 236px)!important;box-sizing:border-box!important;
+  background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;transition:none!important;
 }
 
 html body #qmes-user-dropdown#qmes-user-dropdown{
@@ -153,6 +160,6 @@ html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-to
 
 @media print{
   html body{background:#fff!important;}
-  html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}
-  html body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important;background:transparent!important;}
+  html body #qmes-erp-sidebar,html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}
+  html body #root>div>main{margin-left:0!important;width:100%!important;background:transparent!important;}
 }
