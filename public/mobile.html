@@ -37,7 +37,7 @@
 <script>
 (()=>{
   'use strict';
-  const VERSION='20260903-pcmenu2';
+  const VERSION='20260904-sales1';
   const LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;
   const groups=[
     {title:'WORKSPACE',items:[
@@ -45,7 +45,7 @@
       ['SPC 대시보드','⌁','spc']
     ]},
     {title:'ERP',items:[
-      ['수주 · 납기관리','▤','pending:erpSales'],
+      ['수주 · 납기관리','▤','erpSales'],
       ['생산계획 · MRP','▥','pending:erpPlan'],
       ['구매 · 발주관리','□','pending:erpPurchase'],
       ['재고현황','▣','inv:stock'],
@@ -86,6 +86,7 @@
     if(!authenticated){location.assign(LOGIN);return}
     if(code==='home'){scrollTo({top:0,behavior:'smooth'});return}
     if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}
+    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales1');return}
     openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');
     if(code.startsWith('pending:')){showNotice(label);return}
     if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}
