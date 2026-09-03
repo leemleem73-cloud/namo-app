@@ -7,84 +7,107 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NAMO QMES" />
-  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260903-write1" type="image/svg+xml" />
+  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260903-pcmenu1" type="image/svg+xml" />
   <title>NAMO QMES Mobile</title>
   <style>
-    :root{color-scheme:light;--blue:#0d5eb8;--ink:#152d42;--muted:#718195;--line:#dce4eb;--bg:#f5f7f9;--surface:#fff;--safe-top:env(safe-area-inset-top);--safe-bottom:max(12px,env(safe-area-inset-bottom))}
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:var(--bg);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;color:var(--ink)}button,input{font:inherit}button{touch-action:manipulation}.app{width:min(100%,980px);min-height:100dvh;margin:0 auto;background:var(--bg)}
-    .head{position:sticky;top:0;z-index:50;height:calc(68px + var(--safe-top));padding:var(--safe-top) 12px 0;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.99);border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}.brand{min-width:0;flex:1;display:flex;align-items:center;gap:9px}.brand img{width:48px;height:34px;object-fit:contain}.brand strong{display:block;color:#102a42;font-size:16px;font-weight:950;letter-spacing:-.04em}.brand span{display:block;margin-top:2px;color:#81909e;font-size:7.5px;font-weight:850;letter-spacing:.07em}.user{max-width:94px;height:38px;padding:0 9px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#3e566c;font-size:8.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.logout{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#52687b;display:grid;place-items:center;cursor:pointer}.logout svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-    .intro{padding:17px 12px 10px;background:#fff;border-bottom:1px solid #e8edf1}.intro h1{margin:0;color:#112b42;font-size:21px;font-weight:950;letter-spacing:-.045em}.intro p{margin:5px 0 0;color:#738396;font-size:9.5px;font-weight:750;line-height:1.55}.search{margin-top:13px;height:45px;border:1px solid #d9e2e8;border-radius:10px;background:#f8fafc;display:flex;align-items:center;gap:8px;padding:0 11px}.search svg{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:#6f8294;stroke-width:1.8}.search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#1a344b;font-size:14px}.search input::placeholder{color:#9aa6b1}
-    .content{padding:10px 10px calc(24px + var(--safe-bottom))}.group{margin-top:11px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.group:first-child{margin-top:0}.group-title{padding:10px 12px;background:#f6f8fa;border-bottom:1px solid #e5eaee;color:#41596e;font-size:9px;font-weight:950;letter-spacing:.01em}.menu{width:100%;min-height:59px;padding:9px 10px;border:0;border-bottom:1px solid #edf1f4;background:#fff;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer}.menu:last-child{border-bottom:0}.menu:active{background:#f5f9fc}.icon{flex:0 0 36px;width:36px;height:36px;border-radius:9px;background:#eef5fa;color:#17679c;display:grid;place-items:center;font-size:11px;font-weight:950}.copy{min-width:0;flex:1}.copy strong{display:block;color:#223b51;font-size:11px;font-weight:950}.copy span{display:block;margin-top:4px;color:#81909e;font-size:8.2px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.action{flex:none;min-width:44px;height:24px;padding:0 7px;border-radius:999px;background:#edf4fa;color:#176397;display:grid;place-items:center;font-size:7.4px;font-weight:950}.action.write{background:#e8f6e7;color:#287d31}.chev{flex:none;color:#9aa7b3;font-size:18px;line-height:1}.empty{display:none;margin:12px;padding:28px 12px;text-align:center;border:1px dashed #d5dee5;border-radius:11px;background:#fff;color:#7d8d9b;font-size:9px;font-weight:800}.empty.show{display:block}
-    .opening{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,.78);backdrop-filter:blur(2px)}.opening.show{display:flex}.opening-card{min-width:185px;padding:18px;border:1px solid #dce4eb;border-radius:12px;background:#fff;text-align:center;box-shadow:0 16px 44px rgba(12,38,60,.14)}.spinner{width:24px;height:24px;margin:0 auto 10px;border:2px solid #dce5ec;border-top-color:#0e64b8;border-radius:50%;animation:spin .75s linear infinite}.opening-card strong{font-size:9.5px;font-weight:900;color:#294157}@keyframes spin{to{transform:rotate(360deg)}}
-    @media(min-width:700px){.head{height:calc(78px + var(--safe-top));padding-left:25px;padding-right:25px}.brand img{width:62px;height:42px}.brand strong{font-size:20px}.brand span{font-size:9px}.user{max-width:150px;height:42px;font-size:10.5px}.logout{width:42px;height:42px}.intro{padding:24px 26px 16px}.intro h1{font-size:28px}.intro p{font-size:11px}.search{max-width:560px;height:48px}.content{padding:15px 25px 35px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.group{margin-top:0}.group.full{grid-column:1/-1}.group-title{font-size:10px;padding:11px 14px}.menu{min-height:66px;padding:11px 13px}.icon{width:40px;height:40px;flex-basis:40px}.copy strong{font-size:12.5px}.copy span{font-size:9px}.action{font-size:8px}.empty{grid-column:1/-1}}
+    :root{color-scheme:light;--ink:#152d42;--muted:#718195;--line:#dce4eb;--bg:#f5f7f9;--safe-top:env(safe-area-inset-top);--safe-bottom:max(12px,env(safe-area-inset-bottom))}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:var(--bg);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;color:var(--ink)}button,input{font:inherit}button{touch-action:manipulation}.app{width:min(100%,760px);min-height:100dvh;margin:0 auto;background:var(--bg)}
+    .head{position:sticky;top:0;z-index:50;height:calc(68px + var(--safe-top));padding:var(--safe-top) 12px 0;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.99);border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}.brand{min-width:0;flex:1;display:flex;align-items:center;gap:9px}.brand img{width:48px;height:34px;object-fit:contain}.brand strong{display:block;color:#102a42;font-size:16px;font-weight:950;letter-spacing:-.04em}.brand span{display:block;margin-top:2px;color:#81909e;font-size:7.5px;font-weight:850;letter-spacing:.06em}.user{max-width:94px;height:38px;padding:0 9px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#3e566c;font-size:8.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.logout{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#52687b;display:grid;place-items:center;cursor:pointer}.logout svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .intro{padding:17px 12px 12px;background:#fff;border-bottom:1px solid #e8edf1}.intro h1{margin:0;color:#112b42;font-size:21px;font-weight:950;letter-spacing:-.045em}.intro p{margin:5px 0 0;color:#738396;font-size:9.5px;font-weight:750;line-height:1.55}.search{margin-top:13px;height:45px;border:1px solid #d9e2e8;border-radius:10px;background:#f8fafc;display:flex;align-items:center;gap:8px;padding:0 11px}.search svg{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:#6f8294;stroke-width:1.8}.search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#1a344b;font-size:14px}.search input::placeholder{color:#9aa6b1}
+    .content{padding:10px 10px calc(24px + var(--safe-bottom))}.group{margin-top:11px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.group:first-child{margin-top:0}.group-title{padding:10px 12px;background:#eaf2f8;border-bottom:1px solid #d7e2ea;color:#276287;font-size:9px;font-weight:950;letter-spacing:.03em}.menu{width:100%;min-height:55px;padding:8px 10px;border:0;border-bottom:1px solid #edf1f4;background:#fff;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer}.menu:last-child{border-bottom:0}.menu:active{background:#f4f8fb}.icon{flex:0 0 34px;width:34px;height:34px;border:1px solid #d4e1ea;border-radius:8px;background:#edf4f8;color:#2d6c93;display:grid;place-items:center;font-size:11px;font-weight:950}.label{min-width:0;flex:1;color:#223b51;font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chev{flex:none;color:#9aa7b3;font-size:18px;line-height:1}.empty{display:none;margin:12px;padding:28px 12px;text-align:center;border:1px dashed #d5dee5;border-radius:11px;background:#fff;color:#7d8d9b;font-size:9px;font-weight:800}.empty.show{display:block}
+    .opening{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,.8);backdrop-filter:blur(2px)}.opening.show{display:flex}.opening-card{min-width:190px;padding:18px;border:1px solid #dce4eb;border-radius:12px;background:#fff;text-align:center;box-shadow:0 16px 44px rgba(12,38,60,.14)}.spinner{width:24px;height:24px;margin:0 auto 10px;border:2px solid #dce5ec;border-top-color:#0e64b8;border-radius:50%;animation:spin .75s linear infinite}.opening-card strong{font-size:9.5px;font-weight:900;color:#294157}@keyframes spin{to{transform:rotate(360deg)}}
+    .notice{position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;background:rgba(12,35,53,.32)}.notice.show{display:flex}.notice-card{width:min(100%,760px);margin:0 auto;padding:18px 16px calc(18px + var(--safe-bottom));border-radius:18px 18px 0 0;background:#fff;box-shadow:0 -18px 48px rgba(10,35,55,.15)}.notice-card strong{display:block;color:#18354d;font-size:15px;font-weight:950}.notice-card p{margin:8px 0 14px;color:#6d7f91;font-size:10px;font-weight:750;line-height:1.6}.notice-card button{width:100%;height:44px;border:0;border-radius:9px;background:#183f5c;color:#fff;font-size:11px;font-weight:950}
+    @media(min-width:700px){.head{height:calc(78px + var(--safe-top));padding-left:22px;padding-right:22px}.brand img{width:62px;height:42px}.brand strong{font-size:20px}.brand span{font-size:9px}.user{max-width:150px;height:42px;font-size:10.5px}.logout{width:42px;height:42px}.intro{padding:24px 22px 16px}.intro h1{font-size:27px}.intro p{font-size:11px}.search{height:48px}.content{padding:15px 22px 35px}.group-title{font-size:10px;padding:11px 14px}.menu{min-height:62px;padding:10px 13px}.icon{width:38px;height:38px;flex-basis:38px}.label{font-size:13px}}
   </style>
 </head>
 <body>
 <div class="app">
   <header class="head">
-    <div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260903-write1" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC 메뉴와 같은 업무 순서</span></div></div>
+    <div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260903-pcmenu1" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC · MOBILE SAME MENU</span></div></div>
     <button class="user" id="userBtn" type="button">로그인 확인</button>
     <button class="logout" id="logoutBtn" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
   </header>
-  <section class="intro"><h1>업무 메뉴</h1><p>PC 메뉴 순서로 단순화했습니다. 작성·입력 항목은 누르면 바로 신규작성 화면이 열립니다.</p><label class="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="menuSearch" type="search" placeholder="작업지시, 검사, 재고, 표준서 검색" autocomplete="off"></label></section>
+  <section class="intro"><h1>업무 메뉴</h1><p>현재 PC QMES와 동일한 메뉴 구분·명칭·순서로 구성했습니다.</p><label class="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="menuSearch" type="search" placeholder="PC 메뉴와 동일하게 검색" autocomplete="off"></label></section>
   <main class="content" id="menuRoot"></main>
   <div class="empty" id="empty">검색 결과가 없습니다.</div>
 </div>
 <div class="opening" id="opening"><div class="opening-card"><div class="spinner"></div><strong id="openingText">업무 화면을 여는 중입니다.</strong></div></div>
+<div class="notice" id="notice"><div class="notice-card"><strong id="noticeTitle">모바일 전용 화면</strong><p id="noticeText"></p><button type="button" id="noticeClose">확인</button></div></div>
 <script>
 (()=>{
   'use strict';
-  const VERSION='20260903-write1', LOGIN=`/index.html?mobileLogin=1&v=${VERSION}`;
-  const WRITE_TABS=new Set(['prod','woIssue','prodProcess','iqc','pqc','oqc','inv','eq','partners']);
+  const VERSION='20260903-pcmenu1';
+  const LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;
   const groups=[
-    {title:'생산관리',items:[
-      ['생산(배치)','생산계획·배치 신규작성/수정','prod','작성','PR'],
-      ['작업지시서','작업지시 신규작성·수정·실적','woIssue','작성','WO'],
-      ['생산공정 관리','7단계 공정·작업자·실적 입력','prodProcess','입력','PP']
+    {title:'WORKSPACE',items:[
+      ['통합 대시보드','▦','home'],
+      ['SPC 대시보드','⌁','spc']
     ]},
-    {title:'품질검사',items:[
-      ['수입검사','IQC 신규등록·수정','iqc','작성','IQ'],
-      ['공정검사','PQC 측정값 신규등록·수정','pqc','작성','PQ'],
-      ['출하검사','OQC 측정값·출하정보 등록','oqc','작성','OQ'],
-      ['출하성적서(CoA)','검사기록 연동 성적서 작성','docs:oqccert','작성','CA'],
-      ['SPC','품질 데이터 분석','spc','조회','SP'],
-      ['품질 인터락','HOLD·차단 현황 관리','lock','관리','HL']
+    {title:'ERP',items:[
+      ['수주 · 납기관리','▤','pending:erpSales'],
+      ['생산계획 · MRP','▥','pending:erpPlan'],
+      ['구매 · 발주관리','□','pending:erpPurchase'],
+      ['재고현황','▣','inv:stock'],
+      ['입출고 관리','⇄','inv:tx'],
+      ['LOT별 재고','L','inv:stock'],
+      ['생산투입/완료','↳','inv:tx'],
+      ['재고실사','✓','inv:stock'],
+      ['거래처 현황','◇','partners']
     ]},
-    {title:'현장 · 재고 · 추적',items:[
-      ['현장입력','생산·IQC·PQC·OQC 입력 바로가기','pop','입력','PO'],
-      ['재고관리','입고·출고·이동·잔량','inv','작성','IV'],
-      ['LOT 통합추적','원료↔생산↔검사↔출하','trace','조회','LT'],
-      ['설비관리','설비 점검 신규등록·현황','eq','작성','EQ'],
-      ['거래처 현황','고객사·공급사 신규등록','partners','작성','PT']
-    ]},
-    {title:'표준서 · 성적서',items:[
-      ['작업표준서','새 작업표준서 바로 작성','docs:workstandard','작성','WI'],
-      ['표준작업절차서(SOP)','새 SOP 바로 작성','docs:sop','작성','SO'],
-      ['수입검사 성적서','IQC 기록 연동 성적서','docs:iqccert','작성','IC'],
-      ['공정검사 성적서','PQC 기록 연동 성적서','docs:pqccert','작성','PC'],
-      ['출하검사 성적서','OQC 기록 연동 성적서','docs:oqccert','작성','OC']
-    ]},
-    {title:'부적합 · 변경 · 기타문서',items:[
-      ['부적합 보고서(NCR)','NCR 새 문서 바로 작성','docs:ncr','작성','NR'],
-      ['고객불만 보고서','고객불만 새 문서 작성','docs:other:고객불만 보고서','작성','CC'],
-      ['4M 변경 검증서','변경 전·후 검증 기록','docs:change','작성','4M'],
-      ['설비 점검표','설비 점검 문서 작성','docs:equipment','작성','ES'],
-      ['교육훈련 기록','교육·평가 기록 작성','docs:training','작성','TR'],
-      ['기타 문서','자유 형식 새 문서 작성','docs:other','작성','DC']
+    {title:'MES · QMS',items:[
+      ['생산 진행','▶','prod'],
+      ['작업지시서','▧','woIssue'],
+      ['생산공정 관리','⚙','prodProcess'],
+      ['수입검사 (IQC)','Q','iqc'],
+      ['공정검사 (PQC)','Q','pqc'],
+      ['출하검사 (OQC)','Q','oqc'],
+      ['SPC (Cpk)','C','spc'],
+      ['품질 인터락','!','lock'],
+      ['출하성적서','▤','docs:oqccert'],
+      ['LOT 통합추적','⌕','trace'],
+      ['출하 · 납품관리','⇢','inv:tx'],
+      ['부적합 (8D)','8','docs:ncr'],
+      ['고객불만 (GQMS)','G','docs:other:고객불만 보고서'],
+      ['4M 변경관리','4','docs:change'],
+      ['현장 입력 (iPad)','▱','pop'],
+      ['설비 모니터링','◉','eq']
     ]}
   ];
-  const root=document.getElementById('menuRoot'),opening=document.getElementById('opening'),openingText=document.getElementById('openingText');let authenticated=false;
+  const root=document.getElementById('menuRoot');
+  const opening=document.getElementById('opening');
+  const openingText=document.getElementById('openingText');
+  const notice=document.getElementById('notice');
+  let authenticated=false;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function showNotice(label){opening.classList.remove('show');document.getElementById('noticeTitle').textContent=label;document.getElementById('noticeText').textContent='PC 메뉴와 명칭·순서는 동일하게 맞췄습니다. 이 항목은 PC 화면을 모바일에 강제로 불러오지 않고 모바일 전용 화면으로 별도 연결할 예정입니다.';notice.classList.add('show')}
+  function openWork(tab,extra=''){location.assign(`/mobile-work.html?tab=${encodeURIComponent(tab)}${extra}&v=${VERSION}`)}
   function route(code,label){
     if(!authenticated){location.assign(LOGIN);return}
+    if(code==='home'){scrollTo({top:0,behavior:'smooth'});return}
     openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');
-    if(code.startsWith('docs:')){const parts=code.split(':');const type=parts[1]||'other',title=parts.slice(2).join(':');let url=`/mobile-work.html?tab=docs&new=1&doctype=${encodeURIComponent(type)}&v=${VERSION}`;if(title)url+=`&title=${encodeURIComponent(title)}`;location.assign(url);return}
-    const direct=WRITE_TABS.has(code)?'&new=1':'';
-    location.assign(`/mobile-work.html?tab=${encodeURIComponent(code)}${direct}&v=${VERSION}`)
+    if(code.startsWith('pending:')){showNotice(label);return}
+    if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}
+    if(code.startsWith('docs:')){const parts=code.split(':'),type=parts[1]||'other',title=parts.slice(2).join(':');let extra=`&new=1&doctype=${encodeURIComponent(type)}`;if(title)extra+=`&title=${encodeURIComponent(title)}`;openWork('docs',extra);return}
+    openWork(code)
   }
-  function render(query=''){const q=String(query||'').trim().toLowerCase();let visible=0;root.innerHTML=groups.map((group,gi)=>{const items=group.items.filter(item=>!q||item.slice(0,2).join(' ').toLowerCase().includes(q));if(!items.length)return'';visible+=items.length;return`<section class="group ${gi===4?'full':''}"><div class="group-title">${esc(group.title)}</div>${items.map(([label,desc,code,action,icon])=>`<button class="menu" type="button" data-code="${esc(code)}" data-label="${esc(label)}"><span class="icon">${esc(icon)}</span><span class="copy"><strong>${esc(label)}</strong><span>${esc(desc)}</span></span><span class="action ${['작성','입력'].includes(action)?'write':''}">${esc(action)}</span><span class="chev">›</span></button>`).join('')}</section>`}).join('');document.getElementById('empty').classList.toggle('show',visible===0);root.querySelectorAll('.menu').forEach(btn=>btn.addEventListener('click',()=>route(btn.dataset.code,btn.dataset.label)))}
-  async function init(){render();document.getElementById('menuSearch').addEventListener('input',e=>render(e.target.value));try{const response=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});const payload=await response.json().catch(()=>null);if(response.status===401){authenticated=false;document.getElementById('userBtn').textContent='로그인';return}const user=payload?.data?.user||payload?.data||payload?.user||payload;const name=String(user?.name||user?.loginId||user?.email||'').trim();authenticated=Boolean(name);document.getElementById('userBtn').textContent=name?`${name}님`:'로그인'}catch(_){document.getElementById('userBtn').textContent='로그인'}}
-  document.getElementById('userBtn').addEventListener('click',()=>{if(!authenticated)location.assign(LOGIN)});document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',cache:'no-store'})}catch(_){}location.replace('/index.html?logout=1&mobileLogin=1')});init();
+  function render(query=''){
+    const q=String(query||'').trim().toLowerCase();let visible=0;
+    root.innerHTML=groups.map(group=>{const items=group.items.filter(item=>!q||item[0].toLowerCase().includes(q)||group.title.toLowerCase().includes(q));if(!items.length)return'';visible+=items.length;return`<section class="group"><div class="group-title">${esc(group.title)}</div>${items.map(([label,icon,code])=>`<button class="menu" type="button" data-code="${esc(code)}" data-label="${esc(label)}"><span class="icon">${esc(icon)}</span><span class="label">${esc(label)}</span><span class="chev">›</span></button>`).join('')}</section>`}).join('');
+    document.getElementById('empty').classList.toggle('show',visible===0);
+    root.querySelectorAll('.menu').forEach(btn=>btn.addEventListener('click',()=>route(btn.dataset.code,btn.dataset.label)));
+  }
+  async function init(){
+    render();document.getElementById('menuSearch').addEventListener('input',e=>render(e.target.value));
+    try{
+      const response=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});const payload=await response.json().catch(()=>null);
+      if(response.status===401){location.replace(LOGIN);return}
+      const user=payload?.data?.user||payload?.data||payload?.user||payload;const name=String(user?.name||user?.loginId||user?.email||'').trim();authenticated=Boolean(name);document.getElementById('userBtn').textContent=name?`${name}님`:'로그인';if(!authenticated)location.replace(LOGIN)
+    }catch(_){document.getElementById('userBtn').textContent='로그인'}
+  }
+  document.getElementById('noticeClose').addEventListener('click',()=>notice.classList.remove('show'));notice.addEventListener('click',e=>{if(e.target===notice)notice.classList.remove('show')});
+  document.getElementById('userBtn').addEventListener('click',()=>{if(!authenticated)location.assign(LOGIN)});
+  document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',cache:'no-store'})}catch(_){}location.replace(`/mobile-login.html?logout=1&v=${VERSION}`)});
+  init();
 })();
 </script>
 </body>
