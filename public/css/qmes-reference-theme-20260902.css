@@ -18,6 +18,86 @@
     opacity:0!important;
   }
 
+  /* First paint sidebar lock: current menu styling wins before the runtime theme class is attached. */
+  html body #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar {
+    top:64px!important;
+    width:248px!important;
+    padding:0 0 18px!important;
+    background:#f4f8fb!important;
+    color:#294a63!important;
+    border-right:1px solid #bfd1de!important;
+    box-shadow:2px 0 8px rgba(40,78,105,.08)!important;
+    transition:none!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-toolbar,
+  html body #qmes-sync-sidebar .qmes-side-search-box,
+  html body #qmes-sync-sidebar .qmes-side-search-input,
+  html body #qmes-sync-sidebar .qmes-side-search-icon,
+  html body #qmes-sync-sidebar .qmes-side-close {
+    display:none!important;
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    overflow:hidden!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-groups {padding:0 0 18px!important;}
+  html body #qmes-sync-sidebar .qmes-side-group {margin:0!important;border:0!important;background:#f4f8fb!important;}
+  html body #qmes-sync-sidebar .qmes-side-group-toggle {
+    min-height:47px!important;
+    margin:0!important;
+    padding:0 16px!important;
+    border:0!important;
+    border-top:1px solid #c7d8e4!important;
+    border-radius:0!important;
+    background:#dceaf4!important;
+    color:#2d719f!important;
+    font-size:12.5px!important;
+    font-weight:850!important;
+    box-shadow:none!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-group-toggle:hover,
+  html body #qmes-sync-sidebar .qmes-side-group.is-open > .qmes-side-group-toggle {
+    background:#dceaf4!important;
+    color:#2d719f!important;
+    border-color:#c7d8e4!important;
+    box-shadow:none!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-group-arrow,
+  html body #qmes-sync-sidebar .qmes-side-group.is-open .qmes-side-group-arrow {
+    color:#2d719f!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-group-items {
+    padding:5px 10px 8px!important;
+    background:#f4f8fb!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-item {
+    width:100%!important;
+    min-height:43px!important;
+    margin:1px 0!important;
+    padding:0 14px 0 16px!important;
+    box-sizing:border-box!important;
+    border:0!important;
+    border-radius:3px!important;
+    background:transparent!important;
+    color:#36556d!important;
+    font-size:12.5px!important;
+    font-weight:650!important;
+  }
+  html body #qmes-sync-sidebar .qmes-side-item:before {display:none!important;content:none!important;}
+  html body #qmes-sync-sidebar .qmes-side-item:hover {background:#e7f1f7!important;color:#23658f!important;}
+  html body #qmes-sync-sidebar .qmes-side-item.is-active,
+  html body #qmes-sync-sidebar .qmes-side-item.is-active:hover {
+    background:linear-gradient(180deg,#3e8fc5 0%,#2f79b2 100%)!important;
+    color:#fff!important;
+    font-weight:800!important;
+    border:0!important;
+    border-radius:3px!important;
+    box-shadow:none!important;
+  }
+  html body.qmes-side-open #root > div > main {transition:none!important;}
+
   html body.qmes-reference-theme {
     --namo-ref-blue:#2f78b7;
     --namo-ref-blue-dark:#2d70a5;
@@ -115,9 +195,7 @@
     filter:none!important;
     opacity:1!important;
   }
-  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small {
-    display:none!important;
-  }
+  html body.qmes-reference-theme #root > div > header .qmes-ref-brand-text small {display:none!important;}
 
   html body.qmes-reference-theme #root > div > header .qmes-ref-global-search {
     position:relative!important;
@@ -152,9 +230,7 @@
     border-color:rgba(255,255,255,.34)!important;
     color:#fff!important;
   }
-  html body.qmes-reference-theme #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > div:nth-child(2) {
-    color:#fff!important;
-  }
+  html body.qmes-reference-theme #root > div > header .qmes-header-controls > button[aria-label="계정 설정 열기"] > div:nth-child(2) {color:#fff!important;}
 
   html body.qmes-reference-theme #qmes-sync-sidebar#qmes-sync-sidebar#qmes-sync-sidebar {
     top:64px!important;
@@ -239,12 +315,8 @@
     border-color:#2a6897!important;
     text-shadow:0 1px 0 rgba(0,0,0,.12)!important;
   }
-  html body.qmes-reference-theme #root#root#root#root#root > div > main table tbody tr:nth-child(even) {
-    background:#f7fafc!important;
-  }
-  html body.qmes-reference-theme #root#root#root#root#root > div > main table tbody tr:hover {
-    background:#eaf4fb!important;
-  }
+  html body.qmes-reference-theme #root#root#root#root#root > div > main table tbody tr:nth-child(even) {background:#f7fafc!important;}
+  html body.qmes-reference-theme #root#root#root#root#root > div > main table tbody tr:hover {background:#eaf4fb!important;}
 
   @media (max-width:1180px) {
     html body.qmes-reference-theme #root > div > header .qmes-ref-brand {width:220px!important;min-width:220px!important;}
