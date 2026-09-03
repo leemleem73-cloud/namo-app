@@ -1,0 +1,6 @@
+QMES clean deploy trigger
+2026-09-03 KST
+Reason: force production to pick up the finalized ERP shell asset versions after the live header remained on the previous navy router/header while the rebuilt sidebar was already visible.
+Target: commit e805955aa5c4858961d9c7b1b658b34061e1cb3c and later main.
+Scope: deployment trigger only. No database rows, inspection/report layouts, or production data are modified by this file.
+Expected shell assets: qmes-shell-layer-base-20260827.css, router.jsx, app.jsx, qmes-collapsible-side-menu.js using the shell-final4 version.
