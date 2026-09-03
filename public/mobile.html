@@ -85,6 +85,7 @@
   function route(code,label){
     if(!authenticated){location.assign(LOGIN);return}
     if(code==='home'){scrollTo({top:0,behavior:'smooth'});return}
+    if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}
     openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');
     if(code.startsWith('pending:')){showNotice(label);return}
     if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}
