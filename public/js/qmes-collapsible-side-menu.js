@@ -1,129 +1,14 @@
 (function(){
   "use strict";
-
-  /* Remove every legacy global sidebar instance before installing the new ERP nav. */
   document.getElementById('qmes-sync-sidebar')?.remove();
   document.getElementById('qmes-sync-hamburger')?.remove();
   document.getElementById('qmes-erp-sidebar')?.remove();
   document.body.classList.remove('qmes-side-open');
-
   const clean=value=>String(value||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
-  const sections=[
-    {label:'WORKSPACE',items:[
-      {label:'통합 대시보드',icon:'▦',direct:'대시보드'},
-      {label:'SPC 대시보드',icon:'⌁',group:'품질검사',sub:'SPC (Cpk)'}
-    ]},
-    {label:'ERP',items:[
-      {label:'수주 · 납기관리',icon:'▤',tab:'erpSales'},
-      {label:'생산계획 · MRP',icon:'▥',tab:'erpPlan'},
-      {label:'구매 · 발주관리',icon:'□',tab:'erpPurchase'},
-      {label:'재고현황',icon:'▣',inventory:'overview'},
-      {label:'입출고 관리',icon:'⇄',inventory:'movement'},
-      {label:'LOT별 재고',icon:'L',inventory:'lot'},
-      {label:'생산투입/완료',icon:'↳',inventory:'production'},
-      {label:'재고실사',icon:'✓',inventory:'count'},
-      {label:'거래처 현황',icon:'◇',direct:'거래처 현황'}
-    ]},
-    {label:'MES · QMS',items:[
-      {label:'생산 진행',icon:'▶',group:'생산관리',sub:'생산 (배치)'},
-      {label:'작업지시서',icon:'▧',group:'생산관리',sub:'작업지시서'},
-      {label:'생산공정 관리',icon:'⚙',tab:'prodProcess',openMenu:'productionMenu'},
-      {label:'수입검사 (IQC)',icon:'Q',group:'품질검사',sub:'수입검사 (IQC)'},
-      {label:'공정검사 (PQC)',icon:'Q',group:'품질검사',sub:'공정검사 (PQC)'},
-      {label:'출하검사 (OQC)',icon:'Q',group:'품질검사',sub:'출하검사 (OQC)'},
-      {label:'SPC (Cpk)',icon:'C',group:'품질검사',sub:'SPC (Cpk)'},
-      {label:'품질 인터락',icon:'!',group:'품질검사',sub:'품질 인터락 (차단)'},
-      {label:'출하성적서',icon:'▤',group:'품질검사',sub:'출하성적서'},
-      {label:'LOT 통합추적',icon:'⌕',direct:'LOT 추적'},
-      {label:'출하 · 납품관리',icon:'⇢',tab:'erpShipping'},
-      {label:'부적합 (8D)',icon:'8',group:'부적합관리',sub:'부적합 (8D)'},
-      {label:'고객불만 (GQMS)',icon:'G',group:'부적합관리',sub:'고객불만 (GQMS)'},
-      {label:'4M 변경관리',icon:'4',group:'부적합관리',sub:'4M 변경관리'},
-      {label:'현장 입력 (iPad)',icon:'▱',direct:'현장입력'},
-      {label:'설비 모니터링',icon:'◉',direct:'설비관리'}
-    ]}
-  ];
-
-  const side=document.createElement('aside');
-  side.id='qmes-erp-sidebar';
-  side.dataset.qmesSidebarOwner='erp-reference-rebuild-20260903';
-  side.setAttribute('aria-label','QMES 통합 메뉴');
-  side.innerHTML=`
-    <div class="qmes-erp-company">
-      <div class="qmes-erp-company-row">
-        <span class="qmes-erp-company-name">㈜나모케미칼</span>
-        <span class="qmes-erp-status">정상운영</span>
-      </div>
-      <div class="qmes-erp-company-sub">ERP · MES 통합운영</div>
-    </div>
-    <nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav>
-    <div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
-  document.body.appendChild(side);
-
-  const nav=side.querySelector('.qmes-erp-nav');
-  let activeLabel='통합 대시보드';
-
-  const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
-  const topLabel=button=>clean(button?.querySelector(':scope > span')?.textContent||button?.querySelector('span')?.textContent||button?.textContent);
-  const findTop=label=>topButtons().find(button=>topLabel(button)===clean(label));
-  const findSub=label=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===clean(label));
-
-  function render(){
-    nav.replaceChildren();
-    sections.forEach((section,sectionIndex)=>{
-      const heading=document.createElement('div');
-      heading.className='qmes-erp-section';
-      heading.textContent=section.label;
-      nav.appendChild(heading);
-
-      section.items.forEach((item,itemIndex)=>{
-        const button=document.createElement('button');
-        button.type='button';
-        button.className='qmes-erp-item'+(activeLabel===item.label?' is-active':'');
-        button.dataset.sectionIndex=String(sectionIndex);
-        button.dataset.itemIndex=String(itemIndex);
-        button.setAttribute('aria-current',activeLabel===item.label?'page':'false');
-        button.innerHTML='<span class="qmes-erp-icon" aria-hidden="true"></span><span class="qmes-erp-text"></span>';
-        button.querySelector('.qmes-erp-icon').textContent=item.icon;
-        button.querySelector('.qmes-erp-text').textContent=item.label;
-        nav.appendChild(button);
-      });
-    });
-  }
-
-  function navigate(item){
-    if(!item) return;
-    activeLabel=item.label;
-    render();
-
-    if(item.inventory){
-      try{sessionStorage.setItem('qmes_inventory_section',item.inventory);}catch(_error){}
-      window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv',openMenu:null}}));
-      window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventory}}));
-      return;
-    }
-    if(item.tab){
-      window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:item.tab,openMenu:item.openMenu||null}}));
-      return;
-    }
-    if(item.direct){
-      findTop(item.direct)?.click();
-      return;
-    }
-    if(item.sub){
-      const submenu=findSub(item.sub);
-      if(submenu){submenu.click();return;}
-      findTop(item.group)?.click();
-      requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()));
-    }
-  }
-
-  nav.addEventListener('click',event=>{
-    const button=event.target.closest('.qmes-erp-item');
-    if(!button) return;
-    const section=sections[Number(button.dataset.sectionIndex)];
-    navigate(section?.items?.[Number(button.dataset.itemIndex)]);
-  });
-
-  render();
+  const sections=[{label:'WORKSPACE',items:[{label:'통합 대시보드',icon:'▦',direct:'대시보드'},{label:'SPC 대시보드',icon:'⌁',group:'품질검사',sub:'SPC (Cpk)'}]},{label:'ERP',items:[{label:'수주 · 납기관리',icon:'▤',tab:'erpSales'},{label:'생산계획 · MRP',icon:'▥',tab:'erpPlan'},{label:'구매 · 발주관리',icon:'□',tab:'erpPurchase'},{label:'재고현황',icon:'▣',inventory:'overview'},{label:'입출고 관리',icon:'⇄',inventory:'movement'},{label:'LOT별 재고',icon:'L',inventory:'lot'},{label:'생산투입/완료',icon:'↳',inventory:'production'},{label:'재고실사',icon:'✓',inventory:'count'},{label:'거래처 현황',icon:'◇',direct:'거래처 현황'}]},{label:'MES · QMS',items:[{label:'생산 진행',icon:'▶',group:'생산관리',sub:'생산 (배치)'},{label:'작업지시서',icon:'▧',group:'생산관리',sub:'작업지시서'},{label:'생산공정 관리',icon:'⚙',tab:'prodProcess',openMenu:'productionMenu'},{label:'수입검사 (IQC)',icon:'Q',group:'품질검사',sub:'수입검사 (IQC)'},{label:'공정검사 (PQC)',icon:'Q',group:'품질검사',sub:'공정검사 (PQC)'},{label:'출하검사 (OQC)',icon:'Q',group:'품질검사',sub:'출하검사 (OQC)'},{label:'SPC (Cpk)',icon:'C',group:'품질검사',sub:'SPC (Cpk)'},{label:'품질 인터락',icon:'!',group:'품질검사',sub:'품질 인터락 (차단)'},{label:'출하성적서',icon:'▤',group:'품질검사',sub:'출하성적서'},{label:'LOT 통합추적',icon:'⌕',direct:'LOT 추적'},{label:'출하 · 납품관리',icon:'⇢',tab:'erpShipping'},{label:'부적합 (8D)',icon:'8',group:'부적합관리',sub:'부적합 (8D)'},{label:'고객불만 (GQMS)',icon:'G',group:'부적합관리',sub:'고객불만 (GQMS)'},{label:'4M 변경관리',icon:'4',group:'부적합관리',sub:'4M 변경관리'},{label:'현장 입력 (iPad)',icon:'▱',direct:'현장입력'},{label:'설비 모니터링',icon:'◉',direct:'설비관리'}]}];
+  const side=document.createElement('aside');side.id='qmes-erp-sidebar';side.dataset.qmesSidebarOwner='erp-reference-rebuild-20260903';side.setAttribute('aria-label','QMES 통합 메뉴');side.innerHTML=`<div class="qmes-erp-company"><div class="qmes-erp-company-row"><span class="qmes-erp-company-name">㈜나모케미칼</span><span class="qmes-erp-status">정상운영</span></div></div><nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;document.body.appendChild(side);
+  const nav=side.querySelector('.qmes-erp-nav');let activeLabel='통합 대시보드';const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));const topLabel=button=>clean(button?.querySelector(':scope > span')?.textContent||button?.querySelector('span')?.textContent||button?.textContent);const findTop=label=>topButtons().find(button=>topLabel(button)===clean(label));const findSub=label=>Array.from(document.querySelectorAll('.qmes-submenu-button')).find(button=>clean(button.textContent)===clean(label));
+  function render(){nav.replaceChildren();sections.forEach((section,sectionIndex)=>{const heading=document.createElement('div');heading.className='qmes-erp-section';heading.textContent=section.label;nav.appendChild(heading);section.items.forEach((item,itemIndex)=>{const button=document.createElement('button');button.type='button';button.className='qmes-erp-item'+(activeLabel===item.label?' is-active':'');button.dataset.sectionIndex=String(sectionIndex);button.dataset.itemIndex=String(itemIndex);button.setAttribute('aria-current',activeLabel===item.label?'page':'false');button.innerHTML='<span class="qmes-erp-icon" aria-hidden="true"></span><span class="qmes-erp-text"></span>';button.querySelector('.qmes-erp-icon').textContent=item.icon;button.querySelector('.qmes-erp-text').textContent=item.label;nav.appendChild(button);});});}
+  function navigate(item){if(!item)return;activeLabel=item.label;render();if(item.inventory){try{sessionStorage.setItem('qmes_inventory_section',item.inventory);}catch(_error){}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv',openMenu:null}}));window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventory}}));return;}if(item.tab){window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:item.tab,openMenu:item.openMenu||null}}));return;}if(item.direct){findTop(item.direct)?.click();return;}if(item.sub){const submenu=findSub(item.sub);if(submenu){submenu.click();return;}findTop(item.group)?.click();requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()));}}
+  nav.addEventListener('click',event=>{const button=event.target.closest('.qmes-erp-item');if(!button)return;const section=sections[Number(button.dataset.sectionIndex)];navigate(section?.items?.[Number(button.dataset.itemIndex)]);});render();
 })();
