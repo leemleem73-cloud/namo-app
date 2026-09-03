@@ -1,76 +1,11 @@
-/* NAMO QMES - login/sync bootstrap coordinator - clean shell 2026-09-03 */
+/* NAMO QMES - auth/sync coordinator only. No visual/theme injection. */
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
-  if(global.__QMES_LOGIN_SYNC_COORDINATOR_CLEAN_20260903__) return;
-  global.__QMES_LOGIN_SYNC_COORDINATOR_CLEAN_20260903__=true;
-
+  if(global.__QMES_LOGIN_SYNC_COORDINATOR_CORE_20260903__) return;
+  global.__QMES_LOGIN_SYNC_COORDINATOR_CORE_20260903__=true;
   const SESSION_KEY="qmes-current-user-v1";
-  const SIDEBAR_GUARD="__QMES_SYNC_SIDEBAR_V12_11__";
-  const THEME_ID="qmes-reference-unified-20260903";
-  const THEME_SRC="./css/qmes-reference-unified-20260903.css?v=20260903-clean3";
-  const SIDEBAR_SRC="./js/qmes-collapsible-side-menu.js?v=20260903-flat3";
-  const HEADER_STRUCTURE_SRC="./js/qmes-header-reference-structure-20260902.js?v=20260903-clean1";
-  const QUALITY_UI_SRC="./js/qmes-quality-inspection-ui-20260902.js?v=20260902-iqc-edit-isolated3";
-  const OQC_REPORT_FIX_SRC="./js/qmes-quality-report-fix-20260902.js?v=20260902-iqc-oqc-shared6";
-  const PQC_REPORT_FIX_SRC="./js/qmes-pqc-report-fix-20260902.js?v=20260902-pqc-final8";
-  const CERT_PRINT_FIX_SRC="./js/qmes-certificate-print-fix-20260902.js?v=20260902-cert-print26";
-  const SHELL_FIX_SRC="./js/qmes-shell-runtime-fix-20260902.js?v=20260902-iqc-preview4";
-  const PURCHASE_TERM_SRC="./js/qmes-purchase-terminology-fix-20260901.js?v=20260901-v1-special-notes";
   const nativeFetch=global.fetch.bind(global);
-
-  function ensureTheme(){
-    ['qmes-reference-theme-20260902','qmes-header-logo-final-20260903','qmes-header-erp-design-20260902','qmes-reference-theme-20260903-v2'].forEach(id=>document.getElementById(id)?.remove());
-    let link=document.getElementById(THEME_ID);
-    if(link&&String(link.href||'').includes('clean3')) return link;
-    if(link) link.remove();
-    link=document.createElement('link');link.id=THEME_ID;link.rel='stylesheet';link.href=THEME_SRC;document.head.appendChild(link);return link;
-  }
-  ensureTheme();
-
-  const LOGIN_THEME_STYLE_ID="qmes-login-theme-isolation-20260901";
-  if(!document.getElementById(LOGIN_THEME_STYLE_ID)){
-    const style=document.createElement("style");style.id=LOGIN_THEME_STYLE_ID;
-    style.textContent=`html body:not(:has(#root > div > header)){background:#07162b!important;}html body:not(:has(#root > div > header)) #root#root#root#root,html body:not(:has(#root > div > header)) #root#root#root#root > div{min-height:100vh!important;background:linear-gradient(135deg,#07162b,#0c3156)!important;}html body:not(:has(#root > div > header)) #qmes-sync-hamburger,html body:not(:has(#root > div > header)) #qmes-sync-sidebar{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}html,body,#root,select,option,optgroup{color-scheme:light!important;}html body #root select{color-scheme:light!important;background-color:#fff!important;color:#111827!important;border-color:#cbd5e1!important;}`;
-    document.head.appendChild(style);
-  }
-
   let hasSavedSession=false;try{hasSavedSession=Boolean(sessionStorage.getItem(SESSION_KEY));}catch(_error){}
-  let sidebarDeferred=true;
-  global[SIDEBAR_GUARD]=true;
-  /* Block any cached pre-clean sidebar loaded later from index.html. */
-  global.__QMES_SYNC_SIDEBAR_CLEAN_20260903__=true;
-
-  function currentUserReady(){const user=global.__QMES_CURRENT_USER__;return Boolean(user&&typeof user==="object"&&(user.id||user.uid||user.name));}
-
-  function loadHeaderStructure(){
-    const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-header-reference-structure-20260902.js"));
-    if(current&&String(current.src||"").includes("clean1"))return;
-    if(current)current.remove();
-    try{delete global.__QMES_HEADER_REFERENCE_STRUCTURE_V11_CLEAN_LOGO__;document.getElementById('qmes-header-authority-v4')?.remove();}catch(_error){}
-    const script=document.createElement("script");script.src=HEADER_STRUCTURE_SRC;script.async=false;document.head.appendChild(script);
-  }
-  function loadShellFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-shell-runtime-fix-20260902.js"));if(current&&String(current.src||"").includes("iqc-preview4"))return;if(current)current.remove();try{delete global.__QMES_SHELL_RUNTIME_FIX_20260902_V4__;}catch(_error){}const script=document.createElement("script");script.src=SHELL_FIX_SRC;script.async=false;document.head.appendChild(script);}
-  function loadCertificatePrintFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-certificate-print-fix-20260902.js"));if(current&&String(current.src||"").includes("cert-print26")){loadShellFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=CERT_PRINT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(fix);}
-  function loadPqcReportFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-pqc-report-fix-20260902.js"));if(current&&String(current.src||"").includes("pqc-final8")){loadCertificatePrintFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=PQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadCertificatePrintFix,{once:true});document.head.appendChild(fix);}
-  function loadOqcReportFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-report-fix-20260902.js"));if(current&&String(current.src||"").includes("iqc-oqc-shared6")){loadPqcReportFix();return;}if(current)current.remove();const fix=document.createElement("script");fix.src=OQC_REPORT_FIX_SRC;fix.async=false;fix.addEventListener("load",loadPqcReportFix,{once:true});document.head.appendChild(fix);}
-  function loadQualityInspectionUi(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-quality-inspection-ui-20260902.js"));if(current&&String(current.src||"").includes("iqc-edit-isolated3")){loadOqcReportFix();return;}if(current)current.remove();const script=document.createElement("script");script.src=QUALITY_UI_SRC;script.async=false;script.addEventListener("load",loadOqcReportFix,{once:true});document.head.appendChild(script);}
-  function loadPurchaseTerminologyFix(){const current=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-purchase-terminology-fix-20260901.js"));if(current&&String(current.src||"").includes("v1-special-notes"))return;if(current)current.remove();const fix=document.createElement("script");fix.src=PURCHASE_TERM_SRC;fix.async=false;document.head.appendChild(fix);}
-
-  function releaseSidebarAfterLogin(){
-    if(!sidebarDeferred)return;
-    let attempts=0;
-    const release=()=>{
-      if(!sidebarDeferred)return;attempts+=1;
-      if(!currentUserReady()){if(attempts<200)global.setTimeout(release,50);return;}
-      sidebarDeferred=false;ensureTheme();loadHeaderStructure();loadQualityInspectionUi();loadPurchaseTerminologyFix();
-      try{delete global[SIDEBAR_GUARD];delete global.__QMES_SYNC_SIDEBAR_CLEAN_20260903__;delete global.__QMES_SIDEBAR_FLAT_REFERENCE_20260903__;delete global.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__;}catch(_error){global[SIDEBAR_GUARD]=false;}
-      const existing=Array.from(document.scripts).find(script=>String(script.src||"").includes("qmes-collapsible-side-menu.js"));if(existing)existing.remove();
-      document.getElementById('qmes-sync-sidebar')?.remove();document.getElementById('qmes-sync-hamburger')?.remove();
-      const script=document.createElement("script");script.src=SIDEBAR_SRC;script.async=false;script.addEventListener("load",loadShellFix,{once:true});document.head.appendChild(script);
-    };
-    global.setTimeout(release,0);
-  }
-
   let authState=hasSavedSession?"pending":"anonymous",authCheckPromise=null,authCheckResponse=null;
   function urlOf(input){try{if(typeof input==="string")return new URL(input,global.location.href);if(input&&input.url)return new URL(input.url,global.location.href);}catch(_error){}return null;}
   function isSameOrigin(url){return Boolean(url&&url.origin===global.location.origin);}
@@ -79,22 +14,10 @@
   function isAuthLogout(url){return isSameOrigin(url)&&url.pathname==="/api/auth/logout";}
   function isQmesSync(url){return isSameOrigin(url)&&url.pathname.startsWith("/api/qmes-sync/");}
   function isPurchaseOrders(url){return isSameOrigin(url)&&url.pathname==="/api/purchase-orders";}
-  async function inspectAuthResponse(response){let payload=null;try{payload=await response.clone().json();}catch(_error){}authState=(response.ok&&payload?.success&&payload?.data)?"authenticated":"anonymous";global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;if(authState==="authenticated")releaseSidebarAfterLogin();return response;}
+  async function inspectAuthResponse(response){let payload=null;try{payload=await response.clone().json();}catch(_error){}authState=(response.ok&&payload?.success&&payload?.data)?"authenticated":"anonymous";global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;return response;}
   function ensureAuthCheck(){if(authCheckResponse)return Promise.resolve(authCheckResponse.clone());if(!authCheckPromise){authCheckPromise=nativeFetch("/api/auth/me",{credentials:"same-origin",cache:"no-store",headers:{Accept:"application/json"}}).then(inspectAuthResponse).then(response=>{authCheckResponse=response.clone();return response;}).finally(()=>{authCheckPromise=null;});}return authCheckPromise.then(response=>response.clone());}
-
   let purchaseGetInFlight=null,purchaseGetCache=null,purchaseGetCacheAt=0;
   function purchaseGet(input,init){const now=Date.now();if(purchaseGetCache&&now-purchaseGetCacheAt<1500){try{return Promise.resolve(purchaseGetCache.clone());}catch(_error){purchaseGetCache=null;}}if(purchaseGetInFlight)return purchaseGetInFlight.then(response=>response.clone());purchaseGetInFlight=nativeFetch(input,init).then(response=>{try{purchaseGetCache=response.clone();purchaseGetCacheAt=Date.now();}catch(_error){purchaseGetCache=null;}return response;}).finally(()=>{purchaseGetInFlight=null;});return purchaseGetInFlight.then(response=>response.clone());}
-
   global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;
-  global.fetch=async function coordinatedFetch(input,init){
-    const url=urlOf(input);const method=String((init&&init.method)||(input&&input.method)||"GET").toUpperCase();
-    if(isAuthMe(url)){if(authState==="anonymous"&&!hasSavedSession)return nativeFetch(input,{...(init||{}),credentials:(init&&init.credentials)||"same-origin",cache:"no-store"});return ensureAuthCheck();}
-    if(isPurchaseOrders(url)&&method==="GET")return purchaseGet(input,init);
-    if(isQmesSync(url)&&authState==="pending"){try{await ensureAuthCheck();}catch(_error){}}
-    const response=await nativeFetch(input,init);
-    if(isAuthLogin(url)&&response.ok){authState="authenticated";hasSavedSession=true;authCheckResponse=null;global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;releaseSidebarAfterLogin();}
-    else if(isAuthLogout(url)&&response.ok){authState="anonymous";hasSavedSession=false;authCheckResponse=null;global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;}
-    return response;
-  };
-  if(currentUserReady())releaseSidebarAfterLogin();
+  global.fetch=async function coordinatedFetch(input,init){const url=urlOf(input);const method=String((init&&init.method)||(input&&input.method)||"GET").toUpperCase();if(isAuthMe(url)){if(authState==="anonymous"&&!hasSavedSession)return nativeFetch(input,{...(init||{}),credentials:(init&&init.credentials)||"same-origin",cache:"no-store"});return ensureAuthCheck();}if(isPurchaseOrders(url)&&method==="GET")return purchaseGet(input,init);if(isQmesSync(url)&&authState==="pending"){try{await ensureAuthCheck();}catch(_error){}}const response=await nativeFetch(input,init);if(isAuthLogin(url)&&response.ok){authState="authenticated";hasSavedSession=true;authCheckResponse=null;global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;}else if(isAuthLogout(url)&&response.ok){authState="anonymous";hasSavedSession=false;authCheckResponse=null;global.__QMES_AUTH_BOOTSTRAP_STATE__=authState;}return response;};
 })(window);
