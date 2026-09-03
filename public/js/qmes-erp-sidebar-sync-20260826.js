@@ -1,5 +1,6 @@
 /* QMES ERP top-menu -> shared left-sidebar sync
  * ERP routes use the same active-state lifecycle as normal QMES routes.
+ * Shell visual ownership is intentionally excluded here.
  */
 (function(){
   "use strict";
@@ -14,29 +15,11 @@
   };
   const ERP_TABS=new Set(Object.values(ERP_GROUPS).map(config=>config.tab));
 
-  const SHARED_SHELL_STYLES=[
-    ["qmes-shell-offset-fix-20260826","./css/qmes-shell-offset-fix-20260826.css?v=20260826-shell1"],
-    ["qmes-shell-readable-size-20260827","./css/qmes-shell-readable-size-20260827.css?v=20260827-2"],
-    ["qmes-sidebar-line-align-20260826","./css/qmes-sidebar-line-align-20260826.css?v=20260826-line2"],
-    ["qmes-shared-shell-final-20260827","./css/qmes-shared-shell-final-20260827.css?v=20260827-1"],
-    ["qmes-responsive-main-layout-20260827","./css/qmes-responsive-main-layout-20260827.css?v=20260827-1"]
-  ];
-
   const clean=value=>String(value||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
   const topLabel=button=>clean(button?.querySelector(":scope > span")?.textContent||button?.querySelector("span")?.textContent||button?.textContent);
   const sidebar=()=>document.getElementById("qmes-sync-sidebar");
   let activeGroup="";
   let restoring=false;
-
-  function ensureSharedShell(){
-    SHARED_SHELL_STYLES.forEach(([id,href])=>{
-      let link=document.getElementById(id);
-      if(!link){link=document.createElement("link");link.id=id;link.rel="stylesheet";link.href=href;document.head.appendChild(link);}
-      else if(String(link.getAttribute("href")||"")!==href) link.href=href;
-      link.media="all";
-      link.disabled=false;
-    });
-  }
 
   function clearErpTopActive(){
     document.querySelectorAll(".qmes-top-menu-button").forEach(button=>{
@@ -69,7 +52,6 @@
   function makeSideButton(group,config){
     const button=document.createElement("button");
     button.type="button";
-    /* Normal sidebar behavior: an item becomes active only after its route is active. */
     button.className="qmes-side-item qmes-erp-side-item";
     button.dataset.qmesErpSideTab=config.tab;
     button.dataset.qmesErpGroup=group;
@@ -82,7 +64,6 @@
     const side=sidebar();
     if(!config||!side) return false;
 
-    ensureSharedShell();
     activeGroup=group;
     syncTopActive(group);
     side.dataset.qmesErpGroup=group;
@@ -166,7 +147,6 @@
     const tab=String(event?.detail?.tab||"");
     const entry=Object.entries(ERP_GROUPS).find(([,config])=>config.tab===tab);
     if(!entry){
-      /* This is the missing lifecycle step: leaving ERP must clear ERP-only active state. */
       if(activeGroup&&!ERP_TABS.has(tab)) clearErpState();
       return;
     }
@@ -186,6 +166,4 @@
     queueMicrotask(()=>{try{renderGroup(activeGroup,{openSidebar:document.body.classList.contains("qmes-side-open"),emit:false,activateItem:false});}finally{restoring=false;}});
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
-
-  ensureSharedShell();
 })();
