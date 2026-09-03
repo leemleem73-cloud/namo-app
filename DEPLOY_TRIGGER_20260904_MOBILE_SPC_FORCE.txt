@@ -1,0 +1,4 @@
+Force production redeploy for mobile SPC dashboard routing and Cpk screen.
+Includes mobile.html direct SPC route and public/mobile-spc.html.
+PC desktop source remains unchanged.
+2026-09-04
