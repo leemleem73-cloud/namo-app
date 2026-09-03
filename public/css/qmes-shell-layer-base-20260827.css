@@ -1,38 +1,169 @@
-/* QMES desktop shell core — single visual owner. No overlay theme. */
-:root{--qmes-shell-sidebar-width:248px;--qmes-shell-header-height:64px;--qmes-shell-blue:#2f76ad;--qmes-shell-blue-top:#3d87bd;--qmes-shell-line:#c7d5df;--qmes-shell-text:#3d5264;}
+/* QMES desktop shell core — single visual owner. Direct iCUBE reference implementation. */
+:root{
+  --qmes-shell-sidebar-width:248px;
+  --qmes-shell-header-height:64px;
+  --qmes-shell-blue:#2f78b7;
+  --qmes-shell-blue-dark:#2f76ad;
+  --qmes-shell-blue-top:#3d87bd;
+  --qmes-shell-blue-soft:#e7f2fa;
+  --qmes-shell-ink:#22384a;
+  --qmes-shell-muted:#687c8d;
+  --qmes-shell-line:#cbd8e2;
+  --qmes-shell-bg:#edf2f6;
+}
 
-html body #root>div>header{position:sticky;top:0;z-index:12060!important;height:64px!important;min-height:64px!important;background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;color:#fff!important;border-bottom:1px solid #235f8e!important;box-shadow:0 2px 6px rgba(30,73,105,.20)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
-html body #root>div>header>div:first-child{height:64px!important;min-height:64px!important;max-height:64px!important;padding:0 18px 0 0!important;gap:14px!important;display:flex!important;align-items:center!important;flex-wrap:nowrap!important;background:transparent!important;border:0!important;box-sizing:border-box!important;}
-html body #root>div>header>div:first-child>button:first-child{width:248px!important;min-width:248px!important;height:64px!important;margin:0!important;padding:0 20px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;border:0!important;border-right:1px solid #b9c9d5!important;border-radius:0!important;background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;box-shadow:none!important;box-sizing:border-box!important;overflow:hidden!important;}
-html body #root>div>header img[alt="NAMO Chemical"]{display:block!important;visibility:visible!important;opacity:1!important;width:180px!important;max-width:180px!important;height:auto!important;max-height:42px!important;object-fit:contain!important;filter:none!important;}
-html body #root .qmes-header-clock,html body #root .qmes-header-clock span,html body #root .qmes-header-controls,html body #root .qmes-header-controls div,html body #root .qmes-header-controls span{color:#fff!important;}
-html body #root .qmes-header-action,html body #root button[aria-label*="NAMO Talk"],html body #root button[aria-label^="계정 설정"]{background:transparent!important;color:#fff!important;border-color:rgba(255,255,255,.28)!important;box-shadow:none!important;}
-html body #root button[aria-label^="계정 설정"]>div:first-of-type{background:rgba(255,255,255,.16)!important;color:#fff!important;}
+/* HEADER */
+html body #root>div>header{
+  position:sticky;top:0;z-index:12060!important;
+  height:64px!important;min-height:64px!important;
+  background:linear-gradient(180deg,#3d87bd 0%,#2d70a5 100%)!important;
+  color:#fff!important;border-bottom:1px solid #235f8e!important;
+  box-shadow:0 2px 7px rgba(47,91,124,.12)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+html body #root>div>header>div:first-child{
+  height:64px!important;min-height:64px!important;max-height:64px!important;
+  padding:0 18px 0 0!important;gap:12px!important;
+  display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+  background:transparent!important;border:0!important;box-sizing:border-box!important;
+}
+html body #root>div>header>div:first-child>button:first-child{
+  width:248px!important;min-width:248px!important;height:64px!important;
+  margin:0!important;padding:0 18px!important;display:flex!important;
+  align-items:center!important;justify-content:flex-start!important;
+  border:0!important;border-right:1px solid #bfcdd8!important;border-radius:0!important;
+  background:linear-gradient(180deg,#f8fafb 0%,#e5ebf0 100%)!important;
+  box-shadow:none!important;box-sizing:border-box!important;overflow:hidden!important;
+}
+html body #root>div>header img[alt="NAMO Chemical"]{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  width:190px!important;max-width:190px!important;height:auto!important;max-height:44px!important;
+  object-fit:contain!important;object-position:left center!important;filter:none!important;
+}
+html body #root .qmes-header-clock,
+html body #root .qmes-header-clock span,
+html body #root .qmes-header-controls,
+html body #root .qmes-header-controls div,
+html body #root .qmes-header-controls span{color:#fff!important;}
+html body #root .qmes-header-clock{font-size:12px!important;font-weight:650!important;}
+html body #root .qmes-header-action,
+html body #root button[aria-label*="NAMO Talk"],
+html body #root button[aria-label^="계정 설정"]{
+  min-height:34px!important;background:rgba(255,255,255,.04)!important;
+  color:#fff!important;border:1px solid rgba(255,255,255,.30)!important;
+  border-radius:4px!important;box-shadow:none!important;font-size:12px!important;font-weight:650!important;
+}
+html body #root .qmes-header-action:hover,
+html body #root button[aria-label*="NAMO Talk"]:hover,
+html body #root button[aria-label^="계정 설정"]:hover{background:rgba(255,255,255,.12)!important;}
+html body #root button[aria-label^="계정 설정"]>div:first-of-type{
+  background:rgba(255,255,255,.16)!important;color:#fff!important;
+}
 
-/* The supplied design uses left navigation only. Native top navigation stays in DOM for routing, never on screen. */
-html body #root .qmes-top-menu-bar,html body #root .qmes-top-menu,html body #root .qmes-submenu-row,html body #qmes-all-menu-dropdown{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;}
+/* REFERENCE HAS LEFT NAVIGATION ONLY. Keep native top menu in DOM solely as routing bridge. */
+html body #root .qmes-top-menu-bar,
+html body #root .qmes-top-menu,
+html body #root .qmes-submenu-row,
+html body #qmes-all-menu-dropdown{
+  display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;max-height:0!important;
+  margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;
+}
 
-html body #qmes-sync-sidebar#qmes-sync-sidebar{display:block!important;position:fixed!important;left:0!important;top:64px!important;bottom:0!important;width:248px!important;padding:0 0 22px!important;box-sizing:border-box!important;overflow-y:auto!important;overflow-x:hidden!important;background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;color:#344d60!important;border-right:1px solid #bfcdd8!important;box-shadow:2px 0 5px rgba(51,82,103,.08)!important;z-index:12050!important;transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:none!important;}
-html body.qmes-side-open #qmes-sync-sidebar#qmes-sync-sidebar{transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;}
+/* SIDEBAR */
+html body #qmes-sync-sidebar#qmes-sync-sidebar{
+  display:block!important;position:fixed!important;left:0!important;top:64px!important;bottom:0!important;
+  width:248px!important;padding:0 8px 18px!important;box-sizing:border-box!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  background:linear-gradient(180deg,#f8fafb 0%,#edf2f6 100%)!important;
+  color:#344d60!important;border-right:1px solid #bfcdd8!important;
+  box-shadow:2px 0 5px rgba(51,82,103,.08)!important;z-index:12050!important;
+  transform:translate3d(-100%,0,0)!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+  transition:none!important;scrollbar-width:thin!important;scrollbar-color:#bdccd7 transparent!important;
+}
+html body.qmes-side-open #qmes-sync-sidebar#qmes-sync-sidebar{
+  transform:translate3d(0,0,0)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
 html body #qmes-sync-sidebar .qmes-side-groups{padding:8px 0 24px!important;}
-html body #qmes-sync-sidebar .qmes-side-section-label{display:block!important;margin:7px 0 2px!important;padding:8px 20px!important;background:#dfeaf2!important;border-top:1px solid #c7d7e2!important;border-bottom:1px solid #c7d7e2!important;color:#2f6f9f!important;font-size:10px!important;line-height:14px!important;font-weight:800!important;letter-spacing:1px!important;}
-html body #qmes-sync-sidebar .qmes-side-item{width:calc(100% - 14px)!important;min-height:42px!important;margin:2px 7px!important;padding:9px 10px!important;display:flex!important;align-items:center!important;gap:11px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#3d5264!important;font-size:13px!important;line-height:18px!important;font-weight:650!important;text-align:left!important;box-shadow:none!important;cursor:pointer!important;}
+html body #qmes-sync-sidebar .qmes-side-section-label{
+  display:block!important;margin:8px 0 3px!important;padding:7px 10px!important;
+  background:#dfeaf2!important;border:0!important;border-radius:2px!important;
+  color:#2f6f9f!important;font-size:10px!important;line-height:14px!important;font-weight:800!important;
+  letter-spacing:.8px!important;text-transform:uppercase!important;
+}
+html body #qmes-sync-sidebar .qmes-side-item{
+  width:100%!important;min-height:36px!important;margin:1px 0!important;padding:6px 9px!important;
+  display:flex!important;align-items:center!important;gap:9px!important;
+  border:1px solid transparent!important;border-radius:2px!important;background:transparent!important;
+  color:#3d5264!important;font-size:12.5px!important;line-height:18px!important;font-weight:650!important;
+  text-align:left!important;box-shadow:none!important;cursor:pointer!important;
+}
 html body #qmes-sync-sidebar .qmes-side-item:before{display:none!important;content:none!important;}
 html body #qmes-sync-sidebar .qmes-side-item:hover{background:#e2edf5!important;color:#1d5681!important;}
-html body #qmes-sync-sidebar .qmes-side-item.is-active{background:linear-gradient(90deg,#3d8ac0 0%,#2f76ad 100%)!important;color:#fff!important;font-weight:800!important;box-shadow:0 5px 14px rgba(47,91,124,.18)!important;}
-html body #qmes-sync-sidebar .qmes-side-icon{width:22px!important;height:22px!important;min-width:22px!important;display:grid!important;place-items:center!important;border:1px solid #c5d4df!important;border-radius:3px!important;background:#dfe9f0!important;color:#356f99!important;font-size:10px!important;font-weight:900!important;line-height:1!important;}
-html body #qmes-sync-sidebar .qmes-side-item.is-active .qmes-side-icon{background:rgba(255,255,255,.18)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important;}
-html body #qmes-sync-sidebar .qmes-side-text{min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+html body #qmes-sync-sidebar .qmes-side-item.is-active{
+  background:linear-gradient(180deg,#3d8ac0 0%,#2f76ad 100%)!important;
+  color:#fff!important;border-color:#286b9e!important;font-weight:800!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-icon{
+  width:22px!important;height:22px!important;min-width:22px!important;display:grid!important;place-items:center!important;
+  border:1px solid #c5d4df!important;border-radius:2px!important;background:#dfe9f0!important;
+  color:#356f99!important;font-size:10px!important;font-weight:900!important;line-height:1!important;
+}
+html body #qmes-sync-sidebar .qmes-side-item.is-active .qmes-side-icon{
+  background:rgba(255,255,255,.18)!important;color:#fff!important;border-color:rgba(255,255,255,.35)!important;
+}
+html body #qmes-sync-sidebar .qmes-side-text{
+  min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
 
-html body #qmes-sync-hamburger{display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;left:262px!important;top:16px!important;z-index:12070!important;width:32px!important;height:32px!important;padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;color:#fff!important;box-shadow:none!important;font-size:21px!important;font-weight:800!important;line-height:1!important;cursor:pointer!important;visibility:visible!important;opacity:1!important;}
+/* HAMBURGER */
+html body #qmes-sync-hamburger{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  position:fixed!important;left:260px!important;top:16px!important;z-index:12070!important;
+  width:32px!important;height:32px!important;padding:0!important;border:0!important;border-radius:3px!important;
+  background:transparent!important;color:#fff!important;box-shadow:none!important;
+  font-size:20px!important;font-weight:800!important;line-height:1!important;cursor:pointer!important;
+  visibility:visible!important;opacity:1!important;
+}
 html body #qmes-sync-hamburger:hover{background:rgba(255,255,255,.10)!important;}
-html body.qmes-side-open #root>div>main{margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:none!important;}
 
-html body #qmes-user-dropdown#qmes-user-dropdown{z-index:13060!important;width:196px!important;padding:6px!important;border:1px solid #d9e1ea!important;border-radius:10px!important;background:#fff!important;box-shadow:0 14px 34px rgba(15,23,42,.13)!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown button{width:100%!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-radius:7px!important;background:#fff!important;color:#344054!important;font-size:13px!important;font-weight:600!important;text-align:left!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown button:hover{background:#f7f9fc!important;color:#172033!important;}
-html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;border-top:1px solid #edf1f5!important;color:#b42318!important;}
+/* MAIN SHELL OFFSET ONLY — page/report styling remains owned by its module. */
+html body{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
+html body #root>div>main{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
+html body.qmes-side-open #root>div>main{
+  margin-left:248px!important;width:calc(100% - 248px)!important;box-sizing:border-box!important;transition:none!important;
+}
 
-@media(max-width:1180px){:root{--qmes-shell-sidebar-width:220px;}html body #root>div>header>div:first-child>button:first-child{width:220px!important;min-width:220px!important;}html body #qmes-sync-sidebar#qmes-sync-sidebar{width:220px!important;}html body #qmes-sync-hamburger{left:234px!important;}html body.qmes-side-open #root>div>main{margin-left:220px!important;width:calc(100% - 220px)!important;}}
-@media(max-width:820px){html body #root>div>header>div:first-child>button:first-child{width:170px!important;min-width:170px!important;padding:0 10px!important;}html body #root>div>header img[alt="NAMO Chemical"]{width:145px!important;max-width:145px!important;}html body #qmes-sync-hamburger{left:184px!important;}}
-@media print{html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}html body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important;}}
+/* USER DROPDOWN */
+html body #qmes-user-dropdown#qmes-user-dropdown{
+  z-index:13060!important;width:196px!important;padding:6px!important;
+  border:1px solid #cbd8e2!important;border-radius:4px!important;background:#fff!important;
+  box-shadow:0 8px 20px rgba(47,91,124,.16)!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button{
+  width:100%!important;min-height:36px!important;padding:7px 9px!important;border:0!important;border-radius:2px!important;
+  background:#fff!important;color:#344d60!important;font-size:12.5px!important;font-weight:650!important;text-align:left!important;
+}
+html body #qmes-user-dropdown#qmes-user-dropdown button:hover{background:#e7f2fa!important;color:#1d5681!important;}
+html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{
+  margin-top:4px!important;border-top:1px solid #e1e8ee!important;color:#b42318!important;
+}
+
+@media(max-width:1180px){
+  :root{--qmes-shell-sidebar-width:220px;}
+  html body #root>div>header>div:first-child>button:first-child{width:220px!important;min-width:220px!important;}
+  html body #root>div>header img[alt="NAMO Chemical"]{width:174px!important;max-width:174px!important;}
+  html body #qmes-sync-sidebar#qmes-sync-sidebar{width:220px!important;}
+  html body #qmes-sync-hamburger{left:232px!important;}
+  html body.qmes-side-open #root>div>main{margin-left:220px!important;width:calc(100% - 220px)!important;}
+}
+@media(max-width:820px){
+  html body #root>div>header>div:first-child>button:first-child{width:170px!important;min-width:170px!important;padding:0 10px!important;}
+  html body #root>div>header img[alt="NAMO Chemical"]{width:145px!important;max-width:145px!important;}
+  html body #qmes-sync-hamburger{left:182px!important;}
+}
+@media print{
+  html body{background:#fff!important;}
+  html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}
+  html body.qmes-side-open #root>div>main{margin-left:0!important;width:100%!important;background:transparent!important;}
+}
