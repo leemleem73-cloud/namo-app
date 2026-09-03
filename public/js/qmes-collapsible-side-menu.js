@@ -2,6 +2,9 @@
   "use strict";
   if(window.__QMES_SYNC_SIDEBAR_MASTER_20260903__) return;
   window.__QMES_SYNC_SIDEBAR_MASTER_20260903__=true;
+  window.__QMES_SYNC_SIDEBAR_V18_ERP_THEME__=true;
+  window.__QMES_SYNC_SIDEBAR_V17_HEADER__=true;
+  window.__QMES_SYNC_SIDEBAR_V16_HEADER__=true;
   window.__QMES_SYNC_SIDEBAR_V12_11__=true;
 
   const clean=v=>String(v||"").replace(/[›〉▣]/g,"").replace(/\s+/g," ").trim();
