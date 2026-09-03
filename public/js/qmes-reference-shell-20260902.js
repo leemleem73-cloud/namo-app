@@ -52,12 +52,46 @@
     brand.classList.add("qmes-ref-brand");
   }
 
+  function lockCompanyMetaSize(meta){
+    if(!meta) return;
+    const set=(name,value)=>meta.style.setProperty(name,value,"important");
+    set("margin","14px 16px 16px");
+    set("padding","13px 14px");
+    set("min-height","42px");
+    set("box-sizing","border-box");
+    set("display","flex");
+    set("align-items","center");
+    set("justify-content","space-between");
+    set("gap","8px");
+    set("border","1px solid #c7d9e6");
+    set("border-radius","10px");
+    set("background","#fff");
+    set("box-shadow","none");
+    set("color","#36556d");
+    set("font-size","12px");
+    set("font-weight","700");
+    set("transition","none");
+    const badge=meta.querySelector("b");
+    if(badge){
+      const setBadge=(name,value)=>badge.style.setProperty(name,value,"important");
+      setBadge("padding","4px 8px");
+      setBadge("border","1px solid #cbe4c5");
+      setBadge("border-radius","14px");
+      setBadge("background","#f1faee");
+      setBadge("color","#4f9847");
+      setBadge("font-size","10px");
+      setBadge("white-space","nowrap");
+      setBadge("transition","none");
+    }
+  }
+
   function ensureCompanyMeta(sidebar){
     let meta=sidebar.querySelector(".qmes-ref-company-meta");
-    if(meta) return;
+    if(meta){lockCompanyMetaSize(meta);return;}
     meta=document.createElement("div");
     meta.className="qmes-ref-company-meta";
     meta.innerHTML="<span>㈜나모케미칼</span><b>정상운영</b>";
+    lockCompanyMetaSize(meta);
     const groups=sidebar.querySelector(".qmes-side-groups");
     if(groups) sidebar.insertBefore(meta,groups); else sidebar.appendChild(meta);
   }
