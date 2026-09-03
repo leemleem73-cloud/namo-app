@@ -47,5 +47,5 @@ fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
   return originalReadFile(target, ...nextArgs);
 };
 
-process.env.QMES_DASHBOARD_BUILD = process.env.QMES_DASHBOARD_BUILD || '20260903-enterprise-v3';
+process.env.QMES_DASHBOARD_BUILD = process.env.QMES_DASHBOARD_BUILD || '20260903-enterprise-v4-sidebar-clean';
 require('./server-legacy-20260903.js');
