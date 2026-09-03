@@ -160,26 +160,26 @@ function QMESChemical({user,onLogout}){
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col" style={{fontFamily:"'Pretendard','Noto Sans KR',system-ui,sans-serif"}}>
-      <header className="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur">
-        <div className="w-full px-4 lg:px-6 py-3 flex items-center gap-4">
-          <button type="button" className="flex items-center shrink-0 rounded" onClick={()=>{setTab("dash");setOpenMenu(null);}}>
-            <img src="https://namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical" className="h-[22px] md:h-[26px] w-auto max-w-[262px] object-contain" style={{filter:"brightness(0) invert(1)"}} onError={event=>{event.currentTarget.onerror=null;event.currentTarget.style.filter="none";event.currentTarget.src="/assets/namo-header-logo.svg?v=20260731-white2";}} />
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col" style={{fontFamily:"'Pretendard','Noto Sans KR',system-ui,sans-serif"}}>
+      <header className="qmes-erp-topbar sticky top-0 z-50" style={{background:"linear-gradient(180deg,#f8fbfd 0%,#e8f1f7 100%)",borderBottom:"1px solid #bfd0dc",boxShadow:"0 2px 5px rgba(47,91,124,.09)"}}>
+        <div className="w-full px-4 lg:px-6 flex items-center gap-3" style={{height:58}}>
+          <button type="button" className="flex items-center shrink-0 rounded" onClick={()=>{setTab("dash");setOpenMenu(null);}} style={{width:236,height:58,marginLeft:-16,paddingLeft:14,borderRight:"1px solid #cbd8e2",background:"#f8fafb"}}>
+            <img src="/assets/namo-header-logo.svg?v=20260903-color1" alt="NAMO Chemical" className="w-auto object-contain" style={{width:190,maxWidth:190,maxHeight:42,filter:"none"}} />
           </button>
           <div className="flex-1" />
-          <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
-          <button type="button" onClick={()=>{setTalkTargetRoom("");setTalkOpen(true);}} className="relative p-2 rounded text-yellow-300 hover:bg-slate-800" aria-label={`NAMO Talk 알림 ${namoUnread}건`}>
-            <Bell size={16}/>{namoUnread>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-slate-900">{namoUnread>99?"99+":namoUnread}</span>}
+          <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums" style={{color:"#29485f",fontSize:11.5,fontWeight:700}}><span className="w-2 h-2 rounded-full bg-emerald-500"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
+          <button type="button" onClick={()=>{setTalkTargetRoom("");setTalkOpen(true);}} className="relative p-2 rounded" style={{color:"#356f99",background:"#fff",border:"1px solid #bfd0dc"}} aria-label={`NAMO Talk 알림 ${namoUnread}건`}>
+            <Bell size={16}/>{namoUnread>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-white">{namoUnread>99?"99+":namoUnread}</span>}
           </button>
-          <button type="button" onClick={()=>setTalkOpen(value=>!value)} className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg border text-sm font-bold transition-colors ${talkOpen?"bg-sky-500/20 border-sky-400 text-white":"bg-sky-600/15 border-sky-500/70 text-sky-100 hover:bg-sky-500/25"}`} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>
+          <button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <button type="button" onClick={()=>setProfileOpen(true)} className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-800" aria-label="계정 설정 열기" aria-expanded={profileOpen}><div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">{user.name?.[0]||"사"}</div><div className="hidden md:block whitespace-nowrap" style={{fontSize:18,fontWeight:800,lineHeight:1.2,color:"#ffffff"}}>{user.name} ({user.dept})</div><span className="hidden md:inline text-slate-400" style={{fontSize:12}}>▼</span></button>
-            <button type="button" onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">백업</button>
-            <button type="button" onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border border-slate-700">복원</button>
-            {user.role==="admin"&&<button type="button" onClick={()=>{setTab("members");setOpenMenu(null);}} className={`qmes-header-action px-2 py-1 rounded border ${tab==="members"?"border-sky-500/60 text-sky-300 bg-sky-500/10":"border-slate-700 text-slate-400"}`}>회원관리</button>}
+            <button type="button" onClick={()=>setProfileOpen(true)} className="flex items-center gap-2 rounded px-2 py-1" style={{background:"#fff",border:"1px solid #bfd0dc",color:"#29485f"}} aria-label="계정 설정 열기" aria-expanded={profileOpen}><div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{background:"#dfeaf2",color:"#315f7f"}}>{user.name?.[0]||"사"}</div><div className="hidden md:block whitespace-nowrap" style={{fontSize:15,fontWeight:800,lineHeight:1.2,color:"#29485f"}}>{user.name} ({user.dept})</div><span className="hidden md:inline" style={{fontSize:11,color:"#708596"}}>▼</span></button>
+            <button type="button" onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border">백업</button>
+            <button type="button" onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border">복원</button>
+            {user.role==="admin"&&<button type="button" onClick={()=>{setTab("members");setOpenMenu(null);}} className="qmes-header-action px-2 py-1 rounded border">회원관리</button>}
           </div>
         </div>
-        <div className="border-t border-white/10 qmes-top-menu-bar">
+        <div className="qmes-top-menu-bar">
           <nav className="qmes-top-menu">
             {TOP_MENUS.map(menu=>{const MenuIcon=menu.icon;const children=(menu.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);const direct=!menu.children;const active=direct?tab===menu.id:children.some(item=>item.id===tab);const opened=openMenu===menu.id;return <div key={menu.id} className="qmes-top-menu-item"><button type="button" onClick={()=>{if(direct){setTab(menu.id);setOpenMenu(null);}else{setOpenMenu(opened?null:menu.id);if(!active&&children.length)setTab(children[0].id);}}} className={`qmes-top-menu-button ${active?"is-active":""}`}><MenuIcon size={15}/><span>{menu.label}</span>{!direct&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}</button></div>;})}
           </nav>
