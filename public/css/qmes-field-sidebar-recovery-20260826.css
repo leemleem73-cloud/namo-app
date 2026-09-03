@@ -1,4 +1,4 @@
-/* QMES scoped recovery — field input + sidebar only, 2026-08-26 */
+/* QMES scoped recovery — field input only, 2026-08-26 */
 
 /* 현장입력: LOT/저장 기능은 건드리지 않고 시각 스타일만 안정화 */
 html body #root#root#root .qmes-ipad-pop{
@@ -66,28 +66,6 @@ html body #root#root#root .qmes-ipad-pop .qmes-ipad-equipment textarea{
   color:#111827!important;
   -webkit-text-fill-color:#111827!important;
   border-color:#b8c4d0!important;
-}
-
-/* 왼쪽 메뉴: 선택/클릭 후에도 글자색이 배경에 묻히지 않도록 고정 */
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item *{
-  color:#1f2937!important;
-  -webkit-text-fill-color:#1f2937!important;
-  opacity:1!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item:hover *{
-  color:#111827!important;
-  -webkit-text-fill-color:#111827!important;
-  opacity:1!important;
-}
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item.is-active *,
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item[aria-current="page"],
-html body #qmes-sync-sidebar#qmes-sync-sidebar .qmes-side-item[aria-current="page"] *{
-  color:#1554b6!important;
-  -webkit-text-fill-color:#1554b6!important;
-  opacity:1!important;
 }
 
 /* 수입검사 관리 기준으로 공정/출하 검사 기록 제목 크기 고정 — 뒤 CSS 재로딩에도 변하지 않음 */
