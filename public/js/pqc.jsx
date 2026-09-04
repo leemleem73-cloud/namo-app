@@ -649,13 +649,13 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           <button onClick={() => { setRecordSearch(""); setRecordYear("ALL"); setRecordMonth("ALL"); setRecordPage(1); }}
             style={{width:"135px",height:"42px",margin:0,alignSelf:"end"}} className="px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
-        <div className={isOqc ? "overflow-x-auto -mx-4 px-4" : "qmes-pqc-record-table-wrap"}>
-          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1120px] qmes-oqc-record-table" : "qmes-pqc-record-table"}`}>
+        <div className={isOqc ? "qmes-oqc-record-table-wrap" : "qmes-pqc-record-table-wrap"}>
+          <table className={`w-full text-sm table-fixed ${isOqc ? "qmes-oqc-record-table" : "qmes-pqc-record-table"}`}>
             <colgroup>
               {isOqc ? <>
-                <col style={{ width: "145px" }} /><col style={{ width: "120px" }} /><col style={{ width: "135px" }} />
-                <col style={{ width: "150px" }} /><col style={{ width: "150px" }} /><col style={{ width: "90px" }} />
-                <col style={{ width: "120px" }} /><col style={{ width: "120px" }} /><col style={{ width: "200px" }} />
+                <col style={{ width: "13%" }} /><col style={{ width: "10%" }} /><col style={{ width: "11%" }} />
+                <col style={{ width: "11%" }} /><col style={{ width: "10%" }} /><col style={{ width: "8%" }} />
+                <col style={{ width: "9%" }} /><col style={{ width: "9%" }} /><col style={{ width: "19%" }} />
               </> : <>
                 <col style={{ width: "15%" }} /><col style={{ width: "12%" }} /><col style={{ width: "12%" }} />
                 <col style={{ width: "12%" }} /><col style={{ width: "12%" }} /><col style={{ width: "9%" }} />
