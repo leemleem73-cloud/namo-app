@@ -247,3 +247,24 @@ html body #root>div>main .qmes-pqc-page .qmes-pqc-actions .qmes-iqc-action-btn{
 html body #root>div>main .qmes-pqc-page .qmes-pqc-actions{
   gap:4px!important;
 }
+
+/* PQC output/edit/delete buttons EXACTLY match IQC ledger button size */
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions .qmes-iqc-action-btn{
+  width:auto!important;
+  min-width:0!important;
+  height:28px!important;
+  min-height:28px!important;
+  padding:0 9px!important;
+  margin:0!important;
+  border-radius:3px!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
+  gap:3px!important;
+}
