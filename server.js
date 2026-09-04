@@ -16,7 +16,8 @@ const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx')
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
 const SHELL_BUILD = '20260904-pqo-filtermatch4';
-const MEMBERS_ASSET_BUILD = '20260904-member-edit-modal1';
+const MEMBERS_ASSET_BUILD = '20260904-member-edit-pc-hard5';
+const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 if (!fs.existsSync(enterpriseDashboard)) {
@@ -40,6 +41,12 @@ try {
   normalized = normalized.replace(
     /(<script type="text\/babel" data-presets="react" src="\.\/js\/admin\/members\.jsx\?v=[^"']+"><\/script>)/,
     `$1\n  <script type="text/babel" data-presets="react" src="./js/qmes-members-edit-fix-20260904.jsx?v=${MEMBERS_ASSET_BUILD}"></script>`
+  );
+
+  normalized = normalized.replace(/\n\s*<script src="\.\/js\/qmes-members-pc-edit-fallback-20260904\.js\?v=[^"']+"><\/script>/g, '');
+  normalized = normalized.replace(
+    /(<script type="text\/babel" data-presets="react" src="\.\/js\/qmes-members-edit-fix-20260904\.jsx\?v=[^"']+"><\/script>)/,
+    `$1\n  <script src="./js/qmes-members-pc-edit-fallback-20260904.js?v=${MEMBER_FALLBACK_BUILD}"></script>`
   );
 
   if (normalized !== source) fs.writeFileSync(publicIndex, normalized, 'utf8');
