@@ -1,0 +1,6 @@
+2026-09-04 NAMO Attendance deployment trigger
+- restore missing public/attendance-app.js
+- enable login button actions
+- enable biometric registration/login client flow
+- add PWA manifest, service worker, and icon
+- attendance server preload already enabled in package.json
