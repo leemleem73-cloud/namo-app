@@ -271,3 +271,28 @@ html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-tab
   font-size:10px!important;
   line-height:1.2!important;
 }
+
+
+/* IQC ledger final visual match to PQC - direct high-specificity owner */
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table{
+  font-size:11px!important;color:#405569!important;background:#fff!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th{
+  height:40px!important;padding:8px 9px!important;
+  background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;border:0!important;border-right:1px solid rgba(255,255,255,.30)!important;border-bottom:1px solid #4f8ab2!important;
+  font-size:11px!important;font-weight:900!important;line-height:1.25!important;text-align:center!important;text-shadow:none!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
+  height:42px!important;padding:8px 9px!important;background:#fff!important;color:#405569!important;
+  border:0!important;border-bottom:1px solid #dce5eb!important;
+  font-size:11px!important;font-weight:600!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;text-shadow:none!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:nth-child(even) td{background:#f7fafc!important;}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:hover td{background:#eaf4fb!important;}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a){
+  font-size:11px!important;font-weight:600!important;line-height:1.35!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
+  font-size:10px!important;line-height:1.2!important;
+}
