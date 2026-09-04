@@ -35,6 +35,7 @@
         height:46px!important;
         padding:0 14px!important;
         vertical-align:middle!important;
+        text-align:center!important;
         border-bottom:1px solid #cfdbe3!important;
         background:#f7f9fb!important;
         color:#455b6b!important;
