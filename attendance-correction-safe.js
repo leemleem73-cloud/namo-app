@@ -13,16 +13,19 @@ const fail=(res,status,message)=>res.status(status).json({success:false,message,
 const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그인이 필요합니다.');
 const isAdmin=req=>String(req.session?.user?.role||'').toLowerCase()==='admin';
 
+function attendanceHtmlWithCorrection(){
+  const file=path.resolve(__dirname,'public','attendance.html');
+  let html=fs.readFileSync(file,'utf8');
+  html=html.replace(/<script src="\/attendance-correction\.js\?v=[^"]+"><\/script>/g,'');
+  return html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction2"></script></body>');
+}
 function patchAttendanceHtml(){
   try{
     const file=path.resolve(__dirname,'public','attendance.html');
     if(!fs.existsSync(file))return;
-    let html=fs.readFileSync(file,'utf8');
-    if(!html.includes('/attendance-correction.js')){
-      html=html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction1"></script></body>');
-      fs.writeFileSync(file,html,'utf8');
-      console.log('[Attendance correction] client script installed');
-    }
+    const html=attendanceHtmlWithCorrection();
+    fs.writeFileSync(file,html,'utf8');
+    console.log('[Attendance correction] client script installed');
   }catch(e){console.error('[Attendance correction] HTML patch failed',e)}
 }
 patchAttendanceHtml();
@@ -64,6 +67,17 @@ async function notify(userId,title,message){
 function install(app){
   if(app.__namoAttendanceCorrectionInstalled)return;
   app.__namoAttendanceCorrectionInstalled=true;
+
+  app.get('/attendance.html',(req,res)=>{
+    try{
+      res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.set('Pragma','no-cache');
+      res.type('html').send(attendanceHtmlWithCorrection());
+    }catch(e){
+      console.error('[Attendance correction] attendance route failed',e);
+      res.status(500).send('Attendance page load failed');
+    }
+  });
 
   app.get('/api/attendance/corrections',requireLogin,async(req,res)=>{
     try{await ensureSchema();const q=await pool.query('SELECT * FROM attendance_corrections WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',[req.session.user.id]);return ok(res,q.rows)}catch(e){console.error(e);return fail(res,500,'근태 수정요청을 불러오지 못했습니다.')}
