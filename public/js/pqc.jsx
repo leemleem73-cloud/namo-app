@@ -697,9 +697,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-2 text-center whitespace-nowrap">
                     <div className="qmes-pqc-actions" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"4px",width:"100%",whiteSpace:"nowrap"}}>
-                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" style={{height:"28px",minHeight:"28px",padding:"0 9px",borderRadius:"3px",fontSize:"10px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-print">{isOqc && <Printer size={12} />} 출력</button>
-                      <button onClick={() => editRecord(r)} style={{height:"28px",minHeight:"28px",padding:"0 9px",borderRadius:"3px",fontSize:"10px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
-                      <button onClick={() => deleteRecord(r)} style={{height:"28px",minHeight:"28px",padding:"0 9px",borderRadius:"3px",fontSize:"10px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" style={{height:"32px",minHeight:"32px",padding:"0 11px",borderRadius:"5px",fontSize:"11px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-print">{isOqc && <Printer size={12} />} 출력</button>
+                      <button onClick={() => editRecord(r)} style={{height:"32px",minHeight:"32px",padding:"0 11px",borderRadius:"5px",fontSize:"11px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                      <button onClick={() => deleteRecord(r)} style={{height:"32px",minHeight:"32px",padding:"0 11px",borderRadius:"5px",fontSize:"11px",lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                     </div>
                   </td>
                 </tr>
