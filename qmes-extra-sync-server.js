@@ -13,7 +13,7 @@ const pool = new Pool({
 
 const EXTRA_TYPES = new Set([
   'coa', 'approval', 'nonconform', 'training', 'calibration',
-  'supplier', 'partner', 'report', 'master'
+  'supplier', 'partner', 'report', 'master', 'attendance'
 ]);
 
 function txt(v) {
@@ -38,8 +38,6 @@ function mapNotificationMessage(row) {
     kind: row.message_kind || 'text',
     fileName: row.file_name || '',
     fileType: row.file_type || '',
-    // Notification polling never needs the attachment body. Returning it here
-    // made afterId=0 responses very large when old image/file messages existed.
     fileData: '',
     replyToId: row.reply_to_id || null,
     replySender: row.reply_sender || '',
@@ -54,10 +52,6 @@ function install(app) {
   if (app.__qmesExtraSyncInstalled) return;
   app.__qmesExtraSyncInstalled = true;
 
-  // PQC shared inspection history can grow indefinitely. The old generic
-  // endpoint returned the complete JSON payload history on every screen load,
-  // which can exceed proxy response/time limits and surface as 502. Keep all
-  // DB history, but bound the operational sync read to the newest records.
   app.get('/api/qmes-sync/pqc', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     try {
@@ -75,10 +69,6 @@ function install(app) {
     }
   });
 
-  // OQC inspection history is also read by work-order completion status checks.
-  // Returning the entire historical payload can exceed the reverse-proxy limit
-  // and causes /api/qmes-sync/oqc to surface as 502 in the browser. Preserve
-  // all DB rows while limiting the operational screen sync to recent records.
   app.get('/api/qmes-sync/oqc', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     try {
@@ -96,11 +86,6 @@ function install(app) {
     }
   });
 
-  // Work-order sync payloads are much larger than the other shared records.
-  // The previous generic GET returned the entire historical set at once, which
-  // could exceed the upstream response/time limit and surface as 502. Keep the
-  // database history intact, but bound the operational read to recent work
-  // orders plus the process/worker records used by production management.
   app.get('/api/qmes-sync/workorder', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     try {
@@ -134,10 +119,6 @@ function install(app) {
     }
   });
 
-  // Notification polling only needs a small message summary. In particular,
-  // do not return file_data (base64 attachment bodies) in the poll response.
-  // Large historical attachments were enough to make the reverse proxy return
-  // 502 before the browser received JSON.
   app.get('/api/namo-talk/notifications', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     try {
@@ -186,13 +167,34 @@ function install(app) {
     const type = String(req.params.type || '').trim().toLowerCase();
     if (!EXTRA_TYPES.has(type)) return res.status(400).json({ success:false, message:'지원하지 않는 공용 동기화 유형입니다.', data:null });
     try {
-      const result = await pool.query(
-        `SELECT record_type, record_key, payload, updated_by, updated_at
-           FROM qmes_sync_records
-          WHERE record_type = $1
-          ORDER BY updated_at DESC`,
-        [type]
-      );
+      let result;
+      if (type === 'attendance' && req.session.user.role !== 'admin') {
+        result = await pool.query(
+          `SELECT record_type, record_key, payload, updated_by, updated_at
+             FROM qmes_sync_records
+            WHERE record_type = 'attendance'
+              AND payload->>'userId' = $1
+            ORDER BY updated_at DESC
+            LIMIT 370`,
+          [String(req.session.user.id)]
+        );
+      } else if (type === 'attendance') {
+        result = await pool.query(
+          `SELECT record_type, record_key, payload, updated_by, updated_at
+             FROM qmes_sync_records
+            WHERE record_type = 'attendance'
+            ORDER BY updated_at DESC
+            LIMIT 5000`
+        );
+      } else {
+        result = await pool.query(
+          `SELECT record_type, record_key, payload, updated_by, updated_at
+             FROM qmes_sync_records
+            WHERE record_type = $1
+            ORDER BY updated_at DESC`,
+          [type]
+        );
+      }
       return res.json({ success:true, message:'OK', data:result.rows });
     } catch (error) {
       console.error('qmes extra sync GET failed:', error);
@@ -204,9 +206,20 @@ function install(app) {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     const type = String(req.params.type || '').trim().toLowerCase();
     if (!EXTRA_TYPES.has(type)) return res.status(400).json({ success:false, message:'지원하지 않는 공용 동기화 유형입니다.', data:null });
-    const key = String(req.body?.key || '').trim();
+    let key = String(req.body?.key || '').trim();
+    let payload = req.body?.payload && typeof req.body.payload === 'object' ? { ...req.body.payload } : {};
+    if (type === 'attendance') {
+      const currentUserId = String(req.session.user.id || '');
+      if (!currentUserId) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
+      payload.userId = currentUserId;
+      payload.userName = txt(req.session.user.name);
+      payload.department = txt(req.session.user.department);
+      payload.title = txt(req.session.user.title);
+      const workDate = /^\d{4}-\d{2}-\d{2}$/.test(String(payload.workDate || '')) ? String(payload.workDate) : new Date().toLocaleDateString('sv-SE', { timeZone:'Asia/Seoul' });
+      payload.workDate = workDate;
+      key = `attendance:${currentUserId}:${workDate}`;
+    }
     if (!key) return res.status(400).json({ success:false, message:'공용 기록 키가 없습니다.', data:null });
-    const payload = req.body?.payload && typeof req.body.payload === 'object' ? req.body.payload : {};
     const updatedBy = String(req.session.user?.name || req.session.user?.email || '').trim();
     try {
       const result = await pool.query(
