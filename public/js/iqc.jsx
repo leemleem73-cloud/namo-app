@@ -437,12 +437,12 @@ function IqcTab() {
             </button>
           </div>
           <div className="qmes-iqc-ledger-container">
-            <table className="qmes-iqc-ledger-table qmes-iqc-ledger-compact w-full text-sm">
+            <table className="qmes-iqc-ledger-table qmes-iqc-ledger-compact w-full text-[11px]">
               <colgroup>
                 <col style={{width:"12%"}} /><col style={{width:"17%"}} /><col style={{width:"14%"}} />
                 <col style={{width:"15%"}} /><col style={{width:"9%"}} /><col style={{width:"10%"}} /><col style={{width:"23%"}} />
               </colgroup>
-              <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
+              <thead><tr className="text-[11px] text-slate-400 border-b border-slate-800">
                 <th>입고일자 / 발주번호</th><th>원재료명</th><th>업체명</th><th>LOT No.</th><th>검사자</th><th>판정</th><th className="text-center">관리</th>
               </tr></thead>
               <tbody>
