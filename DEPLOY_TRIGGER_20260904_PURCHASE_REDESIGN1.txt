@@ -1,0 +1,4 @@
+Force production redeploy for purchase management redesign.
+Scope: purchase management presentation only; existing purchase data, save flow, shared DB sync, IQC linkage, edit/cancel behavior remain intact.
+Reference: uploaded NAMO ERP/MES example page structure adapted to current production UI.
+2026-09-04 KST
