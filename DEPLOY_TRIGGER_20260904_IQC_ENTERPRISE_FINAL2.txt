@@ -1,0 +1,2 @@
+Force production redeploy. IQC enterprise screen stylesheet is now the final stylesheet in index.html so legacy screen selectors cannot override it. Print/certificate rules remain scoped to document/print selectors.
+2026-09-04 KST
