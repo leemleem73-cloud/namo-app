@@ -52,7 +52,9 @@ html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summar
 html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
 html body #root>div>main .qmes-iqc-page .qmes-simple-summary-light{
   width:11px!important;height:11px!important;margin:0 0 3px!important;border-radius:999px!important;
-  animation:qmes-iqc-summary-dot-legacy 2.2s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;box-shadow:0 0 7px currentColor!important;
+  animation:qmes-iqc-summary-dot-legacy 2.2s ease-in-out infinite!important;
+  transform-origin:center!important;will-change:transform,opacity!important;
+  box-shadow:none!important;
 }
 html body #root>div>main .qmes-iqc-page .qmes-simple-summary-label{
   color:#344d60!important;font-size:12px!important;font-weight:800!important;line-height:1.3!important;
@@ -160,4 +162,56 @@ html body #root>div>main .qmes-iqc-page .qmes-iqc-rank-panel>div{
 }
 @media print{
   html body #root>div>main .qmes-iqc-page{padding:0!important;margin:0!important;}
+}
+
+
+/* IQC filter sizing aligned with PQC/OQC */
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter{
+  align-items:flex-end!important;
+  gap:9px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box input,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter select,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter>button{
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  font-size:11px!important;
+  line-height:1!important;
+  box-sizing:border-box!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box{
+  height:34px!important;
+  min-height:34px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter select{
+  min-width:120px!important;
+  padding:0 9px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter>button{
+  min-width:84px!important;
+  padding:0 11px!important;
+}
+
+
+/* IQC content typography aligned with PQC/OQC */
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table{
+  font-size:11px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th{
+  font-size:11px!important;
+  line-height:1.25!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,button){
+  font-size:inherit!important;
+  line-height:inherit!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter span,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter label{
+  font-size:10px!important;
+  line-height:1.2!important;
 }
