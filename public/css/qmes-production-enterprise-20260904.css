@@ -333,3 +333,137 @@ html body #root .qmes-prod-process .qpp-actionbar .qpp-btn.red{
   html body #root main .qmes-issued-filter{grid-template-columns:1fr 1fr!important}
   html body #root .qmes-prod-process .qpp-info{grid-template-columns:repeat(3,1fr)!important}
 }
+
+
+/* ---------- 2026-09-04 fine tuning: dense tables without horizontal scroll ---------- */
+html body #root .qmes-production-progress-page .qmes-production-table th,
+html body #root .qmes-production-progress-page .qmes-production-table td{
+  box-sizing:border-box!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table td:nth-child(1),
+html body #root .qmes-production-progress-page .qmes-production-table td:nth-child(2){
+  text-align:left!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table td:nth-child(4),
+html body #root .qmes-production-progress-page .qmes-production-table td:nth-child(5){
+  text-align:right!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table .flex.items-center.gap-2{
+  gap:6px!important;
+  min-width:0!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table .flex-1.h-1\.5{
+  min-width:28px!important;
+  background:#dbe6ed!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table .text-sky-300{
+  color:#3d6f8f!important;
+  -webkit-text-fill-color:#3d6f8f!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table :is(.text-slate-100,.text-slate-300,.text-slate-400){
+  color:#405569!important;
+  -webkit-text-fill-color:#405569!important;
+}
+
+/* issued list gets explicit column geometry so action buttons never push page width */
+html body #root main .qmes-issued-table-v2 th:nth-child(1){width:12.5%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(2){width:13%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(3){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(4){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(5){width:8.5%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(6){width:9%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(7){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(8){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(9){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(10){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(11){width:12%!important}
+html body #root main .qmes-issued-table-v2 td button:not(.qmes-manage-btn){
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#405569!important;
+  -webkit-text-fill-color:#405569!important;
+}
+html body #root main .qmes-issued-table-v2 td:nth-child(1) button{
+  color:#3d6f8f!important;
+  -webkit-text-fill-color:#3d6f8f!important;
+  font-weight:750!important;
+}
+html body #root main .qmes-issued-table-v2 td:nth-child(5){
+  color:#36755a!important;
+  -webkit-text-fill-color:#36755a!important;
+  font-weight:700!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn{
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:27px!important;
+  padding:0 2px!important;
+  font-size:9px!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn.edit[hidden]{
+  display:none!important;
+}
+html body #root main .qmes-issued-table-v2 .qmes-status-select{
+  max-width:100%!important;
+}
+
+/* process management: keep process grid compact and visually aligned with the two production lists */
+html body #root .qmes-prod-process .qpp-grid{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  gap:12px!important;
+}
+html body #root .qmes-prod-process .qpp-grid>*{
+  min-width:0!important;
+}
+html body #root .qmes-prod-process .qpp-table th,
+html body #root .qmes-prod-process .qpp-table td{
+  box-sizing:border-box!important;
+}
+html body #root .qmes-prod-process .qpp-status{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  font-size:10px!important;
+  font-weight:800!important;
+}
+html body #root .qmes-prod-process .qpp-status:before{
+  content:""!important;
+  width:6px!important;
+  height:6px!important;
+  margin-right:5px!important;
+  border-radius:50%!important;
+  background:#94a3b8!important;
+}
+html body #root .qmes-prod-process .qpp-status.run{color:#3d6f8f!important}
+html body #root .qmes-prod-process .qpp-status.run:before{background:#5f9fc9!important}
+html body #root .qmes-prod-process .qpp-status.done{color:#36755a!important}
+html body #root .qmes-prod-process .qpp-status.done:before{background:#5a9a78!important}
+html body #root .qmes-prod-process .qpp-worker{
+  padding:10px 14px!important;
+  border-top:1px solid #e7edf2!important;
+  background:#f8fbfd!important;
+}
+html body #root .qmes-prod-process .qpp-chip{
+  padding:4px 7px!important;
+  border:1px solid #cbd8e1!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#405569!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+@media(max-width:900px){
+  html body #root main .qmes-issued-table-v2 th,
+  html body #root main .qmes-issued-table-v2 td{font-size:9px!important;padding-left:3px!important;padding-right:3px!important}
+  html body #root main .qmes-workorder-actions .qmes-manage-btn{font-size:8px!important}
+}
