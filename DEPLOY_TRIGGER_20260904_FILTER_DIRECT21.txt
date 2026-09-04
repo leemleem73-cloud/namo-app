@@ -1,0 +1,2 @@
+Force production redeploy. IQC/PQC/OQC filter controls now have direct JSX dimensions: search 350x42, year/month 150x42, reset 135x42. Search placeholder '검색어 입력' is explicitly restored with visible gray text. Shared CSS remains only as final support.
+2026-09-04 KST
