@@ -1,0 +1,4 @@
+Force production redeploy for desktop page spacing/title standardization.
+Standard: main padding 24px top / 28px sides / 32px bottom; major page titles 22px with consistent title spacing.
+Scope: desktop menu pages only; print layout remains unchanged.
+2026-09-04 KST
