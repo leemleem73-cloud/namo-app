@@ -7399,10 +7399,7 @@ select.qmes-label-judge-select option[value="불합격"]{
 .qmes-iqc-ledger-table tbody td{
   font-size:12px!important;
 }
-.qmes-iqc-ledger-table .badge,
-.qmes-iqc-ledger-table button{
-  font-size:11px!important;
-}
+.qmes-iqc-ledger-table .badge{font-size:11px!important;}
 
 /* ===== 공정·출하검사: 수입검사와 완전히 다른 미니 툴바형 조회창 ===== */
 .qmes-inspection-record-filter{
