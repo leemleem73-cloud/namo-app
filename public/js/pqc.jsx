@@ -657,8 +657,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <col style={{ width: "120px" }} /><col style={{ width: "120px" }} /><col style={{ width: "200px" }} />
               </> : <>
                 <col style={{ width: "12%" }} /><col style={{ width: "9%" }} /><col style={{ width: "11%" }} />
-                <col style={{ width: "13%" }} /><col style={{ width: "11%" }} /><col style={{ width: "8%" }} />
-                <col style={{ width: "8%" }} /><col style={{ width: "28%" }} />
+                <col style={{ width: "12%" }} /><col style={{ width: "10%" }} /><col style={{ width: "8%" }} />
+                <col style={{ width: "8%" }} /><col style={{ width: "30%" }} />
               </>}
             </colgroup>
             <thead>
@@ -695,7 +695,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-2 text-center whitespace-nowrap">
                     <div className="qmes-pqc-actions" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"4px",width:"100%",whiteSpace:"nowrap"}}>
-                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print"><Printer size={12} /> 출력</button>
+                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print">{isOqc && <Printer size={12} />} 출력</button>
                       <button onClick={() => editRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
                       <button onClick={() => deleteRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                     </div>
