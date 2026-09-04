@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>회원 정보 수정 | 나모케미칼 QMES</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f7fa;color:#243746;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',Arial,sans-serif}.top{height:58px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid #cbd8e2;background:#fff}.top strong{font-size:18px;font-weight:900;color:#163a55}.wrap{width:min(900px,calc(100% - 32px));margin:34px auto}.card{overflow:hidden;border:1px solid #d5e0e8;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(31,65,89,.08)}.head{display:flex;align-items:center;justify-content:space-between;min-height:62px;padding:0 22px;border-bottom:1px solid #dde6ed;background:#fbfcfd}.head h1{margin:0;font-size:20px;font-weight:900}.body{padding:22px}.msg{display:none;margin-bottom:16px;padding:12px 14px;border:1px solid #efaaaa;border-radius:8px;background:#fff5f5;color:#b42318;font-size:13px;font-weight:800}.msg.ok{border-color:#9fd7bd;background:#f3fbf7;color:#17663a}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:block}.field span{display:block;margin-bottom:7px;color:#526574;font-size:13px;font-weight:850}.input,.readonly{width:100%;height:44px;border:1px solid #b8c7d2;border-radius:8px;font-size:14px;font-weight:650}.input{padding:0 12px;background:#fff;color:#243746;outline:none}.input:focus{border-color:#168bc3;box-shadow:0 0 0 3px rgba(22,139,195,.12)}.readonly{display:flex;align-items:center;padding:0 12px;background:#f7f9fb;color:#607483}.actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}.btn{height:42px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:850;cursor:pointer}.cancel{border:1px solid #b7c5cf;background:#fff;color:#344b5a}.save{border:1px solid #0b8fc7;background:#0b8fc7;color:#fff}.btn:disabled{opacity:.55;cursor:wait}.hint{margin:16px 0 0;color:#718391;font-size:12px;font-weight:600}@media(max-width:680px){.grid{grid-template-columns:1fr}.wrap{margin-top:18px}.body{padding:16px}.top{padding:0 16px}}
+  </style>
+</head>
+<body>
+  <div class="top"><strong>㈜나모케미칼 · 관리자 회원정보 수정</strong></div>
+  <main class="wrap">
+    <section class="card">
+      <div class="head"><h1>회원 정보 수정</h1><span id="memberName"></span></div>
+      <div class="body">
+        <div id="message" class="msg"></div>
+        <div id="loading">회원 정보를 불러오는 중입니다.</div>
+        <form id="editForm" hidden>
+          <div class="grid">
+            <label class="field"><span>이름 · 로그인 ID</span><input id="name" class="input" autocomplete="off" /></label>
+            <label class="field"><span>이메일</span><input id="email" type="email" class="input" autocomplete="off" /></label>
+            <label class="field"><span>부서</span><select id="department" class="input"><option>대표</option><option>관리부</option><option>경영지원부</option><option>연구소</option><option>생산부</option><option>영업부</option><option>품질부</option></select></label>
+            <label class="field"><span>직급</span><input id="title" class="input" autocomplete="off" /></label>
+            <label class="field"><span>연락처</span><input id="phone" type="tel" class="input" placeholder="010-0000-0000" autocomplete="off" /></label>
+            <label class="field"><span>권한</span><select id="role" class="input"><option value="user">일반</option><option value="admin">관리자</option></select></label>
+            <label class="field"><span>계정 상태</span><select id="status" class="input"><option value="APPROVED">승인</option><option value="REJECTED">반려</option></select></label>
+            <label class="field"><span>회원 DB ID</span><div id="dbId" class="readonly">-</div></label>
+          </div>
+          <p class="hint">회원 기본정보는 PostgreSQL 사용자 DB에 저장됩니다. 연락처는 현재 QMES 회원 표시 데이터에도 함께 반영합니다.</p>
+          <div class="actions"><button type="button" id="cancel" class="btn cancel">취소</button><button type="submit" id="save" class="btn save">수정 저장</button></div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function(){
+      'use strict';
+      const $=id=>document.getElementById(id);
+      const clean=v=>String(v==null?'':v).trim();
+      const params=new URLSearchParams(location.search);
+      const requestedName=clean(params.get('name'));
+      let member=null;
+      let systemAdmin=false;
+
+      function show(message,ok=false){const el=$('message');el.textContent=message;el.className='msg'+(ok?' ok':'');el.style.display='block';}
+      function back(){try{sessionStorage.setItem('qmes_current_tab','members');}catch(_error){}location.replace('/');}
+      function localPhone(name){try{const list=JSON.parse(localStorage.getItem('qmes-users-v3')||'[]');const row=Array.isArray(list)?list.find(x=>clean(x.name||x.id)===name):null;return clean(row&&row.phone);}catch(_error){return '';}}
+      function saveLocalPhone(beforeName,next){try{const list=JSON.parse(localStorage.getItem('qmes-users-v3')||'[]');if(!Array.isArray(list))return;let found=false;const updated=list.map(row=>{if(clean(row.name||row.id)!==beforeName)return row;found=true;return {...row,id:next.name,name:next.name,dept:next.department,position:next.title,phone:next.phone,email:next.email,role:next.role};});if(!found)updated.push({id:next.name,name:next.name,dept:next.department,position:next.title,phone:next.phone,email:next.email,role:next.role});localStorage.setItem('qmes-users-v3',JSON.stringify(updated));}catch(_error){}}
+      async function json(url,options){const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...(options||{})});const payload=await response.json().catch(()=>({success:false,message:'서버 응답을 읽을 수 없습니다.'}));if(!response.ok||!payload.success)throw new Error(payload.message||'요청 처리에 실패했습니다.');return payload;}
+
+      async function init(){
+        try{
+          const me=await json('/api/auth/me');
+          const current=me.data&&me.data.user?me.data.user:me.data;
+          if(clean(current&&current.role).toLowerCase()!=='admin')throw new Error('관리자만 회원 정보를 수정할 수 있습니다.');
+          if(!requestedName)throw new Error('수정할 회원 이름이 전달되지 않았습니다.');
+          const payload=await json('/api/admin/users');
+          const rows=Array.isArray(payload.data)?payload.data:[];
+          member=rows.find(row=>clean(row.name)===requestedName);
+          if(!member)throw new Error('수정할 회원을 찾을 수 없습니다.');
+          systemAdmin=clean(member.name)==='관리자';
+          $('memberName').textContent=member.name;
+          $('name').value=member.name||'';
+          $('email').value=member.email||'';
+          $('department').value=member.department||'대표';
+          if(!$('department').value){const option=document.createElement('option');option.value=member.department;option.textContent=member.department;$('department').appendChild(option);$('department').value=member.department;}
+          $('title').value=member.title||'';
+          $('phone').value=localPhone(member.name);
+          $('role').value=member.role||'user';
+          $('status').value=member.status||'APPROVED';
+          $('dbId').textContent=member.id||'-';
+          if(systemAdmin){$('role').disabled=true;$('status').disabled=true;}
+          $('loading').hidden=true;
+          $('editForm').hidden=false;
+        }catch(error){$('loading').hidden=true;show(error.message||'회원 정보를 불러오지 못했습니다.');}
+      }
+
+      $('cancel').addEventListener('click',back);
+      $('editForm').addEventListener('submit',async event=>{
+        event.preventDefault();
+        if(!member)return;
+        const body={name:clean($('name').value),email:clean($('email').value).toLowerCase(),department:clean($('department').value),title:clean($('title').value),role:systemAdmin?'admin':clean($('role').value),status:systemAdmin?'APPROVED':clean($('status').value)};
+        const phone=clean($('phone').value);
+        if(!body.name)return show('이름을 입력해 주세요.');
+        if(!body.email)return show('이메일을 입력해 주세요.');
+        const save=$('save');save.disabled=true;save.textContent='저장 중...';
+        try{
+          await json('/api/admin/users/'+encodeURIComponent(member.id),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          saveLocalPhone(member.name,{...body,phone});
+          show(body.name+' 회원 정보가 수정되었습니다.',true);
+          setTimeout(back,500);
+        }catch(error){show(error.message||'회원 수정에 실패했습니다.');save.disabled=false;save.textContent='수정 저장';}
+      });
+      init();
+    })();
+  </script>
+</body>
+</html>
