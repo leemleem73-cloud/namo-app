@@ -183,7 +183,9 @@
     window.addEventListener("resize",()=>{syncHeaderActions();if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open"))positionDropdown();});
     window.addEventListener("scroll",()=>{if(document.getElementById(DROPDOWN_ID)?.classList.contains("is-open"))positionDropdown();},true);
 
-    observer=new MutationObserver(()=>{syncHeaderActions();bindProfileButton();});
+    observer=new MutationObserver(()=>{
+  const hasAuthenticatedUser=()=>{try{return Boolean(sessionStorage.getItem("qmes-current-user-v1"));}catch(_error){return false;}};
+  if(!hasAuthenticatedUser()) return;syncHeaderActions();bindProfileButton();});
     observer.observe(document.documentElement,{childList:true,subtree:true});
 
     let syncCount=0;
