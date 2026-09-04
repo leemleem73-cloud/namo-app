@@ -649,7 +649,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1120px] qmes-oqc-record-table" : "min-w-[1100px] qmes-pqc-record-table"}`}>
+          <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1120px] qmes-oqc-record-table" : "qmes-pqc-record-table"}`}>
             <colgroup>
               {isOqc ? <>
                 <col style={{ width: "145px" }} /><col style={{ width: "120px" }} /><col style={{ width: "135px" }} />
