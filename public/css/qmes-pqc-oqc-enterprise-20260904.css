@@ -173,20 +173,6 @@ html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-tab
 }
 
 
-
-/* PQC action cell final: direct colgroup owns widths; keep all 3 actions visible */
-html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
-html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){
-  overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;padding-left:2px!important;padding-right:2px!important;
-}
-html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
-  display:flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;width:100%!important;min-width:0!important;overflow:visible!important;
-}
-html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions .qmes-iqc-action-btn{
-  flex:0 0 auto!important;min-width:0!important;height:27px!important;min-height:27px!important;padding:0 5px!important;margin:0!important;font-size:9.5px!important;
-}
-
-
 /* PQC record columns: balanced spacing from process number through actions */
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table{
   table-layout:fixed!important;
@@ -223,28 +209,7 @@ html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(7){t
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:15%!important;}
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
-html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:15%!important;}
-/* PQC table final: colgroup owns widths; no competing nth-child widths */
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table{
- width:100%!important;table-layout:fixed!important;
-}
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th,
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td{
- text-align:center!important;vertical-align:middle!important;padding-left:6px!important;padding-right:6px!important;
-}
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){
- overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
-}
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
- display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;width:100%!important;overflow:visible!important;
-}
-html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions>button.qmes-iqc-action-btn{
- width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;
- padding:0 9px!important;border-radius:3px!important;font-size:10px!important;font-weight:800!important;line-height:1.2!important;
-}
-
-/* PQC compact action buttons - final owner */
+html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:15%!important;}/* PQC compact action buttons - final owner */
 html body #root#root#root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page:not(.qmes-oqc-page) .qmes-pqc-actions{
   gap:4px!important;
 }
@@ -262,4 +227,34 @@ html body #root#root#root#root#root#root#root#root#root#root#root>div>main .qmes
   font-size:11px!important;
   line-height:31px!important;
   font-weight:800!important;
+}
+
+/* PQC/OQC action buttons - one shared owner, identical sizing */
+html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions>button.qmes-iqc-action-btn{
+  box-sizing:border-box!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:28px!important;
+  min-height:28px!important;
+  max-height:28px!important;
+  padding:0 9px!important;
+  margin:0!important;
+  border-radius:3px!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
 }
