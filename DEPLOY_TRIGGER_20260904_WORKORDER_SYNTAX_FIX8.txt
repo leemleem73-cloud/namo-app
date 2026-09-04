@@ -1,0 +1,2 @@
+Urgent redeploy: remove corrupted legacy workorder-ui-refinement.js from page load. Fixes Uncaught SyntaxError missing ) after argument list. Native production.jsx workorder flows remain active.
+2026-09-04 KST
