@@ -1,4 +1,4 @@
-@keyframes qmes-pqo-summary-dot-legacy{0%,100%{transform:translateY(0) scale(.92);opacity:.72}50%{transform:translateY(-2px) scale(1.12);opacity:1}}
+@keyframes qmes-pqo-summary-dot-legacy{0%,100%{transform:translateY(2px);opacity:.82}50%{transform:translateY(-5px);opacity:1}}
 /* Legacy PQC/OQC screen cascade neutralizer - screen roots only */
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){
   gap:14px!important;
@@ -39,7 +39,7 @@ html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-light{
   width:11px!important;height:11px!important;margin:0 0 3px!important;border-radius:999px!important;
-  animation:qmes-pqo-summary-dot-legacy 1.35s ease-in-out infinite!important;
+  animation:qmes-pqo-summary-dot-legacy 2.2s ease-in-out infinite!important;
   transform-origin:center!important;will-change:transform,opacity!important;
 }
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-label{
@@ -195,3 +195,19 @@ html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-tab
 html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(7){width:10%!important;}
 html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
 html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:13%!important;}
+
+/* PQC desktop hard-fit: remove inherited negative margins/min-width/scroll from record grid */
+@media(min-width:901px){
+ html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table-wrap{
+   display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+   margin-left:0!important;margin-right:0!important;padding-left:0!important;padding-right:0!important;
+   overflow-x:clip!important;
+ }
+ html body #root#root#root#root#root>div>main .qmes-pqc-page table.qmes-pqc-record-table{
+   display:table!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ }
+ html body #root#root#root#root#root>div>main .qmes-pqc-page table.qmes-pqc-record-table th,
+ html body #root#root#root#root#root>div>main .qmes-pqc-page table.qmes-pqc-record-table td{
+   min-width:0!important;max-width:none!important;
+ }
+}
