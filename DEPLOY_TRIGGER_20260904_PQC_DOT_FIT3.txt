@@ -1,0 +1,2 @@
+Force production redeploy. Restore legacy animated summary dots for PQC/OQC and remove horizontal drag from PQC inspection record table by removing its forced 1100px minimum width and fitting columns to the available desktop width. OQC width remains unchanged.
+2026-09-04 KST
