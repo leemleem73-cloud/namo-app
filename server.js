@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
+require('./attendance-server.js');
 require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 
