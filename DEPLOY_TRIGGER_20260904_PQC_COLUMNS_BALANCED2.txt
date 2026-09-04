@@ -1,0 +1,2 @@
+Force production redeploy. PQC record table columns from process number through actions are rebalanced to 14/12/14/13/13/9/9/16, with uniform 8px cell padding and centered alignment. Keeps action buttons visible without horizontal drag.
+2026-09-04 KST
