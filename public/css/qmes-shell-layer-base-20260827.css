@@ -44,10 +44,36 @@ html body #qmes-erp-sidebar .qmes-erp-text{min-width:0!important;white-space:now
 html body #qmes-erp-sidebar .qmes-erp-foot{flex:none!important;padding:6px 10px!important;border-top:1px solid #d5dfe7!important;background:#f6f8fa!important;color:#708596!important;font-size:8.5px!important;font-weight:650!important;text-align:center!important;}
 html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}
 html body{background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;}
-html body #root>div>main{margin-left:236px!important;margin-top:58px!important;width:calc(100% - 236px)!important;min-height:calc(100vh - 58px)!important;box-sizing:border-box!important;background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;transition:none!important;padding-top:24px!important;}
+html body #root>div>main{margin-left:236px!important;margin-top:58px!important;width:calc(100% - 236px)!important;min-height:calc(100vh - 58px)!important;box-sizing:border-box!important;background:var(--qmes-shell-bg)!important;color:var(--qmes-shell-ink)!important;transition:none!important;padding:24px 28px 32px!important;}
 html body.qmes-erp-menu-closed #root>div>main{margin-left:0!important;width:100%!important;}
 html body #qmes-user-dropdown#qmes-user-dropdown{z-index:13060!important;width:196px!important;padding:6px!important;border:1px solid #cbd8e2!important;border-radius:4px!important;background:#fff!important;box-shadow:0 8px 20px rgba(47,91,124,.16)!important;}
 html body #qmes-user-dropdown#qmes-user-dropdown button{width:100%!important;min-height:36px!important;padding:7px 9px!important;border:0!important;border-radius:2px!important;background:#fff!important;color:#344d60!important;font-size:12.5px!important;font-weight:650!important;text-align:left!important;}
 html body #qmes-user-dropdown#qmes-user-dropdown button:hover{background:#e7f2fa!important;color:#1d5681!important;}
 html body #qmes-user-dropdown#qmes-user-dropdown .qmes-dropdown-logout{margin-top:4px!important;border-top:1px solid #e1e8ee!important;color:#b42318!important;}
+
+/* QMES desktop page spacing/title standard - 2026-09-04 */
+html body #root>div>main>div.flex.flex-col.gap-4>div:first-child h1,
+html body #root>div>main>div.flex.flex-col.gap-4>div:first-child h2,
+html body #root>div>main>div.flex.flex-col.gap-4>h1,
+html body #root>div>main>div.flex.flex-col.gap-4>h2,
+html body #root>div>main .inv-shell>.inv-title-row h2,
+html body #root>div>main .namo-enterprise-dashboard .ned-page-head h1{
+  margin:0!important;
+  font-size:22px!important;
+  line-height:1.32!important;
+  font-weight:800!important;
+  letter-spacing:-.35px!important;
+}
+html body #root>div>main>div.flex.flex-col.gap-4>div:first-child,
+html body #root>div>main .inv-shell>.inv-title-row{
+  margin-top:0!important;
+  margin-bottom:16px!important;
+}
+html body #root>div>main .inv-shell,
+html body #root>div>main>div.flex.flex-col.gap-4{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+
 @media print{html body{background:#fff!important;}html body #qmes-erp-header,html body #qmes-erp-sidebar,html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}html body #root>div>main{margin-left:0!important;margin-top:0!important;padding-top:0!important;width:100%!important;background:transparent!important;}}
