@@ -1,0 +1,5 @@
+Force production redeploy after attendance correction UI fix.
+Expected UI:
+- Keep home in-page '근태 수정 요청' button directly under 연차 신청 / 승인함 card.
+- Remove floating pencil '✎ 근태 수정' button.
+Source change commit: c8763a19747bba4248a122fd77db1701ecfe6e50
