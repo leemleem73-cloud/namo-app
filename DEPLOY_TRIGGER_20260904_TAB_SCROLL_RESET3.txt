@@ -1,0 +1,4 @@
+Force production redeploy for desktop menu scroll reset.
+Reason: switching menu tabs preserved the previous document scroll offset, leaving new page headings underneath the fixed ERP header.
+Fix: reset window and main scroll position to top on every tab change.
+2026-09-04 KST
