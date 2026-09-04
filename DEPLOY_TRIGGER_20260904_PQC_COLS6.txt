@@ -1,0 +1,2 @@
+Force production redeploy. PQC record columns are resized to content proportions, with a protected management column wide enough for print/edit/delete buttons. No OQC changes.
+2026-09-04 KST
