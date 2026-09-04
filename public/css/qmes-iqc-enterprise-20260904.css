@@ -296,3 +296,25 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
 html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
   font-size:10px!important;line-height:1.2!important;
 }
+
+
+/* IQC ledger compact typography - user requested smaller text */
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table{
+  font-size:10px!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th{
+  font-size:10px!important;
+  line-height:1.2!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
+  font-size:10px!important;
+  line-height:1.25!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a,small){
+  font-size:10px!important;
+  line-height:1.25!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
+  font-size:9px!important;
+  line-height:1.15!important;
+}
