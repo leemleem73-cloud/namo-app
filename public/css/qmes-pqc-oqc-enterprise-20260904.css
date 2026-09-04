@@ -228,33 +228,3 @@ html body #root#root#root#root#root#root#root#root#root#root#root>div>main .qmes
   line-height:31px!important;
   font-weight:800!important;
 }
-
-/* PQC/OQC action buttons - one shared owner, identical sizing */
-html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:4px!important;
-  width:100%!important;
-  white-space:nowrap!important;
-  overflow:visible!important;
-}
-html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions>button.qmes-iqc-action-btn{
-  box-sizing:border-box!important;
-  width:52px!important;
-  min-width:52px!important;
-  max-width:52px!important;
-  height:28px!important;
-  min-height:28px!important;
-  max-height:28px!important;
-  padding:0 9px!important;
-  margin:0!important;
-  border-radius:3px!important;
-  font-size:10px!important;
-  font-weight:800!important;
-  line-height:1.2!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-}
