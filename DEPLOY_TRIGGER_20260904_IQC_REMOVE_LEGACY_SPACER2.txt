@@ -1,0 +1,2 @@
+Force production redeploy after removing obsolete IQC-only 114px root padding/header pinning. IQC now uses the same shared ERP header clearance as other menu screens. No inspection data or print layout changes.
+2026-09-04 KST
