@@ -318,3 +318,51 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
   font-size:9px!important;
   line-height:1.15!important;
 }
+
+
+/* IQC ledger filter row recovery: remove accidental vertical gap */
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:9px!important;
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0 0 14px!important;
+  padding:0!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter>div{
+  margin:0!important;
+  align-self:flex-end!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter>div:first-child{
+  width:280px!important;
+  min-width:280px!important;
+  max-width:280px!important;
+  flex:0 0 280px!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter .qmes-inspection-search-box{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  flex:none!important;
+  margin:0!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter .qmes-oqc-record-filter-field{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-end!important;
+  gap:5px!important;
+  width:120px!important;
+  min-width:120px!important;
+  max-width:120px!important;
+  flex:0 0 120px!important;
+  margin:0!important;
+}
+html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel .qmes-iqc-record-filter>button{
+  align-self:flex-end!important;
+  margin:0!important;
+}
