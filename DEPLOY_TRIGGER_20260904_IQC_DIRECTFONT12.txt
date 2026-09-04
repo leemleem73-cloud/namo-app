@@ -1,0 +1,2 @@
+Force production redeploy. Root cause: IQC ledger markup itself still carried Tailwind text-sm. Replaced table text-sm with text-[11px] and header text-xs with text-[11px] directly in iqc.jsx so IQC matches PQC without relying on CSS overrides.
+2026-09-04 KST
