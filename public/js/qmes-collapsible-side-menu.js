@@ -58,7 +58,9 @@
   window.addEventListener('storage',()=>{syncActiveFromRoute();syncUserAndAdminMenu();});
   window.addEventListener('focus',syncUserAndAdminMenu);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncUserAndAdminMenu();});
-  setTimeout(()=>{syncActiveFromRoute();syncUserAndAdminMenu();},0);
+  setTimeout(()=>{
+  const hasAuthenticatedUser=()=>{try{return Boolean(sessionStorage.getItem("qmes-current-user-v1"));}catch(_error){return false;}};
+  if(!hasAuthenticatedUser()) return;syncActiveFromRoute();syncUserAndAdminMenu();},0);
   setInterval(()=>{syncActiveFromRoute();syncUserAndAdminMenu();},350);
   render();
 })();
