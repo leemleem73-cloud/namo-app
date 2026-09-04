@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NAMO QMES" />
-  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260903-pcmenu2" type="image/svg+xml" />
+  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260904-plan1" type="image/svg+xml" />
   <title>NAMO QMES Mobile</title>
   <style>
     :root{color-scheme:light;--ink:#152d42;--muted:#718195;--line:#dce4eb;--bg:#f5f7f9;--safe-top:env(safe-area-inset-top);--safe-bottom:max(12px,env(safe-area-inset-bottom))}
@@ -22,97 +22,13 @@
 </head>
 <body>
 <div class="app">
-  <header class="head">
-    <div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260903-pcmenu2" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC · MOBILE SAME MENU</span></div></div>
-    <button class="pcmode" id="pcBtn" type="button" aria-label="PC 버전으로 이동">PC 버전</button>
-    <button class="user" id="userBtn" type="button">로그인 확인</button>
-    <button class="logout" id="logoutBtn" type="button" aria-label="로그아웃"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button>
-  </header>
+  <header class="head"><div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260904-plan1" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC · MOBILE SAME MENU</span></div></div><button class="pcmode" id="pcBtn" type="button">PC 버전</button><button class="user" id="userBtn" type="button">로그인 확인</button><button class="logout" id="logoutBtn" type="button"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></button></header>
   <section class="intro"><h1>업무 메뉴</h1><p>현재 PC QMES와 동일한 메뉴 구분·명칭·순서로 구성했습니다.</p><label class="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="menuSearch" type="search" placeholder="PC 메뉴와 동일하게 검색" autocomplete="off"></label></section>
-  <main class="content" id="menuRoot"></main>
-  <div class="empty" id="empty">검색 결과가 없습니다.</div>
+  <main class="content" id="menuRoot"></main><div class="empty" id="empty">검색 결과가 없습니다.</div>
 </div>
-<div class="opening" id="opening"><div class="opening-card"><div class="spinner"></div><strong id="openingText">업무 화면을 여는 중입니다.</strong></div></div>
-<div class="notice" id="notice"><div class="notice-card"><strong id="noticeTitle">모바일 전용 화면</strong><p id="noticeText"></p><button type="button" id="noticeClose">확인</button></div></div>
+<div class="opening" id="opening"><div class="opening-card"><div class="spinner"></div><strong id="openingText">업무 화면을 여는 중입니다.</strong></div></div><div class="notice" id="notice"><div class="notice-card"><strong id="noticeTitle">모바일 전용 화면</strong><p id="noticeText"></p><button type="button" id="noticeClose">확인</button></div></div>
 <script>
-(()=>{
-  'use strict';
-  const VERSION='20260904-sales1';
-  const LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;
-  const groups=[
-    {title:'WORKSPACE',items:[
-      ['통합 대시보드','▦','home'],
-      ['SPC 대시보드','⌁','spc']
-    ]},
-    {title:'ERP',items:[
-      ['수주 · 납기관리','▤','erpSales'],
-      ['생산계획 · MRP','▥','pending:erpPlan'],
-      ['구매 · 발주관리','□','pending:erpPurchase'],
-      ['재고현황','▣','inv:stock'],
-      ['입출고 관리','⇄','inv:tx'],
-      ['LOT별 재고','L','inv:stock'],
-      ['생산투입/완료','↳','inv:tx'],
-      ['재고실사','✓','inv:stock'],
-      ['거래처 현황','◇','partners']
-    ]},
-    {title:'MES · QMS',items:[
-      ['생산 진행','▶','prod'],
-      ['작업지시서','▧','woIssue'],
-      ['생산공정 관리','⚙','prodProcess'],
-      ['수입검사 (IQC)','Q','iqc'],
-      ['공정검사 (PQC)','Q','pqc'],
-      ['출하검사 (OQC)','Q','oqc'],
-      ['SPC (Cpk)','C','spc'],
-      ['품질 인터락','!','lock'],
-      ['출하성적서','▤','docs:oqccert'],
-      ['LOT 통합추적','⌕','trace'],
-      ['출하 · 납품관리','⇢','inv:tx'],
-      ['부적합 (8D)','8','docs:ncr'],
-      ['고객불만 (GQMS)','G','docs:other:고객불만 보고서'],
-      ['4M 변경관리','4','docs:change'],
-      ['현장 입력 (iPad)','▱','pop'],
-      ['설비 모니터링','◉','eq']
-    ]}
-  ];
-  const root=document.getElementById('menuRoot');
-  const opening=document.getElementById('opening');
-  const openingText=document.getElementById('openingText');
-  const notice=document.getElementById('notice');
-  let authenticated=false;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function showNotice(label){opening.classList.remove('show');document.getElementById('noticeTitle').textContent=label;document.getElementById('noticeText').textContent='PC 메뉴와 명칭·순서는 동일하게 맞췄습니다. 이 항목은 PC 화면을 모바일에 강제로 불러오지 않고 모바일 전용 화면으로 별도 연결할 예정입니다.';notice.classList.add('show')}
-  function openWork(tab,extra=''){location.assign(`/mobile-work.html?tab=${encodeURIComponent(tab)}${extra}&v=${VERSION}`)}
-  function route(code,label){
-    if(!authenticated){location.assign(LOGIN);return}
-    if(code==='home'){scrollTo({top:0,behavior:'smooth'});return}
-    if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}
-    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales1');return}
-    openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');
-    if(code.startsWith('pending:')){showNotice(label);return}
-    if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}
-    if(code.startsWith('docs:')){const parts=code.split(':'),type=parts[1]||'other',title=parts.slice(2).join(':');let extra=`&new=1&doctype=${encodeURIComponent(type)}`;if(title)extra+=`&title=${encodeURIComponent(title)}`;openWork('docs',extra);return}
-    openWork(code)
-  }
-  function render(query=''){
-    const q=String(query||'').trim().toLowerCase();let visible=0;
-    root.innerHTML=groups.map(group=>{const items=group.items.filter(item=>!q||item[0].toLowerCase().includes(q)||group.title.toLowerCase().includes(q));if(!items.length)return'';visible+=items.length;return`<section class="group"><div class="group-title">${esc(group.title)}</div>${items.map(([label,icon,code])=>`<button class="menu" type="button" data-code="${esc(code)}" data-label="${esc(label)}"><span class="icon">${esc(icon)}</span><span class="label">${esc(label)}</span><span class="chev">›</span></button>`).join('')}</section>`}).join('');
-    document.getElementById('empty').classList.toggle('show',visible===0);
-    root.querySelectorAll('.menu').forEach(btn=>btn.addEventListener('click',()=>route(btn.dataset.code,btn.dataset.label)));
-  }
-  async function init(){
-    render();document.getElementById('menuSearch').addEventListener('input',e=>render(e.target.value));
-    try{
-      const response=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});const payload=await response.json().catch(()=>null);
-      if(response.status===401){location.replace(LOGIN);return}
-      const user=payload?.data?.user||payload?.data||payload?.user||payload;const name=String(user?.name||user?.loginId||user?.email||'').trim();authenticated=Boolean(name);document.getElementById('userBtn').textContent=name?`${name}님`:'로그인';if(!authenticated)location.replace(LOGIN)
-    }catch(_){document.getElementById('userBtn').textContent='로그인'}
-  }
-  document.getElementById('noticeClose').addEventListener('click',()=>notice.classList.remove('show'));notice.addEventListener('click',e=>{if(e.target===notice)notice.classList.remove('show')});
-  document.getElementById('pcBtn').addEventListener('click',()=>location.assign('/index.html?desktop=1'));
-  document.getElementById('userBtn').addEventListener('click',()=>{if(!authenticated)location.assign(LOGIN)});
-  document.getElementById('logoutBtn').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin',cache:'no-store'})}catch(_){}location.replace(`/mobile-login.html?logout=1&v=${VERSION}`)});
-  init();
-})();
+(()=>{'use strict';const VERSION='20260904-plan1',LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;const groups=[{title:'WORKSPACE',items:[['통합 대시보드','▦','home'],['SPC 대시보드','⌁','spc']]},{title:'ERP',items:[['수주 · 납기관리','▤','erpSales'],['생산계획 · MRP','▥','erpPlan'],['구매 · 발주관리','□','pending:erpPurchase'],['재고현황','▣','inv:stock'],['입출고 관리','⇄','inv:tx'],['LOT별 재고','L','inv:stock'],['생산투입/완료','↳','inv:tx'],['재고실사','✓','inv:stock'],['거래처 현황','◇','partners']]},{title:'MES · QMS',items:[['생산 진행','▶','prod'],['작업지시서','▧','woIssue'],['생산공정 관리','⚙','prodProcess'],['수입검사 (IQC)','Q','iqc'],['공정검사 (PQC)','Q','pqc'],['출하검사 (OQC)','Q','oqc'],['SPC (Cpk)','C','spc'],['품질 인터락','!','lock'],['출하성적서','▤','docs:oqccert'],['LOT 통합추적','⌕','trace'],['출하 · 납품관리','⇢','inv:tx'],['부적합 (8D)','8','docs:ncr'],['고객불만 (GQMS)','G','docs:other:고객불만 보고서'],['4M 변경관리','4','docs:change'],['현장 입력 (iPad)','▱','pop'],['설비 모니터링','◉','eq']]}];const root=document.getElementById('menuRoot'),opening=document.getElementById('opening'),openingText=document.getElementById('openingText'),notice=document.getElementById('notice');let authenticated=false;const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function showNotice(label){opening.classList.remove('show');document.getElementById('noticeTitle').textContent=label;document.getElementById('noticeText').textContent='PC 메뉴와 명칭·순서는 동일하게 맞췄습니다. 이 항목은 PC 화면을 모바일에 강제로 불러오지 않고 모바일 전용 화면으로 별도 연결할 예정입니다.';notice.classList.add('show')}function openWork(tab,extra=''){location.assign(`/mobile-work.html?tab=${encodeURIComponent(tab)}${extra}&v=${VERSION}`)}function route(code,label){if(!authenticated){location.assign(LOGIN);return}if(code==='home'){scrollTo({top:0,behavior:'smooth'});return}if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales5');return}if(code==='erpPlan'){location.assign('/mobile-plan.html?v=20260904-plan1');return}openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');if(code.startsWith('pending:')){showNotice(label);return}if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}if(code.startsWith('docs:')){const parts=code.split(':'),type=parts[1]||'other',title=parts.slice(2).join(':');let extra=`&new=1&doctype=${encodeURIComponent(type)}`;if(title)extra+=`&title=${encodeURIComponent(title)}`;openWork('docs',extra);return}openWork(code)}function render(query=''){const q=String(query||'').trim().toLowerCase();let visible=0;root.innerHTML=groups.map(group=>{const items=group.items.filter(item=>!q||item[0].toLowerCase().includes(q)||group.title.toLowerCase().includes(q));if(!items.length)return'';visible+=items.length;return`<section class="group"><div class="group-title">${esc(group.title)}</div>${items.map(([label,icon,code])=>`<button class="menu" type="button" data-code="${esc(code)}" data-label="${esc(label)}"><span class="icon">${esc(icon)}</span><span class="label">${esc(label)}</span><span class="chev">›</span></button>`).join('')}</section>`}).join('');document.getElementById('empty').classList.toggle('show',visible===0);root.querySelectorAll('.menu').forEach(btn=>btn.addEventListener('click',()=>route(btn.dataset.code,btn.dataset.label)))}async function init(){render();document.getElementById('menuSearch').addEventListener('input',e=>render(e.target.value));try{const response=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'}),payload=await response.json().catch(()=>null);if(response.status===401){location.replace(LOGIN);return}const user=payload?.data?.user||payload?.data||payload?.user||payload,name=String(user?.name||user?.loginId||user?.email||'').trim();authenticated=Boolean(name);document.getElementById('userBtn').textContent=name?`${name}님`:'로그인';if(!authenticated){location.replace(LOGIN);return}}catch(_){location.replace(LOGIN);return}document.getElementById('noticeClose').onclick=()=>notice.classList.remove('show');document.getElementById('logoutBtn').onclick=async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})}catch(_){}location.replace(`/mobile-login.html?logout=1&v=${VERSION}`)};document.getElementById('pcBtn').onclick=()=>location.assign('/?desktop=1&view=desktop')}init()})();
 </script>
 </body>
 </html>
