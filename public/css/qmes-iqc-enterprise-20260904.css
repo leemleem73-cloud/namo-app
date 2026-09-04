@@ -254,16 +254,17 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
   font-size:9px!important;
   line-height:1.15!important;
 }
-
-
-
-/* IQC ledger text slightly enlarged to visually match PQC/OQC */
-html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table,
-html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th,
+/* IQC ledger typography EXACTLY matches PQC/OQC record tables */
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table{
+  font-size:11px!important;
+}
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th{
+  font-size:11px!important;font-weight:900!important;line-height:1.25!important;
+}
 html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td,
 html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a,small){
-  font-size:12px!important;
+  font-size:11px!important;font-weight:600!important;line-height:1.35!important;
 }
 html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
-  font-size:10px!important;
+  font-size:10px!important;font-weight:800!important;
 }
