@@ -268,3 +268,8 @@ html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes
 html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
   gap:3px!important;
 }
+
+/* PQC actions final hard owner: same physical size as IQC buttons */
+html body #root#root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions>button.qmes-iqc-action-btn{
+ height:28px!important;min-height:28px!important;padding:0 9px!important;border-radius:3px!important;font-size:10px!important;line-height:1.2!important;
+}
