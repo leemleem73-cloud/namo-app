@@ -5,13 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Hard mobile guard must load before any other mobile/static patch so a phone or
-// iPad can never boot the desktop React login/sidebar shell, even from stale
-// cached entry pages or in-app browsers with unusual User-Agent strings.
 require('./mobile-hard-entry-preload.js');
-
-// Always install mobile root routing before the legacy Express app is created.
-// This works whether production starts with `npm start` or `node server.js`.
 require('./mobile-static-preload.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
@@ -20,8 +14,8 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
-const SHELL_BUILD = '20260904-member-readable-force2';
-const MEMBERS_ASSET_BUILD = '20260904-member-readable-force2';
+const SHELL_BUILD = '20260904-member-edit-modal1';
+const MEMBERS_ASSET_BUILD = '20260904-member-edit-modal1';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 if (!fs.existsSync(enterpriseDashboard)) {
@@ -29,12 +23,9 @@ if (!fs.existsSync(enterpriseDashboard)) {
   process.exit(1);
 }
 
-// Express static/sendFile streams index.html and does not reliably pass through a
-// fs.readFile monkey-patch. Normalize the actual index source once, before the
-// legacy Express server starts, so every static delivery points at one shell build.
 try {
   const source = fs.readFileSync(publicIndex, 'utf8');
-  const normalized = source
+  let normalized = source
     .replace(/qmes-shell-layer-base-20260827\.css\?v=[^"']+/g, `qmes-shell-layer-base-20260827.css?v=${SHELL_BUILD}`)
     .replace(/router\.jsx\?v=[^"']+/g, `router.jsx?v=${SHELL_BUILD}`)
     .replace(/app\.jsx\?v=[^"']+/g, `app.jsx?v=${SHELL_BUILD}`)
@@ -43,14 +34,19 @@ try {
     .replace(/admin\/members-bootstrap\.jsx\?v=[^"']+/g, `admin/members-bootstrap.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members\.jsx\?v=[^"']+/g, `admin/members.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`);
+
+  normalized = normalized.replace(/\n\s*<script type="text\/babel" data-presets="react" src="\.\/js\/qmes-members-edit-fix-20260904\.jsx\?v=[^"']+"><\/script>/g, '');
+  normalized = normalized.replace(
+    /(<script type="text\/babel" data-presets="react" src="\.\/js\/admin\/members\.jsx\?v=[^"']+"><\/script>)/,
+    `$1\n  <script type="text/babel" data-presets="react" src="./js/qmes-members-edit-fix-20260904.jsx?v=${MEMBERS_ASSET_BUILD}"></script>`
+  );
+
   if (normalized !== source) fs.writeFileSync(publicIndex, normalized, 'utf8');
 } catch (error) {
   console.error('[QMES] Failed to normalize shell asset URLs:', error);
   process.exit(1);
 }
 
-// Desktop native-header shortcut. The ERP reference header can mirror/replace this
-// header at runtime, so keep the native shortcut pointed at the dedicated mobile app.
 try {
   const source = fs.readFileSync(publicRouter, 'utf8');
   const oldMobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일용 화면 열기"><span aria-hidden="true">📱</span><span>모바일용</span></button>';
@@ -65,9 +61,6 @@ try {
   process.exit(1);
 }
 
-// The visible ERP reference header previously used its "모바일" button as a
-// shortcut to the desktop 현장입력/POP tab. Convert that same button into a true
-// dedicated-mobile launcher and rename it to "모바일 전용".
 try {
   const source = fs.readFileSync(publicShellMenu, 'utf8');
   const oldLabel = 'aria-label="모바일 화면" title="모바일 화면">${mobileSvg}<span>모바일</span>';
