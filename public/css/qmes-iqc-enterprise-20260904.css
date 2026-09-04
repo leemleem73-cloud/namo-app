@@ -141,11 +141,6 @@ html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
 }
 html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:nth-child(even) td{background:#f7fafc!important;}
 html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:hover td{background:#eaf4fb!important;}
-html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table button{
-  min-height:28px!important;padding:0 9px!important;border:1px solid #b7c8d4!important;border-radius:3px!important;
-  background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important;
-}
-html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table button:hover{border-color:#7fa8c4!important;background:linear-gradient(180deg,#f8fcff,#dcebf5)!important;color:#205e8c!important;}
 html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td:nth-last-child(2) span{
   min-height:24px!important;padding:0 8px!important;border-radius:3px!important;font-size:10px!important;font-weight:850!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
 }
@@ -177,10 +172,6 @@ html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
   font-size:11px!important;
   line-height:1.35!important;
 }
-html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,button){
-  font-size:inherit!important;
-  line-height:inherit!important;
-}
 html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter span,
 html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter label{
   font-size:10px!important;
@@ -202,10 +193,6 @@ html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-tab
 html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a){
   font-size:11px!important;
   line-height:1.35!important;
-}
-html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
-  font-size:10px!important;
-  line-height:1.2!important;
 }
 
 
@@ -229,9 +216,6 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
 html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a){
   font-size:11px!important;font-weight:600!important;line-height:1.35!important;
 }
-html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
-  font-size:10px!important;line-height:1.2!important;
-}
 
 
 /* IQC ledger compact typography - user requested smaller text */
@@ -249,8 +233,4 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
 html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a,small){
   font-size:10px!important;
   line-height:1.25!important;
-}
-html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
-  font-size:9px!important;
-  line-height:1.15!important;
 }
