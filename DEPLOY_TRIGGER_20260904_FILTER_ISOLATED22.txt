@@ -1,0 +1,2 @@
+Force production redeploy. Root cause cleanup: inspection filter controls no longer carry legacy qmes-inspection-search-box / qmes-oqc-record-filter-field / pqc/oqc filter classes. IQC/PQC/OQC now use isolated filter-only classes and one stylesheet: search 350x42 with visible placeholder, year/month 150x42, reset 135x42, 12px gaps.
+2026-09-04 KST
