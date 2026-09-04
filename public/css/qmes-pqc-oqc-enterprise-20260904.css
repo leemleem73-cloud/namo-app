@@ -237,8 +237,9 @@ html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page 
  overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important;
 }
 html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
- display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important;overflow:visible!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;width:100%!important;overflow:visible!important;
 }
 html body #root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions>button.qmes-iqc-action-btn{
- min-width:72px!important;height:34px!important;min-height:34px!important;padding:0 14px!important;border-radius:6px!important;font-size:12px!important;font-weight:800!important;
+ width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;
+ padding:0 9px!important;border-radius:3px!important;font-size:10px!important;font-weight:800!important;line-height:1.2!important;
 }
