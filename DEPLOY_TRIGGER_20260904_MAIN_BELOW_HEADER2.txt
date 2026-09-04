@@ -1,0 +1,4 @@
+Force production redeploy for desktop main content clearance.
+Main content box now starts below the fixed 58px ERP header; internal negative margins can no longer hide page titles beneath the header.
+Print layout remains unchanged.
+2026-09-04 KST
