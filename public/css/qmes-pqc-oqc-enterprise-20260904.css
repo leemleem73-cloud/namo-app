@@ -1,59 +1,75 @@
+/* Legacy PQC/OQC screen cascade neutralizer - screen roots only */
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){
+  gap:14px!important;
+}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(
+  .qmes-simple-summary,
+  .qmes-inspection-quickbar,
+  .qmes-pqc-record-filter,
+  .qmes-oqc-record-filter,
+  .qmes-pqc-record-table,
+  .qmes-oqc-record-table
+){
+  filter:none!important;
+  text-shadow:none!important;
+}
+
 /* NAMO QMES - PQC/OQC enterprise screen owner - 2026-09-04 */
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){
   width:100%!important;max-width:none!important;margin:0!important;padding:0!important;
   color:#22384a!important;background:transparent!important;
   font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary{
   margin:0 0 14px!important;padding:0!important;background:#fff!important;
   border:1px solid #c7d5df!important;border-radius:5px!important;
   box-shadow:0 2px 7px rgba(47,91,124,.08)!important;overflow:hidden!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-items{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-items{
   display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:0!important;margin:0!important;padding:0!important;background:#fff!important;
   border:0!important;border-radius:0!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item{
   min-height:90px!important;margin:0!important;padding:13px 16px!important;
   display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;
   background:#fff!important;border:0!important;border-right:1px solid #dce5eb!important;border-radius:0!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-light{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-light{
   width:9px!important;height:9px!important;margin:0 0 3px!important;border-radius:50%!important;
   animation:none!important;transform:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-label{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-label{
   color:#344d60!important;font-size:12px!important;font-weight:800!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-value strong{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-value strong{
   color:#172033!important;font-size:25px!important;font-weight:900!important;letter-spacing:-.5px!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-value small{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-value small{
   color:#52677a!important;font-size:11px!important;font-weight:800!important;
 }
 
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar{
   min-height:68px!important;margin:0 0 14px!important;
   background:linear-gradient(180deg,#fff 0%,#f4f7f9 100%)!important;
   border:1px solid #c7d5df!important;border-radius:5px!important;
   box-shadow:0 2px 7px rgba(47,91,124,.06)!important;overflow:hidden!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar .qmes-management-heading{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar .qmes-management-heading{
   min-height:68px!important;padding:11px 16px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;
   background:transparent!important;border:0!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar .qmes-management-heading>span{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-quickbar .qmes-management-heading>span{
   color:#718696!important;font-size:9.5px!important;font-weight:850!important;letter-spacing:.14em!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-management-title-row{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-management-title-row{
   display:flex!important;align-items:center!important;gap:10px!important;margin-top:5px!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-management-title-row>strong{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-management-title-row>strong{
   color:#244f70!important;font-size:18px!important;line-height:1.25!important;font-weight:900!important;letter-spacing:-.3px!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-new-btn{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-new-btn{
   height:34px!important;padding:0 12px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
   border:1px solid #286b9e!important;border-radius:4px!important;
   background:linear-gradient(180deg,#4a93c7 0%,#2f78b7 100%)!important;color:#fff!important;
@@ -61,78 +77,78 @@ html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-new
 }
 
 /* record panel */
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg{
   margin:0!important;background:#fff!important;border:1px solid #c7d5df!important;border-radius:5px!important;
   box-shadow:0 2px 7px rgba(47,91,124,.08)!important;overflow:hidden!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:first-child{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:first-child{
   min-height:50px!important;padding:0 16px!important;background:linear-gradient(180deg,#fbfdfe 0%,#edf4f8 100%)!important;
   border-bottom:1px solid #c7d5df!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:first-child h3{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:first-child h3{
   margin:0!important;color:#244f70!important;font-size:14px!important;font-weight:900!important;line-height:1.3!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:last-child{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) > div.bg-slate-900.border.border-slate-800.rounded-lg > div:last-child{
   padding:14px!important;background:#fff!important;
 }
 
 /* search/filter row */
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
   width:100%!important;display:flex!important;align-items:flex-end!important;gap:9px!important;flex-wrap:nowrap!important;
   margin:0 0 14px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) span{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) span{
   color:#68758a!important;font-size:10px!important;font-weight:800!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box{
   position:relative!important;background:#fff!important;border:0!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input,
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) select,
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input,
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) select,
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
   height:34px!important;box-sizing:border-box!important;border:1px solid #b9c9d5!important;border-radius:3px!important;
   background:#fff!important;color:#2e4557!important;font-size:11px!important;font-weight:650!important;box-shadow:none!important;outline:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input{width:100%!important;padding:0 34px!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-icon{color:#5f7e94!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) select{min-width:120px!important;padding:0 9px!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input{width:100%!important;padding:0 34px!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-icon{color:#5f7e94!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter) select{min-width:120px!important;padding:0 9px!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
   min-width:84px!important;padding:0 11px!important;background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;
 }
 
 /* record tables */
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table){
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table){
   width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;background:#fff!important;color:#2e4557!important;font-size:11px!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) thead th{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) thead th{
   height:40px!important;padding:8px 9px!important;background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
   color:#fff!important;border:0!important;border-right:1px solid rgba(255,255,255,.30)!important;border-bottom:1px solid #4f8ab2!important;
   font-size:11px!important;font-weight:900!important;line-height:1.25!important;text-align:center!important;white-space:nowrap!important;text-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td{
   height:42px!important;padding:8px 9px!important;background:#fff!important;color:#405569!important;border:0!important;border-bottom:1px solid #dce5eb!important;
   font-size:11px!important;font-weight:600!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody tr:nth-child(even) td{background:#f7fafc!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody tr:hover td{background:#eaf4fb!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-value-preview-btn,
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-btn{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody tr:nth-child(even) td{background:#f7fafc!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody tr:hover td{background:#eaf4fb!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-value-preview-btn,
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-btn{
   min-height:28px!important;padding:0 9px!important;border:1px solid #b7c8d4!important;border-radius:3px!important;
   background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-delete{color:#b54242!important;border-color:#d8a5a5!important;background:#fff!important;}
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="emerald"],
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="green"]{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-delete{color:#b54242!important;border-color:#d8a5a5!important;background:#fff!important;}
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="emerald"],
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="green"]{
   background:#16a34a!important;border-color:#16a34a!important;color:#fff!important;border-radius:3px!important;
 }
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="red"],
-html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="rose"]{
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="red"],
+html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody td span[class*="rose"]{
   background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;border-radius:3px!important;
 }
 
 @media(max-width:1100px){
-  html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;}
+  html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){flex-wrap:wrap!important;}
 }
 @media print{
-  html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){margin:0!important;padding:0!important;}
+  html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){margin:0!important;padding:0!important;}
 }
