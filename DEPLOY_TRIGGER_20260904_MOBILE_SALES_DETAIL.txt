@@ -1,0 +1,5 @@
+Force production redeploy for mobile sales integrated detail.
+Mobile sales order number click now loads qmes-mobile-sales-detail-20260904.js.
+Flow: order -> production plan -> work/production -> PQC -> OQC -> shipment.
+PC source files unchanged.
+2026-09-04
