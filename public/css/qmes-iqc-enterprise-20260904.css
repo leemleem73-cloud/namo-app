@@ -1,0 +1,162 @@
+/* NAMO QMES - IQC enterprise screen owner - 2026-09-04
+   Screen-only visual owner for Incoming Quality Control.
+   Print/certificate styling remains in qmes-document-final-restore / iqc-certificate-final.
+*/
+html body #root>div>main .qmes-iqc-page{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  color:#22384a!important;
+  background:transparent!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+}
+html body #root>div>main .qmes-iqc-page>.qmes-simple-summary{
+  margin:0 0 14px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border:1px solid #c7d5df!important;
+  border-radius:5px!important;
+  box-shadow:0 2px 7px rgba(47,91,124,.08)!important;
+}
+html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-items{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-item{
+  min-height:90px!important;
+  margin:0!important;
+  padding:13px 16px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  background:#fff!important;
+  border:0!important;
+  border-right:1px solid #dce5eb!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:#22384a!important;
+}
+html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
+html body #root>div>main .qmes-iqc-page .qmes-simple-summary-light{
+  width:9px!important;height:9px!important;margin:0 0 3px!important;border-radius:50%!important;
+  animation:none!important;transform:none!important;box-shadow:0 0 7px currentColor!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-simple-summary-label{
+  color:#344d60!important;font-size:12px!important;font-weight:800!important;line-height:1.3!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-simple-summary-value{display:flex!important;align-items:baseline!important;gap:3px!important;line-height:1!important;}
+html body #root>div>main .qmes-iqc-page .qmes-simple-summary-value strong{color:#172033!important;font-size:25px!important;font-weight:900!important;letter-spacing:-.5px!important;}
+html body #root>div>main .qmes-iqc-page .qmes-simple-summary-value small{color:#52677a!important;font-size:11px!important;font-weight:800!important;}
+
+html body #root>div>main .qmes-iqc-page .qmes-iqc-quickbar{
+  margin:0 0 14px!important;
+  min-height:68px!important;
+  background:linear-gradient(180deg,#fff 0%,#f4f7f9 100%)!important;
+  border:1px solid #c7d5df!important;
+  border-radius:5px!important;
+  box-shadow:0 2px 7px rgba(47,91,124,.06)!important;
+  overflow:hidden!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-quickbar .qmes-management-heading{
+  min-height:68px!important;padding:11px 16px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-quickbar-kicker{
+  color:#718696!important;font-size:9.5px!important;font-weight:850!important;letter-spacing:.14em!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-management-title-row{display:flex!important;align-items:center!important;gap:10px!important;margin-top:5px!important;}
+html body #root>div>main .qmes-iqc-page .qmes-management-title-row>strong{
+  color:#244f70!important;font-size:18px!important;line-height:1.25!important;font-weight:900!important;letter-spacing:-.3px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-new-btn{
+  height:34px!important;padding:0 12px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+  border:1px solid #286b9e!important;border-radius:4px!important;background:linear-gradient(180deg,#4a93c7 0%,#2f78b7 100%)!important;
+  color:#fff!important;font-size:11px!important;font-weight:850!important;box-shadow:none!important;text-shadow:none!important;
+}
+
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel{
+  margin:0!important;background:#fff!important;border:1px solid #c7d5df!important;border-radius:5px!important;
+  box-shadow:0 2px 7px rgba(47,91,124,.08)!important;overflow:hidden!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel>div:first-child{
+  min-height:50px!important;padding:0 16px!important;display:flex!important;align-items:center!important;
+  background:linear-gradient(180deg,#fbfdfe 0%,#edf4f8 100%)!important;border-bottom:1px solid #c7d5df!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel>div:first-child h3{
+  margin:0!important;color:#244f70!important;font-size:14px!important;font-weight:900!important;line-height:1.3!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-panel>div:last-child{padding:14px!important;background:#fff!important;}
+
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter{
+  width:100%!important;display:flex!important;align-items:flex-end!important;gap:9px!important;flex-wrap:nowrap!important;
+  margin:0 0 14px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter .text-\[10px\],
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter span{
+  color:#68758a!important;font-size:10px!important;font-weight:800!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box{position:relative!important;background:#fff!important;border:0!important;box-shadow:none!important;}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box input,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter select,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter>button{
+  height:34px!important;box-sizing:border-box!important;border:1px solid #b9c9d5!important;border-radius:3px!important;
+  background:#fff!important;color:#2e4557!important;font-size:11px!important;font-weight:650!important;box-shadow:none!important;outline:none!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box input{width:100%!important;padding:0 34px!important;}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-icon{color:#5f7e94!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter select{min-width:120px!important;padding:0 9px!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter>button{min-width:84px!important;padding:0 11px!important;background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;}
+html body #root>div>main .qmes-iqc-page .qmes-inspection-search-box input:focus,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter select:focus{
+  border-color:#4d91c2!important;box-shadow:0 0 0 2px rgba(47,120,183,.10)!important;
+}
+
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-container{width:100%!important;overflow-x:auto!important;background:#fff!important;border:0!important;box-shadow:none!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table{
+  width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;background:#fff!important;color:#2e4557!important;font-size:11px!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th{
+  height:40px!important;padding:8px 9px!important;background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;border:0!important;border-right:1px solid rgba(255,255,255,.30)!important;border-bottom:1px solid #4f8ab2!important;
+  font-size:11px!important;font-weight:900!important;line-height:1.25!important;text-align:center!important;white-space:nowrap!important;text-shadow:none!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td{
+  height:42px!important;padding:8px 9px!important;background:#fff!important;color:#405569!important;border:0!important;border-bottom:1px solid #dce5eb!important;
+  font-size:11px!important;font-weight:600!important;line-height:1.35!important;text-align:center!important;vertical-align:middle!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:nth-child(even) td{background:#f7fafc!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody tr:hover td{background:#eaf4fb!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table button{
+  min-height:28px!important;padding:0 9px!important;border:1px solid #b7c8d4!important;border-radius:3px!important;
+  background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important;
+}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table button:hover{border-color:#7fa8c4!important;background:linear-gradient(180deg,#f8fcff,#dcebf5)!important;color:#205e8c!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td:nth-last-child(2) span{
+  min-height:24px!important;padding:0 8px!important;border-radius:3px!important;font-size:10px!important;font-weight:850!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+}
+
+html body #root>div>main .qmes-iqc-page .qmes-iqc-chart-only,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-chart-panel{margin-top:14px!important;}
+html body #root>div>main .qmes-iqc-page .qmes-iqc-rank-panel>div{
+  background:#fff!important;border:1px solid #c7d5df!important;border-radius:5px!important;box-shadow:0 2px 7px rgba(47,91,124,.08)!important;
+}
+
+@media(max-width:1100px){
+  html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-items{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter{flex-wrap:wrap!important;}
+}
+@media print{
+  html body #root>div>main .qmes-iqc-page{padding:0!important;margin:0!important;}
+}
