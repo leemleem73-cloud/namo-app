@@ -1,0 +1,2 @@
+Force production redeploy. Three targeted fixes: slow vertical legacy bounce for summary dots; hard-fit PQC inspection record grid with inherited negative margins/min widths neutralized; restore ERP sidebar active color from qmes_current_tab on refresh and keep it synced with route changes.
+2026-09-04 KST
