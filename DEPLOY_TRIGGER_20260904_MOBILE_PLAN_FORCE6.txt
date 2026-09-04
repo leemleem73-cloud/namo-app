@@ -1,0 +1,8 @@
+2026-09-04 MOBILE PLAN FORCE6
+
+- Mobile-only menu hardening.
+- Production Plan / MRP always routes directly to /mobile-plan.html.
+- Handles both erpPlan and legacy pending:erpPlan.
+- Label-based fallback prevents the old mobile notice popup for Production Plan / MRP.
+- PC React/ERP files are unchanged.
+- Cache version: 20260904-force6 / plan3.
