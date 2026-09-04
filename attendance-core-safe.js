@@ -1,7 +1,7 @@
 'use strict';
 
-// Minimal NAMO mobile attendance API.
-// Installs only after the existing QMES session middleware is already attached.
+// NAMO mobile attendance core API.
+// Safe preload: installs immediately AFTER express-session middleware is attached.
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -40,28 +40,63 @@ async function ensureSchema(){
   return schemaPromise;
 }
 
-function dto(r){return r?{id:r.id,workDate:r.work_date,clockIn:r.clock_in,clockOut:r.clock_out,gpsIn:r.gps_in||{},gpsOut:r.gps_out||{},deviceInfo:r.device_info||''}:null;}
+function dto(r){
+  return r ? {
+    id:r.id,
+    workDate:r.work_date,
+    clockIn:r.clock_in,
+    clockOut:r.clock_out,
+    gpsIn:r.gps_in||{},
+    gpsOut:r.gps_out||{},
+    deviceInfo:r.device_info||''
+  } : null;
+}
 
 function install(app){
   if(app.__namoAttendanceCoreSafeInstalled) return;
   app.__namoAttendanceCoreSafeInstalled = true;
 
+  app.get('/api/attendance/health', (_req,res)=>ok(res,{service:'attendance',status:'ready'},'Attendance API ready'));
+
   app.get('/api/attendance/me', requireLogin, async (req,res)=>{
     try{
       await ensureSchema();
       const u=req.session.user;
-      const r=await pool.query('SELECT id,uid,name,email,department,title,role,status,must_change_password FROM users WHERE id=$1 LIMIT 1',[u.id]);
+      const r=await pool.query(
+        'SELECT id,uid,name,email,department,title,role,status,must_change_password FROM users WHERE id=$1 LIMIT 1',
+        [u.id]
+      );
       const user=r.rows[0]||u;
-      return ok(res,{user:{id:user.id,uid:user.uid||'',name:user.name,email:user.email,department:user.department||'',title:user.title||'',role:user.role,status:user.status,mustChangePassword:Boolean(user.must_change_password)},balance:{granted:15,used:0,remaining:15},passkeyCount:0,profile:{annualLeaveDays:15,mobileEnabled:true,approver1:null,approver2:null}});
-    }catch(e){console.error('[Attendance core] me',e);return fail(res,500,'근태 사용자 정보를 불러오지 못했습니다.');}
+      return ok(res,{
+        user:{
+          id:user.id,uid:user.uid||'',name:user.name||'',email:user.email||'',
+          department:user.department||'',title:user.title||'',role:user.role||'user',
+          status:user.status||'APPROVED',mustChangePassword:Boolean(user.must_change_password)
+        },
+        balance:{granted:15,used:0,remaining:15},
+        passkeyCount:0,
+        profile:{annualLeaveDays:15,mobileEnabled:true,approver1:null,approver2:null}
+      });
+    }catch(e){
+      console.error('[Attendance core] me',e);
+      return fail(res,500,'근태 사용자 정보를 불러오지 못했습니다.');
+    }
   });
 
   app.get('/api/attendance/today', requireLogin, async (req,res)=>{
     try{
       await ensureSchema();
-      const r=await pool.query(`SELECT * FROM attendance_logs WHERE user_id=$1 AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date LIMIT 1`,[req.session.user.id]);
+      const r=await pool.query(
+        `SELECT * FROM attendance_logs
+          WHERE user_id=$1 AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date
+          LIMIT 1`,
+        [req.session.user.id]
+      );
       return ok(res,dto(r.rows[0]||null));
-    }catch(e){console.error('[Attendance core] today',e);return fail(res,500,'오늘 근태를 불러오지 못했습니다.');}
+    }catch(e){
+      console.error('[Attendance core] today',e);
+      return fail(res,500,'오늘 근태를 불러오지 못했습니다.');
+    }
   });
 
   app.get('/api/attendance/logs', requireLogin, async (req,res)=>{
@@ -69,10 +104,22 @@ function install(app){
       await ensureSchema();
       const month=/^\d{4}-\d{2}$/.test(String(req.query.month||''))?String(req.query.month):null;
       const r=month
-        ? await pool.query(`SELECT * FROM attendance_logs WHERE user_id=$1 AND TO_CHAR(work_date,'YYYY-MM')=$2 ORDER BY work_date DESC`,[req.session.user.id,month])
-        : await pool.query(`SELECT * FROM attendance_logs WHERE user_id=$1 ORDER BY work_date DESC LIMIT 100`,[req.session.user.id]);
+        ? await pool.query(
+            `SELECT * FROM attendance_logs
+              WHERE user_id=$1 AND TO_CHAR(work_date,'YYYY-MM')=$2
+              ORDER BY work_date DESC`,
+            [req.session.user.id,month]
+          )
+        : await pool.query(
+            `SELECT * FROM attendance_logs
+              WHERE user_id=$1 ORDER BY work_date DESC LIMIT 100`,
+            [req.session.user.id]
+          );
       return ok(res,r.rows.map(dto));
-    }catch(e){console.error('[Attendance core] logs',e);return fail(res,500,'근태기록을 불러오지 못했습니다.');}
+    }catch(e){
+      console.error('[Attendance core] logs',e);
+      return fail(res,500,'근태기록을 불러오지 못했습니다.');
+    }
   });
 
   app.post('/api/attendance/clock-in', requireLogin, async (req,res)=>{
@@ -90,7 +137,10 @@ function install(app){
           updated_at=NOW()
         RETURNING *`,[req.session.user.id,JSON.stringify(gps),device]);
       return ok(res,dto(r.rows[0]),'출근 처리되었습니다.');
-    }catch(e){console.error('[Attendance core] clock-in',e);return fail(res,500,'출근 처리에 실패했습니다.');}
+    }catch(e){
+      console.error('[Attendance core] clock-in',e);
+      return fail(res,500,'출근 처리에 실패했습니다.');
+    }
   });
 
   app.post('/api/attendance/clock-out', requireLogin, async (req,res)=>{
@@ -108,23 +158,41 @@ function install(app){
         RETURNING *`,[req.session.user.id,JSON.stringify(gps)]);
       if(!r.rowCount) return fail(res,400,'먼저 출근 처리를 해주세요.');
       return ok(res,dto(r.rows[0]),'퇴근 처리되었습니다.');
-    }catch(e){console.error('[Attendance core] clock-out',e);return fail(res,500,'퇴근 처리에 실패했습니다.');}
+    }catch(e){
+      console.error('[Attendance core] clock-out',e);
+      return fail(res,500,'퇴근 처리에 실패했습니다.');
+    }
   });
 
-  // Optional calls used by the current mobile UI. Keep them harmless while core attendance is restored.
   app.get('/api/attendance/notifications', requireLogin, (_req,res)=>ok(res,[]));
   app.post('/api/attendance/notifications/read-all', requireLogin, (_req,res)=>ok(res,null,'모두 읽음 처리했습니다.'));
+
+  // While core recovery is active, return clear JSON for features not restored yet.
+  const unavailable=(req,res)=>fail(res,503,'이 기능은 출퇴근 안정화 후 순차 복구됩니다.');
+  app.get('/api/attendance/leave',requireLogin,unavailable);
+  app.post('/api/attendance/leave',requireLogin,unavailable);
+  app.get('/api/attendance/approvals',requireLogin,unavailable);
+  app.post('/api/attendance/passkey/register/options',requireLogin,unavailable);
+  app.post('/api/attendance/passkey/register/verify',requireLogin,unavailable);
+  app.post('/api/attendance/passkey/login/options',unavailable);
+  app.post('/api/attendance/passkey/login/verify',unavailable);
 }
 
-const originalGet=express.application.get;
-const originalPost=express.application.post;
-express.application.get=function attendanceSafeGet(routePath,...handlers){
-  if(typeof routePath==='string'&&routePath.startsWith('/api/')&&!this.__namoAttendanceCoreSafeInstalled) install(this);
-  return originalGet.call(this,routePath,...handlers);
-};
-express.application.post=function attendanceSafePost(routePath,...handlers){
-  if(typeof routePath==='string'&&routePath.startsWith('/api/')&&!this.__namoAttendanceCoreSafeInstalled) install(this);
-  return originalPost.call(this,routePath,...handlers);
+// express-session is registered with app.use(session(...)).
+// Detect that exact middleware and install our API immediately afterwards,
+// guaranteeing req.session is available while keeping the routes ahead of later app routes.
+const originalUse=express.application.use;
+express.application.use=function attendanceSessionAwareUse(...args){
+  const result=originalUse.apply(this,args);
+  if(!this.__namoAttendanceCoreSafeInstalled){
+    const fns=args.flat().filter(v=>typeof v==='function');
+    const hasSession=fns.some(fn=>fn.name==='session' || /session/i.test(String(fn.name||'')));
+    if(hasSession){
+      install(this);
+      console.log('[Attendance core] routes installed after QMES session middleware');
+    }
+  }
+  return result;
 };
 
 module.exports={installAttendanceCoreSafe:install};
