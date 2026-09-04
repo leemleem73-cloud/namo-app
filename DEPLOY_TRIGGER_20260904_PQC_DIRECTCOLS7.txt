@@ -1,0 +1,2 @@
+Force production redeploy. PQC column widths are now changed directly in the React colgroup instead of relying on CSS overrides. Management column increased from 16% to 28%; shorter columns reduced; action buttons wrapped in a dedicated centered flex row with no margin utilities.
+2026-09-04 KST
