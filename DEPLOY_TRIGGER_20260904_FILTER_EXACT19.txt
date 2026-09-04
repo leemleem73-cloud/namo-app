@@ -1,0 +1,2 @@
+Force production redeploy. IQC/PQC/OQC inspection filter rows now use the same direct JSX grid matching the provided screenshot: search 350px, year 150px, month 150px, reset 135px, 12px gaps, labels above, aligned bottoms.
+2026-09-04 KST
