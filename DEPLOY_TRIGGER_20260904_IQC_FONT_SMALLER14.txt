@@ -1,0 +1,2 @@
+Force production redeploy. IQC management ledger typography reduced only: header/body 10px, action buttons 9px. Layout, filters and spacing unchanged.
+2026-09-04 KST
