@@ -20,7 +20,8 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
-const SHELL_BUILD = '20260904-iqc-enterprise-final2';
+const SHELL_BUILD = '20260904-member-readable-force2';
+const MEMBERS_ASSET_BUILD = '20260904-member-readable-force2';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 if (!fs.existsSync(enterpriseDashboard)) {
@@ -38,6 +39,9 @@ try {
     .replace(/router\.jsx\?v=[^"']+/g, `router.jsx?v=${SHELL_BUILD}`)
     .replace(/app\.jsx\?v=[^"']+/g, `app.jsx?v=${SHELL_BUILD}`)
     .replace(/dashboard\.jsx\?v=[^"']+/g, `dashboard.jsx?v=${DASHBOARD_ASSET_BUILD}`)
+    .replace(/member-management-patch\.jsx\?v=[^"']+/g, `member-management-patch.jsx?v=${MEMBERS_ASSET_BUILD}`)
+    .replace(/admin\/members-bootstrap\.jsx\?v=[^"']+/g, `admin/members-bootstrap.jsx?v=${MEMBERS_ASSET_BUILD}`)
+    .replace(/admin\/members\.jsx\?v=[^"']+/g, `admin/members.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`);
   if (normalized !== source) fs.writeFileSync(publicIndex, normalized, 'utf8');
 } catch (error) {
