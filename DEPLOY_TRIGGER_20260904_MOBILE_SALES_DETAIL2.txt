@@ -1,0 +1,6 @@
+Force production redeploy for direct mobile sales detail binding.
+public/mobile-sales.html now directly loads /js/qmes-mobile-sales-detail-20260904.js?v=20260904-sales-detail2.
+This removes dependency on response-time preload injection for sales detail click.
+Mobile sales build bumped to sales5.
+PC source unchanged.
+2026-09-04
