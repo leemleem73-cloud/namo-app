@@ -1,0 +1,4 @@
+Force production redeploy for desktop content top offset.
+Reason: menu page headings are hidden beneath the fixed 58px ERP header.
+Scope: shell layout only; no database or report data changes.
+2026-09-04 KST
