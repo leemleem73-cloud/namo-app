@@ -1,0 +1,2 @@
+Force production redeploy for PQC/OQC enterprise redesign. Screen-only styling owner loaded last. Existing inspection data, registration logic, gates, certificate preview and print styles remain unchanged.
+2026-09-04 KST
