@@ -1,0 +1,2 @@
+Force production redeploy. PQC and OQC filter controls now use identical search width 280px, year/month width 120px, height 36px, and 10px gaps, with bottom-aligned reset buttons.
+2026-09-04 KST
