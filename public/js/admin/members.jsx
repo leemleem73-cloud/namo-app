@@ -78,54 +78,278 @@ function MembersManagementTab() {
     setInfo({ tone: "green", text: `${u.name} 비밀번호를 1234로 초기화했습니다.` });
   };
 
-  const inputCls = "w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500";
-  const label = (text) => <div className="text-[11px] text-slate-500 mb-1">{text}</div>;
+  const label = (text) => <div className="qmes-member-label">{text}</div>;
 
   return (
-    <div className="flex flex-col gap-4">
-      {info && <div className={`rounded-lg px-4 py-3 text-sm border ${info.tone === "red" ? "bg-red-500/10 border-red-500/40 text-red-300" : "bg-emerald-500/10 border-emerald-500/40 text-emerald-300"}`}>{info.text}</div>}
+    <div className="qmes-members-management">
+      <style>{`
+        .qmes-members-management{
+          --member-font:'Pretendard','Noto Sans KR','Malgun Gothic',Arial,sans-serif;
+          width:100%;
+          color:#263746;
+          font-family:var(--member-font)!important;
+          font-size:14px!important;
+          line-height:1.5!important;
+        }
+        .qmes-members-management *,
+        .qmes-members-management input,
+        .qmes-members-management select,
+        .qmes-members-management button,
+        .qmes-members-management table,
+        .qmes-members-management th,
+        .qmes-members-management td{
+          font-family:var(--member-font)!important;
+          box-sizing:border-box;
+        }
+        .qmes-member-notice{
+          margin-bottom:14px;
+          padding:12px 15px;
+          border:1px solid #cbd8e2;
+          border-radius:8px;
+          background:#fff;
+          color:#263746;
+          font-size:14px!important;
+          font-weight:700!important;
+        }
+        .qmes-member-notice.is-error{border-color:#f4b4b4;background:#fff6f6;color:#b42318;}
+        .qmes-member-notice.is-success{border-color:#9fd7bd;background:#f3fbf7;color:#17663a;}
+        .qmes-member-card{
+          margin-bottom:18px;
+          overflow:hidden;
+          border:1px solid #d5e0e8;
+          border-radius:9px;
+          background:#fff;
+          box-shadow:0 2px 8px rgba(40,72,94,.06);
+        }
+        .qmes-member-card-head{
+          min-height:48px;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:16px;
+          padding:0 16px;
+          border-bottom:1px solid #dde6ed;
+          background:#fbfcfd;
+        }
+        .qmes-member-card-title{
+          margin:0;
+          color:#243746!important;
+          font-size:16px!important;
+          font-weight:900!important;
+          letter-spacing:-.2px;
+        }
+        .qmes-member-count{
+          color:#5c6f7f!important;
+          font-size:13px!important;
+          font-weight:700!important;
+          white-space:nowrap;
+        }
+        .qmes-member-card-body{padding:16px;}
+        .qmes-member-form-grid{
+          display:grid;
+          grid-template-columns:repeat(5,minmax(0,1fr));
+          gap:12px;
+          align-items:end;
+        }
+        .qmes-member-label{
+          margin-bottom:6px;
+          color:#526574!important;
+          font-size:13px!important;
+          font-weight:800!important;
+          line-height:1.3!important;
+        }
+        .qmes-member-input{
+          width:100%;
+          height:42px;
+          padding:0 12px!important;
+          border:1px solid #b8c7d2!important;
+          border-radius:7px!important;
+          background:#fff!important;
+          color:#243746!important;
+          font-size:14px!important;
+          font-weight:650!important;
+          line-height:42px!important;
+          outline:none!important;
+          box-shadow:none!important;
+        }
+        select.qmes-member-input{line-height:normal!important;}
+        .qmes-member-input:focus{border-color:#248bc1!important;box-shadow:0 0 0 3px rgba(36,139,193,.12)!important;}
+        .qmes-member-input::placeholder{color:#94a3ad!important;opacity:1!important;font-weight:500!important;}
+        .qmes-member-phone,
+        .qmes-member-phone::placeholder{
+          font-family:var(--member-font)!important;
+          font-style:normal!important;
+          letter-spacing:0!important;
+          font-variant-numeric:tabular-nums;
+        }
+        .qmes-member-form-actions{
+          display:flex;
+          justify-content:flex-end;
+          gap:8px;
+          margin-top:14px;
+        }
+        .qmes-member-btn{
+          min-height:38px;
+          padding:0 14px!important;
+          border-radius:7px!important;
+          font-size:13px!important;
+          font-weight:800!important;
+          line-height:1!important;
+          cursor:pointer;
+        }
+        .qmes-member-btn-primary{border:1px solid #0c8fc6!important;background:#0c8fc6!important;color:#fff!important;}
+        .qmes-member-btn-primary:hover{background:#087cac!important;}
+        .qmes-member-btn-secondary{border:1px solid #bac8d2!important;background:#fff!important;color:#334a5a!important;}
+        .qmes-member-help{
+          margin:10px 0 0;
+          color:#667887!important;
+          font-size:12.5px!important;
+          font-weight:600!important;
+        }
+        .qmes-member-table-wrap{width:100%;overflow-x:auto;}
+        .qmes-member-table{
+          width:100%;
+          min-width:1120px;
+          border-collapse:collapse;
+          table-layout:auto;
+          color:#263746!important;
+          font-size:14px!important;
+        }
+        .qmes-member-table thead th{
+          height:42px;
+          padding:9px 10px!important;
+          border-bottom:1px solid #cdd9e2!important;
+          background:#f7f9fb!important;
+          color:#4d6272!important;
+          font-size:13px!important;
+          font-weight:850!important;
+          line-height:1.25!important;
+          text-align:left!important;
+          white-space:nowrap;
+        }
+        .qmes-member-table tbody td{
+          min-height:46px;
+          padding:11px 10px!important;
+          border-bottom:1px solid #dbe4ea!important;
+          background:#fff;
+          color:#2b3f4e!important;
+          font-size:14px!important;
+          font-weight:600!important;
+          line-height:1.45!important;
+          vertical-align:middle!important;
+          white-space:nowrap;
+        }
+        .qmes-member-table tbody tr:hover td{background:#f4f8fb!important;}
+        .qmes-member-uid{
+          color:#1587b7!important;
+          font-size:13px!important;
+          font-weight:800!important;
+          font-variant-numeric:tabular-nums;
+        }
+        .qmes-member-name{color:#1f3443!important;font-weight:800!important;}
+        .qmes-member-phone-cell{
+          color:#344b5a!important;
+          font-family:var(--member-font)!important;
+          font-variant-numeric:tabular-nums;
+          letter-spacing:0!important;
+        }
+        .qmes-member-email{color:#4b6171!important;}
+        .qmes-member-badge{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          min-height:25px;
+          padding:3px 9px;
+          border-radius:6px;
+          font-size:12px!important;
+          font-weight:800!important;
+          line-height:1!important;
+          white-space:nowrap;
+        }
+        .qmes-member-badge-admin{border:1px solid #c7b8ff;background:#f2efff;color:#6546c7!important;}
+        .qmes-member-badge-user{border:1px solid #cbd5dc;background:#f3f6f8;color:#526575!important;}
+        .qmes-member-badge-changed{border:1px solid #9ed7ba;background:#effaf4;color:#197247!important;}
+        .qmes-member-badge-initial{border:1px solid #f2cc86;background:#fff7e8;color:#b26a00!important;}
+        .qmes-member-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+        .qmes-member-action{
+          min-height:30px;
+          padding:0 9px!important;
+          border-radius:6px!important;
+          background:#fff!important;
+          font-size:12px!important;
+          font-weight:800!important;
+          line-height:1!important;
+          cursor:pointer;
+          white-space:nowrap;
+        }
+        .qmes-member-action-edit{border:1px solid #7cc4e2!important;color:#1679a2!important;}
+        .qmes-member-action-reset{border:1px solid #b8c6d0!important;color:#344b5a!important;}
+        .qmes-member-action-delete{border:1px solid #f2aaaa!important;color:#c83d3d!important;}
+        @media(max-width:1280px){.qmes-member-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+        @media(max-width:760px){
+          .qmes-member-form-grid{grid-template-columns:1fr;}
+          .qmes-member-card-head{align-items:flex-start;flex-direction:column;padding:12px 14px;}
+          .qmes-member-card-body{padding:14px;}
+          .qmes-member-count{white-space:normal;}
+        }
+      `}</style>
 
-      <Panel title={editingId ? "회원 정보 수정" : "회원 추가"}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-          <div>{label("이름 · 로그인 ID")}<input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="이름" /></div>
-          <div>{label("부서")}<select className={inputCls} value={form.dept} onChange={(e) => setForm({ ...form, dept: e.target.value })}>{departments.map((d) => <option key={d}>{d}</option>)}</select></div>
-          <div>{label("직급")}<input className={inputCls} value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} placeholder="예: 부장" /></div>
-          <div>{label("연락처")}<input className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="010-0000-0000" /></div>
-          <div>{label("이메일")}<input className={inputCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@company.com" /></div>
-        </div>
-        <div className="flex justify-end gap-2 mt-4">
-          {editingId && <button onClick={clearForm} className="px-4 py-2 rounded-lg border border-slate-600 text-slate-300 text-sm">취소</button>}
-          <button onClick={saveMember} className="px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold">{editingId ? "수정 저장" : "회원 추가"}</button>
-        </div>
-        <p className="text-[11px] text-slate-500 mt-3">로그인 ID는 이름이며 신규 회원은 일반 사용자로 등록됩니다. 초기 비밀번호는 1234입니다.</p>
-      </Panel>
+      {info && <div className={`qmes-member-notice ${info.tone === "red" ? "is-error" : "is-success"}`}>{info.text}</div>}
 
-      <Panel title="회원등록 현황" right={<span className="text-xs text-slate-400">관리자 1명 · 일반 사용자 {users.filter((u) => u.role !== "admin").length}명</span>}>
-        <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full text-sm min-w-[1050px]">
-            <thead><tr className="text-xs text-slate-400 border-b border-slate-800">
-              {['고유번호','로그인 ID·이름','부서','직급','연락처','이메일','권한','비밀번호','관리'].map((h) => <th key={h} className="text-left py-2 pr-3 font-medium">{h}</th>)}
-            </tr></thead>
+      <section className="qmes-member-card">
+        <div className="qmes-member-card-head">
+          <h2 className="qmes-member-card-title">{editingId ? "회원 정보 수정" : "회원 추가"}</h2>
+        </div>
+        <div className="qmes-member-card-body">
+          <div className="qmes-member-form-grid">
+            <div>{label("이름 · 로그인 ID")}<input className="qmes-member-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="이름" /></div>
+            <div>{label("부서")}<select className="qmes-member-input" value={form.dept} onChange={(e) => setForm({ ...form, dept: e.target.value })}>{departments.map((d) => <option key={d}>{d}</option>)}</select></div>
+            <div>{label("직급")}<input className="qmes-member-input" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} placeholder="예: 부장" /></div>
+            <div>{label("연락처")}<input type="tel" className="qmes-member-input qmes-member-phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="010-0000-0000" /></div>
+            <div>{label("이메일")}<input type="email" className="qmes-member-input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@company.com" /></div>
+          </div>
+          <div className="qmes-member-form-actions">
+            {editingId && <button onClick={clearForm} className="qmes-member-btn qmes-member-btn-secondary">취소</button>}
+            <button onClick={saveMember} className="qmes-member-btn qmes-member-btn-primary">{editingId ? "수정 저장" : "회원 추가"}</button>
+          </div>
+          <p className="qmes-member-help">로그인 ID는 이름이며 신규 회원은 일반 사용자로 등록됩니다. 초기 비밀번호는 1234입니다.</p>
+        </div>
+      </section>
+
+      <section className="qmes-member-card">
+        <div className="qmes-member-card-head">
+          <h2 className="qmes-member-card-title">회원등록 현황</h2>
+          <span className="qmes-member-count">관리자 1명 · 일반 사용자 {users.filter((u) => u.role !== "admin").length}명</span>
+        </div>
+        <div className="qmes-member-table-wrap">
+          <table className="qmes-member-table">
+            <thead>
+              <tr>
+                {['고유번호','로그인 ID · 이름','부서','직급','연락처','이메일','권한','비밀번호','관리'].map((h) => <th key={h}>{h}</th>)}
+              </tr>
+            </thead>
             <tbody>{users.map((u) => (
-              <tr key={u.id} className="border-b border-slate-800/60 hover:bg-slate-800/30">
-                <td className="py-2.5 pr-3 font-mono text-xs text-sky-300">{u.uid || "-"}</td>
-                <td className="py-2.5 pr-3 text-slate-100">{u.name}</td>
-                <td className="py-2.5 pr-3 text-xs text-slate-300">{u.dept || "-"}</td>
-                <td className="py-2.5 pr-3 text-xs text-slate-300">{u.position || "-"}</td>
-                <td className="py-2.5 pr-3 text-xs text-slate-400">{u.phone || "-"}</td>
-                <td className="py-2.5 pr-3 text-xs text-slate-400">{u.email || "-"}</td>
-                <td className="py-2.5 pr-3">{u.role === "admin" ? <Badge tone="violet">관리자</Badge> : <Badge tone="gray">일반</Badge>}</td>
-                <td className="py-2.5 pr-3">{u.passwordChanged ? <Badge tone="green">변경완료</Badge> : <Badge tone="amber">초기 1234</Badge>}</td>
-                <td className="py-2.5"><div className="flex gap-1.5 flex-wrap">
-                  <button onClick={() => editMember(u)} className="text-[11px] px-2 py-1 rounded border border-sky-500/40 text-sky-300 hover:bg-sky-500/10">수정</button>
-                  <button onClick={() => resetPw(u)} className="text-[11px] px-2 py-1 rounded border border-slate-600 text-slate-300 hover:bg-slate-800">비밀번호 초기화</button>
-                  {u.role !== "admin" && <button onClick={() => removeMember(u)} className="text-[11px] px-2 py-1 rounded border border-red-500/40 text-red-400 hover:bg-red-500/10">삭제</button>}
-                </div></td>
+              <tr key={u.id}>
+                <td className="qmes-member-uid">{u.uid || "-"}</td>
+                <td className="qmes-member-name">{u.name}</td>
+                <td>{u.dept || "-"}</td>
+                <td>{u.position || "-"}</td>
+                <td className="qmes-member-phone-cell">{u.phone || "-"}</td>
+                <td className="qmes-member-email">{u.email || "-"}</td>
+                <td>{u.role === "admin" ? <span className="qmes-member-badge qmes-member-badge-admin">관리자</span> : <span className="qmes-member-badge qmes-member-badge-user">일반</span>}</td>
+                <td>{u.passwordChanged ? <span className="qmes-member-badge qmes-member-badge-changed">변경완료</span> : <span className="qmes-member-badge qmes-member-badge-initial">초기 1234</span>}</td>
+                <td>
+                  <div className="qmes-member-actions">
+                    <button onClick={() => editMember(u)} className="qmes-member-action qmes-member-action-edit">수정</button>
+                    <button onClick={() => resetPw(u)} className="qmes-member-action qmes-member-action-reset">비밀번호 초기화</button>
+                    {u.role !== "admin" && <button onClick={() => removeMember(u)} className="qmes-member-action qmes-member-action-delete">삭제</button>}
+                  </div>
+                </td>
               </tr>
             ))}</tbody>
           </table>
         </div>
-      </Panel>
+      </section>
     </div>
   );
 }
