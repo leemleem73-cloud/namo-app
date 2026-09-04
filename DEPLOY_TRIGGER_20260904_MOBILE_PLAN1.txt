@@ -1,0 +1,8 @@
+Deploy mobile-only Production Plan / MRP screen.
+- New public/mobile-plan.html
+- Mobile ERP menu Production Plan / MRP now routes directly to mobile-plan.html
+- Reads/writes shared inventory record erp:plan
+- Uses actual workorder, IQC, inventory and purchase data for mobile MRP calculation
+- Plan date click opens integrated detail with MRP and work-order status
+- PC source files unchanged.
+2026-09-04
