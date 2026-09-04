@@ -8,6 +8,8 @@
   if (window.__QMES_DASHBOARD_KPI_OQC_LIVE_20260812__) return;
   window.__QMES_DASHBOARD_KPI_OQC_LIVE_20260812__ = true;
   if (typeof DashboardTab !== "function") return;
+  // The enterprise dashboard owns its KPI/OQC data and must not be wrapped by this legacy patch.
+  if (window.DashboardTab === DashboardTab && /namo-enterprise-dashboard/.test(String(DashboardTab))) return;
 
   const LegacyDashboardTab = DashboardTab;
   const clean = (v) => String(v ?? "").trim();
