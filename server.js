@@ -20,7 +20,7 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
-const SHELL_BUILD = '20260904-tab-scroll-reset3';
+const SHELL_BUILD = '20260904-page-standard4';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 if (!fs.existsSync(enterpriseDashboard)) {
