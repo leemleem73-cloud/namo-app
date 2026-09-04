@@ -224,52 +224,8 @@ html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:15%!important;}
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:15%!important;}
-
-
-
-/* PQC action buttons: match OQC output/edit/delete sizing exactly */
-html body #root>div>main .qmes-pqc-page .qmes-pqc-actions .qmes-iqc-action-btn{
-  min-width:0!important;
-  width:auto!important;
-  height:24px!important;
-  min-height:24px!important;
-  padding:0 7px!important;
-  margin:0!important;
-  border-radius:5px!important;
-  font-size:10px!important;
-  line-height:22px!important;
-  white-space:nowrap!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-}
-html body #root>div>main .qmes-pqc-page .qmes-pqc-actions{
-  gap:4px!important;
-}
-
-/* PQC output/edit/delete buttons EXACTLY match IQC ledger button size */
-html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions .qmes-iqc-action-btn{
-  width:auto!important;
-  min-width:0!important;
-  height:28px!important;
-  min-height:28px!important;
-  padding:0 9px!important;
-  margin:0!important;
-  border-radius:3px!important;
-  font-size:10px!important;
-  font-weight:800!important;
-  line-height:1.2!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  white-space:nowrap!important;
-}
-html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions{
-  gap:3px!important;
-}
-
-/* PQC actions final hard owner: same physical size as IQC buttons */
-html body #root#root#root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-actions>button.qmes-iqc-action-btn{
- height:28px!important;min-height:28px!important;padding:0 9px!important;border-radius:3px!important;font-size:10px!important;line-height:1.2!important;
-}
+/* PQC record: narrow MANAGEMENT COLUMN only; do not resize action buttons */
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:18%!important;}
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
+html body #root#root#root#root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:12%!important;}
