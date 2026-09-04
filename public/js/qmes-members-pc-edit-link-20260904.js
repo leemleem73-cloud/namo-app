@@ -1,8 +1,19 @@
-/* QMES 회원 이메일 동기화 + 회원등록 현황 간격 정리 - 2026-09-04 */
+/* QMES 회원 이메일 동기화 + 직원등록 현황 간격 정리 - 2026-09-04 */
 (function(){
   'use strict';
 
   const STYLE_ID='qmes-members-spacing-polish-20260904';
+  const OLD_LABEL='회원등록 현황';
+  const NEW_LABEL='직원등록 현황';
+
+  function renameMemberLabels(){
+    document.querySelectorAll('h1,h2,h3,button,span,div,a').forEach(el=>{
+      if(String(el.textContent||'').trim()===OLD_LABEL){
+        el.textContent=NEW_LABEL;
+        el.setAttribute('data-qmes-employee-status-label','1');
+      }
+    });
+  }
 
   function installMembersSpacingStyle(){
     if(document.getElementById(STYLE_ID))return;
@@ -60,15 +71,9 @@
         overflow:hidden!important;
         text-overflow:ellipsis!important;
       }
-      .qmes-db-member-table tbody tr:last-child td{
-        border-bottom:0!important;
-      }
-      .qmes-db-member-table tbody tr:hover td{
-        background:#f7fafc!important;
-      }
-      .qmes-db-member-table tbody tr.is-editing td{
-        background:#edf8fd!important;
-      }
+      .qmes-db-member-table tbody tr:last-child td{border-bottom:0!important;}
+      .qmes-db-member-table tbody tr:hover td{background:#f7fafc!important;}
+      .qmes-db-member-table tbody tr.is-editing td{background:#edf8fd!important;}
       .qmes-db-member-uid{
         font-size:13px!important;
         font-weight:800!important;
@@ -117,24 +122,15 @@
         line-height:18px!important;
         letter-spacing:-.05px!important;
       }
-      .qmes-db-member-table th:nth-child(1),
-      .qmes-db-member-table td:nth-child(1){width:105px!important;}
-      .qmes-db-member-table th:nth-child(2),
-      .qmes-db-member-table td:nth-child(2){width:150px!important;}
-      .qmes-db-member-table th:nth-child(3),
-      .qmes-db-member-table td:nth-child(3){width:90px!important;}
-      .qmes-db-member-table th:nth-child(4),
-      .qmes-db-member-table td:nth-child(4){width:90px!important;}
-      .qmes-db-member-table th:nth-child(5),
-      .qmes-db-member-table td:nth-child(5){width:110px!important;}
-      .qmes-db-member-table th:nth-child(6),
-      .qmes-db-member-table td:nth-child(6){width:320px!important;}
-      .qmes-db-member-table th:nth-child(7),
-      .qmes-db-member-table td:nth-child(7){width:90px!important;text-align:center!important;}
-      .qmes-db-member-table th:nth-child(8),
-      .qmes-db-member-table td:nth-child(8){width:90px!important;text-align:center!important;}
-      .qmes-db-member-table th:nth-child(9),
-      .qmes-db-member-table td:nth-child(9){width:270px!important;overflow:visible!important;}
+      .qmes-db-member-table th:nth-child(1),.qmes-db-member-table td:nth-child(1){width:105px!important;}
+      .qmes-db-member-table th:nth-child(2),.qmes-db-member-table td:nth-child(2){width:150px!important;}
+      .qmes-db-member-table th:nth-child(3),.qmes-db-member-table td:nth-child(3){width:90px!important;}
+      .qmes-db-member-table th:nth-child(4),.qmes-db-member-table td:nth-child(4){width:90px!important;}
+      .qmes-db-member-table th:nth-child(5),.qmes-db-member-table td:nth-child(5){width:110px!important;}
+      .qmes-db-member-table th:nth-child(6),.qmes-db-member-table td:nth-child(6){width:320px!important;}
+      .qmes-db-member-table th:nth-child(7),.qmes-db-member-table td:nth-child(7){width:90px!important;text-align:center!important;}
+      .qmes-db-member-table th:nth-child(8),.qmes-db-member-table td:nth-child(8){width:90px!important;text-align:center!important;}
+      .qmes-db-member-table th:nth-child(9),.qmes-db-member-table td:nth-child(9){width:270px!important;overflow:visible!important;}
       @media(max-width:1500px){
         .qmes-db-member-table{min-width:1280px!important;}
         .qmes-db-member-table thead th{padding:0 11px!important;}
@@ -145,6 +141,7 @@
   }
 
   installMembersSpacingStyle();
+  renameMemberLabels();
 
   const EMAILS={
     '임흥배':'hbleem@namochemical.com',
@@ -164,7 +161,7 @@
   function onMembersPage(){
     try{if(sessionStorage.getItem('qmes_current_tab')==='members')return true;}catch(_error){}
     const text=clean(document.body?.innerText);
-    return text.includes('회원등록 현황')&&text.includes('회원');
+    return (text.includes(OLD_LABEL)||text.includes(NEW_LABEL))&&text.includes('회원');
   }
 
   async function json(url,options={}){
@@ -237,8 +234,12 @@
     }
   }
 
+  const observer=new MutationObserver(()=>renameMemberLabels());
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+
   const timer=setInterval(()=>{
     installMembersSpacingStyle();
+    renameMemberLabels();
     if(finished){clearInterval(timer);return;}
     syncEmails();
     updateVisibleTable();
