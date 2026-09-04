@@ -582,3 +582,60 @@ html body #root .qmes-prod-process .qpp-empty{
     padding-right:4px!important;
   }
 }
+
+
+/* ---------- production typography / cell spacing normalization ---------- */
+/* 생산 진행 · 작업지시서 · 생산공정 관리: 표 칸과 글자 간격을 한 규격으로 통일 */
+html body #root .qmes-production-progress-page .qmes-production-table th,
+html body #root main .qmes-issued-table-v2 th,
+html body #root .qmes-prod-process .qpp-table th{
+  box-sizing:border-box!important;
+  height:40px!important;
+  padding:0 6px!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  line-height:1.25!important;
+  letter-spacing:-.15px!important;
+  vertical-align:middle!important;
+  text-align:center!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table td,
+html body #root main .qmes-issued-table-v2 td,
+html body #root .qmes-prod-process .qpp-table td{
+  box-sizing:border-box!important;
+  height:42px!important;
+  padding:0 6px!important;
+  font-size:10.5px!important;
+  font-weight:500!important;
+  line-height:1.25!important;
+  letter-spacing:-.1px!important;
+  vertical-align:middle!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table :is(button,span,strong),
+html body #root main .qmes-issued-table-v2 td :is(button,span,strong),
+html body #root .qmes-prod-process .qpp-table td :is(button,span,strong){
+  line-height:1.25!important;
+  letter-spacing:-.1px!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table th+th,
+html body #root main .qmes-issued-table-v2 th+th,
+html body #root .qmes-prod-process .qpp-table th+th{
+  border-left:1px solid rgba(255,255,255,.20)!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table td+td,
+html body #root main .qmes-issued-table-v2 td+td,
+html body #root .qmes-prod-process .qpp-table td+td{
+  border-left:1px solid #e7edf2!important;
+}
+/* 관리/상태 같은 내부 컨트롤도 셀 중앙선에 맞춤 */
+html body #root main .qmes-issued-table-v2 td.center,
+html body #root .qmes-prod-process .qpp-table td,
+html body #root .qmes-production-progress-page .qmes-production-table td{
+  vertical-align:middle!important;
+}
+html body #root main .qmes-workorder-actions,
+html body #root main .qmes-issued-table-v2 .qmes-status-select,
+html body #root .qmes-prod-process .qpp-status{
+  margin-top:0!important;
+  margin-bottom:0!important;
+}
