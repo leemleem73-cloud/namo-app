@@ -406,3 +406,15 @@ html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes
 html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter .qmes-inspection-search-box input{
   width:100%!important;height:36px!important;margin:0!important;padding-left:32px!important;
 }
+
+
+/* IQC search field vertical alignment: lower search group to year/month baseline */
+html body #root#root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter>div:first-child{
+  transform:translateY(0)!important;
+  align-self:flex-end!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+}
+html body #root#root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter{
+  align-items:flex-end!important;
+}
