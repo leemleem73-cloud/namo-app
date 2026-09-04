@@ -648,7 +648,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
           <button onClick={() => { setRecordSearch(""); setRecordYear("ALL"); setRecordMonth("ALL"); setRecordPage(1); }}
             className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
-        <div className="overflow-x-auto -mx-4 px-4">
+        <div className={isOqc ? "overflow-x-auto -mx-4 px-4" : "qmes-pqc-record-table-wrap"}>
           <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1120px] qmes-oqc-record-table" : "qmes-pqc-record-table"}`}>
             <colgroup>
               {isOqc ? <>
