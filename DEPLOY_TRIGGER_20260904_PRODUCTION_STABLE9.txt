@@ -1,0 +1,6 @@
+Force production redeploy for stable production UI cleanup.
+- legacy workorder refinement replaced with syntax-safe no-op stub
+- continuous production-process DOM repair loops removed
+- production progress/workorder/process tables rebuilt under one no-overflow CSS owner
+- management preview/print/edit/delete buttons sized to remain fully inside management cell
+2026-09-04 KST
