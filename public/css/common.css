@@ -12837,3 +12837,27 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
     padding:6px!important;
   }
 }
+
+/* FINAL inspection management button normalization: IQC = PQC = OQC */
+html body #root#root#root#root#root#root#root#root#root#root#root#root
+:is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table)
+.qmes-iqc-action-btn{
+ box-sizing:border-box!important;
+ width:62px!important;min-width:62px!important;max-width:62px!important;
+ height:30px!important;min-height:30px!important;max-height:30px!important;
+ padding:0 6px!important;margin:0!important;
+ border-radius:6px!important;
+ font-size:11px!important;font-weight:600!important;line-height:1!important;
+ flex:0 0 62px!important;white-space:nowrap!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;
+}
+html body #root#root#root#root#root#root#root#root#root#root#root#root
+:is(.qmes-iqc-ledger-table,.qmes-pqc-record-table,.qmes-oqc-record-table)
+.qmes-iqc-action-btn svg{
+ width:12px!important;height:12px!important;flex:0 0 12px!important;
+}
+html body #root#root#root#root#root#root#root#root#root#root#root#root
+:is(.qmes-iqc-manage-inline,.qmes-pqc-actions){
+ display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:center!important;
+ gap:4px!important;white-space:nowrap!important;
+}
