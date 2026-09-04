@@ -72,9 +72,10 @@ function ProductionTab() {
   const stTone = { 발행: "violet", 진행중: "blue", 완료: "green", 대기: "amber", 계획: "gray" };
 
   return (
-    <Panel title="배치 작업지시 현황" right={<span className="text-xs text-slate-400">총 {list.length}건</span>}>
-      <div className="overflow-x-auto -mx-4 px-4">
-        <table className="qmes-production-table w-full table-fixed text-sm min-w-[760px]">
+    <div className="qmes-production-progress-page">
+      <Panel title="배치 작업지시 현황" right={<span className="text-xs text-slate-400">총 {list.length}건</span>}>
+      <div className="qmes-production-table-wrap">
+        <table className="qmes-production-table w-full table-fixed text-sm">
           <thead>
             <tr className="text-xs text-slate-400 border-b border-slate-800">
               <th className="text-left py-2 px-3 font-medium">배치번호</th>
@@ -118,7 +119,8 @@ function ProductionTab() {
           </tbody>
         </table>
       </div>
-    </Panel>
+      </Panel>
+    </div>
   );
 }
 
