@@ -1,3 +1,4 @@
+@keyframes qmes-iqc-summary-dot-legacy{0%,100%{transform:translateY(2px);opacity:.82}50%{transform:translateY(-5px);opacity:1}}
 /* NAMO QMES - IQC enterprise screen owner - 2026-09-04
    Screen-only visual owner for Incoming Quality Control.
    Print/certificate styling remains in qmes-document-final-restore / iqc-certificate-final.
@@ -50,8 +51,8 @@ html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summar
 }
 html body #root>div>main .qmes-iqc-page>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
 html body #root>div>main .qmes-iqc-page .qmes-simple-summary-light{
-  width:9px!important;height:9px!important;margin:0 0 3px!important;border-radius:50%!important;
-  animation:none!important;transform:none!important;box-shadow:0 0 7px currentColor!important;
+  width:11px!important;height:11px!important;margin:0 0 3px!important;border-radius:999px!important;
+  animation:qmes-iqc-summary-dot-legacy 2.2s ease-in-out infinite!important;transform-origin:center!important;will-change:transform,opacity!important;box-shadow:0 0 7px currentColor!important;
 }
 html body #root>div>main .qmes-iqc-page .qmes-simple-summary-label{
   color:#344d60!important;font-size:12px!important;font-weight:800!important;line-height:1.3!important;
