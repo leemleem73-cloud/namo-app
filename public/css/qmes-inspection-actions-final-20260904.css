@@ -1,0 +1,32 @@
+/* FINAL single owner for IQC/PQC/OQC output-edit-delete buttons */
+html body #root button.qmes-unified-inspection-action{
+  box-sizing:border-box!important;
+  width:58px!important;
+  min-width:58px!important;
+  max-width:58px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 4px!important;
+  margin:0!important;
+  border-radius:6px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  flex:0 0 58px!important;
+  white-space:nowrap!important;
+}
+html body #root button.qmes-unified-inspection-action svg{
+  width:11px!important;
+  height:11px!important;
+  min-width:11px!important;
+  min-height:11px!important;
+  flex:0 0 11px!important;
+}
+html body #root :is(.qmes-iqc-manage-inline,.qmes-pqc-actions){
+  gap:4px!important;
+}
