@@ -303,3 +303,81 @@ html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record
   margin:0!important;
   align-self:flex-end!important;
 }
+
+
+/* PQC/OQC filters EXACTLY match current IQC controls */
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  column-gap:10px!important;
+  row-gap:0!important;
+  margin:0 0 14px!important;
+  padding:0!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>div:first-child{
+  width:280px!important;
+  min-width:280px!important;
+  max-width:280px!important;
+  flex:0 0 280px!important;
+  margin:0!important;
+  padding:0!important;
+  align-self:flex-end!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  width:280px!important;
+  min-width:280px!important;
+  max-width:280px!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-icon{
+  position:absolute!important;
+  left:10px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input{
+  width:100%!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+  padding-left:32px!important;
+  padding-right:32px!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-oqc-record-filter-field{
+  width:120px!important;
+  min-width:120px!important;
+  max-width:120px!important;
+  flex:0 0 120px!important;
+  margin:0!important;
+  padding:0!important;
+  align-self:flex-end!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-oqc-record-filter-field select{
+  width:120px!important;
+  min-width:120px!important;
+  max-width:120px!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  margin:0!important;
+  align-self:flex-end!important;
+}
