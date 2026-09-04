@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NAMO QMES" />
-  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260904-force6" type="image/svg+xml" />
+  <link rel="icon" href="/assets/namo-mobile-logo.svg?v=20260904-force7" type="image/svg+xml" />
   <title>NAMO QMES Mobile</title>
   <style>
     :root{color-scheme:light;--ink:#152d42;--muted:#718195;--line:#dce4eb;--bg:#f5f7f9;--safe-top:env(safe-area-inset-top);--safe-bottom:max(12px,env(safe-area-inset-bottom))}
@@ -17,27 +17,29 @@
 </head>
 <body>
 <div class="app">
-  <header class="head"><div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260904-force6" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC · MOBILE SAME MENU</span></div></div><button class="pcmode" id="pcBtn" type="button">PC 버전</button><button class="user" id="userBtn" type="button">로그인 확인</button><button class="logout" id="logoutBtn" type="button">↪</button></header>
+  <header class="head"><div class="brand"><img src="/assets/namo-mobile-logo.svg?v=20260904-force7" alt="NAMO"><div><strong>NAMO QMES</strong><span>PC · MOBILE SAME MENU</span></div></div><button class="pcmode" id="pcBtn" type="button">PC 버전</button><button class="user" id="userBtn" type="button">로그인 확인</button><button class="logout" id="logoutBtn" type="button">↪</button></header>
   <section class="intro"><h1>업무 메뉴</h1><p>현재 PC QMES와 동일한 메뉴 구분·명칭·순서로 구성했습니다.</p><label class="search"><input id="menuSearch" type="search" placeholder="PC 메뉴와 동일하게 검색" autocomplete="off"></label></section>
   <main class="content" id="menuRoot"></main><div class="empty" id="empty">검색 결과가 없습니다.</div>
 </div>
 <div class="notice" id="notice"><div class="notice-card"><strong id="noticeTitle">모바일 전용 화면</strong><p id="noticeText"></p><button type="button" id="noticeClose">확인</button></div></div>
 <script>
 (()=>{'use strict';
-const VERSION='20260904-force6',LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;
+const VERSION='20260904-force7',LOGIN=`/mobile-login.html?mobile=1&v=${VERSION}`;
 const groups=[
  {title:'WORKSPACE',items:[['통합 대시보드','▦','home'],['SPC 대시보드','⌁','spc']]},
- {title:'ERP',items:[['수주 · 납기관리','▤','erpSales'],['생산계획 · MRP','▥','erpPlan'],['구매 · 발주관리','□','pending:erpPurchase'],['재고현황','▣','inv:stock'],['입출고 관리','⇄','inv:tx'],['LOT별 재고','L','inv:stock'],['생산투입/완료','↳','inv:tx'],['재고실사','✓','inv:stock'],['거래처 현황','◇','partners']]},
+ {title:'ERP',items:[['수주 · 납기관리','▤','erpSales'],['생산계획 · MRP','▥','erpPlan'],['구매 · 발주관리','□','erpPurchase'],['재고현황','▣','inv:stock'],['입출고 관리','⇄','inv:tx'],['LOT별 재고','L','inv:stock'],['생산투입/완료','↳','inv:tx'],['재고실사','✓','inv:stock'],['거래처 현황','◇','partners']]},
  {title:'MES · QMS',items:[['생산 진행','▶','prod'],['작업지시서','▧','woIssue'],['생산공정 관리','⚙','prodProcess'],['수입검사 (IQC)','Q','iqc'],['공정검사 (PQC)','Q','pqc'],['출하검사 (OQC)','Q','oqc'],['SPC (Cpk)','C','spc'],['품질 인터락','!','lock'],['출하성적서','▤','docs:oqccert'],['LOT 통합추적','⌕','trace'],['출하 · 납품관리','⇢','inv:tx'],['부적합 (8D)','8','docs:ncr'],['고객불만 (GQMS)','G','docs:other:고객불만 보고서'],['4M 변경관리','4','docs:change'],['현장 입력 (iPad)','▱','pop'],['설비 모니터링','◉','eq']]}
 ];
 const root=document.getElementById('menuRoot'),notice=document.getElementById('notice');let authenticated=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function goPlan(){location.assign('/mobile-plan.html?v=20260904-plan3')}
 function goSales(){location.assign('/mobile-sales.html?v=20260904-sales6')}
+function goPurchase(){location.assign('/mobile-work.html?tab=erpPurchase&mobile=1&v=20260904-purchase1')}
 function showNotice(label){
   const text=String(label||'');
   if(/생산계획|MRP/i.test(text)){goPlan();return}
   if(/수주|납기/i.test(text)){goSales();return}
+  if(/구매|발주/i.test(text)){goPurchase();return}
   document.getElementById('noticeTitle').textContent=label;
   document.getElementById('noticeText').textContent='이 항목은 모바일 전용 화면 연결을 준비 중입니다.';
   notice.classList.add('show');
@@ -49,8 +51,10 @@ function route(code,label){
  if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc3');return}
  if(code==='erpSales'||code==='pending:erpSales'){goSales();return}
  if(code==='erpPlan'||code==='pending:erpPlan'){goPlan();return}
+ if(code==='erpPurchase'||code==='pending:erpPurchase'){goPurchase();return}
  if(/생산계획|MRP/i.test(String(label||''))){goPlan();return}
  if(/수주|납기/i.test(String(label||''))){goSales();return}
+ if(/구매|발주/i.test(String(label||''))){goPurchase();return}
  if(code.startsWith('pending:')){showNotice(label);return}
  if(code.startsWith('inv:')){const view=code.split(':')[1]||'stock';try{sessionStorage.setItem('qmes_mobile_inventory_view',view)}catch(_){}openWork('inv',`&view=${encodeURIComponent(view)}`);return}
  if(code.startsWith('docs:')){const parts=code.split(':'),type=parts[1]||'other',title=parts.slice(2).join(':');let extra=`&new=1&doctype=${encodeURIComponent(type)}`;if(title)extra+=`&title=${encodeURIComponent(title)}`;openWork('docs',extra);return}
