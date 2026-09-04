@@ -1,0 +1,2 @@
+Force production redeploy. IQC search field is restored immediately beside year/month/reset in one compact horizontal row, with no vertical gap.
+2026-09-04 KST
