@@ -696,9 +696,9 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-2 text-center whitespace-nowrap">
                     <div className="qmes-pqc-actions" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"6px",width:"100%",whiteSpace:"nowrap",overflow:"visible"}}>
-                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" style={{height:"28px",minHeight:"28px",width:"auto",minWidth:"0",padding:"0 7px",borderRadius:"3px",fontSize:"10px",fontWeight:800,lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-print">{isOqc && <Printer size={12} />} 출력</button>
-                      <button onClick={() => editRecord(r)} style={{height:"28px",minHeight:"28px",width:"auto",minWidth:"0",padding:"0 7px",borderRadius:"3px",fontSize:"10px",fontWeight:800,lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
-                      <button onClick={() => deleteRecord(r)} style={{height:"28px",minHeight:"28px",width:"auto",minWidth:"0",padding:"0 7px",borderRadius:"3px",fontSize:"10px",fontWeight:800,lineHeight:"1.2"}} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
+                      <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print">{isOqc && <Printer size={12} />} 출력</button>
+                      <button onClick={() => editRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-edit">수정</button>
+                      <button onClick={() => deleteRecord(r)} className="qmes-iqc-action-btn qmes-iqc-action-delete">삭제</button>
                     </div>
                   </td>
                 </tr>
