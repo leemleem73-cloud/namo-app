@@ -1,0 +1,5 @@
+Force production redeploy for mobile sales3 registration UI.
+mobile-sales.html contains + 신규 수주 등록 and shared ERP DB save.
+mobile-static-preload.js now routes erpSales and pending:erpSales to mobile-sales.html?v=20260904-sales3.
+PC React source files unchanged.
+2026-09-04
