@@ -1,0 +1,11 @@
+(()=>{
+'use strict';
+const byId=id=>document.getElementById(id);
+const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function request(url,opt={}){const r=await fetch(url,{credentials:'same-origin',cache:'no-store',...opt});const p=await r.json().catch(()=>({success:false,message:'서버 응답 오류'}));if(!r.ok||p?.success===false)throw new Error(p?.message||'직원 정보를 불러오지 못했습니다.');return p?.data??p}
+function addEmail(){if(byId('memberEmail')||!byId('memberName'))return;const box=document.createElement('div');box.innerHTML='<label>이메일</label><input id="memberEmail" type="email" placeholder="PC 회원정보 이메일">';byId('memberName').insertAdjacentElement('afterend',box)}
+async function load(){const box=byId('memberList');if(!box)return;box.innerHTML='<div class="empty">PC 회원정보 연동 중...</div>';try{const rows=await request('/api/admin/users');window.__namoPcMembers=rows;byId('memberCount').textContent=rows.length+'명';box.innerHTML=rows.length?rows.map(u=>'<div class="item"><div class="item-top"><b>'+escapeHtml(u.name||'-')+' '+escapeHtml(u.title||'')+'</b><span class="pill '+(u.role==='admin'?'green':'')+'">'+(u.role==='admin'?'관리자':'직원')+'</span></div><p>'+escapeHtml(u.department||'부서 미지정')+' · '+escapeHtml(u.email||'이메일 없음')+'</p><div class="approve-actions"><button class="approve" data-pc-member="'+escapeHtml(u.id)+'">수정</button></div></div>').join(''):'<div class="empty">등록된 직원이 없습니다.</div>';box.querySelectorAll('[data-pc-member]').forEach(b=>b.onclick=()=>edit(rows.find(x=>String(x.id)===String(b.dataset.pcMember))))}catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>'}}
+function edit(u){if(!u)return;addEmail();byId('memberId').value=u.id||'';byId('memberName').value=u.name||'';byId('memberEmail').value=u.email||'';byId('memberDept').value=u.department||'';byId('memberTitle').value=u.title||'';byId('memberRole').value=u.role||'user';byId('memberModalTitle').textContent='직원 수정';byId('memberModal').classList.remove('hidden')}
+function install(){addEmail();const open=byId('adminOpen');if(open&&!open.dataset.pcSync){open.dataset.pcSync='1';open.addEventListener('click',()=>setTimeout(load,80),true)}}
+let count=0;const timer=setInterval(()=>{install();if(++count>40)clearInterval(timer)},250);
+})();
