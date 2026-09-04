@@ -44,7 +44,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [nextId, setNextId] = useState(DB.seqs[storeKey] || idStart);
   const [editingId, setEditingId] = useState(null);
   const [recordSearch, setRecordSearch] = useState("");
-  const [recordYear, setRecordYear] = useState("ALL");
+  const [recordYear, setRecordYear] = useState(today.slice(0,4));
   const [recordMonth, setRecordMonth] = useState("ALL");
   const [recordPage, setRecordPage] = useState(1);
   const [viewingRecord, setViewingRecord] = useState(null);
@@ -252,7 +252,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       }
       dbSave();
       setEditingId(null); setPqcValues(makeInitialPqcValues()); setTried(false); setShowRegisterModal(false);
-      setRecordSearch(""); setRecordYear("ALL"); setRecordMonth("ALL"); setRecordPage(1);
+      setRecordSearch(""); setRecordYear(today.slice(0,4)); setRecordMonth("ALL"); setRecordPage(1);
       return;
     }
     const now = new Date();
@@ -635,7 +635,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <div className="qmes-filter-select-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
               <span>연도</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={recordYear} onChange={(e)=>{setRecordYear(e.target.value);setRecordPage(1);}}>
-                <option value="ALL">{recordYears[0] ? String(recordYears[0]).replace(/년$/,"") : "2026"}</option>
                 {recordYears.map((year)=><option key={year} value={year}>{String(year).replace(/년$/,"")}년</option>)}
               </select>
             </div>
