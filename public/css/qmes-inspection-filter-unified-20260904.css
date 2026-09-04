@@ -144,3 +144,40 @@ html body #root>div>main .qmes-unified-filter-grid .qmes-inspection-search-box>b
     overflow-x:auto!important;
   }
 }
+
+/* Unified inspection filter final visibility/sizing */
+html body #root>div>main .qmes-unified-filter-grid .qmes-unified-search-input{
+  width:350px!important;
+  min-width:350px!important;
+  max-width:350px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  font-size:13px!important;
+  color:#2e4557!important;
+  background:#fff!important;
+  opacity:1!important;
+}
+html body #root>div>main .qmes-unified-filter-grid .qmes-unified-search-input::placeholder{
+  color:#6f7f8d!important;
+  opacity:1!important;
+  font-size:13px!important;
+  font-weight:600!important;
+}
+html body #root>div>main .qmes-unified-filter-grid .qmes-oqc-record-filter-field,
+html body #root>div>main .qmes-unified-filter-grid .qmes-oqc-record-filter-field select{
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+}
+html body #root>div>main .qmes-unified-filter-grid>button{
+  width:135px!important;
+  min-width:135px!important;
+  max-width:135px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+}
