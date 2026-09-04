@@ -1,0 +1,5 @@
+Force production redeploy for enterprise dashboard cleanup.
+Reason: production UI is still serving stale/overlapping dashboard behavior after latest dashboard fixes.
+Target: main branch latest commit and later.
+Scope: deployment trigger only. No database or inspection data changes.
+2026-09-04 KST
