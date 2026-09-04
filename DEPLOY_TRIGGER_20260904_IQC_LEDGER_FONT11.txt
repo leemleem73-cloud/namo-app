@@ -1,0 +1,2 @@
+Force production redeploy. IQC ledger header/body typography now exactly matches PQC record scale: header/body 11px, action buttons 10px, with PQC-equivalent weights and line heights.
+2026-09-04 KST
