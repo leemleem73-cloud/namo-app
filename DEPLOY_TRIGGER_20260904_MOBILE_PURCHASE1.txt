@@ -1,0 +1,8 @@
+2026-09-04 MOBILE PURCHASE DIRECT ROUTING
+
+- Mobile-only change.
+- Purchase / Purchase Order menu no longer uses pending popup.
+- erpPurchase and legacy pending:erpPurchase route directly to mobile work purchase screen.
+- Label fallback for 구매/발주 also routes directly.
+- PC files unchanged.
+- Mobile cache build: force7 / purchase1.
