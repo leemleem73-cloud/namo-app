@@ -400,11 +400,11 @@ function IqcTab() {
 
       <div className="qmes-iqc-ledger-section">
         <Panel title="수입검사 관리대장" className="qmes-iqc-ledger-panel">
-          <div className="qmes-inspection-record-filter qmes-iqc-record-filter qmes-unified-filter-grid" style={{display:"grid",gridTemplateColumns:"350px 150px 150px 135px",columnGap:"12px",alignItems:"end",justifyContent:"start",width:"max-content",maxWidth:"100%"}}>
+          <div className="qmes-unified-filter-grid" style={{display:"grid",gridTemplateColumns:"350px 150px 150px 135px",columnGap:"12px",alignItems:"end",justifyContent:"start",width:"max-content",maxWidth:"100%"}}>
             <div className="flex flex-col gap-1" style={{width:"350px",margin:0,minWidth:0}}>
               <span className="text-[10px] text-slate-500">입고번호 / LOT / 검사자 검색</span>
-              <div className="qmes-inspection-search-box" style={{width:"350px",height:"42px",position:"relative",display:"flex",alignItems:"center"}}>
-                <Search size={15} className="qmes-inspection-search-icon" />
+              <div className="qmes-filter-search-wrap" style={{width:"350px",height:"42px",position:"relative",display:"flex",alignItems:"center"}}>
+                <Search size={15} className="qmes-filter-search-icon" />
                 <input
                   value={searchTerm}
                   onChange={(e)=>setSearchTerm(e.target.value)}
@@ -418,13 +418,13 @@ function IqcTab() {
                 )}
               </div>
             </div>
-            <div className="qmes-oqc-record-filter-field" style={{width:"150px",margin:0,minWidth:0}}>
+            <div className="qmes-filter-select-field" style={{width:"150px",margin:0,minWidth:0}}>
               <span>연도</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
                 {availableYears.map((year)=><option key={year} value={year}>{year}년</option>)}
               </select>
             </div>
-            <div className="qmes-oqc-record-filter-field" style={{width:"150px",margin:0,minWidth:0}}>
+            <div className="qmes-filter-select-field" style={{width:"150px",margin:0,minWidth:0}}>
               <span>월</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={selectedMonth} onChange={(e)=>setSelectedMonth(e.target.value)}>
                 <option value="전체">전체 월</option>
