@@ -215,3 +215,38 @@ html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter label{
   font-size:10px!important;
   line-height:1.2!important;
 }
+
+
+/* IQC final control alignment - 2026-09-04 */
+html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-simple-summary-light{
+  box-shadow:none!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter .qmes-inspection-search-box{
+  width:180px!important;
+  min-width:180px!important;
+  max-width:180px!important;
+  height:34px!important;
+  min-height:34px!important;
+  flex:0 0 180px!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter .qmes-inspection-search-box input{
+  width:100%!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+html body #root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-record-filter select{
+  width:120px!important;
+  min-width:120px!important;
+  max-width:120px!important;
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
