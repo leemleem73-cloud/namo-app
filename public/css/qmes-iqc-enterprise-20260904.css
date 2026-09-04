@@ -256,3 +256,14 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
 }
 
 
+
+/* IQC ledger text slightly enlarged to visually match PQC/OQC */
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table,
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table thead th,
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td,
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td :is(span,strong,a,small){
+  font-size:12px!important;
+}
+html body #root#root#root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledger-table tbody td button{
+  font-size:10px!important;
+}
