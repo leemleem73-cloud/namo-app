@@ -1,0 +1,2 @@
+Force production redeploy. Login page must be isolated: collapsible sidebar and header user dropdown enhancement scripts now exit immediately when qmes-current-user-v1 is absent, restoring the original login-only screen with no application menu/header visible before authentication.
+2026-09-04 KST
