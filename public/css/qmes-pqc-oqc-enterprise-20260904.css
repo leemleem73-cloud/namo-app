@@ -258,3 +258,42 @@ html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.
   justify-content:center!important;
   gap:3px!important;
 }
+
+/* PQC/OQC management buttons EXACTLY copy current IQC management button geometry */
+html body #root#root#root#root#root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+html body #root#root#root#root#root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions>button.qmes-iqc-action-btn{
+  box-sizing:border-box!important;
+  width:62px!important;
+  min-width:62px!important;
+  max-width:62px!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-height:30px!important;
+  padding:0 6px!important;
+  margin:0!important;
+  border-radius:6px!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  gap:4px!important;
+  flex:0 0 62px!important;
+  white-space:nowrap!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+html body #root#root#root#root#root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions>button.qmes-iqc-action-btn svg{
+  width:12px!important;
+  height:12px!important;
+  flex:0 0 12px!important;
+}
