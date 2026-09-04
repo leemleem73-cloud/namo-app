@@ -1,0 +1,2 @@
+Force production redeploy. IQC summary dot now matches PQC/OQC exactly in size and no-shadow appearance; IQC search/year/month/reset control heights and fonts aligned to PQC/OQC; IQC ledger content typography reduced to the same 11px scale as PQC/OQC.
+2026-09-04 KST
