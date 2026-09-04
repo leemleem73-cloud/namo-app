@@ -18,18 +18,18 @@
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child{padding:12px 16px!important;border-top:1px solid #334155!important;background:#0b1728!important}
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button{height:36px!important;padding:0 16px!important;border-radius:6px!important;font-size:13px!important;font-weight:700!important}
     #qmes-production-result-modal-root [aria-label="생산실적 입력"]>div:last-child button:last-child{background:#0891b2!important;color:#fff!important;cursor:pointer!important;opacity:1!important}
-    .qmes-issued-table-wrap{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:visible!important}
-    .qmes-issued-table-v2{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
-    .qmes-issued-table-v2 th,.qmes-issued-table-v2 td{box-sizing:border-box!important;height:42px!important;padding:6px 2px!important;text-align:center!important;vertical-align:middle!important;letter-spacing:0!important;font-variant-numeric:tabular-nums!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-    .qmes-wo-list-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
-    .qmes-wo-list-table th,.qmes-wo-list-table td{box-sizing:border-box!important;height:46px!important;min-width:0!important;padding:7px 5px!important;text-align:center!important;vertical-align:middle!important;letter-spacing:0!important;font-variant-numeric:tabular-nums!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-    .qmes-wo-list-table td button,.qmes-wo-list-table td select{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+    
+    
+    
+    
+    
+    
     .qmes-wo-list-table .qmes-status-select{width:100%!important;min-width:0!important;max-width:88px!important;padding-left:4px!important;padding-right:16px!important}
-    @media(max-width:1250px){.qmes-issued-table-v2 th,.qmes-issued-table-v2 td{padding-left:1px!important;padding-right:1px!important}.qmes-issued-table-v2 th{font-size:10px!important}.qmes-issued-table-v2 td{font-size:11px!important}.qmes-wo-list-table th,.qmes-wo-list-table td{padding-left:3px!important;padding-right:3px!important}.qmes-wo-list-table th{font-size:10px!important}.qmes-wo-list-table td{font-size:11px!important}}
-    @media(max-width:900px){.qmes-wo-list-table th,.qmes-wo-list-table td{padding-left:2px!important;padding-right:2px!important}.qmes-wo-list-table th{font-size:9px!important}.qmes-wo-list-table td{font-size:10px!important}.qmes-wo-list-table .qmes-status-select{height:28px!important;padding-left:2px!important;padding-right:12px!important;font-size:9px!important}.qmes-wo-list-table td:last-child button{padding-left:4px!important;padding-right:4px!important;font-size:9px!important}}
+    @media(max-width:1250px){.qmes-issued-table-v2 th{font-size:10px!important}.qmes-issued-table-v2 td{font-size:11px!important}.qmes-wo-list-table th{font-size:10px!important}.qmes-wo-list-table td{font-size:11px!important}}
+    @media(max-width:900px){.qmes-wo-list-table th{font-size:9px!important}.qmes-wo-list-table td{font-size:10px!important}.qmes-wo-list-table .qmes-status-select{height:28px!important;padding-left:2px!important;padding-right:12px!important;font-size:9px!important}.qmes-wo-list-table td:last-child button{padding-left:4px!important;padding-right:4px!important;font-size:9px!important}}
     .qmes-issued-table-v2 th,.qmes-wo-list-table th{font-size:11px!important;font-weight:700!important;white-space:nowrap!important}.qmes-issued-table-v2 td{font-size:12px!important}.qmes-wo-list-table td{font-size:13px!important}
     .qmes-issued-table-v2 th.num,.qmes-issued-table-v2 td.num,.qmes-issued-table-v2 th.center,.qmes-issued-table-v2 td.center{text-align:center!important}
-    .qmes-issued-table-v2 td button,.qmes-issued-table-v2 td select,.qmes-wo-list-table td button,.qmes-wo-list-table td select{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
+    .qmes-issued-table-v2 td button,.qmes-issued-table-v2 td select,
     .qmes-issued-table-v2 td:last-child,.qmes-wo-list-table td:last-child{white-space:nowrap!important;text-align:center!important}
     .qmes-issued-table-v2 .qmes-manage-btn.edit,.qmes-issued-table-v2 [data-qmes-management-edit-hidden="1"]{display:none!important}
     .qmes-production-result-shortcut{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:26px!important;margin:0 1px!important;padding-left:2px!important;padding-right:2px!important;border:1px solid #a855f7!important;background:rgba(126,34,206,.34)!important;color:#f3e8ff!important;font-size:9px!important;white-space:nowrap!important}.qmes-production-result-shortcut:hover{background:rgba(147,51,234,.58)!important;color:#fff!important}
