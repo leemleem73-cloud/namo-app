@@ -131,14 +131,6 @@ html body #root .flex.flex-col.gap-5:has(> .flex.flex-col.gap-3.border-b.border-
   margin-bottom: 18px !important;
 }
 
-/* 공정검사 관리 버튼: 수입검사와 동일하게 버튼 사이 간격 확보 */
-html body #root#root#root main .qmes-pqc-record-table tbody td:last-child .qmes-iqc-action-btn{
-  margin-right:0!important;
-}
-html body #root#root#root main .qmes-pqc-record-table tbody td:last-child .qmes-iqc-action-btn + .qmes-iqc-action-btn{
-  margin-left:6px!important;
-}
-
 /* 공정/출하 측정값 보기: 밝은 화면에 맞는 또렷한 블루 버튼 */
 html body #root#root#root main :is(.qmes-pqc-record-table,.qmes-oqc-record-table) .qmes-pqc-value-preview-btn{
   display:inline-flex!important;
