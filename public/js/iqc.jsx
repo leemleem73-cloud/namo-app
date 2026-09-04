@@ -375,7 +375,7 @@ function IqcTab() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="qmes-iqc-page flex flex-col gap-4">
       <InspectionSummary
         items={[
           { label: "당월 입고", value: monthRows.length, unit: "건", tone: "violet" },
