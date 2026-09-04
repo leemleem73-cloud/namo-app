@@ -1,0 +1,3 @@
+Force production redeploy for attendance correction UI cleanup.
+Expected result: remove only the floating pencil attendance correction button; keep the in-page attendance correction request control and functionality.
+Source change commit: 58df813348cff5b9682b739d57593daceaa5eac3
