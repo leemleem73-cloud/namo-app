@@ -467,3 +467,118 @@ html body #root .qmes-prod-process .qpp-chip{
   html body #root main .qmes-issued-table-v2 td{font-size:9px!important;padding-left:3px!important;padding-right:3px!important}
   html body #root main .qmes-workorder-actions .qmes-manage-btn{font-size:8px!important}
 }
+
+
+/* ---------- production redesign pass 3: final shared alignment ---------- */
+html body #root main:has(.qmes-production-progress-page),
+html body #root main:has(.qmes-issued-table-v2),
+html body #root main:has(.qmes-prod-process){
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+html body #root :is(.qmes-production-progress-page,.qmes-prod-process),
+html body #root main:has(.qmes-issued-table-v2)>*{
+  min-width:0!important;
+  max-width:100%!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table tbody tr,
+html body #root main .qmes-issued-table-v2 tbody tr,
+html body #root .qmes-prod-process .qpp-table tbody tr{
+  transition:background-color .12s ease!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table th:first-child,
+html body #root main .qmes-issued-table-v2 th:first-child,
+html body #root .qmes-prod-process .qpp-table th:first-child{
+  border-top-left-radius:0!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table th:last-child,
+html body #root main .qmes-issued-table-v2 th:last-child,
+html body #root .qmes-prod-process .qpp-table th:last-child{
+  border-top-right-radius:0!important;
+}
+
+/* Workorder filter aligned to the inspection-screen control rhythm */
+html body #root main .qmes-issued-filter{
+  padding:12px!important;
+  border:1px solid #e1e8ef!important;
+  border-radius:8px!important;
+  background:#f8fbfd!important;
+}
+html body #root main .qmes-issued-filter input:focus,
+html body #root main .qmes-issued-filter select:focus{
+  outline:none!important;
+  border-color:#77a9c8!important;
+  box-shadow:0 0 0 2px rgba(95,159,201,.10)!important;
+}
+html body #root main .qmes-issued-filter button:hover,
+html body #root main .qmes-workorder-actions .qmes-manage-btn:hover,
+html body #root .qmes-prod-process .qpp-actionbar button:hover{
+  filter:brightness(.98)!important;
+}
+
+/* Workorder action cell is intentionally compact so all columns stay visible */
+html body #root main .qmes-issued-table-v2 td:last-child{
+  padding-left:3px!important;
+  padding-right:3px!important;
+  overflow:visible!important;
+}
+html body #root main .qmes-workorder-actions{
+  width:100%!important;
+  max-width:100%!important;
+  gap:2px!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn{
+  flex:1 1 0!important;
+  min-width:0!important;
+  height:26px!important;
+  min-height:26px!important;
+  border-radius:4px!important;
+  font-size:8.5px!important;
+  letter-spacing:-.15px!important;
+}
+
+/* Production process: normalize form controls and cards */
+html body #root .qmes-prod-process :is(input,select,textarea){
+  box-sizing:border-box!important;
+  border:1px solid #bdccd7!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#30475c!important;
+  box-shadow:none!important;
+}
+html body #root .qmes-prod-process :is(input,select){
+  min-height:32px!important;
+  padding:0 8px!important;
+  font-size:10.5px!important;
+}
+html body #root .qmes-prod-process textarea{
+  padding:8px!important;
+  font-size:10.5px!important;
+}
+html body #root .qmes-prod-process :is(input,select,textarea):focus{
+  outline:none!important;
+  border-color:#77a9c8!important;
+  box-shadow:0 0 0 2px rgba(95,159,201,.10)!important;
+}
+html body #root .qmes-prod-process .qpp-card + .qpp-card{
+  margin-top:12px!important;
+}
+html body #root .qmes-prod-process .qpp-empty{
+  padding:28px 12px!important;
+  color:#8495a5!important;
+  font-size:11px!important;
+  text-align:center!important;
+}
+
+/* keep the three production screens visually balanced on common desktop widths */
+@media (min-width:901px) and (max-width:1400px){
+  html body #root .qmes-production-progress-page .qmes-production-table th,
+  html body #root .qmes-production-progress-page .qmes-production-table td,
+  html body #root main .qmes-issued-table-v2 th,
+  html body #root main .qmes-issued-table-v2 td,
+  html body #root .qmes-prod-process .qpp-table th,
+  html body #root .qmes-prod-process .qpp-table td{
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
+}
