@@ -1,0 +1,5 @@
+2026-09-04 QMES server recovery redeploy
+- Attendance server preload is disabled from the production startup path.
+- Existing PC QMES and mobile QMES startup structure is preserved.
+- No attendance API is loaded during this recovery deployment.
+- Purpose: restart production with the current clean server.js and package.json only.
