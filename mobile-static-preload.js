@@ -23,25 +23,25 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
       .replace("['수주 · 납기관리','▤','pending:erpSales']", "['수주 · 납기관리','▤','erpSales']")
       .replace("['수주·납기관리','▤','pending:erpSales']", "['수주·납기관리','▤','erpSales']");
 
-    if (!html.includes("if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales3');return}")) {
+    if (!html.includes("if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales4');return}")) {
       const spcRoute = "if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}";
       if (html.includes(spcRoute)) {
         html = html.replace(
           spcRoute,
-          spcRoute + "\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales3');return}"
+          spcRoute + "\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales4');return}"
         );
       } else {
         html = html.replace(
           "openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');",
-          "if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales3');return}\n    openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');"
+          "if(code==='spc'){location.assign('/mobile-spc.html?v=20260904-spc2');return}\n    if(code==='erpSales'){location.assign('/mobile-sales.html?v=20260904-sales4');return}\n    openingText.textContent=`${label} 화면을 여는 중입니다.`;opening.classList.add('show');"
         );
       }
     }
 
-    if (!html.includes("if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales3');return}")) {
+    if (!html.includes("if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales4');return}")) {
       html = html.replace(
         "if(code.startsWith('pending:')){showNotice(label);return}",
-        "if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales3');return}\n    if(code.startsWith('pending:')){showNotice(label);return}"
+        "if(code==='pending:erpSales'){location.assign('/mobile-sales.html?v=20260904-sales4');return}\n    if(code.startsWith('pending:')){showNotice(label);return}"
       );
     }
 
@@ -73,15 +73,15 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
 
       if (fileName === 'mobile.html') {
         html = forceLatestMobileMenuRoutes(html)
-          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force3')
-          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force3');
+          .replace(/\/assets\/namo-mobile-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force4')
+          .replace(/\/assets\/namo-header-logo\.svg(?:\?[^"']*)?/g, '/assets/namo-mobile-logo.svg?v=20260904-mobile-force4');
       }
 
       if (fileName === 'mobile-work.html') {
         html = html.replace('.brandmark{display:none}', '.brandmark{display:grid}');
         html = html.replace(
           '</style>',
-          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260904-mobile-force3") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
+          '.brandmark{font-size:0!important;color:transparent!important;background:transparent url("/assets/namo-mobile-logo.svg?v=20260904-mobile-force4") center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;border:0!important}\n</style>'
         );
 
         if (!html.includes('qmes-mobile-native-adapter-20260903.js')) html = html.replace('</body>', '<script src="/js/qmes-mobile-native-adapter-20260903.js?v=20260903-native1"></script>\n</body>');
@@ -92,6 +92,13 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         if (!html.includes('qmes-mobile-operation-write-20260903.js')) html = html.replace('</body>', '<script src="/js/qmes-mobile-operation-write-20260903.js?v=20260903-write1"></script>\n</body>');
         if (!html.includes('qmes-mobile-direct-entry-20260903.js')) html = html.replace('</body>', '<script src="/js/qmes-mobile-direct-entry-20260903.js?v=20260903-direct1"></script>\n</body>');
         if (!html.includes('qmes-mobile-workorder-pc-parity-20260903.js')) html = html.replace('</body>', '<script src="/js/qmes-mobile-workorder-pc-parity-20260903.js?v=20260903-wopc1"></script>\n</body>');
+      }
+
+      if (fileName === 'mobile-sales.html' && !html.includes('qmes-mobile-sales-detail-20260904.js')) {
+        html = html.replace(
+          '</body>',
+          '<script src="/js/qmes-mobile-sales-detail-20260904.js?v=20260904-sales-detail1"></script>\n</body>'
+        );
       }
 
       if (fileName !== 'mobile-login.html'
@@ -157,12 +164,12 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
     fs.readFile(filePath, 'utf8', (error, source) => {
       if (error) return next(error);
 
-      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile-login.html?v=20260904-mobile-force3');\n  return true;\n}\n`;
+      const runtimeHelper = `\nfunction qmesShouldUseMobileWorkspace(){\n  try {\n    const ua=String(navigator.userAgent||'');\n    const mobileUA=/Android|iPhone|iPad|iPod|Mobile|Tablet|SamsungBrowser|KAKAOTALK/i.test(ua);\n    const ipadDesktop=String(navigator.platform||'')==='MacIntel' && Number(navigator.maxTouchPoints||0)>1;\n    const params=new URLSearchParams(location.search);\n    const forceDesktop=params.get('desktop')==='1'||params.get('view')==='desktop'||params.get('embeddedMobile')==='1';\n    return !forceDesktop && (mobileUA||ipadDesktop);\n  } catch(_error) { return false; }\n}\nfunction qmesGoMobileWorkspace(){\n  if(!qmesShouldUseMobileWorkspace()) return false;\n  location.replace('/mobile-login.html?v=20260904-mobile-force4');\n  return true;\n}\n`;
 
       let patched = runtimeHelper + source;
       patched = patched.replace(
         'function QMESApp() {',
-        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260904-mobile-force3');\n    return null;\n  }`
+        `function QMESApp() {\n  if (qmesShouldUseMobileWorkspace()) {\n    location.replace('/mobile-login.html?v=20260904-mobile-force4');\n    return null;\n  }`
       );
       patched = patched.replace(
         '    setCheckingSession(false);\n    setCurrentUser(user);',
@@ -210,7 +217,7 @@ if (!express.__NAMO_MOBILE_STATIC_PATCHED__) {
         const loggedIn = Boolean(req.session && req.session.user);
 
         if (mobileOrIPad && entryPage && !explicitDesktop) {
-          req.url = loggedIn ? '/mobile.html?v=20260904-mobile-force3' : '/mobile-login.html?v=20260904-mobile-force3';
+          req.url = loggedIn ? '/mobile.html?v=20260904-mobile-force4' : '/mobile-login.html?v=20260904-mobile-force4';
           return servePatchedMobileFile(root, req, res, next) || staticMiddleware(req, res, err => {
             req.url = originalUrl;
             if (err) return next(err);
