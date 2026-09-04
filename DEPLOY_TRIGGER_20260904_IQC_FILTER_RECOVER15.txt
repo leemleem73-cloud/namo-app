@@ -1,0 +1,2 @@
+Force production redeploy. Restore IQC management ledger filters to one compact horizontal row: search 280px, year/month 120px, reset aligned bottom; remove accidental vertical gap before table. Preserve smaller ledger typography.
+2026-09-04 KST
