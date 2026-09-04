@@ -37,8 +37,9 @@ html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>
 }
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page)>.qmes-simple-summary .qmes-simple-summary-item:last-child{border-right:0!important;}
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-light{
-  width:9px!important;height:9px!important;margin:0 0 3px!important;border-radius:50%!important;
-  animation:none!important;transform:none!important;
+  width:11px!important;height:11px!important;margin:0 0 3px!important;border-radius:999px!important;
+  animation:qmes-summary-dot-float 1.35s ease-in-out infinite!important;
+  transform-origin:center!important;will-change:transform,opacity!important;
 }
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-simple-summary-label{
   color:#344d60!important;font-size:12px!important;font-weight:800!important;
@@ -152,3 +153,39 @@ html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) 
 @media print{
   html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page){margin:0!important;padding:0!important;}
 }
+
+
+/* PQC record table: fit within desktop viewport without horizontal drag */
+html body #root#root#root#root#root>div>main .qmes-pqc-page .overflow-x-auto{
+  overflow-x:hidden!important;
+}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table{
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th,
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td{
+  padding-left:6px!important;
+  padding-right:6px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:15%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(2),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(2){width:11%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(3),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(3){width:14%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(4),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(4){width:16%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(5),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(5){width:12%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(6),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(6){width:9%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(7),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(7){width:10%!important;}
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
+html body #root#root#root#root#root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:13%!important;}
