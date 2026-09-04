@@ -14,7 +14,7 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
-const SHELL_BUILD = '20260904-pqc-directcols7';
+const SHELL_BUILD = '20260904-iqc-dot-pqc-actions8';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-modal1';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
