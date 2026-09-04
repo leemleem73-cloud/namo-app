@@ -1,4 +1,4 @@
-/* QMES 관리자 모듈: 회원등록 현황 - 상단 폼 수정 방식 */
+/* QMES 관리자 모듈: 회원등록 현황 - 상단 수정폼 단일 방식 */
 function MembersManagementTab() {
   const departments = ["대표", "관리부", "경영지원부", "연구소", "생산부", "영업부", "품질부"];
   const emptyForm = { name: "", email: "", department: departments[0], title: "", phone: "", role: "user", status: "APPROVED" };
@@ -120,13 +120,21 @@ function MembersManagementTab() {
       role: user.role || "user",
       status: user.status || "APPROVED"
     });
-    setInfo({ tone: "blue", text: `${user.name} 회원을 수정 중입니다. 위 내용을 변경한 뒤 '수정 저장'을 눌러 주세요.` });
+    setInfo({ tone: "blue", text: `${user.name} 회원 수정 화면입니다. 상단에서 내용을 변경한 뒤 '수정 저장'을 눌러 주세요.` });
     requestAnimationFrame(() => {
-      const root = document.querySelector('.qmes-db-members');
-      if (root) root.scrollIntoView({ behavior: "smooth", block: "start" });
-      else window.scrollTo({ top: 0, behavior: "smooth" });
-      setTimeout(() => document.querySelector('.qmes-member-edit-name')?.focus(), 250);
+      requestAnimationFrame(() => {
+        const editor = document.getElementById("qmes-member-editor");
+        if (editor) editor.scrollIntoView({ behavior: "smooth", block: "start" });
+        else window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => document.querySelector('.qmes-member-edit-name')?.focus(), 250);
+      });
     });
+  };
+
+  const startEditFromButton = (event, user) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    beginEdit(user);
   };
 
   const saveMember = async () => {
@@ -223,24 +231,30 @@ function MembersManagementTab() {
         .qmes-db-members{--mf:'Pretendard','Noto Sans KR','Malgun Gothic',Arial,sans-serif;width:100%;font-family:var(--mf)!important;color:#243746;font-size:14px}
         .qmes-db-members *{box-sizing:border-box;font-family:var(--mf)!important}
         .qmes-db-member-notice{margin:0 0 14px;padding:12px 14px;border:1px solid #9fd7bd;border-radius:8px;background:#f3fbf7;color:#17663a;font-size:14px;font-weight:800}
-        .qmes-db-member-notice.error{border-color:#f0aaaa;background:#fff5f5;color:#b42318}.qmes-db-member-notice.editing{border-color:#8ec7e5;background:#eef8fd;color:#0a668f}
+        .qmes-db-member-notice.error{border-color:#f0aaaa;background:#fff5f5;color:#b42318}
+        .qmes-db-member-notice.editing{border-color:#5bb6df;background:#eaf7fd;color:#075f89}
         .qmes-db-member-card{margin-bottom:16px;border:1px solid #d3dfe7;border-radius:9px;background:#fff;overflow:hidden;box-shadow:0 2px 8px rgba(31,65,89,.06)}
-        .qmes-db-member-head{min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #dce5eb;background:#fbfcfd}.qmes-db-member-head h2{margin:0;color:#203746;font-size:16px;font-weight:900}.qmes-db-member-count{color:#5d7180;font-size:13px;font-weight:750}
+        .qmes-db-member-card.is-edit-mode{border:2px solid #2b9fd0;box-shadow:0 0 0 3px rgba(43,159,208,.10),0 6px 18px rgba(31,65,89,.08)}
+        .qmes-db-member-head{min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #dce5eb;background:#fbfcfd}
+        .qmes-db-member-card.is-edit-mode .qmes-db-member-head{background:#edf8fd;border-bottom-color:#9fd5eb}
+        .qmes-db-member-head h2{margin:0;color:#203746;font-size:16px;font-weight:900}
+        .qmes-db-member-edit-chip{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:999px;background:#0b8fc7;color:#fff;font-size:12px;font-weight:900}
+        .qmes-db-member-count{color:#5d7180;font-size:13px;font-weight:750}
         .qmes-db-member-body{padding:16px}.qmes-db-member-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:end}.qmes-db-member-field{display:block;min-width:0}.qmes-db-member-field>span{display:block;margin-bottom:6px;color:#4f6474;font-size:13px;font-weight:850}
         .qmes-db-member-input{width:100%;height:42px;padding:0 11px!important;border:1px solid #b8c7d2!important;border-radius:7px!important;background:#fff!important;color:#243746!important;font-size:14px!important;font-weight:650!important;outline:none!important}.qmes-db-member-input:focus{border-color:#1b8dc5!important;box-shadow:0 0 0 3px rgba(27,141,197,.12)!important}
         .qmes-db-member-actions-top{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.qmes-db-member-btn{height:34px;min-width:48px;padding:0 11px!important;border-radius:6px!important;font-size:12px!important;font-weight:850!important;line-height:1!important;cursor:pointer!important;white-space:nowrap!important;opacity:1!important;visibility:visible!important}.qmes-db-member-btn:disabled{opacity:.55!important;cursor:not-allowed!important}
-        .qmes-db-member-btn.primary{border:1px solid #0b8fc7!important;background:#0b8fc7!important;color:#fff!important}.qmes-db-member-btn.cancel{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.edit{border:1px solid #5ebee2!important;background:#eef9fd!important;color:#0b729d!important}.qmes-db-member-btn.reset{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.delete{border:1px solid #efaaaa!important;background:#fff!important;color:#c43c3c!important}
-        .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eef8fd!important}
+        .qmes-db-member-btn.primary{border:1px solid #0b8fc7!important;background:#0b8fc7!important;color:#fff!important}.qmes-db-member-btn.cancel{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.edit{border:1px solid #39a9d8!important;background:#eaf8fd!important;color:#056b96!important}.qmes-db-member-btn.reset{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.delete{border:1px solid #efaaaa!important;background:#fff!important;color:#c43c3c!important}
+        .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eaf7fd!important}
         .qmes-db-member-uid{color:#1587b7!important;font-size:13px!important;font-weight:850!important}.qmes-db-member-name{color:#1e3443!important;font-weight:850!important}.qmes-db-member-phone{font-variant-numeric:tabular-nums}.qmes-db-member-row-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}.qmes-db-member-badge{display:inline-flex;align-items:center;justify-content:center;min-height:25px;padding:3px 8px;border:1px solid #ccd7de;border-radius:6px;background:#f4f7f9;color:#526575;font-size:12px;font-weight:850}.qmes-db-member-badge.admin{border-color:#c7b8ff;background:#f2efff;color:#6546c7}.qmes-db-member-badge.approved{border-color:#a8d9bf;background:#effaf4;color:#197247}.qmes-db-member-loading{padding:28px;text-align:center;color:#607483;font-weight:700}
         @media(max-width:1100px){.qmes-db-member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.qmes-db-member-grid{grid-template-columns:1fr}}
       `}</style>
 
       {info && <div className={`qmes-db-member-notice ${info.tone === "red" ? "error" : info.tone === "blue" ? "editing" : ""}`}>{info.text}</div>}
 
-      <section className="qmes-db-member-card">
+      <section id="qmes-member-editor" className={`qmes-db-member-card ${editingId ? "is-edit-mode" : ""}`}>
         <div className="qmes-db-member-head">
           <h2>{editingId ? `회원 정보 수정 · ${editingOriginalName}` : "회원 추가"}</h2>
-          {editingId && <span className="qmes-db-member-count">아래 회원의 정보를 상단에서 수정 후 저장</span>}
+          {editingId ? <span className="qmes-db-member-edit-chip">수정 모드</span> : null}
         </div>
         <div className="qmes-db-member-body">
           <div className="qmes-db-member-grid">
@@ -258,7 +272,7 @@ function MembersManagementTab() {
             {editingId && <button type="button" className="qmes-db-member-btn cancel" disabled={saving} onClick={clearEdit}>수정 취소</button>}
             <button type="button" className="qmes-db-member-btn primary" disabled={saving} onClick={saveMember}>{saving ? "저장 중..." : editingId ? "수정 저장" : "회원 추가"}</button>
           </div>
-          <p className="qmes-db-member-help">{editingId ? "회원등록 현황에서 수정 버튼을 누르면 해당 회원 정보가 이 상단 폼에 표시됩니다." : "회원정보는 PostgreSQL 사용자 DB에 저장됩니다. 신규 회원 초기 비밀번호는 1234입니다."}</p>
+          <p className="qmes-db-member-help">{editingId ? `현재 ${editingOriginalName} 회원을 수정 중입니다.` : "회원정보는 PostgreSQL 사용자 DB에 저장됩니다. 신규 회원 초기 비밀번호는 1234입니다."}</p>
         </div>
       </section>
 
@@ -267,7 +281,15 @@ function MembersManagementTab() {
         {loading ? <div className="qmes-db-member-loading">회원 정보를 불러오는 중입니다.</div> : <div className="qmes-db-member-table-wrap"><table className="qmes-db-member-table"><thead><tr>{["고유번호", "로그인 ID·이름", "부서", "직급", "연락처", "이메일", "권한", "상태", "관리"].map((h) => <th key={h}>{h}</th>)}</tr></thead><tbody>{users.map((u) => <tr key={u.id} className={editingId === u.id ? "is-editing" : ""}>
           <td className="qmes-db-member-uid">{u.uid || "-"}</td><td className="qmes-db-member-name">{u.name}</td><td>{u.department || "-"}</td><td>{u.title || "-"}</td><td className="qmes-db-member-phone">{u.phone || "-"}</td><td>{u.email || "-"}</td>
           <td><span className={`qmes-db-member-badge ${u.role === "admin" ? "admin" : ""}`}>{u.role === "admin" ? "관리자" : "일반"}</span></td><td><span className={`qmes-db-member-badge ${u.status === "APPROVED" ? "approved" : ""}`}>{u.status === "APPROVED" ? "승인" : "반려"}</span></td>
-          <td><div className="qmes-db-member-row-actions"><button type="button" className="qmes-db-member-btn edit" disabled={saving} onClick={() => beginEdit(u)}>수정</button><button type="button" className="qmes-db-member-btn reset" disabled={saving} onClick={() => resetPassword(u)}>비밀번호 초기화</button>{u.role !== "admin" && <button type="button" className="qmes-db-member-btn delete" disabled={saving} onClick={() => removeMember(u)}>삭제</button>}</div></td>
+          <td><div className="qmes-db-member-row-actions">
+            <button type="button" data-qmes-member-main-edit="1" className="qmes-db-member-btn edit" disabled={saving}
+              onPointerDown={(e) => startEditFromButton(e, u)}
+              onClick={(e) => { if (e.detail === 0) startEditFromButton(e, u); }}>
+              회원정보 수정
+            </button>
+            <button type="button" className="qmes-db-member-btn reset" disabled={saving} onClick={() => resetPassword(u)}>비밀번호 초기화</button>
+            {u.role !== "admin" && <button type="button" className="qmes-db-member-btn delete" disabled={saving} onClick={() => removeMember(u)}>삭제</button>}
+          </div></td>
         </tr>)}</tbody></table></div>}
       </section>
     </div>
