@@ -1,0 +1,2 @@
+Force production redeploy. Screenshot-confirmed IQC filter layout was broken: search and icon separated from year/month. Component markup now directly enforces one flex row; search icon is anchored inside input; search/year/month/reset stay adjacent. Table typography changes preserved.
+2026-09-04 KST
