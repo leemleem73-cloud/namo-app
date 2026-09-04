@@ -76,4 +76,9 @@ html body #root>div>main>div.flex.flex-col.gap-4{
   box-sizing:border-box!important;
 }
 
+
+/* QMES IQC top spacing correction - 2026-09-04 */
+html body #root>div>main .qmes-iqc-page{margin-top:-14px!important;}
+html body #root>div>main .qmes-iqc-page>.qmes-simple-summary:first-child{margin-top:0!important;}
+
 @media print{html body{background:#fff!important;}html body #qmes-erp-header,html body #qmes-erp-sidebar,html body #qmes-sync-sidebar,html body #qmes-sync-hamburger{display:none!important;visibility:hidden!important;opacity:0!important;}html body #root>div>main{margin-left:0!important;margin-top:0!important;padding-top:0!important;width:100%!important;background:transparent!important;}}
