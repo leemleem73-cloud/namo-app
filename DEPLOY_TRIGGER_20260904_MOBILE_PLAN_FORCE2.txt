@@ -1,0 +1,10 @@
+QMES mobile production plan force redeploy
+2026-09-04 09:48 KST
+
+Changes:
+- mobile-static-preload.js now serves /mobile-plan.html with no-store/no-cache headers.
+- mobile menu erpPlan and legacy pending:erpPlan are forced to /mobile-plan.html?v=20260904-plan2.
+- mobile root cache version bumped to mobile-force5.
+- PC React/source files unchanged.
+
+Purpose: production mobile screen still showed no change after mobile-plan.html and mobile.html were committed.
