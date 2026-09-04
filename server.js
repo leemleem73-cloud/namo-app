@@ -21,6 +21,7 @@ const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx')
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
 const SHELL_BUILD = '20260903-shell-mobile-dedicated3';
+const DASHBOARD_ASSET_BUILD = '20260904-purchase-header-stable1';
 
 if (!fs.existsSync(enterpriseDashboard)) {
   console.error('[QMES] Enterprise dashboard module is missing:', enterpriseDashboard);
@@ -36,6 +37,7 @@ try {
     .replace(/qmes-shell-layer-base-20260827\.css\?v=[^"']+/g, `qmes-shell-layer-base-20260827.css?v=${SHELL_BUILD}`)
     .replace(/router\.jsx\?v=[^"']+/g, `router.jsx?v=${SHELL_BUILD}`)
     .replace(/app\.jsx\?v=[^"']+/g, `app.jsx?v=${SHELL_BUILD}`)
+    .replace(/dashboard\.jsx\?v=[^"']+/g, `dashboard.jsx?v=${DASHBOARD_ASSET_BUILD}`)
     .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`);
   if (normalized !== source) fs.writeFileSync(publicIndex, normalized, 'utf8');
 } catch (error) {
