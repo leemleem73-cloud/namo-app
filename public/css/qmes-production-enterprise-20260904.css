@@ -125,3 +125,54 @@ html body #root .qmes-prod-process .qpp-actionbar .qpp-btn.red{background:#fff!i
  html body #root main .qmes-issued-filter{grid-template-columns:1fr 1fr!important}
  html body #root .qmes-prod-process .qpp-info{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+
+/* ---------- stable workorder management cell ---------- */
+html body #root main .qmes-issued-table-v2 th:nth-child(1){width:11%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(2){width:12%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(3){width:6%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(4){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(5){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(6){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(7){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(8){width:6%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(9){width:7%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(10){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(11){width:21%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(11),
+html body #root main .qmes-issued-table-v2 td:nth-child(11){
+  min-width:0!important;
+  padding-left:5px!important;
+  padding-right:5px!important;
+  overflow:hidden!important;
+}
+html body #root main .qmes-workorder-actions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  gap:3px!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  overflow:hidden!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn{
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:27px!important;
+  min-height:27px!important;
+  padding:0 2px!important;
+  margin:0!important;
+  border-radius:4px!important;
+  font-size:9px!important;
+  line-height:1!important;
+  letter-spacing:-.25px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
