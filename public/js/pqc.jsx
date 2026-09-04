@@ -635,7 +635,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             <div className="qmes-filter-select-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
               <span>연도</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={recordYear} onChange={(e)=>{setRecordYear(e.target.value);setRecordPage(1);}}>
-                {recordYears.map((year)=><option key={year} value={year}>{String(year).replace(/년$/,"")}년</option>)}
+                {recordYears.map((year)=><option key={year} value={String(year).replace(/년$/,"")}>{String(year).replace(/년$/,"")}년</option>)}
               </select>
             </div>
             <div className="qmes-filter-select-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
