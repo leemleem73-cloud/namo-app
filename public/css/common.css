@@ -1866,24 +1866,6 @@ aside{display:none!important}
     animation:none!important;
   }
 }
-
-/* Source style block 33 */
-/* ===== 수입검사 관리대장 작업 버튼 ===== */
-.qmes-iqc-action-btn{
-  height:29px;
-  padding:0 9px;
-  margin:0 2px;
-  border:1px solid;
-  border-radius:6px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  font-size:11px;
-  font-weight:600;
-  line-height:1;
-  transition:background-color .16s ease,color .16s ease,border-color .16s ease;
-}
 .qmes-iqc-action-edit{
   color:#7dd3fc;
   border-color:rgba(14,165,233,.45);
@@ -1974,23 +1956,6 @@ aside{display:none!important}
   background:rgba(65,196,238,.05)!important;
   box-shadow:inset 3px 0 0 rgba(65,196,238,.62);
 }
-
-/* 관리 버튼 정렬 */
-.qmes-iqc-action-btn{
-  position:static!important;
-  top:auto!important;
-  transform:none!important;
-  vertical-align:middle!important;
-  height:30px!important;
-  min-height:30px!important;
-  padding:0 10px!important;
-  margin:0 2px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  border-radius:7px!important;
-  line-height:1!important;
-}
 .qmes-iqc-action-print{
   color:#f1f6fb!important;
   border-color:#637c97!important;
@@ -2065,23 +2030,11 @@ aside{display:none!important}
   padding:8px 4px!important;
   font-size:10px!important;
 }
-.qmes-iqc-ledger-table .qmes-iqc-action-btn{
-  min-width:0!important;
-  height:24px!important;
-  padding:0 4px!important;
-  margin:1px!important;
-  font-size:8px!important;
-}
 @media(min-width:1600px){
   .qmes-iqc-ledger-table th,
   .qmes-iqc-ledger-table td{
     padding:9px 7px!important;
     font-size:12px!important;
-  }
-  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
-    height:28px!important;
-    padding:0 7px!important;
-    font-size:10px!important;
   }
 }
 @media(max-width:1366px){
@@ -2090,11 +2043,6 @@ aside{display:none!important}
     padding-left:2px!important;
     padding-right:2px!important;
     font-size:8.5px!important;
-  }
-  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
-    height:21px!important;
-    padding:0 2px!important;
-    font-size:7px!important;
   }
 }
 
@@ -2162,14 +2110,6 @@ aside{display:none!important}
   padding-left:3px!important;
   padding-right:3px!important;
 }
-.qmes-iqc-ledger-table .qmes-iqc-action-btn{
-  height:25px!important;
-  min-width:0!important;
-  padding:0 5px!important;
-  margin:0 1px!important;
-  font-size:8px!important;
-  line-height:1!important;
-}
 
 /* 큰 모니터 */
 @media(min-width:1600px){
@@ -2181,11 +2121,6 @@ aside{display:none!important}
   }
   .qmes-iqc-ledger-table thead th{font-size:12px!important}
   .qmes-iqc-ledger-table tbody td{font-size:12px!important}
-  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
-    height:28px!important;
-    padding:0 7px!important;
-    font-size:10px!important;
-  }
 }
 
 /* 노트북 */
@@ -2198,11 +2133,6 @@ aside{display:none!important}
   }
   .qmes-iqc-ledger-table thead th{font-size:8.5px!important}
   .qmes-iqc-ledger-table tbody td{font-size:8.5px!important}
-  .qmes-iqc-ledger-table .qmes-iqc-action-btn{
-    height:22px!important;
-    padding:0 3px!important;
-    font-size:7px!important;
-  }
 }
 
 /* Source style block 37 */
@@ -3673,24 +3603,6 @@ aside{display:none!important}
     gap:3px!important;
     align-content:center!important;
   }
-  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn{
-    width:100%!important;
-    min-width:0!important;
-    height:21px!important;
-    margin:0!important;
-    padding:0 2px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:2px!important;
-    font-size:7px!important;
-    overflow:hidden!important;
-  }
-  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn svg{
-    width:9px!important;
-    height:9px!important;
-    flex:0 0 auto!important;
-  }
 }
 @media(max-width:1100px){
   .qmes-iqc-ledger-table thead th,
@@ -3698,9 +3610,6 @@ aside{display:none!important}
     font-size:7.5px!important;
     padding-left:2px!important;
     padding-right:2px!important;
-  }
-  .qmes-iqc-ledger-table td:last-child .qmes-iqc-action-btn{
-    font-size:6.5px!important;
   }
 }
 
@@ -3757,77 +3666,10 @@ aside{display:none!important}
   padding:5px!important;
   vertical-align:middle!important;
 }
-.qmes-iqc-manage-grid{
-  width:100%;
-  max-width:138px;
-  margin:0 auto;
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:4px;
-}
-.qmes-iqc-manage-grid .qmes-iqc-action-btn{
-  width:100%!important;
-  min-width:0!important;
-  height:27px!important;
-  margin:0!important;
-  padding:0 4px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-  box-sizing:border-box!important;
-  white-space:nowrap!important;
-}
-.qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
-  width:11px!important;
-  height:11px!important;
-  flex:0 0 auto!important;
-}
 
 /* 노트북에서도 네 버튼이 잘리지 않도록 압축 */
-@media(max-width:1366px){
-  .qmes-iqc-manage-grid{
-    max-width:118px;
-    gap:3px;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
-    height:25px!important;
-    padding:0 2px!important;
-    font-size:7.5px!important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
-    width:10px!important;
-    height:10px!important;
-  }
-}
 
-/* Source style block 52 */
-/* === 관리 버튼 가로 일렬 배치 복원 === */
-.qmes-iqc-manage-grid{
-  max-width:none !important;
-  display:flex !important;
-  flex-wrap:nowrap !important;
-  justify-content:center !important;
-  align-items:center !important;
-  gap:4px !important;
-}
-.qmes-iqc-manage-grid .qmes-iqc-action-btn{
-  width:auto !important;
-  min-width:54px !important;
-  height:28px !important;
-  padding:0 8px !important;
-  font-size:11px !important;
-}
-@media(max-width:1366px){
-  .qmes-iqc-manage-grid{
-    gap:3px !important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
-    min-width:48px !important;
-    font-size:10px !important;
-    padding:0 6px !important;
-  }
-}
+
 
 /* Source style block 53 */
 /* ===== KPI 네온 카드 + 미니 도넛 링 절충 디자인 ===== */
@@ -3925,30 +3767,6 @@ aside{display:none!important}
     padding:3px 2px!important;
     overflow:visible!important;
   }
-  .qmes-iqc-manage-grid{
-    width:100%!important;
-    max-width:none!important;
-    display:flex!important;
-    flex-wrap:nowrap!important;
-    justify-content:center!important;
-    align-items:center!important;
-    gap:2px!important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
-    flex:1 1 0!important;
-    width:auto!important;
-    min-width:0!important;
-    height:25px!important;
-    padding:0 2px!important;
-    margin:0!important;
-    gap:2px!important;
-    font-size:7.5px!important;
-    border-radius:5px!important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
-    width:9px!important;
-    height:9px!important;
-  }
 }
 
 /* 더 작은 노트북에서도 글자가 튀어나가지 않도록 */
@@ -3958,14 +3776,6 @@ aside{display:none!important}
     font-size:7.2px!important;
     padding-left:2px!important;
     padding-right:2px!important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn{
-    height:23px!important;
-    font-size:6.8px!important;
-    padding:0 1px!important;
-  }
-  .qmes-iqc-manage-grid .qmes-iqc-action-btn svg{
-    display:none!important;
   }
 }
 
@@ -4144,15 +3954,6 @@ aside{display:none!important}
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.035),
     0 14px 30px -24px rgba(0,0,0,.88)!important;
-}
-
-/* 버튼도 네모 느낌 완화 */
-.qmes-iqc-action-btn,
-.qmes-iqc-submit,
-.qmes-iqc-search-toolbar button,
-.qmes-iqc-search-toolbar select,
-.qmes-iqc-search-toolbar input{
-  border-radius:8px 8px 8px 3px!important;
 }
 
 /* 노트북 */
@@ -8587,35 +8388,12 @@ select.qmes-label-judge-select option[value="불합격"]{
   background:rgba(255,255,255,.11)!important;
 }
 
-/* Source style block 109 */
-/* 공정·출하검사 관리: 출력/수정/삭제 버튼 크기 동일 */
-.qmes-pqc-page table .qmes-iqc-action-btn,
-.qmes-oqc-page table .qmes-iqc-action-btn{
-  width:62px!important;
-  min-width:62px!important;
-  max-width:62px!important;
-  height:30px!important;
-  min-height:30px!important;
-  padding:0 6px!important;
-  margin:0 2px!important;
-  box-sizing:border-box!important;
-  justify-content:center!important;
-  white-space:nowrap!important;
-}
-.qmes-pqc-page table .qmes-iqc-action-btn svg,
-.qmes-oqc-page table .qmes-iqc-action-btn svg{
-  width:12px!important;
-  height:12px!important;
-  flex:0 0 12px!important;
-}
-
 /* Source style block 110 */
 /* ===== QMES 2.0 IQC 팝업·무가로스크롤 리뉴얼 ===== */
 .qmes-iqc-quickbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;border:1px solid #263e5b;border-radius:12px;background:linear-gradient(120deg,#0c1c31,#102844);box-shadow:0 14px 34px -24px rgba(0,0,0,.8)}
 .qmes-iqc-quickbar>div{min-width:0}.qmes-iqc-quickbar-kicker{display:block;color:#41c4ee;font-size:10px;font-weight:800;letter-spacing:.12em}.qmes-iqc-quickbar strong{display:block;margin-top:3px;color:#f1f7fd;font-size:18px}.qmes-iqc-quickbar p{margin-top:3px;color:#829bb7;font-size:11px}.qmes-iqc-new-btn{flex:0 0 auto;height:40px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;color:#fff;font-size:13px;font-weight:700;background:linear-gradient(180deg,#00addf,#007fae);box-shadow:0 7px 20px -10px rgba(0,170,210,.9)}
 .qmes-iqc-chart-only{display:block}.qmes-iqc-chart-only .qmes-iqc-chart-panel{width:100%!important}.qmes-iqc-register-panel{display:none!important}
 .qmes-iqc-ledger-container{width:100%;max-width:100%;overflow-x:hidden}.qmes-iqc-ledger-compact{width:100%!important;table-layout:fixed!important;border-collapse:collapse}.qmes-iqc-ledger-compact th{padding:10px 8px;text-align:left;white-space:nowrap;font-weight:600}.qmes-iqc-ledger-compact td{padding:11px 8px;border-bottom:1px solid rgba(36,61,88,.65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#c7d5e4;font-size:12px}.qmes-iqc-ledger-compact tbody tr:hover{background:rgba(24,43,66,.30)}.qmes-iqc-ledger-compact .qmes-date-cell{font-family:ui-monospace,monospace;color:#91a8c0}.qmes-iqc-ledger-compact .qmes-lot-cell{font-family:ui-monospace,monospace;color:#c4b5fd}.qmes-iqc-empty-row{text-align:center!important;padding:28px!important;color:#63809f!important}
-.qmes-iqc-manage-inline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;width:100%}.qmes-iqc-manage-inline .qmes-iqc-action-btn{width:100%;min-width:0;height:27px;padding:0 3px;justify-content:center;font-size:10px;white-space:nowrap}
 .qmes-iqc-modal-backdrop{z-index:12000}.qmes-iqc-modal{width:min(980px,96vw);max-height:92vh;display:flex;flex-direction:column;border:1px solid #304b6c;border-radius:14px;background:#0a1728;box-shadow:0 30px 90px rgba(0,0,0,.65);overflow:hidden}.qmes-iqc-modal-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #263b54;background:linear-gradient(90deg,#0d2038,#102c4c)}.qmes-iqc-modal-head span{display:block;color:#41c4ee;font-size:9px;font-weight:800;letter-spacing:.13em}.qmes-iqc-modal-head strong{display:block;margin-top:2px;color:#f4f8fc;font-size:17px}.qmes-iqc-modal-body{overflow-y:auto;padding:16px 18px}.qmes-iqc-modal-section{padding:13px;border:1px solid #243a55;border-radius:10px;background:rgba(15,32,54,.62)}.qmes-iqc-modal-section+.qmes-iqc-modal-section{margin-top:11px}.qmes-iqc-modal-section h4{margin:0 0 9px;color:#8ca5c4;font-size:11px;font-weight:800}.qmes-iqc-modal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.qmes-iqc-modal-grid-five{grid-template-columns:repeat(5,minmax(0,1fr))}.qmes-iqc-modal .qmes-iqc-field{min-width:0}.qmes-iqc-modal .qmes-iqc-field input,.qmes-iqc-modal .qmes-iqc-field select,.qmes-iqc-modal .qmes-iqc-field textarea{width:100%;min-width:0;border:1px solid #2b405b;border-radius:7px;background:#102138;color:#edf4fb;outline:none;box-sizing:border-box}.qmes-iqc-modal .qmes-iqc-field input,.qmes-iqc-modal .qmes-iqc-field select{height:38px;padding:0 9px}.qmes-iqc-modal .qmes-iqc-field textarea{padding:8px 9px;resize:none}.qmes-iqc-modal .qmes-iqc-field input:focus,.qmes-iqc-modal .qmes-iqc-field select:focus,.qmes-iqc-modal .qmes-iqc-field textarea:focus{border-color:#00aad2}.qmes-iqc-inno-row{display:grid;grid-template-columns:66px minmax(0,1fr);gap:5px}.qmes-iqc-modal-remarks{grid-column:span 2}.qmes-iqc-modal-errors{margin-top:10px;padding:9px 11px;border:1px solid rgba(239,68,68,.45);border-radius:8px;background:rgba(239,68,68,.09);color:#fca5a5;font-size:11px}.qmes-iqc-modal-foot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #263b54;background:#0c1b2e;color:#9fb2c8;font-size:12px}.qmes-iqc-modal-foot>div:last-child{display:flex;gap:7px}.qmes-iqc-modal-cancel,.qmes-iqc-modal-save{height:36px;padding:0 17px;border-radius:7px;font-size:12px;font-weight:700}.qmes-iqc-modal-cancel{border:1px solid #3b526d;color:#b9c8d8}.qmes-iqc-modal-save{color:#fff;background:linear-gradient(180deg,#00addf,#007fae)}
 @media(max-width:900px){.qmes-iqc-modal-grid-five{grid-template-columns:repeat(3,minmax(0,1fr))}.qmes-iqc-ledger-compact th,.qmes-iqc-ledger-compact td{padding-left:5px;padding-right:5px;font-size:11px}}
 @media(max-width:680px){.qmes-iqc-quickbar{align-items:flex-start;flex-direction:column}.qmes-iqc-new-btn{width:100%}.qmes-iqc-modal-grid,.qmes-iqc-modal-grid-five{grid-template-columns:repeat(2,minmax(0,1fr))}.qmes-iqc-modal-remarks{grid-column:span 2}.qmes-iqc-ledger-compact col:nth-child(3),.qmes-iqc-ledger-compact th:nth-child(3),.qmes-iqc-ledger-compact td:nth-child(3),.qmes-iqc-ledger-compact col:nth-child(6),.qmes-iqc-ledger-compact th:nth-child(6),.qmes-iqc-ledger-compact td:nth-child(6){display:none}}
@@ -8647,30 +8425,6 @@ select.qmes-label-judge-select option[value="불합격"]{
   overflow:visible!important;
   padding-left:2px!important;
   padding-right:2px!important;
-}
-.qmes-iqc-manage-inline{
-  width:100%!important;
-  display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-  white-space:nowrap!important;
-}
-.qmes-iqc-manage-inline .qmes-iqc-action-btn{
-  width:auto!important;
-  min-width:0!important;
-  height:22px!important;
-  min-height:22px!important;
-  padding:0 4px!important;
-  margin:0!important;
-  border-radius:5px!important;
-  font-size:8px!important;
-  line-height:1!important;
-  gap:0!important;
-  flex:0 0 auto!important;
-  white-space:nowrap!important;
 }
 
 /* 업체별 IQC 합격률을 관리대장 하단 중앙에 작게 배치 */
@@ -8707,7 +8461,6 @@ select.qmes-label-judge-select option[value="불합격"]{
   .qmes-iqc-quickbar{align-items:stretch!important}
   .qmes-iqc-new-btn{width:auto!important;align-self:flex-start}
   .qmes-iqc-chart-only{width:100%!important}
-  .qmes-iqc-manage-inline .qmes-iqc-action-btn{padding:0 3px!important;font-size:7px!important}
 }
 
 /* Source style block 112 */
@@ -9049,44 +8802,8 @@ select.qmes-label-judge-select option[value="불합격"]{
   font-weight:800!important;
   white-space:nowrap!important;
 }
-/* 수입검사 관리 버튼을 공정·출하검사와 동일한 크기와 글자 크기로 통일 */
-.qmes-iqc-ledger-table .qmes-iqc-manage-inline{
-  display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:4px!important;
-  width:100%!important;
-}
-.qmes-iqc-ledger-table .qmes-iqc-action-btn{
-  width:62px!important;
-  min-width:62px!important;
-  max-width:62px!important;
-  height:30px!important;
-  min-height:30px!important;
-  padding:0 6px!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:4px!important;
-  border-radius:6px!important;
-  font-size:11px!important;
-  font-weight:600!important;
-  line-height:1!important;
-  white-space:nowrap!important;
-  flex:0 0 62px!important;
-}
-.qmes-iqc-ledger-table .qmes-iqc-action-btn svg{
-  width:12px!important;
-  height:12px!important;
-  flex:0 0 12px!important;
-}
 @media(max-width:760px){
   .qmes-iqc-quickbar,.qmes-inspection-quickbar{min-height:92px!important;}
-  .qmes-iqc-ledger-table .qmes-iqc-action-btn{width:58px!important;min-width:58px!important;max-width:58px!important;flex-basis:58px!important;font-size:10px!important;}
 }
 
 /* Source style block 118 */
@@ -9913,11 +9630,6 @@ select.qmes-label-judge-select option[value="불합격"]{
 .qmes-pqc-record-table td:nth-child(7),
 .qmes-pqc-record-table td:nth-child(8){
   text-align:center!important;
-}
-.qmes-pqc-record-table td .qmes-pqc-value-preview-btn,
-.qmes-pqc-record-table td .qmes-iqc-action-btn{
-  margin-left:auto!important;
-  margin-right:auto!important;
 }
 .qmes-pqc-record-table td .qmes-pqc-value-preview-btn,
 .qmes-pqc-record-table td:nth-child(6) > span.inline-flex{
@@ -11081,14 +10793,6 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
 .qmes-oqc-record-table td span{
   font-size:15px!important;
   line-height:21px!important;
-}
-
-/* 관리 버튼과 아이콘은 기존 크기 유지 */
-.qmes-iqc-ledger-table .qmes-iqc-action-btn,
-.qmes-pqc-record-table button,
-.qmes-oqc-record-table button{
-  font-size:11px!important;
-  line-height:1!important;
 }
 
 /* Source style block 173 */
@@ -12836,44 +12540,4 @@ body.print-doc #qmes-print-root .qmes-wo-header-logo{
     height:62px!important;
     padding:6px!important;
   }
-}
-
-/* CLEAN REBUILD 20260904: one geometry owner for IQC/PQC/OQC management buttons */
-html body #root .qmes-iqc-manage-inline > button.qmes-iqc-action-btn,
-html body #root .qmes-pqc-actions > button.qmes-iqc-action-btn{
-  box-sizing:border-box!important;
-  width:58px!important;
-  min-width:58px!important;
-  max-width:58px!important;
-  height:30px!important;
-  min-height:30px!important;
-  max-height:30px!important;
-  padding:0!important;
-  margin:0!important;
-  border-radius:6px!important;
-  font-size:11px!important;
-  font-weight:600!important;
-  line-height:1!important;
-  flex:0 0 58px!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:3px!important;
-  white-space:nowrap!important;
-}
-html body #root .qmes-iqc-manage-inline,
-html body #root .qmes-pqc-actions{
-  display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:4px!important;
-  white-space:nowrap!important;
-}
-html body #root .qmes-iqc-manage-inline > button.qmes-iqc-action-btn svg,
-html body #root .qmes-pqc-actions > button.qmes-iqc-action-btn svg{
-  width:12px!important;
-  height:12px!important;
-  flex:0 0 12px!important;
 }
