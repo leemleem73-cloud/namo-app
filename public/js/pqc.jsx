@@ -613,8 +613,8 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       )}
 
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{groupedFilteredRecords.length}건</span>}>
-        <div className={`qmes-inspection-record-filter ${isOqc ? "qmes-oqc-record-filter" : "qmes-pqc-record-filter"}`}>
-          <div className="flex flex-col gap-1 w-72">
+        <div className={`qmes-inspection-record-filter qmes-unified-filter-grid ${isOqc ? "qmes-oqc-record-filter" : "qmes-pqc-record-filter"}`} style={{display:"grid",gridTemplateColumns:"350px 150px 150px 135px",columnGap:"12px",alignItems:"end",justifyContent:"start",width:"max-content",maxWidth:"100%"}}>
+          <div className="flex flex-col gap-1" style={{width:"350px",margin:0,minWidth:0}}>
             <span className="text-[10px] text-slate-500">{numberLabel} / LOT / 제품명 / 항목 / 검사자 검색</span>
             <div className="qmes-inspection-search-box">
               <Search size={15} className="qmes-inspection-search-icon" />
@@ -630,14 +630,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </div>
           </div>
           <>
-            <div className="qmes-oqc-record-filter-field">
+            <div className="qmes-oqc-record-filter-field" style={{width:"150px",margin:0,minWidth:0}}>
               <span>연도</span>
               <select value={recordYear} onChange={(e)=>{setRecordYear(e.target.value);setRecordPage(1);}}>
                 <option value="ALL">전체 연도</option>
                 {recordYears.map((year)=><option key={year} value={year}>{year}년</option>)}
               </select>
             </div>
-            <div className="qmes-oqc-record-filter-field">
+            <div className="qmes-oqc-record-filter-field" style={{width:"150px",margin:0,minWidth:0}}>
               <span>월</span>
               <select value={recordMonth} onChange={(e)=>{setRecordMonth(e.target.value);setRecordPage(1);}}>
                 <option value="ALL">전체 월</option>
@@ -646,7 +646,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </div>
           </>
           <button onClick={() => { setRecordSearch(""); setRecordYear("ALL"); setRecordMonth("ALL"); setRecordPage(1); }}
-            className="h-9 px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
+            style={{width:"135px",height:"42px",margin:0,alignSelf:"end"}} className="px-3 rounded border border-slate-700 text-xs text-slate-300 hover:bg-slate-800">초기화</button>
         </div>
         <div className={isOqc ? "overflow-x-auto -mx-4 px-4" : "qmes-pqc-record-table-wrap"}>
           <table className={`w-full text-sm table-fixed ${isOqc ? "min-w-[1120px] qmes-oqc-record-table" : "qmes-pqc-record-table"}`}>
