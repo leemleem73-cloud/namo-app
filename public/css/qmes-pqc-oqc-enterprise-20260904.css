@@ -111,7 +111,7 @@ html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) 
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-table,.qmes-oqc-record-table) tbody tr:hover td{background:#eaf4fb!important;}
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-value-preview-btn,
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-btn{
-  min-height:28px!important;padding:0 9px!important;border:1px solid #b7c8d4!important;border-radius:3px!important;
+  min-height:28px!important;padding:0 4px!important;border:1px solid #b7c8d4!important;border-radius:3px!important;
   background:linear-gradient(180deg,#fff,#e8eef3)!important;color:#365269!important;font-size:10px!important;font-weight:800!important;box-shadow:none!important;
 }
 html body #root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-iqc-action-delete{color:#b54242!important;border-color:#d8a5a5!important;background:#fff!important;}
@@ -241,9 +241,9 @@ html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.
 }
 html body #root#root#root#root#root#root#root#root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-pqc-actions>button.qmes-iqc-action-btn{
   box-sizing:border-box!important;
-  width:auto!important;
-  min-width:0!important;
-  max-width:none!important;
+  width:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
   height:28px!important;
   min-height:28px!important;
   max-height:28px!important;
