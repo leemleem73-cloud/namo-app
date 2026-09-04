@@ -1,0 +1,2 @@
+Force production redeploy. Removed stacked IQC/PQC/OQC filter override blocks and replaced them with one final shared inspection-filter stylesheet. Target layout: search 350x42, year 150x42, month 150x42, reset 135x42, 12px gaps, icon inside search input.
+2026-09-04 KST
