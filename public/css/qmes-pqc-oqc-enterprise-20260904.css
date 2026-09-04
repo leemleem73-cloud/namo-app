@@ -248,3 +248,58 @@ html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:15%!important;}
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:15%!important;}
+
+
+/* PQC/OQC filter controls: identical width, height, and spacing */
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter){
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:10px!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>div:first-child{
+  width:280px!important;
+  min-width:280px!important;
+  max-width:280px!important;
+  flex:0 0 280px!important;
+  margin:0!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box{
+  width:100%!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-inspection-search-box input{
+  width:100%!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-oqc-record-filter-field{
+  width:120px!important;
+  min-width:120px!important;
+  max-width:120px!important;
+  flex:0 0 120px!important;
+  margin:0!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) .qmes-oqc-record-filter-field select{
+  width:120px!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+html body #root>div>main :is(.qmes-pqc-page,.qmes-oqc-page) :is(.qmes-pqc-record-filter,.qmes-oqc-record-filter)>button{
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  margin:0!important;
+  align-self:flex-end!important;
+}
