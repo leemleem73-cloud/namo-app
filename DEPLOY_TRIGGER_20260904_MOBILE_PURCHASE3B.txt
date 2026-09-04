@@ -1,0 +1,2 @@
+2026-09-04 MOBILE PURCHASE3B
+Dedicated mobile purchase page + live purchase API + forced mobile routing. PC UI unchanged.
