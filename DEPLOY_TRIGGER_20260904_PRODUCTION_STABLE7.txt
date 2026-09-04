@@ -1,0 +1,2 @@
+Force production redeploy: remove continuous workorder DOM redecorating and fit preview/print/edit/delete actions fully inside management cell.
+2026-09-04 KST
