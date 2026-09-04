@@ -1,4 +1,4 @@
-/* FINAL single owner for IQC/PQC/OQC management buttons */
+/* SINGLE OWNER: IQC / PQC / OQC management buttons - 2026-09-04 */
 html body #root button.qmes-unified-inspection-action{
   box-sizing:border-box!important;
   width:72px!important;
@@ -9,7 +9,10 @@ html body #root button.qmes-unified-inspection-action{
   max-height:38px!important;
   padding:0 8px!important;
   margin:0!important;
+  border:1px solid #b7c8d4!important;
   border-radius:5px!important;
+  background:linear-gradient(180deg,#fff 0%,#eef3f7 100%)!important;
+  color:#365269!important;
   font-size:11px!important;
   font-weight:700!important;
   line-height:1!important;
@@ -19,6 +22,12 @@ html body #root button.qmes-unified-inspection-action{
   gap:4px!important;
   flex:0 0 72px!important;
   white-space:nowrap!important;
+  box-shadow:none!important;
+}
+html body #root button.qmes-unified-inspection-action.qmes-iqc-action-delete{
+  color:#b54242!important;
+  border-color:#d8a5a5!important;
+  background:#fff!important;
 }
 html body #root button.qmes-unified-inspection-action svg{
   width:13px!important;
@@ -27,9 +36,11 @@ html body #root button.qmes-unified-inspection-action svg{
   min-height:13px!important;
   flex:0 0 13px!important;
 }
-html body #root :is(.qmes-iqc-manage-inline,.qmes-pqc-actions){
+html body #root .qmes-iqc-manage-inline,
+html body #root .qmes-pqc-actions{
   display:flex!important;
-  flex-flow:row nowrap!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
   align-items:center!important;
   justify-content:center!important;
   gap:6px!important;
