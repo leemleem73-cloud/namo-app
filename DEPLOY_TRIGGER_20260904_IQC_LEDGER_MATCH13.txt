@@ -1,0 +1,2 @@
+Force production redeploy. IQC management ledger now uses the same PQC table header gradient, alternating row colors, borders, hover, 11px body/header typography and 10px action text. High-specificity final owner prevents legacy IQC styles from overriding it.
+2026-09-04 KST
