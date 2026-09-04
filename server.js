@@ -8,6 +8,7 @@ const path = require('path');
 require('./attendance-core-safe.js');
 require('./attendance-correction-safe.js');
 require('./attendance-leave-cancel-safe.js');
+require('./attendance-admin-overview-safe.js');
 require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
