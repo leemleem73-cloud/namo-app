@@ -1,7 +1,7 @@
 /* QMES inspection filter - isolated owner, no legacy class overlap - 2026-09-04 */
 html body #root>div>main .qmes-unified-filter-grid{
   display:grid!important;
-  grid-template-columns:350px 150px 150px 135px!important;
+  grid-template-columns:350px 150px 150px 92px!important;
   gap:0 12px!important;
   align-items:end!important;
   justify-content:start!important;
@@ -136,9 +136,9 @@ html body #root>div>main .qmes-unified-filter-grid>button{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
-  width:135px!important;
-  min-width:135px!important;
-  max-width:135px!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
   height:42px!important;
   min-height:42px!important;
   max-height:42px!important;
@@ -146,7 +146,7 @@ html body #root>div>main .qmes-unified-filter-grid>button{
   padding:0 12px!important;
   box-sizing:border-box!important;
   border:1px solid #b9c9d5!important;
-  border-radius:3px!important;
+  border-radius:10px!important;
   background:linear-gradient(180deg,#fff 0%,#e8eef3 100%)!important;
   color:#25384a!important;
   font-size:13px!important;
