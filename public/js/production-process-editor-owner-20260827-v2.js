@@ -47,7 +47,7 @@
     if(document.getElementById("qmes-process-editor-owner-style-20260827-v2")) return;
     const style=document.createElement("style");style.id="qmes-process-editor-owner-style-20260827-v2";
     style.textContent=`
-      .qmes-process-owner-head,.qmes-process-owner-cell{width:13%!important;min-width:128px!important;max-width:220px!important;text-align:center!important}
+      .qmes-process-owner-head,.qmes-process-owner-cell{width:13%!important;min-width:0!important;max-width:none!important;text-align:center!important;overflow:hidden!important}
       .qmes-process-owner-inline{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}.qmes-process-owner-note{max-width:110px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#64748b!important;font-size:11px!important;font-weight:700!important}.qmes-process-owner-note:empty{display:none!important}
       .qmes-process-owner-btn{height:32px!important;min-width:56px!important;padding:0 11px!important;border:1px solid #cbd5e1!important;border-radius:7px!important;background:#fff!important;color:#334155!important;-webkit-text-fill-color:#334155!important;font-size:11px!important;font-weight:850!important;cursor:pointer!important;box-shadow:none!important;outline:none!important}
       #${MODAL_ID}{position:fixed!important;inset:0!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:18px!important;background:rgba(15,23,42,.42)!important}
@@ -138,6 +138,6 @@
 
   let raf=0;
   function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;repair();});}
-  function start(){repair();const observer=new MutationObserver(schedule);observer.observe(document.documentElement,{childList:true,subtree:true});["qmes:production-process-updated","qmes:data-updated","qmes:mes-master-ready","qmes:workorder-synced"].forEach(n=>window.addEventListener(n,schedule));[50,150,350,800,1600].forEach(t=>setTimeout(repair,t));}
+  function start(){repair();["qmes:production-process-updated","qmes:data-updated","qmes:mes-master-ready","qmes:workorder-synced"].forEach(n=>window.addEventListener(n,schedule));}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
