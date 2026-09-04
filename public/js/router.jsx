@@ -137,6 +137,7 @@ function QMESChemical({user,onLogout}){
   window.__QMES_CLOSE_NAMO_TALK__=()=>setTalkOpen(false);
   const visibleTabs=TABS.filter(tabItem=>!tabItem.adminOnly||user.role==="admin");
   useEffect(()=>{if(!visibleTabs.some(tabItem=>tabItem.id===tab))setTab("dash");},[tab,visibleTabs.length]);
+  useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
 
   const currentTab=TABS.find(tabItem=>tabItem.id===tab)||TABS[0];
   const Active=currentTab.comp;
