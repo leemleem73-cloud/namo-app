@@ -1,0 +1,2 @@
+Force production redeploy. IQC summary dot glow/shadow/filter removed. Search box fixed to 180x34 and year/month selects fixed to 120x34 with identical box sizing/alignment.
+2026-09-04 KST
