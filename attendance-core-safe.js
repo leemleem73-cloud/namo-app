@@ -1,198 +1,35 @@
 'use strict';
-
-// NAMO mobile attendance core API.
-// Safe preload: installs immediately AFTER express-session middleware is attached.
-const express = require('express');
-const { Pool } = require('pg');
-require('dotenv').config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-});
-
-let schemaReady = false;
-let schemaPromise = null;
-const ok = (res, data = null, message = 'OK') => res.json({ success:true, message, data });
-const fail = (res, status, message) => res.status(status).json({ success:false, message, data:null });
-const requireLogin = (req,res,next) => req.session?.user ? next() : fail(res,401,'로그인이 필요합니다.');
-
-async function ensureSchema(){
-  if(schemaReady) return;
-  if(schemaPromise) return schemaPromise;
-  schemaPromise = pool.query(`
-    CREATE TABLE IF NOT EXISTS attendance_logs(
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID NOT NULL,
-      work_date DATE NOT NULL,
-      clock_in TIMESTAMPTZ,
-      clock_out TIMESTAMPTZ,
-      gps_in JSONB NOT NULL DEFAULT '{}'::jsonb,
-      gps_out JSONB NOT NULL DEFAULT '{}'::jsonb,
-      device_info TEXT DEFAULT '',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE(user_id,work_date)
-    );
-    CREATE INDEX IF NOT EXISTS attendance_logs_user_date_idx
-      ON attendance_logs(user_id,work_date DESC);
-  `).then(()=>{schemaReady=true;}).finally(()=>{schemaPromise=null;});
-  return schemaPromise;
+const express=require('express');const{Pool}=require('pg');require('dotenv').config();
+const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_URL?{rejectUnauthorized:false}:false});
+let schemaReady=false,schemaPromise=null;
+const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});const fail=(res,status,message)=>res.status(status).json({success:false,message,data:null});
+const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그인이 필요합니다.');
+const isAdmin=req=>String(req.session?.user?.role||'').toLowerCase()==='admin';
+async function ensureSchema(){if(schemaReady)return;if(schemaPromise)return schemaPromise;schemaPromise=pool.query(`
+CREATE TABLE IF NOT EXISTS attendance_logs(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),user_id UUID NOT NULL,work_date DATE NOT NULL,clock_in TIMESTAMPTZ,clock_out TIMESTAMPTZ,gps_in JSONB NOT NULL DEFAULT '{}'::jsonb,gps_out JSONB NOT NULL DEFAULT '{}'::jsonb,device_info TEXT DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(user_id,work_date));
+CREATE INDEX IF NOT EXISTS attendance_logs_user_date_idx ON attendance_logs(user_id,work_date DESC);
+CREATE TABLE IF NOT EXISTS leave_requests(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),user_id UUID NOT NULL,leave_type TEXT NOT NULL DEFAULT 'annual',start_date DATE NOT NULL,end_date DATE NOT NULL,days NUMERIC(5,1) NOT NULL,reason TEXT DEFAULT '',handover TEXT DEFAULT '',status TEXT NOT NULL DEFAULT 'PENDING_1',approver1_id UUID,approver2_id UUID,reject_reason TEXT DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE INDEX IF NOT EXISTS leave_requests_user_idx ON leave_requests(user_id,created_at DESC);
+CREATE TABLE IF NOT EXISTS attendance_notifications(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),user_id UUID NOT NULL,title TEXT NOT NULL,message TEXT DEFAULT '',read_at TIMESTAMPTZ,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+CREATE INDEX IF NOT EXISTS attendance_notifications_user_idx ON attendance_notifications(user_id,created_at DESC);
+`).then(()=>{schemaReady=true}).finally(()=>{schemaPromise=null});return schemaPromise}
+function dto(r){return r?{id:r.id,workDate:r.work_date,clockIn:r.clock_in,clockOut:r.clock_out,gpsIn:r.gps_in||{},gpsOut:r.gps_out||{},deviceInfo:r.device_info||''}:null}
+async function notify(userId,title,message){await pool.query('INSERT INTO attendance_notifications(user_id,title,message) VALUES($1,$2,$3)',[userId,title,message])}
+async function balance(userId){const y=new Date().getFullYear();const r=await pool.query("SELECT COALESCE(SUM(days),0)::float AS used FROM leave_requests WHERE user_id=$1 AND status='APPROVED' AND EXTRACT(YEAR FROM start_date)=$2",[userId,y]);const used=Number(r.rows[0]?.used||0),granted=15;return{granted,used,remaining:Math.max(0,granted-used)}}
+function install(app){if(app.__namoAttendanceCoreSafeInstalled)return;app.__namoAttendanceCoreSafeInstalled=true;
+app.get('/api/attendance/health',(_q,r)=>ok(r,{service:'attendance',status:'ready'}));
+app.get('/api/attendance/me',requireLogin,async(req,res)=>{try{await ensureSchema();const u=req.session.user;const q=await pool.query('SELECT id,uid,name,email,department,title,role,status,must_change_password FROM users WHERE id=$1 LIMIT 1',[u.id]);const x=q.rows[0]||u;return ok(res,{user:{id:x.id,uid:x.uid||'',name:x.name||'',email:x.email||'',department:x.department||'',title:x.title||'',role:x.role||'user',status:x.status||'APPROVED',mustChangePassword:Boolean(x.must_change_password)},balance:await balance(u.id),passkeyCount:0,profile:{annualLeaveDays:15,mobileEnabled:true,approver1:null,approver2:null}})}catch(e){console.error('[Attendance] me',e);return fail(res,500,'근태 사용자 정보를 불러오지 못했습니다.')}});
+app.get('/api/attendance/today',requireLogin,async(req,res)=>{try{await ensureSchema();const q=await pool.query("SELECT * FROM attendance_logs WHERE user_id=$1 AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date LIMIT 1",[req.session.user.id]);return ok(res,dto(q.rows[0]||null))}catch(e){return fail(res,500,'오늘 근태를 불러오지 못했습니다.')}});
+app.get('/api/attendance/logs',requireLogin,async(req,res)=>{try{await ensureSchema();const m=/^\d{4}-\d{2}$/.test(String(req.query.month||''))?String(req.query.month):null;const q=m?await pool.query("SELECT * FROM attendance_logs WHERE user_id=$1 AND TO_CHAR(work_date,'YYYY-MM')=$2 ORDER BY work_date DESC",[req.session.user.id,m]):await pool.query('SELECT * FROM attendance_logs WHERE user_id=$1 ORDER BY work_date DESC LIMIT 100',[req.session.user.id]);return ok(res,q.rows.map(dto))}catch(e){return fail(res,500,'근태기록을 불러오지 못했습니다.')}});
+app.post('/api/attendance/clock-in',requireLogin,async(req,res)=>{try{await ensureSchema();const gps=req.body?.gps&&typeof req.body.gps==='object'?req.body.gps:{},device=String(req.body?.device||'').slice(0,500);const q=await pool.query("INSERT INTO attendance_logs(user_id,work_date,clock_in,gps_in,device_info) VALUES($1,(NOW() AT TIME ZONE 'Asia/Seoul')::date,NOW(),$2::jsonb,$3) ON CONFLICT(user_id,work_date) DO UPDATE SET clock_in=COALESCE(attendance_logs.clock_in,EXCLUDED.clock_in),gps_in=CASE WHEN attendance_logs.clock_in IS NULL THEN EXCLUDED.gps_in ELSE attendance_logs.gps_in END,device_info=CASE WHEN attendance_logs.clock_in IS NULL THEN EXCLUDED.device_info ELSE attendance_logs.device_info END,updated_at=NOW() RETURNING *",[req.session.user.id,JSON.stringify(gps),device]);return ok(res,dto(q.rows[0]),'출근 처리되었습니다.')}catch(e){console.error(e);return fail(res,500,'출근 처리에 실패했습니다.')}});
+app.post('/api/attendance/clock-out',requireLogin,async(req,res)=>{try{await ensureSchema();const gps=req.body?.gps&&typeof req.body.gps==='object'?req.body.gps:{};const q=await pool.query("UPDATE attendance_logs SET clock_out=COALESCE(clock_out,NOW()),gps_out=CASE WHEN clock_out IS NULL THEN $2::jsonb ELSE gps_out END,updated_at=NOW() WHERE user_id=$1 AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date AND clock_in IS NOT NULL RETURNING *",[req.session.user.id,JSON.stringify(gps)]);if(!q.rowCount)return fail(res,400,'먼저 출근 처리를 해주세요.');return ok(res,dto(q.rows[0]),'퇴근 처리되었습니다.')}catch(e){return fail(res,500,'퇴근 처리에 실패했습니다.')}});
+app.get('/api/attendance/leave',requireLogin,async(req,res)=>{try{await ensureSchema();const q=await pool.query('SELECT * FROM leave_requests WHERE user_id=$1 ORDER BY created_at DESC',[req.session.user.id]);return ok(res,{balance:await balance(req.session.user.id),requests:q.rows})}catch(e){console.error(e);return fail(res,500,'연차 내역을 불러오지 못했습니다.')}});
+app.post('/api/attendance/leave',requireLogin,async(req,res)=>{try{await ensureSchema();const{leaveType='annual',startDate,endDate,days,reason='',handover=''}=req.body||{};const n=Number(days);if(!startDate||!endDate||!Number.isFinite(n)||n<=0)return fail(res,400,'연차 신청 정보를 확인해주세요.');const b=await balance(req.session.user.id);if(n>b.remaining)return fail(res,400,'잔여 연차가 부족합니다.');const q=await pool.query("INSERT INTO leave_requests(user_id,leave_type,start_date,end_date,days,reason,handover,status) VALUES($1,$2,$3,$4,$5,$6,$7,'PENDING_1') RETURNING *",[req.session.user.id,leaveType,startDate,endDate,n,String(reason).slice(0,1000),String(handover).slice(0,1000)]);const admins=await pool.query("SELECT id FROM users WHERE LOWER(COALESCE(role,''))='admin' AND status='APPROVED'");for(const a of admins.rows)await notify(a.id,'연차 승인 요청',`${req.session.user.name||'직원'}님이 ${startDate} 연차를 신청했습니다.`);return ok(res,q.rows[0],'연차 신청이 전달되었습니다.')}catch(e){console.error(e);return fail(res,500,'연차 신청에 실패했습니다.')}});
+app.get('/api/attendance/approvals',requireLogin,async(req,res)=>{try{await ensureSchema();if(!isAdmin(req))return ok(res,[]);const q=await pool.query("SELECT l.*,u.name employee_name,u.department employee_department,u.title employee_title FROM leave_requests l JOIN users u ON u.id=l.user_id WHERE l.status IN ('PENDING_1','PENDING_2') ORDER BY l.created_at ASC");return ok(res,q.rows)}catch(e){return fail(res,500,'승인대기를 불러오지 못했습니다.')}});
+app.post('/api/attendance/leave/:id/approve',requireLogin,async(req,res)=>{try{await ensureSchema();if(!isAdmin(req))return fail(res,403,'관리자 승인 권한이 필요합니다.');const q=await pool.query("UPDATE leave_requests SET status='APPROVED',approver1_id=$2,approver2_id=$2,updated_at=NOW() WHERE id=$1 AND status IN ('PENDING_1','PENDING_2') RETURNING *",[req.params.id,req.session.user.id]);if(!q.rowCount)return fail(res,404,'승인할 신청을 찾을 수 없습니다.');await notify(q.rows[0].user_id,'연차 승인 완료',`${q.rows[0].start_date.toISOString?.().slice(0,10)||q.rows[0].start_date} 연차가 승인되었습니다.`);return ok(res,q.rows[0],'승인 처리되었습니다.')}catch(e){console.error(e);return fail(res,500,'승인 처리에 실패했습니다.')}});
+app.post('/api/attendance/leave/:id/reject',requireLogin,async(req,res)=>{try{await ensureSchema();if(!isAdmin(req))return fail(res,403,'관리자 승인 권한이 필요합니다.');const reason=String(req.body?.reason||'').trim();if(!reason)return fail(res,400,'반려 사유를 입력해주세요.');const q=await pool.query("UPDATE leave_requests SET status='REJECTED',reject_reason=$2,approver1_id=$3,updated_at=NOW() WHERE id=$1 AND status IN ('PENDING_1','PENDING_2') RETURNING *",[req.params.id,reason.slice(0,1000),req.session.user.id]);if(!q.rowCount)return fail(res,404,'반려할 신청을 찾을 수 없습니다.');await notify(q.rows[0].user_id,'연차 신청 반려',`연차 신청이 반려되었습니다. 사유: ${reason}`);return ok(res,q.rows[0],'반려 처리되었습니다.')}catch(e){return fail(res,500,'반려 처리에 실패했습니다.')}});
+app.get('/api/attendance/notifications',requireLogin,async(req,res)=>{try{await ensureSchema();const q=await pool.query('SELECT * FROM attendance_notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100',[req.session.user.id]);return ok(res,q.rows)}catch(e){return fail(res,500,'알림을 불러오지 못했습니다.')}});
+app.post('/api/attendance/notifications/read-all',requireLogin,async(req,res)=>{try{await ensureSchema();await pool.query('UPDATE attendance_notifications SET read_at=COALESCE(read_at,NOW()) WHERE user_id=$1',[req.session.user.id]);return ok(res,null,'모두 읽음 처리했습니다.')}catch(e){return fail(res,500,'알림 처리에 실패했습니다.')}});
+const unavailable=(req,res)=>fail(res,503,'생체인증은 다음 단계에서 활성화됩니다.');app.post('/api/attendance/passkey/register/options',requireLogin,unavailable);app.post('/api/attendance/passkey/register/verify',requireLogin,unavailable);app.post('/api/attendance/passkey/login/options',unavailable);app.post('/api/attendance/passkey/login/verify',unavailable);
 }
-
-function dto(r){
-  return r ? {
-    id:r.id,
-    workDate:r.work_date,
-    clockIn:r.clock_in,
-    clockOut:r.clock_out,
-    gpsIn:r.gps_in||{},
-    gpsOut:r.gps_out||{},
-    deviceInfo:r.device_info||''
-  } : null;
-}
-
-function install(app){
-  if(app.__namoAttendanceCoreSafeInstalled) return;
-  app.__namoAttendanceCoreSafeInstalled = true;
-
-  app.get('/api/attendance/health', (_req,res)=>ok(res,{service:'attendance',status:'ready'},'Attendance API ready'));
-
-  app.get('/api/attendance/me', requireLogin, async (req,res)=>{
-    try{
-      await ensureSchema();
-      const u=req.session.user;
-      const r=await pool.query(
-        'SELECT id,uid,name,email,department,title,role,status,must_change_password FROM users WHERE id=$1 LIMIT 1',
-        [u.id]
-      );
-      const user=r.rows[0]||u;
-      return ok(res,{
-        user:{
-          id:user.id,uid:user.uid||'',name:user.name||'',email:user.email||'',
-          department:user.department||'',title:user.title||'',role:user.role||'user',
-          status:user.status||'APPROVED',mustChangePassword:Boolean(user.must_change_password)
-        },
-        balance:{granted:15,used:0,remaining:15},
-        passkeyCount:0,
-        profile:{annualLeaveDays:15,mobileEnabled:true,approver1:null,approver2:null}
-      });
-    }catch(e){
-      console.error('[Attendance core] me',e);
-      return fail(res,500,'근태 사용자 정보를 불러오지 못했습니다.');
-    }
-  });
-
-  app.get('/api/attendance/today', requireLogin, async (req,res)=>{
-    try{
-      await ensureSchema();
-      const r=await pool.query(
-        `SELECT * FROM attendance_logs
-          WHERE user_id=$1 AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date
-          LIMIT 1`,
-        [req.session.user.id]
-      );
-      return ok(res,dto(r.rows[0]||null));
-    }catch(e){
-      console.error('[Attendance core] today',e);
-      return fail(res,500,'오늘 근태를 불러오지 못했습니다.');
-    }
-  });
-
-  app.get('/api/attendance/logs', requireLogin, async (req,res)=>{
-    try{
-      await ensureSchema();
-      const month=/^\d{4}-\d{2}$/.test(String(req.query.month||''))?String(req.query.month):null;
-      const r=month
-        ? await pool.query(
-            `SELECT * FROM attendance_logs
-              WHERE user_id=$1 AND TO_CHAR(work_date,'YYYY-MM')=$2
-              ORDER BY work_date DESC`,
-            [req.session.user.id,month]
-          )
-        : await pool.query(
-            `SELECT * FROM attendance_logs
-              WHERE user_id=$1 ORDER BY work_date DESC LIMIT 100`,
-            [req.session.user.id]
-          );
-      return ok(res,r.rows.map(dto));
-    }catch(e){
-      console.error('[Attendance core] logs',e);
-      return fail(res,500,'근태기록을 불러오지 못했습니다.');
-    }
-  });
-
-  app.post('/api/attendance/clock-in', requireLogin, async (req,res)=>{
-    try{
-      await ensureSchema();
-      const gps=req.body?.gps&&typeof req.body.gps==='object'?req.body.gps:{};
-      const device=String(req.body?.device||'').slice(0,500);
-      const r=await pool.query(`
-        INSERT INTO attendance_logs(user_id,work_date,clock_in,gps_in,device_info)
-        VALUES($1,(NOW() AT TIME ZONE 'Asia/Seoul')::date,NOW(),$2::jsonb,$3)
-        ON CONFLICT(user_id,work_date) DO UPDATE SET
-          clock_in=COALESCE(attendance_logs.clock_in,EXCLUDED.clock_in),
-          gps_in=CASE WHEN attendance_logs.clock_in IS NULL THEN EXCLUDED.gps_in ELSE attendance_logs.gps_in END,
-          device_info=CASE WHEN attendance_logs.clock_in IS NULL THEN EXCLUDED.device_info ELSE attendance_logs.device_info END,
-          updated_at=NOW()
-        RETURNING *`,[req.session.user.id,JSON.stringify(gps),device]);
-      return ok(res,dto(r.rows[0]),'출근 처리되었습니다.');
-    }catch(e){
-      console.error('[Attendance core] clock-in',e);
-      return fail(res,500,'출근 처리에 실패했습니다.');
-    }
-  });
-
-  app.post('/api/attendance/clock-out', requireLogin, async (req,res)=>{
-    try{
-      await ensureSchema();
-      const gps=req.body?.gps&&typeof req.body.gps==='object'?req.body.gps:{};
-      const r=await pool.query(`
-        UPDATE attendance_logs SET
-          clock_out=COALESCE(clock_out,NOW()),
-          gps_out=CASE WHEN clock_out IS NULL THEN $2::jsonb ELSE gps_out END,
-          updated_at=NOW()
-        WHERE user_id=$1
-          AND work_date=(NOW() AT TIME ZONE 'Asia/Seoul')::date
-          AND clock_in IS NOT NULL
-        RETURNING *`,[req.session.user.id,JSON.stringify(gps)]);
-      if(!r.rowCount) return fail(res,400,'먼저 출근 처리를 해주세요.');
-      return ok(res,dto(r.rows[0]),'퇴근 처리되었습니다.');
-    }catch(e){
-      console.error('[Attendance core] clock-out',e);
-      return fail(res,500,'퇴근 처리에 실패했습니다.');
-    }
-  });
-
-  app.get('/api/attendance/notifications', requireLogin, (_req,res)=>ok(res,[]));
-  app.post('/api/attendance/notifications/read-all', requireLogin, (_req,res)=>ok(res,null,'모두 읽음 처리했습니다.'));
-
-  // While core recovery is active, return clear JSON for features not restored yet.
-  const unavailable=(req,res)=>fail(res,503,'이 기능은 출퇴근 안정화 후 순차 복구됩니다.');
-  app.get('/api/attendance/leave',requireLogin,unavailable);
-  app.post('/api/attendance/leave',requireLogin,unavailable);
-  app.get('/api/attendance/approvals',requireLogin,unavailable);
-  app.post('/api/attendance/passkey/register/options',requireLogin,unavailable);
-  app.post('/api/attendance/passkey/register/verify',requireLogin,unavailable);
-  app.post('/api/attendance/passkey/login/options',unavailable);
-  app.post('/api/attendance/passkey/login/verify',unavailable);
-}
-
-// express-session is registered with app.use(session(...)).
-// Detect that exact middleware and install our API immediately afterwards,
-// guaranteeing req.session is available while keeping the routes ahead of later app routes.
-const originalUse=express.application.use;
-express.application.use=function attendanceSessionAwareUse(...args){
-  const result=originalUse.apply(this,args);
-  if(!this.__namoAttendanceCoreSafeInstalled){
-    const fns=args.flat().filter(v=>typeof v==='function');
-    const hasSession=fns.some(fn=>fn.name==='session' || /session/i.test(String(fn.name||'')));
-    if(hasSession){
-      install(this);
-      console.log('[Attendance core] routes installed after QMES session middleware');
-    }
-  }
-  return result;
-};
-
-module.exports={installAttendanceCoreSafe:install};
+const originalUse=express.application.use;express.application.use=function(...args){const result=originalUse.apply(this,args);if(!this.__namoAttendanceCoreSafeInstalled){const fns=args.flat().filter(v=>typeof v==='function');if(fns.some(fn=>fn.name==='session'||/session/i.test(String(fn.name||'')))){install(this);console.log('[Attendance core] routes installed after QMES session middleware')}}return result};module.exports={installAttendanceCoreSafe:install};
