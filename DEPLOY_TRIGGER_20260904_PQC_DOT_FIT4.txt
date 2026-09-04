@@ -1,0 +1,2 @@
+Force production redeploy. Fix two root causes: previous dot animation referenced a missing keyframe, now self-contained; PQC record table now has its own non-scroll wrapper instead of the generic overflow-x-auto wrapper. OQC scrolling behavior remains unchanged.
+2026-09-04 KST
