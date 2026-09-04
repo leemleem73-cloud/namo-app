@@ -184,17 +184,10 @@
 
   document.addEventListener("click",e=>{const b=e.target instanceof Element?e.target.closest(".qmes-process-remark-btn-v1"):null;if(!b)return;e.preventDefault();e.stopImmediatePropagation();openModal(b);},true);
 
-  let lastLot="",observer;
-  function burst(){repair();requestAnimationFrame(repair);setTimeout(repair,20);setTimeout(repair,80);}
+  let lastLot="";
+  function burst(){repair();const lot=currentLot();if(lot&&lot!==lastLot){lastLot=lot;refreshNotes(lot);}}
   function start(){
     installStyle();burst();
-    observer=new MutationObserver(muts=>{if(repairing)return;if(muts.some(m=>m.addedNodes?.length||m.removedNodes?.length)){if(missing())repair();requestAnimationFrame(()=>{if(missing())repair();});}});
-    observer.observe(document.documentElement,{childList:true,subtree:true});
-    function frame(){
-      const lot=currentLot();if(lot&&lot!==lastLot){lastLot=lot;refreshNotes(lot);}
-      if(missing())repair();requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
     ["qmes:production-process-updated","qmes:data-updated","qmes:workorder-synced","qmes:mes-master-ready"].forEach(n=>window.addEventListener(n,burst));
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
