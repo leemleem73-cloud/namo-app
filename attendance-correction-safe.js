@@ -17,7 +17,8 @@ function attendanceHtmlWithCorrection(){
   const file=path.resolve(__dirname,'public','attendance.html');
   let html=fs.readFileSync(file,'utf8');
   html=html.replace(/<script src="\/attendance-correction\.js\?v=[^"]+"><\/script>/g,'');
-  return html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction2"></script></body>');
+  html=html.replace(/<script src="\/attendance-leave-cancel\.js\?v=[^"]+"><\/script>/g,'');
+  return html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction3"></script><script src="/attendance-leave-cancel.js?v=20260904-leavecancel1"></script></body>');
 }
 function patchAttendanceHtml(){
   try{
@@ -25,7 +26,7 @@ function patchAttendanceHtml(){
     if(!fs.existsSync(file))return;
     const html=attendanceHtmlWithCorrection();
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance correction] client script installed');
+    console.log('[Attendance correction] client scripts installed');
   }catch(e){console.error('[Attendance correction] HTML patch failed',e)}
 }
 patchAttendanceHtml();
