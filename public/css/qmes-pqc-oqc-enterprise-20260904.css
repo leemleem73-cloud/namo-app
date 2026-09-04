@@ -241,3 +241,10 @@ html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:16%!important;}
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(7),
 html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(7){text-align:center!important;}
+
+
+/* PQC record: slightly narrower management column */
+html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(1),
+html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(1){width:15%!important;}
+html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table th:nth-child(8),
+html body #root>div>main .qmes-pqc-page .qmes-pqc-record-table td:nth-child(8){width:15%!important;}
