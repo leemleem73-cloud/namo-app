@@ -1,0 +1,5 @@
+Force production redeploy for production screen redesign.
+Scope: production progress, workorder issued list, production process management presentation only.
+Changes: unified table typography/cell spacing, compact action controls, no-horizontal-overflow layout.
+Existing production data and workflows remain intact.
+2026-09-04 KST
