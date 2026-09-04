@@ -1,0 +1,3 @@
+Force production redeploy for IQC visual cleanup.
+Removed legacy iqc-light-tweaks screen layer from page loading and added one dedicated enterprise screen stylesheet. Existing IQC data, modal behavior, report/certificate and print styles remain intact.
+2026-09-04 KST
