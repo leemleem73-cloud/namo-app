@@ -1,0 +1,2 @@
+Force production redeploy. Lower IQC search group to the same bottom baseline as year/month/reset without changing table typography or other page layout.
+2026-09-04 KST
