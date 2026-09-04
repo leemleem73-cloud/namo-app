@@ -1,5 +1,5 @@
-const CACHE='namo-attendance-v2';
-const STATIC=['/attendance.html','/attendance.css?v=20260904-2','/attendance-app.js?v=20260904-2','/attendance-icon.svg','/attendance-manifest.webmanifest'];
+const CACHE='namo-attendance-v3-correction2';
+const STATIC=['/attendance.html?v=20260904-correction2','/attendance.css?v=20260904-2','/attendance-app.js?v=20260904-2','/attendance-correction.js?v=20260904-correction2','/attendance-icon.svg','/attendance-manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;if(new URL(r.url).pathname.startsWith('/api/'))return;e.respondWith(fetch(r).then(resp=>{const clone=resp.clone();caches.open(CACHE).then(c=>c.put(r,clone)).catch(()=>{});return resp}).catch(()=>caches.match(r).then(x=>x||caches.match('/attendance.html'))))});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.pathname.startsWith('/api/'))return;const allowed=u.pathname==='/attendance.html'||u.pathname==='/attendance-login.html'||u.pathname==='/attendance.css'||u.pathname==='/attendance-app.js'||u.pathname==='/attendance-correction.js'||u.pathname==='/attendance-icon.svg'||u.pathname==='/attendance-manifest.webmanifest';if(!allowed)return;e.respondWith(fetch(r).then(resp=>{const clone=resp.clone();caches.open(CACHE).then(c=>c.put(r,clone)).catch(()=>{});return resp}).catch(()=>caches.match(r).then(x=>x||caches.match('/attendance.html?v=20260904-correction2'))))});
