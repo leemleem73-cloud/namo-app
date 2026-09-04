@@ -21,7 +21,7 @@ const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx')
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
 const SHELL_BUILD = '20260903-shell-mobile-dedicated3';
-const DASHBOARD_ASSET_BUILD = '20260904-purchase-header-stable1';
+const DASHBOARD_ASSET_BUILD = '20260904-purchase-item-wide2';
 
 if (!fs.existsSync(enterpriseDashboard)) {
   console.error('[QMES] Enterprise dashboard module is missing:', enterpriseDashboard);
