@@ -613,11 +613,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       )}
 
       <Panel title={`검사 기록 (${docName})`} right={<span className="text-xs text-slate-500">{groupedFilteredRecords.length}건</span>}>
-        <div className={`qmes-inspection-record-filter qmes-unified-filter-grid ${isOqc ? "qmes-oqc-record-filter" : "qmes-pqc-record-filter"}`} style={{display:"grid",gridTemplateColumns:"350px 150px 150px 135px",columnGap:"12px",alignItems:"end",justifyContent:"start",width:"max-content",maxWidth:"100%"}}>
+        <div className="qmes-unified-filter-grid" style={{display:"grid",gridTemplateColumns:"350px 150px 150px 135px",columnGap:"12px",alignItems:"end",justifyContent:"start",width:"max-content",maxWidth:"100%"}}>
           <div className="flex flex-col gap-1" style={{width:"350px",margin:0,minWidth:0}}>
             <span className="text-[10px] text-slate-500">{numberLabel} / LOT / 제품명 / 항목 / 검사자 검색</span>
-            <div className="qmes-inspection-search-box" style={{width:"350px",height:"42px",position:"relative",display:"flex",alignItems:"center"}}>
-              <Search size={15} className="qmes-inspection-search-icon" />
+            <div className="qmes-filter-search-wrap" style={{width:"350px",height:"42px",position:"relative",display:"flex",alignItems:"center"}}>
+              <Search size={15} className="qmes-filter-search-icon" />
               <input
                 value={recordSearch}
                 onChange={(e) => { setRecordSearch(e.target.value); setRecordPage(1); }}
@@ -632,14 +632,14 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
             </div>
           </div>
           <>
-            <div className="qmes-oqc-record-filter-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
+            <div className="qmes-filter-select-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
               <span>연도</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={recordYear} onChange={(e)=>{setRecordYear(e.target.value);setRecordPage(1);}}>
                 <option value="ALL">전체 연도</option>
                 {recordYears.map((year)=><option key={year} value={year}>{year}년</option>)}
               </select>
             </div>
-            <div className="qmes-oqc-record-filter-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
+            <div className="qmes-filter-select-field" style={{width:"150px",minWidth:"150px",maxWidth:"150px",margin:0}}>
               <span>월</span>
               <select style={{width:"150px",height:"42px",boxSizing:"border-box"}} value={recordMonth} onChange={(e)=>{setRecordMonth(e.target.value);setRecordPage(1);}}>
                 <option value="ALL">전체 월</option>
