@@ -2011,7 +2011,7 @@ aside{display:none!important}
 .qmes-iqc-ledger-container{
   width:100%!important;
   max-width:none!important;
-  overflow:visible!important;
+  overflow:hidden!important;
 }
 .qmes-iqc-ledger-table{
   width:100%!important;
@@ -3597,12 +3597,7 @@ aside{display:none!important}
   .qmes-iqc-ledger-table td:last-child{
     padding:3px 2px!important;
   }
-  .qmes-iqc-ledger-table td:last-child{
-    display:grid!important;
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-    gap:3px!important;
-    align-content:center!important;
-  }
+  
 }
 @media(max-width:1100px){
   .qmes-iqc-ledger-table thead th,
@@ -3728,21 +3723,16 @@ aside{display:none!important}
   }
 
   /* 열 너비 재배분: 관리 칸 14% 확보 */
-  .qmes-iqc-ledger-table col:nth-child(1){width:10%!important}
-  .qmes-iqc-ledger-table col:nth-child(2){width:7%!important}
-  .qmes-iqc-ledger-table col:nth-child(3){width:8%!important}
-  .qmes-iqc-ledger-table col:nth-child(4){width:8%!important}
-  .qmes-iqc-ledger-table col:nth-child(5){width:9%!important}
-  .qmes-iqc-ledger-table col:nth-child(6),
-  .qmes-iqc-ledger-table col:nth-child(7),
-  .qmes-iqc-ledger-table col:nth-child(8){width:5%!important}
-  .qmes-iqc-ledger-table col:nth-child(9),
-  .qmes-iqc-ledger-table col:nth-child(10),
-  .qmes-iqc-ledger-table col:nth-child(11),
-  .qmes-iqc-ledger-table col:nth-child(12){width:4%!important}
-  .qmes-iqc-ledger-table col:nth-child(13){width:6%!important}
-  .qmes-iqc-ledger-table col:nth-child(14){width:7%!important}
-  .qmes-iqc-ledger-table col:nth-child(15){width:14%!important}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   .qmes-iqc-ledger-table th,
   .qmes-iqc-ledger-table td{
