@@ -1,0 +1,5 @@
+2026-09-04 NAMO Attendance server recovery redeploy
+- package.json restored to the normal QMES preload chain
+- attendance-server is loaded once from server.js
+- force hosting platform redeploy so the live process picks up the corrected server entry
+- PC QMES source is otherwise unchanged
