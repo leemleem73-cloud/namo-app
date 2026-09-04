@@ -1,0 +1,335 @@
+/* NAMO QMES production screens unified design — 2026-09-04 */
+
+/* ---------- shared ---------- */
+html body #root :is(.qmes-production-progress-page,.qmes-prod-process) {
+  color:#334155!important;
+}
+html body #root :is(.qmes-production-progress-page,.qmes-prod-process) .bg-slate-900,
+html body #root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-issued-table-v2){
+  background:#fff!important;
+  border:1px solid #dfe7ee!important;
+  border-radius:10px!important;
+  box-shadow:0 1px 3px rgba(15,23,42,.04)!important;
+}
+html body #root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-issued-table-v2)>div:first-child,
+html body #root .qmes-production-progress-page .bg-slate-900>div:first-child{
+  min-height:48px!important;
+  padding:12px 16px!important;
+  border-bottom:1px solid #e6edf3!important;
+  background:#fff!important;
+}
+html body #root main div.bg-slate-900.border.border-slate-800.rounded-lg:has(.qmes-issued-table-v2) h3,
+html body #root .qmes-production-progress-page h3{
+  color:#24364a!important;
+  font-size:16px!important;
+  font-weight:800!important;
+}
+
+/* ---------- 생산 진행 ---------- */
+html body #root .qmes-production-progress-page .qmes-production-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table th{
+  height:42px!important;
+  padding:8px 10px!important;
+  background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;
+  border-right:1px solid rgba(255,255,255,.28)!important;
+  border-bottom:1px solid #4f8ab2!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  text-align:center!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table td{
+  height:44px!important;
+  padding:8px 10px!important;
+  background:#fff!important;
+  color:#405569!important;
+  border-bottom:1px solid #dce5eb!important;
+  font-size:11px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html body #root .qmes-production-progress-page .qmes-production-table tbody tr:nth-child(even) td{background:#f7fafc!important}
+html body #root .qmes-production-progress-page .qmes-production-table tbody tr:hover td{background:#edf6fb!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(1){width:14%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(2){width:17%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(3){width:10%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(4){width:11%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(5){width:11%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(6){width:17%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(7){width:10%!important}
+html body #root .qmes-production-progress-page .qmes-production-table th:nth-child(8){width:10%!important}
+
+/* ---------- 작업지시서 ---------- */
+html body #root main .qmes-status-guide{
+  margin:0 0 12px!important;
+  padding:10px 12px!important;
+  border:1px solid #e1e8ef!important;
+  border-radius:8px!important;
+  background:#f8fbfd!important;
+  color:#536779!important;
+  font-size:11px!important;
+}
+html body #root main .qmes-issued-filter{
+  display:grid!important;
+  grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 180px 86px!important;
+  gap:10px!important;
+  align-items:end!important;
+  margin:0 0 12px!important;
+}
+html body #root main .qmes-issued-filter>div>span{
+  display:block!important;
+  margin-bottom:5px!important;
+  color:#60758a!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+html body #root main .qmes-issued-filter input,
+html body #root main .qmes-issued-filter select,
+html body #root main .qmes-issued-filter button{
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:34px!important;
+  min-height:34px!important;
+  border:1px solid #b9c9d5!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#2e4557!important;
+  font-size:11px!important;
+  box-shadow:none!important;
+}
+html body #root main .qmes-issued-filter input{padding:0 10px!important}
+html body #root main .qmes-issued-filter button{
+  padding:0 10px!important;
+  font-weight:800!important;
+  background:linear-gradient(180deg,#fff,#eef3f7)!important;
+}
+html body #root main .qmes-issued-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+html body #root main .qmes-issued-table-v2{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+html body #root main .qmes-issued-table-v2 th{
+  height:42px!important;
+  padding:7px 5px!important;
+  background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;
+  border-right:1px solid rgba(255,255,255,.26)!important;
+  border-bottom:1px solid #4f8ab2!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  text-align:center!important;
+}
+html body #root main .qmes-issued-table-v2 td{
+  height:44px!important;
+  padding:7px 5px!important;
+  background:#fff!important;
+  color:#405569!important;
+  border-bottom:1px solid #dce5eb!important;
+  font-size:10.5px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html body #root main .qmes-issued-table-v2 tbody tr:nth-child(even) td{background:#f7fafc!important}
+html body #root main .qmes-issued-table-v2 tbody tr:hover td{background:#edf6fb!important}
+html body #root main .qmes-issued-table-v2 .qmes-status-select{
+  width:78px!important;
+  height:28px!important;
+  min-height:28px!important;
+  padding:0 5px!important;
+  border:1px solid #b7c8d4!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#365269!important;
+  font-size:10px!important;
+}
+html body #root main .qmes-workorder-actions{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn{
+  box-sizing:border-box!important;
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  height:28px!important;
+  min-height:28px!important;
+  padding:0!important;
+  border:1px solid #b7c8d4!important;
+  border-radius:5px!important;
+  background:linear-gradient(180deg,#fff,#eef3f7)!important;
+  color:#365269!important;
+  font-size:9.5px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  box-shadow:none!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn.delete{
+  color:#b54242!important;
+  border-color:#d8a5a5!important;
+  background:#fff!important;
+}
+
+/* ---------- 생산공정 관리 ---------- */
+html body #root .qmes-prod-process{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+html body #root .qmes-prod-process .qpp-card{
+  background:#fff!important;
+  border:1px solid #dfe7ee!important;
+  border-radius:10px!important;
+  box-shadow:0 1px 3px rgba(15,23,42,.04)!important;
+  overflow:hidden!important;
+}
+html body #root .qmes-prod-process .qpp-card-head{
+  min-height:48px!important;
+  padding:12px 16px!important;
+  background:#fff!important;
+  border-bottom:1px solid #e6edf3!important;
+}
+html body #root .qmes-prod-process .qpp-card-head b{
+  color:#24364a!important;
+  font-size:15px!important;
+  font-weight:800!important;
+}
+html body #root .qmes-prod-process .qpp-info{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  background:#fff!important;
+}
+html body #root .qmes-prod-process .qpp-info>div{
+  min-width:0!important;
+  padding:12px 14px!important;
+  border-right:1px solid #e7edf2!important;
+}
+html body #root .qmes-prod-process .qpp-info small{
+  display:block!important;
+  margin-bottom:4px!important;
+  color:#7d91a4!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+html body #root .qmes-prod-process .qpp-info strong{
+  display:block!important;
+  color:#30475c!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html body #root .qmes-prod-process .qpp-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+html body #root .qmes-prod-process .qpp-table{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+html body #root .qmes-prod-process .qpp-table th{
+  height:42px!important;
+  padding:7px 6px!important;
+  background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;
+  border-right:1px solid rgba(255,255,255,.26)!important;
+  border-bottom:1px solid #4f8ab2!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  text-align:center!important;
+}
+html body #root .qmes-prod-process .qpp-table td{
+  height:46px!important;
+  padding:7px 6px!important;
+  background:#fff!important;
+  color:#405569!important;
+  border-bottom:1px solid #dce5eb!important;
+  font-size:10.5px!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+html body #root .qmes-prod-process .qpp-table tbody tr:nth-child(even) td{background:#f7fafc!important}
+html body #root .qmes-prod-process .qpp-table tbody tr:hover td{background:#edf6fb!important}
+html body #root .qmes-prod-process .qpp-side{
+  background:#fff!important;
+}
+html body #root .qmes-prod-process .qpp-sidebox{
+  border:1px solid #dfe7ee!important;
+  border-radius:8px!important;
+  background:#f8fbfd!important;
+  box-shadow:none!important;
+}
+html body #root .qmes-prod-process .qpp-actionbar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+  padding-top:12px!important;
+  border-top:1px solid #e6edf3!important;
+}
+html body #root .qmes-prod-process .qpp-actionbar button{
+  min-width:82px!important;
+  height:32px!important;
+  min-height:32px!important;
+  padding:0 10px!important;
+  border:1px solid #b7c8d4!important;
+  border-radius:6px!important;
+  background:linear-gradient(180deg,#fff,#eef3f7)!important;
+  color:#365269!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+}
+html body #root .qmes-prod-process .qpp-actionbar .qpp-btn.primary{
+  background:#5f9fc9!important;
+  border-color:#5f9fc9!important;
+  color:#fff!important;
+}
+html body #root .qmes-prod-process .qpp-actionbar .qpp-btn.red{
+  background:#fff!important;
+  border-color:#d8a5a5!important;
+  color:#b54242!important;
+}
+
+@media(max-width:1100px){
+  html body #root main .qmes-issued-filter{grid-template-columns:1fr 1fr!important}
+  html body #root .qmes-prod-process .qpp-info{grid-template-columns:repeat(3,1fr)!important}
+}
