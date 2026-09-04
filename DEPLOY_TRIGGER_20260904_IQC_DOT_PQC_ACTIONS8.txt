@@ -1,0 +1,2 @@
+Force production redeploy. IQC summary dots now use the same slow vertical bounce as PQC/OQC. Removed obsolete CSS col widths that conflicted with the direct PQC React colgroup. PQC management is 30%, actions compacted, output icon hidden only on PQC, and delete remains fully visible.
+2026-09-04 KST
