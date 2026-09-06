@@ -233,13 +233,10 @@
         cells[4].title="OQC 완료 상태이나 생산실적 수량이 입력되지 않았습니다.";
       }
 
+      /* Keep the React-rendered item text stable.
+       * Do not rewrite visible table contents after refresh/sync. */
       const sourceProduct=clean(itemButton?.dataset.qmesSourceProduct||itemButton?.textContent);
-      const displayProduct=PRODUCT_LABELS[sourceProduct];
-      if(itemButton&&displayProduct){
-        itemButton.dataset.qmesSourceProduct=sourceProduct;
-        if(clean(itemButton.textContent)!==displayProduct) itemButton.textContent=displayProduct;
-        itemButton.title=displayProduct;
-      }
+      if(itemButton&&!itemButton.dataset.qmesSourceProduct) itemButton.dataset.qmesSourceProduct=sourceProduct;
       if(norm(lotNo)===norm(sourceProduct)){
         row.classList.add("qmes-lot-product-conflict");
         lotButton.title="기존 데이터: 제품코드와 LOT 번호가 동일합니다. 신규 발행부터 별도 LOT를 사용하세요.";
