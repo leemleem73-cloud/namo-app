@@ -801,14 +801,10 @@ function IssueWoTab() {
     });
   };
 
-  useEffect(() => {
-    let active = true;
-    if (typeof qmesSyncPullWorkOrders !== "function") return () => { active = false; };
-    qmesSyncPullWorkOrders()
-      .then(() => { if (active) setIssued([...DB.batches]); })
-      .catch((error) => console.warn("작업지시서 공용 동기화 실패:", error.message));
-    return () => { active = false; };
-  }, []);
+  /* Keep the issued list stable after first paint.
+   * Shared work-order data is already loaded before/around app bootstrap; doing a
+   * second pull here caused visible LOT/item/equipment/worker cells to change
+   * a moment after refresh. */
 
   const bom = BOM[form.product] || BOM[firstProduct];
   const isBinderWorkOrder = bom.workType === "바인더 솔루션(중간재)";
