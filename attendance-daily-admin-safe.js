@@ -16,6 +16,24 @@ const isCeoTitle=v=>/^(대표|대표이사|ceo|chiefexecutiveofficer)$/i.test(St
 async function ensureSchema(){
   if(schemaPromise)return schemaPromise;
   schemaPromise=pool.query(`
+    CREATE TABLE IF NOT EXISTS attendance_corrections(
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL,
+      work_date DATE NOT NULL,
+      original_clock_in TIMESTAMPTZ,
+      original_clock_out TIMESTAMPTZ,
+      requested_clock_in TIME,
+      requested_clock_out TIME,
+      reason TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'PENDING',
+      approver_id UUID,
+      reject_reason TEXT DEFAULT '',
+      approved_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS attendance_corrections_user_idx ON attendance_corrections(user_id,created_at DESC);
+    CREATE INDEX IF NOT EXISTS attendance_corrections_status_idx ON attendance_corrections(status,created_at ASC);
     CREATE TABLE IF NOT EXISTS attendance_admin_adjustments(
       id BIGSERIAL PRIMARY KEY,
       user_id UUID NOT NULL,
