@@ -153,33 +153,14 @@
           changed=true;
         }
 
-        try{
-          if(window.DB?.woDocs?.[lot]){
-            DB.woDocs[lot]={...DB.woDocs[lot],workers:resolved.text,worker:resolved.text,workerIds:resolved.ids};
-            if(DB.woDocs[lot].productionResult){
-              DB.woDocs[lot].productionResult={...DB.woDocs[lot].productionResult,worker:resolved.text,finalWorker:resolved.text,workerIds:resolved.ids};
-              DB.woDocs[lot].finalWorker=resolved.text;
-            }
-          }
-          if(Array.isArray(window.DB?.batches)){
-            DB.batches=DB.batches.map(item=>clean(item?.no)===lot?{
-              ...item,
-              worker:resolved.text,
-              workerIds:resolved.ids,
-              productionResult:item.productionResult?{...item.productionResult,worker:resolved.text,finalWorker:resolved.text,workerIds:resolved.ids}:item.productionResult
-            }:item);
-          }
-          if(window.DB?.productionProcesses?.[lot]){
-            DB.productionProcesses[lot]={...DB.productionProcesses[lot],workerIds:resolved.ids,workers:resolved.workers};
-          }
-        }catch(_error){}
+        /* Do not mutate the live React work-order list after it has rendered.
+         * Server records are already synchronized above; visible list values should
+         * remain stable until React reloads them as one consistent snapshot. */
         updateOpenResultModal(lot,resolved.text);
       }
 
       if(changed){
-        try{if(typeof window.dbSave==="function")window.dbSave();else if(typeof dbSave==="function")dbSave();}catch(_error){}
         window.dispatchEvent(new CustomEvent("qmes:worker-name-sync-complete"));
-        window.dispatchEvent(new CustomEvent("qmes:data-updated",{detail:{type:"worker-name-sync"}}));
       }
     }catch(error){
       console.warn("[QMES 생산] 작업자 이름 동기화 실패",error?.message||error);
