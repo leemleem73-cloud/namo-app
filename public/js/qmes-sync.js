@@ -344,12 +344,28 @@
       return true;
     }
     if (!payload.doc) return false;
+
+    /* Preserve display-critical values that were already rendered locally.
+     * A delayed server merge must not make the visible work-order row change
+     * after refresh. These fields update through explicit work-order/result saves. */
     DB.woDocs = DB.woDocs || {};
-    DB.woDocs[key] = payload.doc;
+    const currentDoc = DB.woDocs[key] || {};
+    DB.woDocs[key] = {
+      ...payload.doc,
+      ...(currentDoc.item != null ? {item:currentDoc.item} : {}),
+      ...(currentDoc.productionActual != null ? {productionActual:currentDoc.productionActual} : {})
+    };
 
     if (payload.batch) {
       DB.batches = DB.batches || [];
-      DB.batches = [payload.batch, ...DB.batches.filter((row) => row.no !== key)];
+      const currentBatch = DB.batches.find((row) => row.no === key) || {};
+      const mergedBatch = {
+        ...payload.batch,
+        ...(currentBatch.item != null ? {item:currentBatch.item} : {}),
+        ...(currentBatch.itemName != null ? {itemName:currentBatch.itemName} : {}),
+        ...(currentBatch.done != null ? {done:currentBatch.done} : {})
+      };
+      DB.batches = [mergedBatch, ...DB.batches.filter((row) => row.no !== key)];
     }
     if (payload.lotRecord) {
       DB.lots = DB.lots || {};
