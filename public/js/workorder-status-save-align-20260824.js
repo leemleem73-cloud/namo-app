@@ -10,14 +10,14 @@
     .qmes-wo-status-save-btn{display:none!important;}
     .qmes-issued-table-v2{table-layout:fixed!important;width:100%!important;min-width:0!important;max-width:100%!important;}
     .qmes-issued-table-v2 th:nth-child(10),.qmes-issued-table-v2 td:nth-child(10){
-      width:6%!important;min-width:0!important;max-width:none!important;
+      width:5%!important;min-width:0!important;max-width:none!important;
       padding-left:3px!important;padding-right:3px!important;text-align:center!important;overflow:hidden!important;
     }
     .qmes-issued-table-v2 td:nth-child(10) .qmes-status-select{
       display:block!important;box-sizing:border-box!important;
-      width:64px!important;min-width:58px!important;max-width:64px!important;
-      height:28px!important;min-height:28px!important;max-height:28px!important;
-      margin:0 auto!important;padding:0 16px 0 4px!important;font-size:9px!important;line-height:26px!important;text-align:center!important;
+      width:56px!important;min-width:52px!important;max-width:56px!important;
+      height:24px!important;min-height:24px!important;max-height:24px!important;
+      margin:0 auto!important;padding:0 13px 0 3px!important;font-size:8px!important;line-height:26px!important;text-align:center!important;
       flex:none!important;
     }
   `;
