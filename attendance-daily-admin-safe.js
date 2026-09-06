@@ -1,5 +1,7 @@
 'use strict';
 const express=require('express');
+const fs=require('fs');
+const path=require('path');
 const{Pool}=require('pg');
 require('dotenv').config();
 
@@ -12,6 +14,42 @@ const requireAdmin=(req,res,next)=>String(req.session?.user?.role||'').toLowerCa
 const dateOk=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''));
 const timeOk=v=>v===''||/^([01]\d|2[0-3]):[0-5]\d$/.test(String(v||''));
 const isCeoTitle=v=>/^(대표|대표이사|ceo|chiefexecutiveofficer)$/i.test(String(v||'').replace(/\s+/g,''));
+
+function installPcClient(){
+  try{
+    const indexFile=path.resolve(__dirname,'public','index.html');
+    if(fs.existsSync(indexFile)){
+      let html=fs.readFileSync(indexFile,'utf8');
+      html=html.replace(/\s*<script type="text\/babel" data-presets="react" src="\.\/js\/namo-daily-attendance-admin-20260907\.jsx\?v=[^"]+"><\/script>/g,'');
+      const routerTag=/<script type="text\/babel" data-presets="react" src="\.\/js\/router\.jsx\?v=[^"]+"><\/script>/;
+      if(routerTag.test(html)){
+        html=html.replace(routerTag,'  <script type="text/babel" data-presets="react" src="./js/namo-daily-attendance-admin-20260907.jsx?v=20260907-daily1"></script>\n  <script type="text/babel" data-presets="react" src="./js/router.jsx?v=20260907-daily1"></script>');
+        fs.writeFileSync(indexFile,html,'utf8');
+      }
+    }
+
+    const routerFile=path.resolve(__dirname,'public','js','router.jsx');
+    if(fs.existsSync(routerFile)){
+      let src=fs.readFileSync(routerFile,'utf8');
+      if(!src.includes('id:"dailyAttendance"')){
+        src=src.replace(
+          '  { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },',
+          '  { id:"dailyAttendance", label:"일 근무관리", icon:ClipboardList, comp:window.NamoDailyAttendanceAdminTab, adminOnly:true },\n  { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },'
+        );
+      }
+      if(!src.includes('id:"attendanceMenu"')){
+        src=src.replace(
+          '  { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },',
+          '  { id:"attendanceMenu", label:"근태관리", icon:ClipboardList, children:["dailyAttendance"], adminOnly:true },\n  { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },'
+        );
+      }
+      src=src.replace('{TOP_MENUS.map(menu=>','{TOP_MENUS.filter(menu=>!menu.adminOnly||user.role==="admin").map(menu=>');
+      fs.writeFileSync(routerFile,src,'utf8');
+    }
+    console.log('[Daily attendance admin] PC client installed');
+  }catch(e){console.error('[Daily attendance admin] PC client install failed',e);}
+}
+installPcClient();
 
 async function ensureSchema(){
   if(schemaPromise)return schemaPromise;
