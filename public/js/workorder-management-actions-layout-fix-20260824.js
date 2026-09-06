@@ -33,7 +33,7 @@
     .qmes-issued-table-v2 td:nth-child(10),
     .qmes-wo-list-table th:nth-child(10),
     .qmes-wo-list-table td:nth-child(10){
-      width:6%!important;
+      width:5%!important;
       min-width:0!important;
       max-width:none!important;
       padding-left:3px!important;
@@ -48,7 +48,7 @@
       box-sizing:border-box!important;
       width:100%!important;
       min-width:0!important;
-      max-width:64px!important;
+      max-width:56px!important;
       height:28px!important;
       margin:0 auto!important;
       padding-left:4px!important;
@@ -62,7 +62,7 @@
     .qmes-issued-table-v2 td:last-child,
     .qmes-wo-list-table th:last-child,
     .qmes-wo-list-table td:last-child{
-      width:20%!important;
+      width:18%!important;
       min-width:0!important;
       max-width:none!important;
       padding-left:2px!important;
@@ -96,14 +96,14 @@
       width:auto!important;
       min-width:0!important;
       max-width:100%!important;
-      height:27px!important;
-      min-height:27px!important;
+      height:24px!important;
+      min-height:24px!important;
       margin:0!important;
-      padding:0 3px!important;
+      padding:0 2px!important;
       line-height:1!important;
       white-space:nowrap!important;
       float:none!important;
-      font-size:8px!important;
+      font-size:7px!important;
       flex:0 1 auto!important;
     }
 
@@ -111,15 +111,15 @@
       .qmes-issued-table-v2 th:last-child,
       .qmes-issued-table-v2 td:last-child,
       .qmes-wo-list-table th:last-child,
-      .qmes-wo-list-table td:last-child{width:20%!important;}
+      .qmes-wo-list-table td:last-child{width:18%!important;}
       .qmes-issued-table-v2 th:nth-child(10),
       .qmes-issued-table-v2 td:nth-child(10),
       .qmes-wo-list-table th:nth-child(10),
-      .qmes-wo-list-table td:nth-child(10){width:6%!important;}
+      .qmes-wo-list-table td:nth-child(10){width:5%!important;}
       .qmes-issued-table-v2 td:last-child button,
       .qmes-wo-list-table td:last-child button,
       .qmes-issued-table-v2 td:last-child .qmes-production-result-shortcut,
-      .qmes-wo-list-table td:last-child .qmes-production-result-shortcut{padding:0 2px!important;font-size:7.5px!important;}
+      .qmes-wo-list-table td:last-child .qmes-production-result-shortcut{padding:0 2px!important;font-size:7px!important;}
     }
   `;
   document.getElementById(style.id)?.remove();
