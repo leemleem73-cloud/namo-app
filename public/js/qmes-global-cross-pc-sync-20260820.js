@@ -192,7 +192,9 @@
     suppressPush = true;
     try {
       const tasks = [syncInspections(db)];
-      if (typeof window.qmesSyncPullWorkOrders === 'function') tasks.push(window.qmesSyncPullWorkOrders());
+      /* Work-order rows are loaded by the production module itself.
+       * Do not re-pull them after first paint: that second async snapshot made
+       * visible LOT/item/equipment/worker values change a moment after refresh. */
       if (typeof window.qmesSyncPullEquipment === 'function') tasks.push(window.qmesSyncPullEquipment());
       await Promise.allSettled(tasks);
       if (typeof window.dbSave === 'function') {
@@ -213,7 +215,9 @@
     patchDbSave();
     baseline = snapshotDb(getDb() || {});
     syncAll();
-    timer = window.setInterval(syncAll, 7000);
+    /* Keep inspection/equipment sync, but avoid a repeating full refresh loop
+     * that can re-render work-order content while the user is viewing it. */
+    timer = window.setInterval(syncAll, 30000);
     window.setInterval(patchDbSave, 1500);
     window.addEventListener('focus', syncAll);
     document.addEventListener('visibilitychange', function () {
