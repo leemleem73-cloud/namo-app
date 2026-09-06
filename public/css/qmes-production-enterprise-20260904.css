@@ -85,32 +85,32 @@ html body #root main .qmes-issued-filter :is(input,select,button){
 }
 
 /* workorder table: management gets enough space; total = 100% */
-html body #root main .qmes-issued-table-v2 th:nth-child(1){width:10%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(2){width:11%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(1){width:11%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(2){width:14%!important}
 html body #root main .qmes-issued-table-v2 th:nth-child(3){width:6%!important}
 html body #root main .qmes-issued-table-v2 th:nth-child(4){width:7%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(5){width:7%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(6){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(5){width:8%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(6){width:9%!important}
 html body #root main .qmes-issued-table-v2 th:nth-child(7){width:7%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(8){width:6%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(8){width:5%!important}
 html body #root main .qmes-issued-table-v2 th:nth-child(9){width:7%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(10){width:8%!important}
-html body #root main .qmes-issued-table-v2 th:nth-child(11){width:23%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(10){width:6%!important}
+html body #root main .qmes-issued-table-v2 th:nth-child(11){width:20%!important}
 
 html body #root main .qmes-issued-table-v2 :is(button,select){box-sizing:border-box!important;max-width:100%!important;min-width:0!important}
 html body #root main .qmes-issued-table-v2 .qmes-status-select{
-  width:100%!important;height:26px!important;min-height:26px!important;padding:0 3px!important;
-  border:1px solid #b7c8d4!important;border-radius:4px!important;background:#fff!important;color:#365269!important;font-size:8.5px!important;
+  width:64px!important;max-width:64px!important;height:26px!important;min-height:26px!important;margin:0 auto!important;padding:0 15px 0 4px!important;
+  border:1px solid #b7c8d4!important;border-radius:4px!important;background:#fff!important;color:#365269!important;font-size:8.5px!important;text-align:center!important;
 }
 html body #root main .qmes-issued-table-v2 td:nth-child(11){padding:3px 4px!important;overflow:hidden!important}
 html body #root main .qmes-workorder-actions{
-  box-sizing:border-box!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  width:100%!important;max-width:100%!important;min-width:0!important;gap:3px!important;align-items:center!important;overflow:hidden!important;
+  box-sizing:border-box!important;display:flex!important;flex-wrap:nowrap!important;justify-content:center!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;gap:2px!important;align-items:center!important;overflow:hidden!important;
 }
-html body #root main .qmes-workorder-actions .qmes-manage-btn{
+html body #root main .qmes-workorder-actions :is(.qmes-manage-btn,.qmes-production-result-shortcut){
   box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;
-  width:100%!important;min-width:0!important;max-width:100%!important;height:26px!important;min-height:26px!important;
-  margin:0!important;padding:0 1px!important;border:1px solid #b7c8d4!important;border-radius:4px!important;
+  width:auto!important;min-width:0!important;max-width:100%!important;height:26px!important;min-height:26px!important;flex:0 1 auto!important;
+  margin:0!important;padding:0 3px!important;border:1px solid #b7c8d4!important;border-radius:4px!important;
   background:linear-gradient(180deg,#fff,#eef3f7)!important;color:#365269!important;
   font-size:8px!important;font-weight:800!important;line-height:1!important;letter-spacing:-.35px!important;
   white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;box-shadow:none!important;
