@@ -139,7 +139,6 @@
     const batch=batchFor(key);
     const lot=lotFor(key);
     const status=unifiedStatus(key);
-    const actual=actualQuantity(key);
     const completed=status==="완료";
     let changed=false;
 
@@ -147,16 +146,13 @@
       if(clean(doc.status)!==status){doc.status=status;changed=true;}
       /* OQC/production completion must outrank an old manual '발행' value. */
       if(completed&&clean(doc.manualStatus)!=="완료"){doc.manualStatus="완료";changed=true;}
-      if(actual!=null&&number(doc.productionActual)!==actual){doc.productionActual=actual;changed=true;}
     }
     if(batch&&Object.keys(batch).length){
       const batchStatus=status==="생산중"||status==="검사중"?"진행중":status;
       if(clean(batch.status)!==batchStatus){batch.status=batchStatus;changed=true;}
-      if(actual!=null&&number(batch.done)!==actual){batch.done=actual;changed=true;}
     }
     if(lot&&Object.keys(lot).length){
       if(clean(lot.productionStatus)!==status){lot.productionStatus=status;changed=true;}
-      if(actual!=null&&number(lot.productionQty)!==actual){lot.productionQty=actual;changed=true;}
     }
     return changed;
   }
@@ -224,15 +220,6 @@
         select.classList.remove("status-발행","status-생산중","status-검사중","status-완료");
         select.classList.add(`status-${status}`);
       }
-      const actual=actualQuantity(lotNo);
-      if(actual!=null){
-        const text=`${actual.toLocaleString("ko-KR",{minimumFractionDigits:3,maximumFractionDigits:3})} kg`;
-        if(clean(cells[4].textContent)!==text) cells[4].textContent=text;
-      }else if(status==="완료"&&clean(cells[4].textContent)==="—"){
-        cells[4].textContent="실적 미입력";
-        cells[4].title="OQC 완료 상태이나 생산실적 수량이 입력되지 않았습니다.";
-      }
-
       /* Keep the React-rendered item text stable.
        * Do not rewrite visible table contents after refresh/sync. */
       const sourceProduct=clean(itemButton?.dataset.qmesSourceProduct||itemButton?.textContent);
