@@ -240,16 +240,16 @@
 
     D.woDocs=D.woDocs&&typeof D.woDocs==="object"?D.woDocs:{};
     const doc=D.woDocs[wo]||{};
-    D.woDocs[wo]={...doc,salesOrderId:sid,customer,customerName:customer,deliveryPlace:destination,requestedDue:due,due:due||doc.due,item:product||doc.item,orderQty:qty,salesQty:qty};
+    D.woDocs[wo]={...doc,salesOrderId:sid,customer,customerName:customer,deliveryPlace:destination,requestedDue:due,due:due||doc.due,orderQty:qty,salesQty:qty};
 
     const batch=(Array.isArray(D.batches)?D.batches:[]).find(item=>clean(item?.no)===wo);
     if(batch){
       batch.salesOrderId=sid;batch.customer=customer;batch.customerName=customer;batch.deliveryPlace=destination;
-      if(due)batch.due=due;if(product){batch.item=product;batch.itemName=product;}batch.orderQty=qty;batch.salesQty=qty;
+      if(due)batch.due=due;batch.orderQty=qty;batch.salesQty=qty;
     }
     D.lots=D.lots&&typeof D.lots==="object"?D.lots:{};
     const lot=D.lots[wo]||{};
-    D.lots[wo]={...lot,salesOrderId:sid,workOrder:wo,customer,deliveryPlace:destination,orderQty:qty,itemName:product||lot.itemName||lot.item};
+    D.lots[wo]={...lot,salesOrderId:sid,workOrder:wo,customer,deliveryPlace:destination,orderQty:qty};
 
     try{if(typeof window.dbSave==="function")window.dbSave();}catch(error){console.warn("[QMES] sales-workorder dbSave failed",error);}
     if(options.sync!==false){
@@ -402,9 +402,9 @@
     const sale=saleForWorkOrder(wo);if(!sale)return;
     const sid=salesId(sale),customer=salesCustomer(sale),product=salesProduct(sale),qty=salesQty(sale),destination=salesDestination(sale),D=db();
     if(D){
-      const doc=D.woDocs?.[wo];if(doc){doc.salesOrderId=sid;if(product)doc.item=product;doc.customer=customer;doc.customerName=customer;doc.deliveryPlace=destination;doc.orderQty=qty;}
-      const batch=(D.batches||[]).find(item=>clean(item?.no)===wo);if(batch){batch.salesOrderId=sid;if(product){batch.item=product;batch.itemName=product;}batch.customer=customer;batch.customerName=customer;batch.deliveryPlace=destination;batch.orderQty=qty;}
-      if(D.lots?.[wo]){D.lots[wo].salesOrderId=sid;if(product)D.lots[wo].itemName=product;D.lots[wo].customer=customer;D.lots[wo].deliveryPlace=destination;D.lots[wo].orderQty=qty;}
+      const doc=D.woDocs?.[wo];if(doc){doc.salesOrderId=sid;doc.customer=customer;doc.customerName=customer;doc.deliveryPlace=destination;doc.orderQty=qty;}
+      const batch=(D.batches||[]).find(item=>clean(item?.no)===wo);if(batch){batch.salesOrderId=sid;batch.customer=customer;batch.customerName=customer;batch.deliveryPlace=destination;batch.orderQty=qty;}
+      if(D.lots?.[wo]){D.lots[wo].salesOrderId=sid;D.lots[wo].customer=customer;D.lots[wo].deliveryPlace=destination;D.lots[wo].orderQty=qty;}
     }
     const customerControl=labelControl(root,"고객사"),qtyControl=labelControl(root,"출하수량 (kg)"),destinationControl=labelControl(root,"납품처");
     setTimeout(()=>{if(customerControl&&customer)setReactInput(customerControl,customer);},0);
