@@ -50,7 +50,7 @@
     "./js/qmes-sales-product-workorder-link-20260827.js?v=20260827-1",
     "./js/qmes-sales-full-edit-20260827.js?v=20260827-full-edit1",
     "./js/qmes-sales-edit-modal-force-20260827-v2.js?v=20260827-force2",
-    "./js/qmes-sales-workorder-oqc-traceability-20260827.js?v=20260827-trace1",
+    "./js/qmes-sales-workorder-oqc-traceability-20260827.js?v=20260907-itemstable1",
     "./js/qmes-sales-delete-so-260826-01-once.js?v=20260826-1",
     "./js/qmes-lot-quality-shipping-linkage-20260826.js?v=20260826-1",
     "./js/qmes-shipping-enterprise-module-20260828-v1.js?v=20260828-2",
