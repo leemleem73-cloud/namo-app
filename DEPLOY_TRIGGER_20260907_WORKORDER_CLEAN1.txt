@@ -1,0 +1,8 @@
+Force production redeploy for work-order cleanup.
+- retire legacy work-order status and action DOM patches
+- keep DBA1501 display stable
+- keep empty actual quantity as em dash
+- compact LOT/item/date filters
+- compact management buttons with light borders
+- improve production-result action readability
+2026-09-07 KST
