@@ -159,3 +159,22 @@ html body #root main .qmes-issued-table-v2 td:nth-child(2) button{
   text-overflow:clip!important;
   line-height:1.2!important;
 }
+
+
+/* 2026-09-07 workorder search controls: compact widths */
+html body #root main .qmes-issued-toolbar{
+  justify-content:flex-start!important;
+}
+html body #root main .qmes-issued-toolbar > *{
+  flex:0 0 auto!important;
+}
+html body #root main .qmes-issued-toolbar input[type="text"]{
+  width:150px!important;
+  max-width:150px!important;
+  min-width:0!important;
+}
+html body #root main .qmes-issued-toolbar input[type="date"]{
+  width:132px!important;
+  max-width:132px!important;
+  min-width:0!important;
+}
