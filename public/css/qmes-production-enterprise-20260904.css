@@ -178,3 +178,30 @@ html body #root main .qmes-issued-toolbar input[type="date"]{
   max-width:132px!important;
   min-width:0!important;
 }
+
+
+/* 2026-09-07 workorder filter cleanup */
+html body #root main .qmes-issued-filter{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+}
+html body #root main .qmes-issued-filter > div{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:0!important;
+}
+html body #root main .qmes-issued-filter input{
+  min-width:0!important;
+}
+html body #root main .qmes-issued-filter > div:nth-child(1) input,
+html body #root main .qmes-issued-filter > div:nth-child(2) input{
+  width:140px!important;
+  max-width:140px!important;
+}
+html body #root main .qmes-issued-filter > div:nth-child(3) input{
+  width:126px!important;
+  max-width:126px!important;
+}
