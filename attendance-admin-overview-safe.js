@@ -17,10 +17,11 @@ function installClient(){
     html=html
       .replace(/<script src="\/attendance-admin-overview\.js\?v=[^"]+"><\/script>/g,'')
       .replace(/<script src="\/attendance-admin-overview-table-20260907\.js\?v=[^"]+"><\/script>/g,'')
+      .replace(/<script src="\/attendance-admin-v2-launcher-20260907\.js\?v=[^"]+"><\/script>/g,'')
       .replace(/<script src="\/attendance-mobile-member-sync\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace('</body>','<script src="/attendance-admin-overview-table-20260907.js?v=20260907-table-force1"></script><script src="/attendance-mobile-member-sync.js?v=20260907-mobile-delete2"></script></body>');
+    html=html.replace('</body>','<script src="/attendance-admin-v2-launcher-20260907.js?v=20260907-v2-force1"></script><script src="/attendance-mobile-member-sync.js?v=20260907-mobile-delete2"></script></body>');
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance admin overview] compact mobile table client installed');
+    console.log('[Attendance admin overview] standalone V2 launcher installed; legacy UI preserved but disabled');
   }catch(e){console.error('[Attendance admin overview] client install failed',e)}
 }
 installClient();
