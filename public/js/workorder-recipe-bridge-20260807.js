@@ -130,8 +130,6 @@
   global.qmesApplyRecipeToWorkOrder=applyToWorkOrder;
   global.qmesBootstrapRecipesFromWorkOrders=bootstrapRecipesFromExisting;
 
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>setTimeout(runBootstrap,0),{once:true});
-  else setTimeout(runBootstrap,0);
-
-  ["qmes:data-updated","qmes:workorder-synced"].forEach((eventName)=>global.addEventListener(eventName,()=>setTimeout(applyAvailableRecipes,0)));
+  /* Existing work orders must not be auto-mutated on page load or background sync.
+   * Recipe APIs remain available and are applied only by explicit work-order actions. */
 })(window);
