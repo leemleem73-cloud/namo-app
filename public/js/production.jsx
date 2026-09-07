@@ -738,17 +738,25 @@ function IssueWoTab() {
     prodDate: "", lotNo: "", site: "C", hours: "7h", timeRange: "08:30~16:30",
     shiftType: "일반", worker: "",
   });
-  const snapshotIssuedRows = () => (DB.batches || []).map((row) => {
-    const doc = DB.woDocs?.[row.no] || {};
-    const inputActualTotal = (doc.inputs || []).reduce((sum, it) => sum + (Number(it.act) || 0), 0);
-    const displayActual = Number(doc.productionActual ?? (inputActualTotal > 0 ? inputActualTotal : row.done) ?? 0);
-    return {
-      ...row,
-      item: String(row.item || ""),
-      _displayActual: Number.isFinite(displayActual) ? displayActual : 0,
-    };
-  });
-  const [issued, setIssued] = useState(() => snapshotIssuedRows());
+  const snapshotIssuedRows = (refresh = false) => {
+    const store = window.__QMES_WORKORDER_DISPLAY_SNAPSHOT__ =
+      window.__QMES_WORKORDER_DISPLAY_SNAPSHOT__ || {};
+    return (DB.batches || []).map((row) => {
+      const key = String(row.no || "");
+      if (!refresh && store[key]) return { ...row, ...store[key] };
+
+      const doc = DB.woDocs?.[row.no] || {};
+      const inputActualTotal = (doc.inputs || []).reduce((sum, it) => sum + (Number(it.act) || 0), 0);
+      const displayActual = Number(doc.productionActual ?? (inputActualTotal > 0 ? inputActualTotal : row.done) ?? 0);
+      const snap = {
+        item: String(row.item || ""),
+        _displayActual: Number.isFinite(displayActual) ? displayActual : 0,
+      };
+      store[key] = snap;
+      return { ...row, ...snap };
+    });
+  };
+  const [issued, setIssued] = useState(() => snapshotIssuedRows(false));
   const [editingWo, setEditingWo] = useState(null);
   const [viewingWo, setViewingWo] = useState(null);
   const [woPreviewMode, setWoPreviewMode] = useState("detail");
@@ -976,7 +984,7 @@ function IssueWoTab() {
       window.alert(`작업지시서 또는 자동 발행된 공정검사 성적서의 PC 공용 DB 저장에 실패했습니다.\n${error.message}`);
     }
     setEditingWo(null);
-    setIssued(snapshotIssuedRows());
+    setIssued(snapshotIssuedRows(true));
     setShowIssueForm(false);
   };
 
@@ -1016,7 +1024,7 @@ function IssueWoTab() {
     } catch (error) {
       window.alert(`이 기기에서는 삭제됐지만 PC 공용 DB 삭제에 실패했습니다.\n${error.message}`);
     }
-    setIssued(snapshotIssuedRows());
+    setIssued(snapshotIssuedRows(true));
   };
 
   const inputCls = "bg-slate-800 border border-slate-700 rounded px-2 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500";
