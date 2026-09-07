@@ -205,3 +205,56 @@ html body #root main .qmes-issued-filter > div:nth-child(3) input{
   width:126px!important;
   max-width:126px!important;
 }
+
+
+/* 2026-09-07 final workorder action cleanup */
+html body #root main .qmes-workorder-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-wrap:nowrap!important;
+  gap:3px!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn,
+html body #root main .qmes-workorder-actions .qmes-production-result-shortcut,
+html body #root main .qmes-issued-table-v2 td:last-child .qmes-production-result-shortcut{
+  box-sizing:border-box!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:25px!important;
+  min-height:25px!important;
+  margin:0!important;
+  padding:0 5px!important;
+  border:1px solid #c8d6e1!important;
+  border-radius:5px!important;
+  background:#ffffff!important;
+  color:#35546c!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+}
+html body #root main .qmes-workorder-actions .qmes-manage-btn.view{padding-left:6px!important;padding-right:6px!important;}
+html body #root main .qmes-workorder-actions .qmes-manage-btn.delete{
+  border-color:#e1c3c7!important;
+  background:#fffafa!important;
+  color:#a43e49!important;
+}
+html body #root main .qmes-workorder-actions .qmes-production-result-shortcut,
+html body #root main .qmes-issued-table-v2 td:last-child .qmes-production-result-shortcut{
+  border-color:#9ec7df!important;
+  background:#eef7fc!important;
+  color:#0b5f94!important;
+  font-weight:900!important;
+  padding-left:6px!important;
+  padding-right:6px!important;
+}
+html body #root main .qmes-issued-table-v2 th,
+html body #root main .qmes-issued-table-v2 td{
+  border-color:#dbe5ec!important;
+}
+html body #root main .qmes-issued-table-v2{
+  border-color:#dbe5ec!important;
+}
