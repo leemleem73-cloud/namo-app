@@ -1,0 +1,5 @@
+Force production redeploy for workorder syntax error cleanup.
+- /js/workorder-ui-refinement.js now served as a syntax-safe no-op from Express
+- startup forcibly rewrites stale legacy file to the same safe stub
+- prevents old ?v=prod-stable7 requests from executing broken code
+2026-09-07 KST
