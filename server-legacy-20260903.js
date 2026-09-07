@@ -866,6 +866,16 @@ app.get('/js/dashboard.jsx', (req, res, next) => {
   });
 });
 
+app.get('/js/workorder-ui-refinement.js', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.type('application/javascript; charset=utf-8');
+  res.send(`/* retired legacy workorder UI refinement */
+(function(){
+  "use strict";
+  window.__QMES_WORKORDER_UI_REFINEMENT__ = true;
+})();`);
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 function ok(res, data = null, message = 'OK') {
