@@ -125,9 +125,8 @@
         || Object.keys(bom).find((name) => bom[name]?.workType === "완제품");
       if (sourceKey) bom[DEFAULT_PRODUCT] = cloneBomEntry(bom[sourceKey]);
     }
-    OLD_PRODUCTS.forEach((name) => {
-      if (name !== DEFAULT_PRODUCT && bom[name]) delete bom[name];
-    });
+    /* Keep legacy BOM product keys intact; deleting them during runtime caused
+     * product labels/options to shift after refresh. */
     return Boolean(bom[DEFAULT_PRODUCT]);
   }
 
@@ -353,27 +352,9 @@
   }
 
   function installResponsiveStyles() {
-    if (document.getElementById("qmes-wo-helper-style")) return;
-    const style = document.createElement("style");
-    style.id = "qmes-wo-helper-style";
-    style.textContent = `
-      #root .qmes-issued-table-wrap{width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch}
-      #root .qmes-issued-table-v2{width:100%!important;min-width:1390px!important;table-layout:fixed!important;border-collapse:collapse!important}
-      #root .qmes-issued-table-v2 th,#root .qmes-issued-table-v2 td{box-sizing:border-box!important;padding:8px 7px!important;vertical-align:middle!important}
-      #root .qmes-issued-table-v2 th:nth-child(1),#root .qmes-issued-table-v2 td:nth-child(1){width:105px!important}
-      #root .qmes-issued-table-v2 th:nth-child(2),#root .qmes-issued-table-v2 td:nth-child(2){width:145px!important}
-      #root .qmes-issued-table-v2 th:nth-child(3),#root .qmes-issued-table-v2 td:nth-child(3){width:95px!important}
-      #root .qmes-issued-table-v2 th:nth-child(4),#root .qmes-issued-table-v2 td:nth-child(4){width:100px!important}
-      #root .qmes-issued-table-v2 th:nth-child(5),#root .qmes-issued-table-v2 td:nth-child(5){width:130px!important;white-space:normal!important;overflow:visible!important}
-      #root .qmes-issued-table-v2 th:nth-child(6),#root .qmes-issued-table-v2 td:nth-child(6){width:170px!important;white-space:normal!important;overflow:visible!important}
-      #root .qmes-issued-table-v2 th:nth-child(7),#root .qmes-issued-table-v2 td:nth-child(7){width:90px!important}
-      #root .qmes-issued-table-v2 th:nth-child(8),#root .qmes-issued-table-v2 td:nth-child(8){width:105px!important}
-      #root .qmes-issued-table-v2 th:nth-child(9),#root .qmes-issued-table-v2 td:nth-child(9){width:90px!important}
-      #root .qmes-issued-table-v2 th:nth-child(10),#root .qmes-issued-table-v2 td:nth-child(10){width:110px!important}
-      #root .qmes-issued-table-v2 th:nth-child(11),#root .qmes-issued-table-v2 td:nth-child(11){width:250px!important;white-space:nowrap!important}
-      #root .qmes-issued-table-v2 .qmes-manage-btn{width:auto!important;min-width:48px!important;height:28px!important;margin:0 2px!important;padding:0 7px!important;font-size:10px!important}
-    `;
-    document.head.appendChild(style);
+    /* Legacy table sizing disabled.
+     * qmes-production-enterprise-20260904.css is the single owner of work-order layout. */
+    document.getElementById("qmes-wo-helper-style")?.remove();
   }
 
   function workOrderLotInput(shell) {
