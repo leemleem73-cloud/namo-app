@@ -425,14 +425,15 @@
 
   function boot(){
     installIssueCapture();installOqcCapture();
-    reconcileExistingLinks().catch(error=>console.warn("[QMES] sales-workorder reconciliation failed",error));
+    /* Do not auto-reconcile existing work orders on boot.
+     * Existing work-order item/quantity values must remain unchanged until an explicit link action. */
     scheduleUi();
     const observer=new MutationObserver(mutations=>{
       if(mutations.some(mutation=>Array.from(mutation.addedNodes||[]).some(node=>node.nodeType===1&&(node.matches?.(".qmes-sales-stable,.qmes-wo-issue-shell,.qmes-oqc-page")||node.querySelector?.(".qmes-sales-stable,.qmes-wo-issue-shell,.qmes-oqc-page")))))scheduleUi();
     });
     observer.observe(document.body,{childList:true,subtree:true});
-    ["qmes:erp-data-changed","qmes:data-updated","qmes:workorder-saved","qmes:workorder-synced","qmes:mes-master-ready","qmes:sales-workorder-linked"].forEach(name=>window.addEventListener(name,()=>{setTimeout(()=>{finishPendingIssue();reconcileExistingLinks();scheduleUi();},0);}));
-    window.addEventListener("storage",event=>{if([SALES_KEY,META_KEY,LINK_KEY,SHIPPING_KEY].includes(event.key))setTimeout(()=>{reconcileExistingLinks();scheduleUi();},0);});
+    ["qmes:erp-data-changed","qmes:data-updated","qmes:workorder-saved","qmes:workorder-synced","qmes:mes-master-ready","qmes:sales-workorder-linked"].forEach(name=>window.addEventListener(name,()=>{setTimeout(()=>{finishPendingIssue();scheduleUi();},0);}));
+    window.addEventListener("storage",event=>{if([SALES_KEY,META_KEY,LINK_KEY,SHIPPING_KEY].includes(event.key))setTimeout(()=>{scheduleUi();},0);});
     setTimeout(scheduleUi,300);setTimeout(scheduleUi,800);setTimeout(syncSalesUi,1200);
   }
 
