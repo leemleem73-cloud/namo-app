@@ -217,10 +217,9 @@
     if(reconciling||typeof DB==="undefined"||!DB.insp) return;
     reconciling=true;
     try{
-      if(options.pullWorkOrders&&typeof global.qmesSyncPullWorkOrders==="function"){
-        try{await global.qmesSyncPullWorkOrders();}
-        catch(error){console.warn("작업지시 공용 동기화 후 PQC 보정 실패:",error?.message||error);}
-      }
+      /* Do not re-pull work orders from PQC reconciliation.
+       * The work-order screen owns its data snapshot; a delayed pull here caused
+       * item and actual-quantity values to change after refresh. */
       let changed=await ensureMissingPqcDrafts();
       if(sortPqcNow()) changed=true;
       if(sortWorkOrdersNow()) changed=true;
@@ -284,9 +283,9 @@
     console.warn("초기 작업지시/PQC 상태 보정 실패:",error);
   }
 
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>schedule({pullWorkOrders:true}),{once:true});
-  else schedule({pullWorkOrders:true});
-  global.addEventListener("focus",()=>schedule({pullWorkOrders:true}));
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>schedule(),{once:true});
+  else schedule();
+  global.addEventListener("focus",()=>schedule());
   global.addEventListener("qmes-pqc-record-updated",()=>schedule());
   global.addEventListener("qmes:data-updated",()=>schedule());
 })(window);
