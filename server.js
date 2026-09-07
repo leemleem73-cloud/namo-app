@@ -19,6 +19,19 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
+const retiredWorkorderUi = path.resolve(__dirname, 'public', 'js', 'workorder-ui-refinement.js');
+try {
+  fs.writeFileSync(retiredWorkorderUi, `/* Retired legacy workorder UI refinement — startup enforced. */
+(function(){
+  "use strict";
+  window.__QMES_WORKORDER_UI_REFINEMENT__ = true;
+})();
+`, 'utf8');
+} catch (error) {
+  console.error('[QMES] Failed to retire legacy workorder UI refinement:', error);
+  process.exit(1);
+}
+
 const SHELL_BUILD = '20260904-production-stable9';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
