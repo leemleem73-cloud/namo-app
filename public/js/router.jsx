@@ -110,10 +110,6 @@ function QMESChemical({user,onLogout}){
     const handleTabNavigation=event=>{
       const nextTab=qmesProcessCleanNavigation(event?.detail?.tab);
       if(!nextTab||!TABS.some(item=>item.id===nextTab))return;
-      if(qmesIsCommercialRestrictedTab(nextTab)&&!qmesCanAccessCommercialErp(user)){
-        window.alert("해당 메뉴에 접근 권한이 없습니다.");
-        return;
-      }
       setTab(nextTab);
       if(event?.detail?.openMenu)setOpenMenu(event.detail.openMenu);
     };
@@ -152,7 +148,17 @@ function QMESChemical({user,onLogout}){
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
 
   const currentTab=TABS.find(tabItem=>tabItem.id===tab)||TABS[0];
+  const commercialDenied=qmesIsCommercialRestrictedTab(tab)&&!qmesCanAccessCommercialErp(user);
   const Active=currentTab.comp;
+  const PermissionDenied=()=>(
+    <div style={{minHeight:420,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{width:"min(560px,100%)",background:"#fff",border:"1px solid #dbe3ec",borderRadius:14,padding:"36px 28px",textAlign:"center",boxShadow:"0 10px 30px rgba(15,23,42,.06)"}}>
+        <div style={{fontSize:42,lineHeight:1,marginBottom:14}}>🔒</div>
+        <div style={{fontSize:20,fontWeight:900,color:"#1f2937",marginBottom:8}}>접근 권한이 없습니다.</div>
+        <div style={{fontSize:13,fontWeight:650,color:"#64748b",lineHeight:1.7}}>이 메뉴는 영업부 및 지정된 경영진만 사용할 수 있습니다.</div>
+      </div>
+    </div>
+  );
   const closeAccountModal=()=>setProfileOpen(false);
   const openPasswordModal=()=>{setProfileOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");setPasswordOpen(true);};
   const closePasswordModal=()=>{setPasswordOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");};
@@ -199,7 +205,7 @@ function QMESChemical({user,onLogout}){
           {openMenu&&(()=>{const selected=TOP_MENUS.find(menu=>menu.id===openMenu);const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);if(!items.length)return null;return <div className={`qmes-submenu-row qmes-submenu-${selected.id}`} role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const ItemIcon=item.icon;return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><ItemIcon size={14}/><span>{item.label}</span></button>;})}</div>;})()}
         </div>
       </header>
-      <main className="w-full px-4 lg:px-6 py-5 flex-1"><Active/></main>
+      <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>
       {talkOpen&&<NamoTalkTab initialRoom={talkTargetRoom} onClose={()=>setTalkOpen(false)}/>}      
       <NamoTalkNotifier talkOpen={talkOpen} onOpenRoom={roomId=>{setTalkTargetRoom(roomId);setTalkOpen(true);}}/>
 
