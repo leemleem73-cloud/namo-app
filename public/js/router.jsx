@@ -10,7 +10,7 @@ function QMESProductionProcessRoute(){
     window.addEventListener("qmes:production-process-ready",syncComponent);
     const timer=setInterval(syncComponent,250);
     return()=>{window.removeEventListener("qmes:production-process-ready",syncComponent);clearInterval(timer);};
-  },[]);
+  },[user]);
   return typeof Component==="function"?<Component/>:<div className="rounded-xl border border-slate-700 bg-slate-900 p-6 text-sm font-bold text-slate-200">생산공정 관리 화면을 불러오는 중입니다.</div>;
 }
 
@@ -79,11 +79,19 @@ function safeStorageGet(key, fallback=null){
 function safeStorageSet(key,value){try{sessionStorage.setItem(key,value);return true;}catch(error){return false;}}
 function safeStorageRemove(key){try{sessionStorage.removeItem(key);}catch(error){}}
 function qmesProcessCleanNavigation(value){return String(value==null?"":value).trim();}
+function qmesCanAccessCommercialErp(user){
+  const name=String(user?.name||"").replace(/\s+/g,"").trim();
+  const dept=String(user?.department||user?.dept||"").replace(/\s+/g,"").trim();
+  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);
+}
+function qmesIsCommercialRestrictedTab(tab){return tab==="erpSales"||tab==="erpPurchase";}
 
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
     const saved=safeStorageGet("qmes_current_tab","dash");
-    return saved==="namoTalk"?"dash":saved;
+    if(saved==="namoTalk")return "dash";
+    if(qmesIsCommercialRestrictedTab(saved)&&!qmesCanAccessCommercialErp(user))return "dash";
+    return saved;
   });
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
@@ -102,6 +110,11 @@ function QMESChemical({user,onLogout}){
     const handleTabNavigation=event=>{
       const nextTab=qmesProcessCleanNavigation(event?.detail?.tab);
       if(!nextTab||!TABS.some(item=>item.id===nextTab))return;
+      if(qmesIsCommercialRestrictedTab(nextTab)&&!qmesCanAccessCommercialErp(user)){
+        safeStorageSet("qmes_current_tab","dash");
+        setTab("dash");
+        return;
+      }
       setTab(nextTab);
       if(event?.detail?.openMenu)setOpenMenu(event.detail.openMenu);
     };
