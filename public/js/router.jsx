@@ -120,7 +120,7 @@ function QMESChemical({user,onLogout}){
     };
     window.addEventListener("qmes:navigate-tab",handleTabNavigation);
     return()=>window.removeEventListener("qmes:navigate-tab",handleTabNavigation);
-  },[]);
+  },[user]);
   useEffect(()=>{safeStorageSet("qmes_namo_talk_open",talkOpen?"1":"0");},[talkOpen]);
   useEffect(()=>{
     const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
@@ -148,7 +148,7 @@ function QMESChemical({user,onLogout}){
 
   window.__QMES_CURRENT_USER__=user;
   window.__QMES_CLOSE_NAMO_TALK__=()=>setTalkOpen(false);
-  const visibleTabs=TABS.filter(tabItem=>!tabItem.adminOnly||user.role==="admin");
+  const visibleTabs=TABS.filter(tabItem=>(!tabItem.adminOnly||user.role==="admin")&&(!qmesIsCommercialRestrictedTab(tabItem.id)||qmesCanAccessCommercialErp(user)));
   useEffect(()=>{if(!visibleTabs.some(tabItem=>tabItem.id===tab))setTab("dash");},[tab,visibleTabs.length]);
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
 
