@@ -1,0 +1,5 @@
+2026-09-08 NAMO Talk standalone API deploy trigger
+- Adds isolated /api/namo-talk-standalone routes only.
+- QMES UI is unchanged.
+- NAMO Talk uses separate PostgreSQL tables with namo_talk_standalone_* prefix.
+- Existing QMES routes and data are not overwritten.
