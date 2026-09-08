@@ -7,10 +7,12 @@ try{
     let html=fs.readFileSync(file,'utf8');
     html=html.replace(/<link rel="stylesheet" href="\/attendance-mobile-stability-20260908\.css\?v=[^"]+"\s*\/?>/g,'');
     html=html.replace(/<link rel="stylesheet" href="\/attendance-reference-ui-20260908\.css\?v=[^"]+"\s*\/?>/g,'');
+    html=html.replace(/<script src="\/attendance-dom-compat-20260908\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/<script src="\/attendance-reference-ui-20260908\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace('</head>','<link rel="stylesheet" href="/attendance-mobile-stability-20260908.css?v=20260908-stable1"><link rel="stylesheet" href="/attendance-reference-ui-20260908.css?v=20260908-ref1"></head>');
-    html=html.replace('</body>','<script src="/attendance-reference-ui-20260908.js?v=20260908-ref1"></script></body>');
+    html=html.replace('</head>','<link rel="stylesheet" href="/attendance-mobile-stability-20260908.css?v=20260908-stable2"><link rel="stylesheet" href="/attendance-reference-ui-20260908.css?v=20260908-ref2"></head>');
+    html=html.replace('<script src="/attendance-v4-live.js', '<script src="/attendance-dom-compat-20260908.js?v=20260908-dom2"></script><script src="/attendance-v4-live.js');
+    html=html.replace('</body>','<script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script></body>');
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance stability] attendance-only anti-flicker + reference UI installed');
+    console.log('[Attendance stability] attendance-only stability + reference UI + DOM compatibility installed');
   }
 }catch(e){console.error('[Attendance stability] preload failed',e)}
