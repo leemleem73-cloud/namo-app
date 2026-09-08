@@ -3,6 +3,7 @@
 require('./attendance-review-safe.js');
 require('./attendance-workplace-safe.js');
 require('./attendance-work-schedule-safe.js');
+require('./attendance-stability-preload.js');
 const express=require('express');
 const fs=require('fs');
 const path=require('path');
