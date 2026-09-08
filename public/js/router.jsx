@@ -111,8 +111,7 @@ function QMESChemical({user,onLogout}){
       const nextTab=qmesProcessCleanNavigation(event?.detail?.tab);
       if(!nextTab||!TABS.some(item=>item.id===nextTab))return;
       if(qmesIsCommercialRestrictedTab(nextTab)&&!qmesCanAccessCommercialErp(user)){
-        safeStorageSet("qmes_current_tab","dash");
-        setTab("dash");
+        window.alert("해당 메뉴에 접근 권한이 없습니다.");
         return;
       }
       setTab(nextTab);
