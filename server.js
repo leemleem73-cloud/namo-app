@@ -32,7 +32,7 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260908-commercial-access2';
+const SHELL_BUILD = '20260908-commercial-access3';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
@@ -94,7 +94,11 @@ try {
 }
 
 try {
-  const source = fs.readFileSync(publicShellMenu, 'utf8');
+  // commercial-access3-sidebar-hardening: menu items always stay visible; router renders the permission screen.
+  let menuSource = fs.readFileSync(publicShellMenu, 'utf8');
+  menuSource = menuSource.replace(/,commercialOnly:true/g, '');
+  fs.writeFileSync(publicShellMenu, menuSource, 'utf8');
+  const source = menuSource;
   const oldLabel = 'aria-label="모바일 화면" title="모바일 화면">${mobileSvg}<span>모바일</span>';
   const newLabel = 'aria-label="모바일 전용" title="모바일 전용">${mobileSvg}<span>모바일 전용</span>';
   const oldHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{const mobileTarget=findTop('현장입력')||findTop('현장 입력');if(mobileTarget){mobileTarget.click();return;}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'fieldInput',openMenu:null}}));});";
