@@ -1,4 +1,8 @@
 'use strict';
+// Attendance-only dependencies. These do not modify ERP/MES or general mobile QMES screens.
+require('./attendance-review-safe.js');
+require('./attendance-workplace-safe.js');
+require('./attendance-work-schedule-safe.js');
 const express=require('express');
 const fs=require('fs');
 const path=require('path');
@@ -18,7 +22,10 @@ function attendanceHtmlWithCorrection(){
   let html=fs.readFileSync(file,'utf8');
   html=html.replace(/<script src="\/attendance-correction\.js\?v=[^"]+"><\/script>/g,'');
   html=html.replace(/<script src="\/attendance-leave-cancel\.js\?v=[^"]+"><\/script>/g,'');
-  return html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction3"></script><script src="/attendance-leave-cancel.js?v=20260904-leavecancel1"></script></body>');
+  html=html.replace(/<link rel="stylesheet" href="\/attendance-mobile-fix-20260908\.css\?v=[^"]+"\s*\/?>/g,'');
+  html=html.replace(/<script src="\/attendance-mobile-fix-20260908\.js\?v=[^"]+"><\/script>/g,'');
+  html=html.replace('</head>','<link rel="stylesheet" href="/attendance-mobile-fix-20260908.css?v=20260908-fix4"></head>');
+  return html.replace('</body>','<script src="/attendance-correction.js?v=20260904-correction3"></script><script src="/attendance-leave-cancel.js?v=20260904-leavecancel1"></script><script src="/attendance-mobile-fix-20260908.js?v=20260908-fix4"></script></body>');
 }
 function patchAttendanceHtml(){
   try{
