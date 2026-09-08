@@ -14,6 +14,10 @@ function installClient(){
     const file=path.resolve(__dirname,'public','attendance.html');
     if(!fs.existsSync(file))return;
     let html=fs.readFileSync(file,'utf8');
+    if(html.includes('data-namo-attendance-full-ui="v4"')){
+      console.log('[Attendance admin overview] full v4 UI detected; legacy client injection skipped');
+      return;
+    }
     html=html
       .replace(/<script src="\/attendance-admin-overview\.js\?v=[^"]+"><\/script>/g,'')
       .replace(/<script src="\/attendance-admin-overview-table-20260907\.js\?v=[^"]+"><\/script>/g,'')
