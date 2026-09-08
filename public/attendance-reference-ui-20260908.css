@@ -1,0 +1,209 @@
+/* Attendance-only UI refresh inspired by the provided mobile workforce reference.
+   Keeps NAMO branding and existing attendance functionality/API bindings. */
+html[data-namo-attendance-full-ui="v4"]{
+  --ref-blue:#0f5bd3;
+  --ref-blue-2:#1768df;
+  --ref-navy:#15477f;
+  --ref-bg:#eef1f4;
+  --ref-line:#e2e6eb;
+  --ref-text:#202936;
+  --ref-muted:#7a8594;
+  --ref-green:#20a768;
+  --ref-amber:#d49a22;
+}
+html[data-namo-attendance-full-ui="v4"] body{
+  background:#e6e8eb;
+  color:var(--ref-text);
+}
+html[data-namo-attendance-full-ui="v4"] .app-shell{
+  width:100%;
+  max-width:460px;
+  min-height:100dvh;
+  margin:0 auto;
+  background:var(--ref-bg);
+  box-shadow:0 0 30px rgba(20,35,55,.10);
+}
+html[data-namo-attendance-full-ui="v4"] .safe-top{background:#fff}
+html[data-namo-attendance-full-ui="v4"] .topbar{
+  position:sticky;
+  top:0;
+  z-index:80;
+  background:#fff;
+  border-bottom:1px solid var(--ref-line);
+  box-shadow:none;
+}
+html[data-namo-attendance-full-ui="v4"] .topbar-row{
+  min-height:62px;
+  padding:0 14px;
+  display:grid;
+  grid-template-columns:42px 1fr 42px;
+  align-items:center;
+  gap:8px;
+}
+html[data-namo-attendance-full-ui="v4"] .brand{
+  min-width:0;
+  justify-self:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+html[data-namo-attendance-full-ui="v4"] .brand img{width:128px;max-height:38px;object-fit:contain}
+html[data-namo-attendance-full-ui="v4"] .brand-copy{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .top-actions{justify-self:end;display:flex;align-items:center}
+html[data-namo-attendance-full-ui="v4"] #noticeBtn{display:none!important}
+html[data-namo-attendance-full-ui="v4"] #namoMenuBtn,
+html[data-namo-attendance-full-ui="v4"] #namoRefreshBtn{
+  width:38px;height:38px;border:0;background:transparent;border-radius:10px;
+  display:grid;place-items:center;font-size:24px;color:#4a5563;padding:0;
+}
+html[data-namo-attendance-full-ui="v4"] #namoRefreshBtn{font-size:22px}
+html[data-namo-attendance-full-ui="v4"] main{padding-bottom:88px}
+html[data-namo-attendance-full-ui="v4"] .page{padding:12px 12px 24px}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .hero{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .date-line{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .namo-report-row{
+  height:48px;background:#fff;border:1px solid var(--ref-line);border-radius:4px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  font-size:14px;font-weight:800;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.02);
+}
+html[data-namo-attendance-full-ui="v4"] .namo-report-row .left{display:flex;align-items:center;gap:10px}
+html[data-namo-attendance-full-ui="v4"] .namo-report-row .icon{font-size:18px;color:#48515c}
+html[data-namo-attendance-full-ui="v4"] .namo-report-row .arrow{font-size:26px;font-weight:400;color:#7e8792}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title{
+  display:flex;align-items:flex-end;justify-content:space-between;margin:8px 2px 8px;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title strong{font-size:21px;letter-spacing:-.5px}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title span{font-size:12px;color:var(--ref-muted)}
+html[data-namo-attendance-full-ui="v4"] .card{
+  background:#fff;border:1px solid var(--ref-line);border-radius:5px;
+  box-shadow:0 1px 3px rgba(20,35,55,.04);
+}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"]>.card{margin-bottom:12px}
+html[data-namo-attendance-full-ui="v4"] .namo-today-card{padding:14px!important}
+html[data-namo-attendance-full-ui="v4"] .namo-today-meta{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+  font-size:13px;color:#4d5968;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-today-meta b{font-size:15px;color:#2a3441}
+html[data-namo-attendance-full-ui="v4"] .namo-availability{
+  display:inline-flex;align-items:center;padding:4px 8px;border-radius:4px;
+  background:#dcebff;color:#1762bf;font-size:11px;font-weight:800;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-clock-actions{display:flex;gap:8px;margin-bottom:10px}
+html[data-namo-attendance-full-ui="v4"] .namo-request-mini{
+  flex:0 0 72px;min-height:52px;border:1px solid #cfd5dd;border-radius:3px;background:#fff;
+  color:#47515f;font-size:13px;font-weight:800;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-clock-actions .clock-grid{
+  flex:1;display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0!important;
+}
+html[data-namo-attendance-full-ui="v4"] .clock-btn{
+  min-height:52px!important;border-radius:3px!important;box-shadow:none!important;padding:8px 10px!important;
+}
+html[data-namo-attendance-full-ui="v4"] .clock-btn.in{background:var(--ref-blue)!important;border-color:var(--ref-blue)!important;color:#fff!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn.out{background:#234c7b!important;border-color:#234c7b!important;color:#fff!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn .label{font-size:14px!important;font-weight:900!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn .time{font-size:11px!important;opacity:.85;margin-top:2px}
+html[data-namo-attendance-full-ui="v4"] .clock-btn .glyph{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .work-time{
+  border-top:1px solid var(--ref-line);margin-top:10px;padding-top:12px!important;align-items:center!important;
+}
+html[data-namo-attendance-full-ui="v4"] .work-time .section-title{font-size:12px!important;color:#66717f!important;font-weight:700!important}
+html[data-namo-attendance-full-ui="v4"] .work-time .mini{font-size:11px!important;color:#98a1ad!important}
+html[data-namo-attendance-full-ui="v4"] .work-time .big{font-size:20px!important;font-weight:900!important;color:#2b3542!important}
+html[data-namo-attendance-full-ui="v4"] .progress{height:7px!important;border-radius:999px!important;background:#e7eaf0!important;margin-top:10px!important}
+html[data-namo-attendance-full-ui="v4"] .progress span{background:#16a5ad!important;border-radius:999px!important}
+html[data-namo-attendance-full-ui="v4"] .progress-labels{font-size:10px!important;color:#969eaa!important}
+html[data-namo-attendance-full-ui="v4"] .place-card{
+  margin-top:12px!important;border-radius:3px!important;border:1px solid #e1e5ea!important;background:#fafbfc!important;
+  padding:11px 12px!important;
+}
+html[data-namo-attendance-full-ui="v4"] .place-card .place-icon{font-size:18px!important}
+html[data-namo-attendance-full-ui="v4"] .place-card .t1{font-size:10px!important;color:#8c95a1!important}
+html[data-namo-attendance-full-ui="v4"] .place-card .t2{font-size:13px!important;font-weight:900!important}
+html[data-namo-attendance-full-ui="v4"] .place-card .t3{font-size:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-card{padding:0!important;overflow:hidden}
+html[data-namo-attendance-full-ui="v4"] .namo-week-head,
+html[data-namo-attendance-full-ui="v4"] .namo-average-head{
+  padding:13px 14px;border-bottom:1px solid var(--ref-line);display:flex;align-items:center;justify-content:space-between;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-week-head strong,
+html[data-namo-attendance-full-ui="v4"] .namo-average-head strong{font-size:16px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-head .icon-btn{width:32px;height:32px;background:transparent;border:0;font-size:16px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-table{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--ref-line)}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell{padding:9px 2px;text-align:center;border-right:1px solid #edf0f3;min-width:0}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell:last-child{border-right:0}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell.today{background:#edf5ff}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell .dow{font-size:10px;color:#6d7785;margin-bottom:4px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell .start{font-size:11px;font-weight:900;color:#445160}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell .end{font-size:10px;color:#74808d;margin-top:2px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-cell .actual{font-size:10px;font-weight:800;color:#1665ca;margin-top:3px}
+html[data-namo-attendance-full-ui="v4"] .namo-week-total{padding:12px 14px;font-size:11px;color:#687382;display:flex;justify-content:space-between}
+html[data-namo-attendance-full-ui="v4"] .namo-average-card{padding:0!important}
+html[data-namo-attendance-full-ui="v4"] .namo-average-body{padding:15px 14px}
+html[data-namo-attendance-full-ui="v4"] .namo-average-track{height:10px;background:#e9edf1;border-radius:2px;position:relative;margin:7px 0 5px}
+html[data-namo-attendance-full-ui="v4"] .namo-average-track span{display:block;height:100%;width:78%;background:#f1b719;border-radius:2px}
+html[data-namo-attendance-full-ui="v4"] .namo-average-scale{display:flex;justify-content:space-between;font-size:10px;color:#7b8592}
+html[data-namo-attendance-full-ui="v4"] .namo-average-value{font-size:12px;color:#c88b0e;font-weight:900}
+
+/* Monthly work calendar */
+html[data-namo-attendance-full-ui="v4"] .page[data-page="records"] .page-title{font-size:20px!important}
+html[data-namo-attendance-full-ui="v4"] .namo-month-card{padding:0!important;overflow:hidden;margin-bottom:12px}
+html[data-namo-attendance-full-ui="v4"] .namo-month-head{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;padding:12px;border-bottom:1px solid var(--ref-line)}
+html[data-namo-attendance-full-ui="v4"] .namo-month-head button{border:0;background:transparent;color:var(--ref-blue);font-size:26px;padding:4px}
+html[data-namo-attendance-full-ui="v4"] .namo-month-title{text-align:center;font-size:15px;font-weight:900;color:#2863ad}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-dows,
+html[data-namo-attendance-full-ui="v4"] .namo-cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-dows div{text-align:center;padding:8px 0;font-size:10px;font-weight:800;color:#596574;border-bottom:1px solid #edf0f3}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-dows div:first-child{color:#e24e5b}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day{
+  min-height:63px;border:0;border-right:1px solid #f0f2f4;border-bottom:1px solid #f0f2f4;background:#fff;
+  padding:5px 2px;text-align:center;overflow:hidden;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day:nth-child(7n){border-right:0}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day.empty{background:#fafbfc}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day .num{font-size:10px;color:#4a5664;margin-bottom:4px}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day.sun .num{color:#e24e5b}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-day.selected .num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;background:#1d559b;color:#fff;margin-top:-2px}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-chip{display:block;margin:2px 1px;padding:2px 1px;border-radius:2px;font-size:8px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;background:#4d9df5}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-chip.out{background:#3185dc}
+html[data-namo-attendance-full-ui="v4"] .namo-cal-chip.leave{background:#27a96b}
+html[data-namo-attendance-full-ui="v4"] .namo-month-detail{padding:12px;background:#f5f6f7;border-top:1px solid var(--ref-line)}
+html[data-namo-attendance-full-ui="v4"] .namo-month-detail-title{font-size:12px;font-weight:900;margin-bottom:8px}
+html[data-namo-attendance-full-ui="v4"] .namo-detail-row{background:#fff;border:1px solid #e2e6ea;border-left:4px solid #3a99ed;padding:9px 10px;margin-top:7px;border-radius:3px}
+html[data-namo-attendance-full-ui="v4"] .namo-detail-row.leave{border-left-color:#2dab71}
+html[data-namo-attendance-full-ui="v4"] .namo-detail-row b{display:block;font-size:12px;margin-bottom:2px}
+html[data-namo-attendance-full-ui="v4"] .namo-detail-row span{font-size:10px;color:#77818e}
+
+/* Leave request screen */
+html[data-namo-attendance-full-ui="v4"] .overlay{background:#f0f2f5!important}
+html[data-namo-attendance-full-ui="v4"] .overlay-header{background:#fff!important;border-bottom:1px solid var(--ref-line)!important;box-shadow:none!important}
+html[data-namo-attendance-full-ui="v4"] .overlay-title{font-size:17px!important;font-weight:900!important}
+html[data-namo-attendance-full-ui="v4"] .namo-request-status{margin:-1px -16px 14px;padding:8px 16px;background:#f3ead4;color:#b27427;text-align:center;font-size:12px;font-weight:900;border-top:1px solid #eadfc5;border-bottom:1px solid #eadfc5}
+html[data-namo-attendance-full-ui="v4"] .overlay-body{padding-top:0!important}
+html[data-namo-attendance-full-ui="v4"] .field-card,
+html[data-namo-attendance-full-ui="v4"] .calendar-card{border-radius:3px!important;border:1px solid #e0e4e9!important;box-shadow:none!important;overflow:hidden}
+html[data-namo-attendance-full-ui="v4"] .field-row{min-height:50px!important;border-bottom:1px solid #e3e7eb!important;padding:13px 15px!important}
+html[data-namo-attendance-full-ui="v4"] .field-label{font-size:12px!important;font-weight:900!important;color:#394451!important}
+html[data-namo-attendance-full-ui="v4"] .field-value{font-size:12px!important;color:#6f7884!important}
+html[data-namo-attendance-full-ui="v4"] .textarea{background:#fff!important;min-height:108px!important;border-radius:0!important}
+html[data-namo-attendance-full-ui="v4"] .summary-list .row{border-bottom:1px solid #e7eaee!important;padding:12px 0!important}
+html[data-namo-attendance-full-ui="v4"] .btn-primary{background:var(--ref-blue)!important;border-radius:3px!important;box-shadow:none!important}
+html[data-namo-attendance-full-ui="v4"] .btn-soft{border-radius:3px!important}
+
+/* Reference-style bottom navigation */
+html[data-namo-attendance-full-ui="v4"] .bottom-nav{
+  background:var(--ref-navy)!important;border-top:0!important;box-shadow:0 -2px 8px rgba(20,45,75,.12)!important;
+  max-width:460px;left:50%!important;transform:translateX(-50%);padding-bottom:max(7px,env(safe-area-inset-bottom));
+}
+html[data-namo-attendance-full-ui="v4"] .nav-btn{color:#b9cee4!important;background:transparent!important}
+html[data-namo-attendance-full-ui="v4"] .nav-btn.active{color:#fff!important}
+html[data-namo-attendance-full-ui="v4"] .nav-btn .ni{font-size:20px!important}
+html[data-namo-attendance-full-ui="v4"] .nav-btn .nt{font-size:10px!important;font-weight:800!important}
+
+@media (max-width:380px){
+  html[data-namo-attendance-full-ui="v4"] .brand img{width:112px}
+  html[data-namo-attendance-full-ui="v4"] .namo-request-mini{flex-basis:60px}
+  html[data-namo-attendance-full-ui="v4"] .clock-btn .label{font-size:12px!important}
+  html[data-namo-attendance-full-ui="v4"] .namo-week-cell .start{font-size:10px}
+}
