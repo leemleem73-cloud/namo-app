@@ -954,6 +954,23 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+const COMMERCIAL_ERP_ALLOWED_NAMES = new Set(['김종혁', '김세희', '정영기']);
+function canAccessCommercialErp(user) {
+  const name = txt(user?.name).replace(/\s+/g, '');
+  const department = txt(user?.department || user?.dept).replace(/\s+/g, '');
+  return department === '영업부' || COMMERCIAL_ERP_ALLOWED_NAMES.has(name);
+}
+function requireCommercialErp(req, res, next) {
+  if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
+  if (!canAccessCommercialErp(req.session.user)) {
+    return fail(res, 403, '수주·납기 및 구매·발주관리 접근 권한이 없습니다.');
+  }
+  next();
+}
+function isRestrictedCommercialSync(type, key) {
+  return type === 'inventory' && (key === 'erp:sales' || key === 'erp:purchase');
+}
+
 function buildSessionUser(user) {
   return {
     id: user.id,
@@ -2069,11 +2086,13 @@ app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
        ORDER BY updated_at DESC`,
       [type]
     );
-    const rows = result.rows.map((row) => (
-      type === 'inventory' && row.record_key === 'erp:purchase'
-        ? { ...row, payload: normalizeLegacyPurchasePayload(row.payload) }
-        : row
-    ));
+    const rows = result.rows
+      .filter((row) => !isRestrictedCommercialSync(type, row.record_key) || canAccessCommercialErp(req.session.user))
+      .map((row) => (
+        type === 'inventory' && row.record_key === 'erp:purchase'
+          ? { ...row, payload: normalizeLegacyPurchasePayload(row.payload) }
+          : row
+      ));
     ok(res, rows);
   } catch (err) {
     fail(res, 500, err.message);
@@ -2521,6 +2540,9 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   if (!type) return;
   const key = txt(req.body?.key);
   const inputPayload = req.body?.payload;
+  if (isRestrictedCommercialSync(type, key) && !canAccessCommercialErp(req.session.user)) {
+    return fail(res, 403, '수주·납기 및 구매·발주관리 접근 권한이 없습니다.');
+  }
   if (!key || !inputPayload || typeof inputPayload !== 'object' || Array.isArray(inputPayload)) {
     return fail(res, 400, '기록 키와 저장 데이터를 확인하세요.');
   }
@@ -2716,7 +2738,7 @@ function mapPurchaseReceipt(row) {
   };
 }
 
-app.get('/api/purchase-orders', requireLogin, async (req, res) => {
+app.get('/api/purchase-orders', requireLogin, requireCommercialErp, async (req, res) => {
   try {
     const clauses = [];
     const params = [];
@@ -2746,7 +2768,7 @@ app.get('/api/purchase-orders', requireLogin, async (req, res) => {
   }
 });
 
-app.get('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+app.get('/api/purchase-orders/:id', requireLogin, requireCommercialErp, async (req, res) => {
   try {
     const result = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
     if (!result.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
@@ -2762,7 +2784,7 @@ app.get('/api/purchase-orders/:id', requireLogin, async (req, res) => {
   }
 });
 
-app.post('/api/purchase-orders', requireLogin, async (req, res) => {
+app.post('/api/purchase-orders', requireLogin, requireCommercialErp, async (req, res) => {
   const body = normalizePurchaseInput(req.body);
   const validation = validatePurchaseInput(body);
   if (validation) return fail(res, 400, validation);
@@ -2799,7 +2821,7 @@ app.post('/api/purchase-orders', requireLogin, async (req, res) => {
   ok(res, mapPurchaseOrder(created), '구매 발주서가 저장되었습니다.');
 });
 
-app.put('/api/purchase-orders/:id', requireLogin, async (req, res) => {
+app.put('/api/purchase-orders/:id', requireLogin, requireCommercialErp, async (req, res) => {
   const client = await pool.connect();
   let before;
   let updated;
@@ -2845,7 +2867,7 @@ app.put('/api/purchase-orders/:id', requireLogin, async (req, res) => {
   ok(res, mapPurchaseOrder(updated), '구매 발주서가 수정되었습니다.');
 });
 
-app.post('/api/purchase-orders/:id/receipts', requireLogin, async (req, res) => {
+app.post('/api/purchase-orders/:id/receipts', requireLogin, requireCommercialErp, async (req, res) => {
   const receiptQty = num(req.body?.qty ?? req.body?.receivedQty);
   const receiptDate = purchaseDate(req.body?.receiptDate, new Date().toISOString().slice(0, 10));
   const materialLot = txt(req.body?.materialLot || req.body?.lot);
@@ -2948,7 +2970,7 @@ app.post('/api/purchase-orders/:id/receipts', requireLogin, async (req, res) => 
   ok(res, { purchaseOrder: mapPurchaseOrder(updated), receipt: mapPurchaseReceipt(receipt) }, '입고가 등록되고 IQC 계획이 연결되었습니다.');
 });
 
-app.post('/api/purchase-orders/:id/cancel', requireLogin, async (req, res) => {
+app.post('/api/purchase-orders/:id/cancel', requireLogin, requireCommercialErp, async (req, res) => {
   try {
     const before = await db(`SELECT * FROM purchase_orders WHERE ${purchaseOrderWhere(req.params.id)}`, [req.params.id]);
     if (!before.rowCount) return fail(res, 404, '발주서를 찾을 수 없습니다.');
