@@ -32,7 +32,7 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260904-production-stable9';
+const SHELL_BUILD = '20260908-commercial-access1';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
