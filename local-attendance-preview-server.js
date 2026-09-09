@@ -321,6 +321,10 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
   }
 });
 
+app.get('/', (_req, res) => {
+  res.redirect(302, '/attendance.html');
+});
+
 app.get(['/attendance.html', '/attendance'], (_req, res) => {
   fs.readFile(attendanceFile, 'utf8', (error, source) => {
     if (error) return res.status(500).send('Attendance TEST page load failed.');
