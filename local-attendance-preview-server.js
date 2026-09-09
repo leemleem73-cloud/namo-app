@@ -5,6 +5,7 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const createAttendanceMailLinkTest = require('./attendance-mail-link-test.js');
 
 const app = express();
 const port = 3000;
@@ -60,7 +61,7 @@ function buildAttendanceHtml(source) {
   if (html.includes('</body>')) {
     html = html.replace(
       '</body>',
-      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script><script src="/attendance-approved-detail-test-20260909.js?v=20260909-approved-detail1"></script><script src="/attendance-direct-mail-test-20260909.js?v=20260909-direct-mail3"></script></body>'
+      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script><script src="/attendance-approved-detail-test-20260909.js?v=20260909-approved-detail1"></script><script src="/attendance-direct-mail-test-20260909.js?v=20260909-direct-mail4"></script></body>'
     );
   }
 
@@ -242,34 +243,14 @@ function mailConfig() {
   };
 }
 
-function senderCredential(sender) {
-  const email = String(sender?.email || '').trim().toLowerCase();
-  if (!email) return null;
-
-  try {
-    const map = JSON.parse(process.env.SMTP_CREDENTIALS_JSON || '{}');
-    const entry = map[email] || map[String(sender?.id || '')] || null;
-    if (typeof entry === 'string' && entry) return { user: email, pass: entry };
-    if (entry && typeof entry === 'object' && entry.pass) {
-      return { user: String(entry.user || email), pass: String(entry.pass) };
-    }
-  } catch (error) {
-    console.warn('[NAMO TEST direct mail] SMTP_CREDENTIALS_JSON parse failed:', error.message);
-  }
-
-  const fallbackUser = String(process.env.SMTP_USER || '').trim().toLowerCase();
-  const fallbackPass = String(process.env.SMTP_PASS || '');
-  if (fallbackUser && fallbackPass && fallbackUser === email) {
-    return { user: fallbackUser, pass: fallbackPass };
-  }
-  return null;
-}
+const mailLink = createAttendanceMailLinkTest({ rootDir: __dirname, mailConfig, fetchCurrentAttendanceUser });
 
 app.use(express.json({ limit: '1mb' }));
 app.use((req, res, next) => {
   noCache(res);
   next();
 });
+mailLink.installRoutes(app);
 
 app.post('/api/attendance/test-direct-mail', async (req, res) => {
   const cfg = mailConfig();
@@ -282,20 +263,12 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
   try {
     sender = await fetchCurrentAttendanceUser(req);
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      code: 'LOGIN_SENDER_NOT_FOUND',
-      message: error.message || '로그인 당사자의 회사메일을 확인할 수 없습니다.'
-    });
+    return res.status(401).json({ success: false, code: 'LOGIN_SENDER_NOT_FOUND', message: error.message || '로그인 당사자의 회사메일을 확인할 수 없습니다.' });
   }
 
-  const credential = senderCredential(sender);
+  const credential = mailLink.credentialFor(sender);
   if (!credential) {
-    return res.status(503).json({
-      success: false,
-      code: 'SMTP_SENDER_NOT_CONFIGURED',
-      message: '로그인 사용자의 이카운트 메일 발송 계정이 서버에 등록되지 않았습니다.'
-    });
+    return res.status(503).json({ success: false, code: 'SMTP_SENDER_NOT_CONFIGURED', message: '최초 1회 메일 연동이 필요합니다.' });
   }
 
   const request = req.body?.request || {};
@@ -340,24 +313,11 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
       }]
     });
 
-    return res.json({
-      success: true,
-      data: {
-        sent: recipients.length,
-        messageId: info.messageId || null,
-        sender: { id: sender.id || null, name: sender.name || '', email: sender.email }
-      }
-    });
+    return res.json({ success: true, data: { sent: recipients.length, messageId: info.messageId || null, sender: { id: sender.id || null, name: sender.name || '', email: sender.email } } });
   } catch (error) {
     console.error('[NAMO TEST direct mail]', error);
     const authFailed = error?.code === 'EAUTH' || Number(error?.responseCode) === 535;
-    return res.status(502).json({
-      success: false,
-      code: authFailed ? 'SMTP_AUTH_FAILED' : 'SMTP_SEND_FAILED',
-      message: authFailed
-        ? '로그인 당사자의 이카운트 메일 인증정보를 확인해 주세요.'
-        : `메일 발송 실패: ${error.message}`
-    });
+    return res.status(502).json({ success: false, code: authFailed ? 'SMTP_AUTH_FAILED' : 'SMTP_SEND_FAILED', message: authFailed ? '로그인 당사자의 이카운트 메일 인증정보를 확인해 주세요.' : `메일 발송 실패: ${error.message}` });
   }
 });
 
@@ -380,6 +340,6 @@ app.listen(port, '127.0.0.1', () => {
   console.log(`NAMO full TEST mirror: http://localhost:${port}/`);
   console.log(`Upstream QMES/mobile: ${productionOrigin.origin}`);
   console.log(`Attendance TEST page: http://localhost:${port}/attendance.html`);
-  console.log('Direct mail TEST: sender is current login user; no password popup.');
+  console.log('Direct mail TEST: current login user; first-time encrypted mail linking, then one-click send.');
   console.log('IMPORTANT: functions use the live QMES backend; create/update/delete actions affect live data.');
 });
