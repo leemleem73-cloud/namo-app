@@ -1,0 +1,40 @@
+/* Attendance TEST layout fixes - reviewer section + submit footer overlap */
+
+/* Ensure the request summary can fully scroll above the fixed action area. */
+.overlay-body{
+  padding-bottom:220px !important;
+}
+
+/* Keep the action area visually separate from the summary content. */
+.footer-action{
+  z-index:140 !important;
+  background:#f5f7fb !important;
+  border-top:1px solid #e4e9f1 !important;
+  box-shadow:0 -10px 28px rgba(28,42,75,.10) !important;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom)) !important;
+}
+
+.footer-action .btn-primary,
+.footer-action .btn-soft{
+  position:relative;
+  z-index:2;
+}
+
+/* The summary card must never slide behind the send button. */
+#wizardStep3 .card:last-of-type{
+  margin-bottom:26px !important;
+}
+
+/* Reviewer list: comfortably fit up to four people (3 executives + 1 manager). */
+#reviewerCheckList{
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+#reviewerCheckList .check-person{
+  min-height:72px;
+}
+
+@media(min-width:431px){
+  .footer-action{bottom:18px !important;}
+}
