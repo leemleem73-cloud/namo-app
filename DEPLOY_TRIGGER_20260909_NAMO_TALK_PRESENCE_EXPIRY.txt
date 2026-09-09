@@ -1,0 +1,2 @@
+NAMO Talk presence expiry deployment trigger.
+Users whose standalone client stops refreshing for 90 seconds are reported offline automatically. Manual online/away/offline status remains supported.
