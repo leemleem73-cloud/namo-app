@@ -1,0 +1,5 @@
+2026-09-09 NAMO Talk employee-list recovery deployment trigger
+- Force production redeploy after employee list API recovery.
+- Existing employee/message data is not deleted or overwritten.
+- /users returns all registered accounts; client continues to hide only the currently logged-in user.
+- Keeps message edit/pin/delete and attachment APIs intact.
