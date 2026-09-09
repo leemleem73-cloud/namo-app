@@ -25,10 +25,12 @@ function buildAttendanceHtml(source) {
   html = html.replace(/<link rel="stylesheet" href="\/attendance-admin-test-fix-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<link rel="stylesheet" href="\/attendance-test-ui-20260909-v1\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<link rel="stylesheet" href="\/attendance-layout-fix-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-enterprise-home-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<script src="\/attendance-dom-compat-20260908\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-reference-ui-20260908\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-admin-benchmark-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-test-fixes-20260909\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/<script src="\/attendance-enterprise-home-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/\sdata-attendance-boot="[^"]*"/g, '');
   html = html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i, '<html$1 data-attendance-boot="pending">');
   html = html.replace(
@@ -41,7 +43,8 @@ function buildAttendanceHtml(source) {
     '<link rel="stylesheet" href="/attendance-reference-ui-20260908.css?v=20260908-ref2">',
     '<link rel="stylesheet" href="/attendance-admin-test-fix-20260909.css?v=20260909-kakao-admin1">',
     '<link rel="stylesheet" href="/attendance-test-ui-20260909-v1.css?v=20260909-test-ui1">',
-    '<link rel="stylesheet" href="/attendance-layout-fix-20260909.css?v=20260909-layout1">'
+    '<link rel="stylesheet" href="/attendance-layout-fix-20260909.css?v=20260909-layout1">',
+    '<link rel="stylesheet" href="/attendance-enterprise-home-20260909.css?v=20260909-enterprise1">'
   ].join('');
 
   if (html.includes('</head>')) html = html.replace('</head>', `${testStyles}</head>`);
@@ -54,7 +57,7 @@ function buildAttendanceHtml(source) {
   if (html.includes('</body>')) {
     html = html.replace(
       '</body>',
-      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script></body>'
+      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script></body>'
     );
   }
 
