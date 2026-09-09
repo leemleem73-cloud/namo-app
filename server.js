@@ -33,7 +33,7 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260908-backend-recovery1';
+const SHELL_BUILD = '20260909-attendance-mobile-direct1';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
@@ -82,25 +82,31 @@ try {
 
 try {
   const source = fs.readFileSync(publicRouter, 'utf8');
-  const oldMobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일용 화면 열기"><span aria-hidden="true">📱</span><span>모바일용</span></button>';
-  const mobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-dedicated1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>';
-  const previousMobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button2")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>';
+  const attendanceMobileButton = '<button type="button" onClick={()=>window.location.assign("/attendance.html?mobile=1&source=qmes&v=20260909-attendance-direct1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="출퇴근 모바일 화면 열기"><span aria-hidden="true">📱</span><span>출퇴근 모바일</span></button>';
+  const oldButtons = [
+    '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일용 화면 열기"><span aria-hidden="true">📱</span><span>모바일용</span></button>',
+    '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button2")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>',
+    '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-dedicated1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>'
+  ];
   const talkButton = '<button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>';
-  let patched = source.replace(oldMobileButton, mobileButton).replace(previousMobileButton, mobileButton);
-  if (!patched.includes(mobileButton)) patched = patched.replace(talkButton, `${mobileButton}\n          ${talkButton}`);
+  let patched = source;
+  oldButtons.forEach(button => { patched = patched.replace(button, attendanceMobileButton); });
+  if (!patched.includes(attendanceMobileButton)) patched = patched.replace(talkButton, `${attendanceMobileButton}\n          ${talkButton}`);
   if (patched !== source) fs.writeFileSync(publicRouter, patched, 'utf8');
 } catch (error) {
-  console.error('[QMES] Failed to install mobile header shortcut:', error);
+  console.error('[QMES] Failed to install attendance mobile header shortcut:', error);
   process.exit(1);
 }
 
 try {
   const source = fs.readFileSync(publicShellMenu, 'utf8');
   const oldLabel = 'aria-label="모바일 화면" title="모바일 화면">${mobileSvg}<span>모바일</span>';
-  const newLabel = 'aria-label="모바일 전용" title="모바일 전용">${mobileSvg}<span>모바일 전용</span>';
+  const previousLabel = 'aria-label="모바일 전용" title="모바일 전용">${mobileSvg}<span>모바일 전용</span>';
+  const newLabel = 'aria-label="출퇴근 모바일" title="출퇴근 모바일">${mobileSvg}<span>출퇴근 모바일</span>';
   const oldHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{const mobileTarget=findTop('현장입력')||findTop('현장 입력');if(mobileTarget){mobileTarget.click();return;}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'fieldInput',openMenu:null}}));});";
-  const newHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});";
-  const patched = source.replace(oldLabel, newLabel).replace(oldHandler, newHandler);
+  const previousHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});";
+  const newHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/attendance.html?mobile=1&source=qmes&v=20260909-attendance-direct1');});";
+  const patched = source.replace(oldLabel, newLabel).replace(previousLabel, newLabel).replace(oldHandler, newHandler).replace(previousHandler, newHandler);
   if (patched !== source) fs.writeFileSync(publicShellMenu, patched, 'utf8');
 } catch (error) {
   console.warn('[QMES] Sidebar UI normalization skipped:', error.message);
