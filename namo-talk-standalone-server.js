@@ -324,6 +324,79 @@ function install(app) {
     }
   });
 
+  app.get(PREFIX+'/conversations', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      await ensureSchema();
+      const direct=await pool.query(
+        `WITH mine AS (
+           SELECT m.*,
+                  CASE WHEN m.sender_name=$1 THEN m.receiver_name ELSE m.sender_name END AS peer_name,
+                  ROW_NUMBER() OVER (PARTITION BY m.room_id ORDER BY m.created_at DESC,m.id DESC) AS rn
+             FROM namo_talk_standalone_messages m
+            WHERE m.deleted_at IS NULL
+              AND m.room_id NOT LIKE 'channel:%'
+              AND (m.sender_name=$1 OR m.receiver_name=$1)
+         )
+         SELECT room_id AS "roomId",'direct'::text AS type,peer_name AS peer,
+                peer_name AS title,''::text AS subtitle,
+                message_text AS "latestText",created_at AS "latestAt",attachment_id AS "attachmentId",
+                (SELECT COUNT(*)::int
+                   FROM namo_talk_standalone_messages u
+                  WHERE u.room_id=mine.room_id AND u.receiver_name=$1
+                    AND u.read_at IS NULL AND u.deleted_at IS NULL) AS unread
+           FROM mine
+          WHERE rn=1
+          ORDER BY created_at DESC`,
+        [me.name]
+      );
+
+      const channelIds=['all'];
+      const dept=String(me.department||'').trim();
+      if(dept) channelIds.push('dept:'+dept);
+      const channelRows=[];
+      for(const channel of channelIds){
+        const rid='channel:'+channel;
+        const latest=await pool.query(
+          `SELECT id,message_text,created_at,attachment_id
+             FROM namo_talk_standalone_messages
+            WHERE room_id=$1 AND deleted_at IS NULL
+            ORDER BY created_at DESC,id DESC LIMIT 1`,
+          [rid]
+        );
+        if(!latest.rowCount) continue;
+        const read=await pool.query(
+          'SELECT COALESCE(last_read_id,0) AS last FROM namo_talk_standalone_channel_reads WHERE room_id=$1 AND user_name=$2',
+          [rid,me.name]
+        );
+        const last=Number(read.rows[0]?.last||0);
+        const unread=await pool.query(
+          `SELECT COUNT(*)::int AS count
+             FROM namo_talk_standalone_messages
+            WHERE room_id=$1 AND id>$2 AND sender_name<>$3 AND deleted_at IS NULL`,
+          [rid,last,me.name]
+        );
+        const row=latest.rows[0];
+        channelRows.push({
+          roomId:rid,type:'channel',channel,
+          title:channel==='all'?'전체공지':channel.slice(5),
+          subtitle:channel==='all'?'전 직원 공지':'업무 채널',
+          latestText:row.message_text||'',
+          latestAt:row.created_at,
+          attachmentId:row.attachment_id||null,
+          unread:Number(unread.rows[0]?.count||0)
+        });
+      }
+
+      const conversations=[...direct.rows,...channelRows]
+        .sort((a,b)=>new Date(b.latestAt).getTime()-new Date(a.latestAt).getTime());
+      ok(res,{conversations});
+    }catch(e){
+      console.error('[NAMO Talk standalone] conversations:',e);
+      fail(res,500,'대화 목록을 불러오지 못했습니다.');
+    }
+  });
+
   app.get(PREFIX+'/profiles', async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
     try{
