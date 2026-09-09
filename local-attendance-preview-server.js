@@ -60,7 +60,7 @@ function buildAttendanceHtml(source) {
   if (html.includes('</body>')) {
     html = html.replace(
       '</body>',
-      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script><script src="/attendance-approved-detail-test-20260909.js?v=20260909-approved-detail1"></script><script src="/attendance-direct-mail-test-20260909.js?v=20260909-direct-mail1"></script></body>'
+      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script><script src="/attendance-approved-detail-test-20260909.js?v=20260909-approved-detail1"></script><script src="/attendance-direct-mail-test-20260909.js?v=20260909-direct-mail2"></script></body>'
     );
   }
 
@@ -132,16 +132,55 @@ function proxyToProduction(req, res) {
   upstreamReq.on('error', (error) => {
     console.error('[NAMO TEST proxy] upstream error:', error.message);
     if (!res.headersSent) {
-      res.status(502).json({
-        success: false,
-        message: '현재 QMES 서버에 연결할 수 없습니다.',
-      });
+      res.status(502).json({ success: false, message: '현재 QMES 서버에 연결할 수 없습니다.' });
     } else {
       res.end();
     }
   });
 
   req.pipe(upstreamReq);
+}
+
+function fetchCurrentAttendanceUser(req) {
+  return new Promise((resolve, reject) => {
+    const headers = {
+      accept: 'application/json',
+      host: productionOrigin.host,
+      cookie: req.headers.cookie || '',
+      'user-agent': req.headers['user-agent'] || 'NAMO-TEST',
+    };
+    const upstreamReq = https.request({
+      protocol: productionOrigin.protocol,
+      hostname: productionOrigin.hostname,
+      port: productionOrigin.port || 443,
+      method: 'GET',
+      path: '/api/attendance/me',
+      headers,
+    }, (upstreamRes) => {
+      let body = '';
+      upstreamRes.setEncoding('utf8');
+      upstreamRes.on('data', (chunk) => {
+        body += chunk;
+        if (body.length > 1024 * 1024) upstreamReq.destroy(new Error('응답이 너무 큽니다.'));
+      });
+      upstreamRes.on('end', () => {
+        try {
+          const payload = JSON.parse(body || '{}');
+          if ((upstreamRes.statusCode || 500) >= 400 || payload?.success === false) {
+            return reject(new Error(payload?.message || '로그인 사용자를 확인할 수 없습니다.'));
+          }
+          const data = payload?.data ?? payload;
+          const user = data?.user ?? data;
+          if (!user || !user.email) return reject(new Error('직원등록현황에 로그인 사용자의 회사메일이 없습니다.'));
+          resolve(user);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    upstreamReq.on('error', reject);
+    upstreamReq.end();
+  });
 }
 
 function escapePdfText(value) {
@@ -197,12 +236,9 @@ function buildApprovalPdf(payload) {
 
 function mailConfig() {
   return {
-    host: process.env.SMTP_HOST || '',
+    host: process.env.SMTP_HOST || 'wsmtp.ecount.com',
     port: Number(process.env.SMTP_PORT || 587),
     secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || Number(process.env.SMTP_PORT) === 465,
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    from: process.env.SMTP_FROM || process.env.SMTP_USER || ''
   };
 }
 
@@ -214,11 +250,12 @@ app.use((req, res, next) => {
 
 app.post('/api/attendance/test-direct-mail', async (req, res) => {
   const cfg = mailConfig();
-  if (!cfg.host || !cfg.user || !cfg.pass || !cfg.from) {
-    return res.status(503).json({
+  const smtpPassword = String(req.body?.smtpPassword || '');
+  if (!smtpPassword) {
+    return res.status(400).json({
       success: false,
-      code: 'SMTP_NOT_CONFIGURED',
-      message: 'SMTP_HOST / SMTP_USER / SMTP_PASS / SMTP_FROM 설정이 필요합니다.'
+      code: 'SMTP_PASSWORD_REQUIRED',
+      message: '로그인 당사자의 이카운트 웹메일 비밀번호가 필요합니다.'
     });
   }
 
@@ -227,12 +264,24 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
     return res.status(400).json({ success: false, message: '수신자를 선택해 주세요.' });
   }
 
+  let sender;
+  try {
+    sender = await fetchCurrentAttendanceUser(req);
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      code: 'LOGIN_SENDER_NOT_FOUND',
+      message: error.message || '로그인 당사자의 회사메일을 확인할 수 없습니다.'
+    });
+  }
+
   const request = req.body?.request || {};
   const transporter = nodemailer.createTransport({
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
-    auth: { user: cfg.user, pass: cfg.pass }
+    auth: { user: sender.email, pass: smtpPassword },
+    requireTLS: cfg.port === 587,
   });
 
   const to = recipients.map(x => x.email).join(', ');
@@ -241,6 +290,7 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
     <div style="font-family:Arial,'Noto Sans KR',sans-serif;color:#1f2937;line-height:1.65">
       <h2 style="color:#176dd0">나모케미칼 근태 요청 승인완료</h2>
       <p>검토 완료 후 자동 승인된 근태 요청입니다.</p>
+      <p style="color:#64748b">발송자: ${sender.name || '-'} &lt;${sender.email}&gt;</p>
       <table style="border-collapse:collapse;width:100%;max-width:640px">
         <tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">신청자</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeName || '-'}</td></tr>
         <tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">부서</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeDepartment || '-'}</td></tr>
@@ -256,7 +306,7 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
 
   try {
     const info = await transporter.sendMail({
-      from: cfg.from,
+      from: sender.name ? `"${String(sender.name).replace(/"/g, '')}" <${sender.email}>` : sender.email,
       to,
       subject,
       html,
@@ -269,14 +319,21 @@ app.post('/api/attendance/test-direct-mail', async (req, res) => {
 
     return res.json({
       success: true,
-      data: { sent: recipients.length, messageId: info.messageId || null }
+      data: {
+        sent: recipients.length,
+        messageId: info.messageId || null,
+        sender: { id: sender.id || null, name: sender.name || '', email: sender.email }
+      }
     });
   } catch (error) {
     console.error('[NAMO TEST direct mail]', error);
+    const authFailed = error?.code === 'EAUTH' || Number(error?.responseCode) === 535;
     return res.status(502).json({
       success: false,
-      code: 'SMTP_SEND_FAILED',
-      message: `메일 발송 실패: ${error.message}`
+      code: authFailed ? 'SMTP_AUTH_FAILED' : 'SMTP_SEND_FAILED',
+      message: authFailed
+        ? '로그인 당사자의 이카운트 웹메일 주소 또는 비밀번호를 확인해 주세요.'
+        : `메일 발송 실패: ${error.message}`
     });
   }
 });
@@ -300,6 +357,6 @@ app.listen(port, '127.0.0.1', () => {
   console.log(`NAMO full TEST mirror: http://localhost:${port}/`);
   console.log(`Upstream QMES/mobile: ${productionOrigin.origin}`);
   console.log(`Attendance TEST page: http://localhost:${port}/attendance.html`);
-  console.log('Direct mail TEST endpoint is enabled when SMTP_* environment variables are configured.');
+  console.log('Direct mail TEST: sender is always the currently logged-in attendance user.');
   console.log('IMPORTANT: functions use the live QMES backend; create/update/delete actions affect live data.');
 });
