@@ -1,6 +1,17 @@
 (()=>{
 'use strict';
 const $=(s,r=document)=>r.querySelector(s);
+async function ensureEmployeeName(){
+  try{
+    const r=await fetch('/api/attendance/me',{credentials:'same-origin',cache:'no-store'});
+    const j=await r.json();
+    const data=j&&typeof j==='object'&&'data' in j?j.data:j;
+    const user=data?.user||data||{};
+    const name=String(user?.name||'').trim();
+    const title=$('.namo-panel-title strong');
+    if(title&&name)title.textContent=`${name}님 · 오늘 근무`;
+  }catch(_error){}
+}
 function ensureGpsCard(){
   const home=$('.page[data-page="home"]');
   if(!home||$('#namoGpsCard'))return;
@@ -43,6 +54,6 @@ function checkGps(){
     setGpsText(msg);
   },{enableHighAccuracy:true,timeout:10000,maximumAge:10000});
 }
-function init(){ensureGpsCard();ensureMapOverlay();document.addEventListener('click',e=>{if(e.target===document.querySelector('#namoMapOverlay'))closeMap();});}
+function init(){ensureEmployeeName();ensureGpsCard();ensureMapOverlay();document.addEventListener('click',e=>{if(e.target===document.querySelector('#namoMapOverlay'))closeMap();});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,40));else setTimeout(init,40);
 })();
