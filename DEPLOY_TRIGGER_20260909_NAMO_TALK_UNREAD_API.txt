@@ -1,0 +1,2 @@
+NAMO Talk unread summary API deployment trigger.
+Adds GET /api/namo-talk-standalone/unread so unread badges/notifications no longer call /messages and accidentally mark conversations read.
