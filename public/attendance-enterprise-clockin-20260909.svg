@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 150" role="img" aria-labelledby="t d">
+<title id="t">출근 일러스트</title><desc id="d">나모케미칼 출근 카드용 직원 출근 일러스트</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2f8cff"/><stop offset="1" stop-color="#0b66df"/></linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#bfe4ff" stop-opacity=".8"/><stop offset="1" stop-color="#75b7f3" stop-opacity=".3"/></linearGradient>
+</defs>
+<rect width="220" height="150" rx="18" fill="url(#bg)"/>
+<path d="M130 30h72v112h-72z" fill="#0a58ba" opacity=".32"/><path d="M143 39h47v92h-47z" fill="url(#glass)"/><path d="M151 47h9v76h-9zm19 0h9v76h-9z" fill="#dff3ff" opacity=".55"/>
+<circle cx="40" cy="114" r="27" fill="#0359bf" opacity=".32"/><path d="M18 145c6-25 18-39 37-42 18-3 30 15 34 42z" fill="#0a55ae" opacity=".5"/><path d="M64 145c2-25 11-41 30-49 18-7 30 8 34 49z" fill="#2db3a6" opacity=".72"/>
+<circle cx="111" cy="58" r="14" fill="#ffd7b0"/><path d="M99 55c1-15 20-20 29-9 4 5 2 13-2 17-3-8-10-11-27-8z" fill="#163356"/><path d="M102 72h18l6 34-23 2z" fill="#fff"/><path d="M109 72h5l4 25-8 5-5-5z" fill="#0d4d9f"/><path d="M103 77l-19 18 7 8 15-12z" fill="#ffd7b0"/><path d="M120 78l17 20-8 7-14-13z" fill="#ffd7b0"/><path d="M103 104l-8 39h11l8-31 8 31h12l-8-39z" fill="#163356"/><path d="M126 83l17 10-4 20-9-1z" fill="#1e4f86" opacity=".65"/><rect x="111" y="92" width="14" height="18" rx="2" fill="#dcefff" stroke="#3177bb"/><circle cx="118" cy="97" r="2" fill="#3177bb"/>
+<g transform="translate(24 22)" opacity=".96"><circle cx="20" cy="20" r="20" fill="#fff" fill-opacity=".14"/><path d="M20 8c-6 0-11 5-11 11 0 8 5 12 11 18 6-6 11-10 11-18 0-6-5-11-11-11zm0 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" fill="#fff"/></g>
+</svg>
