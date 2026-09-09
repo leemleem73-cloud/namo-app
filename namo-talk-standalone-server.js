@@ -317,4 +317,20 @@ express.application.listen=function(...args){
   return originalListen.apply(this,args);
 };
 
+function autoInstall(){
+  const proto=express.application;
+  if(proto.__namoTalkStandaloneAutoInstall) return;
+  proto.__namoTalkStandaloneAutoInstall=true;
+  const originalListen=proto.listen;
+  proto.listen=function(...args){
+    if(!this.__namoTalkStandaloneInstalled){
+      install(this);
+      this.__namoTalkStandaloneInstalled=true;
+      console.log('[NAMO Talk standalone] routes installed before listen');
+    }
+    return originalListen.apply(this,args);
+  };
+}
+autoInstall();
+
 module.exports={installNamoTalkStandaloneRoutes:install};
