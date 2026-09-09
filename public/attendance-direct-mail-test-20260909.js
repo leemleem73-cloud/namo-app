@@ -52,6 +52,34 @@ function leaveName(value){
   return map[String(value||'')]||String(value||'휴가');
 }
 
+function askWebmailPassword(me){
+  return new Promise(resolve=>{
+    $('#namoWebmailPasswordOverlay')?.remove();
+    const overlay=document.createElement('div');
+    overlay.id='namoWebmailPasswordOverlay';
+    Object.assign(overlay.style,{position:'fixed',inset:'0',zIndex:'10080',background:'rgba(15,31,55,.42)',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'});
+    overlay.innerHTML=`<div style="width:min(420px,100%);background:#fff;border-radius:18px;padding:20px;box-shadow:0 18px 50px rgba(15,31,55,.28)">
+      <div style="font-size:17px;font-weight:900;color:#15243a">로그인 본인 메일로 발송</div>
+      <div style="margin-top:8px;font-size:12px;line-height:1.6;color:#64748b">발송자: <b style="color:#1f2937">${String(me?.name||'로그인 사용자')}</b><br>${String(me?.email||'')}</div>
+      <label style="display:block;margin-top:16px;font-size:12px;font-weight:800;color:#344054">이카운트 웹메일 비밀번호</label>
+      <input id="namoWebmailPasswordInput" type="password" autocomplete="off" style="box-sizing:border-box;width:100%;margin-top:7px;height:44px;border:1px solid #cfd8e3;border-radius:12px;padding:0 12px;font-size:14px" placeholder="비밀번호 입력">
+      <div style="margin-top:8px;font-size:11px;color:#7b8798">비밀번호는 저장하지 않고 이번 발송에만 사용합니다.</div>
+      <div style="display:flex;gap:8px;margin-top:18px">
+        <button id="namoWebmailCancel" type="button" style="flex:1;height:42px;border:1px solid #d7dee8;background:#fff;border-radius:11px;font-weight:800">취소</button>
+        <button id="namoWebmailSend" type="button" style="flex:1;height:42px;border:0;background:#176dd0;color:#fff;border-radius:11px;font-weight:900">발송 계속</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const input=$('#namoWebmailPasswordInput',overlay);
+    const finish=value=>{if(input)input.value='';overlay.remove();resolve(value)};
+    $('#namoWebmailCancel',overlay).onclick=()=>finish('');
+    $('#namoWebmailSend',overlay).onclick=()=>finish(input?.value||'');
+    overlay.addEventListener('click',e=>{if(e.target===overlay)finish('')});
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();finish(input.value||'')}else if(e.key==='Escape'){finish('')}});
+    setTimeout(()=>input?.focus(),50);
+  });
+}
+
 async function selectedRecipientUsers(){
   const checked=$$('.namo-approved-member-check:checked');
   if(!checked.length)return [];
@@ -92,6 +120,11 @@ async function sendDirectMail(button){
   if(!item){toast('승인완료 휴가 정보를 찾지 못했습니다.','error');return;}
 
   const me=meData?.user||meData||{};
+  if(!me.email){toast('직원등록현황에 로그인 사용자의 회사메일을 먼저 등록해 주세요.','error');return;}
+
+  const smtpPassword=await askWebmailPassword(me);
+  if(!smtpPassword)return;
+
   const department=$('#postDepartmentSelect')?.value||item.employee_department||me.department||'-';
   const reviewerText=$('#postReviewer')?.textContent?.trim()||item.reviewer_name||'-';
   const recipients=users.map(u=>({
@@ -103,6 +136,7 @@ async function sendDirectMail(button){
   }));
 
   const payload={
+    smtpPassword,
     request:{
       id:item.id,
       leaveType:item.leave_type,
@@ -123,27 +157,34 @@ async function sendDirectMail(button){
 
   const original=button.textContent;
   button.disabled=true;
-  button.textContent='메일 보내는 중...';
+  button.textContent=`${me.name||'본인'} 메일로 보내는 중...`;
   try{
     const result=await api('/api/attendance/test-direct-mail',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
+    payload.smtpPassword='';
 
     await api(`/api/attendance/leave/${encodeURIComponent(item.id)}/mail-log`,{
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipients})
     }).catch(()=>null);
 
     const count=Number(result?.sent||recipients.length);
+    const senderName=result?.sender?.name||me.name||'로그인 사용자';
     button.textContent=`발송 완료 ✓ (${count}명)`;
-    toast(`${count}명에게 승인완료 메일을 앱에서 바로 발송했습니다.`,'success');
+    toast(`${senderName}님 계정으로 ${count}명에게 발송했습니다.`,'success');
     setTimeout(()=>{button.disabled=false;button.textContent=original},2600);
   }catch(error){
+    payload.smtpPassword='';
     button.disabled=false;
     button.textContent=original;
-    if(error.code==='SMTP_NOT_CONFIGURED'||error.status===503){
-      toast('메일 서버 설정이 필요합니다. SMTP 설정 후 바로 발송됩니다.','error');
+    if(error.code==='SMTP_PASSWORD_REQUIRED'){
+      toast('로그인 당사자의 웹메일 비밀번호를 입력해 주세요.','error');
+    }else if(error.code==='SMTP_AUTH_FAILED'){
+      toast('로그인 당사자의 이카운트 웹메일 비밀번호를 확인해 주세요.','error');
+    }else if(error.code==='LOGIN_SENDER_NOT_FOUND'){
+      toast(error.message,'error');
     }else{
       toast(`메일 발송 실패: ${error.message}`,'error');
     }
@@ -152,9 +193,9 @@ async function sendDirectMail(button){
 
 function prepareButton(){
   const button=$('#emailBtn');
-  if(!button||button.dataset.directMail==='1')return;
-  button.dataset.directMail='1';
-  button.textContent='2. 선택 부서원에게 앱에서 바로 메일 보내기';
+  if(!button||button.dataset.directMail==='2')return;
+  button.dataset.directMail='2';
+  button.textContent='2. 로그인 본인 메일로 선택 부서원에게 보내기';
 }
 
 document.addEventListener('click',event=>{
