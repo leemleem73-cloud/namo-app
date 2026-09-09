@@ -1,0 +1,8 @@
+/* TEST branch only: admin boot + NAMO company branding fix */
+html[data-attendance-boot="pending"] .app-shell{visibility:hidden!important}
+html[data-namo-attendance-full-ui="v4"] .topbar-row{grid-template-columns:42px minmax(0,1fr) 42px!important}
+html[data-namo-attendance-full-ui="v4"] .brand{justify-self:center!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0!important;max-width:270px!important}
+html[data-namo-attendance-full-ui="v4"] .brand img{width:58px!important;height:34px!important;max-height:34px!important;object-fit:contain!important;flex:0 0 auto!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy{display:block!important;min-width:0!important;line-height:1.08!important;text-align:left!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b{display:block!important;font-size:13px!important;font-weight:900!important;color:#173896!important;white-space:nowrap!important;letter-spacing:-.2px!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy small{display:block!important;font-size:7.5px!important;color:#7b8496!important;margin-top:3px!important;white-space:nowrap!important;letter-spacing:.02em!important}
