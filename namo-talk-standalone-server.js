@@ -196,14 +196,27 @@ function install(app) {
             SELECT d.name,
                    d.department,
                    COALESCE(a.active,TRUE) AS active,
-                   COALESCE(a.presence,'offline') AS presence,
+                   CASE
+                     WHEN a.presence='offline' THEN 'offline'
+                     WHEN a.last_seen_at IS NULL OR a.last_seen_at < NOW() - INTERVAL '90 seconds' THEN 'offline'
+                     ELSE COALESCE(a.presence,'offline')
+                   END AS presence,
                    COALESCE(a.status_message,'') AS "statusMessage",
                    a.last_seen_at AS "lastSeenAt"
             FROM directory d
             LEFT JOIN namo_talk_standalone_accounts a ON a.name=d.name
             ORDER BY d.department,d.name
           `)
-        : await pool.query('SELECT name,department,active,presence,status_message AS "statusMessage",last_seen_at AS "lastSeenAt" FROM namo_talk_standalone_accounts ORDER BY department,name');
+        : await pool.query(`SELECT name,department,active,
+            CASE
+              WHEN presence='offline' THEN 'offline'
+              WHEN last_seen_at IS NULL OR last_seen_at < NOW() - INTERVAL '90 seconds' THEN 'offline'
+              ELSE presence
+            END AS presence,
+            status_message AS "statusMessage",
+            last_seen_at AS "lastSeenAt"
+          FROM namo_talk_standalone_accounts
+          ORDER BY department,name`);
       ok(res,{users:r.rows});
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
   });
