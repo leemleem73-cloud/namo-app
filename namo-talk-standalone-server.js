@@ -122,14 +122,19 @@ function install(app) {
   app.get(PREFIX+'/sticker-sheet', async(_req,res)=>{
     try{
       const candidates=[
-        path.join(__dirname,'public','assets','namo-emoticons-gel-20260731.webp'),
-        path.join(process.cwd(),'public','assets','namo-emoticons-gel-20260731.webp')
+        path.join(__dirname,'public','assets','namo-emoticons-gel-20260731.js'),
+        path.join(process.cwd(),'public','assets','namo-emoticons-gel-20260731.js')
       ];
       const file=candidates.find(p=>fs.existsSync(p));
-      if(!file) return fail(res,404,'NAMO 이모티콘 원본 파일을 찾을 수 없습니다.');
+      if(!file) return fail(res,404,'NAMO 이모티콘 원본 데이터를 찾을 수 없습니다.');
+      const source=fs.readFileSync(file,'utf8');
+      const match=source.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);
+      if(!match) return fail(res,500,'NAMO 이모티콘 원본 데이터를 읽지 못했습니다.');
+      const image=Buffer.from(match[1],'base64');
       res.setHeader('Content-Type','image/webp');
+      res.setHeader('Content-Length',String(image.length));
       res.setHeader('Cache-Control','public, max-age=86400');
-      fs.createReadStream(file).pipe(res);
+      res.send(image);
     }catch(e){
       console.error('[NAMO Talk standalone] sticker-sheet:',e);
       fail(res,500,'NAMO 이모티콘을 불러오지 못했습니다.');
