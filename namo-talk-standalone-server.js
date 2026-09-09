@@ -166,7 +166,7 @@ function install(app) {
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
     try {
       await pool.query('UPDATE namo_talk_standalone_accounts SET last_seen_at=NOW() WHERE name=$1',[me.name]);
-      const r=await pool.query('SELECT name,department,presence,status_message AS "statusMessage",last_seen_at AS "lastSeenAt" FROM namo_talk_standalone_accounts WHERE active=TRUE ORDER BY department,name');
+      const r=await pool.query('SELECT name,department,presence,status_message AS "statusMessage",last_seen_at AS "lastSeenAt" FROM namo_talk_standalone_accounts WHERE active IS DISTINCT FROM FALSE ORDER BY department,name');
       ok(res,{users:r.rows});
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
   });
