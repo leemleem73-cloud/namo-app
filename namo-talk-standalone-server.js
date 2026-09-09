@@ -264,6 +264,12 @@ function install(app) {
       const channel=String(req.query.channel||'').trim();
       if(!allowedChannel(me,channel)) return fail(res,403,'이 업무채널에 접근할 수 없습니다.');
       const rid='channel:'+channel;
+      const date=String(req.query.date||'').trim();
+      const validDate=/^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
+      const peek=String(req.query.peek||'')==='1';
+      const params=[rid];
+      let dateWhere='';
+      if(validDate){params.push(validDate);dateWhere=" AND (m.created_at AT TIME ZONE 'Asia/Seoul')::date=$2::date";}
       const r=await pool.query(
         `SELECT m.id,m.sender_name AS sender,m.receiver_name AS receiver,m.message_text AS text,
                 m.created_at AS "createdAt",m.edited_at AS "editedAt",m.deleted_at AS "deletedAt",
@@ -271,20 +277,22 @@ function install(app) {
                 a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize"
            FROM namo_talk_standalone_messages m
            LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id
-          WHERE m.room_id=$1 AND m.deleted_at IS NULL
+          WHERE m.room_id=$1 AND m.deleted_at IS NULL${dateWhere}
           ORDER BY m.created_at ASC
           LIMIT 1500`,
-        [rid]
+        params
       );
-      const latest=Number(r.rows[r.rows.length-1]?.id||0);
-      await pool.query(
-        `INSERT INTO namo_talk_standalone_channel_reads(room_id,user_name,last_read_id,updated_at)
-         VALUES($1,$2,$3,NOW())
-         ON CONFLICT(room_id,user_name)
-         DO UPDATE SET last_read_id=GREATEST(namo_talk_standalone_channel_reads.last_read_id,EXCLUDED.last_read_id),updated_at=NOW()`,
-        [rid,me.name,latest]
-      );
-      ok(res,{messages:r.rows});
+      if(!peek){
+        const latest=Number(r.rows[r.rows.length-1]?.id||0);
+        await pool.query(
+          `INSERT INTO namo_talk_standalone_channel_reads(room_id,user_name,last_read_id,updated_at)
+           VALUES($1,$2,$3,NOW())
+           ON CONFLICT(room_id,user_name)
+           DO UPDATE SET last_read_id=GREATEST(namo_talk_standalone_channel_reads.last_read_id,EXCLUDED.last_read_id),updated_at=NOW()`,
+          [rid,me.name,latest]
+        );
+      }
+      ok(res,{messages:r.rows,date:validDate||null});
     }catch(e){
       console.error('[NAMO Talk standalone] channel messages:',e);
       fail(res,500,'업무채널 메시지를 불러오지 못했습니다.');
@@ -511,12 +519,23 @@ function install(app) {
     try {
       const peer=String(req.query.peer||'').trim();
       if(!peer) return fail(res,400,'대화 상대가 필요합니다.');
+      const rid=roomId(me.name,peer);
+      const date=String(req.query.date||'').trim();
+      const validDate=/^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
+      const peek=String(req.query.peek||'')==='1';
+      const params=[rid];
+      let dateWhere='';
+      if(validDate){params.push(validDate);dateWhere=" AND (m.created_at AT TIME ZONE 'Asia/Seoul')::date=$2::date";}
       const r=await pool.query(
-        `SELECT m.id,m.sender_name AS sender,m.receiver_name AS receiver,m.message_text AS text,m.created_at AS "createdAt",m.read_at AS "readAt",m.edited_at AS "editedAt",m.deleted_at AS "deletedAt",m.pinned,m.attachment_id AS "attachmentId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id WHERE m.room_id=$1 AND m.deleted_at IS NULL ORDER BY m.created_at ASC LIMIT 1000`,
-        [roomId(me.name,peer)]
+        `SELECT m.id,m.sender_name AS sender,m.receiver_name AS receiver,m.message_text AS text,m.created_at AS "createdAt",m.read_at AS "readAt",m.edited_at AS "editedAt",m.deleted_at AS "deletedAt",m.pinned,m.attachment_id AS "attachmentId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize"
+           FROM namo_talk_standalone_messages m
+           LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id
+          WHERE m.room_id=$1 AND m.deleted_at IS NULL${dateWhere}
+          ORDER BY m.created_at ASC LIMIT 1000`,
+        params
       );
-      await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[roomId(me.name,peer),me.name]);
-      ok(res,{messages:r.rows});
+      if(!peek) await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[rid,me.name]);
+      ok(res,{messages:r.rows,date:validDate||null});
     } catch(e) { fail(res,500,'메시지를 불러오지 못했습니다.'); }
   });
 
