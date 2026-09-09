@@ -35,6 +35,42 @@
   min-height:72px;
 }
 
+/* Approved-leave detail: make the long recipient list scrollable and keep both actions visible. */
+#postApprovalOverlay.open{
+  overflow:hidden !important;
+}
+
+#postApprovalOverlay .overlay-body{
+  height:calc(100dvh - 64px) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:170px !important;
+}
+
+#postApprovalOverlay #pdfBtn,
+#postApprovalOverlay #emailBtn{
+  position:fixed !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  width:min(calc(100vw - 32px),398px) !important;
+  z-index:190 !important;
+  margin:0 !important;
+  box-shadow:0 8px 24px rgba(24,69,109,.16) !important;
+}
+
+#postApprovalOverlay #pdfBtn{
+  bottom:76px !important;
+}
+
+#postApprovalOverlay #emailBtn{
+  bottom:16px !important;
+  background:#ffffff !important;
+  border:1px solid #cfd9e6 !important;
+}
+
 @media(min-width:431px){
   .footer-action{bottom:18px !important;}
+  #postApprovalOverlay #pdfBtn{bottom:94px !important;}
+  #postApprovalOverlay #emailBtn{bottom:34px !important;}
 }
