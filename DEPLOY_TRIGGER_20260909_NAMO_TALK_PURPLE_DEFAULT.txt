@@ -1,0 +1,1 @@
+Deploy NAMO Talk standalone default-profile update. New standalone accounts use the purple NAMO drop as the default avatar. Client remains connected to the central qmes.namochemical.com server.
