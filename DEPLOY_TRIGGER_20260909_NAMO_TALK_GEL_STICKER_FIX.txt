@@ -1,0 +1,1 @@
+Deploy NAMO Talk sticker-sheet fix: decode the actual WEB NAMO gel sticker data from public/assets/namo-emoticons-gel-20260731.js and serve it as image/webp.
