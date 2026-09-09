@@ -501,7 +501,10 @@ function install(app) {
         const r=await pool.query('UPDATE namo_talk_standalone_messages SET deleted_at=NOW() WHERE id=$1 AND sender_name=$2 AND deleted_at IS NULL RETURNING id',[id,me.name]);
         if(!r.rowCount) return fail(res,404,'삭제할 메시지를 찾을 수 없습니다.');
       } else if(action==='pin' || action==='unpin'){
-        const r=await pool.query('UPDATE namo_talk_standalone_messages SET pinned=$1 WHERE id=$2 AND room_id=$3 AND deleted_at IS NULL RETURNING id',[action==='pin',id,String(req.body?.roomId||'')||roomId(me.name,String(req.body?.peer||''))]);
+        const requestedRoom=String(req.body?.roomId||'').trim();
+        if(requestedRoom.startsWith('channel:') && !allowedChannel(me,requestedRoom.slice(8))) return fail(res,403,'이 업무채널의 메시지를 처리할 수 없습니다.');
+        const targetRoom=requestedRoom||roomId(me.name,String(req.body?.peer||''));
+        const r=await pool.query('UPDATE namo_talk_standalone_messages SET pinned=$1 WHERE id=$2 AND room_id=$3 AND deleted_at IS NULL RETURNING id',[action==='pin',id,targetRoom]);
         if(!r.rowCount) return fail(res,404,'메시지를 찾을 수 없습니다.');
       } else return fail(res,400,'지원하지 않는 작업입니다.');
       ok(res);
