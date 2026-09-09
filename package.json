@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node -r ./rls-hardening.js -r ./attendance-core-safe.js -r ./attendance-review-safe.js -r ./attendance-workplace-safe.js -r ./attendance-work-schedule-safe.js -r ./attendance-correction-safe.js -r ./attendance-mobile-daily-safe.js -r ./attendance-mobile-fix-preload.js -r ./attendance-stability-preload.js -r ./mobile-static-preload.js -r ./sales-v6-force-install.js -r ./security-bootstrap.js -r ./inventory-server.js -r ./inventory-force-install.js -r ./qmes-extra-sync-server.js server.js",
-    "attendance:preview": "node -r dotenv/config local-attendance-preview-server.js",
+    "attendance:preview": "node -r dotenv/config -r ./attendance-local-network-safe.js local-attendance-preview-server.js",
     "maintenance": "node startup-maintenance.js"
   },
   "dependencies": {
