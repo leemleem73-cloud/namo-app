@@ -311,21 +311,29 @@ function install(app) {
   });
 }
 
-const originalListen=express.application.listen;
-express.application.listen=function(...args){
-  install(this);
-  return originalListen.apply(this,args);
-};
-
 function autoInstall(){
   const proto=express.application;
   if(proto.__namoTalkStandaloneAutoInstall) return;
   proto.__namoTalkStandaloneAutoInstall=true;
+
+  // QMES legacy server registers app.get('*') before app.listen().
+  // Install NAMO Talk routes immediately BEFORE that catch-all route,
+  // otherwise standalone GET APIs (/users, /messages, /health, attachments)
+  // are swallowed by the SPA index.html handler.
+  const originalGet=proto.get;
+  proto.get=function(...args){
+    if(args[0]==='*' && !this.__namoTalkStandaloneInstalled){
+      install(this);
+      console.log('[NAMO Talk standalone] routes installed before GET catch-all');
+    }
+    return originalGet.apply(this,args);
+  };
+
+  // Fallback for server variants that do not register a GET catch-all.
   const originalListen=proto.listen;
   proto.listen=function(...args){
     if(!this.__namoTalkStandaloneInstalled){
       install(this);
-      this.__namoTalkStandaloneInstalled=true;
       console.log('[NAMO Talk standalone] routes installed before listen');
     }
     return originalListen.apply(this,args);
