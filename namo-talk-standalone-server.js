@@ -4,6 +4,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -116,6 +118,23 @@ function install(app) {
   if (app.__namoTalkStandaloneInstalled) return;
   app.__namoTalkStandaloneInstalled = true;
   ensureSchema().catch(e=>console.error('[NAMO Talk standalone] schema:',e));
+
+  app.get(PREFIX+'/sticker-sheet', async(_req,res)=>{
+    try{
+      const candidates=[
+        path.join(__dirname,'public','assets','namo-emoticons-gel-20260731.webp'),
+        path.join(process.cwd(),'public','assets','namo-emoticons-gel-20260731.webp')
+      ];
+      const file=candidates.find(p=>fs.existsSync(p));
+      if(!file) return fail(res,404,'NAMO 이모티콘 원본 파일을 찾을 수 없습니다.');
+      res.setHeader('Content-Type','image/webp');
+      res.setHeader('Cache-Control','public, max-age=86400');
+      fs.createReadStream(file).pipe(res);
+    }catch(e){
+      console.error('[NAMO Talk standalone] sticker-sheet:',e);
+      fail(res,500,'NAMO 이모티콘을 불러오지 못했습니다.');
+    }
+  });
 
   app.get(PREFIX+'/health', async(_req,res)=>{
     try { await ensureSchema(); ok(res,{service:'NAMO Talk Standalone',version:'6.0.0-dev'}); }
