@@ -44,7 +44,11 @@ function install(app){
           cl.leave_type AS current_leave_type,
           COALESCE(ms.month_days,0)::int AS month_days,
           COALESCE(ms.month_minutes,0)::int AS month_minutes,
-          COALESCE(ly.used_leave,0)::float AS used_leave
+          COALESCE(ms.late_count,0)::int AS late_count,
+          COALESCE(ms.overtime_minutes,0)::int AS overtime_minutes,
+          COALESCE(ly.used_leave,0)::float AS used_leave,
+          COALESCE(lm.leave_count,0)::int AS leave_count,
+          COALESCE(lm.leave_days,0)::float AS leave_days
         FROM users u
         LEFT JOIN attendance_logs a ON a.user_id=u.id AND a.work_date=$1::date
         LEFT JOIN LATERAL (
@@ -54,17 +58,26 @@ function install(app){
           ORDER BY lr.created_at DESC LIMIT 1
         ) cl ON TRUE
         LEFT JOIN LATERAL (
-          SELECT COUNT(*) FILTER (WHERE clock_in IS NOT NULL) AS month_days,
-            COALESCE(SUM(EXTRACT(EPOCH FROM (clock_out-clock_in))/60) FILTER (WHERE clock_in IS NOT NULL AND clock_out IS NOT NULL),0) AS month_minutes
+          SELECT COUNT(*) FILTER (WHERE x.clock_in IS NOT NULL) AS month_days,
+            COALESCE(SUM(EXTRACT(EPOCH FROM (x.clock_out-x.clock_in))/60) FILTER (WHERE x.clock_in IS NOT NULL AND x.clock_out IS NOT NULL),0) AS month_minutes,
+            COUNT(*) FILTER (WHERE x.clock_in IS NOT NULL AND (x.clock_in AT TIME ZONE 'Asia/Seoul')::time > TIME '09:05') AS late_count,
+            COALESCE(SUM(GREATEST((EXTRACT(EPOCH FROM (x.clock_out-x.clock_in))/60)-480,0)) FILTER (WHERE x.clock_in IS NOT NULL AND x.clock_out IS NOT NULL),0) AS overtime_minutes
           FROM attendance_logs x WHERE x.user_id=u.id AND TO_CHAR(x.work_date,'YYYY-MM')=$2
         ) ms ON TRUE
         LEFT JOIN LATERAL (
-          SELECT COALESCE(SUM(days),0) AS used_leave
+          SELECT COALESCE(SUM(l.days),0) AS used_leave
           FROM leave_requests l
           WHERE l.user_id=u.id AND l.status='APPROVED'
             AND l.leave_type IN ('annual','am_half','pm_half')
             AND EXTRACT(YEAR FROM l.start_date)=EXTRACT(YEAR FROM $1::date)
         ) ly ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*) AS leave_count,COALESCE(SUM(l2.days),0) AS leave_days
+          FROM leave_requests l2
+          WHERE l2.user_id=u.id AND l2.status='APPROVED'
+            AND l2.start_date < (TO_DATE($2||'-01','YYYY-MM-DD') + INTERVAL '1 month')::date
+            AND l2.end_date >= TO_DATE($2||'-01','YYYY-MM-DD')
+        ) lm ON TRUE
         WHERE COALESCE(u.status,'APPROVED') NOT IN ('DELETED','WITHDRAWN')
           AND regexp_replace(lower(COALESCE(u.title,'')),'[[:space:]]+','','g') NOT IN ('대표','대표이사','ceo','chiefexecutiveofficer')
         ORDER BY COALESCE(u.department,''),u.name
@@ -75,7 +88,13 @@ function install(app){
         else if(r.current_leave_type)attendanceStatus='LEAVE';
         else if(r.clock_in&&!r.clock_out)attendanceStatus='WORKING';
         else if(r.clock_in&&r.clock_out)attendanceStatus='DONE';
-        return{id:r.id,name:r.name||'',department:r.department||'',title:r.title||'',role:r.role||'user',attendanceStatus,currentLeaveType:r.current_leave_type||'',clockIn:r.clock_in,clockOut:r.clock_out,monthDays:Number(r.month_days||0),monthMinutes:Number(r.month_minutes||0),leaveGranted:15,leaveUsed:Number(r.used_leave||0),leaveRemaining:Math.max(0,15-Number(r.used_leave||0))};
+        return{
+          id:r.id,name:r.name||'',department:r.department||'',title:r.title||'',role:r.role||'user',attendanceStatus,
+          currentLeaveType:r.current_leave_type||'',clockIn:r.clock_in,clockOut:r.clock_out,
+          monthDays:Number(r.month_days||0),monthMinutes:Number(r.month_minutes||0),lateCount:Number(r.late_count||0),
+          overtimeMinutes:Number(r.overtime_minutes||0),leaveCount:Number(r.leave_count||0),leaveDays:Number(r.leave_days||0),
+          leaveGranted:15,leaveUsed:Number(r.used_leave||0),leaveRemaining:Math.max(0,15-Number(r.used_leave||0))
+        };
       });
       const summary={total:rows.length,working:rows.filter(x=>x.attendanceStatus==='WORKING').length,done:rows.filter(x=>x.attendanceStatus==='DONE').length,absent:rows.filter(x=>x.attendanceStatus==='ABSENT').length,onLeave:rows.filter(x=>x.attendanceStatus==='LEAVE').length,statutory:rows.filter(x=>x.attendanceStatus==='STATUTORY').length,checkedIn:rows.filter(x=>['WORKING','DONE'].includes(x.attendanceStatus)).length};
       const leaves=await pool.query(`SELECT l.*,u.name employee_name,u.department employee_department,u.title employee_title FROM leave_requests l JOIN users u ON u.id=l.user_id WHERE l.start_date < (TO_DATE($1||'-01','YYYY-MM-DD') + INTERVAL '1 month')::date AND l.end_date >= TO_DATE($1||'-01','YYYY-MM-DD') AND regexp_replace(lower(COALESCE(u.title,'')),'[[:space:]]+','','g') NOT IN ('대표','대표이사','ceo','chiefexecutiveofficer') ORDER BY l.start_date DESC,l.created_at DESC LIMIT 500`,[month]);
