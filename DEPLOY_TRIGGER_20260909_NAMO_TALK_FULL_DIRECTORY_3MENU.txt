@@ -1,0 +1,1 @@
+Deploy NAMO Talk full staff-directory and dynamic work-channel update. QMES users and NAMO standalone accounts are merged without dropping valid staff, and department channels are generated from live directory data.
