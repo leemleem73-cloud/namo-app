@@ -31,6 +31,7 @@ function buildAttendanceHtml(source) {
   html = html.replace(/<script src="\/attendance-admin-benchmark-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-test-fixes-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-enterprise-home-20260909\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/<script src="\/attendance-approved-detail-test-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/\sdata-attendance-boot="[^"]*"/g, '');
   html = html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i, '<html$1 data-attendance-boot="pending">');
   html = html.replace(
@@ -57,7 +58,7 @@ function buildAttendanceHtml(source) {
   if (html.includes('</body>')) {
     html = html.replace(
       '</body>',
-      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script></body>'
+      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script><script src="/attendance-enterprise-home-20260909.js?v=20260909-enterprise1"></script><script src="/attendance-approved-detail-test-20260909.js?v=20260909-approved-detail1"></script></body>'
     );
   }
 
