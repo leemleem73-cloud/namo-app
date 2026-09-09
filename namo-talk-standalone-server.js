@@ -3,6 +3,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const multer = require('multer');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -16,6 +17,7 @@ const pool = new Pool({
 const PREFIX = '/api/namo-talk-standalone';
 const SECRET = process.env.NAMO_TALK_TOKEN_SECRET || process.env.SESSION_SECRET || 'namo-talk-dev-secret';
 let schemaPromise = null;
+const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024}});
 
 function ensureSchema() {
   if (schemaPromise) return schemaPromise;
@@ -44,6 +46,19 @@ function ensureSchema() {
     ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ;
     ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
     ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS attachment_id BIGINT;
+    CREATE TABLE IF NOT EXISTS namo_talk_standalone_attachments(
+      id BIGSERIAL PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      sender_name TEXT NOT NULL,
+      receiver_name TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+      file_size BIGINT NOT NULL,
+      file_data BYTEA NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS namo_talk_standalone_attachment_room_idx ON namo_talk_standalone_attachments(room_id,created_at);
     CREATE INDEX IF NOT EXISTS namo_talk_standalone_msg_room_idx
       ON namo_talk_standalone_messages(room_id, created_at);
   `).then(async()=>{
@@ -193,7 +208,7 @@ function install(app) {
       const peer=String(req.query.peer||'').trim();
       if(!peer) return fail(res,400,'대화 상대가 필요합니다.');
       const r=await pool.query(
-        'SELECT id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt",read_at AS "readAt",edited_at AS "editedAt",deleted_at AS "deletedAt",pinned FROM namo_talk_standalone_messages WHERE room_id=$1 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1000',
+        `SELECT m.id,m.sender_name AS sender,m.receiver_name AS receiver,m.message_text AS text,m.created_at AS "createdAt",m.read_at AS "readAt",m.edited_at AS "editedAt",m.deleted_at AS "deletedAt",m.pinned,m.attachment_id AS "attachmentId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id WHERE m.room_id=$1 AND m.deleted_at IS NULL ORDER BY m.created_at ASC LIMIT 1000`,
         [roomId(me.name,peer)]
       );
       await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[roomId(me.name,peer),me.name]);
@@ -213,6 +228,44 @@ function install(app) {
       );
       ok(res,{message:r.rows[0]});
     } catch(e) { fail(res,500,'메시지 전송에 실패했습니다.'); }
+  });
+
+  app.post(PREFIX+'/attachments', upload.single('file'), async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    const peer=String(req.body?.peer||'').trim();
+    const text=String(req.body?.text||'').trim();
+    const file=req.file;
+    if(!peer || !file) return fail(res,400,'첨부할 파일과 대화 상대가 필요합니다.');
+    const rid=roomId(me.name,peer);
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const ar=await client.query(
+        'INSERT INTO namo_talk_standalone_attachments(room_id,sender_name,receiver_name,file_name,mime_type,file_size,file_data) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+        [rid,me.name,peer,file.originalname,file.mimetype||'application/octet-stream',file.size,file.buffer]
+      );
+      const mr=await client.query(
+        'INSERT INTO namo_talk_standalone_messages(room_id,sender_name,receiver_name,message_text,attachment_id) VALUES($1,$2,$3,$4,$5) RETURNING id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt",attachment_id AS "attachmentId"',
+        [rid,me.name,peer,text,ar.rows[0].id]
+      );
+      await client.query('COMMIT');
+      ok(res,{message:{...mr.rows[0],fileName:file.originalname,mimeType:file.mimetype||'application/octet-stream',fileSize:file.size}});
+    }catch(e){await client.query('ROLLBACK');console.error('[NAMO Talk standalone] attachment:',e);fail(res,500,'파일 전송에 실패했습니다.');}
+    finally{client.release();}
+  });
+
+  app.get(PREFIX+'/attachments/:id', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      const r=await pool.query('SELECT room_id,file_name,mime_type,file_size,file_data FROM namo_talk_standalone_attachments WHERE id=$1',[Number(req.params.id)]);
+      if(!r.rowCount) return fail(res,404,'첨부파일을 찾을 수 없습니다.');
+      const a=r.rows[0];
+      if(!String(a.room_id).split('::').includes(me.name)) return fail(res,403,'첨부파일에 접근할 수 없습니다.');
+      res.setHeader('Content-Type',a.mime_type||'application/octet-stream');
+      res.setHeader('Content-Length',String(a.file_size));
+      res.setHeader('Content-Disposition',"attachment; filename*=UTF-8''"+encodeURIComponent(a.file_name));
+      res.send(a.file_data);
+    }catch(e){fail(res,500,'첨부파일을 불러오지 못했습니다.');}
   });
 
   app.put(PREFIX+'/messages/:id', async(req,res)=>{
