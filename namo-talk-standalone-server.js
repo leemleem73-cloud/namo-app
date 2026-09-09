@@ -456,7 +456,8 @@ function install(app) {
     try {
       const presence=['online','away','offline'].includes(req.body?.presence)?req.body.presence:'online';
       const statusMessage=String(req.body?.statusMessage||'').slice(0,120);
-      await pool.query('UPDATE namo_talk_standalone_accounts SET presence=$1,status_message=$2,last_seen_at=NOW(),updated_at=NOW() WHERE name=$3',[presence,statusMessage,me.name]);
+      const updated=await pool.query('UPDATE namo_talk_standalone_accounts SET presence=$1,status_message=$2,last_seen_at=NOW(),updated_at=NOW() WHERE name=$3 RETURNING name',[presence,statusMessage,me.name]);
+      if(!updated.rowCount) return fail(res,404,'NAMO Talk 계정을 찾을 수 없습니다.');
       ok(res,{presence,statusMessage});
     } catch(e){ fail(res,500,'상태 변경에 실패했습니다.'); }
   });
