@@ -127,7 +127,16 @@ function install(app) {
       const password=String(req.body?.password||'1234');
       if(!name) return fail(res,400,'이름을 입력해 주세요.');
       if(password.length<4) return fail(res,400,'비밀번호는 4자 이상이어야 합니다.');
+      const existing=await pool.query('SELECT active FROM namo_talk_standalone_accounts WHERE name=$1',[name]);
       const hash=await bcrypt.hash(password,10);
+      if(existing.rowCount){
+        if(existing.rows[0].active) return fail(res,409,'이미 등록된 이름입니다.');
+        await pool.query(
+          "UPDATE namo_talk_standalone_accounts SET department=$1,password_hash=$2,active=TRUE,presence='offline',status_message='',updated_at=NOW() WHERE name=$3",
+          [department,hash,name]
+        );
+        return ok(res,{user:{name,department},reactivated:true});
+      }
       await pool.query(
         'INSERT INTO namo_talk_standalone_accounts(name,department,password_hash,active) VALUES($1,$2,$3,TRUE)',
         [name,department,hash]
