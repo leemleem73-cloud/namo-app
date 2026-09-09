@@ -63,6 +63,13 @@ function ensureSchema() {
     CREATE INDEX IF NOT EXISTS namo_talk_standalone_attachment_room_idx ON namo_talk_standalone_attachments(room_id,created_at);
     CREATE INDEX IF NOT EXISTS namo_talk_standalone_msg_room_idx
       ON namo_talk_standalone_messages(room_id, created_at);
+    CREATE TABLE IF NOT EXISTS namo_talk_standalone_channel_reads(
+      room_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      last_read_id BIGINT NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY(room_id,user_name)
+    );
   `).then(async()=>{
     const exists = await pool.query('SELECT 1 FROM namo_talk_standalone_accounts WHERE name=$1',['박현아']);
     if (!exists.rowCount) {
@@ -223,6 +230,100 @@ function install(app) {
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
   });
 
+  function allowedChannel(me,room){
+    if(room==='all') return true;
+    if(room.startsWith('dept:')) return room.slice(5)===String(me.department||'');
+    return false;
+  }
+
+  app.get(PREFIX+'/channels', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    const channels=[{id:'all',name:'전체공지',type:'notice',subtitle:'전 직원 공지'}];
+    const dept=String(me.department||'').trim();
+    if(dept) channels.push({id:'dept:'+dept,name:dept,type:'department',subtitle:dept+' 업무 채널'});
+    ok(res,{channels});
+  });
+
+  app.get(PREFIX+'/channel-messages', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      const channel=String(req.query.channel||'').trim();
+      if(!allowedChannel(me,channel)) return fail(res,403,'이 업무채널에 접근할 수 없습니다.');
+      const rid='channel:'+channel;
+      const r=await pool.query(
+        `SELECT m.id,m.sender_name AS sender,m.receiver_name AS receiver,m.message_text AS text,
+                m.created_at AS "createdAt",m.edited_at AS "editedAt",m.deleted_at AS "deletedAt",
+                m.pinned,m.attachment_id AS "attachmentId",
+                a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize"
+           FROM namo_talk_standalone_messages m
+           LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id
+          WHERE m.room_id=$1 AND m.deleted_at IS NULL
+          ORDER BY m.created_at ASC
+          LIMIT 1500`,
+        [rid]
+      );
+      const latest=Number(r.rows[r.rows.length-1]?.id||0);
+      await pool.query(
+        `INSERT INTO namo_talk_standalone_channel_reads(room_id,user_name,last_read_id,updated_at)
+         VALUES($1,$2,$3,NOW())
+         ON CONFLICT(room_id,user_name)
+         DO UPDATE SET last_read_id=GREATEST(namo_talk_standalone_channel_reads.last_read_id,EXCLUDED.last_read_id),updated_at=NOW()`,
+        [rid,me.name,latest]
+      );
+      ok(res,{messages:r.rows});
+    }catch(e){
+      console.error('[NAMO Talk standalone] channel messages:',e);
+      fail(res,500,'업무채널 메시지를 불러오지 못했습니다.');
+    }
+  });
+
+  app.post(PREFIX+'/channel-messages', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      const channel=String(req.body?.channel||'').trim();
+      const text=String(req.body?.text||'').trim();
+      if(!allowedChannel(me,channel)) return fail(res,403,'이 업무채널에 메시지를 보낼 수 없습니다.');
+      if(!text) return fail(res,400,'메시지를 입력해 주세요.');
+      const rid='channel:'+channel;
+      const r=await pool.query(
+        `INSERT INTO namo_talk_standalone_messages(room_id,sender_name,receiver_name,message_text)
+         VALUES($1,$2,$3,$4)
+         RETURNING id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt"`,
+        [rid,me.name,'@'+channel,text]
+      );
+      ok(res,{message:r.rows[0]});
+    }catch(e){
+      console.error('[NAMO Talk standalone] channel send:',e);
+      fail(res,500,'업무채널 메시지 전송에 실패했습니다.');
+    }
+  });
+
+  app.get(PREFIX+'/channel-unread', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      const channels=['all'];
+      const dept=String(me.department||'').trim();
+      if(dept) channels.push('dept:'+dept);
+      const rows=[];
+      for(const channel of channels){
+        const rid='channel:'+channel;
+        const rr=await pool.query('SELECT COALESCE(last_read_id,0) AS last FROM namo_talk_standalone_channel_reads WHERE room_id=$1 AND user_name=$2',[rid,me.name]);
+        const last=Number(rr.rows[0]?.last||0);
+        const cr=await pool.query(
+          `SELECT COUNT(*)::int AS count,COALESCE(MAX(id),0)::bigint AS "latestId"
+             FROM namo_talk_standalone_messages
+            WHERE room_id=$1 AND id>$2 AND sender_name<>$3 AND deleted_at IS NULL`,
+          [rid,last,me.name]
+        );
+        rows.push({channel,count:Number(cr.rows[0]?.count||0),latestId:Number(cr.rows[0]?.latestId||0)});
+      }
+      ok(res,{unread:rows,total:rows.reduce((s,r)=>s+r.count,0)});
+    }catch(e){
+      console.error('[NAMO Talk standalone] channel unread:',e);
+      fail(res,500,'업무채널 알림을 확인하지 못했습니다.');
+    }
+  });
+
   app.get(PREFIX+'/profiles', async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
     try{
@@ -347,21 +448,25 @@ function install(app) {
 
   app.post(PREFIX+'/attachments', upload.single('file'), async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    const channel=String(req.body?.channel||'').trim();
     const peer=String(req.body?.peer||'').trim();
     const text=String(req.body?.text||'').trim();
     const file=req.file;
-    if(!peer || !file) return fail(res,400,'첨부할 파일과 대화 상대가 필요합니다.');
-    const rid=roomId(me.name,peer);
+    if(!file) return fail(res,400,'첨부할 파일이 필요합니다.');
+    if(channel && !allowedChannel(me,channel)) return fail(res,403,'이 업무채널에 파일을 보낼 수 없습니다.');
+    if(!channel && !peer) return fail(res,400,'첨부할 대화 상대가 필요합니다.');
+    const rid=channel?'channel:'+channel:roomId(me.name,peer);
+    const target=channel?'@'+channel:peer;
     const client=await pool.connect();
     try{
       await client.query('BEGIN');
       const ar=await client.query(
         'INSERT INTO namo_talk_standalone_attachments(room_id,sender_name,receiver_name,file_name,mime_type,file_size,file_data) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-        [rid,me.name,peer,file.originalname,file.mimetype||'application/octet-stream',file.size,file.buffer]
+        [rid,me.name,target,file.originalname,file.mimetype||'application/octet-stream',file.size,file.buffer]
       );
       const mr=await client.query(
         'INSERT INTO namo_talk_standalone_messages(room_id,sender_name,receiver_name,message_text,attachment_id) VALUES($1,$2,$3,$4,$5) RETURNING id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt",attachment_id AS "attachmentId"',
-        [rid,me.name,peer,text,ar.rows[0].id]
+        [rid,me.name,target,text,ar.rows[0].id]
       );
       await client.query('COMMIT');
       ok(res,{message:{...mr.rows[0],fileName:file.originalname,mimeType:file.mimetype||'application/octet-stream',fileSize:file.size}});
