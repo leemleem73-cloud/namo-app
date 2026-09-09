@@ -34,6 +34,8 @@ function ensureSchema() {
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS presence TEXT NOT NULL DEFAULT 'offline';
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS status_message TEXT NOT NULL DEFAULT '';
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS avatar_type TEXT NOT NULL DEFAULT 'preset';
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS avatar_value TEXT NOT NULL DEFAULT 'drop-blue';
     CREATE TABLE IF NOT EXISTS namo_talk_standalone_messages(
       id BIGSERIAL PRIMARY KEY,
       room_id TEXT NOT NULL,
@@ -219,6 +221,46 @@ function install(app) {
           ORDER BY department,name`);
       ok(res,{users:r.rows});
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
+  });
+
+  app.get(PREFIX+'/profiles', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      await ensureSchema();
+      const r=await pool.query(
+        `SELECT name,department,avatar_type AS type,avatar_value AS value,updated_at AS "updatedAt"
+           FROM namo_talk_standalone_accounts
+          WHERE active=TRUE
+          ORDER BY department,name`
+      );
+      ok(res,{profiles:r.rows});
+    }catch(e){
+      console.error('[NAMO Talk standalone] profiles:',e);
+      fail(res,500,'프로필 정보를 불러오지 못했습니다.');
+    }
+  });
+
+  app.put(PREFIX+'/profile', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try{
+      await ensureSchema();
+      const type=String(req.body?.type||'preset');
+      const value=String(req.body?.value||'');
+      const allowed=new Set(['drop-blue','drop-purple','drop-mint','drop-pink','drop-yellow','drop-sky','drop-navy','drop-coral','drop-angry','drop-surprise','drop-laugh','drop-sleepy','drop-curious','drop-cheer','drop-focus','drop-thanks']);
+      if(type==='preset'){
+        if(!allowed.has(value)) return fail(res,400,'프로필 캐릭터를 다시 선택해 주세요.');
+      }else if(type==='image'){
+        if(!/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(value) || value.length>1400000) return fail(res,400,'프로필 이미지는 1MB 이하의 이미지 파일만 사용할 수 있습니다.');
+      }else return fail(res,400,'지원하지 않는 프로필 형식입니다.');
+      await pool.query(
+        'UPDATE namo_talk_standalone_accounts SET avatar_type=$1,avatar_value=$2,updated_at=NOW() WHERE name=$3',
+        [type,value,me.name]
+      );
+      ok(res,{profile:{name:me.name,type,value}});
+    }catch(e){
+      console.error('[NAMO Talk standalone] profile save:',e);
+      fail(res,500,'프로필을 저장하지 못했습니다.');
+    }
   });
 
   app.put(PREFIX+'/presence', async(req,res)=>{
