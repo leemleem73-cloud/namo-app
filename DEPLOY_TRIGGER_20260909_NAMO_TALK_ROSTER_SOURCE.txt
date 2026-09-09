@@ -1,0 +1,4 @@
+2026-09-09 NAMO Talk roster source recovery
+- Employee roster now merges approved QMES users with NAMO Talk standalone accounts.
+- Keeps existing NAMO Talk-only test users visible.
+- No employee or message data deletion/overwrite.
