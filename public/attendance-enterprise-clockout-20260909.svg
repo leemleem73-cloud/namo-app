@@ -1,12 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 150" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 150" role="img" aria-labelledby="t d">
 <title id="t">퇴근 일러스트</title><desc id="d">나모케미칼 퇴근 카드용 직원 퇴근 일러스트</desc>
-<defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2b5f98"/><stop offset="1" stop-color="#123963"/></linearGradient>
-  <linearGradient id="door" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8fc5e8" stop-opacity=".75"/><stop offset="1" stop-color="#4d87b7" stop-opacity=".22"/></linearGradient>
-</defs>
-<rect width="220" height="150" rx="18" fill="url(#bg)"/>
-<path d="M137 24h67v119h-67z" fill="#0e2f50" opacity=".55"/><path d="M149 35h42v94h-42z" fill="url(#door)"/><path d="M157 46h26v4h-26zm0 12h26v4h-26z" fill="#dceef9" opacity=".6"/>
-<path d="M30 145c5-23 18-39 39-42 18-2 31 14 37 42z" fill="#163d65" opacity=".65"/><path d="M64 145c3-22 14-37 31-43 18-6 28 10 31 43z" fill="#1d5978" opacity=".65"/>
-<circle cx="117" cy="57" r="14" fill="#ffd2aa"/><path d="M104 54c2-14 18-20 29-12 7 5 8 13 3 20-5-6-14-9-32-8z" fill="#172b42"/><path d="M108 73h20l8 36-25 2z" fill="#183c62"/><path d="M114 76h7l5 24-7 4-7-6z" fill="#d9e9f4"/><path d="M109 80l-17 20 8 7 14-14z" fill="#ffd2aa"/><path d="M127 80l20 17-7 9-18-13z" fill="#ffd2aa"/><path d="M112 106l-4 39h11l7-30 8 30h12l-9-39z" fill="#132a43"/><path d="M139 92l19 4-3 27-18-2z" fill="#4d2d2d"/><path d="M142 92c0-7 4-12 9-12 5 0 9 5 9 12" fill="none" stroke="#b58b6d" stroke-width="3"/>
-<g transform="translate(24 22)" opacity=".96"><circle cx="20" cy="20" r="20" fill="#fff" fill-opacity=".12"/><path d="M12 12h16v16H12z" fill="none" stroke="#fff" stroke-width="2"/><path d="M16 16h8m-8 4h8m-8 4h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+<defs><linearGradient id="door" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b4d9ef" stop-opacity=".78"/><stop offset="1" stop-color="#5c93bd" stop-opacity=".26"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#24557f" stop-opacity=".15"/><stop offset="1" stop-color="#103a61" stop-opacity=".45"/></linearGradient></defs>
+<g opacity=".96"><path d="M115 22h63v117h-63z" fill="#0c2f52" opacity=".46"/><path d="M127 34h39v91h-39z" fill="url(#door)"/><path d="M135 47h23v4h-23zm0 12h23v4h-23z" fill="#e8f5fb" opacity=".62"/><path d="M110 132h68v8h-68z" fill="url(#floor)"/></g>
+<g opacity=".68"><path d="M72 145c4-21 15-35 31-40 16-4 27 10 31 40z" fill="#173f65"/><path d="M94 145c2-17 10-29 23-34 14-6 23 7 26 34z" fill="#275f7c"/></g>
+<g transform="translate(86 13)"><circle cx="35" cy="43" r="14" fill="#f0c59f"/><path d="M20 39c3-14 20-20 31-11 6 5 7 12 3 19-7-6-17-9-34-8z" fill="#162d46"/><path d="M26 58h21l7 39-26 2z" fill="#1c466f"/><path d="M33 61h7l5 24-8 5-7-7z" fill="#dcecf6"/><path d="M27 65L9 86l8 7 15-15z" fill="#f0c59f"/><path d="M48 65l18 18-7 9-17-14z" fill="#f0c59f"/><path d="M29 95l-4 40h11l7-30 8 30h12l-9-40z" fill="#132f4c"/><path d="M59 81l17 4-2 28-18-2z" fill="#5a342b"/><path d="M61 81c0-8 4-13 9-13 5 0 9 5 9 13" fill="none" stroke="#c29b79" stroke-width="3"/></g>
+<g transform="translate(92 106)"><circle cx="17" cy="17" r="17" fill="#fff" fill-opacity=".15"/><path d="M9 9h16v16H9z" fill="none" stroke="#fff" stroke-width="2"/><path d="M13 13h8m-8 4h8m-8 4h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
 </svg>
