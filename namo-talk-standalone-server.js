@@ -35,7 +35,8 @@ function ensureSchema() {
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS status_message TEXT NOT NULL DEFAULT '';
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
     ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS avatar_type TEXT NOT NULL DEFAULT 'preset';
-    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS avatar_value TEXT NOT NULL DEFAULT 'drop-blue';
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS avatar_value TEXT NOT NULL DEFAULT 'drop-purple';
+    ALTER TABLE namo_talk_standalone_accounts ALTER COLUMN avatar_value SET DEFAULT 'drop-purple';
     CREATE TABLE IF NOT EXISTS namo_talk_standalone_messages(
       id BIGSERIAL PRIMARY KEY,
       room_id TEXT NOT NULL,
