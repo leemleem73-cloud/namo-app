@@ -61,7 +61,6 @@ async function selectedRecipientUsers(){
   const found=list.filter(u=>ids.has(String(u.id))&&u.email);
   if(found.length===checked.length)return found;
 
-  // Fallback to visible UI values if an id is not present in the directory response.
   return checked.map(ch=>{
     const label=ch.closest('.check-person');
     const name=label?.querySelector('.check-person-name')?.textContent?.trim()||'-';
@@ -79,7 +78,6 @@ async function currentApprovedRequest(){
     const hit=rows.find(x=>String(x.id)===String(currentRequestId));
     if(hit)return hit;
   }
-  // Fallback: use the newest approved request if the row id was not captured.
   return rows.filter(x=>String(x.status)==='APPROVED').sort((a,b)=>new Date(b.updated_at||b.approved_at||0)-new Date(a.updated_at||a.approved_at||0))[0]||null;
 }
 
@@ -133,7 +131,6 @@ async function sendDirectMail(button){
       body:JSON.stringify(payload)
     });
 
-    // Record the successful delivery in the existing attendance mail log when available.
     await api(`/api/attendance/leave/${encodeURIComponent(item.id)}/mail-log`,{
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipients})
     }).catch(()=>null);
@@ -155,18 +152,16 @@ async function sendDirectMail(button){
 
 function prepareButton(){
   const button=$('#emailBtn');
-  if(!button)return;
-  button.textContent='2. 선택 부서원에게 앱에서 바로 메일 보내기';
+  if(!button||button.dataset.directMail==='1')return;
   button.dataset.directMail='1';
+  button.textContent='2. 선택 부서원에게 앱에서 바로 메일 보내기';
 }
 
-// Capture which approved leave row opened the detail overlay.
 document.addEventListener('click',event=>{
   const row=event.target.closest?.('#leaveSelfView .record.namo-approved-openable');
   if(row?.dataset?.approvedRequestId)currentRequestId=String(row.dataset.approvedRequestId);
 },true);
 
-// Capture the mail button before the legacy mailto onclick handler runs.
 document.addEventListener('click',event=>{
   const button=event.target.closest?.('#emailBtn');
   if(!button||!$('#postApprovalOverlay')?.classList.contains('open'))return;
@@ -175,6 +170,14 @@ document.addEventListener('click',event=>{
   sendDirectMail(button).catch(error=>toast(`메일 발송 실패: ${error.message}`,'error'));
 },true);
 
-function init(){prepareButton();new MutationObserver(prepareButton).observe(document.body,{childList:true,subtree:true});}
+function init(){
+  prepareButton();
+  let pending=false;
+  new MutationObserver(()=>{
+    if(pending)return;
+    pending=true;
+    requestAnimationFrame(()=>{pending=false;prepareButton();});
+  }).observe(document.body,{childList:true,subtree:true});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
