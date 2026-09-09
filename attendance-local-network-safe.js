@@ -19,7 +19,8 @@ try {
 const publicDir = path.join(process.cwd(), 'public');
 const indexFile = path.join(publicDir, 'index.html');
 const sessions = new Map();
-let currentTestPassword = String(process.env.NAMO_TEST_PASSWORD || '1234');
+const memberPasswords = new Map();
+const defaultTestPassword = String(process.env.NAMO_TEST_PASSWORD || '1234');
 
 function cookieValue(req, name) {
   const source = String(req.headers?.cookie || '');
@@ -33,15 +34,39 @@ function cookieValue(req, name) {
   return '';
 }
 
+function loginKey(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function stableTestUuid(loginId) {
+  const hex = crypto.createHash('sha256').update(loginKey(loginId) || 'test-user').digest('hex');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+function stableTestUid(loginId) {
+  const hex = crypto.createHash('sha1').update(loginKey(loginId) || 'test-user').digest('hex').slice(0, 6).toUpperCase();
+  return `U-TEST-${hex}`;
+}
+
+function displayName(loginId, isAdmin) {
+  if (isAdmin) return String(process.env.NAMO_TEST_USER_NAME || 'TEST 관리자');
+  const raw = String(loginId || '').trim();
+  if (raw.includes('@')) return raw.split('@')[0] || raw;
+  return raw;
+}
+
 function testUser(loginId) {
-  const configuredId = String(process.env.NAMO_TEST_LOGIN_ID || 'admin@namo.local').trim();
-  const id = String(loginId || configuredId).trim();
-  const isAdmin = id.toLowerCase() === configuredId.toLowerCase() || id.toLowerCase() === 'admin@namo.local';
+  const configuredAdminId = String(process.env.NAMO_TEST_LOGIN_ID || 'admin@namo.local').trim();
+  const id = String(loginId || configuredAdminId).trim();
+  const isAdmin = loginKey(id) === loginKey(configuredAdminId) || loginKey(id) === 'admin@namo.local';
   return {
-    id: '00000000-0000-4000-8000-000000000001',
-    uid: 'U-TEST-0001',
-    name: String(process.env.NAMO_TEST_USER_NAME || (isAdmin ? 'TEST 관리자' : id)),
-    email: String(process.env.NAMO_TEST_USER_EMAIL || (id.includes('@') ? id : '')),
+    id: stableTestUuid(id),
+    uid: stableTestUid(id),
+    loginId: id,
+    name: displayName(id, isAdmin),
+    email: isAdmin
+      ? String(process.env.NAMO_TEST_USER_EMAIL || (id.includes('@') ? id : ''))
+      : (id.includes('@') ? id : ''),
     department: String(process.env.NAMO_TEST_USER_DEPARTMENT || '품질부'),
     title: String(process.env.NAMO_TEST_USER_TITLE || (isAdmin ? '관리자' : '사원')),
     role: isAdmin ? 'admin' : 'user',
@@ -57,6 +82,10 @@ function sessionUser(req) {
 
 function sendSuccess(res, data, message = 'OK') {
   return res.json({ success: true, message, data });
+}
+
+function passwordFor(loginId) {
+  return memberPasswords.get(loginKey(loginId)) || defaultTestPassword;
 }
 
 function installLocalTest(app) {
@@ -80,20 +109,22 @@ function installLocalTest(app) {
   app.post('/api/auth/login', (req, res) => {
     const loginId = String(req.body?.loginId || '').trim();
     const password = String(req.body?.password || '');
-    const expectedId = String(process.env.NAMO_TEST_LOGIN_ID || 'admin@namo.local').trim();
 
     if (!loginId || !password) {
       return res.status(400).json({ success: false, message: '아이디와 비밀번호를 입력해 주세요.', data: null });
     }
-    if (loginId.toLowerCase() !== expectedId.toLowerCase() || password !== currentTestPassword) {
-      return res.status(401).json({ success: false, message: 'TEST 아이디 또는 비밀번호가 올바르지 않습니다.', data: null });
+
+    // Independent TEST rule: any member identifier can sign in with the TEST password.
+    // This deliberately avoids production QMES/Render authentication dependency.
+    if (password !== passwordFor(loginId)) {
+      return res.status(401).json({ success: false, message: 'TEST 비밀번호가 올바르지 않습니다. 초기 비밀번호는 1234입니다.', data: null });
     }
 
     const user = testUser(loginId);
     const token = crypto.randomBytes(24).toString('hex');
     sessions.set(token, user);
     res.setHeader('Set-Cookie', `namo_test_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`);
-    return sendSuccess(res, { user }, 'TEST 로그인 성공');
+    return sendSuccess(res, { user }, 'TEST 회원 로그인 성공');
   });
 
   app.get('/api/auth/me', (req, res) => {
@@ -114,10 +145,11 @@ function installLocalTest(app) {
     if (!user) return res.status(401).json({ success: false, message: '로그인이 필요합니다.', data: null });
     const currentPassword = String(req.body?.currentPassword || '');
     const newPassword = String(req.body?.newPassword || '');
-    if (currentPassword !== currentTestPassword) return res.status(400).json({ success: false, message: '현재 비밀번호가 일치하지 않습니다.', data: null });
+    const key = loginKey(user.loginId || user.email || user.uid || user.name);
+    if (currentPassword !== passwordFor(key)) return res.status(400).json({ success: false, message: '현재 비밀번호가 일치하지 않습니다.', data: null });
     if (newPassword.length < 4) return res.status(400).json({ success: false, message: '새 비밀번호는 4자 이상 입력해 주세요.', data: null });
-    currentTestPassword = newPassword;
-    return sendSuccess(res, null, 'TEST 비밀번호 변경 완료');
+    memberPasswords.set(key, newPassword);
+    return sendSuccess(res, null, 'TEST 회원 비밀번호 변경 완료');
   });
 
   app.get('/api/attendance/me', (req, res) => {
@@ -144,8 +176,9 @@ function installLocalTest(app) {
     return sendSuccess(res, { requests: [] });
   });
 
-  console.log('[NAMO TEST] independent localhost login enabled.');
-  console.log(`[NAMO TEST] login: ${process.env.NAMO_TEST_LOGIN_ID || 'admin@namo.local'} / ${process.env.NAMO_TEST_PASSWORD ? '(env password)' : '1234'}`);
+  console.log('[NAMO TEST] independent localhost member login enabled.');
+  console.log(`[NAMO TEST] admin: ${process.env.NAMO_TEST_LOGIN_ID || 'admin@namo.local'} / ${process.env.NAMO_TEST_PASSWORD ? '(env password)' : '1234'}`);
+  console.log(`[NAMO TEST] members: any ID/name/employee number / ${process.env.NAMO_TEST_PASSWORD ? '(env password)' : '1234'}`);
 }
 
 // TEST root must be the normal QMES web, not a forced attendance redirect.
