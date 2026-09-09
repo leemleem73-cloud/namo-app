@@ -20,15 +20,15 @@ function noCache(res) {
 function buildAttendanceHtml(source) {
   let html = String(source || '');
 
-  // Apply the same attendance TEST visual/boot patch in memory only.
-  // The tracked attendance.html file is not rewritten by this launcher.
   html = html.replace(/<link rel="stylesheet" href="\/attendance-mobile-stability-20260908\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<link rel="stylesheet" href="\/attendance-reference-ui-20260908\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<link rel="stylesheet" href="\/attendance-admin-test-fix-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<link rel="stylesheet" href="\/attendance-test-ui-20260909-v1\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-layout-fix-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
   html = html.replace(/<script src="\/attendance-dom-compat-20260908\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-reference-ui-20260908\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/<script src="\/attendance-admin-benchmark-20260909\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/<script src="\/attendance-test-fixes-20260909\.js\?v=[^"]+"><\/script>/g, '');
   html = html.replace(/\sdata-attendance-boot="[^"]*"/g, '');
   html = html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i, '<html$1 data-attendance-boot="pending">');
   html = html.replace(
@@ -40,14 +40,17 @@ function buildAttendanceHtml(source) {
     '<link rel="stylesheet" href="/attendance-mobile-stability-20260908.css?v=20260908-stable2">',
     '<link rel="stylesheet" href="/attendance-reference-ui-20260908.css?v=20260908-ref2">',
     '<link rel="stylesheet" href="/attendance-admin-test-fix-20260909.css?v=20260909-kakao-admin1">',
-    '<link rel="stylesheet" href="/attendance-test-ui-20260909-v1.css?v=20260909-test-ui1">'
+    '<link rel="stylesheet" href="/attendance-test-ui-20260909-v1.css?v=20260909-test-ui1">',
+    '<link rel="stylesheet" href="/attendance-layout-fix-20260909.css?v=20260909-layout1">'
   ].join('');
 
   if (html.includes('</head>')) html = html.replace('</head>', `${testStyles}</head>`);
+
   html = html.replace(
     '<script src="/attendance-v4-live.js',
-    '<script src="/attendance-dom-compat-20260908.js?v=20260908-dom2"></script><script src="/attendance-v4-live.js'
+    '<script src="/attendance-dom-compat-20260908.js?v=20260908-dom2"></script><script src="/attendance-test-fixes-20260909.js?v=20260909-reviewers1"></script><script src="/attendance-v4-live.js'
   );
+
   if (html.includes('</body>')) {
     html = html.replace(
       '</body>',
@@ -62,8 +65,6 @@ function localAttendanceAssetPath(urlPath) {
   const clean = decodeURIComponent(String(urlPath || '').split('?')[0]);
   const base = path.basename(clean);
 
-  // Only attendance-specific assets are served from the TEST branch.
-  // QMES and the existing mobile screens are proxied from the current live service.
   if (base === 'attendance.html' || base === 'attendance') return null;
   if (base.startsWith('attendance-') || base === 'attendance.css' || base === 'attendance-app.js') {
     const candidate = path.join(publicDir, base);
@@ -142,7 +143,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Full attendance screen from the TEST branch, not the earlier reduced preview mock.
 app.get(['/attendance.html', '/attendance'], (_req, res) => {
   fs.readFile(attendanceFile, 'utf8', (error, source) => {
     if (error) return res.status(500).send('Attendance TEST page load failed.');
@@ -150,15 +150,12 @@ app.get(['/attendance.html', '/attendance'], (_req, res) => {
   });
 });
 
-// Serve only attendance-specific TEST assets locally.
 app.get('*', (req, res, next) => {
   const file = localAttendanceAssetPath(req.path);
   if (!file) return next();
   res.sendFile(file);
 });
 
-// Everything else is a transparent mirror of the current QMES service:
-// QMES shell, mobile pages, login, all APIs, uploads/downloads and normal data flows.
 app.use((req, res) => proxyToProduction(req, res));
 
 app.listen(port, '127.0.0.1', () => {
