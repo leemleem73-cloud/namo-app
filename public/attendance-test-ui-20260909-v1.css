@@ -1,0 +1,118 @@
+/* TEST BRANCH ONLY - NAMO attendance visual patch v1 */
+html[data-namo-attendance-full-ui="v4"]{
+  --namo-test-blue:#2796e8;
+  --namo-test-blue-deep:#1978c9;
+  --namo-test-blue-soft:#eaf5ff;
+  --namo-test-bg:#f2f6fa;
+  --namo-test-line:#dfe8f0;
+  --namo-test-text:#17212b;
+  --namo-test-muted:#7b8794;
+}
+
+html[data-namo-attendance-full-ui="v4"] body{
+  background:#e9eef3!important;
+  color:var(--namo-test-text)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .app-shell{
+  background:var(--namo-test-bg)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .topbar{
+  background:var(--namo-test-blue)!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+
+/* logo + company name must always be visible */
+html[data-namo-attendance-full-ui="v4"] .brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  min-width:0!important;
+  max-width:270px!important;
+}
+html[data-namo-attendance-full-ui="v4"] .brand img{
+  width:44px!important;
+  height:30px!important;
+  flex:0 0 44px!important;
+  object-fit:contain!important;
+  background:#fff!important;
+  border-radius:7px!important;
+  padding:3px!important;
+}
+html[data-namo-attendance-full-ui="v4"] .brand-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  min-width:0!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b{
+  display:block!important;
+  color:#fff!important;
+  font-size:14px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+  letter-spacing:-.3px!important;
+}
+html[data-namo-attendance-full-ui="v4"] .brand-copy small{
+  display:block!important;
+  color:rgba(255,255,255,.88)!important;
+  font-size:7.5px!important;
+  line-height:1.2!important;
+  margin-top:3px!important;
+  white-space:nowrap!important;
+}
+
+html[data-namo-attendance-full-ui="v4"] .card,
+html[data-namo-attendance-full-ui="v4"] .namo-admin-kpi,
+html[data-namo-attendance-full-ui="v4"] .ka-card,
+html[data-namo-attendance-full-ui="v4"] .ka-summary{
+  background:#fff!important;
+  border-color:var(--namo-test-line)!important;
+  box-shadow:0 3px 12px rgba(31,70,105,.05)!important;
+}
+
+html[data-namo-attendance-full-ui="v4"] .namo-admin-quick button.primary,
+html[data-namo-attendance-full-ui="v4"] .ka-quick-grid button.primary,
+html[data-namo-attendance-full-ui="v4"] .btn-primary,
+html[data-namo-attendance-full-ui="v4"] .fab{
+  background:var(--namo-test-blue)!important;
+  border-color:var(--namo-test-blue)!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(39,150,232,.20)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .namo-admin-quick button.primary *,
+html[data-namo-attendance-full-ui="v4"] .ka-quick-grid button.primary *{
+  color:#fff!important;
+}
+
+html[data-namo-attendance-full-ui="v4"] .badge.blue,
+html[data-namo-attendance-full-ui="v4"] .admin-chip,
+html[data-namo-attendance-full-ui="v4"] .ka-admin-chip,
+html[data-namo-attendance-full-ui="v4"] .nav-btn.active .ni{
+  background:var(--namo-test-blue-soft)!important;
+  color:var(--namo-test-blue-deep)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .nav-btn.active,
+html[data-namo-attendance-full-ui="v4"] .nav-text-btn,
+html[data-namo-attendance-full-ui="v4"] .calendar-title{
+  color:var(--namo-test-blue-deep)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .bottom-nav{
+  background:#fff!important;
+  border-top:1px solid var(--namo-test-line)!important;
+  box-shadow:0 -3px 12px rgba(31,70,105,.04)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .page-title,
+html[data-namo-attendance-full-ui="v4"] .section-title,
+html[data-namo-attendance-full-ui="v4"] .namo-admin-section-title{
+  color:var(--namo-test-text)!important;
+}
+html[data-namo-attendance-full-ui="v4"] .page-sub,
+html[data-namo-attendance-full-ui="v4"] .section-sub,
+html[data-namo-attendance-full-ui="v4"] .namo-admin-section-sub{
+  color:var(--namo-test-muted)!important;
+}
