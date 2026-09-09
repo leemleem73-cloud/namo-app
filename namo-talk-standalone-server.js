@@ -196,7 +196,8 @@ function install(app) {
             WITH directory AS (
               SELECT name, COALESCE(department,'') AS department
               FROM users
-              WHERE COALESCE(status,'APPROVED')='APPROVED' AND COALESCE(name,'')<>''
+              WHERE COALESCE(name,'')<>''
+                AND UPPER(COALESCE(status,'APPROVED')) NOT IN ('REJECTED','DELETED','INACTIVE')
               UNION
               SELECT name, COALESCE(department,'') AS department
               FROM namo_talk_standalone_accounts
@@ -230,18 +231,30 @@ function install(app) {
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
   });
 
-  function allowedChannel(me,room){
+  function allowedChannel(_me,room){
     if(room==='all') return true;
-    if(room.startsWith('dept:')) return room.slice(5)===String(me.department||'');
-    return false;
+    return /^dept:[^:]{1,80}$/.test(String(room||''));
   }
 
   app.get(PREFIX+'/channels', async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
-    const channels=[{id:'all',name:'전체공지',type:'notice',subtitle:'전 직원 공지'}];
-    const dept=String(me.department||'').trim();
-    if(dept) channels.push({id:'dept:'+dept,name:dept,type:'department',subtitle:dept+' 업무 채널'});
-    ok(res,{channels});
+    try{
+      const departments=new Set();
+      const hasQmesUsers=await pool.query("SELECT to_regclass('public.users') AS reg");
+      if(hasQmesUsers.rows[0]?.reg){
+        const r=await pool.query("SELECT DISTINCT COALESCE(department,'') AS department FROM users WHERE COALESCE(name,'')<>'' AND COALESCE(department,'')<>'' AND UPPER(COALESCE(status,'APPROVED')) NOT IN ('REJECTED','DELETED','INACTIVE')");
+        r.rows.forEach(row=>departments.add(String(row.department||'').trim()));
+      }
+      const a=await pool.query("SELECT DISTINCT COALESCE(department,'') AS department FROM namo_talk_standalone_accounts WHERE active=TRUE AND COALESCE(department,'')<>''");
+      a.rows.forEach(row=>departments.add(String(row.department||'').trim()));
+      const channels=[{id:'all',name:'전체공지',type:'notice',subtitle:'전 직원 공지'},
+        ...[...departments].filter(Boolean).sort((x,y)=>x.localeCompare(y,'ko')).map(dept=>({id:'dept:'+dept,name:dept,type:'department',subtitle:dept+' 업무 채널'}))
+      ];
+      ok(res,{channels});
+    }catch(e){
+      console.error('[NAMO Talk standalone] channels:',e);
+      fail(res,500,'업무채널 목록을 불러오지 못했습니다.');
+    }
   });
 
   app.get(PREFIX+'/channel-messages', async(req,res)=>{
