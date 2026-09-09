@@ -31,13 +31,8 @@ html[data-namo-attendance-full-ui="v4"] .clock-btn.out:after{background-image:ur
 html[data-namo-attendance-full-ui="v4"] .clock-btn .label,html[data-namo-attendance-full-ui="v4"] .clock-btn .time{position:relative!important;z-index:3!important;text-shadow:0 1px 2px rgba(0,0,0,.18)!important;max-width:56%!important;white-space:nowrap!important}
 html[data-namo-attendance-full-ui="v4"] .clock-btn .label{font-size:17px!important;font-weight:900!important;letter-spacing:-.3px!important}
 html[data-namo-attendance-full-ui="v4"] .clock-btn .time{font-size:13px!important;margin-top:6px!important;font-weight:700!important}
-html[data-namo-attendance-full-ui="v4"] .work-time{border-top:0!important;background:#f8fbfe!important;border-radius:16px!important;padding:12px 12px 8px!important;margin-top:7px!important}
-html[data-namo-attendance-full-ui="v4"] .work-time .section-title{font-size:13px!important;color:#2d3b4e!important}
-html[data-namo-attendance-full-ui="v4"] .work-time .section-title:after{content:'  수정';color:#1379e8;font-size:11px;font-weight:900}
-html[data-namo-attendance-full-ui="v4"] .work-time .big{font-size:24px!important}
-html[data-namo-attendance-full-ui="v4"] .progress{margin:0 12px 6px!important;background:#dde6ef!important}
-html[data-namo-attendance-full-ui="v4"] .progress span{background:#167ce8!important}
-html[data-namo-attendance-full-ui="v4"] .progress-labels{padding:0 12px 2px!important}
+/* TEST request: current work-time panel is intentionally removed from the home screen. */
+html[data-namo-attendance-full-ui="v4"] .work-time{display:none!important}
 html[data-namo-attendance-full-ui="v4"] .place-card{margin-top:12px!important;border-radius:16px!important;border:1px solid #dfe7ef!important;background:#fff!important;padding:13px!important}
 html[data-namo-attendance-full-ui="v4"] .place-card .place-icon{width:46px!important;height:46px!important;border-radius:15px!important;background:#eaf3ff!important;color:#1677e8!important}
 html[data-namo-attendance-full-ui="v4"] .place-card .t1{font-size:11px!important}
