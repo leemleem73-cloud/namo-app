@@ -29,6 +29,9 @@ function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS presence TEXT NOT NULL DEFAULT 'offline';
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS status_message TEXT NOT NULL DEFAULT '';
+    ALTER TABLE namo_talk_standalone_accounts ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
     CREATE TABLE IF NOT EXISTS namo_talk_standalone_messages(
       id BIGSERIAL PRIMARY KEY,
       room_id TEXT NOT NULL,
@@ -37,6 +40,10 @@ function ensureSchema() {
       message_text TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+    ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMPTZ;
+    ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    ALTER TABLE namo_talk_standalone_messages ADD COLUMN IF NOT EXISTS pinned BOOLEAN NOT NULL DEFAULT FALSE;
     CREATE INDEX IF NOT EXISTS namo_talk_standalone_msg_room_idx
       ON namo_talk_standalone_messages(room_id, created_at);
   `).then(async()=>{
@@ -96,14 +103,15 @@ function install(app) {
       const name=String(req.body?.name||'').trim();
       const password=String(req.body?.password||'');
       const r=await pool.query(
-        'SELECT name,department,password_hash,active FROM namo_talk_standalone_accounts WHERE name=$1 LIMIT 1',
+        'SELECT name,department,password_hash,active,presence,status_message FROM namo_talk_standalone_accounts WHERE name=$1 LIMIT 1',
         [name]
       );
       const user=r.rows[0];
       if(!user || !user.active || !(await bcrypt.compare(password,user.password_hash))) {
         return fail(res,401,'이름 또는 비밀번호를 확인해 주세요.');
       }
-      ok(res,{token:tokenFor(user),user:{name:user.name,department:user.department||''}});
+      await pool.query("UPDATE namo_talk_standalone_accounts SET presence='online',last_seen_at=NOW(),updated_at=NOW() WHERE name=$1",[user.name]);
+      ok(res,{token:tokenFor(user),user:{name:user.name,department:user.department||'',presence:'online',statusMessage:user.status_message||''}});
     } catch(e) {
       console.error('[NAMO Talk standalone] login:',e);
       fail(res,500,'로그인 처리 중 오류가 발생했습니다.');
@@ -148,9 +156,26 @@ function install(app) {
   app.get(PREFIX+'/users', async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
     try {
-      const r=await pool.query('SELECT name,department FROM namo_talk_standalone_accounts WHERE active=TRUE ORDER BY department,name');
+      await pool.query('UPDATE namo_talk_standalone_accounts SET last_seen_at=NOW() WHERE name=$1',[me.name]);
+      const r=await pool.query('SELECT name,department,presence,status_message AS "statusMessage",last_seen_at AS "lastSeenAt" FROM namo_talk_standalone_accounts WHERE active=TRUE ORDER BY department,name');
       ok(res,{users:r.rows});
     } catch(e) { fail(res,500,'직원 목록을 불러오지 못했습니다.'); }
+  });
+
+  app.put(PREFIX+'/presence', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try {
+      const presence=['online','away','offline'].includes(req.body?.presence)?req.body.presence:'online';
+      const statusMessage=String(req.body?.statusMessage||'').slice(0,120);
+      await pool.query('UPDATE namo_talk_standalone_accounts SET presence=$1,status_message=$2,last_seen_at=NOW(),updated_at=NOW() WHERE name=$3',[presence,statusMessage,me.name]);
+      ok(res,{presence,statusMessage});
+    } catch(e){ fail(res,500,'상태 변경에 실패했습니다.'); }
+  });
+
+  app.post(PREFIX+'/logout', async(req,res)=>{
+    const me=auth(req); if(!me) return ok(res);
+    try { await pool.query("UPDATE namo_talk_standalone_accounts SET presence='offline',last_seen_at=NOW(),updated_at=NOW() WHERE name=$1",[me.name]); ok(res); }
+    catch(e){ fail(res,500,'로그아웃 처리에 실패했습니다.'); }
   });
 
   app.get(PREFIX+'/messages', async(req,res)=>{
@@ -159,9 +184,10 @@ function install(app) {
       const peer=String(req.query.peer||'').trim();
       if(!peer) return fail(res,400,'대화 상대가 필요합니다.');
       const r=await pool.query(
-        'SELECT id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt" FROM namo_talk_standalone_messages WHERE room_id=$1 ORDER BY created_at ASC LIMIT 1000',
+        'SELECT id,sender_name AS sender,receiver_name AS receiver,message_text AS text,created_at AS "createdAt",read_at AS "readAt",edited_at AS "editedAt",deleted_at AS "deletedAt",pinned FROM namo_talk_standalone_messages WHERE room_id=$1 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1000',
         [roomId(me.name,peer)]
       );
+      await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[roomId(me.name,peer),me.name]);
       ok(res,{messages:r.rows});
     } catch(e) { fail(res,500,'메시지를 불러오지 못했습니다.'); }
   });
@@ -179,24 +205,32 @@ function install(app) {
       ok(res,{message:r.rows[0]});
     } catch(e) { fail(res,500,'메시지 전송에 실패했습니다.'); }
   });
+
+  app.put(PREFIX+'/messages/:id', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try {
+      const id=Number(req.params.id), action=String(req.body?.action||'');
+      if(action==='edit'){
+        const text=String(req.body?.text||'').trim();
+        if(!text) return fail(res,400,'메시지를 입력해 주세요.');
+        const r=await pool.query('UPDATE namo_talk_standalone_messages SET message_text=$1,edited_at=NOW() WHERE id=$2 AND sender_name=$3 AND deleted_at IS NULL RETURNING id',[text,id,me.name]);
+        if(!r.rowCount) return fail(res,404,'수정할 메시지를 찾을 수 없습니다.');
+      } else if(action==='delete'){
+        const r=await pool.query('UPDATE namo_talk_standalone_messages SET deleted_at=NOW() WHERE id=$1 AND sender_name=$2 AND deleted_at IS NULL RETURNING id',[id,me.name]);
+        if(!r.rowCount) return fail(res,404,'삭제할 메시지를 찾을 수 없습니다.');
+      } else if(action==='pin' || action==='unpin'){
+        const r=await pool.query('UPDATE namo_talk_standalone_messages SET pinned=$1 WHERE id=$2 AND room_id=$3 AND deleted_at IS NULL RETURNING id',[action==='pin',id,String(req.body?.roomId||'')||roomId(me.name,String(req.body?.peer||''))]);
+        if(!r.rowCount) return fail(res,404,'메시지를 찾을 수 없습니다.');
+      } else return fail(res,400,'지원하지 않는 작업입니다.');
+      ok(res);
+    } catch(e){ fail(res,500,'메시지 작업에 실패했습니다.'); }
+  });
 }
 
-const originalGet=express.application.get;
-const originalPost=express.application.post;
-const originalPut=express.application.put;
-function ensure(app){ if(!app.__namoTalkStandaloneInstalled) install(app); }
-
-express.application.get=function(path,...handlers){
-  if(typeof path==='string' && path.startsWith('/api/') && !path.startsWith(PREFIX)) ensure(this);
-  return originalGet.call(this,path,...handlers);
-};
-express.application.post=function(path,...handlers){
-  if(typeof path==='string' && path.startsWith('/api/') && !path.startsWith(PREFIX)) ensure(this);
-  return originalPost.call(this,path,...handlers);
-};
-express.application.put=function(path,...handlers){
-  if(typeof path==='string' && path.startsWith('/api/') && !path.startsWith(PREFIX)) ensure(this);
-  return originalPut.call(this,path,...handlers);
+const originalListen=express.application.listen;
+express.application.listen=function(...args){
+  install(this);
+  return originalListen.apply(this,args);
 };
 
 module.exports={installNamoTalkStandaloneRoutes:install};
