@@ -2,92 +2,168 @@
 
 const express = require('express');
 const fs = require('fs');
+const https = require('https');
 const path = require('path');
 
 const app = express();
 const port = 3000;
 const publicDir = path.join(__dirname, 'public');
-const qmesIndex = path.join(publicDir, 'index.html');
-const attendancePreview = path.join(publicDir, 'attendance-preview-20260909.html');
+const attendanceFile = path.join(publicDir, 'attendance.html');
+const productionOrigin = new URL(process.env.NAMO_TEST_UPSTREAM || 'https://namo-app-xcuy.onrender.com');
 
-const mockUser = {
-  id: 1,
-  uid: 'LOCAL-ADMIN',
-  name: '관리자',
-  email: 'admin@namo.local',
-  department: '관리자',
-  title: '관리자',
-  role: 'admin',
-  mustChangePassword: false,
-};
-
-app.use(express.json());
-app.use((_req, res, next) => {
+function noCache(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
+}
+
+function buildAttendanceHtml(source) {
+  let html = String(source || '');
+
+  // Apply the same attendance TEST visual/boot patch in memory only.
+  // The tracked attendance.html file is not rewritten by this launcher.
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-mobile-stability-20260908\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-reference-ui-20260908\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-admin-test-fix-20260909\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<link rel="stylesheet" href="\/attendance-test-ui-20260909-v1\.css\?v=[^"]+"\s*\/?>/g, '');
+  html = html.replace(/<script src="\/attendance-dom-compat-20260908\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/<script src="\/attendance-reference-ui-20260908\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/<script src="\/attendance-admin-benchmark-20260909\.js\?v=[^"]+"><\/script>/g, '');
+  html = html.replace(/\sdata-attendance-boot="[^"]*"/g, '');
+  html = html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i, '<html$1 data-attendance-boot="pending">');
+  html = html.replace(
+    /<script src="\/attendance-admin-mode-v4\.js\?v=[^"]+"><\/script>/g,
+    '<script src="/attendance-admin-mode-v4.js?v=20260909-admin-fix4"></script>'
+  );
+
+  const testStyles = [
+    '<link rel="stylesheet" href="/attendance-mobile-stability-20260908.css?v=20260908-stable2">',
+    '<link rel="stylesheet" href="/attendance-reference-ui-20260908.css?v=20260908-ref2">',
+    '<link rel="stylesheet" href="/attendance-admin-test-fix-20260909.css?v=20260909-kakao-admin1">',
+    '<link rel="stylesheet" href="/attendance-test-ui-20260909-v1.css?v=20260909-test-ui1">'
+  ].join('');
+
+  if (html.includes('</head>')) html = html.replace('</head>', `${testStyles}</head>`);
+  html = html.replace(
+    '<script src="/attendance-v4-live.js',
+    '<script src="/attendance-dom-compat-20260908.js?v=20260908-dom2"></script><script src="/attendance-v4-live.js'
+  );
+  if (html.includes('</body>')) {
+    html = html.replace(
+      '</body>',
+      '<script src="/attendance-admin-benchmark-20260909.js?v=20260909-kakao-admin1"></script><script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script></body>'
+    );
+  }
+
+  return html;
+}
+
+function localAttendanceAssetPath(urlPath) {
+  const clean = decodeURIComponent(String(urlPath || '').split('?')[0]);
+  const base = path.basename(clean);
+
+  // Only attendance-specific assets are served from the TEST branch.
+  // QMES and the existing mobile screens are proxied from the current live service.
+  if (base === 'attendance.html' || base === 'attendance') return null;
+  if (base.startsWith('attendance-') || base === 'attendance.css' || base === 'attendance-app.js') {
+    const candidate = path.join(publicDir, base);
+    if (candidate.startsWith(publicDir) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+  }
+  if (clean === '/assets/namo-mobile-logo.svg') {
+    const candidate = path.join(publicDir, 'assets', 'namo-mobile-logo.svg');
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+function rewriteSetCookie(value) {
+  if (!value) return value;
+  const items = Array.isArray(value) ? value : [value];
+  return items.map((cookie) => String(cookie)
+    .replace(/;\s*Domain=[^;]+/ig, '')
+    .replace(/;\s*Secure/ig, '')
+    .replace(/SameSite=None/ig, 'SameSite=Lax'));
+}
+
+function proxyToProduction(req, res) {
+  const headers = { ...req.headers };
+  headers.host = productionOrigin.host;
+  headers.origin = productionOrigin.origin;
+  headers.referer = `${productionOrigin.origin}${req.originalUrl || '/'}`;
+  delete headers.connection;
+  delete headers['proxy-connection'];
+  delete headers['accept-encoding'];
+
+  const options = {
+    protocol: productionOrigin.protocol,
+    hostname: productionOrigin.hostname,
+    port: productionOrigin.port || 443,
+    method: req.method,
+    path: req.originalUrl || req.url,
+    headers,
+  };
+
+  const upstreamReq = https.request(options, (upstreamRes) => {
+    const outHeaders = { ...upstreamRes.headers };
+    delete outHeaders.connection;
+    delete outHeaders['transfer-encoding'];
+    delete outHeaders['strict-transport-security'];
+    delete outHeaders['access-control-allow-origin'];
+
+    if (outHeaders['set-cookie']) outHeaders['set-cookie'] = rewriteSetCookie(outHeaders['set-cookie']);
+    if (outHeaders.location) {
+      outHeaders.location = String(outHeaders.location).replace(
+        productionOrigin.origin,
+        `http://localhost:${port}`
+      );
+    }
+
+    res.writeHead(upstreamRes.statusCode || 502, outHeaders);
+    upstreamRes.pipe(res);
+  });
+
+  upstreamReq.on('error', (error) => {
+    console.error('[NAMO TEST proxy] upstream error:', error.message);
+    if (!res.headersSent) {
+      res.status(502).json({
+        success: false,
+        message: '현재 QMES 서버에 연결할 수 없습니다.',
+      });
+    } else {
+      res.end();
+    }
+  });
+
+  req.pipe(upstreamReq);
+}
+
+app.use((req, res, next) => {
+  noCache(res);
   next();
 });
 
-// TEST branch local review flow:
-// - localhost:3000 opens the QMES shell first.
-// - preview mode auto-authenticates a local admin so the login overlay does not block review.
-// - attendance opens the modified attendance test screen.
-// This launcher never connects to the production database.
-app.get('/', (_req, res) => {
-  fs.readFile(qmesIndex, 'utf8', (error, source) => {
-    if (error) return res.status(500).send('QMES index load failed.');
-    const previewSession = {
-      id: mockUser.id,
-      uid: mockUser.uid,
-      name: mockUser.name,
-      email: mockUser.email,
-      dept: mockUser.department,
-      position: mockUser.title,
-      role: mockUser.role,
-      mustChangePassword: false,
-    };
-    const bootstrap = `<script data-namo-local-preview>\ntry {\n  sessionStorage.setItem('qmes-current-user-v1', ${JSON.stringify(JSON.stringify(previewSession))});\n  window.__NAMO_LOCAL_UI_PREVIEW__ = true;\n} catch (_error) {}\n</script>`;
-    const html = source.includes('<head>')
-      ? source.replace('<head>', `<head>\n${bootstrap}`)
-      : `${bootstrap}\n${source}`;
-    res.type('html').send(html);
-  });
-});
-
+// Full attendance screen from the TEST branch, not the earlier reduced preview mock.
 app.get(['/attendance.html', '/attendance'], (_req, res) => {
-  res.sendFile(attendancePreview);
-});
-
-// Local-only mock authentication. This exists only in the preview launcher and never
-// writes user/password data or talks to the production database.
-app.post('/api/auth/login', (_req, res) => {
-  res.json({ success: true, data: { user: mockUser } });
-});
-app.get('/api/auth/me', (_req, res) => {
-  res.json({ success: true, data: { user: mockUser } });
-});
-app.put('/api/auth/password', (_req, res) => {
-  res.json({ success: true, data: { user: mockUser } });
-});
-app.post('/api/auth/logout', (_req, res) => {
-  res.json({ success: true, data: null });
-});
-
-// Other database APIs remain disabled in UI-preview mode.
-app.all('/api/*', (_req, res) => {
-  res.status(503).json({
-    success: false,
-    message: 'LOCAL_UI_PREVIEW: database APIs are disabled in this test launcher.',
-    data: null,
+  fs.readFile(attendanceFile, 'utf8', (error, source) => {
+    if (error) return res.status(500).send('Attendance TEST page load failed.');
+    res.type('html').send(buildAttendanceHtml(source));
   });
 });
 
-app.use(express.static(publicDir));
+// Serve only attendance-specific TEST assets locally.
+app.get('*', (req, res, next) => {
+  const file = localAttendanceAssetPath(req.path);
+  if (!file) return next();
+  res.sendFile(file);
+});
+
+// Everything else is a transparent mirror of the current QMES service:
+// QMES shell, mobile pages, login, all APIs, uploads/downloads and normal data flows.
+app.use((req, res) => proxyToProduction(req, res));
 
 app.listen(port, '127.0.0.1', () => {
-  console.log('NAMO QMES TEST preview listening on http://localhost:3000/');
-  console.log('QMES local preview auto-login: admin mode');
-  console.log('Attendance test screen: http://localhost:3000/attendance.html');
-  console.log('UI preview only - production database is not used.');
+  console.log(`NAMO full TEST mirror: http://localhost:${port}/`);
+  console.log(`Upstream QMES/mobile: ${productionOrigin.origin}`);
+  console.log(`Attendance TEST page: http://localhost:${port}/attendance.html`);
+  console.log('IMPORTANT: functions use the live QMES backend; create/update/delete actions affect live data.');
 });
