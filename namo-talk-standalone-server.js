@@ -224,6 +224,44 @@ function install(app) {
     catch(e){ fail(res,500,'로그아웃 처리에 실패했습니다.'); }
   });
 
+  app.get(PREFIX+'/unread', async(req,res)=>{
+    const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
+    try {
+      await ensureSchema();
+      const counts=await pool.query(
+        `SELECT sender_name AS sender, COUNT(*)::int AS count, MAX(id)::bigint AS "latestId"
+           FROM namo_talk_standalone_messages
+          WHERE receiver_name=$1 AND read_at IS NULL AND deleted_at IS NULL
+          GROUP BY sender_name
+          ORDER BY sender_name`,
+        [me.name]
+      );
+      const latest=await pool.query(
+        `SELECT DISTINCT ON (sender_name)
+                sender_name AS sender,
+                id,
+                message_text AS text,
+                created_at AS "createdAt",
+                attachment_id AS "attachmentId"
+           FROM namo_talk_standalone_messages
+          WHERE receiver_name=$1 AND read_at IS NULL AND deleted_at IS NULL
+          ORDER BY sender_name,id DESC`,
+        [me.name]
+      );
+      const latestBySender=new Map(latest.rows.map(row=>[row.sender,row]));
+      const unread=counts.rows.map(row=>({
+        sender:row.sender,
+        count:Number(row.count||0),
+        latestId:Number(row.latestId||0),
+        latest:latestBySender.get(row.sender)||null
+      }));
+      ok(res,{unread,total:unread.reduce((sum,row)=>sum+row.count,0)});
+    } catch(e) {
+      console.error('[NAMO Talk standalone] unread:',e);
+      fail(res,500,'안 읽은 메시지를 확인하지 못했습니다.');
+    }
+  });
+
   app.get(PREFIX+'/messages', async(req,res)=>{
     const me=auth(req); if(!me) return fail(res,401,'로그인이 필요합니다.');
     try {
