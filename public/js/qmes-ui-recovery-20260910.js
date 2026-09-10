@@ -192,7 +192,12 @@
     const target=event.target instanceof Element?event.target:null;
     if(!target) return;
     const password=target.closest('#qmes-erp-header [data-qmes-account-action="password"]');
-    if(password){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();createPasswordModal();return;}
+    if(password){
+      // Let the native QMES account handler open the real password dialog.
+      // The custom recovery overlay previously swallowed the click and made the screen appear frozen.
+      removeNode('qmes-test-password-modal');
+      return;
+    }
     const logout=target.closest('#qmes-erp-header [data-qmes-account-action="logout"]');
     if(logout){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();logoutNow();return;}
     const notice=target.closest('#qmes-erp-header .qmes-visible-notice-button');
