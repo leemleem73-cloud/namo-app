@@ -79,6 +79,17 @@
         overflow:visible!important;
         z-index:13120!important;
       }
+      html body #qmes-erp-header .qmes-erp-account-wrap::after{
+        content:""!important;
+        position:absolute!important;
+        left:0!important;
+        right:0!important;
+        top:34px!important;
+        height:10px!important;
+        background:transparent!important;
+        pointer-events:auto!important;
+        z-index:13140!important;
+      }
       html body #qmes-erp-header .qmes-erp-header-account{
         width:150px!important;
         max-width:150px!important;
@@ -117,7 +128,7 @@
       html body #qmes-erp-header .qmes-erp-account-menu{
         display:none!important;
         position:absolute!important;
-        top:41px!important;
+        top:36px!important;
         right:0!important;
         width:184px!important;
         min-width:184px!important;
