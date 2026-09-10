@@ -33,15 +33,20 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260910-scroll-fix1';
+const SHELL_BUILD = '20260910-scroll-hardfix2';
 const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 const QMES_SCROLL_FIX_STYLE = `<style id="qmes-scroll-fix-20260910">
-html body #root>div>main{height:calc(100vh - 58px)!important;min-height:calc(100vh - 58px)!important;max-height:calc(100vh - 58px)!important;overflow-y:auto!important;overflow-x:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;touch-action:pan-y!important;}
-html body #qmes-erp-sidebar .qmes-erp-nav{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
+html,body{height:100%!important;min-height:100%!important;}
+html body{overflow:hidden!important;}
+html body #root,html body #root>div{height:100%!important;min-height:0!important;overflow:hidden!important;}
+html body #root>div>main{position:fixed!important;top:58px!important;bottom:0!important;left:236px!important;right:0!important;margin:0!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-y:scroll!important;overflow-x:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;touch-action:pan-y!important;}
+html body.qmes-erp-menu-closed #root>div>main{left:0!important;width:auto!important;}
+html body #qmes-erp-sidebar{overflow:hidden!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:scroll!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:block!important;width:8px!important;height:8px!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-thumb{background:#aebfcb!important;border-radius:8px!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:#edf2f6!important;}
@@ -50,35 +55,84 @@ html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:#e
 const QMES_SCROLL_FIX_SCRIPT = `<script id="qmes-scroll-wheel-fix-20260910">
 (function(){
   "use strict";
-  function install(){
+  if(window.__QMES_SCROLL_HARDFIX_20260910__)return;
+  window.__QMES_SCROLL_HARDFIX_20260910__=true;
+
+  function deltaPixels(event){
+    let delta=Number(event.deltaY)||0;
+    if(event.deltaMode===1)delta*=32;
+    else if(event.deltaMode===2)delta*=window.innerHeight||800;
+    return delta;
+  }
+
+  function getTargets(){
     const main=document.querySelector("#root>div>main");
     const sidebar=document.getElementById("qmes-erp-sidebar");
     const nav=sidebar&&sidebar.querySelector(".qmes-erp-nav");
+    return {main,sidebar,nav};
+  }
+
+  function enforce(){
+    const {main,nav}=getTargets();
     if(main){
-      main.style.setProperty("overflow-y","auto","important");
+      main.style.setProperty("position","fixed","important");
+      main.style.setProperty("top","58px","important");
+      main.style.setProperty("bottom","0","important");
+      main.style.setProperty("left",document.body.classList.contains("qmes-erp-menu-closed")?"0":"236px","important");
+      main.style.setProperty("right","0","important");
+      main.style.setProperty("margin","0","important");
+      main.style.setProperty("width","auto","important");
+      main.style.setProperty("height","auto","important");
+      main.style.setProperty("min-height","0","important");
+      main.style.setProperty("max-height","none","important");
+      main.style.setProperty("overflow-y","scroll","important");
       main.style.setProperty("overflow-x","auto","important");
-      main.style.setProperty("height","calc(100vh - 58px)","important");
-      main.style.setProperty("min-height","calc(100vh - 58px)","important");
-      main.style.setProperty("max-height","calc(100vh - 58px)","important");
     }
-    if(sidebar&&nav&&sidebar.dataset.qmesWheelFix!=="1"){
-      sidebar.dataset.qmesWheelFix="1";
-      sidebar.addEventListener("wheel",function(event){
-        if(nav.scrollHeight<=nav.clientHeight)return;
-        const before=nav.scrollTop;
-        nav.scrollTop+=event.deltaY;
-        if(nav.scrollTop!==before)event.preventDefault();
-      },{passive:false});
+    if(nav){
+      nav.style.setProperty("overflow-y","scroll","important");
+      nav.style.setProperty("overflow-x","hidden","important");
+      nav.style.setProperty("min-height","0","important");
     }
-    return Boolean(main&&sidebar&&nav);
+    document.documentElement.style.setProperty("height","100%","important");
+    document.body.style.setProperty("height","100%","important");
+    document.body.style.setProperty("overflow","hidden","important");
   }
-  let attempts=0;
-  if(!install()){
-    const timer=setInterval(function(){
-      attempts+=1;
-      if(install()||attempts>=20)clearInterval(timer);
-    },250);
-  }
+
+  window.addEventListener("wheel",function(event){
+    const {main,sidebar,nav}=getTargets();
+    if(!main&&!nav)return;
+    const target=event.target instanceof Node?event.target:null;
+    const scroller=sidebar&&nav&&target&&sidebar.contains(target)?nav:main;
+    if(!scroller)return;
+    const delta=deltaPixels(event);
+    if(!delta)return;
+    const max=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
+    if(max<=0)return;
+    const before=scroller.scrollTop;
+    const next=Math.max(0,Math.min(max,before+delta));
+    if(next===before)return;
+    event.preventDefault();
+    scroller.scrollTop=next;
+  },{capture:true,passive:false});
+
+  document.addEventListener("keydown",function(event){
+    if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;
+    const {main}=getTargets();
+    if(!main)return;
+    let delta=0;
+    if(event.key==="PageDown")delta=main.clientHeight*.9;
+    else if(event.key==="PageUp")delta=-main.clientHeight*.9;
+    else if(event.key==="Home")delta=-main.scrollHeight;
+    else if(event.key==="End")delta=main.scrollHeight;
+    if(!delta)return;
+    event.preventDefault();
+    main.scrollTop=Math.max(0,Math.min(main.scrollHeight-main.clientHeight,main.scrollTop+delta));
+  },true);
+
+  const boot=function(){enforce();setTimeout(enforce,0);setTimeout(enforce,250);setTimeout(enforce,1000);};
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  window.addEventListener("resize",enforce);
+  window.addEventListener("qmes:navigate-tab",function(){requestAnimationFrame(enforce);setTimeout(enforce,100);});
 })();
 </script>`;
 
@@ -101,8 +155,7 @@ try {
 
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
   normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
-  normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n</head>`);
-  normalized = normalized.replace('</body>', `  ${QMES_SCROLL_FIX_SCRIPT}\n</body>`);
+  normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n  ${QMES_SCROLL_FIX_SCRIPT}\n</head>`);
 
   normalized = normalized.replace(/\n\s*<script type="text\/babel" data-presets="react" src="\.\/js\/qmes-members-edit-fix-20260904\.jsx\?v=[^"']+"><\/script>/g, '');
   normalized = normalized.replace(
