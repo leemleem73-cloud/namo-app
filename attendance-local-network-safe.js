@@ -13,7 +13,12 @@ try {
   https.globalAgent.options.keepAlive = false;
 } catch (_error) {}
 
-const productionOrigin = new URL(process.env.NAMO_TEST_UPSTREAM || 'https://namo-app-xcuy.onrender.com');
+// TEST must mirror the actual production QMES domain exactly.
+// Force the preview server to use qmes.namochemical.com instead of the old
+// Render service URL so dashboard data, notices, LOT counts and sessions match.
+const deployedQmesOrigin = 'https://qmes.namochemical.com';
+process.env.NAMO_TEST_UPSTREAM = deployedQmesOrigin;
+const productionOrigin = new URL(deployedQmesOrigin);
 
 function rewriteSetCookie(value) {
   if (!value) return value;
@@ -91,6 +96,7 @@ function installQmesMirror(app) {
   // and be proxied from the deployed QMES so localhost:3000 matches QMES exactly.
   // Only attendance.html and attendance-* assets stay local in the preview server.
   console.log('[NAMO TEST] QMES base UI/assets: deployed QMES mirror mode.');
+  console.log('[NAMO TEST] QMES upstream: https://qmes.namochemical.com');
   console.log('[NAMO TEST] attendance UI/assets: local TEST override mode.');
 }
 
