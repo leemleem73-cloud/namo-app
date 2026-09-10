@@ -1,2 +1,0 @@
-NAMO Talk standalone stage-3 feature expansion deploy trigger.
-Includes work channels (all + department), channel unread/read persistence, channel attachments, profile sync, and channel pin support while preserving existing 1:1 data.
