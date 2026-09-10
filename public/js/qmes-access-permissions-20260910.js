@@ -87,7 +87,7 @@
       #qmes-access-modal .qa-title{margin:0;font-size:18px;font-weight:900;color:#203746}.qa-sub{margin-top:4px;color:#5f7180;font-size:12px;font-weight:650}
       #qmes-access-modal .qa-close{margin-left:auto;width:34px;height:34px;border:0;border-radius:7px;background:#edf2f6;color:#40586a;font-size:22px;cursor:pointer}
       #qmes-access-modal .qa-body{overflow:auto;padding:16px 18px}.qa-section{margin-bottom:14px;border:1px solid #dbe4ea;border-radius:9px;overflow:hidden}.qa-section h3{margin:0;padding:10px 12px;background:#f7f9fb;border-bottom:1px solid #e2e8ed;color:#29485f;font-size:13px;font-weight:900}.qa-section-body{padding:12px}.qa-check{display:flex;align-items:center;gap:8px;min-height:32px;color:#304858;font-size:13px;font-weight:700}.qa-check input{width:16px;height:16px}.qa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 12px}.qa-system{padding:10px 12px;border-radius:7px;background:#fff6e8;color:#875a12;font-size:12px;font-weight:750;line-height:1.5}.qa-foot{display:flex;align-items:center;gap:8px;padding:13px 18px;border-top:1px solid #e2e8ed;background:#fff}.qa-foot .spacer{flex:1}.qa-btn{height:36px;padding:0 13px;border-radius:7px;border:1px solid #b9c7d1;background:#fff;color:#344d5e;font-size:12px;font-weight:850;cursor:pointer}.qa-btn.primary{border-color:#0b8fc7;background:#0b8fc7;color:#fff}.qa-btn:disabled{opacity:.5;cursor:not-allowed}
-      .qmes-access-trigger{border:1px solid #8dbbd0!important;background:#f0f9fd!important;color:#12698d!important}
+      .qmes-db-member-row-actions .qmes-access-trigger{display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;border:1px solid #8dbbd0!important;background:#f0f9fd!important;color:#12698d!important}
       @media(max-width:720px){#qmes-access-modal{padding:8px;align-items:flex-start}.qa-grid{grid-template-columns:1fr 1fr}}
       @media(max-width:480px){.qa-grid{grid-template-columns:1fr}}
     `;
@@ -127,19 +127,33 @@
       }catch(error){alert(error.message);save.disabled=false;save.textContent='저장';}
     };
   }
+  window.qmesOpenAccessPermission=openPermission;
 
   function patchMemberRows(){
+    const table=document.querySelector('.qmes-db-member-table');
+    if(table){
+      table.querySelectorAll('thead th').forEach(th=>{if(clean(th.textContent)==='권한')th.textContent='계정등급';});
+    }
     const rows=document.querySelectorAll('.qmes-db-member-table tbody tr');
     rows.forEach(row=>{
       const actions=row.querySelector('.qmes-db-member-row-actions');
-      if(!actions||actions.querySelector('.qmes-access-trigger'))return;
+      if(!actions)return;
       const cells=row.querySelectorAll('td');
       const name=clean(cells[1]?.textContent);if(!name)return;
-      const role=clean(cells[6]?.textContent);
-      if(role==='관리자')return;
-      const btn=document.createElement('button');btn.type='button';btn.className='qmes-db-member-btn qmes-access-trigger';btn.textContent='접근권한 설정';btn.onclick=()=>openPermission({name});
+      const badge=cells[6]?.querySelector('.qmes-db-member-badge');
+      const isAdmin=!!badge?.classList.contains('admin')||/^(관리자|시스템 관리자)$/.test(clean(badge?.textContent||cells[6]?.textContent));
+      if(badge)badge.textContent=isAdmin?'시스템 관리자':'일반 직원';
+      const existing=actions.querySelector('.qmes-access-trigger');
+      if(isAdmin){if(existing)existing.remove();return;}
+      if(existing)return;
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='qmes-db-member-btn qmes-access-trigger';
+      btn.textContent='접근권한 설정';
+      btn.setAttribute('data-qmes-access-name',name);
+      btn.onclick=()=>openPermission({name});
       const reset=Array.from(actions.querySelectorAll('button')).find(b=>clean(b.textContent)==='비밀번호 초기화');
-      if(reset)actions.insertBefore(btn,reset);else actions.appendChild(btn);
+      if(reset)reset.insertAdjacentElement('afterend',btn);else actions.appendChild(btn);
     });
     document.querySelectorAll('.qmes-db-member-grid select').forEach(select=>{
       if(Array.from(select.options||[]).some(o=>o.value==='admin')){
@@ -161,7 +175,6 @@
   }
 
   ensureStyle();guardNavigation();loadMine();isolateWheel();patchMemberRows();
-  const observer=new MutationObserver(()=>{enforceSidebar();patchMemberRows();});
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(()=>{enforceSidebar();patchMemberRows();},1000);
   window.addEventListener('qmes:login',loadMine);window.addEventListener('storage',loadMine);
 })();
