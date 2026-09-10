@@ -33,11 +33,54 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260910-access-permissions1';
+const SHELL_BUILD = '20260910-scroll-fix1';
 const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
+
+const QMES_SCROLL_FIX_STYLE = `<style id="qmes-scroll-fix-20260910">
+html body #root>div>main{height:calc(100vh - 58px)!important;min-height:calc(100vh - 58px)!important;max-height:calc(100vh - 58px)!important;overflow-y:auto!important;overflow-x:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;touch-action:pan-y!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:block!important;width:8px!important;height:8px!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-thumb{background:#aebfcb!important;border-radius:8px!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:#edf2f6!important;}
+</style>`;
+
+const QMES_SCROLL_FIX_SCRIPT = `<script id="qmes-scroll-wheel-fix-20260910">
+(function(){
+  "use strict";
+  function install(){
+    const main=document.querySelector("#root>div>main");
+    const sidebar=document.getElementById("qmes-erp-sidebar");
+    const nav=sidebar&&sidebar.querySelector(".qmes-erp-nav");
+    if(main){
+      main.style.setProperty("overflow-y","auto","important");
+      main.style.setProperty("overflow-x","auto","important");
+      main.style.setProperty("height","calc(100vh - 58px)","important");
+      main.style.setProperty("min-height","calc(100vh - 58px)","important");
+      main.style.setProperty("max-height","calc(100vh - 58px)","important");
+    }
+    if(sidebar&&nav&&sidebar.dataset.qmesWheelFix!=="1"){
+      sidebar.dataset.qmesWheelFix="1";
+      sidebar.addEventListener("wheel",function(event){
+        if(nav.scrollHeight<=nav.clientHeight)return;
+        const before=nav.scrollTop;
+        nav.scrollTop+=event.deltaY;
+        if(nav.scrollTop!==before)event.preventDefault();
+      },{passive:false});
+    }
+    return Boolean(main&&sidebar&&nav);
+  }
+  let attempts=0;
+  if(!install()){
+    const timer=setInterval(function(){
+      attempts+=1;
+      if(install()||attempts>=20)clearInterval(timer);
+    },250);
+  }
+})();
+</script>`;
 
 if (!fs.existsSync(enterpriseDashboard)) {
   console.error('[QMES] Enterprise dashboard module is missing:', enterpriseDashboard);
@@ -55,6 +98,11 @@ try {
     .replace(/admin\/members-bootstrap\.jsx\?v=[^"']+/g, `admin/members-bootstrap.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members\.jsx\?v=[^"']+/g, `admin/members.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`);
+
+  normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
+  normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
+  normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n</head>`);
+  normalized = normalized.replace('</body>', `  ${QMES_SCROLL_FIX_SCRIPT}\n</body>`);
 
   normalized = normalized.replace(/\n\s*<script type="text\/babel" data-presets="react" src="\.\/js\/qmes-members-edit-fix-20260904\.jsx\?v=[^"']+"><\/script>/g, '');
   normalized = normalized.replace(
