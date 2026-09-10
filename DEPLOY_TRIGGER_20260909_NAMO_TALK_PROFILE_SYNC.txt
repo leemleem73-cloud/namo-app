@@ -1,2 +1,0 @@
-NAMO Talk standalone profile sync deployment trigger.
-Adds safe avatar_type/avatar_value columns and authenticated profile list/update APIs for preset NAMO characters or <=1MB image data.
