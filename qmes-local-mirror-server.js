@@ -15,7 +15,8 @@ const TEST_OVERRIDES = new Map([
   ['/js/router.jsx', path.join(PUBLIC, 'js', 'router.jsx')],
   ['/js/qmes-collapsible-side-menu.js', path.join(PUBLIC, 'js', 'qmes-collapsible-side-menu.js')],
   ['/js/qmes-enterprise-header-polish-20260910.js', path.join(PUBLIC, 'js', 'qmes-enterprise-header-polish-20260910.js')],
-  ['/js/qmes-test-ui-recovery-20260910.js', path.join(PUBLIC, 'js', 'qmes-test-ui-recovery-20260910.js')]
+  ['/js/qmes-test-ui-recovery-20260910.js', path.join(PUBLIC, 'js', 'qmes-test-ui-recovery-20260910.js')],
+  ['/js/qmes-test-scroll-admin-fix-20260910.js', path.join(PUBLIC, 'js', 'qmes-test-scroll-admin-fix-20260910.js')]
 ]);
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
@@ -32,11 +33,12 @@ function cleanProductionHtml(html){
   out=out.replace(/\s*<script\b[^>]*src=["'][^"']*namo-emoticons-[^"']*["'][^>]*><\/script>\s*/ig,'\n');
   out=out.replace(/\s*<script\b[^>]*src=["'][^"']*namo-talk[^"']*["'][^>]*><\/script>\s*/ig,'\n');
   out=out.replace(/\s*<script\b[^>]*src=["'][^"']*qmes-user-dropdown-restore-20260812\.js[^"']*["'][^>]*><\/script>\s*/ig,'\n');
-  out=out.replace(/(src=["'][^"']*\/js\/router\.jsx)(?:\?[^"']*)?(["'])/ig,'$1?v=20260910-enterprise-clean6$2');
-  out=out.replace(/(src=["'][^"']*\/js\/qmes-collapsible-side-menu\.js)(?:\?[^"']*)?(["'])/ig,'$1?v=20260910-enterprise-clean6$2');
+  out=out.replace(/(src=["'][^"']*\/js\/router\.jsx)(?:\?[^"']*)?(["'])/ig,'$1?v=20260910-enterprise-clean7$2');
+  out=out.replace(/(src=["'][^"']*\/js\/qmes-collapsible-side-menu\.js)(?:\?[^"']*)?(["'])/ig,'$1?v=20260910-enterprise-clean7$2');
   out=out.replace(/\s*<script\b[^>]*src=["'][^"']*qmes-enterprise-header-polish-20260910\.js[^"']*["'][^>]*><\/script>\s*/ig,'\n');
   out=out.replace(/\s*<script\b[^>]*src=["'][^"']*qmes-test-ui-recovery-20260910\.js[^"']*["'][^>]*><\/script>\s*/ig,'\n');
-  out=out.replace(/<\/body>/i,'  <script src="./js/qmes-enterprise-header-polish-20260910.js?v=20260910-polish2"></script>\n  <script src="./js/qmes-test-ui-recovery-20260910.js?v=20260910-recovery1"></script>\n</body>');
+  out=out.replace(/\s*<script\b[^>]*src=["'][^"']*qmes-test-scroll-admin-fix-20260910\.js[^"']*["'][^>]*><\/script>\s*/ig,'\n');
+  out=out.replace(/<\/body>/i,'  <script src="./js/qmes-enterprise-header-polish-20260910.js?v=20260910-polish3"></script>\n  <script src="./js/qmes-test-ui-recovery-20260910.js?v=20260910-recovery2"></script>\n  <script src="./js/qmes-test-scroll-admin-fix-20260910.js?v=20260910-scroll-admin1"></script>\n</body>');
   return out;
 }
 
@@ -67,11 +69,12 @@ function proxy(req,res){
 }
 
 function localCheck(){
-  let router='';let shell='';let polish='';let recovery='';
+  let router='';let shell='';let polish='';let recovery='';let scrollAdmin='';
   try{router=fs.readFileSync(TEST_OVERRIDES.get('/js/router.jsx'),'utf8');}catch(_){}
   try{shell=fs.readFileSync(TEST_OVERRIDES.get('/js/qmes-collapsible-side-menu.js'),'utf8');}catch(_){}
   try{polish=fs.readFileSync(TEST_OVERRIDES.get('/js/qmes-enterprise-header-polish-20260910.js'),'utf8');}catch(_){}
   try{recovery=fs.readFileSync(TEST_OVERRIDES.get('/js/qmes-test-ui-recovery-20260910.js'),'utf8');}catch(_){}
+  try{scrollAdmin=fs.readFileSync(TEST_OVERRIDES.get('/js/qmes-test-scroll-admin-fix-20260910.js'),'utf8');}catch(_){}
   return {
     routerNamoTalkFound:/NamoTalk|NAMO\s*Talk|namo-talk|qmes_namo_talk/i.test(router),
     shellNamoTalkFound:/NamoTalk|NAMO\s*Talk|qmes-erp-header-talk|namo-talk/i.test(shell),
@@ -80,7 +83,9 @@ function localCheck(){
     qualityUserLabelFound:/임흥배/.test(router)&&/품질부/.test(router)&&/임흥배/.test(shell)&&/품질부/.test(shell),
     headerPolishLoaded:/모바일 전용/.test(polish)&&/qmes-erp-account-menu/.test(polish),
     navigationRecoveryLoaded:/qmes-test-ui-recovery/.test(recovery)&&/routeMap/.test(recovery),
-    directPasswordUiLoaded:/qmes-test-password-modal/.test(recovery)&&/logoutNow/.test(recovery)
+    directPasswordUiLoaded:/qmes-test-password-modal/.test(recovery)&&/logoutNow/.test(recovery),
+    wheelScrollFixLoaded:/document\.addEventListener\('wheel'/.test(scrollAdmin)&&/overflow-y:auto/.test(scrollAdmin),
+    adminEmployeeMenuFixLoaded:/회원등록 현황/.test(scrollAdmin)&&/data-qmes-test-admin-members/.test(scrollAdmin)
   };
 }
 
@@ -95,6 +100,6 @@ const server=http.createServer((req,res)=>{
 
 server.listen(PORT,'127.0.0.1',()=>{
   const check=localCheck();
-  console.log('');console.log('============================================================');console.log(' NAMO QMES TEST');console.log(` http://localhost:${PORT}`);console.log(` branch: ${branchName()||'(unknown)'}`);console.log(' frontend: PRODUCTION RUNTIME mirror');console.log(' TEST overrides: router + enterprise shell + header polish + navigation/account recovery');console.log(` production API reads: proxied to ${UPSTREAM.origin}`);console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);console.log(` NAMO Talk in router: ${check.routerNamoTalkFound?'FOUND - CHECK REQUIRED':'REMOVED'}`);console.log(` NAMO Talk in enterprise shell: ${check.shellNamoTalkFound?'FOUND - CHECK REQUIRED':'REMOVED'}`);console.log(` general alert: ${check.generalAlertFound?'OK':'CHECK REQUIRED'}`);console.log(` account menu: ${check.accountMenuFound?'OK':'CHECK REQUIRED'}`);console.log(` user label: ${check.qualityUserLabelFound?'OK':'CHECK REQUIRED'}`);console.log(` header polish: ${check.headerPolishLoaded?'OK':'CHECK REQUIRED'}`);console.log(` navigation recovery: ${check.navigationRecoveryLoaded?'OK':'CHECK REQUIRED'}`);console.log(` password/logout recovery: ${check.directPasswordUiLoaded?'OK':'CHECK REQUIRED'}`);console.log(` Status: http://localhost:${PORT}/_qmes_test/status`);console.log('============================================================');console.log('');
+  console.log('');console.log('============================================================');console.log(' NAMO QMES TEST');console.log(` http://localhost:${PORT}`);console.log(` branch: ${branchName()||'(unknown)'}`);console.log(' frontend: PRODUCTION RUNTIME mirror');console.log(' TEST overrides: router + enterprise shell + header polish + navigation/account + scroll/admin recovery');console.log(` production API reads: proxied to ${UPSTREAM.origin}`);console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);console.log(` NAMO Talk in router: ${check.routerNamoTalkFound?'FOUND - CHECK REQUIRED':'REMOVED'}`);console.log(` NAMO Talk in enterprise shell: ${check.shellNamoTalkFound?'FOUND - CHECK REQUIRED':'REMOVED'}`);console.log(` general alert: ${check.generalAlertFound?'OK':'CHECK REQUIRED'}`);console.log(` account menu: ${check.accountMenuFound?'OK':'CHECK REQUIRED'}`);console.log(` user label: ${check.qualityUserLabelFound?'OK':'CHECK REQUIRED'}`);console.log(` header polish: ${check.headerPolishLoaded?'OK':'CHECK REQUIRED'}`);console.log(` navigation recovery: ${check.navigationRecoveryLoaded?'OK':'CHECK REQUIRED'}`);console.log(` password/logout recovery: ${check.directPasswordUiLoaded?'OK':'CHECK REQUIRED'}`);console.log(` wheel scroll fix: ${check.wheelScrollFixLoaded?'OK':'CHECK REQUIRED'}`);console.log(` admin employee menu fix: ${check.adminEmployeeMenuFixLoaded?'OK':'CHECK REQUIRED'}`);console.log(` Status: http://localhost:${PORT}/_qmes_test/status`);console.log('============================================================');console.log('');
 });
 server.on('error',error=>{if(error&&error.code==='EADDRINUSE'){console.error(`Port ${PORT} is already in use. Stop the old TEST server first (keyboard Ctrl+C), then retry.`);process.exit(1);}throw error;});
