@@ -1,3 +1,0 @@
-NAMO Talk standalone route-order fix deployment trigger.
-Install standalone GET/POST routes before the legacy QMES app.get('*') SPA catch-all so /users, /messages, /health and attachment GET routes are reachable.
-Commit follows namo-talk-standalone-server.js route-order correction.
