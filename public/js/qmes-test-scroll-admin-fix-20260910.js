@@ -22,6 +22,19 @@
     return user.isAdmin===true || ['admin','administrator','superadmin','관리자'].includes(role) || name==='관리자' || uid==='U-0001';
   }
 
+  function enableAdminFullAccess(){
+    const admin=isAdmin();
+    document.documentElement.toggleAttribute('data-qmes-admin-full-access',admin);
+    if(!admin){
+      window.__QMES_ADMIN_FULL_ACCESS__=false;
+      return;
+    }
+
+    window.__QMES_ADMIN_FULL_ACCESS__=true;
+    try{window.qmesCanAccessCommercialErp=()=>true;}catch(_error){}
+    try{qmesCanAccessCommercialErp=()=>true;}catch(_error){}
+  }
+
   function ensureStyle(){
     if(document.getElementById('qmes-test-scroll-admin-style-20260910')) return;
     const style=document.createElement('style');
@@ -39,13 +52,8 @@
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:block!important;width:7px!important;height:7px!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-thumb{background:rgba(73,111,139,.34)!important;border-radius:999px!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:transparent!important;}
-      html body .qmes-db-member-btn.delete{display:none!important;visibility:hidden!important;pointer-events:none!important;}
     `;
     document.head.appendChild(style);
-  }
-
-  function removeEmployeeDeleteButtons(){
-    document.querySelectorAll('.qmes-db-member-btn.delete').forEach(button=>button.remove());
   }
 
   function dispatchMembers(){
@@ -137,7 +145,7 @@
     if(event.ctrlKey||event.deltaY===0) return;
     const target=event.target instanceof Element?event.target:null;
     if(!target) return;
-    if(target.closest('#qmes-test-password-modal,#qmes-test-alert-panel')) return;
+    if(target.closest('#qmes-test-password-modal,#qmes-test-alert-panel,[role="dialog"]')) return;
 
     const side=target.closest('#qmes-erp-sidebar');
     if(side){
@@ -155,21 +163,51 @@
     }
   }
 
-  window.addEventListener('wheel',forceWheel,{capture:true,passive:false});
+  const adminDirectTabs={
+    '수주 · 납기관리':'erpSales',
+    '구매 · 발주관리':'erpPurchase'
+  };
 
   document.addEventListener('click',event=>{
-    const button=event.target instanceof Element?event.target.closest('[data-qmes-test-admin-members="1"]'):null;
-    if(!button) return;
+    const target=event.target instanceof Element?event.target:null;
+    if(!target) return;
+
+    const membersButton=target.closest('[data-qmes-test-admin-members="1"]');
+    if(membersButton){
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      dispatchMembers();
+      return;
+    }
+
+    if(!isAdmin()) return;
+    const item=target.closest('#qmes-erp-sidebar .qmes-erp-item');
+    if(!item) return;
+    const label=menuLabel(item);
+    const tab=adminDirectTabs[label];
+    if(!tab) return;
+
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    dispatchMembers();
+    enableAdminFullAccess();
+    try{
+      sessionStorage.setItem('qmes_current_tab',tab);
+      sessionStorage.setItem('qmes_erp_active_label',label);
+      sessionStorage.removeItem('qmes_open_menu');
+    }catch(_error){}
+    const detail={tab,openMenu:null,source:'qmes-test-admin-full-access'};
+    window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail}));
+    requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail})));
   },true);
+
+  window.addEventListener('wheel',forceWheel,{capture:true,passive:false});
 
   function sync(){
     ensureStyle();
+    enableAdminFullAccess();
     ensureAdminEmployeeMenu();
-    removeEmployeeDeleteButtons();
   }
 
   sync();
@@ -178,5 +216,5 @@
   window.addEventListener('focus',sync);
   window.addEventListener('resize',sync);
   window.addEventListener('storage',sync);
-  setInterval(sync,700);
+  setInterval(sync,500);
 })();
