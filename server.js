@@ -33,7 +33,8 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260910-native-wheel-scope3';
+const SHELL_BUILD = '20260910-account-stable4';
+const ACCOUNT_ASSET_BUILD = '20260910-account-stable4';
 const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
@@ -185,7 +186,9 @@ try {
     .replace(/member-management-patch\.jsx\?v=[^"']+/g, `member-management-patch.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members-bootstrap\.jsx\?v=[^"']+/g, `admin/members-bootstrap.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members\.jsx\?v=[^"']+/g, `admin/members.jsx?v=${MEMBERS_ASSET_BUILD}`)
-    .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`);
+    .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu.js?v=${SHELL_BUILD}`)
+    .replace(/qmes-enterprise-header-polish-20260910\.js\?v=[^"']+/g, `qmes-enterprise-header-polish-20260910.js?v=${ACCOUNT_ASSET_BUILD}`)
+    .replace(/qmes-ui-recovery-20260910\.js\?v=[^"']+/g, `qmes-ui-recovery-20260910.js?v=${ACCOUNT_ASSET_BUILD}`);
 
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
   normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
@@ -235,7 +238,16 @@ try {
   const newLabel = 'aria-label="모바일 전용" title="모바일 전용">${mobileSvg}<span>모바일 전용</span>';
   const oldHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{const mobileTarget=findTop('현장입력')||findTop('현장 입력');if(mobileTarget){mobileTarget.click();return;}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'fieldInput',openMenu:null}}));});";
   const newHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});";
-  const patched = source.replace(oldLabel, newLabel).replace(oldHandler, newHandler);
+  const oldSetAccountOpen = "const setAccountOpen=open=>{accountWrap.classList.toggle('is-open',Boolean(open));accountButton.setAttribute('aria-expanded',String(Boolean(open)));};";
+  const newSetAccountOpen = "const setAccountOpen=open=>{const visible=Boolean(open);accountWrap.classList.toggle('is-open',visible);accountButton.setAttribute('aria-expanded',String(visible));accountMenu.style.setProperty('display',visible?'block':'none','important');accountMenu.style.setProperty('visibility',visible?'visible':'hidden','important');accountMenu.style.setProperty('opacity',visible?'1':'0','important');accountMenu.style.setProperty('pointer-events',visible?'auto':'none','important');};";
+  const oldAccountEnter = "accountWrap.addEventListener('mouseenter',()=>setAccountOpen(true));";
+  const newAccountEnter = "let qmesAccountCloseTimer=null;const cancelAccountClose=()=>{if(qmesAccountCloseTimer){clearTimeout(qmesAccountCloseTimer);qmesAccountCloseTimer=null;}};const scheduleAccountClose=()=>{cancelAccountClose();qmesAccountCloseTimer=setTimeout(()=>setAccountOpen(false),420);};accountWrap.addEventListener('mouseenter',()=>{cancelAccountClose();setAccountOpen(true);});";
+  const oldAccountLeave = "accountWrap.addEventListener('mouseleave',()=>setAccountOpen(false));";
+  const newAccountLeave = "accountWrap.addEventListener('mouseleave',scheduleAccountClose);accountMenu.addEventListener('mouseenter',()=>{cancelAccountClose();setAccountOpen(true);});accountMenu.addEventListener('mouseleave',scheduleAccountClose);";
+  const oldAccountClick = "accountButton.addEventListener('click',event=>{event.stopPropagation();setAccountOpen(!accountWrap.classList.contains('is-open'));});";
+  const newAccountClick = "accountButton.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();cancelAccountClose();setAccountOpen(!accountWrap.classList.contains('is-open'));});";
+  let patched = source.replace(oldLabel, newLabel).replace(oldHandler, newHandler);
+  patched = patched.replace(oldSetAccountOpen, newSetAccountOpen).replace(oldAccountEnter, newAccountEnter).replace(oldAccountLeave, newAccountLeave).replace(oldAccountClick, newAccountClick);
   if (patched !== source) fs.writeFileSync(publicShellMenu, patched, 'utf8');
 } catch (error) {
   console.warn('[QMES] Sidebar UI normalization skipped:', error.message);
