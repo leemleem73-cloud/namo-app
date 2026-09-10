@@ -12,6 +12,7 @@ require('./attendance-admin-overview-safe.js');
 require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
+require('./access-permissions-safe.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
 const publicRouter = path.resolve(__dirname, 'public', 'js', 'router.jsx');
@@ -32,8 +33,8 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260908-backend-recovery1';
-const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
+const SHELL_BUILD = '20260910-access-permissions1';
+const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
