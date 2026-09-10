@@ -1,4 +1,4 @@
-/* QMES 관리자 모듈: 회원등록 현황 - 상단 수정폼 단일 방식 */
+/* QMES 관리자 모듈: 회원등록 현황 - 관리자 접근권한 관리 */
 function MembersManagementTab() {
   const departments = ["대표", "관리부", "경영지원부", "연구소", "생산부", "영업부", "품질부"];
   const emptyForm = { name: "", email: "", department: departments[0], title: "", phone: "", role: "user", status: "APPROVED" };
@@ -207,6 +207,45 @@ function MembersManagementTab() {
     }
   };
 
+  const changeAdminAccess = async (user, makeAdmin) => {
+    if (user.name === "관리자") {
+      setInfo({ tone: "red", text: "시스템 관리자 계정의 관리자 권한은 해제할 수 없습니다." });
+      return;
+    }
+
+    const actionText = makeAdmin ? "관리자 권한을 부여" : "관리자 권한을 해제";
+    if (!window.confirm(`${user.name}님에게 ${actionText}하시겠습니까?`)) return;
+
+    setSaving(true);
+    try {
+      const body = {
+        name: user.name,
+        email: user.email,
+        department: user.department || "",
+        title: user.title || "",
+        role: makeAdmin ? "admin" : "user",
+        status: user.status || "APPROVED"
+      };
+      await api(`/api/admin/users/${encodeURIComponent(user.id)}`, {
+        method: "PUT",
+        body: JSON.stringify(body)
+      });
+      saveLocalExtra(user.name, { ...body, phone: user.phone || "" });
+      await loadMembers(true);
+      if (editingId === user.id) setForm((prev) => ({ ...prev, role: body.role }));
+      setInfo({
+        tone: "green",
+        text: makeAdmin
+          ? `${user.name}님에게 관리자 접근 권한을 부여했습니다. 해당 사용자는 다시 로그인하면 관리자 메뉴에 접근할 수 있습니다.`
+          : `${user.name}님의 관리자 접근 권한을 해제했습니다. 다음 로그인부터 일반 사용자 권한이 적용됩니다.`
+      });
+    } catch (error) {
+      setInfo({ tone: "red", text: error.message || "관리자 접근 권한 변경에 실패했습니다." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const field = (title, control) => <label className="qmes-db-member-field"><span>{title}</span>{control}</label>;
 
   return (
@@ -227,8 +266,8 @@ function MembersManagementTab() {
         .qmes-db-member-body{padding:16px}.qmes-db-member-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:end}.qmes-db-member-field{display:block;min-width:0}.qmes-db-member-field>span{display:block;margin-bottom:6px;color:#4f6474;font-size:13px;font-weight:850}
         .qmes-db-member-input{width:100%;height:42px;padding:0 11px!important;border:1px solid #b8c7d2!important;border-radius:7px!important;background:#fff!important;color:#243746!important;font-size:14px!important;font-weight:650!important;outline:none!important}.qmes-db-member-input:focus{border-color:#1b8dc5!important;box-shadow:0 0 0 3px rgba(27,141,197,.12)!important}
         .qmes-db-member-actions-top{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.qmes-db-member-btn{height:34px;min-width:48px;padding:0 11px!important;border-radius:6px!important;font-size:12px!important;font-weight:850!important;line-height:1!important;cursor:pointer!important;white-space:nowrap!important;opacity:1!important;visibility:visible!important}.qmes-db-member-btn:disabled{opacity:.55!important;cursor:not-allowed!important}
-        .qmes-db-member-btn.primary{border:1px solid #0b8fc7!important;background:#0b8fc7!important;color:#fff!important}.qmes-db-member-btn.cancel{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.edit{border:1px solid #39a9d8!important;background:#eaf8fd!important;color:#056b96!important}.qmes-db-member-btn.reset{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}
-        .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eaf7fd!important}
+        .qmes-db-member-btn.primary{border:1px solid #0b8fc7!important;background:#0b8fc7!important;color:#fff!important}.qmes-db-member-btn.cancel{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.edit{border:1px solid #39a9d8!important;background:#eaf8fd!important;color:#056b96!important}.qmes-db-member-btn.reset{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.admin-grant{border:1px solid #7b61d1!important;background:#f2efff!important;color:#5d43bb!important}.qmes-db-member-btn.admin-revoke{border:1px solid #d2a14b!important;background:#fff8e8!important;color:#8c651d!important}.qmes-db-member-btn.system-admin{border:1px solid #c8d3da!important;background:#eef3f6!important;color:#657987!important;cursor:default!important}
+        .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1280px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eaf7fd!important}
         .qmes-db-member-uid{color:#1587b7!important;font-size:13px!important;font-weight:850!important}.qmes-db-member-name{color:#1e3443!important;font-weight:850!important}.qmes-db-member-phone{font-variant-numeric:tabular-nums}.qmes-db-member-row-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}.qmes-db-member-badge{display:inline-flex;align-items:center;justify-content:center;min-height:25px;padding:3px 8px;border:1px solid #ccd7de;border-radius:6px;background:#f4f7f9;color:#526575;font-size:12px;font-weight:850}.qmes-db-member-badge.admin{border-color:#c7b8ff;background:#f2efff;color:#6546c7}.qmes-db-member-badge.approved{border-color:#a8d9bf;background:#effaf4;color:#197247}.qmes-db-member-loading{padding:28px;text-align:center;color:#607483;font-weight:700}
         @media(max-width:1100px){.qmes-db-member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.qmes-db-member-grid{grid-template-columns:1fr}}
       `}</style>
@@ -249,14 +288,14 @@ function MembersManagementTab() {
             {field("이메일 (필수)", <input type="email" className="qmes-db-member-input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@company.com" />)}
           </div>
           {editingId && editingOriginalName !== "관리자" && <div className="qmes-db-member-grid" style={{marginTop:12}}>
-            {field("권한", <select className="qmes-db-member-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option value="user">일반</option><option value="admin">관리자</option></select>)}
+            {field("관리자 접근 권한", <select className="qmes-db-member-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option value="user">일반 사용자</option><option value="admin">관리자</option></select>)}
             {field("계정 상태", <select className="qmes-db-member-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}><option value="APPROVED">승인</option><option value="REJECTED">반려</option></select>)}
           </div>}
           <div className="qmes-db-member-actions-top">
             {editingId && <button type="button" className="qmes-db-member-btn cancel" disabled={saving} onClick={clearEdit}>수정 취소</button>}
             <button type="button" className="qmes-db-member-btn primary" disabled={saving} onClick={saveMember}>{saving ? "저장 중..." : editingId ? "수정 저장" : "회원 추가"}</button>
           </div>
-          <p className="qmes-db-member-help">{editingId ? `현재 ${editingOriginalName} 회원을 수정 중입니다.` : "회원정보는 PostgreSQL 사용자 DB에 저장됩니다. 신규 회원 초기 비밀번호는 1234입니다."}</p>
+          <p className="qmes-db-member-help">{editingId ? `현재 ${editingOriginalName} 회원을 수정 중입니다. 관리자 접근 권한도 이 화면에서 변경할 수 있습니다.` : "회원정보는 PostgreSQL 사용자 DB에 저장됩니다. 신규 회원 초기 비밀번호는 1234입니다."}</p>
         </div>
       </section>
 
@@ -272,6 +311,13 @@ function MembersManagementTab() {
               회원정보 수정
             </button>
             <button type="button" className="qmes-db-member-btn reset" disabled={saving} onClick={() => resetPassword(u)}>비밀번호 초기화</button>
+            {u.name === "관리자" ? (
+              <button type="button" className="qmes-db-member-btn system-admin" disabled>시스템 관리자</button>
+            ) : u.role === "admin" ? (
+              <button type="button" className="qmes-db-member-btn admin-revoke" disabled={saving} onClick={() => changeAdminAccess(u, false)}>관리자 권한 해제</button>
+            ) : (
+              <button type="button" className="qmes-db-member-btn admin-grant" disabled={saving} onClick={() => changeAdminAccess(u, true)}>관리자 권한 부여</button>
+            )}
           </div></td>
         </tr>)}</tbody></table></div>}
       </section>
