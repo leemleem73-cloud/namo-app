@@ -3,7 +3,6 @@
 // NAMO Chemical ERP/MES enterprise dashboard server entry - 2026-09-03.
 // Original production server is preserved verbatim in server-legacy-20260903.js.
 const fs = require('fs');
-require('./namo-talk-standalone-server.js');
 const path = require('path');
 
 require('./attendance-core-safe.js');

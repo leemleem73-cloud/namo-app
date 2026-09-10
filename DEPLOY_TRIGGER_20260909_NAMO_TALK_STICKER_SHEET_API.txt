@@ -1,1 +1,0 @@
-Deploy NAMO Talk standalone sticker-sheet API so the desktop client can load the original WEB NAMO emoticon atlas through the central server.

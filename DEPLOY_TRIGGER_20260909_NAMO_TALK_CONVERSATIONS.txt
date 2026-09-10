@@ -1,2 +1,0 @@
-NAMO Talk recent conversations deploy trigger.
-Adds GET /api/namo-talk-standalone/conversations so the standalone client can separate Employees and Conversations while keeping recent conversation lists consistent across PCs.

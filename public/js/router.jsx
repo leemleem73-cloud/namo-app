@@ -89,15 +89,12 @@ function qmesIsCommercialRestrictedTab(tab){return tab==="erpSales"||tab==="erpP
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
     const saved=safeStorageGet("qmes_current_tab","dash");
-    if(saved==="namoTalk")return "dash";
+    if(!TABS.some(item=>item.id===saved))return "dash";
     if(qmesIsCommercialRestrictedTab(saved)&&!qmesCanAccessCommercialErp(user))return "dash";
     return saved;
   });
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
-  const [talkOpen,setTalkOpen]=useState(()=>safeStorageGet("qmes_namo_talk_open","0")==="1");
-  const [talkTargetRoom,setTalkTargetRoom]=useState("");
-  const [namoUnread,setNamoUnread]=useState(()=>{try{return Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0);}catch(error){return 0;}});
   const [profileOpen,setProfileOpen]=useState(false);
   const [passwordOpen,setPasswordOpen]=useState(false);
   const [currentPw,setCurrentPw]=useState("");
@@ -116,12 +113,6 @@ function QMESChemical({user,onLogout}){
     window.addEventListener("qmes:navigate-tab",handleTabNavigation);
     return()=>window.removeEventListener("qmes:navigate-tab",handleTabNavigation);
   },[user]);
-  useEffect(()=>{safeStorageSet("qmes_namo_talk_open",talkOpen?"1":"0");},[talkOpen]);
-  useEffect(()=>{
-    const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
-    window.addEventListener("namo-talk-unread",updateUnread);
-    return()=>window.removeEventListener("namo-talk-unread",updateUnread);
-  },[]);
   useEffect(()=>{if(openMenu)safeStorageSet("qmes_open_menu",openMenu);else safeStorageRemove("qmes_open_menu");},[openMenu]);
   useEffect(()=>{
     const handleFieldShortcut=event=>{
@@ -142,7 +133,6 @@ function QMESChemical({user,onLogout}){
   },[profileOpen,passwordOpen]);
 
   window.__QMES_CURRENT_USER__=user;
-  window.__QMES_CLOSE_NAMO_TALK__=()=>setTalkOpen(false);
   const visibleTabs=TABS.filter(tabItem=>!tabItem.adminOnly||user.role==="admin");
   useEffect(()=>{if(!visibleTabs.some(tabItem=>tabItem.id===tab))setTab("dash");},[tab,visibleTabs.length]);
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
@@ -159,6 +149,7 @@ function QMESChemical({user,onLogout}){
       </div>
     </div>
   );
+  const displayUserName=String(user?.name||"").trim()==="임임흥배"?"임흥배":String(user?.name||"").trim();
   const closeAccountModal=()=>setProfileOpen(false);
   const openPasswordModal=()=>{setProfileOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");setPasswordOpen(true);};
   const closePasswordModal=()=>{setPasswordOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");};
@@ -187,12 +178,8 @@ function QMESChemical({user,onLogout}){
           </button>
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums" style={{color:"#29485f",fontSize:11.5,fontWeight:700}}><span className="w-2 h-2 rounded-full bg-emerald-500"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
-          <button type="button" onClick={()=>{setTalkTargetRoom("");setTalkOpen(true);}} className="relative p-2 rounded" style={{color:"#356f99",background:"#fff",border:"1px solid #bfd0dc"}} aria-label={`NAMO Talk 알림 ${namoUnread}건`}>
-            <Bell size={16}/>{namoUnread>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-white">{namoUnread>99?"99+":namoUnread}</span>}
-          </button>
-          <button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>
           <div className="qmes-header-controls flex items-center gap-2">
-            <button type="button" onClick={()=>setProfileOpen(true)} className="flex items-center gap-2 rounded px-2 py-1" style={{background:"#fff",border:"1px solid #bfd0dc",color:"#29485f"}} aria-label="계정 설정 열기" aria-expanded={profileOpen}><div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{background:"#dfeaf2",color:"#315f7f"}}>{user.name?.[0]||"사"}</div><div className="hidden md:block whitespace-nowrap" style={{fontSize:15,fontWeight:800,lineHeight:1.2,color:"#29485f"}}>{user.name} ({user.dept})</div><span className="hidden md:inline" style={{fontSize:11,color:"#708596"}}>▼</span></button>
+            <button type="button" onClick={()=>setProfileOpen(true)} className="flex items-center gap-2 rounded px-2 py-1" style={{background:"#fff",border:"1px solid #bfd0dc",color:"#29485f"}} aria-label="계정 설정 열기" aria-expanded={profileOpen}><div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{background:"#dfeaf2",color:"#315f7f"}}>{user.name?.[0]||"사"}</div><div className="hidden md:block whitespace-nowrap" style={{fontSize:15,fontWeight:800,lineHeight:1.2,color:"#29485f"}}>{displayUserName} ({user.dept})</div><span className="hidden md:inline" style={{fontSize:11,color:"#708596"}}>▼</span></button>
             <button type="button" onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border">백업</button>
             <button type="button" onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border">복원</button>
             {user.role==="admin"&&<button type="button" onClick={()=>{setTab("members");setOpenMenu(null);}} className="qmes-header-action px-2 py-1 rounded border">회원관리</button>}
@@ -205,9 +192,7 @@ function QMESChemical({user,onLogout}){
           {openMenu&&(()=>{const selected=TOP_MENUS.find(menu=>menu.id===openMenu);const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);if(!items.length)return null;return <div className={`qmes-submenu-row qmes-submenu-${selected.id}`} role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const ItemIcon=item.icon;return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><ItemIcon size={14}/><span>{item.label}</span></button>;})}</div>;})()}
         </div>
       </header>
-      <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>
-      {talkOpen&&<NamoTalkTab initialRoom={talkTargetRoom} onClose={()=>setTalkOpen(false)}/>}      
-      <NamoTalkNotifier talkOpen={talkOpen} onOpenRoom={roomId=>{setTalkTargetRoom(roomId);setTalkOpen(true);}}/>
+      <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>      
 
       {profileOpen&&<div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4" onClick={closeAccountModal} role="dialog" aria-modal="true" aria-label="계정 설정"><div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-6"><h2 className="text-xl font-black text-white">계정 설정</h2><button type="button" onClick={closeAccountModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><button type="button" onClick={openPasswordModal} className="w-full h-12 rounded-xl bg-sky-600 px-4 text-left text-sm font-black text-white hover:bg-sky-500">비밀번호 변경하기</button><button type="button" onClick={handleLogout} className="mt-3 w-full h-12 rounded-xl border border-red-500/50 bg-red-500/10 px-4 text-left text-sm font-black text-red-300 hover:bg-red-500/20">로그아웃</button><button type="button" onClick={closeAccountModal} className="mt-5 w-full h-11 rounded-xl border border-slate-700 text-sm font-bold text-slate-300 hover:bg-slate-800">닫기</button></div></div>}
       {passwordOpen&&<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/70 p-4" onClick={closePasswordModal} role="dialog" aria-modal="true" aria-label="비밀번호 변경"><form onSubmit={changePassword} className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black text-white">비밀번호 변경</h2><button type="button" onClick={closePasswordModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><label className="block text-sm font-bold mb-2">현재 비밀번호</label><input type="password" value={currentPw} onChange={event=>{setCurrentPw(event.target.value);setPasswordError("");}} autoComplete="current-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호</label><input type="password" value={newPw} onChange={event=>{setNewPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호 확인</label><input type="password" value={confirmPw} onChange={event=>{setConfirmPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/>{passwordError&&<div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-400">{passwordError}</div>}<button type="submit" className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black text-white hover:bg-sky-500">변경 저장</button><button type="button" onClick={closePasswordModal} className="mt-3 w-full h-11 rounded-xl border border-slate-700 font-bold text-slate-300 hover:bg-slate-800">취소</button></form></div>}

@@ -1,2 +1,0 @@
-2026-09-09
-Fix root cause: namo-talk-standalone-server.js was required by server.js but its install(app) function was never attached to the production Express app. Auto-install routes before app.listen. Existing DB rows are preserved.
