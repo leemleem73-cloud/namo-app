@@ -27,30 +27,25 @@
     const style=document.createElement('style');
     style.id='qmes-test-scroll-admin-style-20260910';
     style.textContent=`
-      html{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;}
-      html body{height:auto!important;min-height:100vh!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;}
-      html body #root{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;}
-      html body #root>div{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;}
-      html body #root>div>main{height:auto!important;min-height:calc(100vh - 58px)!important;max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important;touch-action:pan-y!important;}
+      html,html body{height:100vh!important;min-height:100vh!important;max-height:100vh!important;overflow:hidden!important;overscroll-behavior:none!important;}
+      html body #root{height:100vh!important;min-height:100vh!important;max-height:100vh!important;overflow:hidden!important;}
+      html body #root>div{height:100vh!important;min-height:100vh!important;max-height:100vh!important;overflow:hidden!important;}
+      html body #root>div>main{height:calc(100vh - 58px)!important;min-height:calc(100vh - 58px)!important;max-height:calc(100vh - 58px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:thin!important;}
+      html body #root>div>main::-webkit-scrollbar{display:block!important;width:9px!important;height:9px!important;}
+      html body #root>div>main::-webkit-scrollbar-thumb{background:rgba(73,111,139,.34)!important;border-radius:999px!important;}
+      html body #root>div>main::-webkit-scrollbar-track{background:transparent!important;}
       html body #qmes-erp-sidebar{overflow:hidden!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;touch-action:pan-y!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:block!important;width:7px!important;height:7px!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-thumb{background:rgba(73,111,139,.34)!important;border-radius:999px!important;}
       html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:transparent!important;}
+      html body .qmes-db-member-btn.delete{display:none!important;visibility:hidden!important;pointer-events:none!important;}
     `;
     document.head.appendChild(style);
   }
 
-  function releaseScrollLock(){
-    ensureStyle();
-    if(document.getElementById('qmes-test-password-modal')) return;
-    document.documentElement.style.setProperty('overflow-y','auto','important');
-    document.documentElement.style.setProperty('overflow-x','hidden','important');
-    document.documentElement.style.setProperty('height','auto','important');
-    document.body.style.setProperty('overflow-y','auto','important');
-    document.body.style.setProperty('overflow-x','hidden','important');
-    document.body.style.setProperty('height','auto','important');
-    document.body.style.setProperty('max-height','none','important');
+  function removeEmployeeDeleteButtons(){
+    document.querySelectorAll('.qmes-db-member-btn.delete').forEach(button=>button.remove());
   }
 
   function dispatchMembers(){
@@ -67,34 +62,40 @@
     setTimeout(fire,250);
   }
 
+  function menuLabel(button){
+    return clean(button?.querySelector?.('.qmes-erp-text')?.textContent||button?.textContent);
+  }
+
   function ensureAdminEmployeeMenu(){
     const side=document.getElementById('qmes-erp-sidebar');
     const nav=side?.querySelector('.qmes-erp-nav');
     if(!nav) return;
 
-    const allItems=Array.from(nav.querySelectorAll('.qmes-erp-item'));
-    const existing=allItems.find(button=>{
-      const label=clean(button.querySelector('.qmes-erp-text')?.textContent||button.textContent);
-      return label==='회원등록 현황'||label==='직원 현황';
-    });
+    const fallback=nav.querySelector('[data-qmes-test-admin-members="1"]');
+    const fallbackHeading=nav.querySelector('[data-qmes-test-admin-section="1"]');
+    const nativeItems=Array.from(nav.querySelectorAll('.qmes-erp-item:not([data-qmes-test-admin-members="1"])'))
+      .filter(button=>['회원등록 현황','직원 현황'].includes(menuLabel(button)));
 
     if(!isAdmin()){
-      nav.querySelector('[data-qmes-test-admin-members="1"]')?.remove();
-      const heading=nav.querySelector('[data-qmes-test-admin-section="1"]');
-      if(heading&&!heading.nextElementSibling?.matches('[data-qmes-test-admin-members="1"]')) heading.remove();
+      fallback?.remove();
+      fallbackHeading?.remove();
       return;
     }
 
-    if(existing){
-      existing.hidden=false;
-      existing.style.removeProperty('display');
-      existing.style.removeProperty('visibility');
-      existing.style.removeProperty('opacity');
-      existing.removeAttribute('aria-hidden');
+    if(nativeItems.length){
+      const keep=nativeItems[0];
+      keep.hidden=false;
+      keep.style.removeProperty('display');
+      keep.style.removeProperty('visibility');
+      keep.style.removeProperty('opacity');
+      keep.removeAttribute('aria-hidden');
+      nativeItems.slice(1).forEach(button=>button.remove());
+      fallback?.remove();
+      fallbackHeading?.remove();
       return;
     }
 
-    let heading=nav.querySelector('[data-qmes-test-admin-section="1"]');
+    let heading=fallbackHeading;
     if(!heading){
       heading=document.createElement('div');
       heading.className='qmes-erp-section';
@@ -103,9 +104,8 @@
       nav.appendChild(heading);
     }
 
-    let button=nav.querySelector('[data-qmes-test-admin-members="1"]');
-    if(!button){
-      button=document.createElement('button');
+    if(!fallback){
+      const button=document.createElement('button');
       button.type='button';
       button.className='qmes-erp-item';
       button.dataset.qmesTestAdminMembers='1';
@@ -115,40 +115,47 @@
     }
   }
 
-  function nearestScrollable(start){
-    let node=start instanceof Element?start:null;
-    while(node&&node!==document.body&&node!==document.documentElement){
-      if(node.matches('#qmes-erp-sidebar .qmes-erp-nav')) return node;
-      const style=getComputedStyle(node);
-      const overflowY=style.overflowY;
-      if((overflowY==='auto'||overflowY==='scroll'||overflowY==='overlay')&&node.scrollHeight>node.clientHeight+1) return node;
-      node=node.parentElement;
-    }
-    const page=document.scrollingElement||document.documentElement;
-    return page.scrollHeight>page.clientHeight+1?page:null;
+  function mainScroller(){
+    return document.querySelector('#root>div>main');
+  }
+
+  function sidebarScroller(){
+    return document.querySelector('#qmes-erp-sidebar .qmes-erp-nav');
   }
 
   function moveScroller(scroller,delta){
     if(!scroller) return false;
-    const before=scroller.scrollTop;
     const max=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
     if(max<=0) return false;
-    scroller.scrollTop=Math.max(0,Math.min(max,before+delta));
+    const before=scroller.scrollTop;
+    const next=Math.max(0,Math.min(max,before+delta));
+    scroller.scrollTop=next;
     return scroller.scrollTop!==before;
   }
 
-  document.addEventListener('wheel',event=>{
+  function forceWheel(event){
     if(event.ctrlKey||event.deltaY===0) return;
     const target=event.target instanceof Element?event.target:null;
     if(!target) return;
-    if(target.closest('input,textarea,select,[contenteditable="true"]')) return;
     if(target.closest('#qmes-test-password-modal,#qmes-test-alert-panel')) return;
-    const scroller=nearestScrollable(target);
-    if(moveScroller(scroller,event.deltaY)){
-      event.preventDefault();
-      event.stopPropagation();
+
+    const side=target.closest('#qmes-erp-sidebar');
+    if(side){
+      if(moveScroller(sidebarScroller(),event.deltaY)){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+      return;
     }
-  },{capture:true,passive:false});
+
+    if(target.closest('#qmes-erp-header')) return;
+    if(moveScroller(mainScroller(),event.deltaY)){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }
+
+  window.addEventListener('wheel',forceWheel,{capture:true,passive:false});
 
   document.addEventListener('click',event=>{
     const button=event.target instanceof Element?event.target.closest('[data-qmes-test-admin-members="1"]'):null;
@@ -160,8 +167,9 @@
   },true);
 
   function sync(){
-    releaseScrollLock();
+    ensureStyle();
     ensureAdminEmployeeMenu();
+    removeEmployeeDeleteButtons();
   }
 
   sync();
