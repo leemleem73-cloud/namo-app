@@ -85,20 +85,31 @@ function qmesCanAccessCommercialErp(user){
   return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);
 }
 function qmesIsCommercialRestrictedTab(tab){return tab==="erpSales"||tab==="erpPurchase";}
+function qmesHeaderUserLabel(user){
+  const rawName=String(user?.name||user?.uid||"사용자").replace(/\s+/g,"").trim();
+  const name=/^임+흥배$/.test(rawName)?"임흥배":rawName;
+  const rawDept=String(user?.department||user?.dept||"").replace(/\s+/g,"").trim();
+  const dept=name==="임흥배"?"품질부":rawDept;
+  return dept?`${name}(${dept})`:name;
+}
+function qmesHeaderGeneralAlerts(){
+  try{
+    if(typeof qmesDashAlerts!=="function")return [];
+    const rows=qmesDashAlerts();
+    return Array.isArray(rows)?rows.slice(0,6):[];
+  }catch(error){return [];}
+}
 
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
     const saved=safeStorageGet("qmes_current_tab","dash");
-    if(saved==="namoTalk")return "dash";
     if(qmesIsCommercialRestrictedTab(saved)&&!qmesCanAccessCommercialErp(user))return "dash";
     return saved;
   });
   const [clock,setClock]=useState(new Date());
   const [openMenu,setOpenMenu]=useState(()=>safeStorageGet("qmes_open_menu",null));
-  const [talkOpen,setTalkOpen]=useState(()=>safeStorageGet("qmes_namo_talk_open","0")==="1");
-  const [talkTargetRoom,setTalkTargetRoom]=useState("");
-  const [namoUnread,setNamoUnread]=useState(()=>{try{return Number(localStorage.getItem("qmes-namo-talk-unread-v1")||0);}catch(error){return 0;}});
-  const [profileOpen,setProfileOpen]=useState(false);
+  const [noticeOpen,setNoticeOpen]=useState(false);
+  const [accountMenuOpen,setAccountMenuOpen]=useState(false);
   const [passwordOpen,setPasswordOpen]=useState(false);
   const [currentPw,setCurrentPw]=useState("");
   const [newPw,setNewPw]=useState("");
@@ -116,12 +127,6 @@ function QMESChemical({user,onLogout}){
     window.addEventListener("qmes:navigate-tab",handleTabNavigation);
     return()=>window.removeEventListener("qmes:navigate-tab",handleTabNavigation);
   },[user]);
-  useEffect(()=>{safeStorageSet("qmes_namo_talk_open",talkOpen?"1":"0");},[talkOpen]);
-  useEffect(()=>{
-    const updateUnread=event=>setNamoUnread(Math.max(0,Number(event.detail?.count||0)));
-    window.addEventListener("namo-talk-unread",updateUnread);
-    return()=>window.removeEventListener("namo-talk-unread",updateUnread);
-  },[]);
   useEffect(()=>{if(openMenu)safeStorageSet("qmes_open_menu",openMenu);else safeStorageRemove("qmes_open_menu");},[openMenu]);
   useEffect(()=>{
     const handleFieldShortcut=event=>{
@@ -137,12 +142,16 @@ function QMESChemical({user,onLogout}){
   },[]);
   useEffect(()=>{const timer=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(timer);},[]);
   useEffect(()=>{
-    const handleKeyDown=event=>{if(event.key!=="Escape")return;if(passwordOpen){setPasswordOpen(false);return;}if(profileOpen)setProfileOpen(false);};
+    const handleKeyDown=event=>{
+      if(event.key!=="Escape")return;
+      if(passwordOpen){setPasswordOpen(false);return;}
+      if(accountMenuOpen){setAccountMenuOpen(false);return;}
+      if(noticeOpen)setNoticeOpen(false);
+    };
     window.addEventListener("keydown",handleKeyDown);return()=>window.removeEventListener("keydown",handleKeyDown);
-  },[profileOpen,passwordOpen]);
+  },[accountMenuOpen,noticeOpen,passwordOpen]);
 
   window.__QMES_CURRENT_USER__=user;
-  window.__QMES_CLOSE_NAMO_TALK__=()=>setTalkOpen(false);
   const visibleTabs=TABS.filter(tabItem=>!tabItem.adminOnly||user.role==="admin");
   useEffect(()=>{if(!visibleTabs.some(tabItem=>tabItem.id===tab))setTab("dash");},[tab,visibleTabs.length]);
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
@@ -150,6 +159,8 @@ function QMESChemical({user,onLogout}){
   const currentTab=TABS.find(tabItem=>tabItem.id===tab)||TABS[0];
   const commercialDenied=qmesIsCommercialRestrictedTab(tab)&&!qmesCanAccessCommercialErp(user);
   const Active=currentTab.comp;
+  const headerUserLabel=qmesHeaderUserLabel(user);
+  const headerAlerts=qmesHeaderGeneralAlerts();
   const PermissionDenied=()=>(
     <div style={{minHeight:420,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{width:"min(560px,100%)",background:"#fff",border:"1px solid #dbe3ec",borderRadius:14,padding:"36px 28px",textAlign:"center",boxShadow:"0 10px 30px rgba(15,23,42,.06)"}}>
@@ -159,10 +170,9 @@ function QMESChemical({user,onLogout}){
       </div>
     </div>
   );
-  const closeAccountModal=()=>setProfileOpen(false);
-  const openPasswordModal=()=>{setProfileOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");setPasswordOpen(true);};
+  const openPasswordModal=()=>{setAccountMenuOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");setPasswordOpen(true);};
   const closePasswordModal=()=>{setPasswordOpen(false);setCurrentPw("");setNewPw("");setConfirmPw("");setPasswordError("");};
-  const handleLogout=()=>{setProfileOpen(false);if(typeof onLogout==="function")onLogout();};
+  const handleLogout=()=>{setAccountMenuOpen(false);if(typeof onLogout==="function")onLogout();};
   const changePassword=async event=>{
     event.preventDefault();
     if(newPw.length<4){setPasswordError("새 비밀번호는 4자 이상 입력하세요.");return;}
@@ -187,12 +197,27 @@ function QMESChemical({user,onLogout}){
           </button>
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums" style={{color:"#29485f",fontSize:11.5,fontWeight:700}}><span className="w-2 h-2 rounded-full bg-emerald-500"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
-          <button type="button" onClick={()=>{setTalkTargetRoom("");setTalkOpen(true);}} className="relative p-2 rounded" style={{color:"#356f99",background:"#fff",border:"1px solid #bfd0dc"}} aria-label={`NAMO Talk 알림 ${namoUnread}건`}>
-            <Bell size={16}/>{namoUnread>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-white">{namoUnread>99?"99+":namoUnread}</span>}
-          </button>
-          <button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>
+          <div className="relative">
+            <button type="button" onClick={()=>{setNoticeOpen(value=>!value);setAccountMenuOpen(false);}} className="relative p-2 rounded" style={{color:"#356f99",background:"#fff",border:"1px solid #bfd0dc"}} aria-label="알림" aria-expanded={noticeOpen}>
+              <Bell size={16}/>{headerAlerts.length>0&&<span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white border-2 border-white">{headerAlerts.length>99?"99+":headerAlerts.length}</span>}
+            </button>
+            {noticeOpen&&<div className="absolute right-0 top-[44px] w-80 rounded-xl border border-slate-200 bg-white p-2 shadow-2xl" style={{zIndex:12000}} role="dialog" aria-label="알림 목록">
+              <div className="px-3 py-2 text-sm font-black text-slate-800 border-b border-slate-100">알림</div>
+              {headerAlerts.length?headerAlerts.map((item,index)=><div key={index} className="mt-1 rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{String(item?.text||item?.message||item?.action||"확인 필요")}</div>):<div className="px-3 py-5 text-center text-xs font-bold text-slate-400">새로운 알림이 없습니다.</div>}
+            </div>}
+          </div>
           <div className="qmes-header-controls flex items-center gap-2">
-            <button type="button" onClick={()=>setProfileOpen(true)} className="flex items-center gap-2 rounded px-2 py-1" style={{background:"#fff",border:"1px solid #bfd0dc",color:"#29485f"}} aria-label="계정 설정 열기" aria-expanded={profileOpen}><div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{background:"#dfeaf2",color:"#315f7f"}}>{user.name?.[0]||"사"}</div><div className="hidden md:block whitespace-nowrap" style={{fontSize:15,fontWeight:800,lineHeight:1.2,color:"#29485f"}}>{user.name} ({user.dept})</div><span className="hidden md:inline" style={{fontSize:11,color:"#708596"}}>▼</span></button>
+            <div className="relative" onMouseEnter={()=>setAccountMenuOpen(true)} onMouseLeave={()=>setAccountMenuOpen(false)}>
+              <button type="button" onClick={()=>{setAccountMenuOpen(value=>!value);setNoticeOpen(false);}} className="namo-enterprise-user-button flex items-center gap-2 rounded px-3 py-1" style={{background:"#fff",border:"1px solid #bfd0dc",color:"#29485f",height:38,minWidth:150}} aria-label="사용자 메뉴" aria-haspopup="menu" aria-expanded={accountMenuOpen}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{background:"#dfeaf2",color:"#315f7f"}}>{headerUserLabel?.[0]||"사"}</div>
+                <div className="hidden md:block whitespace-nowrap namo-enterprise-user-label" style={{fontSize:14,fontWeight:850,lineHeight:1.2,color:"#29485f"}}>{headerUserLabel}</div>
+                <span className="hidden md:inline" style={{fontSize:10,color:"#708596"}}>▼</span>
+              </button>
+              {accountMenuOpen&&<div className="absolute right-0 top-[42px] w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl" style={{zIndex:13000}} role="menu" aria-label="사용자 메뉴">
+                <button type="button" onClick={openPasswordModal} className="w-full h-10 rounded-lg px-3 text-left text-sm font-extrabold text-slate-700 hover:bg-sky-50" role="menuitem">비밀번호 변경</button>
+                <button type="button" onClick={handleLogout} className="w-full h-10 rounded-lg px-3 text-left text-sm font-extrabold text-red-600 hover:bg-red-50" role="menuitem">로그아웃</button>
+              </div>}
+            </div>
             <button type="button" onClick={downloadQmesBackup} className="qmes-header-action px-2 py-1 rounded border">백업</button>
             <button type="button" onClick={restoreQmesBackup} className="qmes-header-action px-2 py-1 rounded border">복원</button>
             {user.role==="admin"&&<button type="button" onClick={()=>{setTab("members");setOpenMenu(null);}} className="qmes-header-action px-2 py-1 rounded border">회원관리</button>}
@@ -206,10 +231,7 @@ function QMESChemical({user,onLogout}){
         </div>
       </header>
       <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>
-      {talkOpen&&<NamoTalkTab initialRoom={talkTargetRoom} onClose={()=>setTalkOpen(false)}/>}      
-      <NamoTalkNotifier talkOpen={talkOpen} onOpenRoom={roomId=>{setTalkTargetRoom(roomId);setTalkOpen(true);}}/>
 
-      {profileOpen&&<div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4" onClick={closeAccountModal} role="dialog" aria-modal="true" aria-label="계정 설정"><div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-6"><h2 className="text-xl font-black text-white">계정 설정</h2><button type="button" onClick={closeAccountModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><button type="button" onClick={openPasswordModal} className="w-full h-12 rounded-xl bg-sky-600 px-4 text-left text-sm font-black text-white hover:bg-sky-500">비밀번호 변경하기</button><button type="button" onClick={handleLogout} className="mt-3 w-full h-12 rounded-xl border border-red-500/50 bg-red-500/10 px-4 text-left text-sm font-black text-red-300 hover:bg-red-500/20">로그아웃</button><button type="button" onClick={closeAccountModal} className="mt-5 w-full h-11 rounded-xl border border-slate-700 text-sm font-bold text-slate-300 hover:bg-slate-800">닫기</button></div></div>}
       {passwordOpen&&<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/70 p-4" onClick={closePasswordModal} role="dialog" aria-modal="true" aria-label="비밀번호 변경"><form onSubmit={changePassword} className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black text-white">비밀번호 변경</h2><button type="button" onClick={closePasswordModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><label className="block text-sm font-bold mb-2">현재 비밀번호</label><input type="password" value={currentPw} onChange={event=>{setCurrentPw(event.target.value);setPasswordError("");}} autoComplete="current-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호</label><input type="password" value={newPw} onChange={event=>{setNewPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호 확인</label><input type="password" value={confirmPw} onChange={event=>{setConfirmPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/>{passwordError&&<div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-400">{passwordError}</div>}<button type="submit" className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black text-white hover:bg-sky-500">변경 저장</button><button type="button" onClick={closePasswordModal} className="mt-3 w-full h-11 rounded-xl border border-slate-700 font-bold text-slate-300 hover:bg-slate-800">취소</button></form></div>}
     </div>
   );
