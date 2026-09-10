@@ -2,6 +2,8 @@
   'use strict';
 
   const STYLE_ID='qmes-enterprise-header-polish-20260910';
+  const MOBILE_URL='/mobile.html?v=20260903-mobile-dedicated1';
+
   const ensureStyle=()=>{
     if(document.getElementById(STYLE_ID))return;
     const style=document.createElement('style');
@@ -208,6 +210,17 @@
     document.head.appendChild(style);
   };
 
+  const bindProductionMobileShortcut=mobile=>{
+    if(!mobile||mobile.dataset.qmesProductionMobileBound==='1')return;
+    mobile.dataset.qmesProductionMobileBound='1';
+    mobile.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      window.location.assign(MOBILE_URL);
+    },true);
+  };
+
   const refineHeader=()=>{
     ensureStyle();
     const header=document.getElementById('qmes-erp-header');
@@ -219,6 +232,7 @@
       if(span)span.textContent='모바일 전용';
       mobile.setAttribute('aria-label','모바일 전용');
       mobile.removeAttribute('title');
+      bindProductionMobileShortcut(mobile);
     }
 
     const notice=header.querySelector('.qmes-visible-notice-button');
