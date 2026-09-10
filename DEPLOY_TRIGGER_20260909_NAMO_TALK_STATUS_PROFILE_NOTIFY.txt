@@ -1,1 +1,0 @@
-Deploy NAMO Talk status-message persistence update for the central standalone API.
