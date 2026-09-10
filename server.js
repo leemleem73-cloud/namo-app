@@ -37,7 +37,7 @@ const SHELL_BUILD = '20260908-backend-recovery1';
 const MEMBERS_ASSET_BUILD = '20260904-member-edit-native2';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
-const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
+const DASHBOARD_ASSET_BUILD = '20260911-test-layout1';
 
 if (!fs.existsSync(enterpriseDashboard)) {
   console.error('[QMES] Enterprise dashboard module is missing:', enterpriseDashboard);
@@ -127,6 +127,25 @@ fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
     patched = patched.replace(
       '.namo-enterprise-dashboard *{box-sizing:border-box}',
       '.namo-enterprise-dashboard *{box-sizing:border-box}.qmes-ref-brand-mark{display:none!important}'
+    );
+
+    // TEST dashboard layout polish - 2026-09-11.
+    // Keep the enterprise dashboard source intact and apply only reversible runtime patches.
+    patched = patched.replace(
+      'ERP → MES 통합 업무 흐름',
+      '통합업무 흐름'
+    );
+    patched = patched.replace(
+      'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}',
+      'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
+    );
+    patched = patched.replace(
+      '.ned-task-panel{min-height:100%}',
+      '.ned-task-panel{min-height:0}.ned-tasks{overflow:auto}'
+    );
+    patched = patched.replace(
+      'return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},',
+      'React.useLayoutEffect(function(){var root=rootRef.current;if(!root)return;var flow=root.querySelector(".ned-left>.ned-panel"),notice=root.querySelector(".ned-task-panel");if(!flow||!notice)return;var sync=function(){if(window.innerWidth<=1200){notice.style.height="";notice.style.maxHeight="";return;}var height=flow.offsetHeight;notice.style.height=height+"px";notice.style.maxHeight=height+"px";};sync();var observer=typeof ResizeObserver==="function"?new ResizeObserver(sync):null;if(observer)observer.observe(flow);window.addEventListener("resize",sync);return function(){if(observer)observer.disconnect();window.removeEventListener("resize",sync);};},[markup]);return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},'
     );
     callback(null, patched);
   };
