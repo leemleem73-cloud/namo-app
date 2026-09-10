@@ -1,9 +1,7 @@
 'use strict';
 
 const dns = require('dns');
-const fs = require('fs');
 const https = require('https');
-const path = require('path');
 const express = require('express');
 
 try {
@@ -15,8 +13,6 @@ try {
   https.globalAgent.options.keepAlive = false;
 } catch (_error) {}
 
-const publicDir = path.join(process.cwd(), 'public');
-const indexFile = path.join(publicDir, 'index.html');
 const productionOrigin = new URL(process.env.NAMO_TEST_UPSTREAM || 'https://namo-app-xcuy.onrender.com');
 
 function rewriteSetCookie(value) {
@@ -63,14 +59,9 @@ function proxyQmesAuth(req, res) {
     delete outHeaders['strict-transport-security'];
     delete outHeaders['access-control-allow-origin'];
 
-    if (outHeaders['set-cookie']) {
-      outHeaders['set-cookie'] = rewriteSetCookie(outHeaders['set-cookie']);
-    }
+    if (outHeaders['set-cookie']) outHeaders['set-cookie'] = rewriteSetCookie(outHeaders['set-cookie']);
     if (outHeaders.location) {
-      outHeaders.location = String(outHeaders.location).replace(
-        productionOrigin.origin,
-        'http://localhost:3000'
-      );
+      outHeaders.location = String(outHeaders.location).replace(productionOrigin.origin, 'http://localhost:3000');
     }
 
     res.writeHead(upstreamRes.statusCode || 502, outHeaders);
@@ -80,50 +71,30 @@ function proxyQmesAuth(req, res) {
   upstreamReq.setTimeout(15000, () => upstreamReq.destroy(new Error('QMES auth timeout')));
   upstreamReq.on('error', (error) => {
     console.error('[NAMO TEST auth proxy]', error.message);
-    if (!res.headersSent) {
-      res.status(502).json({ success: false, message: '현재 QMES 서버에 연결할 수 없습니다.' });
-    } else {
-      res.end();
-    }
+    if (!res.headersSent) res.status(502).json({ success: false, message: '현재 QMES 서버에 연결할 수 없습니다.' });
+    else res.end();
   });
 
   if (body) upstreamReq.end(body);
   else upstreamReq.end();
 }
 
-function installLocalTest(app) {
-  if (app.__namoIndependentTestInstalled) return;
-  app.__namoIndependentTestInstalled = true;
+function installQmesMirror(app) {
+  if (app.__namoQmesMirrorInstalled) return;
+  app.__namoQmesMirrorInstalled = true;
 
-  // QMES 회원 로그인/세션은 운영 QMES와 동일한 인증 API를 사용합니다.
-  // express.json()이 먼저 요청 본문을 읽으므로, 인증 요청은 여기서 JSON 본문을
-  // 다시 만들어 upstream으로 전송해야 로그인 비밀번호가 그대로 전달됩니다.
+  // Login/password/session must behave exactly like the deployed QMES.
   originalUse.call(app, '/api/auth', proxyQmesAuth);
 
-  // TEST branch QMES shell/assets are served locally; business APIs continue
-  // to use the configured QMES upstream through the preview server.
-  const staticHandler = express.static(publicDir, { index: false, fallthrough: true });
-  const localStatic = (req, res, next) => {
-    if (req.method !== 'GET') return next();
-    if (req.path.startsWith('/api/')) return next();
-    if (req.path === '/attendance.html' || req.path === '/attendance') return next();
-
-    if (req.path === '/') {
-      if (!fs.existsSync(indexFile)) return next();
-      res.setHeader('Cache-Control', 'no-store');
-      return res.sendFile(indexFile);
-    }
-
-    return staticHandler(req, res, next);
-  };
-
-  originalUse.call(app, localStatic);
-
-  console.log('[NAMO TEST] local QMES shell enabled.');
-  console.log('[NAMO TEST] authentication: identical QMES member login enabled.');
+  // IMPORTANT: do NOT serve the normal QMES shell or normal QMES assets from
+  // the TEST branch. They must fall through to local-attendance-preview-server.js
+  // and be proxied from the deployed QMES so localhost:3000 matches QMES exactly.
+  // Only attendance.html and attendance-* assets stay local in the preview server.
+  console.log('[NAMO TEST] QMES base UI/assets: deployed QMES mirror mode.');
+  console.log('[NAMO TEST] attendance UI/assets: local TEST override mode.');
 }
 
-// TEST root must be the normal QMES web, not a forced attendance redirect.
+// Prevent the preview server from redirecting localhost root to attendance.
 const originalGet = express.application.get;
 express.application.get = function patchedGet(routePath, ...handlers) {
   if (routePath === '/' && handlers.some((fn) => {
@@ -139,8 +110,8 @@ express.application.get = function patchedGet(routePath, ...handlers) {
 const originalUse = express.application.use;
 express.application.use = function patchedUse(...args) {
   const result = originalUse.apply(this, args);
-  if (!this.__namoIndependentTestInstalled) installLocalTest(this);
+  if (!this.__namoQmesMirrorInstalled) installQmesMirror(this);
   return result;
 };
 
-console.log('[NAMO TEST network] localhost QMES-auth passthrough bootstrap loaded.');
+console.log('[NAMO TEST network] deployed QMES mirror bootstrap loaded.');
