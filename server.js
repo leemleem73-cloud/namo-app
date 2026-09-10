@@ -33,20 +33,20 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260910-scroll-hardfix2';
+const SHELL_BUILD = '20260910-native-wheel-scope3';
 const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
 const MEMBER_LINK_BUILD = '20260904-native2';
 const DASHBOARD_ASSET_BUILD = '20260904-enterprise-only12';
 
 const QMES_SCROLL_FIX_STYLE = `<style id="qmes-scroll-fix-20260910">
-html,body{height:100%!important;min-height:100%!important;}
-html body{overflow:hidden!important;}
-html body #root,html body #root>div{height:100%!important;min-height:0!important;overflow:hidden!important;}
-html body #root>div>main{position:fixed!important;top:58px!important;bottom:0!important;left:236px!important;right:0!important;margin:0!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-y:scroll!important;overflow-x:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;touch-action:pan-y!important;}
-html body.qmes-erp-menu-closed #root>div>main{left:0!important;width:auto!important;}
+html{min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;}
+html body{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;}
+html body #root,html body #root>div{height:auto!important;min-height:100vh!important;overflow:visible!important;}
+html body #root>div>main{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin-left:236px!important;margin-top:58px!important;width:calc(100% - 236px)!important;height:auto!important;min-height:calc(100vh - 58px)!important;max-height:none!important;overflow:visible!important;box-sizing:border-box!important;}
+html body.qmes-erp-menu-closed #root>div>main{margin-left:0!important;width:100%!important;}
 html body #qmes-erp-sidebar{overflow:hidden!important;}
-html body #qmes-erp-sidebar .qmes-erp-nav{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:scroll!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
+html body #qmes-erp-sidebar .qmes-erp-nav{flex:0 0 auto!important;height:calc(100vh - 154px)!important;min-height:0!important;max-height:calc(100vh - 154px)!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{display:block!important;width:8px!important;height:8px!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-thumb{background:#aebfcb!important;border-radius:8px!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:#edf2f6!important;}
@@ -55,8 +55,8 @@ html body #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar-track{background:#e
 const QMES_SCROLL_FIX_SCRIPT = `<script id="qmes-scroll-wheel-fix-20260910">
 (function(){
   "use strict";
-  if(window.__QMES_SCROLL_HARDFIX_20260910__)return;
-  window.__QMES_SCROLL_HARDFIX_20260910__=true;
+  if(window.__QMES_NATIVE_WHEEL_SCOPE3__)return;
+  window.__QMES_NATIVE_WHEEL_SCOPE3__=true;
 
   function deltaPixels(event){
     let delta=Number(event.deltaY)||0;
@@ -65,74 +65,108 @@ const QMES_SCROLL_FIX_SCRIPT = `<script id="qmes-scroll-wheel-fix-20260910">
     return delta;
   }
 
-  function getTargets(){
-    const main=document.querySelector("#root>div>main");
+  function targets(){
     const sidebar=document.getElementById("qmes-erp-sidebar");
     const nav=sidebar&&sidebar.querySelector(".qmes-erp-nav");
-    return {main,sidebar,nav};
+    const main=document.querySelector("#root>div>main");
+    const header=document.getElementById("qmes-erp-header");
+    return {sidebar,nav,main,header};
   }
 
   function enforce(){
-    const {main,nav}=getTargets();
+    const {nav,main}=targets();
+    document.documentElement.style.setProperty("overflow-y","auto","important");
+    document.documentElement.style.setProperty("overflow-x","hidden","important");
+    document.body.style.setProperty("height","auto","important");
+    document.body.style.setProperty("min-height","100%","important");
+    document.body.style.setProperty("overflow-y","auto","important");
+    document.body.style.setProperty("overflow-x","hidden","important");
+    const root=document.getElementById("root");
+    if(root){root.style.setProperty("height","auto","important");root.style.setProperty("min-height","100vh","important");root.style.setProperty("overflow","visible","important");}
+    const shell=root&&root.firstElementChild;
+    if(shell){shell.style.setProperty("height","auto","important");shell.style.setProperty("min-height","100vh","important");shell.style.setProperty("overflow","visible","important");}
     if(main){
-      main.style.setProperty("position","fixed","important");
-      main.style.setProperty("top","58px","important");
-      main.style.setProperty("bottom","0","important");
-      main.style.setProperty("left",document.body.classList.contains("qmes-erp-menu-closed")?"0":"236px","important");
-      main.style.setProperty("right","0","important");
-      main.style.setProperty("margin","0","important");
-      main.style.setProperty("width","auto","important");
+      main.style.setProperty("position","relative","important");
+      main.style.removeProperty("top");main.style.removeProperty("bottom");main.style.removeProperty("left");main.style.removeProperty("right");
+      main.style.setProperty("margin-top","58px","important");
+      main.style.setProperty("margin-left",document.body.classList.contains("qmes-erp-menu-closed")?"0":"236px","important");
+      main.style.setProperty("width",document.body.classList.contains("qmes-erp-menu-closed")?"100%":"calc(100% - 236px)","important");
       main.style.setProperty("height","auto","important");
-      main.style.setProperty("min-height","0","important");
+      main.style.setProperty("min-height","calc(100vh - 58px)","important");
       main.style.setProperty("max-height","none","important");
-      main.style.setProperty("overflow-y","scroll","important");
-      main.style.setProperty("overflow-x","auto","important");
+      main.style.setProperty("overflow","visible","important");
     }
     if(nav){
-      nav.style.setProperty("overflow-y","scroll","important");
-      nav.style.setProperty("overflow-x","hidden","important");
+      nav.style.setProperty("height","calc(100vh - 154px)","important");
+      nav.style.setProperty("max-height","calc(100vh - 154px)","important");
       nav.style.setProperty("min-height","0","important");
+      nav.style.setProperty("overflow-y","auto","important");
+      nav.style.setProperty("overflow-x","hidden","important");
     }
-    document.documentElement.style.setProperty("height","100%","important");
-    document.body.style.setProperty("height","100%","important");
-    document.body.style.setProperty("overflow","hidden","important");
+  }
+
+  function scrollElement(element,delta){
+    if(!element)return false;
+    const max=Math.max(0,element.scrollHeight-element.clientHeight);
+    if(max<=0)return false;
+    const before=element.scrollTop;
+    const next=Math.max(0,Math.min(max,before+delta));
+    if(next===before)return false;
+    element.scrollTop=next;
+    return true;
+  }
+
+  function nearestScrollable(start,boundary,delta){
+    let node=start instanceof Element?start:null;
+    while(node&&node!==boundary&&node!==document.body){
+      const style=getComputedStyle(node);
+      if(/auto|scroll/.test(style.overflowY)&&scrollElement(node,delta))return true;
+      node=node.parentElement;
+    }
+    return false;
   }
 
   window.addEventListener("wheel",function(event){
-    const {main,sidebar,nav}=getTargets();
-    if(!main&&!nav)return;
-    const target=event.target instanceof Node?event.target:null;
-    const scroller=sidebar&&nav&&target&&sidebar.contains(target)?nav:main;
-    if(!scroller)return;
     const delta=deltaPixels(event);
     if(!delta)return;
-    const max=Math.max(0,scroller.scrollHeight-scroller.clientHeight);
-    if(max<=0)return;
-    const before=scroller.scrollTop;
-    const next=Math.max(0,Math.min(max,before+delta));
-    if(next===before)return;
-    event.preventDefault();
-    scroller.scrollTop=next;
+    const {sidebar,nav,main,header}=targets();
+    const target=event.target instanceof Element?event.target:null;
+    if(!target)return;
+
+    if(sidebar&&sidebar.contains(target)){
+      if(scrollElement(nav,delta)){
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      return;
+    }
+
+    if(header&&header.contains(target))return;
+
+    if(main&&(main.contains(target)||target===document.body||target===document.documentElement)){
+      if(nearestScrollable(target,main,delta)){
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      const root=document.scrollingElement||document.documentElement;
+      const max=Math.max(0,root.scrollHeight-root.clientHeight);
+      if(max>0){
+        const before=root.scrollTop;
+        const next=Math.max(0,Math.min(max,before+delta));
+        if(next!==before){
+          root.scrollTop=next;
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }
+    }
   },{capture:true,passive:false});
 
-  document.addEventListener("keydown",function(event){
-    if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;
-    const {main}=getTargets();
-    if(!main)return;
-    let delta=0;
-    if(event.key==="PageDown")delta=main.clientHeight*.9;
-    else if(event.key==="PageUp")delta=-main.clientHeight*.9;
-    else if(event.key==="Home")delta=-main.scrollHeight;
-    else if(event.key==="End")delta=main.scrollHeight;
-    if(!delta)return;
-    event.preventDefault();
-    main.scrollTop=Math.max(0,Math.min(main.scrollHeight-main.clientHeight,main.scrollTop+delta));
-  },true);
-
-  const boot=function(){enforce();setTimeout(enforce,0);setTimeout(enforce,250);setTimeout(enforce,1000);};
+  const boot=function(){enforce();requestAnimationFrame(enforce);setTimeout(enforce,250);setTimeout(enforce,1000);};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
   window.addEventListener("resize",enforce);
-  window.addEventListener("qmes:navigate-tab",function(){requestAnimationFrame(enforce);setTimeout(enforce,100);});
+  window.addEventListener("qmes:navigate-tab",function(){requestAnimationFrame(enforce);setTimeout(enforce,80);});
 })();
 </script>`;
 
