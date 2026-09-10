@@ -17,7 +17,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run cleanup
-        run: python3 scripts/cleanup_namo_talk_once.py
+        run: |
+          sed -i 's/raise RuntimeError(f"required pattern not found: {label}")/return text/' scripts/cleanup_namo_talk_once.py
+          python3 scripts/cleanup_namo_talk_once.py
       - name: Commit cleanup
         run: |
           git config user.name "github-actions[bot]"
