@@ -1,108 +1,17 @@
 /* NAMO QMES TEST dashboard layout patch - 2026-09-11
- * TEST only. Keeps production main untouched.
- * Goal: approved full-screen layout
+ * TEST only. Production main remains untouched.
+ * Approved layout:
  *   KPI row
  *   full-width integrated workflow
- *   bottom 3-column row: purchase | monthly shipping | notices
+ *   purchase | monthly shipping | notices
  */
 (function(){
   'use strict';
-  if(window.__QMES_TEST_APPROVED_DASHBOARD_LAYOUT__) return;
-  window.__QMES_TEST_APPROVED_DASHBOARD_LAYOUT__ = true;
+  if(window.__QMES_TEST_APPROVED_DASHBOARD_LAYOUT_V2__) return;
+  window.__QMES_TEST_APPROVED_DASHBOARD_LAYOUT_V2__ = true;
 
-  var STYLE_ID = 'qmes-test-approved-dashboard-layout-20260911';
   var busy = false;
-
-  function injectStyle(){
-    if(document.getElementById(STYLE_ID)) return;
-    var style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = `
-      .namo-enterprise-dashboard.qmes-test-approved-layout{
-        min-height:calc(100vh - 58px)!important;
-        padding-bottom:18px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-layout{
-        display:block!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-left{
-        display:block!important;
-        width:100%!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-left>.ned-panel{
-        width:100%!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split{
-        display:grid!important;
-        grid-template-columns:minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr)!important;
-        gap:14px!important;
-        margin-top:14px!important;
-        align-items:stretch!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-panel{
-        min-width:0!important;
-        min-height:272px!important;
-        height:272px!important;
-        display:flex!important;
-        flex-direction:column!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-panel>header{
-        flex:0 0 auto!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-panel .ned-table-wrap{
-        flex:1 1 auto!important;
-        overflow:auto!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-panel .ned-chart{
-        flex:1 1 auto!important;
-        height:auto!important;
-        min-height:205px!important;
-        padding:14px 12px 18px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-task-panel{
-        min-height:272px!important;
-        height:272px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-task-panel .ned-tasks{
-        flex:1 1 auto!important;
-        overflow:auto!important;
-        min-height:0!important;
-        padding:10px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-task-panel .ned-task{
-        padding:10px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-right{
-        display:none!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-flow{
-        padding-top:15px!important;
-        padding-bottom:18px!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-bar-col{
-        min-width:0!important;
-      }
-      .namo-enterprise-dashboard.qmes-test-approved-layout .ned-bar-col>b{
-        white-space:nowrap!important;
-      }
-      @media (max-width:1380px){
-        .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split{
-          grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(250px,.78fr)!important;
-        }
-      }
-      @media (max-width:1100px){
-        .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split{
-          grid-template-columns:1fr!important;
-        }
-        .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-panel,
-        .namo-enterprise-dashboard.qmes-test-approved-layout .ned-split>.ned-task-panel{
-          height:auto!important;
-          min-height:250px!important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
+  var queued = false;
 
   function clean(v){ return String(v == null ? '' : v).trim(); }
   function num(v){
@@ -111,7 +20,7 @@
     return m ? Number(m[0]) : 0;
   }
   function dateOnly(v){ return clean(v).slice(0,10); }
-  function monthKey(y,m){ return y + '-' + String(m).padStart(2,'0'); }
+  function setImp(el,key,value){ if(el) el.style.setProperty(key,value,'important'); }
 
   function shippingRows(){
     try{
@@ -139,77 +48,153 @@
     )));
   }
 
-  function buildYearMonths(){
-    var now = new Date();
-    var year = now.getFullYear();
+  function yearMonths(){
+    var year = new Date().getFullYear();
     var months = [];
-    var byKey = {};
-    for(var m=1;m<=12;m+=1){
-      var item = {key:monthKey(year,m),label:m+'월',value:0};
+    var map = {};
+    for(var i=1;i<=12;i+=1){
+      var key = year + '-' + String(i).padStart(2,'0');
+      var item = {key:key,label:i+'월',value:0};
       months.push(item);
-      byKey[item.key] = item;
+      map[key] = item;
     }
     shippingRows().forEach(function(row){
       var key = shippingDate(row).slice(0,7);
-      if(byKey[key]) byKey[key].value += shippingQty(row);
+      if(map[key]) map[key].value += shippingQty(row);
     });
     return months;
   }
 
   function fmtTon(kg){
-    var ton = num(kg) / 1000;
-    return ton.toLocaleString('ko-KR',{maximumFractionDigits:2});
+    return (num(kg)/1000).toLocaleString('ko-KR',{maximumFractionDigits:2});
   }
 
-  function rebuildYearChart(root){
+  function rebuildChart(root){
     var chart = root.querySelector('.ned-chart');
     if(!chart) return;
-    var months = buildYearMonths();
+    var months = yearMonths();
     var max = Math.max.apply(null,[1].concat(months.map(function(x){return x.value;})));
     var signature = months.map(function(x){return x.key+':'+x.value;}).join('|');
     if(chart.dataset.qmesYearSignature === signature && chart.children.length === 12) return;
-
     chart.innerHTML = months.map(function(item){
-      var height = Math.max(3,Math.round(item.value / max * 140));
+      var height = Math.max(3,Math.round(item.value/max*145));
       return '<div class="ned-bar-col"><span>'+fmtTon(item.value)+'</span><div class="ned-bar" style="height:'+height+'px"></div><b>'+item.label+'</b></div>';
     }).join('');
     chart.dataset.qmesYearSignature = signature;
+  }
+
+  function tagPanels(layout){
+    var flow = layout.querySelector('[data-qmes-approved-role="flow"]');
+    var purchase = layout.querySelector('[data-qmes-approved-role="purchase"]');
+    var chart = layout.querySelector('[data-qmes-approved-role="chart"]');
+    var notice = layout.querySelector('[data-qmes-approved-role="notice"]');
+
+    if(flow && purchase && chart && notice) return {flow:flow,purchase:purchase,chart:chart,notice:notice};
+
+    var left = layout.querySelector('.ned-left');
+    var split = left && left.querySelector('.ned-split');
+    var right = layout.querySelector('.ned-right');
+
+    if(!flow && left){
+      var leftPanels = Array.from(left.children).filter(function(el){ return el.classList && el.classList.contains('ned-panel'); });
+      flow = leftPanels[0] || left.querySelector('.ned-panel');
+    }
+    if(split){
+      var bottomPanels = Array.from(split.children).filter(function(el){ return el.classList && el.classList.contains('ned-panel'); });
+      purchase = purchase || bottomPanels[0] || null;
+      chart = chart || bottomPanels[1] || null;
+    }
+    notice = notice || (right && right.querySelector('.ned-task-panel')) || null;
+
+    if(flow) flow.setAttribute('data-qmes-approved-role','flow');
+    if(purchase) purchase.setAttribute('data-qmes-approved-role','purchase');
+    if(chart) chart.setAttribute('data-qmes-approved-role','chart');
+    if(notice) notice.setAttribute('data-qmes-approved-role','notice');
+
+    return {flow:flow,purchase:purchase,chart:chart,notice:notice,left:left,split:split,right:right};
+  }
+
+  function placePanels(root){
+    var layout = root.querySelector('.ned-layout');
+    if(!layout) return false;
+
+    var p = tagPanels(layout);
+    if(!p.flow || !p.purchase || !p.chart || !p.notice) return false;
+
+    [p.flow,p.purchase,p.chart,p.notice].forEach(function(panel){
+      if(panel.parentElement !== layout) layout.appendChild(panel);
+    });
+
+    var oldLeft = layout.querySelector('.ned-left');
+    var oldRight = layout.querySelector('.ned-right');
+    var oldSplit = layout.querySelector('.ned-split');
+    if(oldLeft) setImp(oldLeft,'display','none');
+    if(oldRight) setImp(oldRight,'display','none');
+    if(oldSplit) setImp(oldSplit,'display','none');
+
+    setImp(layout,'display','grid');
+    setImp(layout,'grid-template-columns','minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr)');
+    setImp(layout,'gap','14px');
+    setImp(layout,'align-items','stretch');
+    setImp(layout,'width','100%');
+
+    setImp(p.flow,'grid-column','1 / -1');
+    setImp(p.flow,'grid-row','1');
+    setImp(p.flow,'width','100%');
+    setImp(p.flow,'min-width','0');
+
+    [p.purchase,p.chart,p.notice].forEach(function(panel,index){
+      setImp(panel,'grid-column',String(index+1));
+      setImp(panel,'grid-row','2');
+      setImp(panel,'min-width','0');
+      setImp(panel,'height','278px');
+      setImp(panel,'min-height','278px');
+      setImp(panel,'display','flex');
+      setImp(panel,'flex-direction','column');
+    });
+
+    var tableWrap = p.purchase.querySelector('.ned-table-wrap');
+    if(tableWrap){
+      setImp(tableWrap,'flex','1 1 auto');
+      setImp(tableWrap,'overflow','auto');
+    }
+
+    var noticeTasks = p.notice.querySelector('.ned-tasks');
+    if(noticeTasks){
+      setImp(noticeTasks,'flex','1 1 auto');
+      setImp(noticeTasks,'min-height','0');
+      setImp(noticeTasks,'overflow','auto');
+    }
+
+    var chartEl = p.chart.querySelector('.ned-chart');
+    if(chartEl){
+      setImp(chartEl,'flex','1 1 auto');
+      setImp(chartEl,'height','auto');
+      setImp(chartEl,'min-height','210px');
+      setImp(chartEl,'padding','14px 12px 18px');
+    }
+
+    var flowTitle = p.flow.querySelector('h2');
+    if(flowTitle) flowTitle.textContent = '통합업무 흐름';
+
+    return true;
   }
 
   function apply(){
     if(busy) return;
     busy = true;
     try{
-      injectStyle();
       var root = document.querySelector('.namo-enterprise-dashboard');
       if(!root) return;
-      root.classList.add('qmes-test-approved-layout');
-
-      var headings = root.querySelectorAll('.ned-panel h2');
-      headings.forEach(function(h2){
-        var text = clean(h2.textContent);
-        if(text === 'ERP → MES 통합 업무 흐름' || text === 'ERP·MES 통합 업무 흐름' || text.indexOf('통합 업무 흐름') >= 0){
-          h2.textContent = '통합업무 흐름';
-        }
-      });
-
-      var layout = root.querySelector('.ned-layout');
-      var left = layout && layout.querySelector('.ned-left');
-      var split = left && left.querySelector('.ned-split');
-      var right = layout && layout.querySelector('.ned-right');
-      var notice = right && right.querySelector('.ned-task-panel');
-      if(split && notice && notice.parentElement !== split){
-        split.appendChild(notice);
-      }
-      if(right) right.style.display = 'none';
-
-      rebuildYearChart(root);
+      setImp(root,'min-height','calc(100vh - 58px)');
+      setImp(root,'padding-bottom','18px');
+      placePanels(root);
+      rebuildChart(root);
     } finally {
       busy = false;
     }
   }
 
-  var queued = false;
   function queueApply(){
     if(queued) return;
     queued = true;
@@ -224,11 +209,9 @@
 
   window.addEventListener('load',queueApply);
   window.addEventListener('resize',queueApply);
-  window.addEventListener('qmes:navigate-tab',function(){ setTimeout(queueApply,30); setTimeout(queueApply,250); });
+  window.addEventListener('qmes:navigate-tab',function(){setTimeout(queueApply,20);setTimeout(queueApply,200);});
 
   var observer = new MutationObserver(queueApply);
   observer.observe(document.documentElement,{childList:true,subtree:true});
-  setTimeout(queueApply,300);
-  setTimeout(queueApply,1000);
-  setTimeout(queueApply,2200);
+  setInterval(queueApply,1500);
 })();
