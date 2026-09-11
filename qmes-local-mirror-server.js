@@ -183,6 +183,7 @@ main table tbody tr:hover td,
 .namo-enterprise-dashboard{color:#2f4354 !important;}
 .namo-enterprise-dashboard .ned-breadcrumb{font-size:12px !important;color:#607586 !important;}
 .namo-enterprise-dashboard .ned-page-head h1{font-size:24px !important;color:#244f70 !important;}
+.namo-enterprise-dashboard .ned-head-actions{display:none !important;}
 .namo-enterprise-dashboard .ned-head-actions button,
 .namo-enterprise-dashboard .ned-panel header button{font-size:12px !important;font-weight:850 !important;}
 .namo-enterprise-dashboard .ned-kpis article>span{font-size:13px !important;color:#526b7d !important;}
@@ -269,7 +270,7 @@ function patchedRouter(){
 }
 
 function injectCommonUi(html){
-  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-2">`;
+  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-3">`;
   if(String(html).includes(COMMON_UI_PATH))return html;
   if(/<\/head>/i.test(html))return String(html).replace(/<\/head>/i,tag+'\n</head>');
   return tag+'\n'+String(html);
@@ -311,7 +312,7 @@ function proxy(req,res){
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
   if((req.method==='GET'||req.method==='HEAD') && pathname===COMMON_UI_PATH){
-    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v2'});
+    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v3'});
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
@@ -319,14 +320,14 @@ const server=http.createServer((req,res)=>{
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE DASHBOARD TEXT',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE DASHBOARD TEXT + CLEAN HOME HEADER',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - COMMON UI + READABLE DASHBOARD V2');
+  console.log(' NAMO QMES TEST - CLEAN HOME HEADER V3');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
@@ -334,6 +335,7 @@ server.listen(PORT,HOST,()=>{
   console.log(' router.jsx: administrator access check patched from tracked branch source');
   console.log(' common UI: all list/table headers use the same blue gradient style');
   console.log(' dashboard text: enlarged and contrast strengthened');
+  console.log(' home header: refresh/new purchase actions hidden');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
