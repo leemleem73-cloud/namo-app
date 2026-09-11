@@ -1,7 +1,16 @@
 /* NAMO Chemical QMES approved dashboard layout - 2026-09-11
- * Static CSS only: no polling/DOM observers.
+ * Production UI standard validated on TEST.
  * Desktop: full-width flow, then purchase | monthly shipping | notices.
  */
+:root{
+  --qmes-table-blue-top:#7fb5d8;
+  --qmes-table-blue-bottom:#639fc9;
+  --qmes-table-border:#d7e3ec;
+  --qmes-table-line:#e7eef4;
+  --qmes-table-text:#213547;
+  --qmes-table-hover:#f4f9fd;
+}
+
 .namo-enterprise-dashboard .ned-layout{
   display:grid!important;
   grid-template-columns:minmax(0,1.15fr) minmax(0,1.05fr) minmax(300px,.72fr)!important;
@@ -64,13 +73,168 @@
 .namo-enterprise-dashboard .ned-bar-col{min-width:0!important}
 .namo-enterprise-dashboard .ned-bar-col>b{white-space:nowrap!important}
 
+/* Main dashboard readability */
+.namo-enterprise-dashboard{color:#2f4354!important;}
+.namo-enterprise-dashboard .ned-breadcrumb{font-size:12px!important;color:#607586!important;}
+.namo-enterprise-dashboard .ned-page-head h1{font-size:24px!important;color:#244f70!important;}
+.namo-enterprise-dashboard .ned-head-actions{display:none!important;}
+.namo-enterprise-dashboard .ned-panel header button{font-size:12px!important;font-weight:850!important;}
+.namo-enterprise-dashboard .ned-kpis article>span{font-size:13px!important;color:#526b7d!important;}
+.namo-enterprise-dashboard .ned-kpis strong{font-size:29px!important;color:#22384a!important;}
+.namo-enterprise-dashboard .ned-kpis strong small{font-size:12px!important;color:#526b7d!important;}
+.namo-enterprise-dashboard .ned-kpis p{font-size:11.5px!important;color:#607586!important;min-height:18px!important;}
+.namo-enterprise-dashboard .ned-kpis article>i{font-size:11px!important;}
+.namo-enterprise-dashboard .ned-panel h2{font-size:15px!important;color:#244f70!important;}
+.namo-enterprise-dashboard .ned-panel header p{font-size:11.5px!important;color:#607586!important;}
+.namo-enterprise-dashboard .ned-panel header>span{font-size:11px!important;}
+.namo-enterprise-dashboard .ned-flow-dot{font-size:11px!important;}
+.namo-enterprise-dashboard .ned-flow-step b{font-size:12px!important;color:#30495e!important;}
+.namo-enterprise-dashboard .ned-flow-step small{font-size:10.5px!important;color:#607586!important;}
+.namo-enterprise-dashboard .ned-panel table{font-size:13px!important;}
+.namo-enterprise-dashboard .ned-panel td{color:#334b5e!important;}
+.namo-enterprise-dashboard .ned-status{font-size:10.5px!important;}
+.namo-enterprise-dashboard .ned-bar-col>span{font-size:10px!important;color:#607586!important;}
+.namo-enterprise-dashboard .ned-bar-col>b{font-size:10.5px!important;color:#53697a!important;}
+.namo-enterprise-dashboard .ned-task b{font-size:12px!important;color:#30495e!important;}
+.namo-enterprise-dashboard .ned-task small{font-size:10.5px!important;color:#607586!important;line-height:1.5!important;}
+.namo-enterprise-dashboard .ned-task em{font-size:10.5px!important;}
+.namo-enterprise-dashboard .ned-task-empty,
+.namo-enterprise-dashboard .ned-empty{font-size:11.5px!important;color:#607586!important;}
+
+/* Common QMES list/table visual standard */
+main table,
+#main table,
+#content table,
+.content table,
+.main-content table,
+.page-content table,
+.app-content table,
+.qmes-content table,
+table.qmes-table,
+table.data-table,
+table.list-table,
+table.erp-table,
+table.inventory-table{
+  width:100%!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  background:#fff!important;
+  border:1px solid var(--qmes-table-border)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  box-shadow:0 1px 3px rgba(31,55,76,.05)!important;
+}
+main table thead tr,
+#main table thead tr,
+#content table thead tr,
+.content table thead tr,
+.main-content table thead tr,
+.page-content table thead tr,
+.app-content table thead tr,
+.qmes-content table thead tr,
+table.qmes-table thead tr,
+table.data-table thead tr,
+table.list-table thead tr,
+table.erp-table thead tr,
+table.inventory-table thead tr{
+  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%)!important;
+}
+main table thead th,
+#main table thead th,
+#content table thead th,
+.content table thead th,
+.main-content table thead th,
+.page-content table thead th,
+.app-content table thead th,
+.qmes-content table thead th,
+table.qmes-table thead th,
+table.data-table thead th,
+table.list-table thead th,
+table.erp-table thead th,
+table.inventory-table thead th{
+  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%)!important;
+  color:#fff!important;
+  font-weight:700!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  height:42px!important;
+  padding:10px 12px!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  border-right:1px solid rgba(255,255,255,.36)!important;
+  white-space:nowrap!important;
+}
+main table thead th:first-child,
+#main table thead th:first-child,
+#content table thead th:first-child,
+.content table thead th:first-child,
+.main-content table thead th:first-child,
+.page-content table thead th:first-child,
+.app-content table thead th:first-child,
+.qmes-content table thead th:first-child{border-top-left-radius:9px!important;}
+main table thead th:last-child,
+#main table thead th:last-child,
+#content table thead th:last-child,
+.content table thead th:last-child,
+.main-content table thead th:last-child,
+.page-content table thead th:last-child,
+.app-content table thead th:last-child,
+.qmes-content table thead th:last-child{border-right:0!important;border-top-right-radius:9px!important;}
+main table tbody td,
+#main table tbody td,
+#content table tbody td,
+.content table tbody td,
+.main-content table tbody td,
+.page-content table tbody td,
+.app-content table tbody td,
+.qmes-content table tbody td,
+table.qmes-table tbody td,
+table.data-table tbody td,
+table.list-table tbody td,
+table.erp-table tbody td,
+table.inventory-table tbody td{
+  background:#fff!important;
+  color:var(--qmes-table-text)!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  min-height:44px!important;
+  padding:12px!important;
+  border-top:1px solid var(--qmes-table-line)!important;
+  border-right:1px solid #eef3f7!important;
+}
+main table tbody tr:first-child td,
+#main table tbody tr:first-child td,
+#content table tbody tr:first-child td,
+.content table tbody tr:first-child td,
+.main-content table tbody tr:first-child td,
+.page-content table tbody tr:first-child td,
+.app-content table tbody tr:first-child td,
+.qmes-content table tbody tr:first-child td{border-top:0!important;}
+main table tbody td:last-child,
+#main table tbody td:last-child,
+#content table tbody td:last-child,
+.content table tbody td:last-child,
+.main-content table tbody td:last-child,
+.page-content table tbody td:last-child,
+.app-content table tbody td:last-child,
+.qmes-content table tbody td:last-child{border-right:0!important;}
+main table tbody tr:hover td,
+#main table tbody tr:hover td,
+#content table tbody tr:hover td,
+.content table tbody tr:hover td,
+.main-content table tbody tr:hover td,
+.page-content table tbody tr:hover td,
+.app-content table tbody tr:hover td,
+.qmes-content table tbody tr:hover td{background:var(--qmes-table-hover)!important;}
+.badge,.status,.status-badge,[class*="status-"]{border-radius:999px;}
+
 @media(max-width:1200px){
-  .namo-enterprise-dashboard .ned-layout{
-    grid-template-columns:1fr 1fr!important;
-  }
-  .namo-enterprise-dashboard .ned-layout>.ned-left>.ned-panel{
-    grid-column:1/-1!important;
-  }
+  .namo-enterprise-dashboard .ned-layout{grid-template-columns:1fr 1fr!important;}
+  .namo-enterprise-dashboard .ned-layout>.ned-left>.ned-panel{grid-column:1/-1!important;}
   .namo-enterprise-dashboard .ned-layout>.ned-right>.ned-task-panel{
     grid-column:1/-1!important;
     grid-row:3!important;
@@ -79,9 +243,7 @@
   }
 }
 @media(max-width:760px){
-  .namo-enterprise-dashboard .ned-layout{
-    grid-template-columns:1fr!important;
-  }
+  .namo-enterprise-dashboard .ned-layout{grid-template-columns:1fr!important;}
   .namo-enterprise-dashboard .ned-layout>.ned-left>.ned-panel,
   .namo-enterprise-dashboard .ned-layout>.ned-left>.ned-split>.ned-panel:nth-child(1),
   .namo-enterprise-dashboard .ned-layout>.ned-left>.ned-split>.ned-panel:nth-child(2),
