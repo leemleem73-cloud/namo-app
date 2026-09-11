@@ -23,16 +23,42 @@ function isBlockedWrite(req){const method=String(req.method||'GET').toUpperCase(
 
 function patchedDashboard(){
   let source=fs.readFileSync(ENTERPRISE_DASHBOARD,'utf8');
+
+  // 1) Approved title.
   source=source.replace('ERP → MES 통합 업무 흐름','통합업무 흐름');
+
+  // 2) Monthly shipment chart: current year January through December.
   source=source.replace(
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}',
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
   );
-  source=source.replace('.ned-task-panel{min-height:100%}','.ned-task-panel{min-height:0}.ned-tasks{overflow:auto}');
+
+  // 3) Approved desktop layout:
+  //    full-width workflow on row 1
+  //    purchase | monthly shipment | notices on row 2.
   source=source.replace(
-    'return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},',
-    'React.useLayoutEffect(function(){var root=rootRef.current;if(!root)return;var flow=root.querySelector(".ned-left>.ned-panel"),notice=root.querySelector(".ned-task-panel");if(!flow||!notice)return;var sync=function(){if(window.innerWidth<=1200){notice.style.height="";notice.style.maxHeight="";return;}var height=flow.offsetHeight;notice.style.height=height+"px";notice.style.maxHeight=height+"px";};sync();var observer=typeof ResizeObserver==="function"?new ResizeObserver(sync):null;if(observer)observer.observe(flow);window.addEventListener("resize",sync);return function(){if(observer)observer.disconnect();window.removeEventListener("resize",sync);};},[markup]);return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},'
+    '.ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}',
+    '.ned-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr);gap:14px;align-items:stretch}.ned-left{display:contents}.ned-left>.ned-panel{grid-column:1/-1;min-width:0}.ned-right{display:contents}'
   );
+  source=source.replace(
+    '.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}',
+    '.ned-split{display:contents}'
+  );
+  source=source.replace(
+    '.ned-task-panel{min-height:100%}',
+    '.ned-task-panel{min-height:278px;height:278px;display:flex;flex-direction:column}.ned-tasks{flex:1 1 auto;min-height:0;overflow:auto}'
+  );
+  source=source.replace(
+    '.ned-table-wrap{overflow:auto}',
+    '.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px;padding:14px 12px 18px}'
+  );
+
+  // Keep mobile/tablet responsive; desktop remains the approved three-column row.
+  source=source.replace(
+    '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}',
+    '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr 1fr}.ned-left,.ned-right,.ned-split{display:contents}.ned-left>.ned-panel{grid-column:1/-1}.ned-task-panel{grid-column:1/-1;height:auto;min-height:220px}.ned-split>.ned-panel{height:auto;min-height:240px}}'
+  );
+
   return source;
 }
 
@@ -51,20 +77,20 @@ function proxy(req,res){
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + DASHBOARD TEST PATCH',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - PRODUCTION MIRROR');
+  console.log(' NAMO QMES TEST - APPROVED DASHBOARD LAYOUT');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
-  console.log(' dashboard.jsx: TEST patched enterprise dashboard');
+  console.log(' dashboard.jsx: approved TEST layout patch');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
