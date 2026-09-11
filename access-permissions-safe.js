@@ -67,10 +67,9 @@ function installClient(){
     if(!fs.existsSync(indexFile))return;
     let html=fs.readFileSync(indexFile,'utf8');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-permissions-20260910\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-dashboard-layout-20260911\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace('</body>','  <script src="./js/qmes-dashboard-layout-20260911.js?v=20260911-layout-v1"></script>\n  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
+    html=html.replace('</body>','  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
     fs.writeFileSync(indexFile,html,'utf8');
-    console.log('[QMES access] permission client + dashboard layout installed');
+    console.log('[QMES access] permission client installed');
   }catch(error){console.error('[QMES access] client install failed',error);}
 }
 installClient();
