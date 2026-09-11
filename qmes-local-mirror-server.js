@@ -60,7 +60,7 @@ function patchedDashboard(){
 function patchedRouter(){
   let source=fs.readFileSync(ROUTER,'utf8');
   const original='function qmesCanAccessCommercialErp(user){\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
-  const replacement='function qmesCanAccessCommercialErp(user){\n  if(String(user?.role||"").toLowerCase()==="admin")return true;\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
+  const replacement='function qmesCanAccessCommercialErp(user){\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const role=String(user?.role||"").replace(/\\s+/g,"").trim().toLowerCase();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  if(role==="admin"||name==="관리자")return true;\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
   source=source.replace(original,replacement);
   return source;
 }
@@ -83,9 +83,9 @@ const server=http.createServer((req,res)=>{
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v1'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-name-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT + ADMIN FULL ACCESS',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT + ADMIN ACCESS',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
   return proxy(req,res);
 });
 
@@ -97,7 +97,7 @@ server.listen(PORT,HOST,()=>{
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
   console.log(' dashboard.jsx: approved TEST layout patch');
-  console.log(' router.jsx: administrator bypasses commercial ERP restriction');
+  console.log(' router.jsx: 관리자 account bypasses commercial ERP restriction');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
