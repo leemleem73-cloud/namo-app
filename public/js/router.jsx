@@ -199,3 +199,131 @@ function QMESChemical({user,onLogout}){
     </div>
   );
 }
+
+/* TEST: draggable desktop sidebar width. Keeps the user's width after refresh. */
+(function installQmesSidebarResize(){
+  const STORAGE_KEY='qmes-sidebar-width-v1';
+  const MIN_WIDTH=220;
+  const MAX_WIDTH=420;
+  const DEFAULT_WIDTH=236;
+  let currentWidth=DEFAULT_WIDTH;
+  let attachedSidebar=null;
+  let dragging=false;
+
+  const clamp=value=>Math.max(MIN_WIDTH,Math.min(MAX_WIDTH,Number(value)||DEFAULT_WIDTH));
+  const isDesktop=()=>window.matchMedia('(min-width: 901px)').matches;
+  const storedWidth=()=>{
+    try{return clamp(localStorage.getItem(STORAGE_KEY)||DEFAULT_WIDTH);}catch(_error){return DEFAULT_WIDTH;}
+  };
+  const saveWidth=width=>{try{localStorage.setItem(STORAGE_KEY,String(Math.round(width)));}catch(_error){}};
+
+  function ensureStyle(){
+    if(document.getElementById('qmes-sidebar-resize-style'))return;
+    const style=document.createElement('style');
+    style.id='qmes-sidebar-resize-style';
+    style.textContent=`
+      #qmes-erp-sidebar{min-width:${MIN_WIDTH}px!important;max-width:${MAX_WIDTH}px!important;}
+      #qmes-erp-sidebar .qmes-sidebar-resize-handle{position:absolute!important;top:0!important;right:0!important;bottom:0!important;width:7px!important;z-index:20!important;cursor:col-resize!important;background:transparent!important;touch-action:none!important;user-select:none!important;}
+      #qmes-erp-sidebar .qmes-sidebar-resize-handle:hover,#qmes-erp-sidebar .qmes-sidebar-resize-handle.is-dragging{background:rgba(58,132,184,.18)!important;border-right:2px solid rgba(47,120,183,.70)!important;}
+      body.qmes-sidebar-resizing,body.qmes-sidebar-resizing *{cursor:col-resize!important;user-select:none!important;}
+      @media(max-width:900px){#qmes-erp-sidebar .qmes-sidebar-resize-handle{display:none!important;}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function applyWidth(width){
+    currentWidth=clamp(width);
+    document.documentElement.style.setProperty('--qmes-shell-sidebar-width',currentWidth+'px');
+    const sidebar=document.getElementById('qmes-erp-sidebar');
+    const main=document.querySelector('#root>div>main');
+    const brand=document.querySelector('#qmes-erp-header .qmes-erp-header-brand');
+    if(!isDesktop()){
+      sidebar?.style.removeProperty('width');
+      main?.style.removeProperty('margin-left');
+      main?.style.removeProperty('width');
+      brand?.style.removeProperty('width');
+      brand?.style.removeProperty('flex-basis');
+      return;
+    }
+    const closed=document.body.classList.contains('qmes-erp-menu-closed');
+    sidebar?.style.setProperty('width',currentWidth+'px','important');
+    brand?.style.setProperty('width',currentWidth+'px','important');
+    brand?.style.setProperty('flex-basis',currentWidth+'px','important');
+    if(main){
+      main.style.setProperty('margin-left',closed?'0px':currentWidth+'px','important');
+      main.style.setProperty('width',closed?'100%':'calc(100% - '+currentWidth+'px)','important');
+    }
+  }
+
+  function attach(){
+    ensureStyle();
+    const sidebar=document.getElementById('qmes-erp-sidebar');
+    if(!sidebar){return false;}
+    if(sidebar===attachedSidebar&&sidebar.querySelector('.qmes-sidebar-resize-handle')){
+      applyWidth(currentWidth);
+      return true;
+    }
+    attachedSidebar=sidebar;
+    currentWidth=storedWidth();
+    sidebar.style.setProperty('position','fixed','important');
+    let handle=sidebar.querySelector('.qmes-sidebar-resize-handle');
+    if(!handle){
+      handle=document.createElement('div');
+      handle.className='qmes-sidebar-resize-handle';
+      handle.setAttribute('role','separator');
+      handle.setAttribute('aria-orientation','vertical');
+      handle.setAttribute('aria-label','왼쪽 메뉴 폭 조절');
+      handle.title='드래그하여 메뉴 폭 조절 · 더블클릭 시 기본 폭';
+      sidebar.appendChild(handle);
+    }
+
+    handle.onpointerdown=event=>{
+      if(!isDesktop()||event.button!==0)return;
+      event.preventDefault();
+      dragging=true;
+      handle.classList.add('is-dragging');
+      document.body.classList.add('qmes-sidebar-resizing');
+      try{handle.setPointerCapture(event.pointerId);}catch(_error){}
+    };
+    handle.onpointermove=event=>{
+      if(!dragging||!isDesktop())return;
+      applyWidth(event.clientX);
+    };
+    handle.onpointerup=event=>{
+      if(!dragging)return;
+      dragging=false;
+      handle.classList.remove('is-dragging');
+      document.body.classList.remove('qmes-sidebar-resizing');
+      saveWidth(currentWidth);
+      try{handle.releasePointerCapture(event.pointerId);}catch(_error){}
+    };
+    handle.onpointercancel=()=>{
+      dragging=false;
+      handle.classList.remove('is-dragging');
+      document.body.classList.remove('qmes-sidebar-resizing');
+      saveWidth(currentWidth);
+    };
+    handle.ondblclick=event=>{
+      event.preventDefault();
+      currentWidth=DEFAULT_WIDTH;
+      saveWidth(currentWidth);
+      applyWidth(currentWidth);
+    };
+    applyWidth(currentWidth);
+    return true;
+  }
+
+  const bodyObserver=new MutationObserver(()=>{
+    attach();
+    applyWidth(currentWidth);
+  });
+  const start=()=>{
+    ensureStyle();
+    attach();
+    bodyObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    window.addEventListener('resize',()=>applyWidth(currentWidth));
+    window.addEventListener('focus',attach);
+    setInterval(attach,1000);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
