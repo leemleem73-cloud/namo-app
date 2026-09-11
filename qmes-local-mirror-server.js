@@ -12,6 +12,7 @@ const HOST = String(process.env.HOST || '127.0.0.1');
 const UPSTREAM = new URL(process.env.QMES_UPSTREAM || 'https://qmes.namochemical.com');
 const ALLOW_LIVE_WRITES = String(process.env.NAMO_TEST_ALLOW_LIVE_WRITES || '') === '1';
 const ENTERPRISE_DASHBOARD = path.join(ROOT,'public','js','dashboard-namo-enterprise-20260903.jsx');
+const ROUTER = path.join(ROOT,'public','js','router.jsx');
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
 function pathnameOf(value){try{return decodeURIComponent(new URL(value||'/','http://localhost').pathname);}catch(_){return '/';}}
@@ -24,18 +25,13 @@ function isBlockedWrite(req){const method=String(req.method||'GET').toUpperCase(
 function patchedDashboard(){
   let source=fs.readFileSync(ENTERPRISE_DASHBOARD,'utf8');
 
-  // 1) Approved title.
   source=source.replace('ERP → MES 통합 업무 흐름','통합업무 흐름');
 
-  // 2) Monthly shipment chart: current year January through December.
   source=source.replace(
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}',
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
   );
 
-  // 3) Approved desktop layout:
-  //    full-width workflow on row 1
-  //    purchase | monthly shipment | notices on row 2.
   source=source.replace(
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}',
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr);gap:14px;align-items:stretch}.ned-left{display:contents}.ned-left>.ned-panel{grid-column:1/-1;min-width:0}.ned-right{display:contents}'
@@ -53,12 +49,19 @@ function patchedDashboard(){
     '.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px;padding:14px 12px 18px}'
   );
 
-  // Keep mobile/tablet responsive; desktop remains the approved three-column row.
   source=source.replace(
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}',
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr 1fr}.ned-left,.ned-right,.ned-split{display:contents}.ned-left>.ned-panel{grid-column:1/-1}.ned-task-panel{grid-column:1/-1;height:auto;min-height:220px}.ned-split>.ned-panel{height:auto;min-height:240px}}'
   );
 
+  return source;
+}
+
+function patchedRouter(){
+  let source=fs.readFileSync(ROUTER,'utf8');
+  const original='function qmesCanAccessCommercialErp(user){\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
+  const replacement='function qmesCanAccessCommercialErp(user){\n  if(String(user?.role||"").toLowerCase()==="admin")return true;\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
+  source=source.replace(original,replacement);
   return source;
 }
 
@@ -79,18 +82,22 @@ const server=http.createServer((req,res)=>{
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
+  if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v1'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  }
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT + ADMIN FULL ACCESS',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - APPROVED DASHBOARD LAYOUT');
+  console.log(' NAMO QMES TEST - APPROVED DASHBOARD + ADMIN ACCESS');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
   console.log(' dashboard.jsx: approved TEST layout patch');
+  console.log(' router.jsx: administrator bypasses commercial ERP restriction');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
