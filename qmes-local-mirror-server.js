@@ -178,6 +178,34 @@ main table tbody tr:hover td,
 .badge,.status,.status-badge,[class*="status-"]{
   border-radius:999px;
 }
+
+/* Main dashboard readability: larger type and stronger contrast without changing layout. */
+.namo-enterprise-dashboard{color:#2f4354 !important;}
+.namo-enterprise-dashboard .ned-breadcrumb{font-size:12px !important;color:#607586 !important;}
+.namo-enterprise-dashboard .ned-page-head h1{font-size:24px !important;color:#244f70 !important;}
+.namo-enterprise-dashboard .ned-head-actions button,
+.namo-enterprise-dashboard .ned-panel header button{font-size:12px !important;font-weight:850 !important;}
+.namo-enterprise-dashboard .ned-kpis article>span{font-size:13px !important;color:#526b7d !important;}
+.namo-enterprise-dashboard .ned-kpis strong{font-size:29px !important;color:#22384a !important;}
+.namo-enterprise-dashboard .ned-kpis strong small{font-size:12px !important;color:#526b7d !important;}
+.namo-enterprise-dashboard .ned-kpis p{font-size:11.5px !important;color:#607586 !important;min-height:18px !important;}
+.namo-enterprise-dashboard .ned-kpis article>i{font-size:11px !important;}
+.namo-enterprise-dashboard .ned-panel h2{font-size:15px !important;color:#244f70 !important;}
+.namo-enterprise-dashboard .ned-panel header p{font-size:11.5px !important;color:#607586 !important;}
+.namo-enterprise-dashboard .ned-panel header>span{font-size:11px !important;}
+.namo-enterprise-dashboard .ned-flow-dot{font-size:11px !important;}
+.namo-enterprise-dashboard .ned-flow-step b{font-size:12px !important;color:#30495e !important;}
+.namo-enterprise-dashboard .ned-flow-step small{font-size:10.5px !important;color:#607586 !important;}
+.namo-enterprise-dashboard .ned-panel table{font-size:13px !important;}
+.namo-enterprise-dashboard .ned-panel td{color:#334b5e !important;}
+.namo-enterprise-dashboard .ned-status{font-size:10.5px !important;}
+.namo-enterprise-dashboard .ned-bar-col>span{font-size:10px !important;color:#607586 !important;}
+.namo-enterprise-dashboard .ned-bar-col>b{font-size:10.5px !important;color:#53697a !important;}
+.namo-enterprise-dashboard .ned-task b{font-size:12px !important;color:#30495e !important;}
+.namo-enterprise-dashboard .ned-task small{font-size:10.5px !important;color:#607586 !important;line-height:1.5 !important;}
+.namo-enterprise-dashboard .ned-task em{font-size:10.5px !important;}
+.namo-enterprise-dashboard .ned-task-empty,
+.namo-enterprise-dashboard .ned-empty{font-size:11.5px !important;color:#607586 !important;}
 `;
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
@@ -241,7 +269,7 @@ function patchedRouter(){
 }
 
 function injectCommonUi(html){
-  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-1">`;
+  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-2">`;
   if(String(html).includes(COMMON_UI_PATH))return html;
   if(/<\/head>/i.test(html))return String(html).replace(/<\/head>/i,tag+'\n</head>');
   return tag+'\n'+String(html);
@@ -283,7 +311,7 @@ function proxy(req,res){
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
   if((req.method==='GET'||req.method==='HEAD') && pathname===COMMON_UI_PATH){
-    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v1'});
+    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v2'});
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
@@ -291,20 +319,21 @@ const server=http.createServer((req,res)=>{
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE DASHBOARD TEXT',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - COMMON TABLE UI V1');
+  console.log(' NAMO QMES TEST - COMMON UI + READABLE DASHBOARD V2');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
   console.log(' dashboard.jsx: approved TEST layout patch');
   console.log(' router.jsx: administrator access check patched from tracked branch source');
   console.log(' common UI: all list/table headers use the same blue gradient style');
+  console.log(' dashboard text: enlarged and contrast strengthened');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
