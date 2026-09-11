@@ -25,167 +25,29 @@ const COMMON_UI_CSS = `
   --qmes-table-hover:#f4f9fd;
 }
 
-/* QMES TEST common list/table standard - 2026-09-11 */
-main table,
-#main table,
-#content table,
-.content table,
-.main-content table,
-.page-content table,
-.app-content table,
-.qmes-content table,
-table.qmes-table,
-table.data-table,
-table.list-table,
-table.erp-table,
-table.inventory-table{
-  width:100% !important;
-  border-collapse:separate !important;
-  border-spacing:0 !important;
-  background:#fff !important;
-  border:1px solid var(--qmes-table-border) !important;
-  border-radius:10px !important;
-  overflow:hidden !important;
-  box-shadow:0 1px 3px rgba(31,55,76,.05) !important;
+/* QMES TEST common list/table standard */
+main table,#main table,#content table,.content table,.main-content table,.page-content table,.app-content table,.qmes-content table,table.qmes-table,table.data-table,table.list-table,table.erp-table,table.inventory-table{
+  width:100% !important;border-collapse:separate !important;border-spacing:0 !important;background:#fff !important;border:1px solid var(--qmes-table-border) !important;border-radius:10px !important;overflow:hidden !important;box-shadow:0 1px 3px rgba(31,55,76,.05) !important;
 }
-
-main table thead tr,
-#main table thead tr,
-#content table thead tr,
-.content table thead tr,
-.main-content table thead tr,
-.page-content table thead tr,
-.app-content table thead tr,
-.qmes-content table thead tr,
-table.qmes-table thead tr,
-table.data-table thead tr,
-table.list-table thead tr,
-table.erp-table thead tr,
-table.inventory-table thead tr{
+main table thead tr,#main table thead tr,#content table thead tr,.content table thead tr,.main-content table thead tr,.page-content table thead tr,.app-content table thead tr,.qmes-content table thead tr,table.qmes-table thead tr,table.data-table thead tr,table.list-table thead tr,table.erp-table thead tr,table.inventory-table thead tr{
   background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%) !important;
 }
-
-main table thead th,
-#main table thead th,
-#content table thead th,
-.content table thead th,
-.main-content table thead th,
-.page-content table thead th,
-.app-content table thead th,
-.qmes-content table thead th,
-table.qmes-table thead th,
-table.data-table thead th,
-table.list-table thead th,
-table.erp-table thead th,
-table.inventory-table thead th{
-  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%) !important;
-  color:#fff !important;
-  font-weight:700 !important;
-  font-size:13px !important;
-  line-height:1.25 !important;
-  text-align:center !important;
-  vertical-align:middle !important;
-  height:42px !important;
-  padding:10px 12px !important;
-  border-top:0 !important;
-  border-bottom:0 !important;
-  border-right:1px solid rgba(255,255,255,.36) !important;
-  white-space:nowrap !important;
+main table thead th,#main table thead th,#content table thead th,.content table thead th,.main-content table thead th,.page-content table thead th,.app-content table thead th,.qmes-content table thead th,table.qmes-table thead th,table.data-table thead th,table.list-table thead th,table.erp-table thead th,table.inventory-table thead th{
+  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%) !important;color:#fff !important;font-weight:700 !important;font-size:13px !important;line-height:1.25 !important;text-align:center !important;vertical-align:middle !important;height:42px !important;padding:10px 12px !important;border-top:0 !important;border-bottom:0 !important;border-right:1px solid rgba(255,255,255,.36) !important;white-space:nowrap !important;
 }
-
-main table thead th:first-child,
-#main table thead th:first-child,
-#content table thead th:first-child,
-.content table thead th:first-child,
-.main-content table thead th:first-child,
-.page-content table thead th:first-child,
-.app-content table thead th:first-child,
-.qmes-content table thead th:first-child{
-  border-top-left-radius:9px !important;
+main table tbody td,#main table tbody td,#content table tbody td,.content table tbody td,.main-content table tbody td,.page-content table tbody td,.app-content table tbody td,.qmes-content table tbody td,table.qmes-table tbody td,table.data-table tbody td,table.list-table tbody td,table.erp-table tbody td,table.inventory-table tbody td{
+  background:#fff !important;color:var(--qmes-table-text) !important;font-size:13px !important;line-height:1.35 !important;text-align:center !important;vertical-align:middle !important;min-height:44px !important;padding:12px !important;border-top:1px solid var(--qmes-table-line) !important;border-right:1px solid #eef3f7 !important;
 }
+main table tbody td:last-child,#main table tbody td:last-child,#content table tbody td:last-child,.content table tbody td:last-child,.main-content table tbody td:last-child,.page-content table tbody td:last-child,.app-content table tbody td:last-child,.qmes-content table tbody td:last-child{border-right:0 !important;}
+main table tbody tr:hover td,#main table tbody tr:hover td,#content table tbody tr:hover td,.content table tbody tr:hover td,.main-content table tbody tr:hover td,.page-content table tbody tr:hover td,.app-content table tbody tr:hover td,.qmes-content table tbody tr:hover td{background:var(--qmes-table-hover) !important;}
+.badge,.status,.status-badge,[class*="status-"]{border-radius:999px;}
 
-main table thead th:last-child,
-#main table thead th:last-child,
-#content table thead th:last-child,
-.content table thead th:last-child,
-.main-content table thead th:last-child,
-.page-content table thead th:last-child,
-.app-content table thead th:last-child,
-.qmes-content table thead th:last-child{
-  border-right:0 !important;
-  border-top-right-radius:9px !important;
-}
-
-main table tbody td,
-#main table tbody td,
-#content table tbody td,
-.content table tbody td,
-.main-content table tbody td,
-.page-content table tbody td,
-.app-content table tbody td,
-.qmes-content table tbody td,
-table.qmes-table tbody td,
-table.data-table tbody td,
-table.list-table tbody td,
-table.erp-table tbody td,
-table.inventory-table tbody td{
-  background:#fff !important;
-  color:var(--qmes-table-text) !important;
-  font-size:13px !important;
-  line-height:1.35 !important;
-  text-align:center !important;
-  vertical-align:middle !important;
-  min-height:44px !important;
-  padding:12px 12px !important;
-  border-top:1px solid var(--qmes-table-line) !important;
-  border-right:1px solid #eef3f7 !important;
-}
-
-main table tbody tr:first-child td,
-#main table tbody tr:first-child td,
-#content table tbody tr:first-child td,
-.content table tbody tr:first-child td,
-.main-content table tbody tr:first-child td,
-.page-content table tbody tr:first-child td,
-.app-content table tbody tr:first-child td,
-.qmes-content table tbody tr:first-child td{
-  border-top:0 !important;
-}
-
-main table tbody td:last-child,
-#main table tbody td:last-child,
-#content table tbody td:last-child,
-.content table tbody td:last-child,
-.main-content table tbody td:last-child,
-.page-content table tbody td:last-child,
-.app-content table tbody td:last-child,
-.qmes-content table tbody td:last-child{
-  border-right:0 !important;
-}
-
-main table tbody tr:hover td,
-#main table tbody tr:hover td,
-#content table tbody tr:hover td,
-.content table tbody tr:hover td,
-.main-content table tbody tr:hover td,
-.page-content table tbody tr:hover td,
-.app-content table tbody tr:hover td,
-.qmes-content table tbody tr:hover td{
-  background:var(--qmes-table-hover) !important;
-}
-
-/* Keep semantic status colors intact; only normalize geometry. */
-.badge,.status,.status-badge,[class*="status-"]{
-  border-radius:999px;
-}
-
-/* Main dashboard readability: larger type and stronger contrast without changing layout. */
+/* Main dashboard readability */
 .namo-enterprise-dashboard{color:#2f4354 !important;}
 .namo-enterprise-dashboard .ned-breadcrumb{font-size:12px !important;color:#607586 !important;}
 .namo-enterprise-dashboard .ned-page-head h1{font-size:24px !important;color:#244f70 !important;}
 .namo-enterprise-dashboard .ned-head-actions{display:none !important;}
-.namo-enterprise-dashboard .ned-head-actions button,
-.namo-enterprise-dashboard .ned-panel header button{font-size:12px !important;font-weight:850 !important;}
+.namo-enterprise-dashboard .ned-head-actions button,.namo-enterprise-dashboard .ned-panel header button{font-size:12px !important;font-weight:850 !important;}
 .namo-enterprise-dashboard .ned-kpis article>span{font-size:13px !important;color:#526b7d !important;}
 .namo-enterprise-dashboard .ned-kpis strong{font-size:29px !important;color:#22384a !important;}
 .namo-enterprise-dashboard .ned-kpis strong small{font-size:12px !important;color:#526b7d !important;}
@@ -200,22 +62,18 @@ main table tbody tr:hover td,
 .namo-enterprise-dashboard .ned-panel table{font-size:13px !important;}
 .namo-enterprise-dashboard .ned-panel td{color:#334b5e !important;}
 .namo-enterprise-dashboard .ned-status{font-size:10.5px !important;}
-.namo-enterprise-dashboard .ned-bar-col>span{font-size:10px !important;color:#607586 !important;}
-.namo-enterprise-dashboard .ned-bar-col>b{font-size:10.5px !important;color:#53697a !important;}
 .namo-enterprise-dashboard .ned-task b{font-size:12px !important;color:#30495e !important;}
 .namo-enterprise-dashboard .ned-task small{font-size:10.5px !important;color:#607586 !important;line-height:1.5 !important;}
 .namo-enterprise-dashboard .ned-task em{font-size:10.5px !important;}
-.namo-enterprise-dashboard .ned-task-empty,
-.namo-enterprise-dashboard .ned-empty{font-size:11.5px !important;color:#607586 !important;}
+.namo-enterprise-dashboard .ned-task-empty,.namo-enterprise-dashboard .ned-empty{font-size:11.5px !important;color:#607586 !important;}
 
-/* Monthly shipping trend chart: large kg line, no tooltip and no floating value labels. */
-.namo-enterprise-dashboard .ned-chart{display:block !important;padding:4px 8px 2px !important;min-height:225px !important;overflow:hidden !important;}
-.namo-enterprise-dashboard .ned-shipping-line{display:block;width:100%;height:225px;min-height:225px;overflow:visible;}
-.namo-enterprise-dashboard .ned-shipping-grid{stroke:#dbe6ee;stroke-width:1;}
-.namo-enterprise-dashboard .ned-shipping-area{fill:#6aa8cf;fill-opacity:.14;}
-.namo-enterprise-dashboard .ned-shipping-path{fill:none;stroke:#4b95c5;stroke-width:4;stroke-linejoin:round;stroke-linecap:round;}
-.namo-enterprise-dashboard .ned-shipping-point{fill:#fff;stroke:#4b95c5;stroke-width:3.5;}
-.namo-enterprise-dashboard .ned-shipping-month{fill:#52697b;font-size:11.5px;font-weight:850;}
+/* Monthly shipping: 12-month KG bar chart, sensible scale, no hover tooltip */
+.namo-enterprise-dashboard .ned-chart{height:225px !important;min-height:225px !important;padding:18px 10px 12px !important;display:flex !important;align-items:flex-end !important;gap:5px !important;overflow:hidden !important;}
+.namo-enterprise-dashboard .ned-bar-col{height:188px !important;min-width:0 !important;flex:1 1 0 !important;display:grid !important;grid-template-rows:26px 132px 24px !important;align-items:end !important;justify-items:center !important;gap:3px !important;}
+.namo-enterprise-dashboard .ned-bar-col>span{height:24px !important;display:flex !important;align-items:flex-end !important;justify-content:center !important;font-size:11px !important;font-weight:800 !important;color:#52697b !important;white-space:nowrap !important;}
+.namo-enterprise-dashboard .ned-bar-col>.ned-bar{width:min(28px,72%) !important;min-width:8px !important;align-self:end !important;border-radius:5px 5px 0 0 !important;background:linear-gradient(180deg,#82b9da 0%,#5e9fc9 100%) !important;box-shadow:none !important;}
+.namo-enterprise-dashboard .ned-bar-col>b{height:22px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:10.5px !important;font-weight:850 !important;color:#53697a !important;white-space:nowrap !important;}
+.namo-enterprise-dashboard .ned-bar-col:hover>span,.namo-enterprise-dashboard .ned-bar-col:hover>b{color:#52697b !important;}
 `;
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
@@ -225,21 +83,18 @@ function sendText(req,res,status,type,text,extra={}){const body=Buffer.from(Stri
 function rewriteSetCookie(value){if(!value)return value;const list=Array.isArray(value)?value:[value];return list.map(cookie=>String(cookie).replace(/;\s*Domain=[^;]+/ig,'').replace(/;\s*Secure/ig,'').replace(/SameSite=None/ig,'SameSite=Lax'));}
 function isSafeAuthWrite(req){return String(req.method||'').toUpperCase()==='POST'&&/^\/api\/auth\/(login|logout)\/?(?:\?|$)/.test(req.url||'');}
 function isBlockedWrite(req){const method=String(req.method||'GET').toUpperCase();if(ALLOW_LIVE_WRITES)return false;if(['GET','HEAD','OPTIONS'].includes(method))return false;return !isSafeAuthWrite(req);}
-function trackedText(relPath,fallbackPath){
-  try{return execFileSync('git',['show','HEAD:'+relPath],{cwd:ROOT,encoding:'utf8'});}catch(_error){return fs.readFileSync(fallbackPath,'utf8');}
-}
+function trackedText(relPath,fallbackPath){try{return execFileSync('git',['show','HEAD:'+relPath],{cwd:ROOT,encoding:'utf8'});}catch(_error){return fs.readFileSync(fallbackPath,'utf8');}}
 
 function patchedDashboard(){
   let source=fs.readFileSync(ENTERPRISE_DASHBOARD,'utf8');
 
   source=source.replace('ERP → MES 통합 업무 흐름','통합업무 흐름');
-
   source=source.replace(
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}',
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
   );
 
-  const newBars=`bars=(function(){var width=440,height=220,padX=24,padTop=22,padBottom=38,plotH=height-padTop-padBottom,plotW=width-padX*2,step=data.months.length>1?plotW/(data.months.length-1):0,max=Math.max(1,maxMonthly),points=data.months.map(function(item,index){return {x:padX+step*index,y:padTop+(1-item.value/max)*plotH,value:item.value,label:item.label};}),poly=points.map(function(p){return p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" "),area=padX+","+(height-padBottom)+" "+poly+" "+(width-padX)+","+(height-padBottom),pointHtml=points.map(function(p){return '<circle class="ned-shipping-point" cx="'+p.x+'" cy="'+p.y+'" r="5.5"></circle><text class="ned-shipping-month" x="'+p.x+'" y="'+(height-11)+'" text-anchor="middle">'+esc(p.label)+'</text>';}).join("");return '<svg class="ned-shipping-line" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="월간 출하량 kg 추이"><line class="ned-shipping-grid" x1="'+padX+'" y1="'+padTop+'" x2="'+(width-padX)+'" y2="'+padTop+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(padTop+plotH/2)+'" x2="'+(width-padX)+'" y2="'+(padTop+plotH/2)+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(height-padBottom)+'" x2="'+(width-padX)+'" y2="'+(height-padBottom)+'"></line><polygon class="ned-shipping-area" points="'+area+'"></polygon><polyline class="ned-shipping-path" points="'+poly+'"></polyline>'+pointHtml+'</svg>';})()`;
+  const newBars=`bars=(function(){var peak=Math.max(0,Math.max.apply(null,data.months.map(function(item){return Math.max(0,item.value||0);}))),step=peak<=500?100:peak<=1000?250:peak<=5000?500:1000,scaleMax=Math.max(step,Math.ceil(peak/step)*step);return data.months.map(function(item){var value=Math.max(0,item.value||0),height=value<=0?3:Math.max(8,Math.round(value/scaleMax*118)),label=value>0?fmt(value,value<10?1:0):"";return '<div class="ned-bar-col"><span>'+esc(label)+'</span><div class="ned-bar" style="height:'+height+'px" aria-label="'+esc(item.label+' '+fmt(value,1)+' kg')+'"></div><b>'+esc(item.label)+'</b></div>';}).join("");})()`;
   const barsPattern=/bars=data\.months\.map\(function\(item\)\{[\s\S]*?\}\)\.join\(""\),notices=/;
   if(!barsPattern.test(source))throw new Error('monthly shipping bar chart pattern not found');
   source=source.replace(barsPattern,newBars+',notices=');
@@ -249,24 +104,13 @@ function patchedDashboard(){
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}',
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr);gap:14px;align-items:stretch}.ned-left{display:contents}.ned-left>.ned-panel{grid-column:1/-1;min-width:0}.ned-right{display:contents}'
   );
-  source=source.replace(
-    '.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}',
-    '.ned-split{display:contents}'
-  );
-  source=source.replace(
-    '.ned-task-panel{min-height:100%}',
-    '.ned-task-panel{min-height:278px;height:278px;display:flex;flex-direction:column}.ned-tasks{flex:1 1 auto;min-height:0;overflow:auto}'
-  );
-  source=source.replace(
-    '.ned-table-wrap{overflow:auto}',
-    '.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px;padding:14px 12px 18px}'
-  );
-
+  source=source.replace('.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}','.ned-split{display:contents}');
+  source=source.replace('.ned-task-panel{min-height:100%}','.ned-task-panel{min-height:278px;height:278px;display:flex;flex-direction:column}.ned-tasks{flex:1 1 auto;min-height:0;overflow:auto}');
+  source=source.replace('.ned-table-wrap{overflow:auto}','.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px}');
   source=source.replace(
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}',
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr 1fr}.ned-left,.ned-right,.ned-split{display:contents}.ned-left>.ned-panel{grid-column:1/-1}.ned-task-panel{grid-column:1/-1;height:auto;min-height:220px}.ned-split>.ned-panel{height:auto;min-height:240px}}'
   );
-
   return source;
 }
 
@@ -285,7 +129,7 @@ function patchedRouter(){
 }
 
 function injectCommonUi(html){
-  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-7">`;
+  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-8">`;
   if(String(html).includes(COMMON_UI_PATH))return html;
   if(/<\/head>/i.test(html))return String(html).replace(/<\/head>/i,tag+'\n</head>');
   return tag+'\n'+String(html);
@@ -294,14 +138,13 @@ function injectCommonUi(html){
 function proxy(req,res){
   if(isBlockedWrite(req))return sendText(req,res,409,'application/json; charset=utf-8',JSON.stringify({success:false,code:'QMES_TEST_LIVE_WRITE_BLOCKED',message:'TEST 보호모드입니다. 운영 데이터 변경은 차단되었습니다.'}));
   const headers={...req.headers,host:UPSTREAM.host,origin:UPSTREAM.origin,referer:`${UPSTREAM.origin}${req.url||'/'}`,connection:'close'};
-  delete headers['proxy-connection']; delete headers['accept-encoding'];
+  delete headers['proxy-connection'];delete headers['accept-encoding'];
   const upstreamReq=https.request({protocol:UPSTREAM.protocol,hostname:UPSTREAM.hostname,port:UPSTREAM.port||443,method:req.method,path:req.url,headers,family:4,agent:false},upstreamRes=>{
     const out={...upstreamRes.headers};
     delete out.connection;delete out['transfer-encoding'];delete out['strict-transport-security'];delete out['content-encoding'];
     Object.assign(out,noStore({'x-namo-test-source':'production-mirror'}));
     if(out['set-cookie'])out['set-cookie']=rewriteSetCookie(out['set-cookie']);
     if(out.location)out.location=String(out.location).replace(UPSTREAM.origin,`http://${HOST}:${PORT}`);
-
     const contentType=String(upstreamRes.headers['content-type']||'').toLowerCase();
     if(contentType.includes('text/html')){
       const chunks=[];
@@ -315,7 +158,6 @@ function proxy(req,res){
       });
       return;
     }
-
     res.writeHead(upstreamRes.statusCode||502,out);
     upstreamRes.pipe(res);
   });
@@ -326,30 +168,29 @@ function proxy(req,res){
 
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
-  if((req.method==='GET'||req.method==='HEAD') && pathname===COMMON_UI_PATH){
-    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v7'});
+  if((req.method==='GET'||req.method==='HEAD')&&pathname===COMMON_UI_PATH){
+    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v8'});
   }
-  if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v7-force-line-no-label'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/js/dashboard.jsx'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v8-kg-bars'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/js/router.jsx'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v4'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE TEXT + FORCED LARGE KG LINE CHART + NO LABEL/TOOLTIP',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + 12 MONTH KG BAR CHART + ADMIN ACCESS + COMMON TABLE UI + RESIZABLE SIDEBAR',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - FORCED LARGE KG LINE CHART V7');
+  console.log(' NAMO QMES TEST - 12 MONTH KG BAR CHART V8');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
-  console.log(' screen/assets: mirrored from production QMES');
-  console.log(' dashboard.jsx: forced 12-month kg line chart using robust pattern replacement');
-  console.log(' shipping chart: hover tooltip and floating value labels disabled');
-  console.log(' router.jsx: administrator access check patched from tracked branch source');
-  console.log(' common UI: unified table headers + readable dashboard typography');
+  console.log(' dashboard: 1-12 month KG bars; 230kg is shown as 230, not 0.23');
+  console.log(' chart: sensible rounded scale; no hover tooltip');
+  console.log(' router: admin commercial ERP access bypass retained');
+  console.log(' sidebar: draggable width patch retained from tracked router');
   console.log(' home header: refresh/new purchase actions hidden');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
