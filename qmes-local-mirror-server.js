@@ -13,6 +13,172 @@ const UPSTREAM = new URL(process.env.QMES_UPSTREAM || 'https://qmes.namochemical
 const ALLOW_LIVE_WRITES = String(process.env.NAMO_TEST_ALLOW_LIVE_WRITES || '') === '1';
 const ENTERPRISE_DASHBOARD = path.join(ROOT,'public','js','dashboard-namo-enterprise-20260903.jsx');
 const ROUTER = path.join(ROOT,'public','js','router.jsx');
+const COMMON_UI_PATH = '/qmes-test-common-ui.css';
+
+const COMMON_UI_CSS = `
+:root{
+  --qmes-table-blue-top:#7fb5d8;
+  --qmes-table-blue-bottom:#639fc9;
+  --qmes-table-border:#d7e3ec;
+  --qmes-table-line:#e7eef4;
+  --qmes-table-text:#213547;
+  --qmes-table-hover:#f4f9fd;
+}
+
+/* QMES TEST common list/table standard - 2026-09-11 */
+main table,
+#main table,
+#content table,
+.content table,
+.main-content table,
+.page-content table,
+.app-content table,
+.qmes-content table,
+table.qmes-table,
+table.data-table,
+table.list-table,
+table.erp-table,
+table.inventory-table{
+  width:100% !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+  background:#fff !important;
+  border:1px solid var(--qmes-table-border) !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  box-shadow:0 1px 3px rgba(31,55,76,.05) !important;
+}
+
+main table thead tr,
+#main table thead tr,
+#content table thead tr,
+.content table thead tr,
+.main-content table thead tr,
+.page-content table thead tr,
+.app-content table thead tr,
+.qmes-content table thead tr,
+table.qmes-table thead tr,
+table.data-table thead tr,
+table.list-table thead tr,
+table.erp-table thead tr,
+table.inventory-table thead tr{
+  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%) !important;
+}
+
+main table thead th,
+#main table thead th,
+#content table thead th,
+.content table thead th,
+.main-content table thead th,
+.page-content table thead th,
+.app-content table thead th,
+.qmes-content table thead th,
+table.qmes-table thead th,
+table.data-table thead th,
+table.list-table thead th,
+table.erp-table thead th,
+table.inventory-table thead th{
+  background:linear-gradient(180deg,var(--qmes-table-blue-top) 0%,var(--qmes-table-blue-bottom) 100%) !important;
+  color:#fff !important;
+  font-weight:700 !important;
+  font-size:13px !important;
+  line-height:1.25 !important;
+  text-align:center !important;
+  vertical-align:middle !important;
+  height:42px !important;
+  padding:10px 12px !important;
+  border-top:0 !important;
+  border-bottom:0 !important;
+  border-right:1px solid rgba(255,255,255,.36) !important;
+  white-space:nowrap !important;
+}
+
+main table thead th:first-child,
+#main table thead th:first-child,
+#content table thead th:first-child,
+.content table thead th:first-child,
+.main-content table thead th:first-child,
+.page-content table thead th:first-child,
+.app-content table thead th:first-child,
+.qmes-content table thead th:first-child{
+  border-top-left-radius:9px !important;
+}
+
+main table thead th:last-child,
+#main table thead th:last-child,
+#content table thead th:last-child,
+.content table thead th:last-child,
+.main-content table thead th:last-child,
+.page-content table thead th:last-child,
+.app-content table thead th:last-child,
+.qmes-content table thead th:last-child{
+  border-right:0 !important;
+  border-top-right-radius:9px !important;
+}
+
+main table tbody td,
+#main table tbody td,
+#content table tbody td,
+.content table tbody td,
+.main-content table tbody td,
+.page-content table tbody td,
+.app-content table tbody td,
+.qmes-content table tbody td,
+table.qmes-table tbody td,
+table.data-table tbody td,
+table.list-table tbody td,
+table.erp-table tbody td,
+table.inventory-table tbody td{
+  background:#fff !important;
+  color:var(--qmes-table-text) !important;
+  font-size:13px !important;
+  line-height:1.35 !important;
+  text-align:center !important;
+  vertical-align:middle !important;
+  min-height:44px !important;
+  padding:12px 12px !important;
+  border-top:1px solid var(--qmes-table-line) !important;
+  border-right:1px solid #eef3f7 !important;
+}
+
+main table tbody tr:first-child td,
+#main table tbody tr:first-child td,
+#content table tbody tr:first-child td,
+.content table tbody tr:first-child td,
+.main-content table tbody tr:first-child td,
+.page-content table tbody tr:first-child td,
+.app-content table tbody tr:first-child td,
+.qmes-content table tbody tr:first-child td{
+  border-top:0 !important;
+}
+
+main table tbody td:last-child,
+#main table tbody td:last-child,
+#content table tbody td:last-child,
+.content table tbody td:last-child,
+.main-content table tbody td:last-child,
+.page-content table tbody td:last-child,
+.app-content table tbody td:last-child,
+.qmes-content table tbody td:last-child{
+  border-right:0 !important;
+}
+
+main table tbody tr:hover td,
+#main table tbody tr:hover td,
+#content table tbody tr:hover td,
+.content table tbody tr:hover td,
+.main-content table tbody tr:hover td,
+.page-content table tbody tr:hover td,
+.app-content table tbody tr:hover td,
+.qmes-content table tbody tr:hover td{
+  background:var(--qmes-table-hover) !important;
+}
+
+/* Keep semantic status colors intact; only normalize geometry. */
+.badge,.status,.status-badge,[class*="status-"]{
+  border-radius:999px;
+}
+`;
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
 function pathnameOf(value){try{return decodeURIComponent(new URL(value||'/','http://localhost').pathname);}catch(_){return '/';}}
@@ -74,12 +240,40 @@ function patchedRouter(){
   return source.replace(pattern,replacement);
 }
 
+function injectCommonUi(html){
+  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-1">`;
+  if(String(html).includes(COMMON_UI_PATH))return html;
+  if(/<\/head>/i.test(html))return String(html).replace(/<\/head>/i,tag+'\n</head>');
+  return tag+'\n'+String(html);
+}
+
 function proxy(req,res){
   if(isBlockedWrite(req))return sendText(req,res,409,'application/json; charset=utf-8',JSON.stringify({success:false,code:'QMES_TEST_LIVE_WRITE_BLOCKED',message:'TEST 보호모드입니다. 운영 데이터 변경은 차단되었습니다.'}));
   const headers={...req.headers,host:UPSTREAM.host,origin:UPSTREAM.origin,referer:`${UPSTREAM.origin}${req.url||'/'}`,connection:'close'};
   delete headers['proxy-connection']; delete headers['accept-encoding'];
   const upstreamReq=https.request({protocol:UPSTREAM.protocol,hostname:UPSTREAM.hostname,port:UPSTREAM.port||443,method:req.method,path:req.url,headers,family:4,agent:false},upstreamRes=>{
-    const out={...upstreamRes.headers};delete out.connection;delete out['transfer-encoding'];delete out['strict-transport-security'];delete out['content-encoding'];Object.assign(out,noStore({'x-namo-test-source':'production-mirror'}));if(out['set-cookie'])out['set-cookie']=rewriteSetCookie(out['set-cookie']);if(out.location)out.location=String(out.location).replace(UPSTREAM.origin,`http://${HOST}:${PORT}`);res.writeHead(upstreamRes.statusCode||502,out);upstreamRes.pipe(res);
+    const out={...upstreamRes.headers};
+    delete out.connection;delete out['transfer-encoding'];delete out['strict-transport-security'];delete out['content-encoding'];
+    Object.assign(out,noStore({'x-namo-test-source':'production-mirror'}));
+    if(out['set-cookie'])out['set-cookie']=rewriteSetCookie(out['set-cookie']);
+    if(out.location)out.location=String(out.location).replace(UPSTREAM.origin,`http://${HOST}:${PORT}`);
+
+    const contentType=String(upstreamRes.headers['content-type']||'').toLowerCase();
+    if(contentType.includes('text/html')){
+      const chunks=[];
+      upstreamRes.on('data',chunk=>chunks.push(chunk));
+      upstreamRes.on('end',()=>{
+        const body=Buffer.from(injectCommonUi(Buffer.concat(chunks).toString('utf8')),'utf8');
+        out['content-length']=body.length;
+        res.writeHead(upstreamRes.statusCode||200,out);
+        if(req.method==='HEAD')return res.end();
+        res.end(body);
+      });
+      return;
+    }
+
+    res.writeHead(upstreamRes.statusCode||502,out);
+    upstreamRes.pipe(res);
   });
   upstreamReq.setTimeout(20000,()=>upstreamReq.destroy(new Error('QMES upstream timeout')));
   upstreamReq.on('error',error=>{if(!res.headersSent)sendText(req,res,502,'application/json; charset=utf-8',JSON.stringify({success:false,message:error.message}));else res.end();});
@@ -88,25 +282,29 @@ function proxy(req,res){
 
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
+  if((req.method==='GET'||req.method==='HEAD') && pathname===COMMON_UI_PATH){
+    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v1'});
+  }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT + ADMIN ACCESS V3',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - APPROVED DASHBOARD + ADMIN ACCESS V3');
+  console.log(' NAMO QMES TEST - COMMON TABLE UI V1');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
   console.log(' dashboard.jsx: approved TEST layout patch');
   console.log(' router.jsx: administrator access check patched from tracked branch source');
+  console.log(' common UI: all list/table headers use the same blue gradient style');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
