@@ -208,14 +208,13 @@ main table tbody tr:hover td,
 .namo-enterprise-dashboard .ned-task-empty,
 .namo-enterprise-dashboard .ned-empty{font-size:11.5px !important;color:#607586 !important;}
 
-/* Monthly shipping trend chart: enlarged kg line + soft area. */
+/* Monthly shipping trend chart: large kg line, no tooltip and no floating value labels. */
 .namo-enterprise-dashboard .ned-chart{display:block !important;padding:4px 8px 2px !important;min-height:225px !important;overflow:hidden !important;}
 .namo-enterprise-dashboard .ned-shipping-line{display:block;width:100%;height:225px;min-height:225px;overflow:visible;}
 .namo-enterprise-dashboard .ned-shipping-grid{stroke:#dbe6ee;stroke-width:1;}
 .namo-enterprise-dashboard .ned-shipping-area{fill:#6aa8cf;fill-opacity:.14;}
 .namo-enterprise-dashboard .ned-shipping-path{fill:none;stroke:#4b95c5;stroke-width:4;stroke-linejoin:round;stroke-linecap:round;}
 .namo-enterprise-dashboard .ned-shipping-point{fill:#fff;stroke:#4b95c5;stroke-width:3.5;}
-.namo-enterprise-dashboard .ned-shipping-value{fill:#2f5068;font-size:13px;font-weight:900;}
 .namo-enterprise-dashboard .ned-shipping-month{fill:#52697b;font-size:11.5px;font-weight:850;}
 `;
 
@@ -240,9 +239,10 @@ function patchedDashboard(){
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
   );
 
-  const oldBars=`bars=data.months.map(function(item){var height=Math.max(3,Math.round(item.value/maxMonthly*116));return '<div class="ned-bar-col"><span>'+esc(fmt(item.value/1000,2))+'</span><div class="ned-bar" style="height:'+height+'px"></div><b>'+esc(item.label)+'</b></div>';}).join("")`;
-  const newBars=`bars=(function(){var width=440,height=220,padX=24,padTop=22,padBottom=38,plotH=height-padTop-padBottom,plotW=width-padX*2,step=data.months.length>1?plotW/(data.months.length-1):0,max=Math.max(1,maxMonthly),points=data.months.map(function(item,index){return {x:padX+step*index,y:padTop+(1-item.value/max)*plotH,value:item.value,label:item.label};}),poly=points.map(function(p){return p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" "),area=padX+","+(height-padBottom)+" "+poly+" "+(width-padX)+","+(height-padBottom),pointHtml=points.map(function(p){var valueLabel=p.value>0?'<text class="ned-shipping-value" x="'+p.x+'" y="'+Math.max(15,p.y-11)+'" text-anchor="middle">'+esc(fmt(p.value,0))+' kg</text>':'';return '<circle class="ned-shipping-point" cx="'+p.x+'" cy="'+p.y+'" r="5.5"></circle>'+valueLabel+'<text class="ned-shipping-month" x="'+p.x+'" y="'+(height-11)+'" text-anchor="middle">'+esc(p.label)+'</text>';}).join("");return '<svg class="ned-shipping-line" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="월간 출하량 kg 추이"><line class="ned-shipping-grid" x1="'+padX+'" y1="'+padTop+'" x2="'+(width-padX)+'" y2="'+padTop+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(padTop+plotH/2)+'" x2="'+(width-padX)+'" y2="'+(padTop+plotH/2)+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(height-padBottom)+'" x2="'+(width-padX)+'" y2="'+(height-padBottom)+'"></line><polygon class="ned-shipping-area" points="'+area+'"></polygon><polyline class="ned-shipping-path" points="'+poly+'"></polyline>'+pointHtml+'</svg>';})()`;
-  if(source.includes(oldBars))source=source.replace(oldBars,newBars);
+  const newBars=`bars=(function(){var width=440,height=220,padX=24,padTop=22,padBottom=38,plotH=height-padTop-padBottom,plotW=width-padX*2,step=data.months.length>1?plotW/(data.months.length-1):0,max=Math.max(1,maxMonthly),points=data.months.map(function(item,index){return {x:padX+step*index,y:padTop+(1-item.value/max)*plotH,value:item.value,label:item.label};}),poly=points.map(function(p){return p.x.toFixed(1)+","+p.y.toFixed(1);}).join(" "),area=padX+","+(height-padBottom)+" "+poly+" "+(width-padX)+","+(height-padBottom),pointHtml=points.map(function(p){return '<circle class="ned-shipping-point" cx="'+p.x+'" cy="'+p.y+'" r="5.5"></circle><text class="ned-shipping-month" x="'+p.x+'" y="'+(height-11)+'" text-anchor="middle">'+esc(p.label)+'</text>';}).join("");return '<svg class="ned-shipping-line" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="월간 출하량 kg 추이"><line class="ned-shipping-grid" x1="'+padX+'" y1="'+padTop+'" x2="'+(width-padX)+'" y2="'+padTop+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(padTop+plotH/2)+'" x2="'+(width-padX)+'" y2="'+(padTop+plotH/2)+'"></line><line class="ned-shipping-grid" x1="'+padX+'" y1="'+(height-padBottom)+'" x2="'+(width-padX)+'" y2="'+(height-padBottom)+'"></line><polygon class="ned-shipping-area" points="'+area+'"></polygon><polyline class="ned-shipping-path" points="'+poly+'"></polyline>'+pointHtml+'</svg>';})()`;
+  const barsPattern=/bars=data\.months\.map\(function\(item\)\{[\s\S]*?\}\)\.join\(""\),notices=/;
+  if(!barsPattern.test(source))throw new Error('monthly shipping bar chart pattern not found');
+  source=source.replace(barsPattern,newBars+',notices=');
   source=source.replace('실출하 수량 · 단위 ton','실출하 수량 · 단위 kg');
 
   source=source.replace(
@@ -285,7 +285,7 @@ function patchedRouter(){
 }
 
 function injectCommonUi(html){
-  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-6">`;
+  const tag=`<link rel="stylesheet" href="${COMMON_UI_PATH}?v=20260911-7">`;
   if(String(html).includes(COMMON_UI_PATH))return html;
   if(/<\/head>/i.test(html))return String(html).replace(/<\/head>/i,tag+'\n</head>');
   return tag+'\n'+String(html);
@@ -327,27 +327,27 @@ function proxy(req,res){
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
   if((req.method==='GET'||req.method==='HEAD') && pathname===COMMON_UI_PATH){
-    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v6'});
+    return sendText(req,res,200,'text/css; charset=utf-8',COMMON_UI_CSS,{'x-namo-test-source':'common-ui-20260911-v7'});
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v6-kg-line-no-tooltip'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v7-force-line-no-label'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
   if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
     try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE TEXT + LARGE KG LINE CHART + NO HOVER TOOLTIP',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN ACCESS + COMMON TABLE UI + READABLE TEXT + FORCED LARGE KG LINE CHART + NO LABEL/TOOLTIP',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES,commonUi:COMMON_UI_PATH},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - LARGE KG SHIPPING LINE CHART V6');
+  console.log(' NAMO QMES TEST - FORCED LARGE KG LINE CHART V7');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
   console.log(' screen/assets: mirrored from production QMES');
-  console.log(' dashboard.jsx: approved TEST layout + enlarged 12-month kg line chart');
-  console.log(' shipping chart: hover tooltip disabled');
+  console.log(' dashboard.jsx: forced 12-month kg line chart using robust pattern replacement');
+  console.log(' shipping chart: hover tooltip and floating value labels disabled');
   console.log(' router.jsx: administrator access check patched from tracked branch source');
   console.log(' common UI: unified table headers + readable dashboard typography');
   console.log(' home header: refresh/new purchase actions hidden');
