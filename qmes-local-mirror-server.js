@@ -13,6 +13,7 @@ const UPSTREAM = new URL(process.env.QMES_UPSTREAM || 'https://qmes.namochemical
 const ALLOW_LIVE_WRITES = String(process.env.NAMO_TEST_ALLOW_LIVE_WRITES || '') === '1';
 const ENTERPRISE_DASHBOARD = path.join(ROOT,'public','js','dashboard-namo-enterprise-20260903.jsx');
 const ROUTER = path.join(ROOT,'public','js','router.jsx');
+const ACCESS_CLIENT = path.join(ROOT,'public','js','qmes-access-permissions-20260910.js');
 
 function branchName(){try{return execFileSync('git',['branch','--show-current'],{cwd:ROOT,encoding:'utf8'}).trim();}catch(_){return '';}}
 function pathnameOf(value){try{return decodeURIComponent(new URL(value||'/','http://localhost').pathname);}catch(_){return '/';}}
@@ -21,57 +22,70 @@ function sendText(req,res,status,type,text,extra={}){const body=Buffer.from(Stri
 function rewriteSetCookie(value){if(!value)return value;const list=Array.isArray(value)?value:[value];return list.map(cookie=>String(cookie).replace(/;\s*Domain=[^;]+/ig,'').replace(/;\s*Secure/ig,'').replace(/SameSite=None/ig,'SameSite=Lax'));}
 function isSafeAuthWrite(req){return String(req.method||'').toUpperCase()==='POST'&&/^\/api\/auth\/(login|logout)\/?(?:\?|$)/.test(req.url||'');}
 function isBlockedWrite(req){const method=String(req.method||'GET').toUpperCase();if(ALLOW_LIVE_WRITES)return false;if(['GET','HEAD','OPTIONS'].includes(method))return false;return !isSafeAuthWrite(req);}
+function upstreamHeaders(req){const headers={...req.headers,host:UPSTREAM.host,origin:UPSTREAM.origin,referer:`${UPSTREAM.origin}${req.url||'/'}`,connection:'close'};delete headers['proxy-connection'];delete headers['accept-encoding'];return headers;}
+function sanitizeHeaders(headers){const out={...headers};delete out.connection;delete out['transfer-encoding'];delete out['strict-transport-security'];delete out['content-encoding'];Object.assign(out,noStore({'x-namo-test-source':'production-mirror'}));if(out['set-cookie'])out['set-cookie']=rewriteSetCookie(out['set-cookie']);if(out.location)out.location=String(out.location).replace(UPSTREAM.origin,`http://${HOST}:${PORT}`);return out;}
 
 function patchedDashboard(){
   let source=fs.readFileSync(ENTERPRISE_DASHBOARD,'utf8');
-
   source=source.replace('ERP → MES 통합 업무 흐름','통합업무 흐름');
-
   source=source.replace(
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=5;i>=0;i-=1){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:monthKey(d),label:(d.getMonth()+1)+"월",value:0});}',
     'function monthlyShipping(rows){var now=new Date(),months=[];for(var i=0;i<12;i+=1){var d=new Date(now.getFullYear(),i,1);months.push({key:monthKey(d),label:(i+1)+"월",value:0});}'
   );
-
   source=source.replace(
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);gap:14px;align-items:start}',
     '.ned-layout{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1.05fr) minmax(285px,.72fr);gap:14px;align-items:stretch}.ned-left{display:contents}.ned-left>.ned-panel{grid-column:1/-1;min-width:0}.ned-right{display:contents}'
   );
-  source=source.replace(
-    '.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}',
-    '.ned-split{display:contents}'
-  );
-  source=source.replace(
-    '.ned-task-panel{min-height:100%}',
-    '.ned-task-panel{min-height:278px;height:278px;display:flex;flex-direction:column}.ned-tasks{flex:1 1 auto;min-height:0;overflow:auto}'
-  );
-  source=source.replace(
-    '.ned-table-wrap{overflow:auto}',
-    '.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px;padding:14px 12px 18px}'
-  );
-
+  source=source.replace('.ned-split{display:grid;grid-template-columns:1.08fr .92fr;gap:14px;margin-top:14px}','.ned-split{display:contents}');
+  source=source.replace('.ned-task-panel{min-height:100%}','.ned-task-panel{min-height:278px;height:278px;display:flex;flex-direction:column}.ned-tasks{flex:1 1 auto;min-height:0;overflow:auto}');
+  source=source.replace('.ned-table-wrap{overflow:auto}','.ned-table-wrap{overflow:auto;flex:1 1 auto;min-height:0}.ned-split>.ned-panel{min-width:0;min-height:278px;height:278px;display:flex;flex-direction:column}.ned-split>.ned-panel>header{flex:0 0 auto}.ned-split>.ned-panel .ned-chart{flex:1 1 auto;height:auto;min-height:210px;padding:14px 12px 18px}');
   source=source.replace(
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr}.ned-split{grid-template-columns:1fr 1fr}}',
     '@media(max-width:1200px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-page-head{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(3,1fr)}.ned-layout{grid-template-columns:1fr 1fr}.ned-left,.ned-right,.ned-split{display:contents}.ned-left>.ned-panel{grid-column:1/-1}.ned-task-panel{grid-column:1/-1;height:auto;min-height:220px}.ned-split>.ned-panel{height:auto;min-height:240px}}'
   );
-
   return source;
 }
 
 function patchedRouter(){
   let source=fs.readFileSync(ROUTER,'utf8');
-  const original='function qmesCanAccessCommercialErp(user){\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
-  const replacement='function qmesCanAccessCommercialErp(user){\n  if(String(user?.role||"").toLowerCase()==="admin")return true;\n  const name=String(user?.name||"").replace(/\\s+/g,"").trim();\n  const dept=String(user?.department||user?.dept||"").replace(/\\s+/g,"").trim();\n  return dept==="영업부"||["김종혁","김세희","정영기"].includes(name);\n}';
-  source=source.replace(original,replacement);
+  source += `\n\nfunction qmesTestIsAdministrator(user){\n  const role=String(user?.role||user?.accountRole||user?.account_type||'').replace(/[\\s_-]+/g,'').toLowerCase();\n  return user?.systemAdmin===true||user?.isAdmin===true||['admin','administrator','systemadmin','관리자','시스템관리자'].includes(role);\n}\nfunction qmesCanAccessCommercialErp(user){\n  if(qmesTestIsAdministrator(user))return true;\n  const name=String(user?.name||'').replace(/\\s+/g,'').trim();\n  const dept=String(user?.department||user?.dept||'').replace(/\\s+/g,'').trim();\n  return dept==='영업부'||['김종혁','김세희','정영기'].includes(name);\n}\n`;
+  source=source.replace(/user\.role\s*={2,3}\s*["']admin["']/g,'qmesTestIsAdministrator(user)');
   return source;
+}
+
+function patchedAccessClient(){
+  let source=fs.readFileSync(ACCESS_CLIENT,'utf8');
+  source=source.replace(
+    'if(accessState?.systemAdmin)return true;',
+    `if(accessState?.systemAdmin)return true;\n    const currentAdminUser=window.__QMES_CURRENT_USER__||accessState?.user||{};\n    const currentAdminRole=String(currentAdminUser?.role||currentAdminUser?.accountRole||currentAdminUser?.account_type||'').replace(/[\\s_-]+/g,'').toLowerCase();\n    if(currentAdminUser?.systemAdmin===true||currentAdminUser?.isAdmin===true||['admin','administrator','systemadmin','관리자','시스템관리자'].includes(currentAdminRole))return true;`
+  );
+  return source;
+}
+
+function proxyAccessMe(req,res){
+  const upstreamReq=https.request({protocol:UPSTREAM.protocol,hostname:UPSTREAM.hostname,port:UPSTREAM.port||443,method:'GET',path:req.url,headers:upstreamHeaders(req),family:4,agent:false},upstreamRes=>{
+    const chunks=[];
+    upstreamRes.on('data',chunk=>chunks.push(chunk));
+    upstreamRes.on('end',()=>{
+      let body=Buffer.concat(chunks);
+      try{
+        const payload=JSON.parse(body.toString('utf8'));
+        const user=payload?.data?.user||payload?.data||{};
+        const role=String(user?.role||user?.accountRole||user?.account_type||'').replace(/[\s_-]+/g,'').toLowerCase();
+        const admin=user?.systemAdmin===true||user?.isAdmin===true||['admin','administrator','systemadmin','관리자','시스템관리자'].includes(role);
+        if(admin&&payload?.data){payload.data.systemAdmin=true;payload.data.effective=['*'];body=Buffer.from(JSON.stringify(payload),'utf8');}
+      }catch(_error){}
+      const out=sanitizeHeaders(upstreamRes.headers);out['content-length']=body.length;out['content-type']='application/json; charset=utf-8';res.writeHead(upstreamRes.statusCode||200,out);if(req.method==='HEAD')return res.end();res.end(body);
+    });
+  });
+  upstreamReq.setTimeout(20000,()=>upstreamReq.destroy(new Error('QMES upstream timeout')));
+  upstreamReq.on('error',error=>sendText(req,res,502,'application/json; charset=utf-8',JSON.stringify({success:false,message:error.message})));
+  upstreamReq.end();
 }
 
 function proxy(req,res){
   if(isBlockedWrite(req))return sendText(req,res,409,'application/json; charset=utf-8',JSON.stringify({success:false,code:'QMES_TEST_LIVE_WRITE_BLOCKED',message:'TEST 보호모드입니다. 운영 데이터 변경은 차단되었습니다.'}));
-  const headers={...req.headers,host:UPSTREAM.host,origin:UPSTREAM.origin,referer:`${UPSTREAM.origin}${req.url||'/'}`,connection:'close'};
-  delete headers['proxy-connection']; delete headers['accept-encoding'];
-  const upstreamReq=https.request({protocol:UPSTREAM.protocol,hostname:UPSTREAM.hostname,port:UPSTREAM.port||443,method:req.method,path:req.url,headers,family:4,agent:false},upstreamRes=>{
-    const out={...upstreamRes.headers};delete out.connection;delete out['transfer-encoding'];delete out['strict-transport-security'];delete out['content-encoding'];Object.assign(out,noStore({'x-namo-test-source':'production-mirror'}));if(out['set-cookie'])out['set-cookie']=rewriteSetCookie(out['set-cookie']);if(out.location)out.location=String(out.location).replace(UPSTREAM.origin,`http://${HOST}:${PORT}`);res.writeHead(upstreamRes.statusCode||502,out);upstreamRes.pipe(res);
-  });
+  const upstreamReq=https.request({protocol:UPSTREAM.protocol,hostname:UPSTREAM.hostname,port:UPSTREAM.port||443,method:req.method,path:req.url,headers:upstreamHeaders(req),family:4,agent:false},upstreamRes=>{res.writeHead(upstreamRes.statusCode||502,sanitizeHeaders(upstreamRes.headers));upstreamRes.pipe(res);});
   upstreamReq.setTimeout(20000,()=>upstreamReq.destroy(new Error('QMES upstream timeout')));
   upstreamReq.on('error',error=>{if(!res.headersSent)sendText(req,res,502,'application/json; charset=utf-8',JSON.stringify({success:false,message:error.message}));else res.end();});
   req.pipe(upstreamReq);
@@ -79,25 +93,28 @@ function proxy(req,res){
 
 const server=http.createServer((req,res)=>{
   const pathname=pathnameOf(req.url||'/');
-  if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/dashboard.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/js/dashboard.jsx'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedDashboard(),{'x-namo-test-source':'patched-enterprise-dashboard-v3'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if((req.method==='GET'||req.method==='HEAD') && pathname==='/js/router.jsx'){
-    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v1'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/js/router.jsx'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedRouter(),{'x-namo-test-source':'patched-router-admin-access-v2'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
   }
-  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD LAYOUT + ADMIN FULL ACCESS',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/js/qmes-access-permissions-20260910.js'){
+    try{return sendText(req,res,200,'text/javascript; charset=utf-8',patchedAccessClient(),{'x-namo-test-source':'patched-access-client-admin-v1'});}catch(error){return sendText(req,res,500,'text/plain; charset=utf-8',error.stack||error.message);}
+  }
+  if((req.method==='GET'||req.method==='HEAD')&&pathname==='/api/access/me')return proxyAccessMe(req,res);
+  if(pathname==='/_qmes_test/status')return sendText(req,res,200,'application/json; charset=utf-8',JSON.stringify({mode:'PRODUCTION MIRROR + APPROVED DASHBOARD + ADMIN FULL ACCESS V2',upstream:UPSTREAM.origin,branch:branchName(),liveWritesAllowed:ALLOW_LIVE_WRITES},null,2));
   return proxy(req,res);
 });
 
 server.listen(PORT,HOST,()=>{
   console.log('');
   console.log('============================================================');
-  console.log(' NAMO QMES TEST - APPROVED DASHBOARD + ADMIN ACCESS');
+  console.log(' NAMO QMES TEST - ADMIN FULL ACCESS V2');
   console.log(` http://localhost:${PORT}`);
   console.log(` branch: ${branchName()||'(unknown)'}`);
-  console.log(' screen/assets: mirrored from production QMES');
-  console.log(' dashboard.jsx: approved TEST layout patch');
-  console.log(' router.jsx: administrator bypasses commercial ERP restriction');
+  console.log(' router/access client: admin restrictions bypassed in TEST');
+  console.log(' dashboard: approved TEST layout');
   console.log(` live data writes: ${ALLOW_LIVE_WRITES?'ENABLED':'BLOCKED (safe mode)'}`);
   console.log('============================================================');
   console.log('');
