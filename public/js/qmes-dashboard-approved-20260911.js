@@ -21,7 +21,7 @@
   }
   function shippingDate(row){return dateOnly(row&&(row.actualShipDate||row.shipDate||row.deliveredAt||row.deliveryAt||row.date||row.createdAt));}
   function shippingQty(row){return Math.max(0,num(row&&(row.shipQty!=null?row.shipQty:row.shippingQty!=null?row.shippingQty:row.deliveryQty!=null?row.deliveryQty:row.deliveredQty!=null?row.deliveredQty:row.quantity!=null?row.quantity:row.qty)));}
-  function fmtTon(kg){return (num(kg)/1000).toLocaleString('ko-KR',{maximumFractionDigits:2});}
+  function fmtKg(kg){return num(kg).toLocaleString('ko-KR',{maximumFractionDigits:3});}
 
   function buildMonths(){
     var year=new Date().getFullYear(),months=[],map={};
@@ -40,6 +40,14 @@
       if(text==='ERP → MES 통합 업무 흐름'||text==='ERP·MES 통합 업무 흐름'||text.indexOf('통합 업무 흐름')>=0){
         h2.textContent='통합업무 흐름';
       }
+      if(text==='월간 출하량'){
+        var panel=h2.closest('.ned-panel');
+        var subtitle=panel&&panel.querySelector('header p');
+        if(subtitle){
+          var subtitleText=clean(subtitle.textContent);
+          subtitle.textContent=/단위\s*ton/i.test(subtitleText)?subtitleText.replace(/단위\s*ton/i,'단위 kg'):'실출하 수량 · 단위 kg';
+        }
+      }
     });
   }
 
@@ -48,11 +56,11 @@
     if(!chart)return;
     var months=buildMonths();
     var max=Math.max.apply(null,[1].concat(months.map(function(x){return x.value;})));
-    var signature=months.map(function(x){return x.key+':'+x.value;}).join('|');
+    var signature='kg-v1|'+months.map(function(x){return x.key+':'+x.value;}).join('|');
     if(chart.dataset.qmesApprovedYear===signature&&chart.children.length===12)return;
     chart.innerHTML=months.map(function(item){
       var height=Math.max(3,Math.round(item.value/max*116));
-      return '<div class="ned-bar-col"><span>'+fmtTon(item.value)+'</span><div class="ned-bar" style="height:'+height+'px"></div><b>'+item.label+'</b></div>';
+      return '<div class="ned-bar-col"><span>'+fmtKg(item.value)+'</span><div class="ned-bar" style="height:'+height+'px"></div><b>'+item.label+'</b></div>';
     }).join('');
     chart.dataset.qmesApprovedYear=signature;
   }
