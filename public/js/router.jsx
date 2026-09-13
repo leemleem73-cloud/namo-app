@@ -80,13 +80,8 @@ function safeStorageSet(key,value){try{sessionStorage.setItem(key,value);return 
 function safeStorageRemove(key){try{sessionStorage.removeItem(key);}catch(error){}}
 function qmesProcessCleanNavigation(value){return String(value==null?"":value).trim();}
 function qmesCanAccessCommercialErp(user){
-  const permissionApi=window.qmesAccessPermissions||window.QMESAccessPermissions||null;
-  if(permissionApi&&typeof permissionApi.canAccessTab==="function"){
-    try{return permissionApi.canAccessTab("erpSales",user)!==false;}catch(error){}
-  }
-  if(typeof window.qmesCanAccessTab==="function"){
-    try{return window.qmesCanAccessTab("erpSales",user)!==false;}catch(error){}
-  }
+  // Legacy department/name restriction removed. ERP access is controlled by the
+  // administrator access-permission layer (qmes-access-permissions-20260910.js).
   return true;
 }
 function qmesIsCommercialRestrictedTab(tab){return tab==="erpSales"||tab==="erpPurchase";}
@@ -112,7 +107,6 @@ function QMESChemical({user,onLogout}){
     const handleTabNavigation=event=>{
       const nextTab=qmesProcessCleanNavigation(event?.detail?.tab);
       if(!nextTab||!TABS.some(item=>item.id===nextTab))return;
-      if(qmesIsCommercialRestrictedTab(nextTab)&&!qmesCanAccessCommercialErp(user))return;
       setTab(nextTab);
       if(event?.detail?.openMenu)setOpenMenu(event.detail.openMenu);
     };
@@ -191,10 +185,17 @@ function QMESChemical({user,onLogout}){
             {user.role==="admin"&&<button type="button" onClick={()=>{setTab("members");setOpenMenu(null);}} className="qmes-header-action px-2 py-1 rounded border">회원관리</button>}
           </div>
         </div>
+        <div className="qmes-top-menu-bar">
+          <nav className="qmes-top-menu">
+            {TOP_MENUS.map(menu=>{const MenuIcon=menu.icon;const children=(menu.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);const direct=!menu.children;const active=direct?tab===menu.id:children.some(item=>item.id===tab);const opened=openMenu===menu.id;return <div key={menu.id} className="qmes-top-menu-item"><button type="button" onClick={()=>{if(direct){setTab(menu.id);setOpenMenu(null);}else{setOpenMenu(opened?null:menu.id);if(!active&&children.length)setTab(children[0].id);}}} className={`qmes-top-menu-button ${active?"is-active":""}`}><MenuIcon size={15}/><span>{menu.label}</span>{!direct&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}</button></div>;})}
+          </nav>
+          {openMenu&&(()=>{const selected=TOP_MENUS.find(menu=>menu.id===openMenu);const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);if(!items.length)return null;return <div className={`qmes-submenu-row qmes-submenu-${selected.id}`} role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const ItemIcon=item.icon;return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={`qmes-submenu-button ${tab===item.id?"is-active":""}`}><ItemIcon size={14}/><span>{item.label}</span></button>;})}</div>;})()}
+        </div>
       </header>
-      <main className="flex-1">
-        {commercialDenied?<PermissionDenied/>:<Active/>}
-      </main>
+      <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>      
+
+      {profileOpen&&<div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-4" onClick={closeAccountModal} role="dialog" aria-modal="true" aria-label="계정 설정"><div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-6"><h2 className="text-xl font-black text-white">계정 설정</h2><button type="button" onClick={closeAccountModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><button type="button" onClick={openPasswordModal} className="w-full h-12 rounded-xl bg-sky-600 px-4 text-left text-sm font-black text-white hover:bg-sky-500">비밀번호 변경하기</button><button type="button" onClick={handleLogout} className="mt-3 w-full h-12 rounded-xl border border-red-500/50 bg-red-500/10 px-4 text-left text-sm font-black text-red-300 hover:bg-red-500/20">로그아웃</button><button type="button" onClick={closeAccountModal} className="mt-5 w-full h-11 rounded-xl border border-slate-700 text-sm font-bold text-slate-300 hover:bg-slate-800">닫기</button></div></div>}
+      {passwordOpen&&<div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/70 p-4" onClick={closePasswordModal} role="dialog" aria-modal="true" aria-label="비밀번호 변경"><form onSubmit={changePassword} className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" onClick={event=>event.stopPropagation()}><div className="flex items-center justify-between mb-5"><h2 className="text-xl font-black text-white">비밀번호 변경</h2><button type="button" onClick={closePasswordModal} className="w-9 h-9 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800" aria-label="닫기">×</button></div><label className="block text-sm font-bold mb-2">현재 비밀번호</label><input type="password" value={currentPw} onChange={event=>{setCurrentPw(event.target.value);setPasswordError("");}} autoComplete="current-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호</label><input type="password" value={newPw} onChange={event=>{setNewPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/><label className="block text-sm font-bold mt-4 mb-2">새 비밀번호 확인</label><input type="password" value={confirmPw} onChange={event=>{setConfirmPw(event.target.value);setPasswordError("");}} autoComplete="new-password" className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3 outline-none focus:border-sky-500"/>{passwordError&&<div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-400">{passwordError}</div>}<button type="submit" className="mt-6 w-full h-11 rounded-xl bg-sky-600 font-black text-white hover:bg-sky-500">변경 저장</button><button type="button" onClick={closePasswordModal} className="mt-3 w-full h-11 rounded-xl border border-slate-700 font-bold text-slate-300 hover:bg-slate-800">취소</button></form></div>}
     </div>
   );
 }
