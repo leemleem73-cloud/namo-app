@@ -6,6 +6,18 @@
   if(window.__QMES_DASHBOARD_APPROVED_20260911__) return;
   window.__QMES_DASHBOARD_APPROVED_20260911__ = true;
 
+  /* Load the full guest sandbox runtime after the legacy demo seed has loaded.
+   * It is inert for normal Namo Chemical accounts and activates only for role=guest. */
+  (function loadGuestSandboxRuntime(){
+    if(window.__QMES_GUEST_FULL_SANDBOX_RUNTIME_20260914__)return;
+    if(document.querySelector('script[data-qmes-guest-sandbox-runtime]'))return;
+    var script=document.createElement('script');
+    script.src='./js/qmes-guest-sandbox-runtime-20260914.js?v=20260914-fullsandbox3';
+    script.async=false;
+    script.dataset.qmesGuestSandboxRuntime='true';
+    (document.head||document.documentElement).appendChild(script);
+  })();
+
   var clean=function(v){return String(v==null?'':v).trim();};
   var num=function(v){if(typeof v==='number')return Number.isFinite(v)?v:0;var m=clean(v).replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0;};
   var dateOnly=function(v){return clean(v).slice(0,10);};
