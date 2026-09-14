@@ -281,4 +281,7 @@ fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
 };
 
 process.env.QMES_DASHBOARD_BUILD = process.env.QMES_DASHBOARD_BUILD || `20260903-enterprise-v5-${SHELL_BUILD}`;
+
+// Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
+require('./namo-talk-standalone-server.js');
 require('./server-legacy-20260903.js');
