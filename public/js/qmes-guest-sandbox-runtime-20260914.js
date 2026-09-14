@@ -16,6 +16,7 @@
   var previousRemove=storageProto.removeItem;
   var previousClear=storageProto.clear;
   var previousFetch=global.fetch.bind(global);
+  var previousAlert=global.alert.bind(global);
 
   var demoLocal=new Map();
   var demoSession=new Map();
@@ -152,6 +153,27 @@
     }
 
     return previousFetch(input,init);
+  };
+
+  /* Legacy guest-demo code registered read-only capture handlers. Neutralize only
+   * those guards at the earlier window-capture phase so the normal QMES target
+   * handlers still receive the click/submit and can update the demo sandbox. */
+  function unlockLegacyReadonlyGuard(event){
+    if(!guestActive())return;
+    var target=event&&event.target instanceof Element?event.target:null;
+    if(!target)return;
+    var control=target.closest('button,input[type="button"],input[type="submit"],a,form');
+    if(!control)return;
+    try{Object.defineProperty(event,'preventDefault',{value:function(){},configurable:true});}catch(_error){try{event.preventDefault=function(){};}catch(_ignore){}}
+    try{Object.defineProperty(event,'stopImmediatePropagation',{value:function(){},configurable:true});}catch(_error2){try{event.stopImmediatePropagation=function(){};}catch(_ignore2){}}
+  }
+  global.addEventListener('click',unlockLegacyReadonlyGuard,true);
+  global.addEventListener('submit',unlockLegacyReadonlyGuard,true);
+
+  global.alert=function(message){
+    var text=String(message==null?'':message);
+    if(guestActive()&&(/DEMO 계정은.*읽기|데모 버전은.*열람|저장·수정·삭제.*사용할 수 없습니다/.test(text)))return;
+    return previousAlert(message);
   };
 
   function refreshBadge(){
