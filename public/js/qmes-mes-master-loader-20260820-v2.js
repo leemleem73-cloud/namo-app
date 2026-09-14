@@ -40,6 +40,7 @@
     "./js/qmes-sales-workorder-view-bridge-20260831-v1.js?v=20260831-1",
     "./js/qmes-sales-detail-drawer-20260828-v1.js?v=20260828-1",
     "./js/qmes-erp-runtime-loader-20260826.js?v=20260827-manual-product2",
+    "./js/qmes-purchase-zero-mode-20260914.js?v=20260914-zero1",
     "./js/qmes-production-mrp-live-20260901-v5.js?v=20260901-productalias5",
     "./js/qmes-production-stage-bcd-hotfix-20260901-v2.js?v=20260901-stagebcd2",
     "./js/qmes-sales-enterprise-module-20260828-v2.js?v=20260828-2",
