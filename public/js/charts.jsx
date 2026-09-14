@@ -35,9 +35,14 @@ function SpcTab() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2 rounded-xl border border-slate-700 bg-slate-900 p-3">
         {Object.keys(ALL_SPC_CONFIG).map((key) => (
-          <button key={key} onClick={() => setItem(key)} className={`rounded-lg border px-3 py-2 text-left ${item === key ? "border-sky-400 bg-sky-500/15 text-sky-200" : "border-slate-700 bg-slate-800 text-slate-300"}`}>
-            <strong className="block text-xs">{key}</strong>
-            <small className="text-[10px] text-slate-500">{ALL_SPC_CONFIG[key].spec}</small>
+          <button
+            key={key}
+            onClick={() => setItem(key)}
+            className={`rounded-lg border px-3 py-2 text-left ${item === key ? "border-sky-400 bg-sky-500/15" : "border-slate-700 bg-slate-800 text-slate-300"}`}
+            style={item === key ? { color: "#075985", backgroundColor: "#e0f2fe", borderColor: "#38bdf8" } : undefined}
+          >
+            <strong className="block text-xs" style={item === key ? { color: "#075985" } : undefined}>{key}</strong>
+            <small className={`text-[10px] ${item === key ? "" : "text-slate-500"}`} style={item === key ? { color: "#0c4a6e" } : undefined}>{ALL_SPC_CONFIG[key].spec}</small>
           </button>
         ))}
       </div>
