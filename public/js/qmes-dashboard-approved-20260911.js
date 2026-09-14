@@ -10,7 +10,44 @@
   var num=function(v){if(typeof v==='number')return Number.isFinite(v)?v:0;var m=clean(v).replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):0;};
   var dateOnly=function(v){return clean(v).slice(0,10);};
 
+  function isGuestDemo(){
+    try{
+      var user=JSON.parse(sessionStorage.getItem('qmes-current-user-v1')||'null');
+      return !!(user&&(String(user.role||'').toLowerCase()==='guest'||String(user.id||'').toLowerCase()==='guest'||String(user.uid||'').toUpperCase()==='GUEST'));
+    }catch(_error){return window.__QMES_DEMO_MODE__===true;}
+  }
+
+  function demoShipmentRows(){
+    var year=new Date().getFullYear();
+    var yy=String(year).slice(-2);
+    var values=[1680,1920,2250,2140,2680,2410,2950,3180,2760,3320,3050,3540];
+    var products=['DEMO 절연 슬러리 A','DEMO 절연 슬러리 B','DEMO Binder Solution'];
+    var customers=['DEMO 고객사 A','DEMO 고객사 B','DEMO 고객사 C'];
+    return values.map(function(value,index){
+      var month=String(index+1).padStart(2,'0');
+      var day=index%2===0?'15':'20';
+      var date=year+'-'+month+'-'+day;
+      return {
+        shipNo:'SHIP-DEMO-'+yy+month+'-01',
+        shippingNo:'SHIP-DEMO-'+yy+month+'-01',
+        date:date,
+        actualShipDate:date,
+        customer:customers[index%customers.length],
+        product:products[index%products.length],
+        lot:'FG-DEMO-'+yy+month+day+'-01',
+        finishedLot:'FG-DEMO-'+yy+month+day+'-01',
+        qty:value,
+        shipQty:value,
+        unit:'kg',
+        oqc:'합격',
+        coa:'발행',
+        delivery:'출하완료'
+      };
+    });
+  }
+
   function shippingRows(){
+    if(isGuestDemo())return demoShipmentRows();
     try{
       var saved=JSON.parse(localStorage.getItem('qmes-erp-shipping-v1')||'[]');
       if(Array.isArray(saved))return saved;
@@ -48,7 +85,7 @@
     if(!chart)return;
     var months=buildMonths();
     var max=Math.max.apply(null,[1].concat(months.map(function(x){return x.value;})));
-    var signature=months.map(function(x){return x.key+':'+x.value;}).join('|');
+    var signature=(isGuestDemo()?'demo-year|':'live|')+months.map(function(x){return x.key+':'+x.value;}).join('|');
     if(chart.dataset.qmesApprovedYear===signature&&chart.children.length===12)return;
     chart.innerHTML=months.map(function(item){
       var height=Math.max(3,Math.round(item.value/max*116));
