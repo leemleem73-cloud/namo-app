@@ -1,5 +1,5 @@
 /* NAMO Chemical QMES approved dashboard behavior - 2026-09-11
- * Lightweight bounded patch. No MutationObserver and no permanent interval.
+ * Guest demo dashboard stabilizer. Keeps 1~12 month demo chart after dashboard rerenders.
  */
 (function(){
   'use strict';
@@ -75,9 +75,19 @@
     root.querySelectorAll('.ned-panel h2').forEach(function(h2){
       var text=clean(h2.textContent);
       if(text==='ERP → MES 통합 업무 흐름'||text==='ERP·MES 통합 업무 흐름'||text.indexOf('통합 업무 흐름')>=0){
-        h2.textContent='통합업무 흐름';
+        if(h2.textContent!=='통합업무 흐름')h2.textContent='통합업무 흐름';
       }
     });
+  }
+
+  function patchGuestPurchaseFlow(root){
+    if(!isGuestDemo())return;
+    var purchaseStep=root.querySelector('.ned-flow-step[data-tab="erpPurchase"]');
+    if(!purchaseStep)return;
+    var small=purchaseStep.querySelector('small');
+    if(small&&clean(small.textContent)!=='0원')small.textContent='0원';
+    purchaseStep.setAttribute('title','구매발주 화면 열기');
+    purchaseStep.style.cursor='pointer';
   }
 
   function patchChart(root){
@@ -98,16 +108,46 @@
     var root=document.querySelector('.namo-enterprise-dashboard');
     if(!root)return false;
     patchTitle(root);
+    patchGuestPurchaseFlow(root);
     patchChart(root);
     return true;
   }
 
+  var applyTimer=0;
+  function scheduleApply(){
+    clearTimeout(applyTimer);
+    applyTimer=setTimeout(apply,30);
+  }
   function boundedApply(){
-    [0,120,350,800,1500].forEach(function(delay){setTimeout(apply,delay);});
+    [0,120,350,800,1500,3000].forEach(function(delay){setTimeout(apply,delay);});
+  }
+  function installDashboardObserver(){
+    if(window.__QMES_DASHBOARD_APPROVED_OBSERVER__)return;
+    window.__QMES_DASHBOARD_APPROVED_OBSERVER__=true;
+    var start=function(){
+      if(!document.body)return;
+      var observer=new MutationObserver(function(mutations){
+        for(var i=0;i<mutations.length;i+=1){
+          var target=mutations[i].target;
+          if(target&&target.nodeType===1&&(
+            target.classList&&target.classList.contains('namo-enterprise-dashboard')||
+            target.closest&&target.closest('.namo-enterprise-dashboard')||
+            document.querySelector('.namo-enterprise-dashboard')
+          )){
+            scheduleApply();
+            return;
+          }
+        }
+      });
+      observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+    };
+    if(document.body)start();
+    else document.addEventListener('DOMContentLoaded',start,{once:true});
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boundedApply,{once:true});
-  else boundedApply();
+  function boot(){boundedApply();installDashboardObserver();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
   window.addEventListener('load',boundedApply,{once:true});
   window.addEventListener('qmes:navigate-tab',boundedApply);
   window.addEventListener('storage',function(event){if(event.key==='qmes-erp-shipping-v1')boundedApply();});
