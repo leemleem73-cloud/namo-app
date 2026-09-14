@@ -83,12 +83,13 @@ function installClient(){
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-dashboard-approved-20260911\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-me-request-guard-20260911\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-permissions-20260910\.js\?v=[^"]+"><\/script>/g,'');
+    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-readonly-open-preload-20260914\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-demo-20260914\.js\?v=[^"]+"><\/script>/g,'');
 
-    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <script src="./js/qmes-guest-demo-20260914.js?v=20260914-demo1"></script>\n</head>');
+    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <script src="./js/qmes-guest-readonly-open-preload-20260914.js?v=20260914-open1"></script>\n  <script src="./js/qmes-guest-demo-20260914.js?v=20260914-demo1"></script>\n</head>');
     html=html.replace('</body>','  <script src="./js/qmes-access-me-request-guard-20260911.js?v=20260911-guard1"></script>\n  <script src="./js/qmes-dashboard-approved-20260911.js?v=20260911-approved2"></script>\n  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
     fs.writeFileSync(indexFile,html,'utf8');
-    console.log('[QMES access] demo guest + request guard + approved dashboard + permission client installed');
+    console.log('[QMES access] demo guest + open preload + request guard + approved dashboard + permission client installed');
   }catch(error){console.error('[QMES access] client install failed',error);}
 }
 installClient();
