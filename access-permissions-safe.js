@@ -59,7 +59,7 @@ const baseForDepartment=department=>DEPARTMENT_DEFAULTS[String(department||'').t
 const effectiveFor=(user,row)=>{
   if(String(user?.role||'').toLowerCase()==='admin')return ['*'];
   const extras=sanitizePermissions(row?.permissions);
-  const base=row?.department_default===false?[]:baseForDepartment(user?.department);
+  const base=row?.department_default===false?[]:baseForDepartment(user.department);
   return [...new Set([...base,...extras,'dashboard'])];
 };
 async function readPermissionForUser(user){
@@ -94,7 +94,7 @@ function installClient(){
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-me-request-guard-20260911\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-permissions-20260910\.js\?v=[^"]+"><\/script>/g,'');
 
-    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <link rel="stylesheet" href="./css/qmes-spc-selected-contrast-fix-20260914.css?v=20260914-final2" />\n</head>');
+    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <link rel="stylesheet" href="./css/qmes-spc-selected-contrast-fix-20260914.css?v=20260914-final3" />\n</head>');
     html=html.replace('</body>','  <script src="./js/qmes-access-me-request-guard-20260911.js?v=20260911-guard1"></script>\n  <script src="./js/qmes-dashboard-approved-20260911.js?v=20260911-approved2"></script>\n  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
     fs.writeFileSync(indexFile,html,'utf8');
     console.log('[QMES access] production permission client installed; demo assets removed; SPC contrast override loaded');
