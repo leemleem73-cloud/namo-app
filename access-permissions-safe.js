@@ -10,6 +10,7 @@ const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});
 const fail=(res,status,message)=>res.status(status).json({success:false,message,data:null});
 const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그인이 필요합니다.');
 const requireAdmin=(req,res,next)=>String(req.session?.user?.role||'').toLowerCase()==='admin'?next():fail(res,403,'시스템 관리자 전용 기능입니다.');
+const isGuest=user=>String(user?.role||'').toLowerCase()==='guest'||String(user?.id||'').toLowerCase()==='guest';
 
 const ALL_MENU_KEYS=[
   'dashboard','spcDashboard',
@@ -41,12 +42,23 @@ function ensureTable(){
 const sanitizePermissions=value=>[...new Set((Array.isArray(value)?value:[]).map(v=>String(v||'').trim()).filter(v=>allowedSet.has(v)))];
 const baseForDepartment=department=>DEPARTMENT_DEFAULTS[String(department||'').trim()]||['dashboard'];
 const effectiveFor=(user,row)=>{
-  if(String(user?.role||'').toLowerCase()==='admin')return ['*'];
+  if(String(user?.role||'').toLowerCase()==='admin'||isGuest(user))return ['*'];
   const extras=sanitizePermissions(row?.permissions);
   const base=row?.department_default===false?[]:baseForDepartment(user?.department);
   return [...new Set([...base,...extras,'dashboard'])];
 };
 async function readPermissionForUser(user){
+  if(isGuest(user)){
+    return{
+      user:{id:'guest',name:'게스트',department:'게스트',title:'열람 전용',role:'guest'},
+      systemAdmin:false,
+      departmentDefault:false,
+      departmentDefaults:[],
+      permissions:['*'],
+      effective:['*'],
+      updatedAt:null
+    };
+  }
   await ensureTable();
   const result=await pool.query('SELECT department_default,permissions,updated_at FROM qmes_menu_permissions WHERE user_id=$1',[String(user.id)]);
   const row=result.rows[0]||{department_default:true,permissions:[]};
@@ -71,11 +83,12 @@ function installClient(){
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-dashboard-approved-20260911\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-me-request-guard-20260911\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-permissions-20260910\.js\?v=[^"]+"><\/script>/g,'');
+    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-empty-data-20260914\.js\?v=[^"]+"><\/script>/g,'');
 
-    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n</head>');
+    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <script src="./js/qmes-guest-empty-data-20260914.js?v=20260914-guest1"></script>\n</head>');
     html=html.replace('</body>','  <script src="./js/qmes-access-me-request-guard-20260911.js?v=20260911-guard1"></script>\n  <script src="./js/qmes-dashboard-approved-20260911.js?v=20260911-approved2"></script>\n  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
     fs.writeFileSync(indexFile,html,'utf8');
-    console.log('[QMES access] request guard + approved dashboard + permission client installed');
+    console.log('[QMES access] guest isolation + request guard + approved dashboard + permission client installed');
   }catch(error){console.error('[QMES access] client install failed',error);}
 }
 installClient();
@@ -83,6 +96,28 @@ installClient();
 function install(app){
   if(app.__namoAccessPermissionsInstalled)return;
   app.__namoAccessPermissionsInstalled=true;
+
+  app.post('/api/auth/login',async(req,res,next)=>{
+    const loginId=String(req.body?.loginId||req.body?.email||'').trim().toLowerCase();
+    const password=String(req.body?.password||'');
+    if(loginId!=='guest'||password!=='1234')return next();
+    try{
+      await new Promise((resolve,reject)=>req.session.regenerate(error=>error?reject(error):resolve()));
+      req.session.user={
+        id:'guest',uid:'GUEST',name:'게스트',email:'',department:'게스트',title:'열람 전용',role:'guest',mustChangePassword:false
+      };
+      await new Promise((resolve,reject)=>req.session.save(error=>error?reject(error):resolve()));
+      return ok(res,{user:req.session.user},'게스트 로그인 성공');
+    }catch(error){console.error('[QMES guest] login',error);return fail(res,500,'게스트 로그인에 실패했습니다.');}
+  });
+
+  app.use('/api',(req,res,next)=>{
+    if(!isGuest(req.session?.user))return next();
+    const pathname=String(req.path||'');
+    if(pathname==='/auth/me'||pathname==='/auth/logout'||pathname==='/access/me')return next();
+    if(req.method==='GET'||req.method==='HEAD')return ok(res,[],'게스트 빈 데이터');
+    return fail(res,403,'게스트 계정은 열람 전용입니다.');
+  });
 
   app.get('/api/access/me',requireLogin,async(req,res)=>{
     try{return ok(res,await readPermissionForUser(req.session.user));}
