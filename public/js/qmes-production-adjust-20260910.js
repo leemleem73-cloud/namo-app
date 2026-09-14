@@ -4,6 +4,298 @@
   window.__QMES_PRODUCTION_ADJUST_20260910__=true;
   const sessionKey='qmes-current-user-v1';
   const loggedIn=()=>{try{return Boolean(window.__QMES_CURRENT_USER__||JSON.parse(sessionStorage.getItem(sessionKey)||'null'));}catch(_){return Boolean(window.__QMES_CURRENT_USER__);}};
+
+  const WORKORDER_STYLE_ID='qmes-workorder-polish-20260915';
+  function ensureWorkOrderPolishStyle(){
+    if(document.getElementById(WORKORDER_STYLE_ID))return;
+    const style=document.createElement('style');
+    style.id=WORKORDER_STYLE_ID;
+    style.textContent=`
+      /* Work order registration: compact, left-aligned, unified enterprise style */
+      html body #root main:has(.qmes-wo-issue-shell){
+        padding-left:16px!important;
+        padding-right:16px!important;
+      }
+      html body #root main:has(.qmes-wo-issue-shell) > .flex.flex-col.gap-4{
+        width:100%!important;
+        max-width:none!important;
+        margin:0!important;
+        align-items:stretch!important;
+      }
+      html body #root main:has(.qmes-wo-issue-shell) > .flex.flex-col.gap-4 > .flex.items-center h2{
+        color:#24364a!important;
+        font-size:16px!important;
+        line-height:1.25!important;
+        font-weight:800!important;
+        letter-spacing:-.2px!important;
+      }
+      html body #root .qmes-wo-issue-shell{
+        box-sizing:border-box!important;
+        width:100%!important;
+        max-width:none!important;
+        min-width:0!important;
+        margin:0!important;
+        padding:0!important;
+        align-self:stretch!important;
+        color:#33485c!important;
+        font-size:11px!important;
+      }
+      html body #root .qmes-wo-issue-shell > *{
+        width:100%!important;
+        max-width:none!important;
+        margin-left:0!important;
+        margin-right:0!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-grid{
+        display:grid!important;
+        grid-template-columns:repeat(5,minmax(0,1fr))!important;
+        gap:8px 10px!important;
+        width:100%!important;
+        max-width:none!important;
+        margin:0!important;
+        padding:0!important;
+        align-items:end!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-field{
+        min-width:0!important;
+        margin:0!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-field > span{
+        display:block!important;
+        margin:0 0 4px!important;
+        color:#516579!important;
+        font-size:10px!important;
+        line-height:1.2!important;
+        font-weight:700!important;
+        letter-spacing:-.1px!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-field :is(input,select){
+        box-sizing:border-box!important;
+        width:100%!important;
+        height:31px!important;
+        min-height:31px!important;
+        padding:0 8px!important;
+        border:1px solid #c5d1dc!important;
+        border-radius:5px!important;
+        background:#fff!important;
+        color:#33485c!important;
+        font-size:11px!important;
+        line-height:1!important;
+        font-weight:500!important;
+        box-shadow:none!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-field :is(input,select):focus{
+        border-color:#5e9fcc!important;
+        outline:2px solid rgba(94,159,204,.12)!important;
+        outline-offset:0!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-field input::placeholder,
+      html body #root .qmes-wo-issue-shell .qmes-material-table input::placeholder{
+        color:#94a3b3!important;
+        opacity:1!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-plan-card,
+      html body #root .qmes-wo-issue-shell div.mt-4.bg-slate-800\/50:has(.qmes-material-table){
+        margin-top:12px!important;
+        padding:12px!important;
+        border:1px solid #dce5ed!important;
+        border-radius:8px!important;
+        background:#fff!important;
+        box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-plan-title,
+      html body #root .qmes-wo-issue-shell div.mt-4.bg-slate-800\/50:has(.qmes-material-table) > div:first-child{
+        margin:0 0 8px!important;
+        color:#33485c!important;
+        font-size:11px!important;
+        line-height:1.35!important;
+        font-weight:800!important;
+        letter-spacing:-.1px!important;
+      }
+      html body #root .qmes-wo-issue-shell div.mt-4.bg-slate-800\/50:has(.qmes-material-table) > div:first-child span{
+        color:#708195!important;
+        font-size:9.5px!important;
+        font-weight:500!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table{
+        width:100%!important;
+        min-width:1180px!important;
+        table-layout:fixed!important;
+        border-collapse:collapse!important;
+        color:#33485c!important;
+        font-size:10px!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table thead tr,
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr{
+        border-color:#e4eaf0!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table th{
+        height:29px!important;
+        padding:4px 6px!important;
+        background:#f6f9fb!important;
+        color:#50657a!important;
+        border-bottom:1px solid #dfe7ee!important;
+        font-size:9.5px!important;
+        line-height:1.15!important;
+        font-weight:800!important;
+        text-align:center!important;
+        white-space:nowrap!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table td{
+        height:39px!important;
+        padding:4px 6px!important;
+        background:#fff!important;
+        color:#3f5367!important;
+        border-bottom:1px solid #e6ecf1!important;
+        font-size:10px!important;
+        line-height:1.2!important;
+        font-weight:500!important;
+        vertical-align:middle!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:nth-child(even) td{
+        background:#fbfcfd!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table :is(input,select){
+        box-sizing:border-box!important;
+        width:100%!important;
+        height:29px!important;
+        min-height:29px!important;
+        padding:0 7px!important;
+        border:1px solid #c8d4df!important;
+        border-radius:4px!important;
+        background:#fff!important;
+        color:#33485c!important;
+        font-size:10px!important;
+        line-height:1!important;
+        font-weight:500!important;
+        box-shadow:none!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-table .qmes-qty-unit,
+      html body #root .qmes-wo-issue-shell .qmes-material-table .text-slate-400,
+      html body #root .qmes-wo-issue-shell .qmes-material-table .text-slate-500{
+        color:#718297!important;
+        font-size:9.5px!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-type-tag{
+        display:inline-flex!important;
+        align-items:center!important;
+        min-height:17px!important;
+        margin-top:3px!important;
+        padding:1px 6px!important;
+        border-radius:10px!important;
+        background:#eef2f6!important;
+        color:#627489!important;
+        border:1px solid #dde5ec!important;
+        font-size:9px!important;
+        line-height:1.2!important;
+        font-weight:700!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-material-type-tag.is-intermediate{
+        background:#f1edff!important;
+        color:#6545b8!important;
+        border-color:#cfc2fb!important;
+        font-weight:800!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-delete-plain{
+        width:auto!important;
+        height:26px!important;
+        min-height:26px!important;
+        padding:0 4px!important;
+        margin:0!important;
+        border:0!important;
+        border-radius:0!important;
+        background:transparent!important;
+        color:#d43b3b!important;
+        font-size:10px!important;
+        line-height:1!important;
+        font-weight:800!important;
+        box-shadow:none!important;
+        white-space:nowrap!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-delete-plain:hover{
+        color:#b91c1c!important;
+        background:transparent!important;
+        text-decoration:underline!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-material-add{
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        gap:4px!important;
+        min-width:84px!important;
+        height:29px!important;
+        padding:0 10px!important;
+        border:1px solid #6aa9d3!important;
+        border-radius:5px!important;
+        background:#eef7fd!important;
+        color:#226b9d!important;
+        font-size:10px!important;
+        line-height:1!important;
+        font-weight:800!important;
+        box-shadow:none!important;
+        white-space:nowrap!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-material-add:hover{
+        background:#e1f1fb!important;
+        border-color:#4f98c8!important;
+        color:#185b88!important;
+      }
+      html body #root .qmes-wo-issue-shell .text-sky-300:not(.qmes-wo-material-add),
+      html body #root .qmes-wo-issue-shell .text-emerald-300,
+      html body #root .qmes-wo-issue-shell .text-amber-300:not(.qmes-status-tone),
+      html body #root .qmes-wo-issue-shell .text-slate-200,
+      html body #root .qmes-wo-issue-shell .text-slate-100{
+        color:#3f5367!important;
+      }
+      html body #root .qmes-wo-issue-shell .qmes-wo-form-grid + div{
+        clear:both!important;
+      }
+      @media(max-width:1280px){
+        html body #root .qmes-wo-issue-shell .qmes-wo-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+      }
+      @media(max-width:900px){
+        html body #root .qmes-wo-issue-shell .qmes-wo-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function polishWorkOrderForm(){
+    ensureWorkOrderPolishStyle();
+    const shell=document.querySelector('.qmes-wo-issue-shell');
+    if(!shell)return;
+
+    const materialTable=shell.querySelector('.qmes-material-table');
+    if(materialTable){
+      const card=materialTable.closest('.mt-4');
+      card?.classList.add('qmes-material-plan-card');
+      if(card?.firstElementChild)card.firstElementChild.classList.add('qmes-material-plan-title');
+
+      materialTable.querySelectorAll('span').forEach(span=>{
+        const text=String(span.textContent||'').trim();
+        if(text==='일반원료'||text==='중간재'){
+          span.classList.add('qmes-material-type-tag');
+          span.classList.toggle('is-intermediate',text==='중간재');
+        }
+      });
+
+      materialTable.querySelectorAll('button').forEach(button=>{
+        const text=String(button.textContent||'').replace(/\s+/g,' ').trim();
+        if(text==='삭제'){
+          button.classList.add('qmes-wo-delete-plain');
+        }
+        if(text==='행 추가'||text==='원료 추가'){
+          button.classList.add('qmes-wo-material-add');
+          Array.from(button.childNodes).forEach(node=>{
+            if(node.nodeType===Node.TEXT_NODE&&String(node.textContent||'').includes('행 추가')){
+              node.textContent=String(node.textContent||'').replace('행 추가','원료 추가');
+            }
+          });
+        }
+      });
+    }
+  }
+
   const sync=()=>{
     const visible=loggedIn();
     const header=document.getElementById('qmes-erp-header');
@@ -12,6 +304,7 @@
     if(side)side.style.setProperty('display',visible?'block':'none','important');
     const note=document.querySelector('#qmes-test-password-modal .qmes-test-password-note');
     if(note)note.textContent='현재 비밀번호를 확인한 후 새 비밀번호로 변경합니다.';
+    polishWorkOrderForm();
   };
 
   const PASSWORD_MODAL_ID='qmes-password-modal-fix-20260910';
