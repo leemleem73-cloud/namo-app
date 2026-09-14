@@ -1,25 +1,7 @@
 'use strict';
 const express=require('express');
-const fs=require('fs');
-const path=require('path');
-const{execFileSync}=require('child_process');
 const{Pool}=require('pg');
 require('dotenv').config();
-
-// One-time production business-data reset. The worker preserves the users table.
-try{
-  const resetMode=String(process.env.QMES_RESET_MODE||'').trim().toLowerCase();
-  const resetToken=String(process.env.QMES_RESET_BUSINESS_DATA_ONCE||'').trim();
-  if(resetMode==='execute'&&resetToken){
-    execFileSync(process.execPath,[path.resolve(__dirname,'qmes-business-reset-worker.js')],{
-      env:process.env,
-      stdio:'inherit'
-    });
-  }
-}catch(error){
-  console.error('[QMES RESET] startup reset failed',error);
-  process.exit(1);
-}
 
 const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_URL?{rejectUnauthorized:false}:false});
 const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});
@@ -59,7 +41,7 @@ const baseForDepartment=department=>DEPARTMENT_DEFAULTS[String(department||'').t
 const effectiveFor=(user,row)=>{
   if(String(user?.role||'').toLowerCase()==='admin')return ['*'];
   const extras=sanitizePermissions(row?.permissions);
-  const base=row?.department_default===false?[]:baseForDepartment(user.department);
+  const base=row?.department_default===false?[]:baseForDepartment(user?.department);
   return [...new Set([...base,...extras,'dashboard'])];
 };
 async function readPermissionForUser(user){
@@ -76,31 +58,6 @@ async function readPermissionForUser(user){
     updatedAt:row.updated_at||null
   };
 }
-
-function installClient(){
-  try{
-    const indexFile=path.resolve(__dirname,'public','index.html');
-    if(!fs.existsSync(indexFile))return;
-    let html=fs.readFileSync(indexFile,'utf8');
-
-    // Permanently remove all legacy guest/demo assets from the production shell.
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-readonly-open-preload-20260914\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-demo-20260914\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-guest-sandbox-runtime-20260914\.js\?v=[^"]+"><\/script>/g,'');
-
-    html=html.replace(/\n?\s*<link rel="stylesheet" href="\.\/css\/qmes-dashboard-approved-20260911\.css\?v=[^"]+"\s*\/?>/g,'');
-    html=html.replace(/\n?\s*<link rel="stylesheet" href="\.\/css\/qmes-spc-selected-contrast-fix-20260914\.css\?v=[^"]+"\s*\/?>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-dashboard-approved-20260911\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-me-request-guard-20260911\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace(/\n?\s*<script src="\.\/js\/qmes-access-permissions-20260910\.js\?v=[^"]+"><\/script>/g,'');
-
-    html=html.replace('</head>','  <link rel="stylesheet" href="./css/qmes-dashboard-approved-20260911.css?v=20260911-approved2" />\n  <link rel="stylesheet" href="./css/qmes-spc-selected-contrast-fix-20260914.css?v=20260914-final3" />\n</head>');
-    html=html.replace('</body>','  <script src="./js/qmes-access-me-request-guard-20260911.js?v=20260911-guard1"></script>\n  <script src="./js/qmes-dashboard-approved-20260911.js?v=20260911-approved2"></script>\n  <script src="./js/qmes-access-permissions-20260910.js?v=20260910-access-v1"></script>\n</body>');
-    fs.writeFileSync(indexFile,html,'utf8');
-    console.log('[QMES access] production permission client installed; demo assets removed; SPC contrast override loaded');
-  }catch(error){console.error('[QMES access] client install failed',error);}
-}
-installClient();
 
 function install(app){
   if(app.__namoAccessPermissionsInstalled)return;
