@@ -1,0 +1,6 @@
+QMES deploy trigger
+2026-09-15 KST
+Reason: activate NAMO Talk standalone API routes in production startup.
+Required commit: e4aedb1010987447e5b32bd4ee73aabc5161c6b6
+Expected health endpoint: /api/namo-talk-standalone/health
+No database rows are overwritten by this trigger file.
