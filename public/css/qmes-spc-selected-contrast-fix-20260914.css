@@ -1,0 +1,15 @@
+/* NAMO QMES SPC selected-item contrast fix - 2026-09-14 */
+html body:not(:has(.qmes-ipad-pop)) #root#root#root main div.flex.flex-wrap.gap-2.rounded-xl.border.border-slate-700.bg-slate-900.p-3 > button.border-sky-400{
+  background:#e0f2fe!important;
+  border-color:#38bdf8!important;
+  color:#075985!important;
+  opacity:1!important;
+}
+html body:not(:has(.qmes-ipad-pop)) #root#root#root main div.flex.flex-wrap.gap-2.rounded-xl.border.border-slate-700.bg-slate-900.p-3 > button.border-sky-400 > strong{
+  color:#075985!important;
+  opacity:1!important;
+}
+html body:not(:has(.qmes-ipad-pop)) #root#root#root main div.flex.flex-wrap.gap-2.rounded-xl.border.border-slate-700.bg-slate-900.p-3 > button.border-sky-400 > small{
+  color:#0c4a6e!important;
+  opacity:1!important;
+}
