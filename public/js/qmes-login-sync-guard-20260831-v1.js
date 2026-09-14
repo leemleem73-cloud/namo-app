@@ -1,4 +1,12 @@
 /* NAMO QMES - auth/sync coordinator only. No visual/theme injection. */
+/* Customer showcase preload: load the isolated demo data layer synchronously before common.jsx creates DB. */
+(function preloadCustomerDemo(){
+  try{
+    if(document.readyState==='loading'&&!window.__QMES_CUSTOMER_SHOWCASE_20260914__&&!document.querySelector('script[data-qmes-customer-demo-preload]')){
+      document.write('<script data-qmes-customer-demo-preload src="./js/qmes-guest-demo-20260914.js?v=20260914-customer-showcase1"><\/script>');
+    }
+  }catch(error){console.warn('[QMES] customer demo preload skipped',error);}
+})();
 (function installQmesLoginSyncCoordinator(global){
   "use strict";
   if(global.__QMES_LOGIN_SYNC_COORDINATOR_CORE_20260903__) return;
