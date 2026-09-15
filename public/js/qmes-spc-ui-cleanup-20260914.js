@@ -74,18 +74,3 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startObserver,{once:true});
   else startObserver();
 })();
-
-/* Load the production IQC field-history patch.
- * This keeps the existing field-entry logic intact and only adds the shared
- * inspection-history panel to the IQC field input screen.
- */
-(function(){
-  'use strict';
-  const marker='qmes-iqc-field-history-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-iqc-field-history-20260915.js?v=20260915-2';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
