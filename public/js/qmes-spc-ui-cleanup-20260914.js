@@ -105,7 +105,19 @@
   const marker='qmes-inspector-label-fix-loader-20260915';
   if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
   const script=document.createElement('script');
-  script.src='./js/qmes-inspector-label-fix-20260915.js?v=20260915-1';
+  script.src='./js/qmes-inspector-label-fix-20260915.js?v=20260915-2';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
+
+/* Restore IQC item labels and prevent number/status overlap. */
+(function(){
+  'use strict';
+  const marker='qmes-iqc-item-tabs-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-iqc-item-tabs-fix-20260915.js?v=20260915-1';
   script.async=false;
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
