@@ -98,3 +98,15 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Remove duplicate inspector label in IQC/PQC/OQC field headers. */
+(function(){
+  'use strict';
+  const marker='qmes-inspector-label-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-inspector-label-fix-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
