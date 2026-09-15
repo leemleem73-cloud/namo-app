@@ -5,7 +5,7 @@
   const sessionKey='qmes-current-user-v1';
   const loggedIn=()=>{try{return Boolean(window.__QMES_CURRENT_USER__||JSON.parse(sessionStorage.getItem(sessionKey)||'null'));}catch(_){return Boolean(window.__QMES_CURRENT_USER__);}};
 
-  const WORKORDER_STYLE_ID='qmes-workorder-polish-20260915-v2';
+  const WORKORDER_STYLE_ID='qmes-workorder-polish-20260915-v3';
   function ensureWorkOrderPolishStyle(){
     if(document.getElementById(WORKORDER_STYLE_ID))return;
     const style=document.createElement('style');
@@ -51,6 +51,16 @@
       html body #root .qmes-wo-issue-shell .qmes-material-table span[class*="border-emerald"]{color:#16834f!important;}
       html body #root .qmes-wo-issue-shell .qmes-material-table span[class*="border-amber"]{color:#b66a12!important;}
       html body #root .qmes-wo-issue-shell .qmes-material-table span[class*="border-red"]{color:#c53a43!important;}
+
+      /* Keep remainder / error / ratio values centered directly under their headers. */
+      html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(7),html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(8),html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(9){text-align:center!important;vertical-align:middle!important;padding-left:6px!important;padding-right:6px!important;}
+      html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(7) > span,html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(8) > span,html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(9) > span{display:inline-flex!important;align-items:center!important;justify-content:center!important;margin-left:auto!important;margin-right:auto!important;text-align:center!important;}
+
+      /* Total row is a summary row: larger, stronger and centered. */
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td{height:46px!important;vertical-align:middle!important;background:#f7fafc!important;border-top:1px solid #cfdae4!important;border-bottom:1px solid #cfdae4!important;color:#33485c!important;}
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(2){font-size:13px!important;font-weight:850!important;color:#33485c!important;}
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(5),html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(6),html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(7),html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(8),html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(9){font-size:13px!important;line-height:1.2!important;font-weight:850!important;color:#33485c!important;text-align:center!important;white-space:nowrap!important;}
+      html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(5) > *,html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(6) > *,html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(7) > *,html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(8) > *,html body #root .qmes-wo-issue-shell .qmes-material-table tbody tr:last-child td:nth-child(9) > *{font-size:13px!important;line-height:1.2!important;font-weight:850!important;color:#33485c!important;text-align:center!important;}
 
       html body #root .qmes-wo-issue-shell .qmes-material-table td:nth-child(10) > .flex{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:6px!important;width:100%!important;height:30px!important;margin:0!important;}
       html body #root .qmes-wo-issue-shell .qmes-wo-delete-plain,html body #root .qmes-wo-issue-shell .qmes-material-table button.text-red-300{width:auto!important;height:28px!important;min-height:28px!important;padding:0 4px!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#d43b3b!important;-webkit-text-fill-color:#d43b3b!important;font-size:12px!important;line-height:1!important;font-weight:800!important;box-shadow:none!important;white-space:nowrap!important;opacity:1!important;}
