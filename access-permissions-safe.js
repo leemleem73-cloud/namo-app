@@ -2,6 +2,7 @@
 const express=require('express');
 const{Pool}=require('pg');
 require('dotenv').config();
+require('./purchase-history-repair-20260915.js');
 
 const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_URL?{rejectUnauthorized:false}:false});
 const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});
