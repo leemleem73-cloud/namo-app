@@ -75,134 +75,14 @@
   else startObserver();
 })();
 
-/* Load unified field input redesign for IQC/PQC/OQC. */
-(function(){
-  'use strict';
-  const marker='qmes-field-mode-unify-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-field-mode-unify-20260915.js?v=20260915-2';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Load PQC/OQC inspection item tab alignment fix. */
-(function(){
-  'use strict';
-  const marker='qmes-pqc-oqc-item-tabs-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-pqc-oqc-item-tabs-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Remove duplicate inspector label in IQC/PQC/OQC field headers. */
-(function(){
-  'use strict';
-  const marker='qmes-inspector-label-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-inspector-label-fix-20260915.js?v=20260915-2';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Restore IQC item labels and prevent number/status overlap. */
-(function(){
-  'use strict';
-  const marker='qmes-iqc-item-tabs-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-iqc-item-tabs-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Prevent IQC raw-material input clicks from opening the native date picker. */
-(function(){
-  'use strict';
-  const marker='qmes-iqc-material-date-click-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-iqc-material-date-click-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Normalize quantity input text size across IQC/OQC. */
-(function(){
-  'use strict';
-  const marker='qmes-field-quantity-font-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-field-quantity-font-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Make the existing purchase create workflow explicit as 구매 발주 등록. */
-(function(){
-  'use strict';
-  const marker='qmes-purchase-order-register-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-purchase-order-register-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Restore Admin > Employee registration status access controls and center email column. */
-(function(){
-  'use strict';
-  const marker='qmes-member-access-visibility-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-member-access-visibility-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Force purchase list to read authoritative DB and bypass stale shared-sync cache. */
-(function(){
-  'use strict';
-  const marker='qmes-purchase-authoritative-read-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-purchase-authoritative-read-fix-20260915.js?v=20260915-2';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Mirror newly created purchase orders into purchase_orders DB without overwriting core ERP source. */
-(function(){
-  'use strict';
-  const marker='qmes-purchase-create-db-fix-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-purchase-create-db-fix-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
-
-/* Rebuild the imported purchase history exactly from the latest user-supplied capture. */
-(function(){
-  'use strict';
-  const marker='qmes-purchase-capture-rebuild-loader-20260915';
-  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
-  const script=document.createElement('script');
-  script.src='./js/qmes-purchase-capture-rebuild-20260915.js?v=20260915-1';
-  script.async=false;
-  script.dataset.qmesLoader=marker;
-  document.head.appendChild(script);
-})();
+(function(){'use strict';const marker='qmes-field-mode-unify-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-field-mode-unify-20260915.js?v=20260915-2';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-pqc-oqc-item-tabs-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-pqc-oqc-item-tabs-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-inspector-label-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-inspector-label-fix-20260915.js?v=20260915-2';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-iqc-item-tabs-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-iqc-item-tabs-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-iqc-material-date-click-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-iqc-material-date-click-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-field-quantity-font-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-field-quantity-font-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-purchase-order-register-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-purchase-order-register-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-member-access-visibility-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-member-access-visibility-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-purchase-authoritative-read-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-purchase-authoritative-read-fix-20260915.js?v=20260915-2';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-purchase-create-db-fix-loader-20260915';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-purchase-create-db-fix-20260915.js?v=20260915-1';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
+(function(){'use strict';const marker='qmes-purchase-capture-rebuild-loader-20260915-v2';if(document.querySelector(`script[data-qmes-loader="${marker}"]`))return;const script=document.createElement('script');script.src='./js/qmes-purchase-capture-rebuild-20260915.js?v=20260915-2';script.async=false;script.dataset.qmesLoader=marker;document.head.appendChild(script);})();
