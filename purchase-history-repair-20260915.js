@@ -1,9 +1,11 @@
 'use strict';
 
+const { Pool } = require('pg');
+require('dotenv').config();
+
 /*
  * NAMO QMES - legacy purchase history -> new purchase order repair (2026-09-15)
- *
- * Ensures the 18 rows from the old 구매조회 screen exist in purchase_orders.
+ * Ensures all 18 rows from the old 구매조회 screen exist in purchase_orders.
  * Safe to run on every server start:
  * - creates missing rows
  * - updates only SYSTEM-created legacy import rows
@@ -20,7 +22,7 @@ const PURCHASE_HISTORY_REPAIR = [
   ['2026-03-30-1','2026-03-30','LG Chemical','ADC30G(SBR) [KG]',300,11237,3371100,'내부창고(충주)','2026/03/30 -1'],
   ['2026-01-26-1','2026-01-26','강신산업(주)','AOH30(Boehmite) [KG]',300,9700,2910000,'내부창고(충주)','2026/01/26 -1'],
   ['2026-01-23-1','2026-01-23','모리토루 케미칼즈 한국 주식회사','NMP(SNET) [KG]',2000,0,6350561,'내부창고(충주)','2026/01/23 -1'],
-  ['2026-01-13-1','2026-01-13','(주)케미웍스','NMP(PUYANG GUANGMING CHEMICAL) [KG]',3000,2950,8850000,'내부창고(충주)','2026/01/13 -1'],
+  ['2026-01-13-1','2026-01-13','(주)케미렉스','NMP(PUYANG GUANGMING CHEMICAL) [KG]',3000,2950,8850000,'내부창고(충주)','2026/01/13 -1'],
   ['2025-12-03-1','2025-12-03','삼화페인트(주)','스피롤터(a부, b부) [KG]',100,5600,560000,'외부창고(충주)','2025/12/03 -1'],
   ['2025-11-11-1','2025-11-11','강신산업(주)','AOH30(Boehmite) [kg]',100,9700,970000,'외부창고(충주)','2025/11/11 -1'],
   ['2025-11-10-1','2025-11-10','모리토루 케미칼즈 한국 주식회사','NMP(SNET) [kg]',1000,3307,3306737,'외부창고(충주)','2025/11/10 -1'],
@@ -89,7 +91,6 @@ async function repairPurchaseHistory(pool) {
       affected += result.rowCount || 0;
     }
 
-    /* Keep the compatibility payload in sync for screens still reading erp:purchase. */
     const all = await client.query('SELECT * FROM purchase_orders ORDER BY order_date DESC, created_at DESC');
     const rows = all.rows.map(row => ({
       id: row.purchase_no,
@@ -188,6 +189,16 @@ function schedulePurchaseHistoryRepair(pool) {
   };
 
   setTimeout(run, 1200);
+}
+
+/* This module is preloaded by the server, so run the repair automatically after startup. */
+if (process.env.DATABASE_URL) {
+  const startupPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 2,
+  });
+  schedulePurchaseHistoryRepair(startupPool);
 }
 
 module.exports = { schedulePurchaseHistoryRepair, repairPurchaseHistory, PURCHASE_HISTORY_REPAIR };
