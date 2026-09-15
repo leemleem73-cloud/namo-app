@@ -158,3 +158,15 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Restore Admin > Employee registration status access controls and center email column. */
+(function(){
+  'use strict';
+  const marker='qmes-member-access-visibility-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-member-access-visibility-fix-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
