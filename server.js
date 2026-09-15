@@ -282,6 +282,10 @@ fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
 
 process.env.QMES_DASHBOARD_BUILD = process.env.QMES_DASHBOARD_BUILD || `20260903-enterprise-v5-${SHELL_BUILD}`;
 
+// Import approved historical incoming-inspection ledger rows into the shared IQC store.
+// The importer is idempotent and never overwrites an existing matching inspection.
+require('./iqc-history-seed-20260915.js');
+
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
 require('./server-legacy-20260903.js');
