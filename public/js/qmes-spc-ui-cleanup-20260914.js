@@ -86,3 +86,15 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Load PQC/OQC inspection item tab alignment fix. */
+(function(){
+  'use strict';
+  const marker='qmes-pqc-oqc-item-tabs-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-pqc-oqc-item-tabs-fix-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
