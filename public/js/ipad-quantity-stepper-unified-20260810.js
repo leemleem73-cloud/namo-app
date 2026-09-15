@@ -1,7 +1,7 @@
 /* QMES field input quantity steppers — same height as surrounding IQC/OQC fields.
  * IQC quantity controls: 44px (matches IQC basic inputs)
  * OQC quantity controls: 39px (matches OQC basic inputs)
- * Data/validation logic and text styling are unchanged.
+ * Data/validation logic and text styling are unchanged except value font size aligned to normal inputs.
  */
 (function () {
   const STYLE_ID = 'qmes-ipad-quantity-stepper-unified-style';
@@ -36,7 +36,7 @@
       }
       .${CLASS}>strong{
         display:flex!important;align-items:center!important;min-width:0!important;padding:0 13px!important;
-        color:#111827!important;font-size:16px!important;font-weight:700!important;line-height:1!important;
+        color:#111827!important;font-size:12.5px!important;font-weight:700!important;line-height:1!important;
         font-variant-numeric:tabular-nums!important;
       }
       .${CLASS}>span{
