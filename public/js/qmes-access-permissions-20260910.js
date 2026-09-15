@@ -14,8 +14,9 @@
   ];
 
   let accessState=null;
+  let accessLoading=null;
   const clean=v=>String(v||'').replace(/\s+/g,' ').trim();
-  const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const api=async(url,options={})=>{
     const headers={...(options.headers||{})};
     if(options.body&&!headers['Content-Type'])headers['Content-Type']='application/json';
@@ -31,8 +32,9 @@
   }
   function canUseKey(key){
     if(!key)return true;
-    if(accessState?.systemAdmin)return true;
-    const effective=new Set(accessState?.effective||[]);
+    if(!accessState)return false;
+    if(accessState.systemAdmin)return true;
+    const effective=new Set(accessState.effective||[]);
     return effective.has('*')||effective.has(key);
   }
   function enforceSidebar(){
@@ -55,20 +57,53 @@
       section.style.display=any?'':'none';
     });
   }
+  async function loadMine(force=false){
+    if(accessLoading&&!force)return accessLoading;
+    accessLoading=(async()=>{
+      try{
+        accessState=await api('/api/access/me');
+        window.__QMES_ACCESS_STATE__=accessState;
+        enforceSidebar();
+        return accessState;
+      }catch(error){
+        console.warn('[QMES access] current access unavailable',error.message);
+        return null;
+      }finally{
+        accessLoading=null;
+      }
+    })();
+    return accessLoading;
+  }
   function guardNavigation(){
     document.addEventListener('click',event=>{
       const button=event.target.closest?.('#qmes-erp-sidebar .qmes-erp-item');
       if(!button)return;
       const key=keyForButton(button);
-      if(key&&!canUseKey(key)){
-        event.preventDefault();event.stopImmediatePropagation();
-        alert('이 메뉴에 대한 접근 권한이 없습니다.');
+      if(!key)return;
+
+      if(accessState){
+        if(!canUseKey(key)){
+          event.preventDefault();event.stopImmediatePropagation();
+          alert('이 메뉴에 대한 접근 권한이 없습니다.');
+        }
+        return;
       }
+
+      event.preventDefault();event.stopImmediatePropagation();
+      const retryButton=button;
+      loadMine().then(state=>{
+        if(!state){
+          setTimeout(()=>loadMine(true).then(retryState=>{
+            if(!retryState){alert('접근권한 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');return;}
+            if(canUseKey(key))retryButton.click();
+            else alert('이 메뉴에 대한 접근 권한이 없습니다.');
+          }),120);
+          return;
+        }
+        if(canUseKey(key))retryButton.click();
+        else alert('이 메뉴에 대한 접근 권한이 없습니다.');
+      });
     },true);
-  }
-  async function loadMine(){
-    try{accessState=await api('/api/access/me');enforceSidebar();}
-    catch(error){console.warn('[QMES access] current access unavailable',error.message);}
   }
 
   function ensureStyle(){
