@@ -158,8 +158,16 @@
     document.querySelectorAll('.qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-lots"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-lots"]').forEach(syncCustomListInput);
   }
 
+  function closeDatePickerFocus(exceptInput) {
+    const active = document.activeElement;
+    if (active && active !== exceptInput && active instanceof HTMLInputElement && active.type === "date") {
+      try { active.blur(); } catch (_error) {}
+    }
+  }
+
   function openCustomList(input) {
     if (!input?.matches('.qmes-ipad-pop input[data-qmes-list-id]')) return;
+    closeDatePickerFocus(input);
     const dropdown = getDropdown(input);
     if (!dropdown) return;
     renderDropdown(input, dropdown);
@@ -188,10 +196,12 @@
     if (event.key === "Escape" && event.target?.matches?.('.qmes-ipad-pop input[data-qmes-list-id]')) getDropdown(event.target)?.classList.remove("is-open");
   });
   document.addEventListener("pointerdown", (event) => {
+    const materialOrLotInput = event.target.closest?.('.qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-materials"], .qmes-ipad-pop input[data-qmes-list-id="qmes-ipad-lots"], .qmes-ipad-pop input[list="qmes-ipad-materials"], .qmes-ipad-pop input[list="qmes-ipad-lots"]');
+    if (materialOrLotInput) closeDatePickerFocus(materialOrLotInput);
     document.querySelectorAll(`.${DROPDOWN_CLASS}.is-open`).forEach((dropdown) => {
       if (!dropdown.parentElement?.contains(event.target)) dropdown.classList.remove("is-open");
     });
-  });
+  }, true);
 
   function enhance() {
     ensureStyle();
