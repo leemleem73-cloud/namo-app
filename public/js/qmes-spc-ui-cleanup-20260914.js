@@ -134,3 +134,15 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Normalize quantity input text size across IQC/OQC. */
+(function(){
+  'use strict';
+  const marker='qmes-field-quantity-font-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-field-quantity-font-fix-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
