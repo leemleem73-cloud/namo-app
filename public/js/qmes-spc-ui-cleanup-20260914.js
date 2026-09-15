@@ -74,3 +74,15 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startObserver,{once:true});
   else startObserver();
 })();
+
+/* Load the IQC field input compact redesign patch. */
+(function(){
+  'use strict';
+  const marker='qmes-iqc-field-redesign-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-iqc-field-redesign-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
