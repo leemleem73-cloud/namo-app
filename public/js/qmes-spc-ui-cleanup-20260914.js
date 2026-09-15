@@ -146,3 +146,15 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Make the existing purchase create workflow explicit as 구매 발주 등록. */
+(function(){
+  'use strict';
+  const marker='qmes-purchase-order-register-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-purchase-order-register-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
