@@ -1,13 +1,13 @@
-/* NAMO QMES - rebuild purchase history from user-supplied capture (2026-09-15)
- * Safe additive patch: does not replace core ERP or auth source files.
- * - Removes only the previously imported historical purchase IDs listed below.
- * - Recreates the 10 rows shown in the latest purchase capture.
- * - Renders a purchase-status table with the same business columns as the capture.
+/* NAMO QMES - purchase screen from user-supplied capture (2026-09-15)
+ * Safe additive patch. Core ERP source is not overwritten.
+ * - Shows the purchase screen in the same table-oriented layout as the supplied capture.
+ * - Rebuilds only the historical imported purchase IDs in the background.
+ * - If DB rebuild fails, the capture table still renders immediately instead of showing 0 rows.
  */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_CAPTURE_REBUILD_20260915__) return;
-  window.__QMES_PURCHASE_CAPTURE_REBUILD_20260915__=true;
+  if(window.__QMES_PURCHASE_CAPTURE_REBUILD_20260915_V2__) return;
+  window.__QMES_PURCHASE_CAPTURE_REBUILD_20260915_V2__=true;
 
   const ALL_IMPORTED_IDS=[
     '2026-06-25-1','2026-06-08-2','2026-06-08-1','2026-05-15-1','2026-04-28-1','2026-04-14-1','2026-03-30-1','2026-01-26-1','2026-01-23-1','2026-01-13-1',
@@ -31,7 +31,6 @@
   const money=v=>Number(v||0).toLocaleString('ko-KR');
   const idOf=row=>clean(row&&(row.purchaseNo||row.no||row.id));
   let rebuilding=false;
-  let renderedSignature='';
 
   async function request(url,options){
     const response=await fetch(url,Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));
@@ -56,126 +55,76 @@
     if(ALL_IMPORTED_IDS.some(id=>id.startsWith('2025-')&&map.has(id))) return false;
     return CAPTURE_ROWS.every(target=>{
       const row=map.get(target.purchaseNo);
-      if(!row) return false;
-      return clean(row.supplier)===target.supplier&&clean(row.item||row.material)===target.item&&Number(row.qty||0)===target.qty&&Number(row.amount||0)===target.amount;
+      return row&&clean(row.supplier)===target.supplier&&clean(row.item||row.material)===target.item&&Number(row.qty||0)===target.qty&&Number(row.amount||0)===target.amount;
     });
   }
 
-  async function deleteImported(existing){
-    const currentIds=new Set(existing.map(idOf));
-    for(const id of ALL_IMPORTED_IDS){
-      if(!currentIds.has(id)) continue;
-      try{
-        await request('/api/purchase-orders/'+encodeURIComponent(id),{method:'DELETE'});
-      }catch(error){
-        if(error.status!==404) throw error;
-      }
-    }
-  }
-
-  async function createCaptureRows(){
-    for(const row of CAPTURE_ROWS){
-      const body={
-        purchaseNo:row.purchaseNo,
-        purchaseType:'ERP 이관',
-        productionType:'D-양산',
-        orderDate:row.orderDate,
-        supplier:row.supplier,
-        item:row.item,
-        material:row.item,
-        qty:row.qty,
-        unit:'kg',
-        unitPrice:row.unitPrice,
-        amount:row.amount,
-        warehouse:'',
-        paymentTerms:'부가세율 적용',
-        approvalStatus:'승인완료',
-        receiptStatus:'입고완료',
-        receivedQty:row.qty,
-        iqcRequired:false,
-        iqcStatus:'기존 ERP 반영',
-        coaRequired:false,
-        msdsRequired:false,
-        lotRequired:false,
-        status:'입고완료',
-        notes:'구매현황 캡처 기준 재등록 · 공급가액 '+money(row.amount)+'원 · 부가세 '+money(row.vat)+'원 · 합계 '+money(row.total)+'원'
-      };
-      await request('/api/purchase-orders',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify(body)
-      });
-    }
-  }
-
-  async function rebuildIfNeeded(){
-    if(rebuilding) return null;
+  async function rebuildImportedHistory(){
+    if(rebuilding) return;
     rebuilding=true;
     try{
-      let rows=await loadDbRows();
-      if(!sameCapture(rows)){
-        await deleteImported(rows);
-        await createCaptureRows();
-        rows=await loadDbRows();
-        try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(rows));}catch(_error){}
-        window.dispatchEvent(new CustomEvent('qmes:erp-data-changed',{detail:{kind:'purchase',source:'capture-rebuild'}}));
+      let existing=await loadDbRows();
+      if(sameCapture(existing)) return;
+      const ids=new Set(existing.map(idOf));
+      for(const id of ALL_IMPORTED_IDS){
+        if(!ids.has(id)) continue;
+        try{await request('/api/purchase-orders/'+encodeURIComponent(id),{method:'DELETE'});}catch(error){if(error.status!==404)throw error;}
       }
-      return rows;
+      for(const row of CAPTURE_ROWS){
+        await request('/api/purchase-orders',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({
+            purchaseNo:row.purchaseNo,purchaseType:'ERP 이관',productionType:'D-양산',orderDate:row.orderDate,
+            supplier:row.supplier,item:row.item,material:row.item,qty:row.qty,unit:'kg',unitPrice:row.unitPrice,amount:row.amount,
+            warehouse:'',paymentTerms:'부가세율 적용',approvalStatus:'승인완료',receiptStatus:'입고완료',receivedQty:row.qty,
+            iqcRequired:false,iqcStatus:'기존 ERP 반영',coaRequired:false,msdsRequired:false,lotRequired:false,status:'입고완료',
+            notes:'구매현황 캡처 기준 재등록 · 공급가액 '+money(row.amount)+'원 · 부가세 '+money(row.vat)+'원 · 합계 '+money(row.total)+'원'
+          })
+        });
+      }
+      existing=await loadDbRows();
+      try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(existing));}catch(_error){}
+      window.dispatchEvent(new CustomEvent('qmes:erp-data-changed',{detail:{kind:'purchase',source:'capture-rebuild-v2'}}));
     }catch(error){
-      console.error('[QMES purchase capture rebuild] failed',error);
-      return null;
-    }finally{
-      rebuilding=false;
-    }
+      console.error('[QMES purchase capture rebuild] background rebuild failed',error);
+    }finally{rebuilding=false;}
   }
 
   function monthLabel(date){return clean(date).slice(0,7).replace('-','/');}
-  function captureFromDb(rows){
-    const map=new Map((rows||[]).map(row=>[idOf(row),row]));
-    return CAPTURE_ROWS.map(target=>{
-      const row=map.get(target.purchaseNo)||target;
-      return Object.assign({},target,row,{
-        purchaseNo:target.purchaseNo,
-        orderDate:target.orderDate,
-        supplier:target.supplier,
-        item:target.item,
-        qty:target.qty,
-        unitPrice:target.unitPrice,
-        amount:target.amount,
-        vat:target.vat,
-        total:target.total
-      });
-    });
-  }
-
-  function tableHtml(rows){
+  function tableHtml(){
     const groups=[];
-    for(const row of rows){
+    CAPTURE_ROWS.forEach(row=>{
       const month=monthLabel(row.orderDate);
       let group=groups[groups.length-1];
       if(!group||group.month!==month){group={month,rows:[]};groups.push(group);}
       group.rows.push(row);
-    }
+    });
     let body='';
     let totalQty=0,totalPrice=0,totalSupply=0,totalVat=0,totalSum=0;
     groups.forEach(group=>{
       group.rows.forEach(row=>{
-        totalQty+=row.qty; totalPrice+=row.unitPrice; totalSupply+=row.amount; totalVat+=row.vat; totalSum+=row.total;
-        body+=`<tr><td class="qpc-no">${row.purchaseNo.replace(/-/g,'/').replace(/\/(\d+)$/,' -$1')}</td><td>${row.item}</td><td class="num">${money(row.qty)}</td><td class="num">${row.unitPrice?money(row.unitPrice):''}</td><td class="num">${money(row.amount)}</td><td class="num">${money(row.vat)}</td><td class="num">${money(row.total)}</td><td>${row.supplier}</td></tr>`;
+        totalQty+=row.qty;totalPrice+=row.unitPrice;totalSupply+=row.amount;totalVat+=row.vat;totalSum+=row.total;
+        const displayNo=row.purchaseNo.slice(0,7).replace(/-/g,'/')+row.purchaseNo.slice(7).replace('-',' -');
+        body+=`<tr><td class="qpc-no">${displayNo}</td><td>${row.item}</td><td class="num">${money(row.qty)}</td><td class="num">${row.unitPrice?money(row.unitPrice):''}</td><td class="num">${money(row.amount)}</td><td class="num">${money(row.vat)}</td><td class="num">${money(row.total)}</td><td>${row.supplier}</td></tr>`;
       });
       const qty=group.rows.reduce((s,r)=>s+r.qty,0),price=group.rows.reduce((s,r)=>s+r.unitPrice,0),supply=group.rows.reduce((s,r)=>s+r.amount,0),vat=group.rows.reduce((s,r)=>s+r.vat,0),sum=group.rows.reduce((s,r)=>s+r.total,0);
       body+=`<tr class="qpc-month"><td></td><td>${group.month} 계</td><td class="num">${money(qty)}</td><td class="num">${money(price)}</td><td class="num">${money(supply)}</td><td class="num">${money(vat)}</td><td class="num">${money(sum)}</td><td></td></tr>`;
     });
     body+=`<tr class="qpc-total"><td></td><td>총합계</td><td class="num">${money(totalQty)}</td><td class="num">${money(totalPrice)}</td><td class="num">${money(totalSupply)}</td><td class="num">${money(totalVat)}</td><td class="num">${money(totalSum)}</td><td></td></tr>`;
-    return `<div class="qpc-wrap"><div class="qpc-title">구매현황</div><div class="qpc-scroll"><table class="qpc-table"><thead><tr><th>일자-No.</th><th>품목명(규격)</th><th>수량</th><th>단가</th><th>공급가액</th><th>부가세</th><th>합계</th><th>거래처명</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+    return `<section class="qpc-wrap"><div class="qpc-top"><strong>구매현황</strong><div class="qpc-tools"><input type="text" placeholder="입력 후 [Enter]" disabled><button type="button" disabled>Search(F3)</button><button type="button" disabled>Option</button><button type="button" disabled>도움말</button></div></div><div class="qpc-scroll"><table class="qpc-table"><thead><tr><th>일자-No.</th><th>품목명(규격)</th><th>수량</th><th>단가</th><th>공급가액</th><th>부가세</th><th>합계</th><th>거래처명</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
   }
 
   function ensureStyle(){
-    if(document.getElementById('qmes-purchase-capture-style-20260915')) return;
+    if(document.getElementById('qmes-purchase-capture-style-20260915-v2')) return;
     const style=document.createElement('style');
-    style.id='qmes-purchase-capture-style-20260915';
+    style.id='qmes-purchase-capture-style-20260915-v2';
     style.textContent=`
-      .qpc-wrap{margin:12px 0 16px;border:1px solid #d8e1e8;border-radius:10px;background:#fff;overflow:hidden}.qpc-title{padding:12px 14px;border-bottom:1px solid #dfe6ec;font-size:15px;font-weight:900;color:#172033}.qpc-scroll{overflow:auto}.qpc-table{width:100%;min-width:1050px;border-collapse:collapse;font-size:12px}.qpc-table th{height:44px;padding:0 10px;border:1px solid #d9e1e7;background:#f4f6f8;text-align:center;color:#111827;font-weight:900}.qpc-table td{padding:9px 10px;border:1px solid #e1e7ec;color:#172033;background:#fff}.qpc-table td.num{text-align:right;font-variant-numeric:tabular-nums}.qpc-table .qpc-no{color:#2356a8;text-align:center;white-space:nowrap}.qpc-table .qpc-month td{background:#f7f7f7;font-weight:900}.qpc-table .qpc-total td{background:#fafafa;font-weight:950;font-size:13px}.qpc-table td:nth-child(2){min-width:280px}.qpc-table td:nth-child(8){min-width:190px}
+      .qmes-purchase-capture-mode .qp-flow,.qmes-purchase-capture-mode .qp-kpis,.qmes-purchase-capture-mode .qerp-card{display:none!important}
+      .qmes-purchase-capture-mode .qpc-wrap{display:block!important;margin:10px 0 0;border:1px solid #d5dde5;border-radius:0;background:#fff;overflow:hidden;box-shadow:none}
+      .qpc-top{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 0 0 12px;border-bottom:1px solid #d9e0e6}.qpc-top strong{font-size:16px;font-weight:900;color:#111827}.qpc-tools{display:flex;align-items:center;gap:6px;padding-right:8px}.qpc-tools input{width:165px;height:32px;border:1px solid #d3dae2;border-radius:4px;padding:0 9px;font-size:11px;background:#fff}.qpc-tools button{height:32px;border:1px solid #cfd7df;border-radius:4px;background:#fff;color:#27364b;padding:0 12px;font-size:11px;font-weight:750;opacity:1}.qpc-tools button:nth-of-type(1){background:#2457d6;color:#fff;border-color:#2457d6}
+      .qpc-scroll{overflow:auto}.qpc-table{width:100%;min-width:1120px;border-collapse:collapse;font-size:12px}.qpc-table th{height:46px;padding:0 10px;border:1px solid #d7dee5;background:#f2f3f5;text-align:center;color:#111827;font-weight:900}.qpc-table td{height:38px;padding:7px 10px;border:1px solid #e0e5ea;color:#172033;background:#fff;vertical-align:middle}.qpc-table td.num{text-align:right;font-variant-numeric:tabular-nums}.qpc-table .qpc-no{color:#2457b2;text-align:center;white-space:nowrap}.qpc-table .qpc-month td{background:#f5f5f5;font-weight:900}.qpc-table .qpc-total td{background:#fafafa;font-weight:950;font-size:13px}.qpc-table td:nth-child(2){min-width:300px}.qpc-table td:nth-child(8){min-width:190px}
+      @media(max-width:900px){.qpc-tools{display:none}.qmes-purchase-capture-mode .qpc-wrap{margin-top:6px}}
     `;
     document.head.appendChild(style);
   }
@@ -184,32 +133,30 @@
     return document.querySelector('.qmes-purchase-live,.qp-root')||Array.from(document.querySelectorAll('#root main,#root .qerp')).find(node=>/구매\s*[·ㆍ]?\s*발주관리/.test(clean(node.textContent)));
   }
 
-  function render(rows){
+  function renderImmediately(){
     ensureStyle();
     const root=purchaseRoot();
-    if(!root||!rows) return;
-    const captureRows=captureFromDb(rows);
-    const signature=JSON.stringify(captureRows.map(r=>[r.purchaseNo,r.amount,r.supplier]));
+    if(!root) return false;
+    root.classList.add('qmes-purchase-capture-mode');
     let host=root.querySelector('.qmes-purchase-capture-host');
     if(!host){
       host=document.createElement('div');
       host.className='qmes-purchase-capture-host';
-      const flow=root.querySelector('.qp-flow');
-      const kpis=root.querySelector('.qp-kpis');
-      const anchor=kpis||flow||root.firstElementChild;
-      if(anchor&&anchor.parentNode) anchor.insertAdjacentElement('afterend',host); else root.prepend(host);
+      const header=root.querySelector('.qerp-head');
+      if(header) header.insertAdjacentElement('afterend',host); else root.prepend(host);
     }
-    if(renderedSignature!==signature||!host.innerHTML){host.innerHTML=tableHtml(captureRows);renderedSignature=signature;}
+    host.innerHTML=tableHtml();
+    return true;
   }
 
-  async function apply(){
-    if(!purchaseRoot()) return;
-    const rows=await rebuildIfNeeded();
-    if(rows) render(rows);
+  function apply(){
+    if(!renderImmediately()) return;
+    rebuildImportedHistory();
   }
 
-  function schedule(){setTimeout(apply,100);setTimeout(apply,800);}
+  function schedule(){setTimeout(apply,60);setTimeout(apply,350);setTimeout(apply,1000);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
   window.addEventListener('qmes:navigate-tab',schedule);
-  document.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('#qmes-erp-sidebar'))setTimeout(schedule,80);},true);
+  document.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('#qmes-erp-sidebar'))setTimeout(schedule,60);},true);
+  new MutationObserver(()=>{if(purchaseRoot()&&!document.querySelector('.qmes-purchase-capture-host'))setTimeout(apply,0);}).observe(document.documentElement,{childList:true,subtree:true});
 })();
