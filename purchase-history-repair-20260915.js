@@ -6,6 +6,7 @@ require('dotenv').config();
 /*
  * NAMO QMES - legacy purchase history -> new purchase order repair (2026-09-15)
  * Ensures all 18 rows from the old 구매조회 screen exist in purchase_orders.
+ * The 2026 rows below are aligned to the latest 구매현황 report supplied by the user.
  * Safe to run on every server start:
  * - creates missing rows
  * - updates only SYSTEM-created legacy import rows
@@ -22,7 +23,7 @@ const PURCHASE_HISTORY_REPAIR = [
   ['2026-03-30-1','2026-03-30','LG Chemical','ADC30G(SBR) [KG]',300,11237,3371100,'내부창고(충주)','2026/03/30 -1'],
   ['2026-01-26-1','2026-01-26','강신산업(주)','AOH30(Boehmite) [KG]',300,9700,2910000,'내부창고(충주)','2026/01/26 -1'],
   ['2026-01-23-1','2026-01-23','모리토루 케미칼즈 한국 주식회사','NMP(SNET) [KG]',2000,0,6350561,'내부창고(충주)','2026/01/23 -1'],
-  ['2026-01-13-1','2026-01-13','(주)케미렉스','NMP(PUYANG GUANGMING CHEMICAL) [KG]',3000,2950,8850000,'내부창고(충주)','2026/01/13 -1'],
+  ['2026-01-13-1','2026-01-13','(주)케미웍스','NMP(PUYANG GUANGMING CHEMICAL) [KG]',3000,2950,8850000,'내부창고(충주)','2026/01/13 -1'],
   ['2025-12-03-1','2025-12-03','삼화페인트(주)','스피롤터(a부, b부) [KG]',100,5600,560000,'외부창고(충주)','2025/12/03 -1'],
   ['2025-11-11-1','2025-11-11','강신산업(주)','AOH30(Boehmite) [kg]',100,9700,970000,'외부창고(충주)','2025/11/11 -1'],
   ['2025-11-10-1','2025-11-10','모리토루 케미칼즈 한국 주식회사','NMP(SNET) [kg]',1000,3307,3306737,'외부창고(충주)','2025/11/10 -1'],
@@ -48,7 +49,7 @@ async function repairPurchaseHistory(pool) {
     let affected = 0;
 
     for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_REPAIR) {
-      const note = `기존 ERP 거래내역 · 신규 구매 발주 이관 v3 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`;
+      const note = `기존 ERP 거래내역 · 신규 구매 발주 이관 v4 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`;
       const result = await client.query(
         `INSERT INTO purchase_orders (
            purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
@@ -145,10 +146,10 @@ async function repairPurchaseHistory(pool) {
 
     await client.query(
       `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
-       VALUES ('purchase', 'repair:purchase-history-v3', $1::jsonb, 'SYSTEM', NOW())
+       VALUES ('purchase', 'repair:purchase-history-v4', $1::jsonb, 'SYSTEM', NOW())
        ON CONFLICT (record_type, record_key)
        DO UPDATE SET payload = EXCLUDED.payload, updated_by = 'SYSTEM', updated_at = NOW()`,
-      [JSON.stringify({version:3,count:PURCHASE_HISTORY_REPAIR.length,affected})]
+      [JSON.stringify({version:4,count:PURCHASE_HISTORY_REPAIR.length,affected})]
     );
 
     await client.query('COMMIT');
@@ -191,7 +192,7 @@ function schedulePurchaseHistoryRepair(pool) {
   setTimeout(run, 1200);
 }
 
-/* This module is preloaded by the server, so run the repair automatically after startup. */
+/* This module is preloaded by server.js and repairs purchase data after startup. */
 if (process.env.DATABASE_URL) {
   const startupPool = new Pool({
     connectionString: process.env.DATABASE_URL,
