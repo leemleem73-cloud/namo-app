@@ -182,3 +182,27 @@
   script.dataset.qmesLoader=marker;
   document.head.appendChild(script);
 })();
+
+/* Mirror newly created purchase orders into purchase_orders DB without overwriting core ERP source. */
+(function(){
+  'use strict';
+  const marker='qmes-purchase-create-db-fix-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-purchase-create-db-fix-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
+
+/* Rebuild the imported purchase history exactly from the latest user-supplied capture. */
+(function(){
+  'use strict';
+  const marker='qmes-purchase-capture-rebuild-loader-20260915';
+  if(document.querySelector(`script[data-qmes-loader="${marker}"]`)) return;
+  const script=document.createElement('script');
+  script.src='./js/qmes-purchase-capture-rebuild-20260915.js?v=20260915-1';
+  script.async=false;
+  script.dataset.qmesLoader=marker;
+  document.head.appendChild(script);
+})();
