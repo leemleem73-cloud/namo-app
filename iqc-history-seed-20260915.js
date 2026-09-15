@@ -58,9 +58,6 @@ if (!connectionString) {
     unitWeight: '',
     calculatedWeight: '',
     barcodeQty: '',
-    // The legacy ledger records packaging/appearance as '이상없음' and overall judgment as OK.
-    // Map these historical passing records to the current IQC pass fields while retaining
-    // the original wording below for audit traceability.
     visual: '합격',
     label: '합격',
     weight: '합격',
@@ -146,3 +143,7 @@ if (!connectionString) {
     }
   })();
 }
+
+// Run the purchase-history migration from the same startup preload that server.js already loads.
+// The purchase migration is idempotent and only updates SYSTEM-created legacy rows.
+require('./purchase-history-repair-20260915.js');
