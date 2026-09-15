@@ -1,6 +1,7 @@
-/* QMES field input quantity steppers — single 54px UI for IQC/OQC.
- * Legacy steppers from ipad-iqc-material-add are removed instead of hidden,
- * so each quantity field has only one rendered control.
+/* QMES field input quantity steppers — same height as surrounding IQC/OQC fields.
+ * IQC quantity controls: 44px (matches IQC basic inputs)
+ * OQC quantity controls: 39px (matches OQC basic inputs)
+ * Data/validation logic and text styling are unchanged.
  */
 (function () {
   const STYLE_ID = 'qmes-ipad-quantity-stepper-unified-style';
@@ -19,26 +20,43 @@
         opacity:0!important;pointer-events:none!important;padding:0!important;border:0!important;
       }
       .${CLASS}{
-        width:100%!important;height:54px!important;min-height:54px!important;box-sizing:border-box!important;
-        display:grid!important;grid-template-columns:minmax(0,1fr) 42px!important;overflow:hidden!important;
-        border:1px solid #b8c4d0!important;border-radius:10px!important;background:#fff!important;
-        box-shadow:none!important;color:#111827!important;
+        width:100%!important;
+        height:var(--qmes-stepper-height,39px)!important;
+        min-height:var(--qmes-stepper-height,39px)!important;
+        max-height:var(--qmes-stepper-height,39px)!important;
+        box-sizing:border-box!important;
+        display:grid!important;
+        grid-template-columns:minmax(0,1fr) 38px!important;
+        overflow:hidden!important;
+        border:1px solid #b8c4d0!important;
+        border-radius:8px!important;
+        background:#fff!important;
+        box-shadow:none!important;
+        color:#111827!important;
       }
       .${CLASS}>strong{
-        display:flex!important;align-items:center!important;min-width:0!important;padding:0 14px!important;
+        display:flex!important;align-items:center!important;min-width:0!important;padding:0 13px!important;
         color:#111827!important;font-size:16px!important;font-weight:700!important;line-height:1!important;
         font-variant-numeric:tabular-nums!important;
       }
-      .${CLASS}>span{display:grid!important;grid-template-rows:1fr 1fr!important;border-left:1px solid #cbd5e1!important;}
+      .${CLASS}>span{
+        display:grid!important;
+        grid-template-rows:1fr 1fr!important;
+        min-height:0!important;
+        border-left:1px solid #cbd5e1!important;
+      }
       .${CLASS} button{
-        min-width:0!important;width:100%!important;height:27px!important;min-height:0!important;
+        min-width:0!important;width:100%!important;
+        height:var(--qmes-stepper-half,19.5px)!important;
+        min-height:var(--qmes-stepper-half,19.5px)!important;
+        max-height:var(--qmes-stepper-half,19.5px)!important;
         padding:0!important;margin:0!important;border:0!important;border-radius:0!important;
         background:#f8fafc!important;color:#475569!important;font-size:10px!important;font-weight:800!important;
-        line-height:26px!important;cursor:pointer!important;box-shadow:none!important;
+        line-height:1!important;cursor:pointer!important;box-shadow:none!important;
       }
       .${CLASS} button:first-child{border-bottom:1px solid #cbd5e1!important;}
       .${CLASS} button:hover,.${CLASS} button:focus-visible{background:#e2e8f0!important;color:#0f172a!important;outline:none!important;}
-      .${CLASS}:focus-within{border-color:#2bc3ec!important;box-shadow:0 0 0 3px rgba(43,195,236,.12)!important;}
+      .${CLASS}:focus-within{border-color:#2bc3ec!important;box-shadow:0 0 0 2px rgba(43,195,236,.10)!important;}
     `;
     document.head.appendChild(style);
   }
@@ -70,6 +88,24 @@
   function removeLegacyStepper(label){
     label.querySelectorAll(`:scope>.${LEGACY_NUMBER},:scope>.${LEGACY_SHIP}`).forEach(node=>node.remove());
     label.classList.remove('qmes-ipad-number-field','qmes-ipad-ship-step-field');
+  }
+
+  function applyFieldHeight(label,box){
+    const root=label.closest('.qmes-field-mode-unify');
+    const mode=String(root?.dataset?.qmesMode||'').toUpperCase();
+    const height=mode==='IQC'?44:39;
+    const half=height/2;
+    box.style.setProperty('--qmes-stepper-height',`${height}px`);
+    box.style.setProperty('--qmes-stepper-half',`${half}px`);
+    box.style.setProperty('height',`${height}px`,'important');
+    box.style.setProperty('min-height',`${height}px`,'important');
+    box.style.setProperty('max-height',`${height}px`,'important');
+    box.querySelectorAll('button').forEach(button=>{
+      button.style.setProperty('height',`${half}px`,'important');
+      button.style.setProperty('min-height',`${half}px`,'important');
+      button.style.setProperty('max-height',`${half}px`,'important');
+      button.style.setProperty('line-height','1','important');
+    });
   }
 
   function enhanceLabel(label){
@@ -106,6 +142,8 @@
       box.__qmesSyncValue=sync;
       sync();
     }else if(typeof box.__qmesSyncValue==='function') box.__qmesSyncValue();
+
+    applyFieldHeight(label,box);
   }
 
   function enhance(){
@@ -119,6 +157,7 @@
     queued=true;
     requestAnimationFrame(()=>{queued=false;enhance();});
   });
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-qmes-mode']});
+  window.addEventListener('qmes:navigate-tab',()=>setTimeout(enhance,0));
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',enhance,{once:true}); else enhance();
 })();
