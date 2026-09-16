@@ -158,149 +158,185 @@
 })();
 
 /* =========================================================
-   QMES PURCHASE CREATE BUTTON / APPROVED MODAL RECOVERY
-   Additive only: no data/save logic replacement.
-   Makes the top '+ 신규 구매 발주' button open the existing purchase form,
-   then hands that original form to the approved 4-section target layout.
+   QMES PURCHASE CREATE DIRECT BRIDGE
+   2026-09-16
+   - The approved top button opens the real React purchase form directly.
+   - The real form is adapted in-place for the approved 4-section target layout.
+   - No purchase save/data logic is replaced.
    ========================================================= */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_CREATE_RECOVERY_20260916__) return;
-  window.__QMES_PURCHASE_CREATE_RECOVERY_20260916__ = true;
+  if(window.__QMES_PURCHASE_CREATE_DIRECT_BRIDGE_20260916__) return;
+  window.__QMES_PURCHASE_CREATE_DIRECT_BRIDGE_20260916__ = true;
 
   const clean = v => String(v == null ? '' : v).replace(/\s+/g,' ').trim();
   let opening = false;
 
-  function visible(el){
-    if(!el || !el.isConnected) return false;
-    const s = getComputedStyle(el);
-    return s.display !== 'none' && s.visibility !== 'hidden';
+  function ensureStyle(){
+    if(document.getElementById('qmes-purchase-create-direct-style-20260916')) return;
+    const style = document.createElement('style');
+    style.id = 'qmes-purchase-create-direct-style-20260916';
+    style.textContent = `
+      .qmes-purchase-live.qpx-enterprise-safe-v2 > .qp-modal-bg[data-qmes-direct-purchase-modal="1"],
+      .qmes-purchase-live .qp-modal-bg[data-qmes-direct-purchase-modal="1"]{
+        display:grid!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+      }
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal{display:block!important}
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal .qpx-modal-head h2{
+        margin:0!important;font-size:21px!important;line-height:1.15!important;font-weight:950!important;color:#fff!important;
+      }
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal .qpx-modal-head{
+        border-radius:10px 10px 0 0!important;
+      }
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal .qp-body.qerp-form.qpdz-target-form{
+        padding:4px 2px 68px!important;
+      }
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal .qpx-steps{margin-left:auto!important}
+      .qmes-purchase-live .qp-modal.qpx-form-card.qpdz-target-modal .qp-close{flex:none!important}
+    `;
+    document.head.appendChild(style);
   }
 
   function purchaseActive(){
-    const host = Array.from(document.querySelectorAll('.qpx-enterprise-host')).find(visible);
+    const host = document.querySelector('.qpx-enterprise-host');
     if(!host) return false;
-    return Array.from(document.querySelectorAll('h1,h2,h3,h4,[class*="title"]')).some(el =>
-      visible(el) && /^구매\s*[·ㆍ]?\s*발주관리$/.test(clean(el.textContent))
-    );
+    const title = host.querySelector('.qpx-title');
+    return !!title && /^구매\s*[·ㆍ]?\s*발주관리$/.test(clean(title.textContent));
   }
 
-  function modalTitle(){
-    return Array.from(document.querySelectorAll('h1,h2,h3,h4,strong,[class*="modal-title"],[class*="title"]')).find(el =>
-      visible(el) && /^신규\s*구매\s*발주\s*등록$/.test(clean(el.textContent))
-    ) || null;
+  function findCoreCreateTrigger(){
+    const candidates = Array.from(document.querySelectorAll('.qp-root .qerp-head button,.qp-root button.qerp-btn'));
+    return candidates.find(btn=>{
+      if(btn.closest('.qpx-enterprise-host')) return false;
+      const text = clean(btn.textContent).replace(/^[+＋]\s*/,'');
+      return text === '신규 구매 발주' || text === '구매 발주 등록';
+    }) || null;
   }
 
-  function approvedModalPresent(){
-    return !!document.querySelector('.qpdz-target-modal .qpdz-target-ui') || !!modalTitle();
+  function findCoreModal(){
+    return Array.from(document.querySelectorAll('.qp-modal-bg')).find(bg=>{
+      const title = bg.querySelector('.qp-modal-head h2,.qp-modal h2');
+      return title && /^신규\s*구매\s*발주\s*등록$/.test(clean(title.textContent));
+    }) || null;
   }
 
-  function findLegacyCreateTrigger(){
-    const nodes = Array.from(document.querySelectorAll('button,a,[role="button"]'));
-    let best = null;
-    let bestScore = -1;
-    for(const el of nodes){
-      if(el.closest('.qpx-enterprise-host,.qpdz-target-ui,.qpdz-target-modal')) continue;
-      const text = clean(el.textContent);
-      const aria = clean(el.getAttribute('aria-label'));
-      const title = clean(el.getAttribute('title'));
-      const all = (text+' '+aria+' '+title).replace(/\s+/g,' ').trim();
-      let score = -1;
-      if(/^\+?\s*신규\s*구매\s*발주$/.test(text) || /^＋\s*신규\s*구매\s*발주$/.test(text)) score = 100;
-      else if(/구매\s*발주\s*등록/.test(all)) score = 90;
-      else if(/신규\s*발주/.test(all)) score = 80;
-      else if(/발주서\s*생성/.test(all)) score = 70;
-      if(score > bestScore){ best = el; bestScore = score; }
-    }
-    return best;
+  function addProxyButtons(modal,body){
+    if(body.querySelector('[data-qmes-target-submit-proxy]')) return;
+
+    const submitProxy = document.createElement('button');
+    submitProxy.type = 'button';
+    submitProxy.textContent = '결재상신';
+    submitProxy.hidden = true;
+    submitProxy.setAttribute('data-qmes-target-submit-proxy','1');
+    submitProxy.addEventListener('click',()=>{
+      if(typeof modal.requestSubmit === 'function') modal.requestSubmit();
+      else modal.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    });
+
+    const cancelProxy = document.createElement('button');
+    cancelProxy.type = 'button';
+    cancelProxy.textContent = '취소';
+    cancelProxy.hidden = true;
+    cancelProxy.setAttribute('data-qmes-target-cancel-proxy','1');
+    cancelProxy.addEventListener('click',()=>{
+      const close = modal.querySelector('.qp-close');
+      if(close) close.click();
+    });
+
+    body.appendChild(submitProxy);
+    body.appendChild(cancelProxy);
   }
 
-  function adoptExistingModal(){
-    const title = modalTitle();
-    if(!title) return false;
+  function prepareCoreModal(){
+    const bg = findCoreModal();
+    if(!bg) return false;
 
-    let card = title.closest('[role="dialog"],.modal-content,.qmes-modal,.modal,.qerp-card,.qpx-form-card');
-    if(!card){
-      let node = title.parentElement;
-      let depth = 0;
-      while(node && node !== document.body && depth++ < 9){
-        if(node.querySelector('input,select,textarea') && /발주\s*기본\s*정보/.test(clean(node.textContent))){ card = node; break; }
-        node = node.parentElement;
+    ensureStyle();
+    bg.setAttribute('data-qmes-direct-purchase-modal','1');
+    bg.removeAttribute('data-qpx-hidden-original');
+    bg.style.removeProperty('display');
+
+    const modal = bg.querySelector('form.qp-modal,.qp-modal');
+    if(!modal) return false;
+    modal.removeAttribute('data-qpx-hidden-original');
+    modal.classList.add('qpx-form-card');
+
+    const body = modal.querySelector('.qp-body');
+    if(!body) return false;
+    body.classList.add('qerp-form');
+    addProxyButtons(modal,body);
+
+    const head = modal.querySelector('.qp-modal-head');
+    if(head){
+      head.classList.add('qpx-modal-head');
+      const title = head.querySelector('h2');
+      if(title) title.textContent = '신규 구매 발주 등록';
+      const sub = head.querySelector('p');
+      if(sub) sub.textContent = 'MRP·작업지시·협력사·IQC를 하나의 발주번호로 연결합니다.';
+      const close = head.querySelector('.qp-close');
+      if(close) close.classList.add('qpx-modal-close');
+      if(!head.querySelector('.qpx-steps')){
+        const steps = document.createElement('div');
+        steps.className = 'qpx-steps';
+        steps.innerHTML = '<span class="qpx-step"><b>1</b>기본정보</span><span class="qpx-step"><b>2</b>품목등록</span><span class="qpx-step"><b>3</b>품질요구사항</span><span class="qpx-step"><b>4</b>결재상신</span>';
+        if(close) head.insertBefore(steps,close); else head.appendChild(steps);
       }
     }
-    if(!card) return false;
 
-    let form = card.querySelector('form,.qerp-form');
-    if(!form){
-      const blocks = Array.from(card.querySelectorAll('div,section')).filter(el =>
-        el.querySelector('input,select,textarea') && /발주\s*기본\s*정보/.test(clean(el.textContent))
-      );
-      blocks.sort((a,b)=>clean(a.textContent).length-clean(b.textContent).length);
-      form = blocks[0] || null;
-    }
-    if(!form) return false;
-
-    let host = card.parentElement;
-    if(!host || host === document.body || host.id === 'root'){
-      host = card.closest('.modal-overlay,.qmes-modal-overlay,.overlay,[role="presentation"]') || card.parentElement;
-    }
-    if(host && host !== document.body) host.classList.add('qmes-purchase-live');
-    card.classList.add('qerp-card','qpx-form-card');
-    form.classList.add('qerp-form');
-    card.setAttribute('data-qmes-purchase-modal-adopted','create-recovery-20260916');
-
-    // Wake the existing target-layout MutationObserver after classes are in place.
+    // Wake the existing approved target-layout observer.
     const ping = document.createElement('span');
     ping.hidden = true;
-    ping.setAttribute('data-qmes-purchase-modal-ping','1');
-    form.appendChild(ping);
+    ping.setAttribute('data-qmes-purchase-modal-ping','direct-20260916');
+    body.appendChild(ping);
     requestAnimationFrame(()=>ping.remove());
+
     return true;
   }
 
-  function recoverOpen(){
-    if(!purchaseActive()) return;
-    if(approvedModalPresent()){
-      adoptExistingModal();
-      opening = false;
-      return;
-    }
+  function keepModalVisible(){
+    const bg = findCoreModal();
+    if(!bg) return;
+    bg.setAttribute('data-qmes-direct-purchase-modal','1');
+    bg.removeAttribute('data-qpx-hidden-original');
+  }
 
-    const trigger = findLegacyCreateTrigger();
+  function openCorePurchase(){
+    const trigger = findCoreCreateTrigger();
     if(!trigger){
       opening = false;
-      console.warn('[QMES purchase] legacy create trigger not found');
+      console.error('[QMES purchase] core React create trigger not found');
       return;
     }
 
     trigger.click();
-    [40,100,180,320,520].forEach(ms=>setTimeout(()=>{
-      if(adoptExistingModal()) opening = false;
+    [0,25,60,110,180,280,420,650].forEach(ms=>setTimeout(()=>{
+      if(prepareCoreModal()) opening = false;
+      keepModalVisible();
     },ms));
-    setTimeout(()=>{opening=false;},700);
+    setTimeout(()=>{opening=false;},800);
   }
 
-  function onClick(e){
-    const target = e.target instanceof Element ? e.target.closest('.qpx-enterprise-host [data-qpx-create]') : null;
+  function onCreateClick(event){
+    const target = event.target instanceof Element ? event.target.closest('.qpx-enterprise-host [data-qpx-create]') : null;
     if(!target || !purchaseActive()) return;
+
+    // This bridge owns the approved create button. Prevent the older fallback
+    // handler from displaying "기존 구매 발주 등록 화면을 찾지 못했습니다."
+    event.preventDefault();
+    event.stopImmediatePropagation();
     if(opening) return;
     opening = true;
-    // The existing enterprise handler runs first and may already open the original form.
-    // Give it one render turn, then recover only if the modal is still absent.
-    setTimeout(()=>{
-      if(approvedModalPresent()){
-        adoptExistingModal();
-        opening = false;
-      }else{
-        recoverOpen();
-      }
-    },70);
+    openCorePurchase();
   }
 
   function start(){
-    document.addEventListener('click',onClick,true);
+    ensureStyle();
+    document.addEventListener('click',onCreateClick,true);
     new MutationObserver(()=>{
-      if(modalTitle()) adoptExistingModal();
+      if(findCoreModal()){
+        prepareCoreModal();
+        keepModalVisible();
+      }
     }).observe(document.body,{childList:true,subtree:true});
   }
 
