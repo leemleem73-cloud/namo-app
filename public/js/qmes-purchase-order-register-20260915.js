@@ -159,3 +159,15 @@
   script.defer=true;
   document.head.appendChild(script);
 })();
+
+/* Additive loader: approved purchase-order target modal. Existing code above is preserved unchanged. */
+(function(){
+  'use strict';
+  const id='qmes-purchase-order-target-layout-20260916-v1-loader';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/js/qmes-purchase-order-target-layout-20260916-v1.js?v=20260916c';
+  script.defer=true;
+  document.head.appendChild(script);
+})();
