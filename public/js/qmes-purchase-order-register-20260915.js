@@ -135,3 +135,15 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 })();
+
+/* Additive loader: purchase page only. Existing bridge above is preserved unchanged. */
+(function(){
+  'use strict';
+  const id='qmes-purchase-enterprise-safe-v2-loader';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/js/qmes-purchase-enterprise-safe-20260916-v2.js?v=20260916b';
+  script.defer=true;
+  document.head.appendChild(script);
+})();
