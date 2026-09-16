@@ -147,3 +147,15 @@
   script.defer=true;
   document.head.appendChild(script);
 })();
+
+/* Additive loader: purchase-order modal ERP enhancement. Existing code above is preserved unchanged. */
+(function(){
+  'use strict';
+  const id='qmes-purchase-order-modal-douzone-additive-20260916-loader';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/js/qmes-purchase-order-modal-douzone-additive-20260916.js?v=20260916a';
+  script.defer=true;
+  document.head.appendChild(script);
+})();
