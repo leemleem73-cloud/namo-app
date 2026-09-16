@@ -361,3 +361,42 @@ window.__QMES_PURCHASE_MODAL_DOUZONE_ADDITIVE_20260916__ = true;
   script.defer=true;
   document.head.appendChild(script);
 })();
+
+/* Additive cleanup: hide only the two duplicate legacy actions marked by the user.
+   Keep target toolbar actions visible and keep original legacy buttons in DOM for programmatic reuse. */
+(function(){
+  'use strict';
+  if(window.__QMES_PURCHASE_DUPLICATE_ACTION_CLEANUP_20260916__) return;
+  window.__QMES_PURCHASE_DUPLICATE_ACTION_CLEANUP_20260916__ = true;
+  const clean = v => String(v == null ? '' : v).replace(/\s+/g,' ').trim();
+  let queued = false;
+
+  function apply(){
+    queued = false;
+    document.querySelectorAll('.qmes-purchase-live').forEach(root=>{
+      root.querySelectorAll('button,a').forEach(el=>{
+        if(el.closest('.qpx-enterprise-host,.qpx-form-card,.qpdz-target-ui')) return;
+        const text = clean(el.textContent).replace(/^[+＋]\s*/,'');
+        if(text === '공용 DB 연동' || text === '신규 구매 발주'){
+          el.setAttribute('data-qmes-purchase-duplicate-hidden','1');
+          el.style.setProperty('display','none','important');
+        }
+      });
+    });
+  }
+
+  function schedule(){
+    if(queued) return;
+    queued = true;
+    requestAnimationFrame(apply);
+  }
+
+  function start(){
+    schedule();
+    new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+    window.addEventListener('qmes:navigate-tab',()=>setTimeout(schedule,0));
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+})();
