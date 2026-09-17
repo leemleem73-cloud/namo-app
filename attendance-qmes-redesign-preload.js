@@ -15,11 +15,11 @@ function install() {
 
     html = html.replace(
       '</head>',
-      '<link rel="stylesheet" href="/attendance-qmes-redesign-20260918.css?v=20260918-ui1">\n</head>'
+      '<link rel="stylesheet" href="/attendance-qmes-redesign-20260918.css?v=20260918-ui2">\n</head>'
     );
     html = html.replace(
       '</body>',
-      '<script src="/attendance-qmes-redesign-20260918.js?v=20260918-ui1"></script>\n</body>'
+      '<script src="/attendance-qmes-redesign-20260918.js?v=20260918-ui2"></script>\n</body>'
     );
 
     fs.writeFileSync(file, html, 'utf8');
