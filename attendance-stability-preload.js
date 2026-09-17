@@ -33,14 +33,21 @@ try{
       html=html.replace(new RegExp(`<script src="\\/${escaped}\\?v=[^"]+"><\\/script>`,'g'),'');
     }
 
-    // The final attendance polish must be the last visual script. Remove any earlier copy
-    // so legacy structure/compatibility scripts cannot repaint over it after first reveal.
     html=html.replace(/<script src="\/attendance-final-polish-20260917\.js\?v=[^"]+"><\/script>/g,'');
+    html=html.replace(/<style id="namo-attendance-hard-reload-hide-20260917">[\s\S]*?<\/style>/g,'');
 
     html=html.replace(/<script>window\.__NAMO_ATT_BOOT_FAILSAFE__=[\s\S]*?<\/script>/g,'');
     html=html.replace(/\sdata-attendance-boot="[^"]*"/g,'');
     html=html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i,'<html$1 data-attendance-boot="pending">');
     html=html.replace(/<script src="\/attendance-admin-mode-v4\.js\?v=[^"]+"><\/script>/g,'<script src="/attendance-admin-mode-v4.js?v=20260909-production2"></script>');
+
+    const hardReloadHide='<style id="namo-attendance-hard-reload-hide-20260917">'+
+      'html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] body>*,'+
+      'html[data-namo-reloading="1"] body>*{display:none!important;visibility:hidden!important;opacity:0!important}'+
+      'html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] body,'+
+      'html[data-namo-reloading="1"] body{margin:0!important;min-height:100vh!important;background:#eef2f6!important;overflow:hidden!important}'+
+      'html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] body>*{visibility:visible}'+
+      '</style>';
 
     const styles=[
       '<link rel="stylesheet" href="/attendance-mobile-stability-20260908.css?v=20260908-stable2">',
@@ -48,7 +55,8 @@ try{
       '<link rel="stylesheet" href="/attendance-admin-test-fix-20260909.css?v=20260909-production2">',
       '<link rel="stylesheet" href="/attendance-test-ui-20260909-v1.css?v=20260909-production2">',
       '<link rel="stylesheet" href="/attendance-layout-fix-20260909.css?v=20260909-production2">',
-      '<link rel="stylesheet" href="/attendance-enterprise-home-20260909.css?v=20260909-production2">'
+      '<link rel="stylesheet" href="/attendance-enterprise-home-20260909.css?v=20260909-production2">',
+      hardReloadHide
     ].join('');
     html=html.replace('</head>',styles+'</head>');
 
@@ -63,11 +71,11 @@ try{
       '<script src="/attendance-enterprise-home-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-approved-detail-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-direct-mail-20260909.js?v=20260909-production2"></script>',
-      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last6"></script>'
+      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last7"></script>'
     ].join('');
     html=html.replace('</body>',tail+'</body>');
 
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance stability] production attendance UI installed; final polish locked last');
+    console.log('[Attendance stability] final UI locked last; all attendance content hidden during reload');
   }
 }catch(e){console.error('[Attendance stability] preload failed',e)}
