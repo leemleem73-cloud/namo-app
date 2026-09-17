@@ -1,0 +1,114 @@
+
+html[data-namo-attendance-full-ui="v4"]{
+  --qmes-blue:#1676df;
+  --qmes-blue2:#0b64cc;
+  --qmes-ink:#12233f;
+  --qmes-muted:#71819a;
+  --qmes-bg:#eef5fb;
+  --qmes-card:#ffffff;
+  --qmes-line:#dfe8f1;
+  --qmes-green:#0aa75a;
+  --qmes-red:#eb3b45;
+  --qmes-amber:#f59e0b;
+}
+html[data-namo-attendance-full-ui="v4"] body{background:var(--qmes-bg)!important;color:var(--qmes-ink)!important}
+html[data-namo-attendance-full-ui="v4"] .app-shell{background:#f4f8fc!important;max-width:430px!important}
+html[data-namo-attendance-full-ui="v4"] .safe-top{background:#f4f8fc!important;height:env(safe-area-inset-top)!important}
+html[data-namo-attendance-full-ui="v4"] .topbar{
+  background:rgba(255,255,255,.96)!important;border-bottom:1px solid var(--qmes-line)!important;
+  box-shadow:none!important;padding:0 14px!important;position:sticky!important;top:0!important;z-index:50!important
+}
+html[data-namo-attendance-full-ui="v4"] .topbar-row{height:62px!important;min-height:62px!important;display:grid!important;grid-template-columns:42px 1fr 42px!important;align-items:center!important}
+html[data-namo-attendance-full-ui="v4"] .brand{justify-self:center!important;display:block!important}
+html[data-namo-attendance-full-ui="v4"] .brand img,
+html[data-namo-attendance-full-ui="v4"] .brand-copy small{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b{font-size:21px!important;font-weight:950!important;color:var(--qmes-ink)!important;letter-spacing:-.8px!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b::before{content:"TEST 모바일 출퇴근"}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b{font-size:0!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b::before{font-size:21px!important}
+html[data-namo-attendance-full-ui="v4"] .top-actions{justify-self:end!important}
+html[data-namo-attendance-full-ui="v4"] #noticeBtn{font-size:0!important;width:38px!important;height:38px!important;border:0!important;background:transparent!important}
+html[data-namo-attendance-full-ui="v4"] #noticeBtn::before{content:"🔔";font-size:22px!important}
+html[data-namo-attendance-full-ui="v4"] .topbar-row::before{content:"☰";font-size:27px;font-weight:900;color:#18304f;justify-self:start;line-height:1}
+
+html[data-namo-attendance-full-ui="v4"] main{padding:0 12px 92px!important}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"]{padding:14px 0 18px!important;background:transparent!important}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"]>*{display:none!important}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"]>#qmesAttendanceHome20260918{display:block!important}
+
+.qmes-att-home{display:grid;gap:12px}
+.qmes-att-hero{position:relative;border-radius:20px;padding:17px 18px 16px;overflow:hidden;color:#fff;background:linear-gradient(135deg,#2188ef 0%,#0f6dd7 66%,#0b61c5 100%);box-shadow:0 12px 30px rgba(25,103,189,.19)}
+.qmes-att-hero:after{content:"";position:absolute;right:-28px;bottom:-24px;width:170px;height:130px;border-radius:50%;background:rgba(255,255,255,.09)}
+.qmes-att-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.qmes-att-date{font-size:15px;font-weight:850}
+.qmes-att-place{font-size:13px;font-weight:800;opacity:.94}
+.qmes-att-clock{font-size:44px;font-weight:950;letter-spacing:-2px;margin:9px 0 4px;line-height:1;position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.qmes-att-hero-sub{font-size:14px;font-weight:800;position:relative;z-index:1}
+.qmes-att-hero-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:12px;position:relative;z-index:1}
+.qmes-att-user{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px;font-weight:850;backdrop-filter:blur(8px)}
+.qmes-att-user b{font-size:13px}
+.qmes-att-status{padding:8px 18px;border-radius:999px;background:#fff;color:#14943e;font-weight:950;font-size:15px;box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.qmes-att-status.before{color:#5f7188}.qmes-att-status.done{color:#1768bf}
+
+.qmes-att-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qmes-att-action{border:1px solid #dce6ef;border-radius:16px;background:linear-gradient(180deg,#f8fbfd,#edf3f7);min-height:90px;padding:12px;display:grid;place-items:center;color:#152a48;box-shadow:0 4px 12px rgba(39,67,101,.04)}
+.qmes-att-action strong{font-size:16px;font-weight:950}
+.qmes-att-action span{display:block;margin-top:5px;font-size:13px;color:#6a7b91;font-weight:800;font-variant-numeric:tabular-nums}
+.qmes-att-action .ico{font-size:27px;margin-bottom:2px}
+.qmes-att-action:disabled{opacity:.58}
+
+.qmes-att-gps{display:grid;grid-template-columns:1fr 1.15fr;gap:10px;padding:12px 14px;background:#fff;border:1px solid var(--qmes-line);border-radius:16px}
+.qmes-att-gps-item{display:flex;align-items:center;gap:9px;min-width:0}
+.qmes-att-gps-ico{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#dff8ef;font-size:19px;flex:0 0 auto}
+.qmes-att-gps-item:nth-child(2) .qmes-att-gps-ico{background:#e8f4ff}
+.qmes-att-gps-text b{display:block;font-size:12px}.qmes-att-gps-text span{display:block;font-size:10px;color:#728198;margin-top:2px;line-height:1.35}
+
+.qmes-att-card{background:#fff;border:1px solid var(--qmes-line);border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(35,64,98,.05)}
+.qmes-att-card-head{display:flex;align-items:center;justify-content:space-between;padding:15px 16px 12px}
+.qmes-att-card-head h3{margin:0;font-size:18px;font-weight:950;letter-spacing:-.5px}
+.qmes-att-card-head button{border:0;background:transparent;color:var(--qmes-blue2);font-size:12px;font-weight:900}
+.qmes-att-week{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--qmes-line)}
+.qmes-att-day{padding:11px 2px 12px;text-align:center;border-right:1px solid var(--qmes-line);min-width:0;background:#fff}
+.qmes-att-day:last-child{border-right:0}.qmes-att-day.today{background:#edf6ff}
+.qmes-att-day .dow{font-size:11px;font-weight:900;color:#52637a}.qmes-att-day.today .dow{color:#0d6bd6}
+.qmes-att-day .date{font-size:10px;color:#8190a5;margin-top:4px}
+.qmes-att-day .tin,.qmes-att-day .tout{font-size:12px;font-weight:950;color:#162842;margin-top:12px;font-variant-numeric:tabular-nums}
+.qmes-att-day .tout{margin-top:4px}
+.qmes-att-badge{display:inline-block;margin-top:8px;padding:5px 7px;border-radius:999px;font-size:9px;font-weight:950;white-space:nowrap}
+.qmes-att-badge.done{background:#dff8ef;color:#0f8e5d}.qmes-att-badge.working{background:#dcecff;color:#126bd0}.qmes-att-badge.missing{background:#ffe0e3;color:#d82635}.qmes-att-badge.future{background:#edf1f5;color:#7b8797}.qmes-att-badge.leave{background:#fff1d8;color:#b87000}
+
+.qmes-att-summary{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--qmes-line);padding:13px 4px 14px}
+.qmes-att-sum{text-align:center;border-right:1px solid var(--qmes-line)}.qmes-att-sum:last-child{border-right:0}
+.qmes-att-sum .icon{font-size:20px}.qmes-att-sum .label{font-size:10px;color:#6f7f93;margin-top:5px;font-weight:800}
+.qmes-att-sum .value{font-size:14px;font-weight:950;margin-top:3px;color:#172b48}.qmes-att-sum.alert .value{color:#e6323e}
+
+.qmes-att-detail{position:fixed;inset:0;z-index:2000;background:#f4f8fc;display:none;overflow:auto}
+.qmes-att-detail.open{display:block}
+.qmes-att-detail-shell{max-width:430px;margin:0 auto;min-height:100%;background:#f4f8fc;padding-bottom:28px}
+.qmes-att-detail-head{height:64px;background:#fff;border-bottom:1px solid var(--qmes-line);display:grid;grid-template-columns:50px 1fr 50px;align-items:center;padding:0 8px;position:sticky;top:0;z-index:2}
+.qmes-att-detail-head button{border:0;background:transparent;font-size:31px;color:#17304f}.qmes-att-detail-head h2{margin:0;text-align:center;font-size:20px;font-weight:950}
+.qmes-att-detail-body{padding:18px 16px}
+.qmes-att-detail-date{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.qmes-att-detail-date strong{font-size:19px}.qmes-att-detail-status{padding:8px 16px;border-radius:999px;background:#e1efff;color:#126bd0;font-size:13px;font-weight:950}
+.qmes-att-detail-card{background:#fff;border:1px solid var(--qmes-line);border-radius:18px;overflow:hidden}
+.qmes-att-detail-row{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:9px;padding:14px;border-bottom:1px solid #e8eef4}.qmes-att-detail-row:last-child{border-bottom:0}
+.qmes-att-detail-row .ri{font-size:20px}.qmes-att-detail-row .rk{font-size:13px;color:#5f7188;font-weight:850}.qmes-att-detail-row .rv{font-size:14px;color:#12233f;font-weight:950;text-align:right}
+.qmes-att-detail-row .rv.ok{color:#0ca650}.qmes-att-map{margin-top:14px;height:205px;border-radius:18px;border:1px solid var(--qmes-line);overflow:hidden;position:relative;background:linear-gradient(135deg,#eef2ed,#e1e8ef)}
+.qmes-att-map:before,.qmes-att-map:after{content:"";position:absolute;background:#fff;opacity:.78;transform:rotate(-18deg)}
+.qmes-att-map:before{width:125%;height:17px;left:-12%;top:55px}.qmes-att-map:after{width:16px;height:125%;left:54%;top:-12%;transform:rotate(16deg)}
+.qmes-att-map-radius{position:absolute;width:120px;height:120px;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(52,157,255,.18);border:1px solid rgba(30,133,230,.22)}
+.qmes-att-map-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;background:#1676df;border:5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:1}
+.qmes-att-map-label{position:absolute;right:13px;bottom:14px;background:#fff;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:900;z-index:1}
+.qmes-att-info{margin-top:12px;padding:12px 14px;border-radius:13px;background:#e9f4ff;color:#1c66ac;font-size:11px;line-height:1.5;font-weight:800}
+.qmes-att-back-list{width:100%;margin-top:18px;height:52px;border:1px solid #aabdd0;border-radius:13px;background:#f8fbfe;color:#1f3552;font-weight:950;font-size:15px}
+
+html[data-namo-attendance-full-ui="v4"] .bottom-nav{background:#fff!important;border-top:1px solid var(--qmes-line)!important;box-shadow:0 -7px 20px rgba(48,70,94,.05)!important}
+html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn{color:#63758b!important;font-weight:850!important}
+html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn.active{color:#1676df!important}
+html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn .ni{font-size:22px!important}
+
+@media(max-width:370px){
+  .qmes-att-week{grid-template-columns:repeat(6,minmax(48px,1fr));overflow-x:auto}
+  .qmes-att-clock{font-size:38px}
+  .qmes-att-summary{grid-template-columns:repeat(2,1fr);row-gap:14px}
+  .qmes-att-sum:nth-child(2){border-right:0}
+}
