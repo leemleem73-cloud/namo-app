@@ -60,6 +60,32 @@ async function readPermissionForUser(user){
   };
 }
 
+/* Legacy commercial ERP middleware originally allows only sales department / named users.
+   System administrators already have all menu permissions in this module, so the API layer
+   must honor the same rule. Patch Express route registration before server-legacy registers
+   /api/purchase-orders routes: admin bypasses only requireCommercialErp; all other users keep
+   the original middleware unchanged. */
+if(!express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__){
+  express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__=true;
+  ['get','post','put','patch'].forEach(method=>{
+    const original=express.application[method];
+    express.application[method]=function namoAdminPurchaseApiAccess(...args){
+      const route=args[0];
+      if(typeof route==='string'&&/^\/api\/purchase-orders(?:\/|$)/.test(route)){
+        const patched=[route,...args.slice(1).map(handler=>{
+          if(typeof handler!=='function'||handler.name!=='requireCommercialErp')return handler;
+          return function requireCommercialErpAdminAware(req,res,next){
+            if(String(req.session?.user?.role||'').toLowerCase()==='admin')return next();
+            return handler(req,res,next);
+          };
+        })];
+        return original.apply(this,patched);
+      }
+      return original.apply(this,args);
+    };
+  });
+}
+
 function install(app){
   if(app.__namoAccessPermissionsInstalled)return;
   app.__namoAccessPermissionsInstalled=true;
