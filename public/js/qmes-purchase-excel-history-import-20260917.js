@@ -1,17 +1,15 @@
 /* NAMO QMES - approved 2026 purchase Excel history import
  * 2026-09-17
- * Purpose:
- * - idempotently register the 10 purchase rows supplied from the 2026 Excel ledger
- * - refresh the authoritative purchase DB view after import
- * - open purchase management with the full 2026 date range so the imported rows are visible
- * Existing rows are never overwritten: only missing purchase numbers are POSTed.
+ * Production QMES only.
+ * - idempotently register the 10 supplied 2026 purchase rows
+ * - never overwrite an existing purchase number
+ * - force purchase-management to show the full 2026 range after DB sync
  */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917__) return;
-  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917__ = true;
+  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V2__) return;
+  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V2__ = true;
 
-  const IMPORT_KEY='qmes-purchase-excel-history-import-20260917-v1';
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
   const approvedRows=[
     {purchaseNo:'2026-01-13-1',orderDate:'2026-01-13',supplier:'(주)케미웍스',item:'NMP(PUYANG GUANGMING CHEMICAL) [KG]',qty:3000,unitPrice:2950,amount:8850000},
@@ -27,14 +25,17 @@
   ];
 
   let running=false;
-  let attempts=0;
-  let timer=0;
+  let lastSyncAt=0;
+  let retries=0;
+  let pollTimer=0;
 
-  function purchasePageVisible(){
-    const root=document.querySelector('.qmes-purchase-live');
-    if(!root) return false;
-    const text=clean(root.textContent).slice(0,1800);
-    return /구매/.test(text)&&/발주/.test(text);
+  function purchasePage(){
+    const candidates=[...document.querySelectorAll('.qmes-purchase-live,main,[role="main"],.main-content,.content-area,.page-content')];
+    return candidates.find(root=>{
+      if(!root||!root.isConnected) return false;
+      const text=clean(root.textContent).slice(0,2200);
+      return /구매\s*[·ㆍ]?\s*발주관리/.test(text) && (/발주번호|구매 DB 연동|신규 구매 발주/.test(text));
+    })||null;
   }
 
   async function apiJson(url,options){
@@ -55,9 +56,7 @@
     return [];
   }
 
-  function purchaseNo(row){
-    return clean(row&&(row.purchaseNo||row.purchase_no||row.no||row.id));
-  }
+  function purchaseNo(row){return clean(row&&(row.purchaseNo||row.purchase_no||row.no||row.id));}
 
   function payload(row){
     return {
@@ -86,38 +85,49 @@
     };
   }
 
-  function show2026Range(){
-    const host=document.querySelector('.qmes-purchase-live .qpx-enterprise-host');
+  function setInputValue(input,value){
+    if(!input) return;
+    const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+    if(descriptor&&descriptor.set) descriptor.set.call(input,value); else input.value=value;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+
+  function forceFullYearAndSearch(){
+    const root=purchasePage();
+    if(!root) return false;
+    const host=root.querySelector('.qpx-enterprise-host')||document.querySelector('.qmes-purchase-live .qpx-enterprise-host');
     if(!host) return false;
     const from=host.querySelector('[data-qpx-filter="from"]');
     const to=host.querySelector('[data-qpx-filter="to"]');
     const search=host.querySelector('[data-qpx-search]');
     if(!from||!to||!search) return false;
-    if(from.value!=='2026-01-01'||to.value!=='2026-12-31'){
-      from.value='2026-01-01';
-      to.value='2026-12-31';
-      search.click();
+
+    const changed=from.value!=='2026-01-01'||to.value!=='2026-12-31';
+    if(changed){
+      setInputValue(from,'2026-01-01');
+      setInputValue(to,'2026-12-31');
     }
+    search.click();
     return true;
   }
 
-  function refreshEnterpriseView(rows){
+  function refreshEnterprise(rows){
     try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(rows));}catch(_error){}
     window.__QMES_PURCHASE_AUTHORITATIVE_ROWS__=rows;
+    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows,source:'excel-history-import'}}));
+
     const sync=document.querySelector('.qmes-purchase-live .qpx-enterprise-host [data-qpx-sync]');
     if(sync&&!sync.disabled) sync.click();
-    setTimeout(show2026Range,120);
-    setTimeout(show2026Range,450);
-    setTimeout(show2026Range,900);
+    [80,250,550,1000,1800].forEach(delay=>setTimeout(forceFullYearAndSearch,delay));
   }
 
-  async function ensureApprovedRows(){
-    if(running||!purchasePageVisible()) return;
+  async function ensureRows(){
+    if(running||!purchasePage()) return;
     running=true;
-    attempts+=1;
     try{
-      const current=listRows(await apiJson('/api/purchase-orders?_qmesExcelImport='+Date.now(),{
-        headers:{'Accept':'application/json','Cache-Control':'no-cache, no-store, max-age=0','Pragma':'no-cache'}
+      const current=listRows(await apiJson('/api/purchase-orders?_excelHistory='+Date.now(),{
+        headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
       }));
       const ids=new Set(current.map(purchaseNo).filter(Boolean));
       const missing=approvedRows.filter(row=>!ids.has(row.purchaseNo));
@@ -125,56 +135,51 @@
       for(const row of missing){
         await apiJson('/api/purchase-orders',{
           method:'POST',
-          headers:{'Content-Type':'application/json','Accept':'application/json'},
+          headers:{'Content-Type':'application/json',Accept:'application/json'},
           body:JSON.stringify(payload(row))
         });
       }
 
-      const finalRows=listRows(await apiJson('/api/purchase-orders?_qmesExcelImportDone='+Date.now(),{
-        headers:{'Accept':'application/json','Cache-Control':'no-cache, no-store, max-age=0','Pragma':'no-cache'}
+      const finalRows=listRows(await apiJson('/api/purchase-orders?_excelHistoryDone='+Date.now(),{
+        headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
       }));
       const finalIds=new Set(finalRows.map(purchaseNo).filter(Boolean));
       const unresolved=approvedRows.filter(row=>!finalIds.has(row.purchaseNo));
-      if(unresolved.length) throw new Error('미등록 발주 '+unresolved.map(row=>row.purchaseNo).join(', '));
+      if(unresolved.length) throw new Error('미등록 발주: '+unresolved.map(row=>row.purchaseNo).join(', '));
 
-      try{sessionStorage.setItem(IMPORT_KEY,'ok');}catch(_error){}
-      refreshEnterpriseView(finalRows);
-      console.info('[QMES purchase Excel import] ensured',approvedRows.length,'rows; inserted',missing.length);
+      retries=0;
+      lastSyncAt=Date.now();
+      refreshEnterprise(finalRows);
+      console.info('[QMES purchase Excel import] 2026 rows ready:',approvedRows.length,'inserted:',missing.length);
     }catch(error){
-      console.warn('[QMES purchase Excel import] registration failed',error&&error.message?error.message:error);
-      if(attempts<3){
-        clearTimeout(timer);
-        timer=setTimeout(ensureApprovedRows,1200*attempts);
-      }
+      retries+=1;
+      console.warn('[QMES purchase Excel import] retry',retries,error&&error.message?error.message:error);
+      if(retries<8) setTimeout(ensureRows,Math.min(5000,700*retries));
     }finally{
       running=false;
     }
   }
 
+  function keepVisible(){
+    if(!purchasePage()) return;
+    forceFullYearAndSearch();
+    if(Date.now()-lastSyncAt>8000) ensureRows();
+  }
+
   function schedule(){
-    clearTimeout(timer);
-    timer=setTimeout(()=>{
-      if(!purchasePageVisible()) return;
-      let done=false;
-      try{done=sessionStorage.getItem(IMPORT_KEY)==='ok';}catch(_error){}
-      if(done){
-        show2026Range();
-        return;
-      }
-      ensureApprovedRows();
-    },100);
+    clearTimeout(pollTimer);
+    pollTimer=setTimeout(keepVisible,120);
   }
 
   function start(){
     schedule();
-    window.addEventListener('qmes:navigate-tab',schedule);
+    setInterval(()=>{if(purchasePage()) keepVisible();},1500);
+    window.addEventListener('qmes:navigate-tab',()=>setTimeout(keepVisible,80));
     document.addEventListener('click',event=>{
       const target=event.target instanceof Element?event.target.closest('button,a,[data-qmes-menu]'):null;
-      if(target&&/구매|발주/.test(clean(target.textContent))) setTimeout(schedule,120);
+      if(target&&/구매|발주/.test(clean(target.textContent))) setTimeout(keepVisible,120);
     },true);
-    new MutationObserver(()=>{
-      if(purchasePageVisible()) schedule();
-    }).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
