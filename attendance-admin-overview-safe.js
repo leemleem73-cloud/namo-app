@@ -9,6 +9,9 @@ const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});
 const fail=(res,status,message)=>res.status(status).json({success:false,message,data:null});
 const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그인이 필요합니다.');
 const requireAdmin=(req,res,next)=>String(req.session?.user?.role||'').toLowerCase()==='admin'?next():fail(res,403,'관리자 전용 메뉴입니다.');
+let hireDateReady=false;
+async function ensureHireDateColumn(){if(hireDateReady)return;await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE`);hireDateReady=true}
+function annualGranted(hireDate,asOf){if(!hireDate)return 15;const h=new Date(`${hireDate}T00:00:00+09:00`),a=new Date(`${asOf}T00:00:00+09:00`);if(Number.isNaN(h.getTime())||Number.isNaN(a.getTime())||a<h)return 0;let years=a.getFullYear()-h.getFullYear();const anniv=new Date(h);anniv.setFullYear(h.getFullYear()+years);if(a<anniv)years--;if(years<1){let months=(a.getFullYear()-h.getFullYear())*12+(a.getMonth()-h.getMonth());if(a.getDate()<h.getDate())months--;return Math.max(0,Math.min(11,months))}return Math.min(25,15+Math.floor(Math.max(0,years-1)/2))}
 function installClient(){
   try{
     const file=path.resolve(__dirname,'public','attendance.html');
@@ -36,11 +39,12 @@ function install(app){
   app.__namoAttendanceAdminOverviewInstalled=true;
   app.get('/api/attendance/admin/overview',requireLogin,requireAdmin,async(req,res)=>{
     try{
+      await ensureHireDateColumn();
       const now=new Date();
       const date=validDate(req.query.date)||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
       const month=validMonth(req.query.month)||date.slice(0,7);
       const employees=await pool.query(`
-        SELECT u.id,u.name,u.department,u.title,u.role,u.status,a.clock_in,a.clock_out,
+        SELECT u.id,u.name,u.department,u.title,u.role,u.status,u.hire_date,a.clock_in,a.clock_out,
           cl.leave_type AS current_leave_type,
           COALESCE(ms.month_days,0)::int AS month_days,
           COALESCE(ms.month_minutes,0)::int AS month_minutes,
@@ -75,7 +79,9 @@ function install(app){
         else if(r.current_leave_type)attendanceStatus='LEAVE';
         else if(r.clock_in&&!r.clock_out)attendanceStatus='WORKING';
         else if(r.clock_in&&r.clock_out)attendanceStatus='DONE';
-        return{id:r.id,name:r.name||'',department:r.department||'',title:r.title||'',role:r.role||'user',attendanceStatus,currentLeaveType:r.current_leave_type||'',clockIn:r.clock_in,clockOut:r.clock_out,monthDays:Number(r.month_days||0),monthMinutes:Number(r.month_minutes||0),leaveGranted:15,leaveUsed:Number(r.used_leave||0),leaveRemaining:Math.max(0,15-Number(r.used_leave||0))};
+        const hireDate=r.hire_date?String(r.hire_date).slice(0,10):'';
+        const granted=annualGranted(hireDate,date),used=Number(r.used_leave||0);
+        return{id:r.id,name:r.name||'',department:r.department||'',title:r.title||'',role:r.role||'user',attendanceStatus,currentLeaveType:r.current_leave_type||'',clockIn:r.clock_in,clockOut:r.clock_out,monthDays:Number(r.month_days||0),monthMinutes:Number(r.month_minutes||0),hireDate,leaveGranted:granted,leaveUsed:used,leaveRemaining:Math.max(0,granted-used)};
       });
       const summary={total:rows.length,working:rows.filter(x=>x.attendanceStatus==='WORKING').length,done:rows.filter(x=>x.attendanceStatus==='DONE').length,absent:rows.filter(x=>x.attendanceStatus==='ABSENT').length,onLeave:rows.filter(x=>x.attendanceStatus==='LEAVE').length,statutory:rows.filter(x=>x.attendanceStatus==='STATUTORY').length,checkedIn:rows.filter(x=>['WORKING','DONE'].includes(x.attendanceStatus)).length};
       const leaves=await pool.query(`SELECT l.*,u.name employee_name,u.department employee_department,u.title employee_title FROM leave_requests l JOIN users u ON u.id=l.user_id WHERE l.start_date < (TO_DATE($1||'-01','YYYY-MM-DD') + INTERVAL '1 month')::date AND l.end_date >= TO_DATE($1||'-01','YYYY-MM-DD') AND regexp_replace(lower(COALESCE(u.title,'')),'[[:space:]]+','','g') NOT IN ('대표','대표이사','ceo','chiefexecutiveofficer') ORDER BY l.start_date DESC,l.created_at DESC LIMIT 500`,[month]);
@@ -83,6 +89,8 @@ function install(app){
       return ok(res,{date,month,summary,departments,employees:rows,leaves:leaves.rows});
     }catch(e){console.error('[Attendance admin overview]',e);return fail(res,500,'전체 직원 근태·연차 현황을 불러오지 못했습니다.');}
   });
+  app.put('/api/attendance/admin/users/:id/hire-date',requireLogin,requireAdmin,async(req,res)=>{
+    try{await ensureHireDateColumn();const hireDate=validDate(req.body?.hireDate);if(req.body?.hireDate&&!hireDate)return fail(res,400,'입사일 형식을 확인해주세요.');const asOf=validDate(req.body?.asOfDate)||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const q=await pool.query(`UPDATE users SET hire_date=$1::date WHERE id=$2 RETURNING id,name,hire_date`,[hireDate,req.params.id]);if(!q.rows[0])return fail(res,404,'직원을 찾을 수 없습니다.');const stored=q.rows[0].hire_date?String(q.rows[0].hire_date).slice(0,10):'';return ok(res,{id:q.rows[0].id,name:q.rows[0].name,hireDate:stored,leaveGranted:annualGranted(stored,asOf)},'입사일이 저장되었습니다.');}catch(e){console.error('[Attendance hire date]',e);return fail(res,500,'입사일 저장에 실패했습니다.')}});
 }
 const originalUse=express.application.use;
 express.application.use=function attendanceAdminOverviewUse(...args){const result=originalUse.apply(this,args);if(!this.__namoAttendanceAdminOverviewInstalled){const fns=args.flat().filter(v=>typeof v==='function');if(fns.some(fn=>fn.name==='session'||/session/i.test(String(fn.name||'')))){install(this);console.log('[Attendance admin overview] routes installed')}}return result};
