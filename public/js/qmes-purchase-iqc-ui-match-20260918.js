@@ -320,11 +320,9 @@ html body #root>div>main .qmes-purchase-live.qpx-enterprise-safe-v2 .qpx-manage 
   background:#1786c7!important;
   color:#fff!important;
 }
-html body #root>div>main .qmes-purchase-live.qpx-enterprise-safe-v2 .qpx-table input[type="checkbox"]{
-  width:20px!important;
-  height:20px!important;
-  margin:0!important;
-  vertical-align:middle!important;
+html body #root>div>main .qmes-purchase-live.qpx-enterprise-safe-v2 .qpx-table th:first-child,
+html body #root>div>main .qmes-purchase-live.qpx-enterprise-safe-v2 .qpx-table td:first-child{
+  display:none!important;
 }
 html body #root>div>main .qmes-purchase-live.qpx-enterprise-safe-v2 .qpx-foot{
   display:flex!important;
