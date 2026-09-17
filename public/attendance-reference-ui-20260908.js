@@ -36,6 +36,39 @@
     refresh.addEventListener('click',()=>location.reload());
   }
 
+  function ensureClockCardLabels(schedule){
+    const grid=$('.clock-grid');if(!grid)return;
+    let buttons=$$('.clock-btn',grid);
+    if(buttons.length<2)buttons=$$('button',grid);
+    if(buttons.length<2)return;
+    const values=[
+      {label:'출근하기',time:schedule?.start||DEFAULT_SCHEDULE.start,type:'in'},
+      {label:'퇴근하기',time:schedule?.end||DEFAULT_SCHEDULE.end,type:'out'}
+    ];
+    buttons.slice(0,2).forEach((btn,index)=>{
+      const value=values[index];
+      btn.style.position='relative';
+      btn.style.overflow='hidden';
+      let overlay=btn.querySelector('.namo-clock-card-label');
+      if(!overlay){
+        overlay=document.createElement('div');
+        overlay.className='namo-clock-card-label namo-clock-card-label-'+value.type;
+        Object.assign(overlay.style,{position:'absolute',left:'10px',top:'10px',zIndex:'30',display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'2px',padding:'6px 8px',borderRadius:'9px',background:'rgba(20,48,78,.52)',color:'#fff',pointerEvents:'none',textAlign:'left',boxShadow:'0 2px 8px rgba(0,0,0,.10)',backdropFilter:'blur(1px)'});
+        const label=document.createElement('strong');
+        label.className='namo-clock-card-title';
+        Object.assign(label.style,{display:'block',fontSize:'15px',lineHeight:'1.15',fontWeight:'900',color:'#fff',whiteSpace:'nowrap',textShadow:'0 1px 3px rgba(0,0,0,.28)'});
+        const time=document.createElement('span');
+        time.className='namo-clock-card-time';
+        Object.assign(time.style,{display:'block',fontSize:'11px',lineHeight:'1.15',fontWeight:'900',color:'#fff',whiteSpace:'nowrap',textShadow:'0 1px 3px rgba(0,0,0,.28)'});
+        overlay.append(label,time);btn.appendChild(overlay);
+      }
+      const label=overlay.querySelector('.namo-clock-card-title');
+      const time=overlay.querySelector('.namo-clock-card-time');
+      if(label)label.textContent=value.label;
+      if(time)time.textContent=value.time;
+    });
+  }
+
   function openScheduleEditor(){
     if($('#namoScheduleEditor'))return;
     const current=readLocalSchedule()||DEFAULT_SCHEDULE;
@@ -55,6 +88,7 @@
       const save=$('#namoScheduleSave',overlay);if(save){save.disabled=true;save.textContent='저장 중...'}
       const serverSaved=await saveWorkSchedule({start,end});
       const sched=$('#namoTodaySchedule');if(sched)sched.textContent=start+' - '+end;
+      ensureClockCardLabels({start,end});
       close();await refreshHome();
       if(!serverSaved)console.warn('[Attendance schedule] server save unavailable; browser schedule saved locally.');
     });
@@ -75,6 +109,7 @@
         const wrap=document.createElement('div'); wrap.className='namo-clock-actions';
         const req=document.createElement('button'); req.type='button'; req.className='namo-request-mini'; req.textContent='요청'; req.addEventListener('click',()=>{const b=$('.nav-btn[data-page-target="requests"]');if(b)b.click();});
         clockGrid.parentNode.insertBefore(wrap,clockGrid); wrap.appendChild(req); wrap.appendChild(clockGrid);
+        ensureClockCardLabels(readLocalSchedule()||DEFAULT_SCHEDULE);
       }
       const meta=document.createElement('div'); meta.className='namo-today-meta'; meta.innerHTML='<div><div style="display:flex;align-items:center;gap:8px"><b id="namoTodaySchedule">08:00 - 17:00</b><button id="namoScheduleEdit" type="button" aria-label="근무시간 수정" style="height:26px;padding:0 9px;border:1px solid #cfe0f3;border-radius:8px;background:#f3f8ff;color:#176fd0;font-size:10px;font-weight:900;cursor:pointer">수정</button></div><div id="namoTodayPlace" style="font-size:11px;margin-top:3px;color:#7a8594">근무지 확인 중</div></div><span class="namo-availability">출근 가능</span>';
       firstCard.insertBefore(meta,firstCard.firstChild);
@@ -140,6 +175,7 @@
   async function refreshHome(){
     const me=safeData(await getJson('/api/attendance/me'))||{}; const today=safeData(await getJson('/api/attendance/today-v2'))||safeData(await getJson('/api/attendance/today'))||{}; const logsRaw=safeData(await getJson('/api/attendance/logs'))||[]; const logs=Array.isArray(logsRaw)?logsRaw:[]; const schedule=await loadWorkSchedule();
     const td=$('#namoTodayDate');if(td)td.textContent=fmtDate(new Date()); const sched=$('#namoTodaySchedule');if(sched)sched.textContent=schedule.start+' - '+schedule.end;
+    ensureClockCardLabels(schedule);
     const place=$('#namoTodayPlace');if(place)place.textContent=(today.workplaceName||today.workplace_name||$('#workplaceName')?.textContent||'근무지 선택');
     const m=$('#namoMonthLabel');if(m){const d=new Date();m.textContent=(d.getMonth()+1)+'월 기준'}
     buildWeek(logs,schedule);
