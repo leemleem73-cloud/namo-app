@@ -192,6 +192,9 @@
     suppressPush = true;
     try {
       const tasks = [syncInspections(db)];
+      /* Work-order rows are loaded by the production module itself.
+       * Do not re-pull them after first paint: that second async snapshot made
+       * visible LOT/item/equipment/worker values change a moment after refresh. */
       if (typeof window.qmesSyncPullEquipment === 'function') tasks.push(window.qmesSyncPullEquipment());
       await Promise.allSettled(tasks);
       if (typeof window.dbSave === 'function') {
@@ -212,6 +215,8 @@
     patchDbSave();
     baseline = snapshotDb(getDb() || {});
     syncAll();
+    /* Keep inspection/equipment sync, but avoid a repeating full refresh loop
+     * that can re-render work-order content while the user is viewing it. */
     timer = window.setInterval(syncAll, 30000);
     window.setInterval(patchDbSave, 1500);
     window.addEventListener('focus', syncAll);
@@ -229,16 +234,4 @@
   } else {
     window.setTimeout(start, 500);
   }
-})();
-
-/* Global compact date picker loader - replaces unresizable browser date popup. */
-(function(){
-  'use strict';
-  const id='qmes-global-calendar-size-only-loader-20260917';
-  if(document.getElementById(id)) return;
-  const script=document.createElement('script');
-  script.id=id;
-  script.src='/js/qmes-global-calendar-compact-draggable-20260917.js?v=20260917-compact248-v3';
-  script.defer=true;
-  document.head.appendChild(script);
 })();
