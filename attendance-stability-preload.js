@@ -76,7 +76,8 @@ try{
       '<script src="/attendance-enterprise-home-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-approved-detail-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-direct-mail-20260909.js?v=20260909-production2"></script>',
-      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last8"></script>'
+      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last8"></script>',
+      '<script src="/attendance-week-footer-hide-20260917.js?v=20260917-additive1"></script>'
     ].join('');
     html=html.replace('</body>',tail+'</body>');
 
