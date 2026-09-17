@@ -4,6 +4,7 @@
 // Original production server is preserved verbatim in server-legacy-20260903.js.
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
 
 require('./attendance-core-safe.js');
 require('./attendance-correction-safe.js');
@@ -20,6 +21,57 @@ const publicShellMenu = path.resolve(__dirname, 'public', 'js', 'qmes-collapsibl
 const legacyDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard.jsx');
 const enterpriseDashboard = path.resolve(__dirname, 'public', 'js', 'dashboard-namo-enterprise-20260903.jsx');
 const originalReadFile = fs.readFile.bind(fs);
+
+// Attendance app only: replace the old robot-like clock-in/out artwork at response time.
+// No QMES desktop, purchasing, production, quality, inventory, approval, or other assets are changed.
+const NAMO_ATTENDANCE_CLOCKIN_ART_20260917 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 150" role="img" aria-labelledby="title desc">
+<title id="title">출근하는 직원</title><desc id="desc">나모케미칼 모바일 출퇴근 앱 전용 오리지널 직원 일러스트</desc>
+<defs><linearGradient id="glassIn" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eaf7ff"/><stop offset="1" stop-color="#9ecdf3" stop-opacity=".55"/></linearGradient><linearGradient id="shirtIn" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fcff"/><stop offset="1" stop-color="#cfe9ff"/></linearGradient></defs>
+<g opacity=".9"><rect x="125" y="18" width="56" height="120" rx="5" fill="#0e5fae" opacity=".22"/><rect x="132" y="26" width="40" height="104" rx="3" fill="url(#glassIn)"/><path d="M143 31v94m17-94v94" stroke="#fff" stroke-width="4" opacity=".7"/><rect x="158" y="77" width="18" height="31" rx="4" fill="#173b62"/><circle cx="167" cy="92" r="6" fill="#35a6ff"/><circle cx="167" cy="92" r="3" fill="#d8f3ff"/></g>
+<g transform="translate(67 6)"><ellipse cx="42" cy="41" rx="16" ry="17" fill="#f5c7a4"/><path d="M26 39c1-13 10-20 20-20 11 0 19 8 18 20-6-5-11-7-17-7-7 0-13 3-21 7z" fill="#172d4d"/><path d="M29 36c3-10 10-15 19-15 8 0 14 4 18 11-7-3-14-4-20-2-6 1-11 3-17 6z" fill="#213a62"/><circle cx="37" cy="42" r="1.5" fill="#25364b"/><circle cx="50" cy="42" r="1.5" fill="#25364b"/><path d="M39 49c4 3 8 3 12 0" fill="none" stroke="#b95d4b" stroke-width="1.8" stroke-linecap="round"/><path d="M38 56h10l2 9H36z" fill="#f0bc98"/><path d="M26 63c6-6 12-8 18-8 8 0 16 3 22 9l-4 40H26z" fill="url(#shirtIn)"/><path d="M31 62l10 11 10-11" fill="none" stroke="#7fb4e6" stroke-width="2"/><path d="M42 66v28" stroke="#1d4f83" stroke-width="2"/><rect x="39" y="78" width="9" height="13" rx="1.5" fill="#fff" stroke="#8fb1d0"/><path d="M28 68C17 72 12 80 8 91l8 4c4-8 8-13 15-16" fill="#f5c7a4"/><path d="M62 67c11 5 18 11 27 18l-5 7c-9-5-16-9-25-12" fill="#f5c7a4"/><path d="M87 84l12-3 2 8-13 3z" fill="#fff" stroke="#b9d2e8"/><path d="M26 101l-7 40h14l11-31 11 31h14l-8-40z" fill="#233c62"/><path d="M28 70c-7 10-8 22-5 39l-9 2c-4-20-1-36 8-47z" fill="#263b5a" opacity=".9"/><path d="M18 72c-7 8-8 23-4 38l-8 2C1 94 3 78 13 66z" fill="#1d2e49" opacity=".9"/></g>
+</svg>`;
+
+const NAMO_ATTENDANCE_CLOCKOUT_ART_20260917 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 150" role="img" aria-labelledby="title desc">
+<title id="title">퇴근하는 직원</title><desc id="desc">나모케미칼 모바일 출퇴근 앱 전용 오리지널 직원 일러스트</desc>
+<defs><linearGradient id="glassOut" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e6f4fc"/><stop offset="1" stop-color="#6fa4cb" stop-opacity=".42"/></linearGradient><linearGradient id="jacketOut" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#385f83"/><stop offset="1" stop-color="#163b5f"/></linearGradient></defs>
+<g opacity=".86"><rect x="126" y="17" width="55" height="121" rx="5" fill="#173f64" opacity=".3"/><rect x="133" y="26" width="39" height="104" rx="3" fill="url(#glassOut)"/><path d="M144 31v94m17-94v94" stroke="#eff9ff" stroke-width="4" opacity=".6"/><rect x="159" y="77" width="17" height="31" rx="4" fill="#203c57"/><circle cx="167.5" cy="92" r="5.5" fill="#7dc3ee" opacity=".85"/></g>
+<g transform="translate(66 7)"><ellipse cx="42" cy="40" rx="16" ry="17" fill="#f1c39f"/><path d="M26 38c2-13 10-20 20-20 11 0 19 8 18 20-6-5-12-7-18-7-7 0-13 3-20 7z" fill="#162b44"/><path d="M31 31c5-8 12-11 20-9 7 1 12 6 15 12-8-4-15-5-22-3-4 1-8 2-13 4z" fill="#243b55"/><circle cx="37" cy="41" r="1.5" fill="#263649"/><circle cx="50" cy="41" r="1.5" fill="#263649"/><path d="M39 48c4 2 8 2 12-1" fill="none" stroke="#ad5b4e" stroke-width="1.8" stroke-linecap="round"/><path d="M38 55h10l2 9H36z" fill="#edb995"/><path d="M25 64c6-6 13-9 19-9 8 0 16 3 22 10l-4 40H27z" fill="url(#jacketOut)"/><path d="M39 62l5 12 6-12" fill="#e8f2fa"/><path d="M44 64v26" stroke="#b8d3e7" stroke-width="1.8"/><rect x="40" y="78" width="9" height="13" rx="1.5" fill="#edf5fb" stroke="#87a8c1"/><path d="M28 70c-11 4-17 11-22 21l8 5c5-8 10-12 17-16" fill="#f1c39f"/><path d="M62 68c10 5 17 10 26 17l-5 7c-8-4-16-8-24-12" fill="#f1c39f"/><path d="M84 84l13-3 2 8-14 3z" fill="#eef4f7" stroke="#a9bccb"/><path d="M28 102l-5 39h14l8-30 12 30h14l-10-39z" fill="#132c45"/><path d="M63 79l15 4-2 24-17-3z" fill="#6c4333"/><path d="M65 80c1-7 4-11 8-11 5 0 8 5 8 12" fill="none" stroke="#b78667" stroke-width="2.5"/></g>
+</svg>`;
+
+if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
+  express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__ = true;
+  const attendanceBaseStatic = express.static;
+  express.static = function namoAttendanceHumanArtworkStatic(root, options) {
+    const staticMiddleware = attendanceBaseStatic(root, options);
+    return function namoAttendanceHumanArtworkMiddleware(req, res, next) {
+      const pathname = String(req.path || '').toLowerCase();
+      if (pathname === '/attendance-enterprise-clockin-20260909.svg' || pathname === '/attendance-enterprise-clockout-20260909.svg') {
+        const svg = pathname.includes('clockout') ? NAMO_ATTENDANCE_CLOCKOUT_ART_20260917 : NAMO_ATTENDANCE_CLOCKIN_ART_20260917;
+        res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return res.send(svg);
+      }
+      if (pathname === '/attendance.html') {
+        const filePath = path.join(root, 'attendance.html');
+        return originalReadFile(filePath, 'utf8', (error, source) => {
+          if (error) return staticMiddleware(req, res, next);
+          const humanArtStyle = `<style id="namo-attendance-human-art-20260917">html[data-namo-attendance-full-ui="v4"] .clock-btn.in:after{background-image:url('/attendance-enterprise-clockin-20260909.svg?v=20260917-human1')!important}html[data-namo-attendance-full-ui="v4"] .clock-btn.out:after{background-image:url('/attendance-enterprise-clockout-20260909.svg?v=20260917-human1')!important}</style>`;
+          let html = String(source);
+          if (!html.includes('namo-attendance-human-art-20260917')) html = html.replace('</head>', `${humanArtStyle}\n</head>`);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          return res.send(html);
+        });
+      }
+      return staticMiddleware(req, res, next);
+    };
+  };
+}
+
 const retiredWorkorderUi = path.resolve(__dirname, 'public', 'js', 'workorder-ui-refinement.js');
 try {
   fs.writeFileSync(retiredWorkorderUi, `/* Retired legacy workorder UI refinement — startup enforced. */
