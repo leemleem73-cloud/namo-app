@@ -1,6 +1,10 @@
-/* NAMO QMES - purchase modal fix + global movable/resizable windows
+/* NAMO QMES - benchmark-style movable/resizable windows
  * 2026-09-17
  * Additive UI patch only. Existing save/data/business logic is preserved.
+ * Window behavior follows common desktop/dialog patterns:
+ * - drag by title/header
+ * - resize from outer borders and all 4 corners
+ * - double click title/header to maximize/restore
  */
 (function(){
   'use strict';
@@ -9,7 +13,8 @@
 
   const STYLE_ID='qmes-purchase-header-supplier-fix-20260917-style';
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
-  const grips=new Map();
+  const handlesByBox=new Map();
+  const DIRECTIONS=['n','s','e','w','ne','nw','se','sw'];
   let queued=false;
 
   function ensureStyle(){
@@ -54,19 +59,28 @@
 .qmes-purchase-live .qpx-form-card .qpdz-basic-grid{grid-template-columns:1.08fr 1.08fr 1fr 1.48fr 1fr!important;gap:10px 18px!important}
 #qmes-partner-register-modal-v2{z-index:2147483646!important}
 
-/* Global movable windows. */
+/* Global title-bar behavior. */
 .qpx-modal-head,.qpr-head,.modal-header,.qmes-modal-header,.qerp-modal-head,.qmes-dialog-header,[data-qmes-drag-handle="1"]{cursor:move!important}
 .qpx-modal-head button,.qpr-head button,.modal-header button,.qmes-modal-header button,.qerp-modal-head button,.qmes-dialog-header button,[data-qmes-drag-handle="1"] button,[data-qmes-drag-handle="1"] input,[data-qmes-drag-handle="1"] select,[data-qmes-drag-handle="1"] textarea,[data-qmes-drag-handle="1"] a{cursor:pointer!important}
 body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,body.qmes-modal-resizing *{user-select:none!important}
 
-/* Real resize grip: works even when modal width is controlled by !important CSS. */
-.qmes-global-resize-grip{
-  position:fixed!important;width:22px!important;height:22px!important;z-index:2147483647!important;
-  cursor:nwse-resize!important;border-radius:0 0 5px 0!important;
-  background:linear-gradient(135deg,transparent 0 42%,rgba(50,88,118,.22) 43% 52%,transparent 53% 62%,rgba(50,88,118,.55) 63% 72%,transparent 73%)!important;
-  touch-action:none!important;
+/* Benchmark-style resize hit areas are centered on the OUTER window border, not inside content. */
+.qmes-window-resize-handle{position:fixed!important;background:transparent!important;touch-action:none!important;box-sizing:border-box!important}
+.qmes-window-resize-handle[data-dir="n"],.qmes-window-resize-handle[data-dir="s"]{cursor:ns-resize!important}
+.qmes-window-resize-handle[data-dir="e"],.qmes-window-resize-handle[data-dir="w"]{cursor:ew-resize!important}
+.qmes-window-resize-handle[data-dir="ne"],.qmes-window-resize-handle[data-dir="sw"]{cursor:nesw-resize!important}
+.qmes-window-resize-handle[data-dir="nw"],.qmes-window-resize-handle[data-dir="se"]{cursor:nwse-resize!important}
+.qmes-window-resize-handle[data-dir="ne"]::after,
+.qmes-window-resize-handle[data-dir="nw"]::after,
+.qmes-window-resize-handle[data-dir="se"]::after,
+.qmes-window-resize-handle[data-dir="sw"]::after{
+  content:"";position:absolute;width:9px;height:9px;opacity:.38;pointer-events:none;
 }
-.qmes-global-resize-grip:hover{background:linear-gradient(135deg,transparent 0 34%,rgba(14,117,186,.28) 35% 48%,transparent 49% 58%,#0e75ba 59% 72%,transparent 73%)!important}
+.qmes-window-resize-handle[data-dir="se"]::after{right:2px;bottom:2px;border-right:2px solid #4d7898;border-bottom:2px solid #4d7898}
+.qmes-window-resize-handle[data-dir="sw"]::after{left:2px;bottom:2px;border-left:2px solid #4d7898;border-bottom:2px solid #4d7898}
+.qmes-window-resize-handle[data-dir="ne"]::after{right:2px;top:2px;border-right:2px solid #4d7898;border-top:2px solid #4d7898}
+.qmes-window-resize-handle[data-dir="nw"]::after{left:2px;top:2px;border-left:2px solid #4d7898;border-top:2px solid #4d7898}
+.qmes-window-resize-handle:hover::after{opacity:.95!important;border-color:#0e75ba!important}
 
 @media(max-width:1200px){
   .qmes-purchase-live .qpx-form-card .qpx-modal-head p{display:none!important}
@@ -125,7 +139,7 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
       step.appendChild(document.createTextNode(label));
     });
 
-    if(!modal.dataset.qmesWindowMoved&&!modal.dataset.qmesWindowResized){
+    if(!modal.dataset.qmesWindowMoved&&!modal.dataset.qmesWindowResized&&!modal.dataset.qmesWindowMaximized){
       modal.style.setProperty('top','14px','important');
       modal.style.setProperty('left','50%','important');
       modal.style.setProperty('right','auto','important');
@@ -156,8 +170,8 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();openSupplierRegister();
   }
 
-  const KNOWN_BOXES='.qpx-form-card,.qpr-box,.modal-content,.qmes-modal-content,.qerp-modal-card,.qmes-dialog-card,.dialog-content';
-  const KNOWN_HEADERS='.qpx-modal-head,.qpr-head,.modal-header,.qmes-modal-header,.qerp-modal-head,.qmes-dialog-header';
+  const KNOWN_BOXES='.qpx-form-card,.qpr-box,.modal-content,.qmes-modal-content,.qerp-modal-card,.qmes-dialog-card,.dialog-content,[class*="modal-card"],[class*="dialog-card"],[class*="popup-card"]';
+  const KNOWN_HEADERS='.qpx-modal-head,.qpr-head,.modal-header,.qmes-modal-header,.qerp-modal-head,.qmes-dialog-header,[class*="modal-header"],[class*="dialog-header"],[class*="popup-header"]';
 
   function boxFromRoleDialog(dialog){
     if(!visible(dialog)) return null;
@@ -174,8 +188,14 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     const set=new Set();
     document.querySelectorAll(KNOWN_BOXES).forEach(el=>{if(visible(el)) set.add(el);});
     document.querySelectorAll('[role="dialog"],[aria-modal="true"]').forEach(dialog=>{
-      const box=boxFromRoleDialog(dialog);
-      if(box) set.add(box);
+      const box=boxFromRoleDialog(dialog);if(box) set.add(box);
+    });
+    document.querySelectorAll('[class*="modal"],[class*="dialog"],[class*="popup"]').forEach(el=>{
+      if(!visible(el)) return;
+      const s=getComputedStyle(el),r=el.getBoundingClientRect();
+      if(!['fixed','absolute'].includes(s.position)) return;
+      if(r.width<220||r.height<100||r.width>=window.innerWidth*.98||r.height>=window.innerHeight*.98) return;
+      set.add(el);
     });
     return [...set].filter(box=>{
       const r=box.getBoundingClientRect();
@@ -196,6 +216,16 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     return null;
   }
 
+  function effectiveZ(box){
+    let z=1000,node=box;
+    while(node&&node!==document.body){
+      const n=parseInt(getComputedStyle(node).zIndex,10);
+      if(Number.isFinite(n)) z=Math.max(z,n);
+      node=node.parentElement;
+    }
+    return Math.min(2147483640,z+3);
+  }
+
   function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
 
   function freezeBox(box){
@@ -207,37 +237,62 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     box.style.setProperty('bottom','auto','important');
     box.style.setProperty('transform','none','important');
     box.style.setProperty('margin','0','important');
+    box.style.setProperty('width',Math.round(r.width)+'px','important');
+    box.style.setProperty('height',Math.round(r.height)+'px','important');
+    box.style.setProperty('max-width','none','important');
+    box.style.setProperty('max-height','none','important');
+    box.style.setProperty('box-sizing','border-box','important');
+    box.style.setProperty('overflow','auto','important');
     return box.getBoundingClientRect();
   }
 
-  function syncGrip(box,grip){
-    if(!visible(box)){grip.style.display='none';return;}
-    const r=box.getBoundingClientRect();
-    const size=22;
-    grip.style.display='block';
-    grip.style.left=Math.round(clamp(r.right-size,0,window.innerWidth-size))+'px';
-    grip.style.top=Math.round(clamp(r.bottom-size,0,window.innerHeight-size))+'px';
-    const z=parseInt(getComputedStyle(box).zIndex,10);
-    grip.style.zIndex=String(Number.isFinite(z)?Math.min(2147483647,z+2):2147483647);
+  function createHandle(box,dir){
+    const h=document.createElement('div');
+    h.className='qmes-window-resize-handle';
+    h.dataset.dir=dir;
+    h._qmesResizeBox=box;
+    h.title='창 크기 조절';
+    document.body.appendChild(h);
+    return h;
   }
 
-  function ensureResizeGrip(box){
-    let grip=grips.get(box);
-    if(!grip){
-      grip=document.createElement('div');
-      grip.className='qmes-global-resize-grip';
-      grip.setAttribute('aria-label','창 크기 조절');
-      grip.title='마우스로 드래그하여 창 크기 조절';
-      grip._qmesResizeBox=box;
-      document.body.appendChild(grip);
-      grips.set(box,grip);
+  function ensureHandles(box){
+    let map=handlesByBox.get(box);
+    if(!map){
+      map={};
+      DIRECTIONS.forEach(dir=>map[dir]=createHandle(box,dir));
+      handlesByBox.set(box,map);
     }
-    syncGrip(box,grip);
+    syncHandles(box,map);
   }
 
-  function cleanupGrips(){
-    for(const [box,grip] of grips){
-      if(!box.isConnected||!visible(box)){grip.remove();grips.delete(box);}
+  function syncHandles(box,map){
+    if(!visible(box)){
+      Object.values(map).forEach(h=>h.style.display='none');
+      return;
+    }
+    const r=box.getBoundingClientRect();
+    const t=10,c=18,halfT=t/2,halfC=c/2,z=effectiveZ(box);
+    const edgeW=Math.max(0,r.width-c*2),edgeH=Math.max(0,r.height-c*2);
+    const pos={
+      n:[r.left+c,r.top-halfT,edgeW,t],s:[r.left+c,r.bottom-halfT,edgeW,t],
+      w:[r.left-halfT,r.top+c,t,edgeH],e:[r.right-halfT,r.top+c,t,edgeH],
+      nw:[r.left-halfC,r.top-halfC,c,c],ne:[r.right-halfC,r.top-halfC,c,c],
+      sw:[r.left-halfC,r.bottom-halfC,c,c],se:[r.right-halfC,r.bottom-halfC,c,c]
+    };
+    Object.entries(map).forEach(([dir,h])=>{
+      const [x,y,w,hh]=pos[dir];
+      h.style.display='block';
+      h.style.left=Math.round(x)+'px';h.style.top=Math.round(y)+'px';h.style.width=Math.round(w)+'px';h.style.height=Math.round(hh)+'px';h.style.zIndex=String(z);
+    });
+  }
+
+  function cleanupHandles(){
+    for(const [box,map] of handlesByBox){
+      if(!box.isConnected||!visible(box)){
+        Object.values(map).forEach(h=>h.remove());
+        handlesByBox.delete(box);
+      }
     }
   }
 
@@ -245,9 +300,9 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     collectWindows().forEach(box=>{
       box.dataset.qmesManagedWindow='1';
       findHeader(box);
-      ensureResizeGrip(box);
+      ensureHandles(box);
     });
-    cleanupGrips();
+    cleanupHandles();
   }
 
   function interactive(el){return !!el.closest('button,a,input,select,textarea,label,[contenteditable="true"],[data-no-drag]');}
@@ -255,20 +310,14 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
   function onMoveStart(event){
     if(event.button!==0) return;
     const t=event.target instanceof Element?event.target:null;
-    if(!t||interactive(t)||t.closest('.qmes-global-resize-grip')) return;
-
+    if(!t||interactive(t)||t.closest('.qmes-window-resize-handle')) return;
     const handle=t.closest('[data-qmes-drag-handle="1"]');
-    let box=handle&&handle.closest('[data-qmes-managed-window="1"]');
-    if(!box){
-      box=t.closest('[data-qmes-managed-window="1"]');
-      if(!box) return;
-      const r=box.getBoundingClientRect();
-      if(event.clientY-r.top>58) return;
-    }
+    const box=handle&&handle.closest('[data-qmes-managed-window="1"]');
+    if(!box) return;
 
     event.preventDefault();
     const r=freezeBox(box);
-    box.dataset.qmesWindowMoved='1';
+    box.dataset.qmesWindowMoved='1';delete box.dataset.qmesWindowMaximized;
     const sx=event.clientX,sy=event.clientY,sl=r.left,st=r.top;
     document.body.classList.add('qmes-modal-dragging');
 
@@ -278,7 +327,7 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
       const maxTop=Math.max(0,window.innerHeight-44);
       box.style.setProperty('left',Math.round(clamp(sl+e.clientX-sx,minLeft,maxLeft))+'px','important');
       box.style.setProperty('top',Math.round(clamp(st+e.clientY-sy,0,maxTop))+'px','important');
-      const grip=grips.get(box);if(grip) syncGrip(box,grip);
+      const map=handlesByBox.get(box);if(map) syncHandles(box,map);
     };
     const end=()=>{
       document.body.classList.remove('qmes-modal-dragging');
@@ -288,33 +337,48 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);
   }
 
+  function minSize(box){
+    return box.classList.contains('qpx-form-card')?{w:520,h:300}:{w:300,h:180};
+  }
+
   function onResizeStart(event){
-    const grip=event.target instanceof Element?event.target.closest('.qmes-global-resize-grip'):null;
-    if(!grip||event.button!==0) return;
-    const box=grip._qmesResizeBox;
+    const h=event.target instanceof Element?event.target.closest('.qmes-window-resize-handle'):null;
+    if(!h||event.button!==0) return;
+    const box=h._qmesResizeBox,dir=h.dataset.dir||'se';
     if(!box||!box.isConnected) return;
 
     event.preventDefault();event.stopPropagation();
-    const r=freezeBox(box);
-    box.dataset.qmesWindowResized='1';
-    const sx=event.clientX,sy=event.clientY,sw=r.width,sh=r.height;
-    const minW=Math.min(520,Math.max(280,sw*.45));
-    const minH=Math.min(300,Math.max(180,sh*.40));
+    const r=freezeBox(box),mins=minSize(box);
+    box.dataset.qmesWindowResized='1';delete box.dataset.qmesWindowMaximized;
+    const sx=event.clientX,sy=event.clientY;
+    const start={l:r.left,t:r.top,w:r.width,h:r.height,right:r.right,bottom:r.bottom};
     document.body.classList.add('qmes-modal-resizing');
 
     const move=e=>{
-      const left=parseFloat(box.style.left)||box.getBoundingClientRect().left;
-      const top=parseFloat(box.style.top)||box.getBoundingClientRect().top;
-      const maxW=Math.max(minW,window.innerWidth-Math.max(0,left)-4);
-      const maxH=Math.max(minH,window.innerHeight-Math.max(0,top)-4);
-      const w=clamp(sw+(e.clientX-sx),minW,maxW);
-      const h=clamp(sh+(e.clientY-sy),minH,maxH);
+      const dx=e.clientX-sx,dy=e.clientY-sy;
+      let l=start.l,t=start.t,w=start.w,hh=start.h;
+
+      if(dir.includes('e')) w=clamp(start.w+dx,mins.w,window.innerWidth-Math.max(0,start.l)-4);
+      if(dir.includes('s')) hh=clamp(start.h+dy,mins.h,window.innerHeight-Math.max(0,start.t)-4);
+      if(dir.includes('w')){
+        const maxL=start.right-mins.w;
+        l=clamp(start.l+dx,4,maxL);
+        w=start.right-l;
+      }
+      if(dir.includes('n')){
+        const maxT=start.bottom-mins.h;
+        t=clamp(start.t+dy,4,maxT);
+        hh=start.bottom-t;
+      }
+
+      box.style.setProperty('left',Math.round(l)+'px','important');
+      box.style.setProperty('top',Math.round(t)+'px','important');
       box.style.setProperty('width',Math.round(w)+'px','important');
-      box.style.setProperty('height',Math.round(h)+'px','important');
+      box.style.setProperty('height',Math.round(hh)+'px','important');
       box.style.setProperty('max-width','none','important');
       box.style.setProperty('max-height','none','important');
-      box.style.setProperty('overflow','auto','important');
-      syncGrip(box,grip);
+      box.style.setProperty('transform','none','important');
+      const map=handlesByBox.get(box);if(map) syncHandles(box,map);
     };
     const end=()=>{
       document.body.classList.remove('qmes-modal-resizing');
@@ -324,9 +388,41 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);
   }
 
-  function syncAllGrips(){for(const [box,grip] of grips) syncGrip(box,grip);}
+  function onHeaderDoubleClick(event){
+    const t=event.target instanceof Element?event.target:null;
+    if(!t||interactive(t)) return;
+    const handle=t.closest('[data-qmes-drag-handle="1"]');
+    const box=handle&&handle.closest('[data-qmes-managed-window="1"]');
+    if(!box) return;
+    event.preventDefault();
 
-  function apply(){queued=false;ensureStyle();normalizePurchaseHeader();registerWindows();syncAllGrips();}
+    if(box.dataset.qmesWindowMaximized==='1'){
+      try{
+        const r=JSON.parse(box.dataset.qmesRestoreRect||'{}');
+        if(Number.isFinite(r.l)) box.style.setProperty('left',r.l+'px','important');
+        if(Number.isFinite(r.t)) box.style.setProperty('top',r.t+'px','important');
+        if(Number.isFinite(r.w)) box.style.setProperty('width',r.w+'px','important');
+        if(Number.isFinite(r.h)) box.style.setProperty('height',r.h+'px','important');
+      }catch(_){}
+      delete box.dataset.qmesWindowMaximized;
+    }else{
+      const r=freezeBox(box);
+      box.dataset.qmesRestoreRect=JSON.stringify({l:r.left,t:r.top,w:r.width,h:r.height});
+      box.dataset.qmesWindowMaximized='1';
+      box.style.setProperty('left','6px','important');
+      box.style.setProperty('top','6px','important');
+      box.style.setProperty('width','calc(100vw - 12px)','important');
+      box.style.setProperty('height','calc(100vh - 12px)','important');
+      box.style.setProperty('max-width','none','important');
+      box.style.setProperty('max-height','none','important');
+      box.style.setProperty('transform','none','important');
+    }
+    const map=handlesByBox.get(box);if(map) requestAnimationFrame(()=>syncHandles(box,map));
+  }
+
+  function syncAllHandles(){for(const [box,map] of handlesByBox) syncHandles(box,map);}
+
+  function apply(){queued=false;ensureStyle();normalizePurchaseHeader();registerWindows();syncAllHandles();}
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
 
   function start(){
@@ -334,8 +430,9 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     document.addEventListener('click',handlePurchaseClick,true);
     document.addEventListener('pointerdown',onResizeStart,true);
     document.addEventListener('pointerdown',onMoveStart,true);
+    document.addEventListener('dblclick',onHeaderDoubleClick,true);
     window.addEventListener('resize',schedule);
-    window.addEventListener('scroll',syncAllGrips,true);
+    window.addEventListener('scroll',syncAllHandles,true);
     new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
     window.addEventListener('qmes:navigate-tab',()=>setTimeout(schedule,0));
   }
