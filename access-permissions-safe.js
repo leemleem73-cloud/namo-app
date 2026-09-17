@@ -61,10 +61,7 @@ async function readPermissionForUser(user){
 }
 
 /* Legacy commercial ERP middleware originally allows only sales department / named users.
-   System administrators already have all menu permissions in this module, so the API layer
-   must honor the same rule. Patch Express route registration before server-legacy registers
-   /api/purchase-orders routes: admin bypasses only requireCommercialErp; all other users keep
-   the original middleware unchanged. */
+   Keep the existing route-registration patch as a compatibility layer. */
 if(!express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__){
   express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__=true;
   ['get','post','put','patch'].forEach(method=>{
@@ -75,7 +72,8 @@ if(!express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__){
         const patched=[route,...args.slice(1).map(handler=>{
           if(typeof handler!=='function'||handler.name!=='requireCommercialErp')return handler;
           return function requireCommercialErpAdminAware(req,res,next){
-            if(String(req.session?.user?.role||'').toLowerCase()==='admin')return next();
+            const role=String(req.session?.user?.role||'').toLowerCase();
+            if(role==='admin'||role==='administrator'||role==='관리자')return next();
             return handler(req,res,next);
           };
         })];
@@ -89,6 +87,28 @@ if(!express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__){
 function install(app){
   if(app.__namoAccessPermissionsInstalled)return;
   app.__namoAccessPermissionsInstalled=true;
+
+  /* Production fix: purchase APIs still pass through the legacy commercial-ERP gate.
+     For a system administrator, temporarily present the request as sales-department only
+     while downstream middleware checks access. The original session value is restored
+     immediately after next() returns, so the account's real department is not changed. */
+  app.use(function qmesAdminPurchaseApiGate(req,res,next){
+    const user=req.session?.user;
+    const path=String(req.path||req.originalUrl||'');
+    if(!user||!/^\/api\/purchase-orders(?:\/|$)/.test(path))return next();
+    const role=String(user.role||'').trim().toLowerCase();
+    const isAdmin=role==='admin'||role==='administrator'||role==='관리자'||user.systemAdmin===true;
+    if(!isAdmin)return next();
+    const originalDepartment=user.department;
+    const originalDept=user.dept;
+    user.department='영업부';
+    user.dept='영업부';
+    try{return next();}
+    finally{
+      user.department=originalDepartment;
+      user.dept=originalDept;
+    }
+  });
 
   app.get('/api/access/me',requireLogin,async(req,res)=>{
     try{return ok(res,await readPermissionForUser(req.session.user));}
