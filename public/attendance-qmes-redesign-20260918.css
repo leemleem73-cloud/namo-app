@@ -112,3 +112,31 @@ html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn .ni{font-size:22px!
   .qmes-att-summary{grid-template-columns:repeat(2,1fr);row-gap:14px}
   .qmes-att-sum:nth-child(2){border-right:0}
 }
+
+
+html[data-namo-attendance-full-ui="v4"] .page[data-page="records"]>*:not(#qmesAttendanceRecords20260918){display:none!important}
+.qmes-att-records-page{display:grid;gap:12px;padding:14px 0 8px}
+.qmes-att-record-title{padding:4px 2px 2px}
+.qmes-att-record-title h2{margin:0;font-size:22px;font-weight:950;letter-spacing:-.7px;color:#12233f}
+.qmes-att-record-title p{margin:6px 0 0;font-size:12px;color:#728198}
+.qmes-att-record-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.qmes-att-record-stats>div{background:#fff;border:1px solid var(--qmes-line);border-radius:16px;padding:13px 10px;text-align:center;box-shadow:0 6px 18px rgba(35,64,98,.04)}
+.qmes-att-record-stats span{display:block;font-size:10px;color:#748399;font-weight:850}
+.qmes-att-record-stats b{display:block;margin-top:5px;font-size:22px;color:#132744;font-weight:950}
+.qmes-att-record-list{background:#fff;border:1px solid var(--qmes-line);border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(35,64,98,.05)}
+.qmes-att-record-row{width:100%;display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:10px;padding:14px 15px;border:0;border-bottom:1px solid #e8eef4;background:#fff;text-align:left}
+.qmes-att-record-row:last-child{border-bottom:0}
+.qmes-att-record-dot{width:9px;height:9px;border-radius:50%;background:#a4b0bd}
+.qmes-att-record-dot.done{background:#19b77d}.qmes-att-record-dot.working{background:#1676df}.qmes-att-record-dot.missing{background:#e93e4a}.qmes-att-record-dot.late{background:#f4a11a}.qmes-att-record-dot.future{background:#aab5c1}
+.qmes-att-record-main{min-width:0}.qmes-att-record-main b{display:block;font-size:13px;color:#172b48;font-weight:950}.qmes-att-record-main span{display:block;margin-top:5px;font-size:11px;color:#728198}.qmes-att-record-main strong{color:#1c3555;font-weight:950}
+.qmes-att-record-side{text-align:right}.qmes-att-record-side small{display:block;margin-top:5px;color:#7e8b9d;font-size:9px;font-style:normal}
+.qmes-att-record-badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:950;font-style:normal;background:#edf1f5;color:#718094}
+.qmes-att-record-badge.done{background:#dff8ef;color:#0e8c5b}.qmes-att-record-badge.working{background:#dcecff;color:#126bd0}.qmes-att-record-badge.missing{background:#ffe0e3;color:#d82635}.qmes-att-record-badge.late{background:#fff0d7;color:#b96b00}
+.qmes-att-record-empty{padding:34px 20px;text-align:center;color:#8190a4;font-size:12px}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="requests"] .page-title-row,
+html[data-namo-attendance-full-ui="v4"] .page[data-page="leave"] .page-title-row{margin-top:10px}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="requests"] .list-card,
+html[data-namo-attendance-full-ui="v4"] .page[data-page="requests"] .card,
+html[data-namo-attendance-full-ui="v4"] .page[data-page="leave"] .card,
+html[data-namo-attendance-full-ui="v4"] .page[data-page="more"] .menu-profile,
+html[data-namo-attendance-full-ui="v4"] .page[data-page="more"] .menu-list{border:1px solid var(--qmes-line)!important;border-radius:18px!important;box-shadow:0 7px 20px rgba(35,64,98,.04)!important}
