@@ -105,6 +105,40 @@ function buildHome(){
     '</div></section>';
   bindHome();
 }
+function recordStatus(row){
+  const key=logKey(row),base=statusFor(key,row);
+  if(base.cls==='done'){
+    const late=minsFromTime(time(row.clockIn))>minsFromTime(state.schedule.startTime)+5;
+    return late?{label:'지각',cls:'late'}:{label:'정상근무',cls:'done'};
+  }
+  return base;
+}
+function buildRecords(){
+  const page=$('.page[data-page="records"]');if(!page)return;
+  let host=$('#qmesAttendanceRecords20260918');
+  if(!host){host=document.createElement('div');host.id='qmesAttendanceRecords20260918';host.className='qmes-att-records-page';page.appendChild(host)}
+  const rows=(state.logs||[]).slice().sort((a,b)=>logKey(b).localeCompare(logKey(a)));
+  let normal=0,late=0,missing=0;
+  rows.forEach(r=>{const st=recordStatus(r);if(st.label==='정상근무')normal++;else if(st.label==='지각')late++;else if(st.label==='퇴근누락')missing++});
+  const list=rows.length?rows.map(r=>{
+    const key=logKey(r),st=recordStatus(r),mins=durationMinutes(r,key);
+    return '<button type="button" class="qmes-att-record-row" data-record-date="'+key+'">'+
+      '<span class="qmes-att-record-dot '+st.cls+'"></span>'+
+      '<span class="qmes-att-record-main"><b>'+displayDate(key)+'</b><span>출근 <strong>'+(r.clockIn?time(r.clockIn):'-')+'</strong> · 퇴근 <strong>'+(r.clockOut?time(r.clockOut):'-')+'</strong></span></span>'+
+      '<span class="qmes-att-record-side"><em class="qmes-att-record-badge '+st.cls+'">'+st.label+'</em><small>'+(mins?durationText(mins):'-')+'</small></span>'+
+    '</button>';
+  }).join(''):'<div class="qmes-att-record-empty">등록된 출퇴근 기록이 없습니다.</div>';
+  host.innerHTML=
+    '<div class="qmes-att-record-title"><h2>근무내역</h2><p>실제 출퇴근 기록과 상태를 확인합니다.</p></div>'+
+    '<div class="qmes-att-record-stats">'+
+      '<div><span>정상근무</span><b>'+normal+'</b></div>'+
+      '<div><span>지각</span><b>'+late+'</b></div>'+
+      '<div><span>퇴근누락</span><b>'+missing+'</b></div>'+
+    '</div>'+
+    '<div class="qmes-att-record-list">'+list+'</div>';
+  $('.qmes-att-record-row',host).forEach(b=>b.onclick=()=>openDetail(b.dataset.recordDate));
+}
+
 function ensureDetail(){
   let el=$('#qmesAttendanceDetail20260918');if(el)return el;
   el=document.createElement('div');el.id='qmesAttendanceDetail20260918';el.className='qmes-att-detail';
@@ -166,7 +200,7 @@ function bindHome(){
   const all=$('#qmesAttViewAll');if(all)all.onclick=()=>$('.nav-btn[data-page-target="records"]')?.click();
 }
 function restyleOtherPages(){
-  const page=$('.page[data-page="records"]');if(page){const t=$('.page-title',page),s=$('.page-sub',page);if(t)t.textContent='근무내역';if(s)s.textContent='실제 출퇴근 기록과 상태를 확인합니다.'}
+  const page=$('.page[data-page="records"]');if(page){const t=$('.page-title',page),s=$('.page-sub',page);if(t)t.textContent='근무내역';if(s)s.textContent='실제 출퇴근 기록과 상태를 확인합니다.'} const navRecords=$('.nav-btn[data-page-target="records"] .nt');if(navRecords)navRecords.textContent='근무내역'; const navRequests=$('.nav-btn[data-page-target="requests"] .nt');if(navRequests)navRequests.textContent='신청'; const navMore=$('.nav-btn[data-page-target="more"] .nt');if(navMore)navMore.textContent='내정보';
   const requests=$('.page[data-page="requests"] .page-title');if(requests)requests.textContent='근태신청';
   const leave=$('.page[data-page="leave"] .page-title');if(leave)leave.textContent='휴가관리';
 }
@@ -180,7 +214,7 @@ async function loadAll(){
       api('/api/attendance/work-schedule').catch(()=>({startTime:'08:00',endTime:'17:00'}))
     ]);
     state.me=values[0];state.today=values[1];state.logs=Array.isArray(values[2])?values[2]:[];state.schedule=values[3]||state.schedule;
-    buildHome();restyleOtherPages();
+    buildHome();buildRecords();restyleOtherPages();
     document.documentElement.setAttribute('data-namo-final-ready','1');
     document.documentElement.setAttribute('data-attendance-boot','ready');
   }catch(e){
