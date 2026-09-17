@@ -33,6 +33,10 @@ try{
       html=html.replace(new RegExp(`<script src="\\/${escaped}\\?v=[^"]+"><\\/script>`,'g'),'');
     }
 
+    // The final attendance polish must be the last visual script. Remove any earlier copy
+    // so legacy structure/compatibility scripts cannot repaint over it after first reveal.
+    html=html.replace(/<script src="\/attendance-final-polish-20260917\.js\?v=[^"]+"><\/script>/g,'');
+
     html=html.replace(/<script>window\.__NAMO_ATT_BOOT_FAILSAFE__=[\s\S]*?<\/script>/g,'');
     html=html.replace(/\sdata-attendance-boot="[^"]*"/g,'');
     html=html.replace(/<html([^>]*data-namo-attendance-full-ui="v4"[^>]*)>/i,'<html$1 data-attendance-boot="pending">');
@@ -58,11 +62,12 @@ try{
       '<script src="/attendance-reference-ui-20260908.js?v=20260908-ref2"></script>',
       '<script src="/attendance-enterprise-home-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-approved-detail-20260909.js?v=20260909-production2"></script>',
-      '<script src="/attendance-direct-mail-20260909.js?v=20260909-production2"></script>'
+      '<script src="/attendance-direct-mail-20260909.js?v=20260909-production2"></script>',
+      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last6"></script>'
     ].join('');
     html=html.replace('</body>',tail+'</body>');
 
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance stability] production attendance UI + approved detail + direct mail installed');
+    console.log('[Attendance stability] production attendance UI installed; final polish locked last');
   }
 }catch(e){console.error('[Attendance stability] preload failed',e)}
