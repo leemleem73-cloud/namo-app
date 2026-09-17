@@ -47,6 +47,11 @@ try{
       'html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] body,'+
       'html[data-namo-reloading="1"] body{margin:0!important;min-height:100vh!important;background:#eef2f6!important;overflow:hidden!important}'+
       'html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] body>*{visibility:visible}'+
+      'html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .clock-btn,'+
+      'html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .clock-btn[disabled]{opacity:1!important;filter:none!important;transition:none!important;animation:none!important}'+
+      'html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .namo-clock-photo{opacity:1!important;filter:none!important;transition:none!important;animation:none!important}'+
+      'html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .clock-btn:before,'+
+      'html[data-namo-attendance-full-ui="v4"] .page[data-page="home"] .clock-btn:after{display:none!important;content:none!important;background:none!important;background-image:none!important;filter:none!important;transform:none!important}'+
       '</style>';
 
     const styles=[
@@ -71,11 +76,11 @@ try{
       '<script src="/attendance-enterprise-home-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-approved-detail-20260909.js?v=20260909-production2"></script>',
       '<script src="/attendance-direct-mail-20260909.js?v=20260909-production2"></script>',
-      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last7"></script>'
+      '<script src="/attendance-final-polish-20260917.js?v=20260917-final-last8"></script>'
     ].join('');
     html=html.replace('</body>',tail+'</body>');
 
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance stability] final UI locked last; all attendance content hidden during reload');
+    console.log('[Attendance stability] final UI locked; refresh flash hidden; clock artwork opacity fixed');
   }
 }catch(e){console.error('[Attendance stability] preload failed',e)}
