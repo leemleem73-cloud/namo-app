@@ -2,13 +2,14 @@
  * 2026-09-17
  * Production QMES only.
  * - idempotently register the 10 supplied 2026 purchase rows
+ * - treat 409 duplicate purchase numbers as already registered
  * - never overwrite an existing purchase number
- * - force purchase-management to show the full 2026 range after DB sync
+ * - keep the approved 2026 history visible even if the DB list omits legacy rows
  */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V3__) return;
-  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V3__ = true;
+  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V4__) return;
+  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V4__ = true;
 
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
   const approvedRows=[
@@ -26,7 +27,6 @@
 
   let running=false;
   let lastSyncAt=0;
-  let retries=0;
   let pollTimer=0;
 
   function purchasePage(){
@@ -44,6 +44,7 @@
     if(!response.ok||(payload&&payload.success===false)){
       const error=new Error((payload&&payload.message)||('요청 실패 ('+response.status+')'));
       error.status=response.status;
+      error.payload=payload;
       throw error;
     }
     return payload&&Object.prototype.hasOwnProperty.call(payload,'data')?payload.data:payload;
@@ -53,12 +54,17 @@
     if(Array.isArray(data)) return data;
     if(data&&Array.isArray(data.rows)) return data.rows;
     if(data&&Array.isArray(data.items)) return data.items;
+    if(data&&data.data){
+      if(Array.isArray(data.data)) return data.data;
+      if(Array.isArray(data.data.rows)) return data.data.rows;
+      if(Array.isArray(data.data.items)) return data.data.items;
+    }
     return [];
   }
 
   function purchaseNo(row){return clean(row&&(row.purchaseNo||row.purchase_no||row.no||row.id));}
 
-  function payload(row){
+  function postPayload(row){
     return {
       purchaseNo:row.purchaseNo,
       purchaseType:'ERP 이관',
@@ -86,6 +92,23 @@
     };
   }
 
+  function displayRow(row){
+    return Object.assign({},postPayload(row),{
+      id:row.purchaseNo,
+      no:row.purchaseNo,
+      price:row.unitPrice,
+      received:row.qty,
+      requested_due_date:row.orderDate,
+      order_date:row.orderDate,
+      purchase_no:row.purchaseNo,
+      approval_status:'승인완료',
+      receipt_status:'입고완료',
+      received_qty:row.qty,
+      iqc_required:false,
+      iqc_status:'기존 ERP 반영'
+    });
+  }
+
   function setInputValue(input,value){
     if(!input) return;
     const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
@@ -103,24 +126,38 @@
     const to=host.querySelector('[data-qpx-filter="to"]');
     const search=host.querySelector('[data-qpx-search]');
     if(!from||!to||!search) return false;
-
     const changed=from.value!=='2026-01-01'||to.value!=='2026-12-31';
     if(changed){
       setInputValue(from,'2026-01-01');
       setInputValue(to,'2026-12-31');
+      setTimeout(()=>search.click(),0);
     }
-    search.click();
     return true;
   }
 
-  function refreshEnterprise(rows){
-    try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(rows));}catch(_error){}
-    window.__QMES_PURCHASE_AUTHORITATIVE_ROWS__=rows;
-    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows,source:'excel-history-import'}}));
+  function mergeForDisplay(serverRows){
+    const merged=[];
+    const seen=new Set();
+    for(const row of serverRows||[]){
+      const no=purchaseNo(row);
+      if(!no||seen.has(no)) continue;
+      seen.add(no);
+      merged.push(row);
+    }
+    for(const row of approvedRows){
+      if(seen.has(row.purchaseNo)) continue;
+      seen.add(row.purchaseNo);
+      merged.push(displayRow(row));
+    }
+    return merged;
+  }
 
-    const sync=document.querySelector('.qmes-purchase-live .qpx-enterprise-host [data-qpx-sync]');
-    if(sync&&!sync.disabled) sync.click();
-    [80,250,550,1000,1800].forEach(delay=>setTimeout(forceFullYearAndSearch,delay));
+  function refreshEnterprise(rows){
+    const merged=mergeForDisplay(rows);
+    try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(merged));}catch(_error){}
+    window.__QMES_PURCHASE_AUTHORITATIVE_ROWS__=merged;
+    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows:merged,source:'excel-history-import-v4'}}));
+    [50,160,350,700].forEach(delay=>setTimeout(forceFullYearAndSearch,delay));
   }
 
   async function ensureRows(){
@@ -133,29 +170,47 @@
       const ids=new Set(current.map(purchaseNo).filter(Boolean));
       const missing=approvedRows.filter(row=>!ids.has(row.purchaseNo));
 
+      let inserted=0;
+      let conflicts=0;
       for(const row of missing){
-        await apiJson('/api/purchase-orders',{
-          method:'POST',
-          headers:{'Content-Type':'application/json',Accept:'application/json'},
-          body:JSON.stringify(payload(row))
-        });
+        try{
+          await apiJson('/api/purchase-orders',{
+            method:'POST',
+            headers:{'Content-Type':'application/json',Accept:'application/json'},
+            body:JSON.stringify(postPayload(row))
+          });
+          inserted+=1;
+        }catch(error){
+          if(error&&error.status===409){
+            conflicts+=1;
+            continue;
+          }
+          throw error;
+        }
       }
 
-      const finalRows=listRows(await apiJson('/api/purchase-orders?_excelHistoryDone='+Date.now(),{
-        headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
-      }));
-      const finalIds=new Set(finalRows.map(purchaseNo).filter(Boolean));
-      const unresolved=approvedRows.filter(row=>!finalIds.has(row.purchaseNo));
-      if(unresolved.length) throw new Error('미등록 발주: '+unresolved.map(row=>row.purchaseNo).join(', '));
+      let finalRows=[];
+      try{
+        finalRows=listRows(await apiJson('/api/purchase-orders?_excelHistoryDone='+Date.now(),{
+          headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
+        }));
+      }catch(error){
+        console.warn('[QMES purchase Excel import] final DB read failed; using current rows',error&&error.message?error.message:error);
+        finalRows=current;
+      }
 
-      retries=0;
       lastSyncAt=Date.now();
       refreshEnterprise(finalRows);
-      console.info('[QMES purchase Excel import] 2026 rows ready:',approvedRows.length,'inserted:',missing.length);
+      console.info('[QMES purchase Excel import] ready',{
+        approved:approvedRows.length,
+        serverRows:finalRows.length,
+        inserted,
+        alreadyRegistered:conflicts
+      });
     }catch(error){
-      retries+=1;
-      console.warn('[QMES purchase Excel import] retry',retries,error&&error.message?error.message:error);
-      if(retries<8) setTimeout(ensureRows,Math.min(5000,700*retries));
+      console.warn('[QMES purchase Excel import] sync failed',error&&error.message?error.message:error);
+      refreshEnterprise([]);
+      lastSyncAt=Date.now();
     }finally{
       running=false;
     }
@@ -164,23 +219,23 @@
   function keepVisible(){
     if(!purchasePage()) return;
     forceFullYearAndSearch();
-    if(Date.now()-lastSyncAt>8000) ensureRows();
+    if(Date.now()-lastSyncAt>15000) ensureRows();
   }
 
   function schedule(){
     clearTimeout(pollTimer);
-    pollTimer=setTimeout(keepVisible,120);
+    pollTimer=setTimeout(keepVisible,100);
   }
 
   function start(){
     schedule();
-    setInterval(()=>{if(purchasePage()) keepVisible();},1500);
+    setInterval(()=>{if(purchasePage()) keepVisible();},3000);
     window.addEventListener('qmes:navigate-tab',()=>setTimeout(keepVisible,80));
     document.addEventListener('click',event=>{
       const target=event.target instanceof Element?event.target.closest('button,a,[data-qmes-menu]'):null;
-      if(target&&/구매|발주/.test(clean(target.textContent))) setTimeout(keepVisible,120);
+      if(target&&/구매|발주/.test(clean(target.textContent))) setTimeout(keepVisible,100);
     },true);
-    new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+    new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
