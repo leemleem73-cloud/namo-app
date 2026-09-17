@@ -155,3 +155,15 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+
+/* Global calendar loader: applies compact/movable calendar behavior across QMES. */
+(function(){
+  'use strict';
+  const id='qmes-global-calendar-compact-draggable-20260917-loader';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/js/qmes-global-calendar-compact-draggable-20260917.js?v=20260917-1';
+  script.defer=true;
+  document.head.appendChild(script);
+})();
