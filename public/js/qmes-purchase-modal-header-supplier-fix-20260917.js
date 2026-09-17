@@ -52,6 +52,33 @@
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h2 *,
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h3 *,
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h4 *{color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important}
+/* Close button: white button with dark X so it is always clearly visible. */
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-modal-close,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head button.qpx-modal-close{
+  background:#fff!important;
+  color:#173b5c!important;
+  -webkit-text-fill-color:#173b5c!important;
+  opacity:1!important;
+  border:1px solid rgba(255,255,255,.96)!important;
+  box-shadow:0 1px 4px rgba(0,0,0,.16)!important;
+  font-size:22px!important;
+  font-weight:950!important;
+  line-height:1!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-modal-close *,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head button.qpx-modal-close *{
+  color:#173b5c!important;
+  -webkit-text-fill-color:#173b5c!important;
+  fill:currentColor!important;
+  stroke:currentColor!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-modal-close:hover,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head button.qpx-modal-close:hover{
+  background:#eef6fb!important;
+  color:#075f98!important;
+  -webkit-text-fill-color:#075f98!important;
+  border-color:#d4e8f5!important;
+}
 #qmes-partner-register-modal-v2{z-index:2147483646!important}
 
 /* All managed QMES windows: title/header moves the window. */
@@ -346,6 +373,13 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
       head.dataset.qmesDragHandle='1';
       const title=[...head.querySelectorAll('h1,h2,h3,h4')].find(el=>/신규\s*구매\s*발주\s*등록/.test(clean(el.textContent)));
       if(title){title.style.setProperty('color','#fff','important');title.style.setProperty('-webkit-text-fill-color','#fff','important');title.style.setProperty('opacity','1','important');}
+      const close=head.querySelector('.qpx-modal-close');
+      if(close){
+        close.style.setProperty('background','#fff','important');
+        close.style.setProperty('color','#173b5c','important');
+        close.style.setProperty('-webkit-text-fill-color','#173b5c','important');
+        close.style.setProperty('opacity','1','important');
+      }
     }
     if(!modal.dataset.qmesWindowMoved&&!modal.dataset.qmesWindowResized&&!modal.dataset.qmesWindowMaximized){
       modal.style.setProperty('top','14px','important');modal.style.setProperty('left','50%','important');modal.style.setProperty('right','auto','important');modal.style.setProperty('bottom','auto','important');modal.style.setProperty('transform','translateX(-50%)','important');
