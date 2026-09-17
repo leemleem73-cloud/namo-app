@@ -60,8 +60,8 @@ async function readPermissionForUser(user){
   };
 }
 
-/* Legacy commercial ERP middleware originally allows only sales department / named users.
-   Keep the existing route-registration patch as a compatibility layer. */
+/* Legacy purchase routes still use requireCommercialErp. Keep the old registration
+   wrapper for compatibility, but the request middleware below is authoritative. */
 if(!express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__){
   express.__NAMO_ADMIN_PURCHASE_API_ACCESS_20260917__=true;
   ['get','post','put','patch'].forEach(method=>{
@@ -88,17 +88,30 @@ function install(app){
   if(app.__namoAccessPermissionsInstalled)return;
   app.__namoAccessPermissionsInstalled=true;
 
-  /* Production fix: purchase APIs still pass through the legacy commercial-ERP gate.
-     For a system administrator, temporarily present the request as sales-department only
-     while downstream middleware checks access. The original session value is restored
-     immediately after next() returns, so the account's real department is not changed. */
-  app.use(function qmesAdminPurchaseApiGate(req,res,next){
+  /* Purchase API permission bridge.
+     If QMES says the signed-in user may open erpPurchase, the API must allow the same user.
+     This fixes the old mismatch where the menu was visible but /api/purchase-orders returned 403.
+     The current operational owner account is also explicitly allowed as a safety fallback. */
+  app.use(async function qmesPurchaseApiPermissionBridge(req,res,next){
     const user=req.session?.user;
-    const path=String(req.path||req.originalUrl||'');
-    if(!user||!/^\/api\/purchase-orders(?:\/|$)/.test(path))return next();
+    const requestPath=String(req.path||req.originalUrl||'');
+    if(!user||!/^\/api\/purchase-orders(?:\/|$)/.test(requestPath))return next();
+
+    let permitted=false;
     const role=String(user.role||'').trim().toLowerCase();
-    const isAdmin=role==='admin'||role==='administrator'||role==='관리자'||user.systemAdmin===true;
-    if(!isAdmin)return next();
+    const name=String(user.name||'').replace(/\s+/g,'').trim();
+    if(role==='admin'||role==='administrator'||role==='관리자'||user.systemAdmin===true||name==='임흥배'){
+      permitted=true;
+    }else{
+      try{
+        const access=await readPermissionForUser(user);
+        permitted=Array.isArray(access.effective)&&(access.effective.includes('*')||access.effective.includes('erpPurchase'));
+      }catch(error){
+        console.warn('[QMES access] purchase permission lookup skipped',error.message);
+      }
+    }
+    if(!permitted)return next();
+
     const originalDepartment=user.department;
     const originalDept=user.dept;
     user.department='영업부';
