@@ -1,138 +1,296 @@
-/* NAMO QMES - global compact calendar size patch
+/* NAMO QMES - compact global date picker
  * 2026-09-17
- * Size only: preserve every existing calendar/date-picker function and behavior.
- * Applies to dynamically opened custom calendar popups across QMES.
+ * Chrome's native <input type="date"> popup cannot be resized with page CSS.
+ * Keep the same date value/change behavior, but use one compact QMES calendar UI.
+ * Applies dynamically to every enabled input[type="date"] across QMES.
  */
 (function(){
   'use strict';
-  if(window.__QMES_GLOBAL_CALENDAR_SIZE_ONLY_20260917__) return;
-  window.__QMES_GLOBAL_CALENDAR_SIZE_ONLY_20260917__=true;
+  if(window.__QMES_COMPACT_GLOBAL_DATE_PICKER_20260917_V3__) return;
+  window.__QMES_COMPACT_GLOBAL_DATE_PICKER_20260917_V3__=true;
 
-  const STYLE_ID='qmes-global-calendar-size-only-20260917-style';
-  const monthRe=/(?:19|20)\d{2}\s*년\s*(?:1[0-2]|[1-9])\s*월/;
-  let queued=false;
+  const STYLE_ID='qmes-compact-global-date-picker-20260917-style';
+  const POP_ID='qmes-compact-global-date-picker';
+  const TARGET_WIDTH=248;
+  let activeInput=null;
+  let viewYear=0;
+  let viewMonth=0;
+  let popup=null;
+
+  const pad=n=>String(n).padStart(2,'0');
+  const iso=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+  const parse=value=>{
+    const m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m) return null;
+    return {y:Number(m[1]),m:Number(m[2])-1,d:Number(m[3])};
+  };
 
   function addStyle(){
     if(document.getElementById(STYLE_ID)) return;
     const style=document.createElement('style');
     style.id=STYLE_ID;
     style.textContent=`
-      [data-qmes-compact-calendar="1"]{
-        width:280px!important;
-        min-width:280px!important;
-        max-width:calc(100vw - 16px)!important;
-        padding:10px 12px!important;
+      #${POP_ID}{
+        position:fixed!important;
+        width:${TARGET_WIDTH}px!important;
+        min-width:${TARGET_WIDTH}px!important;
+        max-width:calc(100vw - 12px)!important;
+        background:#fff!important;
+        border:1px solid #dbe4ef!important;
         border-radius:12px!important;
-        font-size:11.5px!important;
+        box-shadow:0 12px 34px rgba(15,23,42,.18)!important;
+        padding:9px 10px 8px!important;
+        z-index:2147483640!important;
+        color:#26354a!important;
+        font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
         box-sizing:border-box!important;
+        user-select:none!important;
       }
-      [data-qmes-compact-calendar="1"] *{box-sizing:border-box!important;}
-      [data-qmes-compact-calendar="1"] h1,
-      [data-qmes-compact-calendar="1"] h2,
-      [data-qmes-compact-calendar="1"] h3,
-      [data-qmes-compact-calendar="1"] h4,
-      [data-qmes-compact-calendar="1"] strong{
-        font-size:15px!important;
-        line-height:1.2!important;
-      }
-      [data-qmes-compact-calendar="1"] button{
-        min-width:0!important;
-        min-height:26px!important;
-        padding:4px 6px!important;
-        font-size:11.5px!important;
-        line-height:1.15!important;
-        border-radius:7px!important;
-      }
-      [data-qmes-compact-calendar="1"] [class*="day"],
-      [data-qmes-compact-calendar="1"] [class*="date"],
-      [data-qmes-compact-calendar="1"] td,
-      [data-qmes-compact-calendar="1"] th{
-        font-size:11.5px!important;
-      }
-      [data-qmes-compact-calendar="1"] [class*="footer"],
-      [data-qmes-compact-calendar="1"] [class*="actions"]{
+      #${POP_ID} *{box-sizing:border-box!important;}
+      #${POP_ID} .qdp-head{
+        height:32px!important;
+        display:grid!important;
+        grid-template-columns:30px 1fr 30px!important;
+        align-items:center!important;
         gap:6px!important;
-        padding-top:7px!important;
-        margin-top:7px!important;
+        margin-bottom:5px!important;
       }
-      @media (max-width:640px){
-        [data-qmes-compact-calendar="1"]{
-          width:min(272px,calc(100vw - 12px))!important;
-          min-width:0!important;
-          padding:9px 10px!important;
-        }
+      #${POP_ID} .qdp-title{
+        text-align:center!important;
+        font-size:13px!important;
+        line-height:1!important;
+        font-weight:800!important;
+        color:#1f2d42!important;
+        white-space:nowrap!important;
+      }
+      #${POP_ID} .qdp-nav{
+        width:30px!important;
+        height:30px!important;
+        min-width:30px!important;
+        border:1px solid #d8e2ed!important;
+        border-radius:8px!important;
+        background:#fff!important;
+        color:#314158!important;
+        font-size:16px!important;
+        font-weight:800!important;
+        line-height:28px!important;
+        padding:0!important;
+        cursor:pointer!important;
+      }
+      #${POP_ID} .qdp-week,
+      #${POP_ID} .qdp-grid{
+        display:grid!important;
+        grid-template-columns:repeat(7,1fr)!important;
+        gap:2px!important;
+      }
+      #${POP_ID} .qdp-week{
+        margin:1px 0 3px!important;
+      }
+      #${POP_ID} .qdp-week span{
+        height:21px!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        font-size:10px!important;
+        font-weight:700!important;
+        color:#8090a4!important;
+      }
+      #${POP_ID} .qdp-week span:first-child{color:#e53935!important;}
+      #${POP_ID} .qdp-week span:last-child{color:#2468df!important;}
+      #${POP_ID} .qdp-cell{
+        width:100%!important;
+        height:27px!important;
+        min-width:0!important;
+        border:0!important;
+        border-radius:7px!important;
+        padding:0!important;
+        background:transparent!important;
+        color:#304057!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        font-size:10.5px!important;
+        font-weight:700!important;
+        cursor:pointer!important;
+      }
+      #${POP_ID} .qdp-cell:hover{background:#edf5ff!important;color:#1269c7!important;}
+      #${POP_ID} .qdp-cell.is-selected{background:#2468df!important;color:#fff!important;}
+      #${POP_ID} .qdp-cell.is-today:not(.is-selected){outline:1px solid #9ec5f3!important;color:#1269c7!important;}
+      #${POP_ID} .qdp-cell:disabled{opacity:.28!important;cursor:not-allowed!important;background:transparent!important;}
+      #${POP_ID} .qdp-empty{height:27px!important;}
+      #${POP_ID} .qdp-foot{
+        border-top:1px solid #e6edf5!important;
+        margin-top:6px!important;
+        padding-top:7px!important;
+        display:flex!important;
+        align-items:center!important;
+        gap:5px!important;
+      }
+      #${POP_ID} .qdp-foot button{
+        height:28px!important;
+        min-width:0!important;
+        border:1px solid #d8e2ed!important;
+        border-radius:7px!important;
+        background:#fff!important;
+        color:#40516a!important;
+        padding:0 9px!important;
+        font-size:10.5px!important;
+        font-weight:700!important;
+        cursor:pointer!important;
+      }
+      #${POP_ID} .qdp-foot .qdp-today{
+        margin-left:auto!important;
+        border-color:#2468df!important;
+        background:#2468df!important;
+        color:#fff!important;
+      }
+      @media(max-width:480px){
+        #${POP_ID}{width:236px!important;min-width:236px!important;padding:8px 9px 7px!important;}
       }
     `;
     document.head.appendChild(style);
   }
 
-  function visible(el){
-    if(!(el instanceof Element)||!el.isConnected) return false;
-    const s=getComputedStyle(el);
-    if(s.display==='none'||s.visibility==='hidden'||Number(s.opacity)===0) return false;
-    const r=el.getBoundingClientRect();
-    return r.width>180&&r.height>150&&r.width<720&&r.height<760;
+  function ensurePopup(){
+    if(popup&&popup.isConnected) return popup;
+    popup=document.createElement('div');
+    popup.id=POP_ID;
+    popup.setAttribute('role','dialog');
+    popup.setAttribute('aria-label','날짜 선택');
+    popup.addEventListener('pointerdown',e=>e.stopPropagation());
+    popup.addEventListener('click',e=>e.stopPropagation());
+    document.body.appendChild(popup);
+    return popup;
   }
 
-  function isCalendar(el){
-    const text=String(el.textContent||'').replace(/\s+/g,' ').trim();
-    if(!monthRe.test(text)) return false;
-    const weekdayCount=['일','월','화','수','목','금','토'].filter(v=>text.includes(v)).length;
-    const hasActions=/오늘|닫기|지우기/.test(text);
-    const manyButtons=el.querySelectorAll('button').length>=10;
-    return weekdayCount>=5||hasActions||manyButtons;
+  function inputSetter(input,value){
+    const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')?.set;
+    if(setter) setter.call(input,value); else input.value=value;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
-  function candidates(){
-    return Array.from(document.querySelectorAll([
-      '[role="dialog"]',
-      '[class*="calendar"]','[class*="Calendar"]',
-      '[class*="datepicker"]','[class*="date-picker"]','[class*="DatePicker"]',
-      '[class*="picker"]','[class*="Picker"]',
-      'body > div','body > section'
-    ].join(',')));
+  function allowed(input,value){
+    if(input.min&&value<input.min) return false;
+    if(input.max&&value>input.max) return false;
+    return true;
   }
 
-  function scan(){
-    queued=false;
-    const matches=candidates().filter(el=>visible(el)&&isCalendar(el));
-    matches.sort((a,b)=>{
-      const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
-      return (ar.width*ar.height)-(br.width*br.height);
-    });
-    const chosen=[];
-    for(const el of matches){
-      if(chosen.some(inner=>el.contains(inner))) continue;
-      chosen.push(el);
+  function sameDay(value,date){
+    return value===iso(date.getFullYear(),date.getMonth(),date.getDate());
+  }
+
+  function render(){
+    if(!activeInput||!activeInput.isConnected) return closePicker();
+    const pop=ensurePopup();
+    const current=activeInput.value;
+    const today=new Date();
+    const firstDay=new Date(viewYear,viewMonth,1).getDay();
+    const days=new Date(viewYear,viewMonth+1,0).getDate();
+    const cells=[];
+    for(let i=0;i<firstDay;i++) cells.push('<span class="qdp-empty"></span>');
+    for(let d=1;d<=days;d++){
+      const value=iso(viewYear,viewMonth,d);
+      const selected=value===current;
+      const isToday=sameDay(value,today);
+      const disabled=!allowed(activeInput,value);
+      cells.push(`<button type="button" class="qdp-cell${selected?' is-selected':''}${isToday?' is-today':''}" data-day="${d}"${disabled?' disabled':''}>${d}</button>`);
     }
-    chosen.forEach(el=>el.setAttribute('data-qmes-compact-calendar','1'));
+    pop.innerHTML=`
+      <div class="qdp-head">
+        <button type="button" class="qdp-nav" data-prev aria-label="이전 달">‹</button>
+        <div class="qdp-title">${viewYear}년 ${viewMonth+1}월</div>
+        <button type="button" class="qdp-nav" data-next aria-label="다음 달">›</button>
+      </div>
+      <div class="qdp-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div class="qdp-grid">${cells.join('')}</div>
+      <div class="qdp-foot">
+        <button type="button" data-clear>지우기</button>
+        <button type="button" data-close>닫기</button>
+        <button type="button" class="qdp-today" data-today>오늘</button>
+      </div>`;
+
+    pop.querySelector('[data-prev]').onclick=()=>{viewMonth-=1;if(viewMonth<0){viewMonth=11;viewYear-=1;}render();};
+    pop.querySelector('[data-next]').onclick=()=>{viewMonth+=1;if(viewMonth>11){viewMonth=0;viewYear+=1;}render();};
+    pop.querySelector('[data-clear]').onclick=()=>{inputSetter(activeInput,'');closePicker();};
+    pop.querySelector('[data-close]').onclick=()=>closePicker();
+    pop.querySelector('[data-today]').onclick=()=>{
+      const value=iso(today.getFullYear(),today.getMonth(),today.getDate());
+      if(allowed(activeInput,value)){inputSetter(activeInput,value);closePicker();}
+    };
+    pop.querySelectorAll('[data-day]').forEach(btn=>{
+      btn.onclick=()=>{
+        const value=iso(viewYear,viewMonth,Number(btn.dataset.day));
+        if(allowed(activeInput,value)){inputSetter(activeInput,value);closePicker();}
+      };
+    });
+    position();
   }
 
-  function schedule(delay=0){
-    if(delay){setTimeout(()=>schedule(),delay);return;}
-    if(queued) return;
-    queued=true;
-    requestAnimationFrame(scan);
+  function position(){
+    if(!activeInput||!popup) return;
+    const r=activeInput.getBoundingClientRect();
+    const pr=popup.getBoundingClientRect();
+    const margin=6;
+    let left=Math.max(margin,Math.min(r.left,window.innerWidth-pr.width-margin));
+    let top=r.bottom+5;
+    if(top+pr.height>window.innerHeight-margin) top=Math.max(margin,r.top-pr.height-5);
+    popup.style.left=Math.round(left)+'px';
+    popup.style.top=Math.round(top)+'px';
+  }
+
+  function openPicker(input){
+    if(!input||input.disabled||input.readOnly) return;
+    activeInput=input;
+    const parsed=parse(input.value);
+    const base=parsed?new Date(parsed.y,parsed.m,parsed.d):new Date();
+    viewYear=base.getFullYear();
+    viewMonth=base.getMonth();
+    input.focus({preventScroll:true});
+    render();
+  }
+
+  function closePicker(){
+    if(popup&&popup.isConnected) popup.remove();
+    popup=null;
+    activeInput=null;
+  }
+
+  function dateInputFromEvent(event){
+    const target=event.target instanceof Element?event.target:null;
+    return target&&target.closest('input[type="date"]');
   }
 
   function start(){
     addStyle();
-    schedule();
+
+    document.addEventListener('pointerdown',event=>{
+      const input=dateInputFromEvent(event);
+      if(!input||input.disabled||input.readOnly) return;
+      event.preventDefault();
+      openPicker(input);
+    },true);
+
     document.addEventListener('click',event=>{
-      const target=event.target instanceof Element?event.target:null;
-      if(target&&target.closest('input[type="date"],input[placeholder*="YYYY"],input[placeholder*="날짜"],[data-date],[data-datepicker]')){
-        schedule(0);schedule(40);schedule(120);
+      const input=dateInputFromEvent(event);
+      if(input){
+        event.preventDefault();
+        openPicker(input);
+        return;
       }
+      if(popup&&!popup.contains(event.target)) closePicker();
     },true);
-    document.addEventListener('focusin',event=>{
-      const target=event.target instanceof Element?event.target:null;
-      if(target&&target.matches('input[type="date"],input[placeholder*="YYYY"],input[placeholder*="날짜"]')){
-        schedule(0);schedule(50);schedule(140);
+
+    document.addEventListener('keydown',event=>{
+      const input=event.target instanceof Element&&event.target.matches('input[type="date"]')?event.target:null;
+      if(input&&(event.key==='Enter'||event.key===' '||event.key==='ArrowDown')){
+        event.preventDefault();openPicker(input);return;
       }
+      if(event.key==='Escape'&&popup){event.preventDefault();closePicker();}
     },true);
-    new MutationObserver(mutations=>{
-      if(mutations.some(m=>m.addedNodes&&m.addedNodes.length)) schedule();
-    }).observe(document.body,{childList:true,subtree:true});
+
+    window.addEventListener('resize',()=>{if(popup)position();});
+    document.addEventListener('scroll',()=>{if(popup)position();},true);
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
