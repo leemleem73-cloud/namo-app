@@ -17,8 +17,12 @@ function installClient(){
     const file=path.resolve(__dirname,'public','attendance.html');
     if(!fs.existsSync(file))return;
     let html=fs.readFileSync(file,'utf8');
+    const hireScript='<script src="/attendance-admin-hire-date-20260917.js?v=20260917-hire2"></script>';
+    html=html.replace(/<script src="\/attendance-admin-hire-date-20260917\.js\?v=[^"]+"><\/script>/g,'');
     if(html.includes('data-namo-attendance-full-ui="v4"')){
-      console.log('[Attendance admin overview] full v4 UI detected; legacy client injection skipped');
+      html=html.replace('</body>',`${hireScript}</body>`);
+      fs.writeFileSync(file,html,'utf8');
+      console.log('[Attendance admin overview] v4 hire-date annual leave client installed');
       return;
     }
     html=html
@@ -26,7 +30,7 @@ function installClient(){
       .replace(/<script src="\/attendance-admin-overview-table-20260907\.js\?v=[^"]+"><\/script>/g,'')
       .replace(/<script src="\/attendance-admin-v2-launcher-20260907\.js\?v=[^"]+"><\/script>/g,'')
       .replace(/<script src="\/attendance-mobile-member-sync\.js\?v=[^"]+"><\/script>/g,'');
-    html=html.replace('</body>','<script src="/attendance-admin-v2-launcher-20260907.js?v=20260907-v2-force1"></script><script src="/attendance-mobile-member-sync.js?v=20260907-mobile-delete2"></script></body>');
+    html=html.replace('</body>','<script src="/attendance-admin-v2-launcher-20260907.js?v=20260907-v2-force1"></script><script src="/attendance-mobile-member-sync.js?v=20260907-mobile-delete2"></script>'+hireScript+'</body>');
     fs.writeFileSync(file,html,'utf8');
     console.log('[Attendance admin overview] standalone V2 launcher installed; legacy UI preserved but disabled');
   }catch(e){console.error('[Attendance admin overview] client install failed',e)}
