@@ -12,13 +12,38 @@
 <link rel="icon" href="/attendance-icon.svg" type="image/svg+xml" />
 <title>나모케미칼 근태관리</title>
 <link rel="stylesheet" href="/attendance-v4-full.css?v=20260908-full-replacement1" />
-<link rel="preload" as="image" href="/attendance-card-clockin-20260917.svg?v=20260917-final4" />
-<link rel="preload" as="image" href="/attendance-card-clockout-20260917.svg?v=20260917-final4" />
+<link rel="preload" as="image" href="/attendance-card-clockin-20260917.svg?v=20260917-premium2" />
+<link rel="preload" as="image" href="/attendance-card-clockout-20260917.svg?v=20260917-premium2" />
 <style id="namo-final-first-paint-20260917">
-html[data-namo-attendance-full-ui="v4"] body{background:#e6edf3!important}
-html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] .app-shell{visibility:hidden!important}
-html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] .app-shell{visibility:visible!important}
+html[data-namo-attendance-full-ui="v4"] body{margin:0!important;background:#eef2f6!important}
+html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] .app-shell{visibility:hidden!important;opacity:0!important}
+html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="0"] body::before,
+html[data-namo-reloading="1"] body::before{content:''!important;position:fixed!important;inset:0!important;z-index:2147483647!important;display:block!important;background:#eef2f6!important;opacity:1!important;pointer-events:all!important}
+html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] .app-shell{visibility:visible!important;opacity:1!important}
+html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] body::before{display:none!important;content:none!important}
 </style>
+<script id="namo-f5-first-paint-shield-20260917">
+(function(){
+  'use strict';
+  if(window.__NAMO_F5_FIRST_PAINT_SHIELD__)return;
+  window.__NAMO_F5_FIRST_PAINT_SHIELD__=true;
+  var root=document.documentElement,reloading=false;
+  function cover(){root.setAttribute('data-namo-reloading','1');}
+  function reloadClean(){
+    if(reloading)return;
+    reloading=true;cover();
+    requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(function(){location.reload();},40);});});
+  }
+  document.addEventListener('keydown',function(e){
+    var k=String(e.key||'').toLowerCase();
+    if(!(k==='f5'||e.keyCode===116||((e.ctrlKey||e.metaKey)&&k==='r')))return;
+    e.preventDefault();e.stopImmediatePropagation();reloadClean();
+  },true);
+  window.addEventListener('beforeunload',cover,{capture:true});
+  window.addEventListener('pagehide',cover,{capture:true});
+  window.addEventListener('pageshow',function(){root.removeAttribute('data-namo-reloading');reloading=false;});
+})();
+</script>
 </head>
 <body>
 <div class="app-shell">
@@ -72,6 +97,6 @@ html[data-namo-attendance-full-ui="v4"][data-namo-final-ready="1"] .app-shell{vi
 <div class="overlay" id="postApprovalOverlay"><div class="overlay-header"><div class="overlay-row"><button class="back-btn" data-close="postApprovalOverlay">‹</button><div class="overlay-title">검토 완료 · 자동 승인</div><div style="width:42px"></div></div></div><div class="overlay-body"><div class="card"><div class="flow-row"><div class="flow-no done">1</div><div><div class="flow-title">검토 완료</div><div class="flow-desc" id="postReviewer">검토자 확인 완료</div></div></div><div class="flow-row"><div class="flow-no done">2</div><div><div class="flow-title">자동 승인 완료</div><div class="flow-desc">검토 완료와 동시에 승인완료 상태로 자동 전환됩니다.</div></div></div><div class="flow-row"><div class="flow-no">3</div><div><div class="flow-title">PDF 변환</div><div class="flow-desc">승인 문서를 PDF로 저장합니다.</div></div></div><div class="flow-row"><div class="flow-no">4</div><div><div class="flow-title">해당 부서원에게 이메일</div><div class="flow-desc">직원등록현황의 부서와 이메일을 불러와 부서원을 체크박스로 선택합니다.</div></div></div></div><div class="dept-mail-box"><div class="section-head"><div><div class="section-title">승인완료 메일 수신자</div><div class="section-sub">해당 부서원 선택</div></div><span class="badge blue">직원등록 연동</span></div><label class="field-label" for="postDepartmentSelect">부서 선택</label><select class="form-select" id="postDepartmentSelect"></select><div class="check-toolbar"><span class="form-help" style="margin:0">메일 받을 부서원을 복수 선택할 수 있습니다.</span><button type="button" id="postSelectAllBtn">전체 선택</button></div><div class="check-list" id="postMemberCheckList"></div><div class="email-preview" id="postMailTargets">선택된 부서원이 없습니다.</div></div><button class="btn-primary" id="pdfBtn">1. PDF 변환</button><button class="btn-soft" id="emailBtn">2. 선택 부서원에게 메일 보내기</button></div></div>
 <script src="/attendance-v4-live.js?v=20260908-full-replacement1"></script>
 <script src="/attendance-admin-mode-v4.js?v=20260908-admin-mode1"></script>
-<script src="/attendance-final-polish-20260917.js?v=20260917-final4"></script>
+<script src="/attendance-final-polish-20260917.js?v=20260917-noflash3"></script>
 </body>
 </html>
