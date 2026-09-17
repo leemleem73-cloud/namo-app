@@ -1,4 +1,4 @@
-/* NAMO QMES - purchase modal top-position fix + supplier bridge + global dialog dragging
+/* NAMO QMES - purchase modal position + supplier bridge + global move/resize
  * 2026-09-17
  * Additive-only patch. Existing data/save logic is preserved.
  */
@@ -29,11 +29,14 @@
   bottom:auto!important;
   transform:translateX(-50%)!important;
   width:min(1760px,92vw)!important;
-  max-width:none!important;
+  max-width:calc(100vw - 12px)!important;
   max-height:calc(100vh - 28px)!important;
+  min-width:640px!important;
+  min-height:360px!important;
   margin:0!important;
   padding:0 18px 0!important;
   overflow:auto!important;
+  resize:both!important;
   border:1px solid #d7e3ee!important;
   border-radius:12px!important;
   background:#fff!important;
@@ -47,24 +50,31 @@
   border-radius:12px 12px 0 0!important;
   background:linear-gradient(100deg,#0d6da9 0%,#0b79bc 54%,#0877b5 100%)!important;
   color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
 }
-.qmes-purchase-live .qpx-form-card .qpdz-title-left{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important;flex:1 1 auto!important}
-.qmes-purchase-live .qpx-form-card .qpdz-cart{width:40px!important;height:40px!important;display:grid!important;place-items:center!important;flex:none!important;color:#d8efff!important;opacity:1!important}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left{display:flex!important;align-items:center!important;gap:13px!important;min-width:0!important;flex:1 1 auto!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h3,
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h3 *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+}
+.qmes-purchase-live .qpx-form-card .qpdz-cart{width:40px!important;height:40px!important;display:grid!important;place-items:center!important;flex:none!important;color:#d8efff!important;opacity:1!important;-webkit-text-fill-color:initial!important}
 .qmes-purchase-live .qpx-form-card .qpdz-cart svg{width:31px!important;height:31px!important;display:block!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-head h3{margin:0!important;color:#fff!important;opacity:1!important;font-size:20px!important;line-height:1.15!important;font-weight:950!important;letter-spacing:-.25px!important;text-shadow:0 1px 1px rgba(0,0,0,.12)!important;white-space:nowrap!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-head p{margin:4px 0 0!important;color:rgba(255,255,255,.96)!important;opacity:1!important;font-size:10px!important;line-height:1.25!important;font-weight:750!important;white-space:nowrap!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head h3{margin:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;font-size:20px!important;line-height:1.15!important;font-weight:950!important;letter-spacing:-.25px!important;text-shadow:0 1px 1px rgba(0,0,0,.12)!important;white-space:nowrap!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head p{margin:4px 0 0!important;color:rgba(255,255,255,.96)!important;-webkit-text-fill-color:rgba(255,255,255,.96)!important;opacity:1!important;font-size:10px!important;line-height:1.25!important;font-weight:750!important;white-space:nowrap!important}
 .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:0!important;flex:0 0 auto!important;flex-wrap:nowrap!important;margin-left:auto!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step{display:inline-flex!important;align-items:center!important;gap:6px!important;color:#fff!important;opacity:1!important;font-size:10px!important;font-weight:850!important;white-space:nowrap!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step b{width:25px!important;height:25px!important;margin:0!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:50%!important;background:transparent!important;color:#fff!important;display:grid!important;place-items:center!important;font-size:10px!important;font-weight:950!important;box-shadow:none!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:first-child b{background:#fff!important;color:#1179ba!important;border-color:#fff!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step{display:inline-flex!important;align-items:center!important;gap:6px!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;font-size:10px!important;font-weight:850!important;white-space:nowrap!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step b{width:25px!important;height:25px!important;margin:0!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:50%!important;background:transparent!important;color:#fff!important;-webkit-text-fill-color:#fff!important;display:grid!important;place-items:center!important;font-size:10px!important;font-weight:950!important;box-shadow:none!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:first-child b{background:#fff!important;color:#1179ba!important;-webkit-text-fill-color:#1179ba!important;border-color:#fff!important}
 .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:not(:last-of-type)::after{content:""!important;width:34px!important;height:1px!important;background:rgba(255,255,255,.48)!important;display:block!important;margin:0 10px!important}
-.qmes-purchase-live .qpx-form-card .qpx-modal-close{width:36px!important;height:36px!important;margin-left:18px!important;padding:0!important;flex:none!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:7px!important;background:#fff!important;color:#244763!important;font-size:21px!important;font-weight:800!important;line-height:1!important;box-shadow:0 1px 2px rgba(0,0,0,.06)!important}
+.qmes-purchase-live .qpx-form-card .qpx-modal-close{width:36px!important;height:36px!important;margin-left:18px!important;padding:0!important;flex:none!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:7px!important;background:#fff!important;color:#244763!important;-webkit-text-fill-color:#244763!important;font-size:21px!important;font-weight:800!important;line-height:1!important;box-shadow:0 1px 2px rgba(0,0,0,.06)!important}
 .qmes-purchase-live .qpx-form-card .qpdz-basic-grid{grid-template-columns:1.08fr 1.08fr 1fr 1.48fr 1fr!important;gap:10px 18px!important}
 .qmes-purchase-live .qpx-form-card .qpdz-section-head{height:39px!important}
 .qmes-purchase-live .qpx-form-card .qpdz-footer{z-index:11!important}
 #qmes-partner-register-modal-v2{z-index:2147483646!important}
 
-/* Every QMES dialog with a title/header can be moved with the mouse. */
+/* Every QMES dialog with a title/header can be moved and resized with the mouse. */
 .qpx-modal-head,.qpr-head,.modal-header,.qmes-modal-header,.qerp-modal-head,.qmes-dialog-header,
 [role="dialog"]>div:first-child{cursor:move}
 .qpx-modal-head button,.qpr-head button,.modal-header button,.qmes-modal-header button,.qerp-modal-head button,.qmes-dialog-header button,
@@ -74,6 +84,19 @@
 [role="dialog"]>div:first-child textarea,
 [role="dialog"]>div:first-child a{cursor:pointer}
 body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
+
+.qmes-window-resizable{
+  resize:both!important;
+  overflow:auto!important;
+  min-width:320px!important;
+  min-height:180px!important;
+  max-width:calc(100vw - 12px)!important;
+  max-height:calc(100vh - 12px)!important;
+  box-sizing:border-box!important;
+}
+.qmes-window-resizable::-webkit-resizer{
+  background:linear-gradient(135deg,transparent 0 45%,#5d7d98 46% 58%,transparent 59% 66%,#5d7d98 67% 79%,transparent 80%);
+}
 
 @media(max-width:1500px){
   .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:not(:last-of-type)::after{width:20px!important;margin:0 7px!important}
@@ -85,7 +108,7 @@ body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
   .qmes-purchase-live .qpx-form-card .qpdz-quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 @media(max-width:850px){
-  .qmes-purchase-live .qpx-form-card.qpdz-target-modal,.qmes-purchase-live .qpx-form-card[data-qmes-purchase-modal-adopted="20260916"]{width:96vw!important;top:8px!important;max-height:calc(100vh - 16px)!important}
+  .qmes-purchase-live .qpx-form-card.qpdz-target-modal,.qmes-purchase-live .qpx-form-card[data-qmes-purchase-modal-adopted="20260916"]{width:96vw!important;top:8px!important;max-height:calc(100vh - 16px)!important;min-width:280px!important}
   .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps .qpx-step{display:none!important}
   .qmes-purchase-live .qpx-form-card .qpx-modal-close{margin-left:0!important}
   .qmes-purchase-live .qpx-form-card .qpdz-basic-grid,.qmes-purchase-live .qpx-form-card .qpdz-quality-grid{grid-template-columns:1fr!important}
@@ -107,7 +130,13 @@ body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
     const first=head.firstElementChild;
     if(first){
       first.classList.add('qpdz-title-left');
-      const h=first.querySelector('h3'); if(h) h.textContent='신규 구매 발주 등록';
+      const h=first.querySelector('h3');
+      if(h){
+        h.textContent='신규 구매 발주 등록';
+        h.style.setProperty('color','#fff','important');
+        h.style.setProperty('-webkit-text-fill-color','#fff','important');
+        h.style.setProperty('opacity','1','important');
+      }
       const p=first.querySelector('p'); if(p) p.textContent='MRP·작업지시·협력사·IQC를 하나의 발주번호로 연결합니다.';
       if(!first.querySelector('.qpdz-cart')) first.insertAdjacentHTML('afterbegin','<span class="qpdz-cart" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M3 5h4l3.2 14.2h13.9l3-10.2H9"/><circle cx="13" cy="25.5" r="1.7"/><circle cx="23" cy="25.5" r="1.7"/></svg></span>');
     }
@@ -121,6 +150,8 @@ body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
       [...step.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.remove());
       step.appendChild(document.createTextNode(label));
     });
+
+    modal.classList.add('qmes-window-resizable');
 
     /* New purchase forms always start from the visible top edge, never above it. */
     if(!modal.dataset.qmesDragMoved){
@@ -198,11 +229,26 @@ body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
     return null;
   }
 
+  function markResizableWindows(){
+    document.querySelectorAll(EXACT_HANDLES).forEach(handle=>{
+      const box=findDragBox(handle);
+      if(box) box.classList.add('qmes-window-resizable');
+    });
+    document.querySelectorAll('[role="dialog"]').forEach(dialog=>{
+      const first=dialog.firstElementChild;
+      if(!first) return;
+      const hasHeader=!!first.querySelector('h1,h2,h3,h4,h5,strong,[class*="title"],button,[aria-label*="닫기"]');
+      const r=dialog.getBoundingClientRect();
+      if(hasHeader&&r.width<window.innerWidth*.985&&r.height<window.innerHeight*.985) dialog.classList.add('qmes-window-resizable');
+    });
+  }
+
   function clamp(value,min,max){return Math.max(min,Math.min(max,value));}
 
   function positionBoxForDrag(box){
     const rect=box.getBoundingClientRect();
     box.dataset.qmesDragMoved='1';
+    box.classList.add('qmes-window-resizable');
     box.style.setProperty('position','fixed','important');
     box.style.setProperty('left',rect.left+'px','important');
     box.style.setProperty('top',Math.max(0,rect.top)+'px','important');
@@ -278,6 +324,7 @@ body.qmes-modal-dragging,body.qmes-modal-dragging *{user-select:none!important}
     queued=false;
     ensureStyle();
     normalizeHeader();
+    markResizableWindows();
   }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
 
