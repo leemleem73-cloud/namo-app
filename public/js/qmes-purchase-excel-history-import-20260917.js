@@ -27,6 +27,7 @@
   let running=false;
   let lastSyncAt=0;
   let timer=0;
+  let initialPublished=false;
 
   function purchasePage(){
     const roots=[...document.querySelectorAll('.qmes-purchase-live,main,[role="main"],.main-content,.content-area,.page-content')];
@@ -78,6 +79,13 @@
     return out;
   }
 
+  function cachedRows(){
+    try{
+      const parsed=JSON.parse(localStorage.getItem('qmes-erp-purchase-v1')||'[]');
+      return Array.isArray(parsed)?parsed:[];
+    }catch(_error){return [];}
+  }
+
   function setInputValue(input,value){
     if(!input) return;
     const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
@@ -103,16 +111,24 @@
     }
   }
 
-  function publish(rows){
+  function publish(rows,source='excel-history-import-v5-readonly'){
     const merged=mergeRows(rows);
     try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(merged));}catch(_error){}
     window.__QMES_PURCHASE_AUTHORITATIVE_ROWS__=merged;
-    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows:merged,source:'excel-history-import-v5-readonly'}}));
-    [40,140,320,700].forEach(ms=>setTimeout(force2026,ms));
+    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows:merged,source}}));
+    [0,40,140,320].forEach(ms=>setTimeout(force2026,ms));
+  }
+
+  function publishInitialNow(){
+    if(initialPublished||!purchasePage()) return false;
+    initialPublished=true;
+    publish(cachedRows(),'excel-history-import-v5-initial-cache');
+    return true;
   }
 
   async function readOnlySync(){
     if(running||!purchasePage()) return;
+    publishInitialNow();
     running=true;
     try{
       const response=await fetch('/api/purchase-orders?_purchaseHistoryRead='+Date.now(),{
@@ -127,9 +143,9 @@
       lastSyncAt=Date.now();
       console.info('[QMES purchase history] read-only sync',{serverRows:rows.length,displayRows:mergeRows(rows).length});
     }catch(error){
-      publish([]);
+      publish(cachedRows());
       lastSyncAt=Date.now();
-      console.warn('[QMES purchase history] DB read unavailable; approved rows kept visible',error&&error.message?error.message:error);
+      console.warn('[QMES purchase history] DB read unavailable; cached/approved rows kept visible',error&&error.message?error.message:error);
     }finally{
       running=false;
     }
@@ -137,33 +153,27 @@
 
   function refresh(){
     if(!purchasePage()) return;
+    publishInitialNow();
     force2026();
     if(Date.now()-lastSyncAt>30000) readOnlySync();
   }
 
-  function schedule(){clearTimeout(timer);timer=setTimeout(refresh,100);}
+  function schedule(){
+    clearTimeout(timer);
+    timer=setTimeout(refresh,0);
+  }
+
   function start(){
     schedule();
-    setTimeout(readOnlySync,180);
+    requestAnimationFrame(()=>{publishInitialNow();readOnlySync();});
     setInterval(()=>{if(purchasePage())refresh();},5000);
-    window.addEventListener('qmes:navigate-tab',()=>setTimeout(refresh,80));
+    window.addEventListener('qmes:navigate-tab',()=>requestAnimationFrame(refresh));
     document.addEventListener('click',e=>{
       const t=e.target instanceof Element?e.target.closest('button,a,[data-qmes-menu]'):null;
-      if(t&&/구매|발주/.test(clean(t.textContent)))setTimeout(refresh,100);
+      if(t&&/구매|발주/.test(clean(t.textContent)))requestAnimationFrame(refresh);
     },true);
     new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
 
-/* Global calendar loader: applies compact/movable calendar behavior across QMES. */
-(function(){
-  'use strict';
-  const id='qmes-global-calendar-compact-draggable-20260917-loader';
-  if(document.getElementById(id)) return;
-  const script=document.createElement('script');
-  script.id=id;
-  script.src='/js/qmes-global-calendar-compact-draggable-20260917.js?v=20260917-1';
-  script.defer=true;
-  document.head.appendChild(script);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
