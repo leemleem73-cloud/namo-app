@@ -2,9 +2,10 @@
   'use strict';
   const SCHEDULE_KEY='namo-attendance-work-schedule-v1';
   const DEFAULT_SCHEDULE={start:'08:00',end:'17:00'};
+  let progressTimer=null;
   function $(s,r=document){return r.querySelector(s)}
   function $$(s,r=document){return Array.from(r.querySelectorAll(s))}
-  function fmtDate(d){return d.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric',weekday:'short'})}
+  function fmtDate(d){return d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}
   function fmtTime(v){if(!v)return '--:--';const d=new Date(v);return isNaN(d)?'--:--':d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false})}
   function safeData(j){return j&&typeof j==='object'&&'data'in j?j.data:j}
   async function getJson(url){try{const r=await fetch(url,{credentials:'same-origin'});const t=await r.text();try{return JSON.parse(t)}catch(_e){return null}}catch(_e){return null}}
@@ -32,6 +33,37 @@
     const nested=me&&typeof me==='object'?(me.user||me.employee||{}):{};
     return String(me?.name||me?.userName||me?.username||me?.fullName||me?.displayName||me?.employeeName||nested?.name||nested?.userName||current?.name||current?.userName||'').trim();
   }
+  function ensureFinalHomeStyle(){
+    if($('#namoAttendanceFinalStyle'))return;
+    const s=document.createElement('style');s.id='namoAttendanceFinalStyle';s.textContent=`
+html[data-namo-attendance-full-ui="v4"] .topbar{position:relative!important;overflow:hidden!important;background:linear-gradient(125deg,#0750ad 0%,#075fcb 46%,#0789ec 100%)!important;border:0!important;box-shadow:0 8px 24px rgba(7,72,155,.18)!important}
+html[data-namo-attendance-full-ui="v4"] .topbar:after{content:'';position:absolute;right:52px;top:-20px;width:88px;height:128px;background:linear-gradient(160deg,rgba(255,255,255,.20),rgba(255,255,255,.035));transform:skewX(-30deg);pointer-events:none}
+html[data-namo-attendance-full-ui="v4"] .topbar-row{position:relative!important;z-index:2!important;min-height:92px!important;padding:0 16px!important}
+html[data-namo-attendance-full-ui="v4"] .brand{gap:10px!important;justify-content:center!important}
+html[data-namo-attendance-full-ui="v4"] .brand img{width:66px!important;height:50px!important;flex:0 0 66px!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy b{font-size:22px!important;letter-spacing:-.7px!important;color:#fff!important;font-weight:900!important}
+html[data-namo-attendance-full-ui="v4"] .brand-copy small{display:none!important}
+html[data-namo-attendance-full-ui="v4"] #namoMenuBtn,html[data-namo-attendance-full-ui="v4"] #namoRefreshBtn{position:relative!important;z-index:3!important;color:#fff!important;font-size:29px!important}
+html[data-namo-attendance-full-ui="v4"] .page[data-page="home"]{padding-top:0!important}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;column-gap:16px!important;margin:0 -14px 14px!important;padding:22px 20px 44px!important;background:linear-gradient(135deg,#ffffff 0%,#f3f9ff 68%,#e9f4ff 100%)!important;border-bottom:1px solid rgba(255,255,255,.8)!important;overflow:hidden!important}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title:before{content:'';position:absolute;right:-40px;bottom:-70px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.52);pointer-events:none}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title strong{position:relative!important;z-index:2!important;display:flex!important;flex-direction:column!important;gap:2px!important;color:#111a3d!important;line-height:1.15!important}
+html[data-namo-attendance-full-ui="v4"] .namo-greet-name{font-size:16px!important;font-weight:600!important;letter-spacing:-.25px!important}
+html[data-namo-attendance-full-ui="v4"] .namo-greet-main{font-size:25px!important;font-weight:900!important;letter-spacing:-1px!important;white-space:nowrap!important}
+html[data-namo-attendance-full-ui="v4"] #namoTodayDate{position:relative!important;z-index:2!important;display:flex!important;align-items:center!important;gap:6px!important;padding:9px 0 9px 15px!important;border-left:1px solid #c9d8e8!important;font-size:11.5px!important;font-weight:800!important;color:#263a5b!important;white-space:nowrap!important}
+html[data-namo-attendance-full-ui="v4"] #namoTodayDate:before{content:'▣';font-size:18px!important;color:#1487ea!important}
+html[data-namo-attendance-full-ui="v4"] .namo-panel-title:after{content:'오늘도 안전하고 행복한 하루 되세요!'!important;position:absolute!important;left:20px!important;bottom:16px!important;margin:0!important;font-size:11px!important;font-weight:650!important;color:#718096!important}
+html[data-namo-attendance-full-ui="v4"] .namo-today-card{margin-top:0!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn{border-radius:11px!important;background:#fff!important;transform:translateZ(0)!important;backface-visibility:hidden!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn:after{inset:-1px!important;width:calc(100% + 2px)!important;height:calc(100% + 2px)!important;background-position:center bottom!important;background-size:auto calc(100% + 2px)!important;border-radius:12px!important;transform:translateZ(0)!important}
+html[data-namo-attendance-full-ui="v4"] .clock-btn.out:after{right:-2px!important;left:-1px!important;width:calc(100% + 3px)!important}
+html[data-namo-attendance-full-ui="v4"] .progress,html[data-namo-attendance-full-ui="v4"] .progress span,html[data-namo-attendance-full-ui="v4"] #workProgress{transition:none!important;animation:none!important;will-change:auto!important}
+html[data-namo-attendance-full-ui="v4"] .progress-labels{min-height:18px!important}
+html[data-namo-attendance-full-ui="v4"] .progress-labels span{display:inline-block!important;min-width:42px!important;font-variant-numeric:tabular-nums!important}
+@media(max-width:380px){html[data-namo-attendance-full-ui="v4"] .namo-panel-title{padding-left:14px!important;padding-right:14px!important;column-gap:9px!important}html[data-namo-attendance-full-ui="v4"] .namo-greet-main{font-size:21px!important}html[data-namo-attendance-full-ui="v4"] #namoTodayDate{font-size:10px!important;padding-left:9px!important}}
+`;
+    document.head.appendChild(s);
+  }
   function updateScheduleProgress(schedule){
     const start=schedule?.start||DEFAULT_SCHEDULE.start;
     const end=schedule?.end||DEFAULT_SCHEDULE.end;
@@ -40,10 +72,16 @@
     if(labels[1]&&labels[1].textContent!==end)labels[1].textContent=end;
     const startMin=timeMinutes(start),endMin=timeMinutes(end);
     if(startMin==null||endMin==null||endMin<=startMin)return;
-    const now=new Date();const currentMin=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+    const now=new Date();const currentMin=now.getHours()*60+now.getMinutes();
     const pct=Math.max(0,Math.min(100,((currentMin-startMin)/(endMin-startMin))*100));
     const bar=$('#workProgress')||$('.page[data-page="home"] .progress span');
-    if(bar)bar.style.width=pct+'%';
+    if(bar){const nextWidth=pct.toFixed(2)+'%';if(bar.dataset.namoWidth!==nextWidth){bar.style.width=nextWidth;bar.dataset.namoWidth=nextWidth}}
+  }
+  function startStableProgressTimer(){
+    if(progressTimer)clearInterval(progressTimer);
+    const render=()=>updateScheduleProgress(readLocalSchedule()||DEFAULT_SCHEDULE);
+    render();
+    progressTimer=setInterval(render,60000);
   }
 
   function patchHeader(){
@@ -83,8 +121,8 @@
       }
       const label=overlay.querySelector('.namo-clock-card-title');
       const time=overlay.querySelector('.namo-clock-card-time');
-      if(label)label.textContent=value.label;
-      if(time)time.textContent=value.time;
+      if(label&&label.textContent!==value.label)label.textContent=value.label;
+      if(time&&time.textContent!==value.time)time.textContent=value.time;
     });
   }
 
@@ -106,10 +144,11 @@
       if(end<=start){if(err)err.textContent='퇴근시간은 출근시간보다 늦어야 합니다.';return}
       const save=$('#namoScheduleSave',overlay);if(save){save.disabled=true;save.textContent='저장 중...'}
       const serverSaved=await saveWorkSchedule({start,end});
-      const sched=$('#namoTodaySchedule');if(sched)sched.textContent=start+' - '+end;
+      const sched=$('#namoTodaySchedule');if(sched&&sched.textContent!==start+' - '+end)sched.textContent=start+' - '+end;
       ensureClockCardLabels({start,end});
       updateScheduleProgress({start,end});
       close();await refreshHome();
+      startStableProgressTimer();
       if(!serverSaved)console.warn('[Attendance schedule] server save unavailable; browser schedule saved locally.');
     });
   }
@@ -194,8 +233,9 @@
 
   async function refreshHome(){
     const me=safeData(await getJson('/api/attendance/me'))||{}; const today=safeData(await getJson('/api/attendance/today-v2'))||safeData(await getJson('/api/attendance/today'))||{}; const logsRaw=safeData(await getJson('/api/attendance/logs'))||[]; const logs=Array.isArray(logsRaw)?logsRaw:[]; const schedule=await loadWorkSchedule();
-    const td=$('#namoTodayDate');if(td)td.textContent=fmtDate(new Date()); const sched=$('#namoTodaySchedule');if(sched)sched.textContent=schedule.start+' - '+schedule.end;
-    const userName=resolveUserName(me);const title=$('.namo-panel-title strong');if(title)title.textContent=userName?userName+'님, 오늘 근무':'오늘 근무';const heroName=$('.hero .greeting .name');if(heroName&&userName)heroName.textContent=userName+'님,';
+    const td=$('#namoTodayDate');const dateText=fmtDate(new Date());if(td&&td.textContent!==dateText)td.textContent=dateText; const sched=$('#namoTodaySchedule');const scheduleText=schedule.start+' - '+schedule.end;if(sched&&sched.textContent!==scheduleText)sched.textContent=scheduleText;
+    const userName=resolveUserName(me);const title=$('.namo-panel-title strong');if(title){const n=userName||'직원';if(title.dataset.namoName!==n){title.textContent='';const a=document.createElement('span');a.className='namo-greet-name';a.textContent=n+'님,';const b=document.createElement('span');b.className='namo-greet-main';b.textContent='오늘도 좋은 하루 되세요!';title.append(a,b);title.dataset.namoName=n}}
+    const heroName=$('.hero .greeting .name');if(heroName&&userName&&heroName.textContent!==userName+'님,')heroName.textContent=userName+'님,';
     ensureClockCardLabels(schedule);
     updateScheduleProgress(schedule);
     const place=$('#namoTodayPlace');if(place)place.textContent=(today.workplaceName||today.workplace_name||$('#workplaceName')?.textContent||'근무지 선택');
@@ -203,9 +243,9 @@
     buildWeek(logs,schedule);
   }
 
-  function init(){patchHeader();ensureHomeLayout();ensureRecordsCalendar();patchWizard();refreshHome();loadRecordsCalendar();
+  function init(){ensureFinalHomeStyle();patchHeader();ensureHomeLayout();ensureRecordsCalendar();patchWizard();refreshHome();loadRecordsCalendar();
     document.addEventListener('click',e=>{const b=e.target.closest('.nav-btn[data-page-target="records"]');if(b)setTimeout(loadRecordsCalendar,50)});
-    setInterval(()=>{const schedule=readLocalSchedule()||DEFAULT_SCHEDULE;ensureClockCardLabels(schedule);updateScheduleProgress(schedule)},1000);
+    startStableProgressTimer();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
