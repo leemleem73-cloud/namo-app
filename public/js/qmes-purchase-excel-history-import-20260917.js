@@ -29,6 +29,14 @@
   let timer=0;
   let initialPublished=false;
 
+  function installFooterRemovalStyle(){
+    if(document.getElementById('qmes-purchase-bottom-footer-remove-20260917')) return;
+    const style=document.createElement('style');
+    style.id='qmes-purchase-bottom-footer-remove-20260917';
+    style.textContent='.qmes-purchase-live .qpx-foot{display:none!important;}';
+    document.head.appendChild(style);
+  }
+
   function purchasePage(){
     const roots=[...document.querySelectorAll('.qmes-purchase-live,main,[role="main"],.main-content,.content-area,.page-content')];
     return roots.find(root=>{
@@ -164,6 +172,7 @@
   }
 
   function start(){
+    installFooterRemovalStyle();
     schedule();
     requestAnimationFrame(()=>{publishInitialNow();readOnlySync();});
     setInterval(()=>{if(purchasePage())refresh();},5000);
