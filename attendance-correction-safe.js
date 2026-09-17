@@ -52,7 +52,7 @@ function attendanceHtmlWithCorrection(){
 
   html=html.replace('</head>',
     '<link rel="stylesheet" href="/attendance-mobile-fix-20260908.css?v=20260908-fix4">'+
-    '<link rel="stylesheet" href="/attendance-qmes-redesign-20260918.css?v=20260918-ui3">'+
+    '<link rel="stylesheet" href="/attendance-qmes-redesign-20260918.css?v=20260918-ui4">'+
     '</head>'
   );
 
@@ -60,7 +60,7 @@ function attendanceHtmlWithCorrection(){
     '<script src="/attendance-correction.js?v=20260904-correction3"></script>'+
     '<script src="/attendance-leave-cancel.js?v=20260904-leavecancel1"></script>'+
     '<script src="/attendance-mobile-fix-20260908.js?v=20260908-fix4"></script>'+
-    '<script src="/attendance-qmes-redesign-20260918.js?v=20260918-ui3"></script>'+
+    '<script src="/attendance-qmes-redesign-20260918.js?v=20260918-ui4"></script>'+
     '</body>'
   );
 }
