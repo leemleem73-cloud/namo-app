@@ -297,7 +297,6 @@ window.__QMES_PURCHASE_MODAL_DOUZONE_ADDITIVE_20260916__ = true;
       setTimeout(schedule,120);
     }
   }
-
   function apply(){
     scheduled = false;
     cleanup();
@@ -362,8 +361,8 @@ window.__QMES_PURCHASE_MODAL_DOUZONE_ADDITIVE_20260916__ = true;
   document.head.appendChild(script);
 })();
 
-/* Additive cleanup: hide only the two duplicate legacy actions marked by the user.
-   Keep target toolbar actions visible and keep original legacy buttons in DOM for programmatic reuse. */
+/* Additive cleanup: hide only duplicate legacy actions marked by the user.
+   Keep the blue target toolbar action and modal actions visible. */
 (function(){
   'use strict';
   if(window.__QMES_PURCHASE_DUPLICATE_ACTION_CLEANUP_20260916__) return;
@@ -377,7 +376,7 @@ window.__QMES_PURCHASE_MODAL_DOUZONE_ADDITIVE_20260916__ = true;
       root.querySelectorAll('button,a').forEach(el=>{
         if(el.closest('.qpx-enterprise-host,.qpx-form-card,.qpdz-target-ui')) return;
         const text = clean(el.textContent).replace(/^[+＋]\s*/,'');
-        if(text === '공용 DB 연동' || text === '신규 구매 발주'){
+        if(text === '공용 DB 연동' || text === '신규 구매 발주' || text === '구매 발주 등록'){
           el.setAttribute('data-qmes-purchase-duplicate-hidden','1');
           el.style.setProperty('display','none','important');
         }
