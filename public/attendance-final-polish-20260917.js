@@ -3,13 +3,13 @@
 if(window.__NAMO_ATTENDANCE_FINAL_POLISH_20260917__)return;
 window.__NAMO_ATTENDANCE_FINAL_POLISH_20260917__=true;
 const root=document.documentElement;
-const IN_SRC='/attendance-card-clockin-20260917.svg?v=20260917-premium1';
-const OUT_SRC='/attendance-card-clockout-20260917.svg?v=20260917-premium1';
+const IN_SRC='/attendance-card-clockin-20260917.svg?v=20260917-premium2';
+const OUT_SRC='/attendance-card-clockout-20260917.svg?v=20260917-premium2';
 const SCHEDULE_KEY='namo-attendance-work-schedule-v1';
 const DEFAULT_SCHEDULE={start:'08:00',end:'17:00'};
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-let clockTimer=null,progressTimer=null,queued=false,revealed=false,observer=null;
+let clockTimer=null,progressTimer=null,queued=false,revealed=false,observer=null,reloadQueued=false;
 function validTime(v){return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v||''))}
 function schedule(){
   try{const v=JSON.parse(localStorage.getItem(SCHEDULE_KEY)||'null');if(v&&validTime(v.start)&&validTime(v.end)&&v.end>v.start)return v}catch(_e){}
@@ -63,6 +63,8 @@ html[data-namo-attendance-full-ui="v4"] .place-card{border:1px solid #e2e9f0!imp
 html[data-namo-attendance-full-ui="v4"] .place-card .place-icon{background:#edf6ff!important;color:#1768bf!important}
 html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn.active{color:#1768bf!important}
 html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn.active .ni:after,html[data-namo-attendance-full-ui="v4"] .bottom-nav .nav-btn.active .ni:before{border-color:#1768bf!important}
+html[data-namo-reloading="1"] body{overflow:hidden!important}
+html[data-namo-reloading="1"] body::after{content:''!important;position:fixed!important;inset:0!important;z-index:2147483647!important;background:#eef2f6!important;display:block!important;opacity:1!important;pointer-events:all!important}
 @media(max-width:390px){html[data-namo-attendance-full-ui="v4"] .topbar-row{height:62px!important;min-height:62px!important}html[data-namo-attendance-full-ui="v4"] .brand img{width:52px!important;height:34px!important;flex-basis:52px!important}html[data-namo-attendance-full-ui="v4"] .brand-copy b{font-size:20px!important}html[data-namo-attendance-full-ui="v4"] .namo-panel-title{padding:17px 14px!important;column-gap:8px!important}html[data-namo-attendance-full-ui="v4"] .namo-greet-name{font-size:14px!important}html[data-namo-attendance-full-ui="v4"] .namo-greet-main{font-size:20px!important}html[data-namo-attendance-full-ui="v4"] #namoTodayDate{width:108px!important;min-width:108px!important}html[data-namo-attendance-full-ui="v4"] .namo-date-day{font-size:9px!important}html[data-namo-attendance-full-ui="v4"] .namo-digital-clock{font-size:20px!important}}
 `;
   document.head.appendChild(style);
@@ -143,11 +145,29 @@ function run(){
   if(ready&&!revealed)waitImages(patchImages()).then(()=>requestAnimationFrame(()=>requestAnimationFrame(reveal)));
 }
 function requestPatch(){if(queued||revealed)return;queued=true;requestAnimationFrame(run)}
+function showReloadShield(){root.setAttribute('data-namo-reloading','1')}
+function reloadWithoutFlash(){
+  if(reloadQueued)return;
+  reloadQueued=true;
+  showReloadShield();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>location.reload(),30)));
+}
+document.addEventListener('keydown',e=>{
+  const key=String(e.key||'').toLowerCase();
+  const isF5=key==='f5'||e.keyCode===116;
+  const isShortcut=(e.ctrlKey||e.metaKey)&&key==='r';
+  if(!isF5&&!isShortcut)return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  reloadWithoutFlash();
+},true);
+window.addEventListener('beforeunload',showReloadShield,{capture:true});
+window.addEventListener('pagehide',showReloadShield,{capture:true});
 observer=new MutationObserver(requestPatch);
 observer.observe(document.documentElement,{subtree:true,childList:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 clockTimer=setInterval(updateDigitalClock,15000);
 progressTimer=setInterval(updateStableProgress,60000);
-window.addEventListener('pageshow',()=>{if(!revealed)requestPatch();else{updateDigitalClock();updateStableProgress()}});
+window.addEventListener('pageshow',()=>{root.removeAttribute('data-namo-reloading');reloadQueued=false;if(!revealed)requestPatch();else{updateDigitalClock();updateStableProgress()}});
 setTimeout(()=>{if(!revealed){patch();reveal()}},2600);
 })();
