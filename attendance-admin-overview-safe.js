@@ -20,11 +20,19 @@ function installClient(){
     if(!fs.existsSync(file))return;
     let html=fs.readFileSync(file,'utf8');
     const hireScript='<script src="/attendance-admin-hire-date-20260917.js?v=20260917-hire4"></script>';
-    html=html.replace(/<script src="\/attendance-admin-hire-date-20260917\.js\?v=[^"]+"><\/script>/g,'');
+    const antiFlashStyle='<style id="namo-attendance-antiflash-20260917">html[data-attendance-boot="pending"] body{background:#eef4f8!important}html[data-attendance-boot="pending"] .app-shell{visibility:hidden!important}html[data-attendance-boot="ready"] .app-shell{visibility:visible!important}</style>';
+    const antiFlashScript=`<script id="namo-attendance-antiflash-script-20260917">(function(){'use strict';if(window.__NAMO_ATT_NOFLASH_20260917__)return;window.__NAMO_ATT_NOFLASH_20260917__=true;var root=document.documentElement;var settled=false;var observer=null;function reveal(){if(settled)return;settled=true;root.setAttribute('data-attendance-boot','ready');if(observer)observer.disconnect();}function finalUiReady(){return !!(document.querySelector('.namo-panel-title .namo-greet-main')&&document.querySelector('.namo-today-card')&&document.querySelector('.clock-btn.in')&&document.querySelector('.clock-btn.out'));}function check(){if(settled||!finalUiReady())return;settled='waiting';setTimeout(function(){root.setAttribute('data-attendance-boot','ready');if(observer)observer.disconnect();settled=true;},1100);}root.setAttribute('data-attendance-boot','pending');observer=new MutationObserver(check);observer.observe(root,{childList:true,subtree:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',check,{once:true});else check();setTimeout(function(){if(settled!==true){root.setAttribute('data-attendance-boot','ready');if(observer)observer.disconnect();settled=true;}},5000);})();</script>`;
+    html=html
+      .replace(/<style id="namo-attendance-antiflash-20260917">[\s\S]*?<\/style>/g,'')
+      .replace(/<script id="namo-attendance-antiflash-script-20260917">[\s\S]*?<\/script>/g,'')
+      .replace(/<script src="\/attendance-admin-hire-date-20260917\.js\?v=[^"]+"><\/script>/g,'');
+    if(/data-attendance-boot="[^"]*"/i.test(html))html=html.replace(/data-attendance-boot="[^"]*"/i,'data-attendance-boot="pending"');
+    else html=html.replace(/<html\b/i,'<html data-attendance-boot="pending"');
+    html=html.replace('</head>',`${antiFlashStyle}${antiFlashScript}</head>`);
     if(html.includes('data-namo-attendance-full-ui="v4"')){
       html=html.replace('</body>',`${hireScript}</body>`);
       fs.writeFileSync(file,html,'utf8');
-      console.log('[Attendance admin overview] v4 hire-date annual leave client installed');
+      console.log('[Attendance admin overview] v4 hire-date client + no-flash boot installed');
       return;
     }
     html=html
@@ -34,7 +42,7 @@ function installClient(){
       .replace(/<script src="\/attendance-mobile-member-sync\.js\?v=[^"]+"><\/script>/g,'');
     html=html.replace('</body>','<script src="/attendance-admin-v2-launcher-20260907.js?v=20260907-v2-force1"></script><script src="/attendance-mobile-member-sync.js?v=20260907-mobile-delete2"></script>'+hireScript+'</body>');
     fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance admin overview] standalone V2 launcher installed; legacy UI preserved but disabled');
+    console.log('[Attendance admin overview] standalone V2 launcher + no-flash boot installed');
   }catch(e){console.error('[Attendance admin overview] client install failed',e)}
 }
 installClient();
