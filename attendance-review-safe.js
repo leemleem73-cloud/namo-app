@@ -15,9 +15,11 @@ async function ensureSchema(){
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS mail_recipients JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS mail_sent_at TIMESTAMPTZ;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE;
   `);
   schemaReady=true;
 }
+function annualGranted(hireDate,asOf){if(!hireDate)return 15;const h=new Date(`${hireDate}T00:00:00+09:00`),a=new Date(`${asOf}T00:00:00+09:00`);if(Number.isNaN(h.getTime())||Number.isNaN(a.getTime())||a<h)return 0;let years=a.getFullYear()-h.getFullYear();const anniv=new Date(h);anniv.setFullYear(h.getFullYear()+years);if(a<anniv)years--;if(years<1){let months=(a.getFullYear()-h.getFullYear())*12+(a.getMonth()-h.getMonth());if(a.getDate()<h.getDate())months--;return Math.max(0,Math.min(11,months))}return Math.min(25,15+Math.floor(Math.max(0,years-1)/2))}
 function activeStatus(v){return !['REJECTED','INACTIVE','DISABLED','DELETED','WITHDRAWN'].includes(String(v||'').toUpperCase())}
 function roleLevel(u){
   const t=`${u?.title||''} ${u?.role||''}`.replace(/\s/g,'').toLowerCase();
@@ -26,11 +28,13 @@ function roleLevel(u){
   if(/부장|본부장|실장|센터장|팀장/.test(t))return 2;
   return 1;
 }
-async function userById(id){if(!id)return null;const q=await pool.query('SELECT id,name,email,department,title,role,status FROM users WHERE id=$1 LIMIT 1',[id]);return q.rows[0]||null}
+async function userById(id){if(!id)return null;const q=await pool.query("SELECT id,name,email,department,title,role,status,TO_CHAR(hire_date,'YYYY-MM-DD') AS hire_date FROM users WHERE id=$1 LIMIT 1",[id]);return q.rows[0]||null}
 async function balance(userId){
-  const y=new Date().getFullYear();
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const y=Number(today.slice(0,4));
+  const u=await pool.query("SELECT TO_CHAR(hire_date,'YYYY-MM-DD') AS hire_date FROM users WHERE id=$1 LIMIT 1",[userId]);
   const q=await pool.query("SELECT COALESCE(SUM(days),0)::float used FROM leave_requests WHERE user_id=$1 AND status='APPROVED' AND leave_type IN ('annual','am_half','pm_half') AND EXTRACT(YEAR FROM start_date)=$2",[userId,y]);
-  const used=Number(q.rows[0]?.used||0);return{granted:15,used,remaining:Math.max(0,15-used)};
+  const used=Number(q.rows[0]?.used||0),hireDate=String(u.rows[0]?.hire_date||''),granted=annualGranted(hireDate,today);return{hireDate,granted,used,remaining:Math.max(0,granted-used)};
 }
 async function notify(userId,title,message,target='approval'){
   if(!userId)return;
