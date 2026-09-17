@@ -1,15 +1,14 @@
-/* NAMO QMES - approved 2026 purchase Excel history import
+/* NAMO QMES - approved 2026 purchase history display bridge
  * 2026-09-17
  * Production QMES only.
- * - idempotently register the 10 supplied 2026 purchase rows
- * - treat 409 duplicate purchase numbers as already registered
- * - never overwrite an existing purchase number
- * - keep the approved 2026 history visible even if the DB list omits legacy rows
+ * The 10 approved 2026 purchase rows already exist in the production DB.
+ * This file must never POST them again. It only reads DB rows, merges the approved
+ * historical rows for display, and keeps the 2026 date range visible.
  */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V4__) return;
-  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V4__ = true;
+  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V5__) return;
+  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V5__=true;
 
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
   const approvedRows=[
@@ -27,217 +26,132 @@
 
   let running=false;
   let lastSyncAt=0;
-  let pollTimer=0;
+  let timer=0;
 
   function purchasePage(){
-    const candidates=[...document.querySelectorAll('.qmes-purchase-live,main,[role="main"],.main-content,.content-area,.page-content')];
-    return candidates.find(root=>{
+    const roots=[...document.querySelectorAll('.qmes-purchase-live,main,[role="main"],.main-content,.content-area,.page-content')];
+    return roots.find(root=>{
       if(!root||!root.isConnected) return false;
-      const text=clean(root.textContent).slice(0,2200);
-      return /구매\s*[·ㆍ]?\s*발주관리/.test(text) && (/발주번호|구매 DB 연동|신규 구매 발주/.test(text));
+      const text=clean(root.textContent).slice(0,2400);
+      return /구매\s*[·ㆍ]?\s*발주관리/.test(text)&&(/발주번호|구매 DB 연동|신규 구매 발주/.test(text));
     })||null;
   }
 
-  async function apiJson(url,options){
-    const response=await fetch(url,Object.assign({credentials:'same-origin',cache:'no-store'},options||{}));
-    const payload=await response.json().catch(()=>({success:false,message:'HTTP '+response.status}));
-    if(!response.ok||(payload&&payload.success===false)){
-      const error=new Error((payload&&payload.message)||('요청 실패 ('+response.status+')'));
-      error.status=response.status;
-      error.payload=payload;
-      throw error;
-    }
-    return payload&&Object.prototype.hasOwnProperty.call(payload,'data')?payload.data:payload;
-  }
-
+  function noOf(row){return clean(row&&(row.purchaseNo||row.purchase_no||row.no||row.id));}
   function listRows(data){
     if(Array.isArray(data)) return data;
     if(data&&Array.isArray(data.rows)) return data.rows;
     if(data&&Array.isArray(data.items)) return data.items;
-    if(data&&data.data){
-      if(Array.isArray(data.data)) return data.data;
-      if(Array.isArray(data.data.rows)) return data.data.rows;
-      if(Array.isArray(data.data.items)) return data.data.items;
-    }
+    if(data&&Array.isArray(data.data)) return data.data;
+    if(data&&data.data&&Array.isArray(data.data.rows)) return data.data.rows;
     return [];
   }
 
-  function purchaseNo(row){return clean(row&&(row.purchaseNo||row.purchase_no||row.no||row.id));}
-
-  function postPayload(row){
+  function displayRow(row){
+    const vat=Math.round(row.amount*0.1);
     return {
-      purchaseNo:row.purchaseNo,
-      purchaseType:'ERP 이관',
-      productionType:'D-양산',
-      supplier:row.supplier,
-      item:row.item,
-      qty:row.qty,
-      unit:'kg',
-      unitPrice:row.unitPrice,
-      amount:row.amount,
-      orderDate:row.orderDate,
-      requestedDueDate:row.orderDate,
-      warehouse:'내부창고(충주)',
-      paymentTerms:'부가세율 적용',
-      approvalStatus:'승인완료',
-      receiptStatus:'입고완료',
-      receivedQty:row.qty,
-      iqcRequired:false,
-      iqcStatus:'기존 ERP 반영',
-      coaRequired:false,
-      msdsRequired:false,
-      lotRequired:false,
-      status:'입고완료',
-      notes:'2026 구매내역 엑셀 이관 · 2026-09-17 화면자료 기준'
+      id:row.purchaseNo,no:row.purchaseNo,purchaseNo:row.purchaseNo,purchase_no:row.purchaseNo,
+      purchaseType:'ERP 이관',purchase_type:'ERP 이관',productionType:'D-양산',production_type:'D-양산',
+      supplier:row.supplier,item:row.item,qty:row.qty,unit:'kg',unitPrice:row.unitPrice,unit_price:row.unitPrice,
+      amount:row.amount,supplyAmount:row.amount,supply_amount:row.amount,vatAmount:vat,vat_amount:vat,
+      totalAmount:row.amount+vat,total_amount:row.amount+vat,orderDate:row.orderDate,order_date:row.orderDate,
+      requestedDueDate:row.orderDate,requested_due_date:row.orderDate,approvalStatus:'승인완료',approval_status:'승인완료',
+      receiptStatus:'입고완료',receipt_status:'입고완료',receivedQty:row.qty,received_qty:row.qty,
+      iqcRequired:false,iqc_required:false,iqcStatus:'기존 ERP 반영',iqc_status:'기존 ERP 반영',
+      status:'입고완료',warehouse:'내부창고(충주)',paymentTerms:'부가세율 적용',payment_terms:'부가세율 적용',
+      notes:'2026 구매내역 엑셀 이관 · 기존 DB 등록분'
     };
   }
 
-  function displayRow(row){
-    return Object.assign({},postPayload(row),{
-      id:row.purchaseNo,
-      no:row.purchaseNo,
-      price:row.unitPrice,
-      received:row.qty,
-      requested_due_date:row.orderDate,
-      order_date:row.orderDate,
-      purchase_no:row.purchaseNo,
-      approval_status:'승인완료',
-      receipt_status:'입고완료',
-      received_qty:row.qty,
-      iqc_required:false,
-      iqc_status:'기존 ERP 반영'
-    });
+  function mergeRows(serverRows){
+    const out=[];
+    const seen=new Set();
+    for(const row of serverRows||[]){
+      const no=noOf(row);
+      if(!no||seen.has(no)) continue;
+      seen.add(no); out.push(row);
+    }
+    for(const row of approvedRows){
+      if(seen.has(row.purchaseNo)) continue;
+      seen.add(row.purchaseNo); out.push(displayRow(row));
+    }
+    return out;
   }
 
   function setInputValue(input,value){
     if(!input) return;
-    const descriptor=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
-    if(descriptor&&descriptor.set) descriptor.set.call(input,value); else input.value=value;
+    const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+    if(d&&d.set)d.set.call(input,value);else input.value=value;
     input.dispatchEvent(new Event('input',{bubbles:true}));
     input.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
-  function forceFullYearAndSearch(){
+  function force2026(){
     const root=purchasePage();
-    if(!root) return false;
+    if(!root) return;
     const host=root.querySelector('.qpx-enterprise-host')||document.querySelector('.qmes-purchase-live .qpx-enterprise-host');
-    if(!host) return false;
+    if(!host) return;
     const from=host.querySelector('[data-qpx-filter="from"]');
     const to=host.querySelector('[data-qpx-filter="to"]');
     const search=host.querySelector('[data-qpx-search]');
-    if(!from||!to||!search) return false;
+    if(!from||!to) return;
     const changed=from.value!=='2026-01-01'||to.value!=='2026-12-31';
     if(changed){
       setInputValue(from,'2026-01-01');
       setInputValue(to,'2026-12-31');
-      setTimeout(()=>search.click(),0);
+      if(search)setTimeout(()=>search.click(),0);
     }
-    return true;
   }
 
-  function mergeForDisplay(serverRows){
-    const merged=[];
-    const seen=new Set();
-    for(const row of serverRows||[]){
-      const no=purchaseNo(row);
-      if(!no||seen.has(no)) continue;
-      seen.add(no);
-      merged.push(row);
-    }
-    for(const row of approvedRows){
-      if(seen.has(row.purchaseNo)) continue;
-      seen.add(row.purchaseNo);
-      merged.push(displayRow(row));
-    }
-    return merged;
-  }
-
-  function refreshEnterprise(rows){
-    const merged=mergeForDisplay(rows);
+  function publish(rows){
+    const merged=mergeRows(rows);
     try{localStorage.setItem('qmes-erp-purchase-v1',JSON.stringify(merged));}catch(_error){}
     window.__QMES_PURCHASE_AUTHORITATIVE_ROWS__=merged;
-    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows:merged,source:'excel-history-import-v4'}}));
-    [50,160,350,700].forEach(delay=>setTimeout(forceFullYearAndSearch,delay));
+    window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh',{detail:{rows:merged,source:'excel-history-import-v5-readonly'}}));
+    [40,140,320,700].forEach(ms=>setTimeout(force2026,ms));
   }
 
-  async function ensureRows(){
+  async function readOnlySync(){
     if(running||!purchasePage()) return;
     running=true;
     try{
-      const current=listRows(await apiJson('/api/purchase-orders?_excelHistory='+Date.now(),{
-        headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
-      }));
-      const ids=new Set(current.map(purchaseNo).filter(Boolean));
-      const missing=approvedRows.filter(row=>!ids.has(row.purchaseNo));
-
-      let inserted=0;
-      let conflicts=0;
-      for(const row of missing){
-        try{
-          await apiJson('/api/purchase-orders',{
-            method:'POST',
-            headers:{'Content-Type':'application/json',Accept:'application/json'},
-            body:JSON.stringify(postPayload(row))
-          });
-          inserted+=1;
-        }catch(error){
-          if(error&&error.status===409){
-            conflicts+=1;
-            continue;
-          }
-          throw error;
-        }
-      }
-
-      let finalRows=[];
-      try{
-        finalRows=listRows(await apiJson('/api/purchase-orders?_excelHistoryDone='+Date.now(),{
-          headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0',Pragma:'no-cache'}
-        }));
-      }catch(error){
-        console.warn('[QMES purchase Excel import] final DB read failed; using current rows',error&&error.message?error.message:error);
-        finalRows=current;
-      }
-
-      lastSyncAt=Date.now();
-      refreshEnterprise(finalRows);
-      console.info('[QMES purchase Excel import] ready',{
-        approved:approvedRows.length,
-        serverRows:finalRows.length,
-        inserted,
-        alreadyRegistered:conflicts
+      const response=await fetch('/api/purchase-orders?_purchaseHistoryRead='+Date.now(),{
+        method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json','Cache-Control':'no-cache, no-store, max-age=0'}
       });
-    }catch(error){
-      console.warn('[QMES purchase Excel import] sync failed',error&&error.message?error.message:error);
-      refreshEnterprise([]);
+      let rows=[];
+      if(response.ok){
+        const json=await response.json().catch(()=>[]);
+        rows=listRows(json);
+      }
+      publish(rows);
       lastSyncAt=Date.now();
+      console.info('[QMES purchase history] read-only sync',{serverRows:rows.length,displayRows:mergeRows(rows).length});
+    }catch(error){
+      publish([]);
+      lastSyncAt=Date.now();
+      console.warn('[QMES purchase history] DB read unavailable; approved rows kept visible',error&&error.message?error.message:error);
     }finally{
       running=false;
     }
   }
 
-  function keepVisible(){
+  function refresh(){
     if(!purchasePage()) return;
-    forceFullYearAndSearch();
-    if(Date.now()-lastSyncAt>15000) ensureRows();
+    force2026();
+    if(Date.now()-lastSyncAt>30000) readOnlySync();
   }
 
-  function schedule(){
-    clearTimeout(pollTimer);
-    pollTimer=setTimeout(keepVisible,100);
-  }
-
+  function schedule(){clearTimeout(timer);timer=setTimeout(refresh,100);}
   function start(){
     schedule();
-    setInterval(()=>{if(purchasePage()) keepVisible();},3000);
-    window.addEventListener('qmes:navigate-tab',()=>setTimeout(keepVisible,80));
-    document.addEventListener('click',event=>{
-      const target=event.target instanceof Element?event.target.closest('button,a,[data-qmes-menu]'):null;
-      if(target&&/구매|발주/.test(clean(target.textContent))) setTimeout(keepVisible,100);
+    setTimeout(readOnlySync,180);
+    setInterval(()=>{if(purchasePage())refresh();},5000);
+    window.addEventListener('qmes:navigate-tab',()=>setTimeout(refresh,80));
+    document.addEventListener('click',e=>{
+      const t=e.target instanceof Element?e.target.closest('button,a,[data-qmes-menu]'):null;
+      if(t&&/구매|발주/.test(clean(t.textContent)))setTimeout(refresh,100);
     },true);
     new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
   }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
