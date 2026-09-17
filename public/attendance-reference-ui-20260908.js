@@ -10,6 +10,7 @@
   async function getJson(url){try{const r=await fetch(url,{credentials:'same-origin'});const t=await r.text();try{return JSON.parse(t)}catch(_e){return null}}catch(_e){return null}}
   async function putJson(url,body){try{const r=await fetch(url,{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const t=await r.text();let j=null;try{j=JSON.parse(t)}catch(_e){}return{ok:r.ok&&j?.success!==false,json:j}}catch(_e){return{ok:false,json:null}}}
   function validTime(v){return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v||''))}
+  function timeMinutes(v){if(!validTime(v))return null;const p=String(v).split(':').map(Number);return p[0]*60+p[1]}
   function readLocalSchedule(){try{const v=JSON.parse(localStorage.getItem(SCHEDULE_KEY)||'null');if(v&&validTime(v.start)&&validTime(v.end)&&v.end>v.start)return v}catch(_e){}return null}
   function writeLocalSchedule(v){try{localStorage.setItem(SCHEDULE_KEY,JSON.stringify({start:v.start,end:v.end}))}catch(_e){}}
   async function loadWorkSchedule(){
@@ -25,6 +26,24 @@
     writeLocalSchedule(schedule);
     const result=await putJson('/api/attendance/work-schedule',{startTime:schedule.start,endTime:schedule.end});
     return result.ok;
+  }
+  function resolveUserName(me){
+    const current=window.__QMES_CURRENT_USER__||{};
+    const nested=me&&typeof me==='object'?(me.user||me.employee||{}):{};
+    return String(me?.name||me?.userName||me?.username||me?.fullName||me?.displayName||me?.employeeName||nested?.name||nested?.userName||current?.name||current?.userName||'').trim();
+  }
+  function updateScheduleProgress(schedule){
+    const start=schedule?.start||DEFAULT_SCHEDULE.start;
+    const end=schedule?.end||DEFAULT_SCHEDULE.end;
+    const labels=$$('.page[data-page="home"] .progress-labels span');
+    if(labels[0]&&labels[0].textContent!==start)labels[0].textContent=start;
+    if(labels[1]&&labels[1].textContent!==end)labels[1].textContent=end;
+    const startMin=timeMinutes(start),endMin=timeMinutes(end);
+    if(startMin==null||endMin==null||endMin<=startMin)return;
+    const now=new Date();const currentMin=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+    const pct=Math.max(0,Math.min(100,((currentMin-startMin)/(endMin-startMin))*100));
+    const bar=$('#workProgress')||$('.page[data-page="home"] .progress span');
+    if(bar)bar.style.width=pct+'%';
   }
 
   function patchHeader(){
@@ -89,6 +108,7 @@
       const serverSaved=await saveWorkSchedule({start,end});
       const sched=$('#namoTodaySchedule');if(sched)sched.textContent=start+' - '+end;
       ensureClockCardLabels({start,end});
+      updateScheduleProgress({start,end});
       close();await refreshHome();
       if(!serverSaved)console.warn('[Attendance schedule] server save unavailable; browser schedule saved locally.');
     });
@@ -175,7 +195,9 @@
   async function refreshHome(){
     const me=safeData(await getJson('/api/attendance/me'))||{}; const today=safeData(await getJson('/api/attendance/today-v2'))||safeData(await getJson('/api/attendance/today'))||{}; const logsRaw=safeData(await getJson('/api/attendance/logs'))||[]; const logs=Array.isArray(logsRaw)?logsRaw:[]; const schedule=await loadWorkSchedule();
     const td=$('#namoTodayDate');if(td)td.textContent=fmtDate(new Date()); const sched=$('#namoTodaySchedule');if(sched)sched.textContent=schedule.start+' - '+schedule.end;
+    const userName=resolveUserName(me);const title=$('.namo-panel-title strong');if(title)title.textContent=userName?userName+'님, 오늘 근무':'오늘 근무';const heroName=$('.hero .greeting .name');if(heroName&&userName)heroName.textContent=userName+'님,';
     ensureClockCardLabels(schedule);
+    updateScheduleProgress(schedule);
     const place=$('#namoTodayPlace');if(place)place.textContent=(today.workplaceName||today.workplace_name||$('#workplaceName')?.textContent||'근무지 선택');
     const m=$('#namoMonthLabel');if(m){const d=new Date();m.textContent=(d.getMonth()+1)+'월 기준'}
     buildWeek(logs,schedule);
@@ -183,6 +205,7 @@
 
   function init(){patchHeader();ensureHomeLayout();ensureRecordsCalendar();patchWizard();refreshHome();loadRecordsCalendar();
     document.addEventListener('click',e=>{const b=e.target.closest('.nav-btn[data-page-target="records"]');if(b)setTimeout(loadRecordsCalendar,50)});
+    setInterval(()=>{const schedule=readLocalSchedule()||DEFAULT_SCHEDULE;ensureClockCardLabels(schedule);updateScheduleProgress(schedule)},1000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
