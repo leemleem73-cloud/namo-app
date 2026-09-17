@@ -42,8 +42,136 @@
   margin:0!important;padding:0 18px 0!important;overflow:auto!important;border:1px solid #d7e3ee!important;
   border-radius:12px!important;background:#fff!important;box-shadow:0 24px 70px rgba(10,35,58,.30)!important;
 }
+
+/* Purchase header: left title block, centered 4-step flow, right close button. */
+.qmes-purchase-live .qpx-form-card .qpx-modal-head{
+  display:grid!important;
+  grid-template-columns:minmax(410px,1.25fr) minmax(510px,.95fr) 42px!important;
+  align-items:center!important;
+  column-gap:24px!important;
+  min-height:76px!important;
+  padding:12px 18px 12px 20px!important;
+  box-sizing:border-box!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child{
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  row-gap:3px!important;
+  min-width:0!important;
+  margin:0!important;
+}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left .qpdz-cart,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child>.qpdz-cart{
+  grid-column:1!important;
+  grid-row:1 / 3!important;
+  width:40px!important;
+  height:40px!important;
+  margin:0!important;
+  align-self:center!important;
+}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h1,
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h2,
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h3,
+.qmes-purchase-live .qpx-form-card .qpdz-title-left h4,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child h1,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child h2,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child h3,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child h4{
+  grid-column:2!important;
+  grid-row:1!important;
+  align-self:end!important;
+  margin:0!important;
+  font-size:20px!important;
+  line-height:1.15!important;
+  font-weight:950!important;
+  white-space:nowrap!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+}
+.qmes-purchase-live .qpx-form-card .qpdz-title-left p,
+.qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child p{
+  grid-column:2!important;
+  grid-row:2!important;
+  align-self:start!important;
+  margin:0!important;
+  font-size:10px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+  color:rgba(255,255,255,.92)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.92)!important;
+  opacity:1!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  min-width:510px!important;
+  margin:0!important;
+  padding:0!important;
+  white-space:nowrap!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  white-space:nowrap!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step b{
+  display:grid!important;
+  place-items:center!important;
+  width:26px!important;
+  height:26px!important;
+  min-width:26px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.78)!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  line-height:1!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:first-child b{
+  background:#fff!important;
+  color:#1179ba!important;
+  -webkit-text-fill-color:#1179ba!important;
+  border-color:#fff!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:not(:last-child)::after{
+  content:""!important;
+  display:block!important;
+  width:30px!important;
+  min-width:30px!important;
+  height:1px!important;
+  margin:0 12px!important;
+  background:rgba(255,255,255,.45)!important;
+}
+.qmes-purchase-live .qpx-form-card .qpx-modal-head .qmes-step-label{
+  display:inline-block!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
 /* Purchase title must remain white. */
-.qmes-purchase-live .qpx-form-card .qpx-modal-head{color:#fff!important;-webkit-text-fill-color:#fff!important}
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h1,
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h2,
 .qmes-purchase-live .qpx-form-card .qpx-modal-head h3,
@@ -55,11 +183,18 @@
 /* Close button: white button with dark X so it is always clearly visible. */
 .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-modal-close,
 .qmes-purchase-live .qpx-form-card .qpx-modal-head button.qpx-modal-close{
+  justify-self:end!important;
+  align-self:center!important;
+  width:36px!important;
+  height:36px!important;
+  margin:0!important;
+  padding:0!important;
   background:#fff!important;
   color:#173b5c!important;
   -webkit-text-fill-color:#173b5c!important;
   opacity:1!important;
   border:1px solid rgba(255,255,255,.96)!important;
+  border-radius:8px!important;
   box-shadow:0 1px 4px rgba(0,0,0,.16)!important;
   font-size:22px!important;
   font-weight:950!important;
@@ -103,9 +238,24 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
 .qmes-window-resize-handle[data-dir="nw"]::after{left:2px;top:2px;border-left:2px solid #4d7898;border-top:2px solid #4d7898}
 .qmes-window-resize-handle:hover::after{opacity:1!important;border-color:#0e75ba!important}
 
+@media(max-width:1320px){
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head{grid-template-columns:minmax(360px,1fr) minmax(430px,.9fr) 42px!important;column-gap:14px!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps{min-width:430px!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:not(:last-child)::after{width:18px!important;min-width:18px!important;margin:0 7px!important}
+}
+@media(max-width:1050px){
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head{grid-template-columns:minmax(330px,1fr) auto 42px!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps{min-width:0!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step .qmes-step-label{display:none!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-step:not(:last-child)::after{width:14px!important;min-width:14px!important;margin:0 5px!important}
+}
 @media(max-width:850px){
   .qmes-purchase-live .qpx-form-card.qpdz-target-modal,
   .qmes-purchase-live .qpx-form-card[data-qmes-purchase-modal-adopted="20260916"]{width:96vw!important;top:8px!important;max-height:calc(100vh - 16px)!important;min-width:280px!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head{grid-template-columns:minmax(0,1fr) 42px!important}
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head .qpx-steps{display:none!important}
+  .qmes-purchase-live .qpx-form-card .qpdz-title-left p,
+  .qmes-purchase-live .qpx-form-card .qpx-modal-head>:first-child p{display:none!important}
 }
 `;
   }
@@ -371,8 +521,22 @@ body.qmes-modal-dragging,body.qmes-modal-resizing,body.qmes-modal-dragging *,bod
     const head=modal.querySelector('.qpx-modal-head');
     if(head){
       head.dataset.qmesDragHandle='1';
+      const left=head.firstElementChild;
+      if(left) left.classList.add('qpdz-title-left');
       const title=[...head.querySelectorAll('h1,h2,h3,h4')].find(el=>/신규\s*구매\s*발주\s*등록/.test(clean(el.textContent)));
       if(title){title.style.setProperty('color','#fff','important');title.style.setProperty('-webkit-text-fill-color','#fff','important');title.style.setProperty('opacity','1','important');}
+
+      const labels=['기본정보','품목등록','품질요구사항','결재상신'];
+      [...head.querySelectorAll('.qpx-step')].slice(0,4).forEach((step,i)=>{
+        let num=step.querySelector('b');
+        if(!num){num=document.createElement('b');step.insertBefore(num,step.firstChild);}
+        num.textContent=String(i+1);
+        [...step.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).forEach(n=>n.remove());
+        let label=step.querySelector('.qmes-step-label');
+        if(!label){label=document.createElement('span');label.className='qmes-step-label';step.appendChild(label);}
+        label.textContent=labels[i];
+      });
+
       const close=head.querySelector('.qpx-modal-close');
       if(close){
         close.style.setProperty('background','#fff','important');
