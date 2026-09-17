@@ -7,8 +7,8 @@
  */
 (function(){
   'use strict';
-  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V2__) return;
-  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V2__ = true;
+  if(window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V3__) return;
+  window.__QMES_PURCHASE_EXCEL_HISTORY_IMPORT_20260917_V3__ = true;
 
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
   const approvedRows=[
@@ -70,6 +70,7 @@
       unitPrice:row.unitPrice,
       amount:row.amount,
       orderDate:row.orderDate,
+      requestedDueDate:row.orderDate,
       warehouse:'내부창고(충주)',
       paymentTerms:'부가세율 적용',
       approvalStatus:'승인완료',
