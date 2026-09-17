@@ -235,3 +235,15 @@
     window.setTimeout(start, 500);
   }
 })();
+
+/* Global calendar size-only loader - preserves existing calendar behavior. */
+(function(){
+  'use strict';
+  const id='qmes-global-calendar-size-only-loader-20260917';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/js/qmes-global-calendar-compact-draggable-20260917.js?v=20260917-sizeonly2';
+  script.defer=true;
+  document.head.appendChild(script);
+})();
