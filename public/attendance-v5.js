@@ -82,7 +82,7 @@ function applyRoleNav(){
       '<button class="nav-btn" data-nav="requests"><span class="nav-ico">▤</span><span>검토함</span></button>'+
       '<button class="nav-btn" data-nav="leave"><span class="nav-ico">◫</span><span>휴가현황</span></button>'+
       '<button class="nav-btn" data-nav="profile"><span class="nav-ico">♙</span><span>관리</span></button>';
-    $('.nav-btn',nav).forEach(b=>b.onclick=()=>showView(b.dataset.nav));
+    $$('.nav-btn',nav).forEach(b=>b.onclick=()=>showView(b.dataset.nav));
   }else{
     nav.classList.remove('admin-nav');
     const rec=$('.nav-btn[data-nav="records"] span:last-child');if(rec)rec.textContent='근무내역';
