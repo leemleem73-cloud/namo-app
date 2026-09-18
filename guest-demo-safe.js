@@ -110,8 +110,8 @@ if (!express.__NAMO_GUEST_DEMO_SAFE_20260918__) {
   };
 
   async function ensureGuest(){
-    const password=String(process.env.QMES_GUEST_PASSWORD || '');
-    if(!password) throw new Error('QMES_GUEST_PASSWORD is not configured');
+    const password=String(process.env.DEFAULT_USER_PASSWORD || '');
+    if(!password) throw new Error('DEFAULT_USER_PASSWORD is not configured');
     const hash=await bcrypt.hash(password,10);
     const found=await pool.query(
       `SELECT id FROM users
