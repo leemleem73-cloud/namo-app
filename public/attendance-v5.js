@@ -297,8 +297,8 @@ function renderRequests(){
   const root=$('#requestsRoot');if(!root)return;
   const rows=state.leave?.requests||[],b=state.leave?.balance||{};
   root.innerHTML='<div class="request-card"><div class="quick-grid"><button class="quick-btn" data-open-request="annual"><strong>연차/반차 신청</strong><span>휴가 신청서를 작성합니다.</span></button><button class="quick-btn" data-open-request="outside"><strong>외근/출장 신청</strong><span>근태 요청을 등록합니다.</span></button></div><div class="profile-list" style="margin-top:12px"><div class="profile-row"><span>연차 부여</span><span>'+Number(b.granted||0)+'일</span></div><div class="profile-row"><span>사용</span><span>'+Number(b.used||0)+'일</span></div><div class="profile-row"><span>잔여</span><span>'+Number(b.remaining||0)+'일</span></div></div></div><div class="request-list">'+(rows.length?rows.map(r=>'<button type="button" class="request-item request-item-btn" data-leave-detail="'+String(r.id||'')+'"><div class="request-top"><div class="request-title">'+leaveTypeName(r.leave_type)+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일<br>사유: '+(r.reason||'-')+'</div></button>').join(''):'<div class="empty">등록된 신청 내역이 없습니다.</div>')+'</div>';
-  $('[data-open-request]').forEach(b=>b.onclick=()=>openRequest(b.dataset.openRequest));
-  $('[data-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.leaveDetail));
+  $$('[data-open-request]').forEach(b=>b.onclick=()=>openRequest(b.dataset.openRequest));
+  $$('[data-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.leaveDetail));
 }
 function fmtDateTime(v){
   if(!v)return'-';
@@ -358,7 +358,7 @@ function renderDistributionList(){
     users.map(u=>'<label class="distribution-person"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small></span></label>').join('')+
     '</section>'
   ).join(''):'<div class="empty">검색 결과가 없습니다.</div>';
-  $('[data-distribution-user]',root).forEach(ch=>ch.onchange=()=>{
+  $$('[data-distribution-user]',root).forEach(ch=>ch.onchange=()=>{
     const id=String(ch.dataset.distributionUser||'');
     if(ch.checked)state.distributionSelected.add(id);else state.distributionSelected.delete(id);
     updateDistributionCount();
@@ -387,7 +387,7 @@ function renderLeave(){
   const rows=state.adminOverview?.leaves||[];
   root.innerHTML='<div class="admin-old-section-head"><div><h2>휴가현황</h2><p>관리자 전체 조회 · 항목을 누르면 상세/사내배포를 확인합니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
     '<div class="request-list">'+(rows.length?rows.map(r=>'<button type="button" class="request-item request-item-btn" data-admin-leave-detail="'+String(r.id||'')+'"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+leaveTypeName(r.leave_type)+'<br>'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일</div></button>').join(''):'<div class="empty">휴가 내역이 없습니다.</div>')+'</div>';
-  $('[data-admin-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.adminLeaveDetail));
+  $$('[data-admin-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.adminLeaveDetail));
 }
 function renderAdminProfile(){
   const root=$('#profileRoot');if(!root)return;
