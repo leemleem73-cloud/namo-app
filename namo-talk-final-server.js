@@ -403,6 +403,11 @@ function install(app){
     }catch(e){fail(res,500,'대화방 설정을 저장하지 못했습니다.')}
   });
 
+  app.post(P+'/conversations/:peer/read',async(req,res)=>{
+    try{const me=await requireUser(req,res);if(!me)return;const peer=String(req.params.peer||'').trim();if(!peer)return fail(res,400,'대화 상대가 필요합니다.');const rid=directRoom(me.name,peer);const r=await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[rid,me.name]);ok(res,{peer,readCount:r.rowCount})}
+    catch(e){fail(res,500,'읽음 처리에 실패했습니다.')}
+  });
+
   app.get(P+'/conversations',async(req,res)=>{
     try{const me=await requireUser(req,res);if(!me)return;const r=await pool.query(`WITH mine AS(SELECT m.*,CASE WHEN sender_name=$1 THEN receiver_name ELSE sender_name END peer,ROW_NUMBER() OVER(PARTITION BY room_id ORDER BY created_at DESC,id DESC) rn FROM namo_talk_standalone_messages m WHERE deleted_at IS NULL AND room_id NOT LIKE 'channel:%' AND(sender_name=$1 OR receiver_name=$1)) SELECT room_id AS "roomId",'direct'::text type,peer,peer title,message_text AS "latestText",created_at AS "latestAt",(SELECT COUNT(*)::int FROM namo_talk_standalone_messages u WHERE u.room_id=mine.room_id AND u.receiver_name=$1 AND u.read_at IS NULL AND u.deleted_at IS NULL) unread FROM mine WHERE rn=1 ORDER BY created_at DESC`,[me.name]);ok(res,{conversations:r.rows})}
     catch(e){fail(res,500,'대화 목록을 불러오지 못했습니다.')}
