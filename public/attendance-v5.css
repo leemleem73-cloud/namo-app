@@ -97,3 +97,13 @@ main{padding:12px}
 .workplace-info{min-width:0}.workplace-info b{display:block;font-size:13px;color:#162b48}.workplace-info small{display:block;margin-top:4px;font-size:10px;color:#75859a;line-height:1.4}.workplace-info em{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:#e7f7ee;color:#118657;font-size:8px;font-style:normal;font-weight:900}.workplace-arrow{color:#8090a3;font-size:20px}
 .detail-place-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
 .detail-change-btn{border:1px solid #b9d5f1;background:#eef6ff;color:#176fd7;border-radius:9px;padding:6px 8px;font-size:9px;font-weight:900}
+
+.map-expand{position:absolute;right:12px;top:12px;width:34px;height:34px;border:1px solid #d8e3ef;border-radius:10px;background:#fff;color:#17304f;font-weight:950;z-index:2;box-shadow:0 4px 12px rgba(31,55,85,.08)}
+.full-map{height:420px;border-radius:20px;position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(135deg,#eef3ef,#e3ebf1)}
+.full-map-grid{position:absolute;inset:0;background:
+linear-gradient(14deg,transparent 0 28%,rgba(255,255,255,.92) 29% 33%,transparent 34% 100%),
+linear-gradient(103deg,transparent 0 46%,rgba(255,255,255,.92) 47% 51%,transparent 52% 100%),
+linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent 71% 100%)}
+.full-map-radius{position:absolute;width:190px;height:190px;border-radius:50%;left:50%;top:52%;transform:translate(-50%,-50%);background:rgba(55,157,255,.17);border:1px solid rgba(25,126,225,.22)}
+.full-map-pin{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;background:#1676df;border:6px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.22)}
+.full-map-label{position:absolute;right:16px;bottom:16px;background:#fff;border-radius:11px;padding:8px 11px;font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(31,55,85,.08)}
