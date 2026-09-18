@@ -135,3 +135,19 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 
 .gps-strip.single{display:none!important;margin:0!important}
 .today-detail-btn{display:none!important}
+
+.admin-hero{background:linear-gradient(135deg,#176fd7,#0b5fbf)}
+.admin-date-label{font-size:10px;color:#75859a;font-weight:850}
+.admin-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line)}
+.admin-summary-grid>div{text-align:center;padding:13px 3px;border-right:1px solid var(--line)}
+.admin-summary-grid>div:last-child{border-right:0}
+.admin-summary-grid span{display:block;font-size:9px;color:#748399;font-weight:800}
+.admin-summary-grid b{display:block;margin-top:4px;font-size:17px;font-weight:950}
+.admin-summary-grid b.warn{color:#e73440}
+.admin-employee-list,.admin-month-list{display:grid}
+.admin-employee-row,.admin-month-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:13px 14px;border-top:1px solid #e8eef4;background:#fff}
+.admin-person-icon{font-size:18px}
+.admin-person-main{min-width:0}.admin-person-main b{display:block;font-size:12px}.admin-person-main small{display:block;margin-top:3px;font-size:9px;color:#7a899c}
+.admin-person-time{text-align:right;font-size:11px;font-weight:950}.admin-person-time small{display:block;margin-top:3px;font-size:9px;color:#7a899c;font-weight:800}
+.admin-month-stats{text-align:right}.admin-month-stats b{display:block;font-size:11px}.admin-month-stats small{display:block;margin-top:3px;font-size:9px;color:#7a899c}
+.admin-record-summary{margin-bottom:10px}
