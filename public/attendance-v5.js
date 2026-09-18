@@ -15,7 +15,7 @@ const state={
   me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
-  workplaceName:'충주 1공장',detailKey:'',timer:null
+  workplaceName:'충주 1공장',detailKey:'',workplaceSaveTimer:null,workplaceSaveSeq:0,timer:null
 };
 function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2300)}
 function kstParts(d=new Date()){
@@ -330,46 +330,74 @@ function openWorkplaceSelector(){
   if(note)note.textContent=state.today?.clockIn?'선택한 근무지로 오늘 근무 기록의 근무장소가 변경됩니다.':'출근 전에 근무지를 선택해 주세요.';
   renderWorkplaces();openSheet('workplaceSheet');
 }
-async function selectWorkplace(code){
+function selectWorkplace(code){
   const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장',address:'충청북도 충주시 주덕읍 중원산업로 309'},{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로606번길 39 판교럭스타워 11층'}].find(x=>x.code===code);
   if(!w)return;
-  const root=$('#workplaceRoot');
-  const buttons=$$('[data-workplace-code]',root);
-  buttons.forEach(b=>b.disabled=true);
-  const selectedBtn=buttons.find(b=>String(b.dataset.workplaceCode)===String(code));
-  if(selectedBtn)selectedBtn.classList.add('saving');
-  try{
-    const result=await api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code)})});
-    state.workplaceCode=String(w.code);
-    state.workplaceName=String(result?.workplaceName||w.name||state.workplaceName);
-    localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
-    if(state.today?.clockIn){
-      state.today={...state.today,
-        workplaceCode:result?.workplaceCode||w.code,
-        workplaceName:result?.workplaceName||w.name,
-        workplaceAddress:result?.workplaceAddress||w.address
-      };
-    }
-    renderHome();renderProfile();
-    toast(state.workplaceName+'으로 근무지를 변경했습니다.');
-    closeSheet('workplaceSheet');
-    if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
-
-    getGps().then(gps=>{
-      if(!gps)return;
-      return api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code),gps})})
-        .then(latest=>{
-          if(state.today?.clockIn){
-            state.today={...state.today,workplaceChangeGps:latest?.workplaceChangeGps||gps};
-            if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
-          }
-        });
-    }).catch(()=>{});
-  }catch(e){
-    buttons.forEach(b=>b.disabled=false);
-    if(selectedBtn)selectedBtn.classList.remove('saving');
-    toast(e.message);
+  if(String(state.workplaceCode)===String(w.code)){
+    renderWorkplaces();
+    return;
   }
+
+  const previous={
+    code:String(state.workplaceCode||''),
+    name:String(state.workplaceName||''),
+    today:state.today?{...state.today}:state.today
+  };
+  const seq=++state.workplaceSaveSeq;
+
+  state.workplaceCode=String(w.code);
+  state.workplaceName=String(w.name||state.workplaceName);
+  localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
+
+  if(state.today?.clockIn){
+    state.today={...state.today,
+      workplaceCode:String(w.code),
+      workplaceName:String(w.name||''),
+      workplaceAddress:String(w.address||'')
+    };
+  }
+
+  renderWorkplaces();
+  renderHome();
+  renderProfile();
+  if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+
+  clearTimeout(state.workplaceSaveTimer);
+  state.workplaceSaveTimer=setTimeout(()=>{
+    api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code)})})
+      .then(result=>{
+        if(seq!==state.workplaceSaveSeq)return;
+        if(state.today?.clockIn){
+          state.today={...state.today,
+            workplaceCode:result?.workplaceCode||w.code,
+            workplaceName:result?.workplaceName||w.name,
+            workplaceAddress:result?.workplaceAddress||w.address
+          };
+        }
+        getGps().then(gps=>{
+          if(!gps||seq!==state.workplaceSaveSeq)return;
+          return api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code),gps})})
+            .then(latest=>{
+              if(seq!==state.workplaceSaveSeq)return;
+              if(state.today?.clockIn){
+                state.today={...state.today,workplaceChangeGps:latest?.workplaceChangeGps||gps};
+                if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+              }
+            });
+        }).catch(()=>{});
+      })
+      .catch(e=>{
+        if(seq!==state.workplaceSaveSeq)return;
+        state.workplaceCode=previous.code;
+        state.workplaceName=previous.name;
+        state.today=previous.today;
+        localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
+        renderWorkplaces();
+        renderHome();
+        renderProfile();
+        toast(e.message||'근무지 변경 저장에 실패했습니다.');
+      });
+  },250);
 }
 function openMapDetail(r,place){
   let s=$('#mapDetailSheet');
