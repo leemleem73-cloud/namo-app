@@ -464,7 +464,12 @@ async function clockOut(){
 function renderReviewerOptions(){
   const sel=$('#requestReviewer');if(!sel)return;
   const rows=Array.isArray(state.reviewers)?state.reviewers:[];
-  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>'<option value="'+String(r.id||'')+'">'+[r.reviewerKind||'',r.name,r.department,r.title].filter(Boolean).join(' · ')+'</option>').join('');
+  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>{
+    const kind=String(r.reviewerKind||'');
+    const name=String(r.name||'').trim();
+    const label=kind==='관리자'?'관리자':[kind,name].filter(Boolean).join(' · ');
+    return '<option value="'+String(r.id||'')+'">'+label+'</option>';
+  }).join('');
   const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'검토자: 관리자 · 부장 · 이사 / 검토 완료 즉시 자동 승인':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
 }
 async function loadReviewers(){
