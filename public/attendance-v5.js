@@ -339,7 +339,6 @@ function printApprovalPdf(id){
   const url='/api/attendance/leave/'+encodeURIComponent(id)+'/distribution-pdf-v2';
   const win=window.open(url,'_blank');
   if(!win)return toast('팝업 차단을 해제해주세요.');
-  try{win.addEventListener('load',()=>setTimeout(()=>{try{win.print()}catch(_e){}},700),{once:true})}catch(_e){}
 }
 async function ensureMailLinked(){
   if(state.mailLinked)return{linked:true};
