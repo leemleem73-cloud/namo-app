@@ -11,7 +11,7 @@
   <title>나모케미칼 출퇴근</title>
   <link rel="manifest" href="/attendance-manifest.webmanifest">
   <link rel="icon" href="/attendance-icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/attendance-v5.css?v=20260918-v5-3">
+  <link rel="stylesheet" href="/attendance-v5.css?v=20260918-v5-4">
 </head>
 <body>
   <div class="app">
@@ -88,6 +88,18 @@
     </div>
   </div>
 
+  <div class="sheet" id="workplaceSheet" aria-hidden="true">
+    <div class="sheet-panel compact-panel">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <h2>근무지 변경</h2>
+        <button class="text-btn" id="workplaceClose">닫기</button>
+      </div>
+      <div class="workplace-note" id="workplaceNote">출근 전에 근무지를 선택해 주세요.</div>
+      <div id="workplaceRoot" class="workplace-list"></div>
+    </div>
+  </div>
+
   <div class="sheet" id="requestSheet" aria-hidden="true">
     <div class="sheet-panel compact-panel">
       <div class="sheet-handle"></div>
@@ -118,6 +130,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="/attendance-v5.js?v=20260918-v5-3"></script>
+  <script src="/attendance-v5.js?v=20260918-v5-4"></script>
 </body>
 </html>
