@@ -284,8 +284,12 @@ function renderAdminRequests(){
   const rows=state.adminReviews||[];
   root.innerHTML='<div class="admin-old-section-head"><div><h2>검토함</h2><p>관리자 · 부장 · 이사가 검토하며, 검토 완료 즉시 자동 승인됩니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
     '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge future">검토대기</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+'<br>'+leaveTypeName(r.leave_type)+' · '+Number(r.days||0)+'일 · '+String(r.reason||'사유 없음')+'</div><div class="review-action-row"><button type="button" class="review-approve" data-review-approve="'+String(r.id||'')+'">검토 완료 · 승인</button><button type="button" class="review-reject" data-review-reject="'+String(r.id||'')+'">반려</button></div></div>').join(''):'<div class="empty">검토 대기 요청이 없습니다.</div>')+'</div>';
-  $('[data-review-approve]',root).forEach(b=>b.onclick=()=>completeReview(b.dataset.reviewApprove));
-  $('[data-review-reject]',root).forEach(b=>b.onclick=()=>rejectReview(b.dataset.reviewReject));
+  root.onclick=e=>{
+    const approveBtn=e.target.closest('[data-review-approve]');
+    if(approveBtn&&root.contains(approveBtn)){completeReview(approveBtn.dataset.reviewApprove);return;}
+    const rejectBtn=e.target.closest('[data-review-reject]');
+    if(rejectBtn&&root.contains(rejectBtn)){rejectReview(rejectBtn.dataset.reviewReject);}
+  };
 }
 function renderRequests(){
   if(isAdmin())return renderAdminRequests();
