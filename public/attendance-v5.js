@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],leaveDetail:null,distributionDirectory:[],distributionSelected:new Set(),
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],leaveDetail:null,distributionDirectory:[],distributionSelected:new Set(),mailLinked:false,mailLinkPromise:null,mailLinkResolve:null,mailLinkReject:null,mailSendBusy:false,
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',workplaceSaveTimer:null,workplaceSaveSeq:0,timer:null
@@ -342,13 +342,49 @@ function printApprovalPdf(id){
   try{win.addEventListener('load',()=>setTimeout(()=>{try{win.print()}catch(_e){}},700),{once:true})}catch(_e){}
 }
 async function ensureMailLinked(){
+  if(state.mailLinked)return{linked:true};
   const status=await api('/api/attendance/mail-link/status');
-  if(status?.linked)return status;
+  if(status?.linked){state.mailLinked=true;return status;}
+  if(state.mailLinkPromise)return state.mailLinkPromise;
   const sender=status?.sender||{};
-  const password=prompt((sender.email?sender.email+'\n':'')+'직원에게 직접 메일을 보내려면 최초 1회 이카운트 웹메일 비밀번호를 입력해주세요.');
-  if(password===null)throw new Error('메일 발송을 취소했습니다.');
-  if(!String(password).trim())throw new Error('메일 비밀번호를 입력해주세요.');
-  return api('/api/attendance/mail-link',{method:'POST',body:JSON.stringify({password:String(password)})});
+  const senderEl=$('#mailLinkSender');if(senderEl)senderEl.textContent=sender.email||'-';
+  const input=$('#mailLinkPassword');if(input)input.value='';
+  const err=$('#mailLinkError');if(err)err.textContent='';
+  openSheet('mailLinkSheet');
+  setTimeout(()=>{try{input?.focus()}catch(_e){}},80);
+  state.mailLinkPromise=new Promise((resolve,reject)=>{state.mailLinkResolve=resolve;state.mailLinkReject=reject;});
+  return state.mailLinkPromise;
+}
+async function submitMailLink(e){
+  e?.preventDefault();
+  const input=$('#mailLinkPassword');
+  const password=String(input?.value||'').trim();
+  const err=$('#mailLinkError');
+  const btn=$('#mailLinkSubmit');
+  if(!password){if(err)err.textContent='이카운트 웹메일 비밀번호를 입력해주세요.';return}
+  if(btn){btn.disabled=true;btn.textContent='연동 확인 중...'}
+  if(err)err.textContent='';
+  try{
+    const result=await api('/api/attendance/mail-link',{method:'POST',body:JSON.stringify({password})});
+    state.mailLinked=true;
+    if(input)input.value='';
+    closeSheet('mailLinkSheet');
+    const resolve=state.mailLinkResolve;
+    state.mailLinkPromise=null;state.mailLinkResolve=null;state.mailLinkReject=null;
+    if(resolve)resolve(result||{linked:true});
+    toast('메일 계정 연동이 완료되었습니다.');
+  }catch(ex){
+    if(err)err.textContent=ex.message||'메일 연동에 실패했습니다.';
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='메일 연동하기'}
+  }
+}
+function cancelMailLink(){
+  const reject=state.mailLinkReject;
+  state.mailLinkPromise=null;state.mailLinkResolve=null;state.mailLinkReject=null;
+  const input=$('#mailLinkPassword');if(input)input.value='';
+  closeSheet('mailLinkSheet');
+  if(reject)reject(new Error('메일 발송을 취소했습니다.'));
 }
 async function openDistribution(){
   if(!state.leaveDetail?.id)return;
@@ -456,8 +492,12 @@ function canvasApprovalPdf(detail){
   });
 }
 async function sendInternalDistribution(){
+  if(state.mailSendBusy)return;
   const ids=[...state.distributionSelected];
   if(!ids.length)return toast('메일을 보낼 직원을 선택해주세요.');
+  const sendBtn=$('#distributionSendBtn');
+  state.mailSendBusy=true;
+  if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='메일 발송 준비 중...'}
   try{
     const recipients=(state.distributionDirectory||[]).filter(u=>ids.includes(String(u.id||''))&&u.email);
     if(!recipients.length)return toast('선택한 직원의 이메일이 등록되어 있지 않습니다.');
@@ -483,6 +523,11 @@ async function sendInternalDistribution(){
     toast('직원 메일 발송 완료 · '+Number(mail?.sent||recipients.length)+'명');
     await openLeaveDetail(state.leaveDetail.id);
   }catch(e){toast(e.message)}
+  finally{
+    state.mailSendBusy=false;
+    if(sendBtn)sendBtn.disabled=false;
+    updateDistributionCount();
+  }
 }
 function renderLeave(){
   const root=$('#leaveRoot');if(!root)return;
@@ -760,6 +805,8 @@ function bind(){
     renderDistributionList();
   };
   $('#distributionSendBtn').onclick=sendInternalDistribution;
+  $('#mailLinkForm').onsubmit=submitMailLink;$('#mailLinkClose').onclick=cancelMailLink;$('#mailLinkCancel').onclick=cancelMailLink;
+  $('#mailLinkSheet').addEventListener('click',e=>{if(e.target.id==='mailLinkSheet')cancelMailLink()});
   $('#requestForm').onsubmit=submitRequest;$('#recordsMonth').onchange=reloadMonth;
   ['detailSheet','noticeSheet','workplaceSheet','requestSheet','leaveDetailSheet','distributionSheet'].forEach(id=>$('#'+id).addEventListener('click',e=>{if(e.target.id===id)closeSheet(id)}));
 }
