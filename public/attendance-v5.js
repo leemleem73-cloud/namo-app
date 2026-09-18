@@ -14,8 +14,8 @@ const api=async(url,opt={})=>{
 const state={
   me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
-  workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
-  workplaceName:'충주 1공장',timer:null
+  workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
+  workplaceName:'충주 1공장',detailKey:'',timer:null
 };
 function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('show'),2300)}
 function kstParts(d=new Date()){
@@ -69,7 +69,14 @@ function weekKeys(){
   const a=[];for(let i=0;i<6;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);a.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()))}return a;
 }
 function employeeLabel(){const u=state.me?.user||{};return [u.name,u.title].filter(Boolean).join(' ')||'사용자'}
-function workplace(r){return r?.workplaceName||state.today?.workplaceName||state.workplaceName}
+function selectedWorkplace(){
+  return state.workplaces.find(w=>String(w.code)===String(state.workplaceCode))||null;
+}
+function workplace(r){
+  if(r?.workplaceName)return r.workplaceName;
+  if(state.today?.clockIn&&state.today?.workplaceName)return state.today.workplaceName;
+  return selectedWorkplace()?.name||state.workplaceName;
+}
 function gpsAccuracy(r){const a=Number(r?.gpsIn?.accuracy);return Number.isFinite(a)&&a>0?Math.round(a):null}
 function showView(name){
   $$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===name));
@@ -101,7 +108,7 @@ function renderHome(){
     '</section>'+
     '<section class="gps-strip">'+
       '<div class="gps-box"><div class="gps-icon">⌖</div><div class="gps-copy"><b>'+(t.clockIn?'GPS 인증 완료':'GPS 인증 대기')+'</b><span>'+(acc?('정확도 약 '+acc+'m'):'출근 시 위치 확인')+'</span></div></div>'+
-      '<div class="gps-box"><div class="gps-icon">◉</div><div class="gps-copy"><b>'+(t.clockIn?'근무지 기록 완료':'근무지 확인')+'</b><span>'+workplace(t)+'</span></div></div>'+
+      '<button type="button" class="gps-box workplace-trigger" id="workplaceChangeBtn"><div class="gps-icon">◉</div><div class="gps-copy"><b>'+(t.clockIn?'현재 근무지':'근무지 변경')+'</b><span>'+workplace(t)+'</span></div><span class="gps-chev">›</span></button>'+
     '</section>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 현황</h2><button class="link-btn" id="viewAllBtn">전체보기 ›</button></div><div class="week-grid">'+cells+'</div></section>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 요약</h2></div><div class="summary-grid">'+
@@ -110,7 +117,7 @@ function renderHome(){
       '<div class="summary-item '+(late?'alert':'')+'"><div class="icon">⚠</div><div class="label">지각</div><div class="value">'+late+'회</div></div>'+
       '<div class="summary-item '+(missing?'alert':'')+'"><div class="icon">!</div><div class="label">퇴근누락</div><div class="value">'+missing+'회</div></div>'+
     '</div></section>';
-  $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');
+  $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;
   $$('[data-detail]').forEach(b=>b.onclick=()=>openDetail(b.dataset.detail));
 }
 function renderRecords(){
@@ -136,20 +143,48 @@ function renderProfile(){
   root.innerHTML='<div class="profile-hero"><div class="name">'+(u.name||'사용자')+'</div><div class="meta">'+(u.department||'-')+' · '+(u.title||'-')+'</div></div><div class="profile-list"><div class="profile-row"><span>이메일</span><span>'+(u.email||'-')+'</span></div><div class="profile-row"><span>권한</span><span>'+(String(u.role||'').toLowerCase()==='admin'?'관리자':'직원')+'</span></div><div class="profile-row"><span>근무지</span><span>'+workplace(state.today)+'</span></div><div class="profile-row"><span>기본 근무시간</span><span>'+state.schedule.startTime+' ~ '+state.schedule.endTime+'</span></div><div class="profile-row"><span>잔여 연차</span><span>'+Number(b.remaining||0)+'일</span></div></div>';
 }
 function openDetail(key){
-  const r=state.logs.find(x=>logKey(x)===key)||(key===todayKey()?state.today:null)||null,s=statusFor(key,r),m=durationMinutes(r,key),acc=gpsAccuracy(r),gpsOk=Boolean(r?.gpsIn&&Object.keys(r.gpsIn).length),place=workplace(r);
+  state.detailKey=key;
+  const r=state.logs.find(x=>logKey(x)===key)||(key===todayKey()?state.today:null)||null,s=statusFor(key,r),m=durationMinutes(r,key),acc=gpsAccuracy(r),gpsOk=Boolean(r?.gpsIn&&Object.keys(r.gpsIn).length),place=workplace(r),canChange=key===todayKey();
   $('#detailRoot').innerHTML='<div class="detail-body"><div class="detail-date"><strong>'+fmtDate(key)+'</strong><span class="detail-status">'+s.label+'</span></div><div class="detail-card">'+
     '<div class="detail-row"><span>👤</span><span class="k">출근자</span><span class="v">'+employeeLabel()+'</span></div>'+
     '<div class="detail-row"><span>▣</span><span class="k">근무계획</span><span class="v">'+state.schedule.startTime+' ~ '+state.schedule.endTime+'</span></div>'+
     '<div class="detail-row"><span>▶</span><span class="k">실제 출근</span><span class="v">'+(r?.clockIn?fmtTime(r.clockIn):'-')+'</span></div>'+
     '<div class="detail-row"><span>⇥</span><span class="k">실제 퇴근</span><span class="v">'+(r?.clockOut?fmtTime(r.clockOut):'-')+'</span></div>'+
     '<div class="detail-row"><span>◷</span><span class="k">근무시간</span><span class="v">'+(m?durationText(m):(s.cls==='working'?'진행 중':'-'))+'</span></div>'+
-    '<div class="detail-row"><span>⌖</span><span class="k">근무장소</span><span class="v">'+place+'</span></div>'+
+    '<div class="detail-row"><span>⌖</span><span class="k">근무장소</span><span class="detail-place-actions"><span class="v">'+place+'</span>'+(canChange?'<button type="button" class="detail-change-btn" id="detailWorkplaceBtn">근무지 변경</button>':'')+'</span></div>'+
     '<div class="detail-row"><span>◎</span><span class="k">GPS 상태</span><span class="v '+(gpsOk?'ok':'')+'">'+(gpsOk?'정상 (위치 기록)':'-')+'</span></div>'+
     '<div class="detail-row"><span>▤</span><span class="k">비고</span><span class="v">-</span></div></div>'+
     '<div class="map-box"><div class="map-radius"></div><div class="map-pin"></div><div class="map-label">⌂ '+place+'</div></div>'+
     '<div class="info-box">'+(gpsOk?(acc?('GPS 위치 기록이 저장되었습니다. 정확도 약 '+acc+'m입니다.'):'GPS 위치 기록이 저장되었습니다.'):'해당 날짜의 GPS 위치 기록이 없습니다.')+'</div>'+
     '<button class="back-list" id="backListBtn">목록으로 돌아가기</button></div>';
-  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');
+  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');const wb=$('#detailWorkplaceBtn');if(wb)wb.onclick=openWorkplaceSelector;
+}
+function renderWorkplaces(){
+  const root=$('#workplaceRoot');if(!root)return;
+  const currentRecorded=state.today?.clockIn?String(state.today?.workplaceCode||''):'';
+  const selected=String(state.workplaceCode||'');
+  const rows=state.workplaces.length?state.workplaces:[{code:'chungju',name:'충주 1공장',address:'충청북도 주덕읍 중원산업로 309'},{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로 606번지 39 판교럭스타워 11층'}];
+  root.innerHTML=rows.map(w=>{
+    const on=String(w.code)===selected;
+    const recorded=currentRecorded&&String(w.code)===currentRecorded;
+    return '<button type="button" class="workplace-option '+(on?'selected':'')+'" data-workplace-code="'+String(w.code||'')+'"><span class="workplace-radio">'+(on?'✓':'')+'</span><span class="workplace-info"><b>'+String(w.name||'-')+'</b><small>'+String(w.address||'')+'</small>'+(recorded?'<em>오늘 출근 기록</em>':'')+'</span><span class="workplace-arrow">›</span></button>';
+  }).join('');
+  $('[data-workplace-code]',root).forEach(b=>b.onclick=()=>selectWorkplace(b.dataset.workplaceCode));
+}
+function openWorkplaceSelector(){
+  const note=$('#workplaceNote');
+  if(note)note.textContent=state.today?.clockIn?'오늘 출근 기록의 근무지는 유지됩니다. 선택한 근무지는 다음 출근부터 적용됩니다.':'출근 전에 근무지를 선택해 주세요.';
+  renderWorkplaces();openSheet('workplaceSheet');
+}
+function selectWorkplace(code){
+  const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장'},{code:'pangyo',name:'판교사무소'}].find(x=>x.code===code);
+  if(!w)return;
+  state.workplaceCode=String(w.code);state.workplaceName=String(w.name||state.workplaceName);
+  localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
+  renderWorkplaces();
+  if(!state.today?.clockIn){renderHome();toast(state.workplaceName+'으로 근무지를 변경했습니다.');}
+  else toast(state.workplaceName+'을 다음 출근 근무지로 저장했습니다.');
+  setTimeout(()=>closeSheet('workplaceSheet'),250);
 }
 function openSheet(id){const s=$('#'+id);if(s){s.classList.add('open');s.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}}
 function closeSheet(id){const s=$('#'+id);if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true');document.body.style.overflow=''}}
@@ -186,10 +221,13 @@ async function loadCore(){
     api('/api/attendance/me'),
     api('/api/attendance/today-v2').catch(()=>null),
     api('/api/attendance/logs?month='+encodeURIComponent(month)).catch(()=>[]),
-    api('/api/attendance/work-schedule').catch(()=>({startTime:'08:00',endTime:'17:00'}))
+    api('/api/attendance/work-schedule').catch(()=>({startTime:'08:00',endTime:'17:00'})),
+    api('/api/attendance/workplaces').catch(()=>[])
   ]);
-  state.me=values[0];state.today=values[1];state.logs=Array.isArray(values[2])?values[2]:[];state.schedule=values[3]||state.schedule;
-  if(state.today?.workplaceCode)state.workplaceCode=state.today.workplaceCode;if(state.today?.workplaceName)state.workplaceName=state.today.workplaceName;
+  state.me=values[0];state.today=values[1];state.logs=Array.isArray(values[2])?values[2]:[];state.schedule=values[3]||state.schedule;state.workplaces=Array.isArray(values[4])?values[4]:[];
+  const saved=selectedWorkplace();if(saved)state.workplaceName=saved.name||state.workplaceName;
+  if(state.today?.workplaceCode&&!localStorage.getItem('namo_workplace_v4_live'))state.workplaceCode=state.today.workplaceCode;
+  if(state.today?.workplaceName&&state.today?.clockIn)state.workplaceName=state.today.workplaceName;
   renderHome();renderRecords();renderProfile();
 }
 async function reloadMonth(){
@@ -200,9 +238,9 @@ async function reloadMonth(){
 function bind(){
   $$('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.nav));
   $('#menuBtn').onclick=()=>showView('profile');$('#noticeBtn').onclick=showNotifications;
-  $('#detailBack').onclick=()=>closeSheet('detailSheet');$('#noticeClose').onclick=()=>closeSheet('noticeSheet');$('#requestClose').onclick=()=>closeSheet('requestSheet');
+  $('#detailBack').onclick=()=>closeSheet('detailSheet');$('#noticeClose').onclick=()=>closeSheet('noticeSheet');$('#workplaceClose').onclick=()=>closeSheet('workplaceSheet');$('#requestClose').onclick=()=>closeSheet('requestSheet');
   $('#requestForm').onsubmit=submitRequest;$('#recordsMonth').onchange=reloadMonth;
-  ['detailSheet','noticeSheet','requestSheet'].forEach(id=>$('#'+id).addEventListener('click',e=>{if(e.target.id===id)closeSheet(id)}));
+  ['detailSheet','noticeSheet','workplaceSheet','requestSheet'].forEach(id=>$('#'+id).addEventListener('click',e=>{if(e.target.id===id)closeSheet(id)}));
 }
 async function init(){
   bind();state.recordsMonth=todayKey().slice(0,7);$('#recordsMonth').value=state.recordsMonth;
