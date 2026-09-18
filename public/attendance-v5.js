@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',timer:null
@@ -73,8 +73,20 @@ function isAdmin(){return String(state.me?.user?.role||'').toLowerCase()==='admi
 function adminStatusLabel(v){return({WORKING:'근무 중',DONE:'근무 완료',ABSENT:'미출근',LEAVE:'휴가',STATUTORY:'법정휴가'})[String(v||'')]||'미확인'}
 function adminStatusClass(v){return({WORKING:'working',DONE:'done',ABSENT:'missing',LEAVE:'future',STATUTORY:'future'})[String(v||'')]||'future'}
 function applyRoleNav(){
-  const rec=$('.nav-btn[data-nav="records"] span:last-child');
-  if(rec)rec.textContent=isAdmin()?'직원현황':'근무내역';
+  const nav=$('.bottom-nav');if(!nav)return;
+  if(isAdmin()){
+    nav.classList.add('admin-nav');
+    nav.innerHTML=
+      '<button class="nav-btn active" data-nav="home"><span class="nav-ico">⌂</span><span>홈</span></button>'+
+      '<button class="nav-btn" data-nav="records"><span class="nav-ico">▣</span><span>전체근태</span></button>'+
+      '<button class="nav-btn" data-nav="requests"><span class="nav-ico">▤</span><span>검토함</span></button>'+
+      '<button class="nav-btn" data-nav="leave"><span class="nav-ico">◫</span><span>휴가현황</span></button>'+
+      '<button class="nav-btn" data-nav="profile"><span class="nav-ico">♙</span><span>관리</span></button>';
+    $('.nav-btn',nav).forEach(b=>b.onclick=()=>showView(b.dataset.nav));
+  }else{
+    nav.classList.remove('admin-nav');
+    const rec=$('.nav-btn[data-nav="records"] span:last-child');if(rec)rec.textContent='근무내역';
+  }
 }
 function selectedWorkplace(){
   return state.workplaces.find(w=>String(w.code)===String(state.workplaceCode))||null;
@@ -90,33 +102,40 @@ function showView(name){
   $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));
   if(name==='records')renderRecords();
   if(name==='requests')renderRequests();
+  if(name==='leave')renderLeave();
   if(name==='profile')renderProfile();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderAdminHome(){
   const root=$('#homeRoot');if(!root)return;
-  const ov=state.adminOverview||{},sum=ov.summary||{},rows=Array.isArray(ov.employees)?ov.employees:[];
-  const user=state.me?.user||{},key=todayKey();
-  const employeeRows=rows.length?rows.map(e=>{
-    const s=adminStatusLabel(e.attendanceStatus),cls=adminStatusClass(e.attendanceStatus);
-    const inTime=e.clockIn?fmtTime(e.clockIn):'-',outTime=e.clockOut?fmtTime(e.clockOut):'-';
-    return '<div class="admin-employee-row"><span class="admin-person-icon">👤</span><span class="admin-person-main"><b>'+String(e.name||'-')+'</b><small>'+[e.department,e.title].filter(Boolean).join(' · ')+'</small></span><span class="admin-person-time">'+inTime+'<small>'+outTime+'</small></span><span class="badge '+cls+'">'+s+'</span></div>';
-  }).join(''):'<div class="empty">표시할 직원이 없습니다.</div>';
+  const ov=state.adminOverview||{},s=ov.summary||{},name=state.me?.user?.name||'관리자',reviews=state.adminReviews||[];
+  const recent=(ov.employees||[]).filter(x=>['WORKING','DONE','LEAVE','STATUTORY'].includes(x.attendanceStatus)).slice(0,6);
   root.innerHTML=
-    '<section class="hero admin-hero">'+
-      '<div class="hero-top"><div class="hero-date">'+fmtDate(key)+'</div><div class="hero-place">관리자</div></div>'+
-      '<div class="hero-clock" id="liveClock">'+liveClock()+'</div><div class="hero-sub">전체 직원 근태 현황을 확인하세요.</div>'+
-      '<div class="hero-bottom"><div class="employee-pill">👤 <span>관리자</span><b>'+([user.name,user.title].filter(Boolean).join(' ')||'관리자')+'</b></div><div class="status-pill done">관리자 모드</div></div>'+
+    '<section class="admin-old-hero"><div><div class="admin-old-name">'+name+'님,</div><div class="admin-old-sub">전사 근태 현황을 확인하세요.</div></div><span class="admin-old-chip">ADMIN</span></section>'+
+    '<div class="admin-old-date">'+String(ov.date||todayKey())+' · 관리자 모드</div>'+
+    '<section class="admin-old-kpis">'+
+      '<div class="admin-old-kpi"><small>재직 인원</small><b>'+Number(s.total||0)+'</b><em>대표이사 제외</em></div>'+
+      '<div class="admin-old-kpi"><small>오늘 출근</small><b>'+Number(s.checkedIn||0)+'</b><em>근무중 + 퇴근완료</em></div>'+
+      '<div class="admin-old-kpi"><small>오늘 휴가</small><b>'+Number((s.onLeave||0)+(s.statutory||0))+'</b><em>승인된 휴가 기준</em></div>'+
+      '<div class="admin-old-kpi"><small>검토 대기</small><b>'+reviews.length+'</b><em>처리 필요</em></div>'+
     '</section>'+
-    '<section class="card admin-summary-card"><div class="card-head"><h2>오늘 근태 현황</h2><span class="admin-date-label">'+shortDate(key)+'</span></div><div class="admin-summary-grid">'+
-      '<div><span>전체 직원</span><b>'+Number(sum.total||0)+'</b></div>'+
-      '<div><span>출근</span><b>'+Number(sum.checkedIn||0)+'</b></div>'+
-      '<div><span>근무 중</span><b>'+Number(sum.working||0)+'</b></div>'+
-      '<div><span>미출근</span><b class="'+(Number(sum.absent||0)>0?'warn':'')+'">'+Number(sum.absent||0)+'</b></div>'+
-      '<div><span>휴가</span><b>'+Number(sum.onLeave||0)+'</b></div>'+
-    '</div></section>'+
-    '<section class="card admin-staff-card"><div class="card-head"><h2>전체 직원</h2><button class="link-btn" id="adminViewAllBtn">직원현황 ›</button></div><div class="admin-employee-list">'+employeeRows+'</div></section>';
-  const all=$('#adminViewAllBtn');if(all)all.onclick=()=>showView('records');
+    '<section class="card admin-old-card"><div class="card-head"><div><h2>빠른 관리</h2><p>관리자 전용 메뉴</p></div></div>'+
+      '<div class="admin-old-quick">'+
+        '<button class="primary" data-admin-go="records">전체 출근현황</button>'+
+        '<button data-admin-go="requests">검토함</button>'+
+        '<button data-admin-go="leave">휴가 현황</button>'+
+        '<button data-admin-go="profile">직원 관리</button>'+
+      '</div>'+
+    '</section>'+
+    '<section class="card admin-old-card"><div class="card-head"><div><h2>오늘 근무 현황</h2><p>최근 상태</p></div><span class="badge working">'+Number(s.checkedIn||0)+'명 출근</span></div>'+
+      '<div class="admin-old-list">'+
+      (recent.length?recent.map(u=>{
+        const meta=adminStatusLabel(u.attendanceStatus),cls=adminStatusClass(u.attendanceStatus);
+        return '<div class="admin-old-person"><div class="admin-old-avatar">'+String(u.name||'?').slice(0,1)+'</div><div class="admin-old-person-copy"><b>'+String(u.name||'-')+'</b><small>'+String(u.department||'-')+' · '+String(u.title||'-')+'<br>출근 '+fmtTime(u.clockIn)+' · 퇴근 '+fmtTime(u.clockOut)+'</small></div><span class="admin-old-status '+cls+'">'+meta+'</span></div>';
+      }).join(''):'<div class="empty">오늘 근무 데이터가 없습니다.</div>')+
+      '</div>'+
+    '</section>';
+  $$('[data-admin-go]',root).forEach(b=>b.onclick=()=>showView(b.dataset.adminGo));
 }
 function renderHome(){
   if(isAdmin())return renderAdminHome();
@@ -162,12 +181,19 @@ function renderHome(){
 }
 function renderAdminRecords(){
   const root=$('#recordsRoot');if(!root)return;
-  const ov=state.adminOverview||{},rows=Array.isArray(ov.employees)?ov.employees:[];
-  const list=rows.length?rows.map(e=>{
-    const cls=adminStatusClass(e.attendanceStatus),status=adminStatusLabel(e.attendanceStatus),mins=Number(e.monthMinutes||0);
-    return '<div class="admin-month-row"><span class="admin-person-icon">👤</span><span class="admin-person-main"><b>'+String(e.name||'-')+'</b><small>'+[e.department,e.title].filter(Boolean).join(' · ')+'</small></span><span class="admin-month-stats"><b>'+Number(e.monthDays||0)+'일</b><small>'+durationText(mins)+'</small></span><span class="badge '+cls+'">'+status+'</span></div>';
-  }).join(''):'<div class="empty">표시할 직원이 없습니다.</div>';
-  root.innerHTML='<div class="records-summary admin-record-summary"><div><span>전체 직원</span><b>'+Number(ov.summary?.total||0)+'</b></div><div><span>출근</span><b>'+Number(ov.summary?.checkedIn||0)+'</b></div><div><span>휴가</span><b>'+Number(ov.summary?.onLeave||0)+'</b></div></div><div class="record-list admin-month-list">'+list+'</div>';
+  const ov=state.adminOverview||{},rows=(ov.employees||[]).filter(u=>!state.adminDepartment||u.department===state.adminDepartment),logs=(ov.monthlyLogs||[]).filter(u=>!state.adminDepartment||u.department===state.adminDepartment),month=state.recordsMonth||todayKey().slice(0,7);
+  const depts=ov.departments||[];
+  root.innerHTML=
+    '<div class="admin-old-section-head"><div><h2>전체 출근현황</h2><p>월별 근무집계 · 관리자 전용</p></div></div>'+
+    '<section class="card admin-old-table-card"><div class="admin-old-toolbar"><input id="adminMonthFilter" type="month" value="'+month+'"><select id="adminDeptFilter"><option value="">전체 부서</option>'+depts.map(d=>'<option value="'+d+'" '+(state.adminDepartment===d?'selected':'')+'>'+d+'</option>').join('')+'</select></div>'+
+    '<div class="admin-old-table-wrap"><table class="admin-old-table"><thead><tr><th>조직도</th><th>근무일수</th><th>출근시간</th><th>퇴근시간</th><th>부여</th><th>사용</th><th>잔여</th></tr></thead><tbody>'+
+    (rows.length?rows.map(u=>'<tr><td class="name">'+String(u.name||'-')+' '+String(u.title||'')+'</td><td>'+Number(u.monthDays||0)+'일</td><td>'+fmtTime(u.clockIn)+'</td><td>'+fmtTime(u.clockOut)+'</td><td>'+Number(u.leaveGranted||0)+'일</td><td>'+Number(u.leaveUsed||0)+'일</td><td>'+Number(u.leaveRemaining||0)+'일</td></tr>').join(''):'<tr><td colspan="7">조회 결과가 없습니다.</td></tr>')+
+    '</tbody></table></div></section>'+
+    '<section class="card admin-old-table-card"><div class="card-head"><div><h2>월간 출퇴근 근무 현황</h2><p>'+month+' 실제 출근·퇴근 기록 기준</p></div></div><div class="admin-old-table-wrap"><table class="admin-old-table monthly"><thead><tr><th>일자</th><th>조직도</th><th>출근시간</th><th>퇴근시간</th><th>근무시간</th><th>상태</th></tr></thead><tbody>'+
+    (logs.length?logs.map(r=>'<tr><td>'+String(r.workDate||'')+'</td><td class="name">'+String(r.name||'-')+' '+String(r.title||'')+'</td><td>'+fmtTime(r.clockIn)+'</td><td>'+fmtTime(r.clockOut)+'</td><td>'+durationText(Number(r.workMinutes||0))+'</td><td>'+adminStatusLabel(r.status)+'</td></tr>').join(''):'<tr><td colspan="6">선택한 월의 출퇴근 기록이 없습니다.</td></tr>')+
+    '</tbody></table></div></section>';
+  $('#adminMonthFilter').onchange=async e=>{state.recordsMonth=e.target.value;$('#recordsMonth').value=e.target.value;await loadAdminOverview(e.target.value);renderAdminRecords();renderAdminHome()};
+  $('#adminDeptFilter').onchange=e=>{state.adminDepartment=e.target.value;renderAdminRecords()};
 }
 function renderRecords(){
   if(isAdmin())return renderAdminRecords();
@@ -182,13 +208,36 @@ function renderRecords(){
 }
 function leaveTypeName(v){return({annual:'연차',am_half:'오전 반차',pm_half:'오후 반차',sick:'병가',bereavement:'경조휴가',outside:'외근/출장',overtime:'연장근무'})[String(v||'')]||String(v||'요청')}
 function requestStatus(v){return({PENDING_1:'검토대기',PENDING_2:'검토대기',APPROVED:'승인완료',REJECTED:'반려'})[String(v||'')]||String(v||'')}
+function renderAdminRequests(){
+  const root=$('#requestsRoot');if(!root)return;
+  const rows=state.adminReviews||[];
+  root.innerHTML='<div class="admin-old-section-head"><div><h2>검토함</h2><p>내가 처리해야 할 근태 · 휴가 요청입니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
+    '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge future">검토대기</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+'<br>'+leaveTypeName(r.leave_type)+' · '+Number(r.days||0)+'일 · '+String(r.reason||'사유 없음')+'</div></div>').join(''):'<div class="empty">검토 대기 요청이 없습니다.</div>')+'</div>';
+}
 function renderRequests(){
+  if(isAdmin())return renderAdminRequests();
   const root=$('#requestsRoot');if(!root)return;
   const rows=state.leave?.requests||[],b=state.leave?.balance||{};
   root.innerHTML='<div class="request-card"><div class="quick-grid"><button class="quick-btn" data-open-request="annual"><strong>연차/반차 신청</strong><span>휴가 신청서를 작성합니다.</span></button><button class="quick-btn" data-open-request="outside"><strong>외근/출장 신청</strong><span>근태 요청을 등록합니다.</span></button></div><div class="profile-list" style="margin-top:12px"><div class="profile-row"><span>연차 부여</span><span>'+Number(b.granted||0)+'일</span></div><div class="profile-row"><span>사용</span><span>'+Number(b.used||0)+'일</span></div><div class="profile-row"><span>잔여</span><span>'+Number(b.remaining||0)+'일</span></div></div></div><div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+leaveTypeName(r.leave_type)+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일<br>사유: '+(r.reason||'-')+'</div></div>').join(''):'<div class="empty">등록된 신청 내역이 없습니다.</div>')+'</div>';
   $$('[data-open-request]').forEach(b=>b.onclick=()=>openRequest(b.dataset.openRequest));
 }
+function renderLeave(){
+  const root=$('#leaveRoot');if(!root)return;
+  if(!isAdmin()){root.innerHTML='<div class="empty">관리자 전용 메뉴입니다.</div>';return}
+  const rows=state.adminOverview?.leaves||[];
+  root.innerHTML='<div class="admin-old-section-head"><div><h2>휴가현황</h2><p>관리자 전체 조회</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
+    '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+leaveTypeName(r.leave_type)+'<br>'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일</div></div>').join(''):'<div class="empty">휴가 내역이 없습니다.</div>')+'</div>';
+}
+function renderAdminProfile(){
+  const root=$('#profileRoot');if(!root)return;
+  const rows=state.adminDirectory.length?state.adminDirectory:(state.adminOverview?.employees||[]);
+  root.innerHTML='<div class="admin-old-section-head"><div><h2>관리</h2><p>직원등록현황 · 이메일 · 권한</p></div><span class="admin-old-chip">ADMIN</span></div>'+
+    '<section class="card admin-old-card"><div class="card-head"><div><h2>직원등록현황</h2><p>QMES 등록정보</p></div><span class="badge working">'+rows.length+'명</span></div><div class="admin-old-list">'+
+    (rows.length?rows.map(u=>'<div class="admin-old-person"><div class="admin-old-avatar">'+String(u.name||'?').slice(0,1)+'</div><div class="admin-old-person-copy"><b>'+String(u.name||'-')+'</b><small>'+String(u.department||'-')+' · '+String(u.title||'-')+' · '+(String(u.role||'').toLowerCase()==='admin'?'관리자':'직원')+(u.email?'<br>'+String(u.email):'')+'</small></div><span class="admin-old-status '+(String(u.role||'').toLowerCase()==='admin'?'working':'done')+'">'+(String(u.role||'').toLowerCase()==='admin'?'ADMIN':'재직')+'</span></div>').join(''):'<div class="empty">직원 정보를 불러오지 못했습니다.</div>')+
+    '</div></section>';
+}
 function renderProfile(){
+  if(isAdmin())return renderAdminProfile();
   const root=$('#profileRoot');if(!root)return;const u=state.me?.user||{},b=state.me?.balance||{};
   root.innerHTML='<div class="profile-hero"><div class="name">'+(u.name||'사용자')+'</div><div class="meta">'+(u.department||'-')+' · '+(u.title||'-')+'</div></div><div class="profile-list"><div class="profile-row"><span>이메일</span><span>'+(u.email||'-')+'</span></div><div class="profile-row"><span>권한</span><span>'+(String(u.role||'').toLowerCase()==='admin'?'관리자':'직원')+'</span></div><div class="profile-row"><span>근무지</span><span>'+workplace(state.today)+'</span></div><div class="profile-row"><span>기본 근무시간</span><span>'+state.schedule.startTime+' ~ '+state.schedule.endTime+'</span></div><div class="profile-row"><span>잔여 연차</span><span>'+Number(b.remaining||0)+'일</span></div></div>';
 }
@@ -328,7 +377,16 @@ async function loadCore(){
 }
 async function loadAdminOverview(month=state.recordsMonth||todayKey().slice(0,7)){
   if(!isAdmin()){state.adminOverview=null;return}
-  state.adminOverview=await api('/api/attendance/admin/overview?date='+encodeURIComponent(todayKey())+'&month='+encodeURIComponent(month)).catch(()=>({summary:{},employees:[],monthlyLogs:[]}));
+  state.adminOverview=await api('/api/attendance/admin/overview?date='+encodeURIComponent(todayKey())+'&month='+encodeURIComponent(month)).catch(()=>({summary:{},employees:[],monthlyLogs:[],leaves:[],departments:[]}));
+}
+async function loadAdminAux(){
+  if(!isAdmin())return;
+  const vals=await Promise.all([
+    api('/api/attendance/reviews-v2').catch(()=>[]),
+    api('/api/attendance/directory').catch(()=>[])
+  ]);
+  state.adminReviews=Array.isArray(vals[0])?vals[0]:[];
+  state.adminDirectory=Array.isArray(vals[1])?vals[1]:[];
 }
 async function reloadMonth(){
   state.recordsMonth=$('#recordsMonth').value||todayKey().slice(0,7);
@@ -345,7 +403,7 @@ function bind(){
 }
 async function init(){
   bind();state.recordsMonth=todayKey().slice(0,7);$('#recordsMonth').value=state.recordsMonth;
-  try{await Promise.all([loadCore(),loadLeave(),loadNotifications()]);renderRequests()}catch(e){if(e.status===401){location.replace('/mobile-login.html?mobile=1&next=%2Fattendance.html');return}toast(e.message)}
+  try{await Promise.all([loadCore(),loadLeave(),loadNotifications()]);await loadAdminAux();if(isAdmin()){renderAdminHome();renderAdminRecords();renderAdminRequests();renderLeave();renderAdminProfile();}else renderRequests()}catch(e){if(e.status===401){location.replace('/mobile-login.html?mobile=1&next=%2Fattendance.html');return}toast(e.message)}
   clearInterval(state.timer);state.timer=setInterval(()=>{const c=$('#liveClock');if(c)c.textContent=liveClock()},15000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
