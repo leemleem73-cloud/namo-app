@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',workplaceSaveTimer:null,workplaceSaveSeq:0,timer:null
@@ -440,8 +440,20 @@ async function clockIn(){
 async function clockOut(){
   try{toast('GPS 위치를 확인하는 중입니다.');const g=await getGps();await api('/api/attendance/clock-out-v2',{method:'POST',body:JSON.stringify({gps:g})});toast('퇴근 등록이 완료되었습니다.');await loadCore()}catch(e){toast(e.message)}
 }
-function openRequest(type){
-  $('#requestType').value=type||'annual';const t=todayKey();$('#requestStart').value=t;$('#requestEnd').value=t;$('#requestReason').value='';openSheet('requestSheet');
+function renderReviewerOptions(){
+  const sel=$('#requestReviewer');if(!sel)return;
+  const rows=Array.isArray(state.reviewers)?state.reviewers:[];
+  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>'<option value="'+String(r.id||'')+'">'+[r.name,r.department,r.title].filter(Boolean).join(' · ')+'</option>').join('');
+  const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'검토자 '+rows.length+'명을 선택할 수 있습니다.':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
+}
+async function loadReviewers(){
+  try{state.reviewers=await api('/api/attendance/reviewers');if(!Array.isArray(state.reviewers))state.reviewers=[]}catch(_){state.reviewers=[]}
+  renderReviewerOptions();
+}
+async function openRequest(type){
+  $('#requestType').value=type||'annual';const t=todayKey();$('#requestStart').value=t;$('#requestEnd').value=t;$('#requestReason').value='';
+  if(!state.reviewers.length)await loadReviewers();else renderReviewerOptions();
+  openSheet('requestSheet');
 }
 function requestDays(start,end,type){
   if(['am_half','pm_half'].includes(type))return .5;
@@ -449,9 +461,17 @@ function requestDays(start,end,type){
   const a=new Date(start+'T00:00:00'),b=new Date(end+'T00:00:00');return Math.max(1,Math.floor((b-a)/86400000)+1);
 }
 async function submitRequest(e){
-  e.preventDefault();const type=$('#requestType').value,start=$('#requestStart').value,end=$('#requestEnd').value,reason=$('#requestReason').value.trim();
-  if(!start||!end)return toast('날짜를 선택해주세요.');if(end<start)return toast('종료일을 확인해주세요.');
-  try{await api('/api/attendance/leave-v2',{method:'POST',body:JSON.stringify({leaveType:type,startDate:start,endDate:end,days:requestDays(start,end,type),reason})});closeSheet('requestSheet');toast('신청이 등록되었습니다.');await loadLeave();renderRequests()}catch(err){toast(err.message)}
+  e.preventDefault();
+  const type=$('#requestType').value,start=$('#requestStart').value,end=$('#requestEnd').value,reason=$('#requestReason').value.trim(),reviewerId=$('#requestReviewer')?.value||'';
+  if(!reviewerId)return toast('검토자를 먼저 선택해주세요.');
+  if(!start||!end)return toast('날짜를 선택해주세요.');
+  if(end<start)return toast('종료일을 확인해주세요.');
+  try{
+    const result=await api('/api/attendance/leave-v2',{method:'POST',body:JSON.stringify({leaveType:type,startDate:start,endDate:end,days:requestDays(start,end,type),reason,reviewerId})});
+    closeSheet('requestSheet');
+    toast((result?.reviewer?.name?result.reviewer.name+' 검토자에게 요청했습니다.':'신청이 등록되었습니다.'));
+    await loadLeave();renderRequests();
+  }catch(err){toast(err.message)}
 }
 async function loadNotifications(){
   try{state.notifications=await api('/api/attendance/notifications');const dot=$('#noticeDot');if(dot)dot.style.display=state.notifications.some(n=>!n.read_at)?'block':'none'}catch(_){}
@@ -504,7 +524,7 @@ function bind(){
 }
 async function init(){
   bind();state.recordsMonth=todayKey().slice(0,7);$('#recordsMonth').value=state.recordsMonth;
-  try{await Promise.all([loadCore(),loadLeave(),loadNotifications()]);await loadAdminAux();if(isAdmin()){renderAdminHome();renderAdminRecords();renderAdminRequests();renderLeave();renderAdminProfile();}else renderRequests()}catch(e){if(e.status===401){location.replace('/mobile-login.html?mobile=1&next=%2Fattendance.html');return}toast(e.message)}
+  try{await Promise.all([loadCore(),loadLeave(),loadNotifications(),loadReviewers()]);await loadAdminAux();if(isAdmin()){renderAdminHome();renderAdminRecords();renderAdminRequests();renderLeave();renderAdminProfile();}else renderRequests()}catch(e){if(e.status===401){location.replace('/mobile-login.html?mobile=1&next=%2Fattendance.html');return}toast(e.message)}
   clearInterval(state.timer);state.timer=setInterval(()=>{const c=$('#liveClock');if(c)c.textContent=liveClock()},15000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
