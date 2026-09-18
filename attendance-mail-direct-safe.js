@@ -159,7 +159,18 @@ function install(app){
       const subject=`[나모케미칼] ${request.leaveName||'휴가'} 승인 완료`;
       const to=recipients.map(x=>x.email).join(', ');
       const html=`<div style="font-family:Arial,'Noto Sans KR',sans-serif;color:#1f2937;line-height:1.65"><h2 style="color:#176dd0">나모케미칼 근태 요청 승인완료</h2><p>검토 완료 후 자동 승인된 근태 요청입니다.</p><p style="color:#64748b">발송자: ${sender.name||'-'} &lt;${sender.email}&gt;</p><table style="border-collapse:collapse;width:100%;max-width:640px"><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">신청자</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeName||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">부서</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeDepartment||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">휴가</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.leaveName||request.leaveType||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일정</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.startDate||'-'} ~ ${request.endDate||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일수</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.days??'-'}일</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">상태</td><td style="padding:8px;border-bottom:1px solid #ddd">승인완료</td></tr></table><p style="margin-top:18px;color:#64748b">승인 문서는 PDF로 첨부되었습니다.</p></div>`;
-      const info=await transporter.sendMail({from:sender.name?`"${String(sender.name).replace(/"/g,'')}" <${sender.email}>`:sender.email,to,subject,html,attachments:[{filename:`NAMO_Attendance_Approval_${String(request.id||'approved').replace(/[^A-Za-z0-9_-]/g,'_')}.pdf`,content:buildApprovalPdf(req.body),contentType:'application/pdf'}]});
+      let pdfContent=null;
+      let pdfFilename=String(req.body?.pdfName||'').trim().slice(0,160);
+      const pdfBase64=String(req.body?.pdfBase64||'').trim();
+      if(pdfBase64){
+        try{
+          const candidate=Buffer.from(pdfBase64,'base64');
+          if(candidate.length&&candidate.length<=5*1024*1024&&candidate.slice(0,5).toString('ascii')==='%PDF-')pdfContent=candidate;
+        }catch(_e){}
+      }
+      if(!pdfContent)pdfContent=buildApprovalPdf(req.body);
+      if(!pdfFilename)pdfFilename=`NAMO_Attendance_Approval_${String(request.id||'approved').replace(/[^A-Za-z0-9_-]/g,'_')}.pdf`;
+      const info=await transporter.sendMail({from:sender.name?`"${String(sender.name).replace(/"/g,'')}" <${sender.email}>`:sender.email,to,subject,html,attachments:[{filename:pdfFilename,content:pdfContent,contentType:'application/pdf'}]});
       return ok(res,{sent:recipients.length,messageId:info.messageId||null,sender:{id:sender.id,name:sender.name||'',email:sender.email}});
     }catch(e){
       console.error('[Attendance direct mail]',e);
