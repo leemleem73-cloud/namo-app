@@ -106,8 +106,7 @@ function renderHome(){
       '<button class="clock-action" id="clockInBtn" '+(t.clockIn?'disabled':'')+'><div><div class="ico">⇥</div><strong>출근하기</strong><span>'+(t.clockIn?fmtTime(t.clockIn):state.schedule.startTime)+'</span></div></button>'+
       '<button class="clock-action" id="clockOutBtn" '+(!t.clockIn||t.clockOut?'disabled':'')+'><div><div class="ico">⇤</div><strong>퇴근하기</strong><span>'+(t.clockOut?fmtTime(t.clockOut):'-')+'</span></div></button>'+
     '</section>'+
-    '<section class="gps-strip">'+
-      '<div class="gps-box"><div class="gps-icon">⌖</div><div class="gps-copy"><b>'+(t.clockIn?'GPS 인증 완료':'GPS 인증 대기')+'</b><span>'+(acc?('정확도 약 '+acc+'m'):'출근 시 위치 확인')+'</span></div></div>'+
+    '<section class="gps-strip single">'+
       '<button type="button" class="gps-box workplace-trigger" id="workplaceChangeBtn"><div class="gps-icon">◉</div><div class="gps-copy"><b>근무지 변경</b><span>'+workplace(t)+'</span></div><span class="gps-chev">›</span></button>'+
     '</section>'+
     '<button type="button" class="today-detail-btn" id="todayDetailBtn" style="width:100%;margin-top:12px;border:1px solid #dfe8f1;border-radius:16px;background:#fff;padding:13px 14px;display:grid;grid-template-columns:40px 1fr 22px;align-items:center;gap:10px;text-align:left;color:#18304f;box-shadow:0 5px 16px rgba(37,66,98,.04)"><span class="today-detail-icon" style="width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#eaf4ff;color:#1477e6;font-size:20px">▤</span><span class="today-detail-copy" style="display:block;min-width:0"><b style="display:block;font-size:13px;font-weight:950;line-height:1.25">근무 상세내역</b><small style="display:block;margin-top:4px;font-size:10px;line-height:1.35;color:#738298">오늘의 출근·퇴근 · 근무지 · GPS 기록 확인</small></span><strong style="font-size:22px;color:#176fd7;line-height:1">›</strong></button>'+
