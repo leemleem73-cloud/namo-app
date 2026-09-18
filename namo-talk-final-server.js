@@ -308,7 +308,6 @@ function install(app){
       const me=await requireUser(req,res);if(!me)return;
       const peer=String(req.query.peer||'').trim(),rid=directRoom(me.name,peer);
       const r=await pool.query(`SELECT m.id,m.sender_name sender,m.receiver_name receiver,m.message_text text,m.created_at AS "createdAt",m.read_at AS "readAt",m.edited_at AS "editedAt",m.pinned,m.attachment_id AS "attachmentId",m.client_message_id AS "clientMessageId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id WHERE m.room_id=$1 AND m.deleted_at IS NULL ORDER BY m.created_at ASC,m.id ASC LIMIT 1000`,[rid]);
-      await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[rid,me.name]);
       ok(res,{messages:r.rows,data:r.rows});
     }catch(e){fail(res,500,'메시지를 불러오지 못했습니다.')}
   });
@@ -360,10 +359,21 @@ function install(app){
     try{
       const me=await requireUser(req,res);if(!me)return;const ch=String(req.query.channel||'');if(!(await canAccessChannel(me,ch)))return fail(res,403,'이 업무채널을 볼 수 없습니다.');const rid='channel:'+ch;
       const r=await pool.query(`SELECT m.id,m.sender_name sender,m.message_text text,m.created_at AS "createdAt",m.edited_at AS "editedAt",m.pinned,m.attachment_id AS "attachmentId",m.client_message_id AS "clientMessageId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id WHERE m.room_id=$1 AND m.deleted_at IS NULL ORDER BY m.created_at ASC,m.id ASC LIMIT 1000`,[rid]);
-      const last=r.rows.length?Number(r.rows[r.rows.length-1].id):0;
-      await pool.query(`INSERT INTO namo_talk_standalone_channel_reads(room_id,user_name,last_read_id) VALUES($1,$2,$3) ON CONFLICT(room_id,user_name) DO UPDATE SET last_read_id=EXCLUDED.last_read_id,updated_at=NOW()`,[rid,me.name,last]);
       ok(res,{messages:r.rows});
     }catch(e){fail(res,500,'업무채널 메시지를 불러오지 못했습니다.')}
+  });
+
+  app.post(P+'/channels/:channel/read',async(req,res)=>{
+    try{
+      const me=await requireUser(req,res);if(!me)return;const ch=String(req.params.channel||'').trim();
+      if(!(await canAccessChannel(me,ch)))return fail(res,403,'이 업무채널을 볼 수 없습니다.');
+      const rid='channel:'+ch;
+      const r=await pool.query('SELECT COALESCE(MAX(id),0)::bigint AS "lastId" FROM namo_talk_standalone_messages WHERE room_id=$1 AND deleted_at IS NULL',[rid]);
+      const last=Number(r.rows[0]?.lastId||0);
+      await pool.query(`INSERT INTO namo_talk_standalone_channel_reads(room_id,user_name,last_read_id) VALUES($1,$2,$3)
+        ON CONFLICT(room_id,user_name) DO UPDATE SET last_read_id=GREATEST(namo_talk_standalone_channel_reads.last_read_id,EXCLUDED.last_read_id),updated_at=NOW()`,[rid,me.name,last]);
+      ok(res,{channel:ch,lastReadId:last});
+    }catch(e){fail(res,500,'업무채널 읽음 처리에 실패했습니다.')}
   });
 
   app.post(P+'/channel-messages',async(req,res)=>{
