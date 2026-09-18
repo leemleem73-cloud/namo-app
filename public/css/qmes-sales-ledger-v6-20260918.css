@@ -1,0 +1,354 @@
+/* NAMO QMES - Sales/Due V6 presentation
+ * 2026-09-18
+ * ADD-ONLY. Sales/Due page only.
+ * Match Purchase Order ledger readability and remove outer card look.
+ */
+.qmes-sales-ledger-v6{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  color:#31485b!important;
+  background:transparent!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:10px!important;
+}
+.qmes-sales-ledger-v6 *{box-sizing:border-box!important;}
+
+.qmes-sales-ledger-v6 .qslv4-head{
+  min-height:54px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  margin:0!important;
+  padding:0 0 12px!important;
+  border:0!important;
+  border-bottom:1px solid #d9e3ea!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v6 .qslv4-title{
+  margin:0!important;
+  color:#13283e!important;
+  font-size:18px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  letter-spacing:-.35px!important;
+}
+.qmes-sales-ledger-v6 .qslv4-head-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  flex-wrap:wrap!important;
+}
+.qmes-sales-ledger-v6 .qslv4-head-actions button,
+.qmes-sales-ledger-v6 .qslv4-new-btn{
+  height:34px!important;
+  min-width:auto!important;
+  margin:0!important;
+  padding:0 12px!important;
+  border:1px solid #b9c9d5!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#365269!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v6 .qslv4-new-btn{
+  border-color:#2187c7!important;
+  background:#2187c7!important;
+  color:#fff!important;
+}
+.qmes-sales-ledger-v6 .qslv4-sync{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:30px!important;
+  padding:0 9px!important;
+  border:1px solid #bcefd1!important;
+  border-radius:15px!important;
+  background:#ecfdf3!important;
+  color:#18864b!important;
+  font-size:10px!important;
+  font-weight:850!important;
+}
+
+.qmes-sales-ledger-v6 .qrl-filter{
+  margin:0!important;
+  padding:12px 0 14px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v6 .qrl-grid{
+  display:grid!important;
+  grid-template-columns:350px 155px 250px 145px 145px minmax(270px,1fr) 78px 78px!important;
+  gap:0 10px!important;
+  align-items:end!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.qmes-sales-ledger-v6 .qrl-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.qmes-sales-ledger-v6 .qrl-field>span:first-child{
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  color:#68758a!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:12px!important;
+}
+.qmes-sales-ledger-v6 .qrl-date{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr)!important;
+  gap:4px!important;
+  align-items:center!important;
+  width:100%!important;
+}
+.qmes-sales-ledger-v6 .qrl-date>b{
+  text-align:center!important;
+  color:#7c8c9a!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.qmes-sales-ledger-v6 input,
+.qmes-sales-ledger-v6 select{
+  width:100%!important;
+  min-width:0!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+  padding:0 11px!important;
+  border:1px solid #b9c9d5!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#26394b!important;
+  font-family:inherit!important;
+  font-size:12px!important;
+  font-weight:650!important;
+  line-height:40px!important;
+  outline:none!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v6 input::placeholder{
+  color:#7c8b99!important;
+  opacity:1!important;
+  font-size:12px!important;
+  font-weight:600!important;
+}
+.qmes-sales-ledger-v6 .qrl-grid>button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:78px!important;
+  min-width:78px!important;
+  max-width:78px!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:42px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid #b9c9d5!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,#fff 0%,#e8eef3 100%)!important;
+  color:#25384a!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  line-height:1!important;
+}
+.qmes-sales-ledger-v6 .qrl-grid>button.primary{
+  border-color:#1786c7!important;
+  background:#1786c7!important;
+  color:#fff!important;
+}
+
+.qmes-sales-ledger-v6 .qrl-list{
+  width:100%!important;
+  overflow:hidden!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid #d3dfe7!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v6 .qrl-wrap{
+  width:100%!important;
+  overflow:auto!important;
+  border:0!important;
+  background:#fff!important;
+}
+.qmes-sales-ledger-v6 table{
+  width:100%!important;
+  min-width:1450px!important;
+  margin:0!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  table-layout:fixed!important;
+  background:#fff!important;
+  color:#405569!important;
+  font-size:10px!important;
+}
+.qmes-sales-ledger-v6 thead th{
+  height:46px!important;
+  padding:8px 7px!important;
+  background:linear-gradient(180deg,#7fb4d6 0%,#619bc2 100%)!important;
+  color:#fff!important;
+  border:0!important;
+  border-right:1px solid rgba(255,255,255,.32)!important;
+  border-bottom:1px solid #4f8ab2!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+.qmes-sales-ledger-v6 tbody td{
+  height:46px!important;
+  padding:8px 7px!important;
+  background:#fff!important;
+  color:#405569!important;
+  border:0!important;
+  border-bottom:1px solid #dce5eb!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  line-height:1.25!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.qmes-sales-ledger-v6 tbody tr:nth-child(even) td{background:#f7fafc!important;}
+.qmes-sales-ledger-v6 tbody tr:hover td{background:#eaf4fb!important;}
+.qmes-sales-ledger-v6 td.left{text-align:left!important;}
+.qmes-sales-ledger-v6 td.qty-center{
+  text-align:center!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.qmes-sales-ledger-v6 .qslv6-no{
+  text-align:center!important;
+  font-weight:700!important;
+}
+
+/* 12 visible columns including No */
+.qmes-sales-ledger-v6 th:nth-child(1),.qmes-sales-ledger-v6 td:nth-child(1){width:54px!important;}
+.qmes-sales-ledger-v6 th:nth-child(2),.qmes-sales-ledger-v6 td:nth-child(2){width:100px!important;}
+.qmes-sales-ledger-v6 th:nth-child(3),.qmes-sales-ledger-v6 td:nth-child(3){width:125px!important;}
+.qmes-sales-ledger-v6 th:nth-child(4),.qmes-sales-ledger-v6 td:nth-child(4){width:145px!important;}
+.qmes-sales-ledger-v6 th:nth-child(5),.qmes-sales-ledger-v6 td:nth-child(5){width:185px!important;}
+.qmes-sales-ledger-v6 th:nth-child(6),.qmes-sales-ledger-v6 td:nth-child(6){width:90px!important;}
+.qmes-sales-ledger-v6 th:nth-child(7),.qmes-sales-ledger-v6 td:nth-child(7){width:60px!important;}
+.qmes-sales-ledger-v6 th:nth-child(8),.qmes-sales-ledger-v6 td:nth-child(8){width:100px!important;}
+.qmes-sales-ledger-v6 th:nth-child(9),.qmes-sales-ledger-v6 td:nth-child(9){width:105px!important;}
+.qmes-sales-ledger-v6 th:nth-child(10),.qmes-sales-ledger-v6 td:nth-child(10){width:105px!important;}
+.qmes-sales-ledger-v6 th:nth-child(11),.qmes-sales-ledger-v6 td:nth-child(11){width:105px!important;}
+.qmes-sales-ledger-v6 th:nth-child(12),.qmes-sales-ledger-v6 td:nth-child(12){width:100px!important;}
+
+.qmes-sales-ledger-v6 .qrl-link{
+  color:#126ca8!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  line-height:1.25!important;
+}
+.qmes-sales-ledger-v6 .qrl-badge{
+  min-width:50px!important;
+  height:24px!important;
+  padding:0 8px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:6px!important;
+  font-size:9px!important;
+  font-weight:850!important;
+}
+.qmes-sales-ledger-v6 .qrl-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+}
+.qmes-sales-ledger-v6 .qrl-actions button{
+  height:28px!important;
+  min-width:38px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid #b9cbd8!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#365269!important;
+  font-size:9px!important;
+  font-weight:850!important;
+}
+.qmes-sales-ledger-v6 .qrl-actions button:first-child{
+  border-color:#1786c7!important;
+  background:#1786c7!important;
+  color:#fff!important;
+}
+.qmes-sales-ledger-v6 .qrl-empty{
+  height:160px!important;
+  color:#8797a6!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  text-align:center!important;
+}
+.qmes-sales-ledger-v6 .qrl-foot{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  min-height:54px!important;
+  margin:0!important;
+  padding:8px 12px!important;
+  border:0!important;
+  border-top:1px solid #dce5eb!important;
+  background:#fff!important;
+}
+.qmes-sales-ledger-v6 .qrl-page{
+  width:auto!important;
+  min-width:34px!important;
+  height:34px!important;
+  margin:0!important;
+  padding:0 9px!important;
+  border:1px solid #b8c7d4!important;
+  border-radius:4px!important;
+  background:#fff!important;
+  color:#334b60!important;
+  font-size:11px!important;
+  font-weight:850!important;
+}
+.qmes-sales-ledger-v6 .qrl-page.active{
+  border-color:#0d659e!important;
+  background:#0d659e!important;
+  color:#fff!important;
+}
+
+@media(max-width:1650px){
+  .qmes-sales-ledger-v6 .qrl-grid{
+    grid-template-columns:300px 145px 220px 135px 135px minmax(240px,1fr) 76px 76px!important;
+  }
+}
+@media(max-width:1350px){
+  .qmes-sales-ledger-v6 .qrl-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .qmes-sales-ledger-v6 .qrl-grid>button{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+}
