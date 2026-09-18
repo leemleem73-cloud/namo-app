@@ -9,6 +9,7 @@ const express = require('express');
 require('./attendance-core-safe.js');
 require('./attendance-correction-safe.js');
 require('./attendance-leave-cancel-safe.js');
+require('./attendance-review-safe.js');
 require('./attendance-admin-overview-safe.js');
 require('./attendance-qmes-redesign-preload.js');
 require('./mobile-hard-entry-preload.js');
