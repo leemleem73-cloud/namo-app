@@ -325,15 +325,30 @@ async function openLeaveDetail(id){
         '<div><span>승인일시</span><b>'+fmtDateTime(detail.reviewed_at)+'</b></div>'+
       '</div></div>'+
       (detail.status==='APPROVED'?'<div class="leave-approved-box">✓ 해당 신청이 최종 승인 완료되었습니다.</div>':'')+
-      (detail.hasDistributionPdf?'<button type="button" class="secondary-btn pdf-view-btn" id="viewDistributionPdfBtn">승인 PDF 내용 보기</button>':'')+
-      (detail.canDistribute?'<button type="button" class="primary-btn distribute-open-btn" id="openDistributionBtn">사내 직원에게 배포하기</button>':'')+
+      (detail.hasDistributionPdf?'<button type="button" class="secondary-btn pdf-view-btn" id="viewDistributionPdfBtn">인쇄하기</button>':'')+
+      (detail.canDistribute?'<button type="button" class="primary-btn distribute-open-btn" id="openDistributionBtn">사내 직원에게 메일 보내기</button>':'')+
       '<button type="button" class="secondary-btn leave-list-btn" id="leaveListBtn">목록으로</button>'+
     '</div>';
-    const p=$('#viewDistributionPdfBtn');if(p)p.onclick=()=>window.open('/api/attendance/leave/'+encodeURIComponent(detail.id)+'/distribution-pdf-v2','_blank');
+    const p=$('#viewDistributionPdfBtn');if(p)p.onclick=()=>printApprovalPdf(detail.id);
     const d=$('#openDistributionBtn');if(d)d.onclick=()=>openDistribution();
     const l=$('#leaveListBtn');if(l)l.onclick=()=>closeSheet('leaveDetailSheet');
     openSheet('leaveDetailSheet');
   }catch(e){toast(e.message)}
+}
+function printApprovalPdf(id){
+  const url='/api/attendance/leave/'+encodeURIComponent(id)+'/distribution-pdf-v2';
+  const win=window.open(url,'_blank');
+  if(!win)return toast('팝업 차단을 해제해주세요.');
+  try{win.addEventListener('load',()=>setTimeout(()=>{try{win.print()}catch(_e){}},700),{once:true})}catch(_e){}
+}
+async function ensureMailLinked(){
+  const status=await api('/api/attendance/mail-link/status');
+  if(status?.linked)return status;
+  const sender=status?.sender||{};
+  const password=prompt((sender.email?sender.email+'\n':'')+'직원에게 직접 메일을 보내려면 최초 1회 이카운트 웹메일 비밀번호를 입력해주세요.');
+  if(password===null)throw new Error('메일 발송을 취소했습니다.');
+  if(!String(password).trim())throw new Error('메일 비밀번호를 입력해주세요.');
+  return api('/api/attendance/mail-link',{method:'POST',body:JSON.stringify({password:String(password)})});
 }
 async function openDistribution(){
   if(!state.leaveDetail?.id)return;
@@ -357,7 +372,7 @@ function renderDistributionList(){
   rows.forEach(u=>{const d=String(u.department||'미지정');(groups[d]||(groups[d]=[])).push(u)});
   root.innerHTML=Object.keys(groups).length?Object.entries(groups).map(([dept,users])=>
     '<section class="distribution-group"><div class="distribution-group-title">'+dept+' ('+users.length+'명)</div>'+
-    users.map(u=>'<label class="distribution-person"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small><small class="distribution-email">'+(u.email?String(u.email):'메일 미등록')+'</small></span></label>').join('')+
+    users.map(u=>'<label class="distribution-person '+(u.email?'':'email-missing')+'"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(u.email?'':'disabled ') +(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small><small class="distribution-email">'+(u.email?String(u.email):'메일 미등록 · 발송 불가')+'</small></span></label>').join('')+
     '</section>'
   ).join(''):'<div class="empty">검색 결과가 없습니다.</div>';
   $$('[data-distribution-user]',root).forEach(ch=>ch.onchange=()=>{
@@ -369,9 +384,10 @@ function renderDistributionList(){
 }
 function updateDistributionCount(){
   const c=state.distributionSelected.size;
+  const mailUsers=(state.distributionDirectory||[]).filter(u=>u.email);
   const el=$('#distributionCount');if(el)el.textContent=c+'명 선택';
-  const all=$('#distributionAll');if(all)all.checked=Boolean(state.distributionDirectory.length)&&c===state.distributionDirectory.length;
-  const btn=$('#distributionSendBtn');if(btn)btn.textContent=c?'선택한 직원에게 배포 ('+c+'명)':'선택한 직원에게 배포';
+  const all=$('#distributionAll');if(all)all.checked=Boolean(mailUsers.length)&&c===mailUsers.length;
+  const btn=$('#distributionSendBtn');if(btn)btn.textContent=c?'선택한 직원에게 메일 발송 ('+c+'명)':'선택한 직원에게 메일 발송';
 }
 function canvasApprovalPdf(detail){
   return new Promise((resolve,reject)=>{
@@ -441,15 +457,30 @@ function canvasApprovalPdf(detail){
 }
 async function sendInternalDistribution(){
   const ids=[...state.distributionSelected];
-  if(!ids.length)return toast('배포할 직원을 선택해주세요.');
+  if(!ids.length)return toast('메일을 보낼 직원을 선택해주세요.');
   try{
+    const recipients=(state.distributionDirectory||[]).filter(u=>ids.includes(String(u.id||''))&&u.email);
+    if(!recipients.length)return toast('선택한 직원의 이메일이 등록되어 있지 않습니다.');
+    await ensureMailLinked();
     const pdfBase64=await canvasApprovalPdf(state.leaveDetail);
     const employee=String(state.leaveDetail?.employee_name||'직원').replace(/[\\/:*?"<>|]/g,'_');
     const start=String(state.leaveDetail?.start_date||'').slice(0,10);
     const pdfName='나모케미칼_연차승인_'+employee+'_'+start+'.pdf';
-    const result=await api('/api/attendance/leave/'+encodeURIComponent(state.leaveDetail.id)+'/distribute-v2',{method:'POST',body:JSON.stringify({recipientIds:ids,pdfBase64,pdfName})});
+    await api('/api/attendance/leave/'+encodeURIComponent(state.leaveDetail.id)+'/distribute-v2',{method:'POST',body:JSON.stringify({recipientIds:recipients.map(u=>u.id),pdfBase64,pdfName})});
+    const request={
+      id:state.leaveDetail.id,
+      leaveType:state.leaveDetail.leave_type,
+      leaveName:leaveTypeName(state.leaveDetail.leave_type),
+      employeeName:state.leaveDetail.employee_name||'',
+      employeeDepartment:state.leaveDetail.employee_department||'',
+      startDate:String(state.leaveDetail.start_date||'').slice(0,10),
+      endDate:String(state.leaveDetail.end_date||'').slice(0,10),
+      days:Number(state.leaveDetail.days||0),
+      reviewerName:state.leaveDetail.reviewed_by_name||state.leaveDetail.reviewer_name||''
+    };
+    const mail=await api('/api/attendance/direct-mail',{method:'POST',body:JSON.stringify({recipients:recipients.map(u=>({id:u.id})),request})});
     closeSheet('distributionSheet');
-    toast('승인 PDF 사내 배포 완료 · '+Number(result?.count||ids.length)+'명');
+    toast('직원 메일 발송 완료 · '+Number(mail?.sent||recipients.length)+'명');
     await openLeaveDetail(state.leaveDetail.id);
   }catch(e){toast(e.message)}
 }
@@ -725,7 +756,7 @@ function bind(){
   $('#leaveDetailBack').onclick=()=>closeSheet('leaveDetailSheet');$('#distributionClose').onclick=()=>closeSheet('distributionSheet');
   $('#distributionSearch').oninput=renderDistributionList;
   $('#distributionAll').onchange=e=>{
-    state.distributionSelected=e.target.checked?new Set((state.distributionDirectory||[]).map(u=>String(u.id||''))):new Set();
+    state.distributionSelected=e.target.checked?new Set((state.distributionDirectory||[]).filter(u=>u.email).map(u=>String(u.id||''))):new Set();
     renderDistributionList();
   };
   $('#distributionSendBtn').onclick=sendInternalDistribution;
