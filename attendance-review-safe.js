@@ -138,7 +138,7 @@ function install(app){
       const row=q.rows[0],uid=String(req.session.user.id||'');
       const canView=isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
       if(!canView)return fail(res,403,'신청 상세 조회 권한이 없습니다.');
-      const canDistribute=row.status==='APPROVED'&&(isAdmin(req)||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||''));
+      const canDistribute=row.status==='APPROVED'&&(isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||''));
       return ok(res,{...row,canDistribute});
     }catch(e){console.error('[Attendance leave detail]',e);return fail(res,500,'신청 상세를 불러오지 못했습니다.');}
   });
@@ -155,7 +155,7 @@ function install(app){
       if(!cur.rowCount)return fail(res,404,'승인 완료 신청을 찾을 수 없습니다.');
       const row=cur.rows[0],uid=String(req.session.user.id||'');
       if(row.status!=='APPROVED')return fail(res,409,'최종 승인 완료 후 배포할 수 있습니다.');
-      const allowed=isAdmin(req)||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
+      const allowed=isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
       if(!allowed)return fail(res,403,'사내 배포 권한이 없습니다.');
       const users=await pool.query(`
         SELECT id,name,department,title,status
