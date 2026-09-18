@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],leaveDetail:null,distributionDirectory:[],distributionSelected:new Set(),
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',workplaceSaveTimer:null,workplaceSaveSeq:0,timer:null
@@ -295,8 +295,90 @@ function renderRequests(){
   if(isAdmin())return renderAdminRequests();
   const root=$('#requestsRoot');if(!root)return;
   const rows=state.leave?.requests||[],b=state.leave?.balance||{};
-  root.innerHTML='<div class="request-card"><div class="quick-grid"><button class="quick-btn" data-open-request="annual"><strong>연차/반차 신청</strong><span>휴가 신청서를 작성합니다.</span></button><button class="quick-btn" data-open-request="outside"><strong>외근/출장 신청</strong><span>근태 요청을 등록합니다.</span></button></div><div class="profile-list" style="margin-top:12px"><div class="profile-row"><span>연차 부여</span><span>'+Number(b.granted||0)+'일</span></div><div class="profile-row"><span>사용</span><span>'+Number(b.used||0)+'일</span></div><div class="profile-row"><span>잔여</span><span>'+Number(b.remaining||0)+'일</span></div></div></div><div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+leaveTypeName(r.leave_type)+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일<br>사유: '+(r.reason||'-')+'</div></div>').join(''):'<div class="empty">등록된 신청 내역이 없습니다.</div>')+'</div>';
-  $$('[data-open-request]').forEach(b=>b.onclick=()=>openRequest(b.dataset.openRequest));
+  root.innerHTML='<div class="request-card"><div class="quick-grid"><button class="quick-btn" data-open-request="annual"><strong>연차/반차 신청</strong><span>휴가 신청서를 작성합니다.</span></button><button class="quick-btn" data-open-request="outside"><strong>외근/출장 신청</strong><span>근태 요청을 등록합니다.</span></button></div><div class="profile-list" style="margin-top:12px"><div class="profile-row"><span>연차 부여</span><span>'+Number(b.granted||0)+'일</span></div><div class="profile-row"><span>사용</span><span>'+Number(b.used||0)+'일</span></div><div class="profile-row"><span>잔여</span><span>'+Number(b.remaining||0)+'일</span></div></div></div><div class="request-list">'+(rows.length?rows.map(r=>'<button type="button" class="request-item request-item-btn" data-leave-detail="'+String(r.id||'')+'"><div class="request-top"><div class="request-title">'+leaveTypeName(r.leave_type)+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일<br>사유: '+(r.reason||'-')+'</div></button>').join(''):'<div class="empty">등록된 신청 내역이 없습니다.</div>')+'</div>';
+  $('[data-open-request]').forEach(b=>b.onclick=()=>openRequest(b.dataset.openRequest));
+  $('[data-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.leaveDetail));
+}
+function fmtDateTime(v){
+  if(!v)return'-';
+  const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);
+  return d.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\. /g,'-').replace('. ',' ');
+}
+async function openLeaveDetail(id){
+  try{
+    const detail=await api('/api/attendance/leave/'+encodeURIComponent(id)+'/detail-v2');
+    state.leaveDetail=detail;
+    const root=$('#leaveDetailRoot');if(!root)return;
+    const start=String(detail.start_date||'').slice(0,10),end=String(detail.end_date||'').slice(0,10);
+    root.innerHTML='<div class="leave-detail-wrap">'+
+      '<div class="leave-detail-card"><div class="leave-detail-head"><div><strong>'+leaveTypeName(detail.leave_type)+'</strong><span>신청 상세</span></div><span class="badge '+(detail.status==='APPROVED'?'done':detail.status==='REJECTED'?'missing':'future')+'">'+requestStatus(detail.status)+'</span></div>'+
+      '<div class="leave-detail-grid">'+
+        '<div><span>신청자</span><b>'+String(detail.employee_name||'-')+' '+String(detail.employee_title||'')+'</b></div>'+
+        '<div><span>부서</span><b>'+String(detail.employee_department||'-')+'</b></div>'+
+        '<div><span>휴가 유형</span><b>'+leaveTypeName(detail.leave_type)+'</b></div>'+
+        '<div><span>휴가 기간</span><b>'+start+(end&&end!==start?' ~ '+end:'')+' ('+Number(detail.days||0)+'일)</b></div>'+
+        '<div class="wide"><span>사유</span><b>'+String(detail.reason||'-')+'</b></div>'+
+        '<div><span>검토자</span><b>'+String(detail.reviewer_name||'-')+' '+String(detail.reviewer_title||'')+'</b></div>'+
+        '<div><span>최종 처리자</span><b>'+String(detail.reviewed_by_name||detail.reviewer_name||'-')+' '+String(detail.reviewed_by_title||detail.reviewer_title||'')+'</b></div>'+
+        '<div><span>신청일시</span><b>'+fmtDateTime(detail.created_at)+'</b></div>'+
+        '<div><span>승인일시</span><b>'+fmtDateTime(detail.reviewed_at)+'</b></div>'+
+      '</div></div>'+
+      (detail.status==='APPROVED'?'<div class="leave-approved-box">✓ 해당 신청이 최종 승인 완료되었습니다.</div>':'')+
+      (detail.canDistribute?'<button type="button" class="primary-btn distribute-open-btn" id="openDistributionBtn">사내 직원에게 배포하기</button>':'')+
+      '<button type="button" class="secondary-btn leave-list-btn" id="leaveListBtn">목록으로</button>'+
+    '</div>';
+    const d=$('#openDistributionBtn');if(d)d.onclick=()=>openDistribution();
+    const l=$('#leaveListBtn');if(l)l.onclick=()=>closeSheet('leaveDetailSheet');
+    openSheet('leaveDetailSheet');
+  }catch(e){toast(e.message)}
+}
+async function openDistribution(){
+  if(!state.leaveDetail?.id)return;
+  try{
+    state.distributionDirectory=await api('/api/attendance/directory');
+    if(!Array.isArray(state.distributionDirectory))state.distributionDirectory=[];
+    state.distributionSelected=new Set();
+    $('#distributionSearch').value='';
+    renderDistributionList();
+    openSheet('distributionSheet');
+  }catch(e){toast(e.message)}
+}
+function renderDistributionList(){
+  const root=$('#distributionRoot');if(!root)return;
+  const q=String($('#distributionSearch')?.value||'').trim().toLowerCase();
+  const rows=(state.distributionDirectory||[]).filter(u=>{
+    if(!q)return true;
+    return [u.name,u.department,u.title].some(v=>String(v||'').toLowerCase().includes(q));
+  });
+  const groups={};
+  rows.forEach(u=>{const d=String(u.department||'미지정');(groups[d]||(groups[d]=[])).push(u)});
+  root.innerHTML=Object.keys(groups).length?Object.entries(groups).map(([dept,users])=>
+    '<section class="distribution-group"><div class="distribution-group-title">'+dept+' ('+users.length+'명)</div>'+
+    users.map(u=>'<label class="distribution-person"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small></span></label>').join('')+
+    '</section>'
+  ).join(''):'<div class="empty">검색 결과가 없습니다.</div>';
+  $('[data-distribution-user]',root).forEach(ch=>ch.onchange=()=>{
+    const id=String(ch.dataset.distributionUser||'');
+    if(ch.checked)state.distributionSelected.add(id);else state.distributionSelected.delete(id);
+    updateDistributionCount();
+  });
+  updateDistributionCount();
+}
+function updateDistributionCount(){
+  const c=state.distributionSelected.size;
+  const el=$('#distributionCount');if(el)el.textContent=c+'명 선택';
+  const all=$('#distributionAll');if(all)all.checked=Boolean(state.distributionDirectory.length)&&c===state.distributionDirectory.length;
+  const btn=$('#distributionSendBtn');if(btn)btn.textContent=c?'선택한 직원에게 배포 ('+c+'명)':'선택한 직원에게 배포';
+}
+async function sendInternalDistribution(){
+  const ids=[...state.distributionSelected];
+  if(!ids.length)return toast('배포할 직원을 선택해주세요.');
+  try{
+    const result=await api('/api/attendance/leave/'+encodeURIComponent(state.leaveDetail.id)+'/distribute-v2',{method:'POST',body:JSON.stringify({recipientIds:ids})});
+    closeSheet('distributionSheet');
+    toast('사내 배포 완료 · '+Number(result?.count||ids.length)+'명');
+    await openLeaveDetail(state.leaveDetail.id);
+  }catch(e){toast(e.message)}
 }
 function renderLeave(){
   const root=$('#leaveRoot');if(!root)return;
@@ -559,8 +641,15 @@ function bind(){
   $$('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.nav));
   $('#menuBtn').onclick=()=>showView('profile');$('#noticeBtn').onclick=showNotifications;
   $('#detailBack').onclick=()=>closeSheet('detailSheet');$('#noticeClose').onclick=()=>closeSheet('noticeSheet');$('#workplaceClose').onclick=()=>closeSheet('workplaceSheet');$('#requestClose').onclick=()=>closeSheet('requestSheet');
+  $('#leaveDetailBack').onclick=()=>closeSheet('leaveDetailSheet');$('#distributionClose').onclick=()=>closeSheet('distributionSheet');
+  $('#distributionSearch').oninput=renderDistributionList;
+  $('#distributionAll').onchange=e=>{
+    state.distributionSelected=e.target.checked?new Set((state.distributionDirectory||[]).map(u=>String(u.id||''))):new Set();
+    renderDistributionList();
+  };
+  $('#distributionSendBtn').onclick=sendInternalDistribution;
   $('#requestForm').onsubmit=submitRequest;$('#recordsMonth').onchange=reloadMonth;
-  ['detailSheet','noticeSheet','workplaceSheet','requestSheet'].forEach(id=>$('#'+id).addEventListener('click',e=>{if(e.target.id===id)closeSheet(id)}));
+  ['detailSheet','noticeSheet','workplaceSheet','requestSheet','leaveDetailSheet','distributionSheet'].forEach(id=>$('#'+id).addEventListener('click',e=>{if(e.target.id===id)closeSheet(id)}));
 }
 async function init(){
   bind();state.recordsMonth=todayKey().slice(0,7);$('#recordsMonth').value=state.recordsMonth;
