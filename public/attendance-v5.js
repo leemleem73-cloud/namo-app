@@ -94,7 +94,7 @@ function renderHome(){
     const r=state.logs.find(x=>logKey(x)===k),s=statusFor(k,r),mins=durationMinutes(r,k);
     if(r?.clockIn){workDays++;total+=mins;if(s.cls==='late')late++}
     if(s.cls==='missing'&&r?.clockIn)missing++;
-    return '<button class="week-day '+(k===key?'today':'')+'" data-detail="'+k+'" type="button"><div class="dow">'+names[i]+'</div><div class="date">'+shortDate(k)+'</div><div class="in">'+(r?.clockIn?fmtTime(r.clockIn):'-')+'</div><div class="out">'+(r?.clockOut?fmtTime(r.clockOut):'-')+'</div><span class="badge '+s.cls+'">'+s.label+'</span></button>';
+    return '<div class="week-day '+(k===key?'today':'')+'"><div class="dow">'+names[i]+'</div><div class="date">'+shortDate(k)+'</div><div class="in">'+(r?.clockIn?fmtTime(r.clockIn):'-')+'</div><div class="out">'+(r?.clockOut?fmtTime(r.clockOut):'-')+'</div><span class="badge '+s.cls+'">'+s.label+'</span></div>';
   }).join('');
   root.innerHTML=
     '<section class="hero">'+
@@ -118,7 +118,6 @@ function renderHome(){
       '<div class="summary-item '+(missing?'alert':'')+'"><div class="icon">!</div><div class="label">퇴근누락</div><div class="value">'+missing+'회</div></div>'+
     '</div></section>';
   $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;
-  $$('[data-detail]').forEach(b=>b.onclick=()=>openDetail(b.dataset.detail));
 }
 function renderRecords(){
   const root=$('#recordsRoot');if(!root)return;
