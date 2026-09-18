@@ -1,0 +1,18 @@
+/* Sales/Due No column patch - 2026-09-18 */
+.qmes-sales-ledger-v4 .qrl-no{
+  text-align:center!important;
+  font-weight:800!important;
+  color:#40586b!important;
+}
+.qmes-sales-ledger-v4 th:nth-child(1),.qmes-sales-ledger-v4 td:nth-child(1){width:4.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(2),.qmes-sales-ledger-v4 td:nth-child(2){width:8.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(3),.qmes-sales-ledger-v4 td:nth-child(3){width:11.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(4),.qmes-sales-ledger-v4 td:nth-child(4){width:13%!important;}
+.qmes-sales-ledger-v4 th:nth-child(5),.qmes-sales-ledger-v4 td:nth-child(5){width:17%!important;}
+.qmes-sales-ledger-v4 th:nth-child(6),.qmes-sales-ledger-v4 td:nth-child(6){width:7%!important;}
+.qmes-sales-ledger-v4 th:nth-child(7),.qmes-sales-ledger-v4 td:nth-child(7){width:5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(8),.qmes-sales-ledger-v4 td:nth-child(8){width:8%!important;}
+.qmes-sales-ledger-v4 th:nth-child(9),.qmes-sales-ledger-v4 td:nth-child(9){width:7.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(10),.qmes-sales-ledger-v4 td:nth-child(10){width:7.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(11),.qmes-sales-ledger-v4 td:nth-child(11){width:7.5%!important;}
+.qmes-sales-ledger-v4 th:nth-child(12),.qmes-sales-ledger-v4 td:nth-child(12){width:8%!important;}
