@@ -11,7 +11,7 @@
   <title>나모케미칼 출퇴근</title>
   <link rel="manifest" href="/attendance-manifest.webmanifest">
   <link rel="icon" href="/attendance-icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/attendance-v5.css?v=20260918-v5-25">
+  <link rel="stylesheet" href="/attendance-v5.css?v=20260918-v5-26">
 </head>
 <body>
   <div class="app">
@@ -129,6 +129,12 @@
             <option value="overtime">연장근무</option>
           </select>
         </label>
+        <label>검토자
+          <select id="requestReviewer" required>
+            <option value="">검토자를 선택해 주세요.</option>
+          </select>
+          <span class="request-help" id="requestReviewerHelp">연차/근태 신청 전 검토자를 선택합니다.</span>
+        </label>
         <div class="form-grid">
           <label>시작일<input type="date" id="requestStart" required></label>
           <label>종료일<input type="date" id="requestEnd" required></label>
@@ -140,6 +146,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="/attendance-v5.js?v=20260918-v5-25"></script>
+  <script src="/attendance-v5.js?v=20260918-v5-26"></script>
 </body>
 </html>
