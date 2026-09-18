@@ -110,6 +110,7 @@ function renderHome(){
       '<div class="gps-box"><div class="gps-icon">⌖</div><div class="gps-copy"><b>'+(t.clockIn?'GPS 인증 완료':'GPS 인증 대기')+'</b><span>'+(acc?('정확도 약 '+acc+'m'):'출근 시 위치 확인')+'</span></div></div>'+
       '<button type="button" class="gps-box workplace-trigger" id="workplaceChangeBtn"><div class="gps-icon">◉</div><div class="gps-copy"><b>근무지 변경</b><span>'+workplace(t)+'</span></div><span class="gps-chev">›</span></button>'+
     '</section>'+
+    '<button type="button" class="today-detail-btn" id="todayDetailBtn"><span><b>근무 상세내역</b><small>오늘의 출근·퇴근, 근무지, GPS 기록 확인</small></span><strong>›</strong></button>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 현황</h2><button class="link-btn" id="viewAllBtn">전체보기 ›</button></div><div class="week-grid">'+cells+'</div></section>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 요약</h2></div><div class="summary-grid">'+
       '<div class="summary-item"><div class="icon">▣</div><div class="label">근무일수</div><div class="value">'+workDays+'일</div></div>'+
@@ -117,7 +118,7 @@ function renderHome(){
       '<div class="summary-item '+(late?'alert':'')+'"><div class="icon">⚠</div><div class="label">지각</div><div class="value">'+late+'회</div></div>'+
       '<div class="summary-item '+(missing?'alert':'')+'"><div class="icon">!</div><div class="label">퇴근누락</div><div class="value">'+missing+'회</div></div>'+
     '</div></section>';
-  $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;
+  $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;$('#todayDetailBtn').onclick=()=>openDetail(key);
 }
 function renderRecords(){
   const root=$('#recordsRoot');if(!root)return;
