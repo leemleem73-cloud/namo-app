@@ -169,7 +169,10 @@ function renderWorkplaces(){
     const recorded=currentRecorded&&String(w.code)===currentRecorded;
     return '<button type="button" class="workplace-option '+(on?'selected':'')+'" data-workplace-code="'+String(w.code||'')+'"><span class="workplace-radio">'+(on?'✓':'')+'</span><span class="workplace-info"><b>'+String(w.name||'-')+'</b><small>'+String(w.address||'')+'</small>'+(recorded?'<em>오늘 출근 기록</em>':'')+'</span><span class="workplace-arrow">›</span></button>';
   }).join('');
-  $('[data-workplace-code]',root).forEach(b=>b.onclick=()=>selectWorkplace(b.dataset.workplaceCode));
+  root.onclick=e=>{
+    const btn=e.target.closest('[data-workplace-code]');
+    if(btn&&root.contains(btn))selectWorkplace(btn.dataset.workplaceCode);
+  };
 }
 function openWorkplaceSelector(){
   const note=$('#workplaceNote');
