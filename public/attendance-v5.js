@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',timer:null
@@ -69,6 +69,13 @@ function weekKeys(){
   const a=[];for(let i=0;i<6;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);a.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()))}return a;
 }
 function employeeLabel(){const u=state.me?.user||{};return [u.name,u.title].filter(Boolean).join(' ')||'사용자'}
+function isAdmin(){return String(state.me?.user?.role||'').toLowerCase()==='admin'}
+function adminStatusLabel(v){return({WORKING:'근무 중',DONE:'근무 완료',ABSENT:'미출근',LEAVE:'휴가',STATUTORY:'법정휴가'})[String(v||'')]||'미확인'}
+function adminStatusClass(v){return({WORKING:'working',DONE:'done',ABSENT:'missing',LEAVE:'future',STATUTORY:'future'})[String(v||'')]||'future'}
+function applyRoleNav(){
+  const rec=$('.nav-btn[data-nav="records"] span:last-child');
+  if(rec)rec.textContent=isAdmin()?'직원현황':'근무내역';
+}
 function selectedWorkplace(){
   return state.workplaces.find(w=>String(w.code)===String(state.workplaceCode))||null;
 }
@@ -86,7 +93,33 @@ function showView(name){
   if(name==='profile')renderProfile();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function renderAdminHome(){
+  const root=$('#homeRoot');if(!root)return;
+  const ov=state.adminOverview||{},sum=ov.summary||{},rows=Array.isArray(ov.employees)?ov.employees:[];
+  const user=state.me?.user||{},key=todayKey();
+  const employeeRows=rows.length?rows.map(e=>{
+    const s=adminStatusLabel(e.attendanceStatus),cls=adminStatusClass(e.attendanceStatus);
+    const inTime=e.clockIn?fmtTime(e.clockIn):'-',outTime=e.clockOut?fmtTime(e.clockOut):'-';
+    return '<div class="admin-employee-row"><span class="admin-person-icon">👤</span><span class="admin-person-main"><b>'+String(e.name||'-')+'</b><small>'+[e.department,e.title].filter(Boolean).join(' · ')+'</small></span><span class="admin-person-time">'+inTime+'<small>'+outTime+'</small></span><span class="badge '+cls+'">'+s+'</span></div>';
+  }).join(''):'<div class="empty">표시할 직원이 없습니다.</div>';
+  root.innerHTML=
+    '<section class="hero admin-hero">'+
+      '<div class="hero-top"><div class="hero-date">'+fmtDate(key)+'</div><div class="hero-place">관리자</div></div>'+
+      '<div class="hero-clock" id="liveClock">'+liveClock()+'</div><div class="hero-sub">전체 직원 근태 현황을 확인하세요.</div>'+
+      '<div class="hero-bottom"><div class="employee-pill">👤 <span>관리자</span><b>'+([user.name,user.title].filter(Boolean).join(' ')||'관리자')+'</b></div><div class="status-pill done">관리자 모드</div></div>'+
+    '</section>'+
+    '<section class="card admin-summary-card"><div class="card-head"><h2>오늘 근태 현황</h2><span class="admin-date-label">'+shortDate(key)+'</span></div><div class="admin-summary-grid">'+
+      '<div><span>전체 직원</span><b>'+Number(sum.total||0)+'</b></div>'+
+      '<div><span>출근</span><b>'+Number(sum.checkedIn||0)+'</b></div>'+
+      '<div><span>근무 중</span><b>'+Number(sum.working||0)+'</b></div>'+
+      '<div><span>미출근</span><b class="'+(Number(sum.absent||0)>0?'warn':'')+'">'+Number(sum.absent||0)+'</b></div>'+
+      '<div><span>휴가</span><b>'+Number(sum.onLeave||0)+'</b></div>'+
+    '</div></section>'+
+    '<section class="card admin-staff-card"><div class="card-head"><h2>전체 직원</h2><button class="link-btn" id="adminViewAllBtn">직원현황 ›</button></div><div class="admin-employee-list">'+employeeRows+'</div></section>';
+  const all=$('#adminViewAllBtn');if(all)all.onclick=()=>showView('records');
+}
 function renderHome(){
+  if(isAdmin())return renderAdminHome();
   const root=$('#homeRoot');if(!root)return;
   const t=state.today||{},key=todayKey(),st=statusFor(key,t),acc=gpsAccuracy(t),wk=weekKeys(),names=['월','화','수','목','금','토']; if(t?.clockIn&&!state.logs.some(x=>logKey(x)===key))state.logs=[...state.logs,t];
   let workDays=0,total=0,late=0,missing=0;
@@ -127,7 +160,17 @@ function renderHome(){
     '</div></section>';
   $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;$('#todayDetailBtn').onclick=()=>openDetail(key);
 }
+function renderAdminRecords(){
+  const root=$('#recordsRoot');if(!root)return;
+  const ov=state.adminOverview||{},rows=Array.isArray(ov.employees)?ov.employees:[];
+  const list=rows.length?rows.map(e=>{
+    const cls=adminStatusClass(e.attendanceStatus),status=adminStatusLabel(e.attendanceStatus),mins=Number(e.monthMinutes||0);
+    return '<div class="admin-month-row"><span class="admin-person-icon">👤</span><span class="admin-person-main"><b>'+String(e.name||'-')+'</b><small>'+[e.department,e.title].filter(Boolean).join(' · ')+'</small></span><span class="admin-month-stats"><b>'+Number(e.monthDays||0)+'일</b><small>'+durationText(mins)+'</small></span><span class="badge '+cls+'">'+status+'</span></div>';
+  }).join(''):'<div class="empty">표시할 직원이 없습니다.</div>';
+  root.innerHTML='<div class="records-summary admin-record-summary"><div><span>전체 직원</span><b>'+Number(ov.summary?.total||0)+'</b></div><div><span>출근</span><b>'+Number(ov.summary?.checkedIn||0)+'</b></div><div><span>휴가</span><b>'+Number(ov.summary?.onLeave||0)+'</b></div></div><div class="record-list admin-month-list">'+list+'</div>';
+}
 function renderRecords(){
+  if(isAdmin())return renderAdminRecords();
   const root=$('#recordsRoot');if(!root)return;
   const month=$('#recordsMonth').value||todayKey().slice(0,7);
   const rows=state.logs.filter(r=>logKey(r).startsWith(month)).slice().sort((a,b)=>logKey(b).localeCompare(logKey(a)));
@@ -280,11 +323,17 @@ async function loadCore(){
   const saved=selectedWorkplace();if(saved)state.workplaceName=saved.name||state.workplaceName;
   if(state.today?.workplaceCode&&!localStorage.getItem('namo_workplace_v4_live'))state.workplaceCode=state.today.workplaceCode;
   if(state.today?.workplaceName&&state.today?.clockIn)state.workplaceName=state.today.workplaceName;
-  renderHome();renderRecords();renderProfile();
+  if(isAdmin())await loadAdminOverview(month);
+  applyRoleNav();renderHome();renderRecords();renderProfile();
+}
+async function loadAdminOverview(month=state.recordsMonth||todayKey().slice(0,7)){
+  if(!isAdmin()){state.adminOverview=null;return}
+  state.adminOverview=await api('/api/attendance/admin/overview?date='+encodeURIComponent(todayKey())+'&month='+encodeURIComponent(month)).catch(()=>({summary:{},employees:[],monthlyLogs:[]}));
 }
 async function reloadMonth(){
   state.recordsMonth=$('#recordsMonth').value||todayKey().slice(0,7);
-  state.logs=await api('/api/attendance/logs?month='+encodeURIComponent(state.recordsMonth)).catch(()=>[]);
+  if(isAdmin())await loadAdminOverview(state.recordsMonth);
+  else state.logs=await api('/api/attendance/logs?month='+encodeURIComponent(state.recordsMonth)).catch(()=>[]);
   renderRecords();
 }
 function bind(){
