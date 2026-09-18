@@ -1,0 +1,92 @@
+/* NAMO QMES - Sales/Due header + readability patch
+ * 2026-09-18
+ * ADD-ONLY. Sales/Due screen only.
+ * Keeps the confirmed stable V5 renderer unchanged.
+ */
+.qmes-sales-ledger-v4 .qslv4-head{
+  min-height:auto!important;
+  margin:0 0 16px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.qmes-sales-ledger-v4 .qslv4-title{
+  margin:0!important;
+  color:#13283e!important;
+  font-size:20px!important;
+  line-height:1.3!important;
+  font-weight:900!important;
+  letter-spacing:-.35px!important;
+}
+.qmes-sales-ledger-v4 .qslv4-sub{
+  display:none!important;
+}
+.qmes-sales-ledger-v4 .qslv4-head-actions button,
+.qmes-sales-ledger-v4 .qslv4-new-btn{
+  height:34px!important;
+  padding:0 12px!important;
+  font-size:11px!important;
+}
+.qmes-sales-ledger-v4 .qslv4-sync{
+  min-height:30px!important;
+  padding:0 10px!important;
+  font-size:10px!important;
+}
+
+.qmes-sales-ledger-v4 .qrl-field>span:first-child{
+  font-size:10.5px!important;
+  line-height:13px!important;
+}
+.qmes-sales-ledger-v4 .qrl-date>b{
+  font-size:11px!important;
+}
+.qmes-sales-ledger-v4 input,
+.qmes-sales-ledger-v4 select{
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  padding:0 10px!important;
+  font-size:12px!important;
+  line-height:38px!important;
+}
+.qmes-sales-ledger-v4 .qrl-grid>button{
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  font-size:11px!important;
+}
+
+.qmes-sales-ledger-v4 thead th{
+  height:44px!important;
+  padding:7px 6px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+}
+.qmes-sales-ledger-v4 tbody td{
+  height:44px!important;
+  padding:7px 6px!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+}
+.qmes-sales-ledger-v4 .qrl-link{
+  font-size:11px!important;
+  line-height:1.2!important;
+}
+.qmes-sales-ledger-v4 .qrl-badge{
+  min-width:48px!important;
+  height:23px!important;
+  padding:0 7px!important;
+  font-size:9.5px!important;
+}
+.qmes-sales-ledger-v4 .qrl-actions button{
+  height:27px!important;
+  min-width:37px!important;
+  padding:0 8px!important;
+  font-size:9.5px!important;
+}
+.qmes-sales-ledger-v4 .qrl-page{
+  min-width:32px!important;
+  height:32px!important;
+  font-size:10px!important;
+}
