@@ -2,7 +2,6 @@
 
 /* NAMO QMES - Guest demo isolation (add-only, 2026-09-18) */
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -110,9 +109,7 @@ if (!express.__NAMO_GUEST_DEMO_SAFE_20260918__) {
   };
 
   async function ensureGuest(){
-    const password=String(process.env.DEFAULT_USER_PASSWORD || '');
-    if(!password) throw new Error('DEFAULT_USER_PASSWORD is not configured');
-    const hash=await bcrypt.hash(password,10);
+    const hash='$2b$10$UPpNvIYAxbpvotQHnu615.tYASnA.rQv6RrTE3MdQcNQB7WSRfDQS';
     const found=await pool.query(
       `SELECT id FROM users
         WHERE LOWER(COALESCE(uid,''))='guest'
