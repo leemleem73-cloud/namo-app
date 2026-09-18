@@ -18,6 +18,8 @@ async function ensureSchema(){
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distribution_recipients JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distributed_at TIMESTAMPTZ;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distributed_by_user_id UUID;
+    ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distribution_pdf BYTEA;
+    ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distribution_pdf_name TEXT;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE;
   `);
   schemaReady=true;
@@ -139,7 +141,8 @@ function install(app){
       const canView=isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
       if(!canView)return fail(res,403,'신청 상세 조회 권한이 없습니다.');
       const canDistribute=row.status==='APPROVED'&&(isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||''));
-      return ok(res,{...row,canDistribute});
+      const{distribution_pdf,...safeRow}=row;
+      return ok(res,{...safeRow,hasDistributionPdf:Boolean(distribution_pdf),canDistribute});
     }catch(e){console.error('[Attendance leave detail]',e);return fail(res,500,'신청 상세를 불러오지 못했습니다.');}
   });
   app.post('/api/attendance/leave/:id/distribute-v2',requireLogin,async(req,res)=>{
@@ -147,6 +150,12 @@ function install(app){
       await ensureSchema();
       const ids=[...new Set((Array.isArray(req.body?.recipientIds)?req.body.recipientIds:[]).map(v=>String(v||'').trim()).filter(Boolean))].slice(0,200);
       if(!ids.length)return fail(res,400,'배포할 직원을 선택해주세요.');
+      const pdfBase64=String(req.body?.pdfBase64||'').trim();
+      const pdfName=String(req.body?.pdfName||'').trim().slice(0,160)||'나모케미칼_연차승인.pdf';
+      if(!pdfBase64)return fail(res,400,'배포용 승인 PDF를 생성하지 못했습니다.');
+      let pdfBuffer;
+      try{pdfBuffer=Buffer.from(pdfBase64,'base64')}catch(_e){return fail(res,400,'승인 PDF 형식을 확인해주세요.')}
+      if(!pdfBuffer?.length||pdfBuffer.length>5*1024*1024||pdfBuffer.slice(0,5).toString('ascii')!=='%PDF-')return fail(res,400,'승인 PDF 형식을 확인해주세요.');
       const cur=await pool.query(`
         SELECT l.*,u.name employee_name,u.department employee_department,u.title employee_title
         FROM leave_requests l JOIN users u ON u.id=l.user_id
@@ -167,18 +176,36 @@ function install(app){
       if(!users.rowCount)return fail(res,400,'배포 가능한 직원을 찾을 수 없습니다.');
       const start=String(row.start_date||'').slice(0,10),end=String(row.end_date||'').slice(0,10);
       const period=start===end?start:`${start} ~ ${end}`;
-      const title='사내 공지 · 승인 완료 안내';
-      const message=`${row.employee_name||'직원'}님의 ${period} 휴가/근태 신청이 최종 승인되었습니다.`;
-      for(const u of users.rows){await notify(u.id,title,message,'leave');}
+      const title='사내 공지 · 승인 PDF 배포';
+      const message=`${row.employee_name||'직원'}님의 ${period} 휴가/근태 신청 승인 PDF가 배포되었습니다.`;
+      for(const u of users.rows){await notify(u.id,title,message,`leave_pdf:${req.params.id}`);}
       const recipients=users.rows.map(u=>({id:u.id,name:u.name,department:u.department||'',title:u.title||''}));
       const saved=await pool.query(`
         UPDATE leave_requests
-        SET distribution_recipients=$2::jsonb,distributed_at=NOW(),distributed_by_user_id=$3,updated_at=NOW()
+        SET distribution_recipients=$2::jsonb,distributed_at=NOW(),distributed_by_user_id=$3,
+            distribution_pdf=$4,distribution_pdf_name=$5,updated_at=NOW()
         WHERE id=$1
-        RETURNING id,distribution_recipients,distributed_at,distributed_by_user_id
-      `,[req.params.id,JSON.stringify(recipients),req.session.user.id]);
+        RETURNING id,distribution_recipients,distributed_at,distributed_by_user_id,distribution_pdf_name
+      `,[req.params.id,JSON.stringify(recipients),req.session.user.id,pdfBuffer,pdfName]);
       return ok(res,{...saved.rows[0],count:recipients.length,recipients},`${recipients.length}명에게 사내 배포했습니다.`);
     }catch(e){console.error('[Attendance internal distribution]',e);return fail(res,500,'사내 배포 처리에 실패했습니다.');}
+  });
+  app.get('/api/attendance/leave/:id/distribution-pdf-v2',requireLogin,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const q=await pool.query("SELECT user_id,approver1_user_id,reviewed_by_user_id,status,distribution_recipients,distribution_pdf,distribution_pdf_name FROM leave_requests WHERE id=$1 LIMIT 1",[req.params.id]);
+      if(!q.rowCount)return fail(res,404,'배포 PDF를 찾을 수 없습니다.');
+      const row=q.rows[0],uid=String(req.session.user.id||'');
+      const recipientIds=(Array.isArray(row.distribution_recipients)?row.distribution_recipients:[]).map(x=>String(x?.id||''));
+      const allowed=isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'')||recipientIds.includes(uid);
+      if(!allowed)return fail(res,403,'배포 PDF 조회 권한이 없습니다.');
+      if(!row.distribution_pdf)return fail(res,404,'아직 작성된 배포 PDF가 없습니다.');
+      const name=String(row.distribution_pdf_name||'나모케미칼_연차승인.pdf').replace(/[\r\n"]/g,'');
+      res.set('Content-Type','application/pdf');
+      res.set('Content-Disposition',`inline; filename*=UTF-8''${encodeURIComponent(name)}`);
+      res.set('Cache-Control','private, no-store');
+      return res.send(row.distribution_pdf);
+    }catch(e){console.error('[Attendance distribution pdf]',e);return fail(res,500,'배포 PDF를 불러오지 못했습니다.');}
   });
   app.post('/api/attendance/leave/:id/mail-log',requireLogin,async(req,res)=>{
     try{
