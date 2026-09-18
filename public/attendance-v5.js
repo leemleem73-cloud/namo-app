@@ -325,9 +325,11 @@ async function openLeaveDetail(id){
         '<div><span>승인일시</span><b>'+fmtDateTime(detail.reviewed_at)+'</b></div>'+
       '</div></div>'+
       (detail.status==='APPROVED'?'<div class="leave-approved-box">✓ 해당 신청이 최종 승인 완료되었습니다.</div>':'')+
+      (detail.hasDistributionPdf?'<button type="button" class="secondary-btn pdf-view-btn" id="viewDistributionPdfBtn">승인 PDF 내용 보기</button>':'')+
       (detail.canDistribute?'<button type="button" class="primary-btn distribute-open-btn" id="openDistributionBtn">사내 직원에게 배포하기</button>':'')+
       '<button type="button" class="secondary-btn leave-list-btn" id="leaveListBtn">목록으로</button>'+
     '</div>';
+    const p=$('#viewDistributionPdfBtn');if(p)p.onclick=()=>window.open('/api/attendance/leave/'+encodeURIComponent(detail.id)+'/distribution-pdf-v2','_blank');
     const d=$('#openDistributionBtn');if(d)d.onclick=()=>openDistribution();
     const l=$('#leaveListBtn');if(l)l.onclick=()=>closeSheet('leaveDetailSheet');
     openSheet('leaveDetailSheet');
