@@ -260,11 +260,32 @@ function renderRecords(){
 }
 function leaveTypeName(v){return({annual:'연차',am_half:'오전 반차',pm_half:'오후 반차',sick:'병가',bereavement:'경조휴가',outside:'외근/출장',overtime:'연장근무'})[String(v||'')]||String(v||'요청')}
 function requestStatus(v){return({PENDING_1:'검토대기',PENDING_2:'검토대기',APPROVED:'승인완료',REJECTED:'반려'})[String(v||'')]||String(v||'')}
+async function completeReview(id){
+  try{
+    await api('/api/attendance/leave/'+encodeURIComponent(id)+'/review-complete-v2',{method:'POST',body:'{}'});
+    toast('검토 완료 · 자동 승인되었습니다.');
+    await Promise.all([loadAdminAux(),loadAdminOverview()]);
+    renderAdminRequests();renderAdminHome();renderLeave();
+  }catch(e){toast(e.message)}
+}
+async function rejectReview(id){
+  const reason=prompt('반려 사유를 입력해주세요.');
+  if(reason===null)return;
+  if(!String(reason).trim())return toast('반려 사유를 입력해주세요.');
+  try{
+    await api('/api/attendance/leave/'+encodeURIComponent(id)+'/reject-v2',{method:'POST',body:JSON.stringify({reason:String(reason).trim()})});
+    toast('반려 처리되었습니다.');
+    await Promise.all([loadAdminAux(),loadAdminOverview()]);
+    renderAdminRequests();renderAdminHome();renderLeave();
+  }catch(e){toast(e.message)}
+}
 function renderAdminRequests(){
   const root=$('#requestsRoot');if(!root)return;
   const rows=state.adminReviews||[];
-  root.innerHTML='<div class="admin-old-section-head"><div><h2>검토함</h2><p>내가 처리해야 할 근태 · 휴가 요청입니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
-    '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge future">검토대기</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+'<br>'+leaveTypeName(r.leave_type)+' · '+Number(r.days||0)+'일 · '+String(r.reason||'사유 없음')+'</div></div>').join(''):'<div class="empty">검토 대기 요청이 없습니다.</div>')+'</div>';
+  root.innerHTML='<div class="admin-old-section-head"><div><h2>검토함</h2><p>관리자 · 부장 · 이사가 검토하며, 검토 완료 즉시 자동 승인됩니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
+    '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge future">검토대기</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+'<br>'+leaveTypeName(r.leave_type)+' · '+Number(r.days||0)+'일 · '+String(r.reason||'사유 없음')+'</div><div class="review-action-row"><button type="button" class="review-approve" data-review-approve="'+String(r.id||'')+'">검토 완료 · 승인</button><button type="button" class="review-reject" data-review-reject="'+String(r.id||'')+'">반려</button></div></div>').join(''):'<div class="empty">검토 대기 요청이 없습니다.</div>')+'</div>';
+  $('[data-review-approve]',root).forEach(b=>b.onclick=()=>completeReview(b.dataset.reviewApprove));
+  $('[data-review-reject]',root).forEach(b=>b.onclick=()=>rejectReview(b.dataset.reviewReject));
 }
 function renderRequests(){
   if(isAdmin())return renderAdminRequests();
@@ -443,8 +464,8 @@ async function clockOut(){
 function renderReviewerOptions(){
   const sel=$('#requestReviewer');if(!sel)return;
   const rows=Array.isArray(state.reviewers)?state.reviewers:[];
-  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>'<option value="'+String(r.id||'')+'">'+[r.name,r.department,r.title].filter(Boolean).join(' · ')+'</option>').join('');
-  const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'검토자 '+rows.length+'명을 선택할 수 있습니다.':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
+  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>'<option value="'+String(r.id||'')+'">'+[r.reviewerKind||'',r.name,r.department,r.title].filter(Boolean).join(' · ')+'</option>').join('');
+  const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'검토자: 관리자 · 부장 · 이사 / 검토 완료 즉시 자동 승인':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
 }
 async function loadReviewers(){
   try{state.reviewers=await api('/api/attendance/reviewers');if(!Array.isArray(state.reviewers))state.reviewers=[]}catch(_){state.reviewers=[]}
