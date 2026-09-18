@@ -331,24 +331,45 @@ function openWorkplaceSelector(){
   renderWorkplaces();openSheet('workplaceSheet');
 }
 async function selectWorkplace(code){
-  const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장'},{code:'pangyo',name:'판교사무소'}].find(x=>x.code===code);
+  const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장',address:'충청북도 충주시 주덕읍 중원산업로 309'},{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로606번길 39 판교럭스타워 11층'}].find(x=>x.code===code);
   if(!w)return;
+  const root=$('#workplaceRoot');
+  const buttons=$('[data-workplace-code]',root);
+  buttons.forEach(b=>b.disabled=true);
+  const selectedBtn=buttons.find(b=>String(b.dataset.workplaceCode)===String(code));
+  if(selectedBtn)selectedBtn.classList.add('saving');
   try{
-    let gps=null;
-    try{gps=await getGps()}catch(_){gps=null}
-    const result=await api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code),gps:gps||{}})});
-    state.workplaceCode=String(w.code);state.workplaceName=String(w.name||state.workplaceName);
+    const result=await api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code)})});
+    state.workplaceCode=String(w.code);
+    state.workplaceName=String(result?.workplaceName||w.name||state.workplaceName);
     localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
-    if(state.today?.clockIn&&result?.workplaceName){
-      state.today={...state.today,workplaceCode:result.workplaceCode||w.code,workplaceName:result.workplaceName||w.name,workplaceAddress:result.workplaceAddress||w.address,workplaceChangeGps:result.workplaceChangeGps||gps||{}};
+    if(state.today?.clockIn){
+      state.today={...state.today,
+        workplaceCode:result?.workplaceCode||w.code,
+        workplaceName:result?.workplaceName||w.name,
+        workplaceAddress:result?.workplaceAddress||w.address
+      };
     }
-    renderWorkplaces();renderHome();renderProfile();
-    toast(result?.workplaceName?(result.workplaceName+'으로 근무지를 변경했습니다.'):(state.workplaceName+'으로 근무지를 변경했습니다.'));
-    setTimeout(()=>{
-      closeSheet('workplaceSheet');
-      if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
-    },250);
-  }catch(e){toast(e.message)}
+    renderHome();renderProfile();
+    toast(state.workplaceName+'으로 근무지를 변경했습니다.');
+    closeSheet('workplaceSheet');
+    if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+
+    getGps().then(gps=>{
+      if(!gps)return;
+      return api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code),gps})})
+        .then(latest=>{
+          if(state.today?.clockIn){
+            state.today={...state.today,workplaceChangeGps:latest?.workplaceChangeGps||gps};
+            if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+          }
+        });
+    }).catch(()=>{});
+  }catch(e){
+    buttons.forEach(b=>b.disabled=false);
+    if(selectedBtn)selectedBtn.classList.remove('saving');
+    toast(e.message);
+  }
 }
 function openMapDetail(r,place){
   let s=$('#mapDetailSheet');
