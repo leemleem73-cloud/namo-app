@@ -15,7 +15,6 @@ require('./attendance-qmes-redesign-preload.js');
 require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
-require('./guest-demo-safe.js');
 require('./access-permissions-safe.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
