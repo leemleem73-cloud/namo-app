@@ -182,3 +182,8 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 
 
 .request-help{display:block;margin-top:6px;font-size:9px;line-height:1.4;color:#7a899c;font-weight:750}
+
+.review-action-row{display:grid;grid-template-columns:1fr 90px;gap:8px;margin-top:12px}
+.review-action-row button{height:40px;border-radius:11px;font-size:10px;font-weight:900}
+.review-approve{border:1px solid #1477e6;background:#1477e6;color:#fff}
+.review-reject{border:1px solid #f0b7bd;background:#fff5f6;color:#d72b3a}
