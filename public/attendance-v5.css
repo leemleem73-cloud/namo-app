@@ -220,3 +220,6 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 .distribution-person small{display:block;margin-top:2px;font-size:9px;color:#8290a2}
 #distributionSendBtn{width:100%;margin-top:10px;flex:0 0 auto}
 @media(max-width:370px){.leave-detail-grid{grid-template-columns:1fr}.leave-detail-grid>div,.leave-detail-grid>div:nth-child(2n){border-right:0}.leave-detail-grid>div.wide{grid-column:auto}}
+
+.pdf-view-btn{margin-top:10px;border-color:#b8c9dc;background:#f8fbff;color:#176fd7}
+.notice-pdf-btn{margin-top:9px;height:36px;padding:0 12px;border:1px solid #b8cfe9;border-radius:10px;background:#eef6ff;color:#176fd7;font-size:10px;font-weight:900}
