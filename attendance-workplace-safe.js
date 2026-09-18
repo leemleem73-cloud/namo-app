@@ -7,13 +7,13 @@ const ok=(res,data=null,message='OK')=>res.json({success:true,message,data});
 const fail=(res,status,message)=>res.status(status).json({success:false,message,data:null});
 const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그인이 필요합니다.');
 const WORKPLACES={
-  chungju:{code:'chungju',name:'충주 1공장',address:'충청북도 주덕읍 중원산업로 309'},
-  pangyo:{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로 606번지 39 판교럭스타워 11층'}
+  chungju:{code:'chungju',name:'충주 1공장',address:'충청북도 충주시 주덕읍 중원산업로 309',lat:null,lng:null,radius:100},
+  pangyo:{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로606번길 39 판교럭스타워 11층',lat:37.396480,lng:127.111495,radius:100}
 };
 let schemaReady=false;
 async function ensureSchema(){if(schemaReady)return;await pool.query("ALTER TABLE attendance_logs ADD COLUMN IF NOT EXISTS workplace_code TEXT DEFAULT ''; ALTER TABLE attendance_logs ADD COLUMN IF NOT EXISTS workplace_name TEXT DEFAULT ''; ALTER TABLE attendance_logs ADD COLUMN IF NOT EXISTS workplace_address TEXT DEFAULT ''; ");schemaReady=true}
 function wp(v){return WORKPLACES[String(v||'')]||null}
-function dto(r){return r?{id:r.id,workDate:r.work_date,clockIn:r.clock_in,clockOut:r.clock_out,gpsIn:r.gps_in||{},gpsOut:r.gps_out||{},deviceInfo:r.device_info||'',workplaceCode:r.workplace_code||'',workplaceName:r.workplace_name||'',workplaceAddress:r.workplace_address||''}:null}
+function dto(r){if(!r)return null;const place=wp(r.workplace_code);return{id:r.id,workDate:r.work_date,clockIn:r.clock_in,clockOut:r.clock_out,gpsIn:r.gps_in||{},gpsOut:r.gps_out||{},deviceInfo:r.device_info||'',workplaceCode:r.workplace_code||'',workplaceName:r.workplace_name||'',workplaceAddress:r.workplace_address||'',workplaceLat:place?.lat??null,workplaceLng:place?.lng??null,workplaceRadius:place?.radius??100}}
 function install(app){
   if(app.__namoAttendanceWorkplaceInstalled)return;
   app.__namoAttendanceWorkplaceInstalled=true;
