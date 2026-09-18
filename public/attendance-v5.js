@@ -219,8 +219,8 @@ function renderAdminRecords(){
   const avgMinutes=workedLogs.length?Math.round(totalMinutes/workedLogs.length):0;
   const workedPeople=new Set(logs.map(r=>r.userId).filter(Boolean)).size;
   root.innerHTML=
-    '<div class="admin-old-section-head"><div><h2>전체 출근현황</h2><p>월별 근무집계 · 관리자 전용</p></div><button type="button" class="admin-excel-btn" id="adminExcelBtn">▣ 엑셀 다운로드</button></div>'+
-    '<section class="card admin-month-summary"><div class="card-head"><div><h2>월간 집계</h2><p>'+month+' 기준</p></div></div><div class="admin-month-summary-grid">'+
+    '<div class="admin-old-section-head"><div><h2>전체 출근현황</h2><p>월별 근무집계 · 관리자 전용</p></div></div>'+
+    '<section class="card admin-month-summary"><div class="card-head admin-month-head"><div><h2>월간 집계</h2><p>'+month+' 기준</p></div><button type="button" class="admin-excel-btn" id="adminExcelBtn"><span>▣</span> 엑셀 다운로드</button></div><div class="admin-month-summary-grid">'+
       '<div><span>근무 인원</span><b>'+workedPeople+'명</b></div>'+
       '<div><span>총 근무일수</span><b>'+totalDays+'일</b></div>'+
       '<div><span>총 근무시간</span><b>'+durationText(totalMinutes)+'</b></div>'+
