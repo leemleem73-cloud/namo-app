@@ -165,3 +165,17 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 .admin-old-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 10px}.admin-old-section-head h2{font-size:20px;margin:0}.admin-old-section-head p{font-size:10px;color:#7b8496;margin:4px 0 0}
 .admin-old-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}.admin-old-toolbar input,.admin-old-toolbar select{height:42px;border:1px solid #dfe5ee;border-radius:13px;background:#fff;padding:0 11px;color:#26334d}
 .admin-old-table-card{overflow:hidden}.admin-old-table-wrap{overflow:auto;border-top:1px solid #e2e7ed;background:#fff;-webkit-overflow-scrolling:touch}.admin-old-table{width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed;font-size:10px}.admin-old-table th{background:#f8fafc;color:#52606f;padding:9px 5px;border-bottom:1px solid #dfe5eb;border-right:1px solid #edf1f4;font-weight:900;white-space:nowrap}.admin-old-table td{padding:9px 5px;border-bottom:1px solid #edf1f4;border-right:1px solid #f1f3f5;text-align:center;white-space:nowrap}.admin-old-table .name{text-align:left;font-weight:900;color:#172b4d}.admin-old-table.monthly{min-width:650px}
+
+.admin-excel-btn{height:36px;border:1px solid #b9d5f1;border-radius:11px;background:#eef6ff;color:#176fd7;padding:0 11px;font-size:10px;font-weight:900}
+.admin-month-summary{margin-bottom:12px}
+.admin-month-summary .card-head p{margin:4px 0 0;font-size:10px;color:#7b8496}
+.admin-month-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.admin-month-summary-grid>div{text-align:center;padding:12px 4px;border-right:1px solid var(--line)}
+.admin-month-summary-grid>div:last-child{border-right:0}
+.admin-month-summary-grid span{display:block;font-size:9px;color:#748399;font-weight:800}
+.admin-month-summary-grid b{display:block;margin-top:4px;font-size:13px;font-weight:950;color:#172b48}
+.admin-employee-table{min-width:900px}
+.admin-employee-table .hire-head{width:120px}
+.hire-cell{padding:5px!important}
+.admin-hire-input{width:108px;height:30px;border:1px solid #d7e1eb;border-radius:8px;background:#fff;padding:0 5px;font-size:9px;color:#203652}
+@media(max-width:430px){.admin-month-summary-grid{grid-template-columns:repeat(2,1fr)}}
