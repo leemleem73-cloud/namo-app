@@ -56,7 +56,7 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
         return res.send(svg);
       }
       if (pathname === '/attendance.html') {
-        const filePath = path.join(root, 'attendance.html');
+        const filePath = path.join(root, 'attendance-v5.html');
         return originalReadFile(filePath, 'utf8', (error, source) => {
           if (error) return staticMiddleware(req, res, next);
           const humanArtStyle = `<style id="namo-attendance-human-art-20260917">html[data-namo-attendance-full-ui="v4"] .clock-btn.in:after{background-image:url('/attendance-enterprise-clockin-20260909.svg?v=20260917-human1')!important}html[data-namo-attendance-full-ui="v4"] .clock-btn.out:after{background-image:url('/attendance-enterprise-clockout-20260909.svg?v=20260917-human1')!important}</style>`;
