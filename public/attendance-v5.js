@@ -266,6 +266,7 @@ async function completeReview(id){
     toast('검토 완료 · 자동 승인되었습니다.');
     await Promise.all([loadAdminAux(),loadAdminOverview()]);
     renderAdminRequests();renderAdminHome();renderLeave();
+    await openLeaveDetail(id);
   }catch(e){toast(e.message)}
 }
 async function rejectReview(id){
@@ -384,8 +385,9 @@ function renderLeave(){
   const root=$('#leaveRoot');if(!root)return;
   if(!isAdmin()){root.innerHTML='<div class="empty">관리자 전용 메뉴입니다.</div>';return}
   const rows=state.adminOverview?.leaves||[];
-  root.innerHTML='<div class="admin-old-section-head"><div><h2>휴가현황</h2><p>관리자 전체 조회</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
-    '<div class="request-list">'+(rows.length?rows.map(r=>'<div class="request-item"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+leaveTypeName(r.leave_type)+'<br>'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일</div></div>').join(''):'<div class="empty">휴가 내역이 없습니다.</div>')+'</div>';
+  root.innerHTML='<div class="admin-old-section-head"><div><h2>휴가현황</h2><p>관리자 전체 조회 · 항목을 누르면 상세/사내배포를 확인합니다.</p></div><span class="admin-old-chip">'+rows.length+'건</span></div>'+
+    '<div class="request-list">'+(rows.length?rows.map(r=>'<button type="button" class="request-item request-item-btn" data-admin-leave-detail="'+String(r.id||'')+'"><div class="request-top"><div class="request-title">'+String(r.employee_name||'-')+' '+String(r.employee_title||'')+'</div><span class="badge '+(r.status==='APPROVED'?'done':r.status==='REJECTED'?'missing':'future')+'">'+requestStatus(r.status)+'</span></div><div class="request-meta">'+String(r.employee_department||'-')+' · '+leaveTypeName(r.leave_type)+'<br>'+String(r.start_date||'').slice(0,10)+(String(r.end_date||'').slice(0,10)!==String(r.start_date||'').slice(0,10)?' ~ '+String(r.end_date||'').slice(0,10):'')+' · '+Number(r.days||0)+'일</div></button>').join(''):'<div class="empty">휴가 내역이 없습니다.</div>')+'</div>';
+  $('[data-admin-leave-detail]',root).forEach(b=>b.onclick=()=>openLeaveDetail(b.dataset.adminLeaveDetail));
 }
 function renderAdminProfile(){
   const root=$('#profileRoot');if(!root)return;
