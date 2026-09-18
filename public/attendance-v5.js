@@ -180,24 +180,33 @@ function renderHome(){
   $('#clockInBtn').onclick=clockIn;$('#clockOutBtn').onclick=clockOut;$('#viewAllBtn').onclick=()=>showView('records');$('#workplaceChangeBtn').onclick=openWorkplaceSelector;$('#todayDetailBtn').onclick=()=>openDetail(key);
 }
 function adminExportExcel(){
-  const ov=state.adminOverview||{},month=state.recordsMonth||todayKey().slice(0,7);
+  const ov=state.adminOverview||{},month=state.recordsMonth||todayKey().slice(0,7),deptLabel=state.adminDepartment||'전체 부서';
   const rows=(ov.employees||[]).filter(u=>!state.adminDepartment||u.department===state.adminDepartment);
   const logs=(ov.monthlyLogs||[]).filter(u=>!state.adminDepartment||u.department===state.adminDepartment);
   const totalDays=rows.reduce((a,u)=>a+Number(u.monthDays||0),0);
   const totalMinutes=logs.reduce((a,r)=>a+Number(r.workMinutes||0),0);
   const workedLogs=logs.filter(r=>Number(r.workMinutes||0)>0);
   const avgMinutes=workedLogs.length?Math.round(totalMinutes/workedLogs.length):0;
+  const workedPeople=new Set(logs.map(r=>r.userId).filter(Boolean)).size;
   const escExcel=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const summary='<table border="1"><tr><th colspan="8">'+escExcel(month)+' 월간 집계</th></tr>'+
-    '<tr><th>근무 인원</th><th>총 근무일수</th><th>총 근무시간</th><th>평균 근무시간</th><th colspan="4"></th></tr>'+
-    '<tr><td>'+new Set(logs.map(r=>r.userId).filter(Boolean)).size+'명</td><td>'+totalDays+'일</td><td>'+durationText(totalMinutes)+'</td><td>'+durationText(avgMinutes)+'</td><td colspan="4"></td></tr></table>';
-  const employees='<br><table border="1"><tr><th colspan="8">전체 출근현황</th></tr><tr><th>조직도</th><th>입사일</th><th>근무일수</th><th>출근시간</th><th>퇴근시간</th><th>연차부여</th><th>연차사용</th><th>연차잔여</th></tr>'+
-    rows.map(u=>'<tr><td>'+escExcel((u.name||'')+' '+(u.title||''))+'</td><td>'+escExcel(u.hireDate||'')+'</td><td>'+Number(u.monthDays||0)+'일</td><td>'+escExcel(fmtTime(u.clockIn))+'</td><td>'+escExcel(fmtTime(u.clockOut))+'</td><td>'+Number(u.leaveGranted||0)+'일</td><td>'+Number(u.leaveUsed||0)+'일</td><td>'+Number(u.leaveRemaining||0)+'일</td></tr>').join('')+'</table>';
-  const monthly='<br><table border="1"><tr><th colspan="6">월간 출퇴근 근무 현황</th></tr><tr><th>일자</th><th>조직도</th><th>출근시간</th><th>퇴근시간</th><th>근무시간</th><th>상태</th></tr>'+
-    logs.map(r=>'<tr><td>'+escExcel(r.workDate||'')+'</td><td>'+escExcel((r.name||'')+' '+(r.title||''))+'</td><td>'+escExcel(fmtTime(r.clockIn))+'</td><td>'+escExcel(fmtTime(r.clockOut))+'</td><td>'+escExcel(durationText(Number(r.workMinutes||0)))+'</td><td>'+escExcel(adminStatusLabel(r.status))+'</td></tr>').join('')+'</table>';
+  const summary='<table border="1">'+
+    '<tr><th colspan="8">'+escExcel(month)+' 월간 근태 집계</th></tr>'+
+    '<tr><th>조회 부서</th><th>근무 인원</th><th>총 근무일수</th><th>총 근무시간</th><th>평균 근무시간</th><th>월간 상세건수</th><th colspan="2"></th></tr>'+
+    '<tr><td>'+escExcel(deptLabel)+'</td><td>'+workedPeople+'명</td><td>'+totalDays+'일</td><td>'+escExcel(durationText(totalMinutes))+'</td><td>'+escExcel(durationText(avgMinutes))+'</td><td>'+logs.length+'건</td><td colspan="2"></td></tr>'+
+    '</table>';
+  const employees='<br><table border="1">'+
+    '<tr><th colspan="8">'+escExcel(month)+' 전체 출근현황</th></tr>'+
+    '<tr><th>조직도</th><th>입사일</th><th>근무일수</th><th>출근시간</th><th>퇴근시간</th><th>연차부여</th><th>연차사용</th><th>연차잔여</th></tr>'+
+    (rows.length?rows.map(u=>'<tr><td>'+escExcel((u.name||'')+' '+(u.title||''))+'</td><td>'+escExcel(u.hireDate||'')+'</td><td>'+Number(u.monthDays||0)+'일</td><td>'+escExcel(fmtTime(u.clockIn))+'</td><td>'+escExcel(fmtTime(u.clockOut))+'</td><td>'+Number(u.leaveGranted||0)+'일</td><td>'+Number(u.leaveUsed||0)+'일</td><td>'+Number(u.leaveRemaining||0)+'일</td></tr>').join(''):'<tr><td colspan="8">조회 결과가 없습니다.</td></tr>')+
+    '</table>';
+  const monthly='<br><table border="1">'+
+    '<tr><th colspan="7">'+escExcel(month)+' 월간 출퇴근 상세 현황</th></tr>'+
+    '<tr><th>일자</th><th>조직도</th><th>부서</th><th>출근시간</th><th>퇴근시간</th><th>근무시간</th><th>상태</th></tr>'+
+    (logs.length?logs.map(r=>'<tr><td>'+escExcel(r.workDate||'')+'</td><td>'+escExcel((r.name||'')+' '+(r.title||''))+'</td><td>'+escExcel(r.department||'')+'</td><td>'+escExcel(fmtTime(r.clockIn))+'</td><td>'+escExcel(fmtTime(r.clockOut))+'</td><td>'+escExcel(durationText(Number(r.workMinutes||0)))+'</td><td>'+escExcel(adminStatusLabel(r.status))+'</td></tr>').join(''):'<tr><td colspan="7">선택한 월의 출퇴근 기록이 없습니다.</td></tr>')+
+    '</table>';
   const blob=new Blob(['\ufeff',summary,employees,monthly],{type:'application/vnd.ms-excel;charset=utf-8'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='나모케미칼_근무집계_'+month+'.xls';document.body.appendChild(a);a.click();a.remove();
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='나모케미칼_월간근무집계_'+month+'.xls';document.body.appendChild(link);link.click();link.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function saveAdminHireDate(userId,hireDate){
