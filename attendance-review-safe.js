@@ -48,6 +48,8 @@ function reviewerEligible(u){
 function reviewerKind(u){
   const title=String(u?.title||'').replace(/\s/g,'');
   const role=String(u?.role||'').toLowerCase();
+  const name=String(u?.name||'').replace(/\s/g,'');
+  if(name==='임흥배')return'부장';
   if(/부장|본부장/.test(title))return'부장';
   if(/이사|상무|전무|임원/.test(title)&&!/대표이사/.test(title))return'이사';
   if(role==='admin'||/관리자/.test(title))return'관리자';
