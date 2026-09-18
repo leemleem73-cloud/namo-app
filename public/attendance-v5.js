@@ -152,12 +152,12 @@ function openDetail(key){
     '<div class="detail-row"><span>⇥</span><span class="k">실제 퇴근</span><span class="v">'+(r?.clockOut?fmtTime(r.clockOut):'-')+'</span></div>'+
     '<div class="detail-row"><span>◷</span><span class="k">근무시간</span><span class="v">'+(m?durationText(m):(s.cls==='working'?'진행 중':'-'))+'</span></div>'+
     '<div class="detail-row"><span>⌖</span><span class="k">근무장소</span><span class="detail-place-actions"><span class="v">'+place+'</span>'+(canChange?'<button type="button" class="detail-change-btn" id="detailWorkplaceBtn">근무지 변경</button>':'')+'</span></div>'+
-    '<div class="detail-row"><span>◎</span><span class="k">GPS 상태</span><span class="v '+(gpsOk?'ok':'')+'">'+(gpsOk?'정상 (위치 기록)':'-')+'</span></div>'+
+    '<button type="button" class="detail-row detail-click-row" id="gpsDetailBtn"><span>◎</span><span class="k">GPS 상태</span><span class="v '+(gpsOk?'ok':'')+'">'+(gpsOk?'정상 (위치 기록)':'-')+' ›</span></button>'+
     '<div class="detail-row"><span>▤</span><span class="k">비고</span><span class="v">-</span></div></div>'+
-    '<div class="map-box" id="detailMap"><div class="map-radius"></div><div class="map-pin"></div><div class="map-label">⌂ '+place+'</div><button type="button" class="map-expand" id="mapExpandBtn">↗</button></div>'+
+    '<button type="button" class="map-box map-box-button" id="detailMap"><div class="map-radius"></div><div class="map-pin"></div><div class="map-label">⌂ '+place+'</div><span class="map-expand">↗</span></button>'+
     '<div class="info-box">'+(gpsOk?(acc?('GPS 위치 기록이 저장되었습니다. 정확도 약 '+acc+'m입니다.'):'GPS 위치 기록이 저장되었습니다.'):'해당 날짜의 GPS 위치 기록이 없습니다.')+'</div>'+
     '<button class="back-list" id="backListBtn">목록으로 돌아가기</button></div>';
-  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');const wb=$('#detailWorkplaceBtn');if(wb)wb.onclick=openWorkplaceSelector;const mb=$('#mapExpandBtn');if(mb)mb.onclick=()=>openMapDetail(r,place);
+  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');const wb=$('#detailWorkplaceBtn');if(wb)wb.onclick=openWorkplaceSelector;const gm=$('#detailMap');if(gm)gm.onclick=()=>openMapDetail(r,place);const gb=$('#gpsDetailBtn');if(gb)gb.onclick=()=>openMapDetail(r,place);
 }
 function renderWorkplaces(){
   const root=$('#workplaceRoot');if(!root)return;
@@ -173,7 +173,7 @@ function renderWorkplaces(){
 }
 function openWorkplaceSelector(){
   const note=$('#workplaceNote');
-  if(note)note.textContent=state.today?.clockIn?'오늘 출근 기록의 근무지는 유지됩니다. 선택한 근무지는 다음 출근부터 적용됩니다.':'출근 전에 근무지를 선택해 주세요.';
+  if(note)note.textContent=state.today?.clockIn?'선택한 근무지로 오늘 근무 기록의 근무장소가 변경됩니다.':'출근 전에 근무지를 선택해 주세요.';
   renderWorkplaces();openSheet('workplaceSheet');
 }
 async function selectWorkplace(code){
@@ -205,15 +205,23 @@ function openMapDetail(r,place){
   }
   const lat=Number(r?.gpsIn?.lat),lng=Number(r?.gpsIn?.lng),acc=gpsAccuracy(r);
   const has=Number.isFinite(lat)&&Number.isFinite(lng);
+  let mapHtml='<div class="full-map empty-real-map"><div class="full-map-grid"></div><div class="full-map-label">저장된 GPS 위치 없음</div></div>';
+  if(has){
+    const dx=0.004,dy=0.0027;
+    const bbox=[lng-dx,lat-dy,lng+dx,lat+dy].join(',');
+    const mapUrl='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(lat+','+lng);
+    const openUrl='https://www.openstreetmap.org/?mlat='+encodeURIComponent(lat)+'&mlon='+encodeURIComponent(lng)+'#map=17/'+encodeURIComponent(lat)+'/'+encodeURIComponent(lng);
+    mapHtml='<div class="real-map-wrap"><iframe class="real-map-frame" src="'+mapUrl+'" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="GPS 상세 지도"></iframe><a class="real-map-open" href="'+openUrl+'" target="_blank" rel="noopener">지도에서 크게 보기 ↗</a><div class="real-map-accuracy">정확도 약 '+(acc||'-')+'m</div></div>';
+  }
   $('#mapDetailRoot').innerHTML='<div class="detail-date"><strong>'+place+'</strong><span class="detail-status">'+(has?'GPS 기록':'위치 없음')+'</span></div>'+
-    '<div class="full-map"><div class="full-map-grid"></div><div class="full-map-radius"></div><div class="full-map-pin"></div><div class="full-map-label">⌂ '+place+'</div></div>'+
+    mapHtml+
     '<div class="detail-card" style="margin-top:14px">'+
       '<div class="detail-row"><span>⌖</span><span class="k">근무지</span><span class="v">'+place+'</span></div>'+
       '<div class="detail-row"><span>◎</span><span class="k">위도</span><span class="v">'+(has?lat.toFixed(6):'-')+'</span></div>'+
       '<div class="detail-row"><span>◎</span><span class="k">경도</span><span class="v">'+(has?lng.toFixed(6):'-')+'</span></div>'+
       '<div class="detail-row"><span>◷</span><span class="k">정확도</span><span class="v">'+(acc?('약 '+acc+'m'):'-')+'</span></div>'+
     '</div>'+
-    '<div class="info-box">'+(has?'출근 시 저장된 GPS 좌표를 기준으로 표시합니다.':'저장된 GPS 좌표가 없습니다.')+'</div>';
+    '<div class="info-box">'+(has?'출근 시 저장된 실제 GPS 좌표를 지도에 표시합니다.':'저장된 GPS 좌표가 없습니다.')+'</div>';
   openSheet('mapDetailSheet');
 }
 function openSheet(id){const s=$('#'+id);if(s){s.classList.add('open');s.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}}
