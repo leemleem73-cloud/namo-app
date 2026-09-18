@@ -371,13 +371,83 @@ function updateDistributionCount(){
   const all=$('#distributionAll');if(all)all.checked=Boolean(state.distributionDirectory.length)&&c===state.distributionDirectory.length;
   const btn=$('#distributionSendBtn');if(btn)btn.textContent=c?'선택한 직원에게 배포 ('+c+'명)':'선택한 직원에게 배포';
 }
+function canvasApprovalPdf(detail){
+  return new Promise((resolve,reject)=>{
+    try{
+      const canvas=document.createElement('canvas');
+      canvas.width=1240;canvas.height=1754;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#0f2d5c';ctx.font='700 54px sans-serif';ctx.fillText('나모케미칼 연차/근태 승인서',90,120);
+      ctx.fillStyle='#47709e';ctx.font='28px sans-serif';ctx.fillText('최종 승인 완료 문서',90,170);
+      ctx.strokeStyle='#d9e3ef';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(90,210);ctx.lineTo(1150,210);ctx.stroke();
+
+      const start=String(detail.start_date||'').slice(0,10),end=String(detail.end_date||'').slice(0,10);
+      const rows=[
+        ['신청자',String(detail.employee_name||'-')+' '+String(detail.employee_title||'')],
+        ['부서',String(detail.employee_department||'-')],
+        ['휴가 유형',leaveTypeName(detail.leave_type)],
+        ['휴가 기간',start+(end&&end!==start?' ~ '+end:'')+' ('+Number(detail.days||0)+'일)'],
+        ['사유',String(detail.reason||'-')],
+        ['검토자',String(detail.reviewer_name||'-')+' '+String(detail.reviewer_title||'')],
+        ['최종 처리자',String(detail.reviewed_by_name||detail.reviewer_name||'-')+' '+String(detail.reviewed_by_title||detail.reviewer_title||'')],
+        ['신청일시',fmtDateTime(detail.created_at)],
+        ['승인일시',fmtDateTime(detail.reviewed_at)],
+        ['승인 상태','최종 승인']
+      ];
+      let y=285;
+      rows.forEach(([label,value])=>{
+        ctx.fillStyle='#f3f7fb';ctx.fillRect(90,y,250,92);
+        ctx.strokeStyle='#d9e3ef';ctx.strokeRect(90,y,250,92);
+        ctx.fillStyle='#ffffff';ctx.fillRect(340,y,810,92);
+        ctx.strokeStyle='#d9e3ef';ctx.strokeRect(340,y,810,92);
+        ctx.fillStyle='#59708f';ctx.font='700 26px sans-serif';ctx.fillText(label,120,y+56);
+        ctx.fillStyle='#17304f';ctx.font='700 28px sans-serif';
+        const text=String(value||'-');ctx.fillText(text.length>40?text.slice(0,40)+'…':text,375,y+56);
+        y+=92;
+      });
+      ctx.fillStyle='#eaf8ef';ctx.fillRect(90,y+40,1060,110);
+      ctx.fillStyle='#13854b';ctx.font='700 30px sans-serif';ctx.fillText('✓ 해당 신청은 최종 승인 완료되었습니다.',125,y+105);
+      ctx.fillStyle='#7b8796';ctx.font='22px sans-serif';ctx.fillText('나모케미칼 QMES 사내 배포용',90,1660);
+
+      const dataUrl=canvas.toDataURL('image/jpeg',0.92);
+      const jpeg=Uint8Array.from(atob(dataUrl.split(',')[1]),c=>c.charCodeAt(0));
+      const w=595,h=842;
+      const enc=s=>new TextEncoder().encode(s);
+      const parts=[];let len=0;const offsets=[0];
+      const push=b=>{parts.push(b);len+=b.length};
+      push(enc('%PDF-1.4\n'));
+      function obj(n,head,stream){
+        offsets[n]=len;push(enc(n+' 0 obj\n'+head));
+        if(stream){push(enc('\nstream\n'));push(stream);push(enc('\nendstream'))}
+        push(enc('\nendobj\n'));
+      }
+      obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+      obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+      obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+w+' '+h+'] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+      obj(4,'<< /Type /XObject /Subtype /Image /Width 1240 /Height 1754 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpeg.length+' >>',jpeg);
+      const content=enc('q\n'+w+' 0 0 '+h+' 0 0 cm\n/Im0 Do\nQ');
+      obj(5,'<< /Length '+content.length+' >>',content);
+      const xref=len;push(enc('xref\n0 6\n0000000000 65535 f \n'));
+      for(let n=1;n<=5;n++)push(enc(String(offsets[n]).padStart(10,'0')+' 00000 n \n'));
+      push(enc('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF'));
+      const out=new Uint8Array(len);let pos=0;parts.forEach(p=>{out.set(p,pos);pos+=p.length});
+      let binary='';const step=0x8000;for(let i=0;i<out.length;i+=step)binary+=String.fromCharCode(...out.subarray(i,i+step));
+      resolve(btoa(binary));
+    }catch(e){reject(e)}
+  });
+}
 async function sendInternalDistribution(){
   const ids=[...state.distributionSelected];
   if(!ids.length)return toast('배포할 직원을 선택해주세요.');
   try{
-    const result=await api('/api/attendance/leave/'+encodeURIComponent(state.leaveDetail.id)+'/distribute-v2',{method:'POST',body:JSON.stringify({recipientIds:ids})});
+    const pdfBase64=await canvasApprovalPdf(state.leaveDetail);
+    const employee=String(state.leaveDetail?.employee_name||'직원').replace(/[\\/:*?"<>|]/g,'_');
+    const start=String(state.leaveDetail?.start_date||'').slice(0,10);
+    const pdfName='나모케미칼_연차승인_'+employee+'_'+start+'.pdf';
+    const result=await api('/api/attendance/leave/'+encodeURIComponent(state.leaveDetail.id)+'/distribute-v2',{method:'POST',body:JSON.stringify({recipientIds:ids,pdfBase64,pdfName})});
     closeSheet('distributionSheet');
-    toast('사내 배포 완료 · '+Number(result?.count||ids.length)+'명');
+    toast('승인 PDF 사내 배포 완료 · '+Number(result?.count||ids.length)+'명');
     await openLeaveDetail(state.leaveDetail.id);
   }catch(e){toast(e.message)}
 }
@@ -601,7 +671,14 @@ async function loadNotifications(){
   try{state.notifications=await api('/api/attendance/notifications');const dot=$('#noticeDot');if(dot)dot.style.display=state.notifications.some(n=>!n.read_at)?'block':'none'}catch(_){}
 }
 function showNotifications(){
-  const rows=state.notifications||[];$('#noticeRoot').innerHTML=rows.length?rows.slice(0,20).map(n=>'<div class="request-item"><div class="request-title">'+(n.title||'알림')+'</div><div class="request-meta">'+(n.message||'')+'</div></div>').join(''):'<div class="empty">새 알림이 없습니다.</div>';openSheet('noticeSheet');api('/api/attendance/notifications/read-all',{method:'POST',body:'{}'}).catch(()=>{});const dot=$('#noticeDot');if(dot)dot.style.display='none';
+  const rows=state.notifications||[];
+  $('#noticeRoot').innerHTML=rows.length?rows.slice(0,20).map(n=>{
+    const target=String(n.target||'');
+    const pdfId=target.startsWith('leave_pdf:')?target.slice('leave_pdf:'.length):'';
+    return '<div class="request-item"><div class="request-title">'+(n.title||'알림')+'</div><div class="request-meta">'+(n.message||'')+'</div>'+(pdfId?'<button type="button" class="notice-pdf-btn" data-notice-pdf="'+pdfId+'">승인 PDF 보기</button>':'')+'</div>';
+  }).join(''):'<div class="empty">새 알림이 없습니다.</div>';
+  $('[data-notice-pdf]').forEach(b=>b.onclick=()=>window.open('/api/attendance/leave/'+encodeURIComponent(b.dataset.noticePdf)+'/distribution-pdf-v2','_blank'));
+  openSheet('noticeSheet');api('/api/attendance/notifications/read-all',{method:'POST',body:'{}'}).catch(()=>{});const dot=$('#noticeDot');if(dot)dot.style.display='none';
 }
 async function loadLeave(){try{state.leave=await api('/api/attendance/leave')}catch(_){state.leave={balance:{},requests:[]}}}
 async function loadCore(){
