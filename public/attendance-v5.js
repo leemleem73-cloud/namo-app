@@ -111,7 +111,7 @@ function renderAdminHome(){
   const ov=state.adminOverview||{},s=ov.summary||{},name=state.me?.user?.name||'관리자',reviews=state.adminReviews||[];
   const recent=(ov.employees||[]).filter(x=>['WORKING','DONE','LEAVE','STATUTORY'].includes(x.attendanceStatus)).slice(0,6);
   root.innerHTML=
-    '<section class="admin-old-hero"><div><div class="admin-old-name">'+name+'님,</div><div class="admin-old-sub">전사 근태 현황을 확인하세요.</div></div><span class="admin-old-chip">ADMIN</span></section>'+
+    '<section class="admin-old-hero"><div><div class="admin-old-name">'+name+'님,</div><div class="admin-old-sub">전사 근태 현황을 확인하세요.</div></div></section>'+
     '<div class="admin-old-date">'+String(ov.date||todayKey())+' · 관리자 모드</div>'+
     '<section class="admin-old-kpis">'+
       '<div class="admin-old-kpi"><small>재직 인원</small><b>'+Number(s.total||0)+'</b><em>대표이사 제외</em></div>'+
