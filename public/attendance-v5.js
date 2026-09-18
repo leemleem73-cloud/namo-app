@@ -351,13 +351,13 @@ function renderDistributionList(){
   const q=String($('#distributionSearch')?.value||'').trim().toLowerCase();
   const rows=(state.distributionDirectory||[]).filter(u=>{
     if(!q)return true;
-    return [u.name,u.department,u.title].some(v=>String(v||'').toLowerCase().includes(q));
+    return [u.name,u.department,u.title,u.email].some(v=>String(v||'').toLowerCase().includes(q));
   });
   const groups={};
   rows.forEach(u=>{const d=String(u.department||'미지정');(groups[d]||(groups[d]=[])).push(u)});
   root.innerHTML=Object.keys(groups).length?Object.entries(groups).map(([dept,users])=>
     '<section class="distribution-group"><div class="distribution-group-title">'+dept+' ('+users.length+'명)</div>'+
-    users.map(u=>'<label class="distribution-person"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small></span></label>').join('')+
+    users.map(u=>'<label class="distribution-person"><input type="checkbox" data-distribution-user="'+String(u.id||'')+'" '+(state.distributionSelected.has(String(u.id||''))?'checked':'')+'><span><b>'+String(u.name||'-')+' '+String(u.title||'')+'</b><small>'+String(u.department||'-')+'</small><small class="distribution-email">'+(u.email?String(u.email):'메일 미등록')+'</small></span></label>').join('')+
     '</section>'
   ).join(''):'<div class="empty">검색 결과가 없습니다.</div>';
   $$('[data-distribution-user]',root).forEach(ch=>ch.onchange=()=>{
