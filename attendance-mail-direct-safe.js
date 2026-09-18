@@ -78,7 +78,10 @@ async function storedCredential(sender){
 
 async function verifyCredential(sender,password){
   const cfg=smtpConfig();
-  const transporter=nodemailer.createTransport({host:cfg.host,port:cfg.port,secure:cfg.secure,auth:{user:sender.email,pass:password},requireTLS:cfg.port===587});
+  const transporter=nodemailer.createTransport({
+    host:cfg.host,port:cfg.port,secure:cfg.secure,auth:{user:sender.email,pass:password},requireTLS:cfg.port===587,
+    connectionTimeout:12000,greetingTimeout:8000,socketTimeout:12000
+  });
   await transporter.verify();
 }
 
@@ -137,7 +140,10 @@ function install(app){
       await pool.query(`INSERT INTO attendance_mail_credentials(user_id,email,iv,auth_tag,cipher_text,linked_at,updated_at) VALUES($1,$2,$3,$4,$5,NOW(),NOW()) ON CONFLICT(user_id) DO UPDATE SET email=EXCLUDED.email,iv=EXCLUDED.iv,auth_tag=EXCLUDED.auth_tag,cipher_text=EXCLUDED.cipher_text,updated_at=NOW()`,[sender.id,String(sender.email).toLowerCase(),secret.iv,secret.tag,secret.data]);
       return ok(res,{linked:true,sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 연동이 완료되었습니다.');
     }catch(e){
+      console.error('[Attendance mail link]',e?.code||'',e?.message||e);
       const authFailed=e?.code==='EAUTH'||Number(e?.responseCode)===535;
+      const networkFailed=['ETIMEDOUT','ECONNECTION','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH'].includes(String(e?.code||'').toUpperCase())||/timeout|timed out|network is unreachable/i.test(String(e?.message||''));
+      if(networkFailed)return fail(res,503,'현재 서버에서 SMTP 메일 서버에 연결할 수 없습니다. Render Free 서비스는 SMTP 포트(25/465/587) 발신이 차단됩니다. 메일 발송을 사용하려면 Render 유료 인스턴스 또는 HTTPS 메일 API가 필요합니다.','SMTP_NETWORK_BLOCKED');
       return fail(res,502,authFailed?'이카운트 웹메일 비밀번호를 확인해 주세요.':`메일 연동 실패: ${e.message}`,authFailed?'SMTP_AUTH_FAILED':'MAIL_LINK_FAILED');
     }
   });
@@ -154,7 +160,10 @@ function install(app){
       const recipients=await validRecipients(req.body?.recipients);
       if(!recipients.length)return fail(res,400,'수신자를 선택해 주세요.','RECIPIENTS_REQUIRED');
       const cfg=smtpConfig();
-      const transporter=nodemailer.createTransport({host:cfg.host,port:cfg.port,secure:cfg.secure,auth:credential,requireTLS:cfg.port===587});
+      const transporter=nodemailer.createTransport({
+        host:cfg.host,port:cfg.port,secure:cfg.secure,auth:credential,requireTLS:cfg.port===587,
+        connectionTimeout:12000,greetingTimeout:8000,socketTimeout:20000
+      });
       const request=req.body?.request||{};
       const subject=`[나모케미칼] ${request.leaveName||'휴가'} 승인 완료`;
       const to=recipients.map(x=>x.email).join(', ');
@@ -175,6 +184,8 @@ function install(app){
     }catch(e){
       console.error('[Attendance direct mail]',e);
       const authFailed=e?.code==='EAUTH'||Number(e?.responseCode)===535;
+      const networkFailed=['ETIMEDOUT','ECONNECTION','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH'].includes(String(e?.code||'').toUpperCase())||/timeout|timed out|network is unreachable/i.test(String(e?.message||''));
+      if(networkFailed)return fail(res,503,'현재 서버에서 SMTP 메일 서버에 연결할 수 없습니다. Render Free 서비스는 SMTP 포트(25/465/587) 발신이 차단됩니다. 메일 발송을 사용하려면 Render 유료 인스턴스 또는 HTTPS 메일 API가 필요합니다.','SMTP_NETWORK_BLOCKED');
       return fail(res,502,authFailed?'로그인 사용자의 이카운트 메일 인증정보를 확인해 주세요.':`메일 발송 실패: ${e.message}`,authFailed?'SMTP_AUTH_FAILED':'SMTP_SEND_FAILED');
     }
   });
