@@ -223,3 +223,5 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 
 .pdf-view-btn{margin-top:10px;border-color:#b8c9dc;background:#f8fbff;color:#176fd7}
 .notice-pdf-btn{margin-top:9px;height:36px;padding:0 12px;border:1px solid #b8cfe9;border-radius:10px;background:#eef6ff;color:#176fd7;font-size:10px;font-weight:900}
+
+.distribution-email{color:#176fd7!important;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
