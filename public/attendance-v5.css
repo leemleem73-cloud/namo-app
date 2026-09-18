@@ -107,3 +107,6 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 .full-map-radius{position:absolute;width:190px;height:190px;border-radius:50%;left:50%;top:52%;transform:translate(-50%,-50%);background:rgba(55,157,255,.17);border:1px solid rgba(25,126,225,.22)}
 .full-map-pin{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;background:#1676df;border:6px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.22)}
 .full-map-label{position:absolute;right:16px;bottom:16px;background:#fff;border-radius:11px;padding:8px 11px;font-size:12px;font-weight:900;box-shadow:0 4px 12px rgba(31,55,85,.08)}
+
+.today-detail-btn{width:100%;margin-top:12px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;text-align:left;color:#18304f;box-shadow:0 5px 16px rgba(37,66,98,.04)}
+.today-detail-btn span{display:block}.today-detail-btn b{display:block;font-size:13px;font-weight:950}.today-detail-btn small{display:block;margin-top:4px;font-size:10px;color:#738298}.today-detail-btn strong{font-size:22px;color:#176fd7}
