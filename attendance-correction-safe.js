@@ -19,59 +19,12 @@ const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그
 const isAdmin=req=>String(req.session?.user?.role||'').toLowerCase()==='admin';
 
 function attendanceHtmlWithCorrection(){
-  const file=path.resolve(__dirname,'public','attendance.html');
-  let html=fs.readFileSync(file,'utf8');
-
-  // 2026-09-18 attendance-only UI isolation.
-  const legacyCss=[
-    'attendance-reference-ui-20260908.css',
-    'attendance-admin-test-fix-20260909.css',
-    'attendance-test-ui-20260909-v1.css',
-    'attendance-layout-fix-20260909.css',
-    'attendance-enterprise-home-20260909.css',
-    'attendance-qmes-redesign-20260918.css'
-  ];
-  const legacyJs=[
-    'attendance-reference-ui-20260908.js',
-    'attendance-enterprise-home-20260909.js',
-    'attendance-final-polish-20260917.js',
-    'attendance-week-footer-hide-20260917.js',
-    'attendance-qmes-redesign-20260918.js',
-    'attendance-correction.js',
-    'attendance-leave-cancel.js',
-    'attendance-mobile-fix-20260908.js'
-  ];
-  for(const name of legacyCss){
-    const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    html=html.replace(new RegExp('<link rel="stylesheet" href="/'+escaped+'\\?v=[^"]+"\\s*/?>','g'),'');
-  }
-  for(const name of legacyJs){
-    const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    html=html.replace(new RegExp('<script src="/'+escaped+'\\?v=[^"]+"><\\/script>','g'),'');
-  }
-
-  html=html.replace('</head>',
-    '<link rel="stylesheet" href="/attendance-mobile-fix-20260908.css?v=20260908-fix4">'+
-    '<link rel="stylesheet" href="/attendance-qmes-redesign-20260918.css?v=20260918-ui4">'+
-    '</head>'
-  );
-
-  return html.replace('</body>',
-    '<script src="/attendance-correction.js?v=20260904-correction3"></script>'+
-    '<script src="/attendance-leave-cancel.js?v=20260904-leavecancel1"></script>'+
-    '<script src="/attendance-mobile-fix-20260908.js?v=20260908-fix4"></script>'+
-    '<script src="/attendance-qmes-redesign-20260918.js?v=20260918-ui4"></script>'+
-    '</body>'
-  );
+  const file=path.resolve(__dirname,'public','attendance-v5.html');
+  return fs.readFileSync(file,'utf8');
 }
 function patchAttendanceHtml(){
-  try{
-    const file=path.resolve(__dirname,'public','attendance.html');
-    if(!fs.existsSync(file))return;
-    const html=attendanceHtmlWithCorrection();
-    fs.writeFileSync(file,html,'utf8');
-    console.log('[Attendance correction] client scripts installed');
-  }catch(e){console.error('[Attendance correction] HTML patch failed',e)}
+  // V5 is served directly from attendance-v5.html.
+  // Legacy attendance.html is intentionally left untouched.
 }
 patchAttendanceHtml();
 
