@@ -40,12 +40,25 @@ async function notify(userId,title,message,target='approval'){
   if(!userId)return;
   try{await pool.query('INSERT INTO attendance_notifications(user_id,title,message,target) VALUES($1,$2,$3,$4)',[userId,title,String(message||'').slice(0,1000),target])}catch(e){console.error('[Attendance review notify]',e)}
 }
+function reviewerEligible(u){
+  const title=String(u?.title||'').replace(/\s/g,'');
+  const role=String(u?.role||'').toLowerCase();
+  return role==='admin'||/관리자/.test(title)||/부장|본부장/.test(title)||(/이사|상무|전무|임원/.test(title)&&!/대표이사/.test(title));
+}
+function reviewerKind(u){
+  const title=String(u?.title||'').replace(/\s/g,'');
+  const role=String(u?.role||'').toLowerCase();
+  if(role==='admin'||/관리자/.test(title))return'관리자';
+  if(/부장|본부장/.test(title))return'부장';
+  if(/이사|상무|전무|임원/.test(title)&&!/대표이사/.test(title))return'이사';
+  return'';
+}
 async function reviewerList(excludeId=''){
   const q=await pool.query("SELECT id,name,email,department,title,role,status FROM users WHERE COALESCE(status,'APPROVED') NOT IN ('REJECTED','INACTIVE','DISABLED','DELETED','WITHDRAWN') ORDER BY name");
-  const all=q.rows.filter(u=>String(u.id)!==String(excludeId)&&activeStatus(u.status));
-  const executives=all.filter(u=>roleLevel(u)===3).slice(0,3);
-  const managers=all.filter(u=>roleLevel(u)===2).slice(0,1);
-  return[...executives,...managers];
+  return q.rows
+    .filter(u=>String(u.id)!==String(excludeId)&&activeStatus(u.status)&&reviewerEligible(u))
+    .map(u=>({...u,reviewerKind:reviewerKind(u)}))
+    .sort((a,b)=>({관리자:1,부장:2,이사:3}[a.reviewerKind]||9)-({관리자:1,부장:2,이사:3}[b.reviewerKind]||9)||String(a.name||'').localeCompare(String(b.name||''),'ko'));
 }
 function install(app){
   if(app.__namoAttendanceReviewSafeInstalled)return;
@@ -67,12 +80,12 @@ function install(app){
       await ensureSchema();
       const{leaveType='annual',startDate,endDate,days,reason='',handover='',reviewerId=''}=req.body||{};
       const n=Number(days);if(!startDate||!endDate||!Number.isFinite(n)||n<=0)return fail(res,400,'휴가 신청 정보를 확인해주세요.');
-      const reviewer=await userById(reviewerId);if(!reviewer||!activeStatus(reviewer.status)||![2,3].includes(roleLevel(reviewer)))return fail(res,400,'선택한 검토자를 확인해주세요.');
+      const reviewer=await userById(reviewerId);if(!reviewer||!activeStatus(reviewer.status)||!reviewerEligible(reviewer))return fail(res,400,'검토자는 관리자, 부장, 이사만 선택할 수 있습니다.');
       if(String(reviewer.id)===String(req.session.user.id))return fail(res,400,'본인은 자신의 검토자가 될 수 없습니다.');
       if(['annual','am_half','pm_half'].includes(String(leaveType))){const b=await balance(req.session.user.id);if(n>b.remaining)return fail(res,400,'잔여 연차가 부족합니다.');}
       const q=await pool.query("INSERT INTO leave_requests(user_id,leave_type,start_date,end_date,days,reason,handover,status,approver1_user_id,approver2_user_id) VALUES($1,$2,$3,$4,$5,$6,$7,'PENDING_1',$8,$8) RETURNING *",[req.session.user.id,leaveType,startDate,endDate,n,String(reason).slice(0,1000),String(handover).slice(0,1000),reviewer.id]);
       await notify(reviewer.id,'근태 검토 요청',`${req.session.user.name||'직원'}님이 ${startDate} 휴가/근태 검토를 요청했습니다.`,'approval');
-      return ok(res,{...q.rows[0],reviewer:{id:reviewer.id,name:reviewer.name,email:reviewer.email,title:reviewer.title,department:reviewer.department}},'검토 요청이 전달되었습니다.');
+      return ok(res,{...q.rows[0],reviewer:{id:reviewer.id,name:reviewer.name,email:reviewer.email,title:reviewer.title,department:reviewer.department,reviewerKind:reviewerKind(reviewer)}},'검토 요청이 전달되었습니다. 검토 완료 즉시 자동 승인됩니다.');
     }catch(e){console.error('[Attendance leave-v2]',e);return fail(res,500,'검토 요청 등록에 실패했습니다.');}
   });
   app.get('/api/attendance/reviews-v2',requireLogin,async(req,res)=>{
