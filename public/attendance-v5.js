@@ -108,7 +108,7 @@ function renderHome(){
     '</section>'+
     '<section class="gps-strip">'+
       '<div class="gps-box"><div class="gps-icon">⌖</div><div class="gps-copy"><b>'+(t.clockIn?'GPS 인증 완료':'GPS 인증 대기')+'</b><span>'+(acc?('정확도 약 '+acc+'m'):'출근 시 위치 확인')+'</span></div></div>'+
-      '<button type="button" class="gps-box workplace-trigger" id="workplaceChangeBtn"><div class="gps-icon">◉</div><div class="gps-copy"><b>'+(t.clockIn?'현재 근무지':'근무지 변경')+'</b><span>'+workplace(t)+'</span></div><span class="gps-chev">›</span></button>'+
+      '<button type="button" class="gps-box workplace-trigger" id="workplaceChangeBtn"><div class="gps-icon">◉</div><div class="gps-copy"><b>근무지 변경</b><span>'+workplace(t)+'</span></div><span class="gps-chev">›</span></button>'+
     '</section>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 현황</h2><button class="link-btn" id="viewAllBtn">전체보기 ›</button></div><div class="week-grid">'+cells+'</div></section>'+
     '<section class="card"><div class="card-head"><h2>이번 주 근무 요약</h2></div><div class="summary-grid">'+
@@ -184,7 +184,10 @@ function selectWorkplace(code){
   renderWorkplaces();
   if(!state.today?.clockIn){renderHome();toast(state.workplaceName+'으로 근무지를 변경했습니다.');}
   else toast(state.workplaceName+'을 다음 출근 근무지로 저장했습니다.');
-  setTimeout(()=>closeSheet('workplaceSheet'),250);
+  setTimeout(()=>{
+    closeSheet('workplaceSheet');
+    if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+  },250);
 }
 function openSheet(id){const s=$('#'+id);if(s){s.classList.add('open');s.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}}
 function closeSheet(id){const s=$('#'+id);if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true');document.body.style.overflow=''}}
