@@ -86,6 +86,13 @@ CREATE TABLE IF NOT EXISTS namo_talk_standalone_channel_members(
 CREATE TABLE IF NOT EXISTS namo_talk_standalone_settings(
  key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS namo_talk_standalone_room_preferences(
+ user_name TEXT NOT NULL,peer_name TEXT NOT NULL,alias TEXT NOT NULL DEFAULT '',
+ top_pinned BOOLEAN NOT NULL DEFAULT FALSE,muted BOOLEAN NOT NULL DEFAULT FALSE,
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(user_name,peer_name)
+);
+CREATE INDEX IF NOT EXISTS namo_talk_standalone_room_preferences_user_idx
+ ON namo_talk_standalone_room_preferences(user_name,top_pinned DESC,updated_at DESC);
 CREATE TABLE IF NOT EXISTS namo_talk_standalone_backup_history(
  id BIGSERIAL PRIMARY KEY,backup_key TEXT UNIQUE NOT NULL,status TEXT NOT NULL DEFAULT 'completed',
  created_by TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),message_count BIGINT NOT NULL DEFAULT 0,
@@ -377,6 +384,23 @@ function install(app){
       const r=await pool.query(`SELECT substring(m.room_id from 9) channel,COUNT(*)::int count,MAX(m.id)::bigint AS "latestId" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_channel_reads rd ON rd.room_id=m.room_id AND rd.user_name=$1 WHERE m.room_id=ANY($2::text[]) AND m.deleted_at IS NULL AND m.sender_name<>$1 AND m.id>COALESCE(rd.last_read_id,0) GROUP BY m.room_id ORDER BY MAX(m.id) DESC`,[me.name,ids]);
       ok(res,{unread:r.rows,total:r.rows.reduce((s,x)=>s+Number(x.count||0),0)});
     }catch(e){fail(res,500,'업무채널 안 읽은 메시지를 확인하지 못했습니다.')}
+  });
+
+  app.get(P+'/room-preferences',async(req,res)=>{
+    try{const me=await requireUser(req,res);if(!me)return;const r=await pool.query(`SELECT peer_name AS "peerName",alias,top_pinned AS "topPinned",muted,updated_at AS "updatedAt" FROM namo_talk_standalone_room_preferences WHERE user_name=$1 ORDER BY top_pinned DESC,updated_at DESC`,[me.name]);ok(res,{preferences:r.rows})}
+    catch(e){fail(res,500,'대화방 설정을 불러오지 못했습니다.')}
+  });
+  app.put(P+'/room-preferences/:peer',async(req,res)=>{
+    try{
+      const me=await requireUser(req,res);if(!me)return;
+      const peer=String(req.params.peer||'').trim();if(!peer||peer===me.name)return fail(res,400,'대화 상대가 올바르지 않습니다.');
+      const target=await account(peer);if(!target)return fail(res,404,'직원을 찾을 수 없습니다.');
+      const body=req.body||{},alias=String(body.alias??'').trim().slice(0,30),topPinned=!!body.topPinned,muted=!!body.muted;
+      const r=await pool.query(`INSERT INTO namo_talk_standalone_room_preferences(user_name,peer_name,alias,top_pinned,muted,updated_at)
+        VALUES($1,$2,$3,$4,$5,NOW()) ON CONFLICT(user_name,peer_name) DO UPDATE SET alias=EXCLUDED.alias,top_pinned=EXCLUDED.top_pinned,muted=EXCLUDED.muted,updated_at=NOW()
+        RETURNING peer_name AS "peerName",alias,top_pinned AS "topPinned",muted,updated_at AS "updatedAt"`,[me.name,peer,alias,topPinned,muted]);
+      ok(res,{preference:r.rows[0]});
+    }catch(e){fail(res,500,'대화방 설정을 저장하지 못했습니다.')}
   });
 
   app.get(P+'/conversations',async(req,res)=>{
