@@ -958,7 +958,8 @@ const COMMERCIAL_ERP_ALLOWED_NAMES = new Set(['김종혁', '김세희', '정영�
 function canAccessCommercialErp(user) {
   const name = txt(user?.name).replace(/\s+/g, '');
   const department = txt(user?.department || user?.dept).replace(/\s+/g, '');
-  return department === '영업부' || COMMERCIAL_ERP_ALLOWED_NAMES.has(name);
+  const role = txt(user?.role).toLowerCase();
+  return role === 'admin' || department === '영업부' || COMMERCIAL_ERP_ALLOWED_NAMES.has(name);
 }
 function requireCommercialErp(req, res, next) {
   if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
