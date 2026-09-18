@@ -465,11 +465,19 @@ async function clockIn(){
 async function clockOut(){
   try{toast('GPS 위치를 확인하는 중입니다.');const g=await getGps();await api('/api/attendance/clock-out-v2',{method:'POST',body:JSON.stringify({gps:g})});toast('퇴근 등록이 완료되었습니다.');await loadCore()}catch(e){toast(e.message)}
 }
+function reviewerKindClient(r){
+  const title=String(r?.title||'').replace(/\s/g,'');
+  const role=String(r?.role||'').toLowerCase();
+  if(/부장|본부장/.test(title))return'부장';
+  if(/이사|상무|전무|임원/.test(title)&&!/대표이사/.test(title))return'이사';
+  if(role==='admin'||/관리자/.test(title))return'관리자';
+  return String(r?.reviewerKind||'');
+}
 function renderReviewerOptions(){
   const sel=$('#requestReviewer');if(!sel)return;
   const rows=Array.isArray(state.reviewers)?state.reviewers:[];
   sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>{
-    const kind=String(r.reviewerKind||'');
+    const kind=reviewerKindClient(r);
     const name=String(r.name||'').trim();
     const label=kind==='관리자'?'관리자':[kind,name].filter(Boolean).join(' · ');
     return '<option value="'+String(r.id||'')+'">'+label+'</option>';
@@ -482,7 +490,7 @@ async function loadReviewers(){
 }
 async function openRequest(type){
   $('#requestType').value=type||'annual';const t=todayKey();$('#requestStart').value=t;$('#requestEnd').value=t;$('#requestReason').value='';
-  if(!state.reviewers.length)await loadReviewers();else renderReviewerOptions();
+  await loadReviewers();
   openSheet('requestSheet');
 }
 function requestDays(start,end,type){
