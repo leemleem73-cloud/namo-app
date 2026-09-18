@@ -31,7 +31,18 @@ function fmtDate(key){
   return m[1]+'년 '+Number(m[2])+'월 '+Number(m[3])+'일 ('+days[d.getDay()]+')';
 }
 function shortDate(key){const m=String(key||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?Number(m[2])+'/'+Number(m[3]):'-'}
-function logKey(r){return String(r?.workDate||'').slice(0,10)}
+function isoKstDate(v){
+  if(!v)return'';
+  const d=new Date(v);if(Number.isNaN(d.getTime()))return'';
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);
+  const o={};p.forEach(x=>o[x.type]=x.value);return o.year+'-'+o.month+'-'+o.day;
+}
+function logKey(r){
+  const raw=String(r?.workDate||'').slice(0,10);
+  const byClock=isoKstDate(r?.clockIn||r?.clockOut);
+  if(byClock&&raw&&byClock!==raw)return byClock;
+  return byClock||raw;
+}
 function minsOf(t){const m=String(t||'').match(/^(\d{2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):0}
 function durationMinutes(r,key){
   if(!r?.clockIn)return 0;
@@ -70,7 +81,7 @@ function showView(name){
 }
 function renderHome(){
   const root=$('#homeRoot');if(!root)return;
-  const t=state.today||{},key=todayKey(),st=statusFor(key,t),acc=gpsAccuracy(t),wk=weekKeys(),names=['월','화','수','목','금','토'];
+  const t=state.today||{},key=todayKey(),st=statusFor(key,t),acc=gpsAccuracy(t),wk=weekKeys(),names=['월','화','수','목','금','토']; if(t?.clockIn&&!state.logs.some(x=>logKey(x)===key))state.logs=[...state.logs,t];
   let workDays=0,total=0,late=0,missing=0;
   const cells=wk.map((k,i)=>{
     const r=state.logs.find(x=>logKey(x)===k),s=statusFor(k,r),mins=durationMinutes(r,k);
