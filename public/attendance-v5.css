@@ -180,7 +180,3 @@ linear-gradient(0deg,transparent 0 67%,rgba(214,228,236,.95) 68% 70%,transparent
 .admin-hire-input{width:108px;height:30px;border:1px solid #d7e1eb;border-radius:8px;background:#fff;padding:0 5px;font-size:9px;color:#203652}
 @media(max-width:430px){.admin-month-summary-grid{grid-template-columns:repeat(2,1fr)}}
 
-.workplace-option:disabled{opacity:.72;cursor:wait}
-.workplace-option.saving{border-color:#1477e6;background:#edf6ff;box-shadow:0 0 0 3px rgba(20,119,230,.08)}
-.workplace-option.saving .workplace-arrow{font-size:0}
-.workplace-option.saving .workplace-arrow:after{content:"저장 중";font-size:9px;color:#1477e6;font-weight:900}
