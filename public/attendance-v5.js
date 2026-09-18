@@ -334,7 +334,7 @@ async function selectWorkplace(code){
   const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장',address:'충청북도 충주시 주덕읍 중원산업로 309'},{code:'pangyo',name:'판교사무소',address:'경기도 성남시 분당구 대왕판교로606번길 39 판교럭스타워 11층'}].find(x=>x.code===code);
   if(!w)return;
   const root=$('#workplaceRoot');
-  const buttons=$('[data-workplace-code]',root);
+  const buttons=$$('[data-workplace-code]',root);
   buttons.forEach(b=>b.disabled=true);
   const selectedBtn=buttons.find(b=>String(b.dataset.workplaceCode)===String(code));
   if(selectedBtn)selectedBtn.classList.add('saving');
