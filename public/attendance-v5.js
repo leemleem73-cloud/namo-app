@@ -153,10 +153,10 @@ function openDetail(key){
     '<div class="detail-row"><span>⌖</span><span class="k">근무장소</span><span class="detail-place-actions"><span class="v">'+place+'</span>'+(canChange?'<button type="button" class="detail-change-btn" id="detailWorkplaceBtn">근무지 변경</button>':'')+'</span></div>'+
     '<div class="detail-row"><span>◎</span><span class="k">GPS 상태</span><span class="v '+(gpsOk?'ok':'')+'">'+(gpsOk?'정상 (위치 기록)':'-')+'</span></div>'+
     '<div class="detail-row"><span>▤</span><span class="k">비고</span><span class="v">-</span></div></div>'+
-    '<div class="map-box"><div class="map-radius"></div><div class="map-pin"></div><div class="map-label">⌂ '+place+'</div></div>'+
+    '<div class="map-box" id="detailMap"><div class="map-radius"></div><div class="map-pin"></div><div class="map-label">⌂ '+place+'</div><button type="button" class="map-expand" id="mapExpandBtn">↗</button></div>'+
     '<div class="info-box">'+(gpsOk?(acc?('GPS 위치 기록이 저장되었습니다. 정확도 약 '+acc+'m입니다.'):'GPS 위치 기록이 저장되었습니다.'):'해당 날짜의 GPS 위치 기록이 없습니다.')+'</div>'+
     '<button class="back-list" id="backListBtn">목록으로 돌아가기</button></div>';
-  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');const wb=$('#detailWorkplaceBtn');if(wb)wb.onclick=openWorkplaceSelector;
+  openSheet('detailSheet');$('#backListBtn').onclick=()=>closeSheet('detailSheet');const wb=$('#detailWorkplaceBtn');if(wb)wb.onclick=openWorkplaceSelector;const mb=$('#mapExpandBtn');if(mb)mb.onclick=()=>openMapDetail(r,place);
 }
 function renderWorkplaces(){
   const root=$('#workplaceRoot');if(!root)return;
@@ -175,18 +175,45 @@ function openWorkplaceSelector(){
   if(note)note.textContent=state.today?.clockIn?'오늘 출근 기록의 근무지는 유지됩니다. 선택한 근무지는 다음 출근부터 적용됩니다.':'출근 전에 근무지를 선택해 주세요.';
   renderWorkplaces();openSheet('workplaceSheet');
 }
-function selectWorkplace(code){
+async function selectWorkplace(code){
   const w=state.workplaces.find(x=>String(x.code)===String(code))||[{code:'chungju',name:'충주 1공장'},{code:'pangyo',name:'판교사무소'}].find(x=>x.code===code);
   if(!w)return;
-  state.workplaceCode=String(w.code);state.workplaceName=String(w.name||state.workplaceName);
-  localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
-  renderWorkplaces();
-  if(!state.today?.clockIn){renderHome();toast(state.workplaceName+'으로 근무지를 변경했습니다.');}
-  else toast(state.workplaceName+'을 다음 출근 근무지로 저장했습니다.');
-  setTimeout(()=>{
-    closeSheet('workplaceSheet');
-    if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
-  },250);
+  try{
+    const result=await api('/api/attendance/workplace-v2',{method:'PUT',body:JSON.stringify({workplaceCode:String(w.code)})});
+    state.workplaceCode=String(w.code);state.workplaceName=String(w.name||state.workplaceName);
+    localStorage.setItem('namo_workplace_v4_live',state.workplaceCode);
+    if(state.today?.clockIn&&result?.workplaceName){
+      state.today={...state.today,workplaceCode:result.workplaceCode||w.code,workplaceName:result.workplaceName||w.name,workplaceAddress:result.workplaceAddress||w.address};
+    }
+    renderWorkplaces();renderHome();renderProfile();
+    toast(result?.workplaceName?(result.workplaceName+'으로 근무지를 변경했습니다.'):(state.workplaceName+'으로 근무지를 변경했습니다.'));
+    setTimeout(()=>{
+      closeSheet('workplaceSheet');
+      if($('#detailSheet')?.classList.contains('open')&&state.detailKey)openDetail(state.detailKey);
+    },250);
+  }catch(e){toast(e.message)}
+}
+function openMapDetail(r,place){
+  let s=$('#mapDetailSheet');
+  if(!s){
+    s=document.createElement('div');s.id='mapDetailSheet';s.className='sheet';s.setAttribute('aria-hidden','true');
+    s.innerHTML='<div class="sheet-panel detail-panel"><header class="detail-header"><button class="detail-back" id="mapDetailBack" aria-label="뒤로">←</button><div>GPS 상세 지도</div><div></div></header><div class="detail-body" id="mapDetailRoot"></div></div>';
+    document.body.appendChild(s);
+    $('#mapDetailBack').onclick=()=>closeSheet('mapDetailSheet');
+    s.addEventListener('click',e=>{if(e.target.id==='mapDetailSheet')closeSheet('mapDetailSheet')});
+  }
+  const lat=Number(r?.gpsIn?.lat),lng=Number(r?.gpsIn?.lng),acc=gpsAccuracy(r);
+  const has=Number.isFinite(lat)&&Number.isFinite(lng);
+  $('#mapDetailRoot').innerHTML='<div class="detail-date"><strong>'+place+'</strong><span class="detail-status">'+(has?'GPS 기록':'위치 없음')+'</span></div>'+
+    '<div class="full-map"><div class="full-map-grid"></div><div class="full-map-radius"></div><div class="full-map-pin"></div><div class="full-map-label">⌂ '+place+'</div></div>'+
+    '<div class="detail-card" style="margin-top:14px">'+
+      '<div class="detail-row"><span>⌖</span><span class="k">근무지</span><span class="v">'+place+'</span></div>'+
+      '<div class="detail-row"><span>◎</span><span class="k">위도</span><span class="v">'+(has?lat.toFixed(6):'-')+'</span></div>'+
+      '<div class="detail-row"><span>◎</span><span class="k">경도</span><span class="v">'+(has?lng.toFixed(6):'-')+'</span></div>'+
+      '<div class="detail-row"><span>◷</span><span class="k">정확도</span><span class="v">'+(acc?('약 '+acc+'m'):'-')+'</span></div>'+
+    '</div>'+
+    '<div class="info-box">'+(has?'출근 시 저장된 GPS 좌표를 기준으로 표시합니다.':'저장된 GPS 좌표가 없습니다.')+'</div>';
+  openSheet('mapDetailSheet');
 }
 function openSheet(id){const s=$('#'+id);if(s){s.classList.add('open');s.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}}
 function closeSheet(id){const s=$('#'+id);if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true');document.body.style.overflow=''}}
