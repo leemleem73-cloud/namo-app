@@ -86,6 +86,19 @@ CREATE TABLE IF NOT EXISTS namo_talk_standalone_channel_members(
 CREATE TABLE IF NOT EXISTS namo_talk_standalone_settings(
  key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS namo_talk_standalone_backup_history(
+ id BIGSERIAL PRIMARY KEY,backup_key TEXT UNIQUE NOT NULL,status TEXT NOT NULL DEFAULT 'completed',
+ created_by TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),message_count BIGINT NOT NULL DEFAULT 0,
+ attachment_count BIGINT NOT NULL DEFAULT 0,attachment_bytes BIGINT NOT NULL DEFAULT 0,account_count BIGINT NOT NULL DEFAULT 0,
+ channel_read_count BIGINT NOT NULL DEFAULT 0,checksum TEXT NOT NULL DEFAULT '',note TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS namo_talk_standalone_backup_created_idx ON namo_talk_standalone_backup_history(created_at DESC);
+CREATE TABLE IF NOT EXISTS namo_talk_standalone_backup_items(
+ backup_id BIGINT NOT NULL REFERENCES namo_talk_standalone_backup_history(id) ON DELETE CASCADE,
+ entity_type TEXT NOT NULL,row_key TEXT NOT NULL,row_data JSONB NOT NULL,file_data BYTEA,
+ PRIMARY KEY(backup_id,entity_type,row_key)
+);
+CREATE INDEX IF NOT EXISTS namo_talk_standalone_backup_items_type_idx ON namo_talk_standalone_backup_items(backup_id,entity_type);
 INSERT INTO namo_talk_standalone_settings(key,value) VALUES
  ('attachment_auto_cleanup','true'),('attachment_retention_days','365'),('attachment_last_cleanup_at',''),
  ('attachment_last_deleted_count','0'),('attachment_last_deleted_bytes','0')
@@ -194,7 +207,7 @@ function install(app){
   schema().then(scheduleCleanup).catch(e=>console.error('[NAMO Talk schema]',e));
 
   app.get(P+'/health',async(req,res)=>{
-    try{await schema();ok(res,{service:'NAMO Talk Standalone',version:'7.0.0',serverTime:new Date().toISOString(),features:{centralServer:true,idempotentSend:true,channelUnread:true,employeeLifecycle:true,storageRetention:true,managedChannels:true}})}
+    try{await schema();ok(res,{service:'NAMO Talk Standalone',version:'7.0.0',serverTime:new Date().toISOString(),features:{centralServer:true,idempotentSend:true,channelUnread:true,employeeLifecycle:true,storageRetention:true,managedChannels:true,backupManagement:true}})}
     catch(e){fail(res,500,'NAMO Talk DB를 준비하지 못했습니다.')}
   });
 
@@ -399,6 +412,63 @@ function install(app){
   app.post(P+'/storage-cleanup',async(req,res)=>{
     try{const me=await requireAdmin(req,res);if(!me)return;ok(res,await cleanupAttachments(req.body?.days))}
     catch(e){fail(res,500,'첨부파일 정리에 실패했습니다.')}
+  });
+
+  app.post(P+'/backups',async(req,res)=>{
+    let client;
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+      const backupKey='namo-'+new Date().toISOString().replace(/[-:.TZ]/g,'').slice(0,14)+'-'+crypto.randomBytes(4).toString('hex');
+      const h=await client.query(`INSERT INTO namo_talk_standalone_backup_history(backup_key,status,created_by,note) VALUES($1,'creating',$2,$3) RETURNING id`,[backupKey,me.name,'운영 서버 DB 직접 복구용 스냅샷']);
+      const id=h.rows[0].id;
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'account',id::text,to_jsonb(a) FROM namo_talk_standalone_accounts a`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data,file_data)
+        SELECT $1,'attachment',id::text,to_jsonb(a)-'file_data',file_data FROM namo_talk_standalone_attachments a`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'message',id::text,to_jsonb(m) FROM namo_talk_standalone_messages m`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'channel_read',room_id||'|'||user_name,to_jsonb(r) FROM namo_talk_standalone_channel_reads r`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'setting',key,to_jsonb(s) FROM namo_talk_standalone_settings s`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'channel',id,to_jsonb(c) FROM namo_talk_standalone_channels c`,[id]);
+      await client.query(`INSERT INTO namo_talk_standalone_backup_items(backup_id,entity_type,row_key,row_data)
+        SELECT $1,'channel_member',channel_id||'|'||user_name,to_jsonb(m) FROM namo_talk_standalone_channel_members m`,[id]);
+      const s=await client.query(`SELECT
+        COUNT(*) FILTER(WHERE entity_type='message')::bigint messages,
+        COUNT(*) FILTER(WHERE entity_type='attachment')::bigint attachments,
+        COALESCE(SUM(octet_length(file_data)) FILTER(WHERE entity_type='attachment'),0)::bigint attachment_bytes,
+        COUNT(*) FILTER(WHERE entity_type='account')::bigint accounts,
+        COUNT(*) FILTER(WHERE entity_type='channel_read')::bigint reads
+        FROM namo_talk_standalone_backup_items WHERE backup_id=$1`,[id]);
+      const z=s.rows[0],fingerprint=[id,z.messages,z.attachments,z.attachment_bytes,z.accounts,z.reads].join('|');
+      const checksum=crypto.createHash('sha256').update(fingerprint).digest('hex');
+      const done=await client.query(`UPDATE namo_talk_standalone_backup_history SET status='verified',message_count=$2,attachment_count=$3,attachment_bytes=$4,account_count=$5,channel_read_count=$6,checksum=$7 WHERE id=$1 RETURNING id,backup_key AS "backupKey",status,created_by AS "createdBy",created_at AS "createdAt",message_count AS "messageCount",attachment_count AS "attachmentCount",attachment_bytes AS "attachmentBytes",account_count AS "accountCount",channel_read_count AS "channelReadCount",checksum,note`,[id,z.messages,z.attachments,z.attachment_bytes,z.accounts,z.reads,checksum]);
+      await client.query('COMMIT');ok(res,{backup:done.rows[0],restoreEnabled:false,dataModified:false,format:'namo-talk-db-snapshot-v2'});
+    }catch(e){if(client)try{await client.query('ROLLBACK')}catch(_){}console.error('[NAMO Talk backup]',e);fail(res,500,'백업본을 생성하지 못했습니다.')}
+    finally{client?.release()}
+  });
+  app.get(P+'/backups',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const r=await pool.query(`SELECT id,backup_key AS "backupKey",status,created_by AS "createdBy",created_at AS "createdAt",message_count AS "messageCount",attachment_count AS "attachmentCount",attachment_bytes AS "attachmentBytes",account_count AS "accountCount",channel_read_count AS "channelReadCount",checksum,note FROM namo_talk_standalone_backup_history ORDER BY created_at DESC LIMIT 100`);ok(res,{backups:r.rows,restoreEnabled:false})}
+    catch(e){fail(res,500,'백업 이력을 불러오지 못했습니다.')}
+  });
+  app.get(P+'/backup-status',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const r=await pool.query(`SELECT id,backup_key AS "backupKey",status,created_at AS "createdAt",message_count AS "messageCount",attachment_count AS "attachmentCount",attachment_bytes AS "attachmentBytes",checksum FROM namo_talk_standalone_backup_history ORDER BY created_at DESC LIMIT 1`);ok(res,{latest:r.rows[0]||null,restoreEnabled:false,stage:'db-snapshot-v2'})}
+    catch(e){fail(res,500,'백업 상태를 확인하지 못했습니다.')}
+  });
+  app.get(P+'/backups/:id/verify',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const id=Number(req.params.id);const h=await pool.query('SELECT id,backup_key,checksum FROM namo_talk_standalone_backup_history WHERE id=$1',[id]);if(!h.rowCount)return fail(res,404,'검증할 백업본이 없습니다.');const s=await pool.query(`SELECT COUNT(*) FILTER(WHERE entity_type='message')::bigint messages,COUNT(*) FILTER(WHERE entity_type='attachment')::bigint attachments,COALESCE(SUM(octet_length(file_data)) FILTER(WHERE entity_type='attachment'),0)::bigint attachment_bytes,COUNT(*) FILTER(WHERE entity_type='account')::bigint accounts,COUNT(*) FILTER(WHERE entity_type='channel_read')::bigint reads FROM namo_talk_standalone_backup_items WHERE backup_id=$1`,[id]);const z=s.rows[0],actual=crypto.createHash('sha256').update([id,z.messages,z.attachments,z.attachment_bytes,z.accounts,z.reads].join('|')).digest('hex');ok(res,{id,backupKey:h.rows[0].backup_key,valid:actual===h.rows[0].checksum,storedChecksum:h.rows[0].checksum,actualChecksum:actual,restoreEnabled:false})}
+    catch(e){fail(res,500,'백업본 검증에 실패했습니다.')}
+  });
+  app.post(P+'/backups/:id/restore-plan',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const id=Number(req.params.id);const h=await pool.query('SELECT * FROM namo_talk_standalone_backup_history WHERE id=$1',[id]);if(!h.rowCount)return fail(res,404,'복원할 백업본이 없습니다.');const b=h.rows[0];const s=await pool.query(`SELECT COUNT(*) FILTER(WHERE entity_type='message')::bigint messages,COUNT(*) FILTER(WHERE entity_type='attachment')::bigint attachments,COALESCE(SUM(octet_length(file_data)) FILTER(WHERE entity_type='attachment'),0)::bigint attachment_bytes,COUNT(*) FILTER(WHERE entity_type='account')::bigint accounts,COUNT(*) FILTER(WHERE entity_type='channel_read')::bigint reads FROM namo_talk_standalone_backup_items WHERE backup_id=$1`,[id]);const z=s.rows[0],actual=crypto.createHash('sha256').update([id,z.messages,z.attachments,z.attachment_bytes,z.accounts,z.reads].join('|')).digest('hex');if(actual!==b.checksum)return fail(res,409,'백업본 검증값이 일치하지 않아 복원을 준비할 수 없습니다.');const cur=await Promise.all([pool.query('SELECT COUNT(*)::bigint count FROM namo_talk_standalone_messages'),pool.query('SELECT COUNT(*)::bigint count,COALESCE(SUM(octet_length(file_data)),0)::bigint bytes FROM namo_talk_standalone_attachments'),pool.query('SELECT COUNT(*)::bigint count FROM namo_talk_standalone_accounts'),pool.query('SELECT COUNT(*)::bigint count FROM namo_talk_standalone_channel_reads')]);ok(res,{restoreEnabled:false,executionBlocked:true,requiresPreRestoreBackup:true,backup:{id,backupKey:b.backup_key,messageCount:Number(b.message_count),attachmentCount:Number(b.attachment_count),attachmentBytes:Number(b.attachment_bytes),accountCount:Number(b.account_count),channelReadCount:Number(b.channel_read_count)},current:{messageCount:Number(cur[0].rows[0].count),attachmentCount:Number(cur[1].rows[0].count),attachmentBytes:Number(cur[1].rows[0].bytes),accountCount:Number(cur[2].rows[0].count),channelReadCount:Number(cur[3].rows[0].count)},message:'복원 계획만 생성되었습니다. 실제 데이터는 변경되지 않았습니다.'})}
+    catch(e){fail(res,500,'복원 계획을 만들지 못했습니다.')}
+  });
+  app.post(P+'/backups/:id/restore',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;return fail(res,423,'실제 복원은 검증 완료 전까지 잠겨 있습니다. 먼저 복원 계획과 사전 안전백업을 확인해 주세요.')}
+    catch(e){fail(res,500,'복원 잠금 상태를 확인하지 못했습니다.')}
   });
 
   app.put(P+'/messages/:id',async(req,res)=>{
