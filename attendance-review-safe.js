@@ -15,6 +15,9 @@ async function ensureSchema(){
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS mail_recipients JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS mail_sent_at TIMESTAMPTZ;
+    ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distribution_recipients JSONB NOT NULL DEFAULT '[]'::jsonb;
+    ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distributed_at TIMESTAMPTZ;
+    ALTER TABLE leave_requests ADD COLUMN IF NOT EXISTS distributed_by_user_id UUID;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS hire_date DATE;
   `);
   schemaReady=true;
@@ -115,6 +118,67 @@ function install(app){
       const q=await pool.query("UPDATE leave_requests SET status='REJECTED',reject_reason=$2,reviewed_by_user_id=$3,reviewed_at=NOW(),updated_at=NOW() WHERE id=$1 AND status IN ('PENDING_1','PENDING_2') RETURNING *",[req.params.id,reason.slice(0,1000),req.session.user.id]);if(!q.rowCount)return fail(res,409,'이미 처리된 요청입니다.');
       await notify(q.rows[0].user_id,'근태 요청 반려',`신청이 반려되었습니다. 사유: ${reason}`,'leave');return ok(res,q.rows[0],'반려 처리되었습니다.');
     }catch(e){console.error('[Attendance reject-v2]',e);return fail(res,500,'반려 처리에 실패했습니다.');}
+  });
+  app.get('/api/attendance/leave/:id/detail-v2',requireLogin,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const q=await pool.query(`
+        SELECT l.*,
+          u.name employee_name,u.email employee_email,u.department employee_department,u.title employee_title,
+          r.name reviewer_name,r.department reviewer_department,r.title reviewer_title,
+          rb.name reviewed_by_name,rb.department reviewed_by_department,rb.title reviewed_by_title
+        FROM leave_requests l
+        JOIN users u ON u.id=l.user_id
+        LEFT JOIN users r ON r.id=l.approver1_user_id
+        LEFT JOIN users rb ON rb.id=l.reviewed_by_user_id
+        WHERE l.id=$1
+        LIMIT 1
+      `,[req.params.id]);
+      if(!q.rowCount)return fail(res,404,'신청 내역을 찾을 수 없습니다.');
+      const row=q.rows[0],uid=String(req.session.user.id||'');
+      const canView=isAdmin(req)||uid===String(row.user_id||'')||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
+      if(!canView)return fail(res,403,'신청 상세 조회 권한이 없습니다.');
+      const canDistribute=row.status==='APPROVED'&&(isAdmin(req)||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||''));
+      return ok(res,{...row,canDistribute});
+    }catch(e){console.error('[Attendance leave detail]',e);return fail(res,500,'신청 상세를 불러오지 못했습니다.');}
+  });
+  app.post('/api/attendance/leave/:id/distribute-v2',requireLogin,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const ids=[...new Set((Array.isArray(req.body?.recipientIds)?req.body.recipientIds:[]).map(v=>String(v||'').trim()).filter(Boolean))].slice(0,200);
+      if(!ids.length)return fail(res,400,'배포할 직원을 선택해주세요.');
+      const cur=await pool.query(`
+        SELECT l.*,u.name employee_name,u.department employee_department,u.title employee_title
+        FROM leave_requests l JOIN users u ON u.id=l.user_id
+        WHERE l.id=$1 LIMIT 1
+      `,[req.params.id]);
+      if(!cur.rowCount)return fail(res,404,'승인 완료 신청을 찾을 수 없습니다.');
+      const row=cur.rows[0],uid=String(req.session.user.id||'');
+      if(row.status!=='APPROVED')return fail(res,409,'최종 승인 완료 후 배포할 수 있습니다.');
+      const allowed=isAdmin(req)||uid===String(row.approver1_user_id||'')||uid===String(row.reviewed_by_user_id||'');
+      if(!allowed)return fail(res,403,'사내 배포 권한이 없습니다.');
+      const users=await pool.query(`
+        SELECT id,name,department,title,status
+        FROM users
+        WHERE id = ANY($1::uuid[])
+          AND COALESCE(status,'APPROVED') NOT IN ('REJECTED','INACTIVE','DISABLED','DELETED','WITHDRAWN')
+        ORDER BY department,name
+      `,[ids]);
+      if(!users.rowCount)return fail(res,400,'배포 가능한 직원을 찾을 수 없습니다.');
+      const start=String(row.start_date||'').slice(0,10),end=String(row.end_date||'').slice(0,10);
+      const period=start===end?start:`${start} ~ ${end}`;
+      const title='사내 공지 · 승인 완료 안내';
+      const message=`${row.employee_name||'직원'}님의 ${period} 휴가/근태 신청이 최종 승인되었습니다.`;
+      for(const u of users.rows){await notify(u.id,title,message,'leave');}
+      const recipients=users.rows.map(u=>({id:u.id,name:u.name,department:u.department||'',title:u.title||''}));
+      const saved=await pool.query(`
+        UPDATE leave_requests
+        SET distribution_recipients=$2::jsonb,distributed_at=NOW(),distributed_by_user_id=$3,updated_at=NOW()
+        WHERE id=$1
+        RETURNING id,distribution_recipients,distributed_at,distributed_by_user_id
+      `,[req.params.id,JSON.stringify(recipients),req.session.user.id]);
+      return ok(res,{...saved.rows[0],count:recipients.length,recipients},`${recipients.length}명에게 사내 배포했습니다.`);
+    }catch(e){console.error('[Attendance internal distribution]',e);return fail(res,500,'사내 배포 처리에 실패했습니다.');}
   });
   app.post('/api/attendance/leave/:id/mail-log',requireLogin,async(req,res)=>{
     try{
