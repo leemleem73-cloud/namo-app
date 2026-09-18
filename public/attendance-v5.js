@@ -478,7 +478,7 @@ async function sendInternalDistribution(){
       days:Number(state.leaveDetail.days||0),
       reviewerName:state.leaveDetail.reviewed_by_name||state.leaveDetail.reviewer_name||''
     };
-    const mail=await api('/api/attendance/direct-mail',{method:'POST',body:JSON.stringify({recipients:recipients.map(u=>({id:u.id})),request})});
+    const mail=await api('/api/attendance/direct-mail',{method:'POST',body:JSON.stringify({recipients:recipients.map(u=>({id:u.id})),request,pdfBase64,pdfName})});
     closeSheet('distributionSheet');
     toast('직원 메일 발송 완료 · '+Number(mail?.sent||recipients.length)+'명');
     await openLeaveDetail(state.leaveDetail.id);
