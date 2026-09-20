@@ -1,0 +1,21 @@
+/* QMES Sales Order ledger center-alignment patch - 2026-09-21
+ * Additive visual patch only. Existing sales data and modules are not replaced.
+ */
+.qmes-sales-ledger-v4 thead th,
+.qmes-sales-ledger-v4 tbody td,
+.qmes-sales-ledger-v4 tbody td.left,
+.qmes-sales-ledger-v4 tbody td.num,
+.qmes-sales-ledger-v6 thead th,
+.qmes-sales-ledger-v6 tbody td,
+.qmes-sales-ledger-v6 tbody td.left,
+.qmes-sales-ledger-v6 tbody td.num,
+.qmes-sales-stable.qrl-owner thead th,
+.qmes-sales-stable.qrl-owner tbody td,
+.qmes-sales-stable.qrl-owner tbody td.left,
+.qmes-sales-stable.qrl-owner tbody td.num,
+.qmes-sales-stable.qsf-active thead th,
+.qmes-sales-stable.qsf-active tbody td,
+.qmes-sales-stable.qsf-active tbody td.left,
+.qmes-sales-stable.qsf-active tbody td.num{
+  text-align:center!important;
+}
