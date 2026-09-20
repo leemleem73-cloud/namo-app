@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>나모케미칼 QMES 로그인</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Malgun Gothic",sans-serif;background:#07162b}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:440px;background:#fff;border-radius:22px;padding:34px 30px;box-shadow:0 22px 65px rgba(0,0,0,.32)}
+    h1{margin:0 0 8px;text-align:center;color:#0f2740;font-size:26px}.sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:26px}
+    label{display:block;color:#334155;font-size:13px;font-weight:700;margin:14px 0 6px}
+    input{width:100%;height:50px;border:1px solid #cbd5e1;border-radius:11px;padding:0 14px;font-size:17px;background:#fff;-webkit-appearance:none}
+    button{width:100%;height:52px;border:0;border-radius:11px;background:#0f5d8f;color:#fff;font-size:17px;font-weight:800;margin-top:22px}
+    button:disabled{opacity:.65}.msg{min-height:22px;margin-top:12px;font-size:13px;font-weight:700;color:#dc2626;text-align:center}
+    .status{color:#64748b}.foot{text-align:center;color:#64748b;font-size:12px;margin-top:14px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>나모케미칼 QMES</h1>
+    <div class="sub">PAD 간편 로그인</div>
+    <form id="loginForm">
+      <label for="loginId">아이디 또는 사번</label>
+      <input id="loginId" name="loginId" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="예: 임흥배 또는 U-0009">
+      <label for="password">비밀번호</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="비밀번호">
+      <button id="submitBtn" type="submit">로그인</button>
+      <div id="message" class="msg status">로그인 상태를 확인 중입니다.</div>
+      <div class="foot">로그인 후 QMES 화면으로 자동 이동합니다.</div>
+    </form>
+  </main>
+<script>
+(function(){
+  "use strict";
+  var KEY="qmes-current-user-v1";
+  var form=document.getElementById("loginForm");
+  var btn=document.getElementById("submitBtn");
+  var msg=document.getElementById("message");
+  function setMsg(text,isError){msg.textContent=text||"";msg.className="msg"+(isError?"":" status");}
+  function saveUser(user){
+    var normalized={
+      id:user.id||"",
+      uid:user.uid||"",
+      name:user.name||"",
+      email:user.email||"",
+      dept:user.department||user.dept||"",
+      position:user.title||user.position||"",
+      role:user.role||"user",
+      mustChangePassword:Boolean(user.mustChangePassword)
+    };
+    try{sessionStorage.setItem(KEY,JSON.stringify(normalized));}catch(e){}
+  }
+  function go(user){if(user)saveUser(user);window.location.replace("/?pad=1");}
+  function request(method,url,body,done){
+    var xhr=new XMLHttpRequest();
+    xhr.open(method,url,true);
+    xhr.withCredentials=true;
+    xhr.setRequestHeader("Accept","application/json");
+    if(body!==null)xhr.setRequestHeader("Content-Type","application/json");
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState!==4)return;
+      var data=null;
+      try{data=JSON.parse(xhr.responseText||"{}");}catch(e){data={success:false,message:"서버 응답을 확인할 수 없습니다."};}
+      done(xhr.status,data);
+    };
+    xhr.onerror=function(){done(0,{success:false,message:"서버에 연결할 수 없습니다."});};
+    xhr.send(body===null?null:JSON.stringify(body));
+  }
+  request("GET","/api/auth/me",null,function(status,data){
+    if(status>=200&&status<300&&data&&data.success&&data.data){go(data.data);return;}
+    setMsg("",false);
+  });
+  form.onsubmit=function(event){
+    if(event&&event.preventDefault)event.preventDefault();
+    var id=document.getElementById("loginId").value.replace(/^\s+|\s+$/g,"");
+    var pw=document.getElementById("password").value;
+    if(!id||!pw){setMsg("아이디와 비밀번호를 입력해 주세요.",true);return false;}
+    btn.disabled=true;btn.textContent="로그인 확인 중...";setMsg("",false);
+    request("POST","/api/auth/login",{loginId:id,password:pw},function(status,data){
+      btn.disabled=false;btn.textContent="로그인";
+      if(status>=200&&status<300&&data&&data.success&&data.data&&data.data.user){go(data.data.user);return;}
+      setMsg((data&&data.message)||"로그인에 실패했습니다.",true);
+    });
+    return false;
+  };
+})();
+</script>
+</body>
+</html>
