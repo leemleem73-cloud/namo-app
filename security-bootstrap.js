@@ -40,14 +40,18 @@ function hardenedSession(options = {}) {
 Object.assign(hardenedSession, session);
 require.cache[sessionModulePath].exports = hardenedSession;
 
+// Company PCs/PADs can share one public IP through the office router.
+// Do not count successful logins against the shared-IP limit, otherwise normal
+// users can lock each other out. Keep protection for repeated failed attempts.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
   message: {
     success: false,
-    message: '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.',
+    message: '로그인 실패가 반복되어 잠시 제한되었습니다. 15분 후 다시 시도해 주세요.',
     data: null,
   },
 });
