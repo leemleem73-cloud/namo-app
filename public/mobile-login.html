@@ -19,7 +19,7 @@
     <section id="loginPanel">
       <h1 class="title">로그인</h1>
       <p class="desc">모바일/iPad 전용 로그인 화면입니다.</p>
-      <form id="loginForm">
+      <form id="loginForm" method="post" action="/api/auth/login">
         <label class="field"><span>아이디 또는 사번</span><input name="loginId" autocomplete="username" placeholder="아이디 또는 사번" required></label>
         <label class="field"><span>비밀번호</span><input name="password" type="password" autocomplete="current-password" placeholder="비밀번호" required></label>
         <div class="error" id="loginError"></div>
@@ -30,7 +30,7 @@
     <section id="passwordPanel" class="hidden">
       <h1 class="title">초기 비밀번호 변경</h1>
       <p class="desc" id="passwordDesc">안전한 사용을 위해 새 비밀번호를 설정해 주세요.</p>
-      <form id="passwordForm">
+      <form id="passwordForm" method="post" action="/api/auth/password">
         <label class="field"><span>현재 비밀번호</span><input name="currentPassword" type="password" autocomplete="current-password" required></label>
         <label class="field"><span>새 비밀번호</span><input name="newPassword" type="password" autocomplete="new-password" minlength="4" required></label>
         <label class="field"><span>새 비밀번호 확인</span><input name="confirmPassword" type="password" autocomplete="new-password" minlength="4" required></label>
@@ -42,20 +42,146 @@
   </main>
 </div>
 <script>
-(()=>{
-  'use strict';
-  const HOME='/mobile.html?v=20260903-mobile-login1';
-  let currentUser=null;
-  const loginPanel=document.getElementById('loginPanel'),passwordPanel=document.getElementById('passwordPanel');
-  const showError=(id,text)=>{const el=document.getElementById(id);if(!el)return;el.textContent=text||'';el.classList.toggle('show',Boolean(text));};
-  const setBusy=(id,busy,text)=>{const btn=document.getElementById(id);if(!btn)return;btn.disabled=busy;if(text)btn.textContent=text;};
-  const normalizeUser=user=>({id:user?.id,uid:user?.uid||'',name:user?.name||'',email:user?.email||'',department:user?.department||user?.dept||'',title:user?.title||user?.position||'',role:user?.role||'user',mustChangePassword:Boolean(user?.mustChangePassword)});
-  const goHome=()=>location.replace(HOME);
-  const showPassword=user=>{currentUser=normalizeUser(user);loginPanel.classList.add('hidden');passwordPanel.classList.remove('hidden');document.getElementById('passwordDesc').textContent=`${currentUser.name||'사용자'}님, 안전한 사용을 위해 새 비밀번호를 설정해 주세요.`;};
-  async function checkSession(){try{const r=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});const p=await r.json().catch(()=>null);if(!r.ok||p?.success===false)return;const user=p?.data?.user||p?.data||p?.user||p;if(!user?.name)return;if(user.mustChangePassword)showPassword(user);else goHome();}catch(_){}}
-  document.getElementById('loginForm').addEventListener('submit',async event=>{event.preventDefault();showError('loginError','');const fd=new FormData(event.currentTarget),loginId=String(fd.get('loginId')||'').trim(),password=String(fd.get('password')||'').trim();if(!loginId||!password){showError('loginError','아이디와 비밀번호를 입력해 주세요.');return;}setBusy('loginBtn',true,'로그인 확인 중...');try{const r=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({loginId,password})});const p=await r.json().catch(()=>null);if(!r.ok||!p?.success||!p?.data?.user)throw new Error(p?.message||'로그인에 실패했습니다.');const user=p.data.user;if(user.mustChangePassword){showPassword(user);event.currentTarget.reset();}else goHome();}catch(error){showError('loginError',error.message||'로그인에 실패했습니다.');}finally{setBusy('loginBtn',false,'로그인');}});
-  document.getElementById('passwordForm').addEventListener('submit',async event=>{event.preventDefault();showError('passwordError','');const fd=new FormData(event.currentTarget),currentPassword=String(fd.get('currentPassword')||''),newPassword=String(fd.get('newPassword')||''),confirmPassword=String(fd.get('confirmPassword')||'');if(newPassword.length<4){showError('passwordError','새 비밀번호는 4자 이상 입력해 주세요.');return;}if(newPassword!==confirmPassword){showError('passwordError','새 비밀번호 확인이 일치하지 않습니다.');return;}setBusy('passwordBtn',true,'변경 중...');try{const r=await fetch('/api/auth/password',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPassword,newPassword})});const p=await r.json().catch(()=>null);if(!r.ok||!p?.success)throw new Error(p?.message||'비밀번호 변경에 실패했습니다.');goHome();}catch(error){showError('passwordError',error.message||'비밀번호 변경에 실패했습니다.');}finally{setBusy('passwordBtn',false,'비밀번호 변경');}});
-  document.getElementById('passwordLogout').addEventListener('click',async()=>{try{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'});}catch(_){}location.replace('/mobile-login.html?logout=1');});
+(function(){
+  "use strict";
+  var HOME="/mobile.html?v=20260921-pad-login-es5";
+  var currentUser=null;
+  var loginPanel=document.getElementById("loginPanel");
+  var passwordPanel=document.getElementById("passwordPanel");
+
+  function showError(id,text){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.textContent=text||"";
+    if(text)el.className="error show";
+    else el.className="error";
+  }
+  function setBusy(id,busy,text){
+    var btn=document.getElementById(id);
+    if(!btn)return;
+    btn.disabled=!!busy;
+    if(text)btn.textContent=text;
+  }
+  function normalizeUser(user){
+    user=user||{};
+    return {
+      id:user.id||"",
+      uid:user.uid||"",
+      name:user.name||"",
+      email:user.email||"",
+      department:user.department||user.dept||"",
+      title:user.title||user.position||"",
+      role:user.role||"user",
+      mustChangePassword:!!user.mustChangePassword
+    };
+  }
+  function goHome(){window.location.replace(HOME);}
+  function showPassword(user){
+    currentUser=normalizeUser(user);
+    loginPanel.className="hidden";
+    passwordPanel.className="";
+    document.getElementById("passwordDesc").textContent=(currentUser.name||"사용자")+"님, 안전한 사용을 위해 새 비밀번호를 설정해 주세요.";
+  }
+  function request(method,url,payload,done){
+    var xhr=new XMLHttpRequest();
+    xhr.open(method,url,true);
+    xhr.withCredentials=true;
+    xhr.setRequestHeader("Accept","application/json");
+    if(payload!==null)xhr.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState!==4)return;
+      var body=null;
+      try{body=JSON.parse(xhr.responseText||"{}");}catch(_e){body=null;}
+      done(xhr.status,body);
+    };
+    xhr.onerror=function(){done(0,null);};
+    xhr.send(payload===null?null:JSON.stringify(payload));
+  }
+  function responseUser(p){
+    if(!p)return null;
+    if(p.data&&p.data.user)return p.data.user;
+    if(p.data&&p.data.name)return p.data;
+    if(p.user)return p.user;
+    return null;
+  }
+  function checkSession(){
+    request("GET","/api/auth/me",null,function(status,p){
+      if(status<200||status>=300||!p||p.success===false)return;
+      var user=responseUser(p);
+      if(!user||!user.name)return;
+      if(user.mustChangePassword)showPassword(user);
+      else goHome();
+    });
+  }
+
+  var loginForm=document.getElementById("loginForm");
+  loginForm.onsubmit=function(event){
+    if(event&&event.preventDefault)event.preventDefault();
+    showError("loginError","");
+    var loginInput=loginForm.elements["loginId"];
+    var passwordInput=loginForm.elements["password"];
+    var loginId=String(loginInput&&loginInput.value||"").replace(/^\s+|\s+$/g,"");
+    var password=String(passwordInput&&passwordInput.value||"");
+    if(!loginId||!password){
+      showError("loginError","아이디와 비밀번호를 입력해 주세요.");
+      return false;
+    }
+    setBusy("loginBtn",true,"로그인 확인 중...");
+    request("POST","/api/auth/login",{loginId:loginId,password:password},function(status,p){
+      setBusy("loginBtn",false,"로그인");
+      var user=responseUser(p);
+      if(status>=200&&status<300&&p&&p.success&&user){
+        if(user.mustChangePassword){
+          showPassword(user);
+          loginForm.reset();
+        }else{
+          goHome();
+        }
+        return;
+      }
+      showError("loginError",(p&&p.message)||"로그인에 실패했습니다.");
+    });
+    return false;
+  };
+
+  var passwordForm=document.getElementById("passwordForm");
+  passwordForm.onsubmit=function(event){
+    if(event&&event.preventDefault)event.preventDefault();
+    showError("passwordError","");
+    var currentPassword=String(passwordForm.elements["currentPassword"].value||"");
+    var newPassword=String(passwordForm.elements["newPassword"].value||"");
+    var confirmPassword=String(passwordForm.elements["confirmPassword"].value||"");
+    if(newPassword.length<4){
+      showError("passwordError","새 비밀번호는 4자 이상 입력해 주세요.");
+      return false;
+    }
+    if(newPassword!==confirmPassword){
+      showError("passwordError","새 비밀번호 확인이 일치하지 않습니다.");
+      return false;
+    }
+    setBusy("passwordBtn",true,"변경 중...");
+    request("PUT","/api/auth/password",{currentPassword:currentPassword,newPassword:newPassword},function(status,p){
+      setBusy("passwordBtn",false,"비밀번호 변경");
+      if(status>=200&&status<300&&p&&p.success){
+        goHome();
+        return;
+      }
+      showError("passwordError",(p&&p.message)||"비밀번호 변경에 실패했습니다.");
+    });
+    return false;
+  };
+
+  document.getElementById("passwordLogout").onclick=function(){
+    request("POST","/api/auth/logout",{},function(){
+      window.location.replace("/mobile-login.html?logout=1");
+    });
+  };
+
+  try{
+    if(window.history&&window.history.replaceState&&(/[?&](loginId|password)=/i.test(window.location.search))){
+      window.history.replaceState(null,document.title,"/mobile-login.html?v=20260921-pad-login-es5");
+    }
+  }catch(_e){}
   checkSession();
 })();
 </script>
