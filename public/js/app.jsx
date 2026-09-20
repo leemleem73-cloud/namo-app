@@ -372,18 +372,12 @@ function QMESInitialPasswordChange({ user, onComplete, onLogout }) {
 
 function QMESApp() {
   const [currentUser, setCurrentUser] = useState(loadLoginSession);
-  const [checkingSession, setCheckingSession] = useState(() => Boolean(loadLoginSession()));
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     let active = true;
-    const saved = loadLoginSession();
 
-    if (!saved) {
-      setCheckingSession(false);
-      return () => { active = false; };
-    }
-
-    fetch("/api/auth/me", { credentials: "same-origin" })
+    fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({ success: false }));
         if (!response.ok || !payload.success || !payload.data) {
