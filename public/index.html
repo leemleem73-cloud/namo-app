@@ -6,10 +6,13 @@
   <script id="qmes-pad-login-entry-20260921">
   (function(){try{
     var ua=navigator.userAgent||"";
-    var isPad=/iPad|Tablet|PlayBook|Silk/i.test(ua)||(/Android/i.test(ua)&&!/Mobile/i.test(ua))||(/Macintosh/i.test(ua)&&Number(navigator.maxTouchPoints||0)>1);
+    var touch=Number(navigator.maxTouchPoints||0)>0||("ontouchstart" in window);
+    var sw=Number((screen&&screen.width)||0),sh=Number((screen&&screen.height)||0);
+    var minScreen=Math.min(sw||9999,sh||9999);
+    var isPad=/iPad|Tablet|PlayBook|Silk|Android/i.test(ua)||(/Macintosh/i.test(ua)&&touch)||(touch&&minScreen>=600);
     if(!isPad)return;
-    var saved=null;try{saved=sessionStorage.getItem("qmes-current-user-v1");}catch(_e){}
-    if(!saved&&location.pathname!=="/pad-login.html")location.replace("/pad-login.html?v=20260921-1");
+    if(new URLSearchParams(location.search).get("pad")==="1")return;
+    if(location.pathname!=="/pad-login.html")location.replace("/pad-login.html?v=20260921-2");
   }catch(_error){}})();
   </script>
   <title>나모케미칼 QMES</title>
