@@ -11,7 +11,10 @@
     var minScreen=Math.min(sw||9999,sh||9999);
     var isPad=/iPad|Tablet|PlayBook|Silk|Android/i.test(ua)||(/Macintosh/i.test(ua)&&touch)||(touch&&minScreen>=600);
     if(!isPad)return;
-    if(new URLSearchParams(location.search).get("pad")==="1")return;
+    var params=new URLSearchParams(location.search);
+    var forceDesktop=params.get("desktop")==="1"||params.get("view")==="desktop"||params.get("embeddedMobile")==="1";
+    if(forceDesktop)return;
+    if(params.get("pad")==="1")return;
     if(location.pathname!=="/pad-login.html")location.replace("/pad-login.html?v=20260921-2");
   }catch(_error){}})();
   </script>
