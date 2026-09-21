@@ -56,7 +56,7 @@
       #${POP_ID}{
         position:fixed!important;
         z-index:2147483647!important;
-        width:226px!important;
+        width:210px!important;
         padding:6px 7px 8px!important;
         border:1px solid #dfe5ea!important;
         border-radius:10px!important;
@@ -71,21 +71,21 @@
 
       #${POP_ID} .qf-head{
         display:grid!important;
-        grid-template-columns:24px 1fr 24px!important;
+        grid-template-columns:22px 1fr 22px!important;
         align-items:center!important;
         gap:5px!important;
         min-height:24px!important;
         margin-bottom:4px!important;
       }
       #${POP_ID} .qf-nav{
-        width:24px!important;height:24px!important;
+        width:22px!important;height:20px!important;
         display:grid!important;place-items:center!important;
         padding:0!important;
         border:0!important;
         border-radius:5px!important;
         background:transparent!important;
         color:#475569!important;
-        font-size:15px!important;
+        font-size:14px!important;
         font-weight:700!important;
         cursor:pointer!important;
       }
@@ -97,9 +97,22 @@
         align-items:center!important;
         gap:3px!important;
       }
+      #${POP_ID} .qf-select-unit{
+        display:flex!important;
+        align-items:center!important;
+        gap:2px!important;
+        white-space:nowrap!important;
+      }
+      #${POP_ID} .qf-suffix{
+        flex:0 0 auto!important;
+        color:#334155!important;
+        font-size:9px!important;
+        font-weight:650!important;
+        line-height:1!important;
+      }
       #${POP_ID} .qf-select{
         height:24px!important;
-        padding:0 16px 0 6px!important;
+        padding:0 13px 0 5px!important;
         border:1px solid #d5dde4!important;
         border-radius:5px!important;
         background:#fff!important;
@@ -109,8 +122,8 @@
         outline:none!important;
         cursor:pointer!important;
       }
-      #${POP_ID} .qf-year{width:68px!important;min-width:68px!important}
-      #${POP_ID} .qf-month{width:52px!important;min-width:52px!important}
+      #${POP_ID} .qf-year{width:54px!important;min-width:54px!important}
+      #${POP_ID} .qf-month{width:34px!important;min-width:34px!important}
 
       #${POP_ID} .qf-week,
       #${POP_ID} .qf-grid{
@@ -127,7 +140,7 @@
         display:grid!important;
         place-items:center!important;
         color:#1f2937!important;
-        font-size:9.5px!important;
+        font-size:9px!important;
         font-weight:600!important;
       }
       #${POP_ID} .qf-week span:first-child{color:#ef4444!important}
@@ -135,7 +148,7 @@
 
       #${POP_ID} .qf-day{
         width:100%!important;
-        height:26px!important;
+        height:24px!important;
         display:grid!important;
         place-items:center!important;
         margin:0!important;
@@ -251,7 +264,7 @@
     const pop=document.getElementById(POP_ID);
     if(!pop||!activeInput) return;
     const r=activeInput.getBoundingClientRect();
-    const w=226, h=246, gap=5;
+    const w=210, h=230, gap=5;
     let left=r.left;
     if(left+w>window.innerWidth-8) left=window.innerWidth-w-8;
     if(left<8) left=8;
@@ -264,13 +277,13 @@
 
   function yearOptions(){
     let out="";
-    for(let y=2000;y<=2100;y++) out+='<option value="'+y+'"'+(y===viewYear?' selected':'')+'>'+y+'년</option>';
+    for(let y=2000;y<=2100;y++) out+='<option value="'+y+'"'+(y===viewYear?' selected':'')+'>'+y+'</option>';
     return out;
   }
 
   function monthOptions(){
     let out="";
-    for(let m=1;m<=12;m++) out+='<option value="'+m+'"'+(m===viewMonth+1?' selected':'')+'>'+m+'월</option>';
+    for(let m=1;m<=12;m++) out+='<option value="'+m+'"'+(m===viewMonth+1?' selected':'')+'>'+m+'</option>';
     return out;
   }
 
@@ -310,8 +323,8 @@
       '<div class="qf-head">'+
         '<button type="button" class="qf-nav" data-qf-prev aria-label="이전 달">‹</button>'+
         '<div class="qf-selects">'+
-          '<select class="qf-select qf-year" data-qf-year aria-label="연도">'+yearOptions()+'</select>'+
-          '<select class="qf-select qf-month" data-qf-month aria-label="월">'+monthOptions()+'</select>'+
+          '<span class="qf-select-unit"><select class="qf-select qf-year" data-qf-year aria-label="연도">'+yearOptions()+'</select><span class="qf-suffix">년</span></span>'+
+          '<span class="qf-select-unit"><select class="qf-select qf-month" data-qf-month aria-label="월">'+monthOptions()+'</select><span class="qf-suffix">월</span></span>'+
         '</div>'+
         '<button type="button" class="qf-nav" data-qf-next aria-label="다음 달">›</button>'+
       '</div>'+
