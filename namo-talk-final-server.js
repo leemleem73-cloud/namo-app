@@ -406,20 +406,34 @@ function install(app){
     try{
       const me=await requireAdmin(req,res);if(!me)return;
       await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-      const [accounts,messages,reads,settings,channels,members,attachments]=await Promise.all([
+      const [accounts,messages,reads,settings,channels,members,attachmentMeta]=await Promise.all([
         client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id'),
         client.query('SELECT * FROM namo_talk_standalone_messages ORDER BY id'),
         client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name'),
         client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key'),
         client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id'),
         client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name'),
-        client.query(`SELECT id,file_name,mime_type,file_size,created_at,CASE WHEN file_data IS NULL THEN NULL ELSE encode(file_data,'base64') END AS "fileDataBase64" FROM namo_talk_standalone_attachments ORDER BY id`)
+        client.query('SELECT id,file_name,mime_type,file_size,created_at FROM namo_talk_standalone_attachments ORDER BY id')
       ]);
-      const data={format:'namo-talk-pc-backup-v1',createdAt:new Date().toISOString(),createdBy:me.name,accounts:accounts.rows,messages:messages.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows,attachments:attachments.rows};
+      const data={format:'namo-talk-pc-backup-v2',createdAt:new Date().toISOString(),createdBy:me.name,accounts:accounts.rows,messages:messages.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows,attachments:attachmentMeta.rows};
       const counts={accounts:data.accounts.length,messages:data.messages.length,attachments:data.attachments.length,channelReads:data.channelReads.length,channels:data.channels.length,channelMembers:data.channelMembers.length};
-      await client.query('COMMIT');ok(res,{backup:data,counts,restoreEnabled:false,storage:'client-pc'});
+      await client.query('COMMIT');
+      ok(res,{backup:data,counts,attachmentPayloadMode:'separate-download',restoreEnabled:false,storage:'client-pc'});
     }catch(e){if(client)try{await client.query('ROLLBACK')}catch(_){}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 데이터를 만들지 못했습니다.')}
     finally{client?.release()}
+  });
+
+  app.get(P+'/backup-attachments/:id',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const r=await pool.query('SELECT id,file_name,mime_type,file_size,file_data FROM namo_talk_standalone_attachments WHERE id=$1',[Number(req.params.id)]);
+      if(!r.rowCount)return fail(res,404,'백업할 첨부파일을 찾을 수 없습니다.');
+      const f=r.rows[0];
+      res.setHeader('Content-Type',f.mime_type||'application/octet-stream');
+      res.setHeader('Content-Length',String(f.file_size||f.file_data?.length||0));
+      res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(f.file_name)}`);
+      res.end(f.file_data);
+    }catch(e){console.error('[NAMO Talk PC backup attachment]',e);fail(res,500,'백업 첨부파일을 불러오지 못했습니다.')}
   });
 
   app.put(P+'/messages/:id',async(req,res)=>{
