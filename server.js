@@ -337,6 +337,17 @@ fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
 
 process.env.QMES_DASHBOARD_BUILD = process.env.QMES_DASHBOARD_BUILD || `20260903-enterprise-v5-${SHELL_BUILD}`;
 
+// Generate the PAD PC compatibility build only after all startup shell/router
+// normalization has been applied. This keeps PAD PC mode visually and
+// functionally aligned with the exact desktop QMES source while serving
+// pre-transpiled JavaScript to older tablet browsers.
+try {
+  require('./build-pad-compat.js');
+} catch (error) {
+  console.error('[PAD-COMPAT] build failed:', error);
+  process.exit(1);
+}
+
 // Import approved historical incoming-inspection ledger rows into the shared IQC store.
 // The importer is idempotent and never overwrites an existing matching inspection.
 require('./iqc-history-seed-20260915.js');
