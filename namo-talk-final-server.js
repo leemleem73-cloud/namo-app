@@ -408,7 +408,8 @@ function install(app){
       await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       const bounds=await client.query(`SELECT
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
-        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId"`);
+        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
+        (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
       const [accounts,reads,settings,channels,members]=await Promise.all([
         client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id'),
         client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name'),
@@ -418,7 +419,7 @@ function install(app){
       ]);
       const b=bounds.rows[0],backup={
         format:'namo-talk-pc-backup-v3',createdAt:new Date().toISOString(),createdBy:me.name,
-        snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId)},
+        snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
         accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows
       };
       await client.query('COMMIT');
@@ -445,9 +446,15 @@ function install(app){
       const maxId=Math.max(0,Number(req.query.maxId||0)),after=Math.max(0,Number(req.query.after||0));
       const limit=Math.min(500,Math.max(1,Number(req.query.limit||500)));
       if(!Number.isSafeInteger(maxId)||!Number.isSafeInteger(after))return fail(res,400,'백업 범위가 올바르지 않습니다.');
+      const expectedCount=Math.max(0,Number(req.query.expectedCount||0));
+      if(!Number.isSafeInteger(expectedCount))return fail(res,400,'백업 첨부파일 개수가 올바르지 않습니다.');
       const r=await pool.query('SELECT id,room_id,sender_name,receiver_name,file_name,mime_type,file_size,created_at FROM namo_talk_standalone_attachments WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
-      const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after;
-      ok(res,{rows:r.rows,nextAfter,done:r.rowCount<limit});
+      const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after,done=r.rowCount<limit;
+      if(done){
+        const c=await pool.query('SELECT COUNT(*)::int count FROM namo_talk_standalone_attachments WHERE id<=$1',[maxId]);
+        if(Number(c.rows[0].count||0)!==expectedCount)return fail(res,409,'백업 중 첨부파일 목록이 변경되었습니다. 백업을 다시 시작해 주세요.');
+      }
+      ok(res,{rows:r.rows,nextAfter,done});
     }catch(e){console.error('[NAMO Talk PC backup attachments]',e);fail(res,500,'백업 첨부 목록을 불러오지 못했습니다.')}
   });
 
