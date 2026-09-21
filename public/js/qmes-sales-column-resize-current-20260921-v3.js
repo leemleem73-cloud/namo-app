@@ -13,6 +13,8 @@
   const HANDLE="qmes-sales-current-v3-resizer";
   const STYLE="qmes-sales-current-v3-resizer-style";
   const MIN=18, MAX=600;
+  const MIGRATION_KEY="qmes-sales-column-resize-v3-manage-normalized-1";
+  const MANAGE_DEFAULT=132;
 
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const read=()=>{
@@ -46,6 +48,20 @@
         overflow:hidden!important;
         text-overflow:ellipsis!important;
         white-space:nowrap!important;
+      }
+      .qmes-sales-ledger-v4 .qrl-actions{
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        gap:6px!important;
+        width:100%!important;
+        min-width:0!important;
+        max-width:100%!important;
+        overflow:visible!important;
+        flex-wrap:nowrap!important;
+      }
+      .qmes-sales-ledger-v4 .qrl-actions button{
+        flex:0 0 auto!important;
       }
       .qmes-sales-ledger-v4 .${HANDLE}{
         position:absolute!important;
@@ -86,9 +102,25 @@
     let v=read();
     if(!v||v.length!==info.headers.length||v.some(x=>!Number.isFinite(x)||x<=0)){
       v=info.headers.map(th=>clamp(Math.round(th.getBoundingClientRect().width)||MIN,MIN,MAX));
-      save(v);
     }
-    return v.map(x=>clamp(Number(x)||MIN,MIN,MAX));
+
+    v=v.map(x=>clamp(Number(x)||MIN,MIN,MAX));
+
+    /* One-time cleanup from the previous right-edge filler:
+       it stretched the final Management column to absorb all free space. */
+    try{
+      if(localStorage.getItem(MIGRATION_KEY)!=="1"){
+        const last=v.length-1;
+        if(last>=0 && v[last]>170) v[last]=MANAGE_DEFAULT;
+        localStorage.setItem(MIGRATION_KEY,"1");
+      }
+    }catch(_){
+      const last=v.length-1;
+      if(last>=0 && v[last]>170) v[last]=MANAGE_DEFAULT;
+    }
+
+    save(v);
+    return v;
   }
 
   function apply(info,v){
