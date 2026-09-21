@@ -22,16 +22,6 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-function walk(dir, out) {
-  if (!fs.existsSync(dir)) return out;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(full, out);
-    else out.push(full);
-  }
-  return out;
-}
-
 function transpile(source, filename) {
   const result = Babel.transform(String(source || ''), {
     filename,
@@ -69,13 +59,31 @@ if(!g.requestIdleCallback){g.requestIdleCallback=function(cb){return setTimeout(
   fs.writeFileSync(path.join(OUTPUT_ROOT, 'polyfills.js'), polyfills, 'utf8');
 }
 
+function referencedScripts() {
+  const html = fs.readFileSync(SOURCE_HTML, 'utf8');
+  const found = [];
+  const seen = new Set();
+  const re = /<script[^>]+src=(["'])((?:\.\/|\/)?js\/[^"']+)\1[^>]*><\/script>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const clean = String(match[2] || '').split('?')[0].replace(/^\.\//, '').replace(/^\//, '');
+    if (!/^js\/.+\.(?:js|jsx)$/i.test(clean) || seen.has(clean)) continue;
+    seen.add(clean);
+    found.push(clean.replace(/^js\//, ''));
+  }
+  return found;
+}
+
 function transpileScripts() {
   const sourceRoot = path.join(PUBLIC, 'js');
-  const files = walk(sourceRoot, []).filter(file => /\.(?:js|jsx)$/i.test(file));
+  const references = referencedScripts();
   const failures = [];
 
-  for (const file of files) {
-    const relative = path.relative(sourceRoot, file);
+  console.log('[PAD-COMPAT] referenced scripts:', references.length);
+
+  for (let index = 0; index < references.length; index += 1) {
+    const relative = references[index];
+    const file = path.join(sourceRoot, relative);
     const outFile = path.join(OUTPUT_JS, relative).replace(/\.jsx$/i, '.js');
     ensureDir(path.dirname(outFile));
     try {
@@ -83,11 +91,14 @@ function transpileScripts() {
       fs.writeFileSync(outFile, transpile(source, relative), 'utf8');
     } catch (error) {
       failures.push({ relative, error: error && error.message ? error.message : String(error) });
-      fs.copyFileSync(file, outFile);
+      if (fs.existsSync(file)) fs.copyFileSync(file, outFile);
+    }
+    if ((index + 1) % 20 === 0 || index + 1 === references.length) {
+      console.log('[PAD-COMPAT] compiled', index + 1, '/', references.length);
     }
   }
 
-  return { count: files.length, failures };
+  return { count: references.length, failures };
 }
 
 function cleanScriptAttributes(attributes) {
