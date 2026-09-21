@@ -150,7 +150,7 @@
       '    if(!Current||Current===QMESErpSalesTab) return null;',
       '    return React.createElement(Current);',
       '  }'
-    ].join('\\n');
+    ].join('\n');
     return source.slice(0,start)+currentProxy+source.slice(end);
   }
 
