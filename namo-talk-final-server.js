@@ -408,7 +408,9 @@ function install(app){
     let client,sessionId;
     try{
       const me=await requireAdmin(req,res);if(!me)return;
-      await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      await schema();
+      for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
+      client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       const bounds=await client.query(`SELECT
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
@@ -438,7 +440,7 @@ function install(app){
       const r=await x.client.query('SELECT * FROM namo_talk_standalone_messages WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
       const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after;
       ok(res,{rows:r.rows,nextAfter,done:r.rowCount<limit});
-    }catch(e){console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
+    }catch(e){const sessionId=String(req.query.sessionId||'');if(sessionId)await closeBackupSession(sessionId,false);console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
   });
 
   app.post(P+'/backup-complete',async(req,res)=>{
