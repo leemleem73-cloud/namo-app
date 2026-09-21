@@ -144,7 +144,14 @@
     const start=source.indexOf('  function QMESErpSalesTab(){');
     const end=source.indexOf('\n\n  function QMESErpPlanTab(){',start);
     if(start<0||end<0) throw new Error('Sales component markers not found');
-    return source.slice(0,start)+stableSalesComponentSource()+source.slice(end);
+    const currentProxy=[
+      '  function QMESErpSalesTab(){',
+      '    const Current=window.__QMES_CURRENT_SALES_LEDGER_COMPONENT__||window.QMESErpSalesTab;',
+      '    if(!Current||Current===QMESErpSalesTab) return null;',
+      '    return React.createElement(Current);',
+      '  }'
+    ].join('\\n');
+    return source.slice(0,start)+currentProxy+source.slice(end);
   }
 
   async function load(){

@@ -247,6 +247,7 @@
     );
   }
 
+  window.__QMES_CURRENT_SALES_LEDGER_COMPONENT__=StableSalesLedgerV5No3;
   window.QMESErpSalesTab=StableSalesLedgerV5No3;
   window.dispatchEvent(new CustomEvent("qmes:erp-integrated-ready"));
 })();
