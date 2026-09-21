@@ -55,6 +55,23 @@ if(!Promise.allSettled){Promise.allSettled=function(items){return Promise.all(Ar
 if(!g.queueMicrotask){g.queueMicrotask=function(cb){Promise.resolve().then(cb).catch(function(e){setTimeout(function(){throw e;},0);});};}
 if(!g.structuredClone){g.structuredClone=function(value){if(value===undefined)return undefined;return JSON.parse(JSON.stringify(value));};}
 if(!g.requestIdleCallback){g.requestIdleCallback=function(cb){return setTimeout(function(){cb({didTimeout:false,timeRemaining:function(){return 0;}});},1);};g.cancelIdleCallback=function(id){clearTimeout(id);};}
+(function(){
+  function replaceChildren(){
+    while(this.firstChild)this.removeChild(this.firstChild);
+    for(var i=0;i<arguments.length;i++){
+      var node=arguments[i];
+      if(node==null)continue;
+      if(!(node&&typeof node.nodeType==="number"))node=(this.ownerDocument||document).createTextNode(String(node));
+      this.appendChild(node);
+    }
+  }
+  var list=[];
+  if(g.Element&&g.Element.prototype)list.push(g.Element.prototype);
+  if(g.Document&&g.Document.prototype)list.push(g.Document.prototype);
+  if(g.DocumentFragment&&g.DocumentFragment.prototype)list.push(g.DocumentFragment.prototype);
+  for(var i=0;i<list.length;i++)if(!list[i].replaceChildren)list[i].replaceChildren=replaceChildren;
+})();
+if(g.crypto&&!g.crypto.randomUUID){g.crypto.randomUUID=function(){var a=new Uint8Array(16);g.crypto.getRandomValues(a);a[6]=(a[6]&15)|64;a[8]=(a[8]&63)|128;var h=[];for(var i=0;i<a.length;i++)h.push((a[i]+256).toString(16).slice(1));return h.slice(0,4).join("")+"-"+h.slice(4,6).join("")+"-"+h.slice(6,8).join("")+"-"+h.slice(8,10).join("")+"-"+h.slice(10,16).join("");};}
 if(typeof Element!=="undefined"&&!Element.prototype.replaceChildren){Element.prototype.replaceChildren=function(){while(this.firstChild)this.removeChild(this.firstChild);for(var i=0;i<arguments.length;i++){var n=arguments[i];this.appendChild(n&&n.nodeType?n:document.createTextNode(String(n)));}};}
 if(typeof DocumentFragment!=="undefined"&&!DocumentFragment.prototype.replaceChildren){DocumentFragment.prototype.replaceChildren=Element.prototype.replaceChildren;}
 if(typeof Element!=="undefined"&&!Element.prototype.closest){Element.prototype.closest=function(selector){var el=this;while(el&&el.nodeType===1){if(el.matches(selector))return el;el=el.parentElement;}return null;};}
