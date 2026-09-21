@@ -12,7 +12,7 @@
   const ReactRef=window.React;
   if(!ReactRef) return;
   const h=ReactRef.createElement;
-  const {useEffect,useMemo,useState}=ReactRef;
+  const {useEffect,useMemo,useRef,useState}=ReactRef;
 
   const SALES="qmes-erp-sales-v1";
   const META="qmes-sales-order-meta-v1";
@@ -96,6 +96,174 @@
 
   function Badge(props){
     return h("span",{className:"qrl-badge "+props.tone},props.text);
+  }
+
+  const pad2=n=>String(n).padStart(2,"0");
+  function qrlDateParts(value){
+    const m=clean(value).match(/^(20\\d{2})-(\\d{2})-(\\d{2})$/);
+    const now=new Date();
+    return m?{y:Number(m[1]),m:Number(m[2]),d:Number(m[3])}:{y:now.getFullYear(),m:now.getMonth()+1,d:now.getDate()};
+  }
+  function qrlDateValue(y,m,d){
+    const max=new Date(y,m,0).getDate();
+    return y+"-"+pad2(m)+"-"+pad2(Math.min(Math.max(1,d),max));
+  }
+  function qrlMonthValue(value){
+    const p=qrlDateParts(value);
+    return p.y+"-"+pad2(p.m);
+  }
+  function qrlShiftMonth(value,delta){
+    const m=clean(value).match(/^(20\\d{2})-(\\d{2})$/);
+    const base=m?new Date(Number(m[1]),Number(m[2])-1,1):new Date();
+    base.setMonth(base.getMonth()+delta);
+    return base.getFullYear()+"-"+pad2(base.getMonth()+1);
+  }
+  function qrlMonthParts(value){
+    const m=clean(value).match(/^(20\\d{2})-(\\d{2})$/);
+    const now=new Date();
+    return m?{y:Number(m[1]),m:Number(m[2])}:{y:now.getFullYear(),m:now.getMonth()+1};
+  }
+
+  function QrlCalendarPane(props){
+    const vm=qrlMonthParts(props.view);
+    const first=new Date(vm.y,vm.m-1,1);
+    const start=new Date(vm.y,vm.m-1,1-first.getDay());
+    const today=(()=>{const d=new Date();return qrlDateValue(d.getFullYear(),d.getMonth()+1,d.getDate())})();
+    const years=Array.from({length:16},(_,i)=>2022+i);
+    const months=Array.from({length:12},(_,i)=>i+1);
+
+    const cells=Array.from({length:42},(_,i)=>{
+      const d=new Date(start);
+      d.setDate(start.getDate()+i);
+      const value=qrlDateValue(d.getFullYear(),d.getMonth()+1,d.getDate());
+      const outside=d.getMonth()+1!==vm.m;
+      const dow=d.getDay();
+      const inRange=props.from&&props.to&&value>=props.from&&value<=props.to;
+      const selected=value===props.from||value===props.to;
+      const cls=[
+        "qrl-range-day",
+        outside?"other":"",
+        dow===0?"sun":"",
+        dow===6?"sat":"",
+        inRange?"in-range":"",
+        selected?"selected":"",
+        value===today?"today":""
+      ].filter(Boolean).join(" ");
+      return h("button",{
+        key:value+"-"+i,
+        type:"button",
+        className:cls,
+        onClick:()=>{
+          if(props.side==="from"){
+            props.setFrom(value);
+            if(!props.to||value>props.to) props.setTo(value);
+          }else{
+            props.setTo(value);
+            if(!props.from||value<props.from) props.setFrom(value);
+          }
+          if(outside) props.setView(qrlMonthValue(value));
+        }
+      },String(d.getDate()));
+    });
+
+    return h("div",{className:"qrl-range-pane"},
+      h("div",{className:"qrl-range-pane-head"},
+        h("button",{type:"button",className:"qrl-range-nav",onClick:()=>props.setView(qrlShiftMonth(props.view,-1))},"‹"),
+        h("div",{className:"qrl-range-pane-selects"},
+          h("select",{value:String(vm.y),onChange:e=>props.setView(e.target.value+"-"+pad2(vm.m))},
+            years.map(y=>h("option",{key:y,value:String(y)},String(y)))
+          ),
+          h("select",{value:pad2(vm.m),onChange:e=>props.setView(vm.y+"-"+e.target.value)},
+            months.map(m=>h("option",{key:m,value:pad2(m)},pad2(m)))
+          )
+        ),
+        h("button",{type:"button",className:"qrl-range-nav",onClick:()=>props.setView(qrlShiftMonth(props.view,1))},"›")
+      ),
+      h("div",{className:"qrl-range-week"},
+        ["일","월","화","수","목","금","토"].map((v,i)=>h("span",{key:v,className:i===0?"sun":i===6?"sat":""},v))
+      ),
+      h("div",{className:"qrl-range-days"},cells),
+      h("button",{type:"button",className:"qrl-range-today",onClick:()=>{
+        const d=new Date(),v=qrlDateValue(d.getFullYear(),d.getMonth()+1,d.getDate());
+        if(props.side==="from"){props.setFrom(v);if(!props.to||v>props.to)props.setTo(v);}
+        else{props.setTo(v);if(!props.from||v<props.from)props.setFrom(v);}
+        props.setView(qrlMonthValue(v));
+      }},"오늘")
+    );
+  }
+
+  function QrlFixedRangeField(props){
+    const rootRef=useRef(null);
+    const [open,setOpen]=useState(false);
+    const [leftView,setLeftView]=useState(()=>qrlMonthValue(props.from));
+    const [rightView,setRightView]=useState(()=>{
+      const a=qrlMonthValue(props.from),b=qrlMonthValue(props.to);
+      return b>a?b:qrlShiftMonth(a,1);
+    });
+    const fp=qrlDateParts(props.from),tp=qrlDateParts(props.to);
+    const years=Array.from({length:16},(_,i)=>2022+i);
+    const months=Array.from({length:12},(_,i)=>i+1);
+
+    useEffect(()=>{
+      if(!open)return;
+      const onDown=e=>{
+        if(rootRef.current&&!rootRef.current.contains(e.target))setOpen(false);
+      };
+      document.addEventListener("pointerdown",onDown,true);
+      return()=>document.removeEventListener("pointerdown",onDown,true);
+    },[open]);
+
+    const updatePart=(side,part,value)=>{
+      const src=side==="from"?qrlDateParts(props.from):qrlDateParts(props.to);
+      let y=src.y,m=src.m,d=src.d;
+      if(part==="y")y=Number(value);
+      if(part==="m")m=Number(value);
+      if(part==="d")d=Number(value);
+      const next=qrlDateValue(y,m,d);
+      if(side==="from"){
+        props.setFrom(next);
+        if(!props.to||next>props.to)props.setTo(next);
+        setLeftView(qrlMonthValue(next));
+      }else{
+        props.setTo(next);
+        if(!props.from||next<props.from)props.setFrom(next);
+        setRightView(qrlMonthValue(next));
+      }
+    };
+
+    const dayOptions=p=>Array.from({length:new Date(p.y,p.m,0).getDate()},(_,i)=>i+1);
+    const openCalendar=()=>{
+      const l=qrlMonthValue(props.from),r=qrlMonthValue(props.to);
+      setLeftView(l);
+      setRightView(r>l?r:qrlShiftMonth(l,1));
+      setOpen(v=>!v);
+    };
+
+    return h("label",{className:"qrl-field qrl-period-field",ref:rootRef},
+      h("span",null,"기간"),
+      h("div",{className:"qrl-fixed-range"},
+        h("button",{type:"button",className:"qrl-range-direct",onClick:()=>setOpen(false)},"직접 입력"),
+        h("div",{className:"qrl-range-dateparts"},
+          h("select",{value:String(fp.y),onChange:e=>updatePart("from","y",e.target.value)},years.map(y=>h("option",{key:y,value:String(y)},String(y)))),
+          h("span",{className:"qrl-range-slash"},"/"),
+          h("select",{value:pad2(fp.m),onChange:e=>updatePart("from","m",e.target.value)},months.map(m=>h("option",{key:m,value:pad2(m)},pad2(m)))),
+          h("span",{className:"qrl-range-slash"},"/"),
+          h("select",{value:pad2(fp.d),onChange:e=>updatePart("from","d",e.target.value)},dayOptions(fp).map(d=>h("option",{key:d,value:pad2(d)},pad2(d)))),
+          h("span",{className:"qrl-range-tilde"},"~"),
+          h("select",{value:String(tp.y),onChange:e=>updatePart("to","y",e.target.value)},years.map(y=>h("option",{key:y,value:String(y)},String(y)))),
+          h("span",{className:"qrl-range-slash"},"/"),
+          h("select",{value:pad2(tp.m),onChange:e=>updatePart("to","m",e.target.value)},months.map(m=>h("option",{key:m,value:pad2(m)},pad2(m)))),
+          h("span",{className:"qrl-range-slash"},"/"),
+          h("select",{value:pad2(tp.d),onChange:e=>updatePart("to","d",e.target.value)},dayOptions(tp).map(d=>h("option",{key:d,value:pad2(d)},pad2(d))))
+        ),
+        h("button",{type:"button",className:"qrl-range-calendar-button","aria-label":"기간 달력 열기",onClick:openCalendar},"▣")
+      ),
+      open?h("div",{className:"qrl-range-popup",role:"dialog","aria-label":"기간 선택 달력"},
+        h(QrlCalendarPane,{side:"from",view:leftView,setView:setLeftView,from:props.from,to:props.to,setFrom:props.setFrom,setTo:props.setTo}),
+        h("div",{className:"qrl-range-divider"}),
+        h(QrlCalendarPane,{side:"to",view:rightView,setView:setRightView,from:props.from,to:props.to,setFrom:props.setFrom,setTo:props.setTo})
+      ):null
+    );
   }
 
   function StableSalesLedgerV5No3(){
@@ -214,14 +382,7 @@
       ),
       h("div",{className:"qrl-filter"},
         h("div",{className:"qrl-grid"},
-          h("label",{className:"qrl-field"},
-            h("span",null,"기간"),
-            h("span",{className:"qrl-date"},
-              h("input",{type:"date",value:from,onChange:e=>setFrom(e.target.value)}),
-              h("b",null,"~"),
-              h("input",{type:"date",value:to,onChange:e=>setTo(e.target.value)})
-            )
-          ),
+          h(QrlFixedRangeField,{from,to,setFrom,setTo}),
           h("label",{className:"qrl-field"},h("span",null,"거래처"),h("select",{value:customerFilter,onChange:e=>setCustomerFilter(e.target.value)},customerOptions)),
           h("label",{className:"qrl-field"},h("span",null,"품목명"),h("input",{value:productFilter,onChange:e=>setProductFilter(e.target.value),placeholder:"품목명 또는 규격 입력"})),
           h("label",{className:"qrl-field"},h("span",null,"진행상태"),h("select",{value:progressFilter,onChange:e=>setProgressFilter(e.target.value)},progressOptions)),
