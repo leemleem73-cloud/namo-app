@@ -523,7 +523,7 @@ function install(app){
       const messages=backup.messages||[],attachments=backup.attachments||[],accounts=backup.accounts||[];
       const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
       if(hasCredentialFields)return fail(res,400,'인증정보가 포함된 백업파일은 복원할 수 없습니다.');
-      if(messages.length>200000||attachments.length>50000)return fail(res,400,'백업파일 데이터 수가 허용 범위를 초과했습니다.');
+      if(messages.length>5000||attachments.length>2000)return fail(res,400,'복원 사전검증은 한 번에 메시지 5,000건, 첨부파일 2,000건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const invalidMessages=messages.filter(m=>!m||!String(m.room_id||'')||!String(m.sender_name||'')||!String(m.receiver_name||'')||typeof m.message_text!=='string'||!String(m.created_at||'')||Number.isNaN(Date.parse(String(m.created_at||'')))).length;
       const invalidAttachments=attachments.filter(a=>!a||!String(a.room_id||'')||!String(a.sender_name||'')||!String(a.receiver_name||'')||!String(a.file_name||'')||!String(a.created_at||'')||Number.isNaN(Date.parse(String(a.created_at||'')))||!Number.isSafeInteger(Number(a.file_size))||Number(a.file_size)<0).length;
       if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
