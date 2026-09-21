@@ -14,7 +14,8 @@ const pool=new Pool({connectionString:dbUrl,ssl:dbUrl&&!/(localhost|127\.0\.0\.1
 const SECRET=process.env.NAMO_TALK_TOKEN_SECRET||process.env.SESSION_SECRET||'namo-talk-dev-secret';
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024}});
 let ready=null,cleanupTimer=null;
-const backupSessions=new Map(),BACKUP_TTL_MS=10*60*1000;
+const backupSessions=new Map(),backupStartLocks=new Map(),BACKUP_TTL_MS=10*60*1000;
+async function withBackupStartLock(user,fn){const prev=backupStartLocks.get(user)||Promise.resolve();let release;const gate=new Promise(r=>{release=r});const tail=prev.catch(()=>{}).then(()=>gate);backupStartLocks.set(user,tail);await prev.catch(()=>{});try{return await fn()}finally{release();if(backupStartLocks.get(user)===tail)backupStartLocks.delete(user)}}
 function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
 function armBackupSession(id,x){clearTimeout(x.timer);x.timer=setTimeout(()=>closeBackupSession(id,false),BACKUP_TTL_MS);}
 
@@ -409,6 +410,7 @@ function install(app){
     try{
       const me=await requireAdmin(req,res);if(!me)return;
       await schema();
+      return await withBackupStartLock(me.name,async()=>{
       for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
       client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       const bounds=await client.query(`SELECT
@@ -426,6 +428,7 @@ function install(app){
         snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
         accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
       ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
+      });
     }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
   });
 
