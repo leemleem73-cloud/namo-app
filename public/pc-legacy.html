@@ -1,189 +1,93 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script id="qmes-pad-login-entry-20260921">
-  (function(){try{
-    var ua=navigator.userAgent||"";
-    var touch=Number(navigator.maxTouchPoints||0)>0||("ontouchstart" in window);
-    var sw=Number((screen&&screen.width)||0),sh=Number((screen&&screen.height)||0);
-    var minScreen=Math.min(sw||9999,sh||9999);
-    var isPad=/iPad|Tablet|PlayBook|Silk|Android/i.test(ua)||(/Macintosh/i.test(ua)&&touch)||(touch&&minScreen>=600);
-    if(!isPad)return;
-    var params=new URLSearchParams(location.search);
-    var forceDesktop=params.get("desktop")==="1"||params.get("view")==="desktop"||params.get("embeddedMobile")==="1";
-    if(forceDesktop)return;
-    if(params.get("pad")==="1")return;
-    if(location.pathname!=="/pad-login.html")location.replace("/pad-login.html?v=20260921-2");
-  }catch(_error){}})();
-  </script>
-  <title>나모케미칼 QMES - PC 호환 모드</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css" />
-  <link rel="stylesheet" href="./css/common.css?v=20260904-iqc-clean-small48" />
-  <link rel="stylesheet" href="./css/qmes-shell-layer-base-20260827.css?v=20260904-iqc-remove-legacy-spacer2" />
-  <link rel="stylesheet" href="./css/layout.css?v=20260903-layout-clean4" />
-  <link rel="stylesheet" href="./css/dashboard.css?v=20260810-kpi-unit1" />
-  <link rel="stylesheet" href="./css/iqc.css" />
-<link rel="stylesheet" href="./css/pqc.css" />
-  <link rel="stylesheet" href="./css/oqc.css" />
-  <link rel="stylesheet" href="./css/ipad-pop.css?v=20260820-packaging-border1" />
-  <link rel="stylesheet" href="./css/ipad-pop-tweaks-20260810.css?v=20260814-field-stable2" />
-  <link rel="stylesheet" href="./css/ipad-pqc-order-fix-20260810.css?v=20260814-field-stable2" />
-  <link rel="stylesheet" href="./css/ipad-equipment-light-20260810.css?v=20260814-field-stable2" />
-  <link rel="stylesheet" href="./css/equipment-management-sidebar-20260811.css?v=20260828-repair-equal1" />
-  <link rel="stylesheet" href="./css/equipment-repair-tight-spacing-20260828.css?v=20260828-preferred-layout3" />
-  <link rel="stylesheet" href="./css/report.css" />
-  <link rel="stylesheet" href="./css/print.css?v=20260826-latest1" />
-  <link rel="stylesheet" href="./css/ipad-pop-final-20260810.css?v=20260814-field-stable2" />
-  <link rel="stylesheet" href="./css/inventory-enterprise.css?v=20260819-qmes2" />
-  <link rel="stylesheet" href="./css/inventory-stock-table-alignment-20260820-v3.css?v=20260824-all-center1" />
-  <link rel="stylesheet" href="./css/inventory-movement-table-alignment-20260820-v4.css?v=20260824-detail-title1" />
-  <style>
-    .qmes-wo-cert .qmes-wo-basic-info-table thead th:first-child {font-size:15px!important;font-weight:700!important;}
-    .qmes-wo-cert .qmes-wo-cert-material-table th:first-child,.qmes-wo-cert .qmes-wo-cert-material-table td:first-child {width:4%!important;padding-left:2px!important;padding-right:2px!important;font-size:15px!important;}
-    .qmes-wo-cert .qmes-wo-cert-material-table th:first-child {font-weight:700!important;}.qmes-wo-cert .qmes-wo-cert-material-table td:first-child {font-weight:400!important;}
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(2),.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(3) {width:17.125%!important;}
-    .qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(4) {width:7.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(5),.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(6) {width:10.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(7) {width:12.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(8) {width:8.125%!important;}.qmes-wo-cert .qmes-wo-cert-material-table th:nth-child(9) {width:14.125%!important;}
-    .qmes-wo-form-field:has(> input[placeholder="원료 계획량 합계"]) {display:none!important;}
-    [role="dialog"][aria-label="계정 설정"] {display:none!important;}
-    [role="dialog"][aria-label="비밀번호 변경"] {position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;overflow:auto!important;}
-    [role="dialog"][aria-label="비밀번호 변경"] > form {position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;margin:auto!important;transform:none!important;max-height:calc(100vh - 32px)!important;overflow-y:auto!important;}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>NAMO QMES - PAD PC</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,"Malgun Gothic",sans-serif;background:#eef3f6;color:#1f3345}
+button,input{font:inherit}.top{position:fixed;left:0;right:0;top:0;height:58px;background:#f9fbfc;border-bottom:1px solid #bdccd7;display:flex;align-items:center;z-index:30;box-shadow:0 2px 5px rgba(30,70,100,.08)}
+.brand{width:230px;height:58px;padding:8px 12px;border-right:1px solid #cbd8e2;display:flex;align-items:center}.brand img{width:186px;max-height:40px;object-fit:contain}.top-title{font-size:15px;font-weight:900;padding-left:16px}.spacer{flex:1}.user{font-size:12px;font-weight:800;color:#38546a;margin-right:10px}.top-btn{height:34px;border:1px solid #b8c9d5;background:#fff;border-radius:6px;margin-right:8px;padding:0 12px;color:#29485f;font-weight:800}
+.side{position:fixed;left:0;top:58px;bottom:0;width:230px;background:#17364f;color:#fff;overflow-y:auto;z-index:20}.company{padding:15px 14px;border-bottom:1px solid rgba(255,255,255,.12);font-size:13px;font-weight:900}.group{padding:12px 10px 5px;color:#8fb0c8;font-size:10px;font-weight:900;letter-spacing:.08em}.nav{width:100%;height:39px;border:0;background:transparent;color:#dce7ee;text-align:left;padding:0 14px;font-size:12px;font-weight:700;border-left:3px solid transparent}.nav.active{background:#24506f;color:#fff;border-left-color:#63b3e6}.nav:active{background:#2c5d7e}
+.main{margin-left:230px;padding-top:58px;min-height:100vh}.pagehead{padding:15px 18px 10px;background:#fff;border-bottom:1px solid #d6e0e7}.pagehead h1{margin:0;font-size:20px}.pagehead p{margin:5px 0 0;font-size:11px;color:#6d7f8e}.cards{display:flex;gap:8px;padding:12px 18px 0}.card{min-width:135px;background:#fff;border:1px solid #d5e0e7;border-radius:8px;padding:10px 12px}.card span{display:block;font-size:10px;color:#758595}.card strong{display:block;margin-top:5px;font-size:20px;color:#173e5e}.body{padding:12px 18px 24px}.toolbar{display:flex;gap:7px;margin-bottom:10px}.search{height:36px;flex:1;max-width:360px;border:1px solid #c6d4de;border-radius:6px;padding:0 10px;background:#fff}.action{height:36px;border:1px solid #b6c8d4;border-radius:6px;background:#fff;padding:0 12px;font-weight:800;color:#2b536e}.panel{background:#fff;border:1px solid #d5e0e7;border-radius:8px;overflow:hidden}.status{padding:11px 13px;border-bottom:1px solid #e1e8ed;font-size:11px;color:#607382;background:#f9fbfc}.table-wrap{overflow:auto;max-height:calc(100vh - 245px)}table{border-collapse:collapse;width:100%;min-width:850px;font-size:11px}th{position:sticky;top:0;background:#e9f1f6;color:#29475d;padding:9px 8px;border-right:1px solid #d0dde5;border-bottom:1px solid #c5d4de;text-align:center;white-space:nowrap}td{padding:8px;border-right:1px solid #e1e8ed;border-bottom:1px solid #e4eaee;white-space:nowrap;text-align:center}tr:nth-child(even) td{background:#fbfcfd}.empty{padding:45px 20px;text-align:center;color:#738493;font-size:13px}.trace{padding:18px}.trace-row{display:flex;gap:8px}.trace-row input{height:40px;flex:1;border:1px solid #c3d3dd;border-radius:6px;padding:0 10px}.trace-row button{height:40px;border:0;border-radius:6px;background:#17689a;color:#fff;font-weight:900;padding:0 18px}.badge{display:inline-block;padding:3px 7px;border-radius:10px;background:#eef3f6}.bad{color:#b42335;font-weight:900}.ok{color:#147342;font-weight:900}
+@media(max-width:900px){.brand{width:210px}.side{width:210px}.main{margin-left:210px}.top-title{display:none}.cards{overflow-x:auto}.card{min-width:120px}.body{padding-left:10px;padding-right:10px}.pagehead{padding-left:10px}.top-btn{padding:0 8px}}
 </style>
-  <link rel="stylesheet" href="./css/qmes-global-light-theme-20260826.css?v=20260904-deepclean-fit45" />
-<link id="qmes-sales-spacious-layout-20260826" rel="stylesheet" href="./css/qmes-sales-spacious-layout-20260826.css?v=20260826-enterprise5" />
-  <link id="qmes-document-final-restore-20260827" rel="stylesheet" href="./css/qmes-document-final-restore-20260827.css?v=20260902-iqc-clean2" />
-  <link id="qmes-inspection-search-single-field-20260827" rel="stylesheet" href="./css/qmes-inspection-search-single-field-20260827.css?v=20260827-1" />
-  <link rel="stylesheet" href="./css/qmes-coa-filter-single-row-20260827.css?v=20260827-1" />
-  <link id="qmes-iqc-certificate-final-20260902" rel="stylesheet" href="./css/iqc-certificate-final-20260902.css?v=20260902-1" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link rel="stylesheet" href="./css/qmes-iqc-enterprise-20260904.css?v=20260904-actions-deepclean44">
-  <link rel="stylesheet" href="./css/qmes-pqc-oqc-enterprise-20260904.css?v=20260904-deepclean-fit45">
-  <link rel="stylesheet" href="./css/qmes-inspection-filter-unified-20260904.css?v=20260904-reset-compact25">
-  <link rel="stylesheet" href="./css/qmes-inspection-actions-final-20260904.css?v=20260904-iqc-clean-small48">
-  <link rel="stylesheet" href="./css/qmes-production-enterprise-20260904.css?v=20260907-finalclean1">
-  <link rel="stylesheet" href="./css/qmes-erp-enterprise-20260906.css?v=20260906-erp1">
-  <link rel="stylesheet" href="./css/qmes-sales-ledger-v4-20260918.css?v=20260918-1">
-  <link rel="stylesheet" href="./css/qmes-sales-header-readability-20260918.css?v=20260918-1">
-  <link rel="stylesheet" href="./css/qmes-sales-no-column-20260918.css?v=20260918-1">
-  <link rel="stylesheet" href="./css/qmes-purchase-sales-ledger-match-20260918.css?v=20260918-1">
-  <link rel="stylesheet" href="./css/qmes-sales-center-align-20260921.css?v=20260921-center1">
 </head>
 <body>
-  <div id="qmes-legacy-pc-compat" style="position:fixed;right:10px;bottom:10px;z-index:2147483000;padding:5px 8px;border-radius:6px;background:rgba(15,39,64,.82);color:#fff;font:700 10px Arial,sans-serif">PC 호환 모드</div>
-  <div id="root"></div>
-  <div id="qmes-print-root" aria-hidden="true"></div>
-  <noscript>이 페이지는 JavaScript가 필요합니다.</noscript>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-login-sync-guard-20260831-v1.js?v=20260914-rollback1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/production-process-editor-owner-20260827-v2.js?v=20260904-stable9"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/production-process-row-edit-20260827-v1.js?v=20260827-early2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/production-process-remark-stable-patch-20260827-v1.js?v=20260904-stable9"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/auth-session-fastcheck-20260812.js?v=20260831-pcflicker1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/common.jsx?v=20260810-remove-packaging1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/utils.jsx"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sync.js?v=20260907-workorder-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-commercial-sync-write-guard-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/iqc-sync-sanitize-20260813.js?v=20260813-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-ipad-pending-link-20260811.js?v=20260811-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/dashboard.jsx?v=20260904-notice-freeze11"></script>
-<script type="text/babel" data-presets="env,react" src="./js/report.jsx?v=20260820-iqcpackaging2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc.jsx?v=20260904-remove-oqc-scroll46"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-date-edit-enable-20260811.js?v=20260811-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-order-match-workorder-20260811.js?v=20260826-errorfix2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/oqc.jsx"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/iqc.jsx?v=20260904-iqc-reference43"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/iqc-edit-screen-20260826.js?v=20260901-purchase-link1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inspection-edit-screen-20260826.js?v=20260826-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/production.jsx?v=20260907-workorder-stable3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-process-no-sequence-20260811.js?v=20260811-4"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-workorder-reconcile-20260811.js?v=20260907-workorder-stable3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/pqc-duplicate-pending-cleanup-20260820.js?v=20260820-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-pop.jsx?v=20260824-lot-clean1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-pop-spec-highlight-20260810.js?v=20260814-field-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-iqc-material-add-20260810.js?v=20260826-fieldstable5"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-iqc-visibility-fix-20260811.js?v=20260814-field-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-quantity-stepper-unified-20260810.js?v=20260915-sizefix3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/ipad-equipment-em-20260810.js?v=20260814-field-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/equipment-daily-status-cards-20260811.js?v=20260814-field-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/equipment-inspector-selector-20260828.js?v=20260831-pcflicker1"></script>
-  <script>qmesIpadCurrentUser=function(){const raw=window.__QMES_USER__||window.__QMES_CURRENT_USER__;const value=raw&&typeof raw==='object'?String(raw.name||raw.uid||'관리자'):String(raw||'관리자');return value.replace(/\s*\(U-\d+\)\s*$/i,'').trim();};</script>
-  <script type="text/babel" data-presets="env,react" src="./js/workorder-lot-sync.js?v=20260907-cleanup1"></script>
-<script type="text/babel" data-presets="env,react" src="./js/workorder-print-cleanup.js?v=20260826-latest1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/api.jsx?v=20260814-field-stable2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/equipment-management.jsx?v=20260828-repair-spacing1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/lot.jsx?v=20260826-global3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/charts.jsx?v=20260804-lot-tabs-final"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/approval.jsx"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/partners.jsx?v=20260821-layoutfix3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/partners-register-modal-v2-20260821.js?v=20260821-3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/admin.jsx?v=20260728-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/member-management-patch.jsx?v=20260728-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/admin/members-bootstrap.jsx?v=20260811-15"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/admin/members.jsx?v=20260728-3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/clean-management-modals.jsx?v=20260731-clean1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-enterprise-auto-mode-20260820-v11.jsx?v=20260824-firstpaint1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-production-lot-flow-20260819.jsx?v=20260819-1531"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-physical-location-map-20260820-v3.js?v=20260820-4"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-auto-link-all-20260820-v7.jsx?v=20260821-packaging-sync2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/namo-attendance-admin-edit.jsx?v=20260814-latest2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/namo-attendance-time-patch.js?v=20260814-latest2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-attendance-reminder.js?v=20260814-restore1"></script>
-  <script>var useRef=React.useRef;</script>
-  <script type="text/babel" data-presets="env,react" src="./js/production-process-management-20260824.jsx?v=20260824-production-direct5"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-react-owner-gate-20260918.js?v=20260918-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-react-ledger-owner-v5-no3-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-edit-button-bridge-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-excel-download-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-react-component-lock-20260918.js?v=20260918-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/router.jsx?v=20260910-name-avatar-fix"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/app.jsx?v=20260903-errorfix1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-user-dropdown-restore-20260812.js?v=20260904-authguard1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-collapsible-side-menu.js?v=20260910-prod2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-layout-resizable-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-layout-resize-polish-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-header-separator-polish-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-header-separator-strong-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-header-separator-benchmark-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-body-separator-benchmark-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-spc-ui-cleanup-20260914.js?v=20260915-adminaccess3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-access-permissions-20260910.js?v=20260915-adminaccess3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-member-access-visibility-fix-20260915.js?v=20260915-adminaccess3"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-enterprise-header-polish-20260910.js?v=20260910-prod2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-ui-recovery-20260910.js?v=20260910-prod2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-order-register-20260915.js?v=20260916-safe-loader2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-modal-header-supplier-fix-20260917.js?v=20260917-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-legacy-visual-cleanup-20260916.js?v=20260916-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-excel-history-import-20260917.js?v=20260917-excel5"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-iqc-ui-match-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-purchase-no-column-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-production-adjust-20260910.js?v=20260910-prod2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-remove-inspection-new-buttons-20260810.js?v=20260827-no-repeat-click1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-workorder-overwrite-block-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-persistent-restore-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-flicker-prelock-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-compact-ui-20260826.js?v=20260826-enterprise5"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-order-id-display-sync-20260828-v1.js?v=20260828-8"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-detail-consistency-20260828-v1.js?v=20260828-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-content-seed-20260918-v2.js?v=20260918-2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-history-seed-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-legacy-visual-block-20260918.js?v=20260918-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-customer-name-standardize-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-deduplicate-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-sales-remove-marked-duplicates-20260921.js?v=20260921-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-mes-master-loader-20260820-v2.js?v=20260907-cleanup2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-menu-hover-fix-20260819.js?v=20260824-qr-larger1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-detail-stable-20260821.js?v=20260824-packaging-fallback1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-pm-receipt-20260819.js?v=20260819-1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/inventory-movement-list-clean-20260821.js?v=20260824-firstpaint1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-latest-date-sort-20260811.js?v=20260811-latest-first2"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/coa-issued-delete-button-20260813.js?v=20260813-1"></script>
-<script type="text/babel" data-presets="env,react" src="./js/qmes-global-cross-pc-sync-20260820.js?v=20260907-stable-workorders1"></script>
-  <script type="text/babel" data-presets="env,react" src="./js/qmes-workorder-legacy-artifact-cleanup-20260907.js?v=20260907-finalclean1"></script>
+<header class="top">
+  <div class="brand"><img src="/assets/namo-header-logo.svg?v=20260903-color1" alt="NAMO"></div>
+  <div class="top-title">QMES PAD · PC 빠른 화면</div><div class="spacer"></div>
+  <div class="user" id="userName">로그인 확인 중</div>
+  <button class="top-btn" id="mobileBtn" type="button">모바일 버전</button>
+  <button class="top-btn" id="refreshBtn" type="button">새로고침</button>
+</header>
+<aside class="side">
+  <div class="company">㈜나모케미칼 · QMES</div>
+  <div class="group">WORKSPACE</div>
+  <button class="nav active" data-code="dash" type="button">통합 대시보드</button>
+  <div class="group">ERP</div>
+  <button class="nav" data-code="sales" type="button">수주 · 납기관리</button>
+  <button class="nav" data-code="plan" type="button">생산계획 · MRP</button>
+  <button class="nav" data-code="purchase" type="button">구매 · 발주관리</button>
+  <button class="nav" data-code="inventory" type="button">재고현황</button>
+  <div class="group">MES · QMS</div>
+  <button class="nav" data-code="workorder" type="button">작업지시서 / 생산</button>
+  <button class="nav" data-code="iqc" type="button">수입검사 (IQC)</button>
+  <button class="nav" data-code="pqc" type="button">공정검사 (PQC)</button>
+  <button class="nav" data-code="oqc" type="button">출하검사 (OQC)</button>
+  <button class="nav" data-code="spc" type="button">SPC 데이터</button>
+  <button class="nav" data-code="trace" type="button">LOT 통합추적</button>
+  <button class="nav" data-code="equipment" type="button">설비 모니터링</button>
+</aside>
+<main class="main">
+  <section class="pagehead"><h1 id="pageTitle">통합 대시보드</h1><p id="pageDesc">구형 PAD에서도 빠르게 사용할 수 있는 PC형 호환 화면입니다.</p></section>
+  <section class="cards"><div class="card"><span>전체</span><strong id="sum1">-</strong></div><div class="card"><span id="sum2Label">진행</span><strong id="sum2">-</strong></div><div class="card"><span id="sum3Label">상태</span><strong id="sum3">정상</strong></div></section>
+  <section class="body">
+    <div class="toolbar"><input id="searchInput" class="search" type="search" placeholder="현재 목록 검색"><button class="action" id="reloadBtn" type="button">다시 불러오기</button></div>
+    <div class="panel"><div class="status" id="statusText">데이터를 불러오는 중입니다.</div><div id="content"><div class="empty">잠시만 기다려 주세요.</div></div></div>
+  </section>
+</main>
+<script>
+(function(){
+"use strict";
+var currentCode="dash",currentRows=[],currentColumns=[],currentUser=null;
+var titles={dash:"통합 대시보드",sales:"수주 · 납기관리",plan:"생산계획 · MRP",purchase:"구매 · 발주관리",inventory:"재고현황",workorder:"작업지시서 / 생산",iqc:"수입검사 (IQC)",pqc:"공정검사 (PQC)",oqc:"출하검사 (OQC)",spc:"SPC 데이터",trace:"LOT 통합추적",equipment:"설비 모니터링"};
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function val(o,keys,fallback){var i,k,v;if(!o)return fallback;for(i=0;i<keys.length;i++){k=keys[i];v=o[k];if(v!==undefined&&v!==null&&String(v)!=="")return v;}return fallback;}
+function num(v){var n=Number(String(v==null?"":v).replace(/[^0-9.-]/g,""));return isFinite(n)?n:0;}
+function fmt(v){var n=num(v);try{return n.toLocaleString("ko-KR",{maximumFractionDigits:3});}catch(e){return String(n);}}
+function payloadOf(r){var p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p);}catch(e){p={};}}return p&&typeof p==="object"?p:{};}
+function request(method,url,body,done){var x=new XMLHttpRequest();x.open(method,url,true);x.withCredentials=true;x.setRequestHeader("Accept","application/json");if(body!=null)x.setRequestHeader("Content-Type","application/json;charset=UTF-8");x.onreadystatechange=function(){if(x.readyState!==4)return;var p=null;try{p=JSON.parse(x.responseText||"{}");}catch(e){}if(x.status===401){window.location.replace("/mobile-login.html?mobile=1&from=pcfast");return;}done(x.status,p);};x.onerror=function(){done(0,null);};x.send(body==null?null:JSON.stringify(body));}
+function dataOf(p){if(!p)return null;if(p.success===false)return null;return p.data!==undefined?p.data:p;}
+function syncRows(records,key){var out=[],i,r,p,a,j,k,arrays=["rows","items","list","lots","inventory","stocks","data"];records=Array.isArray(records)?records:[];for(i=0;i<records.length;i++){r=records[i]||{};if(key&&String(r.record_key||r.recordKey||"")!==key)continue;p=payloadOf(r);if(p.deleted)continue;if(p.batch){out.push(p.batch);continue;}if(p.entry){out.push(p.entry);continue;}a=null;for(j=0;j<arrays.length;j++){k=arrays[j];if(Array.isArray(p[k])){a=p[k];break;}}if(a){for(j=0;j<a.length;j++)out.push(a[j]);}else if(Object.keys(p).length)out.push(p);}return out;}
+function setStatus(t){document.getElementById("statusText").textContent=t;}
+function setSummary(a,b,c,l2,l3){document.getElementById("sum1").textContent=a;document.getElementById("sum2").textContent=b;document.getElementById("sum3").textContent=c;document.getElementById("sum2Label").textContent=l2||"진행";document.getElementById("sum3Label").textContent=l3||"상태";}
+function setActive(code){var b=document.querySelectorAll(".nav"),i;for(i=0;i<b.length;i++)b[i].className="nav"+(b[i].getAttribute("data-code")===code?" active":"");}
+function renderTable(rows,cols){currentRows=rows||[];currentColumns=cols||[];renderFiltered();}
+function renderFiltered(){var q=String(document.getElementById("searchInput").value||"").toLowerCase(),rows=currentRows,filtered=[],i,j,s,html;if(q){for(i=0;i<rows.length;i++){s="";for(j=0;j<currentColumns.length;j++)s+=" "+String(currentColumns[j][1](rows[i],i)||"");if(s.toLowerCase().indexOf(q)>=0)filtered.push(rows[i]);}}else filtered=rows.slice(0);if(!filtered.length){document.getElementById("content").innerHTML='<div class="empty">표시할 데이터가 없습니다.</div>';return;}html='<div class="table-wrap"><table><thead><tr>';for(i=0;i<currentColumns.length;i++)html+='<th>'+esc(currentColumns[i][0])+'</th>';html+='</tr></thead><tbody>';for(i=0;i<filtered.length&&i<150;i++){html+='<tr>';for(j=0;j<currentColumns.length;j++)html+='<td>'+esc(currentColumns[j][1](filtered[i],i))+'</td>';html+='</tr>';}html+='</tbody></table></div>';document.getElementById("content").innerHTML=html;}
+function col(label,keys,kind){return[label,function(r,i){var v;if(keys==="__no")return i+1;v=val(r,keys,"-");return kind==="num"?fmt(v):v;}];}
+function loadSync(path,done){request("GET","/api/qmes-sync/"+path,null,function(st,p){if(st>=200&&st<300)done(dataOf(p)||[]);else{setStatus("데이터 연결 실패 ("+st+")");done([]);}});}
+function loadDash(){setStatus("주요 현황을 불러오는 중입니다.");var left=4,total=0,issues=0,latest="-";function finish(){left--;if(left>0)return;setSummary(total,issues,"연동","전체","이상/대기");document.getElementById("content").innerHTML='<div class="table-wrap"><table><thead><tr><th>구분</th><th>설명</th><th>상태</th></tr></thead><tbody><tr><td>ERP/MES/QMS</td><td>공용 DB 실시간 조회</td><td class="ok">정상</td></tr><tr><td>PAD PC 화면</td><td>구형 Chrome용 경량 화면</td><td class="ok">정상</td></tr><tr><td>로그인</td><td>'+esc(currentUser&&currentUser.name||"-")+'</td><td class="ok">인증됨</td></tr></tbody></table></div>';setStatus("대시보드 로딩 완료");}
+loadSync("workorder",function(r){total+=syncRows(r).length;finish();});
+loadSync("iqc",function(r){var a=syncRows(r),i,j;total+=a.length;for(i=0;i<a.length;i++){j=String(val(a[i],["judge","status"],""));if(/불합격|NG|FAIL/i.test(j))issues++;}finish();});
+loadSync("pqc",function(r){total+=syncRows(r).length;finish();});
+loadSync("oqc",function(r){total+=syncRows(r).length;finish();});}
+function loadSales(){loadSync("inventory",function(r){var a=syncRows(r,"erp:sales");setSummary(a.length,a.filter?0:0,"DB 연동","수주건수","상태");setStatus("수주 데이터 "+a.length+"건");renderTable(a,[col("No","__no"),col("수주번호",["id","salesNo","orderNo"]),col("수주일자",["orderDate","date"]),col("고객사",["customer","customerName"]),col("제품",["product","item"]),col("수주량",["qty","quantity"],"num"),col("납기일",["due","dueDate"]),col("생산계획",["plan","planStatus"]),col("출하",["shipping","shippingStatus"]),col("비고",["note","remark"])]);});}
+function loadPlan(){loadSync("inventory",function(r){var a=syncRows(r,"erp:plan");setSummary(a.length,a.length,"DB 연동","계획건수","상태");setStatus("생산계획 "+a.length+"건");renderTable(a,[col("No","__no"),col("계획일자",["date","planDate"]),col("생산구분",["productionType","type"]),col("제품",["product","item"]),col("계획량",["qty","quantity"],"num"),col("Revision",["revision","rev"]),col("저장일시",["savedAt","updatedAt"])]);});}
+function loadPurchase(){request("GET","/api/purchase-orders",null,function(st,p){var a=dataOf(p);a=Array.isArray(a)?a:[];setSummary(a.length,a.length,"PC DB","발주건수","연동");setStatus("구매발주 "+a.length+"건");renderTable(a,[col("No","__no"),col("발주번호",["purchaseNo","no","id"]),col("발주일",["orderDate","date"]),col("협력사",["supplier"]),col("품목",["item","material"]),col("발주수량",["qty"],"num"),col("입고수량",["receivedQty","received"],"num"),col("IQC",["iqcStatus","iqc"]),col("상태",["status","receiptStatus"])]);});}
+function loadInventory(){loadSync("inventory",function(r){var a=syncRows(r),clean=[],i;for(i=0;i<a.length;i++)if(!a[i].kind||!/sales|plan/i.test(String(a[i].kind)))clean.push(a[i]);setSummary(clean.length,clean.length,"공용 DB","재고행","연동");setStatus("재고 데이터 "+clean.length+"건");renderTable(clean,[col("No","__no"),col("품목",["materialName","material","productName","product","item","name"]),col("LOT",["lot","lotNo","materialLot","finishedLot"]),col("현재수량",["currentQty","stockQty","remainingQty","qty","amount"],"num"),col("단위",["unit","uom"]),col("창고",["warehouse","storage","location"]),col("상태",["status","state"])]);});}
+function loadWork(){loadSync("workorder",function(r){var a=syncRows(r);setSummary(a.length,a.length,"공용 DB","작업지시","연동");setStatus("작업지시 / 생산 "+a.length+"건");renderTable(a,[col("No","__no"),col("작업지시번호",["no","workOrderNo","workOrder"]),col("제품",["item","product","productName"]),col("생산LOT",["productionLot","lot"]),col("계획량",["plan","planQty"],"num"),col("실적",["done","actualQty"],"num"),col("납기",["due","dueDate"]),col("상태",["status","state"]),col("탱크",["tank","equipment"])]);});}
+function loadInspection(type){loadSync(type,function(r){var a=syncRows(r);setSummary(a.length,a.length,"공용 DB","검사건수","연동");setStatus(type.toUpperCase()+" 데이터 "+a.length+"건");renderTable(a,[col("No","__no"),col("검사번호",["inNo","groupId","inspectionNo","id"]),col("일자",["recv","date","inspectionDate","shipDate"]),col("LOT",["lot","lotNo"]),col("품목/제품",["name","product","item"]),col("업체",["supplier","customer"]),col("검사항목",["check","inspectionItem"]),col("판정",["judge","status"]),col("검사자",["inspector","by"])]);});}
+function loadSpc(){var all=[],left=2;function done(){left--;if(left)return;setSummary(all.length,all.length,"측정값","검사데이터","상태");setStatus("PQC/OQC 측정 데이터 "+all.length+"건");renderTable(all,[col("No","__no"),col("구분",["_source"]),col("일자",["date","inspectionDate"]),col("LOT",["lot","groupId"]),col("제품",["product","item"]),col("검사항목",["check","name"]),col("측정값",["value","measured","result"]),col("판정",["judge","status"])]);}
+loadSync("pqc",function(r){var a=syncRows(r),i;for(i=0;i<a.length;i++){a[i]._source="PQC";all.push(a[i]);}done();});
+loadSync("oqc",function(r){var a=syncRows(r),i;for(i=0;i<a.length;i++){a[i]._source="OQC";all.push(a[i]);}done();});}
+function loadEquipment(){loadSync("equipment",function(r){var a=syncRows(r);setSummary(a.length,a.length,"공용 DB","설비건수","연동");setStatus("설비 데이터 "+a.length+"건");renderTable(a,[col("No","__no"),col("설비번호",["equipmentNo","equipmentId","code","id"]),col("설비명",["equipmentName","name","equipment"]),col("상태",["status","state"]),col("점검일",["inspectionDate","checkDate","date"]),col("담당자",["manager","inspector","owner"]),col("비고",["note","remark","memo"])]);});}
+function traceScreen(){setSummary("-","-","대기","검색결과","상태");setStatus("LOT 또는 작업지시번호를 입력하세요.");document.getElementById("content").innerHTML='<div class="trace"><div class="trace-row"><input id="traceKeyword" type="search" placeholder="LOT / 작업지시번호"><button id="traceBtn" type="button">추적</button></div><div id="traceResult" class="empty">검색어를 입력하세요.</div></div>';document.getElementById("traceBtn").onclick=function(){var q=String(document.getElementById("traceKeyword").value||"").replace(/^\s+|\s+$/g,"");if(!q)return;setStatus("LOT 추적 조회 중...");request("GET","/api/trace?keyword="+encodeURIComponent(q),null,function(st,p){var a=dataOf(p);if(!Array.isArray(a))a=a?[a]:[];setSummary(a.length,a.length,"조회완료","검색결과","상태");setStatus("LOT 추적 "+a.length+"건");currentRows=a;currentColumns=[col("No","__no"),col("LOT",["lot","lotNo","materialLot","finishedLot"]),col("작업지시",["workOrderNo","workOrder","no"]),col("품목/제품",["material","product","item","name"]),col("일자",["date","productionDate","shipDate"]),col("수량",["qty","quantity","amount"],"num"),col("상태",["status","state"])];renderFiltered();});};}
+function load(code){currentCode=code;document.getElementById("pageTitle").textContent=titles[code]||code;document.getElementById("searchInput").value="";setActive(code);document.getElementById("content").innerHTML='<div class="empty">데이터를 불러오는 중입니다.</div>';setStatus("데이터를 불러오는 중입니다.");if(code==="dash")loadDash();else if(code==="sales")loadSales();else if(code==="plan")loadPlan();else if(code==="purchase")loadPurchase();else if(code==="inventory")loadInventory();else if(code==="workorder")loadWork();else if(code==="iqc"||code==="pqc"||code==="oqc")loadInspection(code);else if(code==="spc")loadSpc();else if(code==="trace")traceScreen();else if(code==="equipment")loadEquipment();}
+function init(){request("GET","/api/auth/me",null,function(st,p){var u=dataOf(p);if(u&&u.user)u=u.user;if(st<200||st>=300||!u){window.location.replace("/mobile-login.html?mobile=1&from=pcfast");return;}currentUser=u;document.getElementById("userName").textContent=String(u.name||u.uid||"사용자")+"님";load("dash");});}
+var nav=document.querySelectorAll(".nav"),i;for(i=0;i<nav.length;i++)nav[i].onclick=function(){load(this.getAttribute("data-code"));};document.getElementById("searchInput").oninput=renderFiltered;document.getElementById("reloadBtn").onclick=function(){load(currentCode);};document.getElementById("refreshBtn").onclick=function(){load(currentCode);};document.getElementById("mobileBtn").onclick=function(){window.location.assign("/mobile.html?v=20260921-fastpc1");};init();
+})();
+</script>
 </body>
 </html>
