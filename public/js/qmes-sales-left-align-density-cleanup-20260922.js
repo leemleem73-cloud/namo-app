@@ -1,8 +1,7 @@
-/* QMES Sales left-align + row-density label cleanup - 2026-09-22
- * ADD-ONLY patch. Existing Sales files remain untouched.
- * - Hides the "줄간격" control requested for removal.
- * - Keeps the Sales main area aligned to the ACTUAL visible sidebar width.
- *   This prevents the ledger from staying shifted right when the sidebar is resized.
+/* QMES Sales left-align + row-density control removal - 2026-09-22
+ * ADD-ONLY patch. Existing Sales source files remain untouched.
+ * - Completely removes the row-spacing control from the current Sales header.
+ * - Keeps the Sales main area aligned to the actual visible sidebar width.
  */
 (function(){
   "use strict";
@@ -11,19 +10,13 @@
 
   const STYLE_ID="qmes-sales-left-align-density-cleanup-20260922-style";
   const MARK="qmesSalesLeftAlign20260922";
+  const DENSITY_ID="qmes-sales-row-density-20260921-v1";
 
   function ensureStyle(){
     if(document.getElementById(STYLE_ID)) return;
     const s=document.createElement("style");
     s.id=STYLE_ID;
     s.textContent=`
-      /* Requested removal: do not show the row-spacing wording/button. */
-      #qmes-sales-row-density-20260921-v1{
-        display:none!important;
-        visibility:hidden!important;
-      }
-
-      /* Sales ledger should use the full main workspace after sidebar alignment. */
       .qmes-sales-ledger-v4{
         width:100%!important;
         max-width:none!important;
@@ -32,6 +25,18 @@
       }
     `;
     document.head.appendChild(s);
+  }
+
+  function removeDensityControl(){
+    const direct=document.getElementById(DENSITY_ID);
+    if(direct) direct.remove();
+
+    document.querySelectorAll(".qmes-sales-ledger-v4 .qslv4-head-actions button").forEach(button=>{
+      const text=String(button.textContent||"").replace(/\s+/g," ").trim();
+      if(text==="줄간격 기본" || text==="줄간격 줄이기"){
+        button.remove();
+      }
+    });
   }
 
   function sidebarWidth(){
@@ -53,6 +58,7 @@
 
   function apply(){
     ensureStyle();
+    removeDensityControl();
 
     const main=document.querySelector("#root>div>main");
     const sales=document.querySelector(".qmes-sales-ledger-v4");
@@ -94,8 +100,9 @@
         }
         for(const node of record.addedNodes||[]){
           if(!(node instanceof Element)) continue;
-          if(node.matches?.(".qmes-sales-ledger-v4,#qmes-erp-sidebar") ||
-             node.querySelector?.(".qmes-sales-ledger-v4,#qmes-erp-sidebar")){
+          if(node.id===DENSITY_ID ||
+             node.matches?.(".qmes-sales-ledger-v4,#qmes-erp-sidebar") ||
+             node.querySelector?.("#"+DENSITY_ID+",.qmes-sales-ledger-v4,#qmes-erp-sidebar")){
             relevant=true;break;
           }
         }
@@ -122,7 +129,7 @@
     ["qmes:navigate-tab","qmes:erp-integrated-ready","qmes:erp-data-changed","qmes:data-updated"]
       .forEach(name=>window.addEventListener(name,()=>setTimeout(schedule,0)));
 
-    [100,300,700,1500].forEach(ms=>setTimeout(schedule,ms));
+    [0,100,300,700,1500,3000].forEach(ms=>setTimeout(schedule,ms));
   }
 
   if(document.readyState==="loading"){
