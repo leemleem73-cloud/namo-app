@@ -99,7 +99,7 @@ const QMES_SCROLL_FIX_STYLE = `<style id="qmes-scroll-fix-20260910">
 html{min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;}
 html body{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;}
 html body #root,html body #root>div{height:auto!important;min-height:100vh!important;overflow:visible!important;}
-html body #root>div>main{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin-left:236px!important;margin-top:58px!important;width:calc(100% - 236px)!important;height:auto!important;min-height:calc(100vh - 58px)!important;max-height:none!important;overflow:visible!important;box-sizing:border-box!important;}
+html body #root>div>main{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin-left:var(--qmes-shell-sidebar-width,236px)!important;margin-top:58px!important;width:calc(100% - var(--qmes-shell-sidebar-width,236px))!important;height:auto!important;min-height:calc(100vh - 58px)!important;max-height:none!important;overflow:visible!important;box-sizing:border-box!important;}
 html body.qmes-erp-menu-closed #root>div>main{margin-left:0!important;width:100%!important;}
 html body #qmes-erp-sidebar{overflow:hidden!important;}
 html body #qmes-erp-sidebar .qmes-erp-nav{flex:0 0 auto!important;height:calc(100vh - 154px)!important;min-height:0!important;max-height:calc(100vh - 154px)!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin!important;-ms-overflow-style:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;}
@@ -145,8 +145,13 @@ const QMES_SCROLL_FIX_SCRIPT = `<script id="qmes-scroll-wheel-fix-20260910">
       main.style.setProperty("position","relative","important");
       main.style.removeProperty("top");main.style.removeProperty("bottom");main.style.removeProperty("left");main.style.removeProperty("right");
       main.style.setProperty("margin-top","58px","important");
-      main.style.setProperty("margin-left",document.body.classList.contains("qmes-erp-menu-closed")?"0":"236px","important");
-      main.style.setProperty("width",document.body.classList.contains("qmes-erp-menu-closed")?"100%":"calc(100% - 236px)","important");
+      const closed=document.body.classList.contains("qmes-erp-menu-closed");
+      const sidebar=document.getElementById("qmes-erp-sidebar");
+      const measured=sidebar&&!closed?Math.round(sidebar.getBoundingClientRect().width):0;
+      const cssWidth=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--qmes-shell-sidebar-width"))||236;
+      const sideWidth=closed?0:(measured>0?measured:cssWidth);
+      main.style.setProperty("margin-left",sideWidth+"px","important");
+      main.style.setProperty("width",closed?"100%":"calc(100% - "+sideWidth+"px)","important");
       main.style.setProperty("height","auto","important");
       main.style.setProperty("min-height","calc(100vh - 58px)","important");
       main.style.setProperty("max-height","none","important");
