@@ -375,6 +375,11 @@
     }
 
     if(!t.closest("#"+POP_ID)) return;
+
+    // Native year/month selects must receive their normal click behavior.
+    // Preventing the default click here blocks opening/changing the selector.
+    if(t.closest("[data-qf-year],[data-qf-month]")) return;
+
     e.preventDefault();
     e.stopPropagation();
 
