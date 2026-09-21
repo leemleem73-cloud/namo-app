@@ -409,32 +409,42 @@ function install(app){
   });
 
   app.get(P+'/backup-export',async(req,res)=>{
-    let client,sessionId;
+    let client=null,sessionId=null,slotOwned=false;
     try{
       const me=await requireAdmin(req,res);if(!me)return;
       await schema();
-      return await withBackupStartLock(me.name,async()=>{
-      for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
-      if(!reserveBackupSlot())return fail(res,429,'동시에 진행할 수 있는 PC 백업 수를 초과했습니다. 잠시 후 다시 시도해 주세요.');
-      let slotOwned=true;
-      try{client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-      const bounds=await client.query(`SELECT
-        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
-        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
-        (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
-      const accounts=await client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id');
-      const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
-      const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
-      const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
-      const members=await client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name');
-      const b=bounds.rows[0];sessionId=crypto.randomUUID();
-      const x={client,user:me.name,timer:null,slotOwned:true};backupSessions.set(sessionId,x);armBackupSession(sessionId,x);client=null;slotOwned=false;
-      const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
-        snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
-        accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
-      ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
+      await withBackupStartLock(me.name,async()=>{
+        for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
+        if(!reserveBackupSlot())return fail(res,429,'동시에 진행할 수 있는 PC 백업 수를 초과했습니다. 잠시 후 다시 시도해 주세요.');
+        slotOwned=true;
+        client=await pool.connect();
+        await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+        const bounds=await client.query(`SELECT
+          COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
+          COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
+          (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
+        const accounts=await client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id');
+        const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
+        const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
+        const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
+        const members=await client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name');
+        const b=bounds.rows[0];
+        sessionId=crypto.randomUUID();
+        const x={client,user:me.name,timer:null,slotOwned:true};
+        backupSessions.set(sessionId,x);armBackupSession(sessionId,x);
+        client=null;slotOwned=false;
+        const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
+          snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
+          accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
+        ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
       });
-    }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release();if(typeof slotOwned!=='undefined'&&slotOwned){slotOwned=false;releaseBackupSlot()}}else if(typeof slotOwned!=='undefined'&&slotOwned){slotOwned=false;releaseBackupSlot()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
+    }catch(e){
+      if(sessionId)await closeBackupSession(sessionId,false);
+      else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release();client=null;if(slotOwned){slotOwned=false;releaseBackupSlot()}}
+      else if(slotOwned){slotOwned=false;releaseBackupSlot()}
+      console.error('[NAMO Talk PC backup export]',e);
+      if(!res.headersSent)fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')
+    }
   });
 
   app.get(P+'/backup-messages',async(req,res)=>{
