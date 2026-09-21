@@ -401,6 +401,27 @@ function install(app){
     catch(e){fail(res,500,'첨부파일 정리에 실패했습니다.')}
   });
 
+  app.get(P+'/backup-export',async(req,res)=>{
+    let client;
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      const [accounts,messages,reads,settings,channels,members,attachments]=await Promise.all([
+        client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id'),
+        client.query('SELECT * FROM namo_talk_standalone_messages ORDER BY id'),
+        client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name'),
+        client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key'),
+        client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id'),
+        client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name'),
+        client.query(`SELECT id,file_name,mime_type,file_size,created_at,CASE WHEN file_data IS NULL THEN NULL ELSE encode(file_data,'base64') END AS "fileDataBase64" FROM namo_talk_standalone_attachments ORDER BY id`)
+      ]);
+      const data={format:'namo-talk-pc-backup-v1',createdAt:new Date().toISOString(),createdBy:me.name,accounts:accounts.rows,messages:messages.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows,attachments:attachments.rows};
+      const counts={accounts:data.accounts.length,messages:data.messages.length,attachments:data.attachments.length,channelReads:data.channelReads.length,channels:data.channels.length,channelMembers:data.channelMembers.length};
+      await client.query('COMMIT');ok(res,{backup:data,counts,restoreEnabled:false,storage:'client-pc'});
+    }catch(e){if(client)try{await client.query('ROLLBACK')}catch(_){}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 데이터를 만들지 못했습니다.')}
+    finally{client?.release()}
+  });
+
   app.put(P+'/messages/:id',async(req,res)=>{
     try{
       const me=await requireUser(req,res);if(!me)return;const id=Number(req.params.id),action=String(req.body?.action||'');
