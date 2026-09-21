@@ -352,6 +352,23 @@ try {
 // The importer is idempotent and never overwrites an existing matching inspection.
 require('./iqc-history-seed-20260915.js');
 
-// Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
+// Load NAMO Talk route installers before the legacy server starts.
+const namoTalkFinal = require('./namo-talk-final-server.js');
 require('./namo-talk-standalone-server.js');
+
+// The legacy server registers JSON/urlencoded/session middleware first.
+// Install final Talk routes immediately after the session middleware is added,
+// so request bodies are available while all Talk APIs still precede the SPA catch-all.
+const expressAppProto = require('express').application;
+const originalUse = expressAppProto.use;
+let legacyUseCount = 0;
+expressAppProto.use = function(...args){
+  const result = originalUse.apply(this,args);
+  legacyUseCount += 1;
+  if(legacyUseCount === 3 && !this.__namoTalkFinalInstalled){
+    namoTalkFinal.installNamoTalkFinalRoutes(this);
+    expressAppProto.use = originalUse;
+  }
+  return result;
+};
 require('./server-legacy-20260903.js');
