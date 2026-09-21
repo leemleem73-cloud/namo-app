@@ -137,6 +137,15 @@
       var user=responseUser(payload)||{};
       var name=String(user.name||user.loginId||user.email||"").replace(/^\s+|\s+$/g,"");
       authenticated=!!name;
+      if(authenticated){
+        try{
+          sessionStorage.setItem("qmes-current-user-v1",JSON.stringify({
+            id:user.id||"",uid:user.uid||"",name:name,email:user.email||"",
+            dept:user.department||user.dept||"",position:user.title||user.position||"",
+            role:user.role||"user",mustChangePassword:!!user.mustChangePassword
+          }));
+        }catch(_e){}
+      }
       document.getElementById("userBtn").textContent=name?name+"님":"로그인";
       if(!authenticated)window.location.replace(LOGIN);
     });

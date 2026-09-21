@@ -210,6 +210,36 @@
     });
   }
 
+  const routeByLabel={
+    '통합 대시보드':{tab:'dash'},
+    'SPC 대시보드':{tab:'spc',openMenu:'qualityMenu'},
+    '거래처 현황':{tab:'partners'},
+    '생산 진행':{tab:'prod',openMenu:'productionMenu'},
+    '작업지시서':{tab:'woIssue',openMenu:'productionMenu'},
+    '생산공정 관리':{tab:'prodProcess',openMenu:'productionMenu'},
+    '수입검사 (IQC)':{tab:'iqc',openMenu:'qualityMenu'},
+    '공정검사 (PQC)':{tab:'pqc',openMenu:'qualityMenu'},
+    '출하검사 (OQC)':{tab:'oqc',openMenu:'qualityMenu'},
+    'SPC (Cpk)':{tab:'spc',openMenu:'qualityMenu'},
+    '품질 인터락':{tab:'lock',openMenu:'qualityMenu'},
+    '출하성적서':{tab:'coa',openMenu:'qualityMenu'},
+    'LOT 통합추적':{tab:'trace'},
+    '부적합 (8D)':{tab:'ncr',openMenu:'nonconformityMenu'},
+    '고객불만 (GQMS)':{tab:'cc',openMenu:'nonconformityMenu'},
+    '4M 변경관리':{tab:'4m',openMenu:'nonconformityMenu'},
+    '현장 입력 (iPad)':{tab:'pop'},
+    '설비 모니터링':{tab:'eq'},
+    '회원등록 현황':{tab:'members'}
+  };
+  function dispatchTab(tab,openMenu){
+    if(!tab)return;
+    try{
+      sessionStorage.setItem('qmes_current_tab',tab);
+      if(openMenu)sessionStorage.setItem('qmes_open_menu',openMenu);
+      else sessionStorage.removeItem('qmes_open_menu');
+    }catch(_error){}
+    window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:tab,openMenu:openMenu||null}}));
+  }
   function navigate(item){
     if(!item||item.adminOnly&&!isAdminUser())return;
     activeLabel=item.label;
@@ -217,13 +247,15 @@
     searchInput.value='';render();
     if(item.inventory){
       try{sessionStorage.setItem('qmes_inventory_section',item.inventory);}catch(_error){}
-      window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'inv',openMenu:null}}));
+      dispatchTab('inv',null);
       window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:item.inventory}}));
       return;
     }
-    if(item.tab){window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:item.tab,openMenu:item.openMenu||null}}));return;}
-    if(item.direct){findTop(item.direct)?.click();return;}
-    if(item.sub){const submenu=findSub(item.sub);if(submenu){submenu.click();return;}findTop(item.group)?.click();requestAnimationFrame(()=>requestAnimationFrame(()=>findSub(item.sub)?.click()));}
+    if(item.tab){dispatchTab(item.tab,item.openMenu||null);return;}
+    const mapped=routeByLabel[item.label];
+    if(mapped){dispatchTab(mapped.tab,mapped.openMenu||null);return;}
+    if(item.direct){const top=findTop(item.direct);if(top)top.click();return;}
+    if(item.sub){const submenu=findSub(item.sub);if(submenu){submenu.click();return;}const top=findTop(item.group);if(top)top.click();requestAnimationFrame(()=>requestAnimationFrame(()=>{const next=findSub(item.sub);if(next)next.click();}));}
   }
 
   nav.addEventListener('click',event=>{
