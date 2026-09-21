@@ -56,10 +56,10 @@
       #${POP_ID}{
         position:fixed!important;
         z-index:2147483647!important;
-        width:256px!important;
-        padding:8px 8px 10px!important;
+        width:226px!important;
+        padding:6px 7px 8px!important;
         border:1px solid #dfe5ea!important;
-        border-radius:12px!important;
+        border-radius:10px!important;
         background:#fff!important;
         color:#303b45!important;
         box-shadow:0 8px 24px rgba(25,45,65,.14)!important;
@@ -71,21 +71,21 @@
 
       #${POP_ID} .qf-head{
         display:grid!important;
-        grid-template-columns:28px 1fr 28px!important;
+        grid-template-columns:24px 1fr 24px!important;
         align-items:center!important;
-        gap:8px!important;
-        min-height:28px!important;
-        margin-bottom:6px!important;
+        gap:5px!important;
+        min-height:24px!important;
+        margin-bottom:4px!important;
       }
       #${POP_ID} .qf-nav{
-        width:28px!important;height:28px!important;
+        width:24px!important;height:24px!important;
         display:grid!important;place-items:center!important;
         padding:0!important;
         border:0!important;
-        border-radius:7px!important;
+        border-radius:5px!important;
         background:transparent!important;
         color:#475569!important;
-        font-size:18px!important;
+        font-size:15px!important;
         font-weight:700!important;
         cursor:pointer!important;
       }
@@ -95,22 +95,22 @@
         display:flex!important;
         justify-content:center!important;
         align-items:center!important;
-        gap:4px!important;
+        gap:3px!important;
       }
       #${POP_ID} .qf-select{
-        height:27px!important;
-        padding:0 22px 0 8px!important;
+        height:24px!important;
+        padding:0 16px 0 6px!important;
         border:1px solid #d5dde4!important;
         border-radius:5px!important;
         background:#fff!important;
         color:#334155!important;
-        font-size:12px!important;
+        font-size:10px!important;
         font-weight:500!important;
         outline:none!important;
         cursor:pointer!important;
       }
-      #${POP_ID} .qf-year{width:76px!important}
-      #${POP_ID} .qf-month{width:62px!important}
+      #${POP_ID} .qf-year{width:68px!important;min-width:68px!important}
+      #${POP_ID} .qf-month{width:52px!important;min-width:52px!important}
 
       #${POP_ID} .qf-week,
       #${POP_ID} .qf-grid{
@@ -120,14 +120,14 @@
       }
       #${POP_ID} .qf-week{
         border-bottom:1px solid #eef1f4!important;
-        margin-bottom:3px!important;
+        margin-bottom:2px!important;
       }
       #${POP_ID} .qf-week span{
-        height:28px!important;
+        height:22px!important;
         display:grid!important;
         place-items:center!important;
         color:#1f2937!important;
-        font-size:11px!important;
+        font-size:9.5px!important;
         font-weight:600!important;
       }
       #${POP_ID} .qf-week span:first-child{color:#ef4444!important}
@@ -135,7 +135,7 @@
 
       #${POP_ID} .qf-day{
         width:100%!important;
-        height:31px!important;
+        height:26px!important;
         display:grid!important;
         place-items:center!important;
         margin:0!important;
@@ -144,7 +144,7 @@
         border-radius:6px!important;
         background:transparent!important;
         color:#5b6670!important;
-        font-size:11px!important;
+        font-size:9.5px!important;
         font-weight:500!important;
         cursor:pointer!important;
       }
@@ -160,20 +160,20 @@
       #${POP_ID} .qf-day:disabled{opacity:.25!important;cursor:not-allowed!important}
 
       #${POP_ID} .qf-foot{
-        height:28px!important;
+        height:22px!important;
         display:flex!important;
         align-items:flex-end!important;
         justify-content:flex-start!important;
-        padding:5px 2px 0!important;
+        padding:3px 2px 0!important;
         border-top:1px solid #f1f3f5!important;
-        margin-top:2px!important;
+        margin-top:1px!important;
       }
       #${POP_ID} .qf-today{
         position:relative!important;
         border:0!important;
         background:transparent!important;
         color:#8b96a0!important;
-        font-size:11px!important;
+        font-size:9px!important;
         padding:0 14px 0 0!important;
         cursor:pointer!important;
       }
@@ -251,7 +251,7 @@
     const pop=document.getElementById(POP_ID);
     if(!pop||!activeInput) return;
     const r=activeInput.getBoundingClientRect();
-    const w=256, h=286, gap=6;
+    const w=226, h=246, gap=5;
     let left=r.left;
     if(left+w>window.innerWidth-8) left=window.innerWidth-w-8;
     if(left<8) left=8;
