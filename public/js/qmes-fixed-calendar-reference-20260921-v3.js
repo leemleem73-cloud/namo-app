@@ -133,7 +133,7 @@
         white-space:nowrap!important;
       }
       #${POP_ID} .qf-year{width:96px!important;min-width:96px!important;max-width:96px!important}
-      #${POP_ID} .qf-month{width:116px!important;min-width:116px!important;max-width:116px!important}
+      #${POP_ID} .qf-month{width:96px!important;min-width:96px!important;max-width:96px!important}
 
       #${POP_ID} .qf-week,
       #${POP_ID} .qf-grid{
@@ -166,15 +166,15 @@
         border:0!important;
         border-radius:6px!important;
         background:transparent!important;
-        color:#5b6670!important;
+        color:#394957!important;
         font-size:10px!important;
-        font-weight:500!important;
+        font-weight:650!important;
         cursor:pointer!important;
       }
       #${POP_ID} .qf-day:hover{background:#f1f5f8!important}
       #${POP_ID} .qf-day.sun{color:#ef4444!important}
       #${POP_ID} .qf-day.sat{color:#1492de!important}
-      #${POP_ID} .qf-day.other{color:#d5dce2!important}
+      #${POP_ID} .qf-day.other{color:#aeb8c1!important;font-weight:600!important}
       #${POP_ID} .qf-day.selected{
         background:#3158d7!important;
         color:#fff!important;
