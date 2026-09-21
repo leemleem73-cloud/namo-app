@@ -19,7 +19,7 @@ let backupSlotsInUse=0;
 function reserveBackupSlot(){if(backupSlotsInUse>=MAX_BACKUP_SESSIONS)return false;backupSlotsInUse++;return true}
 function releaseBackupSlot(){if(backupSlotsInUse>0)backupSlotsInUse--}
 async function withBackupStartLock(user,fn){const prev=backupStartLocks.get(user)||Promise.resolve();let release;const gate=new Promise(r=>{release=r});const tail=prev.catch(()=>{}).then(()=>gate);backupStartLocks.set(user,tail);await prev.catch(()=>{});try{return await fn()}finally{release();if(backupStartLocks.get(user)===tail)backupStartLocks.delete(user)}}
-function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);if(x.slotOwned){x.slotOwned=false;releaseBackupSlot()}return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
+function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>{x.client.release();if(x.slotOwned){x.slotOwned=false;releaseBackupSlot()}});}
 function armBackupSession(id,x){clearTimeout(x.timer);x.timer=setTimeout(()=>closeBackupSession(id,false),BACKUP_TTL_MS);}
 
 const ok=(res,data={})=>res.json({success:true,...data});
