@@ -352,6 +352,14 @@ try {
 // The importer is idempotent and never overwrites an existing matching inspection.
 require('./iqc-history-seed-20260915.js');
 
-// Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
-require('./namo-talk-standalone-server.js');
+// Ensure NAMO Talk final API routes are installed on the app before the legacy SPA catch-all is registered.
+const namoTalkFinal = require('./namo-talk-final-server.js');
+const namoTalkStandalone = require('./namo-talk-standalone-server.js');
+const expressAppProto = require('express').application;
+const originalUse = expressAppProto.use;
+expressAppProto.use = function(...args){
+  if(!this.__namoTalkFinalInstalled) namoTalkFinal.installNamoTalkFinalRoutes(this);
+  expressAppProto.use = originalUse;
+  return originalUse.apply(this,args);
+};
 require('./server-legacy-20260903.js');
