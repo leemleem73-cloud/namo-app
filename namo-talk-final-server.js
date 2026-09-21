@@ -461,6 +461,58 @@ function install(app){
     }catch(e){const sessionId=String(req.query.sessionId||'');if(sessionId)await closeBackupSession(sessionId,false);console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
   });
 
+  app.post(P+'/backup-restore-preview',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const messages=Array.isArray(req.body?.messages)?req.body.messages:[];
+      const attachments=Array.isArray(req.body?.attachments)?req.body.attachments:[];
+      if(messages.length>500)return fail(res,400,'복원 미리보기는 한 번에 최대 500건까지 확인할 수 있습니다.');
+      if(attachments.length>500)return fail(res,400,'첨부파일 복원 미리보기는 한 번에 최대 500건까지 확인할 수 있습니다.');
+      if(!messages.length&&!attachments.length)return ok(res,{duplicates:[],newCount:0,duplicateCount:0,attachmentDuplicates:[],newAttachmentCount:0,duplicateAttachmentCount:0});
+
+      const clean=messages.map((m,i)=>({
+        idx:i,room_id:String(m?.room_id||''),sender_name:String(m?.sender_name||''),receiver_name:String(m?.receiver_name||''),
+        message_text:String(m?.message_text||''),created_at:String(m?.created_at||''),client_message_id:String(m?.client_message_id||'').trim()||null
+      }));
+      if(clean.some(m=>!m.room_id||!m.sender_name||!m.receiver_name||!m.created_at||Number.isNaN(Date.parse(m.created_at))))
+        return fail(res,400,'복원 미리보기 메시지 정보가 올바르지 않습니다.');
+      let duplicates=[];
+      if(clean.length){
+        const r=await pool.query(`WITH src AS (
+          SELECT * FROM jsonb_to_recordset($1::jsonb) AS x(idx int,room_id text,sender_name text,receiver_name text,message_text text,created_at timestamptz,client_message_id text)
+        )
+        SELECT s.idx FROM src s WHERE EXISTS (
+          SELECT 1 FROM namo_talk_standalone_messages m
+          WHERE (s.client_message_id IS NOT NULL AND m.sender_name=s.sender_name AND m.client_message_id=s.client_message_id)
+             OR (s.client_message_id IS NULL AND m.room_id=s.room_id AND m.sender_name=s.sender_name AND m.receiver_name=s.receiver_name
+                 AND m.message_text=s.message_text AND date_trunc('milliseconds',m.created_at)=date_trunc('milliseconds',s.created_at))
+        ) ORDER BY s.idx`,[JSON.stringify(clean)]);
+        duplicates=r.rows.map(x=>Number(x.idx));
+      }
+
+      const aclean=attachments.map((a,i)=>({
+        idx:i,room_id:String(a?.room_id||''),sender_name:String(a?.sender_name||''),receiver_name:String(a?.receiver_name||''),
+        file_name:String(a?.file_name||''),mime_type:String(a?.mime_type||'application/octet-stream'),file_size:Number(a?.file_size||0),created_at:String(a?.created_at||'')
+      }));
+      if(aclean.some(a=>!a.room_id||!a.sender_name||!a.receiver_name||!a.file_name||!a.mime_type||!Number.isSafeInteger(a.file_size)||a.file_size<0||!a.created_at||Number.isNaN(Date.parse(a.created_at))))
+        return fail(res,400,'복원 미리보기 첨부파일 정보가 올바르지 않습니다.');
+      let attachmentDuplicates=[];
+      if(aclean.length){
+        const ar=await pool.query(`WITH src AS (
+          SELECT * FROM jsonb_to_recordset($1::jsonb) AS x(idx int,room_id text,sender_name text,receiver_name text,file_name text,mime_type text,file_size bigint,created_at timestamptz)
+        )
+        SELECT s.idx FROM src s WHERE EXISTS (
+          SELECT 1 FROM namo_talk_standalone_attachments a WHERE a.room_id=s.room_id AND a.sender_name=s.sender_name
+            AND a.receiver_name=s.receiver_name AND a.file_name=s.file_name AND a.mime_type=s.mime_type AND a.file_size=s.file_size
+            AND date_trunc('milliseconds',a.created_at)=date_trunc('milliseconds',s.created_at)
+        ) ORDER BY s.idx`,[JSON.stringify(aclean)]);
+        attachmentDuplicates=ar.rows.map(x=>Number(x.idx));
+      }
+      ok(res,{duplicates,newCount:clean.length-duplicates.length,duplicateCount:duplicates.length,
+        attachmentDuplicates,newAttachmentCount:aclean.length-attachmentDuplicates.length,duplicateAttachmentCount:attachmentDuplicates.length});
+    }catch(e){console.error('[NAMO Talk restore preview]',e);fail(res,500,'복원 미리보기를 확인하지 못했습니다.')}
+  });
+
   app.post(P+'/backup-complete',async(req,res)=>{
     try{const me=await requireAdmin(req,res);if(!me)return;const id=String(req.body?.sessionId||''),x=backupSessions.get(id);if(!x||x.user!==me.name)return fail(res,409,'백업 세션이 만료되었습니다.');await closeBackupSession(id,true);ok(res)}
     catch(e){console.error('[NAMO Talk PC backup complete]',e);fail(res,500,'백업 세션을 종료하지 못했습니다.')}
