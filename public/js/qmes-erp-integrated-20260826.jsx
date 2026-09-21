@@ -160,30 +160,13 @@
   function Status({children}){return <span className={`qerp-status ${statusClass(children)}`}>{children}</span>;}
   function Kpi({label,value,kind="",small}){return <div className={`qerp-kpi ${kind}`}><span>{label}</span><b>{value}</b>{small&&<small>{small}</small>}</div>;}
 
+  /* Legacy Sales visual renderer removed 2026-09-22.
+   * This route can render ONLY the current stable Sales ledger owner.
+   */
   function QMESErpSalesTab(){
-    const {rows,save,syncStatus}=useSharedRows("sales",SALES_DEFAULT);
-    const [open,setOpen]=useState(false);
-    const [form,setForm]=useState({customer:"현대자동차",po:"",due:"2026-08-30",product:"전도 슬러리 A",qty:"1000"});
-    const [error,setError]=useState("");
-    const total=rows.reduce((sum,row)=>sum+Number(row.qty||0),0);
-    const dueSoon=rows.filter(row=>{const time=new Date(row.due+"T23:59:59").getTime()-Date.now();return time>=0&&time<=7*86400000;}).length;
-    const risk=rows.filter(row=>/위험|지연/.test(String(row.shipping||""))).length;
-    const submit=async e=>{
-      e.preventDefault();setError("");
-      const qty=Number(String(form.qty).replace(/,/g,""));
-      if(!form.customer||!form.product||!form.due||!Number.isFinite(qty)||qty<=0){setError("고객사·제품·납기일·수량을 확인하세요.");return;}
-      const d=new Date();const stamp=`${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`;
-      let seq=1;while(rows.some(row=>row.id===`SO-${stamp}-${String(seq).padStart(2,"0")}`))seq++;
-      const next=[{id:`SO-${stamp}-${String(seq).padStart(2,"0")}`,customer:form.customer,po:form.po||"-",product:form.product,qty,due:form.due,plan:"계획대기",shipping:"-"},...rows];
-      await save(next);setOpen(false);
-    };
-    return <div className="qerp"><Header title="수주 · 납기관리" subtitle="고객 PO를 생산계획 및 출하계획의 시작점으로 관리" status={syncStatus} actionLabel={open?"입력 닫기":"+ 신규 수주"} onAction={()=>setOpen(v=>!v)}/>
-      <div className="qerp-kpis"><Kpi label="진행 수주" value={`${rows.length}건`}/><Kpi label="7일 이내 납기" value={`${dueSoon}건`} kind="orange"/><Kpi label="납기 준수율" value="96.8%" kind="green"/><Kpi label="지연 위험" value={`${risk}건`} kind="red"/><Kpi label="수주량 합계" value={`${(total/1000).toFixed(1)}t`} kind="slate"/></div>
-      <div className="qerp-card">
-        {open&&<form className="qerp-form" onSubmit={submit}><div className="qerp-field"><label>고객사</label><select value={form.customer} onChange={e=>setForm({...form,customer:e.target.value})}><option>현대자동차</option><option>삼성SDI</option><option>SK</option><option>기타</option></select></div><div className="qerp-field"><label>고객 PO 번호</label><input value={form.po} onChange={e=>setForm({...form,po:e.target.value})} placeholder="고객 PO 번호"/></div><div className="qerp-field"><label>요청 납기일</label><input type="date" value={form.due} onChange={e=>setForm({...form,due:e.target.value})}/></div><div className="qerp-field"><label>제품</label><select value={form.product} onChange={e=>setForm({...form,product:e.target.value})}><option>전도 슬러리 A</option><option>전도 슬러리 B</option><option>Binder Solution</option></select></div><div className="qerp-field"><label>수량 (kg)</label><input inputMode="numeric" value={form.qty} onChange={e=>setForm({...form,qty:e.target.value})}/></div>{error&&<div className="qerp-error">{error}</div>}<div className="qerp-form-actions"><button type="button" className="qerp-btn ghost" onClick={()=>setOpen(false)}>취소</button><button type="submit" className="qerp-btn">수주 저장</button></div></form>}
-        <div className="qerp-table-wrap"><table className="qerp-table"><thead><tr><th>수주번호</th><th>고객사</th><th>고객 PO</th><th>제품</th><th>수량</th><th>납기일</th><th>생산계획</th><th>출하상태</th></tr></thead><tbody>{rows.map(row=><tr key={row.id}><td><b>{row.id}</b></td><td>{row.customer}</td><td>{row.po||"-"}</td><td>{row.product}</td><td>{fmtQty(row.qty)}</td><td>{shortDate(row.due)}</td><td><Status>{row.plan}</Status></td><td>{row.shipping==="-"?"-":<Status>{row.shipping}</Status>}</td></tr>)}</tbody></table></div>
-      </div>
-    </div>;
+    const Current=window.__QMES_CURRENT_SALES_LEDGER_COMPONENT__||window.QMESErpSalesTab;
+    if(!Current||Current===QMESErpSalesTab) return null;
+    return React.createElement(Current);
   }
 
   function QMESErpPlanTab(){
