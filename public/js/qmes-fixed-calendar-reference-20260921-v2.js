@@ -56,7 +56,7 @@
       #${POP_ID}{
         position:fixed!important;
         z-index:2147483647!important;
-        width:238px!important;
+        width:300px!important;
         padding:6px 7px 8px!important;
         border:1px solid #dfe5ea!important;
         border-radius:10px!important;
@@ -117,13 +117,18 @@
         border-radius:5px!important;
         background:#fff!important;
         color:#334155!important;
-        font-size:10px!important;
+        font-size:11px!important;
         font-weight:500!important;
         outline:none!important;
         cursor:pointer!important;
+        flex:0 0 auto!important;
+        max-width:none!important;
+        overflow:visible!important;
+        text-overflow:clip!important;
+        white-space:nowrap!important;
       }
-      #${POP_ID} .qf-year{width:82px!important;min-width:82px!important}
-      #${POP_ID} .qf-month{width:58px!important;min-width:58px!important}
+      #${POP_ID} .qf-year{width:120px!important;min-width:120px!important;max-width:120px!important}
+      #${POP_ID} .qf-month{width:88px!important;min-width:88px!important;max-width:88px!important}
 
       #${POP_ID} .qf-week,
       #${POP_ID} .qf-grid{
@@ -264,7 +269,7 @@
     const pop=document.getElementById(POP_ID);
     if(!pop||!activeInput) return;
     const r=activeInput.getBoundingClientRect();
-    const w=238, h=230, gap=5;
+    const w=300, h=230, gap=5;
     let left=r.left;
     if(left+w>window.innerWidth-8) left=window.innerWidth-w-8;
     if(left<8) left=8;
