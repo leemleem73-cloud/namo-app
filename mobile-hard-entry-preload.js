@@ -18,9 +18,13 @@ if (!express.__NAMO_MOBILE_HARD_ENTRY_PATCHED__) {
   const originalStatic = express.static;
 
   function currentRequestForcesDesktop(req) {
+    const referer = String(req.headers.referer || '');
+    const refererForcesDesktop = /[?&](?:desktop=1|view=desktop|embeddedMobile=1)(?:&|$)/i.test(referer)
+      || /\/pc-legacy\.html(?:[?#]|$)/i.test(referer);
     return String(req.query?.desktop || '') === '1'
       || String(req.query?.view || '') === 'desktop'
-      || String(req.query?.embeddedMobile || '') === '1';
+      || String(req.query?.embeddedMobile || '') === '1'
+      || refererForcesDesktop;
   }
 
   function mobileHeader(req) {
