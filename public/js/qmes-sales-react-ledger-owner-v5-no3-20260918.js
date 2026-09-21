@@ -217,9 +217,9 @@
           h("label",{className:"qrl-field"},
             h("span",null,"기간"),
             h("span",{className:"qrl-date"},
-              h("input",{type:"date",value:from,onChange:e=>setFrom(e.target.value)}),
+              h("input",{type:"text",inputMode:"numeric",maxLength:10,placeholder:"YYYY-MM-DD",value:from,onChange:e=>setFrom(e.target.value)}),
               h("b",null,"~"),
-              h("input",{type:"date",value:to,onChange:e=>setTo(e.target.value)})
+              h("input",{type:"text",inputMode:"numeric",maxLength:10,placeholder:"YYYY-MM-DD",value:to,onChange:e=>setTo(e.target.value)})
             )
           ),
           h("label",{className:"qrl-field"},h("span",null,"거래처"),h("select",{value:customerFilter,onChange:e=>setCustomerFilter(e.target.value)},customerOptions)),
