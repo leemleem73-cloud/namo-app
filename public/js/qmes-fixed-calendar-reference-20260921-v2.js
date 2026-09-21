@@ -56,7 +56,7 @@
       #${POP_ID}{
         position:fixed!important;
         z-index:2147483647!important;
-        width:322px!important;
+        width:260px!important;
         padding:6px 7px 8px!important;
         border:1px solid #dfe5ea!important;
         border-radius:10px!important;
@@ -71,14 +71,14 @@
 
       #${POP_ID} .qf-head{
         display:grid!important;
-        grid-template-columns:22px 1fr 22px!important;
+        grid-template-columns:18px 1fr 18px!important;
         align-items:center!important;
-        gap:5px!important;
+        gap:2px!important;
         min-height:24px!important;
         margin-bottom:4px!important;
       }
       #${POP_ID} .qf-nav{
-        width:22px!important;height:20px!important;
+        width:18px!important;height:20px!important;
         display:grid!important;place-items:center!important;
         padding:0!important;
         border:0!important;
@@ -127,7 +127,7 @@
         text-overflow:clip!important;
         white-space:nowrap!important;
       }
-      #${POP_ID} .qf-year{width:120px!important;min-width:120px!important;max-width:120px!important}
+      #${POP_ID} .qf-year{width:90px!important;min-width:90px!important;max-width:90px!important}
       #${POP_ID} .qf-month{width:110px!important;min-width:110px!important;max-width:110px!important}
 
       #${POP_ID} .qf-week,
@@ -269,7 +269,7 @@
     const pop=document.getElementById(POP_ID);
     if(!pop||!activeInput) return;
     const r=activeInput.getBoundingClientRect();
-    const w=322, h=230, gap=5;
+    const w=260, h=230, gap=5;
     let left=r.left;
     if(left+w>window.innerWidth-8) left=window.innerWidth-w-8;
     if(left<8) left=8;
