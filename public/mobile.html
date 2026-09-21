@@ -154,7 +154,7 @@
   document.getElementById("attendanceLaunch").onclick=function(){window.location.assign("/attendance.html?mobile=1&source=qmes&v="+VERSION);};
   document.getElementById("noticeClose").onclick=function(){notice.className="notice";};
   document.getElementById("logoutBtn").onclick=function(){request("POST","/api/auth/logout",{},function(){window.location.replace("/mobile-login.html?logout=1&v="+VERSION);});};
-  document.getElementById("pcBtn").onclick=function(){window.location.assign("/?desktop=1&view=desktop");};
+  document.getElementById("pcBtn").onclick=function(){var ua=navigator.userAgent||"";var m=ua.match(/Chrome\/(\d+)/i);var chromeMajor=m?Number(m[1]):0;var legacy=/Android/i.test(ua)&&chromeMajor>0&&chromeMajor<90;window.location.assign(legacy?"/pc-legacy.html?desktop=1&view=desktop&compat=1":"/?desktop=1&view=desktop");};
 
   init();
 })();
