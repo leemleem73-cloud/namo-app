@@ -423,7 +423,7 @@ function install(app){
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
           (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
-        const accounts=await client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id');
+        const accounts=await client.query('SELECT id,name,department,role,active,avatar_type,avatar_value,is_admin FROM namo_talk_standalone_accounts ORDER BY id');
         const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
         const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
         const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
@@ -519,13 +519,12 @@ function install(app){
       const backup=req.body?.backup;
       if(!backup||typeof backup!=='object')return fail(res,400,'백업파일 구조가 올바르지 않습니다.');
       if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
-      const messages=Array.isArray(backup.messages)?backup.messages:[];
-      const attachments=Array.isArray(backup.attachments)?backup.attachments:[];
-      const accounts=Array.isArray(backup.accounts)?backup.accounts:[];
+      for(const key of ['messages','attachments','accounts'])if(backup[key]!==undefined&&!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목 형식이 올바르지 않습니다.`);
+      const messages=backup.messages||[],attachments=backup.attachments||[],accounts=backup.accounts||[];
       const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
       if(hasCredentialFields)return fail(res,400,'인증정보가 포함된 백업파일은 복원할 수 없습니다.');
       if(messages.length>200000||attachments.length>50000)return fail(res,400,'백업파일 데이터 수가 허용 범위를 초과했습니다.');
-      const invalidMessages=messages.filter(m=>!m||!String(m.room_id||'')||!String(m.sender_name||'')||!String(m.receiver_name||'')||!String(m.created_at||'')||Number.isNaN(Date.parse(String(m.created_at||'')))).length;
+      const invalidMessages=messages.filter(m=>!m||!String(m.room_id||'')||!String(m.sender_name||'')||!String(m.receiver_name||'')||typeof m.message_text!=='string'||!String(m.created_at||'')||Number.isNaN(Date.parse(String(m.created_at||'')))).length;
       const invalidAttachments=attachments.filter(a=>!a||!String(a.room_id||'')||!String(a.sender_name||'')||!String(a.receiver_name||'')||!String(a.file_name||'')||!String(a.created_at||'')||Number.isNaN(Date.parse(String(a.created_at||'')))||!Number.isSafeInteger(Number(a.file_size))||Number(a.file_size)<0).length;
       if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
       ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,restoreEnabled:false});
