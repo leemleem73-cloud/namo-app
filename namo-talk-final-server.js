@@ -530,7 +530,7 @@ function install(app){
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
       const validDateString=v=>nonEmptyString(v)&&!Number.isNaN(Date.parse(v));
       const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)).length;
-      const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!validDateString(a.created_at)||typeof a.file_size!=='number'||!Number.isSafeInteger(a.file_size)||a.file_size<0).length;
+      const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));\n      const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
       if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
       ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,restoreEnabled:false});
     }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
