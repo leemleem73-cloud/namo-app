@@ -14,6 +14,9 @@ const pool=new Pool({connectionString:dbUrl,ssl:dbUrl&&!/(localhost|127\.0\.0\.1
 const SECRET=process.env.NAMO_TALK_TOKEN_SECRET||process.env.SESSION_SECRET||'namo-talk-dev-secret';
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024}});
 let ready=null,cleanupTimer=null;
+const backupSessions=new Map(),BACKUP_TTL_MS=10*60*1000;
+function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
+function armBackupSession(id,x){clearTimeout(x.timer);x.timer=setTimeout(()=>closeBackupSession(id,false),BACKUP_TTL_MS);}
 
 const ok=(res,data={})=>res.json({success:true,...data});
 const fail=(res,status,message,extra={})=>res.status(status).json({success:false,message,...extra});
@@ -402,7 +405,7 @@ function install(app){
   });
 
   app.get(P+'/backup-export',async(req,res)=>{
-    let client;
+    let client,sessionId;
     try{
       const me=await requireAdmin(req,res);if(!me)return;
       await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
@@ -410,34 +413,41 @@ function install(app){
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
         (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
-      const [accounts,reads,settings,channels,members]=await Promise.all([
-        client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id'),
-        client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name'),
-        client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key'),
-        client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id'),
-        client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name')
-      ]);
-      const b=bounds.rows[0],backup={
-        format:'namo-talk-pc-backup-v3',createdAt:new Date().toISOString(),createdBy:me.name,
+      const accounts=await client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id');
+      const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
+      const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
+      const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
+      const members=await client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name');
+      const b=bounds.rows[0];sessionId=crypto.randomUUID();
+      const x={client,user:me.name,timer:null};backupSessions.set(sessionId,x);armBackupSession(sessionId,x);client=null;
+      const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
         snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
-        accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows
-      };
-      await client.query('COMMIT');
-      ok(res,{backup,pageSize:500,restoreEnabled:false,storage:'client-pc'});
-    }catch(e){if(client)try{await client.query('ROLLBACK')}catch(_){}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
-    finally{client?.release()}
+        accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
+      ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
+    }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
   });
 
   app.get(P+'/backup-messages',async(req,res)=>{
     try{
       const me=await requireAdmin(req,res);if(!me)return;
-      const maxId=Math.max(0,Number(req.query.maxId||0)),after=Math.max(0,Number(req.query.after||0));
-      const limit=Math.min(500,Math.max(1,Number(req.query.limit||500)));
+      const sessionId=String(req.query.sessionId||''),x=backupSessions.get(sessionId);
+      if(!x||x.user!==me.name)return fail(res,409,'백업 세션이 만료되었습니다. 백업을 다시 시작해 주세요.');
+      const maxId=Math.max(0,Number(req.query.maxId||0)),after=Math.max(0,Number(req.query.after||0)),limit=Math.min(500,Math.max(1,Number(req.query.limit||500)));
       if(!Number.isSafeInteger(maxId)||!Number.isSafeInteger(after))return fail(res,400,'백업 범위가 올바르지 않습니다.');
-      const r=await pool.query('SELECT * FROM namo_talk_standalone_messages WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
+      armBackupSession(sessionId,x);
+      const r=await x.client.query('SELECT * FROM namo_talk_standalone_messages WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
       const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after;
       ok(res,{rows:r.rows,nextAfter,done:r.rowCount<limit});
     }catch(e){console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
+  });
+
+  app.post(P+'/backup-complete',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const id=String(req.body?.sessionId||''),x=backupSessions.get(id);if(!x||x.user!==me.name)return fail(res,409,'백업 세션이 만료되었습니다.');await closeBackupSession(id,true);ok(res)}
+    catch(e){console.error('[NAMO Talk PC backup complete]',e);fail(res,500,'백업 세션을 종료하지 못했습니다.')}
+  });
+  app.post(P+'/backup-cancel',async(req,res)=>{
+    try{const me=await requireAdmin(req,res);if(!me)return;const id=String(req.body?.sessionId||''),x=backupSessions.get(id);if(x&&x.user===me.name)await closeBackupSession(id,false);ok(res)}
+    catch(e){console.error('[NAMO Talk PC backup cancel]',e);fail(res,500,'백업 세션을 취소하지 못했습니다.')}
   });
 
   app.get(P+'/backup-attachments',async(req,res)=>{
