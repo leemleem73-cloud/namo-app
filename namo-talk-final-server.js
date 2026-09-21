@@ -401,6 +401,67 @@ function install(app){
     catch(e){fail(res,500,'첨부파일 정리에 실패했습니다.')}
   });
 
+  app.get(P+'/backup-export',async(req,res)=>{
+    let client;
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      await schema();client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      const bounds=await client.query(`SELECT
+        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
+        COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId"`);
+      const [accounts,reads,settings,channels,members]=await Promise.all([
+        client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id'),
+        client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name'),
+        client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key'),
+        client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id'),
+        client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name')
+      ]);
+      const b=bounds.rows[0],backup={
+        format:'namo-talk-pc-backup-v3',createdAt:new Date().toISOString(),createdBy:me.name,
+        snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId)},
+        accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows
+      };
+      await client.query('COMMIT');
+      ok(res,{backup,pageSize:500,restoreEnabled:false,storage:'client-pc'});
+    }catch(e){if(client)try{await client.query('ROLLBACK')}catch(_){}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
+    finally{client?.release()}
+  });
+
+  app.get(P+'/backup-messages',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const maxId=Math.max(0,Number(req.query.maxId||0)),after=Math.max(0,Number(req.query.after||0));
+      const limit=Math.min(500,Math.max(1,Number(req.query.limit||500)));
+      if(!Number.isSafeInteger(maxId)||!Number.isSafeInteger(after))return fail(res,400,'백업 범위가 올바르지 않습니다.');
+      const r=await pool.query('SELECT * FROM namo_talk_standalone_messages WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
+      const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after;
+      ok(res,{rows:r.rows,nextAfter,done:r.rowCount<limit});
+    }catch(e){console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
+  });
+
+  app.get(P+'/backup-attachments',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const maxId=Math.max(0,Number(req.query.maxId||0)),after=Math.max(0,Number(req.query.after||0));
+      const limit=Math.min(500,Math.max(1,Number(req.query.limit||500)));
+      if(!Number.isSafeInteger(maxId)||!Number.isSafeInteger(after))return fail(res,400,'백업 범위가 올바르지 않습니다.');
+      const r=await pool.query('SELECT id,room_id,sender_name,receiver_name,file_name,mime_type,file_size,created_at FROM namo_talk_standalone_attachments WHERE id>$1 AND id<=$2 ORDER BY id LIMIT $3',[after,maxId,limit]);
+      const nextAfter=r.rowCount?Number(r.rows[r.rows.length-1].id):after;
+      ok(res,{rows:r.rows,nextAfter,done:r.rowCount<limit});
+    }catch(e){console.error('[NAMO Talk PC backup attachments]',e);fail(res,500,'백업 첨부 목록을 불러오지 못했습니다.')}
+  });
+
+  app.get(P+'/backup-attachments/:id',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const id=Number(req.params.id),maxId=Math.max(0,Number(req.query.maxId||0));
+      if(!Number.isSafeInteger(id)||!Number.isSafeInteger(maxId)||id<1||id>maxId)return fail(res,400,'백업 첨부파일 범위가 올바르지 않습니다.');
+      const r=await pool.query('SELECT file_name,mime_type,file_size,file_data FROM namo_talk_standalone_attachments WHERE id=$1',[id]);
+      if(!r.rowCount)return fail(res,409,'백업 중 첨부파일이 변경되었습니다. 백업을 다시 시작해 주세요.');
+      const a=r.rows[0];res.setHeader('Content-Type',a.mime_type||'application/octet-stream');res.setHeader('Content-Length',String(a.file_size||a.file_data?.length||0));res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(a.file_name)}`);res.end(a.file_data);
+    }catch(e){console.error('[NAMO Talk PC backup attachment]',e);if(!res.headersSent)fail(res,500,'백업 첨부파일을 불러오지 못했습니다.')}
+  });
+
   app.put(P+'/messages/:id',async(req,res)=>{
     try{
       const me=await requireUser(req,res);if(!me)return;const id=Number(req.params.id),action=String(req.body?.action||'');
