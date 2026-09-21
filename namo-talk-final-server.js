@@ -14,7 +14,7 @@ const pool=new Pool({connectionString:dbUrl,ssl:dbUrl&&!/(localhost|127\.0\.0\.1
 const SECRET=process.env.NAMO_TALK_TOKEN_SECRET||process.env.SESSION_SECRET||'namo-talk-dev-secret';
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024}});
 let ready=null,cleanupTimer=null;
-const backupSessions=new Map(),backupStartLocks=new Map(),BACKUP_TTL_MS=10*60*1000;
+const backupSessions=new Map(),backupStartLocks=new Map(),BACKUP_TTL_MS=10*60*1000,MAX_BACKUP_SESSIONS=2;
 async function withBackupStartLock(user,fn){const prev=backupStartLocks.get(user)||Promise.resolve();let release;const gate=new Promise(r=>{release=r});const tail=prev.catch(()=>{}).then(()=>gate);backupStartLocks.set(user,tail);await prev.catch(()=>{});try{return await fn()}finally{release();if(backupStartLocks.get(user)===tail)backupStartLocks.delete(user)}}
 function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
 function armBackupSession(id,x){clearTimeout(x.timer);x.timer=setTimeout(()=>closeBackupSession(id,false),BACKUP_TTL_MS);}
@@ -412,6 +412,7 @@ function install(app){
       await schema();
       return await withBackupStartLock(me.name,async()=>{
       for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
+      if(backupSessions.size>=MAX_BACKUP_SESSIONS)return fail(res,429,'동시에 진행할 수 있는 PC 백업 수를 초과했습니다. 잠시 후 다시 시도해 주세요.');
       client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       const bounds=await client.query(`SELECT
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
