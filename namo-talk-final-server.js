@@ -15,8 +15,11 @@ const SECRET=process.env.NAMO_TALK_TOKEN_SECRET||process.env.SESSION_SECRET||'na
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024}});
 let ready=null,cleanupTimer=null;
 const backupSessions=new Map(),backupStartLocks=new Map(),BACKUP_TTL_MS=10*60*1000,MAX_BACKUP_SESSIONS=2;
+let backupSlotsInUse=0;
+function reserveBackupSlot(){if(backupSlotsInUse>=MAX_BACKUP_SESSIONS)return false;backupSlotsInUse++;return true}
+function releaseBackupSlot(){if(backupSlotsInUse>0)backupSlotsInUse--}
 async function withBackupStartLock(user,fn){const prev=backupStartLocks.get(user)||Promise.resolve();let release;const gate=new Promise(r=>{release=r});const tail=prev.catch(()=>{}).then(()=>gate);backupStartLocks.set(user,tail);await prev.catch(()=>{});try{return await fn()}finally{release();if(backupStartLocks.get(user)===tail)backupStartLocks.delete(user)}}
-function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
+function closeBackupSession(id,commit=false){const x=backupSessions.get(id);if(!x)return Promise.resolve();backupSessions.delete(id);clearTimeout(x.timer);if(x.slotOwned){x.slotOwned=false;releaseBackupSlot()}return x.client.query(commit?'COMMIT':'ROLLBACK').catch(()=>{}).finally(()=>x.client.release());}
 function armBackupSession(id,x){clearTimeout(x.timer);x.timer=setTimeout(()=>closeBackupSession(id,false),BACKUP_TTL_MS);}
 
 const ok=(res,data={})=>res.json({success:true,...data});
@@ -412,8 +415,9 @@ function install(app){
       await schema();
       return await withBackupStartLock(me.name,async()=>{
       for(const [id,x] of backupSessions){if(x.user===me.name)await closeBackupSession(id,false)}
-      if(backupSessions.size>=MAX_BACKUP_SESSIONS)return fail(res,429,'동시에 진행할 수 있는 PC 백업 수를 초과했습니다. 잠시 후 다시 시도해 주세요.');
-      client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      if(!reserveBackupSlot())return fail(res,429,'동시에 진행할 수 있는 PC 백업 수를 초과했습니다. 잠시 후 다시 시도해 주세요.');
+      let slotOwned=true;
+      try{client=await pool.connect();await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
       const bounds=await client.query(`SELECT
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
         COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
@@ -424,11 +428,12 @@ function install(app){
       const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
       const members=await client.query('SELECT * FROM namo_talk_standalone_channel_members ORDER BY channel_id,user_name');
       const b=bounds.rows[0];sessionId=crypto.randomUUID();
-      const x={client,user:me.name,timer:null};backupSessions.set(sessionId,x);armBackupSession(sessionId,x);client=null;
+      const x={client,user:me.name,timer:null,slotOwned:true};backupSessions.set(sessionId,x);armBackupSession(sessionId,x);client=null;slotOwned=false;
       const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
         snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
         accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
       ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
+      }finally{if(slotOwned)releaseBackupSlot()}
       });
     }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
   });
