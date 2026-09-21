@@ -433,9 +433,8 @@ function install(app){
         snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
         accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
       ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
-      }finally{if(slotOwned)releaseBackupSlot()}
       });
-    }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
+    }catch(e){if(sessionId)await closeBackupSession(sessionId,false);else if(client){try{await client.query('ROLLBACK')}catch(_){}client.release();if(typeof slotOwned!=='undefined'&&slotOwned){slotOwned=false;releaseBackupSlot()}}else if(typeof slotOwned!=='undefined'&&slotOwned){slotOwned=false;releaseBackupSlot()}console.error('[NAMO Talk PC backup export]',e);fail(res,500,'PC 백업 시작 정보를 만들지 못했습니다.')}
   });
 
   app.get(P+'/backup-messages',async(req,res)=>{
