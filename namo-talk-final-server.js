@@ -423,7 +423,7 @@ function install(app){
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
           (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
-        const accounts=await client.query('SELECT id,name,department,role,active,avatar_type,avatar_value,is_admin FROM namo_talk_standalone_accounts ORDER BY id');
+        const accounts=await client.query('SELECT id,name,department,is_admin,active,created_at FROM namo_talk_standalone_accounts ORDER BY id');
         const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
         const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
         const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
