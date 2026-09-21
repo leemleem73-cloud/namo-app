@@ -4,7 +4,7 @@
  * - Every vertical boundary is draggable through the full table body.
  * - Drag resizes adjacent columns while preserving the total table width.
  * - Column range: 18px ~ 600px.
- * - Adds row spacing toggle (compact/default).
+ * - Uses a fixed compact row spacing; no row-spacing toggle is rendered.
  * - No legacy Sales UI restoration and no periodic screen replacement.
  */
 (function(){
@@ -13,10 +13,8 @@
   window.__QMES_SALES_LAYOUT_CURRENT_20260921_V4__=true;
 
   const KEY="qmes-sales-ledger-v4-column-widths-v4";
-  const DENSITY_KEY="qmes-sales-ledger-v4-density-v1";
   const HANDLE="qmes-sales-v4-resizer";
   const STYLE_ID="qmes-sales-layout-current-20260921-v4-style";
-  const BTN_ID="qmes-sales-row-density-20260921-v1";
   const MIN=18, MAX=600;
   const WEIGHTS=[4.5,8.5,11.5,13,17,7,5,8,7.5,7.5,7.5,8];
 
@@ -159,21 +157,6 @@
       .qmes-sales-ledger-v4.qmes-sales-density-compact .qrl-badge{
         height:18px!important;
       }
-
-      #${BTN_ID}{
-        height:31px!important;
-        padding:0 10px!important;
-        border:1px solid #bfd0db!important;
-        border-radius:6px!important;
-        background:#fff!important;
-        color:#355269!important;
-        font:inherit!important;
-        font-size:9.5px!important;
-        font-weight:850!important;
-        white-space:nowrap!important;
-        cursor:pointer!important;
-      }
-      #${BTN_ID}:hover{background:#f4f8fb!important}
     `;
     document.head.appendChild(s);
   }
@@ -289,28 +272,6 @@
     }
   }
 
-  function density(info){
-    let compact=true;
-    try{compact=(localStorage.getItem(DENSITY_KEY)||"compact")==="compact";}catch(_){}
-    info.root.classList.toggle("qmes-sales-density-compact",compact);
-
-    const host=info.root.querySelector(".qslv4-head-actions");
-    if(!host) return;
-    let btn=document.getElementById(BTN_ID);
-    if(!btn){
-      btn=document.createElement("button");
-      btn.type="button";
-      btn.id=BTN_ID;
-      host.insertBefore(btn,host.firstChild);
-      btn.addEventListener("click",()=>{
-        const next=!info.root.classList.contains("qmes-sales-density-compact");
-        try{localStorage.setItem(DENSITY_KEY,next?"compact":"default");}catch(_){}
-        density(info);
-        requestAnimationFrame(()=>position());
-      });
-    }
-    btn.textContent=compact?"줄간격 기본":"줄간격 줄이기";
-  }
 
   function install(){
     ensureStyle();
@@ -318,7 +279,7 @@
     if(!info) return;
     handles(info);
     apply(info,widthsFor(info));
-    density(info);
+    info.root.classList.add("qmes-sales-density-compact");
   }
 
   let raf=0;
