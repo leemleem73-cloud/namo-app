@@ -109,8 +109,8 @@
         outline:none!important;
         cursor:pointer!important;
       }
-      #${POP_ID} .qf-year{width:58px!important}
-      #${POP_ID} .qf-month{width:54px!important}
+      #${POP_ID} .qf-year{width:76px!important}
+      #${POP_ID} .qf-month{width:62px!important}
 
       #${POP_ID} .qf-week,
       #${POP_ID} .qf-grid{
@@ -264,13 +264,13 @@
 
   function yearOptions(){
     let out="";
-    for(let y=2000;y<=2100;y++) out+='<option value="'+y+'"'+(y===viewYear?' selected':'')+'>'+y+'</option>';
+    for(let y=2000;y<=2100;y++) out+='<option value="'+y+'"'+(y===viewYear?' selected':'')+'>'+y+'년</option>';
     return out;
   }
 
   function monthOptions(){
     let out="";
-    for(let m=1;m<=12;m++) out+='<option value="'+m+'"'+(m===viewMonth+1?' selected':'')+'>'+m+'</option>';
+    for(let m=1;m<=12;m++) out+='<option value="'+m+'"'+(m===viewMonth+1?' selected':'')+'>'+m+'월</option>';
     return out;
   }
 
