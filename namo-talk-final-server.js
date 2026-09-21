@@ -513,6 +513,25 @@ function install(app){
     }catch(e){console.error('[NAMO Talk restore preview]',e);fail(res,500,'복원 미리보기를 확인하지 못했습니다.')}
   });
 
+  app.post(P+'/backup-restore-validate',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const backup=req.body?.backup;
+      if(!backup||typeof backup!=='object')return fail(res,400,'백업파일 구조가 올바르지 않습니다.');
+      if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
+      const messages=Array.isArray(backup.messages)?backup.messages:[];
+      const attachments=Array.isArray(backup.attachments)?backup.attachments:[];
+      const accounts=Array.isArray(backup.accounts)?backup.accounts:[];
+      const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
+      if(hasCredentialFields)return fail(res,400,'인증정보가 포함된 백업파일은 복원할 수 없습니다.');
+      if(messages.length>200000||attachments.length>50000)return fail(res,400,'백업파일 데이터 수가 허용 범위를 초과했습니다.');
+      const invalidMessages=messages.filter(m=>!m||!String(m.room_id||'')||!String(m.sender_name||'')||!String(m.receiver_name||'')||!String(m.created_at||'')||Number.isNaN(Date.parse(String(m.created_at||'')))).length;
+      const invalidAttachments=attachments.filter(a=>!a||!String(a.room_id||'')||!String(a.sender_name||'')||!String(a.receiver_name||'')||!String(a.file_name||'')||!String(a.created_at||'')||Number.isNaN(Date.parse(String(a.created_at||'')))||!Number.isSafeInteger(Number(a.file_size))||Number(a.file_size)<0).length;
+      if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
+      ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,restoreEnabled:false});
+    }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
+  });
+
   app.post(P+'/backup-complete',async(req,res)=>{
     try{const me=await requireAdmin(req,res);if(!me)return;const id=String(req.body?.sessionId||''),x=backupSessions.get(id);if(!x||x.user!==me.name)return fail(res,409,'백업 세션이 만료되었습니다.');await closeBackupSession(id,true);ok(res)}
     catch(e){console.error('[NAMO Talk PC backup complete]',e);fail(res,500,'백업 세션을 종료하지 못했습니다.')}
