@@ -510,7 +510,13 @@ function install(app){
       const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)).length;
       const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
-      if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
+      const validBool=v=>typeof v==='boolean';
+      const invalidAccounts=accounts.filter(a=>!a||typeof a!=='object'||!validRecordId(a.id)||!nonEmptyString(a.name)||typeof a.department!=='string'||!validBool(a.active)||!validDateString(a.created_at)||!validDateString(a.updated_at)||!nonEmptyString(a.presence)||typeof a.status_message!=='string'||(a.last_seen_at!==null&&!validDateString(a.last_seen_at))||!nonEmptyString(a.avatar_type)||!nonEmptyString(a.avatar_value)||!validBool(a.is_admin)).length;
+      const invalidReads=backup.channelReads.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.room_id)||!nonEmptyString(x.user_name)||!validSnapshotId(x.last_read_id)||!validDateString(x.updated_at)).length;
+      const invalidSettings=backup.settings.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.key)||typeof x.value!=='string'||!validDateString(x.updated_at)).length;
+      const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!nonEmptyString(x.name)||!nonEmptyString(x.type)||typeof x.subtitle!=='string'||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
+      const invalidMembers=backup.channelMembers.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.channel_id)||!nonEmptyString(x.user_name)||!nonEmptyString(x.role)||!validDateString(x.created_at)).length;
+      if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
       ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,legacyCredentialFieldsIgnored,restoreEnabled:false});
     }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
   });
