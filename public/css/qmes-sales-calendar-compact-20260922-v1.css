@@ -1,0 +1,74 @@
+/* QMES Sales calendar compact size patch - 2026-09-22
+ * ADD-ONLY.
+ * Keeps the approved native-style calendar behavior and reduces the popup size substantially.
+ */
+#qmes-fixed-calendar-native-style-20260922-v2-pop{
+  width:260px!important;
+  min-width:260px!important;
+  max-width:260px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-head{
+  height:40px!important;
+  grid-template-columns:1fr 34px 34px!important;
+  padding:0 6px 0 10px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-title{
+  height:32px!important;
+  font-size:13px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-caret{
+  margin-left:4px!important;
+  border-left-width:4px!important;
+  border-right-width:4px!important;
+  border-top-width:5px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-nav{
+  width:32px!important;
+  height:32px!important;
+  font-size:24px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-week{
+  height:30px!important;
+  padding:0 7px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-week span{
+  font-size:10px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-grid{
+  grid-auto-rows:31px!important;
+  padding:0 7px 4px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-day{
+  width:28px!important;
+  height:28px!important;
+  font-size:10px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-years{
+  max-height:220px!important;
+  padding:4px 0!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-year{
+  height:34px!important;
+  padding:0 20px!important;
+  font-size:12px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-foot{
+  height:40px!important;
+  padding:0 13px!important;
+}
+
+#qmes-fixed-calendar-native-style-20260922-v2-pop .qnv-action{
+  height:28px!important;
+  font-size:10px!important;
+}
