@@ -1,0 +1,171 @@
+/* QMES Purchase typography = current Sales/Delivery baseline V2 - 2026-09-23
+ * TYPOGRAPHY ONLY.
+ * No layout / spacing / dimensions / behavior / data changes.
+ */
+.qmes-purchase-ledger-v1,
+#qmes-purchase-new-order-portal-20260923-v3{
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:9px!important;
+  color:#2b4355!important;
+}
+.qmes-purchase-ledger-v1 *,
+#qmes-purchase-new-order-portal-20260923-v3 *{
+  font-family:inherit!important;
+}
+
+/* Title + top action buttons */
+.qmes-purchase-ledger-v1 .qpo-title-row h1{
+  font-size:19px!important;
+  line-height:1.25!important;
+  font-weight:950!important;
+  letter-spacing:-.3px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-title-actions .qpo-action{
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:850!important;
+}
+
+/* KPI */
+.qmes-purchase-ledger-v1 .qpo-kpi span{
+  font-size:9px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpi b{
+  font-size:20px!important;
+  line-height:1!important;
+  font-weight:950!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpi small{
+  font-size:8px!important;
+  line-height:1.2!important;
+  font-weight:700!important;
+}
+
+/* Filter row */
+.qmes-purchase-ledger-v1 .qpo-field label{
+  font-size:8.7px!important;
+  line-height:11px!important;
+  font-weight:850!important;
+}
+.qmes-purchase-ledger-v1 .qpo-control{
+  font-size:9.5px!important;
+  line-height:1!important;
+  font-weight:700!important;
+}
+.qmes-purchase-ledger-v1 .qpo-period>span{
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:700!important;
+}
+.qmes-purchase-ledger-v1 .qpo-search{
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:850!important;
+}
+
+/* Information strip / footer */
+.qmes-purchase-ledger-v1 .qpo-notice{
+  font-size:8.5px!important;
+  line-height:1.3!important;
+  font-weight:700!important;
+}
+.qmes-purchase-ledger-v1 .qpo-notice strong{
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-footer-note{
+  font-size:8px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+}
+
+/* Main table */
+.qmes-purchase-ledger-v1 .qpo-table thead th{
+  font-size:8.8px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table tbody td{
+  font-size:8.6px!important;
+  line-height:1.2!important;
+  font-weight:650!important;
+}
+.qmes-purchase-ledger-v1 .qpo-link,
+.qmes-purchase-ledger-v1 .qpo-link-btn{
+  font-size:8.6px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-status{
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-mini{
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-page{
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-empty{
+  font-size:9.5px!important;
+  line-height:1.3!important;
+  font-weight:700!important;
+}
+
+/* Detail / new / edit modal typography */
+.qmes-purchase-ledger-v1 .qpo-modal-head h3,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-head h3{
+  font-size:15px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-sum span,
+.qmes-purchase-ledger-v1 .qpo-flow-card span,
+.qmes-purchase-ledger-v1 .qpo-form-field label,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field label{
+  font-size:8.7px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+}
+.qmes-purchase-ledger-v1 .qpo-sum b,
+.qmes-purchase-ledger-v1 .qpo-flow-card b{
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-info,
+.qmes-purchase-ledger-v1 .qpo-print-table{
+  font-size:8.6px!important;
+  line-height:1.2!important;
+}
+.qmes-purchase-ledger-v1 .qpo-info th,
+.qmes-purchase-ledger-v1 .qpo-print-table th{
+  font-size:8.8px!important;
+  font-weight:900!important;
+}
+.qmes-purchase-ledger-v1 .qpo-info td,
+.qmes-purchase-ledger-v1 .qpo-print-table td{
+  font-size:8.6px!important;
+  font-weight:650!important;
+}
+.qmes-purchase-ledger-v1 .qpo-form-field input,
+.qmes-purchase-ledger-v1 .qpo-form-field select,
+.qmes-purchase-ledger-v1 .qpo-form-field textarea,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field input,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field select,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field textarea{
+  font-size:9.5px!important;
+  line-height:1.2!important;
+  font-weight:700!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-action{
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:850!important;
+}
