@@ -66,6 +66,7 @@
     if(!(input instanceof HTMLInputElement)) return false;
     if(input.closest(".qmes-sales-ledger-v4 .qrl-date")) return true;
     if(input.matches('#qmes-sales-edit-force-v2 input[name="due"]')) return true;
+    if(input.matches('.qmes-purchase-ledger-v1 input[data-filter="from"], .qmes-purchase-ledger-v1 input[data-filter="to"]')) return true;
     if(input.closest("#qmes-sales-new-order-integrated-v11")){
       return ["orderDate","due","plannedProductionDate","oqcDate"].includes(input.name);
     }
@@ -445,6 +446,8 @@
     root.querySelectorAll?.(
       '.qmes-sales-ledger-v4 .qrl-date input,'+
       '#qmes-sales-edit-force-v2 input[name="due"],'+
+      '.qmes-purchase-ledger-v1 input[data-filter="from"],'+
+      '.qmes-purchase-ledger-v1 input[data-filter="to"],'+
       '#qmes-sales-new-order-integrated-v11 input[name="orderDate"],'+
       '#qmes-sales-new-order-integrated-v11 input[name="due"],'+
       '#qmes-sales-new-order-integrated-v11 input[name="plannedProductionDate"],'+
