@@ -516,10 +516,10 @@ function install(app){
       const invalidSettings=backup.settings.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.key)||typeof x.value!=='string'||!validDateString(x.updated_at)).length;
       const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!nonEmptyString(x.name)||!nonEmptyString(x.type)||typeof x.subtitle!=='string'||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
       const invalidMembers=backup.channelMembers.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.channel_id)||!nonEmptyString(x.user_name)||!nonEmptyString(x.role)||!validDateString(x.created_at)).length;
+      if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
       const uniqueBy=(rows,keyFn)=>{const keys=rows.map(keyFn);return new Set(keys).size===keys.length;};
       const stateKeysUnique=uniqueBy(accounts,x=>String(x.id))&&uniqueBy(accounts,x=>x.name)&&uniqueBy(backup.channelReads,x=>x.room_id+'\u0000'+x.user_name)&&uniqueBy(backup.settings,x=>x.key)&&uniqueBy(backup.channels,x=>x.id)&&uniqueBy(backup.channelMembers,x=>x.channel_id+'\u0000'+x.user_name);
       if(!stateKeysUnique)return fail(res,400,'백업파일의 계정/읽음/설정/채널 데이터에 중복 키가 있습니다.');
-      if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
       ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,legacyCredentialFieldsIgnored,restoreEnabled:false});
     }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
   });
