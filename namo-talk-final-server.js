@@ -421,9 +421,10 @@ function install(app){
         await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
         const bounds=await client.query(`SELECT
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
+          (SELECT COUNT(*)::int FROM namo_talk_standalone_messages) AS "messageCount",
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
           (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
-        const accounts=await client.query('SELECT * FROM namo_talk_standalone_accounts ORDER BY id');
+        const accounts=await client.query('SELECT id,name,department,active,created_at,updated_at,presence,status_message,last_seen_at,avatar_type,avatar_value,is_admin FROM namo_talk_standalone_accounts ORDER BY id');
         const reads=await client.query('SELECT * FROM namo_talk_standalone_channel_reads ORDER BY room_id,user_name');
         const settings=await client.query('SELECT * FROM namo_talk_standalone_settings ORDER BY key');
         const channels=await client.query('SELECT * FROM namo_talk_standalone_channels ORDER BY id');
@@ -434,7 +435,7 @@ function install(app){
         backupSessions.set(sessionId,x);armBackupSession(sessionId,x);
         client=null;slotOwned=false;
         const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
-          snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
+          snapshot:{maxMessageId:String(b.maxMessageId),messageCount:Number(b.messageCount||0),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
           accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
         ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
       });
