@@ -1,0 +1,71 @@
+/* QMES Purchase: swap 발주기간 <-> 전체 발주 V1 - 2026-09-23 */
+.qmes-purchase-ledger-v1 .qpo-filter>.qpo-kpi.qpo-swap-total-top{
+  min-height:59px!important;
+  height:59px!important;
+  margin:0!important;
+  padding:8px 12px!important;
+  align-self:end!important;
+  border:1px solid #d4dfe8!important;
+  border-radius:7px!important;
+  background:#fff!important;
+}
+.qmes-purchase-ledger-v1 .qpo-filter>.qpo-kpi.qpo-swap-total-top span{
+  margin:0 0 5px!important;
+  font-size:8.7px!important;
+  line-height:11px!important;
+  font-weight:850!important;
+  color:#657789!important;
+}
+.qmes-purchase-ledger-v1 .qpo-filter>.qpo-kpi.qpo-swap-total-top b{
+  display:block!important;
+  margin:0!important;
+  font-size:20px!important;
+  line-height:20px!important;
+  font-weight:950!important;
+  color:#126da2!important;
+}
+.qmes-purchase-ledger-v1 .qpo-filter>.qpo-kpi.qpo-swap-total-top small{
+  display:block!important;
+  margin-top:4px!important;
+  font-size:8px!important;
+  line-height:9px!important;
+  font-weight:700!important;
+  color:#8a9aa6!important;
+}
+
+.qmes-purchase-ledger-v1 .qpo-kpis>.qpo-field.qpo-swap-period-bottom{
+  min-width:0!important;
+  min-height:78px!important;
+  height:78px!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border:1px solid #d4dfe8!important;
+  border-radius:8px!important;
+  background:#fff!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpis>.qpo-field.qpo-swap-period-bottom>label{
+  display:block!important;
+  margin:0 0 7px!important;
+  font-size:9px!important;
+  line-height:11px!important;
+  font-weight:800!important;
+  color:#64788b!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpis>.qpo-field.qpo-swap-period-bottom .qpo-period{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 10px minmax(0,1fr)!important;
+  gap:3px!important;
+  align-items:center!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpis>.qpo-field.qpo-swap-period-bottom .qpo-period .qpo-control{
+  width:100%!important;
+  min-width:0!important;
+  height:34px!important;
+  padding:0 6px!important;
+  font-size:8.7px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-kpis>.qpo-field.qpo-swap-period-bottom .qpo-period>span{
+  text-align:center!important;
+  font-size:9px!important;
+  color:#7e8f9e!important;
+}
