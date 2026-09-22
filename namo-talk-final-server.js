@@ -498,7 +498,8 @@ function install(app){
       if(messages.length>1000||attachments.length>500)return fail(res,400,'복원 사전검증은 한 번에 메시지 1,000건, 첨부파일 500건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const MAX_VALIDATE_BYTES=9*1024*1024;
       if(Buffer.byteLength(JSON.stringify({backup}),'utf8')>MAX_VALIDATE_BYTES)return fail(res,413,'복원 사전검증 파일은 9MB 이하만 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
-      const nonEmptyString=v=>typeof v==='string'&&v.length>0;
+      const validText=v=>typeof v==='string'&&!v.includes('\u0000');
+      const nonEmptyString=v=>validText(v)&&v.length>0;
       const validDateString=v=>{
         if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
         const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-](\d{2}):(\d{2}))$/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
@@ -509,15 +510,15 @@ function install(app){
       };
       const nullableDate=v=>v===null||validDateString(v);
       const nullableRecordId=v=>v===null||validRecordId(v);
-      const nullableString=v=>v===null||typeof v==='string';
-      const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)||!nullableDate(m.read_at)||!nullableDate(m.edited_at)||!nullableDate(m.deleted_at)||typeof m.pinned!=='boolean'||!nullableRecordId(m.attachment_id)||!nullableString(m.client_message_id)).length;
+      const nullableString=v=>v===null||validText(v);
+      const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||!validText(m.message_text)||!validDateString(m.created_at)||!nullableDate(m.read_at)||!nullableDate(m.edited_at)||!nullableDate(m.deleted_at)||typeof m.pinned!=='boolean'||!nullableRecordId(m.attachment_id)||!nullableString(m.client_message_id)).length;
       const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
       const validBool=v=>typeof v==='boolean';
-      const invalidAccounts=accounts.filter(a=>!a||typeof a!=='object'||!validRecordId(a.id)||!nonEmptyString(a.name)||!(a.department===null||typeof a.department==='string')||!validBool(a.active)||!validDateString(a.created_at)||!validDateString(a.updated_at)||!nonEmptyString(a.presence)||typeof a.status_message!=='string'||(a.last_seen_at!==null&&!validDateString(a.last_seen_at))||!nonEmptyString(a.avatar_type)||!nonEmptyString(a.avatar_value)||!validBool(a.is_admin)).length;
+      const invalidAccounts=accounts.filter(a=>!a||typeof a!=='object'||!validRecordId(a.id)||!nonEmptyString(a.name)||!(a.department===null||validText(a.department))||!validBool(a.active)||!validDateString(a.created_at)||!validDateString(a.updated_at)||!nonEmptyString(a.presence)||!validText(a.status_message)||(a.last_seen_at!==null&&!validDateString(a.last_seen_at))||!nonEmptyString(a.avatar_type)||!validText(a.avatar_value)||!validBool(a.is_admin)).length;
       const invalidReads=backup.channelReads.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.room_id)||!nonEmptyString(x.user_name)||!validSnapshotId(x.last_read_id)||!validDateString(x.updated_at)).length;
-      const invalidSettings=backup.settings.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.key)||typeof x.value!=='string'||!validDateString(x.updated_at)).length;
-      const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!nonEmptyString(x.name)||!nonEmptyString(x.type)||typeof x.subtitle!=='string'||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
+      const invalidSettings=backup.settings.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.key)||!validText(x.value)||!validDateString(x.updated_at)).length;
+      const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!validText(x.name)||!nonEmptyString(x.type)||!validText(x.subtitle)||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
       const invalidMembers=backup.channelMembers.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.channel_id)||!nonEmptyString(x.user_name)||!nonEmptyString(x.role)||!validDateString(x.created_at)).length;
       if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
       const attachmentIdSet=new Set(attachmentIds.map(Number));
