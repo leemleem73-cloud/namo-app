@@ -498,7 +498,13 @@ function install(app){
       const legacyCredentialFieldsIgnored=isLegacyV4&&accounts.some(a=>credentialKeys(a).includes('password_hash'));
       if(messages.length>5000||attachments.length>2000)return fail(res,400,'복원 사전검증은 한 번에 메시지 5,000건, 첨부파일 2,000건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
-      const validDateString=v=>nonEmptyString(v)&&!Number.isNaN(Date.parse(v));
+      const validDateString=v=>{
+        if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
+        const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
+        if(mo<1||mo>12||d<1||h>23||mi>59||sec>59)return false;
+        const days=new Date(Date.UTC(y,mo,0)).getUTCDate();
+        return d<=days&&!Number.isNaN(Date.parse(v));
+      };
       const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)).length;
       const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
