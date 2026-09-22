@@ -507,7 +507,10 @@ function install(app){
         const days=new Date(Date.UTC(y,mo,0)).getUTCDate();
         return d<=days&&!Number.isNaN(Date.parse(v));
       };
-      const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)).length;
+      const nullableDate=v=>v===null||validDateString(v);
+      const nullableRecordId=v=>v===null||validRecordId(v);
+      const nullableString=v=>v===null||typeof v==='string';
+      const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)||!nullableDate(m.read_at)||!nullableDate(m.edited_at)||!nullableDate(m.deleted_at)||typeof m.pinned!=='boolean'||!nullableRecordId(m.attachment_id)||!nullableString(m.client_message_id)).length;
       const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
       const validBool=v=>typeof v==='boolean';
