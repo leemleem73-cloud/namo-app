@@ -468,9 +468,8 @@ function install(app){
       const backup=req.body?.backup;
       if(!backup||typeof backup!=='object')return fail(res,400,'백업파일 구조가 올바르지 않습니다.');
       if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
-      for(const key of ['messages','attachments','accounts'])if(backup[key]!==undefined&&!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목 형식이 올바르지 않습니다.`);
-      const messages=backup.messages||[],attachments=backup.attachments||[],accounts=backup.accounts||[];
-      if(!Array.isArray(backup.messages))return fail(res,400,'백업파일의 messages 항목이 누락되었습니다.');
+      for(const key of ['messages','attachments','accounts','channelReads','settings','channels','channelMembers'])if(!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목이 누락되었거나 형식이 올바르지 않습니다.`);
+      const messages=backup.messages,attachments=backup.attachments,accounts=backup.accounts;
       const expectedMaxMessageId=backup.snapshot?.maxMessageId;
       const validSnapshotId=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       if(!validSnapshotId(expectedMaxMessageId))return fail(res,400,'백업파일의 메시지 스냅샷 정보가 올바르지 않습니다.');
