@@ -1,0 +1,54 @@
+/* QMES Sales management column always visible - 2026-09-22
+ * ADD-ONLY.
+ * Keeps the final 관리(상세/수정) column visible at the right edge even when
+ * the integrated ledger is wider than the viewport.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th:last-child{
+  position:sticky!important;
+  right:0!important;
+  z-index:8!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  background:linear-gradient(180deg,#67b3dc,#4696c2)!important;
+  box-shadow:-2px 0 5px rgba(41,81,108,.16)!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td:last-child{
+  position:sticky!important;
+  right:0!important;
+  z-index:5!important;
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  background:#fff!important;
+  box-shadow:-2px 0 5px rgba(41,81,108,.12)!important;
+  overflow:visible!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody tr:nth-child(even) td:last-child{
+  background:#f7fafc!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody tr:hover td:last-child{
+  background:#eef7fc!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qrl-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:100%!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qrl-actions button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:34px!important;
+  width:34px!important;
+  height:23px!important;
+  padding:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  white-space:nowrap!important;
+}
