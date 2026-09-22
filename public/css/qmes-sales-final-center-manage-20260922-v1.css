@@ -1,0 +1,42 @@
+/* QMES Sales final table center alignment + manage column - 2026-09-22
+ * ADD-ONLY patch.
+ * - Keeps the current final Sales/Delivery screen unchanged.
+ * - Centers the entire table content.
+ * - Keeps only the rightmost 관리 column visible with 상세/수정 actions.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th,
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td.left,
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td.num{
+  text-align:center!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:last-child,
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:last-child{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qrl-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:100%!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qrl-actions button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:34px!important;
+  height:23px!important;
+  padding:0 6px!important;
+  margin:0!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
