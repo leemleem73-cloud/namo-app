@@ -461,6 +461,76 @@ function install(app){
     }catch(e){const sessionId=String(req.query.sessionId||'');if(sessionId)await closeBackupSession(sessionId,false);console.error('[NAMO Talk PC backup messages]',e);fail(res,500,'백업 메시지를 불러오지 못했습니다.')}
   });
 
+  app.post(P+'/backup-restore-validate',async(req,res)=>{
+    try{
+      const me=await requireAdmin(req,res);if(!me)return;
+      const backup=req.body?.backup;
+      if(!backup||typeof backup!=='object')return fail(res,400,'백업파일 구조가 올바르지 않습니다.');
+      if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
+      for(const key of ['messages','attachments','accounts','channelReads','settings','channels','channelMembers'])if(!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목이 누락되었거나 형식이 올바르지 않습니다.`);
+      const messages=backup.messages,attachments=backup.attachments,accounts=backup.accounts;
+      const expectedMaxMessageId=backup.snapshot?.maxMessageId;
+      const validSnapshotId=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
+      if(!validSnapshotId(expectedMaxMessageId))return fail(res,400,'백업파일의 메시지 스냅샷 정보가 올바르지 않습니다.');
+      const expectedMessageCount=backup.snapshot?.messageCount;
+      if(expectedMessageCount!==undefined&&(!Number.isSafeInteger(expectedMessageCount)||expectedMessageCount<0||messages.length!==expectedMessageCount))return fail(res,400,'백업파일의 메시지 개수가 스냅샷과 일치하지 않습니다.');
+      const validRecordId=v=>validSnapshotId(v)&&Number(v)>0;
+      const messageIds=messages.map(m=>m?.id);
+      if(messageIds.some(id=>!validRecordId(id))||new Set(messageIds.map(Number)).size!==messageIds.length)return fail(res,400,'백업파일의 메시지 ID 정보가 올바르지 않습니다.');
+      const expectedMaxMessageNumber=Number(expectedMaxMessageId);
+      const actualMaxMessageNumber=messageIds.reduce((max,id)=>Math.max(max,Number(id)),0);
+      if((expectedMaxMessageNumber===0&&messages.length!==0)||(expectedMaxMessageNumber>0&&actualMaxMessageNumber!==expectedMaxMessageNumber))return fail(res,400,'백업파일의 메시지 목록이 스냅샷 경계와 일치하지 않습니다.');
+      const expectedAttachmentCount=backup.snapshot?.attachmentCount;
+      if(!Number.isSafeInteger(expectedAttachmentCount)||expectedAttachmentCount<0)return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
+      if(!Array.isArray(backup.attachments)||attachments.length!==expectedAttachmentCount)return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷과 일치하지 않습니다.');
+      const expectedMaxAttachmentId=backup.snapshot?.maxAttachmentId;
+      if(!validSnapshotId(expectedMaxAttachmentId))return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
+      const attachmentIds=attachments.map(a=>a?.id);
+      if(attachmentIds.some(id=>!validRecordId(id))||new Set(attachmentIds.map(Number)).size!==attachmentIds.length)return fail(res,400,'백업파일의 첨부파일 ID 정보가 올바르지 않습니다.');
+      const actualMaxAttachmentId=attachmentIds.reduce((max,id)=>Math.max(max,Number(id)),0);
+      if((Number(expectedMaxAttachmentId)===0&&attachments.length!==0)||(Number(expectedMaxAttachmentId)>0&&actualMaxAttachmentId!==Number(expectedMaxAttachmentId)))return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷 경계와 일치하지 않습니다.');
+      const isLegacyV4=backup.snapshot?.messageCount===undefined;
+      const credentialKeys=a=>a&&typeof a==='object'?Object.keys(a).filter(k=>/password|hash|token|secret/i.test(k)):[];
+      const hasUnsupportedCredentialFields=accounts.some(a=>credentialKeys(a).some(k=>!(isLegacyV4&&k==='password_hash')));
+      if(hasUnsupportedCredentialFields)return fail(res,400,'지원하지 않는 인증정보가 포함된 백업파일은 복원할 수 없습니다.');
+      const legacyCredentialFieldsIgnored=isLegacyV4&&accounts.some(a=>credentialKeys(a).includes('password_hash'));
+      if(messages.length>1000||attachments.length>500)return fail(res,400,'복원 사전검증은 한 번에 메시지 1,000건, 첨부파일 500건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
+      const MAX_VALIDATE_BYTES=9*1024*1024;
+      if(Buffer.byteLength(JSON.stringify({backup}),'utf8')>MAX_VALIDATE_BYTES)return fail(res,413,'복원 사전검증 파일은 9MB 이하만 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
+      const validText=v=>typeof v==='string'&&!v.includes('\u0000');
+      const nonEmptyString=v=>validText(v)&&v.length>0;
+      const validDateString=v=>{
+        if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
+        const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-](\d{2}):(\d{2}))$/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
+        if(y<1||mo<1||mo>12||d<1||h>23||mi>59||sec>59)return false;
+        if(m[8]!=='Z'){const oh=Number(m[9]),om=Number(m[10]);if(oh>15||om>59||(oh===15&&om>59))return false;}
+        const days=new Date(Date.UTC(y,mo,0)).getUTCDate();
+        return d<=days&&!Number.isNaN(Date.parse(v));
+      };
+      const nullableDate=v=>v===null||validDateString(v);
+      const nullableRecordId=v=>v===null||validRecordId(v);
+      const nullableString=v=>v===null||validText(v);
+      const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||!validText(m.message_text)||!validDateString(m.created_at)||!nullableDate(m.read_at)||!nullableDate(m.edited_at)||!nullableDate(m.deleted_at)||typeof m.pinned!=='boolean'||!nullableRecordId(m.attachment_id)||!nullableString(m.client_message_id)).length;
+      const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
+      const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
+      const validBool=v=>typeof v==='boolean';
+      const invalidAccounts=accounts.filter(a=>!a||typeof a!=='object'||!validRecordId(a.id)||!nonEmptyString(a.name)||!(a.department===null||validText(a.department))||!validBool(a.active)||!validDateString(a.created_at)||!validDateString(a.updated_at)||!nonEmptyString(a.presence)||!validText(a.status_message)||(a.last_seen_at!==null&&!validDateString(a.last_seen_at))||!nonEmptyString(a.avatar_type)||!validText(a.avatar_value)||!validBool(a.is_admin)).length;
+      const invalidReads=backup.channelReads.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.room_id)||!nonEmptyString(x.user_name)||!validSnapshotId(x.last_read_id)||!validDateString(x.updated_at)).length;
+      const invalidSettings=backup.settings.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.key)||!validText(x.value)||!validDateString(x.updated_at)).length;
+      const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!validText(x.name)||!nonEmptyString(x.type)||!validText(x.subtitle)||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
+      const invalidMembers=backup.channelMembers.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.channel_id)||!nonEmptyString(x.user_name)||!nonEmptyString(x.role)||!validDateString(x.created_at)).length;
+      if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
+      const attachmentIdSet=new Set(attachmentIds.map(Number));
+      if(messages.some(m=>m.attachment_id!==null&&!attachmentIdSet.has(Number(m.attachment_id))))return fail(res,400,'백업파일의 메시지가 존재하지 않는 첨부파일을 참조합니다.');
+      const clientKeys=messages.filter(m=>m.client_message_id!==null).map(m=>m.sender_name+'\u0000'+m.client_message_id);
+      if(new Set(clientKeys).size!==clientKeys.length)return fail(res,400,'백업파일의 메시지 client_message_id가 발신자 기준으로 중복되어 있습니다.');
+      const uniqueBy=(rows,keyFn)=>{const keys=rows.map(keyFn);return new Set(keys).size===keys.length;};
+      const stateKeysUnique=uniqueBy(accounts,x=>String(x.id))&&uniqueBy(accounts,x=>x.name)&&uniqueBy(backup.channelReads,x=>x.room_id+'\u0000'+x.user_name)&&uniqueBy(backup.settings,x=>x.key)&&uniqueBy(backup.channels,x=>x.id)&&uniqueBy(backup.channelMembers,x=>x.channel_id+'\u0000'+x.user_name);
+      if(!stateKeysUnique)return fail(res,400,'백업파일의 계정/읽음/설정/채널 데이터에 중복 키가 있습니다.');
+      ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,legacyCredentialFieldsIgnored,restoreEnabled:false});
+    }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
+  });
+
   app.post(P+'/backup-restore-preview',async(req,res)=>{
     try{
       const me=await requireAdmin(req,res);if(!me)return;
