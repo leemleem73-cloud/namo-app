@@ -543,8 +543,11 @@ function install(app){
       if(attachmentIds.some(id=>!validRecordId(id))||new Set(attachmentIds.map(Number)).size!==attachmentIds.length)return fail(res,400,'백업파일의 첨부파일 ID 정보가 올바르지 않습니다.');
       const actualMaxAttachmentId=attachmentIds.reduce((max,id)=>Math.max(max,Number(id)),0);
       if((Number(expectedMaxAttachmentId)===0&&attachments.length!==0)||(Number(expectedMaxAttachmentId)>0&&actualMaxAttachmentId!==Number(expectedMaxAttachmentId)))return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷 경계와 일치하지 않습니다.');
-      const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
-      if(hasCredentialFields)return fail(res,400,'인증정보가 포함된 백업파일은 복원할 수 없습니다.');
+      const isLegacyV4=backup.snapshot?.messageCount===undefined;
+      const credentialKeys=a=>a&&typeof a==='object'?Object.keys(a).filter(k=>/password|hash|token|secret/i.test(k)):[];
+      const hasUnsupportedCredentialFields=accounts.some(a=>credentialKeys(a).some(k=>!(isLegacyV4&&k==='password_hash')));
+      if(hasUnsupportedCredentialFields)return fail(res,400,'지원하지 않는 인증정보가 포함된 백업파일은 복원할 수 없습니다.');
+      const legacyCredentialFieldsIgnored=isLegacyV4&&accounts.some(a=>credentialKeys(a).includes('password_hash'));
       if(messages.length>5000||attachments.length>2000)return fail(res,400,'복원 사전검증은 한 번에 메시지 5,000건, 첨부파일 2,000건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
       const validDateString=v=>nonEmptyString(v)&&!Number.isNaN(Date.parse(v));
@@ -552,7 +555,7 @@ function install(app){
       const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
       if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
-      ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,restoreEnabled:false});
+      ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,legacyCredentialFieldsIgnored,restoreEnabled:false});
     }catch(e){console.error('[NAMO Talk restore validate]',e);fail(res,500,'복원 파일을 검증하지 못했습니다.')}
   });
 
