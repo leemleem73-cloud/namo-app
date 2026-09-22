@@ -1,4 +1,4 @@
-/* NAMO QMES - Purchase ledger owner V1 - 2026-09-22
+/* NAMO QMES - Purchase ledger owner V1 - 2026-09-23
  * ADD-ONLY / NO OVERWRITE.
  * Replaces only the visible Purchase Order route with the approved uploaded UI.
  * Existing purchase source files remain untouched.
@@ -209,12 +209,6 @@
     var start=(state.page-1)*PAGE_SIZE;
     var shown=data.slice(start,start+PAGE_SIZE);
     var sOptions='<option value="">전체</option>'+supplierOptions().map(function(v){return '<option value="'+esc(v)+'"'+(state.supplier===v?' selected':'')+'>'+esc(v)+'</option>';}).join("");
-    var totalAmount=data.reduce(function(s,r){return s+amount(r);},0);
-    var doneAmount=data.filter(function(r){return inStatus(r)==="입고완료";}).reduce(function(s,r){return s+amount(r);},0);
-    var pending=Math.max(0,data.filter(function(r){return poStatus(r)==="승인대기";}).length);
-    var cancelled=data.filter(function(r){return poStatus(r)==="취소";}).length;
-    var iqcWait=data.filter(function(r){return iqcStatus(r)==="미착수"&&(inStatus(r)==="입고완료"||inStatus(r)==="부분입고");}).length;
-
     var rowsHtml=shown.length?shown.map(function(r,i){
       var no=rowNo(r),ins=inStatus(r),iq=iqcStatus(r),dueS=dueStatus(r),po=poStatus(r);
       var missing=Math.max(0,qty(r)-received(r));
@@ -270,11 +264,6 @@
         '<div class="qpo-kpi"><span>미입고 금액</span><b>'+moneyShort(k.openAmount)+'</b><small>잔량 기준</small></div>'+
         '<div class="qpo-kpi good"><span>협력사 납기준수율</span><b>'+k.comply.toFixed(1)+'%</b><small>현재 조회 기준</small></div>'+
       '</div>'+
-      '<div class="qpo-summary">'+
-        '<div class="qpo-summary-card"><h3>발주 진행 현황</h3>'+progress("발주완료",Math.max(0,data.length-pending-cancelled),data.length)+progress("승인대기",pending,data.length)+progress("취소",cancelled,data.length)+'</div>'+
-        '<div class="qpo-summary-card"><h3>입고 위험 요인</h3>'+progress("납기지연",k.late,data.length)+progress("부분입고",k.partial,data.length)+progress("IQC 대기",iqcWait,data.length)+'</div>'+
-        '<div class="qpo-summary-card"><h3>구매 금액</h3>'+progressMoney("총 발주금액",totalAmount,totalAmount)+progressMoney("입고완료",doneAmount,totalAmount)+progressMoney("미입고",Math.max(0,totalAmount-doneAmount),totalAmount)+'</div>'+
-      '</div>'+
       '<div class="qpo-notice"><span><strong>구매·발주 핵심관리</strong> · 발주수량 대비 입고수량 · 요청입고일 대비 실제입고일 · IQC 상태 · 미입고잔량 · 협력사 납기준수</span><span>※ 부분입고 및 납기지연 자동 강조</span></div>'+
       '<div class="qpo-table-box"><div class="qpo-table-scroll"><table class="qpo-table"><thead><tr>'+
         ["No","발주일 ↓","발주번호","협력사","품목명(규격)","발주수량","단위","단가","발주금액","요청입고일","확정입고일","입고수량","미입고수량","입고상태","IQC","LOT","납기차이","납기상태","발주상태","담당자","비고","관리"].map(function(h){return "<th>"+h+"</th>";}).join("")+
@@ -283,14 +272,6 @@
       '<input type="file" class="qpo-hidden-file" data-role="upload-input" accept=".xlsx,.xls,.csv">';
   }
 
-  function progress(label,value,total){
-    var pct=total?Math.max(0,Math.min(100,value/total*100)):0;
-    return '<div class="qpo-progress"><span>'+esc(label)+'</span><div class="qpo-track"><div class="qpo-fill" style="width:'+pct.toFixed(1)+'%"></div></div><span class="right">'+value+'건</span></div>';
-  }
-  function progressMoney(label,value,total){
-    var pct=total?Math.max(0,Math.min(100,value/total*100)):0;
-    return '<div class="qpo-progress"><span>'+esc(label)+'</span><div class="qpo-track"><div class="qpo-fill" style="width:'+pct.toFixed(1)+'%"></div></div><span class="right">'+moneyShort(value)+'</span></div>';
-  }
   function findRow(no){return state.rows.find(function(r){return rowNo(r)===no;})||null;}
 
   function overlay(title,body,wide){
