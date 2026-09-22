@@ -497,11 +497,14 @@ function install(app){
       if(hasUnsupportedCredentialFields)return fail(res,400,'지원하지 않는 인증정보가 포함된 백업파일은 복원할 수 없습니다.');
       const legacyCredentialFieldsIgnored=isLegacyV4&&accounts.some(a=>credentialKeys(a).includes('password_hash'));
       if(messages.length>1000||attachments.length>500)return fail(res,400,'복원 사전검증은 한 번에 메시지 1,000건, 첨부파일 500건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
+      const MAX_VALIDATE_BYTES=9*1024*1024;
+      if(Buffer.byteLength(JSON.stringify({backup}),'utf8')>MAX_VALIDATE_BYTES)return fail(res,413,'복원 사전검증 파일은 9MB 이하만 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
       const validDateString=v=>{
         if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
-        const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
+        const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-](\d{2}):(\d{2}))$/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
         if(mo<1||mo>12||d<1||h>23||mi>59||sec>59)return false;
+        if(m[8]!=='Z'){const oh=Number(m[9]),om=Number(m[10]);if(oh>15||om>59||(oh===15&&om>59))return false;}
         const days=new Date(Date.UTC(y,mo,0)).getUTCDate();
         return d<=days&&!Number.isNaN(Date.parse(v));
       };
