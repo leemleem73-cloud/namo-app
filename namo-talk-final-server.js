@@ -496,7 +496,7 @@ function install(app){
       const hasUnsupportedCredentialFields=accounts.some(a=>credentialKeys(a).some(k=>!(isLegacyV4&&k==='password_hash')));
       if(hasUnsupportedCredentialFields)return fail(res,400,'지원하지 않는 인증정보가 포함된 백업파일은 복원할 수 없습니다.');
       const legacyCredentialFieldsIgnored=isLegacyV4&&accounts.some(a=>credentialKeys(a).includes('password_hash'));
-      if(messages.length>5000||attachments.length>2000)return fail(res,400,'복원 사전검증은 한 번에 메시지 5,000건, 첨부파일 2,000건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
+      if(messages.length>1000||attachments.length>500)return fail(res,400,'복원 사전검증은 한 번에 메시지 1,000건, 첨부파일 500건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
       const validDateString=v=>{
         if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
