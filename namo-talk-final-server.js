@@ -503,7 +503,7 @@ function install(app){
       const validDateString=v=>{
         if(!nonEmptyString(v)||!/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.test(v))return false;
         const m=v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-](\d{2}):(\d{2}))$/),y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]),h=Number(m[4]),mi=Number(m[5]),sec=Number(m[6]);
-        if(mo<1||mo>12||d<1||h>23||mi>59||sec>59)return false;
+        if(y<1||mo<1||mo>12||d<1||h>23||mi>59||sec>59)return false;
         if(m[8]!=='Z'){const oh=Number(m[9]),om=Number(m[10]);if(oh>15||om>59||(oh===15&&om>59))return false;}
         const days=new Date(Date.UTC(y,mo,0)).getUTCDate();
         return d<=days&&!Number.isNaN(Date.parse(v));
