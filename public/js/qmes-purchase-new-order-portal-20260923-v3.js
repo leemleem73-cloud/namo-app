@@ -1,13 +1,13 @@
-/* QMES Purchase New Order Portal V2 - 2026-09-22
+/* QMES Purchase New Order Portal V3 - 2026-09-23
  * ADD-ONLY. New Purchase form is rendered under document.body so
  * purchase-ledger re-renders cannot remove the open form.
  */
 (function(){
   "use strict";
-  if(window.__QMES_PURCHASE_NEW_ORDER_PORTAL_20260922_V2__) return;
-  window.__QMES_PURCHASE_NEW_ORDER_PORTAL_20260922_V2__=true;
+  if(window.__QMES_PURCHASE_NEW_ORDER_PORTAL_20260923_V3__) return;
+  window.__QMES_PURCHASE_NEW_ORDER_PORTAL_20260923_V3__=true;
 
-  var PORTAL_ID="qmes-purchase-new-order-portal-20260922-v2";
+  var PORTAL_ID="qmes-purchase-new-order-portal-20260923-v3";
   var STORE="qmes-erp-purchase-v1";
   var saving=false;
 
@@ -110,13 +110,21 @@
     var portal=el.closest("#"+PORTAL_ID);
     if(!portal)return;
     if(el.closest("[data-qpo-portal-close]")){event.preventDefault();event.stopPropagation();closePortal();return;}
-    if(el===portal){event.preventDefault();event.stopPropagation();closePortal();}
+    if(el===portal){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();return;}
   },true);
 
   document.addEventListener("submit",function(event){
     var form=event.target instanceof Element?event.target.closest("[data-qpo-portal-form]"):null;
     if(!form)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();submit(form);
+  },true);
+
+  document.addEventListener("pointerdown",function(event){
+    var portal=document.getElementById(PORTAL_ID);
+    if(!portal||event.target!==portal)return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
   },true);
 
   document.addEventListener("keydown",function(event){
