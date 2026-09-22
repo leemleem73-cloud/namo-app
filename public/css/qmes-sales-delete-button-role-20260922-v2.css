@@ -1,0 +1,8 @@
+/* QMES Sales delete button role state - 2026-09-22 */
+.qmes-sales-delivery-dashboard-v2 .qrl-actions .qrl-delete-btn:disabled{
+  background:#d7dde2!important;
+  border-color:#c8d0d6!important;
+  color:#7c8992!important;
+  cursor:not-allowed!important;
+  opacity:.8!important;
+}
