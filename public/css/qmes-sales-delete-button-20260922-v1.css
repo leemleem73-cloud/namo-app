@@ -1,0 +1,20 @@
+/* QMES Sales delete button - 2026-09-22
+ * ADD-ONLY. Management column only.
+ */
+.qmes-sales-delivery-dashboard-v2 .qrl-actions .qrl-delete-btn{
+  min-width:30px!important;
+  height:22px!important;
+  padding:0 5px!important;
+  border:1px solid #e5484d!important;
+  border-radius:5px!important;
+  background:#e5484d!important;
+  color:#fff!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  cursor:pointer!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qrl-actions .qrl-delete-btn:hover{
+  background:#cf3c42!important;
+  border-color:#cf3c42!important;
+}
