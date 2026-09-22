@@ -520,6 +520,10 @@ function install(app){
       const invalidChannels=backup.channels.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.id)||!nonEmptyString(x.name)||!nonEmptyString(x.type)||typeof x.subtitle!=='string'||!nonEmptyString(x.created_by)||!validBool(x.active)||!validDateString(x.created_at)||!validDateString(x.updated_at)).length;
       const invalidMembers=backup.channelMembers.filter(x=>!x||typeof x!=='object'||!nonEmptyString(x.channel_id)||!nonEmptyString(x.user_name)||!nonEmptyString(x.role)||!validDateString(x.created_at)).length;
       if(invalidMessages||invalidAttachments||invalidAccounts||invalidReads||invalidSettings||invalidChannels||invalidMembers)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건, 계정 ${invalidAccounts}건, 읽음 ${invalidReads}건, 설정 ${invalidSettings}건, 채널 ${invalidChannels}건, 채널멤버 ${invalidMembers}건`);
+      const attachmentIdSet=new Set(attachmentIds.map(Number));
+      if(messages.some(m=>m.attachment_id!==null&&!attachmentIdSet.has(Number(m.attachment_id))))return fail(res,400,'백업파일의 메시지가 존재하지 않는 첨부파일을 참조합니다.');
+      const clientKeys=messages.filter(m=>m.client_message_id!==null).map(m=>m.sender_name+'\u0000'+m.client_message_id);
+      if(new Set(clientKeys).size!==clientKeys.length)return fail(res,400,'백업파일의 메시지 client_message_id가 발신자 기준으로 중복되어 있습니다.');
       const uniqueBy=(rows,keyFn)=>{const keys=rows.map(keyFn);return new Set(keys).size===keys.length;};
       const stateKeysUnique=uniqueBy(accounts,x=>String(x.id))&&uniqueBy(accounts,x=>x.name)&&uniqueBy(backup.channelReads,x=>x.room_id+'\u0000'+x.user_name)&&uniqueBy(backup.settings,x=>x.key)&&uniqueBy(backup.channels,x=>x.id)&&uniqueBy(backup.channelMembers,x=>x.channel_id+'\u0000'+x.user_name);
       if(!stateKeysUnique)return fail(res,400,'백업파일의 계정/읽음/설정/채널 데이터에 중복 키가 있습니다.');
