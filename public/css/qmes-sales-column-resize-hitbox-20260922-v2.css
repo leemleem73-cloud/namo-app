@@ -1,0 +1,18 @@
+/* QMES Sales column/window resize hitbox V2 - ADD ONLY
+ * Keeps the separator visually clean but makes the click/drag target wider and reliable.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer{
+  position:absolute!important;
+  top:0!important;
+  right:-9px!important;
+  width:18px!important;
+  height:100%!important;
+  z-index:60!important;
+  cursor:col-resize!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  background:transparent!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th:hover .qmes-sales-col-resizer{
+  pointer-events:auto!important;
+}
