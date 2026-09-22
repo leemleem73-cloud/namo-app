@@ -527,9 +527,10 @@ function install(app){
       const validSnapshotId=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       if(!validSnapshotId(expectedMaxMessageId))return fail(res,400,'백업파일의 메시지 스냅샷 정보가 올바르지 않습니다.');
       const expectedMessageCount=backup.snapshot?.messageCount;
-      if(!Number.isSafeInteger(expectedMessageCount)||expectedMessageCount<0||messages.length!==expectedMessageCount)return fail(res,400,'백업파일의 메시지 개수가 스냅샷과 일치하지 않습니다.');
+      if(expectedMessageCount!==undefined&&(!Number.isSafeInteger(expectedMessageCount)||expectedMessageCount<0||messages.length!==expectedMessageCount))return fail(res,400,'백업파일의 메시지 개수가 스냅샷과 일치하지 않습니다.');
+      const validRecordId=v=>validSnapshotId(v)&&Number(v)>0;
       const messageIds=messages.map(m=>m?.id);
-      if(messageIds.some(id=>!validSnapshotId(id))||new Set(messageIds.map(Number)).size!==messageIds.length)return fail(res,400,'백업파일의 메시지 ID 정보가 올바르지 않습니다.');
+      if(messageIds.some(id=>!validRecordId(id))||new Set(messageIds.map(Number)).size!==messageIds.length)return fail(res,400,'백업파일의 메시지 ID 정보가 올바르지 않습니다.');
       const expectedMaxMessageNumber=Number(expectedMaxMessageId);
       const actualMaxMessageNumber=messageIds.reduce((max,id)=>Math.max(max,Number(id)),0);
       if((expectedMaxMessageNumber===0&&messages.length!==0)||(expectedMaxMessageNumber>0&&actualMaxMessageNumber!==expectedMaxMessageNumber))return fail(res,400,'백업파일의 메시지 목록이 스냅샷 경계와 일치하지 않습니다.');
@@ -539,7 +540,7 @@ function install(app){
       const expectedMaxAttachmentId=backup.snapshot?.maxAttachmentId;
       if(!validSnapshotId(expectedMaxAttachmentId))return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
       const attachmentIds=attachments.map(a=>a?.id);
-      if(attachmentIds.some(id=>!validSnapshotId(id))||new Set(attachmentIds.map(Number)).size!==attachmentIds.length)return fail(res,400,'백업파일의 첨부파일 ID 정보가 올바르지 않습니다.');
+      if(attachmentIds.some(id=>!validRecordId(id))||new Set(attachmentIds.map(Number)).size!==attachmentIds.length)return fail(res,400,'백업파일의 첨부파일 ID 정보가 올바르지 않습니다.');
       const actualMaxAttachmentId=attachmentIds.reduce((max,id)=>Math.max(max,Number(id)),0);
       if((Number(expectedMaxAttachmentId)===0&&attachments.length!==0)||(Number(expectedMaxAttachmentId)>0&&actualMaxAttachmentId!==Number(expectedMaxAttachmentId)))return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷 경계와 일치하지 않습니다.');
       const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
