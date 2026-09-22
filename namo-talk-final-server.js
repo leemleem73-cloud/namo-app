@@ -467,7 +467,7 @@ function install(app){
       const me=await requireAdmin(req,res);if(!me)return;
       const backup=req.body?.backup;
       if(!backup||typeof backup!=='object')return fail(res,400,'백업파일 구조가 올바르지 않습니다.');
-      if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
+      if(!['namo-talk-pc-backup-v4','namo-talk-pc-backup-v5'].includes(backup.format))return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
       for(const key of ['messages','attachments','accounts','channelReads','settings','channels','channelMembers'])if(!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목이 누락되었거나 형식이 올바르지 않습니다.`);
       const messages=backup.messages,attachments=backup.attachments,accounts=backup.accounts;
       const expectedMaxMessageId=backup.snapshot?.maxMessageId;
