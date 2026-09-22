@@ -1,0 +1,21 @@
+/* QMES Sales KPI-first + upload button - 2026-09-22
+ * ADD-ONLY. Existing dashboard sources remain preserved.
+ */
+.qmes-sales-delivery-dashboard-v2 #qmes-sales-upload-button-20260922{
+  height:34px!important;
+  padding:0 12px!important;
+  border:1px solid #a9c9dc!important;
+  border-radius:7px!important;
+  background:#f7fbfe!important;
+  color:#176f9d!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+  cursor:pointer!important;
+}
+.qmes-sales-delivery-dashboard-v2 #qmes-sales-upload-button-20260922:hover{
+  background:#eef8fd!important;
+  border-color:#7fb6d4!important;
+}
+.qmes-sales-delivery-dashboard-v2 .qsd-kpis{margin-bottom:10px!important}
+.qmes-sales-delivery-dashboard-v2 .qrl-filter{margin-bottom:10px!important}
