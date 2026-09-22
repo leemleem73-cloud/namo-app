@@ -1,0 +1,24 @@
+/* QMES Sales resize handle visual cleanup - 2026-09-22
+ * ADD-ONLY.
+ * Keeps column drag-resize fully active, but removes the strange visible bars/lines
+ * from the blue table header.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer::after,
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer:hover::after,
+body.qmes-sales-column-resizing .qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer.active::after{
+  width:0!important;
+  background:transparent!important;
+  opacity:0!important;
+  box-shadow:none!important;
+}
+
+/* Preserve normal header separator appearance only. */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th{
+  overflow:visible!important;
+}
