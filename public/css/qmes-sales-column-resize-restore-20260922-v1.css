@@ -1,0 +1,50 @@
+/* QMES Sales column resize restore - 2026-09-22
+ * ADD-ONLY.
+ * Restores draggable header resize bars on the current final Sales ledger.
+ * Baseline remains the approved fit-to-screen layout until a user drags a separator.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table-shell{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th{
+  position:relative!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer{
+  position:absolute!important;
+  top:0!important;
+  right:-5px!important;
+  width:10px!important;
+  height:100%!important;
+  z-index:20!important;
+  cursor:col-resize!important;
+  touch-action:none!important;
+  user-select:none!important;
+  background:transparent!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer::after{
+  content:""!important;
+  position:absolute!important;
+  top:18%!important;
+  bottom:18%!important;
+  left:4px!important;
+  width:1px!important;
+  background:rgba(255,255,255,.32)!important;
+  opacity:.75!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer:hover::after,
+body.qmes-sales-column-resizing .qmes-sales-delivery-dashboard-v2 .qsd-table thead th .qmes-sales-col-resizer.active::after{
+  width:2px!important;
+  background:#fff!important;
+  opacity:1!important;
+}
+
+body.qmes-sales-column-resizing,
+body.qmes-sales-column-resizing *{
+  cursor:col-resize!important;
+  user-select:none!important;
+}
