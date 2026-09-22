@@ -421,6 +421,7 @@ function install(app){
         await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
         const bounds=await client.query(`SELECT
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_messages),0)::bigint AS "maxMessageId",
+          (SELECT COUNT(*)::int FROM namo_talk_standalone_messages) AS "messageCount",
           COALESCE((SELECT MAX(id) FROM namo_talk_standalone_attachments),0)::bigint AS "maxAttachmentId",
           (SELECT COUNT(*)::int FROM namo_talk_standalone_attachments) AS "attachmentCount"`);
         const accounts=await client.query('SELECT id,name,department,active,created_at,updated_at,presence,status_message,last_seen_at,avatar_type,avatar_value,is_admin FROM namo_talk_standalone_accounts ORDER BY id');
@@ -434,7 +435,7 @@ function install(app){
         backupSessions.set(sessionId,x);armBackupSession(sessionId,x);
         client=null;slotOwned=false;
         const backup={format:'namo-talk-pc-backup-v4',createdAt:new Date().toISOString(),createdBy:me.name,
-          snapshot:{maxMessageId:String(b.maxMessageId),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
+          snapshot:{maxMessageId:String(b.maxMessageId),messageCount:Number(b.messageCount||0),maxAttachmentId:String(b.maxAttachmentId),attachmentCount:Number(b.attachmentCount||0)},
           accounts:accounts.rows,channelReads:reads.rows,settings:settings.rows,channels:channels.rows,channelMembers:members.rows};
         ok(res,{backup,backupSessionId:sessionId,pageSize:500,restoreEnabled:false,storage:'client-pc'});
       });
@@ -525,12 +526,22 @@ function install(app){
       const expectedMaxMessageId=backup.snapshot?.maxMessageId;
       const validSnapshotId=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       if(!validSnapshotId(expectedMaxMessageId))return fail(res,400,'백업파일의 메시지 스냅샷 정보가 올바르지 않습니다.');
+      const expectedMessageCount=backup.snapshot?.messageCount;
+      if(!Number.isSafeInteger(expectedMessageCount)||expectedMessageCount<0||messages.length!==expectedMessageCount)return fail(res,400,'백업파일의 메시지 개수가 스냅샷과 일치하지 않습니다.');
+      const messageIds=messages.map(m=>m?.id);
+      if(messageIds.some(id=>!validSnapshotId(id))||new Set(messageIds.map(Number)).size!==messageIds.length)return fail(res,400,'백업파일의 메시지 ID 정보가 올바르지 않습니다.');
       const expectedMaxMessageNumber=Number(expectedMaxMessageId);
-      const actualMaxMessageNumber=messages.reduce((max,m)=>{const id=m?.id;return validSnapshotId(id)?Math.max(max,Number(id)):max;},0);
+      const actualMaxMessageNumber=messageIds.reduce((max,id)=>Math.max(max,Number(id)),0);
       if((expectedMaxMessageNumber===0&&messages.length!==0)||(expectedMaxMessageNumber>0&&actualMaxMessageNumber!==expectedMaxMessageNumber))return fail(res,400,'백업파일의 메시지 목록이 스냅샷 경계와 일치하지 않습니다.');
       const expectedAttachmentCount=backup.snapshot?.attachmentCount;
       if(!Number.isSafeInteger(expectedAttachmentCount)||expectedAttachmentCount<0)return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
       if(!Array.isArray(backup.attachments)||attachments.length!==expectedAttachmentCount)return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷과 일치하지 않습니다.');
+      const expectedMaxAttachmentId=backup.snapshot?.maxAttachmentId;
+      if(!validSnapshotId(expectedMaxAttachmentId))return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
+      const attachmentIds=attachments.map(a=>a?.id);
+      if(attachmentIds.some(id=>!validSnapshotId(id))||new Set(attachmentIds.map(Number)).size!==attachmentIds.length)return fail(res,400,'백업파일의 첨부파일 ID 정보가 올바르지 않습니다.');
+      const actualMaxAttachmentId=attachmentIds.reduce((max,id)=>Math.max(max,Number(id)),0);
+      if((Number(expectedMaxAttachmentId)===0&&attachments.length!==0)||(Number(expectedMaxAttachmentId)>0&&actualMaxAttachmentId!==Number(expectedMaxAttachmentId)))return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷 경계와 일치하지 않습니다.');
       const hasCredentialFields=accounts.some(a=>a&&typeof a==='object'&&Object.keys(a).some(k=>/password|hash|token|secret/i.test(k)));
       if(hasCredentialFields)return fail(res,400,'인증정보가 포함된 백업파일은 복원할 수 없습니다.');
       if(messages.length>5000||attachments.length>2000)return fail(res,400,'복원 사전검증은 한 번에 메시지 5,000건, 첨부파일 2,000건까지 확인할 수 있습니다. 대용량 복원은 이후 분할 검증 방식으로 처리해야 합니다.');
