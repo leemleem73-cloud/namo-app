@@ -1,0 +1,117 @@
+/* QMES Sales final normal screen fit - 2026-09-22
+ * ADD-ONLY patch.
+ * Goal: match the approved normal screen.
+ * - Entire 21-column ledger fits the visible workspace.
+ * - No horizontal scrolling.
+ * - 관리(상세/수정) is the natural last column, not a floating/sticky overlay.
+ * - All cells remain centered.
+ */
+.qmes-sales-delivery-dashboard-v2 .qsd-table-shell{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:hidden!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+  margin:0!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th,
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td{
+  min-width:0!important;
+  max-width:none!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  padding-left:3px!important;
+  padding-right:3px!important;
+  font-size:8px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td.left,
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td.num{
+  text-align:center!important;
+}
+
+/* Approved screen: management column belongs to the table flow. */
+.qmes-sales-delivery-dashboard-v2 .qsd-table thead th:last-child,
+.qmes-sales-delivery-dashboard-v2 .qsd-table tbody td:last-child{
+  position:static!important;
+  right:auto!important;
+  z-index:auto!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+/* Proportional widths for the 21 approved columns. */
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(1),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(1){width:2.2%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(2),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(2){width:4.5%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(3),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(3){width:5.9%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(4),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(4){width:6.6%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(5),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(5){width:8.2%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(6),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(6){width:3.8%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(7),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(7){width:2.5%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(8),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(8){width:4.7%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(9),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(9){width:4.7%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(10),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(10){width:3.3%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(11),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(11){width:3.4%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(12),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(12){width:3.8%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(13),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(13){width:6.1%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(14),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(14){width:5.4%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(15),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(15){width:4.4%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(16),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(16){width:4.6%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(17),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(17){width:4.8%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(18),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(18){width:4.1%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(19),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(19){width:3.4%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(20),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(20){width:8.7%!important}
+.qmes-sales-delivery-dashboard-v2 .qsd-table th:nth-child(21),
+.qmes-sales-delivery-dashboard-v2 .qsd-table td:nth-child(21){width:4.9%!important}
+
+.qmes-sales-delivery-dashboard-v2 .qrl-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  width:100%!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qrl-actions button{
+  min-width:30px!important;
+  width:auto!important;
+  height:22px!important;
+  padding:0 5px!important;
+  font-size:8px!important;
+  line-height:1!important;
+}
+
+.qmes-sales-delivery-dashboard-v2 .qrl-foot{
+  width:100%!important;
+  margin:0!important;
+}
