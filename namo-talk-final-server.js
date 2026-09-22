@@ -521,6 +521,13 @@ function install(app){
       if(backup.format!=='namo-talk-pc-backup-v4')return fail(res,400,'지원하지 않는 백업파일 형식입니다.');
       for(const key of ['messages','attachments','accounts'])if(backup[key]!==undefined&&!Array.isArray(backup[key]))return fail(res,400,`백업파일의 ${key} 항목 형식이 올바르지 않습니다.`);
       const messages=backup.messages||[],attachments=backup.attachments||[],accounts=backup.accounts||[];
+      if(!Array.isArray(backup.messages))return fail(res,400,'백업파일의 messages 항목이 누락되었습니다.');
+      const expectedMaxMessageId=backup.snapshot?.maxMessageId;
+      const validSnapshotId=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
+      if(!validSnapshotId(expectedMaxMessageId))return fail(res,400,'백업파일의 메시지 스냅샷 정보가 올바르지 않습니다.');
+      const expectedMaxMessageNumber=Number(expectedMaxMessageId);
+      const actualMaxMessageNumber=messages.reduce((max,m)=>{const id=m?.id;return validSnapshotId(id)?Math.max(max,Number(id)):max;},0);
+      if((expectedMaxMessageNumber===0&&messages.length!==0)||(expectedMaxMessageNumber>0&&actualMaxMessageNumber!==expectedMaxMessageNumber))return fail(res,400,'백업파일의 메시지 목록이 스냅샷 경계와 일치하지 않습니다.');
       const expectedAttachmentCount=backup.snapshot?.attachmentCount;
       if(!Number.isSafeInteger(expectedAttachmentCount)||expectedAttachmentCount<0)return fail(res,400,'백업파일의 첨부파일 스냅샷 정보가 올바르지 않습니다.');
       if(!Array.isArray(backup.attachments)||attachments.length!==expectedAttachmentCount)return fail(res,400,'백업파일의 첨부파일 목록이 스냅샷과 일치하지 않습니다.');
@@ -530,7 +537,7 @@ function install(app){
       const nonEmptyString=v=>typeof v==='string'&&v.length>0;
       const validDateString=v=>nonEmptyString(v)&&!Number.isNaN(Date.parse(v));
       const invalidMessages=messages.filter(m=>!m||typeof m!=='object'||!nonEmptyString(m.room_id)||!nonEmptyString(m.sender_name)||!nonEmptyString(m.receiver_name)||typeof m.message_text!=='string'||!validDateString(m.created_at)).length;
-      const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
+      const validFileSize=v=>(typeof v==='number'&&Number.isSafeInteger(v)&&v>=0)||(typeof v==='string'&&/^(0|[1-9]\d*)$/.test(v)&&Number.isSafeInteger(Number(v)));
       const invalidAttachments=attachments.filter(a=>!a||typeof a!=='object'||!nonEmptyString(a.room_id)||!nonEmptyString(a.sender_name)||!nonEmptyString(a.receiver_name)||!nonEmptyString(a.file_name)||!nonEmptyString(a.mime_type)||!validDateString(a.created_at)||!validFileSize(a.file_size)).length;
       if(invalidMessages||invalidAttachments)return fail(res,400,`백업파일 데이터 검증에 실패했습니다. 메시지 ${invalidMessages}건, 첨부파일 ${invalidAttachments}건`);
       ok(res,{valid:true,format:backup.format,messageCount:messages.length,attachmentCount:attachments.length,credentialFields:false,restoreEnabled:false});
