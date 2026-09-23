@@ -16,7 +16,7 @@ require('./attendance-qmes-redesign-preload.js');
 require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
-require('./access-permissions-safe.js');
+require('./access-permissions-safe-20260923-v2.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
 const publicRouter = path.resolve(__dirname, 'public', 'js', 'router.jsx');
