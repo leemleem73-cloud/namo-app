@@ -183,6 +183,3 @@ if (!connectionString) {
   })();
 }
 
-// Run the purchase-history migration from the same startup preload that server.js already loads.
-// The purchase migration is idempotent and only updates SYSTEM-created legacy rows.
-require('./purchase-history-repair-20260915.js');

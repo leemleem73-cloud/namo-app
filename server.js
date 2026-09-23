@@ -355,7 +355,7 @@ try {
 
 // Import approved historical incoming-inspection ledger rows into the shared IQC store.
 // The importer is idempotent and never overwrites an existing matching inspection.
-require('./iqc-history-seed-20260915.js');
+require('./iqc-history-seed-20260923-v2.js');
 
 // Ensure the 18 approved legacy purchase rows are present in purchase_orders.
 // Missing rows are inserted; only SYSTEM-created legacy rows may be refreshed.
