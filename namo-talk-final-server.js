@@ -234,7 +234,8 @@ function install(app){
   app.post(P+'/login',async(req,res)=>{
     try{
       const name=String(req.body?.name||'').trim(),pw=String(req.body?.password||'');
-      const a=await account(name);
+      let a=await account(name);
+      if(!a){await syncApprovedEmployees(name);a=await account(name);}
       if(!a||!a.active||!(await bcrypt.compare(pw,a.password_hash)))return fail(res,401,'이름 또는 비밀번호를 확인해 주세요.');
       await pool.query("UPDATE namo_talk_standalone_accounts SET presence='online',last_seen_at=NOW(),updated_at=NOW() WHERE name=$1",[name]);
       ok(res,{token:makeToken(a),user:{name:a.name,department:a.department||'',presence:'online',statusMessage:a.status_message||'',isAdmin:!!a.is_admin},permissions:{admin:!!a.is_admin,manageEmployees:!!a.is_admin,manageStorage:!!a.is_admin,manageChannels:!!a.is_admin,postAllNotice:!!a.is_admin,pinNotices:!!a.is_admin}});
