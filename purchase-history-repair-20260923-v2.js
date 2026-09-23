@@ -4,7 +4,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 /*
- * NAMO QMES - legacy purchase history -> new purchase order repair (2026-09-15)
+ * NAMO QMES - legacy purchase history -> new purchase order repair V2 (2026-09-23)
  * Ensures all 18 rows from the old 구매조회 screen exist in purchase_orders.
  * The 2026 rows below are aligned to the latest 구매현황 report supplied by the user.
  * Safe to run on every server start:
@@ -49,7 +49,7 @@ async function repairPurchaseHistory(pool) {
     let affected = 0;
 
     for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_REPAIR) {
-      const note = `기존 ERP 거래내역 · 신규 구매 발주 이관 v4 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`;
+      const note = `기존 ERP 거래내역 · 신규 구매 발주 이관 v5 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`;
       const result = await client.query(
         `INSERT INTO purchase_orders (
            purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
@@ -146,14 +146,14 @@ async function repairPurchaseHistory(pool) {
 
     await client.query(
       `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
-       VALUES ('purchase', 'repair:purchase-history-v4', $1::jsonb, 'SYSTEM', NOW())
+       VALUES ('purchase', 'repair:purchase-history-v5', $1::jsonb, 'SYSTEM', NOW())
        ON CONFLICT (record_type, record_key)
        DO UPDATE SET payload = EXCLUDED.payload, updated_by = 'SYSTEM', updated_at = NOW()`,
-      [JSON.stringify({version:4,count:PURCHASE_HISTORY_REPAIR.length,affected})]
+      [JSON.stringify({version:5,count:PURCHASE_HISTORY_REPAIR.length,affected})]
     );
 
     await client.query('COMMIT');
-    console.log(`[purchase-history-repair] ensured ${PURCHASE_HISTORY_REPAIR.length} historical purchase orders (${affected} inserted/updated)`);
+    console.log(`[purchase-history-repair-v2] ensured ${PURCHASE_HISTORY_REPAIR.length} historical purchase orders (${affected} inserted/updated)`);
     return { count: PURCHASE_HISTORY_REPAIR.length, affected };
   } catch (error) {
     await client.query('ROLLBACK').catch(() => {});
@@ -173,7 +173,7 @@ function schedulePurchaseHistoryRepair(pool) {
     try {
       if (!(await tableExists(pool))) {
         if (attempts < 30) return setTimeout(run, 2000);
-        console.warn('[purchase-history-repair] purchase_orders table was not ready; repair skipped');
+        console.warn('[purchase-history-repair-v2] purchase_orders table was not ready; repair skipped');
         scheduled = false;
         return;
       }
@@ -181,18 +181,25 @@ function schedulePurchaseHistoryRepair(pool) {
       completed = true;
       scheduled = false;
     } catch (error) {
-      if (attempts < 30 && /does not exist|relation|qmes_sync_records/i.test(String(error?.message || ''))) {
-        return setTimeout(run, 2000);
+      const message = String(error?.message || '');
+      const code = String(error?.code || '');
+      const retryable = /does not exist|relation|qmes_sync_records|deadlock detected|could not serialize access/i.test(message)
+        || code === '40P01'
+        || code === '40001';
+      if (attempts < 30 && retryable) {
+        const delay = Math.min(10000, 1500 + attempts * 750);
+        console.warn('[purchase-history-repair-v2] retry', attempts, 'in', delay, 'ms:', message || code);
+        return setTimeout(run, delay);
       }
       scheduled = false;
-      console.error('[purchase-history-repair] failed', error);
+      console.error('[purchase-history-repair-v2] failed', error);
     }
   };
 
   setTimeout(run, 1200);
 }
 
-/* This module is preloaded by server.js and repairs purchase data after startup. */
+/* This module is preloaded by server.js and retries transient DB lock conflicts after startup. */
 if (process.env.DATABASE_URL) {
   const startupPool = new Pool({
     connectionString: process.env.DATABASE_URL,
