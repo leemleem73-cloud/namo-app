@@ -357,6 +357,11 @@ try {
 // The importer is idempotent and never overwrites an existing matching inspection.
 require('./iqc-history-seed-20260915.js');
 
+// Ensure the 18 approved legacy purchase rows are present in purchase_orders.
+// Missing rows are inserted; only SYSTEM-created legacy rows may be refreshed.
+// User-created purchase orders are never overwritten.
+require('./purchase-history-repair-20260915.js');
+
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
 require('./server-legacy-20260903.js');
