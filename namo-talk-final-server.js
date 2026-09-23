@@ -125,6 +125,32 @@ async function account(name){
     FROM namo_talk_standalone_accounts WHERE name=$1 LIMIT 1`,[name]);
   return r.rows[0]||null;
 }
+// QMES and NAMO Talk keep separate account tables. Import only unambiguous,
+// approved QMES employees who do not yet have a Talk account. ON CONFLICT
+// deliberately leaves existing Talk passwords, permissions and active flags alone.
+async function syncApprovedEmployees(name=null){
+  await schema();
+  await pool.query(`INSERT INTO namo_talk_standalone_accounts(name,department,password_hash)
+    SELECT u.name,u.department,u.password_hash FROM users u
+    JOIN (SELECT name FROM users WHERE name<>''
+      GROUP BY name HAVING COUNT(*)=1) unique_names ON unique_names.name=u.name
+    WHERE u.status='APPROVED' AND u.password_hash LIKE '$2%'
+      AND ($1::text IS NULL OR u.name=$1)
+    ON CONFLICT(name) DO NOTHING`,[name]);
+}
+async function recipientAccount(peer){
+  let target=await account(peer);
+  if(target)return target; // In particular, never reactivate an inactive account on send.
+  await syncApprovedEmployees(peer);
+  target=await account(peer);
+  if(target)return target;
+  // Older clients can send the display label "name · department" as peer.
+  const parts=peer.split(/\s*·\s*/);
+  if(parts.length!==2||!parts[0]||!parts[1])return null;
+  target=await account(parts[0]);
+  if(!target){await syncApprovedEmployees(parts[0]);target=await account(parts[0]);}
+  return target?.department===parts[1]?target:null;
+}
 async function requireUser(req,res){
   const tokenUser=verifyToken(req);
   if(!tokenUser){fail(res,401,'로그인이 필요합니다.');return null}
@@ -218,6 +244,7 @@ function install(app){
   app.get(P+'/users',async(req,res)=>{
     try{
       const me=await requireUser(req,res);if(!me)return;
+      await syncApprovedEmployees();
       await pool.query('UPDATE namo_talk_standalone_accounts SET last_seen_at=NOW() WHERE name=$1',[me.name]);
       const r=await pool.query(`SELECT name,department,active,is_admin AS "isAdmin",
         CASE WHEN active=FALSE THEN 'offline' WHEN presence='offline' OR last_seen_at IS NULL OR last_seen_at<NOW()-INTERVAL '90 seconds' THEN 'offline' ELSE presence END presence,
@@ -259,7 +286,7 @@ function install(app){
     catch(e){fail(res,500,'권한 정보를 확인하지 못했습니다.')}
   });
   app.get(P+'/admin/users',async(req,res)=>{
-    try{const me=await requireAdmin(req,res);if(!me)return;const r=await pool.query('SELECT name,department,active,is_admin AS "isAdmin",created_at AS "createdAt",updated_at AS "updatedAt" FROM namo_talk_standalone_accounts ORDER BY active DESC,department,name');ok(res,{users:r.rows})}
+    try{const me=await requireAdmin(req,res);if(!me)return;await syncApprovedEmployees();const r=await pool.query('SELECT name,department,active,is_admin AS "isAdmin",created_at AS "createdAt",updated_at AS "updatedAt" FROM namo_talk_standalone_accounts ORDER BY active DESC,department,name');ok(res,{users:r.rows})}
     catch(e){fail(res,500,'직원 관리 정보를 불러오지 못했습니다.')}
   });
   app.put(P+'/admin/users/:name/role',async(req,res)=>{
@@ -293,7 +320,9 @@ function install(app){
   app.get(P+'/messages',async(req,res)=>{
     try{
       const me=await requireUser(req,res);if(!me)return;
-      const peer=String(req.query.peer||'').trim(),rid=directRoom(me.name,peer);
+      const requestedPeer=String(req.query.peer||'').trim();
+      const target=await recipientAccount(requestedPeer);
+      const peer=target?.active?target.name:requestedPeer,rid=directRoom(me.name,peer);
       const r=await pool.query(`SELECT m.id,m.sender_name sender,m.receiver_name receiver,m.message_text text,m.created_at AS "createdAt",m.read_at AS "readAt",m.edited_at AS "editedAt",m.pinned,m.attachment_id AS "attachmentId",m.client_message_id AS "clientMessageId",a.file_name AS "fileName",a.mime_type AS "mimeType",a.file_size AS "fileSize" FROM namo_talk_standalone_messages m LEFT JOIN namo_talk_standalone_attachments a ON a.id=m.attachment_id WHERE m.room_id=$1 AND m.deleted_at IS NULL ORDER BY m.created_at ASC,m.id ASC LIMIT 1000`,[rid]);
       await pool.query('UPDATE namo_talk_standalone_messages SET read_at=COALESCE(read_at,NOW()) WHERE room_id=$1 AND receiver_name=$2 AND read_at IS NULL',[rid,me.name]);
       ok(res,{messages:r.rows,data:r.rows});
@@ -303,9 +332,10 @@ function install(app){
   app.post(P+'/messages',async(req,res)=>{
     try{
       const me=await requireUser(req,res);if(!me)return;
-      const peer=String(req.body?.peer||'').trim(),text=String(req.body?.text||'').trim(),clientId=String(req.body?.clientMessageId||'').trim()||null;
-      if(!peer||!text)return fail(res,400,'메시지를 입력해 주세요.');
-      const target=await account(peer);if(!target?.active)return fail(res,400,'현재 사용할 수 없는 직원입니다.');
+      const requestedPeer=String(req.body?.peer||'').trim(),text=String(req.body?.text||'').trim(),clientId=String(req.body?.clientMessageId||'').trim()||null;
+      if(!requestedPeer||!text)return fail(res,400,'메시지를 입력해 주세요.');
+      const target=await recipientAccount(requestedPeer);if(!target?.active)return fail(res,400,'현재 사용할 수 없는 직원입니다.');
+      const peer=target.name;
       const old=await existingMessage(me.name,clientId);if(old)return ok(res,{message:old,data:old,duplicate:true,delivered:true,serverTime:new Date().toISOString()});
       try{
         const r=await pool.query(`INSERT INTO namo_talk_standalone_messages(room_id,sender_name,receiver_name,message_text,client_message_id) VALUES($1,$2,$3,$4,$5) RETURNING id,sender_name sender,receiver_name receiver,message_text text,created_at AS "createdAt",client_message_id AS "clientMessageId"`,[directRoom(me.name,peer),me.name,peer,text,clientId]);
@@ -381,8 +411,9 @@ function install(app){
   app.post(P+'/attachments',upload.single('file'),async(req,res)=>{
     const file=req.file;if(!file)return fail(res,400,'첨부파일이 필요합니다.');
     try{
-      const me=await requireUser(req,res);if(!me)return;const peer=String(req.body?.peer||''),ch=String(req.body?.channel||''),clientId=String(req.body?.clientMessageId||'').trim()||null;
-      if(ch){if(!(await canAccessChannel(me,ch)))return fail(res,403,'이 업무채널에 파일을 보낼 수 없습니다.');if(ch==='all'&&!me.is_admin)return fail(res,403,'전체공지는 관리자만 작성할 수 있습니다.')}else{const target=await account(peer);if(!peer||!target?.active)return fail(res,400,'현재 사용할 수 없는 직원입니다.')}
+      const me=await requireUser(req,res);if(!me)return;const requestedPeer=String(req.body?.peer||'').trim(),ch=String(req.body?.channel||''),clientId=String(req.body?.clientMessageId||'').trim()||null;
+      let peer=requestedPeer;
+      if(ch){if(!(await canAccessChannel(me,ch)))return fail(res,403,'이 업무채널에 파일을 보낼 수 없습니다.');if(ch==='all'&&!me.is_admin)return fail(res,403,'전체공지는 관리자만 작성할 수 있습니다.')}else{const target=await recipientAccount(peer);if(!peer||!target?.active)return fail(res,400,'현재 사용할 수 없는 직원입니다.');peer=target.name}
       const old=await existingMessage(me.name,clientId);if(old)return ok(res,{message:old,duplicate:true,delivered:true});
       const rid=ch?'channel:'+ch:directRoom(me.name,peer),target=ch?'@'+ch:peer,c=await pool.connect();
       try{await c.query('BEGIN');const a=await c.query('INSERT INTO namo_talk_standalone_attachments(room_id,sender_name,receiver_name,file_name,mime_type,file_size,file_data) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id',[rid,me.name,target,file.originalname,file.mimetype||'application/octet-stream',file.size,file.buffer]);const m=await c.query(`INSERT INTO namo_talk_standalone_messages(room_id,sender_name,receiver_name,message_text,attachment_id,client_message_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,sender_name sender,receiver_name receiver,message_text text,created_at AS "createdAt",attachment_id AS "attachmentId",client_message_id AS "clientMessageId"`,[rid,me.name,target,'📎 '+file.originalname,a.rows[0].id,clientId]);await c.query('COMMIT');ok(res,{message:{...m.rows[0],fileName:file.originalname,mimeType:file.mimetype,fileSize:file.size},duplicate:false,delivered:true})}
