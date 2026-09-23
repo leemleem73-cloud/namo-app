@@ -1,12 +1,12 @@
-/* NAMO QMES - Purchase ledger owner V1 - 2026-09-23
+/* NAMO QMES - Purchase ledger owner V3 - 2026-09-23
  * ADD-ONLY / NO OVERWRITE.
  * Replaces only the visible Purchase Order route with the approved uploaded UI.
  * Existing purchase source files remain untouched.
  */
 (function(){
   "use strict";
-  if(window.__QMES_PURCHASE_LEDGER_OWNER_20260922_V1__) return;
-  window.__QMES_PURCHASE_LEDGER_OWNER_20260922_V1__=true;
+  if(window.__QMES_PURCHASE_LEDGER_OWNER_20260923_V3__) return;
+  window.__QMES_PURCHASE_LEDGER_OWNER_20260923_V3__=true;
   if(!window.React) return;
 
   var ReactRef=window.React;
@@ -123,18 +123,49 @@
     if(!response.ok||(result&&result.success===false)) throw new Error((result&&result.message)||("요청 실패 ("+response.status+")"));
     return result&&Object.prototype.hasOwnProperty.call(result,"data")?result.data:result;
   }
-  async function loadRows(){
-    state.rows=readLocal();
-    render();
+  function syncPurchaseRows(data){
+    var records=Array.isArray(data)?data:[];
+    var record=records.find(function(r){
+      var key=clean(r&&(r.record_key||r.recordKey||r.key));
+      return key==="erp:purchase";
+    });
+    var payload=record&&record.payload&&typeof record.payload==="object"?record.payload:null;
+    return payload&&Array.isArray(payload.rows)?payload.rows:[];
+  }
+  async function fetchPurchaseRows(){
+    var directError=null;
     try{
-      var data=await apiJson("/api/purchase-orders?_qmesFresh="+Date.now(),{headers:{"Accept":"application/json","Cache-Control":"no-cache, no-store"}});
-      var rows=Array.isArray(data)?data:(data&&Array.isArray(data.rows)?data.rows:[]);
-      if(Array.isArray(rows)){
+      var data=await apiJson("/api/purchase-orders?_qmesFresh="+Date.now(),{headers:{"Accept":"application/json","Cache-Control":"no-cache, no-store","Pragma":"no-cache"}});
+      var directRows=Array.isArray(data)?data:(data&&Array.isArray(data.rows)?data.rows:[]);
+      if(directRows.length) return directRows;
+    }catch(error){
+      directError=error;
+      console.warn("[QMES Purchase owner] direct DB read unavailable",error);
+    }
+    try{
+      var sync=await apiJson("/api/qmes-sync/inventory?_qmesFresh="+Date.now(),{headers:{"Accept":"application/json","Cache-Control":"no-cache, no-store","Pragma":"no-cache"}});
+      var syncRows=syncPurchaseRows(sync);
+      if(syncRows.length) return syncRows;
+    }catch(error){
+      console.warn("[QMES Purchase owner] sync fallback unavailable",error);
+    }
+    if(directError) throw directError;
+    return [];
+  }
+  async function loadRows(){
+    var localRows=readLocal();
+    if(localRows.length||!state.rows.length){
+      state.rows=localRows;
+      render();
+    }
+    try{
+      var rows=await fetchPurchaseRows();
+      if(rows.length){
         state.rows=rows;
         writeLocal(rows);
-        state.loaded=true;
-        render();
       }
+      state.loaded=true;
+      render();
     }catch(error){
       console.warn("[QMES Purchase owner] DB read unavailable",error);
       state.loaded=true;
@@ -572,11 +603,19 @@
     loadRows();
     loadUser();
     var refresh=function(){loadRows();};
+    var visibleRefresh=function(){if(!document.hidden)loadRows();};
+    var retry1=setTimeout(loadRows,700);
+    var retry2=setTimeout(loadRows,2200);
     window.addEventListener("qmes:purchase-db-refresh",refresh);
     window.addEventListener("qmes:shared-sync-complete",refresh);
+    window.addEventListener("focus",refresh);
+    document.addEventListener("visibilitychange",visibleRefresh);
     host.__qpoCleanup=function(){
+      clearTimeout(retry1);clearTimeout(retry2);
       window.removeEventListener("qmes:purchase-db-refresh",refresh);
       window.removeEventListener("qmes:shared-sync-complete",refresh);
+      window.removeEventListener("focus",refresh);
+      document.removeEventListener("visibilitychange",visibleRefresh);
     };
   }
 
