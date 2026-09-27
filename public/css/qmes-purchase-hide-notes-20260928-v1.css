@@ -1,0 +1,8 @@
+/* QMES Purchase ledger - hide remarks column - 2026-09-28
+ * ADD-ONLY / NO SOURCE OVERWRITE.
+ * Hides only the visible "비고" column in the purchase ledger table.
+ */
+.qmes-purchase-ledger-v1 .qpo-table thead th:nth-child(21),
+.qmes-purchase-ledger-v1 .qpo-table tbody td:nth-child(21){
+  display:none!important;
+}
