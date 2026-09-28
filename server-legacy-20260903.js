@@ -1763,7 +1763,7 @@ function normalizePurchaseInput(input, current = {}) {
     unit_price: unitPrice,
     amount: Math.max(0, num(value(['amount'], ['amount'], quantity * unitPrice)) ?? quantity * unitPrice),
     order_date: orderDate,
-    requested_due_date: requestedDueDate,
+    requested_due_date: requestedDueDate || null,
     confirmed_due_date: purchaseDate(value(
       ['confirmedDueDate', 'expected', 'expectedDate'],
       ['confirmed_due_date']
