@@ -1,12 +1,11 @@
-/* QMES Sales/Delivery integrated dashboard V2 - FINAL SCREEN - 2026-09-22
- * ADD-ONLY new React owner.
- * Existing Sales components remain preserved.
- * Final layout: title/actions -> filters -> KPI -> auto judgment -> integrated ledger.
+/* QMES Sales/Delivery integrated dashboard V12 - CLEAN SINGLE OWNER - 2026-09-29
+ * SINGLE OWNER. Legacy dashboard owner versions removed before this file is loaded.
+ * Final layout: title/actions -> KPI -> filters -> auto judgment -> integrated ledger.
  */
 (function(){
   "use strict";
-  if(window.__QMES_SALES_DELIVERY_DASHBOARD_20260922_V2__) return;
-  window.__QMES_SALES_DELIVERY_DASHBOARD_20260922_V2__=true;
+  if(window.__QMES_SALES_DELIVERY_DASHBOARD_20260929_V12__) return;
+  window.__QMES_SALES_DELIVERY_DASHBOARD_20260929_V12__=true;
 
   const ReactRef=window.React;
   if(!ReactRef) return;
@@ -35,6 +34,29 @@
   const meta=(r,m)=>m[key(r)]||m[clean(r&&r.id)]||(r&&r.orderMeta)||{};
   const shownId=(r,m)=>clean(meta(r,m).salesOrderIdOverride)||clean(r&&r.id);
   const orderDateFromId=id=>{let a=clean(id).match(/^SO-(20\d{2})(\d{2})(\d{2})-/i);if(a)return a[1]+"-"+a[2]+"-"+a[3];a=clean(id).match(/^SO-(\d{2})(\d{2})(\d{2})-/i);return a?"20"+a[1]+"-"+a[2]+"-"+a[3]:""};
+
+  function currentUser(){
+    if(window.__QMES_CURRENT_USER__&&typeof window.__QMES_CURRENT_USER__==="object") return window.__QMES_CURRENT_USER__;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem("qmes-current-user-v1")||"null");
+      if(saved&&typeof saved==="object") return saved;
+    }catch(_){}
+    return {};
+  }
+
+  function isDeleteAllowedUser(user){
+    const title=clean(user&&(
+      user.title||user.position||user.rank||user.jobTitle||user.job_title
+    ));
+    const role=clean(user&&user.role).toLowerCase();
+    // 부장 + 임원급만 허용. 시스템 관리자도 운영상 허용.
+    return /^(부장|이사|상무|전무|부사장|사장|대표|대표이사|회장|임원)$/.test(title) ||
+      role==="admin" || role==="administrator" || role==="관리자";
+  }
+
+  function canDeleteSales(){
+    return isDeleteAllowedUser(currentUser());
+  }
 
   function isDeleted(r,m){
     const id=clean(r&&r.id),wo=key(r),shown=shownId(r,m);
@@ -96,19 +118,39 @@
     },0);
   }
 
-  function productionState(r,m,shipmentDone){
-    if(shipmentDone) return {status:"생산완료",date:""};
-    const mm=meta(r,m),batch=batchFor(r,m),doc=docFor(r,m);
+  function processFor(r,m,processRows){
+    const mm=meta(r,m),wo=clean(mm.workOrder||r&&r.workOrder);
+    if(!wo||!Array.isArray(processRows)) return {};
+    const row=processRows.find(x=>clean(x&&x.record_key)===("process:"+wo));
+    let payload=row&&row.payload;
+    if(typeof payload==="string"){try{payload=JSON.parse(payload)}catch(_){payload={}}}
+    return payload&&typeof payload==="object"?payload:{};
+  }
+
+  function productionState(r,m,shipmentDone,processRows){
+    const mm=meta(r,m),batch=batchFor(r,m),doc=docFor(r,m),process=processFor(r,m,processRows);
     const plan=num(batch&&batch.plan),done=num(batch&&batch.done);
-    let status=clean(mm.productionPlanStatus||r&&r.productionStatus||r&&r.plan||doc&&doc.status||batch&&batch.status);
-    if(/완료/.test(status)||(plan!=null&&plan>0&&done!=null&&done>=plan)) status="생산완료";
+    let status=clean(mm.productionPlanStatus||r&&r.productionStatus||r&&r.plan||process&&process.status||doc&&doc.status||batch&&batch.status);
+
+    if(shipmentDone) status="생산완료";
+    else if(/완료/.test(status)||(plan!=null&&plan>0&&done!=null&&done>=plan)) status="생산완료";
     else if(done!=null&&done>0&&plan!=null&&plan>0) status="생산 "+Math.min(100,Math.round(done/plan*100))+"%";
     else if(/진행|생산중|실적/.test(status)) status="생산진행";
-    else if(!status||status==="-") status=(batch||doc)?"생산대기":"생산대기";
+    else if(!status||status==="-") status=(batch||doc||Object.keys(process||{}).length)?"생산대기":"생산대기";
 
+    // 작업일지 작성 후 process:<작업지시>의 workDate를 최우선으로 사용한다.
+    const workDate=iso(
+      process&&process.workDate ||
+      process&&process.productionDate ||
+      doc&&doc.workDate ||
+      doc&&doc.date ||
+      doc&&doc.productionDate ||
+      batch&&batch.workDate ||
+      batch&&batch.date
+    );
     const completed=iso(mm.productionCompletedDate||r&&r.productionCompletedDate||doc&&doc.completedAt);
     const planned=iso(mm.plannedProductionDate||mm.productionPlanDate||r&&r.plannedProductionDate||batch&&batch.due||r&&r.productionDate);
-    return {status,date:completed||planned||""};
+    return {status,date:workDate||completed||planned||""};
   }
 
   function dueInfo(confirmed,actualShipDate,shipmentDone){
@@ -148,7 +190,27 @@
     return "-";
   }
 
-  function buildRows(rows,inventory){
+  function shipmentSourceQtyUnit(r,m,baseQuantity){
+    const mm=meta(r,m);
+    const sourceQty=num(
+      mm.sourceQty!=null?mm.sourceQty:
+      r&&r.sourceQty!=null?r.sourceQty:
+      r&&r.orderMeta&&r.orderMeta.sourceQty!=null?r.orderMeta.sourceQty:
+      null
+    );
+    const sourceUnit=clean(
+      mm.sourceUnit ||
+      r&&r.sourceUnit ||
+      r&&r.orderMeta&&r.orderMeta.sourceUnit ||
+      r&&r.unit
+    );
+    return {
+      quantity:sourceQty!=null?sourceQty:baseQuantity,
+      unit:sourceUnit||"kg"
+    };
+  }
+
+  function buildRows(rows,inventory,processRows){
     const m=metaMap(),ships=shipRows();
     return (Array.isArray(rows)?rows:[]).filter(r=>r&&!isDeleted(r,m)).map(r=>{
       const mm=meta(r,m);
@@ -156,30 +218,45 @@
       const date=iso(mm.orderDate||r&&r.orderDate||r&&r.createdAt)||orderDateFromId(id);
       const customer=clean(mm.customerOverride||r&&r.customer)||"-";
       const product=clean(mm.productOverride||r&&r.product)||"-";
-      const quantity=num(mm.qtyOverride!=null?mm.qtyOverride:r&&r.qty)||0;
-      const requestedDue=iso(mm.requestedDue||r&&r.due);
-      const confirmedDue=iso(mm.confirmedDue||mm.fixedDue||r&&r.confirmedDue||r&&r.fixedDue)||requestedDue;
+      const baseQuantity=num(mm.qtyOverride!=null?mm.qtyOverride:r&&r.qty)||0;
+      const sourceQty=shipmentSourceQtyUnit(r,m,baseQuantity);
+      const quantity=sourceQty.quantity;
+      const unit=sourceQty.unit;
+      const quantityCalc=String(unit).toLowerCase()==="g"?quantity/1000:quantity;
+      // 사용자 기준: 요청납기/확정납기는 수주일자와 동일하게 자동 입력.
+      const requestedDue=date||iso(mm.requestedDue||r&&r.due);
+      const confirmedDue=requestedDue||date||iso(mm.confirmedDue||mm.fixedDue||r&&r.confirmedDue||r&&r.fixedDue);
       const ship=findShipment(r,m,ships);
       const shipStatusRaw=[r&&r.shipping,mm.shippingStatus,ship&&ship.shipping,ship&&ship.delivery,ship&&ship.status].map(clean).join(" ");
-      const actualShipDate=iso(mm.actualShipmentDate||r&&r.actualShipmentDate||ship&&ship.actualShipmentDate||ship&&ship.shipDate||ship&&ship.date);
-      const shipmentDone=Boolean(actualShipDate)||r&&r.actualShipment===true||mm.actualShipment===true||/출하완료|납품완료|배송완료|출고완료/.test(shipStatusRaw);
-      const prod=productionState(r,m,shipmentDone);
+      const explicitShipmentDone=r&&r.actualShipment===true||mm.actualShipment===true||/출하완료|납품완료|배송완료|출고완료/.test(shipStatusRaw);
+      // 출하 원본에 실제 출하일이 있으면 우선 사용하고, 완료 데이터의 빈 실제출하일은 수주/납기일자로 자동 보완.
+      const sourceShipDate=iso(mm.actualShipmentDate||r&&r.actualShipmentDate||ship&&ship.actualShipmentDate||ship&&ship.shipDate||ship&&ship.date);
+      const actualShipDate=sourceShipDate||(explicitShipmentDone?(confirmedDue||requestedDue||date):"");
+      const shipmentDone=Boolean(actualShipDate)||explicitShipmentDone;
+      const prod=productionState(r,m,shipmentDone,processRows);
       const inspection=inspectionFor(r,m,shipmentDone);
       const shippingStatus=shipmentDone?"출하완료":(clean(mm.shippingStatus||r&&r.shipping||ship&&ship.status||ship&&ship.delivery)||"출하대기").replace(/^[-]$/,"출하대기");
       const stock=currentStock(product,inventory,r,mm);
-      const shortage=stock==null?null:Math.max(0,quantity-stock);
+      const shortage=stock==null?null:Math.max(0,quantityCalc-stock);
+
+      // 재고 계산은 내부 표준단위 kg로 유지하고, 화면 표시는 수주 원본 단위와 동일하게 맞춘다.
+      // 예: 수주수량 1,480 g이면 부족수량도 1,480 g로 표시한다.
+      const isGram=String(unit).toLowerCase()==="g";
+      const stockDisplay=stock==null?null:(isGram?stock*1000:stock);
+      const shortageDisplay=shortage==null?null:(isGram?shortage*1000:shortage);
+
       const due=dueInfo(confirmedDue,actualShipDate,shipmentDone);
       const out={
-        row:r,id,date,customer,product,quantity,unit:clean(r&&r.unit)||"kg",
+        row:r,id,date,customer,product,quantity,unit,quantityCalc,
         requestedDue,confirmedDue,dday:due.dday,ddayTone:due.ddayTone,
-        stock,shortage,productionDate:prod.date,productionStatus:prod.status,
+        stock,shortage,stockDisplay,shortageDisplay,productionDate:prod.date,productionStatus:prod.status,
         inspectionStatus:inspection,actualShipDate,shippingStatus,
         delivery:due.delivery,deliveryTone:due.deliveryTone,
         difference:due.difference,differenceTone:due.differenceTone,
-        shipQty:num(ship&&(ship.qty!=null?ship.qty:ship.quantity))
+        shipQty:(()=>{const q=num(ship&&(ship.qty!=null?ship.qty:ship.quantity));return q==null&&shipmentDone?quantityCalc:q})()
       };
       out.reason=riskReason(out);
-      out.otif=shipmentDone&&actualShipDate&&confirmedDue&&dayDiff(actualShipDate,confirmedDue)<=0&&(out.shipQty==null||out.shipQty>=quantity);
+      out.otif=shipmentDone&&actualShipDate&&confirmedDue&&dayDiff(actualShipDate,confirmedDue)<=0&&(out.shipQty==null||out.shipQty>=quantityCalc);
       out.shipmentDone=shipmentDone;
       return out;
     }).sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.id).localeCompare(String(a.id),undefined,{numeric:true}));
@@ -207,6 +284,8 @@
   function SalesDeliveryDashboard(){
     const [rows,setRows]=useState(()=>localRows());
     const [inventory,setInventory]=useState([]);
+    const [processRows,setProcessRows]=useState([]);
+    const [deleteAllowed,setDeleteAllowed]=useState(()=>canDeleteSales());
     const yearEnd=String(new Date().getFullYear())+"-12-31";
     const [from,setFrom]=useState("2025-01-01");
     const [to,setTo]=useState(yearEnd);
@@ -238,25 +317,53 @@
         if(response.ok&&payload&&payload.success&&Array.isArray(payload.data)) setInventory(payload.data);
         else if(response.ok&&Array.isArray(payload)) setInventory(payload);
       }catch(_){}
+      if(typeof window.qmesSyncList==="function"){
+        try{
+          const workorderRecords=await window.qmesSyncList("workorder");
+          if(Array.isArray(workorderRecords)) setProcessRows(workorderRecords);
+        }catch(_){}
+      }
     };
 
     useEffect(()=>{
       refresh();
+
+      // Resolve the signed-in user's current title/role from the server.
+      // This ensures a 부장/임원 sees the 삭제 button even when sessionStorage is stale.
+      fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"})
+        .then(r=>r.ok?r.json():null)
+        .then(payload=>{
+          const user=payload&&payload.user?payload.user:payload;
+          if(user&&typeof user==="object"){
+            try{
+              window.__QMES_CURRENT_USER__={...(window.__QMES_CURRENT_USER__||{}),...user};
+              sessionStorage.setItem("qmes-current-user-v1",JSON.stringify(window.__QMES_CURRENT_USER__));
+            }catch(_){}
+            setDeleteAllowed(isDeleteAllowedUser(user));
+          }
+        })
+        .catch(()=>setDeleteAllowed(canDeleteSales()));
       const onData=()=>refresh();
       const onStorage=e=>{if([SALES,META,SHIPPING,DELETED].includes(e.key))refresh()};
       window.addEventListener("qmes:erp-data-changed",onData);
       window.addEventListener("qmes:data-updated",onData);
       window.addEventListener("qmes:shared-sync-complete",onData);
+      window.addEventListener("qmes:production-process-updated",onData);
+      window.addEventListener("qmes:workorder-saved",onData);
+      window.addEventListener("qmes:workorder-synced",onData);
       window.addEventListener("storage",onStorage);
       return()=>{
         window.removeEventListener("qmes:erp-data-changed",onData);
         window.removeEventListener("qmes:data-updated",onData);
         window.removeEventListener("qmes:shared-sync-complete",onData);
+        window.removeEventListener("qmes:production-process-updated",onData);
+        window.removeEventListener("qmes:workorder-saved",onData);
+        window.removeEventListener("qmes:workorder-synced",onData);
         window.removeEventListener("storage",onStorage);
       };
     },[]);
 
-    const all=useMemo(()=>buildRows(rows,inventory),[rows,inventory]);
+    const all=useMemo(()=>buildRows(rows,inventory,processRows),[rows,inventory,processRows]);
     const progressOf=x=>{
       if(/출하완료/.test(x.shippingStatus)) return "출하완료";
       if(/출하/.test(x.shippingStatus)&&!/대기|미계획/.test(x.shippingStatus)) return "출하진행";
@@ -301,7 +408,110 @@
       else if(window.qmesSalesOrderDetail&&typeof window.qmesSalesOrderDetail.open==="function") window.qmesSalesOrderDetail.open(id);
     };
     const openEdit=x=>window.qmesSalesEditDirectV18?.open?.(x.row);
+
+    const deleteOrder=async x=>{
+      if(!x||!x.row) return;
+      if(!(deleteAllowed||canDeleteSales())){
+        window.alert("삭제 권한이 없습니다. 부장 및 임원만 삭제할 수 있습니다.");
+        return;
+      }
+      const shown=clean(x.id);
+      if(!window.confirm("수주 "+shown+" 을(를) 삭제하시겠습니까?")) return;
+
+      const rawId=clean(x.row&&x.row.id);
+      const workOrder=clean(x.row&&x.row.workOrder);
+      const currentMeta=metaMap();
+      const rowShown=r=>clean(
+        (r&&r.orderMeta&&r.orderMeta.salesOrderIdOverride) ||
+        currentMeta[clean(r&&r.workOrder||r&&r.id)]?.salesOrderIdOverride ||
+        currentMeta[clean(r&&r.id)]?.salesOrderIdOverride ||
+        r&&r.id
+      );
+      const shouldDelete=r=>{
+        const rid=clean(r&&r.id);
+        const rwo=clean(r&&r.workOrder);
+        const sid=rowShown(r);
+        return (rawId&&rid===rawId)||(shown&&sid===shown)||(workOrder&&rwo===workOrder);
+      };
+
+      // 1) local sales rows
+      const local=localRows();
+      const nextLocal=local.filter(r=>!shouldDelete(r));
+      try{localStorage.setItem(SALES,JSON.stringify(nextLocal));}catch(_){}
+
+      // 2) deletion marker for legacy/restore guards
+      try{
+        const deleted=delRows();
+        if(!deleted.some(d=>clean(d&&d.id)===shown||clean(d&&d.id)===rawId)){
+          deleted.push({
+            id:shown||rawId,
+            workOrder:workOrder||"",
+            deletedAt:new Date().toISOString(),
+            reason:"user-delete-sales-ledger"
+          });
+          localStorage.setItem(DELETED,JSON.stringify(deleted));
+        }
+      }catch(_){}
+
+      // 3) local metadata
+      try{
+        const mm=metaMap();
+        [shown,rawId,workOrder].filter(Boolean).forEach(k=>{delete mm[k]});
+        localStorage.setItem(META,JSON.stringify(mm));
+      }catch(_){}
+
+      // 4) shared sales record, so deletion persists across PCs
+      if(typeof window.qmesSyncList==="function"&&typeof window.qmesSyncUpsert==="function"){
+        try{
+          const records=await window.qmesSyncList("inventory");
+          const found=(Array.isArray(records)?records:[]).find(r=>clean(r&&r.record_key)==="erp:sales");
+          let payload=found&&found.payload;
+          if(typeof payload==="string"){try{payload=JSON.parse(payload)}catch(_){payload=null}}
+          if(payload&&Array.isArray(payload.rows)){
+            const filtered=payload.rows.filter(r=>!shouldDelete(r));
+            await window.qmesSyncUpsert("inventory","erp:sales",{
+              ...payload,
+              module:payload.module||"erp",
+              kind:payload.kind||"sales",
+              rows:filtered,
+              savedAt:new Date().toISOString(),
+              source:"SALES_DELETE_ACTION_20260922"
+            });
+          }
+        }catch(error){
+          console.warn("[QMES] sales delete shared sync failed",error);
+        }
+      }
+
+      setRows(nextLocal);
+      window.dispatchEvent(new CustomEvent("qmes:erp-data-changed",{
+        detail:{module:"sales",reason:"user-delete-sales-ledger",id:shown||rawId}
+      }));
+      window.dispatchEvent(new CustomEvent("qmes:data-updated",{
+        detail:{module:"sales",reason:"user-delete-sales-ledger",id:shown||rawId}
+      }));
+    };
+
     const openNew=()=>window.qmesSalesNewOrderIntegratedV11?.open?.();
+    const openUpload=()=>{
+      if(window.qmesSalesOrderUpload&&typeof window.qmesSalesOrderUpload.open==="function"){
+        window.qmesSalesOrderUpload.open();
+        return;
+      }
+      const input=document.createElement("input");
+      input.type="file";
+      input.accept=".xlsx,.xls,.csv";
+      input.style.display="none";
+      input.addEventListener("change",()=>{
+        const file=input.files&&input.files[0];
+        if(file){
+          window.dispatchEvent(new CustomEvent("qmes:sales-upload-file-selected",{detail:{file}}));
+        }
+        input.remove();
+      },{once:true});
+      document.body.appendChild(input);
+      input.click();
+    };
 
     const applyFilters=()=>{
       setApplied({from,to,customer:customerFilter,product:productFilter,progress:progressFilter,due:dueFilter,q});
@@ -323,14 +533,16 @@
       h("td",null,h("button",{className:"qrl-link",type:"button",onClick:()=>openDetail(x.id)},x.date||"-")),
       h("td",null,h("button",{className:"qrl-link",type:"button",onClick:()=>openDetail(x.id)},x.id||"-")),
       h("td",{title:x.customer},x.customer),
-      h("td",{className:"left",title:x.product},x.product),
+      h("td",{className:"left",title:(String(x.unit).toLowerCase()==="g"&&!/\[g\]\s*$/i.test(x.product)?x.product+" [g]":x.product)},
+        String(x.unit).toLowerCase()==="g"&&!/\[g\]\s*$/i.test(x.product)?x.product+" [g]":x.product
+      ),
       h("td",{className:"num"},fmt(x.quantity)),
       h("td",null,x.unit),
       h("td",null,x.requestedDue||"-"),
       h("td",null,x.confirmedDue||"-"),
       h("td",{className:"qsd-dday "+x.ddayTone},x.dday),
-      h("td",{className:"num"},fmt(x.stock)),
-      h("td",{className:x.shortage!=null&&x.shortage>0?"num qsd-shortage":"num"},fmt(x.shortage)),
+      h("td",{className:"num"},fmt(x.stockDisplay)),
+      h("td",{className:x.shortage!=null&&x.shortage>0?"num qsd-shortage":"num"},fmt(x.shortageDisplay)),
       h("td",null,x.productionDate||"-"),
       h("td",null,h(Badge,{text:x.productionStatus})),
       h("td",null,h(Badge,{text:x.inspectionStatus})),
@@ -341,7 +553,14 @@
       h("td",{className:"left",title:x.reason},x.reason),
       h("td",null,h("span",{className:"qrl-actions"},
         h("button",{type:"button",onClick:()=>openDetail(x.id)},"상세"),
-        h("button",{type:"button",onClick:()=>openEdit(x)},"수정")
+        h("button",{type:"button",onClick:()=>openEdit(x)},"수정"),
+        h("button",{
+          type:"button",
+          className:"qrl-delete-btn",
+          disabled:!(deleteAllowed||canDeleteSales()),
+          title:(deleteAllowed||canDeleteSales())?"삭제":"삭제 권한: 부장 및 임원",
+          onClick:()=>deleteOrder(x)
+        },"삭제")
       ))
     )):[h("tr",{key:"empty"},h("td",{colSpan:21,className:"qsd-empty"},"등록된 수주 데이터가 없습니다."))];
 
@@ -351,10 +570,19 @@
           h("h1",{className:"qslv4-title"},"수주·납기 관리대장")
         ),
         h("div",{className:"qslv4-head-actions"},
-          h("span",{className:"qslv4-sync"},"공용 DB 연동"),
+          h("button",{id:"qmes-sales-upload-button-20260922",type:"button",className:"qslv4-upload-btn",onClick:openUpload},"수주업로드"),
           h("button",{id:"qmes-sales-progress-button-20260826",type:"button",onClick:()=>data[0]&&openDetail(data[0].id)},"수주 진행현황"),
           h("button",{type:"button",className:"qslv4-new-btn",onClick:openNew},"+ 신규 수주")
         )
+      ),
+
+      h("div",{className:"qsd-kpis"},
+        h(Kpi,{label:"전체 수주",value:String(data.length),sub:"조회기간 기준"}),
+        h(Kpi,{label:"정상 납기",value:String(normal),sub:"요청납기 내 가능",tone:"good"}),
+        h(Kpi,{label:"주의",value:String(caution),sub:"D-3 / 생산·검사 미완료",tone:"warn"}),
+        h(Kpi,{label:"지연 위험",value:String(risk),sub:"확정납기 > 요청납기",tone:"bad"}),
+        h(Kpi,{label:"납기 미확정",value:String(unconfirmed),sub:"확정납기 산출 필요",tone:"dark"}),
+        h(Kpi,{label:"OTIF (On Time In Full)",value:otif,sub:"정시·정량 출하율",tone:"good"})
       ),
 
       h("div",{className:"qrl-filter"},
@@ -375,15 +603,6 @@
           h("button",{type:"button",className:"primary",onClick:applyFilters},"조회"),
           h("button",{type:"button",onClick:resetFilters},"초기화")
         )
-      ),
-
-      h("div",{className:"qsd-kpis"},
-        h(Kpi,{label:"전체 수주",value:String(data.length),sub:"조회기간 기준"}),
-        h(Kpi,{label:"정상 납기",value:String(normal),sub:"요청납기 내 가능",tone:"good"}),
-        h(Kpi,{label:"주의",value:String(caution),sub:"D-3 / 생산·검사 미완료",tone:"warn"}),
-        h(Kpi,{label:"지연 위험",value:String(risk),sub:"확정납기 > 요청납기",tone:"bad"}),
-        h(Kpi,{label:"납기 미확정",value:String(unconfirmed),sub:"확정납기 산출 필요",tone:"dark"}),
-        h(Kpi,{label:"OTIF (On Time In Full)",value:otif,sub:"정시·정량 출하율",tone:"good"})
       ),
 
       h("div",{className:"qsd-legend"},
