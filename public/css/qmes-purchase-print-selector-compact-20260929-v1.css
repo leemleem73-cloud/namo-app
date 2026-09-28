@@ -1,0 +1,67 @@
+/* QMES Purchase print selector compact patch - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * Applies only to "발주서 출력 선택" modal (identified by qpo-print-table).
+ */
+.qpo-modal.wide:has(.qpo-print-table){
+  width:min(780px,78vw)!important;
+  max-width:780px!important;
+  max-height:78vh!important;
+  border-radius:8px!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-modal-head{
+  padding:10px 12px!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-modal-head h3{
+  font-size:14px!important;
+  line-height:1.2!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-modal-body{
+  padding:10px 12px 12px!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-notice{
+  min-height:28px!important;
+  margin-bottom:6px!important;
+  padding:5px 8px!important;
+  font-size:9px!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table{
+  width:100%!important;
+  table-layout:fixed!important;
+  font-size:9px!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th,
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td{
+  padding:5px 4px!important;
+  height:31px!important;
+  line-height:1.2!important;
+  vertical-align:middle!important;
+}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(1),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(1){width:84px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(2),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(2){width:72px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(3),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(3){width:112px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(4),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(4){width:auto!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(5),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(5){width:72px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(6),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(6){width:92px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(7),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(7){width:82px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table th:nth-child(8),
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table td:nth-child(8){width:68px!important}
+.qpo-modal.wide:has(.qpo-print-table) .qpo-print-table .qpo-action{
+  height:25px!important;
+  min-height:25px!important;
+  padding:0 7px!important;
+  border-radius:5px!important;
+  font-size:8.5px!important;
+}
+@media(max-width:900px){
+  .qpo-modal.wide:has(.qpo-print-table){
+    width:min(720px,94vw)!important;
+    max-width:94vw!important;
+  }
+}
