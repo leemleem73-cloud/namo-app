@@ -1,0 +1,125 @@
+/* Purchase ledger -> Sales/Delivery parity fix V1 - 2026-09-28
+ * ADD-ONLY / NO OVERWRITE.
+ * Visual only: typography, table fit, footer/pagination, flicker suppression.
+ */
+.qmes-purchase-ledger-v1{
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.qmes-purchase-ledger-v1,
+.qmes-purchase-ledger-v1 *,
+.qmes-purchase-ledger-v1 table,
+.qmes-purchase-ledger-v1 .qpo-table-scroll{
+  animation:none!important;
+  transition:none!important;
+}
+
+/* Match Sales/Delivery typography */
+.qmes-purchase-ledger-v1 .qpo-title-row h1{font-size:16px!important;line-height:1.2!important}
+.qmes-purchase-ledger-v1 .qpo-title-actions .qpo-action{font-size:9px!important}
+.qmes-purchase-ledger-v1 .qpo-kpi span{font-size:9px!important}
+.qmes-purchase-ledger-v1 .qpo-kpi b{font-size:20px!important}
+.qmes-purchase-ledger-v1 .qpo-kpi small{font-size:8.8px!important}
+.qmes-purchase-ledger-v1 .qpo-field label{font-size:9.5px!important;line-height:1.2!important}
+.qmes-purchase-ledger-v1 .qpo-filter .qpo-control{font-size:9px!important;font-weight:700!important}
+.qmes-purchase-ledger-v1 .qpo-search{font-size:9px!important}
+.qmes-purchase-ledger-v1 .qpo-notice{font-size:8.7px!important}
+
+/* Bottom table: fit the visible workspace like Sales/Delivery, no bottom horizontal bar */
+.qmes-purchase-ledger-v1 .qpo-table-box{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+  margin:0!important;
+  font-size:8px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table thead th,
+.qmes-purchase-ledger-v1 .qpo-table tbody td{
+  min-width:0!important;
+  max-width:none!important;
+  padding-left:3px!important;
+  padding-right:3px!important;
+  font-size:8px!important;
+  line-height:1.15!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table tbody td.left,
+.qmes-purchase-ledger-v1 .qpo-table tbody td.money{
+  text-align:center!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table thead th:last-child,
+.qmes-purchase-ledger-v1 .qpo-table tbody td:last-child{
+  position:static!important;
+  right:auto!important;
+  z-index:auto!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+/* 22-column proportional fit, modeled on current Sales/Delivery screen */
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(1),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(1){width:2.3%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(2),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(2){width:5.1%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(3),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(3){width:6.2%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(4),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(4){width:7.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(5),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(5){width:10.5%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(6),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(6){width:4.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(7),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(7){width:2.7%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(8),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(8){width:4.1%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(9),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(9){width:5.2%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(10),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(10){width:4.9%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(11),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(11){width:4.9%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(12),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(12){width:4.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(13),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(13){width:4.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(14),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(14){width:4.8%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(15),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(15){width:4.4%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(16),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(16){width:3.4%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(17),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(17){width:3.8%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(18),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(18){width:4.3%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(19),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(19){width:4.2%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(20),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(20){width:4.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(21),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(21){width:5.0%!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(22),.qmes-purchase-ledger-v1 .qpo-table td:nth-child(22){width:6.2%!important}
+
+.qmes-purchase-ledger-v1 .qpo-status{font-size:8px!important;min-width:36px!important;padding:3px 5px!important}
+.qmes-purchase-ledger-v1 .qpo-link,
+.qmes-purchase-ledger-v1 .qpo-link-btn{font-size:8px!important}
+.qmes-purchase-ledger-v1 .qpo-manage{gap:3px!important}
+.qmes-purchase-ledger-v1 .qpo-mini{
+  min-width:29px!important;
+  height:22px!important;
+  padding:0 4px!important;
+  font-size:8px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-pagination{
+  min-height:44px!important;
+  padding:6px 10px!important;
+  gap:4px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.qmes-purchase-ledger-v1 .qpo-page{
+  min-width:29px!important;
+  width:auto!important;
+  height:29px!important;
+  padding:0 7px!important;
+  font-size:9px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-footer-note{font-size:8px!important}
