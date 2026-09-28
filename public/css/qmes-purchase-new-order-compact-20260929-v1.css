@@ -1,0 +1,72 @@
+/* QMES Purchase new-order portal compact V1 - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * Applies only to the body-level 신규 발주 등록 portal.
+ */
+#qmes-purchase-new-order-portal-20260923-v3.qpo-modal-bg{
+  padding:14px!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal{
+  width:min(700px,86vw)!important;
+  max-width:700px!important;
+  max-height:76vh!important;
+  border-radius:8px!important;
+  overflow:auto!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-head{
+  padding:10px 12px!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-head h3{
+  margin:0!important;
+  font-size:14px!important;
+  line-height:1.2!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-body{
+  padding:10px 12px 12px!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px 8px!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field label{
+  margin-bottom:3px!important;
+  font-size:9px!important;
+  line-height:1.15!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field input,
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field select{
+  height:32px!important;
+  min-height:32px!important;
+  padding:0 8px!important;
+  font-size:9.5px!important;
+  line-height:32px!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field textarea{
+  min-height:54px!important;
+  max-height:70px!important;
+  padding:7px 8px!important;
+  font-size:9.5px!important;
+  resize:vertical!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-actions{
+  margin-top:10px!important;
+  gap:6px!important;
+}
+#qmes-purchase-new-order-portal-20260923-v3 .qpo-modal-actions .qpo-action{
+  height:30px!important;
+  min-height:30px!important;
+  padding:0 12px!important;
+  font-size:9px!important;
+  border-radius:5px!important;
+}
+@media(max-width:780px){
+  #qmes-purchase-new-order-portal-20260923-v3 .qpo-modal{
+    width:94vw!important;
+    max-width:94vw!important;
+    max-height:86vh!important;
+  }
+  #qmes-purchase-new-order-portal-20260923-v3 .qpo-form-grid{
+    grid-template-columns:1fr!important;
+  }
+}
