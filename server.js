@@ -361,6 +361,7 @@ require('./iqc-history-seed-20260923-v2.js');
 // Missing rows are inserted; only SYSTEM-created legacy rows may be refreshed.
 // User-created purchase orders are never overwritten.
 require('./purchase-history-repair-20260923-v2.js');
+require('./purchase-order-date-align-20260928-v1.js');
 
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
