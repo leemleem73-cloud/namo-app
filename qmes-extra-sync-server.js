@@ -112,7 +112,33 @@ function install(app) {
          ORDER BY updated_at DESC`,
         []
       );
-      return res.json({ success:true, message:'OK', data:result.rows });
+      const user=req.session.user||{};
+      const role=String(user.role||'').trim().toLowerCase();
+      const department=String(user.department||'').trim();
+      const title=String(user.title||user.position||user.rank||'').trim();
+      const canViewInputQty =
+        role==='admin'||role==='administrator'||role==='관리자'||
+        department==='생산부'||
+        /^(이사|상무|전무|부사장|사장|대표|대표이사|회장|임원)$/.test(title);
+
+      const safeRows = canViewInputQty ? result.rows : result.rows.map((row) => {
+        let payload=row.payload;
+        if(!payload||typeof payload!=='object') return row;
+        payload=JSON.parse(JSON.stringify(payload));
+        if(payload.doc&&Array.isArray(payload.doc.inputs)){
+          payload.doc.inputs=payload.doc.inputs.map((input) => {
+            const next={...input};
+            delete next.plan;
+            delete next.std;
+            delete next.act;
+            delete next.actual;
+            delete next.error;
+            return next;
+          });
+        }
+        return {...row,payload};
+      });
+      return res.json({ success:true, message:'OK', data:safeRows });
     } catch (error) {
       console.error('qmes workorder sync GET failed:', error);
       return res.status(500).json({ success:false, message:'작업지시 공용 DB 조회에 실패했습니다.', data:null });
