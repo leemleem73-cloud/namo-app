@@ -400,3 +400,29 @@
 @media(max-width:1450px){
   .qmes-purchase-ledger-v1 .qpo-kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+
+
+/* 2026-09-28 bottom horizontal scroll = Sales/Delivery behavior */
+.qmes-purchase-ledger-v1 .qpo-table-scroll{
+  overflow-x:scroll!important;
+  overflow-y:hidden!important;
+  scrollbar-gutter:stable both-edges!important;
+  padding-bottom:2px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table{
+  width:1951px!important;
+  min-width:1951px!important;
+  max-width:none!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar{
+  height:12px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar-track{
+  background:#eef3f7!important;
+  border-radius:6px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar-thumb{
+  background:#6d7f8d!important;
+  border-radius:6px!important;
+  border:2px solid #eef3f7!important;
+}
