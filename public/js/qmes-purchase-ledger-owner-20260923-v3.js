@@ -133,22 +133,47 @@
     return payload&&Array.isArray(payload.rows)?payload.rows:[];
   }
   async function fetchPurchaseRows(){
+    var directRows=[];
+    var syncRows=[];
     var directError=null;
     try{
       var data=await apiJson("/api/purchase-orders?_qmesFresh="+Date.now(),{headers:{"Accept":"application/json","Cache-Control":"no-cache, no-store","Pragma":"no-cache"}});
-      var directRows=Array.isArray(data)?data:(data&&Array.isArray(data.rows)?data.rows:[]);
-      if(directRows.length) return directRows;
+      directRows=Array.isArray(data)?data:(data&&Array.isArray(data.rows)?data.rows:[]);
     }catch(error){
       directError=error;
       console.warn("[QMES Purchase owner] direct DB read unavailable",error);
     }
     try{
       var sync=await apiJson("/api/qmes-sync/inventory?_qmesFresh="+Date.now(),{headers:{"Accept":"application/json","Cache-Control":"no-cache, no-store","Pragma":"no-cache"}});
-      var syncRows=syncPurchaseRows(sync);
-      if(syncRows.length) return syncRows;
+      syncRows=syncPurchaseRows(sync);
     }catch(error){
       console.warn("[QMES Purchase owner] sync fallback unavailable",error);
     }
+
+    /* Restore complete purchase history: merge direct DB + shared snapshot.
+       Direct DB wins on duplicates, shared snapshot restores missing historical rows. */
+    var merged=new Map();
+    syncRows.forEach(function(r){
+      var key=rowNo(r);
+      if(key) merged.set(key,r);
+    });
+    directRows.forEach(function(r){
+      var key=rowNo(r);
+      if(key) merged.set(key,r);
+    });
+    var rows=Array.from(merged.values());
+
+    /* Guard against accidental truncation: keep the fuller local snapshot too. */
+    var localRows=readLocal();
+    localRows.forEach(function(r){
+      var key=rowNo(r);
+      if(key&&!merged.has(key)){
+        merged.set(key,r);
+        rows.push(r);
+      }
+    });
+
+    if(rows.length) return rows;
     if(directError) throw directError;
     return [];
   }
