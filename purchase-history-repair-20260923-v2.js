@@ -49,7 +49,7 @@ async function repairPurchaseHistory(pool) {
     let affected = 0;
 
     for (const [purchaseNo, orderDate, supplier, item, qty, unitPrice, amount, warehouse, originalNo] of PURCHASE_HISTORY_REPAIR) {
-      const note = `기존 ERP 거래내역 · 신규 구매 발주 이관 v5 · 원본번호 ${originalNo}${amount > 0 ? '' : ' · 금액 미입력'}`;
+      const note = '';
       const result = await client.query(
         `INSERT INTO purchase_orders (
            purchase_no, purchase_type, production_type, supplier, item, qty, unit, unit_price, amount,
@@ -85,7 +85,7 @@ async function repairPurchaseHistory(pool) {
            updated_by = 'SYSTEM',
            updated_at = NOW()
          WHERE purchase_orders.created_by = 'SYSTEM'
-           AND (purchase_orders.notes LIKE '기존 ERP 거래내역%' OR purchase_orders.notes LIKE '%신규 구매 발주 이관%')
+           AND purchase_orders.purchase_type = 'ERP 이관'
          RETURNING purchase_no`,
         [purchaseNo, supplier, item, qty, unitPrice, amount, orderDate, warehouse, note]
       );
@@ -146,10 +146,10 @@ async function repairPurchaseHistory(pool) {
 
     await client.query(
       `INSERT INTO qmes_sync_records (record_type, record_key, payload, updated_by, updated_at)
-       VALUES ('purchase', 'repair:purchase-history-v5', $1::jsonb, 'SYSTEM', NOW())
+       VALUES ('purchase', 'repair:purchase-history-v6', $1::jsonb, 'SYSTEM', NOW())
        ON CONFLICT (record_type, record_key)
        DO UPDATE SET payload = EXCLUDED.payload, updated_by = 'SYSTEM', updated_at = NOW()`,
-      [JSON.stringify({version:5,count:PURCHASE_HISTORY_REPAIR.length,affected})]
+      [JSON.stringify({version:6,count:PURCHASE_HISTORY_REPAIR.length,affected})]
     );
 
     await client.query('COMMIT');
