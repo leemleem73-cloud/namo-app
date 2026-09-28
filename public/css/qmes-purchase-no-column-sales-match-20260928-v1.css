@@ -1,0 +1,13 @@
+/* Purchase No. column = Sales/Delivery width - 2026-09-28
+ * ADD-ONLY / NO OVERWRITE.
+ * Only adjusts the first table column. No data/function/layout changes elsewhere.
+ */
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(1),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(1){
+  width:2.2%!important;
+  min-width:2.2%!important;
+  max-width:2.2%!important;
+  text-align:center!important;
+  padding-left:2px!important;
+  padding-right:2px!important;
+}
