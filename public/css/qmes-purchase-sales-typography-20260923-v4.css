@@ -2,8 +2,8 @@
  * TYPOGRAPHY ONLY.
  * Current Sales/Delivery actual values:
  * title 19 / top buttons 10 / KPI 9-20-8 /
- * filter labels 10.5 / inputs 12 / search 11 /
- * legend 8.5 / table 8 / badges-actions 8.
+ * filter labels 8.7 / inputs 9.5 / search 9 /
+ * legend 8.5 / table header 8.8 / body 8.6 / badges-actions 8.
  */
 .qmes-purchase-ledger-v1,
 #qmes-purchase-new-order-portal-20260923-v3{
@@ -41,35 +41,35 @@
 
 /* Filter = current Sales/Delivery final actual values */
 .qmes-purchase-ledger-v1 .qpo-field label{
-  font-size:10.5px!important;
-  line-height:13px!important;
+  font-size:8.7px!important;
+  line-height:11px!important;
   font-weight:850!important;
 }
 .qmes-purchase-ledger-v1 .qpo-filter input.qpo-control,
 .qmes-purchase-ledger-v1 .qpo-filter select.qpo-control,
 .qmes-purchase-ledger-v1 .qpo-filter .qpo-control{
-  font-size:12px!important;
+  font-size:9.5px!important;
   line-height:1!important;
   font-weight:700!important;
 }
 .qmes-purchase-ledger-v1 .qpo-filter select.qpo-control option{
   font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
-  font-size:12px!important;
+  font-size:9.5px!important;
   font-weight:700!important;
 }
 .qmes-purchase-ledger-v1 .qpo-filter input.qpo-control::placeholder{
   font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
-  font-size:12px!important;
+  font-size:9.5px!important;
   font-weight:700!important;
   opacity:1!important;
 }
 .qmes-purchase-ledger-v1 .qpo-period>span{
-  font-size:11px!important;
+  font-size:9px!important;
   line-height:1!important;
   font-weight:700!important;
 }
 .qmes-purchase-ledger-v1 .qpo-search{
-  font-size:11px!important;
+  font-size:9px!important;
   line-height:1!important;
   font-weight:850!important;
 }
@@ -84,14 +84,17 @@
 .qmes-purchase-ledger-v1 .qpo-table{
   font-size:8px!important;
 }
-.qmes-purchase-ledger-v1 .qpo-table thead th,
+.qmes-purchase-ledger-v1 .qpo-table thead th{
+  font-size:8.8px!important;
+  line-height:1.15!important;
+}
 .qmes-purchase-ledger-v1 .qpo-table tbody td{
-  font-size:8px!important;
+  font-size:8.6px!important;
   line-height:1.2!important;
 }
 .qmes-purchase-ledger-v1 .qpo-link,
 .qmes-purchase-ledger-v1 .qpo-link-btn{
-  font-size:8px!important;
+  font-size:8.6px!important;
   line-height:1.2!important;
 }
 .qmes-purchase-ledger-v1 .qpo-status{
@@ -125,12 +128,12 @@
 .qmes-purchase-ledger-v1 .qpo-flow-card span,
 .qmes-purchase-ledger-v1 .qpo-form-field label,
 #qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field label{
-  font-size:10.5px!important;
-  line-height:13px!important;
+  font-size:8.7px!important;
+  line-height:11px!important;
 }
 .qmes-purchase-ledger-v1 .qpo-sum b,
 .qmes-purchase-ledger-v1 .qpo-flow-card b{
-  font-size:12px!important;
+  font-size:9.5px!important;
   line-height:1.2!important;
 }
 .qmes-purchase-ledger-v1 .qpo-info,
@@ -148,7 +151,7 @@
 #qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field input,
 #qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field select,
 #qmes-purchase-new-order-portal-20260923-v3 .qpo-form-field textarea{
-  font-size:12px!important;
+  font-size:9.5px!important;
   line-height:1.2!important;
 }
 #qmes-purchase-new-order-portal-20260923-v3 .qpo-action,
