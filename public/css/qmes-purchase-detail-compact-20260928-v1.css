@@ -1,0 +1,81 @@
+/* Purchase detail modal compact V1 - 2026-09-28
+ * ADD-ONLY / NO OVERWRITE.
+ * Visual only: shrink purchase detail modal to a compact size similar to Sales/Delivery.
+ */
+.qmes-purchase-ledger-v1 .qpo-modal-bg{
+  padding:12px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal{
+  width:min(760px,92vw)!important;
+  max-height:82vh!important;
+  border-radius:10px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal.wide{
+  width:min(820px,92vw)!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal-head{
+  padding:10px 14px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal-head h3{
+  font-size:15px!important;
+  line-height:1.2!important;
+  font-weight:950!important;
+}
+.qmes-purchase-ledger-v1 .qpo-x{
+  font-size:20px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal-body{
+  padding:12px 14px 14px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-modal-summary{
+  grid-template-columns:repeat(5,1fr)!important;
+  gap:6px!important;
+  margin-bottom:9px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-sum{
+  padding:7px 8px!important;
+  border-radius:6px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-sum span{
+  font-size:8.5px!important;
+  line-height:1.15!important;
+}
+.qmes-purchase-ledger-v1 .qpo-sum b{
+  margin-top:4px!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+}
+.qmes-purchase-ledger-v1 .qpo-flow{
+  grid-template-columns:repeat(5,1fr)!important;
+  gap:5px!important;
+  margin:8px 0!important;
+}
+.qmes-purchase-ledger-v1 .qpo-flow-card{
+  padding:7px!important;
+  border-radius:6px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-flow-card span{
+  font-size:8.5px!important;
+  line-height:1.1!important;
+}
+.qmes-purchase-ledger-v1 .qpo-flow-card b{
+  margin-top:4px!important;
+  font-size:10.5px!important;
+  line-height:1.15!important;
+}
+.qmes-purchase-ledger-v1 .qpo-info th,
+.qmes-purchase-ledger-v1 .qpo-info td{
+  padding:6px 7px!important;
+  font-size:9.5px!important;
+  line-height:1.2!important;
+}
+.qmes-purchase-ledger-v1 .qpo-info th{
+  width:125px!important;
+  font-size:9px!important;
+}
+@media(max-width:900px){
+  .qmes-purchase-ledger-v1 .qpo-modal{
+    width:96vw!important;
+    max-height:88vh!important;
+  }
+}
