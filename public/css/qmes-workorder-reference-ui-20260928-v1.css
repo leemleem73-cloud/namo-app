@@ -1,0 +1,94 @@
+/* NAMO QMES - Workorder reference UI owner V1 - 2026-09-28
+ * ADD-ONLY / NO OVERWRITE.
+ * Exact visual/layout reference: attached 작업지시서l(3).html.
+ */
+.qmes-workorder-reference-active{
+  --wo-blue:#2e8ec2;--wo-blue2:#197fb8;--wo-bg:#f3f6fa;--wo-line:#d6e0e8;
+  --wo-text:#26384a;--wo-muted:#718096;--wo-green:#1f9d55;--wo-greenbg:#eaf8ef;
+  --wo-orange:#bd6b0b;--wo-orangebg:#fff3e1;--wo-red:#cf3f35;--wo-redbg:#fff0ee;
+  --wo-gray:#eef2f6;
+  display:block!important;
+  background:var(--wo-bg)!important;
+  color:var(--wo-text)!important;
+  min-width:0!important;
+}
+.qmes-workorder-reference-active>#qmes-workorder-reference-owner{display:block!important}
+.qmes-workorder-reference-active>div:not(#qmes-workorder-reference-owner):not(.qmes-wo-issue-shell){display:none!important}
+
+#qmes-workorder-reference-owner{font-family:Arial,"Malgun Gothic","Noto Sans KR",sans-serif!important;padding:10px 0 0!important}
+#qmes-workorder-reference-owner *{box-sizing:border-box}
+.qwor-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+.qwor-title-row h1{font-size:21px;margin:0;font-weight:900;color:var(--wo-text)}
+.qwor-title-actions{display:flex;gap:7px}
+.qwor-btn{height:34px;border:1px solid #c7d5e1;background:#fff;border-radius:6px;padding:0 13px;font-size:10px;font-weight:800;color:#40566a;cursor:pointer;white-space:nowrap}
+.qwor-btn.blue{background:#138dcc;color:#fff;border-color:#138dcc}.qwor-btn.green{background:#f2fff6;color:#178a43;border-color:#b9e2c7}
+
+.qwor-filter{background:#fff;border:1px solid var(--wo-line);border-radius:8px;padding:10px;display:grid;grid-template-columns:235px 190px 230px 170px 170px 1fr 64px;gap:7px;align-items:end;margin-bottom:12px}
+.qwor-field label{display:block;font-size:9px;font-weight:800;color:#607589;margin:0 0 4px 2px}
+.qwor-control{height:38px;border:1px solid #cbd8e3;border-radius:5px;padding:0 10px;background:#fff;width:100%;font-size:10px;color:#334155}
+.qwor-period{display:flex;gap:6px;align-items:center}.qwor-period input{width:calc(50% - 8px)}
+.qwor-search-btn{height:38px;border:0;border-radius:5px;background:#168dcc;color:#fff;font-size:10px;font-weight:900;cursor:pointer}
+
+.qwor-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:12px}
+.qwor-kpi{background:#fff;border:1px solid var(--wo-line);border-radius:8px;padding:11px 13px;min-height:92px}
+.qwor-kpi .l{font-size:10px;color:#677b8e;font-weight:800}.qwor-kpi .v{font-size:22px;font-weight:900;margin-top:6px}.qwor-kpi .s{font-size:9px;color:#8b99a7;margin-top:5px}
+.qwor-kpi.good .v{color:var(--wo-green)}.qwor-kpi.warn .v{color:var(--wo-orange)}.qwor-kpi.bad .v{color:var(--wo-red)}.qwor-kpi.info .v{color:#207bad}
+
+.qwor-panel{background:#fff;border:1px solid var(--wo-line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.qwor-panel-hd{padding:11px 14px;border-bottom:1px solid var(--wo-line);display:flex;justify-content:space-between;align-items:center}
+.qwor-panel-hd h2{font-size:13px;margin:0;font-weight:800}.qwor-panel-hd span{font-size:9px;color:#7f8e9b}
+.qwor-table-scroll{overflow-x:scroll!important;overflow-y:auto;max-height:500px;scrollbar-gutter:stable both-edges}
+.qwor-table-scroll::-webkit-scrollbar{height:12px}.qwor-table-scroll::-webkit-scrollbar-track{background:#eef2f6}.qwor-table-scroll::-webkit-scrollbar-thumb{background:#758694;border-radius:8px;border:2px solid #eef2f6}
+.qwor-table{width:100%;border-collapse:separate;border-spacing:0;min-width:2200px;font-size:10px}
+.qwor-table thead th{position:sticky;top:0;background:linear-gradient(#61abd2,#4c9bc5);color:#fff;padding:9px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.55);white-space:nowrap;z-index:2;font-size:9px;font-weight:800}
+.qwor-table tbody td{padding:8px;text-align:center;border-right:1px solid #dce5ec;border-bottom:1px solid #dce5ec;white-space:nowrap;color:#334155;height:36px;font-size:9px}
+.qwor-table tbody tr:nth-child(even){background:#f8fafc}.qwor-table tbody tr:hover{background:#edf7fd}
+.qwor-left{text-align:left!important}.qwor-link{color:#0878b9;font-weight:900;cursor:pointer}
+.qwor-status{display:inline-flex;align-items:center;justify-content:center;min-width:50px;padding:4px 8px;border-radius:11px;font-size:9px;font-weight:900}
+.qwor-status.ok{background:var(--wo-greenbg);color:var(--wo-green)}.qwor-status.warn{background:var(--wo-orangebg);color:var(--wo-orange)}.qwor-status.bad{background:var(--wo-redbg);color:var(--wo-red)}.qwor-status.gray{background:var(--wo-gray);color:#65778a}.qwor-status.blue{background:#e7f4fb;color:#1477ad}
+.qwor-manage{display:flex;gap:5px;justify-content:center}.qwor-mini{height:24px;padding:0 8px;border:1px solid #c3d4e2;background:#fff;border-radius:4px;font-size:9px;font-weight:800;cursor:pointer}.qwor-mini.blue{background:#138dcc;color:#fff;border-color:#138dcc}
+.qwor-footer{font-size:9px;color:#7e8d9a;margin-top:7px}
+
+/* Native new/edit form: keep all existing logic, show it as the attached modal layout. */
+.qmes-workorder-reference-active>.qmes-wo-issue-shell{
+  position:fixed!important;inset:0!important;z-index:10050!important;
+  margin:0!important;padding:24px!important;background:rgba(17,35,49,.38)!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  overflow:auto!important;
+}
+.qmes-workorder-reference-active>.qmes-wo-issue-shell>div{
+  width:min(1100px,calc(100vw - 48px))!important;max-height:90vh!important;overflow:auto!important;
+  margin:auto!important;background:#fff!important;border:0!important;border-radius:10px!important;
+  box-shadow:0 24px 65px rgba(0,0,0,.28)!important;color:#26384a!important;padding:0!important;
+}
+.qmes-workorder-reference-active>.qmes-wo-issue-shell>div>div:first-child{
+  position:sticky!important;top:0!important;z-index:3!important;background:#fff!important;
+  border-bottom:1px solid var(--wo-line)!important;padding:15px 18px!important;min-height:58px!important;
+}
+.qmes-workorder-reference-active>.qmes-wo-issue-shell>div>div:first-child>div:first-child{
+  color:#26384a!important;font-size:17px!important;font-weight:800!important;
+}
+.qmes-workorder-reference-active .qmes-wo-form-grid{
+  display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:9px!important;
+  padding:17px 17px 0!important;
+}
+.qmes-workorder-reference-active .qmes-wo-form-field>span:first-child{display:block!important;font-size:9px!important;font-weight:800!important;color:#64788a!important;margin-bottom:4px!important}
+.qmes-workorder-reference-active .qmes-wo-form-field input,
+.qmes-workorder-reference-active .qmes-wo-form-field select{
+  width:100%!important;height:34px!important;border:1px solid #cad8e4!important;border-radius:5px!important;padding:8px!important;font-size:10px!important;background:#fff!important;color:#26384a!important;
+}
+.qmes-workorder-reference-active .qmes-wo-issue-shell .mt-4{margin:10px 17px 0!important;background:#fff!important;border:1px solid var(--wo-line)!important;border-radius:8px!important;padding:11px!important;color:#26384a!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell .mt-4>div:first-child{color:#26384a!important;font-size:11px!important;font-weight:800!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell table{color:#26384a!important;background:#fff!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell th{background:#edf5fa!important;color:#4b6477!important;border:1px solid #dbe4eb!important;font-size:9px!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell td{background:#fff!important;color:#26384a!important;border:1px solid #dbe4eb!important;font-size:9px!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell td input,
+.qmes-workorder-reference-active .qmes-wo-issue-shell td select{background:#fff!important;color:#26384a!important;border:1px solid #cad8e4!important;font-size:9px!important}
+.qmes-workorder-reference-active .qmes-wo-issue-shell .flex.items-center.justify-between.mt-3{
+  margin:13px 17px 17px!important;padding-top:13px!important;border-top:1px solid var(--wo-line)!important;
+}
+.qmes-workorder-reference-active .qmes-inspection-save-btn{background:#138dcc!important;color:#fff!important;border-color:#138dcc!important}
+.qmes-workorder-reference-active .qmes-inspection-cancel-btn{background:#fff!important;color:#40566a!important;border:1px solid #c7d5e1!important}
+@media(max-width:1500px){
+  .qwor-filter{grid-template-columns:220px 175px 210px 155px 155px minmax(260px,1fr) 64px}
+}
