@@ -16,7 +16,7 @@
   var PAGE_SIZE=10;
   var state={
     host:null,rows:[],loaded:false,page:1,
-    from:"2026-01-01",to:"2026-12-31",supplier:"",item:"",poStatus:"",inStatus:"",q:"",
+    from:"2025-01-01",to:"2026-12-31",supplier:"",item:"",poStatus:"",inStatus:"",q:"",
     user:{},canDelete:false
   };
 
