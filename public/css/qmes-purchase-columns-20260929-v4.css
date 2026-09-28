@@ -1,0 +1,45 @@
+/* QMES Purchase visible table columns V4 - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * Visible ledger has 19 columns after removing 확정입고일 / LOT / 납기차이.
+ */
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(1),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(1){width:42px!important;min-width:42px!important;max-width:42px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(2),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(2){width:88px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(3),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(3){width:115px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(4),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(4){width:128px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(5),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(5){width:160px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(6),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(6){width:74px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(7),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(7){width:48px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(8),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(8){width:82px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(9),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(9){width:92px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(10),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(10){width:92px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(11),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(11){width:74px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(12),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(12){width:74px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(13),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(13){width:86px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(14),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(14){width:76px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(15),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(15){width:84px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(16),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(16){width:86px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(17),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(17){width:92px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(18),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(18){width:120px!important}
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(19),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(19){width:150px!important}
+.qmes-purchase-ledger-v1 .qpo-table{
+  min-width:1740px!important;
+}
