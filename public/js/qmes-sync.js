@@ -11,7 +11,13 @@
   async function request(path, options = {}) {
     const response = await fetch(path, {
       credentials:"same-origin",
-      headers:{"Content-Type":"application/json", ...(options.headers || {})},
+      cache:"no-store",
+      headers:{
+        "Content-Type":"application/json",
+        "Cache-Control":"no-cache, no-store",
+        "Pragma":"no-cache",
+        ...(options.headers || {})
+      },
       ...options
     });
     const payload = await response.json().catch(() => ({}));
@@ -51,7 +57,7 @@
   }
 
   async function list(type) {
-    return await request(`/api/qmes-sync/${encodeURIComponent(normalizeType(type))}`);
+    return await request(`/api/qmes-sync/${encodeURIComponent(normalizeType(type))}?_qmesFresh=${Date.now()}`);
   }
 
   async function upsert(type, key, payload) {
