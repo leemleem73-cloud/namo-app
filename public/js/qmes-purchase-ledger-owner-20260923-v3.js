@@ -154,22 +154,21 @@
   }
   async function loadRows(){
     var localRows=readLocal();
-    if(localRows.length||!state.rows.length){
-      state.rows=localRows;
-      render();
-    }
     try{
+      /* DB-first: prevent stale local rows from flashing before authoritative rows arrive. */
       var rows=await fetchPurchaseRows();
-      if(rows.length){
-        state.rows=rows;
-        writeLocal(rows);
-      }
+      state.rows=Array.isArray(rows)?rows:[];
+      writeLocal(state.rows);
       state.loaded=true;
       render();
     }catch(error){
       console.warn("[QMES Purchase owner] DB read unavailable",error);
-      state.loaded=true;
-      render();
+      /* Local data is fallback only when the shared DB cannot be read. */
+      if(!state.loaded){
+        state.rows=localRows;
+        state.loaded=true;
+        render();
+      }
     }
   }
   async function loadUser(){
