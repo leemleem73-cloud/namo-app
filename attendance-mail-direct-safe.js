@@ -58,6 +58,41 @@ function smtpConfig(){
   };
 }
 
+function httpsMailConfig(){
+  const apiKey=String(process.env.RESEND_API_KEY||'').trim();
+  const from=String(process.env.MAIL_API_FROM||process.env.RESEND_FROM||'').trim();
+  return{enabled:Boolean(apiKey&&from),apiKey,from};
+}
+
+async function sendViaHttpsMailApi({sender,recipients,subject,html,pdfFilename,pdfContent}){
+  const cfg=httpsMailConfig();
+  if(!cfg.enabled){
+    const error=new Error('HTTPS 메일 API가 아직 설정되지 않았습니다.');
+    error.code='MAIL_API_NOT_CONFIGURED';
+    throw error;
+  }
+  const response=await fetch('https://api.resend.com/emails',{
+    method:'POST',
+    headers:{Authorization:`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      from:cfg.from,
+      reply_to:sender.email,
+      to:recipients.map(x=>x.email),
+      subject,
+      html,
+      attachments:[{filename:pdfFilename,content:pdfContent.toString('base64')}]
+    })
+  });
+  const body=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const error=new Error(body?.message||`HTTPS 메일 API 오류 (HTTP ${response.status})`);
+    error.code='MAIL_API_SEND_FAILED';
+    error.status=response.status;
+    throw error;
+  }
+  return{id:body?.id||null};
+}
+
 async function currentSender(req){
   const id=req.session?.user?.id;
   if(!id)throw new Error('로그인 사용자를 확인할 수 없습니다.');
@@ -125,15 +160,21 @@ function install(app){
   app.__namoAttendanceMailDirectInstalled=true;
 
   app.get('/api/attendance/mail-link/status',requireLogin,async(req,res)=>{
-    try{const sender=await currentSender(req);return ok(res,{linked:Boolean(await storedCredential(sender)),sender:{id:sender.id,name:sender.name||'',email:sender.email}})}
-    catch(e){return fail(res,401,e.message,'LOGIN_SENDER_NOT_FOUND')}
+    try{
+      const sender=await currentSender(req);
+      const apiCfg=httpsMailConfig();
+      if(apiCfg.enabled)return ok(res,{linked:true,mode:'https_api',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+      return ok(res,{linked:Boolean(await storedCredential(sender)),mode:'smtp',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+    }catch(e){return fail(res,401,e.message,'LOGIN_SENDER_NOT_FOUND')}
   });
 
   app.post('/api/attendance/mail-link',requireLogin,async(req,res)=>{
-    const password=String(req.body?.password||'');
-    if(!password)return fail(res,400,'최초 메일 연동을 위한 이카운트 웹메일 비밀번호가 필요합니다.','MAIL_LINK_PASSWORD_REQUIRED');
     try{
       const sender=await currentSender(req);
+      const apiCfg=httpsMailConfig();
+      if(apiCfg.enabled)return ok(res,{linked:true,mode:'https_api',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'HTTPS 메일 API가 연결되어 있습니다.');
+      const password=String(req.body?.password||'');
+      if(!password)return fail(res,400,'최초 메일 연동을 위한 이카운트 웹메일 비밀번호가 필요합니다.','MAIL_LINK_PASSWORD_REQUIRED');
       await verifyCredential(sender,password);
       await ensureSchema();
       const secret=encryptPassword(password);
@@ -155,8 +196,9 @@ function install(app){
   app.post('/api/attendance/direct-mail',requireLogin,async(req,res)=>{
     try{
       const sender=await currentSender(req);
-      const credential=await storedCredential(sender);
-      if(!credential)return fail(res,503,'로그인 사용자의 메일 발송 계정이 아직 연동되지 않았습니다.','SMTP_SENDER_NOT_CONFIGURED');
+      const apiCfg=httpsMailConfig();
+      const credential=apiCfg.enabled?null:await storedCredential(sender);
+      if(!apiCfg.enabled&&!credential)return fail(res,503,'로그인 사용자의 메일 발송 계정이 아직 연동되지 않았습니다.','SMTP_SENDER_NOT_CONFIGURED');
       const recipients=await validRecipients(req.body?.recipients);
       if(!recipients.length)return fail(res,400,'수신자를 선택해 주세요.','RECIPIENTS_REQUIRED');
       const cfg=smtpConfig();
@@ -179,12 +221,23 @@ function install(app){
       }
       if(!pdfContent)pdfContent=buildApprovalPdf(req.body);
       if(!pdfFilename)pdfFilename=`NAMO_Attendance_Approval_${String(request.id||'approved').replace(/[^A-Za-z0-9_-]/g,'_')}.pdf`;
-      const info=await transporter.sendMail({from:sender.name?`"${String(sender.name).replace(/"/g,'')}" <${sender.email}>`:sender.email,to,subject,html,attachments:[{filename:pdfFilename,content:pdfContent,contentType:'application/pdf'}]});
-      return ok(res,{sent:recipients.length,messageId:info.messageId||null,sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+      let messageId=null;
+      let mode='smtp';
+      if(apiCfg.enabled){
+        const apiInfo=await sendViaHttpsMailApi({sender,recipients,subject,html,pdfFilename,pdfContent});
+        messageId=apiInfo.id||null;
+        mode='https_api';
+      }else{
+        const info=await transporter.sendMail({from:sender.name?`"${String(sender.name).replace(/"/g,'')}" <${sender.email}>`:sender.email,to,subject,html,attachments:[{filename:pdfFilename,content:pdfContent,contentType:'application/pdf'}]});
+        messageId=info.messageId||null;
+      }
+      return ok(res,{sent:recipients.length,messageId,mode,sender:{id:sender.id,name:sender.name||'',email:sender.email}});
     }catch(e){
       console.error('[Attendance direct mail]',e);
       const authFailed=e?.code==='EAUTH'||Number(e?.responseCode)===535;
       const networkFailed=['ETIMEDOUT','ECONNECTION','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH'].includes(String(e?.code||'').toUpperCase())||/timeout|timed out|network is unreachable/i.test(String(e?.message||''));
+      if(e?.code==='MAIL_API_NOT_CONFIGURED')return fail(res,503,'HTTPS 메일 API 설정이 필요합니다. Render 환경변수에 RESEND_API_KEY와 MAIL_API_FROM을 등록해 주세요.','MAIL_API_NOT_CONFIGURED');
+      if(e?.code==='MAIL_API_SEND_FAILED')return fail(res,502,`HTTPS 메일 API 발송 실패: ${e.message}`,'MAIL_API_SEND_FAILED');
       if(networkFailed)return fail(res,503,'현재 서버에서 SMTP 메일 서버에 연결할 수 없습니다. Render Free 서비스는 SMTP 포트(25/465/587) 발신이 차단됩니다. 메일 발송을 사용하려면 Render 유료 인스턴스 또는 HTTPS 메일 API가 필요합니다.','SMTP_NETWORK_BLOCKED');
       return fail(res,502,authFailed?'로그인 사용자의 이카운트 메일 인증정보를 확인해 주세요.':`메일 발송 실패: ${e.message}`,authFailed?'SMTP_AUTH_FAILED':'SMTP_SEND_FAILED');
     }
