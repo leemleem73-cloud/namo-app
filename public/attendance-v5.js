@@ -399,13 +399,13 @@ function canvasApprovalPdf(detail){
 
       const start=String(detail.start_date||'').slice(0,10),end=String(detail.end_date||'').slice(0,10);
       const rows=[
-        ['신청자',String(detail.employee_name||'-')+' '+String(detail.employee_title||'')],
+        ['작성자',String(detail.employee_name||'-')+' '+String(detail.employee_title||'')],
         ['부서',String(detail.employee_department||'-')],
         ['휴가 유형',leaveTypeName(detail.leave_type)],
         ['휴가 기간',start+(end&&end!==start?' ~ '+end:'')+' ('+Number(detail.days||0)+'일)'],
         ['사유',String(detail.reason||'-')],
         ['검토자',String(detail.reviewer_name||'-')+' '+String(detail.reviewer_title||'')],
-        ['최종 처리자',String(detail.reviewed_by_name||detail.reviewer_name||'-')+' '+String(detail.reviewed_by_title||detail.reviewer_title||'')],
+        ['승인자',String(detail.reviewed_by_name||detail.reviewer_name||'-')+' '+String(detail.reviewed_by_title||detail.reviewer_title||'')],
         ['신청일시',fmtDateTime(detail.created_at)],
         ['승인일시',fmtDateTime(detail.reviewed_at)],
         ['승인 상태','최종 승인']
