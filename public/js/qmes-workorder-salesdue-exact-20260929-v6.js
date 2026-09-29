@@ -7,7 +7,7 @@ if(window.__QMES_WORKORDER_SALESDUE_EXACT_20260929_V6__)return;
 window.__QMES_WORKORDER_SALESDUE_EXACT_20260929_V6__=true;
 
 var PAGE_SIZE=10;
-var state={root:null,host:null,rows:[],filtered:[],page:1};
+var state={root:null,host:null,rows:[],filtered:[],page:1,signature:""};
 function clean(v){return String(v==null?"":v).replace(/\s+/g," ").trim()}
 function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function num(v){var n=parseFloat(String(v==null?"":v).replace(/[^0-9.+-]/g,""));return Number.isFinite(n)?n:0}
@@ -106,10 +106,14 @@ function bind(){
  ["qwf2-from","qwf2-to","qwf2-customer","qwf2-product","qwf2-status","qwf2-q"].forEach(function(id){var el=state.host.querySelector("#"+id);if(el)el.addEventListener("keydown",function(e){if(e.key==="Enter"){applyFilter(true);render()}})});
 }
 function mount(){
- var root=findRoot();if(!root)return;if(state.root!==root){state.root=root;state.host=null}
+ var root=findRoot();if(!root)return;if(state.root!==root){state.root=root;state.host=null;state.signature=""}
  root.classList.add("qmes-workorder-salesdue-exact-v6");root.setAttribute("data-qmes-workorder-owner","salesdue-exact-v6");
  if(!state.host||!state.host.isConnected){var host=document.createElement("section");host.id="qmes-workorder-salesdue-exact-v6";host.className="qmes-sales-ledger-v4 qmes-sales-delivery-dashboard-v1 qmes-sales-delivery-dashboard-v2";host.innerHTML=markup();root.insertBefore(host,root.firstChild);state.host=host;bind()}
- state.rows=sourceRows(root);applyFilter(false);render();if(window.qmesFixedCalendar&&typeof window.qmesFixedCalendar.scan==="function")window.qmesFixedCalendar.scan(state.host);
+ var nextRows=sourceRows(root);
+ var nextSignature="";
+ try{nextSignature=JSON.stringify(nextRows.map(function(r){return [r.rawKey,r.date,r.customer,r.product,r.plan,r.actual,r.plannedDate,r.equipment,r.worker,r.status,r.remarks]}))}catch(_){}
+ if(state.signature===nextSignature&&state.rows&&state.rows.length===nextRows.length)return;
+ state.signature=nextSignature;state.rows=nextRows;applyFilter(false);render();if(window.qmesFixedCalendar&&typeof window.qmesFixedCalendar.scan==="function")window.qmesFixedCalendar.scan(state.host);
 }
 var queued=false, initialObserver=null;
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;mount()})}
