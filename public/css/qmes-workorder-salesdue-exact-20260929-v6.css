@@ -1,0 +1,34 @@
+/* QMES Workorder exact Sales/Due layout owner - 2026-09-29 V6
+ * Single visible owner, old screen hidden, native dialogs preserved.
+ */
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>*{visibility:hidden!important}
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>#qmes-workorder-salesdue-exact-v6,
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-wo-issue-shell,
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-modal-backdrop{visibility:visible!important}
+.qmes-workorder-salesdue-exact-v6{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+.qmes-workorder-salesdue-exact-v6>#qmes-workorder-salesdue-exact-v6{display:block!important;width:100%!important;visibility:visible!important}
+.qmes-workorder-salesdue-exact-v6>div:not(#qmes-workorder-salesdue-exact-v6):not(.qmes-wo-issue-shell):not(.qmes-modal-backdrop),
+.qmes-workorder-salesdue-exact-v6>section:not(#qmes-workorder-salesdue-exact-v6):not(.qmes-wo-issue-shell):not(.qmes-modal-backdrop){display:none!important}
+.qmes-workorder-salesdue-exact-v6 .qmes-wo-issue-shell{display:block!important;width:100%!important;margin:12px 0!important;visibility:visible!important}
+.qmes-workorder-salesdue-exact-v6 .qmes-modal-backdrop{display:flex!important;visibility:visible!important;opacity:1!important;z-index:9999!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table{min-width:1740px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(1),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(1){width:42px!important;min-width:42px!important;max-width:42px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(2),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(2){width:88px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(3),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(3){width:115px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(4),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(4){width:128px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(5),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(5){width:160px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(6),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(6){width:112px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(7),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(7){width:82px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(8),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(8){width:48px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(9),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(9){width:92px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(10),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(10){width:70px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(11),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(11){width:88px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(12),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(12){width:88px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(13),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(13){width:88px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(14),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(14){width:64px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(15),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(15){width:66px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(16),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(16){width:86px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(17),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(17){width:94px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(18),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(18){width:120px!important}
+#qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(19),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(19){width:120px!important}
+#qmes-workorder-salesdue-exact-v6 .qrl-actions .qrl-delete-btn{border:1px solid #efaaa6!important;background:#fff!important;color:#cc3a31!important}
