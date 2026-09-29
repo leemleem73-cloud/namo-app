@@ -55,7 +55,7 @@ function sourceRows(root){
     }
     var worker=clean(c[8]&&c[8].textContent)||"-",sel=c[9]&&c[9].querySelector("select"),status=clean(sel?sel.value:(c[9]&&c[9].textContent))||"-";
     var y=plan>0&&actual>0?actual/plan*100:null;
-    return {index:index,rawKey:raw,date:date,workOrderNo:raw,productionLotNo:raw,customer:link.customer||"-",product:product,equipment:equipment,plan:plan,actual:actual,plannedDate:date,worker:worker,status:status,yield:y,pqc:"-",remarks:link.remarks||"-"};
+    return {index:index,rawKey:raw,date:date,workOrderNo:raw,productionLotNo:raw,customer:link.customer||"현대자동차",product:product,equipment:equipment,plan:plan,actual:actual,plannedDate:date,worker:worker,status:status,yield:y,pqc:"-",remarks:link.remarks||"-"};
   });
 }
 function tone(v){var s=clean(v);if(/불합격|NG|보류|이상/.test(s))return"bad";if(/완료|합격|OK/.test(s))return"good";if(/생산중|검사중|진행/.test(s))return"blue";if(/대기|발행|미착수/.test(s))return"warn";return"gray"}
