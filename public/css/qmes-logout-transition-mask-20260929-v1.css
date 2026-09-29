@@ -1,0 +1,13 @@
+/* QMES logout transition mask - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * Prevents stale dashboard/header flash after logout while login view is booting.
+ */
+html.qmes-logout-transition body{background:linear-gradient(135deg,#07162b,#0c3156)!important}
+html.qmes-logout-transition body>*{visibility:hidden!important}
+html.qmes-logout-transition #qmes-logout-transition-mask{
+  visibility:visible!important;display:flex!important;position:fixed!important;inset:0!important;
+  z-index:2147483000!important;align-items:center!important;justify-content:center!important;
+  background:linear-gradient(135deg,#07162b,#0c3156)!important;color:#fff!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:16px!important;font-weight:850!important;letter-spacing:-.2px!important
+}
