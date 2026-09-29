@@ -1,0 +1,48 @@
+/* QMES Purchase final tail alignment V9 - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * After the ledger body is reduced to 19 cells, restore the exact right-edge frame.
+ */
+.qmes-purchase-ledger-v1 .qpo-table-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:scroll!important;
+  overflow-y:hidden!important;
+  margin:0!important;
+  padding:0!important;
+  scrollbar-gutter:auto!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table{
+  width:1900px!important;
+  min-width:1900px!important;
+  max-width:none!important;
+  margin:0!important;
+  table-layout:fixed!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table th:last-child,
+.qmes-purchase-ledger-v1 .qpo-table td:last-child{
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+  border-right:0!important;
+  position:static!important;
+  right:auto!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  background-clip:padding-box!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table thead th:last-child{
+  background:linear-gradient(180deg,#67b3dc,#4696c2)!important;
+  color:#fff!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table tbody td:last-child{
+  background:inherit!important;
+}
+.qmes-purchase-ledger-v1 .qpo-manage{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  width:100%!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
