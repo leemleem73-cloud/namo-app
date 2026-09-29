@@ -28,6 +28,8 @@ function salesMeta(raw){
 }
 function sourceRows(root){
   var table=root.querySelector(".qmes-issued-table-v2");if(!table)return[];
+  var previous={};
+  (state.rows||[]).forEach(function(r){if(r&&r.rawKey)previous[clean(r.rawKey)]=r});
   return [].slice.call(table.querySelectorAll("tbody tr")).filter(function(tr){return tr.querySelectorAll("td").length>=10}).map(function(tr,index){
     var c=tr.querySelectorAll("td"),raw=clean(c[0]&&c[0].textContent),link=salesMeta(raw);
     var product=clean(c[1]&&c[1].textContent)||link.product||"-";
@@ -42,6 +44,14 @@ function sourceRows(root){
     if(!plan){
       var planText=clean(tr.textContent).match(/(?:계획량|계획)\s*[:：]?\s*([0-9,.]+)/);
       if(planText) plan=num(planText[1]);
+    }
+    if(!plan&&previous[raw]&&Number(previous[raw].plan)>0) plan=Number(previous[raw].plan);
+    if(!plan){
+      try{
+        var batch=(window.DB&&Array.isArray(window.DB.batches)?window.DB.batches:[]).find(function(b){return clean(b&&b.no)===raw});
+        var doc=window.DB&&window.DB.woDocs&&window.DB.woDocs[raw];
+        plan=num(batch&&batch.plan)||num(doc&&doc.plan)||0;
+      }catch(_){}
     }
     var worker=clean(c[8]&&c[8].textContent)||"-",sel=c[9]&&c[9].querySelector("select"),status=clean(sel?sel.value:(c[9]&&c[9].textContent))||"-";
     var y=plan>0&&actual>0?actual/plan*100:null;
