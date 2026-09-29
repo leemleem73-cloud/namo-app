@@ -16,6 +16,7 @@
     var s=document.createElement("style");
     s.id=STYLE_ID;
     s.textContent=
+      'html body #qmes-user-dropdown{display:none!important;visibility:hidden!important;pointer-events:none!important}'+
       'html body #qmes-erp-header .qmes-erp-account-wrap{position:relative!important;overflow:visible!important;z-index:16000!important}'+
       'html body #qmes-erp-header .qmes-erp-account-menu.qmes-persistent-account-menu{display:none!important;position:absolute!important;top:36px!important;right:0!important;width:184px!important;min-width:184px!important;padding:6px!important;margin:0!important;border:1px solid #cbd8e2!important;border-radius:8px!important;background:#fff!important;box-shadow:0 10px 26px rgba(37,76,105,.20)!important;z-index:16050!important;pointer-events:auto!important}'+
       'html body #qmes-erp-header .qmes-erp-account-wrap.is-open>.qmes-erp-account-menu.qmes-persistent-account-menu{display:block!important}'+
@@ -64,6 +65,7 @@
 
   function ensure(){
     ensureStyle();
+    document.querySelectorAll("#qmes-user-dropdown").forEach(function(el){el.remove();});
     var w=wrap(),a=account();
     if(!w||!a)return false;
     a.setAttribute("aria-label","사용자 메뉴");
@@ -79,6 +81,7 @@
     // Keep exactly two actions. Remove legacy duplicate buttons left by earlier header owners.
     var wanted='<button type="button" role="menuitem" data-qmes-persistent-action="password">비밀번호 변경</button><button type="button" role="menuitem" data-qmes-persistent-action="logout">로그아웃</button>';
     if(m.innerHTML!==wanted)m.innerHTML=wanted;
+    m.querySelectorAll("button").forEach(function(btn){btn.removeAttribute("data-qmes-account-action");});
     return true;
   }
 
