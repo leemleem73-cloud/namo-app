@@ -52,7 +52,14 @@
   function requested(r){return clean(r&&(r.requestedDueDate||r.requested_due_date||r.due||r.dueDate||r.due_date)).slice(0,10);}
   function confirmed(r){return clean(r&&(r.confirmedDueDate||r.confirmed_due_date||r.expected||r.expectedDate||r.expected_date)).slice(0,10);}
   function received(r){return num(r&&(r.receivedQty!=null?r.receivedQty:r.received_qty!=null?r.received_qty:r.receiptQty!=null?r.receiptQty:r.received));}
-  function iqc(r){return clean(r&&(r.iqcStatus||r.iqc_status||r.iqc));}
+  function iqc(r){
+    return clean(r&&(
+      r.iqcReportStatus||r.iqc_report_status||
+      r.iqcResult||r.iqc_result||
+      r.inspectionStatus||r.inspection_status||
+      r.iqcStatus||r.iqc_status||r.iqc
+    ));
+  }
   function lot(r){return clean(r&&(r.materialLot||r.material_lot||r.lot||r.rawMaterialLot||r.raw_material_lot));}
   function owner(r){return clean(r&&(r.requester||r.owner||r.createdBy||r.updatedBy));}
   function notes(r){return clean(r&&(r.notes||r.remark||r.remarks));}
@@ -77,7 +84,8 @@
     var t=iqc(r);
     if(/합격|적합|pass|ok/i.test(t)) return "합격";
     if(/불합격|부적합|fail|ng/i.test(t)) return "부적합";
-    if(/검사|진행/.test(t)) return "검사중";
+    if(/작성중|검사중|검사|진행/.test(t)) return "검사중";
+    if(/작성완료|성적서완료|검사완료|완료/.test(t)) return "완료";
     if(inStatus(r)==="입고완료") return "완료";
     return "미착수";
   }
@@ -647,12 +655,16 @@
     var retry2=setTimeout(loadRows,2200);
     window.addEventListener("qmes:purchase-db-refresh",refresh);
     window.addEventListener("qmes:shared-sync-complete",refresh);
+    window.addEventListener("qmes:iqc-report-saved",refresh);
+    window.addEventListener("qmes:iqc-report-updated",refresh);
     window.addEventListener("focus",refresh);
     document.addEventListener("visibilitychange",visibleRefresh);
     host.__qpoCleanup=function(){
       clearTimeout(retry1);clearTimeout(retry2);
       window.removeEventListener("qmes:purchase-db-refresh",refresh);
       window.removeEventListener("qmes:shared-sync-complete",refresh);
+      window.removeEventListener("qmes:iqc-report-saved",refresh);
+      window.removeEventListener("qmes:iqc-report-updated",refresh);
       window.removeEventListener("focus",refresh);
       document.removeEventListener("visibilitychange",visibleRefresh);
     };
