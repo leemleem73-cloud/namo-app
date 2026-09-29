@@ -37,7 +37,7 @@
 
 /* filters = same compact density as Sales/Due */
 .qmes-purchase-ledger-v1 .qpo-filter-row{
-  display:grid!important;grid-template-columns:1.15fr .9fr 1.25fr 1.1fr 1.1fr 2.3fr 64px!important;
+  display:grid!important;grid-template-columns:minmax(330px,1.55fr) minmax(170px,.9fr) minmax(220px,1.2fr) minmax(150px,1fr) minmax(150px,1fr) minmax(300px,2fr) 64px!important;
   gap:7px!important;align-items:end!important;margin:0 0 8px!important;padding:8px!important;
   border:1px solid #d6e1e8!important;border-radius:7px!important;background:#fff!important
 }
@@ -151,3 +151,24 @@
 /* 2026-09-30: stable purchase top owner; Sales/Due geometry. */
 .qmes-purchase-ledger-v1 .qpo-kpis,.qmes-purchase-ledger-v1 .qpo-filter-row{width:100%!important;min-width:0!important}
 .qmes-purchase-ledger-v1 .qpo-filter-row{min-height:62px!important}
+
+/* 2026-09-30 hotfix: keep purchase period controls inside the first filter cell. */
+.qmes-purchase-ledger-v1 .qpo-filter-row .qpo-period{
+  display:grid!important;
+  grid-template-columns:minmax(138px,1fr) 14px minmax(138px,1fr)!important;
+  align-items:center!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.qmes-purchase-ledger-v1 .qpo-filter-row .qpo-period .qpo-control{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
+.qmes-purchase-ledger-v1 .qpo-filter-row .qpo-period>span{
+  width:14px!important;
+  min-width:14px!important;
+  text-align:center!important;
+}
