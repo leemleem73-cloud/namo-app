@@ -103,6 +103,7 @@ function QMESChemical({user,onLogout}){
   const [passwordError,setPasswordError]=useState("");
   const [passwordSaving,setPasswordSaving]=useState(false);
   const accountRef=React.useRef(null);
+  const accountCloseTimer=React.useRef(null);
 
   useEffect(()=>{safeStorageSet("qmes_current_tab",tab);},[tab]);
   useEffect(()=>{
@@ -191,6 +192,8 @@ function QMESChemical({user,onLogout}){
       setPasswordSaving(false);
     }
   }
+  const openAccountHover=()=>{if(accountCloseTimer.current){clearTimeout(accountCloseTimer.current);accountCloseTimer.current=null;}setAccountOpen(true);};
+  const closeAccountHover=()=>{if(accountCloseTimer.current)clearTimeout(accountCloseTimer.current);accountCloseTimer.current=setTimeout(()=>setAccountOpen(false),220);};
   const runLogout=()=>{setAccountOpen(false);if(typeof onLogout==="function")onLogout();};
 
   return (
@@ -203,7 +206,7 @@ function QMESChemical({user,onLogout}){
           <div className="flex-1" />
           <div className="qmes-header-clock hidden sm:flex items-center gap-2 font-mono tabular-nums" style={{color:"#29485f",fontSize:11.5,fontWeight:700}}><span className="w-2 h-2 rounded-full bg-emerald-500"/><span>{clock.toLocaleTimeString("ko-KR",{hour12:false})}</span></div>
           <div className="qmes-header-controls flex items-center gap-2">
-            <div className="qauth-account" ref={accountRef}>
+            <div className="qauth-account" ref={accountRef} onMouseEnter={openAccountHover} onMouseLeave={closeAccountHover}>
               <button type="button" className="qauth-account-button" onClick={()=>setAccountOpen(open=>!open)} aria-haspopup="menu" aria-expanded={accountOpen}>
                 <span className="qauth-account-avatar">{(displayUserName||"U").slice(0,1)}</span>
                 <span className="qauth-account-label">{displayUserName}{displayDept?" ("+displayDept+")":""}</span>
