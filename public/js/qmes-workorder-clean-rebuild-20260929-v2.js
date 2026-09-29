@@ -264,7 +264,8 @@
         if(a==="search"){refreshFiltered(true);render();return;}
         if(a==="new"){if(!clickNativeNew())alert("신규 작업지시 기능을 찾을 수 없습니다.");return;}
         if(a==="print"){window.print();return;}
-        if(a==="excel-out"){downloadCsv();return;}\n        if(a==="excel-in"){var input=document.createElement("input");input.type="file";input.accept=".csv";input.style.display="none";input.onchange=function(){alert("원료 불러오기는 CSV 형식으로 연결 예정입니다.");input.remove();};document.body.appendChild(input);input.click();return;}
+        if(a==="excel-out"){downloadCsv();return;}
+        if(a==="excel-in"){var input=document.createElement("input");input.type="file";input.accept=".csv";input.style.display="none";input.onchange=function(){alert("원료 불러오기는 CSV 형식으로 연결 예정입니다.");input.remove();};document.body.appendChild(input);input.click();return;}
       }
       var action=e.target.closest("[data-act]");
       if(!action)return;
