@@ -103,6 +103,32 @@ async function validRecipients(input){
   return q.rows;
 }
 
+function resendConfigured(){
+  return Boolean(String(process.env.RESEND_API_KEY||'').trim()&&String(process.env.RESEND_FROM_EMAIL||'').trim());
+}
+
+async function sendViaResend({sender,recipients,subject,html,pdfFilename,pdfContent}){
+  const apiKey=String(process.env.RESEND_API_KEY||'').trim();
+  const fromEmail=String(process.env.RESEND_FROM_EMAIL||'').trim();
+  if(!apiKey||!fromEmail)throw new Error('Resend API 설정이 없습니다.');
+  const fromName=String(sender?.name||'나모케미칼').replace(/["<>]/g,'').trim()||'나모케미칼';
+  const response=await fetch('https://api.resend.com/emails',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      from:fromName+' <'+fromEmail+'>',
+      reply_to:sender?.email||undefined,
+      to:recipients.map(x=>x.email),
+      subject,
+      html,
+      attachments:pdfContent?[{filename:pdfFilename||'approval.pdf',content:pdfContent.toString('base64')}]:[]
+    })
+  });
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload?.message||payload?.name||('Resend HTTP '+response.status));
+  return String(payload?.id||'');
+}
+
 async function enqueueMail({sender,recipients,subject,html,pdfFilename,pdfContent}){
   await ensureSchema();
   const id=crypto.randomUUID();
@@ -123,7 +149,7 @@ function install(app){
   app.get('/api/attendance/mail-link/status',requireLogin,async(req,res)=>{
     try{
       const sender=await currentSender(req);
-      return ok(res,{linked:true,mode:'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+      return ok(res,{linked:true,mode:resendConfigured()?'resend':'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
     }catch(e){return fail(res,401,e.message,'LOGIN_SENDER_NOT_FOUND')}
   });
 
@@ -146,8 +172,12 @@ function install(app){
       }
       if(!pdfContent)pdfContent=buildApprovalPdf(req.body);
       if(!pdfFilename)pdfFilename=`NAMO_Attendance_Approval_${String(request.id||'approved').replace(/[^A-Za-z0-9_-]/g,'_')}.pdf`;
+      if(resendConfigured()){
+        const messageId=await sendViaResend({sender,recipients,subject,html,pdfFilename,pdfContent});
+        return ok(res,{queued:false,sentDirect:true,messageId,sent:recipients.length,mode:'resend',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 발송이 완료되었습니다.');
+      }
       const queueId=await enqueueMail({sender,recipients,subject,html,pdfFilename,pdfContent});
-      return ok(res,{queued:true,queueId,sent:recipients.length,mode:'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 발송 대기열에 등록했습니다.');
+      return ok(res,{queued:true,queueId,sentDirect:false,sent:recipients.length,mode:'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 발송 대기열에 등록했습니다.');
     }catch(e){
       console.error('[Attendance mail queue]',e);
       return fail(res,500,`메일 발송 대기 등록 실패: ${e.message}`,'MAIL_QUEUE_FAILED');
