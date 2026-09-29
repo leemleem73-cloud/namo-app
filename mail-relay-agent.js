@@ -15,6 +15,7 @@ const cfg={
   smtpPort:Number(process.env.SMTP_PORT||587),
   smtpUser:String(process.env.SMTP_USER||'').trim(),
   smtpPass:String(process.env.SMTP_PASS||''),
+  smtpSecurity:String(process.env.SMTP_SECURITY||'auto').trim().toLowerCase(),
   pollMs:Math.max(5000,Number(process.env.MAIL_RELAY_POLL_MS||15000)),
 };
 
@@ -24,6 +25,7 @@ function assertConfig(){
   if(!cfg.relayToken)missing.push('MAIL_RELAY_TOKEN');
   if(!cfg.smtpUser)missing.push('SMTP_USER');
   if(!cfg.smtpPass)missing.push('SMTP_PASS');
+  if(!['auto','tls','none'].includes(cfg.smtpSecurity))throw new Error('SMTP_SECURITY 값은 auto, tls, none 중 하나여야 합니다.');
   if(missing.length)throw new Error('필수 설정 누락: '+missing.join(', '));
 }
 
@@ -51,16 +53,23 @@ async function reportResult(id,payload){
 
 function transporter(){
   const secure=cfg.smtpPort===465;
-  return nodemailer.createTransport({
+  const options={
     host:cfg.smtpHost,
     port:cfg.smtpPort,
     secure,
     auth:{user:cfg.smtpUser,pass:cfg.smtpPass},
-    requireTLS:cfg.smtpPort===587,
     connectionTimeout:15000,
     greetingTimeout:10000,
     socketTimeout:30000
-  });
+  };
+
+  if(cfg.smtpSecurity==='tls'){
+    options.requireTLS=!secure;
+  }else if(cfg.smtpSecurity==='none'){
+    options.ignoreTLS=!secure;
+  }
+
+  return nodemailer.createTransport(options);
 }
 
 async function sendJob(job){
@@ -118,7 +127,7 @@ async function main(){
     await tx.verify();
     console.log('QMES PC 메일 릴레이 시작');
     console.log('QMES:',cfg.baseUrl);
-    console.log('SMTP:',cfg.smtpHost+':'+cfg.smtpPort,'계정:',cfg.smtpUser);
+    console.log('SMTP:',cfg.smtpHost+':'+cfg.smtpPort,'계정:',cfg.smtpUser,'보안:',cfg.smtpSecurity);
     console.log('확인주기:',cfg.pollMs+'ms');
     await tick();
     setInterval(tick,cfg.pollMs);
