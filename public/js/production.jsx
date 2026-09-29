@@ -748,8 +748,11 @@ function IssueWoTab() {
       const doc = DB.woDocs?.[row.no] || {};
       const inputActualTotal = (doc.inputs || []).reduce((sum, it) => sum + (Number(it.act) || 0), 0);
       const displayActual = Number(doc.productionActual ?? (inputActualTotal > 0 ? inputActualTotal : row.done) ?? 0);
+      const safePlan = Number(row.plan ?? doc.plan ?? 0);
       const snap = {
-        item: String(row.item || ""),
+        item: String(row.item || doc.item || ""),
+        plan: Number.isFinite(safePlan) ? safePlan : 0,
+        tank: String(row.tank || doc.tank || ""),
         _displayActual: Number.isFinite(displayActual) ? displayActual : 0,
       };
       store[key] = snap;
