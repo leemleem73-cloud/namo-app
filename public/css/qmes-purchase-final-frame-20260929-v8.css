@@ -1,0 +1,72 @@
+/* QMES Purchase final frame cleanup V8 - 2026-09-29
+ * ADD-ONLY / NO OVERWRITE.
+ * Fixes the far-right white strip and aligns the visible frame with Sales/Due,
+ * while keeping a bottom horizontal scrollbar for reaching the last columns.
+ */
+.qmes-purchase-ledger-v1 .qpo-table-box{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  border:1px solid #cbd8e2!important;
+  border-radius:7px!important;
+  background:#fff!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:scroll!important;
+  overflow-y:hidden!important;
+  margin:0!important;
+  padding:0!important;
+  scrollbar-gutter:auto!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table{
+  width:100%!important;
+  min-width:1900px!important;
+  max-width:none!important;
+  margin:0!important;
+  table-layout:fixed!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table th:last-child,
+.qmes-purchase-ledger-v1 .qpo-table td:last-child{
+  border-right:0!important;
+  position:static!important;
+  right:auto!important;
+  z-index:auto!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+/* final 관리 width: enough for 상세/수정/삭제 without creating an empty strip */
+.qmes-purchase-ledger-v1 .qpo-table th:nth-child(19),
+.qmes-purchase-ledger-v1 .qpo-table td:nth-child(19){
+  width:150px!important;
+  min-width:150px!important;
+  max-width:150px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-manage{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.qmes-purchase-ledger-v1 .qpo-mini{
+  min-width:30px!important;
+  width:auto!important;
+  height:22px!important;
+  padding:0 5px!important;
+  font-size:8px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar{
+  height:12px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar-track{
+  background:#eef3f7!important;
+  border-radius:6px!important;
+}
+.qmes-purchase-ledger-v1 .qpo-table-scroll::-webkit-scrollbar-thumb{
+  background:#6d7f8d!important;
+  border-radius:6px!important;
+  border:2px solid #eef3f7!important;
+}
