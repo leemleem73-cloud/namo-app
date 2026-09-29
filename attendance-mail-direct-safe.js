@@ -2,7 +2,6 @@
 
 const crypto=require('crypto');
 const express=require('express');
-const nodemailer=require('nodemailer');
 const{Pool}=require('pg');
 require('dotenv').config();
 
@@ -16,81 +15,49 @@ const requireLogin=(req,res,next)=>req.session?.user?next():fail(res,401,'로그
 async function ensureSchema(){
   if(schemaReady)return;
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS attendance_mail_credentials(
-      user_id UUID PRIMARY KEY,
-      email TEXT NOT NULL,
-      iv TEXT NOT NULL,
-      auth_tag TEXT NOT NULL,
-      cipher_text TEXT NOT NULL,
-      linked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CREATE TABLE IF NOT EXISTS attendance_mail_queue(
+      id UUID PRIMARY KEY,
+      sender_user_id UUID,
+      sender_name TEXT,
+      sender_email TEXT,
+      recipients JSONB NOT NULL DEFAULT '[]'::jsonb,
+      subject TEXT NOT NULL,
+      html TEXT NOT NULL,
+      attachment_name TEXT,
+      attachment_base64 TEXT,
+      status TEXT NOT NULL DEFAULT 'PENDING',
+      attempts INTEGER NOT NULL DEFAULT 0,
+      locked_at TIMESTAMPTZ,
+      next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      sent_at TIMESTAMPTZ,
+      message_id TEXT,
+      last_error TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
-    CREATE INDEX IF NOT EXISTS attendance_mail_credentials_email_idx ON attendance_mail_credentials(lower(email));
+    CREATE INDEX IF NOT EXISTS attendance_mail_queue_status_idx
+      ON attendance_mail_queue(status,next_attempt_at,created_at);
   `);
   schemaReady=true;
 }
 
-function encryptionKey(){
-  const raw=String(process.env.MAIL_CREDENTIAL_KEY||process.env.SESSION_SECRET||'').trim();
-  if(!raw)throw new Error('MAIL_CREDENTIAL_KEY 또는 SESSION_SECRET 설정이 필요합니다.');
-  return crypto.createHash('sha256').update(raw,'utf8').digest();
+function relayToken(){
+  return String(process.env.MAIL_RELAY_TOKEN||'').trim();
 }
 
-function encryptPassword(password){
-  const iv=crypto.randomBytes(12);
-  const cipher=crypto.createCipheriv('aes-256-gcm',encryptionKey(),iv);
-  const encrypted=Buffer.concat([cipher.update(String(password),'utf8'),cipher.final()]);
-  return{iv:iv.toString('base64'),tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')};
+function relayAuthorized(req){
+  const expected=relayToken();
+  const actual=String(req.get('x-mail-relay-token')||'').trim();
+  if(!expected||!actual)return false;
+  const a=Buffer.from(expected,'utf8');
+  const b=Buffer.from(actual,'utf8');
+  return a.length===b.length&&crypto.timingSafeEqual(a,b);
 }
 
-function decryptPassword(row){
-  const decipher=crypto.createDecipheriv('aes-256-gcm',encryptionKey(),Buffer.from(row.iv,'base64'));
-  decipher.setAuthTag(Buffer.from(row.auth_tag,'base64'));
-  return Buffer.concat([decipher.update(Buffer.from(row.cipher_text,'base64')),decipher.final()]).toString('utf8');
-}
-
-function smtpConfig(){
-  const port=Number(process.env.SMTP_PORT||587);
-  return{
-    host:String(process.env.SMTP_HOST||'wsmtp.ecount.com'),
-    port,
-    secure:String(process.env.SMTP_SECURE||'').toLowerCase()==='true'||port===465,
-  };
-}
-
-function httpsMailConfig(){
-  const apiKey=String(process.env.RESEND_API_KEY||'').trim();
-  const from=String(process.env.MAIL_API_FROM||process.env.RESEND_FROM||'').trim();
-  return{enabled:Boolean(apiKey&&from),apiKey,from};
-}
-
-async function sendViaHttpsMailApi({sender,recipients,subject,html,pdfFilename,pdfContent}){
-  const cfg=httpsMailConfig();
-  if(!cfg.enabled){
-    const error=new Error('HTTPS 메일 API가 아직 설정되지 않았습니다.');
-    error.code='MAIL_API_NOT_CONFIGURED';
-    throw error;
-  }
-  const response=await fetch('https://api.resend.com/emails',{
-    method:'POST',
-    headers:{Authorization:`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      from:cfg.from,
-      reply_to:sender.email,
-      to:recipients.map(x=>x.email),
-      subject,
-      html,
-      attachments:[{filename:pdfFilename,content:pdfContent.toString('base64')}]
-    })
-  });
-  const body=await response.json().catch(()=>({}));
-  if(!response.ok){
-    const error=new Error(body?.message||`HTTPS 메일 API 오류 (HTTP ${response.status})`);
-    error.code='MAIL_API_SEND_FAILED';
-    error.status=response.status;
-    throw error;
-  }
-  return{id:body?.id||null};
+function requireRelay(req,res,next){
+  if(!relayToken())return fail(res,503,'MAIL_RELAY_TOKEN 설정이 필요합니다.','MAIL_RELAY_NOT_CONFIGURED');
+  if(!relayAuthorized(req))return fail(res,401,'메일 릴레이 인증에 실패했습니다.','MAIL_RELAY_UNAUTHORIZED');
+  next();
 }
 
 async function currentSender(req){
@@ -100,24 +67,6 @@ async function currentSender(req){
   const user=q.rows[0];
   if(!user?.email)throw new Error('직원등록현황에 로그인 사용자의 회사메일이 없습니다.');
   return user;
-}
-
-async function storedCredential(sender){
-  await ensureSchema();
-  const q=await pool.query('SELECT * FROM attendance_mail_credentials WHERE user_id=$1 LIMIT 1',[sender.id]);
-  const row=q.rows[0];
-  if(!row)return null;
-  if(String(row.email||'').toLowerCase()!==String(sender.email||'').toLowerCase())return null;
-  try{return{user:sender.email,pass:decryptPassword(row)}}catch(e){console.warn('[Attendance mail] credential decrypt failed:',e.message);return null}
-}
-
-async function verifyCredential(sender,password){
-  const cfg=smtpConfig();
-  const transporter=nodemailer.createTransport({
-    host:cfg.host,port:cfg.port,secure:cfg.secure,auth:{user:sender.email,pass:password},requireTLS:cfg.port===587,
-    connectionTimeout:12000,greetingTimeout:8000,socketTimeout:12000
-  });
-  await transporter.verify();
 }
 
 function escapePdfText(value){return String(value??'').replace(/[^\x20-\x7E]/g,'?').replace(/([\\()])/g,'\\$1')}
@@ -134,7 +83,6 @@ function buildApprovalPdf(payload){
     `Days: ${req.days??'-'}`,
     `Reviewer: ${req.reviewerName||'-'}`,
     'Status: APPROVED',
-    `Recipient Department: ${req.recipientDepartment||'-'}`,
     `Recipients: ${recipients.map(x=>x.email).join(', ')||'-'}`
   ];
   const stream=['BT','/F1 13 Tf','50 790 Td',...lines.flatMap((line,i)=>i?['0 -24 Td',`(${escapePdfText(line)}) Tj`]:[`(${escapePdfText(line)}) Tj`]),'ET'].join('\n');
@@ -155,6 +103,19 @@ async function validRecipients(input){
   return q.rows;
 }
 
+async function enqueueMail({sender,recipients,subject,html,pdfFilename,pdfContent}){
+  await ensureSchema();
+  const id=crypto.randomUUID();
+  await pool.query(
+    `INSERT INTO attendance_mail_queue(
+      id,sender_user_id,sender_name,sender_email,recipients,subject,html,
+      attachment_name,attachment_base64,status,attempts,next_attempt_at,created_at,updated_at
+    ) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,'PENDING',0,NOW(),NOW(),NOW())`,
+    [id,sender.id,sender.name||'',sender.email,JSON.stringify(recipients.map(x=>({id:x.id,name:x.name||'',email:x.email}))),subject,html,pdfFilename,pdfContent.toString('base64')]
+  );
+  return id;
+}
+
 function install(app){
   if(app.__namoAttendanceMailDirectInstalled)return;
   app.__namoAttendanceMailDirectInstalled=true;
@@ -162,54 +123,18 @@ function install(app){
   app.get('/api/attendance/mail-link/status',requireLogin,async(req,res)=>{
     try{
       const sender=await currentSender(req);
-      const apiCfg=httpsMailConfig();
-      if(apiCfg.enabled)return ok(res,{linked:true,mode:'https_api',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
-      return ok(res,{linked:Boolean(await storedCredential(sender)),mode:'smtp',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+      return ok(res,{linked:true,mode:'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}});
     }catch(e){return fail(res,401,e.message,'LOGIN_SENDER_NOT_FOUND')}
-  });
-
-  app.post('/api/attendance/mail-link',requireLogin,async(req,res)=>{
-    try{
-      const sender=await currentSender(req);
-      const apiCfg=httpsMailConfig();
-      if(apiCfg.enabled)return ok(res,{linked:true,mode:'https_api',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'HTTPS 메일 API가 연결되어 있습니다.');
-      const password=String(req.body?.password||'');
-      if(!password)return fail(res,400,'최초 메일 연동을 위한 이카운트 웹메일 비밀번호가 필요합니다.','MAIL_LINK_PASSWORD_REQUIRED');
-      await verifyCredential(sender,password);
-      await ensureSchema();
-      const secret=encryptPassword(password);
-      await pool.query(`INSERT INTO attendance_mail_credentials(user_id,email,iv,auth_tag,cipher_text,linked_at,updated_at) VALUES($1,$2,$3,$4,$5,NOW(),NOW()) ON CONFLICT(user_id) DO UPDATE SET email=EXCLUDED.email,iv=EXCLUDED.iv,auth_tag=EXCLUDED.auth_tag,cipher_text=EXCLUDED.cipher_text,updated_at=NOW()`,[sender.id,String(sender.email).toLowerCase(),secret.iv,secret.tag,secret.data]);
-      return ok(res,{linked:true,sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 연동이 완료되었습니다.');
-    }catch(e){
-      console.error('[Attendance mail link]',e?.code||'',e?.message||e);
-      const authFailed=e?.code==='EAUTH'||Number(e?.responseCode)===535;
-      const networkFailed=['ETIMEDOUT','ECONNECTION','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH'].includes(String(e?.code||'').toUpperCase())||/timeout|timed out|network is unreachable/i.test(String(e?.message||''));
-      if(networkFailed)return fail(res,503,'현재 서버에서 SMTP 메일 서버에 연결할 수 없습니다. Render Free 서비스는 SMTP 포트(25/465/587) 발신이 차단됩니다. 메일 발송을 사용하려면 Render 유료 인스턴스 또는 HTTPS 메일 API가 필요합니다.','SMTP_NETWORK_BLOCKED');
-      return fail(res,502,authFailed?'이카운트 웹메일 비밀번호를 확인해 주세요.':`메일 연동 실패: ${e.message}`,authFailed?'SMTP_AUTH_FAILED':'MAIL_LINK_FAILED');
-    }
-  });
-
-  app.delete('/api/attendance/mail-link',requireLogin,async(req,res)=>{
-    try{const sender=await currentSender(req);await ensureSchema();await pool.query('DELETE FROM attendance_mail_credentials WHERE user_id=$1',[sender.id]);return ok(res,{linked:false},'메일 연동을 해제했습니다.')}catch(e){return fail(res,500,e.message,'MAIL_UNLINK_FAILED')}
   });
 
   app.post('/api/attendance/direct-mail',requireLogin,async(req,res)=>{
     try{
       const sender=await currentSender(req);
-      const apiCfg=httpsMailConfig();
-      const credential=apiCfg.enabled?null:await storedCredential(sender);
-      if(!apiCfg.enabled&&!credential)return fail(res,503,'로그인 사용자의 메일 발송 계정이 아직 연동되지 않았습니다.','SMTP_SENDER_NOT_CONFIGURED');
       const recipients=await validRecipients(req.body?.recipients);
       if(!recipients.length)return fail(res,400,'수신자를 선택해 주세요.','RECIPIENTS_REQUIRED');
-      const cfg=smtpConfig();
-      const transporter=nodemailer.createTransport({
-        host:cfg.host,port:cfg.port,secure:cfg.secure,auth:credential,requireTLS:cfg.port===587,
-        connectionTimeout:12000,greetingTimeout:8000,socketTimeout:20000
-      });
       const request=req.body?.request||{};
       const subject=`[나모케미칼] ${request.leaveName||'휴가'} 승인 완료`;
-      const to=recipients.map(x=>x.email).join(', ');
-      const html=`<div style="font-family:Arial,'Noto Sans KR',sans-serif;color:#1f2937;line-height:1.65"><h2 style="color:#176dd0">나모케미칼 근태 요청 승인완료</h2><p>검토 완료 후 자동 승인된 근태 요청입니다.</p><p style="color:#64748b">발송자: ${sender.name||'-'} &lt;${sender.email}&gt;</p><table style="border-collapse:collapse;width:100%;max-width:640px"><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">신청자</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeName||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">부서</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeDepartment||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">휴가</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.leaveName||request.leaveType||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일정</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.startDate||'-'} ~ ${request.endDate||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일수</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.days??'-'}일</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">상태</td><td style="padding:8px;border-bottom:1px solid #ddd">승인완료</td></tr></table><p style="margin-top:18px;color:#64748b">승인 문서는 PDF로 첨부되었습니다.</p></div>`;
+      const html=`<div style="font-family:Arial,'Noto Sans KR',sans-serif;color:#1f2937;line-height:1.65"><h2 style="color:#176dd0">나모케미칼 근태 요청 승인완료</h2><p>검토 완료 후 자동 승인된 근태 요청입니다.</p><p style="color:#64748b">요청자: ${sender.name||'-'} &lt;${sender.email}&gt;</p><table style="border-collapse:collapse;width:100%;max-width:640px"><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">신청자</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeName||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">부서</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.employeeDepartment||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">휴가</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.leaveName||request.leaveType||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일정</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.startDate||'-'} ~ ${request.endDate||'-'}</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">일수</td><td style="padding:8px;border-bottom:1px solid #ddd">${request.days??'-'}일</td></tr><tr><td style="padding:8px;border-bottom:1px solid #ddd;font-weight:700">상태</td><td style="padding:8px;border-bottom:1px solid #ddd">승인완료</td></tr></table><p style="margin-top:18px;color:#64748b">승인 문서는 PDF로 첨부되었습니다.</p></div>`;
       let pdfContent=null;
       let pdfFilename=String(req.body?.pdfName||'').trim().slice(0,160);
       const pdfBase64=String(req.body?.pdfBase64||'').trim();
@@ -221,25 +146,99 @@ function install(app){
       }
       if(!pdfContent)pdfContent=buildApprovalPdf(req.body);
       if(!pdfFilename)pdfFilename=`NAMO_Attendance_Approval_${String(request.id||'approved').replace(/[^A-Za-z0-9_-]/g,'_')}.pdf`;
-      let messageId=null;
-      let mode='smtp';
-      if(apiCfg.enabled){
-        const apiInfo=await sendViaHttpsMailApi({sender,recipients,subject,html,pdfFilename,pdfContent});
-        messageId=apiInfo.id||null;
-        mode='https_api';
-      }else{
-        const info=await transporter.sendMail({from:sender.name?`"${String(sender.name).replace(/"/g,'')}" <${sender.email}>`:sender.email,to,subject,html,attachments:[{filename:pdfFilename,content:pdfContent,contentType:'application/pdf'}]});
-        messageId=info.messageId||null;
-      }
-      return ok(res,{sent:recipients.length,messageId,mode,sender:{id:sender.id,name:sender.name||'',email:sender.email}});
+      const queueId=await enqueueMail({sender,recipients,subject,html,pdfFilename,pdfContent});
+      return ok(res,{queued:true,queueId,sent:recipients.length,mode:'pc_relay',sender:{id:sender.id,name:sender.name||'',email:sender.email}},'메일 발송 대기열에 등록했습니다.');
     }catch(e){
-      console.error('[Attendance direct mail]',e);
-      const authFailed=e?.code==='EAUTH'||Number(e?.responseCode)===535;
-      const networkFailed=['ETIMEDOUT','ECONNECTION','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH'].includes(String(e?.code||'').toUpperCase())||/timeout|timed out|network is unreachable/i.test(String(e?.message||''));
-      if(e?.code==='MAIL_API_NOT_CONFIGURED')return fail(res,503,'HTTPS 메일 API 설정이 필요합니다. Render 환경변수에 RESEND_API_KEY와 MAIL_API_FROM을 등록해 주세요.','MAIL_API_NOT_CONFIGURED');
-      if(e?.code==='MAIL_API_SEND_FAILED')return fail(res,502,`HTTPS 메일 API 발송 실패: ${e.message}`,'MAIL_API_SEND_FAILED');
-      if(networkFailed)return fail(res,503,'현재 서버에서 SMTP 메일 서버에 연결할 수 없습니다. Render Free 서비스는 SMTP 포트(25/465/587) 발신이 차단됩니다. 메일 발송을 사용하려면 Render 유료 인스턴스 또는 HTTPS 메일 API가 필요합니다.','SMTP_NETWORK_BLOCKED');
-      return fail(res,502,authFailed?'로그인 사용자의 이카운트 메일 인증정보를 확인해 주세요.':`메일 발송 실패: ${e.message}`,authFailed?'SMTP_AUTH_FAILED':'SMTP_SEND_FAILED');
+      console.error('[Attendance mail queue]',e);
+      return fail(res,500,`메일 발송 대기 등록 실패: ${e.message}`,'MAIL_QUEUE_FAILED');
+    }
+  });
+
+  app.get('/api/mail-relay/jobs/next',requireRelay,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const client=await pool.connect();
+      try{
+        await client.query('BEGIN');
+        const q=await client.query(`
+          SELECT *
+          FROM attendance_mail_queue
+          WHERE (
+            status='PENDING'
+            OR (status='SENDING' AND locked_at < NOW() - INTERVAL '5 minutes')
+          )
+          AND next_attempt_at <= NOW()
+          AND attempts < 5
+          ORDER BY created_at ASC
+          FOR UPDATE SKIP LOCKED
+          LIMIT 1
+        `);
+        const row=q.rows[0];
+        if(!row){
+          await client.query('COMMIT');
+          return ok(res,{job:null});
+        }
+        await client.query(
+          `UPDATE attendance_mail_queue
+           SET status='SENDING',attempts=attempts+1,locked_at=NOW(),updated_at=NOW()
+           WHERE id=$1`,
+          [row.id]
+        );
+        await client.query('COMMIT');
+        return ok(res,{job:{
+          id:row.id,
+          senderName:row.sender_name||'',
+          senderEmail:row.sender_email||'',
+          recipients:Array.isArray(row.recipients)?row.recipients:[],
+          subject:row.subject,
+          html:row.html,
+          attachmentName:row.attachment_name||'approval.pdf',
+          attachmentBase64:row.attachment_base64||'',
+          attempt:Number(row.attempts||0)+1
+        }});
+      }catch(e){
+        await client.query('ROLLBACK').catch(()=>{});
+        throw e;
+      }finally{client.release()}
+    }catch(e){
+      console.error('[Mail relay next]',e);
+      return fail(res,500,e.message,'MAIL_RELAY_NEXT_FAILED');
+    }
+  });
+
+  app.post('/api/mail-relay/jobs/:id/result',requireRelay,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const id=String(req.params.id||'');
+      if(!/^[0-9a-f-]{36}$/i.test(id))return fail(res,400,'잘못된 작업 ID입니다.','MAIL_RELAY_BAD_ID');
+      const success=Boolean(req.body?.success);
+      const messageId=String(req.body?.messageId||'').slice(0,500);
+      const error=String(req.body?.error||'').slice(0,2000);
+      if(success){
+        await pool.query(
+          `UPDATE attendance_mail_queue
+           SET status='SENT',sent_at=NOW(),message_id=$2,last_error=NULL,locked_at=NULL,updated_at=NOW()
+           WHERE id=$1`,
+          [id,messageId]
+        );
+        return ok(res,{id,status:'SENT'});
+      }
+      const q=await pool.query('SELECT attempts FROM attendance_mail_queue WHERE id=$1 LIMIT 1',[id]);
+      if(!q.rowCount)return fail(res,404,'메일 작업을 찾을 수 없습니다.','MAIL_RELAY_JOB_NOT_FOUND');
+      const attempts=Number(q.rows[0].attempts||0);
+      const terminal=attempts>=5;
+      await pool.query(
+        `UPDATE attendance_mail_queue
+         SET status=$2,last_error=$3,locked_at=NULL,
+             next_attempt_at=CASE WHEN $2='FAILED' THEN next_attempt_at ELSE NOW()+INTERVAL '1 minute' END,
+             updated_at=NOW()
+         WHERE id=$1`,
+        [id,terminal?'FAILED':'PENDING',error||'메일 발송 실패']
+      );
+      return ok(res,{id,status:terminal?'FAILED':'PENDING'});
+    }catch(e){
+      console.error('[Mail relay result]',e);
+      return fail(res,500,e.message,'MAIL_RELAY_RESULT_FAILED');
     }
   });
 }
@@ -249,7 +248,7 @@ express.application.use=function attendanceMailDirectUse(...args){
   const result=originalUse.apply(this,args);
   if(!this.__namoAttendanceMailDirectInstalled){
     const fns=args.flat().filter(v=>typeof v==='function');
-    if(fns.some(fn=>fn.name==='session'||/session/i.test(String(fn.name||'')))){install(this);console.log('[Attendance mail] direct-mail routes installed')}
+    if(fns.some(fn=>fn.name==='session'||/session/i.test(String(fn.name||'')))){install(this);console.log('[Attendance mail] PC relay routes installed')}
   }
   return result;
 };
