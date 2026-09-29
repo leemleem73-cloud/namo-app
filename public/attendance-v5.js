@@ -481,7 +481,7 @@ async function sendInternalDistribution(){
     };
     const mail=await api('/api/attendance/direct-mail',{method:'POST',body:JSON.stringify({recipients:recipients.map(u=>({id:u.id})),request,pdfBase64,pdfName})});
     closeSheet('distributionSheet');
-    toast('메일 발송 대기 등록 완료 · '+Number(mail?.sent||recipients.length)+'명');
+    toast((mail?.sentDirect?'메일 발송 완료 · ':'메일 발송 대기 등록 완료 · ')+Number(mail?.sent||recipients.length)+'명');
     await openLeaveDetail(state.leaveDetail.id);
   }catch(e){toast(e.message)}
   finally{
