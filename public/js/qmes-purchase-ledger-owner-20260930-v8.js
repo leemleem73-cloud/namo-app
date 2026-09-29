@@ -78,6 +78,7 @@
     if(/합격|적합|pass|ok/i.test(t)) return "합격";
     if(/불합격|부적합|fail|ng/i.test(t)) return "부적합";
     if(/검사|진행/.test(t)) return "검사중";
+    if(inStatus(r)==="입고완료") return "완료";
     return "미착수";
   }
   function dueBase(r){return confirmed(r)||requested(r);}
