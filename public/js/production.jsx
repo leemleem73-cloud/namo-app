@@ -767,6 +767,21 @@ function IssueWoTab() {
   const [issueSearch, setIssueSearch] = useState({ lot: "", item: "", date: "" });
   const [statusVersion, setStatusVersion] = useState(0);
   const issueFormRef = React.useRef(null);
+  const [newModalPos, setNewModalPos] = useState({ x:0, y:0 });
+  const startNewModalDrag = (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest("button,input,select,textarea")) return;
+    e.preventDefault();
+    const startX=e.clientX, startY=e.clientY;
+    const originX=newModalPos.x, originY=newModalPos.y;
+    const onMove=(ev)=>setNewModalPos({x:originX+(ev.clientX-startX),y:originY+(ev.clientY-startY)});
+    const onUp=()=>{
+      window.removeEventListener("mousemove",onMove);
+      window.removeEventListener("mouseup",onUp);
+    };
+    window.addEventListener("mousemove",onMove);
+    window.addEventListener("mouseup",onUp);
+  };
 
   const openWorkOrderPreview = (lotNo, mode = "detail") => {
     setWoPreviewMode(mode);
@@ -814,6 +829,7 @@ function IssueWoTab() {
     }));
     setPlanItems(blankPlanItems(product));
     setPackRows([blankPackRow()]);
+    setNewModalPos({ x:0, y:0 });
     setShowIssueForm(true);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -1449,9 +1465,9 @@ function IssueWoTab() {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          style={{ width:"min(650px,56vw)", maxHeight:"56vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"9px", boxShadow:"0 20px 55px rgba(0,0,0,.26)" }}
+          style={{ width:"min(650px,56vw)", maxHeight:"56vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"9px", boxShadow:"0 20px 55px rgba(0,0,0,.26)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)` }}
         >
-          <div style={{ position:"sticky", top:0, zIndex:3, background:"#fff", borderBottom:"1px solid #d6e0e8", padding:"6px 9px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div onMouseDown={startNewModalDrag} style={{ position:"sticky", top:0, zIndex:3, background:"#fff", borderBottom:"1px solid #d6e0e8", padding:"6px 9px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"move", userSelect:"none" }}>
             <h3 style={{ margin:0, fontSize:"15px", fontWeight:800 }}>신규 작업지시 등록</h3>
             <button
               type="button"
