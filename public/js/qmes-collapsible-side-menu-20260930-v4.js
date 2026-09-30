@@ -40,7 +40,6 @@
       {label:'구매 · 발주관리',icon:'□',tab:'erpPurchase'},
       {label:'재고현황',icon:'▣',inventory:'overview'},
       {label:'생산투입/완료',icon:'↳',inventory:'production'},
-      {label:'재고실사',icon:'✓',inventory:'count'},
       {label:'거래처 현황',icon:'◇',direct:'거래처 현황'}
     ]},
     {label:'MES · QMS',items:[
