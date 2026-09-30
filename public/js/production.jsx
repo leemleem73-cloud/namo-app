@@ -855,7 +855,7 @@ function IssueWoTab() {
     !String(name).includes("중간배치")
   ).concat(allowedIntermediateMaterials.length ? ["중간배치 선택", ...allowedIntermediateMaterials] : []);
   const plannedTotal = planItems.reduce((sum, it) => sum + (Number(it.plan) || 0), 0);
-  const qtyNum = Number(plannedTotal.toFixed(3));
+  const qtyNum = String(form.qty ?? "").trim() !== "" ? Number(Number(form.qty || 0).toFixed(3)) : Number(plannedTotal.toFixed(3));
 
   /* 생산일자·생산구분 기반 자동 채번 — [사이트][년][월][일][당일 순번] */
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(form.prodDate);
@@ -1459,7 +1459,7 @@ function IssueWoTab() {
 
       {showIssueForm && !editingWo && (
       <div
-        className="qmes-modal-backdrop qmes-workorder-new-modal"
+        className="qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
         style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
       >
@@ -1510,7 +1510,7 @@ function IssueWoTab() {
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 계획수량
-                <input type="number" value={qtyNum || ""} readOnly placeholder="0" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="number" value={form.qty ?? ""} onChange={(e) => setForm({ ...form, qty:e.target.value.replace(/[^0-9.]/g,"") })} placeholder="0" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 단위
@@ -1557,7 +1557,7 @@ function IssueWoTab() {
                 <table style={{ width:"100%", minWidth:"720px", borderCollapse:"collapse", fontSize:"8px" }}>
                   <thead>
                     <tr>
-                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
+                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고","삭제"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
@@ -1585,6 +1585,9 @@ function IssueWoTab() {
                         <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
                           <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
                         </td>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px", textAlign:"center" }}>
+                          <button type="button" onClick={() => setPlanItems(planItems.filter((_,i)=>i!==idx))} style={{ height:"26px", border:"1px solid #e2b8b8", background:"#fff", color:"#b23b3b", borderRadius:"4px", padding:"0 8px", fontSize:"9px", fontWeight:800, cursor:"pointer" }}>삭제</button>
+                        </td>
                       </tr>
                     ))}
                     <tr>
@@ -1593,6 +1596,7 @@ function IssueWoTab() {
                       <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>kg</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}></th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}></th>
                     </tr>
                   </tbody>
