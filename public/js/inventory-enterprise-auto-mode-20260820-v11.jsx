@@ -2,7 +2,7 @@
 const INV_STATUS_LABEL={AVAILABLE:'사용가능',IQC_PENDING:'IQC 대기',OQC_PENDING:'OQC 대기',HOLD:'HOLD',NONCONFORM:'부적합',RESERVED:'예약'};
 const INV_CATEGORY_LABEL={RM:'원료',PM:'부자재',WIP:'재공품',FG:'완제품'};
 const INV_TYPE_LABEL={RECEIPT:'입고',ISSUE:'출고',MOVE:'이동',ADJUSTMENT:'조정',PRODUCTION_ISSUE:'생산투입',PRODUCTION_RECEIPT:'생산완료',SHIPMENT:'출하',RETURN:'반품',HOLD:'보류',RELEASE:'보류해제'};
-const INV_MOVEMENT_TYPES=new Set(['RECEIPT','ISSUE','MOVE','PRODUCTION_ISSUE','PRODUCTION_RECEIPT','SHIPMENT','RETURN']);
+const INV_MOVEMENT_TYPES=new Set(['RECEIPT','ISSUE','MOVE','ADJUSTMENT','PRODUCTION_ISSUE','PRODUCTION_RECEIPT','SHIPMENT','RETURN']);
 
 async function invApi(path,options={}){
   const response=await fetch('/api/inventory'+path,{credentials:'same-origin',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
@@ -229,41 +229,84 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
 }
 
 function InventoryMovementSalesDueScreen({rows,page,pages,pageSize,onPage,onReload,onSelect}){
+  const now=new Date();
+  const monthStart=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const [startDate,setStartDate]=useState(monthStart);
+  const [endDate,setEndDate]=useState(today);
+  const [typeFilter,setTypeFilter]=useState('');
+  const [categoryFilter,setCategoryFilter]=useState('');
   const [q,setQ]=useState('');
+
+  const dateKey=value=>{
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return '';
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  const txCategory=tx=>{
+    const raw=String(tx?.category||tx?.item_category||'').trim().toUpperCase();
+    if(raw)return raw;
+    return ['PRODUCTION_RECEIPT','SHIPMENT'].includes(String(tx?.transaction_type||'').toUpperCase())?'FG':'RM';
+  };
+  const typeGroup=tx=>{
+    const type=String(tx?.transaction_type||'').toUpperCase();
+    if(['RECEIPT','PRODUCTION_RECEIPT','RETURN'].includes(type))return 'IN';
+    if(['ISSUE','SHIPMENT'].includes(type))return 'OUT';
+    if(type==='PRODUCTION_ISSUE')return 'CONSUME';
+    if(['ADJUSTMENT','MOVE'].includes(type))return 'ADJUST';
+    return 'OTHER';
+  };
+
   const normalized=String(q||'').trim().toLowerCase();
-  const filtered=rows.filter(tx=>!normalized||[
-    new Date(tx.created_at).toLocaleString('ko-KR'),
-    INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type,
-    txMaterialName(tx),tx.lot_no,invNum(tx.quantity),tx.unit,
-    txDirectionLabel(tx),txDisplayReference(tx)
-  ].join(' ').toLowerCase().includes(normalized));
+  const filtered=rows.filter(tx=>{
+    const day=dateKey(tx.created_at);
+    if(startDate&&day&&day<startDate)return false;
+    if(endDate&&day&&day>endDate)return false;
+    if(typeFilter&&typeGroup(tx)!==typeFilter)return false;
+    if(categoryFilter&&txCategory(tx)!==categoryFilter)return false;
+    if(normalized&&![new Date(tx.created_at).toLocaleString('ko-KR'),INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type,txMaterialName(tx),tx.lot_no,invNum(tx.quantity),tx.unit,txDirectionLabel(tx),txDisplayReference(tx),tx.operator_name,tx.operator_id].join(' ').toLowerCase().includes(normalized))return false;
+    return true;
+  });
+
   const filteredPages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const activePage=Math.min(page,filteredPages);
   const visible=filtered.slice((activePage-1)*pageSize,activePage*pageSize);
-  const incoming=filtered.filter(x=>['RECEIPT','PRODUCTION_RECEIPT','RETURN'].includes(x.transaction_type)).length;
-  const outgoing=filtered.filter(x=>['ISSUE','PRODUCTION_ISSUE','SHIPMENT'].includes(x.transaction_type)).length;
-  const lots=new Set(filtered.map(x=>x.lot_no).filter(Boolean)).size;
+  const incoming=filtered.filter(x=>typeGroup(x)==='IN').length;
+  const outgoing=filtered.filter(x=>typeGroup(x)==='OUT').length;
+  const consumed=filtered.filter(x=>typeGroup(x)==='CONSUME').length;
+  const adjusted=filtered.filter(x=>typeGroup(x)==='ADJUST').length;
+
+  const resetPage=()=>onPage(1);
+
   return <div className="qmes-inv-salesdue-screen">
     <div className="qmes-inv-salesdue-head">
       <h1>재고관리 · 입출고 관리</h1>
       <div className="qmes-inv-salesdue-actions"><button type="button" onClick={onReload}>새로고침</button></div>
     </div>
-    <div className="qmes-inv-salesdue-kpis">
-      <div className="qmes-inv-salesdue-kpi"><span>전체 처리</span><strong>{filtered.length}</strong><small>조회 기준</small></div>
-      <div className="qmes-inv-salesdue-kpi good"><span>입고</span><strong>{incoming}</strong><small>입고·생산완료·반품</small></div>
-      <div className="qmes-inv-salesdue-kpi warn"><span>출고</span><strong>{outgoing}</strong><small>출고·생산투입·출하</small></div>
-      <div className="qmes-inv-salesdue-kpi dark"><span>LOT 수</span><strong>{lots}</strong><small>처리 LOT 기준</small></div>
-    </div>
+
     <div className="qmes-inv-salesdue-filter">
       <div className="qmes-inv-salesdue-grid">
-        <label><span>통합검색</span><input value={q} onChange={e=>{setQ(e.target.value);onPage(1);}} placeholder="일시, 구분, 원료명, LOT, 비고 검색"/></label>
-        <button type="button" className="primary" onClick={()=>onPage(1)}>조회</button>
-        <button type="button" onClick={()=>{setQ('');onPage(1);}}>초기화</button>
+        <label><span>처리기간</span><input type="date" value={startDate} onChange={e=>{setStartDate(e.target.value);resetPage();}}/></label>
+        <div className="qmes-inv-period-sep">~</div>
+        <label><span>&nbsp;</span><input type="date" value={endDate} onChange={e=>{setEndDate(e.target.value);resetPage();}}/></label>
+        <label><span>구분</span><select value={typeFilter} onChange={e=>{setTypeFilter(e.target.value);resetPage();}}><option value="">전체</option><option value="IN">입고</option><option value="OUT">출고</option><option value="CONSUME">소모</option><option value="ADJUST">조정</option></select></label>
+        <label><span>품목구분</span><select value={categoryFilter} onChange={e=>{setCategoryFilter(e.target.value);resetPage();}}><option value="">전체</option><option value="RM">원재료</option><option value="PM">부자재</option><option value="WIP">재공품</option><option value="FG">완제품</option></select></label>
+        <label className="qmes-inv-salesdue-search"><span>통합검색</span><input value={q} onChange={e=>{setQ(e.target.value);resetPage();}} placeholder="품목명, LOT, 근거번호, 담당자 검색"/></label>
+        <button type="button" className="primary" onClick={resetPage}>조회</button>
       </div>
     </div>
+
+    <div className="qmes-inv-salesdue-kpis">
+      <div className="qmes-inv-salesdue-kpi"><span>전체 처리</span><strong>{filtered.length}</strong><small>조회기간 기준</small></div>
+      <div className="qmes-inv-salesdue-kpi good"><span>입고</span><strong>{incoming}</strong><small>정상 입고</small></div>
+      <div className="qmes-inv-salesdue-kpi warn"><span>출고</span><strong>{outgoing}</strong><small>생산/납품 출고</small></div>
+      <div className="qmes-inv-salesdue-kpi dark"><span>소모</span><strong>{consumed}</strong><small>생산 투입/개발</small></div>
+      <div className="qmes-inv-salesdue-kpi bad"><span>조정</span><strong>{adjusted}</strong><small>폐기/재고조정</small></div>
+    </div>
+
     <div className="qmes-inv-salesdue-legend">
-      <div><b>입출고 처리 기준</b> · 생산완료 / 생산투입 / 입고 / 출고 / 출하 LOT 원장</div>
-      <div>※ 바코드는 비고란에서 확인</div>
+      <div><b>입출고 흐름</b> · 구매입고/IQC 합격 → 원재료 재고 반영 → 생산 투입 → 완제품 생산 → 출하/OQC → 완제품 출고</div>
+      <div>LOT 추적 연동</div>
     </div>
     <div className="qmes-inv-salesdue-table-shell">
       <table className="qmes-inv-salesdue-table">
@@ -286,7 +329,6 @@ function InventoryMovementSalesDueScreen({rows,page,pages,pageSize,onPage,onRelo
     </div>
   </div>;
 }
-
 
 function InventoryFilters({query,setQuery,category,setCategory,status,setStatus}){return <div className="inv-filter"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="원료명 / LOT / 위치 검색"/><select value={category} onChange={e=>setCategory(e.target.value)}><option value="">전체 구분</option>{Object.entries(INV_CATEGORY_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">전체 상태</option>{Object.entries(INV_STATUS_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></div>}
 function StockTable({rows}){return <div className="inv-panel inv-stock-panel"><table className="inv-stock-table"><colgroup><col/><col/><col/><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>구분</th><th>원료명</th><th>LOT</th><th>위치</th><th>품질상태</th><th>현재고</th><th>예약</th><th>가용</th><th>유효기간</th></tr></thead><tbody>{rows.map((r,i)=><tr key={i}><td>{INV_CATEGORY_LABEL[r.category]||r.category}</td><td>{r.item_name}</td><td>{r.lot_no}</td><td>{r.location_code==='UNASSIGNED'?'위치확인':r.location_code}</td><td><InvBadge status={r.quality_status}/></td><td className="num">{invNum(r.quantity)} {r.unit}</td><td className="num">{invNum(r.reserved_qty)}</td><td className="num strong">{invNum(r.available_qty)}</td><td>{r.expiry_date?String(r.expiry_date).slice(0,10):'-'}</td></tr>)}</tbody></table>{!rows.length&&<div className="inv-empty">등록된 재고가 없습니다.</div>}</div>}
