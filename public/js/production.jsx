@@ -1459,7 +1459,7 @@ function IssueWoTab() {
 
       {showIssueForm && !editingWo && (
       <div
-        className="qmes-workorder-new-modal"
+        className="qmes-modal-backdrop qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
         style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
       >
