@@ -161,9 +161,10 @@
 
   const nav=side.querySelector('.qmes-erp-nav');
   function removeObsoleteInventoryMovementItem(){
+    const removedLabels=new Set(['입출고 관리','LOT별 재고','재고실사']);
     side.querySelectorAll('.qmes-erp-item').forEach(button=>{
       const label=clean(button.querySelector('.qmes-erp-text')?.textContent||button.textContent);
-      if(label==='입출고 관리')button.remove();
+      if(removedLabels.has(label))button.remove();
     });
   }
   const obsoleteMovementObserver=new MutationObserver(removeObsoleteInventoryMovementItem);
