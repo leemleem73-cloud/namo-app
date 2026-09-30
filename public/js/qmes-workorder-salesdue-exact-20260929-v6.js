@@ -128,7 +128,100 @@ function nativeAction(raw,type){
  },30);
  return true
 }
-function nativeNew(){var b=document.querySelector(".qmes-iqc-new-btn");if(!b)return false;b.click();return true}
+
+var newModalObserver=null;
+function ensureNewModalStyle(){
+ if(document.getElementById("qmes-workorder-new-modal-style-v1"))return;
+ var s=document.createElement("style");s.id="qmes-workorder-new-modal-style-v1";
+ s.textContent=[
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(1120px,92vw)!important;max-height:82vh!important;overflow:auto!important;z-index:2147483000!important;background:#fff!important;border-radius:12px!important;box-shadow:0 0 0 100vmax rgba(22,42,58,.42),0 28px 80px rgba(0,0,0,.28)!important;padding:0!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field{min-width:0!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field{display:flex;flex-direction:column;gap:4px;min-width:0}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field>span{font-size:10px;color:#607589;font-weight:800}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field input,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{width:100%;border:1px solid #cbd8e3;border-radius:5px;background:#fff;color:#26384a;padding:8px;font-size:11px}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{min-height:62px;resize:vertical}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-wide{grid-column:1/-1}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table{min-width:0!important;width:100%!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal [data-qmes-new-hidden='1']{display:none!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-material-note{display:none!important}",
+ "@media(max-width:900px){.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{grid-template-columns:1fr!important}.qmes-wo-issue-shell.qmes-new-workorder-modal{width:95vw!important;max-height:88vh!important}}"
+ ].join("");
+ document.head.appendChild(s);
+}
+function fieldByLabel(shell,text){
+ return [].slice.call(shell.querySelectorAll(".qmes-wo-form-field")).find(function(el){
+   var n=el.querySelector("span");return clean(n&&n.textContent)===text;
+ })||null;
+}
+function renameField(shell,from,to){
+ var f=fieldByLabel(shell,from);if(!f)return null;var n=f.querySelector("span");if(n)n.textContent=to;return f;
+}
+function hideMaterialColumn(table,labelText){
+ if(!table)return;
+ var ths=[].slice.call(table.querySelectorAll("thead th")),idx=ths.findIndex(function(th){return clean(th.textContent)===labelText});
+ if(idx<0)return;
+ ths[idx].setAttribute("data-qmes-new-hidden","1");
+ [].slice.call(table.querySelectorAll("tbody tr")).forEach(function(tr){var cell=tr.children[idx];if(cell)cell.setAttribute("data-qmes-new-hidden","1")});
+}
+function customizeNewModal(){
+ ensureNewModalStyle();
+ var shell=document.querySelector(".qmes-wo-issue-shell");
+ if(!shell)return false;
+ var title=[].slice.call(shell.querySelectorAll("h1,h2,h3,div,span")).find(function(el){var t=clean(el.textContent);return t==="신규 작업지시 발행"||t==="신규 작업지시 등록"});
+ if(!title&&/작업지시 수정/.test(clean(shell.textContent)))return false;
+ shell.classList.add("qmes-new-workorder-modal");
+ if(title)title.textContent="신규 작업지시 등록";
+ [].slice.call(shell.querySelectorAll("span")).forEach(function(el){if(/^LOT No\. 자동 채번/.test(clean(el.textContent)))el.setAttribute("data-qmes-new-hidden","1")});
+ ["작업구분","생산구분","작업시간","생산시간","근무유형"].forEach(function(t){var f=fieldByLabel(shell,t);if(f)f.setAttribute("data-qmes-new-hidden","1")});
+ renameField(shell,"공정 / 품목 (Grd.)","제품명");
+ renameField(shell,"설비명","설비");
+ renameField(shell,"생산일자","생산예정일");
+ renameField(shell,"LOT No.","생산LOT");
+ renameField(shell,"생산계획량 (kg)","계획수량");
+ renameField(shell,"작업자","작성자");
+ var grid=shell.querySelector(".qmes-wo-form-grid");
+ if(grid&&!grid.querySelector(".qmes-workorder-extra-field[data-extra='order-date']")){
+   var today=new Date().toISOString().slice(0,10);
+   var d=document.createElement("div");d.className="qmes-workorder-extra-field";d.setAttribute("data-extra","order-date");d.innerHTML='<span>지시일</span><input type="date" value="'+today+'">';
+   var cust=document.createElement("div");cust.className="qmes-workorder-extra-field";cust.setAttribute("data-extra","customer");cust.innerHTML='<span>고객사</span><input value="현대자동차">';
+   var unit=document.createElement("div");unit.className="qmes-workorder-extra-field";unit.setAttribute("data-extra","unit");unit.innerHTML='<span>단위</span><input value="kg" readonly>';
+   grid.insertBefore(d,grid.firstChild);grid.insertBefore(cust,d.nextSibling);
+   var plan=fieldByLabel(shell,"계획수량");if(plan)grid.insertBefore(unit,plan.nextSibling);else grid.appendChild(unit);
+   var note=document.createElement("div");note.className="qmes-workorder-extra-field qmes-new-wide";note.setAttribute("data-extra","note");note.innerHTML='<span>비고</span><textarea placeholder="작업지시 특이사항"></textarea>';
+   grid.appendChild(note);
+ }
+ var mt=[].slice.call(shell.querySelectorAll("table")).find(function(t){return [].slice.call(t.querySelectorAll("th")).some(function(th){return /원재료명/.test(clean(th.textContent))})});
+ if(mt){
+   var labels=[].slice.call(mt.querySelectorAll("thead th"));
+   labels.forEach(function(th){var t=clean(th.textContent);if(t==="순서")th.textContent="No";if(t==="LOT No.")th.textContent="원재료 LOT";});
+   ["투입상태","사용 후 잔량","오차(%)","투입비율"].forEach(function(t){hideMaterialColumn(mt,t)});
+ }
+ [].slice.call(shell.querySelectorAll("div,span")).forEach(function(el){
+   var t=clean(el.textContent);
+   if(t.indexOf("계획량 합계")>=0||t.indexOf("오차 기준")>=0){el.classList.add("qmes-new-material-note");}
+ });
+ [].slice.call(shell.querySelectorAll("button")).forEach(function(btn){
+   var t=clean(btn.textContent);
+   if(t==="발행"||t==="작업지시 발행"||t==="등록")btn.textContent="저장";
+ });
+ return true;
+}
+function watchNewModal(){
+ if(newModalObserver){newModalObserver.disconnect();newModalObserver=null}
+ var tries=0,timer=setInterval(function(){
+   tries++;
+   if(customizeNewModal()){
+     clearInterval(timer);
+     var shell=document.querySelector(".qmes-wo-issue-shell.qmes-new-workorder-modal");
+     if(shell){
+       newModalObserver=new MutationObserver(function(){customizeNewModal()});
+       newModalObserver.observe(shell,{childList:true,subtree:true});
+     }
+   }else if(tries>50)clearInterval(timer);
+ },30);
+}
+function nativeNew(){var b=document.querySelector(".qmes-iqc-new-btn");if(!b)return false;b.click();watchNewModal();return true}
 function downloadCsv(){var heads=["No","지시일","작업지시번호","고객사","제품명","생산 LOT NO.","계획수량","단위","생산예정일","설비","투입계획량","실투입량","생산수량","수율","PQC","진행상태","작업자","비고"],rows=state.filtered.map(function(r,i){return[i+1,r.date,r.workOrderNo,r.customer,r.product,r.productionLotNo,r.plan,"kg",r.plannedDate,r.equipment,r.plan,r.actual||"",r.actual||"",r.yield==null?"":r.yield.toFixed(1)+"%",r.pqc,r.status,r.worker,r.remarks]});function cell(v){var s=String(v==null?"":v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}var csv="\uFEFF"+[heads].concat(rows).map(function(row){return row.map(cell).join(",")}).join("\r\n"),blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="작업지시서_"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000)}
 function bind(){
  state.host.addEventListener("click",function(e){
