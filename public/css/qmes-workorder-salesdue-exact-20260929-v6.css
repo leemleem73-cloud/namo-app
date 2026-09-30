@@ -67,3 +67,51 @@
   transform-origin:top center!important;
   box-shadow:none!important;
 }
+
+
+/* workorder print preview clean white shell 2026-09-30 */
+/* Print preview only: remove dark shell and unnecessary header text. */
+.qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  background:#f8fafc!important;
+  backdrop-filter:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:16px!important;
+}
+.qmes-wo-viewer.qmes-wo-output-preview{
+  width:min(70vw,1060px)!important;
+  max-width:1060px!important;
+  height:80vh!important;
+  max-height:80vh!important;
+  background:#ffffff!important;
+  color:#1f2937!important;
+  border:1px solid #dbe5ec!important;
+  border-radius:10px!important;
+  box-shadow:0 10px 28px rgba(15,23,42,.10)!important;
+  overflow:auto!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head{
+  min-height:44px!important;
+  height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  background:#ffffff!important;
+  border-bottom:1px solid #e2e8f0!important;
+  color:#1f2937!important;
+  padding:0 12px!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head>div:first-child{
+  display:none!important;
+}
+.qmes-wo-output-preview .qmes-wo-preview-edit-btn{
+  display:none!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  width:100%!important;
+  max-width:940px!important;
+  margin:8px auto 14px!important;
+  zoom:.68!important;
+  transform-origin:top center!important;
+  box-shadow:none!important;
+}
