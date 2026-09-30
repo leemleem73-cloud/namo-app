@@ -223,7 +223,8 @@ function customizeNewModal(){
  var mt=[].slice.call(shell.querySelectorAll("table")).find(function(t){return [].slice.call(t.querySelectorAll("th")).some(function(th){return /원재료명/.test(clean(th.textContent))})});
  if(mt){
    var holder=mt.closest("div");
-   if(holder&&!holder.classList.contains("qmes-new-material-box")){
+   var existingBox=mt.closest(".qmes-new-material-box");
+   if(holder&&!existingBox){
      var box=document.createElement("div");box.className="qmes-new-material-box";box.innerHTML="<h4>투입원료</h4>";
      holder.parentElement.insertBefore(box,holder);box.appendChild(holder);
    }
@@ -251,7 +252,15 @@ function watchNewModal(){
      clearInterval(timer);
      var shell=document.querySelector(".qmes-wo-issue-shell.qmes-new-workorder-modal");
      if(shell){
-       newModalObserver=new MutationObserver(function(){customizeNewModal()});
+       var pending=false;
+       newModalObserver=new MutationObserver(function(){
+         if(pending)return;
+         pending=true;
+         requestAnimationFrame(function(){
+           pending=false;
+           if(shell.isConnected)customizeNewModal();
+         });
+       });
        newModalObserver.observe(shell,{childList:true,subtree:true});
      }
    }else if(tries>60)clearInterval(timer);
