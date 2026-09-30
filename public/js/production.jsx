@@ -1465,7 +1465,7 @@ function IssueWoTab() {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          style={{ width:"min(650px,56vw)", maxHeight:"56vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"9px", boxShadow:"0 20px 55px rgba(0,0,0,.26)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)` }}
+          style={{ width:"min(900px,76vw)", maxHeight:"56vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"9px", boxShadow:"0 20px 55px rgba(0,0,0,.26)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)` }}
         >
           <div onMouseDown={startNewModalDrag} style={{ position:"sticky", top:0, zIndex:3, background:"#fff", borderBottom:"1px solid #d6e0e8", padding:"6px 9px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"move", userSelect:"none" }}>
             <h3 style={{ margin:0, fontSize:"15px", fontWeight:800 }}>신규 작업지시 등록</h3>
