@@ -304,11 +304,18 @@ function printDoc(sourceEl) {
   clone.style.setProperty("box-shadow", "none", "important");
 
   if (isWorkOrder) {
-    /* 화면용 zoom을 제거한 뒤, 실제 전체 문서 크기를 A4에 맞춰 다시 축소 */
+    /* 작업지시서 인쇄만: 외곽 파란 줄/줄무늬 제거 + A4 맞춤 */
     clone.style.setProperty("zoom", String(scale), "important");
     clone.style.setProperty("transform", "none", "important");
     clone.style.setProperty("transform-origin", "top left", "important");
     clone.style.setProperty("overflow", "visible", "important");
+    clone.style.setProperty("border", "0", "important");
+    clone.style.setProperty("border-left", "0", "important");
+    clone.style.setProperty("border-right", "0", "important");
+    clone.style.setProperty("outline", "0", "important");
+    clone.style.setProperty("box-shadow", "none", "important");
+    clone.style.setProperty("background-image", "none", "important");
+    clone.style.setProperty("background-color", "#fff", "important");
   } else {
     clone.style.setProperty("transform", "none", "important");
     clone.style.setProperty("zoom", String(scale), "important");
@@ -322,7 +329,9 @@ function printDoc(sourceEl) {
                     source.classList.contains("qmes-oqc-doc"))) ? 12 * MM_TO_PX : 0;
   const stageTop = centerCoaOnA4
     ? Math.max(MARGIN, (PAGE_H - workOrderLayoutH * scale) / 2)
-    : MARGIN;
+    : isWorkOrder
+      ? MARGIN + (12 * MM_TO_PX)
+      : MARGIN;
   stage.style.setProperty("width", (workOrderLayoutW * scale) + "px", "important");
   stage.style.setProperty("height", isWorkOrder ? (workOrderLayoutH * scale) + "px" : "auto", "important");
   stage.style.setProperty("margin", stageTop + "px auto 0", "important");
