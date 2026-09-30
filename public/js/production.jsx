@@ -1449,10 +1449,10 @@ function IssueWoTab() {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          style={{ width:"min(900px,76vw)", maxHeight:"70vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"10px", boxShadow:"0 24px 65px rgba(0,0,0,.28)" }}
+          style={{ width:"min(650px,56vw)", maxHeight:"56vh", overflow:"auto", background:"#fff", color:"#26384a", borderRadius:"9px", boxShadow:"0 20px 55px rgba(0,0,0,.26)" }}
         >
-          <div style={{ position:"sticky", top:0, zIndex:3, background:"#fff", borderBottom:"1px solid #d6e0e8", padding:"8px 11px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <h3 style={{ margin:0, fontSize:"17px", fontWeight:800 }}>신규 작업지시 등록</h3>
+          <div style={{ position:"sticky", top:0, zIndex:3, background:"#fff", borderBottom:"1px solid #d6e0e8", padding:"6px 9px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <h3 style={{ margin:0, fontSize:"15px", fontWeight:800 }}>신규 작업지시 등록</h3>
             <button
               type="button"
               onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
@@ -1461,11 +1461,11 @@ function IssueWoTab() {
             >×</button>
           </div>
 
-          <div style={{ padding:"9px" }}>
+          <div style={{ padding:"7px" }}>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"9px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 지시일
-                <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 고객사
@@ -1473,7 +1473,7 @@ function IssueWoTab() {
                   type="text"
                   defaultValue=""
                   placeholder="고객사명 직접 입력"
-                  style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
+                  style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
                 />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
@@ -1483,43 +1483,43 @@ function IssueWoTab() {
                   value={form.product}
                   onChange={(e) => setForm({ ...form, product:e.target.value })}
                   placeholder="제품명 직접 입력"
-                  style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
+                  style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
                 />
               </label>
 
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 생산LOT
-                <input value={form.lotNo} onChange={(e) => setForm({ ...form, lotNo:e.target.value.toUpperCase().replace(/\s/g,"") })} placeholder="생산LOT 수기 입력" style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input value={form.lotNo} onChange={(e) => setForm({ ...form, lotNo:e.target.value.toUpperCase().replace(/\s/g,"") })} placeholder="생산LOT 수기 입력" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 계획수량
-                <input type="number" value={qtyNum || ""} readOnly placeholder="0" style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="number" value={qtyNum || ""} readOnly placeholder="0" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 단위
-                <select defaultValue="kg" style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
+                <select defaultValue="kg" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
                   <option>kg</option><option>EA</option>
                 </select>
               </label>
 
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 생산예정일
-                <input type="text" data-qmes-workorder-date="1" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} placeholder="YYYY-MM-DD" style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="text" data-qmes-workorder-date="1" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} placeholder="YYYY-MM-DD" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 설비
-                <select value="HSM" onChange={() => {}} style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
+                <select value="HSM" onChange={() => {}} style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
                   <option value="HSM">HSM</option>
                 </select>
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 작성자
-                <input value={form.worker} onChange={(e) => setForm({ ...form, worker:e.target.value })} placeholder="작성자" style={{ height:"29px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input value={form.worker} onChange={(e) => setForm({ ...form, worker:e.target.value })} placeholder="작성자" style={{ height:"26px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
 
               <label style={{ gridColumn:"1/-1", display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 비고
-                <textarea placeholder="작업지시 특이사항" style={{ minHeight:"42px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"8px", background:"#fff", color:"#26384a", resize:"vertical" }} />
+                <textarea placeholder="작업지시 특이사항" style={{ minHeight:"34px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"8px", background:"#fff", color:"#26384a", resize:"vertical" }} />
               </label>
             </div>
 
@@ -1537,46 +1537,46 @@ function IssueWoTab() {
                 >+ 원료 행 추가</button>
               </div>
               <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", minWidth:"820px", borderCollapse:"collapse", fontSize:"8.5px" }}>
+                <table style={{ width:"100%", minWidth:"720px", borderCollapse:"collapse", fontSize:"8px" }}>
                   <thead>
                     <tr>
-                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
+                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
                     {planItems.map((it, idx) => (
                       <tr key={idx}>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px", textAlign:"center" }}>{idx+1}</td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px" }}>
-                          <select value={it.name} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,name:e.target.value}:r))} style={{ width:"100%", height:"29px", border:"1px solid #cad8e4", borderRadius:"4px", background:"#fff", color:"#26384a" }}>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px", textAlign:"center" }}>{idx+1}</td>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
+                          <select value={it.name} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,name:e.target.value}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", background:"#fff", color:"#26384a" }}>
                             {availableMaterialOptions.filter((n)=>n!=="중간배치 선택").map((name)=><option key={name}>{name}</option>)}
                           </select>
                         </td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px" }}>
-                          <input value={it.materialLot || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,materialLot:e.target.value.toUpperCase()}:r))} style={{ width:"100%", height:"29px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
+                          <input value={it.materialLot || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,materialLot:e.target.value.toUpperCase()}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
                         </td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px" }}>
-                          <input value={it.plan ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,plan:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"29px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
+                          <input value={it.plan ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,plan:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
                         </td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px" }}>
-                          <input value={it.actual ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,actual:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"29px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
+                          <input value={it.actual ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,actual:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
                         </td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px", textAlign:"center", fontWeight:700, color:"#40566a" }}>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px", textAlign:"center", fontWeight:700, color:"#40566a" }}>
                           {Number(it.plan) > 0 && Number(it.actual) >= 0 && String(it.actual ?? "").trim() !== "" ? `${((Number(it.actual) / Number(it.plan)) * 100).toFixed(2)}%` : "-"}
                         </td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px", textAlign:"center" }}>{it.unit || "kg"}</td>
-                        <td style={{ border:"1px solid #dbe4eb", padding:"4px" }}>
-                          <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"29px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px", textAlign:"center" }}>{it.unit || "kg"}</td>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"3px" }}>
+                          <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"26px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
                         </td>
                       </tr>
                     ))}
                     <tr>
-                      <th colSpan="3" style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}>계</th>
-                      <th style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}>{plannedTotal.toFixed(3)}</th>
-                      <th style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
-                      <th style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
-                      <th style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}>kg</th>
-                      <th style={{ border:"1px solid #dbe4eb", padding:"4px", background:"#fff" }}></th>
+                      <th colSpan="3" style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>계</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>{plannedTotal.toFixed(3)}</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}>kg</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"3px", background:"#fff" }}></th>
                     </tr>
                   </tbody>
                 </table>
