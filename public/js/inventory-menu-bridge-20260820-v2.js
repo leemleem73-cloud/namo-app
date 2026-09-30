@@ -8,7 +8,7 @@
   let restoreScheduled=false;
   const SURFACE_KEY='qmes_current_surface';
   const SECTION_KEY='qmes_inventory_section';
-  const sections=[['overview','재고현황'],['movement','입출고 관리'],['lot','LOT별 재고'],['production','생산투입/완료'],['count','재고실사']];
+  const sections=[['overview','재고현황'],['production','생산투입/완료']];
   const clean=v=>String(v==null?'':v).replace(/\s+/g,' ').trim();
 
   function setSurface(value){
