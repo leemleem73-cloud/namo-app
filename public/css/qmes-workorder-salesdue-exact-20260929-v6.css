@@ -33,27 +33,37 @@
 #qmes-workorder-salesdue-exact-v6 .qwf2-table th:nth-child(19),#qmes-workorder-salesdue-exact-v6 .qwf2-table td:nth-child(19){width:120px!important}
 #qmes-workorder-salesdue-exact-v6 .qrl-actions .qrl-delete-btn{border:1px solid #efaaa6!important;background:#fff!important;color:#cc3a31!important}
 
-
-/* workorder print preview light shell 2026-09-30 */
+/* workorder print preview compact white shell 2026-09-30 */
 .qmes-workorder-salesdue-exact-v6 .qmes-modal-backdrop{
-  background:rgba(241,245,249,.94)!important;
+  background:rgba(248,250,252,.98)!important;
   backdrop-filter:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:18px!important;
 }
 .qmes-workorder-salesdue-exact-v6 .qmes-wo-viewer.qmes-wo-output-preview{
-  width:min(82vw,1280px)!important;
-  max-width:1280px!important;
-  height:88vh!important;
-  max-height:88vh!important;
-  background:#f8fafc!important;
-  border:1px solid #cbd5e1!important;
-  box-shadow:0 18px 48px rgba(15,23,42,.18)!important;
+  width:min(74vw,1120px)!important;
+  max-width:1120px!important;
+  height:84vh!important;
+  max-height:84vh!important;
+  background:#ffffff!important;
+  border:1px solid #d7e0e7!important;
+  border-radius:12px!important;
+  box-shadow:0 12px 34px rgba(15,23,42,.12)!important;
+  overflow:auto!important;
 }
 .qmes-workorder-salesdue-exact-v6 .qmes-wo-output-preview .qmes-wo-viewer-head{
+  min-height:48px!important;
+  height:48px!important;
   background:#ffffff!important;
   border-bottom:1px solid #dbe5ec!important;
   color:#1f2937!important;
 }
 .qmes-workorder-salesdue-exact-v6 .qmes-wo-output-preview .qmes-issued-preview-cert{
+  width:100%!important;
   max-width:980px!important;
-  margin:14px auto 24px!important;
+  margin:10px auto 18px!important;
+  zoom:.72!important;
+  transform-origin:top center!important;
+  box-shadow:none!important;
 }
