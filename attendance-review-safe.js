@@ -99,6 +99,20 @@ function install(app){
       return ok(res,{...q.rows[0],reviewer:{id:reviewer.id,name:reviewer.name,email:reviewer.email,title:reviewer.title,department:reviewer.department,reviewerKind:reviewerKind(reviewer)},finalApprover:{id:ceo.id,name:ceo.name,email:ceo.email,title:ceo.title,department:ceo.department}},'검토 요청이 전달되었습니다. 검토 완료 후 대표이사 최종 승인으로 진행됩니다.');
     }catch(e){console.error('[Attendance leave-v2]',e);return fail(res,500,'검토 요청 등록에 실패했습니다.');}
   });
+  app.post('/api/attendance/leave/:id/update-v2',requireLogin,async(req,res)=>{
+    try{
+      await ensureSchema();
+      const cur=await pool.query('SELECT * FROM leave_requests WHERE id=$1 AND user_id=$2 LIMIT 1',[req.params.id,req.session.user.id]);
+      if(!cur.rowCount)return fail(res,404,'수정할 신청을 찾을 수 없습니다.');
+      if(cur.rows[0].status!=='PENDING_1')return fail(res,409,'검토 전 신청만 수정할 수 있습니다.');
+      const{leaveType,startDate,endDate,days,reason='',reviewerId=''}=req.body||{};const n=Number(days);
+      if(!startDate||!endDate||!Number.isFinite(n)||n<=0)return fail(res,400,'수정 내용을 확인해주세요.');
+      const reviewer=await userById(reviewerId);if(!reviewer||!activeStatus(reviewer.status)||!reviewerEligible(reviewer))return fail(res,400,'검토자를 다시 선택해주세요.');
+      const ceo=await finalApprover();if(!ceo)return fail(res,400,'최종 승인자(대표이사)가 등록되어 있지 않습니다.');
+      const q=await pool.query("UPDATE leave_requests SET leave_type=$3,start_date=$4,end_date=$5,days=$6,reason=$7,approver1_user_id=$8,approver2_user_id=$9,updated_at=NOW() WHERE id=$1 AND user_id=$2 AND status='PENDING_1' RETURNING *",[req.params.id,req.session.user.id,leaveType,startDate,endDate,n,String(reason).slice(0,1000),reviewer.id,ceo.id]);
+      return ok(res,q.rows[0],'신청 내용이 수정되었습니다.');
+    }catch(e){console.error('[Attendance leave update-v2]',e);return fail(res,500,'신청 수정에 실패했습니다.');}
+  });
   app.get('/api/attendance/reviews-v2',requireLogin,async(req,res)=>{
     try{
       await ensureSchema();const uid=req.session.user.id;
