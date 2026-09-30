@@ -84,3 +84,12 @@
   transform-origin:top center!important;
   box-shadow:none!important;
 }
+
+
+/* direct print: no preview screen 2026-09-30 */
+body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  opacity:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+}
