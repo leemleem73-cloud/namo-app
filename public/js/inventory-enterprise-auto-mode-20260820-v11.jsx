@@ -133,16 +133,8 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
   filtered.forEach(r=>{
     const key=[r.category||'',r.item_code||'',r.item_name||'',r.unit||'kg'].join('|');
     const g=groups.get(key)||{
-      category:r.category||'',
-      item_code:r.item_code||'',
-      item_name:r.item_name||r.item_code||'-',
-      unit:r.unit||'kg',
-      rows:[],
-      lots:new Set(),
-      total:0,
-      reserved:0,
-      available:0,
-      hold:0
+      category:r.category||'',item_code:r.item_code||'',item_name:r.item_name||r.item_code||'-',unit:r.unit||'kg',
+      rows:[],lots:new Set(),total:0,reserved:0,available:0,hold:0
     };
     g.rows.push(r);
     if(r.lot_no)g.lots.add(r.lot_no);
@@ -165,8 +157,7 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
     window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:'lot'}}));
   };
   const openBarcode=(g)=>{
-    const lotRows=g.rows.filter(r=>r.lot_no);
-    const chosen=lotRows[0]||g.rows[0];
+    const chosen=g.rows.find(r=>r.lot_no)||g.rows[0];
     if(!chosen)return;
     const match=(Array.isArray(transactions)?transactions:[]).find(tx=>
       String(tx.item_code||'')===String(chosen.item_code||'') &&
@@ -187,44 +178,42 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
     });
   };
 
-  return <div className="qmes-inv-overview-v1">
+  return <div className="qmes-inv-overview-purchase-v1">
+    <div className="qio-title-row"><h1>재고현황</h1><div className="qio-title-actions"><button type="button">엑셀 다운로드</button></div></div>
+
     <div className="qio-kpis">
-      <div><span>전체 품목</span><strong>{new Set(allRows.map(r=>r.item_code||r.item_name).filter(Boolean)).size}</strong><small>원재료 + 완제품</small></div>
-      <div className="good"><span>원재료 재고</span><strong>{invNum(rm)}</strong><small>kg</small></div>
-      <div className="good"><span>완제품 재고</span><strong>{invNum(fg)}</strong><small>kg</small></div>
-      <div className="warn"><span>안전재고 미만</span><strong>{lowItems}</strong><small>품목</small></div>
-      <div className="dark"><span>검사/보류</span><strong>{pendingLots}</strong><small>LOT</small></div>
-      <div className="bad"><span>격리</span><strong>{holdLots}</strong><small>LOT</small></div>
+      <div className="qio-kpi info"><span>전체 품목</span><strong>{new Set(allRows.map(r=>r.item_code||r.item_name).filter(Boolean)).size}</strong><small>원재료 + 완제품</small></div>
+      <div className="qio-kpi good"><span>원재료 재고</span><strong>{invNum(rm)}</strong><small>kg</small></div>
+      <div className="qio-kpi good"><span>완제품 재고</span><strong>{invNum(fg)}</strong><small>kg</small></div>
+      <div className="qio-kpi warn"><span>안전재고 미만</span><strong>{lowItems}</strong><small>품목</small></div>
+      <div className="qio-kpi dark"><span>검사/보류</span><strong>{pendingLots}</strong><small>LOT</small></div>
+      <div className="qio-kpi bad"><span>격리</span><strong>{holdLots}</strong><small>LOT</small></div>
     </div>
 
-    <div className="qio-filter">
-      <label><span>품목구분</span><select value={kind} onChange={e=>setKind(e.target.value)}><option value="">전체</option><option value="RM">원재료</option><option value="PM">부자재</option><option value="WIP">재공품</option><option value="FG">완제품</option></select></label>
-      <label><span>재고상태</span><select value={state} onChange={e=>setState(e.target.value)}><option value="">전체</option>{Object.entries(INV_STATUS_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
-      <label><span>품목명</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="품목명 검색"/></label>
-      <label><span>LOT 여부</span><select value={lotOnly} onChange={e=>setLotOnly(e.target.value)}><option value="">전체</option><option value="Y">LOT 있음</option><option value="N">LOT 없음</option></select></label>
-      <label className="qio-search"><span>통합검색</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="품목명, LOT, 위치 검색"/></label>
-      <button type="button">조회</button>
+    <div className="qio-filter-row">
+      <div className="qio-field"><label>품목구분</label><select className="qio-control" value={kind} onChange={e=>setKind(e.target.value)}><option value="">전체</option><option value="RM">원재료</option><option value="PM">부자재</option><option value="WIP">재공품</option><option value="FG">완제품</option></select></div>
+      <div className="qio-field"><label>재고상태</label><select className="qio-control" value={state} onChange={e=>setState(e.target.value)}><option value="">전체</option>{Object.entries(INV_STATUS_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></div>
+      <div className="qio-field"><label>품목명</label><input className="qio-control" value={name} onChange={e=>setName(e.target.value)} placeholder="품목명 검색"/></div>
+      <div className="qio-field"><label>LOT 여부</label><select className="qio-control" value={lotOnly} onChange={e=>setLotOnly(e.target.value)}><option value="">전체</option><option value="Y">LOT 있음</option><option value="N">LOT 없음</option></select></div>
+      <div className="qio-field"><label>통합검색</label><input className="qio-control" value={q} onChange={e=>setQ(e.target.value)} placeholder="품목명, LOT, 위치 검색"/></div>
+      <button type="button" className="qio-search">조회</button>
     </div>
 
-    <div className="qio-table-card">
-      <div className="qio-table-head"><h3>품목별 재고 현황</h3><span>LOT별 재고의 품목 합계</span></div>
-      <div className="qio-table-scroll">
-        <table className="qio-table">
-          <thead><tr><th>No</th><th>품목구분</th><th>품목명</th><th>LOT 수</th><th>총입고</th><th>총출고/소모</th><th>현재고</th><th>사용가능</th><th>보류/격리</th><th>단위</th><th>상태</th><th>관리</th></tr></thead>
-          <tbody>{grouped.length?grouped.map((g,i)=>{
-            const totalOut=Math.max(0,g.total-g.available);
-            const tone=g.available<=0?'부족':'정상';
-            return <tr key={[g.category,g.item_code,g.item_name].join('|')}>
-              <td>{i+1}</td><td>{INV_CATEGORY_LABEL[g.category]||g.category||'-'}</td><td>{g.item_name}</td><td>{g.lots.size}</td>
-              <td>{invNum(g.total)}</td><td>{invNum(totalOut)}</td><td className="qio-current">{invNum(g.available)}</td><td>{invNum(g.available)}</td><td>{invNum(g.hold)}</td><td>{g.unit}</td>
-              <td><span className={'qio-status '+(tone==='정상'?'good':'warn')}>{tone}</span></td>
-              <td><div className="qio-actions"><button type="button" onClick={()=>openLot(g)}>LOT 보기</button><button type="button" onClick={()=>openBarcode(g)}>바코드</button></div></td>
-            </tr>
-          }):<tr><td colSpan="12" className="qio-empty">재고 데이터가 없습니다.</td></tr>}</tbody>
-        </table>
-      </div>
-    </div>
-    <div className="qio-note">※ 재고현황에서는 수량을 직접 수정하지 않고, 입출고 원장과 LOT별 재고를 기준으로 자동 집계합니다.</div>
+    <div className="qio-notice"><span><strong>재고 핵심관리</strong> · 품목별 현재고 · LOT 수 · 사용가능 · 보류/격리 · LOT별 재고 연동</span><span>※ 관리에서 LOT 보기 / 바코드 확인</span></div>
+
+    <div className="qio-table-box"><div className="qio-table-scroll"><table className="qio-table">
+      <thead><tr><th>No</th><th>품목구분</th><th>품목명</th><th>LOT 수</th><th>총입고</th><th>총출고/소모</th><th>현재고</th><th>사용가능</th><th>보류/격리</th><th>단위</th><th>상태</th><th>관리</th></tr></thead>
+      <tbody>{grouped.length?grouped.map((g,i)=>{
+        const totalOut=Math.max(0,g.total-g.available);
+        const tone=g.available<=0?'부족':'정상';
+        return <tr key={[g.category,g.item_code,g.item_name].join('|')}>
+          <td>{i+1}</td><td>{INV_CATEGORY_LABEL[g.category]||g.category||'-'}</td><td>{g.item_name}</td><td>{g.lots.size}</td>
+          <td>{invNum(g.total)}</td><td>{invNum(totalOut)}</td><td className="qio-current">{invNum(g.available)}</td><td>{invNum(g.available)}</td><td>{invNum(g.hold)}</td><td>{g.unit}</td>
+          <td><span className={'qio-status '+(tone==='정상'?'good':'warn')}>{tone}</span></td>
+          <td><div className="qio-actions"><button type="button" onClick={()=>openLot(g)}>LOT 보기</button><button type="button" onClick={()=>openBarcode(g)}>바코드</button></div></td>
+        </tr>
+      }):<tr><td colSpan="12" className="qio-empty">재고 데이터가 없습니다.</td></tr>}</tbody>
+    </table></div></div>
   </div>;
 }
 
