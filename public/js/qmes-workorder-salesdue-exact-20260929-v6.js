@@ -131,21 +131,29 @@ function nativeAction(raw,type){
 
 var newModalObserver=null;
 function ensureNewModalStyle(){
- if(document.getElementById("qmes-workorder-new-modal-style-v1"))return;
- var s=document.createElement("style");s.id="qmes-workorder-new-modal-style-v1";
+ if(document.getElementById("qmes-workorder-new-modal-style-v2"))return;
+ var s=document.createElement("style");s.id="qmes-workorder-new-modal-style-v2";
  s.textContent=[
- ".qmes-wo-issue-shell.qmes-new-workorder-modal{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(1120px,92vw)!important;max-height:82vh!important;overflow:auto!important;z-index:2147483000!important;background:#fff!important;border-radius:12px!important;box-shadow:0 0 0 100vmax rgba(22,42,58,.42),0 28px 80px rgba(0,0,0,.28)!important;padding:0!important}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field{min-width:0!important}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field{display:flex;flex-direction:column;gap:4px;min-width:0}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field>span{font-size:10px;color:#607589;font-weight:800}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field input,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{width:100%;border:1px solid #cbd8e3;border-radius:5px;background:#fff;color:#26384a;padding:8px;font-size:11px}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{min-height:62px;resize:vertical}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-wide{grid-column:1/-1}",
- ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table{min-width:0!important;width:100%!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(1120px,92vw)!important;max-height:88vh!important;overflow:auto!important;z-index:2147483000!important;background:#fff!important;color:#26384a!important;border-radius:11px!important;box-shadow:0 0 0 100vmax rgba(17,35,49,.42),0 24px 65px rgba(0,0,0,.28)!important;padding:0!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal>div{background:#fff!important;border:0!important;box-shadow:none!important;color:#26384a!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal h1,.qmes-wo-issue-shell.qmes-new-workorder-modal h2,.qmes-wo-issue-shell.qmes-new-workorder-modal h3{color:#26384a!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;padding:17px 17px 0!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field>span,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field>span{font-size:9px!important;color:#64788a!important;font-weight:800!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field input,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-field select,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field input,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field select,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{width:100%!important;height:34px!important;border:1px solid #cad8e4!important;border-radius:5px!important;background:#fff!important;color:#26384a!important;padding:7px 9px!important;font-size:10px!important;box-shadow:none!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-workorder-extra-field textarea{height:70px!important;min-height:70px!important;resize:vertical!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-wide{grid-column:1/-1!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-material-box{margin:12px 17px 0!important;border:1px solid #d6e0e8!important;border-radius:8px!important;background:#fff!important;padding:11px!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-material-box h4{margin:0 0 9px!important;font-size:11px!important;color:#26384a!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table{min-width:0!important;width:100%!important;border-collapse:collapse!important;font-size:9px!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table th,.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table td{border:1px solid #dbe4eb!important;padding:7px!important;text-align:center!important;background:#fff!important;color:#3b4d5f!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-material-table thead th{background:#edf5fa!important;color:#4b6477!important;position:static!important}",
  ".qmes-wo-issue-shell.qmes-new-workorder-modal [data-qmes-new-hidden='1']{display:none!important}",
  ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-material-note{display:none!important}",
- "@media(max-width:900px){.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{grid-template-columns:1fr!important}.qmes-wo-issue-shell.qmes-new-workorder-modal{width:95vw!important;max-height:88vh!important}}"
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-footer{display:flex!important;justify-content:flex-end!important;gap:7px!important;padding:13px 17px 17px!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-footer button{height:34px!important;border:1px solid #c7d5e1!important;background:#fff!important;border-radius:6px!important;padding:0 13px!important;font-size:10px!important;font-weight:800!important;color:#40566a!important}",
+ ".qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-new-footer button.qmes-new-save{background:#138dcc!important;color:#fff!important;border-color:#138dcc!important}",
+ "@media(max-width:900px){.qmes-wo-issue-shell.qmes-new-workorder-modal .qmes-wo-form-grid{grid-template-columns:1fr!important}.qmes-wo-issue-shell.qmes-new-workorder-modal{width:95vw!important;max-height:90vh!important}}"
  ].join("");
  document.head.appendChild(s);
 }
@@ -164,15 +172,29 @@ function hideMaterialColumn(table,labelText){
  ths[idx].setAttribute("data-qmes-new-hidden","1");
  [].slice.call(table.querySelectorAll("tbody tr")).forEach(function(tr){var cell=tr.children[idx];if(cell)cell.setAttribute("data-qmes-new-hidden","1")});
 }
+function hideSalesLinkStrip(){
+ [].slice.call(document.querySelectorAll("body *")).forEach(function(el){
+   if(el===document.body||el===document.documentElement)return;
+   var t=clean(el.textContent);
+   if(t==="연결 수주번호"||t==="연결 가능한 미발행 수주 없음"){
+     var p=el.parentElement;
+     if(p&&clean(p.textContent).indexOf("수주 선택")>=0)p.setAttribute("data-qmes-new-hidden","1");
+   }
+ });
+}
 function customizeNewModal(){
  ensureNewModalStyle();
  var shell=document.querySelector(".qmes-wo-issue-shell");
  if(!shell)return false;
- var title=[].slice.call(shell.querySelectorAll("h1,h2,h3,div,span")).find(function(el){var t=clean(el.textContent);return t==="신규 작업지시 발행"||t==="신규 작업지시 등록"});
- if(!title&&/작업지시 수정/.test(clean(shell.textContent)))return false;
+ var all=clean(shell.textContent);
+ if(/작업지시 수정/.test(all)&&!/(신규 작업지시 발행|신규 작업지시 등록)/.test(all))return false;
  shell.classList.add("qmes-new-workorder-modal");
- if(title)title.textContent="신규 작업지시 등록";
+ hideSalesLinkStrip();
+
+ var heading=[].slice.call(shell.querySelectorAll("h1,h2,h3")).find(function(el){return /(신규 작업지시 발행|신규 작업지시 등록)/.test(clean(el.textContent))});
+ if(heading)heading.textContent="신규 작업지시 등록";
  [].slice.call(shell.querySelectorAll("span")).forEach(function(el){if(/^LOT No\. 자동 채번/.test(clean(el.textContent)))el.setAttribute("data-qmes-new-hidden","1")});
+
  ["작업구분","생산구분","작업시간","생산시간","근무유형"].forEach(function(t){var f=fieldByLabel(shell,t);if(f)f.setAttribute("data-qmes-new-hidden","1")});
  renameField(shell,"공정 / 품목 (Grd.)","제품명");
  renameField(shell,"설비명","설비");
@@ -180,31 +202,45 @@ function customizeNewModal(){
  renameField(shell,"LOT No.","생산LOT");
  renameField(shell,"생산계획량 (kg)","계획수량");
  renameField(shell,"작업자","작성자");
+
  var grid=shell.querySelector(".qmes-wo-form-grid");
- if(grid&&!grid.querySelector(".qmes-workorder-extra-field[data-extra='order-date']")){
+ if(grid&&!grid.querySelector("[data-extra='order-date']")){
    var today=new Date().toISOString().slice(0,10);
    var d=document.createElement("div");d.className="qmes-workorder-extra-field";d.setAttribute("data-extra","order-date");d.innerHTML='<span>지시일</span><input type="date" value="'+today+'">';
-   var cust=document.createElement("div");cust.className="qmes-workorder-extra-field";cust.setAttribute("data-extra","customer");cust.innerHTML='<span>고객사</span><input value="현대자동차">';
-   var unit=document.createElement("div");unit.className="qmes-workorder-extra-field";unit.setAttribute("data-extra","unit");unit.innerHTML='<span>단위</span><input value="kg" readonly>';
+   var cust=document.createElement("div");cust.className="qmes-workorder-extra-field";cust.setAttribute("data-extra","customer");cust.innerHTML='<span>고객사</span><select><option>현대자동차</option><option>알파라인</option></select>';
    grid.insertBefore(d,grid.firstChild);grid.insertBefore(cust,d.nextSibling);
-   var plan=fieldByLabel(shell,"계획수량");if(plan)grid.insertBefore(unit,plan.nextSibling);else grid.appendChild(unit);
-   var note=document.createElement("div");note.className="qmes-workorder-extra-field qmes-new-wide";note.setAttribute("data-extra","note");note.innerHTML='<span>비고</span><textarea placeholder="작업지시 특이사항"></textarea>';
-   grid.appendChild(note);
+
+   var product=fieldByLabel(shell,"제품명");if(product)grid.insertBefore(product,cust.nextSibling);
+   var lot=fieldByLabel(shell,"생산LOT");if(lot)grid.insertBefore(lot,product?product.nextSibling:null);
+   var plan=fieldByLabel(shell,"계획수량");if(plan)grid.insertBefore(plan,lot?lot.nextSibling:null);
+   var unit=document.createElement("div");unit.className="qmes-workorder-extra-field";unit.setAttribute("data-extra","unit");unit.innerHTML='<span>단위</span><select><option>kg</option><option>EA</option></select>';if(plan)grid.insertBefore(unit,plan.nextSibling);else grid.appendChild(unit);
+   var date=fieldByLabel(shell,"생산예정일");if(date)grid.appendChild(date);
+   var eq=fieldByLabel(shell,"설비");if(eq)grid.appendChild(eq);
+   var author=fieldByLabel(shell,"작성자");if(author)grid.appendChild(author);
+   var note=document.createElement("div");note.className="qmes-workorder-extra-field qmes-new-wide";note.setAttribute("data-extra","note");note.innerHTML='<span>비고</span><textarea placeholder="작업지시 특이사항"></textarea>';grid.appendChild(note);
  }
+
  var mt=[].slice.call(shell.querySelectorAll("table")).find(function(t){return [].slice.call(t.querySelectorAll("th")).some(function(th){return /원재료명/.test(clean(th.textContent))})});
  if(mt){
-   var labels=[].slice.call(mt.querySelectorAll("thead th"));
-   labels.forEach(function(th){var t=clean(th.textContent);if(t==="순서")th.textContent="No";if(t==="LOT No.")th.textContent="원재료 LOT";});
+   var holder=mt.closest("div");
+   if(holder&&!holder.classList.contains("qmes-new-material-box")){
+     var box=document.createElement("div");box.className="qmes-new-material-box";box.innerHTML="<h4>투입원료</h4>";
+     holder.parentElement.insertBefore(box,holder);box.appendChild(holder);
+   }
+   [].slice.call(mt.querySelectorAll("thead th")).forEach(function(th){var t=clean(th.textContent);if(t==="순서")th.textContent="No";if(t==="LOT No.")th.textContent="원재료 LOT";if(t==="계획량")th.textContent="투입량";});
    ["투입상태","사용 후 잔량","오차(%)","투입비율"].forEach(function(t){hideMaterialColumn(mt,t)});
  }
- [].slice.call(shell.querySelectorAll("div,span")).forEach(function(el){
-   var t=clean(el.textContent);
-   if(t.indexOf("계획량 합계")>=0||t.indexOf("오차 기준")>=0){el.classList.add("qmes-new-material-note");}
- });
- [].slice.call(shell.querySelectorAll("button")).forEach(function(btn){
-   var t=clean(btn.textContent);
-   if(t==="발행"||t==="작업지시 발행"||t==="등록")btn.textContent="저장";
- });
+ [].slice.call(shell.querySelectorAll("div,span")).forEach(function(el){var t=clean(el.textContent);if(t.indexOf("계획량 합계")>=0||t.indexOf("오차 기준")>=0)el.classList.add("qmes-new-material-note")});
+
+ var footer=shell.querySelector(".qmes-new-footer");
+ if(!footer){
+   footer=document.createElement("div");footer.className="qmes-new-footer";
+   var cancel=document.createElement("button");cancel.type="button";cancel.textContent="취소";cancel.onclick=function(){var x=[].slice.call(shell.querySelectorAll("button")).find(function(b){return clean(b.textContent)==="×"||/닫기/.test(b.getAttribute("aria-label")||"")});if(x)x.click();};
+   var save=[].slice.call(shell.querySelectorAll("button")).find(function(b){return /^(발행|작업지시 발행|등록|저장)$/.test(clean(b.textContent))});
+   var saveProxy=document.createElement("button");saveProxy.type="button";saveProxy.className="qmes-new-save";saveProxy.textContent="저장";saveProxy.onclick=function(){if(save)save.click();};
+   footer.appendChild(cancel);footer.appendChild(saveProxy);shell.appendChild(footer);
+   if(save)save.setAttribute("data-qmes-new-hidden","1");
+ }
  return true;
 }
 function watchNewModal(){
@@ -218,7 +254,7 @@ function watchNewModal(){
        newModalObserver=new MutationObserver(function(){customizeNewModal()});
        newModalObserver.observe(shell,{childList:true,subtree:true});
      }
-   }else if(tries>50)clearInterval(timer);
+   }else if(tries>60)clearInterval(timer);
  },30);
 }
 function nativeNew(){var b=document.querySelector(".qmes-iqc-new-btn");if(!b)return false;b.click();watchNewModal();return true}
