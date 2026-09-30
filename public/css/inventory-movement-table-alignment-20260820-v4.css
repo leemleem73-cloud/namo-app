@@ -48,7 +48,7 @@
 
 #qmes-inventory-host .qmes-inv-salesdue-kpis{
   display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
   gap:8px!important;
   margin:0 0 10px!important;
 }
@@ -88,6 +88,7 @@
 #qmes-inventory-host .qmes-inv-salesdue-kpi.good strong{color:#15914b!important}
 #qmes-inventory-host .qmes-inv-salesdue-kpi.warn strong{color:#d17a00!important}
 #qmes-inventory-host .qmes-inv-salesdue-kpi.dark strong{color:#243d52!important}
+#qmes-inventory-host .qmes-inv-salesdue-kpi.bad strong{color:#cf3e33!important}
 
 #qmes-inventory-host .qmes-inv-salesdue-filter{
   margin:0 0 10px!important;
@@ -98,7 +99,7 @@
 }
 #qmes-inventory-host .qmes-inv-salesdue-grid{
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) 64px 64px!important;
+  grid-template-columns:182px 18px 182px 220px 220px minmax(320px,1fr) 64px!important;
   gap:6px!important;
   align-items:end!important;
 }
@@ -114,7 +115,8 @@
   line-height:13px!important;
   font-weight:850!important;
 }
-#qmes-inventory-host .qmes-inv-salesdue-grid input{
+#qmes-inventory-host .qmes-inv-salesdue-grid input,
+#qmes-inventory-host .qmes-inv-salesdue-grid select{
   width:100%!important;
   min-width:0!important;
   height:38px!important;
@@ -130,6 +132,16 @@
   font-weight:700!important;
   outline:none!important;
 }
+ #qmes-inventory-host .qmes-inv-period-sep{
+  height:38px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#657789!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+#qmes-inventory-host .qmes-inv-salesdue-search{min-width:0!important}
 #qmes-inventory-host .qmes-inv-salesdue-grid button{
   width:64px!important;
   height:38px!important;
@@ -319,6 +331,11 @@
 #qmes-inventory-host .inv-tx-detail-actions{display:flex;justify-content:flex-end;gap:8px;padding:18px 22px 22px}
 #qmes-inventory-host .inv-tx-detail-actions button{min-width:92px;min-height:40px}
 
+@media(max-width:1300px){
+  #qmes-inventory-host .qmes-inv-salesdue-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #qmes-inventory-host .qmes-inv-period-sep{display:none!important}
+  #qmes-inventory-host .qmes-inv-salesdue-grid button{width:100%!important}
+}
 @media(max-width:820px){
   #qmes-inventory-host .qmes-inv-salesdue-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   #qmes-inventory-host .qmes-inv-salesdue-legend{align-items:flex-start!important;flex-direction:column!important}
