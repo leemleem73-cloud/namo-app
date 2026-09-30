@@ -12,7 +12,7 @@ const api=async(url,opt={})=>{
   return p?.data??p;
 };
 const state={
-  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],leaveDetail:null,distributionDirectory:[],distributionSelected:new Set(),mailLinked:false,mailLinkPromise:null,mailLinkResolve:null,mailLinkReject:null,mailSendBusy:false,
+  me:null,today:null,logs:[],schedule:{startTime:'08:00',endTime:'17:00'},adminOverview:null,adminReviews:[],adminDirectory:[],adminDepartment:'',reviewers:[],leaveDetail:null,editRequestId:'',distributionDirectory:[],distributionSelected:new Set(),mailLinked:false,mailLinkPromise:null,mailLinkResolve:null,mailLinkReject:null,mailSendBusy:false,
   leave:{balance:{},requests:[]},notifications:[],recordsMonth:'',
   workplaces:[],workplaceCode:localStorage.getItem('namo_workplace_v4_live')||'chungju',
   workplaceName:'충주 1공장',detailKey:'',workplaceSaveTimer:null,workplaceSaveSeq:0,timer:null
@@ -259,13 +259,22 @@ function renderRecords(){
   $$('[data-record]').forEach(b=>b.onclick=()=>openDetail(b.dataset.record));
 }
 function leaveTypeName(v){return({annual:'연차',am_half:'오전 반차',pm_half:'오후 반차',sick:'병가',bereavement:'경조휴가',outside:'외근/출장',overtime:'연장근무'})[String(v||'')]||String(v||'요청')}
-function requestStatus(v){return({PENDING_1:'검토대기',PENDING_2:'검토대기',APPROVED:'승인완료',REJECTED:'반려'})[String(v||'')]||String(v||'')}
+function requestStatus(v){return({PENDING_1:'검토대기',PENDING_2:'대표이사 승인대기',APPROVED:'승인완료',REJECTED:'반려',CANCELLED:'신청취소'})[String(v||'')]||String(v||'')}
 async function completeReview(id){
   try{
     await api('/api/attendance/leave/'+encodeURIComponent(id)+'/review-complete-v2',{method:'POST',body:'{}'});
-    toast('검토 완료 · 자동 승인되었습니다.');
-    await Promise.all([loadAdminAux(),loadAdminOverview()]);
-    renderAdminRequests();renderAdminHome();renderLeave();
+    toast('검토 완료 · 대표이사 최종 승인 대기입니다.');
+    await Promise.all([loadAdminAux(),isAdmin()?loadAdminOverview():Promise.resolve()]);
+    if(isAdmin()){renderAdminRequests();renderAdminHome();renderLeave();}else renderRequests();
+    await openLeaveDetail(id);
+  }catch(e){toast(e.message)}
+}
+async function finalApprove(id){
+  try{
+    await api('/api/attendance/leave/'+encodeURIComponent(id)+'/final-approve-v2',{method:'POST',body:'{}'});
+    toast('대표이사 최종 승인 완료되었습니다.');
+    await Promise.all([loadAdminAux(),loadLeave(),isAdmin()?loadAdminOverview():Promise.resolve()]);
+    if(isAdmin()){renderAdminRequests();renderAdminHome();renderLeave();}else renderRequests();
     await openLeaveDetail(id);
   }catch(e){toast(e.message)}
 }
@@ -320,15 +329,18 @@ async function openLeaveDetail(id){
         '<div><span>휴가 기간</span><b>'+start+(end&&end!==start?' ~ '+end:'')+' ('+Number(detail.days||0)+'일)</b></div>'+
         '<div class="wide"><span>사유</span><b>'+String(detail.reason||'-')+'</b></div>'+
         '<div><span>검토자</span><b>'+String(detail.reviewer_name||'-')+' '+String(detail.reviewer_title||'')+'</b></div>'+
-        '<div><span>최종 처리자</span><b>'+String(detail.reviewed_by_name||detail.reviewer_name||'-')+' '+String(detail.reviewed_by_title||detail.reviewer_title||'')+'</b></div>'+
+        '<div><span>최종 승인자</span><b>'+String(detail.final_approver_name||'대표이사')+' '+String(detail.final_approver_title||'')+'</b></div>'+
         '<div><span>신청일시</span><b>'+fmtDateTime(detail.created_at)+'</b></div>'+
         '<div><span>승인일시</span><b>'+fmtDateTime(detail.reviewed_at)+'</b></div>'+
       '</div></div>'+
-      (detail.status==='APPROVED'?'<div class="leave-approved-box">✓ 해당 신청이 최종 승인 완료되었습니다.</div>':'')+
+      (detail.status==='APPROVED'?'<div class="leave-approved-box">✓ 대표이사 최종 승인 완료되었습니다.</div>':detail.status==='PENDING_2'?'<div class="leave-approved-box" style="background:#fff8dc;color:#7a5b00">검토 완료 · 대표이사 최종 승인 대기</div>':'')+
+      (detail.status==='PENDING_1'?'<div class="review-action-row"><button type="button" class="review-approve" id="editLeaveBtn">수정</button><button type="button" class="review-reject" id="cancelLeaveBtn">신청 취소</button></div>':'')+
       (detail.hasDistributionPdf?'<button type="button" class="secondary-btn pdf-view-btn" id="viewDistributionPdfBtn">인쇄하기</button>':'')+
       (detail.canDistribute?'<button type="button" class="primary-btn distribute-open-btn" id="openDistributionBtn">사내 직원에게 메일 보내기</button>':'')+
       '<button type="button" class="secondary-btn leave-list-btn" id="leaveListBtn">목록으로</button>'+
     '</div>';
+    const edit=$('#editLeaveBtn');if(edit)edit.onclick=()=>{closeSheet('leaveDetailSheet');openRequest(detail.leave_type,detail)};
+    const cancel=$('#cancelLeaveBtn');if(cancel)cancel.onclick=async()=>{if(!confirm('이 신청을 취소하시겠습니까?'))return;try{await api('/api/attendance/leave/'+encodeURIComponent(detail.id)+'/cancel',{method:'POST',body:'{}'});toast('신청이 취소되었습니다.');closeSheet('leaveDetailSheet');await loadLeave();renderRequests()}catch(e){toast(e.message)}};
     const p=$('#viewDistributionPdfBtn');if(p)p.onclick=()=>printApprovalPdf(detail.id);
     const d=$('#openDistributionBtn');if(d)d.onclick=()=>openDistribution();
     const l=$('#leaveListBtn');if(l)l.onclick=()=>closeSheet('leaveDetailSheet');
@@ -669,22 +681,19 @@ function reviewerKindClient(r){
   return String(r?.reviewerKind||'');
 }
 function renderReviewerOptions(){
-  const sel=$('#requestReviewer');if(!sel)return;
+  const hidden=$('#requestReviewer'),box=$('#requestReviewerChecks');if(!hidden||!box)return;
   const rows=Array.isArray(state.reviewers)?state.reviewers:[];
-  sel.innerHTML='<option value="">검토자를 선택해 주세요.</option>'+rows.map(r=>{
-    const kind=reviewerKindClient(r);
-    const name=String(r.name||'').trim();
-    const label=kind==='관리자'?'관리자':[kind,name].filter(Boolean).join(' · ');
-    return '<option value="'+String(r.id||'')+'">'+label+'</option>';
-  }).join('');
-  const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'검토자: 관리자 · 부장 · 이사 / 검토 완료 즉시 자동 승인':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
+  box.innerHTML=rows.map(r=>{const kind=reviewerKindClient(r),name=String(r.name||'').trim(),label=kind==='관리자'?'관리자':[kind,name].filter(Boolean).join(' · '),checked=String(hidden.value||'')===String(r.id||'')?' checked':'';return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #dfe6ef;border-radius:10px;margin-top:6px;background:#fff"><input type="radio" name="requestReviewerRadio" value="'+String(r.id||'')+'"'+checked+'><span>'+label+'</span></label>'}).join('')||'<div class="empty">선택 가능한 검토자가 없습니다.</div>';
+  $('input[name="requestReviewerRadio"]',box).forEach(x=>x.onchange=()=>{hidden.value=x.value});
+  const help=$('#requestReviewerHelp');if(help)help.textContent=rows.length?'해당 검토자를 체크해 주세요. 검토 후 대표이사 최종 승인으로 진행됩니다.':'선택 가능한 검토자가 없습니다. 관리자에게 문의해 주세요.';
 }
 async function loadReviewers(){
   try{state.reviewers=await api('/api/attendance/reviewers');if(!Array.isArray(state.reviewers))state.reviewers=[]}catch(_){state.reviewers=[]}
   renderReviewerOptions();
 }
-async function openRequest(type){
-  $('#requestType').value=type||'annual';const t=todayKey();$('#requestStart').value=t;$('#requestEnd').value=t;$('#requestReason').value='';
+async function openRequest(type,item=null){
+  state.editRequestId=item?.id||'';$('#requestSheetTitle').textContent=state.editRequestId?'신청 수정':'신청하기';
+  $('#requestType').value=item?.leave_type||type||'annual';const t=todayKey();$('#requestStart').value=String(item?.start_date||t).slice(0,10);$('#requestEnd').value=String(item?.end_date||item?.start_date||t).slice(0,10);$('#requestReason').value=item?.reason||'';$('#requestReviewer').value=String(item?.approver1_user_id||'');
   await loadReviewers();
   openSheet('requestSheet');
 }
@@ -700,9 +709,11 @@ async function submitRequest(e){
   if(!start||!end)return toast('날짜를 선택해주세요.');
   if(end<start)return toast('종료일을 확인해주세요.');
   try{
-    const result=await api('/api/attendance/leave-v2',{method:'POST',body:JSON.stringify({leaveType:type,startDate:start,endDate:end,days:requestDays(start,end,type),reason,reviewerId})});
+    const payload={leaveType:type,startDate:start,endDate:end,days:requestDays(start,end,type),reason,reviewerId};
+    const result=state.editRequestId?await api('/api/attendance/leave/'+encodeURIComponent(state.editRequestId)+'/update-v2',{method:'POST',body:JSON.stringify(payload)}):await api('/api/attendance/leave-v2',{method:'POST',body:JSON.stringify(payload)});
     closeSheet('requestSheet');
-    toast((result?.reviewer?.name?result.reviewer.name+' 검토자에게 요청했습니다.':'신청이 등록되었습니다.'));
+    toast(state.editRequestId?'신청 내용이 수정되었습니다.':(result?.reviewer?.name?result.reviewer.name+' 검토자에게 요청했습니다.':'신청이 등록되었습니다.'));
+    state.editRequestId='';
     await loadLeave();renderRequests();
   }catch(err){toast(err.message)}
 }
@@ -741,7 +752,6 @@ async function loadAdminOverview(month=state.recordsMonth||todayKey().slice(0,7)
   state.adminOverview=await api('/api/attendance/admin/overview?date='+encodeURIComponent(todayKey())+'&month='+encodeURIComponent(month)).catch(()=>({summary:{},employees:[],monthlyLogs:[],leaves:[],departments:[]}));
 }
 async function loadAdminAux(){
-  if(!isAdmin())return;
   const vals=await Promise.all([
     api('/api/attendance/reviews-v2').catch(()=>[]),
     api('/api/attendance/directory').catch(()=>[])
