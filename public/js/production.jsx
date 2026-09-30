@@ -1540,7 +1540,7 @@ function IssueWoTab() {
                 <table style={{ width:"100%", minWidth:"900px", borderCollapse:"collapse", fontSize:"9px" }}>
                   <thead>
                     <tr>
-                      {["No","원재료명","원재료 LOT","투입량","실투입량","단위","비고"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
+                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고"].map((h) => <th key={h} style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#edf5fa", color:"#4b6477", textAlign:"center" }}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
@@ -1561,6 +1561,9 @@ function IssueWoTab() {
                         <td style={{ border:"1px solid #dbe4eb", padding:"7px" }}>
                           <input value={it.actual ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,actual:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"32px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
                         </td>
+                        <td style={{ border:"1px solid #dbe4eb", padding:"7px", textAlign:"center", fontWeight:700, color:"#40566a" }}>
+                          {Number(it.plan) > 0 && Number(it.actual) >= 0 && String(it.actual ?? "").trim() !== "" ? `${((Number(it.actual) / Number(it.plan)) * 100).toFixed(2)}%` : "-"}
+                        </td>
                         <td style={{ border:"1px solid #dbe4eb", padding:"7px", textAlign:"center" }}>{it.unit || "kg"}</td>
                         <td style={{ border:"1px solid #dbe4eb", padding:"7px" }}>
                           <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"32px", border:"1px solid #cad8e4", borderRadius:"4px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
@@ -1571,6 +1574,7 @@ function IssueWoTab() {
                       <th colSpan="3" style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}>계</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}>{plannedTotal.toFixed(3)}</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
+                      <th style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}>kg</th>
                       <th style={{ border:"1px solid #dbe4eb", padding:"7px", background:"#fff" }}></th>
                     </tr>
