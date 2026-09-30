@@ -98,7 +98,7 @@ function InventoryEnterpriseTab({section='overview'}){
     {loading?<div className="inv-loading">재고 데이터를 불러오는 중...</div>:<>
       {section==='overview'&&<><div className="inv-kpis">{['RM','PM','WIP','FG'].map(code=>{const r=totals[code]||{};return <div className="inv-kpi" key={code}><span>{INV_CATEGORY_LABEL[code]}</span><strong>{invNum(r.total_qty)} <small>kg/EA</small></strong><div>가용 {invNum(r.available_qty)} · 대기 {invNum(r.pending_qty)} · HOLD {invNum(r.hold_qty)}</div></div>})}</div><div className="inv-grid2"><div className="inv-panel"><h3>관리 알림</h3><div className="inv-alerts"><div>검사대기 LOT <b>{summary?.pendingLots||0}</b></div><div>안전재고 미달 <b>{summary?.safetyAlerts?.length||0}</b></div><div>유효기간 30일 이내 <b>{summary?.expiryAlerts?.length||0}</b></div><div>활성 예약 <b>{reservations.length}</b></div></div></div><div className="inv-panel"><h3>최근 재고 처리</h3>{transactions.slice(0,6).map(tx=><div className="inv-recent" key={tx.id}><b>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</b><span>{tx.item_code} / {tx.lot_no}</span><strong>{invNum(tx.quantity)} {tx.unit}</strong></div>)}</div></div></>}
       {section==='lot'&&<><InventoryFilters query={query} setQuery={setQuery} category={category} setCategory={setCategory} status={status} setStatus={setStatus}/><StockTable rows={filtered}/></>}
-      {section==='movement'&&<div className="inv-panel inv-stock-panel inv-movement-panel qmes-inv-movement-ledger"><div className="inv-movement-heading"><h3>자동 입출고 처리 내역</h3><span>일시를 선택하면 상세정보와 바코드를 확인할 수 있습니다.</span></div><div className="qmes-inv-ledger-scroll"><InventoryMovementTable rows={visibleMovementRows} onSelect={setSelectedTx} sequenceStart={(safeMovementPage-1)*movementPageSize}/></div>{!movementRows.length&&<div className="inv-empty">입출고 처리 내역이 없습니다.</div>}{movementRows.length>0&&<InventoryPager page={safeMovementPage} pages={movementPages} total={movementRows.length} onPage={setMovementPage}/>}</div>}
+      {section==='movement'&&<InventoryMovementSalesDueScreen rows={movementRows} page={safeMovementPage} pages={movementPages} pageSize={movementPageSize} onPage={setMovementPage} onReload={load} onSelect={setSelectedTx}/>} 
       {section==='production'&&<><div className="inv-panel"><h3>생산 예약재고</h3><table><thead><tr><th>작업지시</th><th>품목</th><th>LOT</th><th>위치</th><th>예약수량</th><th>등록자</th></tr></thead><tbody>{reservations.map(r=><tr key={r.id}><td>{r.work_order_no}</td><td>{r.item_code}</td><td>{r.lot_no||'자동선정'}</td><td>{r.location_code||'-'}</td><td className="num">{invNum(r.quantity)}</td><td>{r.reserved_by}</td></tr>)}</tbody></table></div><div className="inv-panel"><h3>생산 관련 원장</h3><TxTable rows={transactions.filter(t=>['PRODUCTION_ISSUE','PRODUCTION_RECEIPT'].includes(t.transaction_type))}/></div></>}
       {section==='count'&&<div className="inv-panel"><h3>재고실사 이력</h3><table><thead><tr><th>실사일</th><th>품목</th><th>LOT</th><th>위치</th><th>장부</th><th>실재고</th><th>차이</th><th>실사자</th></tr></thead><tbody>{counts.map(c=><tr key={c.id}><td>{c.count_date}</td><td>{c.item_code}</td><td>{c.lot_no}</td><td>{c.location_code}</td><td className="num">{invNum(c.book_qty)}</td><td className="num">{invNum(c.actual_qty)}</td><td className={'num '+(Number(c.difference_qty)!==0?'warn':'')}>{invNum(c.difference_qty)}</td><td>{c.counted_by}</td></tr>)}</tbody></table></div>}
       {section==='history'&&<div className="inv-panel"><h3>재고 Transaction 원장</h3><TxTable rows={transactions}/></div>}
@@ -109,7 +109,65 @@ function InventoryEnterpriseTab({section='overview'}){
   </div>;
 }
 
-function InventoryMovementTable({rows,onSelect,sequenceStart=0}){return <table className="qmes-inv-ledger-table"><colgroup><col className="c-seq"/><col className="c-date"/><col className="c-type"/><col className="c-name"/><col className="c-lot"/><col className="c-qty"/><col className="c-direction"/><col className="c-note"/></colgroup><thead><tr><th>순번</th><th>일시</th><th>구분</th><th>원료명</th><th>LOT</th><th>수량</th><th>이동 방향</th><th>비고</th></tr></thead><tbody>{rows.map((tx,index)=><tr key={tx.id}><td>{sequenceStart+index+1}</td><td>{onSelect?<button type="button" className="inv-tx-detail-link" onClick={()=>onSelect(tx)} title="상세정보 및 바코드 보기">{new Date(tx.created_at).toLocaleString('ko-KR')}</button>:new Date(tx.created_at).toLocaleString('ko-KR')}</td><td>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</td><td title={txMaterialName(tx)}>{txMaterialName(tx)}</td><td>{tx.lot_no}</td><td className="num">{invNum(tx.quantity)} {tx.unit}</td><td>{txDirectionLabel(tx)}</td><td title={txDisplayReference(tx)}>{txDisplayReference(tx)}</td></tr>)}</tbody></table>}
+function InventoryMovementSalesDueScreen({rows,page,pages,pageSize,onPage,onReload,onSelect}){
+  const [q,setQ]=useState('');
+  const normalized=String(q||'').trim().toLowerCase();
+  const filtered=rows.filter(tx=>!normalized||[
+    new Date(tx.created_at).toLocaleString('ko-KR'),
+    INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type,
+    txMaterialName(tx),tx.lot_no,invNum(tx.quantity),tx.unit,
+    txDirectionLabel(tx),txDisplayReference(tx)
+  ].join(' ').toLowerCase().includes(normalized));
+  const filteredPages=Math.max(1,Math.ceil(filtered.length/pageSize));
+  const activePage=Math.min(page,filteredPages);
+  const visible=filtered.slice((activePage-1)*pageSize,activePage*pageSize);
+  const incoming=filtered.filter(x=>['RECEIPT','PRODUCTION_RECEIPT','RETURN'].includes(x.transaction_type)).length;
+  const outgoing=filtered.filter(x=>['ISSUE','PRODUCTION_ISSUE','SHIPMENT'].includes(x.transaction_type)).length;
+  const lots=new Set(filtered.map(x=>x.lot_no).filter(Boolean)).size;
+  return <div className="qmes-inv-salesdue-screen">
+    <div className="qmes-inv-salesdue-head">
+      <h1>재고관리 · 입출고 관리</h1>
+      <div className="qmes-inv-salesdue-actions"><button type="button" onClick={onReload}>새로고침</button></div>
+    </div>
+    <div className="qmes-inv-salesdue-kpis">
+      <div className="qmes-inv-salesdue-kpi"><span>전체 처리</span><strong>{filtered.length}</strong><small>조회 기준</small></div>
+      <div className="qmes-inv-salesdue-kpi good"><span>입고</span><strong>{incoming}</strong><small>입고·생산완료·반품</small></div>
+      <div className="qmes-inv-salesdue-kpi warn"><span>출고</span><strong>{outgoing}</strong><small>출고·생산투입·출하</small></div>
+      <div className="qmes-inv-salesdue-kpi dark"><span>LOT 수</span><strong>{lots}</strong><small>처리 LOT 기준</small></div>
+    </div>
+    <div className="qmes-inv-salesdue-filter">
+      <div className="qmes-inv-salesdue-grid">
+        <label><span>통합검색</span><input value={q} onChange={e=>{setQ(e.target.value);onPage(1);}} placeholder="일시, 구분, 원료명, LOT, 비고 검색"/></label>
+        <button type="button" className="primary" onClick={()=>onPage(1)}>조회</button>
+        <button type="button" onClick={()=>{setQ('');onPage(1);}}>초기화</button>
+      </div>
+    </div>
+    <div className="qmes-inv-salesdue-legend">
+      <div><b>입출고 처리 기준</b> · 생산완료 / 생산투입 / 입고 / 출고 / 출하 LOT 원장</div>
+      <div>※ 바코드는 비고란에서 확인</div>
+    </div>
+    <div className="qmes-inv-salesdue-table-shell">
+      <table className="qmes-inv-salesdue-table">
+        <colgroup><col className="c-seq"/><col className="c-date"/><col className="c-type"/><col className="c-name"/><col className="c-lot"/><col className="c-qty"/><col className="c-direction"/><col className="c-note"/></colgroup>
+        <thead><tr><th>No</th><th>일시</th><th>구분</th><th>원료명</th><th>LOT</th><th>수량</th><th>이동 방향</th><th>비고</th></tr></thead>
+        <tbody>{visible.length?visible.map((tx,index)=><tr key={tx.id}>
+          <td>{(activePage-1)*pageSize+index+1}</td>
+          <td>{new Date(tx.created_at).toLocaleString('ko-KR')}</td>
+          <td>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</td>
+          <td title={txMaterialName(tx)}>{txMaterialName(tx)}</td>
+          <td>{tx.lot_no}</td>
+          <td className="num">{invNum(tx.quantity)} {tx.unit}</td>
+          <td>{txDirectionLabel(tx)}</td>
+          <td className="qmes-inv-note-cell" title={txDisplayReference(tx)}><span>{txDisplayReference(tx)}</span><button type="button" className="qmes-inv-barcode-btn" onClick={()=>onSelect(tx)}>바코드</button></td>
+        </tr>):<tr><td colSpan="8" className="qmes-inv-salesdue-empty">입출고 처리 내역이 없습니다.</td></tr>}</tbody>
+      </table>
+      <div className="qmes-inv-salesdue-foot">
+        {Array.from({length:filteredPages},(_,i)=><button key={i+1} type="button" className={i+1===activePage?'active':''} onClick={()=>onPage(i+1)}>{i+1}</button>)}
+      </div>
+    </div>
+  </div>;
+}
+
 
 function InventoryFilters({query,setQuery,category,setCategory,status,setStatus}){return <div className="inv-filter"><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="원료명 / LOT / 위치 검색"/><select value={category} onChange={e=>setCategory(e.target.value)}><option value="">전체 구분</option>{Object.entries(INV_CATEGORY_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">전체 상태</option>{Object.entries(INV_STATUS_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></div>}
 function StockTable({rows}){return <div className="inv-panel inv-stock-panel"><table className="inv-stock-table"><colgroup><col/><col/><col/><col/><col/><col/><col/><col/><col/></colgroup><thead><tr><th>구분</th><th>원료명</th><th>LOT</th><th>위치</th><th>품질상태</th><th>현재고</th><th>예약</th><th>가용</th><th>유효기간</th></tr></thead><tbody>{rows.map((r,i)=><tr key={i}><td>{INV_CATEGORY_LABEL[r.category]||r.category}</td><td>{r.item_name}</td><td>{r.lot_no}</td><td>{r.location_code==='UNASSIGNED'?'위치확인':r.location_code}</td><td><InvBadge status={r.quality_status}/></td><td className="num">{invNum(r.quantity)} {r.unit}</td><td className="num">{invNum(r.reserved_qty)}</td><td className="num strong">{invNum(r.available_qty)}</td><td>{r.expiry_date?String(r.expiry_date).slice(0,10):'-'}</td></tr>)}</tbody></table>{!rows.length&&<div className="inv-empty">등록된 재고가 없습니다.</div>}</div>}
