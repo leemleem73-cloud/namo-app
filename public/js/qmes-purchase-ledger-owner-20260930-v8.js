@@ -62,7 +62,6 @@
   }
   function lot(r){return clean(r&&(r.materialLot||r.material_lot||r.lot||r.rawMaterialLot||r.raw_material_lot));}
   function owner(r){return clean(r&&(r.requester||r.owner||r.createdBy||r.updatedBy));}
-  function notes(r){return clean(r&&(r.notes||r.remark||r.remarks));}
   function approval(r){return clean(r&&(r.approvalStatus||r.approval_status||r.approval||r.status));}
   function receiptText(r){return clean(r&&(r.receiptStatus||r.receipt_status||r.receiving||r.inboundStatus||r.inbound_status));}
 
@@ -245,7 +244,7 @@
       if(state.poStatus&&poStatus(r)!==state.poStatus) return false;
       if(state.inStatus&&inStatus(r)!==state.inStatus) return false;
       if(q){
-        var hay=[rowNo(r),supplier(r),item(r),spec(r),owner(r),notes(r)].join(" ").toLowerCase();
+        var hay=[rowNo(r),supplier(r),item(r),spec(r),owner(r)].join(" ").toLowerCase();
         if(!hay.includes(q)) return false;
       }
       return true;
@@ -304,10 +303,9 @@
         '<td>'+badge(ins)+'</td><td>'+badge(iq)+'</td>'+
         '<td>'+badge(dueS)+'</td><td>'+badge(po)+'</td>'+
         '<td>'+esc(owner(r)||"-")+'</td>'+
-        '<td class="left" title="'+esc(notes(r))+'">'+esc(notes(r)||"-")+'</td>'+
         '<td><div class="qpo-manage"><button class="qpo-mini detail" data-action="detail" data-no="'+esc(no)+'">상세</button><button class="qpo-mini" data-action="edit" data-no="'+esc(no)+'">수정</button><button class="qpo-mini danger" data-action="delete" data-no="'+esc(no)+'"'+(state.canDelete?"":" disabled title=\"삭제 권한: 부장 및 임원\"")+'>삭제</button></div></td>'+
       '</tr>';
-    }).join(""):'<tr><td colspan="19" class="qpo-empty">조건에 맞는 발주가 없습니다.</td></tr>';
+    }).join(""):'<tr><td colspan="18" class="qpo-empty">조건에 맞는 발주가 없습니다.</td></tr>';
 
     var pager="";
     for(var p=1;p<=pages;p++) pager+='<button class="qpo-page '+(p===state.page?"active":"")+'" data-action="page" data-page="'+p+'">'+p+'</button>';
@@ -339,7 +337,7 @@
       '</div>'+
       '<div class="qpo-notice"><span><strong>구매·발주 핵심관리</strong> · 발주수량 대비 입고수량 · 요청입고일 대비 실제입고일 · IQC 상태 · 미입고잔량 · 협력사 납기준수</span><span>※ 부분입고 및 납기지연 자동 강조</span></div>'+
       '<div class="qpo-table-box"><div class="qpo-table-scroll"><table class="qpo-table"><thead><tr>'+
-        ["No","발주일 ↓","발주번호","협력사","품목명(규격)","발주수량","단위","단가","발주금액","요청입고일","입고수량","미입고수량","입고상태","IQC","납기상태","발주상태","담당자","비고","관리"].map(function(h){return "<th>"+h+"</th>";}).join("")+
+        ["No","발주일 ↓","발주번호","협력사","품목명(규격)","발주수량","단위","단가","발주금액","요청입고일","입고수량","미입고수량","입고상태","IQC","납기상태","발주상태","담당자","관리"].map(function(h){return "<th>"+h+"</th>";}).join("")+
       '</tr></thead><tbody>'+rowsHtml+'</tbody></table></div><div class="qpo-pagination">'+pager+'</div></div>'+
       '<div class="qpo-footer-note">※ 업로드된 승인 시안 기준 UI · 발주서 출력은 선택한 발주 건을 A4 1장 전용 양식으로 출력합니다.</div>'+
       '<input type="file" class="qpo-hidden-file" data-role="upload-input" accept=".xlsx,.xls,.csv">';
@@ -373,8 +371,7 @@
       '<tr><th>단가</th><td>₩'+won(price(r))+'</td><th>발주금액</th><td>₩'+won(amount(r))+'</td></tr>'+
       '<tr><th>요청입고일</th><td>'+esc(requested(r)||"-")+'</td><th>확정입고일</th><td>'+esc(confirmed(r)||"-")+'</td></tr>'+
       '<tr><th>입고상태</th><td>'+esc(inStatus(r))+'</td><th>IQC</th><td>'+esc(iqcStatus(r))+'</td></tr>'+
-      '<tr><th>LOT</th><td>'+esc(lot(r)||"-")+'</td><th>납기차이</th><td>'+esc(dueDiff(r))+'</td></tr>'+
-      '<tr><th>비고</th><td colspan="3">'+esc(notes(r)||"-")+'</td></tr></table>';
+      '<tr><th>LOT</th><td>'+esc(lot(r)||"-")+'</td><th>납기차이</th><td>'+esc(dueDiff(r))+'</td></tr></table>';
   }
   function card(l,v){return '<div class="qpo-sum"><span>'+esc(l)+'</span><b>'+esc(v)+'</b></div>';}
   function flow(n,v,cls){return '<div class="qpo-flow-card '+cls+'"><span>'+esc(n)+'</span><b>'+esc(v)+'</b></div>';}
@@ -393,7 +390,6 @@
       '<div class="qpo-form-field"><label>요청입고일</label><input type="date" name="requested" value="'+esc(requested(x))+'"></div>'+
       '<div class="qpo-form-field"><label>확정입고일</label><input type="date" name="confirmed" value="'+esc(confirmed(x))+'"></div>'+
       '<div class="qpo-form-field"><label>담당자</label><input name="owner" value="'+esc(owner(x)||clean(state.user.name))+'"></div>'+
-      '<div class="qpo-form-field full"><label>비고</label><textarea name="notes">'+esc(notes(x))+'</textarea></div>'+
       '</div><div class="qpo-modal-actions"><button type="button" class="qpo-action" data-action="close-modal">취소</button><button type="submit" class="qpo-action blue">저장</button></div></form>';
   }
 
@@ -417,7 +413,7 @@
       unitPrice:p,price:p,amount:q*p,
       requestedDueDate:clean(fd.get("requested")),due:clean(fd.get("requested")),
       confirmedDueDate:clean(fd.get("confirmed")),expected:clean(fd.get("confirmed")),
-      requester:clean(fd.get("owner")),owner:clean(fd.get("owner")),notes:clean(fd.get("notes")),
+      requester:clean(fd.get("owner")),owner:clean(fd.get("owner")),
       approvalStatus:base&&base.approvalStatus?base.approvalStatus:"구매검토",
       approval:base&&base.approval?base.approval:"구매검토",
       receiptStatus:base&&base.receiptStatus?base.receiptStatus:"미입고",
@@ -464,13 +460,13 @@
   function printOne(r){
     var no=esc(rowNo(r)),date=esc(rowDate(r)),sup=esc(supplier(r)),prod=esc(displayProduct(r));
     var q=esc(fmt(qty(r))),u=esc(unit(r)),pr=esc(won(price(r))),amt=esc(won(amount(r)));
-    var req=esc(requested(r)||"-"),conf=esc(confirmed(r)||"-"),mgr=esc(owner(r)||"-"),remark=esc(notes(r));
+    var req=esc(requested(r)||"-"),conf=esc(confirmed(r)||"-"),mgr=esc(owner(r)||"-");
     var html='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>'+no+' 발주서</title><style>'+
-      '@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#111827;font-family:Arial,"Malgun Gothic","Noto Sans KR",sans-serif}body{width:186mm;margin:0 auto;font-size:10pt;line-height:1.35}.sheet{width:100%;min-height:270mm;position:relative}.topline{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:6mm}.company{font-size:18pt;font-weight:900}.company small{display:block;margin-top:1.5mm;font-size:8pt;font-weight:600;color:#475569}.doc{text-align:right;font-size:8.5pt;color:#334155}h1{margin:0 0 6mm;text-align:center;font-size:25pt;letter-spacing:8px;font-weight:900}.subtitle{text-align:center;margin-top:-4mm;margin-bottom:7mm;font-size:8.5pt;color:#64748b;letter-spacing:1px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #1f2937;padding:3mm 2.5mm;vertical-align:middle}th{background:#f3f4f6;text-align:center;font-weight:800}.info th{width:22mm}.info td{height:9mm}.items{margin-top:5mm}.items th{padding:2.8mm 2mm}.items td{height:12mm;text-align:center;padding:3mm 2mm}.items td.item{text-align:left}.amount{text-align:right!important}.summary{margin-top:5mm}.summary td{height:9mm}.summary .label{width:30mm;background:#f3f4f6;font-weight:800;text-align:center}.summary .money{text-align:right;font-weight:900;font-size:11pt}.remark{margin-top:5mm}.remark td{height:22mm;vertical-align:top}.terms{margin-top:5mm;border:1px solid #1f2937;padding:4mm;font-size:8.5pt}.terms strong{display:block;margin-bottom:2mm}.approval{margin-top:8mm}.approval th,.approval td{text-align:center;height:10mm}.approval td.sign{height:18mm}.footer{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;padding-top:3mm;color:#64748b;font-size:7.5pt}'+
+      '@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#111827;font-family:Arial,"Malgun Gothic","Noto Sans KR",sans-serif}body{width:186mm;margin:0 auto;font-size:10pt;line-height:1.35}.sheet{width:100%;min-height:270mm;position:relative}.topline{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:6mm}.company{font-size:18pt;font-weight:900}.company small{display:block;margin-top:1.5mm;font-size:8pt;font-weight:600;color:#475569}.doc{text-align:right;font-size:8.5pt;color:#334155}h1{margin:0 0 6mm;text-align:center;font-size:25pt;letter-spacing:8px;font-weight:900}.subtitle{text-align:center;margin-top:-4mm;margin-bottom:7mm;font-size:8.5pt;color:#64748b;letter-spacing:1px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #1f2937;padding:3mm 2.5mm;vertical-align:middle}th{background:#f3f4f6;text-align:center;font-weight:800}.info th{width:22mm}.info td{height:9mm}.items{margin-top:5mm}.items th{padding:2.8mm 2mm}.items td{height:12mm;text-align:center;padding:3mm 2mm}.items td.item{text-align:left}.amount{text-align:right!important}.summary{margin-top:5mm}.summary td{height:9mm}.summary .label{width:30mm;background:#f3f4f6;font-weight:800;text-align:center}.summary .money{text-align:right;font-weight:900;font-size:11pt}.terms{margin-top:5mm;border:1px solid #1f2937;padding:4mm;font-size:8.5pt}.terms strong{display:block;margin-bottom:2mm}.approval{margin-top:8mm}.approval th,.approval td{text-align:center;height:10mm}.approval td.sign{height:18mm}.footer{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;padding-top:3mm;color:#64748b;font-size:7.5pt}'+
       '</style></head><body><div class="sheet"><div class="topline"><div class="company">나모케미칼<small>NAMO Chemical Co., Ltd.</small></div><div class="doc">발주번호 : <b>'+no+'</b><br>발주일 : '+date+'</div></div><h1>발 주 서</h1><div class="subtitle">PURCHASE ORDER</div>'+
       '<table class="info"><tr><th>협력사</th><td>'+sup+'</td><th>담당자</th><td>'+mgr+'</td></tr><tr><th>요청입고일</th><td>'+req+'</td><th>확정입고일</th><td>'+conf+'</td></tr></table>'+
       '<table class="items"><colgroup><col style="width:12mm"><col><col style="width:27mm"><col style="width:18mm"><col style="width:30mm"><col style="width:36mm"></colgroup><thead><tr><th>No</th><th>품목명 / 규격</th><th>발주수량</th><th>단위</th><th>단가</th><th>금액</th></tr></thead><tbody><tr><td>1</td><td class="item">'+prod+'</td><td>'+q+'</td><td>'+u+'</td><td class="amount">'+pr+'</td><td class="amount">'+amt+'</td></tr><tr><td>2</td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr><tr><td>3</td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr><tr><td>4</td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr><tr><td>5</td><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr></tbody></table>'+
-      '<table class="summary"><tr><td class="label">발주금액</td><td class="money">₩ '+amt+'</td></tr></table><table class="remark"><tr><th style="width:30mm">비고</th><td>'+remark+'</td></tr></table>'+
+      '<table class="summary"><tr><td class="label">발주금액</td><td class="money">₩ '+amt+'</td></tr></table>'+
       '<div class="terms"><strong>납품 및 검사</strong>납품된 원자재는 당사 수입검사(IQC) 절차에 따라 확인 후 입고 처리합니다. 발주내용 또는 납기 변경이 필요한 경우 담당자와 사전 협의 바랍니다.</div>'+
       '<table class="approval"><tr><th style="width:28%">구분</th><th>작성</th><th>검토</th><th>승인</th></tr><tr><th>성명 / 서명</th><td class="sign">'+mgr+'</td><td class="sign"></td><td class="sign"></td></tr></table>'+
       '<div class="footer"><span>나모케미칼 구매·발주관리</span><span>'+no+'</span></div></div><script>window.addEventListener("load",function(){setTimeout(function(){window.print()},200)});<\/script></body></html>';
@@ -480,8 +476,8 @@
   }
 
   function downloadCsv(){
-    var headers=["발주일","발주번호","협력사","품목명","규격","발주수량","단위","단가","발주금액","요청입고일","확정입고일","입고수량","미입고수량","입고상태","IQC","LOT","납기상태","발주상태","담당자","비고"];
-    var body=filtered().map(function(r){return [rowDate(r),rowNo(r),supplier(r),item(r),spec(r),qty(r),unit(r),price(r),amount(r),requested(r),confirmed(r),received(r),Math.max(0,qty(r)-received(r)),inStatus(r),iqcStatus(r),lot(r),dueStatus(r),poStatus(r),owner(r),notes(r)];});
+    var headers=["발주일","발주번호","협력사","품목명","규격","발주수량","단위","단가","발주금액","요청입고일","확정입고일","입고수량","미입고수량","입고상태","IQC","LOT","납기상태","발주상태","담당자"];
+    var body=filtered().map(function(r){return [rowDate(r),rowNo(r),supplier(r),item(r),spec(r),qty(r),unit(r),price(r),amount(r),requested(r),confirmed(r),received(r),Math.max(0,qty(r)-received(r)),inStatus(r),iqcStatus(r),lot(r),dueStatus(r),poStatus(r),owner(r)];});
     var csv="\uFEFF"+[headers].concat(body).map(function(cols){return cols.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");
     var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
     var url=URL.createObjectURL(blob),a=document.createElement("a");
@@ -530,7 +526,6 @@
         expected:clean(pick(o,["확정입고일","확정납기"])),
         requester:clean(pick(o,["담당자","구매담당"])),
         owner:clean(pick(o,["담당자","구매담당"])),
-        notes:clean(pick(o,["비고","특이사항"])),
         approvalStatus:"구매검토",approval:"구매검토",receiptStatus:"미입고",receiving:"미입고",receivedQty:0,iqcStatus:"계획 대기",iqc:"계획 대기",status:"결재대기",
         createdAt:new Date().toISOString(),createdBy:clean(state.user.name)
       };
