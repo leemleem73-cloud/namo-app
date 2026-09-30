@@ -807,7 +807,7 @@ function IssueWoTab() {
       ...current,
       workType:productBom.workType,
       product,
-      tank:productBom.tanks[0],
+      tank:"HSM",
       prodDate:"",
       lotNo:"",
       qty:""
@@ -1508,8 +1508,8 @@ function IssueWoTab() {
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 설비
-                <select value={form.tank} onChange={(e) => setForm({ ...form, tank:e.target.value })} style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
-                  {(BOM[form.product]?.tanks || BOM[firstProduct]?.tanks || [form.tank]).map((t) => <option key={t}>{t}</option>)}
+                <select value="HSM" onChange={() => {}} style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
+                  <option value="HSM">HSM</option>
                 </select>
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
