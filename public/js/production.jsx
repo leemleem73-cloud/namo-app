@@ -1443,7 +1443,7 @@ function IssueWoTab() {
 
       {showIssueForm && !editingWo && (
       <div
-        className="qmes-modal-backdrop"
+        className="qmes-modal-backdrop qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
         style={{ position:"fixed", inset:0, zIndex:2147483000, background:"rgba(17,35,49,.42)", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px" }}
       >
@@ -1465,7 +1465,7 @@ function IssueWoTab() {
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"9px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 지시일
-                <input type="date" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 고객사
@@ -1498,7 +1498,7 @@ function IssueWoTab() {
 
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 생산예정일
-                <input type="date" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
+                <input type="text" data-qmes-workorder-date="1" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} placeholder="YYYY-MM-DD" style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }} />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 설비
@@ -1518,7 +1518,18 @@ function IssueWoTab() {
             </div>
 
             <div style={{ marginTop:"12px", border:"1px solid #d6e0e8", borderRadius:"8px", padding:"11px", background:"#fff" }}>
-              <h4 style={{ margin:"0 0 9px", fontSize:"11px", color:"#26384a" }}>투입원료</h4>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", marginBottom:"9px" }}>
+                <h4 style={{ margin:0, fontSize:"11px", color:"#26384a" }}>투입원료</h4>
+                <button
+                  type="button"
+                  onClick={() => setPlanItems([...planItems, {
+                    name:(availableMaterialOptions.find((name) => name !== "중간배치 선택") || MATERIAL_OPTIONS[0] || ""),
+                    materialLot:"", containerNo:"", inputStatus:"신규", availableQty:"",
+                    base:"", plan:"", actual:"", remaining:null, unit:"kg", note:""
+                  }])}
+                  style={{ height:"30px", border:"1px solid #b9d7e8", background:"#f3fbff", color:"#167cae", borderRadius:"5px", padding:"0 10px", fontSize:"10px", fontWeight:800, cursor:"pointer" }}
+                >+ 원료 행 추가</button>
+              </div>
               <div style={{ overflowX:"auto" }}>
                 <table style={{ width:"100%", minWidth:"900px", borderCollapse:"collapse", fontSize:"9px" }}>
                   <thead>
