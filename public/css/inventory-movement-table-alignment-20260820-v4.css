@@ -251,3 +251,75 @@
 #qmes-inventory-host .inv-tx-detail-actions button{
   min-width:76px!important;min-height:32px!important;font-size:10px!important
 }
+
+/* Inventory detail compact no-scroll v2 - 2026-09-30 */
+#qmes-inventory-host .inv-tx-detail-overlay{
+  padding:6px!important;
+  overflow:hidden!important;
+}
+#qmes-inventory-host .inv-tx-detail-sheet{
+  width:min(440px,86vw)!important;
+  max-height:68vh!important;
+  overflow:hidden!important;
+  border-radius:9px!important;
+}
+#qmes-inventory-host .inv-tx-detail-head{padding:9px 11px 7px!important}
+#qmes-inventory-host .inv-tx-detail-head span{font-size:7.5px!important}
+#qmes-inventory-host .inv-tx-detail-head h3{font-size:13px!important}
+#qmes-inventory-host .inv-tx-detail-head>button{
+  width:26px!important;min-height:26px!important;font-size:17px!important
+}
+#qmes-inventory-host .inv-tx-detail-status{
+  margin:7px 11px 0!important;
+  padding:6px 8px!important;
+}
+#qmes-inventory-host .inv-tx-detail-status b,
+#qmes-inventory-host .inv-tx-detail-status span{font-size:9px!important}
+#qmes-inventory-host .inv-tx-detail-grid{
+  margin:7px 11px!important;
+}
+#qmes-inventory-host .inv-tx-detail-grid>div{padding:6px 8px!important}
+#qmes-inventory-host .inv-tx-detail-grid dt{font-size:8px!important}
+#qmes-inventory-host .inv-tx-detail-grid dd{font-size:10px!important}
+#qmes-inventory-host .inv-tx-barcode{
+  margin:0 11px!important;
+  padding:7px!important;
+  overflow:hidden!important;
+}
+#qmes-inventory-host .inv-tx-barcode>div{margin-bottom:4px!important}
+#qmes-inventory-host .inv-tx-barcode>div b{font-size:9px!important}
+#qmes-inventory-host .inv-tx-barcode>div span{font-size:8px!important}
+#qmes-inventory-host .qmes-inv-native-qr{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  min-height:0!important;
+}
+#qmes-inventory-host .qmes-inv-native-qr canvas,
+#qmes-inventory-host .qmes-inv-native-qr img{
+  width:138px!important;
+  height:138px!important;
+  max-width:138px!important;
+  max-height:138px!important;
+}
+#qmes-inventory-host .inv-tx-detail-actions{
+  padding:7px 11px 10px!important;
+}
+#qmes-inventory-host .inv-tx-detail-actions button{
+  min-width:68px!important;
+  min-height:29px!important;
+  font-size:9px!important;
+}
+#qmes-inventory-host .inv-tx-detail-sheet,
+#qmes-inventory-host .inv-tx-detail-overlay,
+#qmes-inventory-host .inv-tx-barcode{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+#qmes-inventory-host .inv-tx-detail-sheet::-webkit-scrollbar,
+#qmes-inventory-host .inv-tx-detail-overlay::-webkit-scrollbar,
+#qmes-inventory-host .inv-tx-barcode::-webkit-scrollbar{
+  width:0!important;
+  height:0!important;
+  display:none!important;
+}
