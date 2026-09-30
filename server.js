@@ -48,6 +48,16 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
     const staticMiddleware = attendanceBaseStatic(root, options);
     return function namoAttendanceHumanArtworkMiddleware(req, res, next) {
       const pathname = String(req.path || '').toLowerCase();
+      // Retired inventory movement asset compatibility: old cached index pages may still
+      // request this removed script. Return valid no-op JavaScript instead of allowing
+      // the SPA fallback HTML to be parsed as JS ("Unexpected token '<'").
+      if (pathname === '/js/inventory-movement-list-clean-20260821.js') {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return res.send('/* retired inventory movement UI: intentionally empty */\n');
+      }
       if (pathname === '/attendance-enterprise-clockin-20260909.svg' || pathname === '/attendance-enterprise-clockout-20260909.svg') {
         const svg = pathname.includes('clockout') ? NAMO_ATTENDANCE_CLOCKOUT_ART_20260917 : NAMO_ATTENDANCE_CLOCKIN_ART_20260917;
         res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
