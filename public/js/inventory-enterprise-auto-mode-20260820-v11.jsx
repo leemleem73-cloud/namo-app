@@ -96,7 +96,7 @@ function InventoryEnterpriseTab({section='overview'}){
     <div className="inv-title-row"><div><h2>재고관리 · {title}</h2><p>PostgreSQL 중앙 DB · LOT/위치/품질상태/원장 기반 실시간 재고</p></div><div className="inv-actions"><button onClick={load}>새로고침</button>{section==='count'&&<button className="primary" onClick={()=>setModal('count')}>실사등록</button>}</div></div>
     {error&&<div className="inv-error">{error}</div>}
     {loading?<div className="inv-loading">재고 데이터를 불러오는 중...</div>:<>
-      {section==='overview'&&<><div className="inv-kpis">{['RM','PM','WIP','FG'].map(code=>{const r=totals[code]||{};return <div className="inv-kpi" key={code}><span>{INV_CATEGORY_LABEL[code]}</span><strong>{invNum(r.total_qty)} <small>kg/EA</small></strong><div>가용 {invNum(r.available_qty)} · 대기 {invNum(r.pending_qty)} · HOLD {invNum(r.hold_qty)}</div></div>})}</div><div className="inv-grid2"><div className="inv-panel"><h3>관리 알림</h3><div className="inv-alerts"><div>검사대기 LOT <b>{summary?.pendingLots||0}</b></div><div>안전재고 미달 <b>{summary?.safetyAlerts?.length||0}</b></div><div>유효기간 30일 이내 <b>{summary?.expiryAlerts?.length||0}</b></div><div>활성 예약 <b>{reservations.length}</b></div></div></div><div className="inv-panel"><h3>최근 재고 처리</h3>{transactions.slice(0,6).map(tx=><div className="inv-recent" key={tx.id}><b>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</b><span>{tx.item_code} / {tx.lot_no}</span><strong>{invNum(tx.quantity)} {tx.unit}</strong></div>)}</div></div></>}
+      {section==='overview'&&<InventoryOverviewEnterpriseScreen stock={stock} transactions={transactions} onSelectTx={setSelectedTx}/>} 
       {section==='lot'&&<><InventoryFilters query={query} setQuery={setQuery} category={category} setCategory={setCategory} status={status} setStatus={setStatus}/><StockTable rows={filtered}/></>}
       {section==='movement'&&<InventoryMovementSalesDueScreen rows={movementRows} page={safeMovementPage} pages={movementPages} pageSize={movementPageSize} onPage={setMovementPage} onReload={load} onSelect={setSelectedTx}/>} 
       {section==='production'&&<><div className="inv-panel"><h3>생산 예약재고</h3><table><thead><tr><th>작업지시</th><th>품목</th><th>LOT</th><th>위치</th><th>예약수량</th><th>등록자</th></tr></thead><tbody>{reservations.map(r=><tr key={r.id}><td>{r.work_order_no}</td><td>{r.item_code}</td><td>{r.lot_no||'자동선정'}</td><td>{r.location_code||'-'}</td><td className="num">{invNum(r.quantity)}</td><td>{r.reserved_by}</td></tr>)}</tbody></table></div><div className="inv-panel"><h3>생산 관련 원장</h3><TxTable rows={transactions.filter(t=>['PRODUCTION_ISSUE','PRODUCTION_RECEIPT'].includes(t.transaction_type))}/></div></>}
@@ -106,6 +106,137 @@ function InventoryEnterpriseTab({section='overview'}){
     {modal==='transaction'&&<InventoryTransactionModal stock={stock} items={items} locations={locations} section={section} onClose={()=>setModal(null)} onSaved={()=>{setModal(null);load();}}/>}
     {modal==='count'&&<InventoryCountModal stock={stock} onClose={()=>setModal(null)} onSaved={()=>{setModal(null);load();}}/>}
     {selectedTx&&<InventoryTransactionDetailModal tx={selectedTx} onClose={()=>setSelectedTx(null)}/>}
+  </div>;
+}
+
+function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
+  const [kind,setKind]=useState('');
+  const [state,setState]=useState('');
+  const [name,setName]=useState('');
+  const [lotOnly,setLotOnly]=useState('');
+  const [q,setQ]=useState('');
+
+  const allRows=Array.isArray(stock)?stock:[];
+  const filtered=allRows.filter(r=>{
+    if(kind&&r.category!==kind)return false;
+    if(state&&r.quality_status!==state)return false;
+    if(lotOnly==='Y'&&!String(r.lot_no||'').trim())return false;
+    if(lotOnly==='N'&&String(r.lot_no||'').trim())return false;
+    const n=String(name||'').trim().toLowerCase();
+    if(n&&!String(r.item_name||r.item_code||'').toLowerCase().includes(n))return false;
+    const qq=String(q||'').trim().toLowerCase();
+    if(qq&&![r.item_name,r.item_code,r.lot_no,r.location_code].join(' ').toLowerCase().includes(qq))return false;
+    return true;
+  });
+
+  const groups=new Map();
+  filtered.forEach(r=>{
+    const key=[r.category||'',r.item_code||'',r.item_name||'',r.unit||'kg'].join('|');
+    const g=groups.get(key)||{
+      category:r.category||'',
+      item_code:r.item_code||'',
+      item_name:r.item_name||r.item_code||'-',
+      unit:r.unit||'kg',
+      rows:[],
+      lots:new Set(),
+      total:0,
+      reserved:0,
+      available:0,
+      hold:0
+    };
+    g.rows.push(r);
+    if(r.lot_no)g.lots.add(r.lot_no);
+    g.total+=Number(r.quantity||0);
+    g.reserved+=Number(r.reserved_qty||0);
+    g.available+=Number(r.available_qty!=null?r.available_qty:r.quantity||0);
+    if(['HOLD','NONCONFORM'].includes(String(r.quality_status||'')))g.hold+=Number(r.quantity||0);
+    groups.set(key,g);
+  });
+  const grouped=[...groups.values()];
+
+  const rm=allRows.filter(r=>r.category==='RM').reduce((s,r)=>s+Number(r.quantity||0),0);
+  const fg=allRows.filter(r=>r.category==='FG').reduce((s,r)=>s+Number(r.quantity||0),0);
+  const pendingLots=new Set(allRows.filter(r=>['IQC_PENDING','OQC_PENDING'].includes(r.quality_status)).map(r=>r.lot_no).filter(Boolean)).size;
+  const holdLots=new Set(allRows.filter(r=>['HOLD','NONCONFORM'].includes(r.quality_status)).map(r=>r.lot_no).filter(Boolean)).size;
+  const lowItems=grouped.filter(g=>g.available<=0).length;
+
+  const openLot=(g)=>{
+    try{sessionStorage.setItem('qmes_inventory_section','lot');}catch(_){}
+    window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:'lot'}}));
+  };
+  const openBarcode=(g)=>{
+    const lotRows=g.rows.filter(r=>r.lot_no);
+    const chosen=lotRows[0]||g.rows[0];
+    if(!chosen)return;
+    const match=(Array.isArray(transactions)?transactions:[]).find(tx=>
+      String(tx.item_code||'')===String(chosen.item_code||'') &&
+      (!chosen.lot_no||String(tx.lot_no||'')===String(chosen.lot_no||''))
+    );
+    if(match){onSelectTx(match);return;}
+    onSelectTx({
+      id:'stock-'+String(chosen.item_code||chosen.item_name||'item'),
+      created_at:new Date().toISOString(),
+      transaction_type:'RECEIPT',
+      item_code:chosen.item_code||'',
+      item_name:chosen.item_name||chosen.item_code||'-',
+      lot_no:chosen.lot_no||'',
+      quantity:chosen.quantity||0,
+      unit:chosen.unit||'kg',
+      to_location:chosen.location_code||'',
+      reference_no:'재고현황'
+    });
+  };
+
+  return <div className="qmes-inv-overview-v1">
+    <div className="qio-flow">
+      <div><b>대기업형 4단 재고 구조</b><span>재고현황 → 입출고 원장 → LOT별 재고 → LOT 추적</span></div>
+      <small>수량 이중입력 금지 · 원장 단일화</small>
+    </div>
+
+    <div className="qio-steps">
+      <div><strong>1. 재고현황</strong><span>품목별 전체 현재고를 요약합니다. LOT 여러 개의 합계를 한 화면에서 확인합니다.</span></div>
+      <div><strong>2. 입출고 관리</strong><span>재고 증감의 원본 원장입니다. 입고·출고·투입·생산·조정 이력이 모두 남습니다.</span></div>
+      <div><strong>3. LOT별 재고</strong><span>입출고 원장을 LOT 기준으로 집계하여 현재고와 상태를 자동 계산합니다.</span></div>
+      <div><strong>4. LOT 추적</strong><span>협력사 LOT부터 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향으로 추적합니다.</span></div>
+    </div>
+
+    <div className="qio-kpis">
+      <div><span>전체 품목</span><strong>{new Set(allRows.map(r=>r.item_code||r.item_name).filter(Boolean)).size}</strong><small>원재료 + 완제품</small></div>
+      <div className="good"><span>원재료 재고</span><strong>{invNum(rm)}</strong><small>kg</small></div>
+      <div className="good"><span>완제품 재고</span><strong>{invNum(fg)}</strong><small>kg</small></div>
+      <div className="warn"><span>안전재고 미만</span><strong>{lowItems}</strong><small>품목</small></div>
+      <div className="dark"><span>검사/보류</span><strong>{pendingLots}</strong><small>LOT</small></div>
+      <div className="bad"><span>격리</span><strong>{holdLots}</strong><small>LOT</small></div>
+    </div>
+
+    <div className="qio-filter">
+      <label><span>품목구분</span><select value={kind} onChange={e=>setKind(e.target.value)}><option value="">전체</option><option value="RM">원재료</option><option value="PM">부자재</option><option value="WIP">재공품</option><option value="FG">완제품</option></select></label>
+      <label><span>재고상태</span><select value={state} onChange={e=>setState(e.target.value)}><option value="">전체</option>{Object.entries(INV_STATUS_LABEL).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
+      <label><span>품목명</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="품목명 검색"/></label>
+      <label><span>LOT 여부</span><select value={lotOnly} onChange={e=>setLotOnly(e.target.value)}><option value="">전체</option><option value="Y">LOT 있음</option><option value="N">LOT 없음</option></select></label>
+      <label className="qio-search"><span>통합검색</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="품목명, LOT, 위치 검색"/></label>
+      <button type="button">조회</button>
+    </div>
+
+    <div className="qio-table-card">
+      <div className="qio-table-head"><h3>품목별 재고 현황</h3><span>LOT별 재고의 품목 합계</span></div>
+      <div className="qio-table-scroll">
+        <table className="qio-table">
+          <thead><tr><th>No</th><th>품목구분</th><th>품목명</th><th>LOT 수</th><th>총입고</th><th>총출고/소모</th><th>현재고</th><th>사용가능</th><th>보류/격리</th><th>단위</th><th>상태</th><th>관리</th></tr></thead>
+          <tbody>{grouped.length?grouped.map((g,i)=>{
+            const totalOut=Math.max(0,g.total-g.available);
+            const tone=g.available<=0?'부족':'정상';
+            return <tr key={[g.category,g.item_code,g.item_name].join('|')}>
+              <td>{i+1}</td><td>{INV_CATEGORY_LABEL[g.category]||g.category||'-'}</td><td>{g.item_name}</td><td>{g.lots.size}</td>
+              <td>{invNum(g.total)}</td><td>{invNum(totalOut)}</td><td className="qio-current">{invNum(g.available)}</td><td>{invNum(g.available)}</td><td>{invNum(g.hold)}</td><td>{g.unit}</td>
+              <td><span className={'qio-status '+(tone==='정상'?'good':'warn')}>{tone}</span></td>
+              <td><div className="qio-actions"><button type="button" onClick={()=>openLot(g)}>LOT 보기</button><button type="button" onClick={()=>openBarcode(g)}>바코드</button></div></td>
+            </tr>
+          }):<tr><td colSpan="12" className="qio-empty">재고 데이터가 없습니다.</td></tr>}</tbody>
+        </table>
+      </div>
+    </div>
+    <div className="qio-note">※ 재고현황에서는 수량을 직접 수정하지 않고, 입출고 원장과 LOT별 재고를 기준으로 자동 집계합니다.</div>
   </div>;
 }
 
