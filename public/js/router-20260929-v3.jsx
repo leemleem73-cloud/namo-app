@@ -15,7 +15,7 @@ function QMESProductionProcessRoute(){
 }
 
 function qmesSavedInventorySection(){
-  const allowed=["overview","movement","lot","production","count"];
+  const allowed=["overview","production"];
   try{
     const saved=sessionStorage.getItem("qmes_inventory_section")||"overview";
     return allowed.includes(saved)?saved:"overview";
@@ -27,7 +27,7 @@ function QMESInventoryRoute(){
   useEffect(()=>{
     const handleSection=event=>{
       const next=String(event?.detail?.section||"");
-      if(!["overview","movement","lot","production","count"].includes(next))return;
+      if(!["overview","production"].includes(next))return;
       try{sessionStorage.setItem("qmes_inventory_section",next);}catch(error){}
       setSection(next);
     };
