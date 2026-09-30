@@ -180,11 +180,38 @@
     @media print{
       body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert{
         position:absolute!important;
-        top:50%!important;
-        left:50%!important;
+        top:0!important;
+        left:8mm!important;
+        right:auto!important;
+        width:194mm!important;
+        min-width:194mm!important;
+        max-width:194mm!important;
+        height:auto!important;
+        min-height:0!important;
         margin:0!important;
-        transform:translate(-50%,-50%) scale(.82)!important;
-        transform-origin:center center!important;
+        padding:5mm 6mm 4mm!important;
+        box-sizing:border-box!important;
+        transform:none!important;
+        transform-origin:top left!important;
+        overflow:visible!important;
+        background:#fff!important;
+      }
+      body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert .qmes-wo-header{
+        grid-template-columns:44mm 1fr 44mm!important;
+        width:100%!important;
+        max-width:100%!important;
+      }
+      body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert table{
+        width:100%!important;
+        max-width:100%!important;
+        min-width:0!important;
+        table-layout:fixed!important;
+      }
+      body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert .qmes-wo-header-logo{
+        width:40mm!important;
+        max-width:40mm!important;
+        max-height:12mm!important;
+        transform:none!important;
       }
       .qmes-wo-cert-material-table th:first-child,
       .qmes-wo-cert-material-table td:first-child{
