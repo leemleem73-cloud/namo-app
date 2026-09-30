@@ -280,26 +280,39 @@ function printDoc(sourceEl) {
   const availW = PAGE_W - MARGIN * 2;
   const availH = PAGE_H - MARGIN * 2;
   const centerCoaOnA4 = source.classList.contains("qmes-coa-unified-doc");
-  const scale = Math.min(availW / rect.width, centerCoaOnA4 ? availH / rect.height : 1, 1);
+  const isWorkOrder = source.classList.contains("qmes-wo-cert");
+  const scale = Math.min(
+    availW / rect.width,
+    (centerCoaOnA4 || isWorkOrder) ? availH / rect.height : 1,
+    1
+  );
 
-  /* 복제본을 화면 폭 그대로 두고 zoom으로 축소 → transform과 달리 실제 박스 크기가 줄어들어 인쇄 시 페이지 나눔이 정상 동작함 */
   clone.style.setProperty("width", rect.width + "px", "important");
   clone.style.setProperty("margin", "0", "important");
   clone.style.setProperty("box-shadow", "none", "important");
-  clone.style.setProperty("transform", "none", "important");
-  clone.style.setProperty("zoom", String(scale), "important");
+
+  /* 작업지시서만 transform 기반으로 실제 A4 영역 안에 강제 축소한다.
+     기존 공통 인쇄 로직은 그대로 유지한다. */
+  if (isWorkOrder) {
+    clone.style.setProperty("zoom", "1", "important");
+    clone.style.setProperty("transform", `scale(${scale})`, "important");
+    clone.style.setProperty("transform-origin", "top left", "important");
+  } else {
+    clone.style.setProperty("transform", "none", "important");
+    clone.style.setProperty("zoom", String(scale), "important");
+  }
 
   const stage = document.createElement("div");
   stage.className = "qmes-screen-print-stage";
-  /* 수입·공정·출하검사 성적서 모두 용지 상단에서 1.2cm 추가 하향 배치 */
-  const extraTop = (source.classList.contains("qmes-iqc-doc") ||
+  const extraTop = (!isWorkOrder && (
+                    source.classList.contains("qmes-iqc-doc") ||
                     source.classList.contains("qmes-pqc-doc") ||
-                    source.classList.contains("qmes-oqc-doc")) ? 12 * MM_TO_PX : 0;
+                    source.classList.contains("qmes-oqc-doc"))) ? 12 * MM_TO_PX : 0;
   const stageTop = centerCoaOnA4
     ? Math.max(MARGIN, (PAGE_H - rect.height * scale) / 2)
     : MARGIN + extraTop;
   stage.style.setProperty("width", (rect.width * scale) + "px", "important");
-  stage.style.setProperty("height", "auto", "important");
+  stage.style.setProperty("height", isWorkOrder ? (rect.height * scale) + "px" : "auto", "important");
   stage.style.setProperty("margin", stageTop + "px auto 0", "important");
   stage.style.setProperty("overflow", "visible", "important");
   stage.appendChild(clone);
