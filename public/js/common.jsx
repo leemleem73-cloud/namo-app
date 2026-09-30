@@ -281,22 +281,34 @@ function printDoc(sourceEl) {
   const availH = PAGE_H - MARGIN * 2;
   const centerCoaOnA4 = source.classList.contains("qmes-coa-unified-doc");
   const isWorkOrder = source.classList.contains("qmes-wo-cert");
+
+  /* 작업지시서 미리보기에는 화면용 zoom이 걸려 있어 rect.width만 사용하면
+     실제 문서 폭보다 작게 측정된다. 인쇄 시에는 원본 레이아웃 폭/높이를 기준으로
+     A4 안에 맞춰야 오른쪽이 잘리지 않는다. */
+  const workOrderLayoutW = isWorkOrder
+    ? Math.max(source.scrollWidth || 0, source.offsetWidth || 0, rect.width)
+    : rect.width;
+  const workOrderLayoutH = isWorkOrder
+    ? Math.max(source.scrollHeight || 0, source.offsetHeight || 0, rect.height)
+    : rect.height;
   const scale = Math.min(
-    availW / rect.width,
-    (centerCoaOnA4 || isWorkOrder) ? availH / rect.height : 1,
+    availW / workOrderLayoutW,
+    (centerCoaOnA4 || isWorkOrder) ? availH / workOrderLayoutH : 1,
     1
   );
 
-  clone.style.setProperty("width", rect.width + "px", "important");
+  clone.style.setProperty("width", workOrderLayoutW + "px", "important");
+  clone.style.setProperty("max-width", "none", "important");
+  clone.style.setProperty("min-width", "0", "important");
   clone.style.setProperty("margin", "0", "important");
   clone.style.setProperty("box-shadow", "none", "important");
 
-  /* 작업지시서만 transform 기반으로 실제 A4 영역 안에 강제 축소한다.
-     기존 공통 인쇄 로직은 그대로 유지한다. */
   if (isWorkOrder) {
-    clone.style.setProperty("zoom", "1", "important");
-    clone.style.setProperty("transform", `scale(${scale})`, "important");
+    /* 화면용 zoom을 제거한 뒤, 실제 전체 문서 크기를 A4에 맞춰 다시 축소 */
+    clone.style.setProperty("zoom", String(scale), "important");
+    clone.style.setProperty("transform", "none", "important");
     clone.style.setProperty("transform-origin", "top left", "important");
+    clone.style.setProperty("overflow", "visible", "important");
   } else {
     clone.style.setProperty("transform", "none", "important");
     clone.style.setProperty("zoom", String(scale), "important");
@@ -309,10 +321,10 @@ function printDoc(sourceEl) {
                     source.classList.contains("qmes-pqc-doc") ||
                     source.classList.contains("qmes-oqc-doc"))) ? 12 * MM_TO_PX : 0;
   const stageTop = centerCoaOnA4
-    ? Math.max(MARGIN, (PAGE_H - rect.height * scale) / 2)
-    : MARGIN + extraTop;
-  stage.style.setProperty("width", (rect.width * scale) + "px", "important");
-  stage.style.setProperty("height", isWorkOrder ? (rect.height * scale) + "px" : "auto", "important");
+    ? Math.max(MARGIN, (PAGE_H - workOrderLayoutH * scale) / 2)
+    : MARGIN;
+  stage.style.setProperty("width", (workOrderLayoutW * scale) + "px", "important");
+  stage.style.setProperty("height", isWorkOrder ? (workOrderLayoutH * scale) + "px" : "auto", "important");
   stage.style.setProperty("margin", stageTop + "px auto 0", "important");
   stage.style.setProperty("overflow", "visible", "important");
   stage.appendChild(clone);
