@@ -11,7 +11,6 @@
     '생산계획 · MRP':{tab:'erpPlan'},
     '구매 · 발주관리':{tab:'erpPurchase'},
     '재고현황':{tab:'inv',section:'overview'},
-    '생산투입/완료':{tab:'inv',section:'production'},
     '거래처 현황':{tab:'partners'},
     '생산 진행':{tab:'prod',openMenu:'productionMenu'},
     '작업지시서':{tab:'woIssue',openMenu:'productionMenu'},
