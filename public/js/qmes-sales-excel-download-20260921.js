@@ -285,7 +285,10 @@
 
   function ensureButton(){
     installStyle();
-    const host=document.querySelector(".qmes-sales-ledger-v4 .qslv4-head-actions");
+    const wrong=document.querySelector("#qmes-workorder-salesdue-exact-v6 #"+BTN_ID);
+    if(wrong) wrong.remove();
+    const hosts=[...document.querySelectorAll(".qmes-sales-ledger-v4 .qslv4-head-actions")];
+    const host=hosts.find(el=>!el.closest("#qmes-workorder-salesdue-exact-v6"))||null;
     if(!host||document.getElementById(BTN_ID)) return;
     const btn=document.createElement("button");
     btn.id=BTN_ID;
