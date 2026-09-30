@@ -94,7 +94,40 @@ function markup(){
  '<div class="qsd-table-shell"><table class="qsd-table qwf2-table"><thead><tr><th>No</th><th>지시일</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT NO.</th><th>계획수량</th><th>단위</th><th>생산예정일</th><th>설비</th><th>투입계획량</th><th>실투입량</th><th>생산수량</th><th>수율</th><th>PQC</th><th>진행상태</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody></tbody></table><div class="qrl-foot"></div></div>';
 }
 function findNativeRow(raw){return [].slice.call(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(function(tr){var td=tr.querySelector("td");return clean(td&&td.textContent)===clean(raw)})||null}
-function nativeAction(raw,type){var tr=findNativeRow(raw);if(!tr)return false;var map={print:".qmes-manage-btn.print",edit:".qmes-manage-btn.edit",delete:".qmes-manage-btn.delete"},sel=map[type];if(!sel)return false;var b=tr.querySelector(sel);if(!b){var label=type==="print"?"출력":type==="edit"?"수정":"삭제";b=[].slice.call(tr.querySelectorAll("button")).find(function(x){return clean(x.textContent)===label})}if(!b)return false;b.click();return true}
+function nativeAction(raw,type){
+ var tr=findNativeRow(raw);if(!tr)return false;
+ var map={print:".qmes-manage-btn.print",edit:".qmes-manage-btn.edit",delete:".qmes-manage-btn.delete"},sel=map[type];if(!sel)return false;
+ var b=tr.querySelector(sel);
+ if(!b){var label=type==="print"?"출력":type==="edit"?"수정":"삭제";b=[].slice.call(tr.querySelectorAll("button")).find(function(x){return clean(x.textContent)===label})}
+ if(!b)return false;
+ if(type!=="print"){b.click();return true}
+ document.body.classList.add("qmes-workorder-direct-printing");
+ b.click();
+ var tries=0,timer=setInterval(function(){
+   tries++;
+   var viewer=document.querySelector(".qmes-wo-viewer.qmes-wo-output-preview");
+   if(viewer){
+     clearInterval(timer);
+     var printBtn=[].slice.call(viewer.querySelectorAll("button")).find(function(x){return clean(x.textContent)==="인쇄"});
+     if(printBtn){
+       setTimeout(function(){
+         printBtn.click();
+         setTimeout(function(){
+           var close=viewer.querySelector(".qmes-modal-close");
+           if(close)close.click();
+           document.body.classList.remove("qmes-workorder-direct-printing");
+         },250);
+       },60);
+     }else{
+       document.body.classList.remove("qmes-workorder-direct-printing");
+     }
+   }else if(tries>30){
+     clearInterval(timer);
+     document.body.classList.remove("qmes-workorder-direct-printing");
+   }
+ },30);
+ return true
+}
 function nativeNew(){var b=document.querySelector(".qmes-iqc-new-btn");if(!b)return false;b.click();return true}
 function downloadCsv(){var heads=["No","지시일","작업지시번호","고객사","제품명","생산 LOT NO.","계획수량","단위","생산예정일","설비","투입계획량","실투입량","생산수량","수율","PQC","진행상태","작업자","비고"],rows=state.filtered.map(function(r,i){return[i+1,r.date,r.workOrderNo,r.customer,r.product,r.productionLotNo,r.plan,"kg",r.plannedDate,r.equipment,r.plan,r.actual||"",r.actual||"",r.yield==null?"":r.yield.toFixed(1)+"%",r.pqc,r.status,r.worker,r.remarks]});function cell(v){var s=String(v==null?"":v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}var csv="\uFEFF"+[heads].concat(rows).map(function(row){return row.map(cell).join(",")}).join("\r\n"),blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="작업지시서_"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000)}
 function bind(){
