@@ -1461,7 +1461,7 @@ function IssueWoTab() {
       <div
         className="qmes-modal-backdrop qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
-        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"rgba(17,35,49,.42)", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
+        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
       >
         <div
           onClick={(e) => e.stopPropagation()}
