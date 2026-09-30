@@ -396,3 +396,121 @@
 #qmes-inventory-host .qio-note{margin-top:7px;color:#768b99;font-size:8.5px}
 @media(max-width:1450px){#qmes-inventory-host .qio-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#qmes-inventory-host .qio-steps{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-steps>div::after{display:none}}
 @media(max-width:900px){#qmes-inventory-host .qio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-filter{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-filter button{width:100%}}
+
+/* Inventory overview purchase-ledger parity v1 - 2026-09-30 */
+#qmes-inventory-host[data-qmes-inventory-section="overview"] .inv-title-row{display:none!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1{
+  width:100%!important;max-width:none!important;margin:0!important;padding:0!important;
+  color:#2b4355!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 *{box-sizing:border-box!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-title-row{
+  display:flex!important;align-items:flex-start!important;justify-content:space-between!important;
+  gap:16px!important;margin:0 0 12px!important;padding:0!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-title-row h1{
+  margin:0!important;color:#123b58!important;font-size:19px!important;line-height:1.25!important;font-weight:950!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-title-actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-title-actions button{
+  height:34px!important;padding:0 11px!important;border:1px solid #bfd0db!important;border-radius:7px!important;
+  background:#fff!important;color:#355269!important;font-size:10px!important;font-weight:850!important;white-space:nowrap!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpis{
+  display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important;margin:0 0 10px!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi{
+  min-width:0!important;height:78px!important;padding:10px 12px!important;border:1px solid #cbd9e3!important;border-radius:7px!important;
+  background:#fff!important;box-shadow:0 1px 2px rgba(31,70,98,.05)!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi span{display:block!important;color:#698094!important;font-size:9px!important;font-weight:800!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi strong{display:block!important;margin-top:5px!important;font-size:20px!important;line-height:1!important;font-weight:950!important;color:#126da2!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi small{display:block!important;margin-top:7px!important;color:#8a9aa6!important;font-size:8px!important;font-weight:700!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi.good strong{color:#15914b!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi.warn strong{color:#d17a00!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi.bad strong{color:#cf3e33!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpi.dark strong{color:#243d52!important}
+
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-filter-row{
+  display:grid!important;grid-template-columns:minmax(150px,.9fr) minmax(170px,1fr) minmax(220px,1.2fr) minmax(150px,.9fr) minmax(300px,2fr) 64px!important;
+  gap:7px!important;align-items:end!important;margin:0 0 8px!important;padding:8px!important;
+  border:1px solid #d6e1e8!important;border-radius:7px!important;background:#fff!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-field{min-width:0!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-field label{
+  display:block!important;margin:0 0 4px!important;color:#60788a!important;font-size:8px!important;font-weight:850!important;white-space:nowrap!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-control{
+  width:100%!important;min-width:0!important;height:34px!important;margin:0!important;padding:0 9px!important;
+  border:1px solid #c4d2dc!important;border-radius:6px!important;background:#fff!important;color:#31495d!important;
+  font-size:9.5px!important;line-height:34px!important;font-weight:700!important;outline:none!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-search{
+  width:64px!important;height:34px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  padding:0 6px!important;border:1px solid #1687c6!important;border-radius:6px!important;background:#1687c6!important;
+  color:#fff!important;font-size:9px!important;font-weight:850!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-notice{
+  min-height:26px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;
+  margin:0 0 7px!important;padding:6px 10px!important;border:1px solid #c8e1ef!important;border-radius:4px!important;
+  background:#eef9ff!important;color:#3c6078!important;font-size:8.5px!important;font-weight:700!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-notice strong{color:#2f739e!important}
+
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table-box{
+  width:100%!important;max-width:100%!important;overflow:hidden!important;border:1px solid #cbd8e2!important;border-radius:7px!important;background:#fff!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table-scroll{
+  width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;margin:0!important;padding:0!important;scrollbar-width:thin!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table{
+  width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;border-collapse:separate!important;border-spacing:0!important;
+  table-layout:fixed!important;background:#fff!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table thead th{
+  height:35px!important;min-width:0!important;padding:5px 3px!important;border-right:1px solid rgba(255,255,255,.34)!important;
+  border-bottom:1px solid #4d91ba!important;background:linear-gradient(180deg,#67b3dc,#4696c2)!important;color:#fff!important;
+  font-size:8px!important;font-weight:900!important;text-align:center!important;vertical-align:middle!important;white-space:nowrap!important;
+  overflow:hidden!important;text-overflow:ellipsis!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table tbody td{
+  height:36px!important;min-width:0!important;padding:5px 3px!important;border-right:1px solid #dce6ed!important;border-bottom:1px solid #dce6ed!important;
+  background:#fff!important;color:#314a5b!important;font-size:8px!important;font-weight:650!important;text-align:center!important;vertical-align:middle!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table tbody tr:nth-child(even) td{background:#f7fafc!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table tbody tr:hover td{background:#eef7fc!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:last-child,
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:last-child{border-right:0!important;overflow:visible!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-current{color:#129249!important;font-weight:950!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-status{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:46px!important;height:20px!important;
+  padding:0 6px!important;border-radius:8px!important;font-size:8px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-status.good{background:#e4f7ea!important;color:#158548!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-status.warn{background:#fff2df!important;color:#d27300!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-actions{
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;width:100%!important;min-width:0!important;white-space:nowrap!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-actions button{
+  min-width:30px!important;width:auto!important;height:22px!important;padding:0 5px!important;border-radius:5px!important;font-size:8px!important;line-height:1!important;font-weight:900!important
+}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-actions button:first-child{border:1px solid #2f92c8!important;background:#138cc7!important;color:#fff!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-actions button:last-child{border:1px solid #c6d5df!important;background:#fff!important;color:#355269!important}
+
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(1),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(1){width:4%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(2),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(2){width:8%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(3),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(3){width:12%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(4),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(4){width:7%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(5),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(5){width:9%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(6),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(6){width:10%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(7),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(7){width:8%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(8),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(8){width:9%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(9),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(9){width:9%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(10),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(10){width:6%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(11),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(11){width:8%!important}
+#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table th:nth-child(12),#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-table td:nth-child(12){width:10%!important}
+@media(max-width:1450px){#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:820px){#qmes-inventory-host .qmes-inv-overview-purchase-v1 .qio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
