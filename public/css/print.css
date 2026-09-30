@@ -223,3 +223,51 @@
     page-break-after: avoid !important;
   }
 }
+
+
+/* workorder print final fit override 2026-09-30 */
+@media print {
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert,
+  body.print-doc #qmes-print-root > .doc-paper.qmes-wo-cert {
+    position:absolute!important;
+    top:0!important;
+    left:8mm!important;
+    right:auto!important;
+    width:194mm!important;
+    min-width:194mm!important;
+    max-width:194mm!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:5mm 6mm 4mm!important;
+    transform:none!important;
+    transform-origin:top left!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+    background:#fff!important;
+  }
+
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert .qmes-wo-header,
+  body.print-doc #qmes-print-root > .doc-paper.qmes-wo-cert .qmes-wo-header {
+    grid-template-columns:44mm 1fr 44mm!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert table,
+  body.print-doc #qmes-print-root > .doc-paper.qmes-wo-cert table {
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+
+  body.print-doc #qmes-print-root > .qmes-screen-print-copy.qmes-wo-cert .qmes-wo-header-logo,
+  body.print-doc #qmes-print-root > .doc-paper.qmes-wo-cert .qmes-wo-header-logo {
+    width:40mm!important;
+    max-width:40mm!important;
+    max-height:12mm!important;
+    transform:none!important;
+  }
+}
