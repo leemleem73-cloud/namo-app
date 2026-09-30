@@ -84,13 +84,12 @@ function InventoryEnterpriseTab({section='overview'}){
   useEffect(()=>{load();const reload=()=>load();document.addEventListener('qmes:inventory-auto-linked',reload);return()=>document.removeEventListener('qmes:inventory-auto-linked',reload);},[]);
   const filtered=stock.filter(row=>(!category||row.category===category)&&(!status||row.quality_status===status)&&(!query||[row.item_code,row.item_name,row.lot_no,row.location_code].join(' ').toLowerCase().includes(query.toLowerCase())));
   const totals=(summary?.totals||[]).reduce((a,row)=>{a[row.category]=row;return a;},{});
-  const title={overview:'재고현황',lot:'LOT별 재고',production:'생산투입/완료',count:'재고실사',history:'재고이력'}[section]||'재고관리';
+  const title={overview:'재고현황',production:'생산투입/완료',count:'재고실사',history:'재고이력'}[section]||'재고관리';
   return <div className="inv-shell">
     <div className="inv-title-row"><div><h2>재고관리 · {title}</h2><p>PostgreSQL 중앙 DB · LOT/위치/품질상태/원장 기반 실시간 재고</p></div><div className="inv-actions"><button onClick={load}>새로고침</button>{section==='count'&&<button className="primary" onClick={()=>setModal('count')}>실사등록</button>}</div></div>
     {error&&<div className="inv-error">{error}</div>}
     {loading?<div className="inv-loading">재고 데이터를 불러오는 중...</div>:<>
       {section==='overview'&&<InventoryOverviewEnterpriseScreen stock={stock} transactions={transactions} onSelectTx={setSelectedTx}/>} 
-      {section==='lot'&&<><InventoryFilters query={query} setQuery={setQuery} category={category} setCategory={setCategory} status={status} setStatus={setStatus}/><StockTable rows={filtered}/></>}
 {section==='production'&&<><div className="inv-panel"><h3>생산 예약재고</h3><table><thead><tr><th>작업지시</th><th>품목</th><th>LOT</th><th>위치</th><th>예약수량</th><th>등록자</th></tr></thead><tbody>{reservations.map(r=><tr key={r.id}><td>{r.work_order_no}</td><td>{r.item_code}</td><td>{r.lot_no||'자동선정'}</td><td>{r.location_code||'-'}</td><td className="num">{invNum(r.quantity)}</td><td>{r.reserved_by}</td></tr>)}</tbody></table></div><div className="inv-panel"><h3>생산 관련 원장</h3><TxTable rows={transactions.filter(t=>['PRODUCTION_ISSUE','PRODUCTION_RECEIPT'].includes(t.transaction_type))}/></div></>}
       {section==='count'&&<div className="inv-panel"><h3>재고실사 이력</h3><table><thead><tr><th>실사일</th><th>품목</th><th>LOT</th><th>위치</th><th>장부</th><th>실재고</th><th>차이</th><th>실사자</th></tr></thead><tbody>{counts.map(c=><tr key={c.id}><td>{c.count_date}</td><td>{c.item_code}</td><td>{c.lot_no}</td><td>{c.location_code}</td><td className="num">{invNum(c.book_qty)}</td><td className="num">{invNum(c.actual_qty)}</td><td className={'num '+(Number(c.difference_qty)!==0?'warn':'')}>{invNum(c.difference_qty)}</td><td>{c.counted_by}</td></tr>)}</tbody></table></div>}
       {section==='history'&&<div className="inv-panel"><h3>재고 Transaction 원장</h3><TxTable rows={transactions}/></div>}
@@ -144,10 +143,6 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
   const holdLots=new Set(allRows.filter(r=>['HOLD','NONCONFORM'].includes(r.quality_status)).map(r=>r.lot_no).filter(Boolean)).size;
   const lowItems=grouped.filter(g=>g.available<=0).length;
 
-  const openLot=(g)=>{
-    try{sessionStorage.setItem('qmes_inventory_section','lot');}catch(_){}
-    window.dispatchEvent(new CustomEvent('qmes:inventory-section',{detail:{section:'lot'}}));
-  };
   const openBarcode=(g)=>{
     const chosen=g.rows.find(r=>r.lot_no)||g.rows[0];
     if(!chosen)return;
@@ -191,7 +186,7 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
       <button type="button" className="qio-search">조회</button>
     </div>
 
-    <div className="qio-notice"><span><strong>재고 핵심관리</strong> · 품목별 현재고 · LOT 수 · 사용가능 · 보류/격리 · LOT별 재고 연동</span><span>※ 관리에서 LOT 보기 / 바코드 확인</span></div>
+    <div className="qio-notice"><span><strong>재고 핵심관리</strong> · 품목별 현재고 · LOT 수 · 사용가능 · 보류/격리</span><span>※ 관리에서 바코드 확인</span></div>
 
     <div className="qio-table-box"><div className="qio-table-scroll"><table className="qio-table">
       <thead><tr><th>No</th><th>품목구분</th><th>품목명</th><th>LOT 수</th><th>총입고</th><th>총출고/소모</th><th>현재고</th><th>사용가능</th><th>보류/격리</th><th>단위</th><th>상태</th><th>관리</th></tr></thead>
@@ -202,7 +197,7 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
           <td>{i+1}</td><td>{INV_CATEGORY_LABEL[g.category]||g.category||'-'}</td><td>{g.item_name}</td><td>{g.lots.size}</td>
           <td>{invNum(g.total)}</td><td>{invNum(totalOut)}</td><td className="qio-current">{invNum(g.available)}</td><td>{invNum(g.available)}</td><td>{invNum(g.hold)}</td><td>{g.unit}</td>
           <td><span className={'qio-status '+(tone==='정상'?'good':'warn')}>{tone}</span></td>
-          <td><div className="qio-actions"><button type="button" onClick={()=>openLot(g)}>LOT 보기</button><button type="button" onClick={()=>openBarcode(g)}>바코드</button></div></td>
+          <td><div className="qio-actions"><button type="button" onClick={()=>openBarcode(g)}>바코드</button></div></td>
         </tr>
       }):<tr><td colSpan="12" className="qio-empty">재고 데이터가 없습니다.</td></tr>}</tbody>
     </table></div></div>
@@ -282,4 +277,4 @@ function InventoryTransactionModal({stock,items,locations,section,onClose,onSave
 }
 function InventoryCountModal({stock,onClose,onSaved}){const [key,setKey]=useState(''),[actual,setActual]=useState(''),[reason,setReason]=useState(''),[error,setError]=useState('');const row=stock[Number(key)]||null;const submit=async e=>{e.preventDefault();if(!row)return;try{await invApi('/counts',{method:'POST',body:JSON.stringify({itemCode:row.item_code,lotNo:row.lot_no,locationCode:row.location_code,qualityStatus:row.quality_status,actualQty:actual,reason})});onSaved();}catch(err){setError(err.message);}};return <div className="inv-modal"><form onSubmit={submit}><div className="inv-modal-head"><h3>재고실사 등록</h3><button type="button" onClick={onClose}>×</button></div>{error&&<div className="inv-error">{error}</div>}<label>실사대상<select required value={key} onChange={e=>setKey(e.target.value)}><option value="">선택</option>{stock.map((r,i)=><option key={i} value={i}>{r.item_code} / {r.lot_no} / {r.location_code} / {invNum(r.quantity)}</option>)}</select></label><label>실재고<input required type="number" min="0" step="0.001" value={actual} onChange={e=>setActual(e.target.value)}/></label><label>차이 사유<input value={reason} onChange={e=>setReason(e.target.value)}/></label><div className="inv-modal-actions"><button type="button" onClick={onClose}>취소</button><button className="primary">실사 반영</button></div></form></div>}
 
-function InventoryOverviewTab(){return <InventoryEnterpriseTab section="overview"/>}function InventoryLotTab(){return <InventoryEnterpriseTab section="lot"/>}function InventoryProductionTab(){return <InventoryEnterpriseTab section="production"/>}function InventoryCountTab(){return <InventoryEnterpriseTab section="count"/>}function InventoryHistoryTab(){return <InventoryEnterpriseTab section="history"/>}
+function InventoryOverviewTab(){return <InventoryEnterpriseTab section="overview"/>}function InventoryProductionTab(){return <InventoryEnterpriseTab section="production"/>}function InventoryCountTab(){return <InventoryEnterpriseTab section="count"/>}function InventoryHistoryTab(){return <InventoryEnterpriseTab section="history"/>}
