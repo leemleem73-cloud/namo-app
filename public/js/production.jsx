@@ -1469,16 +1469,22 @@ function IssueWoTab() {
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 고객사
-                <select defaultValue="현대자동차" style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
-                  <option>현대자동차</option>
-                  <option>알파라인</option>
-                </select>
+                <input
+                  type="text"
+                  defaultValue=""
+                  placeholder="고객사명 직접 입력"
+                  style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
+                />
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 제품명
-                <select value={form.product} onChange={(e) => { const next=e.target.value; setForm({ ...form, product:next, workType:BOM[next].workType, tank:BOM[next].tanks[0], qty:"" }); setPlanItems(blankPlanItems(next)); setPackRows([blankPackRow()]); }} style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
-                  {products.map((pd) => <option key={pd} value={pd}>{pd}</option>)}
-                </select>
+                <input
+                  type="text"
+                  value={form.product}
+                  onChange={(e) => setForm({ ...form, product:e.target.value })}
+                  placeholder="제품명 직접 입력"
+                  style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}
+                />
               </label>
 
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
@@ -1503,7 +1509,7 @@ function IssueWoTab() {
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
                 설비
                 <select value={form.tank} onChange={(e) => setForm({ ...form, tank:e.target.value })} style={{ height:"36px", border:"1px solid #cad8e4", borderRadius:"5px", padding:"0 9px", background:"#fff", color:"#26384a" }}>
-                  {(BOM[form.product]?.tanks || []).map((t) => <option key={t}>{t}</option>)}
+                  {(BOM[form.product]?.tanks || BOM[firstProduct]?.tanks || [form.tank]).map((t) => <option key={t}>{t}</option>)}
                 </select>
               </label>
               <label style={{ display:"flex", flexDirection:"column", gap:"4px", fontSize:"9px", fontWeight:800, color:"#64788a" }}>
