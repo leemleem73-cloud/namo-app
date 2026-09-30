@@ -39,7 +39,6 @@
       {label:'생산계획 · MRP',icon:'▥',tab:'erpPlan'},
       {label:'구매 · 발주관리',icon:'□',tab:'erpPurchase'},
       {label:'재고현황',icon:'▣',inventory:'overview'},
-      {label:'입출고 관리',icon:'⇄',inventory:'movement'},
       {label:'LOT별 재고',icon:'L',inventory:'lot'},
       {label:'생산투입/완료',icon:'↳',inventory:'production'},
       {label:'재고실사',icon:'✓',inventory:'count'},
