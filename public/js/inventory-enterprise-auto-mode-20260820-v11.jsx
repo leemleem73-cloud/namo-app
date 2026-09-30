@@ -222,65 +222,62 @@ function InventoryPager({page,pages,total,onPage}){const start=Math.max(1,Math.m
 function TxTable({rows,onSelect,showSequence=false,sequenceStart=0}){return <table className="inv-stock-table inv-movement-table"><colgroup>{showSequence&&<col/>}<col/><col/><col/><col/><col/><col/><col/></colgroup><thead><tr>{showSequence&&<th className="qmes-inv-seq">순번</th>}<th>일시</th><th>구분</th><th>원료명</th><th>LOT</th><th>수량</th><th>이동 방향</th><th>비고</th></tr></thead><tbody>{rows.map((tx,index)=><tr key={tx.id}>{showSequence&&<td className="qmes-inv-seq">{sequenceStart+index+1}</td>}<td>{onSelect?<button type="button" className="inv-tx-detail-link" onClick={()=>onSelect(tx)} title="상세정보 및 바코드 보기">{new Date(tx.created_at).toLocaleString('ko-KR')}</button>:new Date(tx.created_at).toLocaleString('ko-KR')}</td><td>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</td><td title={txMaterialName(tx)}>{txMaterialName(tx)}</td><td>{tx.lot_no}</td><td className="num">{invNum(tx.quantity)} {tx.unit}</td><td>{txDirectionLabel(tx)}</td><td title={txDisplayReference(tx)}>{txDisplayReference(tx)}</td></tr>)}</tbody></table>}
 
 function InventoryTransactionDetailModal({tx,onClose}){
-  const requestedCount=Number(tx?.barcode_qty||tx?.package_qty||1);
-  const barcodeCount=Math.min(500,Math.max(1,Number.isInteger(requestedCount)?requestedCount:1));
-  const packageQty=Number(tx?.package_qty||barcodeCount);
+  const packageQty=Math.max(1,Math.trunc(Number(tx?.package_qty||tx?.barcode_qty||1))||1);
   const packagingType=String(tx?.packaging_type||'').trim();
   const packagingTypeOther=String(tx?.packaging_type_other||'').trim();
-  const packagingLabel=packagingType==='기타'&&packagingTypeOther?`${packagingType}(${packagingTypeOther})`:(packagingType||'-');
-  const unitWeight=Number(tx?.unit_weight||0);
-  const calculatedWeight=Number(tx?.calculated_weight||0);
-  const barcodeRefs=React.useRef([]);
-  const barcodeValues=Array.from({length:barcodeCount},(_,index)=>`${txBarcodeValue(tx)}|PKG:${String(index+1).padStart(3,'0')}/${String(barcodeCount).padStart(3,'0')}`);
-  const barcodeSignature=barcodeValues.join('||');
+  const packagingLabel=packagingType==='기타'&&packagingTypeOther?`기타(${packagingTypeOther})`:(packagingType||'-');
+  const qrRef=React.useRef(null);
+  const qrText=React.useMemo(()=>{
+    const url=new URL(window.location.href);
+    url.hash='';
+    if(tx?.id)url.searchParams.set('inventoryTx',String(tx.id));
+    return url.toString();
+  },[tx?.id]);
 
   React.useEffect(()=>{
-    if(!window.JsBarcode)return;
-    barcodeValues.forEach((value,index)=>{
-      const element=barcodeRefs.current[index];
-      if(element)window.JsBarcode(element,value,{format:'CODE128',displayValue:true,height:64,margin:8,fontSize:13,lineColor:'#0f172a'});
-    });
-  },[barcodeSignature]);
+    const host=qrRef.current;
+    if(!host)return;
+    host.replaceChildren();
+    if(window.QRCode){
+      try{
+        new window.QRCode(host,{text:qrText,width:180,height:180,colorDark:'#111827',colorLight:'#ffffff',correctLevel:window.QRCode.CorrectLevel?.M});
+      }catch(_){}
+    }
+  },[qrText]);
+
   React.useEffect(()=>{
     const close=e=>{if(e.key==='Escape')onClose();};
     document.addEventListener('keydown',close);
     return()=>document.removeEventListener('keydown',close);
   },[onClose]);
 
-  const printBarcode=()=>{
-    const printWindow=window.open('','_blank',`width=900,height=760`);
-    if(!printWindow||!barcodeRefs.current[0])return;
-    const doc=printWindow.document;
-    doc.title=`${tx.item_code||txMaterialName(tx)} ${tx.lot_no||''} 용기 바코드 ${barcodeCount}매`;
-    const style=doc.createElement('style');
-    style.textContent='@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;color:#0f172a}.label{width:100%;min-height:126mm;border:1.5px solid #cbd5e1;border-radius:10px;padding:10mm;page-break-after:always}.label:last-child{page-break-after:auto}.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0f172a;padding-bottom:10px;margin-bottom:12px}.head h1{font-size:24px;margin:0}.head b{font-size:16px}.grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;margin-bottom:16px}.cell{padding:9px 12px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}.cell:nth-child(2n){border-right:0}.cell small{display:block;color:#64748b;font-weight:700;margin-bottom:4px}.cell strong{font-size:16px}.wide{grid-column:1/-1;border-right:0}.barcode{border:1px dashed #94a3b8;border-radius:8px;padding:14px;text-align:center}.barcode svg{max-width:100%;height:82px}.footer{margin-top:10px;font-size:11px;color:#64748b;text-align:right}';
-    doc.head.appendChild(style);
-    barcodeValues.forEach((value,index)=>{
-      const label=doc.createElement('section');
-      label.className='label';
-      const cells=[
-        ['문서번호',txDocumentNo(tx)],['구분',INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type],
-        ['원료명',txMaterialName(tx)],['원료코드',tx.item_code||'-'],
-        ['LOT',tx.lot_no||'-'],['총 입고중량',`${invNum(tx.quantity)} ${tx.unit||'kg'}`],
-        ['포장형태',packagingLabel],['용기번호',`${index+1} / ${barcodeCount}`],
-        ['용기당 중량',unitWeight>0?`${invNum(unitWeight)} kg`:'-'],['계산중량',calculatedWeight>0?`${invNum(calculatedWeight)} kg`:'-'],
-        ['이동 방향',txDirectionLabel(tx)],['작업자',txOperatorLabel(tx)],
-        ['비고',txDisplayReference(tx)]
-      ];
-      label.innerHTML=`<div class="head"><div><h1>NAMO Chemical 원료 바코드</h1><b>${txMaterialName(tx)}</b></div><strong>${index+1} / ${barcodeCount}</strong></div><div class="grid">${cells.map((cell,cellIndex)=>`<div class="cell ${cellIndex===10||cellIndex===12?'wide':''}"><small>${cell[0]}</small><strong></strong></div>`).join('')}</div><div class="barcode"><b>원료·LOT·위치·용기 CODE128</b></div><div class="footer">발행 ${new Date().toLocaleString('ko-KR')} · ERP 연동용</div>`;
-      Array.from(label.querySelectorAll('.cell strong')).forEach((element,cellIndex)=>{element.textContent=String(cells[cellIndex][1]??'-');});
-      const barcodeWrap=label.querySelector('.barcode');
-      const barcode=barcodeRefs.current[index]?.cloneNode(true);
-      if(barcode)barcodeWrap.appendChild(barcode);
-      else{const code=doc.createElement('code');code.textContent=value;barcodeWrap.appendChild(code);}
-      doc.body.appendChild(label);
-    });
-    doc.close();
-    printWindow.focus();
-    window.setTimeout(()=>{printWindow.print();printWindow.close();},250);
+  const printQr=()=>{
+    const node=qrRef.current?.querySelector('canvas,img');
+    if(!node)return;
+    const src=node.tagName==='CANVAS'?node.toDataURL('image/png'):node.src;
+    const w=window.open('','_blank','width=720,height=620');
+    if(!w)return;
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>입출고 상세 QR</title><style>body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;color:#111827}.sheet{width:120mm;height:80mm;margin:18mm auto;padding:6mm;box-sizing:border-box;border:1px solid #cbd5e1}.top{display:flex;justify-content:space-between;border-bottom:1px solid #cbd5e1;padding-bottom:3mm}.grid{display:grid;grid-template-columns:1fr 42mm;gap:5mm;margin-top:4mm}.meta small{display:block;color:#64748b;margin-top:2mm}.meta strong{display:block;font-size:16px}.qr img{width:42mm;height:42mm;object-fit:contain}@media print{@page{size:A4 landscape;margin:0}.sheet{margin:55mm auto 0;border:0}}</style></head><body><section class="sheet"><div class="top"><b>NAMO Chemical</b><span>${packageQty} EA</span></div><div class="grid"><div class="meta"><small>원료명</small><strong>${String(txMaterialName(tx)).replace(/</g,'&lt;')}</strong><small>LOT</small><strong>${String(tx?.lot_no||'-').replace(/</g,'&lt;')}</strong><small>이동 방향</small><strong>${String(txDirectionLabel(tx)).replace(/</g,'&lt;')}</strong></div><div class="qr"><img src="${src}"></div></div></section><script>window.onload=function(){window.print();window.close();}<\/script></body></html>`);
+    w.document.close();
   };
 
-  return <div className="inv-tx-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="inv-tx-detail-title" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><section className="inv-tx-detail-sheet"><div className="inv-tx-detail-head"><div><span>INVENTORY TRANSACTION</span><h3 id="inv-tx-detail-title">입출고 처리 상세</h3></div><button type="button" onClick={onClose} aria-label="닫기">×</button></div><div className="inv-tx-detail-status"><b>처리 완료</b><span>{new Date(tx.created_at).toLocaleString('ko-KR')}</span></div><dl className="inv-tx-detail-grid"><div><dt>문서번호</dt><dd>{txDocumentNo(tx)}</dd></div><div><dt>구분</dt><dd>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</dd></div><div><dt>원료명</dt><dd>{txMaterialName(tx)}</dd></div><div><dt>원료코드</dt><dd>{tx.item_code||'-'}</dd></div><div><dt>LOT</dt><dd>{tx.lot_no||'-'}</dd></div><div><dt>총 수량</dt><dd>{invNum(tx.quantity)} {tx.unit}</dd></div><div><dt>포장형태</dt><dd>{packagingLabel}</dd></div><div><dt>입고 포장수량</dt><dd>{packageQty>0?`${packageQty} EA`:'-'}</dd></div><div><dt>용기당 중량</dt><dd>{unitWeight>0?`${invNum(unitWeight)} kg`:'-'}</dd></div><div><dt>바코드 발행수량</dt><dd>{barcodeCount} 매</dd></div><div className="wide"><dt>이동 방향</dt><dd>{txDirectionLabel(tx)}</dd></div><div><dt>작업자</dt><dd>{txOperatorLabel(tx)}</dd></div><div><dt>비고</dt><dd>{txDisplayReference(tx)}</dd></div></dl><div className="inv-tx-barcode"><div><b>원료·LOT·위치·용기 바코드</b><span>ERP 연동용 CODE128 · 총 {barcodeCount}매</span></div>{barcodeValues.map((value,index)=><div key={value} style={{display:index===0?'block':'none'}}><svg ref={element=>{barcodeRefs.current[index]=element;}} aria-label={`재고 용기 바코드 ${value}`}></svg>{!window.JsBarcode&&<code>{value}</code>}</div>)}</div><div className="inv-tx-detail-actions"><button type="button" onClick={onClose}>닫기</button><button type="button" className="primary" onClick={printBarcode}>QR 인쇄</button></div></section></div>;
+  return <div className="inv-tx-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="inv-tx-detail-title" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <section className="inv-tx-detail-sheet">
+      <div className="inv-tx-detail-head"><div><span>INVENTORY TRANSACTION</span><h3 id="inv-tx-detail-title">입출고 처리 상세</h3></div><button type="button" onClick={onClose} aria-label="닫기">×</button></div>
+      <div className="inv-tx-detail-status"><b>처리 완료</b><span>{new Date(tx.created_at).toLocaleString('ko-KR')}</span></div>
+      <dl className="inv-tx-detail-grid">
+        <div><dt>구분</dt><dd>{INV_TYPE_LABEL[tx.transaction_type]||tx.transaction_type}</dd></div>
+        <div><dt>원료명</dt><dd>{txMaterialName(tx)}</dd></div>
+        <div><dt>LOT</dt><dd>{tx.lot_no||'-'}</dd></div>
+        <div><dt>포장형태</dt><dd>{packagingLabel}</dd></div>
+        <div><dt>총 수량</dt><dd>{invNum(tx.quantity)} {tx.unit}</dd></div>
+        <div><dt>입고 포장수량</dt><dd>{packageQty} EA</dd></div>
+        <div className="wide"><dt>이동 방향</dt><dd>{txDirectionLabel(tx)}</dd></div>
+      </dl>
+      <div className="inv-tx-barcode"><div><b>입출고 상세 QR</b><span>휴대폰 카메라로 스캔하면 상세정보를 확인할 수 있습니다.</span></div><div ref={qrRef} className="qmes-inv-native-qr"></div></div>
+      <div className="inv-tx-detail-actions"><button type="button" onClick={onClose}>닫기</button><button type="button" className="primary" onClick={printQr}>QR 인쇄</button></div>
+    </section>
+  </div>;
 }
 
 function InventoryTransactionModal({stock,items,locations,section,onClose,onSaved}){
