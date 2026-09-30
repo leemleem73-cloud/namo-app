@@ -188,18 +188,6 @@ function InventoryOverviewEnterpriseScreen({stock,transactions,onSelectTx}){
   };
 
   return <div className="qmes-inv-overview-v1">
-    <div className="qio-flow">
-      <div><b>대기업형 4단 재고 구조</b><span>재고현황 → 입출고 원장 → LOT별 재고 → LOT 추적</span></div>
-      <small>수량 이중입력 금지 · 원장 단일화</small>
-    </div>
-
-    <div className="qio-steps">
-      <div><strong>1. 재고현황</strong><span>품목별 전체 현재고를 요약합니다. LOT 여러 개의 합계를 한 화면에서 확인합니다.</span></div>
-      <div><strong>2. 입출고 관리</strong><span>재고 증감의 원본 원장입니다. 입고·출고·투입·생산·조정 이력이 모두 남습니다.</span></div>
-      <div><strong>3. LOT별 재고</strong><span>입출고 원장을 LOT 기준으로 집계하여 현재고와 상태를 자동 계산합니다.</span></div>
-      <div><strong>4. LOT 추적</strong><span>협력사 LOT부터 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향으로 추적합니다.</span></div>
-    </div>
-
     <div className="qio-kpis">
       <div><span>전체 품목</span><strong>{new Set(allRows.map(r=>r.item_code||r.item_name).filter(Boolean)).size}</strong><small>원재료 + 완제품</small></div>
       <div className="good"><span>원재료 재고</span><strong>{invNum(rm)}</strong><small>kg</small></div>
