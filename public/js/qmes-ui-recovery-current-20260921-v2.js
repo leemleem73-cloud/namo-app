@@ -11,7 +11,6 @@
     '생산계획 · MRP':{tab:'erpPlan'},
     '구매 · 발주관리':{tab:'erpPurchase'},
     '재고현황':{tab:'inv',section:'overview'},
-    '입출고 관리':{tab:'inv',section:'movement'},
     'LOT별 재고':{tab:'inv',section:'lot'},
     '생산투입/완료':{tab:'inv',section:'production'},
     '재고실사':{tab:'inv',section:'count'},
