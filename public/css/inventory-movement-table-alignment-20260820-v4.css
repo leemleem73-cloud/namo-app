@@ -330,3 +330,52 @@
   #qmes-inventory-host .inv-tx-detail-grid>.wide{grid-column:auto}
   #qmes-inventory-host .inv-tx-barcode>div{align-items:flex-start;flex-direction:column;gap:3px}
 }
+
+/* Inventory overview enterprise screen v1 - scope overview only */
+#qmes-inventory-host[data-qmes-inventory-section="overview"] .inv-title-row{display:none!important}
+#qmes-inventory-host .qmes-inv-overview-v1{width:100%!important;color:#2b4355!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important}
+#qmes-inventory-host .qmes-inv-overview-v1 *{box-sizing:border-box!important}
+#qmes-inventory-host .qio-flow{min-height:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 10px;padding:7px 10px;border:1px solid #c8e1ef;border-radius:6px;background:#eef9ff;color:#45667d;font-size:9px}
+#qmes-inventory-host .qio-flow div{display:flex;align-items:center;gap:6px}
+#qmes-inventory-host .qio-flow b{color:#2f739e}
+#qmes-inventory-host .qio-flow small{font-size:8.5px;color:#6e8494}
+#qmes-inventory-host .qio-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 10px}
+#qmes-inventory-host .qio-steps>div{position:relative;min-height:76px;padding:13px 14px;border:1px solid #cfdbe5;border-radius:8px;background:#fff}
+#qmes-inventory-host .qio-steps>div:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:28px;color:#4aa4d3;font-size:18px;font-weight:800;z-index:2}
+#qmes-inventory-host .qio-steps strong{display:block;margin-bottom:10px;color:#126da2;font-size:13px}
+#qmes-inventory-host .qio-steps span{display:block;color:#728798;font-size:9px;line-height:1.45}
+#qmes-inventory-host .qio-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 10px}
+#qmes-inventory-host .qio-kpis>div{height:92px;padding:13px 14px;border:1px solid #cbd9e3;border-radius:8px;background:#fff}
+#qmes-inventory-host .qio-kpis span{display:block;color:#698094;font-size:10px;font-weight:800}
+#qmes-inventory-host .qio-kpis strong{display:block;margin-top:9px;color:#126da2;font-size:24px;line-height:1;font-weight:950}
+#qmes-inventory-host .qio-kpis small{display:block;margin-top:10px;color:#899ba8;font-size:9px}
+#qmes-inventory-host .qio-kpis .good strong{color:#15914b}
+#qmes-inventory-host .qio-kpis .warn strong{color:#d17a00}
+#qmes-inventory-host .qio-kpis .bad strong{color:#cf3e33}
+#qmes-inventory-host .qio-kpis .dark strong{color:#243d52}
+#qmes-inventory-host .qio-filter{display:grid;grid-template-columns:1fr 1fr 1.1fr 1fr 3.1fr 72px;gap:6px;align-items:end;margin:0 0 10px;padding:10px;border:1px solid #d8e3eb;border-radius:8px;background:#fbfdff}
+#qmes-inventory-host .qio-filter label{min-width:0;display:flex;flex-direction:column;gap:4px}
+#qmes-inventory-host .qio-filter label>span{color:#657789;font-size:9px;font-weight:850}
+#qmes-inventory-host .qio-filter input,#qmes-inventory-host .qio-filter select{width:100%;height:38px;padding:0 10px;border:1px solid #c4d2dc;border-radius:6px;background:#fff;color:#31495d;font-size:10px;font-weight:700}
+#qmes-inventory-host .qio-filter button{height:38px;border:1px solid #1687c6;border-radius:6px;background:#1687c6;color:#fff;font-size:10px;font-weight:900;cursor:pointer}
+#qmes-inventory-host .qio-table-card{border:1px solid #cbd8e2;border-radius:8px;background:#fff;overflow:hidden}
+#qmes-inventory-host .qio-table-head{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #d9e4eb}
+#qmes-inventory-host .qio-table-head h3{margin:0;color:#1f3b51;font-size:12px}
+#qmes-inventory-host .qio-table-head span{color:#7a8f9e;font-size:9px}
+#qmes-inventory-host .qio-table-scroll{overflow-x:auto;overflow-y:hidden}
+#qmes-inventory-host .qio-table{width:100%;min-width:1280px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+#qmes-inventory-host .qio-table thead th{height:35px;padding:5px 4px;border-right:1px solid rgba(255,255,255,.34);border-bottom:1px solid #4d91ba;background:linear-gradient(180deg,#67b3dc,#4696c2);color:#fff;font-size:8.8px;font-weight:900;text-align:center;white-space:nowrap}
+#qmes-inventory-host .qio-table tbody td{height:36px;padding:5px;border-right:1px solid #dce6ed;border-bottom:1px solid #dce6ed;background:#fff;color:#314a5b;font-size:8.7px;font-weight:650;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#qmes-inventory-host .qio-table tbody tr:nth-child(even) td{background:#f7fafc}
+#qmes-inventory-host .qio-table tbody tr:hover td{background:#eef7fc}
+#qmes-inventory-host .qio-current{color:#129249!important;font-weight:950!important}
+#qmes-inventory-host .qio-status{display:inline-flex;align-items:center;justify-content:center;min-width:54px;height:22px;padding:0 8px;border-radius:12px;font-size:8.5px;font-weight:900}
+#qmes-inventory-host .qio-status.good{background:#e4f7ea;color:#158548}
+#qmes-inventory-host .qio-status.warn{background:#fff2df;color:#d27300}
+#qmes-inventory-host .qio-actions{display:flex;align-items:center;justify-content:center;gap:4px}
+#qmes-inventory-host .qio-actions button{height:24px;min-width:48px;padding:0 7px;border:1px solid #2f92c8;border-radius:5px;background:#138cc7;color:#fff;font-size:8px;font-weight:900;cursor:pointer}
+#qmes-inventory-host .qio-actions button+button{background:#fff;color:#355269;border-color:#c6d5df}
+#qmes-inventory-host .qio-empty{height:90px!important;color:#8799a6!important}
+#qmes-inventory-host .qio-note{margin-top:7px;color:#768b99;font-size:8.5px}
+@media(max-width:1450px){#qmes-inventory-host .qio-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#qmes-inventory-host .qio-steps{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-steps>div::after{display:none}}
+@media(max-width:900px){#qmes-inventory-host .qio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-filter{grid-template-columns:repeat(2,minmax(0,1fr))}#qmes-inventory-host .qio-filter button{width:100%}}
