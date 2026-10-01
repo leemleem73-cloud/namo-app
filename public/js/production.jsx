@@ -783,38 +783,16 @@ function IssueWoTab() {
     window.addEventListener("mousemove",onMove);
     window.addEventListener("mouseup",onUp);
   };
-  const startNewModalResize = (dir, e) => {
+  const startNewModalResize = (e) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    const startX=e.clientX, startY=e.clientY;
-    const originSize={...newModalSize};
-    const originPos={...newModalPos};
-    const maxW=Math.max(640, window.innerWidth-36);
+    const startY=e.clientY;
+    const originHeight=newModalSize.height;
     const maxH=Math.max(420, window.innerHeight-36);
-    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
     const onMove=(ev)=>{
-      const dx=ev.clientX-startX, dy=ev.clientY-startY;
-      let width=originSize.width, height=originSize.height;
-      let x=originPos.x, y=originPos.y;
-      if(dir.includes("e")) {
-        width=clamp(originSize.width+dx,640,maxW);
-        x=originPos.x+(width-originSize.width)/2;
-      }
-      if(dir.includes("w")) {
-        width=clamp(originSize.width-dx,640,maxW);
-        x=originPos.x-(width-originSize.width)/2;
-      }
-      if(dir.includes("s")) {
-        height=clamp(originSize.height+dy,420,maxH);
-        y=originPos.y+(height-originSize.height)/2;
-      }
-      if(dir.includes("n")) {
-        height=clamp(originSize.height-dy,420,maxH);
-        y=originPos.y-(height-originSize.height)/2;
-      }
-      setNewModalSize({width,height});
-      setNewModalPos({x,y});
+      const nextHeight=Math.max(420,Math.min(maxH,originHeight+(ev.clientY-startY)));
+      setNewModalSize((current)=>({ ...current, height:nextHeight }));
     };
     const onUp=()=>{
       window.removeEventListener("mousemove",onMove);
@@ -1510,14 +1488,12 @@ function IssueWoTab() {
           onClick={(e) => e.stopPropagation()}
           style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(640, window.innerWidth-36))}px`, height:`${Math.min(newModalSize.height, Math.max(420, window.innerHeight-36))}px`, overflow:"auto", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
         >
-          <div data-qmes-resize="n" onMouseDown={(e)=>startNewModalResize("n",e)} style={{position:"absolute",zIndex:8,top:"-4px",left:"12px",right:"12px",height:"8px",cursor:"ns-resize"}} />
-          <div data-qmes-resize="s" onMouseDown={(e)=>startNewModalResize("s",e)} style={{position:"absolute",zIndex:8,bottom:"-4px",left:"12px",right:"12px",height:"8px",cursor:"ns-resize"}} />
-          <div data-qmes-resize="w" onMouseDown={(e)=>startNewModalResize("w",e)} style={{position:"absolute",zIndex:8,left:"-4px",top:"12px",bottom:"12px",width:"8px",cursor:"ew-resize"}} />
-          <div data-qmes-resize="e" onMouseDown={(e)=>startNewModalResize("e",e)} style={{position:"absolute",zIndex:8,right:"-4px",top:"12px",bottom:"12px",width:"8px",cursor:"ew-resize"}} />
-          <div data-qmes-resize="nw" onMouseDown={(e)=>startNewModalResize("nw",e)} style={{position:"absolute",zIndex:9,left:"-5px",top:"-5px",width:"14px",height:"14px",cursor:"nwse-resize"}} />
-          <div data-qmes-resize="ne" onMouseDown={(e)=>startNewModalResize("ne",e)} style={{position:"absolute",zIndex:9,right:"-5px",top:"-5px",width:"14px",height:"14px",cursor:"nesw-resize"}} />
-          <div data-qmes-resize="sw" onMouseDown={(e)=>startNewModalResize("sw",e)} style={{position:"absolute",zIndex:9,left:"-5px",bottom:"-5px",width:"14px",height:"14px",cursor:"nesw-resize"}} />
-          <div data-qmes-resize="se" onMouseDown={(e)=>startNewModalResize("se",e)} style={{position:"absolute",zIndex:9,right:"-5px",bottom:"-5px",width:"14px",height:"14px",cursor:"nwse-resize"}} />
+          <div
+            data-qmes-resize="vertical"
+            onMouseDown={startNewModalResize}
+            title="위아래로 드래그하여 창 높이 조절"
+            style={{position:"absolute",zIndex:10,left:"18px",right:"18px",bottom:"5px",height:"10px",borderRadius:"999px",background:"#264867",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.18)",cursor:"ns-resize"}}
+          />
           <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"54px", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
               <div style={{ width:"28px", height:"28px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", background:"#eaf6ff", border:"1px solid #cbe6f8", color:"#1489ca", fontSize:"17px", fontWeight:900 }}>▣</div>
