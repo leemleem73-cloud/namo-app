@@ -6,84 +6,114 @@
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar{
       width:54px!important;
       z-index:14040!important;
-      box-shadow:2px 0 7px rgba(51,82,103,.10)!important;
       overflow:hidden!important;
+      background:#354052!important;
+      color:#dce5ec!important;
+      border-right:0!important;
+      box-shadow:2px 0 8px rgba(24,39,55,.16)!important;
+      transition:width .16s ease!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within{
       width:236px!important;
-      box-shadow:5px 0 16px rgba(35,67,90,.18)!important;
+      background:#354052!important;
+      box-shadow:6px 0 18px rgba(24,39,55,.22)!important;
     }
     html body:not(.qmes-erp-menu-closed) #root>div>main{
       margin-left:54px!important;
       width:calc(100% - 54px)!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-company-name,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-status,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-text,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-foot{
       opacity:0!important;
       visibility:hidden!important;
       pointer-events:none!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-company-name,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-status,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-text,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-foot,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-company-name,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-status,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-text,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-foot{
       opacity:1!important;
       visibility:visible!important;
       pointer-events:auto!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item{
-      width:42px!important;
-      margin-left:6px!important;
-      margin-right:6px!important;
-      padding-left:10px!important;
-      padding-right:10px!important;
-      gap:9px!important;
-    }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-item,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-item{
-      width:calc(100% - 12px)!important;
-      padding-left:9px!important;
-      padding-right:9px!important;
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-nav{
+      padding:8px 0 10px!important;
+      background:#354052!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-section{
-      padding-left:0!important;
-      padding-right:0!important;
-      text-align:center!important;
+      height:6px!important;
+      min-height:6px!important;
+      margin:5px 10px!important;
+      padding:0!important;
+      border:0!important;
+      background:rgba(255,255,255,.10)!important;
       color:transparent!important;
-      letter-spacing:0!important;
+      font-size:0!important;
+      line-height:0!important;
       overflow:hidden!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-section,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-section{
-      padding-left:14px!important;
-      padding-right:14px!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:8px 0 3px!important;
+      padding:5px 14px!important;
+      background:transparent!important;
+      color:#9fb2c4!important;
+      font-size:9px!important;
+      line-height:12px!important;
+      font-weight:800!important;
+      letter-spacing:.65px!important;
       text-align:left!important;
-      color:#2f6f9f!important;
-      letter-spacing:.55px!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-company{
-      padding-left:6px!important;
-      padding-right:6px!important;
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item{
+      width:42px!important;
+      min-height:38px!important;
+      margin:2px 6px!important;
+      padding:7px 10px!important;
+      gap:10px!important;
+      border:0!important;
+      border-radius:6px!important;
+      background:transparent!important;
+      color:#c7d2dc!important;
+      box-shadow:none!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-company,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-company{
-      padding-left:12px!important;
-      padding-right:12px!important;
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-item,
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-item{
+      width:calc(100% - 12px)!important;
+      padding:7px 10px!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-company-row{
-      overflow:hidden!important;
-      justify-content:flex-start!important;
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item:hover{
+      background:#414f63!important;
+      color:#fff!important;
     }
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-company-row,
-    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-company-row{
-      justify-content:space-between!important;
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item.is-active{
+      background:#2d79b3!important;
+      color:#fff!important;
+      box-shadow:none!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-icon{
+      width:22px!important;
+      height:22px!important;
+      min-width:22px!important;
+      border:0!important;
+      border-radius:5px!important;
+      background:transparent!important;
+      color:inherit!important;
+      font-size:11px!important;
+      font-weight:900!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-text{
+      color:inherit!important;
+      font-size:12px!important;
+      font-weight:650!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-foot{
+      border-top:1px solid rgba(255,255,255,.10)!important;
+      background:#354052!important;
+      color:#8fa3b6!important;
+      font-size:8px!important;
     }
   `;
   document.head.appendChild(hoverSidebarStyle);
@@ -153,7 +183,7 @@
   side.id='qmes-erp-sidebar';
   side.dataset.qmesSidebarOwner='enterprise-test-20260910';
   side.setAttribute('aria-label','QMES 통합 메뉴');
-  side.innerHTML=`<div class="qmes-erp-company"><div class="qmes-erp-company-row"><span class="qmes-erp-company-name">㈜나모케미칼</span><span class="qmes-erp-status">정상운영</span></div></div><nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
+  side.innerHTML=`<nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
   document.body.appendChild(side);
 
   const menuSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
