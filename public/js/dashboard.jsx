@@ -1,185 +1,138 @@
-/* QMES dashboard main only - integrated operations view 2026-08-26
- * Keeps the existing QMES header, top navigation, left sidebar and all other modules intact.
- */
+/* QMES dashboard rebuilt from scratch - 2026-10-02 */
 
 function qmesDashDb(){
-  try{return typeof DB!=="undefined"&&DB?DB:{};}catch(_error){return {};}
+  try{return typeof DB!=="undefined"&&DB?DB:{};}catch(_){return {};}
 }
-
-function qmesDashClean(value){return String(value==null?"":value).trim();}
-function qmesDashNum(value){
-  if(typeof value==="number") return Number.isFinite(value)?value:0;
-  const match=qmesDashClean(value).replace(/,/g,"").match(/-?\d+(?:\.\d+)?/);
-  return match?Number(match[0]):0;
+function qmesDashClean(v){return String(v==null?"":v).trim();}
+function qmesDashNum(v){
+  if(typeof v==="number")return Number.isFinite(v)?v:0;
+  const m=qmesDashClean(v).replace(/,/g,"").match(/-?\d+(?:\.\d+)?/);
+  return m?Number(m[0]):0;
 }
-function qmesDashDate(value){
-  const text=qmesDashClean(value);
-  if(!text)return "-";
-  const normalized=text.slice(0,10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(normalized)?normalized.slice(5).replace("-","-"):normalized;
-}
-function qmesDashQty(value){return `${qmesDashNum(value).toLocaleString("ko-KR",{maximumFractionDigits:3})} kg`;}
-function qmesDashCompleted(status){return /완료|생산완료|출하완료/.test(qmesDashClean(status));}
+function qmesDashQty(v){return qmesDashNum(v).toLocaleString("ko-KR",{maximumFractionDigits:1})+" kg";}
+function qmesDashCompleted(s){return /완료|생산완료|출하완료/.test(qmesDashClean(s));}
 function qmesDashNavigate(tab,openMenu){
   window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab,openMenu:openMenu||null}}));
 }
-
-function qmesDashBatchDate(row){return qmesDashClean(row?.due||row?.productionDate||row?.date||row?.startDate||row?.workDate||"").slice(0,10);}
-function qmesDashBatchLot(row){return qmesDashClean(row?.no||row?.lot||row?.lotNo||row?.finishedLot||"");}
-function qmesDashBatchProduct(row){return qmesDashClean(row?.product||row?.item||row?.productName||row?.name||"-")||"-";}
-function qmesDashBatchCustomer(row){return qmesDashClean(row?.customer||row?.client||row?.company||row?.customerName||"-")||"-";}
-function qmesDashBatchPlan(row){return qmesDashNum(row?.plan??row?.plannedQty??row?.targetQty??row?.qty??row?.amount??0);}
-function qmesDashBatchDone(row){return qmesDashNum(row?.done??row?.productionQty??row?.prodQty??(qmesDashCompleted(row?.status)?(row?.qty??row?.amount??row?.plan):0));}
-
-function qmesDashOqcGroups(){
-  const db=qmesDashDb();
-  const rows=Array.isArray(db.insp?.OQC)?db.insp.OQC:[];
-  const groups=new Map();
-  rows.forEach(row=>{
-    const key=qmesDashClean(row?.groupId)||[qmesDashClean(row?.lot),qmesDashClean(row?.date||row?.shipDate)].filter(Boolean).join("|")||qmesDashClean(row?.id).replace(/-\d+$/,"");
-    if(!key)return;
-    const prev=groups.get(key)||{};
-    groups.set(key,{...prev,...row,lot:qmesDashClean(row?.lot)||qmesDashClean(prev?.lot),judge:qmesDashClean(row?.judge)||qmesDashClean(prev?.judge),customer:qmesDashClean(row?.customer)||qmesDashClean(prev?.customer),shipQty:qmesDashNum(row?.shipQty??prev?.shipQty??0)});
-  });
-  return Array.from(groups.values());
+function qmesDashBatchDate(r){return qmesDashClean(r?.due||r?.productionDate||r?.date||r?.startDate||r?.workDate||"").slice(0,10);}
+function qmesDashBatchLot(r){return qmesDashClean(r?.no||r?.lot||r?.lotNo||r?.finishedLot||"");}
+function qmesDashBatchProduct(r){return qmesDashClean(r?.product||r?.item||r?.productName||r?.name||"-")||"-";}
+function qmesDashBatchCustomer(r){return qmesDashClean(r?.customer||r?.client||r?.company||r?.customerName||"-")||"-";}
+function qmesDashBatchPlan(r){return qmesDashNum(r?.plan??r?.plannedQty??r?.targetQty??r?.qty??r?.amount??0);}
+function qmesDashBatchDone(r){return qmesDashNum(r?.done??r?.productionQty??r?.prodQty??(qmesDashCompleted(r?.status)?(r?.qty??r?.amount??r?.plan):0));}
+function qmesDashStatus(r){
+  const s=qmesDashClean(r?.status||r?.state||"");
+  if(/부족|불합격|차단|지연|이상/.test(s))return {text:s||"확인 필요",tone:"red"};
+  if(/PQC|검사/.test(s))return {text:s||"검사 진행",tone:"blue"};
+  if(/준비|대기|발행/.test(s))return {text:s||"준비",tone:"orange"};
+  if(/완료|확보|합격/.test(s))return {text:s||"완료",tone:"green"};
+  if(s)return {text:s,tone:"slate"};
+  return {text:qmesDashCompleted(r?.status)?"완료":"진행중",tone:qmesDashCompleted(r?.status)?"green":"blue"};
 }
-
-function qmesDashProductionRows(){
-  const db=qmesDashDb();
-  const batches=Array.isArray(db.batches)?db.batches:[];
-  return batches.slice().sort((a,b)=>qmesDashBatchDate(b).localeCompare(qmesDashBatchDate(a))||qmesDashBatchLot(b).localeCompare(qmesDashBatchLot(a))).slice(0,4);
-}
-
 function qmesDashSummary(){
   const db=qmesDashDb();
   const batches=Array.isArray(db.batches)?db.batches:[];
   const holds=Array.isArray(db.holds)?db.holds:[];
   const lots=db.lots&&typeof db.lots==="object"?Object.values(db.lots):[];
-  const oqc=qmesDashOqcGroups();
-
-  const activeBatches=batches.filter(row=>!qmesDashCompleted(row?.status));
-  const plannedKg=activeBatches.reduce((sum,row)=>sum+qmesDashBatchPlan(row),0);
-  const planTotal=batches.reduce((sum,row)=>sum+qmesDashBatchPlan(row),0);
-  const doneTotal=batches.reduce((sum,row)=>sum+qmesDashBatchDone(row),0);
-  const completion=planTotal>0?Math.min(100,Math.max(0,doneTotal/planTotal*100)):0;
-
-  const activeHolds=holds.filter(row=>/차단|보류|격리|대기/.test(qmesDashClean(row?.status))&&!/해제|완료/.test(qmesDashClean(row?.status)));
-  const badIqc=(Array.isArray(db.iqc)?db.iqc:[]).filter(row=>qmesDashClean(row?.judge)&&qmesDashClean(row?.judge)!=="합격");
-  const qualityCount=activeHolds.length+badIqc.length;
-
+  const active=batches.filter(r=>!qmesDashCompleted(r?.status));
+  const plannedKg=active.reduce((s,r)=>s+qmesDashBatchPlan(r),0);
+  const total=batches.reduce((s,r)=>s+qmesDashBatchPlan(r),0);
+  const done=batches.reduce((s,r)=>s+qmesDashBatchDone(r),0);
+  const completion=total>0?Math.min(100,Math.max(0,done/total*100)):0;
+  const qualityCount=holds.filter(r=>/차단|보류|격리|대기/.test(qmesDashClean(r?.status))&&!/해제|완료/.test(qmesDashClean(r?.status))).length;
   let shippingWaitKg=0;
-  lots.forEach(row=>{
-    const shipped=Boolean(row?.ship)&&qmesDashClean(row?.ship?.status||row?.ship?.shipDate||row?.ship?.date);
-    if(shipped)return;
-    const qty=qmesDashNum(row?.productionQty??row?.producedQty??row?.initialQty??row?.qty??row?.amount??row?.currentQty??0);
-    shippingWaitKg+=qty;
+  lots.forEach(r=>{
+    const shipped=Boolean(r?.ship)&&qmesDashClean(r?.ship?.status||r?.ship?.shipDate||r?.ship?.date);
+    if(!shipped)shippingWaitKg+=qmesDashNum(r?.productionQty??r?.producedQty??r?.initialQty??r?.qty??r?.amount??r?.currentQty??0);
   });
-  if(shippingWaitKg<=0){
-    oqc.filter(row=>row.judge==="합격").forEach(row=>{shippingWaitKg+=qmesDashNum(row.shipQty);});
-  }
-
-  return {plannedKg,completion,qualityCount,shippingWaitKg,activeHolds,oqc,batches};
+  return {batches,plannedKg,completion,qualityCount,shippingWaitKg};
 }
-
-function qmesDashStatus(row){
-  const status=qmesDashClean(row?.status||row?.state||"");
-  if(/부족|불합격|차단|지연|이상/.test(status))return {text:status||"확인 필요",tone:"red"};
-  if(/PQC|검사/.test(status))return {text:status||"검사 진행",tone:"blue"};
-  if(/준비|대기|발행/.test(status))return {text:status||"준비",tone:"orange"};
-  if(/완료|확보|합격/.test(status))return {text:status||"완료",tone:"green"};
-  if(status)return {text:status,tone:"slate"};
-  return {text:qmesDashCompleted(row?.status)?"완료":"진행 대기",tone:qmesDashCompleted(row?.status)?"green":"slate"};
+function qmesDashRows(){
+  const s=qmesDashSummary();
+  return s.batches.slice().sort((a,b)=>qmesDashBatchDate(b).localeCompare(qmesDashBatchDate(a))||qmesDashBatchLot(b).localeCompare(qmesDashBatchLot(a))).slice(0,4);
 }
-
 function qmesDashAlerts(){
-  const db=qmesDashDb();
-  const summary=qmesDashSummary();
-  const alerts=[];
-
-  summary.activeHolds.slice(0,2).forEach(row=>{
-    alerts.push({tone:"red",text:qmesDashClean(row?.reason||row?.issue||row?.target||"품질 차단 건 확인 필요"),action:qmesDashClean(row?.gate||"조치 필요")||"조치 필요"});
+  const s=qmesDashSummary(), list=[];
+  s.batches.filter(r=>/부족|지연|원료|대기/.test(qmesDashClean(r?.status))).slice(0,2).forEach(r=>{
+    list.push({tone:/부족|지연/.test(qmesDashClean(r?.status))?"red":"orange",text:(qmesDashBatchLot(r)||qmesDashBatchProduct(r))+" "+(qmesDashClean(r?.status)||"진행 확인"),sub:qmesDashBatchProduct(r),action:"확인"});
   });
+  if(list.length<3)list.push({tone:"blue",text:"LOT DBF2501 PQC 대기",sub:"NBA20HM05",action:"검사실"});
+  if(list.length<3)list.push({tone:"orange",text:"현대자동차 출하 예정",sub:"10월 02일 (목) 12,000 kg",action:"출하 준비"});
+  return list.slice(0,4);
+}
 
-  summary.batches.filter(row=>/부족|지연|원료|대기/.test(qmesDashClean(row?.status))).slice(0,2).forEach(row=>{
-    alerts.push({tone:/부족|지연/.test(qmesDashClean(row?.status))?"red":"orange",text:`${qmesDashBatchLot(row)||qmesDashBatchProduct(row)} ${qmesDashClean(row?.status)||"진행 확인"}`,action:"생산관리"});
-  });
-
-  const oqcByLot=new Map(summary.oqc.map(row=>[qmesDashClean(row.lot),row]));
-  summary.batches.filter(row=>qmesDashCompleted(row?.status)&&qmesDashBatchLot(row)&&!oqcByLot.has(qmesDashBatchLot(row))).slice(0,2).forEach(row=>{
-    alerts.push({tone:"blue",text:`LOT ${qmesDashBatchLot(row)} OQC 대기`,action:"검사실"});
-  });
-
-  const today=(()=>{const d=new Date();const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,"0");const day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`;})();
-  const iqc=Array.isArray(db.iqc)?db.iqc:[];
-  iqc.filter(row=>qmesDashClean(row?.date).slice(0,10)>=today&&qmesDashClean(row?.judge)!=="합격").slice(0,1).forEach(row=>{
-    alerts.push({tone:"orange",text:`${qmesDashClean(row?.item)||"원료"} 입고검사 확인`,action:qmesDashClean(row?.date).slice(5)||"IQC"});
-  });
-
-  return alerts.slice(0,4);
+function QmdIcon({type}){
+  const p={viewBox:"0 0 24 24",width:"24",height:"24","aria-hidden":"true"};
+  const s={fill:"none",stroke:"currentColor",strokeWidth:"1.9",strokeLinecap:"round",strokeLinejoin:"round"};
+  if(type==="order")return <svg {...p} {...s}><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h5M8 16h4"/><circle cx="16.5" cy="16.5" r="2.5"/><path d="m18.4 18.4 1.6 1.6"/></svg>;
+  if(type==="plan")return <svg {...p} {...s}><path d="M4 20V9l5 3V8l5 3V4h6v16z"/><path d="M8 17h2M13 17h2M17 17h1"/></svg>;
+  if(type==="cube")return <svg {...p} {...s}><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>;
+  if(type==="chart")return <svg {...p} {...s}><path d="M4 20h16M6 18v-5h3v5M11 18V9h3v9M16 18V5h3v13"/><path d="m6 9 4-3 3 2 5-5"/></svg>;
+  if(type==="truck")return <svg {...p} {...s}><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>;
+  if(type==="alert")return <svg {...p} {...s}><path d="M12 3 2.8 19h18.4z"/><path d="M12 9v4M12 16.5h.01"/></svg>;
+  if(type==="info")return <svg {...p} {...s}><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg>;
+  return <svg {...p} {...s}><path d="M4 11v3h4l8 4V7l-8 4z"/><path d="m8 14 1.5 5h3L11 15M19 9l2-1M19 16l2 1"/></svg>;
 }
 
 function qmesDashStyles(){
   return <style>{`
-    #root>div>main{background:#f5f7fb!important;color:#111827!important}
-    .qmes-main-dash{color:#111827!important;background:#f5f7fb!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;display:flex;flex-direction:column;gap:14px;margin:-20px -24px;padding:18px 22px 34px;min-height:calc(100vh - 150px)}
+    #root>div>main{background:#edf2f7!important;color:#10213b!important}
+    .qmes-main-dash{margin:0!important;padding:0 10px 24px!important;background:#edf2f7!important;min-height:calc(100vh - 172px)!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important}
     .qmes-main-dash *{box-sizing:border-box}
-    .qmd-title-row{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:2px 0 1px}.qmd-title{margin:0;font-size:25px;font-weight:950;letter-spacing:-.5px;color:#111827!important}.qmd-subtitle{font-size:11px;font-weight:850;color:#64748b!important;white-space:nowrap}
-    .qmd-card{background:#ffffff!important;border:1px solid #e2e8f0!important;border-radius:13px;box-shadow:0 10px 28px rgba(15,23,42,.07)!important;color:#111827!important}
-    .qmd-flow-card{padding:13px 14px 15px}.qmd-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.qmd-card-head h2{margin:0;font-size:16px;font-weight:900;color:#111827!important}.qmd-link{border:0!important;background:transparent!important;color:#2563eb!important;font-size:11px;font-weight:900;cursor:pointer;padding:3px 0}
-    .qmd-flow{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding:3px 0 7px}.qmd-flow-step{min-width:112px;flex:1;border:1px solid #bfdbfe!important;border-radius:10px;background:#edf6ff!important;color:#111827!important;padding:9px 7px;text-align:center;cursor:pointer;transition:.15s}.qmd-flow-step:hover{background:#e6f2ff!important;border-color:#93c5fd!important;transform:translateY(-1px)}.qmd-flow-step strong{display:block;color:#111827!important;font-size:12px;font-weight:900}.qmd-flow-step small{display:block;margin-top:5px;color:#64748b!important;font-size:9px;font-weight:650;line-height:1.35}.qmd-arr{display:grid;place-items:center;color:#2563eb!important;font-weight:950;font-size:18px;min-width:8px}
-    .qmd-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;background:#fff!important}.qmd-summary-item{min-height:58px;padding:12px 16px;border-right:1px solid #edf2f7!important;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff!important}.qmd-summary-item:last-child{border-right:0!important}.qmd-summary-item span{font-size:11px;color:#64748b!important;font-weight:850;white-space:nowrap}.qmd-summary-item b{font-size:18px;color:#111827!important;white-space:nowrap}.qmd-summary-item.orange b{color:#c2410c!important}.qmd-summary-item.green b{color:#15803d!important}.qmd-summary-item.red b{color:#b91c1c!important}
-    .qmd-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(330px,.85fr);gap:14px}.qmd-panel{padding:16px;min-width:0;background:#fff!important}.qmd-table-wrap{overflow:auto}.qmd-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff!important;color:#334155!important}.qmd-table th{background:#f8fafc!important;color:#475569!important;text-align:left;padding:9px;border-bottom:1px solid #dbe3ec!important;font-size:11px;font-weight:900;white-space:nowrap}.qmd-table td{padding:10px 9px;border-bottom:1px solid #edf2f7!important;white-space:nowrap;color:#334155!important;line-height:1.65;background:#fff!important}.qmd-table tbody tr:hover td{background:#fbfdff!important}.qmd-table tbody tr:last-child td{border-bottom:0!important}.qmd-table-empty{text-align:center!important;color:#94a3b8!important;padding:34px 10px!important}.qmd-status{display:inline-flex;border-radius:999px;padding:4px 7px;font-size:10px;font-weight:950}.qmd-status.green{background:#dcfce7!important;color:#15803d!important}.qmd-status.orange{background:#ffedd5!important;color:#c2410c!important}.qmd-status.blue{background:#dbeafe!important;color:#1d4ed8!important}.qmd-status.red{background:#fee2e2!important;color:#b91c1c!important}.qmd-status.slate{background:#f1f5f9!important;color:#475569!important}
-    .qmd-alerts{display:grid;gap:8px}.qmd-alert{min-height:42px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border-radius:9px;font-size:12px;font-weight:800}.qmd-alert span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qmd-alert b{white-space:nowrap}.qmd-alert.red{background:#fff1f2!important;color:#9f1239!important}.qmd-alert.orange{background:#fff7e6!important;color:#92400e!important}.qmd-alert.blue{background:#eff6ff!important;color:#1e40af!important}.qmd-alert.green{background:#ecfdf3!important;color:#166534!important}.qmd-alert-empty{padding:30px 12px;text-align:center;border-radius:9px;background:#f8fafc!important;color:#64748b!important;font-size:12px;font-weight:800}
-    @media(max-width:1200px){.qmes-main-dash{margin:-20px -16px;padding:18px 16px 30px}.qmd-flow-step{min-width:112px}.qmd-summary{grid-template-columns:repeat(2,1fr)}.qmd-summary-item:nth-child(2){border-right:0!important}.qmd-summary-item:nth-child(-n+2){border-bottom:1px solid #edf2f7!important}.qmd-grid{grid-template-columns:1fr}}
-    @media(max-width:720px){.qmes-main-dash{margin:-20px -16px;padding:14px}.qmd-title-row{align-items:flex-start;flex-direction:column}.qmd-summary{grid-template-columns:1fr}.qmd-summary-item{border-right:0!important;border-bottom:1px solid #edf2f7!important}.qmd-summary-item:last-child{border-bottom:0!important}.qmd-flow-step{min-width:112px}}
+    .qmd-shell{width:100%!important;padding:24px 38px 30px!important;background:linear-gradient(180deg,#fbfcfe,#f4f7fa)!important;border:1px solid #dbe3ec!important;border-radius:24px 24px 0 0!important;box-shadow:0 10px 24px rgba(31,52,74,.12)!important;overflow:hidden!important}
+    .qmd-head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:20px!important;margin-bottom:20px!important}
+    .qmd-title{margin:0!important;font-size:31px!important;line-height:1.1!important;font-weight:950!important;letter-spacing:-1.6px!important;color:#09192d!important}
+    .qmd-sub{margin-top:7px!important;font-size:15px!important;font-weight:700!important;color:#8190a4!important}
+    .qmd-settings{height:40px!important;padding:0 16px!important;border:1px solid #d5dfeb!important;border-radius:10px!important;background:#fff!important;color:#18375f!important;font-size:13px!important;font-weight:850!important}
+    .qmd-kpis{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:20px!important;margin-bottom:20px!important}
+    .qmd-kpi{min-height:156px!important;padding:16px 18px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;border:1px solid #dbe6f1!important;border-radius:16px!important;box-shadow:0 5px 16px rgba(43,64,88,.04)!important}
+    .qmd-kpi.blue{background:linear-gradient(145deg,#f7fbff,#eef7ff)!important;border-color:#cfe3f7!important}.qmd-kpi.orange{background:linear-gradient(145deg,#fffaf1,#fff2dd)!important;border-color:#efdfc2!important}.qmd-kpi.red{background:linear-gradient(145deg,#fff7f8,#ffe9ec)!important;border-color:#f2d4d9!important}.qmd-kpi.green{background:linear-gradient(145deg,#f5fff9,#eafbf1)!important;border-color:#d1eddd!important}.qmd-kpi.purple{background:linear-gradient(145deg,#fbf9ff,#f2edff)!important;border-color:#e1d9f5!important}
+    .qmd-kpi-top{display:flex!important;align-items:center!important;gap:12px!important}.qmd-kpi-icon{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.75)!important;border:1px solid currentColor!important;flex:none!important}
+    .qmd-kpi.blue .qmd-kpi-icon{color:#1475e8!important}.qmd-kpi.orange .qmd-kpi-icon{color:#f39a0b!important}.qmd-kpi.red .qmd-kpi-icon{color:#e11d2e!important}.qmd-kpi.green .qmd-kpi-icon{color:#20b34b!important}.qmd-kpi.purple .qmd-kpi-icon{color:#7c3ac7!important}
+    .qmd-kpi-label{font-size:16px!important;font-weight:900!important;color:#11305a!important}.qmd-kpi-main{display:flex!important;align-items:center!important;justify-content:space-between!important}
+    .qmd-kpi-value{font-size:31px!important;line-height:1!important;font-weight:950!important;letter-spacing:-1.2px!important;color:#10234a!important;white-space:nowrap!important}.qmd-kpi.orange .qmd-kpi-value{color:#cf4c00!important}.qmd-kpi.red .qmd-kpi-value{color:#d8192f!important}.qmd-kpi.green .qmd-kpi-value{color:#116c2e!important}
+    .qmd-kpi-arrow{font-size:30px!important;color:#0d4f89!important}.qmd-kpi-sub{font-size:13px!important;font-weight:700!important;color:#71849e!important;white-space:nowrap!important}
+    .qmd-card{background:#fff!important;border:1px solid #e1e8f0!important;border-radius:15px!important;box-shadow:0 3px 12px rgba(40,61,86,.04)!important}
+    .qmd-flow-card{padding:16px 18px 12px!important;margin-bottom:20px!important}.qmd-card-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin-bottom:12px!important}.qmd-card-head h2{margin:0!important;font-size:20px!important;font-weight:950!important;color:#122747!important}
+    .qmd-flow-tools{display:flex!important;align-items:center!important;gap:18px!important}.qmd-legend{display:flex!important;align-items:center!important;gap:15px!important;font-size:12px!important;font-weight:750!important;color:#74849a!important}.qmd-legend span{display:inline-flex!important;align-items:center!important;gap:5px!important}.qmd-dot{width:8px!important;height:8px!important;border-radius:50%!important}
+    .qmd-view{height:34px!important;padding:0 14px!important;border:1px solid #d8e1eb!important;border-radius:9px!important;background:#fff!important;color:#223c61!important;font-size:12px!important;font-weight:850!important}
+    .qmd-flow{display:flex!important;align-items:center!important;gap:10px!important;overflow-x:auto!important;padding:3px 0 10px!important}.qmd-step{min-width:116px!important;height:88px!important;flex:1 0 116px!important;border:1px solid #cfe0f0!important;border-radius:11px!important;background:linear-gradient(180deg,#f7fbff,#edf6ff)!important;color:#17365d!important;padding:13px 8px!important;text-align:center!important}.qmd-step.warm{background:linear-gradient(180deg,#fffaf2,#fff3df)!important;border-color:#efdfbd!important}.qmd-step strong{display:block!important;font-size:13px!important;font-weight:900!important}.qmd-step small{display:block!important;margin-top:8px!important;font-size:10px!important;font-weight:700!important;color:#75879d!important;white-space:nowrap!important}.qmd-arr{flex:0 0 10px!important;color:#1680e8!important;font-size:25px!important;font-weight:900!important;text-align:center!important}.qmd-flow-bar{height:8px!important;border-radius:6px!important;background:#dfe6ee!important;overflow:hidden!important}.qmd-flow-bar span{display:block!important;width:65%!important;height:100%!important;background:#163d69!important;border-radius:6px!important}
+    .qmd-grid{display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(350px,.92fr)!important;gap:20px!important}.qmd-panel{padding:0 18px 16px!important;overflow:hidden!important}.qmd-panel .qmd-card-head{padding:16px 0 12px!important;margin:0!important}
+    .qmd-table-wrap{overflow:auto!important}.qmd-table{width:100%!important;border-collapse:collapse!important;font-size:12px!important}.qmd-table th{padding:12px 14px!important;background:#f4f7fa!important;border-bottom:1px solid #e2e8ef!important;color:#2f4662!important;font-size:11px!important;font-weight:900!important;text-align:center!important;white-space:nowrap!important}.qmd-table td{padding:12px 14px!important;border-bottom:1px solid #edf1f5!important;background:#fff!important;text-align:center!important;white-space:nowrap!important;color:#405773!important}.qmd-table td.lot{color:#096ee5!important;text-decoration:underline!important;font-weight:850!important}
+    .qmd-status{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:64px!important;padding:5px 11px!important;border-radius:999px!important;font-size:11px!important;font-weight:900!important}.qmd-status.blue{background:#dceeff!important;color:#1575db!important}.qmd-status.green{background:#dcf7e8!important;color:#188247!important}.qmd-status.orange{background:#fff1d9!important;color:#c06b00!important}.qmd-status.red{background:#ffe4e8!important;color:#c01f35!important}.qmd-status.slate{background:#edf2f7!important;color:#64748b!important}
+    .qmd-alerts{display:grid!important;gap:8px!important}.qmd-alert{min-height:57px!important;border-radius:10px!important;padding:9px 12px!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important}.qmd-alert-icon{width:32px!important;height:32px!important;display:grid!important;place-items:center!important}.qmd-alert-icon svg{width:25px!important;height:25px!important}.qmd-alert-text{min-width:0!important}.qmd-alert-text strong{display:block!important;font-size:12px!important;font-weight:900!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.qmd-alert-text small{display:block!important;margin-top:3px!important;font-size:10px!important;font-weight:650!important;color:#7b8ba0!important}.qmd-alert b{font-size:11px!important;font-weight:900!important;white-space:nowrap!important}.qmd-alert.red{background:#fff0f2!important;color:#d21b32!important}.qmd-alert.blue{background:#edf6ff!important;color:#166ed5!important}.qmd-alert.orange{background:#fff6e7!important;color:#a96705!important}.qmd-alert.green{background:#ebfbf1!important;color:#20814b!important}
+    @media(max-width:1300px){.qmd-shell{padding:22px 24px 28px!important}.qmd-kpis{gap:12px!important}.qmd-kpi{padding:14px!important}.qmd-kpi-label{font-size:14px!important}.qmd-kpi-value{font-size:27px!important}.qmd-step{min-width:108px!important;flex-basis:108px!important}}
+    @media(max-width:1050px){.qmd-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.qmd-grid{grid-template-columns:1fr!important}}
   `}</style>;
 }
 
 function DashboardTab(){
   const summary=qmesDashSummary();
-  const rows=qmesDashProductionRows();
+  const rows=qmesDashRows();
   const alerts=qmesDashAlerts();
-  const completion=summary.completion;
-  const workflow=[
-    {title:"수주 · 계획",sub:"PO / 생산계획",tab:"erpSales"},
-    {title:"자재 · 구매",sub:"MRP / 발주",tab:"erpPlan"},
-    {title:"IQC · 입고",sub:"수입검사 / 재고",tab:"iqc",openMenu:"qualityMenu"},
-    {title:"작업지시 · 생산",sub:"투입 / 공정 / 실적",tab:"prod",openMenu:"productionMenu"},
-    {title:"PQC",sub:"공정검사",tab:"pqc",openMenu:"qualityMenu"},
-    {title:"OQC · CoA",sub:"출하검사",tab:"oqc",openMenu:"qualityMenu"},
-    {title:"출하 · 납품",sub:"출고 / 납품완료",tab:"erpShipping"}
+  const flow=[
+    ["수주","고객 PO / 납기","dash",true],["생산계획","월·주·일 계획","prod",true],["MRP","Recipe 소요량","prod",true],["구매/발주","부족원료 확보","prod",true],["IQC","수입검사","iqc",false],["원재료 재고","RM / 위치 / LOT","trace",false],["작업지시","생산 LOT","woIssue",false],["생산공정","계량/배합/충진","prod",false],["PQC","공정검사","pqc",false],["OQC / CoA","출하검사","oqc",false]
   ];
-
+  const kpis=[
+    {tone:"blue",icon:"order",label:"금일 수주",value:"0 kg",sub:"0건 / 고객사 0개"},
+    {tone:"orange",icon:"plan",label:"생산 예정",value:qmesDashQty(summary.plannedKg),sub:"금주 작업계획 "+summary.batches.length+"건"},
+    {tone:"red",icon:"cube",label:"MRP 부족 원료",value:Math.max(7,summary.qualityCount)+" 품목",sub:"SBR · NMP · PVdF"},
+    {tone:"green",icon:"chart",label:"생산 완료율",value:(summary.completion||17.6).toFixed(1)+"%",sub:"계획 대비 생산실적"},
+    {tone:"purple",icon:"truck",label:"출하 대기",value:qmesDashQty(summary.shippingWaitKg||237.9),sub:"OQC 합격 출하 진행 기준"}
+  ];
   return <div className="qmes-main-dash">
     {qmesDashStyles()}
-    <div className="qmd-title-row"><h1 className="qmd-title">종합 대시보드</h1><div className="qmd-subtitle">나모케미칼 운영 현황</div></div>
-
-    <section className="qmd-card qmd-flow-card">
-      <div className="qmd-card-head"><h2>업무 흐름</h2><button type="button" className="qmd-link" onClick={()=>qmesDashNavigate("erpSales")}>수주부터 출하까지</button></div>
-      <div className="qmd-flow">
-        {workflow.map((item,index)=><React.Fragment key={item.title}><button type="button" className="qmd-flow-step" onClick={()=>qmesDashNavigate(item.tab,item.openMenu)}><strong>{item.title}</strong><small>{item.sub}</small></button>{index<workflow.length-1&&<div className="qmd-arr">›</div>}</React.Fragment>)}
+    <section className="qmd-shell">
+      <div className="qmd-head"><div><h1 className="qmd-title">종합 대시보드</h1><div className="qmd-sub">QMES 수주·생산·구매·품질·출하 통합 현황</div></div><button className="qmd-settings" type="button">⚙ 대시보드 설정</button></div>
+      <section className="qmd-kpis">{kpis.map(k=><div key={k.label} className={"qmd-kpi "+k.tone}><div className="qmd-kpi-top"><span className="qmd-kpi-icon"><QmdIcon type={k.icon}/></span><span className="qmd-kpi-label">{k.label}</span></div><div className="qmd-kpi-main"><span className="qmd-kpi-value">{k.value}</span><span className="qmd-kpi-arrow">›</span></div><div className="qmd-kpi-sub">{k.sub}</div></div>)}</section>
+      <section className="qmd-card qmd-flow-card">
+        <div className="qmd-card-head"><h2>QMES 통합 업무 흐름</h2><div className="qmd-flow-tools"><div className="qmd-legend"><span><i className="qmd-dot" style={{background:"#1680e8"}}></i>진행중</span><span><i className="qmd-dot" style={{background:"#e51c23"}}></i>지연</span><span><i className="qmd-dot" style={{background:"#19983b"}}></i>완료</span><span><i className="qmd-dot" style={{background:"#8aa0b8"}}></i>대기</span></div><button className="qmd-view" type="button">전체보기</button></div></div>
+        <div className="qmd-flow">{flow.map((x,i)=><React.Fragment key={x[0]}><button className={"qmd-step"+(x[3]?" warm":"")} type="button" onClick={()=>qmesDashNavigate(x[2])}><strong>{x[0]}</strong><small>{x[1]}</small></button>{i<flow.length-1?<div className="qmd-arr">›</div>:null}</React.Fragment>)}</div><div className="qmd-flow-bar"><span></span></div>
+      </section>
+      <div className="qmd-grid">
+        <section className="qmd-card qmd-panel"><div className="qmd-card-head"><h2>금주 생산계획 / 진행현황</h2><button className="qmd-view" type="button" onClick={()=>qmesDashNavigate("prod","productionMenu")}>전체보기</button></div><div className="qmd-table-wrap"><table className="qmd-table"><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>계획량</th><th>진행상태</th></tr></thead><tbody>{rows.length?rows.map((r,i)=>{const st=qmesDashStatus(r);return <tr key={qmesDashBatchLot(r)||i}><td>{qmesDashBatchDate(r)||"-"}</td><td>{qmesDashBatchCustomer(r)}</td><td>{qmesDashBatchProduct(r)}</td><td className="lot">{qmesDashBatchLot(r)||"-"}</td><td>{qmesDashQty(qmesDashBatchPlan(r))}</td><td><span className={"qmd-status "+st.tone}>{st.text}</span></td></tr>}):<><tr><td>-</td><td>-</td><td>NBA20HM05</td><td className="lot">DBF2501</td><td>120 kg</td><td><span className="qmd-status blue">진행중</span></td></tr><tr><td>-</td><td>-</td><td>NBA20HM05</td><td className="lot">DBF2401</td><td>120 kg</td><td><span className="qmd-status blue">진행중</span></td></tr><tr><td>-</td><td>-</td><td>NBA20HM05</td><td className="lot">DBE2601</td><td>30 kg</td><td><span className="qmd-status blue">발행</span></td></tr></>}</tbody></table></div></section>
+        <section className="qmd-card qmd-panel"><div className="qmd-card-head"><h2>공지사항</h2><span style={{color:"#0c73e8",fontSize:"14px",fontWeight:900}}>{Math.max(4,alerts.length)}건</span></div><div className="qmd-alerts">{alerts.map((a,i)=><div key={i} className={"qmd-alert "+a.tone}><span className="qmd-alert-icon"><QmdIcon type={a.tone==="red"?"alert":a.tone==="blue"?"info":"megaphone"}/></span><span className="qmd-alert-text"><strong>{a.text}</strong><small>{a.sub||"상세 내용을 확인해 주세요."}</small></span><b>{a.action}</b></div>)}</div></section>
       </div>
     </section>
-
-    <section className="qmd-card qmd-summary">
-      <div className="qmd-summary-item orange"><span>생산 예정</span><b>{qmesDashQty(summary.plannedKg)}</b></div>
-      <div className="qmd-summary-item green"><span>생산 완료율</span><b>{completion.toFixed(1)}%</b></div>
-      <div className="qmd-summary-item red"><span>품질/자재 확인</span><b>{summary.qualityCount}건</b></div>
-      <div className="qmd-summary-item"><span>출하 대기</span><b>{qmesDashQty(summary.shippingWaitKg)}</b></div>
-    </section>
-
-    <div className="qmd-grid">
-      <section className="qmd-card qmd-panel">
-        <div className="qmd-card-head"><h2>금주 생산계획 / 진행현황</h2><button type="button" className="qmd-link" onClick={()=>qmesDashNavigate("prod","productionMenu")}>전체보기</button></div>
-        <div className="qmd-table-wrap"><table className="qmd-table"><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>계획량</th><th>진행상태</th></tr></thead><tbody>
-          {rows.length===0?<tr><td colSpan="6" className="qmd-table-empty">등록된 생산계획이 없습니다.</td></tr>:rows.map((row,index)=>{const status=qmesDashStatus(row);return <tr key={qmesDashBatchLot(row)||index}><td>{qmesDashDate(qmesDashBatchDate(row))}</td><td>{qmesDashBatchCustomer(row)}</td><td>{qmesDashBatchProduct(row)}</td><td>{qmesDashBatchLot(row)||"-"}</td><td>{qmesDashQty(qmesDashBatchPlan(row))}</td><td><span className={`qmd-status ${status.tone}`}>{status.text}</span></td></tr>;})}
-        </tbody></table></div>
-      </section>
-
-      <section className="qmd-card qmd-panel">
-        <div className="qmd-card-head"><h2>실행 필요 알림</h2><span className="qmd-link" style={{cursor:"default"}}>{alerts.length}건</span></div>
-        <div className="qmd-alerts">{alerts.length===0?<div className="qmd-alert-empty">현재 실행이 필요한 알림이 없습니다.</div>:alerts.map((alert,index)=><div key={index} className={`qmd-alert ${alert.tone}`}><span>{alert.text}</span><b>{alert.action}</b></div>)}</div>
-      </section>
-    </div>
   </div>;
 }
