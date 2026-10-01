@@ -32,21 +32,19 @@ function ensureStyle(){
     html body #root>div>header{display:none!important}
     html body #${HEADER_ID}{
       position:fixed!important;left:0!important;right:0!important;top:0!important;height:172px!important;z-index:15000!important;
-      display:flex!important;align-items:flex-start!important;gap:18px!important;padding:18px 34px 0 72px!important;box-sizing:border-box!important;
-      background:
-        linear-gradient(90deg,rgba(10,38,67,.22),rgba(24,53,88,.08) 48%,rgba(10,27,54,.24)),
-        url("/qmes-login.jpg") center 72%/cover no-repeat!important;
+      display:flex!important;align-items:flex-start!important;gap:16px!important;padding:16px 30px 0 78px!important;box-sizing:border-box!important;
+      background:url("/qmes-login.jpg") center 50%/cover no-repeat!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
     }
-    html body #${HEADER_ID} .qh-brand{width:252px!important;height:60px!important;flex:0 0 252px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
-    html body #${HEADER_ID} .qh-logo{width:238px!important;height:auto!important;max-height:56px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))!important}
-    html body #${HEADER_ID} .qh-search{width:310px!important;height:44px!important;flex:0 0 310px!important;margin-top:3px!important;display:flex!important;align-items:center!important;gap:10px!important;padding:0 15px!important;border:1px solid rgba(255,255,255,.34)!important;border-radius:24px!important;background:rgba(235,241,248,.66)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 10px rgba(19,39,62,.10)!important}
+    html body #${HEADER_ID} .qh-brand{width:252px!important;height:58px!important;flex:0 0 252px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
+    html body #${HEADER_ID} .qh-logo{width:232px!important;height:auto!important;max-height:54px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))!important}
+    html body #${HEADER_ID} .qh-search{width:310px!important;height:44px!important;flex:0 0 310px!important;margin-top:4px!important;display:flex!important;align-items:center!important;gap:10px!important;padding:0 15px!important;border:1px solid rgba(255,255,255,.34)!important;border-radius:24px!important;background:rgba(235,241,248,.66)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 10px rgba(19,39,62,.10)!important}
     html body #${HEADER_ID} .qh-search svg{width:21px!important;height:21px!important;flex:none!important;fill:none!important;stroke:#fff!important;stroke-width:2.5!important;stroke-linecap:round!important}
     html body #${HEADER_ID} .qh-search input{width:100%!important;height:100%!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:14px!important;font-weight:800!important}
     html body #${HEADER_ID} .qh-search input::placeholder{color:rgba(255,255,255,.95)!important}
     html body #${HEADER_ID} .qh-spacer{flex:1 1 auto!important;min-width:10px!important}
-    html body #${HEADER_ID} .qh-clock{min-width:205px!important;height:44px!important;margin-top:2px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:14px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
+    html body #${HEADER_ID} .qh-clock{min-width:205px!important;height:44px!important;margin-top:3px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:14px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
     html body #${HEADER_ID} .qh-btn{height:44px!important;min-width:42px!important;margin-top:2px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;font-size:13px!important;font-weight:850!important;cursor:pointer!important;text-shadow:0 1px 2px rgba(0,0,0,.26)!important}
     html body #${HEADER_ID} .qh-btn:hover{background:rgba(255,255,255,.12)!important}
     html body #${HEADER_ID} .qh-btn svg{width:21px!important;height:21px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
