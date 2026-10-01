@@ -768,13 +768,54 @@ function IssueWoTab() {
   const [statusVersion, setStatusVersion] = useState(0);
   const issueFormRef = React.useRef(null);
   const [newModalPos, setNewModalPos] = useState({ x:0, y:0 });
+  const [newModalSize, setNewModalSize] = useState({ width:980, height:620 });
   const startNewModalDrag = (e) => {
     if (e.button !== 0) return;
-    if (e.target.closest("button,input,select,textarea")) return;
+    if (e.target.closest("button,input,select,textarea,[data-qmes-resize]")) return;
     e.preventDefault();
     const startX=e.clientX, startY=e.clientY;
     const originX=newModalPos.x, originY=newModalPos.y;
     const onMove=(ev)=>setNewModalPos({x:originX+(ev.clientX-startX),y:originY+(ev.clientY-startY)});
+    const onUp=()=>{
+      window.removeEventListener("mousemove",onMove);
+      window.removeEventListener("mouseup",onUp);
+    };
+    window.addEventListener("mousemove",onMove);
+    window.addEventListener("mouseup",onUp);
+  };
+  const startNewModalResize = (dir, e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const startX=e.clientX, startY=e.clientY;
+    const originSize={...newModalSize};
+    const originPos={...newModalPos};
+    const maxW=Math.max(640, window.innerWidth-36);
+    const maxH=Math.max(420, window.innerHeight-36);
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+    const onMove=(ev)=>{
+      const dx=ev.clientX-startX, dy=ev.clientY-startY;
+      let width=originSize.width, height=originSize.height;
+      let x=originPos.x, y=originPos.y;
+      if(dir.includes("e")) {
+        width=clamp(originSize.width+dx,640,maxW);
+        x=originPos.x+(width-originSize.width)/2;
+      }
+      if(dir.includes("w")) {
+        width=clamp(originSize.width-dx,640,maxW);
+        x=originPos.x-(width-originSize.width)/2;
+      }
+      if(dir.includes("s")) {
+        height=clamp(originSize.height+dy,420,maxH);
+        y=originPos.y+(height-originSize.height)/2;
+      }
+      if(dir.includes("n")) {
+        height=clamp(originSize.height-dy,420,maxH);
+        y=originPos.y-(height-originSize.height)/2;
+      }
+      setNewModalSize({width,height});
+      setNewModalPos({x,y});
+    };
     const onUp=()=>{
       window.removeEventListener("mousemove",onMove);
       window.removeEventListener("mouseup",onUp);
@@ -830,6 +871,7 @@ function IssueWoTab() {
     setPlanItems(blankPlanItems(product));
     setPackRows([blankPackRow()]);
     setNewModalPos({ x:0, y:0 });
+    setNewModalSize({ width:980, height:620 });
     setShowIssueForm(true);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -1466,8 +1508,16 @@ function IssueWoTab() {
         <div
           onMouseDown={startNewModalDrag}
           onClick={(e) => e.stopPropagation()}
-          style={{ width:"min(980px,82vw)", maxHeight:"78vh", overflow:"auto", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
+          style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(640, window.innerWidth-36))}px`, height:`${Math.min(newModalSize.height, Math.max(420, window.innerHeight-36))}px`, overflow:"auto", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
         >
+          <div data-qmes-resize="n" onMouseDown={(e)=>startNewModalResize("n",e)} style={{position:"absolute",zIndex:8,top:"-4px",left:"12px",right:"12px",height:"8px",cursor:"ns-resize"}} />
+          <div data-qmes-resize="s" onMouseDown={(e)=>startNewModalResize("s",e)} style={{position:"absolute",zIndex:8,bottom:"-4px",left:"12px",right:"12px",height:"8px",cursor:"ns-resize"}} />
+          <div data-qmes-resize="w" onMouseDown={(e)=>startNewModalResize("w",e)} style={{position:"absolute",zIndex:8,left:"-4px",top:"12px",bottom:"12px",width:"8px",cursor:"ew-resize"}} />
+          <div data-qmes-resize="e" onMouseDown={(e)=>startNewModalResize("e",e)} style={{position:"absolute",zIndex:8,right:"-4px",top:"12px",bottom:"12px",width:"8px",cursor:"ew-resize"}} />
+          <div data-qmes-resize="nw" onMouseDown={(e)=>startNewModalResize("nw",e)} style={{position:"absolute",zIndex:9,left:"-5px",top:"-5px",width:"14px",height:"14px",cursor:"nwse-resize"}} />
+          <div data-qmes-resize="ne" onMouseDown={(e)=>startNewModalResize("ne",e)} style={{position:"absolute",zIndex:9,right:"-5px",top:"-5px",width:"14px",height:"14px",cursor:"nesw-resize"}} />
+          <div data-qmes-resize="sw" onMouseDown={(e)=>startNewModalResize("sw",e)} style={{position:"absolute",zIndex:9,left:"-5px",bottom:"-5px",width:"14px",height:"14px",cursor:"nesw-resize"}} />
+          <div data-qmes-resize="se" onMouseDown={(e)=>startNewModalResize("se",e)} style={{position:"absolute",zIndex:9,right:"-5px",bottom:"-5px",width:"14px",height:"14px",cursor:"nwse-resize"}} />
           <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"54px", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
               <div style={{ width:"28px", height:"28px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", background:"#eaf6ff", border:"1px solid #cbe6f8", color:"#1489ca", fontSize:"17px", fontWeight:900 }}>▣</div>
