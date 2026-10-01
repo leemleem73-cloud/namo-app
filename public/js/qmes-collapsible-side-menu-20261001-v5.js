@@ -20,8 +20,8 @@
       box-shadow:6px 0 18px rgba(24,39,55,.22)!important;
     }
     html body #root>div>main{
-      margin-left:54px!important;
-      width:calc(100% - 54px)!important;
+      margin-left:36px!important;
+      width:calc(100% - 36px)!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-text,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-foot{
@@ -180,8 +180,8 @@
   document.body.classList.remove('qmes-side-open','qmes-erp-menu-closed');
   const qmesMain=document.querySelector('#root>div>main');
   if(qmesMain){
-    qmesMain.style.setProperty('margin-left','54px','important');
-    qmesMain.style.setProperty('width','calc(100% - 54px)','important');
+    qmesMain.style.setProperty('margin-left','36px','important');
+    qmesMain.style.setProperty('width','calc(100% - 36px)','important');
   }
 
   const clean=value=>String(value||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
@@ -355,8 +355,8 @@
     side.hidden=!open;
     side.setAttribute('aria-hidden',String(!open));
     if(qmesMain){
-      qmesMain.style.setProperty('margin-left','54px','important');
-      qmesMain.style.setProperty('width','calc(100% - 54px)','important');
+      qmesMain.style.setProperty('margin-left','36px','important');
+      qmesMain.style.setProperty('width','calc(100% - 36px)','important');
     }
     menuButton.innerHTML=open?closeSvg:menuSvg;
     menuButton.setAttribute('aria-expanded',String(open));
@@ -442,11 +442,19 @@
   const alignMainToCollapsedSidebar=()=>{
     const main=document.querySelector('#root>div>main');
     if(!main)return;
-    main.style.setProperty('margin-left','54px','important');
-    main.style.setProperty('width','calc(100% - 54px)','important');
+    main.style.setProperty('margin-left','36px','important');
+    main.style.setProperty('width','calc(100% - 36px)','important');
   };
 
   side.addEventListener('mouseleave',()=>side.classList.remove('qmes-force-collapsed'));
+
+  // Fallback: if the cursor enters the blank strip next to the collapsed sidebar,
+  // align the main content immediately as well.
+  document.addEventListener('pointermove',event=>{
+    if(event.clientX>54&&event.clientX<=236){
+      alignMainToCollapsedSidebar();
+    }
+  },{passive:true});
 
   nav.addEventListener('click',event=>{
     const button=event.target.closest('.qmes-erp-item');
