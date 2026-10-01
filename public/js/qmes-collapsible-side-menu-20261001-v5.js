@@ -380,7 +380,6 @@
       {label:'품질 인터락',icon:'!',group:'품질검사',sub:'품질 인터락 (차단)'},
       {label:'출하성적서',icon:'▤',group:'품질검사',sub:'출하성적서'},
       {label:'LOT 통합추적',icon:'⌕',direct:'LOT 추적'},
-      {label:'출하 · 납품관리',icon:'⇢',tab:'erpShipping'},
       {label:'부적합 (8D)',icon:'8',group:'부적합관리',sub:'부적합 (8D)'},
       {label:'고객불만 (GQMS)',icon:'G',group:'부적합관리',sub:'고객불만 (GQMS)'},
       {label:'4M 변경관리',icon:'4',group:'부적합관리',sub:'4M 변경관리'},
@@ -582,7 +581,6 @@
 
   const routeByLabel={
     '통합 대시보드':{tab:'dash'},
-    '거래처 현황':{tab:'partners'},
     '생산 진행':{tab:'prod',openMenu:'productionMenu'},
     '작업지시서':{tab:'woIssue',openMenu:'productionMenu'},
     '생산공정 관리':{tab:'prodProcess',openMenu:'productionMenu'},
