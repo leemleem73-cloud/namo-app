@@ -58,13 +58,16 @@ const TABS = [
   { id:"ncr", label:"부적합 (8D)", icon:ShieldAlert, comp:NcrTab },
   { id:"cc", label:"고객불만 (GQMS)", icon:MessageSquareWarning, comp:ComplaintTab },
   { id:"coa", label:"출하성적서", icon:Printer, comp:CoaTab },
+  { id:"msa", label:"MSA / GRR 관리", icon:Gauge, comp:window.QMESMsaTab },
+  { id:"calibration", label:"계측기 교정관리", icon:Wrench, comp:window.QMESCalibrationTab },
+  { id:"standards", label:"기준서 / 매뉴얼", icon:FileText, comp:window.QMESStandardsTab },
   { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },
 ];
 
 const TOP_MENUS = [
   { id:"dash", label:"대시보드", icon:LayoutDashboard },
   { id:"productionMenu", label:"생산관리", icon:FlaskConical, children:["prod","woIssue","prodProcess"] },
-  { id:"qualityMenu", label:"품질검사", icon:ClipboardCheck, children:["iqc","pqc","oqc","spc","lock","coa"] },
+  { id:"qualityMenu", label:"품질검사", icon:ClipboardCheck, children:["iqc","pqc","oqc","spc","lock","coa","msa","calibration","standards"] },
   { id:"pop", label:"현장입력", icon:Tablet },
   { id:"inv", label:"재고관리", icon:Boxes },
   { id:"partners", label:"거래처 현황", icon:Users },
