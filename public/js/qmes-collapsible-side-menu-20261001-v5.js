@@ -416,11 +416,20 @@
     if(item.sub){const submenu=findSub(item.sub);if(submenu){submenu.click();return;}const top=findTop(item.group);if(top)top.click();requestAnimationFrame(()=>requestAnimationFrame(()=>{const next=findSub(item.sub);if(next)next.click();}));}
   }
 
+  const alignMainToCollapsedSidebar=()=>{
+    const main=document.querySelector('#root>div>main');
+    if(!main)return;
+    main.style.setProperty('margin-left','54px','important');
+    main.style.setProperty('width','calc(100% - 54px)','important');
+  };
+
   nav.addEventListener('click',event=>{
     const button=event.target.closest('.qmes-erp-item');
     if(!button)return;
     const section=sections[Number(button.dataset.sectionIndex)];
     navigate(section?.items?.[Number(button.dataset.itemIndex)]);
+    alignMainToCollapsedSidebar();
+    requestAnimationFrame(()=>requestAnimationFrame(alignMainToCollapsedSidebar));
   });
 
   const searchInput=header.querySelector('.qmes-erp-header-search input');
