@@ -66,7 +66,7 @@
   side.id='qmes-erp-sidebar';
   side.dataset.qmesSidebarOwner='enterprise-test-20260910';
   side.setAttribute('aria-label','QMES 통합 메뉴');
-  side.innerHTML=`<div class="qmes-erp-company"><div class="qmes-erp-company-row"><span class="qmes-erp-company-name">㈜나모케미칼</span><span class="qmes-erp-status">정상운영</span></div></div><nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
+  side.innerHTML=`<nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
   document.body.appendChild(side);
 
   const menuSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
