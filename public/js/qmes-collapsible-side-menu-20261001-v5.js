@@ -43,6 +43,17 @@
       display:flex!important;
       flex-direction:column!important;
       align-items:stretch!important;
+      overflow:hidden!important;
+      scrollbar-width:none!important;
+      -ms-overflow-style:none!important;
+      overscroll-behavior:none!important;
+      touch-action:none!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar::-webkit-scrollbar,
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-nav::-webkit-scrollbar{
+      display:none!important;
+      width:0!important;
+      height:0!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-section{
       height:0!important;
@@ -205,6 +216,15 @@
   side.setAttribute('aria-label','QMES 통합 메뉴');
   side.innerHTML=`<nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
   document.body.appendChild(side);
+
+  const stopSidebarScroll=(event)=>{
+    if(side.contains(event.target)){
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+  side.addEventListener("wheel",stopSidebarScroll,{passive:false});
+  side.addEventListener("touchmove",stopSidebarScroll,{passive:false});
 
   const menuSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
   const closeSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
