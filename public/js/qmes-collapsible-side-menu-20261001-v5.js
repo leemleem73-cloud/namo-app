@@ -19,7 +19,7 @@
       background:#354052!important;
       box-shadow:6px 0 18px rgba(24,39,55,.22)!important;
     }
-    html body:not(.qmes-erp-menu-closed) #root>div>main{
+    html body #root>div>main{
       margin-left:54px!important;
       width:calc(100% - 54px)!important;
     }
@@ -157,7 +157,6 @@
   if(qmesMain){
     qmesMain.style.setProperty('margin-left','54px','important');
     qmesMain.style.setProperty('width','calc(100% - 54px)','important');
-    qmesMain.style.setProperty('padding-left','8px','important');
   }
 
   const clean=value=>String(value||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
@@ -332,6 +331,10 @@
     document.body.classList.toggle('qmes-erp-menu-closed',!open);
     side.hidden=!open;
     side.setAttribute('aria-hidden',String(!open));
+    if(qmesMain){
+      qmesMain.style.setProperty('margin-left','54px','important');
+      qmesMain.style.setProperty('width','calc(100% - 54px)','important');
+    }
     menuButton.innerHTML=open?closeSvg:menuSvg;
     menuButton.setAttribute('aria-expanded',String(open));
     menuButton.setAttribute('aria-label',open?'왼쪽 메뉴 닫기':'왼쪽 메뉴 열기');
