@@ -157,25 +157,10 @@
   const clean=value=>String(value||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
   const readSessionUser=()=>{try{return JSON.parse(sessionStorage.getItem('qmes-current-user-v1')||'null');}catch(_error){return null;}};
   const currentUser=()=>window.__QMES_CURRENT_USER__||readSessionUser()||null;
-  const normalizeUserName=value=>/^임+흥배$/.test(String(value||'').replace(/\s+/g,''))?'임흥배':String(value||'').trim();
-  const accountText=()=>{
-    const user=currentUser()||{};
-    const name=normalizeUserName(user.name||user.uid||'사용자');
-    const rawDept=String(user.department||user.dept||'').replace(/\s+/g,'').trim();
-    const dept=name==='임흥배'?'품질부':rawDept;
-    return dept?`${name}(${dept})`:name;
-  };
+  const accountText=()=> '사용자';
   const isAdminUser=()=>{
     const user=currentUser();
-    const role=String(user?.role||'').trim().toLowerCase();
-    if(role==='admin')return true;
-    return String(user?.name||'').trim()==='관리자'&&String(user?.uid||'').trim().toUpperCase()==='U-0001';
-  };
-  const canAccessCommercialErp=()=>{
-    const user=currentUser()||{};
-    const name=String(user?.name||'').replace(/\s+/g,'').trim();
-    const dept=String(user?.department||user?.dept||'').replace(/\s+/g,'').trim();
-    return dept==='영업부'||['김종혁','김세희','정영기'].includes(name);
+    return String(user?.role||'').trim().toLowerCase()==='admin';
   };
 
   const sections=[
@@ -214,7 +199,7 @@
   side.id='qmes-erp-sidebar';
   side.dataset.qmesSidebarOwner='enterprise-test-20260910';
   side.setAttribute('aria-label','QMES 통합 메뉴');
-  side.innerHTML=`<nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav><div class="qmes-erp-foot">NAMO Chemical Co., Ltd.</div>`;
+  side.innerHTML=`<nav class="qmes-erp-nav" aria-label="업무 메뉴"></nav>`;
   document.body.appendChild(side);
 
   const stopSidebarScroll=(event)=>{
@@ -238,7 +223,7 @@
   header.dataset.qmesHeaderOwner='enterprise-test-20260910';
   header.setAttribute('aria-label','나모케미칼 상단 헤더');
   header.innerHTML=`
-    <button type="button" class="qmes-erp-header-brand" aria-label="통합 대시보드"><img class="qmes-erp-official-logo" src="/assets/namo-header-logo.svg?v=20260903-official-logo4" alt="나모케미칼(주) NAMO Chemical Co., Ltd."></button>
+    <button type="button" class="qmes-erp-header-brand" aria-label="통합 대시보드"><img class="qmes-erp-official-logo" src="/assets/namo-header-logo.svg?v=20260903-official-logo4" alt="나모케미칼 로고"></button>
     <button type="button" class="qmes-erp-header-menu" aria-label="왼쪽 메뉴 닫기" aria-expanded="true">${closeSvg}</button>
     <div id="qmes-ref-global-search" class="qmes-erp-header-search"><input type="search" placeholder="메뉴 찾기" aria-label="메뉴 찾기"><button type="button" class="qmes-erp-header-search-icon" aria-label="검색">${searchSvg}</button></div>
     <div class="qmes-erp-header-spacer"></div>
@@ -451,7 +436,7 @@
   let lastUserSignature='';
   const syncUserAndAdminMenu=()=>{
     const user=currentUser();
-    const signature=[user?.id||'',user?.uid||'',user?.name||'',user?.department||user?.dept||'',user?.role||''].join('|');
+    const signature=String(user?.role||'');
     const adminState=isAdminUser();
     if(signature!==lastUserSignature||adminState!==lastAdminState){
       lastUserSignature=signature;
