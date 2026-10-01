@@ -1486,13 +1486,13 @@ function IssueWoTab() {
         <div
           onMouseDown={startNewModalDrag}
           onClick={(e) => e.stopPropagation()}
-          style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(640, window.innerWidth-36))}px`, height:`${Math.min(newModalSize.height, Math.max(420, window.innerHeight-36))}px`, overflow:"auto", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
+          style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(640, window.innerWidth-36))}px`, height:`${Math.min(newModalSize.height, Math.max(420, window.innerHeight-36))}px`, overflow:"hidden", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
         >
           <div
             data-qmes-resize="vertical"
             onMouseDown={startNewModalResize}
-            title="위아래로 드래그하여 창 높이 조절"
-            style={{position:"absolute",zIndex:10,left:"18px",right:"18px",bottom:"5px",height:"10px",borderRadius:"999px",background:"#264867",boxShadow:"inset 0 0 0 1px rgba(255,255,255,.18)",cursor:"ns-resize"}}
+            title="아래 테두리를 위아래로 드래그하여 창 높이 조절"
+            style={{position:"absolute",zIndex:12,left:0,right:0,bottom:0,height:"10px",cursor:"ns-resize",background:"transparent"}}
           />
           <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"54px", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
@@ -1507,7 +1507,7 @@ function IssueWoTab() {
             >×</button>
           </div>
 
-          <div style={{ padding:"18px 20px 20px" }}>
+          <div style={{ height:"calc(100% - 54px)", overflow:"auto", padding:"18px 20px 24px", boxSizing:"border-box" }}>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"18px", rowGap:"13px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
                 <span>지시일 <b style={{ color:"#e24b4b" }}>*</b></span>
