@@ -241,9 +241,6 @@
   side.addEventListener("wheel",stopSidebarScroll,{passive:false});
   side.addEventListener("touchmove",stopSidebarScroll,{passive:false});
 
-  const menuSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
-  const closeSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-  const searchSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
   const bellSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>';
   const mobileSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4M11 18.5h2"/></svg>';
   const userSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.8-4 3-6 6.5-6s5.7 2 6.5 6"/></svg>';
@@ -268,6 +265,11 @@
     <button type="button" class="qmes-erp-header-btn qmes-erp-header-backup">백업</button>
     <button type="button" class="qmes-erp-header-btn qmes-erp-header-restore">복원</button>`;
   document.body.appendChild(header);
+  header.querySelectorAll('.qmes-erp-header-menu,.qmes-erp-header-search,.qmes-erp-header-search-icon').forEach(node=>node.remove());
+  Array.from(header.querySelectorAll('button')).forEach(button=>{
+    const aria=String(button.getAttribute('aria-label')||'');
+    if(/왼쪽 메뉴 (닫기|열기)/.test(aria))button.remove();
+  });
 
   const nativeHeader=()=>document.querySelector('#root header:not(#qmes-erp-header)');
   const accountWrap=header.querySelector('.qmes-erp-account-wrap');
@@ -349,27 +351,11 @@
 
   header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});
 
-  const menuButton=document.createElement('button');
-  function setMenu(open){
-    document.body.classList.toggle('qmes-erp-menu-closed',!open);
-    side.hidden=!open;
-    side.setAttribute('aria-hidden',String(!open));
-    if(qmesMain){
-      qmesMain.style.setProperty('margin-left','36px','important');
-      qmesMain.style.setProperty('width','calc(100% - 36px)','important');
-    }
-    menuButton.innerHTML=open?closeSvg:menuSvg;
-    menuButton.setAttribute('aria-expanded',String(open));
-    menuButton.setAttribute('aria-label',open?'왼쪽 메뉴 닫기':'왼쪽 메뉴 열기');
-  }
-  menuButton.addEventListener('click',()=>setMenu(document.body.classList.contains('qmes-erp-menu-closed')));
-  setMenu(true);
+  function render(){
 
-  function render(filter=''){
     nav.replaceChildren();
-    const needle=clean(filter).toLowerCase();
     sections.forEach((section,sectionIndex)=>{
-      const matches=section.items.map((item,itemIndex)=>({item,itemIndex})).filter(({item})=>(!item.adminOnly||isAdminUser())&&(!needle||clean(item.label).toLowerCase().includes(needle)));
+      const matches=section.items.map((item,itemIndex)=>({item,itemIndex})).filter(({item})=>(!item.adminOnly||isAdminUser()));
       if(!matches.length)return;
       const heading=document.createElement('div');
       heading.className='qmes-erp-section';
@@ -425,7 +411,7 @@
     if(!item||item.adminOnly&&!isAdminUser())return;
     activeLabel=item.label;
     try{sessionStorage.setItem('qmes_erp_active_label',activeLabel);}catch(_error){}
-    searchInput.value='';render();
+    render();
     if(item.inventory){
       try{sessionStorage.setItem('qmes_inventory_section',item.inventory);}catch(_error){}
       dispatchTab('inv',null);
@@ -466,22 +452,12 @@
     requestAnimationFrame(()=>requestAnimationFrame(alignMainToCollapsedSidebar));
   });
 
-  const searchInput=document.createElement('input');
-  const runSearch=()=>{
-    const q=clean(searchInput.value);render(q);if(!q)return;
-    const exact=sections.flatMap(section=>section.items).find(item=>(!item.adminOnly||isAdminUser())&&clean(item.label).toLowerCase()===q.toLowerCase());
-    if(exact)navigate(exact);
-  };
-  searchInput.addEventListener('input',()=>render(searchInput.value));
-  searchInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();runSearch();}});
-  header.querySelector('.qmes-erp-header-search-icon')?.addEventListener('click',runSearch);
-
   const syncActiveFromRoute=()=>{
     const next=tabToLabel[savedTab()];
     if(next&&next!==activeLabel){
       activeLabel=next;
       try{sessionStorage.setItem('qmes_erp_active_label',activeLabel);}catch(_error){}
-      render(searchInput.value);
+      render();
     }
   };
   let lastAdminState=isAdminUser();
@@ -494,7 +470,7 @@
       lastUserSignature=signature;
       lastAdminState=adminState;
       updateAccountLabel();
-      render(searchInput.value);
+      render();
     }
   };
 
