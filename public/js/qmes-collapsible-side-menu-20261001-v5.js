@@ -146,6 +146,31 @@
       color:#8fa3b6!important;
       font-size:8px!important;
     }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed,
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed:hover,
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed:focus-within{
+      width:54px!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed .qmes-erp-text,
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed .qmes-erp-foot{
+      opacity:0!important;
+      visibility:hidden!important;
+      pointer-events:none!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed .qmes-erp-section{
+      height:0!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:0!important;
+      font-size:0!important;
+      line-height:0!important;
+      overflow:hidden!important;
+    }
+    html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar.qmes-force-collapsed .qmes-erp-item{
+      width:42px!important;
+      margin-left:6px!important;
+      margin-right:6px!important;
+    }
   `;
   document.head.appendChild(hoverSidebarStyle);
   document.getElementById('qmes-sync-sidebar')?.remove();
@@ -421,11 +446,14 @@
     main.style.setProperty('width','calc(100% - 54px)','important');
   };
 
+  side.addEventListener('mouseleave',()=>side.classList.remove('qmes-force-collapsed'));
+
   nav.addEventListener('click',event=>{
     const button=event.target.closest('.qmes-erp-item');
     if(!button)return;
     const section=sections[Number(button.dataset.sectionIndex)];
     navigate(section?.items?.[Number(button.dataset.itemIndex)]);
+    side.classList.add('qmes-force-collapsed');
     alignMainToCollapsedSidebar();
     requestAnimationFrame(()=>requestAnimationFrame(alignMainToCollapsedSidebar));
   });
