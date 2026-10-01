@@ -38,16 +38,19 @@
       pointer-events:auto!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-nav{
-      padding:8px 0 10px!important;
+      padding:10px 0 10px!important;
       background:#354052!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:stretch!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-section{
-      height:6px!important;
-      min-height:6px!important;
-      margin:5px 10px!important;
+      height:0!important;
+      min-height:0!important;
+      margin:0!important;
       padding:0!important;
       border:0!important;
-      background:rgba(255,255,255,.10)!important;
+      background:transparent!important;
       color:transparent!important;
       font-size:0!important;
       line-height:0!important;
@@ -56,23 +59,29 @@
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-section,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-section{
       height:auto!important;
-      min-height:0!important;
-      margin:8px 0 3px!important;
-      padding:5px 14px!important;
+      min-height:22px!important;
+      margin:7px 0 2px!important;
+      padding:5px 15px 3px!important;
       background:transparent!important;
       color:#9fb2c4!important;
       font-size:9px!important;
-      line-height:12px!important;
+      line-height:14px!important;
       font-weight:800!important;
       letter-spacing:.65px!important;
       text-align:left!important;
+      box-sizing:border-box!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item{
       width:42px!important;
+      height:38px!important;
       min-height:38px!important;
       margin:2px 6px!important;
-      padding:7px 10px!important;
+      padding:0 10px!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:flex-start!important;
       gap:10px!important;
+      box-sizing:border-box!important;
       border:0!important;
       border-radius:6px!important;
       background:transparent!important;
@@ -82,7 +91,8 @@
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover .qmes-erp-item,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within .qmes-erp-item{
       width:calc(100% - 12px)!important;
-      padding:7px 10px!important;
+      height:38px!important;
+      padding:0 10px!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-item:hover{
       background:#414f63!important;
@@ -97,17 +107,27 @@
       width:22px!important;
       height:22px!important;
       min-width:22px!important;
+      flex:0 0 22px!important;
+      display:grid!important;
+      place-items:center!important;
+      margin:0!important;
       border:0!important;
       border-radius:5px!important;
       background:transparent!important;
       color:inherit!important;
       font-size:11px!important;
       font-weight:900!important;
+      line-height:1!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-text{
+      min-width:0!important;
       color:inherit!important;
       font-size:12px!important;
+      line-height:1!important;
       font-weight:650!important;
+      white-space:nowrap!important;
+      overflow:hidden!important;
+      text-overflow:ellipsis!important;
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar .qmes-erp-foot{
       border-top:1px solid rgba(255,255,255,.10)!important;
