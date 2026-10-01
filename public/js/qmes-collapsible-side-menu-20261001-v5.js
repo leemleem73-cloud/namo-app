@@ -153,6 +153,12 @@
   document.getElementById('qmes-erp-sidebar')?.remove();
   document.getElementById('qmes-erp-header')?.remove();
   document.body.classList.remove('qmes-side-open','qmes-erp-menu-closed');
+  const qmesMain=document.querySelector('#root>div>main');
+  if(qmesMain){
+    qmesMain.style.setProperty('margin-left','54px','important');
+    qmesMain.style.setProperty('width','calc(100% - 54px)','important');
+    qmesMain.style.setProperty('padding-left','8px','important');
+  }
 
   const clean=value=>String(value||'').replace(/[›〉▣]/g,'').replace(/\s+/g,' ').trim();
   const readSessionUser=()=>{try{return JSON.parse(sessionStorage.getItem('qmes-current-user-v1')||'null');}catch(_error){return null;}};
