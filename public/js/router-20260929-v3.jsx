@@ -15,7 +15,7 @@ function QMESProductionProcessRoute(){
 }
 
 function qmesSavedInventorySection(){
-  const allowed=[];
+  const allowed=["overview"];
   try{
     const saved=sessionStorage.getItem("qmes_inventory_section")||"overview";
     return allowed.includes(saved)?saved:"overview";
@@ -27,7 +27,7 @@ function QMESInventoryRoute(){
   useEffect(()=>{
     const handleSection=event=>{
       const next=String(event?.detail?.section||"");
-      return;
+      if(!["overview"].includes(next))return;
       try{sessionStorage.setItem("qmes_inventory_section",next);}catch(error){}
       setSection(next);
     };
@@ -49,7 +49,9 @@ const TABS = [
   { id:"pqc", label:"공정검사 (PQC)", icon:ClipboardCheck, comp:PqcTab },
   { id:"oqc", label:"출하검사 (OQC)", icon:ArrowUpFromLine, comp:OqcTab },
   { id:"lock", label:"품질 인터락 (차단)", icon:Lock, comp:InterlockTab },
+  { id:"partners", label:"거래처 현황", icon:Users, comp:PartnersTab },
   { id:"eq", label:"설비 모니터링", icon:Cpu, comp:EquipmentTab },
+  { id:"inv", label:"재고관리", icon:Boxes, comp:QMESInventoryRoute },
   { id:"trace", label:"Lot 추적", icon:GitBranch, comp:TraceTab },
   { id:"spc", label:"SPC (Cpk)", icon:BarChart3, comp:SpcTab },
   { id:"4m", label:"4M 변경관리", icon:Repeat, comp:FourMTab },
@@ -67,6 +69,8 @@ const TOP_MENUS = [
   { id:"productionMenu", label:"생산관리", icon:FlaskConical, children:["prod","woIssue","prodProcess"] },
   { id:"qualityMenu", label:"품질검사", icon:ClipboardCheck, children:["iqc","pqc","oqc","spc","lock","coa","msa","calibration","standards"] },
   { id:"pop", label:"현장입력", icon:Tablet },
+  { id:"inv", label:"재고관리", icon:Boxes },
+  { id:"partners", label:"거래처 현황", icon:Users },
   { id:"eq", label:"설비관리", icon:Cpu },
   { id:"trace", label:"LOT 추적", icon:GitBranch },
   { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },
