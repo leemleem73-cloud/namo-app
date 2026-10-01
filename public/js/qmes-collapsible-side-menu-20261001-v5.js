@@ -229,8 +229,6 @@
   header.setAttribute('aria-label','나모케미칼 상단 헤더');
   header.innerHTML=`
     <button type="button" class="qmes-erp-header-brand" aria-label="통합 대시보드"><img class="qmes-erp-official-logo" src="/assets/namo-header-logo.svg?v=20260903-official-logo4" alt="나모케미칼 로고"></button>
-    <button type="button" class="qmes-erp-header-menu" aria-label="왼쪽 메뉴 닫기" aria-expanded="true">${closeSvg}</button>
-    <div id="qmes-ref-global-search" class="qmes-erp-header-search"><input type="search" placeholder="메뉴 찾기" aria-label="메뉴 찾기"><button type="button" class="qmes-erp-header-search-icon" aria-label="검색">${searchSvg}</button></div>
     <div class="qmes-erp-header-spacer"></div>
     <div class="qmes-erp-header-clock" aria-label="현재 시각"></div>
     <button type="button" class="qmes-erp-header-mobile" aria-label="모바일 화면">${mobileSvg}<span>모바일</span></button>
@@ -326,7 +324,7 @@
 
   header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});
 
-  const menuButton=header.querySelector('.qmes-erp-header-menu');
+  const menuButton=document.createElement('button');
   function setMenu(open){
     document.body.classList.toggle('qmes-erp-menu-closed',!open);
     side.hidden=!open;
@@ -432,7 +430,7 @@
     requestAnimationFrame(()=>requestAnimationFrame(alignMainToCollapsedSidebar));
   });
 
-  const searchInput=header.querySelector('.qmes-erp-header-search input');
+  const searchInput=document.createElement('input');
   const runSearch=()=>{
     const q=clean(searchInput.value);render(q);if(!q)return;
     const exact=sections.flatMap(section=>section.items).find(item=>(!item.adminOnly||isAdminUser())&&clean(item.label).toLowerCase()===q.toLowerCase());
@@ -440,7 +438,7 @@
   };
   searchInput.addEventListener('input',()=>render(searchInput.value));
   searchInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();runSearch();}});
-  header.querySelector('.qmes-erp-header-search-icon').addEventListener('click',runSearch);
+  header.querySelector('.qmes-erp-header-search-icon')?.addEventListener('click',runSearch);
 
   const syncActiveFromRoute=()=>{
     const next=tabToLabel[savedTab()];
