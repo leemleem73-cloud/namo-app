@@ -197,13 +197,6 @@
     {label:'WORKSPACE',items:[
       {label:'통합 대시보드',icon:'▦',direct:'대시보드'},
     ]},
-    {label:'ERP',items:[
-      {label:'수주 · 납기관리',icon:'▤',tab:'erpSales'},
-      {label:'생산계획 · MRP',icon:'▥',tab:'erpPlan'},
-      {label:'구매 · 발주관리',icon:'□',tab:'erpPurchase'},
-      {label:'재고현황',icon:'▣',inventory:'overview'},
-      {label:'거래처 현황',icon:'◇',direct:'거래처 현황'}
-    ]},
     {label:'MES · QMS',items:[
       {label:'생산 진행',icon:'▶',group:'생산관리',sub:'생산 (배치)'},
       {label:'작업지시서',icon:'▧',group:'생산관리',sub:'작업지시서'},
@@ -341,7 +334,7 @@
   const obsoleteMovementObserver=new MutationObserver(removeObsoleteInventoryMovementItem);
   obsoleteMovementObserver.observe(side,{childList:true,subtree:true});
 
-  const tabToLabel={dash:'통합 대시보드',iqc:'수입검사 (IQC)',pqc:'공정검사 (PQC)',oqc:'출하검사 (OQC)',spc:'SPC (Cpk)',lock:'품질 인터락',coa:'출하성적서',prod:'생산 진행',woIssue:'작업지시서',prodProcess:'생산공정 관리',pop:'현장 입력 (iPad)',partners:'거래처 현황',eq:'설비 모니터링',trace:'LOT 통합추적',erpSales:'수주 · 납기관리',erpPlan:'생산계획 · MRP',erpPurchase:'구매 · 발주관리',erpShipping:'출하 · 납품관리',members:'회원등록 현황'};
+  const tabToLabel={dash:'통합 대시보드',iqc:'수입검사 (IQC)',pqc:'공정검사 (PQC)',oqc:'출하검사 (OQC)',spc:'SPC (Cpk)',lock:'품질 인터락',coa:'출하성적서',prod:'생산 진행',woIssue:'작업지시서',prodProcess:'생산공정 관리',pop:'현장 입력 (iPad)',eq:'설비 모니터링',trace:'LOT 통합추적',members:'회원등록 현황'};
   const savedTab=()=>{try{return sessionStorage.getItem('qmes_current_tab')||'dash';}catch(_error){return 'dash';}};
   let activeLabel=tabToLabel[savedTab()]||'통합 대시보드';
   const topButtons=()=>Array.from(document.querySelectorAll('.qmes-top-menu-button'));
