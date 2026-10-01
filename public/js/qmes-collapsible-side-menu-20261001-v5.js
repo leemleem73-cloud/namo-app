@@ -15,7 +15,7 @@
     }
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:hover,
     html body:not(.qmes-erp-menu-closed) #qmes-erp-sidebar:focus-within{
-      width:236px!important;
+      width:180px!important;
       background:#354052!important;
       box-shadow:6px 0 18px rgba(24,39,55,.22)!important;
     }
