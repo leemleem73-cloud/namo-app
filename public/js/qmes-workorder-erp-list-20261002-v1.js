@@ -104,6 +104,12 @@ function markup(){
 function findNativeRow(raw){return [].slice.call(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(function(tr){var td=tr.querySelector("td");return clean(td&&td.textContent)===clean(raw)})||null}
 function nativeAction(raw,type){
  var tr=findNativeRow(raw);if(!tr)return false;
+ if(type==="detail"){
+   var detailBtn=tr.querySelector("td:first-child button, .qmes-manage-btn.view, button");
+   if(!detailBtn)return false;
+   detailBtn.click();
+   return true;
+ }
  var map={print:".qmes-manage-btn.print",edit:".qmes-manage-btn.edit",delete:".qmes-manage-btn.delete"},sel=map[type];if(!sel)return false;
  var b=tr.querySelector(sel);
  if(!b){var label=type==="print"?"출력":type==="edit"?"수정":"삭제";b=[].slice.call(tr.querySelectorAll("button")).find(function(x){return clean(x.textContent)===label})}
