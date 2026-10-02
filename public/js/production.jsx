@@ -768,7 +768,7 @@ function IssueWoTab() {
   const [statusVersion, setStatusVersion] = useState(0);
   const issueFormRef = React.useRef(null);
   const [newModalPos, setNewModalPos] = useState({ x:0, y:0 });
-  const [newModalSize, setNewModalSize] = useState({ width:980, height:620 });
+  const [newModalSize, setNewModalSize] = useState({ width:820, height:540 });
   const startNewModalDrag = (e) => {
     if (e.button !== 0) return;
     if (e.target.closest("button,input,select,textarea,[data-qmes-resize]")) return;
@@ -789,9 +789,9 @@ function IssueWoTab() {
     e.stopPropagation();
     const startY=e.clientY;
     const originHeight=newModalSize.height;
-    const maxH=Math.max(420, window.innerHeight-36);
+    const maxH=Math.max(380, window.innerHeight-28);
     const onMove=(ev)=>{
-      const nextHeight=Math.max(420,Math.min(maxH,originHeight+(ev.clientY-startY)));
+      const nextHeight=Math.max(380,Math.min(maxH,originHeight+(ev.clientY-startY)));
       setNewModalSize((current)=>({ ...current, height:nextHeight }));
     };
     const onUp=()=>{
@@ -849,7 +849,7 @@ function IssueWoTab() {
     setPlanItems(blankPlanItems(product));
     setPackRows([blankPackRow()]);
     setNewModalPos({ x:0, y:0 });
-    setNewModalSize({ width:980, height:620 });
+    setNewModalSize({ width:820, height:540 });
     setShowIssueForm(true);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -1481,12 +1481,12 @@ function IssueWoTab() {
       <div
         className="qmes-modal-backdrop qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
-        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"18px" }}
+        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"14px" }}
       >
         <div
           onMouseDown={startNewModalDrag}
           onClick={(e) => e.stopPropagation()}
-          style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(640, window.innerWidth-36))}px`, height:`${Math.min(newModalSize.height, Math.max(420, window.innerHeight-36))}px`, overflow:"hidden", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
+          style={{ position:"relative", width:`${Math.min(newModalSize.width, Math.max(560, window.innerWidth-28))}px`, height:`${Math.min(newModalSize.height, Math.max(380, window.innerHeight-28))}px`, overflow:"hidden", background:"#fff", color:"#24364a", border:"1px solid #d7e3ec", borderRadius:"12px", boxShadow:"0 24px 70px rgba(27,54,78,.20)", transform:`translate(${newModalPos.x}px,${newModalPos.y}px)`, cursor:"move" }}
         >
           <div
             data-qmes-resize="vertical"
@@ -1494,7 +1494,7 @@ function IssueWoTab() {
             title="아래 테두리를 위아래로 드래그하여 창 높이 조절"
             style={{position:"absolute",zIndex:12,left:0,right:0,bottom:0,height:"10px",cursor:"ns-resize",background:"transparent"}}
           />
-          <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"54px", padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
+          <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"46px", padding:"0 14px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
               <div style={{ width:"28px", height:"28px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", background:"#eaf6ff", border:"1px solid #cbe6f8", color:"#1489ca", fontSize:"17px", fontWeight:900 }}>▣</div>
               <h3 style={{ margin:0, fontSize:"17px", fontWeight:850, color:"#17324a", letterSpacing:"-.2px" }}>신규 작업지시 등록</h3>
@@ -1507,8 +1507,8 @@ function IssueWoTab() {
             >×</button>
           </div>
 
-          <div style={{ height:"calc(100% - 54px)", overflow:"auto", padding:"18px 20px 24px", boxSizing:"border-box" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"18px", rowGap:"13px" }}>
+          <div style={{ height:"calc(100% - 46px)", overflow:"auto", padding:"12px 14px 16px", boxSizing:"border-box" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"12px", rowGap:"9px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
                 <span>지시일 <b style={{ color:"#e24b4b" }}>*</b></span>
                 <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
@@ -1564,7 +1564,7 @@ function IssueWoTab() {
               </label>
             </div>
 
-            <div style={{ marginTop:"18px", border:"1px solid #d6e3ed", borderRadius:"10px", background:"#fbfdff", overflow:"hidden" }}>
+            <div style={{ marginTop:"12px", border:"1px solid #d6e3ed", borderRadius:"10px", background:"#fbfdff", overflow:"hidden" }}>
               <div style={{ minHeight:"50px", padding:"0 14px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px", background:"linear-gradient(180deg,#f9fcff,#f1f7fb)", borderBottom:"1px solid #dbe6ee" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
                   <div style={{ width:"27px", height:"27px", borderRadius:"7px", display:"flex", alignItems:"center", justifyContent:"center", background:"#e9f6ff", color:"#1588c9", border:"1px solid #cae6f7", fontSize:"14px" }}>⌁</div>
