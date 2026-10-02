@@ -215,3 +215,14 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
   width:100%!important;
   height:32px!important;
 }
+
+/* Work order ERP filter after approval-status removal - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:
+    minmax(390px,1.8fr)
+    minmax(210px,1fr)
+    minmax(210px,1fr)
+    minmax(170px,.85fr)
+    minmax(300px,1.45fr)
+    auto!important;
+}
