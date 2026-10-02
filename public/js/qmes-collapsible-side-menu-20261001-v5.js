@@ -33,12 +33,12 @@ function ensureStyle(){
     html body #${HEADER_ID}{
       position:fixed!important;left:0!important;right:0!important;top:0!important;height:132px!important;z-index:15000!important;
       display:flex!important;align-items:flex-start!important;gap:12px!important;padding:12px 30px 0 66px!important;box-sizing:border-box!important;
-      background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-sharp1") center center/100% 100% no-repeat!important;image-rendering:-webkit-optimize-contrast!important;filter:contrast(1.18) saturate(1.12) brightness(1.03)!important;
+      background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-sharp1") center center/100% 100% no-repeat!important;image-rendering:-webkit-optimize-contrast!important;filter:contrast(1.07) saturate(1.08) brightness(1.02)!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
     }
-    html body #${HEADER_ID} .qh-brand{position:absolute!important;left:74px!important;top:12px!important;width:220px!important;height:58px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important;z-index:2!important}
-    html body #${HEADER_ID} .qh-logo{width:220px!important;height:auto!important;max-height:54px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.30))!important}
+    html body #${HEADER_ID} .qh-brand{width:220px!important;height:58px!important;flex:0 0 220px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
+    html body #${HEADER_ID} .qh-logo{width:232px!important;height:auto!important;max-height:54px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))!important}
     html body #${HEADER_ID} .qh-spacer{flex:1 1 auto!important;min-width:10px!important}
     html body #${HEADER_ID} .qh-clock{min-width:175px!important;height:44px!important;margin-top:3px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:12.5px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
     html body #${HEADER_ID} .qh-btn{height:44px!important;min-width:42px!important;margin-top:2px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;font-size:13px!important;font-weight:850!important;cursor:pointer!important;text-shadow:0 1px 2px rgba(0,0,0,.26)!important}
@@ -132,9 +132,15 @@ function build(){
       <span class="qh-notice-dot" aria-hidden="true"></span>
     </button>
     <div class="qh-account">
-      <button type="button" class="qh-account-btn" aria-label="사용자 메뉴"><span class="qh-avatar">${name.charAt(0)||"사"}</span><span class="qh-name">${name}</span><span class="qh-caret">⌄</span></button>
+      <button type="button" class="qh-account-btn" aria-label="사용자 메뉴"><span class="qh-avatar">${name.charAt(0)||"사"}</span><span class="qh-name">${name}</span><span class="qh-role">${role}</span><span class="qh-caret">⌄</span></button>
       <div class="qh-menu"><button type="button" data-act="pw">비밀번호 변경</button><button type="button" data-act="logout">로그아웃</button></div>
     </div>
+    <button type="button" class="qh-btn qh-settings" aria-label="설정">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5v-3l-2-.7-.7-1.6 1-1.9-2.1-2.1-1.9 1-1.6-.7-.7-2h-3l-.7 2-1.6.7-1.9-1-2.1 2.1 1 1.9-.7 1.6-2 .7v3l2 .7.7 1.6-1 1.9 2.1 2.1 1.9-1 1.6.7.7 2h3l.7-2 1.6-.7 1.9 1 2.1-2.1-1-1.9.7-1.6z"></path></svg>
+    </button>
+    <button type="button" class="qh-btn qh-all" aria-label="전체 메뉴">
+      <svg viewBox="0 0 24 24" aria-hidden="true" style="stroke:none;fill:currentColor"><circle cx="5" cy="5" r="1.5"></circle><circle cx="12" cy="5" r="1.5"></circle><circle cx="19" cy="5" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="19" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle><circle cx="19" cy="19" r="1.5"></circle></svg>
+    </button>
   `;
   document.body.appendChild(header);
 
@@ -166,7 +172,10 @@ function build(){
   header.querySelector(".qh-account-btn").onclick=e=>{e.stopPropagation();acc.classList.toggle("open");};
   header.querySelector('[data-act="pw"]').onclick=()=>triggerAccount("비밀번호 변경");
   header.querySelector('[data-act="logout"]').onclick=()=>triggerAccount("로그아웃");
-  document.addEventListener("click",e=>{if(!acc.contains(e.target))acc.classList.remove("open");});};
+  document.addEventListener("click",e=>{if(!acc.contains(e.target))acc.classList.remove("open");});
+
+  header.querySelector(".qh-settings").onclick=()=>navigate("members");
+  header.querySelector(".qh-all").onclick=()=>{side.dispatchEvent(new MouseEvent("mouseenter",{bubbles:false}));};
 
   function tick(){
     const now=new Date(),d=["일","월","화","수","목","금","토"];
