@@ -23,12 +23,14 @@
 #qmes-workorder-erp-list-v1 .qerp-btn,#qmes-workorder-erp-list-v1 .qerp-filter-actions button{height:30px;border:1px solid #cfd6de;background:#fff;border-radius:3px;padding:0 11px;font-size:10px;font-weight:700;color:#475767;cursor:pointer}
 #qmes-workorder-erp-list-v1 .qerp-btn.primary,#qmes-workorder-erp-list-v1 .qerp-filter-actions .primary{background:#2189d6;border-color:#2189d6;color:#fff}
 #qmes-workorder-erp-list-v1 .qerp-filter{border:1px solid #d7dde4;background:#fafbfc;margin:8px 0 8px;padding:10px 12px}
-#qmes-workorder-erp-list-v1 .qerp-filter-row{display:grid;grid-template-columns:1.45fr .72fr .95fr .72fr .72fr 1.25fr auto;gap:10px;align-items:end}
+#qmes-workorder-erp-list-v1 .qerp-filter-row{display:grid;grid-template-columns:minmax(330px,1.65fr) .72fr .95fr .72fr .72fr 1.25fr auto;gap:10px;align-items:end}
 #qmes-workorder-erp-list-v1 .qerp-filter label{min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);gap:6px;align-items:center}
+#qmes-workorder-erp-list-v1 .qerp-filter label:first-child{grid-template-columns:58px minmax(280px,1fr)}
 #qmes-workorder-erp-list-v1 .qerp-filter label>span{font-size:10px;font-weight:750;color:#43515d;text-align:right;white-space:nowrap}
 #qmes-workorder-erp-list-v1 .qerp-filter input,#qmes-workorder-erp-list-v1 .qerp-filter select{width:100%;height:30px;border:1px solid #cfd6dd;border-radius:2px;background:#fff;padding:0 8px;color:#2f3d49;font-size:10px;outline:none}
 #qmes-workorder-erp-list-v1 .qerp-filter input:focus,#qmes-workorder-erp-list-v1 .qerp-filter select:focus{border-color:#4aa1df;box-shadow:0 0 0 1px #4aa1df inset}
-#qmes-workorder-erp-list-v1 .qerp-date{display:grid;grid-template-columns:1fr 16px 1fr;align-items:center;gap:2px}
+#qmes-workorder-erp-list-v1 .qerp-date{display:grid;grid-template-columns:minmax(128px,1fr) 18px minmax(128px,1fr);align-items:center;gap:4px}
+#qmes-workorder-erp-list-v1 .qerp-date input{min-width:128px!important;width:100%!important;padding:0 8px!important;font-variant-numeric:tabular-nums}
 #qmes-workorder-erp-list-v1 .qerp-date b{text-align:center;color:#7a8792;font-size:10px;font-weight:600}
 #qmes-workorder-erp-list-v1 .qerp-filter-actions{display:flex;gap:5px}
 #qmes-workorder-erp-list-v1 .qerp-grid-shell{border-top:2px solid #69747e;border-left:1px solid #d5dbe1;border-right:1px solid #d5dbe1;border-bottom:1px solid #d5dbe1;background:#fff}
@@ -79,7 +81,7 @@
 #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(19),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(19){width:120px}
 
 @media(max-width:1200px){
- #qmes-workorder-erp-list-v1 .qerp-filter-row{grid-template-columns:1.3fr .7fr .9fr .7fr .7fr 1fr auto;gap:6px}
+ #qmes-workorder-erp-list-v1 .qerp-filter-row{grid-template-columns:minmax(300px,1.5fr) .7fr .9fr .7fr .7fr 1fr auto;gap:6px}
  #qmes-workorder-erp-list-v1 .qerp-filter label{grid-template-columns:50px minmax(0,1fr)}
 }
 /* workorder print preview final clean shell 2026-09-30 */
