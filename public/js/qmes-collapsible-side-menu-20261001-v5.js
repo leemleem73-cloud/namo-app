@@ -73,6 +73,14 @@ function ensureStyle(){
     html body #${SIDEBAR_ID} .qside-text{opacity:0!important;font-size:12px!important;font-weight:750!important;transition:opacity .12s ease!important}
     html body #${SIDEBAR_ID}:hover .qside-text{opacity:1!important}
     html body #root>div>main{margin-left:54px!important;width:calc(100% - 54px)!important;padding-top:132px!important;background:#eef3f8!important}
+
+    /* 2026-10-02 PC = PAD hard parity / obsolete flow hard block */
+    html body .qmd-shell{padding:22px 24px 28px!important}
+    html body .qmd-kpis{gap:12px!important}
+    html body .qmd-kpi{padding:14px!important}
+    html body .qmd-kpi-label{font-size:14px!important}
+    html body .qmd-kpi-value{font-size:27px!important}
+    html body .qmd-flow-card{display:none!important}
     @media(max-width:1280px){
       html body #${HEADER_ID}{padding-left:66px!important;gap:12px!important}
       html body #${HEADER_ID} .qh-brand{width:220px!important}
@@ -176,6 +184,20 @@ function build(){
     header.querySelector(".qh-clock").textContent=date+"   "+time;
   }
   tick();setInterval(tick,1000);
+
+  const purgeObsoleteFlow=()=>{
+    document.querySelectorAll(".qmd-flow-card").forEach(el=>el.remove());
+    document.querySelectorAll("h1,h2,h3").forEach(h=>{
+      if(String(h.textContent||"").trim()==="QMES 통합 업무 흐름"){
+        const card=h.closest("section,.qmd-card");
+        if(card) card.remove();
+      }
+    });
+  };
+  purgeObsoleteFlow();
+  setTimeout(purgeObsoleteFlow,100);
+  setTimeout(purgeObsoleteFlow,500);
+  new MutationObserver(purgeObsoleteFlow).observe(document.body,{childList:true,subtree:true});
 }
 
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",build,{once:true});else build();
