@@ -77,7 +77,7 @@ function QmdIcon({type}){
 function qmesDashStyles(){
   return <style>{`
     #root>div>main{background:#edf2f7!important;color:#10213b!important}
-    .qmes-main-dash{margin:0!important;padding:0 10px 24px!important;background:#edf2f7!important;min-height:calc(100vh - 172px)!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important}
+    .qmes-main-dash{margin:0!important;padding:18px 10px 24px!important;background:#edf2f7!important;min-height:calc(100vh - 172px)!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important}
     .qmes-main-dash *{box-sizing:border-box}
     .qmd-shell{width:100%!important;padding:24px 38px 30px!important;background:linear-gradient(180deg,#fbfcfe,#f4f7fa)!important;border:1px solid #dbe3ec!important;border-radius:24px 24px 0 0!important;box-shadow:0 10px 24px rgba(31,52,74,.12)!important;overflow:hidden!important}
     .qmd-head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:20px!important;margin-bottom:20px!important}
