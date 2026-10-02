@@ -48,14 +48,16 @@ function ensureStyle(){
     html body #${HEADER_ID} .qh-notice{position:relative!important;width:44px!important;padding:0!important}
     html body #${HEADER_ID} .qh-notice-dot{position:absolute!important;top:5px!important;right:5px!important;width:9px!important;height:9px!important;border:2px solid #fff!important;border-radius:999px!important;background:#ef3038!important;box-sizing:content-box!important}
     html body #${HEADER_ID} .qh-account{position:relative!important;min-width:170px!important;height:48px!important;flex:0 0 auto!important;margin-top:0!important}
-    html body #${HEADER_ID} .qh-account-btn{width:100%!important;height:48px!important;padding:0 6px!important;display:grid!important;grid-template-columns:40px minmax(112px,1fr) 14px!important;grid-template-rows:25px 19px!important;column-gap:9px!important;align-items:center!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;text-align:left!important;cursor:pointer!important}
+    html body #${HEADER_ID} .qh-account-btn{width:100%!important;height:48px!important;padding:0 6px!important;display:grid!important;grid-template-columns:40px minmax(112px,1fr) 14px!important;grid-template-rows:48px!important;column-gap:9px!important;align-items:center!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;text-align:left!important;cursor:pointer!important}
     html body #${HEADER_ID} .qh-account-btn:hover{background:rgba(255,255,255,.12)!important}
     html body #${HEADER_ID} .qh-avatar{grid-column:1!important;grid-row:1 / span 2!important;width:40px!important;height:40px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.94)!important;color:#506a82!important;font-weight:950!important;text-shadow:none!important;border:1px solid rgba(255,255,255,.72)!important}
     html body #${HEADER_ID} .qh-name{grid-column:2!important;grid-row:1!important;font-size:14px!important;font-weight:950!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
     html body #${HEADER_ID} .qh-role{grid-column:2!important;grid-row:2!important;font-size:10.5px!important;font-weight:700!important;color:rgba(255,255,255,.87)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-    html body #${HEADER_ID} .qh-caret{grid-column:3!important;grid-row:1 / span 2!important;font-size:11px!important}
+    html body #${HEADER_ID} .qh-caret{grid-column:3!important;grid-row:1!important;font-size:11px!important}
     html body #${HEADER_ID} .qh-menu{position:absolute!important;top:52px!important;right:0!important;min-width:170px!important;display:none!important;padding:6px!important;border-radius:10px!important;background:rgba(16,39,62,.96)!important;box-shadow:0 14px 34px rgba(8,22,38,.30)!important}
     html body #${HEADER_ID} .qh-account.open .qh-menu{display:block!important}
+    html body #${HEADER_ID} .qh-role{display:none!important}
+    html body #${HEADER_ID} .qh-settings,html body #${HEADER_ID} .qh-all{display:none!important}
     html body #${HEADER_ID} .qh-menu button{width:100%!important;height:36px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#fff!important;text-align:left!important;padding:0 11px!important;font-size:12px!important;font-weight:750!important}
     html body #${HEADER_ID} .qh-menu button:hover{background:rgba(255,255,255,.12)!important}
     html body #${SIDEBAR_ID}{
@@ -132,15 +134,10 @@ function build(){
       <span class="qh-notice-dot" aria-hidden="true"></span>
     </button>
     <div class="qh-account">
-      <button type="button" class="qh-account-btn" aria-label="사용자 메뉴"><span class="qh-avatar">${name.charAt(0)||"사"}</span><span class="qh-name">${name}</span><span class="qh-role">${role}</span><span class="qh-caret">⌄</span></button>
+      <button type="button" class="qh-account-btn" aria-label="사용자 메뉴"><span class="qh-avatar">${name.charAt(0)||"사"}</span><span class="qh-name">${name}</span><span class="qh-caret">⌄</span></button>
       <div class="qh-menu"><button type="button" data-act="pw">비밀번호 변경</button><button type="button" data-act="logout">로그아웃</button></div>
     </div>
-    <button type="button" class="qh-btn qh-settings" aria-label="설정">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5v-3l-2-.7-.7-1.6 1-1.9-2.1-2.1-1.9 1-1.6-.7-.7-2h-3l-.7 2-1.6.7-1.9-1-2.1 2.1 1 1.9-.7 1.6-2 .7v3l2 .7.7 1.6-1 1.9 2.1 2.1 1.9-1 1.6.7.7 2h3l.7-2 1.6-.7 1.9 1 2.1-2.1-1-1.9.7-1.6z"></path></svg>
-    </button>
-    <button type="button" class="qh-btn qh-all" aria-label="전체 메뉴">
-      <svg viewBox="0 0 24 24" aria-hidden="true" style="stroke:none;fill:currentColor"><circle cx="5" cy="5" r="1.5"></circle><circle cx="12" cy="5" r="1.5"></circle><circle cx="19" cy="5" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="19" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle><circle cx="19" cy="19" r="1.5"></circle></svg>
-    </button>
+
   `;
   document.body.appendChild(header);
 
@@ -172,10 +169,7 @@ function build(){
   header.querySelector(".qh-account-btn").onclick=e=>{e.stopPropagation();acc.classList.toggle("open");};
   header.querySelector('[data-act="pw"]').onclick=()=>triggerAccount("비밀번호 변경");
   header.querySelector('[data-act="logout"]').onclick=()=>triggerAccount("로그아웃");
-  document.addEventListener("click",e=>{if(!acc.contains(e.target))acc.classList.remove("open");});
-
-  header.querySelector(".qh-settings").onclick=()=>navigate("members");
-  header.querySelector(".qh-all").onclick=()=>{side.dispatchEvent(new MouseEvent("mouseenter",{bubbles:false}));};
+  document.addEventListener("click",e=>{if(!acc.contains(e.target))acc.classList.remove("open");});};
 
   function tick(){
     const now=new Date(),d=["일","월","화","수","목","금","토"];
