@@ -333,3 +333,63 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
 #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(4){
   transform:translateX(-8px)!important;
 }
+
+/* Work order detail preview light ERP style - 2026-10-02 */
+.qmes-modal-backdrop:has(.qmes-wo-detail-preview){
+  background:rgba(15,23,42,.22)!important;
+  backdrop-filter:none!important;
+}
+.qmes-wo-viewer.qmes-wo-detail-preview{
+  background:#fff!important;
+  color:#253443!important;
+  border:1px solid #d7dfe7!important;
+  box-shadow:0 16px 40px rgba(15,23,42,.18)!important;
+}
+.qmes-wo-detail-preview .qmes-wo-viewer-head{
+  background:#fff!important;
+  border-bottom:1px solid #d9e0e6!important;
+  color:#253443!important;
+}
+.qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-100,
+.qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-500{
+  color:#253443!important;
+}
+.qmes-wo-detail-preview .qmes-modal-close{
+  background:#fff!important;
+  color:#506273!important;
+  border:1px solid #cfd8e1!important;
+}
+.qmes-wo-detail-preview .qmes-wo-preview-edit-btn{
+  background:#fff!important;
+  color:#3f5265!important;
+  border:1px solid #cfd8e1!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert{
+  background:#fff!important;
+  color:#253443!important;
+  box-shadow:none!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert table,
+.qmes-wo-detail-preview .qmes-issued-preview-cert thead,
+.qmes-wo-detail-preview .qmes-issued-preview-cert tbody,
+.qmes-wo-detail-preview .qmes-issued-preview-cert tr,
+.qmes-wo-detail-preview .qmes-issued-preview-cert th,
+.qmes-wo-detail-preview .qmes-issued-preview-cert td{
+  background:#fff!important;
+  color:#334155!important;
+  border-color:#cfd8e1!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert thead th,
+.qmes-wo-detail-preview .qmes-issued-preview-cert tfoot th,
+.qmes-wo-detail-preview .qmes-issued-preview-cert tfoot td{
+  background:#f4f6f8!important;
+  color:#2f4051!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-sky-300,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-emerald-300,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-slate-100,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-slate-300,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-slate-400,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-slate-500{
+  color:#334155!important;
+}
