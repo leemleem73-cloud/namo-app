@@ -122,6 +122,10 @@
     var paths={order:'<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/>',plan:'<path d="M3 21V9l6 3V8l6 3V3h6v18H3Z"/><path d="M7 17h2m4 0h2m3 0h1"/>',material:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9m-4-14 8 4.5"/>',progress:'<path d="M4 20h16M7 16v-4m5 4V8m5 8V4"/>',shipping:'<path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 21h4"/>',arrow:'<path d="m9 6 6 6-6 6"/>'};
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(paths[type]||paths.bell)+'</svg>';
   }
+  function dashboardTodayLabel(){
+    var d=new Date(),days=["일","월","화","수","목","금","토"];
+    return d.getFullYear()+"년 "+String(d.getMonth()+1).padStart(2,"0")+"월 "+String(d.getDate()).padStart(2,"0")+"일 ("+days[d.getDay()]+")";
+  }
   function markup(data){
     var shortageNames=data.shortages.map(function(x){return x.name;}),shortageLabel=data.shortages.slice(0,3).map(function(x){return x.name;}).join(" · ")||"부족 원료 없음";
     var rowsHtml=data.tableRows.length?data.tableRows.map(function(r){var d=rowDate(r),status=productionStatus(r,shortageNames);return '<tr><td>'+esc(d?d.slice(5):"-")+'</td><td>'+esc(batchCustomer(r))+'</td><td>'+esc(batchProduct(r))+'</td><td><button type="button" class="ned-link" data-tab="prod" data-menu="productionMenu">'+esc(batchLot(r)||"-")+'</button></td><td class="ned-quantity">'+esc(fmt(batchPlan(r),1))+' <small>kg</small></td><td>'+statusBadge(status)+'</td></tr>';}).join(""):'<tr><td colspan="6" class="ned-empty">이번 주 등록된 생산계획이 없습니다.</td></tr>';
@@ -139,44 +143,46 @@
     var qualityRate=(q.rate||0).toFixed(1);
     var qualityBlock='<div class="ned-quality-body"><div class="ned-quality-ring" style="--rate:'+qualityRate+'"><div><strong>'+qualityRate+'%</strong><span>OQC 합격률</span></div></div><div class="ned-quality-list"><p><i class="green"></i><span>OQC 합격</span><b>'+q.oqcPass+'건</b></p><p><i class="red"></i><span>OQC 불합격</span><b>'+q.oqcFail+'건</b></p><p><i class="blue"></i><span>PQC 완료</span><b>'+q.pqcDone+'건</b></p><p><i class="orange"></i><span>PQC 대기</span><b>'+q.pqcPending+'건</b></p></div></div>';
     var monthlyBlock='<div class="ned-monthly-body"><div class="ned-month-summary"><strong>'+esc(fmt(ms.total,1))+' <small>kg</small></strong><span>'+esc(ms.month)+' 누적 출하량</span></div><div class="ned-month-chart">'+shipBars+'</div></div>';
-    return '<div class="ned-page-head"><div><h1>종합 대시보드</h1><p>QMES 수주·생산·구매·품질·출하 통합 현황</p></div></div>'+
+    return '<div class="ned-page-head"><div><h1>종합 대시보드</h1><p>QMES 수주·생산·구매·품질·출하 통합 현황</p></div><div class="ned-page-date"><span>'+esc(dashboardTodayLabel())+'</span><button type="button" aria-label="오늘">오늘</button></div></div>'+
       '<section class="ned-kpis" aria-label="주요 현황">'+cards+'</section>'+
       '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기 '+icon("arrow")+'</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th class="ned-quantity">계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>즉시 처리 업무</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>'+
       '<section class="ned-insight-row"><div class="ned-panel ned-quality-panel"><header><h2>품질 현황</h2><button type="button" data-tab="oqc" data-menu="qualityMenu">전체보기 '+icon("arrow")+'</button></header>'+qualityBlock+'</div><div class="ned-panel ned-monthly-panel"><header><h2>'+esc(ms.month)+' 월간 출하 현황</h2><button type="button" data-tab="erpShipping">전체보기 '+icon("arrow")+'</button></header>'+monthlyBlock+'</div></section>';
   }
   var dashboardCss=`
-  .namo-enterprise-dashboard{--ink:#182b45;--muted:#738197;--line:#e2e8f0;--bg:#f4f6f9;min-height:0;margin:-20px -24px 0;padding:18px 24px 24px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
+  .namo-enterprise-dashboard{--ink:#182b45;--muted:#738197;--line:#e2e8f0;--bg:#f4f6f9;min-height:0;margin:-22px -24px 0;padding:10px 18px 16px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
   .namo-enterprise-dashboard *{box-sizing:border-box}
   .namo-enterprise-dashboard button{font-family:inherit}
   .namo-enterprise-dashboard svg{width:20px;height:20px;flex:none}
-  .namo-enterprise-dashboard .ned-page-head{min-height:66px;display:flex;align-items:center;padding:0 0 16px}
-  .namo-enterprise-dashboard .ned-page-head h1{margin:0;font-size:25px;line-height:1.25;font-weight:750;letter-spacing:-.8px;color:var(--ink)}
-  .namo-enterprise-dashboard .ned-page-head p{margin:6px 0 0;font-size:12px;color:var(--muted);font-weight:450}
-  .namo-enterprise-dashboard .ned-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:0 0 20px}
-  .namo-enterprise-dashboard .ned-kpis article{--accent:#416eac;--tint:#edf3fa;position:relative;min-width:0;height:140px;padding:16px 19px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(24,43,69,.035);overflow:hidden}
+  .namo-enterprise-dashboard .ned-page-head{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 10px}
+  .namo-enterprise-dashboard .ned-page-head h1{margin:0;font-size:24px;line-height:1.25;font-weight:750;letter-spacing:-.8px;color:var(--ink)}
+  .namo-enterprise-dashboard .ned-page-head p{margin:4px 0 0;font-size:11px;color:var(--muted);font-weight:450}
+  .namo-enterprise-dashboard .ned-page-date{display:flex;align-items:center;gap:10px;color:#718096;font-size:10px;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-page-date button{height:30px;padding:0 11px;border:1px solid #dbe3ec;border-radius:7px;background:#fff;color:#536a87;font-size:10px;font-weight:600;cursor:default}
+  .namo-enterprise-dashboard .ned-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:0 0 12px}
+  .namo-enterprise-dashboard .ned-kpis article{--accent:#416eac;--tint:#edf3fa;position:relative;min-width:0;height:112px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(24,43,69,.035);overflow:hidden}
   .namo-enterprise-dashboard .ned-kpis article.orange{--accent:#ad7938;--tint:#faf4ea}
   .namo-enterprise-dashboard .ned-kpis article.red{--accent:#b65a64;--tint:#faf0f2}
   .namo-enterprise-dashboard .ned-kpis article.green{--accent:#368773;--tint:#edf6f2}
   .namo-enterprise-dashboard .ned-kpis article.slate{--accent:#66758c;--tint:#f0f3f7}
-  .namo-enterprise-dashboard .ned-metric-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+  .namo-enterprise-dashboard .ned-metric-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:26px}
   .namo-enterprise-dashboard .ned-metric-head>span{font-size:12px;font-weight:600;letter-spacing:-.2px;color:#566880}
-  .namo-enterprise-dashboard .ned-metric-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+  .namo-enterprise-dashboard .ned-metric-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
   .namo-enterprise-dashboard .ned-metric-icon svg{width:19px;height:19px}
-  .namo-enterprise-dashboard .ned-kpis strong{display:block;margin-top:10px;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.8px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-kpis strong{display:block;margin-top:5px;font-size:27px;line-height:1.15;font-weight:700;letter-spacing:-.8px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
   .namo-enterprise-dashboard .ned-kpis strong small{font-size:12px;letter-spacing:0;font-weight:500;color:#7b899c;margin-left:3px}
-  .namo-enterprise-dashboard .ned-kpis p{margin:9px 0 0;color:#7b889a;font-size:10.5px;line-height:1.4;font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .namo-enterprise-dashboard .ned-kpis p{margin:5px 0 0;color:#7b889a;font-size:10.5px;line-height:1.4;font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .namo-enterprise-dashboard .ned-panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 14px rgba(24,43,69,.025);overflow:hidden}
-  .namo-enterprise-dashboard .ned-panel>header{position:static!important;min-height:60px;height:auto!important;padding:13px 20px;display:flex!important;align-items:center;gap:12px;background:#fff!important;border:0;border-bottom:1px solid #edf1f5;box-shadow:none!important}
+  .namo-enterprise-dashboard .ned-panel>header{position:static!important;min-height:48px;height:auto!important;padding:9px 16px;display:flex!important;align-items:center;gap:12px;background:#fff!important;border:0;border-bottom:1px solid #edf1f5;box-shadow:none!important}
   .namo-enterprise-dashboard .ned-panel h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
   .namo-enterprise-dashboard .ned-panel header>span,.namo-enterprise-dashboard .ned-panel header>button{margin-left:auto}
   .namo-enterprise-dashboard .ned-panel header>span{font-size:11px;font-weight:600;color:#526b8f;background:#f0f4f9;border-radius:7px;padding:5px 8px}
   .namo-enterprise-dashboard .ned-panel header button{height:32px;padding:0 10px;border:1px solid #e1e7ef;border-radius:7px;background:#fff;color:#5f7390;font-size:11px;font-weight:550;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
   .namo-enterprise-dashboard .ned-panel header button svg{width:13px;height:13px}
-  .namo-enterprise-dashboard .ned-bottom{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(310px,1fr);gap:18px;align-items:stretch}
+  .namo-enterprise-dashboard .ned-bottom{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(310px,1fr);gap:14px;align-items:stretch}
   .namo-enterprise-dashboard .ned-table-wrap{overflow:auto;scrollbar-width:none;-ms-overflow-style:none}
   .namo-enterprise-dashboard .ned-panel table{width:100%;border-collapse:collapse;font-size:12px}
-  .namo-enterprise-dashboard .ned-panel th{height:40px;padding:10px 14px;background:#f8fafc;color:#758398;text-align:left;font-size:11px;font-weight:550;white-space:nowrap;border-bottom:1px solid #edf1f5}
-  .namo-enterprise-dashboard .ned-panel td{height:48px;padding:10px 14px;border-top:1px solid #f0f3f6;color:#40536d;font-weight:450;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-panel th{height:34px;padding:7px 12px;background:#f8fafc;color:#758398;text-align:left;font-size:11px;font-weight:550;white-space:nowrap;border-bottom:1px solid #edf1f5}
+  .namo-enterprise-dashboard .ned-panel td{height:39px;padding:7px 12px;border-top:1px solid #f0f3f6;color:#40536d;font-weight:450;white-space:nowrap}
   .namo-enterprise-dashboard .ned-panel tbody tr:hover{background:#f8fafc}
   .namo-enterprise-dashboard .ned-panel .ned-quantity{text-align:right;font-variant-numeric:tabular-nums}
   .namo-enterprise-dashboard .ned-quantity small{font-size:10px;color:#8190a3}
@@ -186,8 +192,8 @@
   .namo-enterprise-dashboard .ned-status:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
   .namo-enterprise-dashboard .ned-status.blue{color:#4976ad;background:#eef4fb}.namo-enterprise-dashboard .ned-status.green{color:#3f8673;background:#eef6f2}.namo-enterprise-dashboard .ned-status.orange{color:#a47a44;background:#faf5ec}.namo-enterprise-dashboard .ned-status.red{color:#b45c68;background:#fbf0f2}
   .namo-enterprise-dashboard .ned-empty{padding:52px 18px!important;text-align:center!important;color:#7b899c!important}
-  .namo-enterprise-dashboard .ned-tasks{display:grid;gap:0;padding:3px 18px 8px}
-  .namo-enterprise-dashboard .ned-task{--accent:#587ca9;--tint:#eff4fa;width:100%;min-height:70px;display:flex;align-items:center;gap:10px;padding:12px 0;border:0;border-bottom:1px solid #f0f3f6;border-radius:0;text-align:left;cursor:pointer;background:#fff;color:var(--ink)}
+  .namo-enterprise-dashboard .ned-tasks{display:grid;gap:0;padding:2px 14px 5px}
+  .namo-enterprise-dashboard .ned-task{--accent:#587ca9;--tint:#eff4fa;width:100%;min-height:54px;display:flex;align-items:center;gap:9px;padding:7px 0;border:0;border-bottom:1px solid #f0f3f6;border-radius:0;text-align:left;cursor:pointer;background:#fff;color:var(--ink)}
   .namo-enterprise-dashboard .ned-task:last-child{border-bottom:0}
   .namo-enterprise-dashboard .ned-task.red{--accent:#b45e68;--tint:#faf0f2}.namo-enterprise-dashboard .ned-task.orange{--accent:#a67d45;--tint:#faf5ec}.namo-enterprise-dashboard .ned-task.green{--accent:#418573;--tint:#eff6f2}.namo-enterprise-dashboard .ned-task.purple{--accent:#7b70a1;--tint:#f3f1f8}
   .namo-enterprise-dashboard .ned-task-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;background:var(--tint);color:var(--accent)}
@@ -198,14 +204,14 @@
   .namo-enterprise-dashboard .ned-task em{font-size:10px;font-style:normal;font-weight:550;white-space:nowrap;color:var(--accent)}
   .namo-enterprise-dashboard .ned-task:hover{background:#fafbfd}
   .namo-enterprise-dashboard .ned-task-empty{padding:52px 12px;text-align:center;color:#7b899c;font-size:12px}
-  .namo-enterprise-dashboard .ned-insight-row{display:grid;grid-template-columns:minmax(320px,.8fr) minmax(0,1.5fr);gap:18px;margin-top:18px}
-  .namo-enterprise-dashboard .ned-quality-body{min-height:190px;padding:18px 22px;display:grid;grid-template-columns:140px 1fr;align-items:center;gap:18px}
-  .namo-enterprise-dashboard .ned-quality-ring{--rate:0;width:126px;height:126px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#2f7be5 calc(var(--rate)*1%),#e9eef5 0);position:relative}
-  .namo-enterprise-dashboard .ned-quality-ring:after{content:"";position:absolute;inset:13px;border-radius:50%;background:#fff}
+  .namo-enterprise-dashboard .ned-insight-row{display:grid;grid-template-columns:minmax(320px,.8fr) minmax(0,1.5fr);gap:14px;margin-top:12px}
+  .namo-enterprise-dashboard .ned-quality-body{min-height:142px;padding:10px 18px;display:grid;grid-template-columns:140px 1fr;align-items:center;gap:18px}
+  .namo-enterprise-dashboard .ned-quality-ring{--rate:0;width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#2f7be5 calc(var(--rate)*1%),#e9eef5 0);position:relative}
+  .namo-enterprise-dashboard .ned-quality-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:#fff}
   .namo-enterprise-dashboard .ned-quality-ring>div{position:relative;z-index:1;text-align:center}.namo-enterprise-dashboard .ned-quality-ring strong{display:block;font-size:24px;font-weight:750;color:#203c61}.namo-enterprise-dashboard .ned-quality-ring span{display:block;margin-top:4px;font-size:10px;color:#8290a2}
   .namo-enterprise-dashboard .ned-quality-list{display:grid;gap:11px}.namo-enterprise-dashboard .ned-quality-list p{margin:0;display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:8px;font-size:11px;color:#617087}.namo-enterprise-dashboard .ned-quality-list p>i{width:7px;height:7px;border-radius:50%}.namo-enterprise-dashboard .ned-quality-list p>i.green{background:#2fa36b}.namo-enterprise-dashboard .ned-quality-list p>i.red{background:#e04455}.namo-enterprise-dashboard .ned-quality-list p>i.blue{background:#347fd5}.namo-enterprise-dashboard .ned-quality-list p>i.orange{background:#e19a32}.namo-enterprise-dashboard .ned-quality-list b{font-size:12px;color:#314a69}
-  .namo-enterprise-dashboard .ned-monthly-body{min-height:190px;padding:16px 22px 18px;display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:end}.namo-enterprise-dashboard .ned-month-summary{align-self:center}.namo-enterprise-dashboard .ned-month-summary strong{display:block;font-size:25px;font-weight:750;color:#203c61;font-variant-numeric:tabular-nums}.namo-enterprise-dashboard .ned-month-summary strong small{font-size:11px;font-weight:550;color:#8290a2}.namo-enterprise-dashboard .ned-month-summary span{display:block;margin-top:6px;font-size:10px;color:#8290a2}
-  .namo-enterprise-dashboard .ned-month-chart{height:135px;display:grid;grid-template-columns:repeat(7,minmax(28px,1fr));gap:10px;align-items:end;border-bottom:1px solid #e7edf4;padding:0 4px 10px}.namo-enterprise-dashboard .ned-month-col{height:124px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}.namo-enterprise-dashboard .ned-month-bars{height:98px;display:flex;align-items:flex-end;justify-content:center}.namo-enterprise-dashboard .ned-month-bars i.done{display:block;width:18px;min-height:5px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#70a9ee,#397bd0)}.namo-enterprise-dashboard .ned-month-col span{font-size:9px;color:#74839a;white-space:nowrap}.namo-enterprise-dashboard .ned-month-col small{font-size:8px;color:#9aa5b3;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-monthly-body{min-height:142px;padding:9px 18px 12px;display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:end}.namo-enterprise-dashboard .ned-month-summary{align-self:center}.namo-enterprise-dashboard .ned-month-summary strong{display:block;font-size:25px;font-weight:750;color:#203c61;font-variant-numeric:tabular-nums}.namo-enterprise-dashboard .ned-month-summary strong small{font-size:11px;font-weight:550;color:#8290a2}.namo-enterprise-dashboard .ned-month-summary span{display:block;margin-top:6px;font-size:10px;color:#8290a2}
+  .namo-enterprise-dashboard .ned-month-chart{height:102px;display:grid;grid-template-columns:repeat(7,minmax(28px,1fr));gap:10px;align-items:end;border-bottom:1px solid #e7edf4;padding:0 4px 10px}.namo-enterprise-dashboard .ned-month-col{height:94px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}.namo-enterprise-dashboard .ned-month-bars{height:70px;display:flex;align-items:flex-end;justify-content:center}.namo-enterprise-dashboard .ned-month-bars i.done{display:block;width:18px;min-height:5px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#70a9ee,#397bd0)}.namo-enterprise-dashboard .ned-month-col span{font-size:9px;color:#74839a;white-space:nowrap}.namo-enterprise-dashboard .ned-month-col small{font-size:8px;color:#9aa5b3;white-space:nowrap}
   @media(max-width:960px){.namo-enterprise-dashboard .ned-insight-row{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-monthly-body{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-month-summary{text-align:left}}
   .namo-enterprise-dashboard button:focus-visible{outline:2px solid #5a83b9;outline-offset:2px}
   /* Hide only dashboard scrollbars; wheel, touch and keyboard scrolling stay usable. */
