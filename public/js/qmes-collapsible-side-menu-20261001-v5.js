@@ -63,7 +63,7 @@ function ensureStyle(){
     html body #${HEADER_ID} .qh-menu button{width:100%!important;height:36px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#fff!important;text-align:left!important;padding:0 11px!important;font-size:12px!important;font-weight:750!important}
     html body #${HEADER_ID} .qh-menu button:hover{background:rgba(255,255,255,.12)!important}
     html body #${SIDEBAR_ID}{
-      position:fixed!important;left:0!important;top:172px!important;bottom:0!important;width:54px!important;z-index:14900!important;
+      position:fixed!important;left:0!important;top:130px!important;bottom:0!important;width:54px!important;z-index:14900!important;
       background:#2e3a4b!important;border-right:0!important;box-shadow:2px 0 8px rgba(21,36,53,.15)!important;overflow:hidden!important;
       transition:width .16s ease!important
     }
