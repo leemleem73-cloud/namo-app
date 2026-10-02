@@ -32,22 +32,22 @@ function ensureStyle(){
     html body #root>div>header{display:none!important}
     html body #${HEADER_ID}{
       position:fixed!important;left:0!important;right:0!important;top:0!important;height:132px!important;z-index:15000!important;
-      display:flex!important;align-items:flex-start!important;gap:16px!important;padding:12px 30px 0 78px!important;box-sizing:border-box!important;
+      display:flex!important;align-items:flex-start!important;gap:12px!important;padding:12px 30px 0 66px!important;box-sizing:border-box!important;
       background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-sharp1") center center/100% 100% no-repeat!important;image-rendering:-webkit-optimize-contrast!important;filter:contrast(1.07) saturate(1.08) brightness(1.02)!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
     }
-    html body #${HEADER_ID} .qh-brand{width:252px!important;height:58px!important;flex:0 0 252px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
+    html body #${HEADER_ID} .qh-brand{width:220px!important;height:58px!important;flex:0 0 220px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
     html body #${HEADER_ID} .qh-logo{width:232px!important;height:auto!important;max-height:54px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))!important}
     html body #${HEADER_ID} .qh-spacer{flex:1 1 auto!important;min-width:10px!important}
-    html body #${HEADER_ID} .qh-clock{min-width:205px!important;height:44px!important;margin-top:3px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:14px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
+    html body #${HEADER_ID} .qh-clock{min-width:175px!important;height:44px!important;margin-top:3px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:12.5px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
     html body #${HEADER_ID} .qh-btn{height:44px!important;min-width:42px!important;margin-top:2px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;font-size:13px!important;font-weight:850!important;cursor:pointer!important;text-shadow:0 1px 2px rgba(0,0,0,.26)!important}
     html body #${HEADER_ID} .qh-btn:hover{background:rgba(255,255,255,.12)!important}
     html body #${HEADER_ID} .qh-btn svg{width:21px!important;height:21px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
     html body #${HEADER_ID} .qh-mobile{min-width:80px!important}
     html body #${HEADER_ID} .qh-notice{position:relative!important;width:44px!important;padding:0!important}
     html body #${HEADER_ID} .qh-notice-dot{position:absolute!important;top:5px!important;right:5px!important;width:9px!important;height:9px!important;border:2px solid #fff!important;border-radius:999px!important;background:#ef3038!important;box-sizing:content-box!important}
-    html body #${HEADER_ID} .qh-account{position:relative!important;min-width:205px!important;height:48px!important;flex:0 0 auto!important;margin-top:0!important}
+    html body #${HEADER_ID} .qh-account{position:relative!important;min-width:170px!important;height:48px!important;flex:0 0 auto!important;margin-top:0!important}
     html body #${HEADER_ID} .qh-account-btn{width:100%!important;height:48px!important;padding:0 6px!important;display:grid!important;grid-template-columns:40px minmax(112px,1fr) 14px!important;grid-template-rows:25px 19px!important;column-gap:9px!important;align-items:center!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;text-align:left!important;cursor:pointer!important}
     html body #${HEADER_ID} .qh-account-btn:hover{background:rgba(255,255,255,.12)!important}
     html body #${HEADER_ID} .qh-avatar{grid-column:1!important;grid-row:1 / span 2!important;width:40px!important;height:40px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:rgba(255,255,255,.94)!important;color:#506a82!important;font-weight:950!important;text-shadow:none!important;border:1px solid rgba(255,255,255,.72)!important}
