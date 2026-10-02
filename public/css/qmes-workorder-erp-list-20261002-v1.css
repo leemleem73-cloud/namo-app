@@ -322,3 +322,14 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
 #qmes-workorder-erp-list-v1 .qerp-filter-actions{
   margin-left:4px!important;
 }
+
+/* ERP filter position fine-tune - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter{
+  padding-left:6px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  margin-left:-4px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(4){
+  transform:translateX(-8px)!important;
+}
