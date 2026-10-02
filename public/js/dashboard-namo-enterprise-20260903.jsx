@@ -144,8 +144,6 @@
       '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기 '+icon("arrow")+'</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th class="ned-quantity">계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>즉시 처리 업무</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>'+
       '<section class="ned-insight-row"><div class="ned-panel ned-quality-panel"><header><h2>품질 현황</h2><button type="button" data-tab="oqc" data-menu="qualityMenu">전체보기 '+icon("arrow")+'</button></header>'+qualityBlock+'</div><div class="ned-panel ned-monthly-panel"><header><h2>'+esc(ms.month)+' 월간 출하 현황</h2><button type="button" data-tab="erpShipping">전체보기 '+icon("arrow")+'</button></header>'+monthlyBlock+'</div></section>';
   }
-
-  }
   var dashboardCss=`
   .namo-enterprise-dashboard{--ink:#182b45;--muted:#738197;--line:#e2e8f0;--bg:#f4f6f9;min-height:0;margin:-20px -24px 0;padding:18px 24px 24px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
   .namo-enterprise-dashboard *{box-sizing:border-box}
