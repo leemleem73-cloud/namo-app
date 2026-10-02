@@ -51,6 +51,19 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
       // Retired inventory movement asset compatibility: old cached index pages may still
       // request this removed script. Return valid no-op JavaScript instead of allowing
       // the SPA fallback HTML to be parsed as JS ("Unexpected token '<'").
+      // Retired QMES shell/ERP assets: old cached PC pages can still request these
+      // removed files. Never let the SPA HTML fallback be parsed as JavaScript.
+      const retiredQmesJs =
+        pathname.startsWith('/js/qmes-erp-') ||
+        (pathname.startsWith('/js/qmes-collapsible-') &&
+         pathname !== '/js/qmes-collapsible-side-menu-20261001-v5.js');
+      if (retiredQmesJs) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return res.send('/* retired cached QMES script: intentionally empty */\n');
+      }
       if (pathname === '/js/inventory-movement-list-clean-20260821.js') {
         res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
