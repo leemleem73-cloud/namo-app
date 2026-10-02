@@ -304,3 +304,21 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
     min-width:56px!important;
   }
 }
+
+/* ERP filter spacing refinement - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  column-gap:16px!important;
+  row-gap:10px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label{
+  column-gap:9px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label>span{
+  padding-right:2px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date{
+  gap:7px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-actions{
+  margin-left:4px!important;
+}
