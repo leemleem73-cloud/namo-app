@@ -39,10 +39,6 @@ function ensureStyle(){
     }
     html body #${HEADER_ID} .qh-brand{width:252px!important;height:58px!important;flex:0 0 252px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:0!important;border:0!important;background:transparent!important;cursor:pointer!important}
     html body #${HEADER_ID} .qh-logo{width:232px!important;height:auto!important;max-height:54px!important;object-fit:contain!important;object-position:left center!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.22))!important}
-    html body #${HEADER_ID} .qh-search{width:310px!important;height:44px!important;flex:0 0 310px!important;margin-top:4px!important;display:flex!important;align-items:center!important;gap:10px!important;padding:0 15px!important;border:1px solid rgba(255,255,255,.34)!important;border-radius:24px!important;background:rgba(235,241,248,.66)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 10px rgba(19,39,62,.10)!important}
-    html body #${HEADER_ID} .qh-search svg{width:21px!important;height:21px!important;flex:none!important;fill:none!important;stroke:#fff!important;stroke-width:2.5!important;stroke-linecap:round!important}
-    html body #${HEADER_ID} .qh-search input{width:100%!important;height:100%!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:14px!important;font-weight:800!important}
-    html body #${HEADER_ID} .qh-search input::placeholder{color:rgba(255,255,255,.95)!important}
     html body #${HEADER_ID} .qh-spacer{flex:1 1 auto!important;min-width:10px!important}
     html body #${HEADER_ID} .qh-clock{min-width:205px!important;height:44px!important;margin-top:3px!important;padding-right:18px!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;border-right:1px solid rgba(255,255,255,.45)!important;font-size:14px!important;font-weight:850!important;letter-spacing:-.2px!important;white-space:nowrap!important;text-shadow:0 1px 2px rgba(0,0,0,.28)!important}
     html body #${HEADER_ID} .qh-btn{height:44px!important;min-width:42px!important;margin-top:2px!important;padding:0 8px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#fff!important;font-size:13px!important;font-weight:850!important;cursor:pointer!important;text-shadow:0 1px 2px rgba(0,0,0,.26)!important}
@@ -82,7 +78,6 @@ function ensureStyle(){
       html body #${HEADER_ID} .qh-brand{width:220px!important}
       html body #${HEADER_ID} .qh-symbol{width:62px!important}
       html body #${HEADER_ID} .qh-ko{font-size:18px!important}
-      html body #${HEADER_ID} .qh-search{width:260px!important}
       html body #${HEADER_ID} .qh-clock{min-width:175px!important;font-size:12.5px!important}
       html body #${HEADER_ID} .qh-account{min-width:170px!important}
     }
@@ -119,10 +114,6 @@ function build(){
     <button type="button" class="qh-brand" aria-label="통합 대시보드">
       <img class="qh-logo" src="/assets/namo-header-logo.svg?v=20261002-headerfix1" alt="나모케미칼 로고">
     </button>
-    <label class="qh-search" aria-label="메뉴 찾기">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-      <input type="search" placeholder="메뉴 찾기" autocomplete="off">
-    </label>
     <div class="qh-spacer"></div>
     <div class="qh-clock"></div>
     <button type="button" class="qh-btn qh-mobile" aria-label="모바일">
@@ -174,14 +165,6 @@ function build(){
   header.querySelector('[data-act="pw"]').onclick=()=>triggerAccount("비밀번호 변경");
   header.querySelector('[data-act="logout"]').onclick=()=>triggerAccount("로그아웃");
   document.addEventListener("click",e=>{if(!acc.contains(e.target))acc.classList.remove("open");});
-
-  const search=header.querySelector(".qh-search input");
-  search.addEventListener("keydown",e=>{
-    if(e.key!=="Enter")return;
-    const q=clean(search.value).toLowerCase();
-    const idx=menu.findIndex(m=>m.label.toLowerCase().includes(q));
-    if(idx>=0){nav.children[idx].click();search.blur();}
-  });
 
   header.querySelector(".qh-settings").onclick=()=>navigate("members");
   header.querySelector(".qh-all").onclick=()=>{side.dispatchEvent(new MouseEvent("mouseenter",{bubbles:false}));};
