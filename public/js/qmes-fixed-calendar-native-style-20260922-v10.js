@@ -66,6 +66,7 @@
     if(!(input instanceof HTMLInputElement)) return false;
     if(input.matches('.qmes-workorder-new-modal input[data-qmes-workorder-date="1"]')) return true;
     if(input.closest(".qmes-sales-ledger-v4 .qrl-date")) return true;
+    if(input.closest("#qmes-workorder-erp-list-v1 .qerp-date")) return true;
     if(input.matches('#qmes-sales-edit-force-v2 input[name="due"]')) return true;
     if(input.matches('.qmes-purchase-ledger-v1 input[data-filter="from"], .qmes-purchase-ledger-v1 input[data-filter="to"], .qmes-purchase-ledger-v1 form[data-role] input[name="orderDate"], .qmes-purchase-ledger-v1 form[data-role] input[name="requested"], .qmes-purchase-ledger-v1 form[data-role] input[name="confirmed"]')) return true;
     if(input.closest("#qmes-sales-new-order-integrated-v11")){
@@ -447,6 +448,7 @@
     root.querySelectorAll?.(
       '.qmes-workorder-new-modal input[data-qmes-workorder-date="1"],'+
       '.qmes-sales-ledger-v4 .qrl-date input,'+
+      '#qmes-workorder-erp-list-v1 .qerp-date input,'+
       '#qmes-sales-edit-force-v2 input[name="due"],'+
       '.qmes-purchase-ledger-v1 input[data-filter="from"],'+
       '.qmes-purchase-ledger-v1 input[data-filter="to"],'+
