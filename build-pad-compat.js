@@ -11,7 +11,7 @@ const OUTPUT_ROOT = path.join(PUBLIC, 'pad-compat');
 const OUTPUT_JS = path.join(OUTPUT_ROOT, 'js');
 const OUTPUT_HTML = path.join(PUBLIC, 'pad-pc.html');
 
-const BUILD_VERSION = '20260921-pc-parity1';
+const BUILD_VERSION = '20261002-pc-pad-unified1';
 const TARGETS = {
   chrome: '55',
   safari: '11',
@@ -131,35 +131,11 @@ function cleanScriptAttributes(attributes) {
 function rewriteHtml() {
   let html = fs.readFileSync(SOURCE_HTML, 'utf8');
 
-  html = html.replace(
-    /<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi,
-    function(match, attrs, code) {
-      if (!String(code || '').trim()) return match;
-      if (/type=(["'])(?:application\/json|application\/ld\+json|text\/template)\1/i.test(attrs || '')) return match;
-      try {
-        const next = transpile(code, 'index-inline.js');
-        return '<script' + cleanScriptAttributes(attrs) + '>\n' + next + '\n</script>';
-      } catch (error) {
-        return match;
-      }
-    }
-  );
-
-  html = html.replace(
-    /<script([^>]*?)\ssrc=(["'])((?:\.\/|\/)?js\/[^"']+)\2([^>]*)><\/script>/gi,
-    function(match, before, quote, src, after) {
-      const parts = src.split('?');
-      let pathname = parts[0].replace(/^\.\//, '').replace(/^\//, '');
-      pathname = pathname.replace(/\.jsx$/i, '.js');
-      const query = parts.length > 1 ? '?' + parts.slice(1).join('?') : '';
-      const attrs = cleanScriptAttributes((before || '') + (after || ''));
-      return '<script' + attrs + ' src="/pad-compat/' + pathname + query + '"></script>';
-    }
-  );
-
+  // PAD desktop mode must use the exact same CSS/JS source as PC.
+  // Only add compatibility polyfills; do not create a second UI bundle.
   html = html.replace(
     /(<meta\s+name=(["'])viewport\2[^>]*>)/i,
-    '$1\n  <script src="/pad-compat/polyfills.js?v=' + BUILD_VERSION + '"></script>'
+    '$1\n  <script src="/pad-compat/polyfills.js?v=20261002-pc-pad-unified1"></script>'
   );
 
   html = html.replace(/<title>[^<]*<\/title>/i, '<title>나모케미칼 QMES</title>');
@@ -171,17 +147,10 @@ function main() {
   fs.rmSync(OUTPUT_ROOT, { recursive: true, force: true });
   ensureDir(OUTPUT_JS);
   writePolyfills();
-  const result = transpileScripts();
   rewriteHtml();
 
-  console.log('[PAD-COMPAT] generated pad-pc.html');
-  console.log('[PAD-COMPAT] transpiled scripts:', result.count);
-  if (result.failures.length) {
-    console.warn('[PAD-COMPAT] fallback copies:', result.failures.length);
-    for (const item of result.failures.slice(0, 20)) {
-      console.warn('[PAD-COMPAT]', item.relative, item.error);
-    }
-  }
+  console.log('[PAD-COMPAT] generated pad-pc.html from the exact PC source');
+  console.log('[PAD-COMPAT] PAD/PC UI source unified');
 }
 
 main();
