@@ -91,6 +91,33 @@
     if(notices.length<4&&oqcPending[0])notices.push({tone:"purple",title:"LOT "+batchLot(oqcPending[0])+" OQC 대기",detail:batchProduct(oqcPending[0]),action:"검사실",tab:"oqc",openMenu:"qualityMenu"});
     return {batches:batches,plans:plans,weekPlans:weekPlans,weekBatches:weekBatches,tableRows:(weekPlans.length?weekPlans:weekBatches).slice().sort(function(a,b){return rowDate(a).localeCompare(rowDate(b));}).slice(0,5),todaySales:todaySales,todayOrderQty:orderQty,todayCustomerCount:customerCount,planQty:planQty,planCount:planBasis.length,actualQty:actualQty,completion:completion,shortages:shortages,shipPending:shipPending,shipPendingQty:shipPendingQty,pqcPending:pqcPending,oqcPending:oqcPending,notices:notices,purchases:purchases};
   }
+  function qualitySummary(){
+    var s=db(),insp=s.insp&&typeof s.insp==="object"?s.insp:{};
+    var oqc=Array.isArray(insp.OQC)?insp.OQC:[],pqc=Array.isArray(insp.PQC)?insp.PQC:[];
+    var oqcPass=oqc.filter(function(r){return isPass(r&&(r.judge||r.status));}).length;
+    var oqcFail=oqc.filter(function(r){return /불합격|부적합|FAIL|NG/i.test(clean(r&&(r.judge||r.status)));}).length;
+    var pqcDone=pqc.filter(function(r){return isPass(r&&(r.judge||r.status));}).length;
+    var pqcPending=pqc.filter(function(r){var v=clean(r&&(r.judge||r.status));return !isPass(v)&&!/불합격|부적합|FAIL|NG/i.test(v);}).length;
+    var total=oqcPass+oqcFail,rate=total>0?oqcPass/total*100:0;
+    return {oqcPass:oqcPass,oqcFail:oqcFail,pqcDone:pqcDone,pqcPending:pqcPending,rate:rate};
+  }
+  function monthlyShipping(){
+    var now=new Date(),y=now.getFullYear(),m=now.getMonth(),days=new Date(y,m+1,0).getDate();
+    var rows=shippingRows(),daily=new Array(days).fill(0);
+    rows.forEach(function(r){
+      var d=dateOnly(r&&(r.shipDate||r.deliveryDate||r.date||r.completedAt));
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;
+      var dt=new Date(d+"T00:00:00");
+      if(dt.getFullYear()===y&&dt.getMonth()===m)daily[dt.getDate()-1]+=shippingQty(r);
+    });
+    var buckets=[],step=Math.ceil(days/7);
+    for(var start=1;start<=days;start+=step){
+      var end=Math.min(days,start+step-1),qty=0;
+      for(var day=start;day<=end;day++)qty+=daily[day-1];
+      buckets.push({label:start===end?String(start):start+"-"+end,qty:qty});
+    }
+    return {month:(m+1)+"월",buckets:buckets,total:daily.reduce(function(a,b){return a+b;},0)};
+  }
   function icon(type){
     var paths={order:'<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/>',plan:'<path d="M3 21V9l6 3V8l6 3V3h6v18H3Z"/><path d="M7 17h2m4 0h2m3 0h1"/>',material:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9m-4-14 8 4.5"/>',progress:'<path d="M4 20h16M7 16v-4m5 4V8m5 8V4"/>',shipping:'<path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 21h4"/>',arrow:'<path d="m9 6 6 6-6 6"/>'};
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(paths[type]||paths.bell)+'</svg>';
@@ -107,9 +134,17 @@
       ["slate","shipping","출하 대기",fmt(data.shipPendingQty,1),"kg","OQC 합격·출하 진행 기준"]
     ];
     var cards=metrics.map(function(m){return '<article class="'+m[0]+'"><div class="ned-metric-head"><span>'+esc(m[2])+'</span><i class="ned-metric-icon">'+icon(m[1])+'</i></div><strong>'+esc(m[3])+' <small>'+esc(m[4])+'</small></strong><p>'+esc(m[5])+'</p></article>';}).join("");
+    var q=qualitySummary(),ms=monthlyShipping(),maxShip=Math.max.apply(null,ms.buckets.map(function(x){return x.qty;}).concat([1]));
+    var shipBars=ms.buckets.map(function(x){var bh=Math.max(6,Math.round(x.qty/maxShip*96));return '<div class="ned-month-col"><div class="ned-month-bars"><i class="done" style="height:'+bh+'px"></i></div><span>'+esc(x.label)+'</span><small>'+esc(fmt(x.qty,1))+'</small></div>';}).join("");
+    var qualityRate=(q.rate||0).toFixed(1);
+    var qualityBlock='<div class="ned-quality-body"><div class="ned-quality-ring" style="--rate:'+qualityRate+'"><div><strong>'+qualityRate+'%</strong><span>OQC 합격률</span></div></div><div class="ned-quality-list"><p><i class="green"></i><span>OQC 합격</span><b>'+q.oqcPass+'건</b></p><p><i class="red"></i><span>OQC 불합격</span><b>'+q.oqcFail+'건</b></p><p><i class="blue"></i><span>PQC 완료</span><b>'+q.pqcDone+'건</b></p><p><i class="orange"></i><span>PQC 대기</span><b>'+q.pqcPending+'건</b></p></div></div>';
+    var monthlyBlock='<div class="ned-monthly-body"><div class="ned-month-summary"><strong>'+esc(fmt(ms.total,1))+' <small>kg</small></strong><span>'+esc(ms.month)+' 누적 출하량</span></div><div class="ned-month-chart">'+shipBars+'</div></div>';
     return '<div class="ned-page-head"><div><h1>종합 대시보드</h1><p>QMES 수주·생산·구매·품질·출하 통합 현황</p></div></div>'+
       '<section class="ned-kpis" aria-label="주요 현황">'+cards+'</section>'+
-      '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기 '+icon("arrow")+'</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th class="ned-quantity">계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>공지사항</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>';
+      '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기 '+icon("arrow")+'</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th class="ned-quantity">계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>즉시 처리 업무</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>'+
+      '<section class="ned-insight-row"><div class="ned-panel ned-quality-panel"><header><h2>품질 현황</h2><button type="button" data-tab="oqc" data-menu="qualityMenu">전체보기 '+icon("arrow")+'</button></header>'+qualityBlock+'</div><div class="ned-panel ned-monthly-panel"><header><h2>'+esc(ms.month)+' 월간 출하 현황</h2><button type="button" data-tab="erpShipping">전체보기 '+icon("arrow")+'</button></header>'+monthlyBlock+'</div></section>';
+  }
+
   }
   var dashboardCss=`
   .namo-enterprise-dashboard{--ink:#182b45;--muted:#738197;--line:#e2e8f0;--bg:#f4f6f9;min-height:0;margin:-20px -24px 0;padding:18px 24px 24px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
@@ -165,6 +200,15 @@
   .namo-enterprise-dashboard .ned-task em{font-size:10px;font-style:normal;font-weight:550;white-space:nowrap;color:var(--accent)}
   .namo-enterprise-dashboard .ned-task:hover{background:#fafbfd}
   .namo-enterprise-dashboard .ned-task-empty{padding:52px 12px;text-align:center;color:#7b899c;font-size:12px}
+  .namo-enterprise-dashboard .ned-insight-row{display:grid;grid-template-columns:minmax(320px,.8fr) minmax(0,1.5fr);gap:18px;margin-top:18px}
+  .namo-enterprise-dashboard .ned-quality-body{min-height:190px;padding:18px 22px;display:grid;grid-template-columns:140px 1fr;align-items:center;gap:18px}
+  .namo-enterprise-dashboard .ned-quality-ring{--rate:0;width:126px;height:126px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#2f7be5 calc(var(--rate)*1%),#e9eef5 0);position:relative}
+  .namo-enterprise-dashboard .ned-quality-ring:after{content:"";position:absolute;inset:13px;border-radius:50%;background:#fff}
+  .namo-enterprise-dashboard .ned-quality-ring>div{position:relative;z-index:1;text-align:center}.namo-enterprise-dashboard .ned-quality-ring strong{display:block;font-size:24px;font-weight:750;color:#203c61}.namo-enterprise-dashboard .ned-quality-ring span{display:block;margin-top:4px;font-size:10px;color:#8290a2}
+  .namo-enterprise-dashboard .ned-quality-list{display:grid;gap:11px}.namo-enterprise-dashboard .ned-quality-list p{margin:0;display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:8px;font-size:11px;color:#617087}.namo-enterprise-dashboard .ned-quality-list p>i{width:7px;height:7px;border-radius:50%}.namo-enterprise-dashboard .ned-quality-list p>i.green{background:#2fa36b}.namo-enterprise-dashboard .ned-quality-list p>i.red{background:#e04455}.namo-enterprise-dashboard .ned-quality-list p>i.blue{background:#347fd5}.namo-enterprise-dashboard .ned-quality-list p>i.orange{background:#e19a32}.namo-enterprise-dashboard .ned-quality-list b{font-size:12px;color:#314a69}
+  .namo-enterprise-dashboard .ned-monthly-body{min-height:190px;padding:16px 22px 18px;display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:end}.namo-enterprise-dashboard .ned-month-summary{align-self:center}.namo-enterprise-dashboard .ned-month-summary strong{display:block;font-size:25px;font-weight:750;color:#203c61;font-variant-numeric:tabular-nums}.namo-enterprise-dashboard .ned-month-summary strong small{font-size:11px;font-weight:550;color:#8290a2}.namo-enterprise-dashboard .ned-month-summary span{display:block;margin-top:6px;font-size:10px;color:#8290a2}
+  .namo-enterprise-dashboard .ned-month-chart{height:135px;display:grid;grid-template-columns:repeat(7,minmax(28px,1fr));gap:10px;align-items:end;border-bottom:1px solid #e7edf4;padding:0 4px 10px}.namo-enterprise-dashboard .ned-month-col{height:124px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}.namo-enterprise-dashboard .ned-month-bars{height:98px;display:flex;align-items:flex-end;justify-content:center}.namo-enterprise-dashboard .ned-month-bars i.done{display:block;width:18px;min-height:5px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#70a9ee,#397bd0)}.namo-enterprise-dashboard .ned-month-col span{font-size:9px;color:#74839a;white-space:nowrap}.namo-enterprise-dashboard .ned-month-col small{font-size:8px;color:#9aa5b3;white-space:nowrap}
+  @media(max-width:960px){.namo-enterprise-dashboard .ned-insight-row{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-monthly-body{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-month-summary{text-align:left}}
   .namo-enterprise-dashboard button:focus-visible{outline:2px solid #5a83b9;outline-offset:2px}
   /* Hide only dashboard scrollbars; wheel, touch and keyboard scrolling stay usable. */
   html:has(.namo-enterprise-dashboard),body:has(.namo-enterprise-dashboard),#root:has(.namo-enterprise-dashboard),#root>div:has(.namo-enterprise-dashboard),#root>div>main:has(.namo-enterprise-dashboard),.namo-enterprise-dashboard{scrollbar-width:none!important;-ms-overflow-style:none!important;scroll-behavior:auto!important;scrollbar-gutter:auto!important}
