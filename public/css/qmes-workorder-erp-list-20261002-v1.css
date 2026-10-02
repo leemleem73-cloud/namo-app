@@ -168,3 +168,24 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
 #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2){
   grid-template-columns:48px minmax(150px,1fr)!important;
 }
+
+/* ERP work-order date range: full date text + fixed calendar owner */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:minmax(390px,1.9fr) minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(260px,1.35fr) auto!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:first-child{
+  grid-template-columns:62px minmax(320px,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date{
+  grid-template-columns:minmax(145px,1fr) 18px minmax(145px,1fr)!important;
+  gap:5px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date input{
+  min-width:145px!important;
+  width:100%!important;
+  height:32px!important;
+  padding:0 34px 0 9px!important;
+  font-size:10px!important;
+  font-variant-numeric:tabular-nums!important;
+  text-overflow:clip!important;
+}
