@@ -1481,7 +1481,8 @@ function IssueWoTab() {
       <div
         className="qmes-modal-backdrop qmes-workorder-new-modal"
         onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
-        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"14px" }}
+        onWheel={(e) => e.stopPropagation()}
+        style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"14px", overscrollBehavior:"contain" }}
       >
         <div
           onMouseDown={startNewModalDrag}
@@ -1507,7 +1508,7 @@ function IssueWoTab() {
             >×</button>
           </div>
 
-          <div style={{ height:"calc(100% - 40px)", overflow:"hidden", padding:"8px 10px 10px", boxSizing:"border-box" }}>
+          <div onWheel={(e) => e.stopPropagation()} style={{ height:"calc(100% - 40px)", overflowY:"auto", overflowX:"hidden", overscrollBehavior:"contain", padding:"8px 10px 10px", boxSizing:"border-box" }}>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"9px", rowGap:"6px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>지시일 <b style={{ color:"#e24b4b" }}>*</b></span>
