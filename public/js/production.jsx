@@ -1508,7 +1508,7 @@ function IssueWoTab() {
           </div>
 
           <div style={{ height:"calc(100% - 40px)", overflow:"hidden", padding:"8px 10px 10px", boxSizing:"border-box" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"9px", rowGap:"6px" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,minmax(0,1fr))", columnGap:"10px", rowGap:"7px" }}>
               <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>지시일 <b style={{ color:"#e24b4b" }}>*</b></span>
                 <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
@@ -1560,11 +1560,18 @@ function IssueWoTab() {
 
               <label style={{ gridColumn:"1/-1", display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>비고</span>
-                <textarea placeholder="작업지시 특이사항을 입력하세요." style={{ minHeight:"34px", maxHeight:"34px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"6px 8px", background:"#fff", color:"#26384a", resize:"vertical", outline:"none" }} />
+                <textarea placeholder="작업지시 특이사항을 입력하세요." style={{ minHeight:"30px", maxHeight:"30px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"6px 8px", background:"#fff", color:"#26384a", resize:"vertical", outline:"none" }} />
               </label>
             </div>
+          </div>
 
-            <div style={{ marginTop:"8px", border:"1px solid #d6e3ed", borderRadius:"10px", background:"#fbfdff", overflow:"hidden" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"18px", height:"32px", padding:"0 10px", borderTop:"1px solid #e5ebf0", borderLeft:"1px solid #e5ebf0", borderRight:"1px solid #e5ebf0", background:"#fff" }}>
+            <span style={{ color:"#168fd0", fontSize:"10px", fontWeight:850, borderBottom:"2px solid #168fd0", height:"32px", display:"inline-flex", alignItems:"center" }}>투입원료</span>
+            <span style={{ color:"#7d8b99", fontSize:"10px", fontWeight:750 }}>공정정보</span>
+            <span style={{ color:"#7d8b99", fontSize:"10px", fontWeight:750 }}>추적정보</span>
+          </div>
+
+          <div style={{ marginTop:0, border:"1px solid #d6e3ed", borderRadius:"0 0 6px 6px", background:"#fbfdff", overflow:"hidden" }}>
               <div style={{ minHeight:"38px", padding:"0 10px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", background:"linear-gradient(180deg,#f9fcff,#f1f7fb)", borderBottom:"1px solid #dbe6ee" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
                   <div style={{ width:"22px", height:"22px", borderRadius:"7px", display:"flex", alignItems:"center", justifyContent:"center", background:"#e9f6ff", color:"#1588c9", border:"1px solid #cae6f7", fontSize:"12px" }}>⌁</div>
@@ -1635,11 +1642,7 @@ function IssueWoTab() {
               </div>
             </div>
 
-            <div style={{ display:"flex", justifyContent:"flex-end", gap:"8px", marginTop:"8px" }}>
-              <button type="button" onClick={() => { setEditingWo(null); setShowIssueForm(false); }} style={{ height:"30px", minWidth:"60px", border:"1px solid #ced9e2", background:"#f8fafc", borderRadius:"7px", padding:"0 12px", fontSize:"9px", fontWeight:800, color:"#506579", cursor:"pointer" }}>취소</button>
-              <button type="button" onClick={issue} style={{ height:"30px", minWidth:"84px", border:"1px solid #168dca", background:"linear-gradient(180deg,#22a4e5,#1387c2)", boxShadow:"0 3px 8px rgba(19,135,194,.18)", borderRadius:"7px", padding:"0 14px", fontSize:"9px", fontWeight:850, color:"#fff", cursor:"pointer" }}>저장하기</button>
-            </div>
-          </div>
+
         </div>
       </div>
       )}
