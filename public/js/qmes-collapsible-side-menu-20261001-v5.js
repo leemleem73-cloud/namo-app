@@ -48,12 +48,11 @@ function ensureStyle(){
     html body #${HEADER_ID} .qh-mobile{min-width:86px!important}
     html body #${HEADER_ID} .qh-notice{position:relative!important;width:40px!important;padding:0!important}
     html body #${HEADER_ID} .qh-notice-dot{position:absolute!important;top:5px!important;right:6px!important;width:6px!important;height:6px!important;border:1.5px solid #fff!important;border-radius:999px!important;background:#ef5966!important;box-sizing:content-box!important}
-    html body #${HEADER_ID} .qh-account{position:relative!important;min-width:170px!important;max-width:260px!important;height:48px!important;flex:0 0 auto!important;margin:0!important}
-    html body #${HEADER_ID} .qh-account-btn{width:100%!important;height:48px!important;padding:3px 9px 3px 5px!important;display:grid!important;grid-template-columns:36px minmax(92px,1fr) 12px!important;grid-template-rows:22px 18px!important;column-gap:10px!important;align-items:center!important;border:1px solid transparent!important;border-radius:12px!important;background:transparent!important;color:#fff!important;font-family:inherit!important;text-align:left!important;cursor:pointer!important;transition:background .15s ease,border-color .15s ease!important}
-    html body #${HEADER_ID} .qh-avatar{grid-column:1!important;grid-row:1 / span 2!important;width:36px!important;height:36px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.07))!important;color:#fff!important;border:1px solid rgba(255,255,255,.52)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 6px rgba(12,27,45,.12)!important}
-    html body #${HEADER_ID} .qh-name{grid-column:2!important;grid-row:1!important;font-size:13.5px!important;font-weight:650!important;line-height:20px!important;letter-spacing:-.15px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-shadow:0 1px 3px rgba(0,0,0,.24)!important}
-    html body #${HEADER_ID} .qh-role{grid-column:2!important;grid-row:2!important;font-size:11px!important;font-weight:450!important;line-height:16px!important;color:rgba(255,255,255,.82)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-    html body #${HEADER_ID} .qh-caret{grid-column:3!important;grid-row:1 / span 2!important;display:flex!important;align-items:center!important;color:rgba(255,255,255,.72)!important}
+    html body #${HEADER_ID} .qh-account{position:relative!important;min-width:170px!important;max-width:360px!important;height:48px!important;flex:0 0 auto!important;margin:0!important}
+    html body #${HEADER_ID} .qh-account-btn{width:100%!important;height:48px!important;padding:3px 9px 3px 5px!important;display:grid!important;grid-template-columns:36px minmax(92px,1fr) 12px!important;grid-template-rows:40px!important;column-gap:10px!important;align-items:center!important;border:1px solid transparent!important;border-radius:12px!important;background:transparent!important;color:#fff!important;font-family:inherit!important;text-align:left!important;cursor:pointer!important;transition:background .15s ease,border-color .15s ease!important}
+    html body #${HEADER_ID} .qh-avatar{grid-column:1!important;grid-row:1!important;width:36px!important;height:36px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.07))!important;color:#fff!important;border:1px solid rgba(255,255,255,.52)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 6px rgba(12,27,45,.12)!important}
+    html body #${HEADER_ID} .qh-name{grid-column:2!important;grid-row:1!important;min-width:0!important;font-size:13.5px!important;font-weight:650!important;line-height:20px!important;letter-spacing:-.15px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-shadow:0 1px 3px rgba(0,0,0,.24)!important}
+    html body #${HEADER_ID} .qh-caret{grid-column:3!important;grid-row:1!important;display:flex!important;align-items:center!important;color:rgba(255,255,255,.72)!important}
     html body #${HEADER_ID} .qh-caret svg{width:12px!important;height:12px!important}
     html body #${HEADER_ID} .qh-menu{position:absolute!important;top:54px!important;right:0!important;min-width:178px!important;display:none!important;padding:6px!important;border:1px solid rgba(255,255,255,.15)!important;border-radius:12px!important;background:rgba(16,39,62,.97)!important;box-shadow:0 14px 34px rgba(8,22,38,.25)!important}
     html body #${HEADER_ID} .qh-account.open .qh-menu{display:block!important}
@@ -108,12 +107,12 @@ function triggerAccount(label){
 function syncIdentity(header){
   const user=currentUser();
   const name=clean(user.name)||"사용자";
-  const dept=clean(user.dept||user.department);
+  const dept=clean(user.dept)||clean(user.department);
+  const position=clean(user.position)||clean(user.title)||clean(user.rank)||clean(user.jobTitle);
+  const details=[dept,position].filter(Boolean).join(",");
+  const label=details?name+"("+details+")":name;
   const nameNode=header.querySelector(".qh-name");
-  const deptNode=header.querySelector(".qh-role");
-  if(nameNode.textContent!==name)nameNode.textContent=name;
-  if(deptNode.textContent!==dept)deptNode.textContent=dept;
-  const label=[name,dept].filter(Boolean).join(" / ");
+  if(nameNode.textContent!==label)nameNode.textContent=label;
   const button=header.querySelector(".qh-account-btn");
   if(button.getAttribute("title")!==label){button.setAttribute("title",label);button.setAttribute("aria-label",label+" 사용자 메뉴");}
 }
@@ -127,7 +126,7 @@ function build(){
 
   const header=document.createElement("header");
   header.id=HEADER_ID;
-  header.dataset.qmesHeaderVersion="20261002-account-notice-mobile1";
+  header.dataset.qmesHeaderVersion="20261002-account-dept-position1";
   header.innerHTML=`
     <button type="button" class="qh-brand" aria-label="통합 대시보드">
       <img class="qh-logo" src="https://www.namochemical.com/img/svg/img_logo.svg" alt="나모케미칼 로고">
@@ -137,7 +136,7 @@ function build(){
       <div class="qh-account">
         <button type="button" class="qh-account-btn" aria-label="사용자 메뉴" aria-haspopup="menu" aria-expanded="false" aria-controls="qh-account-menu">
           <span class="qh-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.25 20v-1.75a6.75 6.75 0 0 1 13.5 0V20"></path></svg></span>
-          <span class="qh-name"></span><span class="qh-role"></span>
+          <span class="qh-name"></span>
           <span class="qh-caret" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="m4.5 6.5 3.5 3.5 3.5-3.5"></path></svg></span>
         </button>
         <div class="qh-menu" id="qh-account-menu" role="menu"><button type="button" role="menuitem" data-act="pw">비밀번호 변경</button><button type="button" role="menuitem" data-act="logout">로그아웃</button></div>
