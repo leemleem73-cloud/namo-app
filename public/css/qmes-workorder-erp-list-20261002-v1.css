@@ -189,3 +189,29 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
   font-variant-numeric:tabular-nums!important;
   text-overflow:clip!important;
 }
+
+/* ERP filter final width alignment - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:
+    minmax(390px,1.75fr)
+    minmax(210px,1fr)
+    minmax(210px,1fr)
+    minmax(165px,.82fr)
+    minmax(165px,.82fr)
+    minmax(250px,1.25fr)
+    auto!important;
+  gap:12px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label{
+  grid-template-columns:62px minmax(0,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2),
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3){
+  grid-template-columns:62px minmax(142px,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 #qwf2-customer,
+#qmes-workorder-erp-list-v1 #qwf2-product{
+  min-width:142px!important;
+  width:100%!important;
+  height:32px!important;
+}
