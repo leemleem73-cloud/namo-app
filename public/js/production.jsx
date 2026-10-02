@@ -768,7 +768,7 @@ function IssueWoTab() {
   const [statusVersion, setStatusVersion] = useState(0);
   const issueFormRef = React.useRef(null);
   const [newModalPos, setNewModalPos] = useState({ x:0, y:0 });
-  const [newModalSize, setNewModalSize] = useState({ width:820, height:540 });
+  const [newModalSize, setNewModalSize] = useState({ width:760, height:500 });
   const startNewModalDrag = (e) => {
     if (e.button !== 0) return;
     if (e.target.closest("button,input,select,textarea,[data-qmes-resize]")) return;
@@ -849,7 +849,7 @@ function IssueWoTab() {
     setPlanItems(blankPlanItems(product));
     setPackRows([blankPackRow()]);
     setNewModalPos({ x:0, y:0 });
-    setNewModalSize({ width:820, height:540 });
+    setNewModalSize({ width:760, height:500 });
     setShowIssueForm(true);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -1494,83 +1494,83 @@ function IssueWoTab() {
             title="아래 테두리를 위아래로 드래그하여 창 높이 조절"
             style={{position:"absolute",zIndex:12,left:0,right:0,bottom:0,height:"10px",cursor:"ns-resize",background:"transparent"}}
           />
-          <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"46px", padding:"0 14px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
+          <div style={{ position:"sticky", top:0, zIndex:4, minHeight:"40px", padding:"0 12px", display:"flex", alignItems:"center", justifyContent:"space-between", background:"linear-gradient(180deg,#fafdff 0%,#f3f8fc 100%)", borderBottom:"1px solid #dce7ef", cursor:"move", userSelect:"none" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
-              <div style={{ width:"28px", height:"28px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", background:"#eaf6ff", border:"1px solid #cbe6f8", color:"#1489ca", fontSize:"17px", fontWeight:900 }}>▣</div>
-              <h3 style={{ margin:0, fontSize:"17px", fontWeight:850, color:"#17324a", letterSpacing:"-.2px" }}>신규 작업지시 등록</h3>
+              <div style={{ width:"24px", height:"24px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", background:"#eaf6ff", border:"1px solid #cbe6f8", color:"#1489ca", fontSize:"14px", fontWeight:900 }}>▣</div>
+              <h3 style={{ margin:0, fontSize:"15px", fontWeight:850, color:"#17324a", letterSpacing:"-.2px" }}>신규 작업지시 등록</h3>
             </div>
             <button
               type="button"
               onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
-              style={{ width:"32px", height:"32px", border:0, borderRadius:"8px", background:"transparent", fontSize:"25px", lineHeight:1, color:"#60758a", cursor:"pointer" }}
+              style={{ width:"22px", height:"22px", border:0, borderRadius:"8px", background:"transparent", fontSize:"21px", lineHeight:1, color:"#60758a", cursor:"pointer" }}
               aria-label="신규 작업지시 닫기"
             >×</button>
           </div>
 
-          <div style={{ height:"calc(100% - 46px)", overflow:"auto", padding:"12px 14px 16px", boxSizing:"border-box" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"12px", rowGap:"9px" }}>
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+          <div style={{ height:"calc(100% - 40px)", overflow:"hidden", padding:"8px 10px 10px", boxSizing:"border-box" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,minmax(0,1fr))", columnGap:"9px", rowGap:"6px" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>지시일 <b style={{ color:"#e24b4b" }}>*</b></span>
-                <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
+                <input type="text" data-qmes-workorder-date="1" value={new Date().toISOString().slice(0,10)} readOnly style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>고객사 <b style={{ color:"#e24b4b" }}>*</b></span>
-                <input type="text" defaultValue="" placeholder="고객사명 직접 입력" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", outline:"none" }} />
+                <input type="text" defaultValue="" placeholder="고객사명 직접 입력" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>제품명 <b style={{ color:"#e24b4b" }}>*</b></span>
-                <input type="text" value={form.product} onChange={(e) => setForm({ ...form, product:e.target.value })} placeholder="제품명 직접 입력" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
+                <input type="text" value={form.product} onChange={(e) => setForm({ ...form, product:e.target.value })} placeholder="제품명 직접 입력" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>생산LOT</span>
-                <input value={form.lotNo} onChange={(e) => setForm({ ...form, lotNo:e.target.value.toUpperCase().replace(/\s/g,"") })} placeholder="생산LOT 수기 입력" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", outline:"none" }} />
+                <input value={form.lotNo} onChange={(e) => setForm({ ...form, lotNo:e.target.value.toUpperCase().replace(/\s/g,"") })} placeholder="생산LOT 수기 입력" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>계획수량 <b style={{ color:"#e24b4b" }}>*</b></span>
-                <input type="number" value={form.qty ?? ""} onChange={(e) => setForm({ ...form, qty:e.target.value.replace(/[^0-9.]/g,"") })} placeholder="0" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", outline:"none" }} />
+                <input type="number" value={form.qty ?? ""} onChange={(e) => setForm({ ...form, qty:e.target.value.replace(/[^0-9.]/g,"") })} placeholder="0" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>단위 <b style={{ color:"#e24b4b" }}>*</b></span>
-                <select defaultValue="kg" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }}>
+                <select defaultValue="kg" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }}>
                   <option>kg</option><option>EA</option>
                 </select>
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>생산예정일</span>
-                <input type="text" data-qmes-workorder-date="1" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} placeholder="YYYY-MM-DD" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", outline:"none" }} />
+                <input type="text" data-qmes-workorder-date="1" value={form.prodDate} onChange={(e) => setForm({ ...form, prodDate:e.target.value })} placeholder="YYYY-MM-DD" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", outline:"none" }} />
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>설비</span>
-                <select value="HSM" onChange={() => {}} style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }}>
+                <select value="HSM" onChange={() => {}} style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", fontWeight:700, outline:"none" }}>
                   <option value="HSM">HSM</option>
                 </select>
               </label>
 
-              <label style={{ display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>작성자</span>
-                <input value={form.worker} onChange={(e) => setForm({ ...form, worker:e.target.value })} placeholder="작성자" style={{ height:"34px", border:"1px solid #ccd9e4", borderRadius:"7px", padding:"0 11px", background:"#fff", color:"#26384a", outline:"none" }} />
+                <input value={form.worker} onChange={(e) => setForm({ ...form, worker:e.target.value })} placeholder="작성자" style={{ height:"28px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"0 8px", background:"#fff", color:"#26384a", outline:"none" }} />
               </label>
 
-              <label style={{ gridColumn:"1/-1", display:"flex", flexDirection:"column", gap:"6px", fontSize:"10px", fontWeight:800, color:"#4d6479" }}>
+              <label style={{ gridColumn:"1/-1", display:"flex", flexDirection:"column", gap:"3px", fontSize:"9px", fontWeight:800, color:"#4d6479" }}>
                 <span>비고</span>
-                <textarea placeholder="작업지시 특이사항을 입력하세요." style={{ minHeight:"58px", border:"1px solid #ccd9e4", borderRadius:"8px", padding:"10px 12px", background:"#fff", color:"#26384a", resize:"vertical", outline:"none" }} />
+                <textarea placeholder="작업지시 특이사항을 입력하세요." style={{ minHeight:"34px", maxHeight:"34px", border:"1px solid #ccd9e4", borderRadius:"6px", padding:"6px 8px", background:"#fff", color:"#26384a", resize:"vertical", outline:"none" }} />
               </label>
             </div>
 
-            <div style={{ marginTop:"12px", border:"1px solid #d6e3ed", borderRadius:"10px", background:"#fbfdff", overflow:"hidden" }}>
-              <div style={{ minHeight:"50px", padding:"0 14px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"12px", background:"linear-gradient(180deg,#f9fcff,#f1f7fb)", borderBottom:"1px solid #dbe6ee" }}>
+            <div style={{ marginTop:"8px", border:"1px solid #d6e3ed", borderRadius:"10px", background:"#fbfdff", overflow:"hidden" }}>
+              <div style={{ minHeight:"38px", padding:"0 10px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:"8px", background:"linear-gradient(180deg,#f9fcff,#f1f7fb)", borderBottom:"1px solid #dbe6ee" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"9px" }}>
-                  <div style={{ width:"27px", height:"27px", borderRadius:"7px", display:"flex", alignItems:"center", justifyContent:"center", background:"#e9f6ff", color:"#1588c9", border:"1px solid #cae6f7", fontSize:"14px" }}>⌁</div>
+                  <div style={{ width:"22px", height:"22px", borderRadius:"7px", display:"flex", alignItems:"center", justifyContent:"center", background:"#e9f6ff", color:"#1588c9", border:"1px solid #cae6f7", fontSize:"12px" }}>⌁</div>
                   <div>
-                    <h4 style={{ margin:0, fontSize:"13px", fontWeight:850, color:"#20394f" }}>투입원료</h4>
-                    <div style={{ marginTop:"2px", fontSize:"9px", color:"#7a8fa2", fontWeight:600 }}>작업지시에 투입되는 원료 정보를 등록하세요.</div>
+                    <h4 style={{ margin:0, fontSize:"11px", fontWeight:850, color:"#20394f" }}>투입원료</h4>
+                    <div style={{ marginTop:"2px", fontSize:"8px", color:"#7a8fa2", fontWeight:600 }}>작업지시에 투입되는 원료 정보를 등록하세요.</div>
                   </div>
                 </div>
                 <button
@@ -1580,64 +1580,64 @@ function IssueWoTab() {
                     materialLot:"", containerNo:"", inputStatus:"신규", availableQty:"",
                     base:"", plan:"", actual:"", remaining:null, unit:"kg", note:""
                   }])}
-                  style={{ height:"32px", border:"1px solid #9ccff0", background:"#f3faff", color:"#167fbc", borderRadius:"7px", padding:"0 12px", fontSize:"10px", fontWeight:850, cursor:"pointer" }}
+                  style={{ height:"26px", border:"1px solid #9ccff0", background:"#f3faff", color:"#167fbc", borderRadius:"7px", padding:"0 9px", fontSize:"9px", fontWeight:850, cursor:"pointer" }}
                 >+ 원료 행 추가</button>
               </div>
 
-              <div style={{ padding:"10px", overflowX:"auto" }}>
-                <table style={{ width:"100%", minWidth:"820px", borderCollapse:"separate", borderSpacing:0, fontSize:"9px", background:"#fff", border:"1px solid #dce6ee", borderRadius:"8px", overflow:"hidden" }}>
+              <div style={{ padding:"6px", overflow:"hidden" }}>
+                <table style={{ width:"100%", minWidth:0, tableLayout:"fixed", borderCollapse:"separate", borderSpacing:0, fontSize:"8px", background:"#fff", border:"1px solid #dce6ee", borderRadius:"8px", overflow:"hidden" }}>
                   <thead>
                     <tr>
-                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고","삭제"].map((h) => <th key={h} style={{ height:"30px", borderRight:"1px solid #dce6ee", borderBottom:"1px solid #dce6ee", padding:"4px", background:"#edf6fb", color:"#405c72", textAlign:"center", fontWeight:850 }}>{h}</th>)}
+                      {["No","원재료명","원재료 LOT","투입량","실투입량","비율","단위","비고","삭제"].map((h) => <th key={h} style={{ height:"24px", borderRight:"1px solid #dce6ee", borderBottom:"1px solid #dce6ee", padding:"2px", background:"#edf6fb", color:"#405c72", textAlign:"center", fontWeight:850 }}>{h}</th>)}
                     </tr>
                   </thead>
                   <tbody>
                     {planItems.map((it, idx) => (
                       <tr key={idx}>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px", textAlign:"center", fontWeight:700, color:"#536b7e" }}>{idx+1}</td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px" }}>
-                          <select value={it.name} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,name:e.target.value}:r))} style={{ width:"100%", height:"28px", border:"1px solid #cbd9e4", borderRadius:"5px", background:"#fff", color:"#26384a", padding:"0 6px" }}>
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px", textAlign:"center", fontWeight:700, color:"#536b7e" }}>{idx+1}</td>
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px" }}>
+                          <select value={it.name} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,name:e.target.value}:r))} style={{ width:"100%", height:"22px", border:"1px solid #cbd9e4", borderRadius:"4px", background:"#fff", color:"#26384a", padding:"0 4px", fontSize:"8px" }}>
                             {availableMaterialOptions.filter((n)=>n!=="중간배치 선택").map((name)=><option key={name}>{name}</option>)}
                           </select>
                         </td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px" }}>
-                          <input value={it.materialLot || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,materialLot:e.target.value.toUpperCase()}:r))} style={{ width:"100%", height:"28px", border:"1px solid #cbd9e4", borderRadius:"5px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px" }}>
+                          <input value={it.materialLot || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,materialLot:e.target.value.toUpperCase()}:r))} style={{ width:"100%", height:"22px", border:"1px solid #cbd9e4", borderRadius:"4px", padding:"0 4px", background:"#fff", fontSize:"8px", color:"#26384a" }} />
                         </td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px" }}>
-                          <input value={it.plan ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,plan:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"28px", border:"1px solid #cbd9e4", borderRadius:"5px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px" }}>
+                          <input value={it.plan ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,plan:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"22px", border:"1px solid #cbd9e4", borderRadius:"4px", padding:"0 4px", textAlign:"right", fontSize:"8px", background:"#fff", color:"#26384a" }} />
                         </td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px" }}>
-                          <input value={it.actual ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,actual:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"28px", border:"1px solid #cbd9e4", borderRadius:"5px", padding:"0 7px", textAlign:"right", background:"#fff", color:"#26384a" }} />
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px" }}>
+                          <input value={it.actual ?? ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,actual:e.target.value.replace(/[^0-9.]/g,"")}:r))} style={{ width:"100%", height:"22px", border:"1px solid #cbd9e4", borderRadius:"4px", padding:"0 4px", textAlign:"right", fontSize:"8px", background:"#fff", color:"#26384a" }} />
                         </td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px", textAlign:"center", fontWeight:800, color:"#40566a" }}>
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px", textAlign:"center", fontWeight:800, color:"#40566a" }}>
                           {Number(it.plan) > 0 && Number(it.actual) >= 0 && String(it.actual ?? "").trim() !== "" ? `${((Number(it.actual) / Number(it.plan)) * 100).toFixed(2)}%` : "-"}
                         </td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px", textAlign:"center", fontWeight:700 }}>{it.unit || "kg"}</td>
-                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"4px" }}>
-                          <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"28px", border:"1px solid #cbd9e4", borderRadius:"5px", padding:"0 7px", background:"#fff", color:"#26384a" }} />
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px", textAlign:"center", fontWeight:700 }}>{it.unit || "kg"}</td>
+                        <td style={{ borderRight:"1px solid #e0e8ef", borderBottom:"1px solid #e0e8ef", padding:"2px" }}>
+                          <input value={it.note || ""} onChange={(e) => setPlanItems(planItems.map((r,i)=>i===idx?{...r,note:e.target.value}:r))} style={{ width:"100%", height:"22px", border:"1px solid #cbd9e4", borderRadius:"4px", padding:"0 4px", background:"#fff", fontSize:"8px", color:"#26384a" }} />
                         </td>
-                        <td style={{ borderBottom:"1px solid #e0e8ef", padding:"4px", textAlign:"center" }}>
-                          <button type="button" onClick={() => setPlanItems(planItems.filter((_,i)=>i!==idx))} title="행 삭제" style={{ width:"28px", height:"28px", border:"1px solid #f0b8b8", background:"#fff4f4", color:"#d84a4a", borderRadius:"6px", padding:0, fontSize:"13px", fontWeight:900, cursor:"pointer" }}>×</button>
+                        <td style={{ borderBottom:"1px solid #e0e8ef", padding:"2px", textAlign:"center" }}>
+                          <button type="button" onClick={() => setPlanItems(planItems.filter((_,i)=>i!==idx))} title="행 삭제" style={{ width:"24px", height:"24px", border:"1px solid #f0b8b8", background:"#fff4f4", color:"#d84a4a", borderRadius:"6px", padding:0, fontSize:"11px", fontWeight:900, cursor:"pointer" }}>×</button>
                         </td>
                       </tr>
                     ))}
                     <tr>
-                      <th colSpan="3" style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc", color:"#52697b" }}>계</th>
-                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc" }}>{plannedTotal.toFixed(3)}</th>
-                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
-                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
-                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc" }}>kg</th>
-                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"6px", background:"#f8fafc" }}></th>
-                      <th style={{ padding:"6px", background:"#f8fafc" }}></th>
+                      <th colSpan="3" style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc", color:"#52697b" }}>계</th>
+                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc" }}>{plannedTotal.toFixed(3)}</th>
+                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc" }}>{planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0).toFixed(3)}</th>
+                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc" }}>{plannedTotal > 0 ? `${((planItems.reduce((a,it)=>a+(parseFloat(it.actual)||0),0) / plannedTotal) * 100).toFixed(2)}%` : "-"}</th>
+                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc" }}>kg</th>
+                      <th style={{ borderRight:"1px solid #e0e8ef", padding:"3px", background:"#f8fafc" }}></th>
+                      <th style={{ padding:"3px", background:"#f8fafc" }}></th>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <div style={{ display:"flex", justifyContent:"flex-end", gap:"10px", marginTop:"18px" }}>
-              <button type="button" onClick={() => { setEditingWo(null); setShowIssueForm(false); }} style={{ height:"38px", minWidth:"72px", border:"1px solid #ced9e2", background:"#f8fafc", borderRadius:"7px", padding:"0 16px", fontSize:"11px", fontWeight:800, color:"#506579", cursor:"pointer" }}>취소</button>
-              <button type="button" onClick={issue} style={{ height:"38px", minWidth:"104px", border:"1px solid #168dca", background:"linear-gradient(180deg,#22a4e5,#1387c2)", boxShadow:"0 3px 8px rgba(19,135,194,.18)", borderRadius:"7px", padding:"0 18px", fontSize:"11px", fontWeight:850, color:"#fff", cursor:"pointer" }}>저장하기</button>
+            <div style={{ display:"flex", justifyContent:"flex-end", gap:"8px", marginTop:"8px" }}>
+              <button type="button" onClick={() => { setEditingWo(null); setShowIssueForm(false); }} style={{ height:"30px", minWidth:"60px", border:"1px solid #ced9e2", background:"#f8fafc", borderRadius:"7px", padding:"0 12px", fontSize:"9px", fontWeight:800, color:"#506579", cursor:"pointer" }}>취소</button>
+              <button type="button" onClick={issue} style={{ height:"30px", minWidth:"84px", border:"1px solid #168dca", background:"linear-gradient(180deg,#22a4e5,#1387c2)", boxShadow:"0 3px 8px rgba(19,135,194,.18)", borderRadius:"7px", padding:"0 14px", fontSize:"9px", fontWeight:850, color:"#fff", cursor:"pointer" }}>저장하기</button>
             </div>
           </div>
         </div>
