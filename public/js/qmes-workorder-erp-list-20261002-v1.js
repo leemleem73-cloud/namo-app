@@ -99,7 +99,7 @@ function markup(){
  '</div></section>'+
  '<section class="qerp-grid-shell"><div class="qerp-grid-toolbar"><strong>생산지시 목록</strong><span>작업지시 현황</span></div><div class="qerp-scroll">'+
  '<table class="qerp-table qwf2-table"><thead><tr><th>No</th><th>지시일</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT NO.</th><th>계획수량</th><th>단위</th><th>생산예정일</th><th>설비</th><th>투입계획량</th><th>실투입량</th><th>생산수량</th><th>수율</th><th>PQC</th><th>진행상태</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody></tbody></table></div><div class="qrl-foot"></div></section>'+
- '<section class="qerp-detail"><div class="qerp-tabs"><button class="active" type="button">공정경로</button><button type="button">소요자재</button><button type="button">추적정보</button></div><div class="qerp-detail-grid"><div class="qerp-detail-head"><span>공정번호</span><span>공정</span><span>작업장</span><span>구분</span><span>지시수량</span><span>실적수량</span><span>생산설비</span><span>작업팀</span><span>작업조</span><span>비고</span></div><div class="qerp-empty">작업지시번호를 선택하면 상세정보가 표시됩니다.</div></div></section>';
+ '';
 }
 function findNativeRow(raw){return [].slice.call(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(function(tr){var td=tr.querySelector("td");return clean(td&&td.textContent)===clean(raw)})||null}
 function nativeAction(raw,type){
