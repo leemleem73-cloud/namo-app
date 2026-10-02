@@ -787,6 +787,7 @@ function IssueWoTab() {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
+    if (typeof e.nativeEvent?.stopImmediatePropagation === "function") e.nativeEvent.stopImmediatePropagation();
     const startY=e.clientY;
     const originHeight=newModalSize.height;
     const maxH=Math.max(380, window.innerHeight-28);
@@ -1480,7 +1481,7 @@ function IssueWoTab() {
       {showIssueForm && !editingWo && (
       <div
         className="qmes-modal-backdrop qmes-workorder-new-modal"
-        onClick={() => { setEditingWo(null); setShowIssueForm(false); }}
+        onClick={(e) => e.stopPropagation()}
         onWheel={(e) => e.stopPropagation()}
         style={{ position:"fixed", inset:0, zIndex:2147483000, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", padding:"14px", overscrollBehavior:"contain" }}
       >
