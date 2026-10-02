@@ -86,7 +86,7 @@ function renderTable(){
 }
 function render(){renderCustomers();renderKpis();renderTable()}
 function markup(){
- return '<div class="qerp-head"><div class="qerp-title-wrap"><h1 class="qerp-title">작업지시 관리</h1><span class="qerp-sub">PRODUCTION INSTRUCTION</span></div><div class="qerp-actions">'+
+ return '<div class="qerp-head"><div class="qerp-title-wrap"><h1 class="qerp-title">작업지시 관리</h1></div><div class="qerp-actions">'+
  '<button type="button" class="qerp-btn" data-top="excel-in">엑셀 원료 불러오기</button><button type="button" class="qerp-btn primary" data-top="new">+ 신규 작업지시</button></div></div>'+
  '<section class="qerp-filter"><div class="qerp-filter-row">'+
  '<label><span>지시기간</span><div class="qerp-date"><input id="qwf2-from" type="date" value="2025-01-01"><b>~</b><input id="qwf2-to" type="date" value="2026-12-31"></div></label>'+
