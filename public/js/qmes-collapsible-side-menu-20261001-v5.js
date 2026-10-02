@@ -33,7 +33,7 @@ function ensureStyle(){
     html body #${HEADER_ID}{
       position:fixed!important;left:0!important;right:0!important;top:0!important;height:132px!important;z-index:15000!important;
       display:flex!important;align-items:flex-start!important;gap:16px!important;padding:12px 30px 0 78px!important;box-sizing:border-box!important;
-      background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-final1") center center/cover no-repeat!important;
+      background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-sharp1") center center/100% 100% no-repeat!important;image-rendering:-webkit-optimize-contrast!important;filter:contrast(1.07) saturate(1.08) brightness(1.02)!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
     }
