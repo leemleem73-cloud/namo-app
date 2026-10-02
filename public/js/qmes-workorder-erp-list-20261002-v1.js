@@ -93,7 +93,7 @@ function markup(){
  '<label><span>거래처</span><select id="qwf2-customer"><option value="">전체</option></select></label>'+
  '<label><span>품목명</span><input id="qwf2-product" placeholder="품목명 또는 규격"></label>'+
  '<label><span>진행상태</span><select id="qwf2-status"><option value="">전체</option><option>발행</option><option>생산중</option><option>검사중</option><option>완료</option></select></label>'+
- '<label><span>결재상태</span><select disabled><option>전체</option></select></label>'+
+ ''+
  '<label class="qerp-search"><span>통합검색</span><input id="qwf2-q" placeholder="작업지시번호, 생산LOT, 제품명, 고객사"></label>'+
  '<div class="qerp-filter-actions"><button type="button" class="primary" data-top="search">조회</button><button type="button" data-top="reset">초기화</button></div>'+
  '</div></section>'+
