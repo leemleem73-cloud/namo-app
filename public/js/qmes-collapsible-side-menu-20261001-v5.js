@@ -31,8 +31,8 @@ function ensureStyle(){
   style.textContent=`
     html body #root>div>header{display:none!important}
     html body #${HEADER_ID}{
-      position:fixed!important;left:0!important;right:0!important;top:0!important;height:172px!important;z-index:15000!important;
-      display:flex!important;align-items:flex-start!important;gap:16px!important;padding:16px 30px 0 78px!important;box-sizing:border-box!important;
+      position:fixed!important;left:0!important;right:0!important;top:0!important;height:132px!important;z-index:15000!important;
+      display:flex!important;align-items:flex-start!important;gap:16px!important;padding:12px 30px 0 78px!important;box-sizing:border-box!important;
       background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-final1") center center/cover no-repeat!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
@@ -72,7 +72,7 @@ function ensureStyle(){
     html body #${SIDEBAR_ID} .qside-icon{width:22px!important;min-width:22px!important;height:22px!important;display:grid!important;place-items:center!important;font-size:14px!important;font-weight:900!important}
     html body #${SIDEBAR_ID} .qside-text{opacity:0!important;font-size:12px!important;font-weight:750!important;transition:opacity .12s ease!important}
     html body #${SIDEBAR_ID}:hover .qside-text{opacity:1!important}
-    html body #root>div>main{margin-left:54px!important;width:calc(100% - 54px)!important;padding-top:172px!important;background:#eef3f8!important}
+    html body #root>div>main{margin-left:54px!important;width:calc(100% - 54px)!important;padding-top:132px!important;background:#eef3f8!important}
     @media(max-width:1280px){
       html body #${HEADER_ID}{padding-left:66px!important;gap:12px!important}
       html body #${HEADER_ID} .qh-brand{width:220px!important}
