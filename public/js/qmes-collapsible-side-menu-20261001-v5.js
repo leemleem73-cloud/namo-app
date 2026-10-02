@@ -33,7 +33,7 @@ function ensureStyle(){
     html body #${HEADER_ID}{
       position:fixed!important;left:0!important;right:0!important;top:0!important;height:172px!important;z-index:15000!important;
       display:flex!important;align-items:flex-start!important;gap:16px!important;padding:16px 30px 0 78px!important;box-sizing:border-box!important;
-      background:url("/qmes-login.jpg") center 50%/cover no-repeat!important;
+      background:url("/assets/qmes-header-factory-20261002.webp?v=20261002-final1") center center/cover no-repeat!important;
       color:#fff!important;border:0!important;box-shadow:0 4px 15px rgba(19,41,68,.18)!important;
       font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important
     }
