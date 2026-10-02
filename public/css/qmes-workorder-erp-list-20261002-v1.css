@@ -56,14 +56,6 @@
 #qmes-workorder-erp-list-v1 .qrl-foot{min-height:34px;display:flex;align-items:center;justify-content:center;gap:4px;border-top:1px solid #e1e6ea;background:#fff}
 #qmes-workorder-erp-list-v1 .qrl-page{width:28px;height:24px;border:1px solid #cfd6dc;background:#fff;border-radius:2px;font-size:9px;color:#55636f}
 #qmes-workorder-erp-list-v1 .qrl-page.active{background:#2389d1;border-color:#2389d1;color:#fff}
-#qmes-workorder-erp-list-v1 .qerp-detail{margin-top:8px;border:1px solid #d5dbe1;background:#fff}
-#qmes-workorder-erp-list-v1 .qerp-tabs{height:36px;display:flex;align-items:end;gap:4px;padding:0 8px;border-bottom:1px solid #d5dbe1}
-#qmes-workorder-erp-list-v1 .qerp-tabs button{height:35px;border:0;background:transparent;padding:0 12px;font-size:10px;font-weight:700;color:#687682;border-bottom:2px solid transparent}
-#qmes-workorder-erp-list-v1 .qerp-tabs button.active{color:#1689d2;border-bottom-color:#1689d2}
-#qmes-workorder-erp-list-v1 .qerp-detail-grid{min-height:150px}
-#qmes-workorder-erp-list-v1 .qerp-detail-head{height:34px;display:grid;grid-template-columns:80px 1.2fr 1fr 90px 100px 100px 1fr 90px 90px 1.2fr;border-bottom:1px solid #d6dde4;background:#f7f8f9}
-#qmes-workorder-erp-list-v1 .qerp-detail-head span{display:flex;align-items:center;justify-content:center;border-right:1px solid #dde3e8;font-size:9px;font-weight:750;color:#44535f}
-#qmes-workorder-erp-list-v1 .qerp-empty{height:116px;display:flex;align-items:center;justify-content:center;color:#a0a9b1;font-size:10px}
 #qmes-workorder-erp-list-v1 .qsd-empty{height:120px!important;text-align:center!important;color:#8b97a2!important}
 
 #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(1),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(1){width:42px}
