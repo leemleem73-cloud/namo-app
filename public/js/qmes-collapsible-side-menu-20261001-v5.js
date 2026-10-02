@@ -120,7 +120,7 @@ function build(){
   header.id=HEADER_ID;
   header.innerHTML=`
     <button type="button" class="qh-brand" aria-label="통합 대시보드">
-      <img class="qh-logo" src="/logo.png?v=20261002-leftlogo2" alt="나모케미칼 로고">
+      <img class="qh-logo" src="https://www.namochemical.com/img/svg/img_logo.svg" alt="나모케미칼 로고">
     </button>
     <div class="qh-spacer"></div>
     <div class="qh-clock"></div>
