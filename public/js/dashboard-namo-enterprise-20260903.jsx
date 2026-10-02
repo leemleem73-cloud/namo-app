@@ -1,10 +1,9 @@
-/* Namo Chemical QMES integrated dashboard - MAIN redesign 2026-09-15
- * Dashboard-only visual owner. Global header/sidebar are preserved.
- * KPI and tables use live QMES/local ERP data only; no demo values are hard-coded.
+/* Namo Chemical QMES dashboard - refined visual owner 2026-10-02.
+ * Existing data calculations and navigation are preserved.
+ * Previous dashboard markup/styles are replaced, not layered over.
  */
 (function(){
   "use strict";
-
   var h=React.createElement;
   var clean=function(v){return String(v==null?"":v).trim();};
   var esc=function(v){return String(v==null?"":v).replace(/[&<>"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];});};
@@ -26,7 +25,6 @@
   var shippingQty=function(r){return Math.max(0,num(r&&(r.shipQty!=null?r.shipQty:r.shippingQty!=null?r.shippingQty:r.deliveryQty!=null?r.deliveryQty:r.deliveredQty!=null?r.deliveredQty:r.quantity!=null?r.quantity:r.qty)));};
   var salesQty=function(r){return Math.max(0,num(r&&(r.orderQty!=null?r.orderQty:r.totalQty!=null?r.totalQty:r.quantity!=null?r.quantity:r.qty!=null?r.qty:r.weight)));};
   var tone=function(status){var t=clean(status);if(/부족|지연|불합격|부적합|차단|취소|이상/.test(t))return "red";if(/완료|합격|확보|마감|출하가능/.test(t))return "green";if(/준비|대기|예정|부분|검사/.test(t))return "orange";if(/진행|생산|발주|확정|발행/.test(t))return "blue";return "gray";};
-
   function salesRows(){return storageRows("qmes-erp-sales-v1").length?storageRows("qmes-erp-sales-v1"):storageRows("erp:sales");}
   function shippingRows(){var rows=storageRows("qmes-erp-shipping-v1");if(rows.length)return rows;try{var s=db();if(Array.isArray(s.shipping))return s.shipping;}catch(_e){}return [];}
   function planRows(){
@@ -84,7 +82,6 @@
     return "원료 준비";
   }
   function statusBadge(status){return '<span class="ned-status '+tone(status)+'">'+esc(status||"-")+'</span>';}
-
   function dashboardData(purchases){
     var s=db(),batches=Array.isArray(s.batches)?s.batches.slice():[],plans=planRows(),weekPlans=chooseWeekRows(plans),weekBatches=chooseWeekRows(batches),activeBatches=batches.filter(function(r){return !isDone(r&&r.status);}),sales=salesRows(),ship=shippingRows(),today=localDateKey(new Date()),todaySales=sales.filter(function(r){return !/취소/.test(clean(r.status))&&dateOnly(r.orderDate||r.date||r.createdAt)===today;}),shortages=mrpShortages(activeBatches),pqcPassed=latestPassedLots("PQC"),oqcPassed=latestPassedLots("OQC"),pqcPending=activeBatches.filter(function(r){return batchActual(r)>0&&batchLot(r)&&!pqcPassed.has(batchLot(r));}),oqcPending=activeBatches.filter(function(r){return batchActual(r)>0&&batchLot(r)&&!oqcPassed.has(batchLot(r));}),shipPending=ship.filter(function(r){return !isDone(r.delivery||r.status||r.shipping);}),planBasis=weekPlans.length?weekPlans:weekBatches,progressBasis=weekBatches.length?weekBatches:planBasis,planQty=planBasis.reduce(function(sum,r){return sum+batchPlan(r);},0),actualQty=progressBasis.reduce(function(sum,r){return sum+batchActual(r);},0),completion=planQty>0?Math.min(100,actualQty/planQty*100):0,orderQty=todaySales.reduce(function(sum,r){return sum+salesQty(r);},0),customerCount=new Set(todaySales.map(function(r){return clean(r.customer||r.customerName||r.client||r.accountName);}).filter(Boolean)).size,shipPendingQty=shipPending.reduce(function(sum,r){return sum+shippingQty(r);},0),overdue=purchases.filter(function(r){var due=dateOnly(r.confirmedDueDate||r.expected||r.requestedDueDate||r.due);return due&&due<today&&!/입고완료|마감|취소/.test(clean(r.status));}),notices=[];
     if(shortages[0])notices.push({tone:"red",title:shortages[0].name+" 재고 "+fmt(shortages[0].shortage,1)+"kg 부족",detail:"생산계획 기준 부족 원료 확인",action:"발주 필요",tab:"erpPurchase"});
@@ -94,52 +91,95 @@
     if(notices.length<4&&oqcPending[0])notices.push({tone:"purple",title:"LOT "+batchLot(oqcPending[0])+" OQC 대기",detail:batchProduct(oqcPending[0]),action:"검사실",tab:"oqc",openMenu:"qualityMenu"});
     return {batches:batches,plans:plans,weekPlans:weekPlans,weekBatches:weekBatches,tableRows:(weekPlans.length?weekPlans:weekBatches).slice().sort(function(a,b){return rowDate(a).localeCompare(rowDate(b));}).slice(0,5),todaySales:todaySales,todayOrderQty:orderQty,todayCustomerCount:customerCount,planQty:planQty,planCount:planBasis.length,actualQty:actualQty,completion:completion,shortages:shortages,shipPending:shipPending,shipPendingQty:shipPendingQty,pqcPending:pqcPending,oqcPending:oqcPending,notices:notices,purchases:purchases};
   }
-
-  function markup(data){
-    var shortageNames=data.shortages.map(function(x){return x.name;}),shortageLabel=data.shortages.slice(0,3).map(function(x){return x.name;}).join(" · ")||"부족 원료 없음",flow=[
-      ["수주","고객 PO / 납기","erpSales","","plan"],
-      ["생산계획","월·주·일 계획","erpPlan","","plan"],
-      ["MRP","Recipe 소요량","erpPlan","","plan"],
-      ["구매/발주","부족원료 확보","erpPurchase","","plan"],
-      ["IQC","수입검사","iqc","qualityMenu","core"],
-      ["원재료 재고","RM / 위치 / LOT","inv","","core"],
-      ["작업지시","생산 LOT","woIssue","productionMenu","core"],
-      ["생산공정","계량/배합/충진","prodProcess","productionMenu","core"],
-      ["PQC","공정검사","pqc","qualityMenu","core"],
-      ["OQC / CoA","출하검사","oqc","qualityMenu","core"],
-      ["출하/납품","납품완료","erpShipping","","ship"]
-    ],flowHtml=flow.map(function(x){return '<button type="button" class="ned-flow-step '+x[4]+'" data-tab="'+esc(x[2])+'" data-menu="'+esc(x[3])+'"><b>'+esc(x[0])+'</b><small>'+esc(x[1])+'</small></button>';}).join(""),rowsHtml=data.tableRows.length?data.tableRows.map(function(r){var d=rowDate(r),status=productionStatus(r,shortageNames);return '<tr><td>'+esc(d?d.slice(5):"-")+'</td><td>'+esc(batchCustomer(r))+'</td><td>'+esc(batchProduct(r))+'</td><td><button type="button" class="ned-link" data-tab="prod" data-menu="productionMenu">'+esc(batchLot(r)||"-")+'</button></td><td>'+esc(fmt(batchPlan(r),1))+' kg</td><td>'+statusBadge(status)+'</td></tr>';}).join(""):'<tr><td colspan="6" class="ned-empty">이번 주 등록된 생산계획이 없습니다.</td></tr>',noticeHtml=data.notices.length?data.notices.slice(0,4).map(function(n){return '<button type="button" class="ned-task '+esc(n.tone)+'" data-tab="'+esc(n.tab||"dash")+'" data-menu="'+esc(n.openMenu||"")+'"><span><b>'+esc(n.title)+'</b><small>'+esc(n.detail||"확인 필요")+'</small></span><em>'+esc(n.action||"확인")+'</em></button>';}).join(""):'<div class="ned-task-empty">현재 실행이 필요한 알림이 없습니다.</div>';
-    return '<div class="ned-page-head"><div><h1>종합 대시보드</h1><p>QMES 수주·생산·구매·품질·출하 통합 현황</p></div></div>'+
-      '<section class="ned-kpis">'+
-        '<article class="blue"><span>금일 수주</span><strong>'+esc(fmt(data.todayOrderQty,1))+' <small>kg</small></strong><p>'+esc(data.todaySales.length)+'건 / 고객사 '+esc(data.todayCustomerCount)+'개</p></article>'+
-        '<article class="orange"><span>생산 예정</span><strong>'+esc(fmt(data.planQty,1))+' <small>kg</small></strong><p>금주 작업계획 '+esc(data.planCount)+'건</p></article>'+
-        '<article class="red"><span>MRP 부족 원료</span><strong>'+esc(data.shortages.length)+' <small>품목</small></strong><p>'+esc(shortageLabel)+'</p></article>'+
-        '<article class="green"><span>생산 완료율</span><strong>'+esc(data.completion.toFixed(1))+'<small>%</small></strong><p>계획 대비 생산실적</p></article>'+
-        '<article class="slate"><span>출하 대기</span><strong>'+esc(fmt(data.shipPendingQty,1))+' <small>kg</small></strong><p>OQC 합격·출하 진행 기준</p></article>'+
-      '</section>'+
-      '<section class="ned-panel ned-flow-panel"><header><h2>QMES 통합 업무 흐름</h2><span>파랑 = 기준 / 주황 = 추가</span></header><div class="ned-flow">'+flowHtml+'</div></section>'+
-      '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>실행 필요 알림</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>';
+  function icon(type){
+    var paths={order:'<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/>',plan:'<path d="M3 21V9l6 3V8l6 3V3h6v18H3Z"/><path d="M7 17h2m4 0h2m3 0h1"/>',material:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9m-4-14 8 4.5"/>',progress:'<path d="M4 20h16M7 16v-4m5 4V8m5 8V4"/>',shipping:'<path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 21h4"/>',arrow:'<path d="m9 6 6 6-6 6"/>'};
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'+(paths[type]||paths.bell)+'</svg>';
   }
-
+  function markup(data){
+    var shortageNames=data.shortages.map(function(x){return x.name;}),shortageLabel=data.shortages.slice(0,3).map(function(x){return x.name;}).join(" · ")||"부족 원료 없음";
+    var rowsHtml=data.tableRows.length?data.tableRows.map(function(r){var d=rowDate(r),status=productionStatus(r,shortageNames);return '<tr><td>'+esc(d?d.slice(5):"-")+'</td><td>'+esc(batchCustomer(r))+'</td><td>'+esc(batchProduct(r))+'</td><td><button type="button" class="ned-link" data-tab="prod" data-menu="productionMenu">'+esc(batchLot(r)||"-")+'</button></td><td class="ned-quantity">'+esc(fmt(batchPlan(r),1))+' <small>kg</small></td><td>'+statusBadge(status)+'</td></tr>';}).join(""):'<tr><td colspan="6" class="ned-empty">이번 주 등록된 생산계획이 없습니다.</td></tr>';
+    var noticeHtml=data.notices.length?data.notices.slice(0,4).map(function(n){return '<button type="button" class="ned-task '+esc(n.tone)+'" data-tab="'+esc(n.tab||"dash")+'" data-menu="'+esc(n.openMenu||"")+'"><i class="ned-task-icon">'+icon("bell")+'</i><span><b>'+esc(n.title)+'</b><small>'+esc(n.detail||"확인 필요")+'</small></span><em>'+esc(n.action||"확인")+'</em></button>';}).join(""):'<div class="ned-task-empty">현재 실행이 필요한 알림이 없습니다.</div>';
+    var metrics=[
+      ["blue","order","금일 수주",fmt(data.todayOrderQty,1),"kg",data.todaySales.length+"건 / 고객사 "+data.todayCustomerCount+"개"],
+      ["orange","plan","생산 예정",fmt(data.planQty,1),"kg","금주 작업계획 "+data.planCount+"건"],
+      ["red","material","MRP 부족 원료",String(data.shortages.length),"품목",shortageLabel],
+      ["green","progress","생산 완료율",data.completion.toFixed(1),"%","계획 대비 생산실적"],
+      ["slate","shipping","출하 대기",fmt(data.shipPendingQty,1),"kg","OQC 합격·출하 진행 기준"]
+    ];
+    var cards=metrics.map(function(m){return '<article class="'+m[0]+'"><div class="ned-metric-head"><span>'+esc(m[2])+'</span><i class="ned-metric-icon">'+icon(m[1])+'</i></div><strong>'+esc(m[3])+' <small>'+esc(m[4])+'</small></strong><p>'+esc(m[5])+'</p></article>';}).join("");
+    return '<div class="ned-page-head"><div><h1>종합 대시보드</h1><p>QMES 수주·생산·구매·품질·출하 통합 현황</p></div></div>'+
+      '<section class="ned-kpis" aria-label="주요 현황">'+cards+'</section>'+
+      '<section class="ned-bottom"><div class="ned-panel"><header><h2>금주 생산계획 / 진행현황</h2><button type="button" data-tab="erpPlan">전체보기 '+icon("arrow")+'</button></header><div class="ned-table-wrap"><table><thead><tr><th>생산일</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th class="ned-quantity">계획량</th><th>진행상태</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div></div><div class="ned-panel ned-alert-panel"><header><h2>공지사항</h2><span>'+esc(data.notices.length)+'건</span></header><div class="ned-tasks">'+noticeHtml+'</div></div></section>';
+  }
   var dashboardCss=`
-  .namo-enterprise-dashboard{--ink:#12233a;--muted:#708198;--line:#dbe3ec;--bg:#f2f5f9;min-height:calc(100vh - 90px);margin:-20px -24px -34px;padding:0 24px 34px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
-  .namo-enterprise-dashboard *{box-sizing:border-box}.qmes-ref-brand-mark{display:none!important}
-  .ned-page-head{min-height:94px;display:flex;align-items:center;gap:18px;padding:18px 0 12px}.ned-page-head h1{margin:0;font-size:27px;line-height:1.15;font-weight:950;letter-spacing:-.7px;color:#10233e}.ned-page-head p{margin:8px 0 0;font-size:12px;color:#6f8097;font-weight:600}.ned-panel header button{height:36px;padding:0 13px;border:1px solid #c8d4e2;border-radius:7px;background:#fff;color:#37506c;font-size:11px;font-weight:850;cursor:pointer}
-  .ned-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin:0 0 16px}.ned-kpis article{position:relative;min-width:0;height:122px;padding:22px 18px 16px;border:1px solid #dbe3ec;border-radius:14px;background:#fff;box-shadow:0 6px 18px rgba(15,35,60,.06);overflow:hidden}.ned-kpis article:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#2f6fed}.ned-kpis article.orange{background:#fff2de}.ned-kpis article.orange:before{background:#f59e0b}.ned-kpis article.red{background:#ffe8e8}.ned-kpis article.red:before{background:#ef4444}.ned-kpis article.green{background:#dcfbe6}.ned-kpis article.green:before{background:#16a34a}.ned-kpis article.slate:before{background:#718096}.ned-kpis article>span{display:block;font-size:12px;font-weight:850;color:#57708e}.ned-kpis strong{display:block;margin-top:14px;font-size:26px;line-height:1;font-weight:950;color:#101d34;white-space:nowrap}.ned-kpis article.orange strong{color:#c45500}.ned-kpis article.red strong{color:#c51f2d}.ned-kpis article.green strong{color:#11813a}.ned-kpis strong small{font-size:16px;font-weight:850}.ned-kpis p{margin:9px 0 0;color:#93a1b4;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ned-panel{background:#fff;border:1px solid #dbe3ec;border-radius:14px;box-shadow:0 5px 16px rgba(15,35,60,.05);overflow:hidden}.ned-panel>header{min-height:54px;padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #edf1f5}.ned-panel h2{margin:0;font-size:16px;font-weight:950;color:#152238}.ned-panel header>span,.ned-panel header>button{margin-left:auto}.ned-panel header>span{font-size:10.5px;font-weight:850;color:#2468e8}.ned-flow-panel{margin-bottom:16px}.ned-flow{display:grid;grid-template-columns:repeat(11,minmax(90px,1fr));gap:20px;padding:18px 18px 22px;overflow-x:auto}.ned-flow-step{position:relative;min-width:90px;height:74px;padding:10px 7px;border-radius:11px;border:1px solid #b9daf7;background:#eef7ff;color:#10233e;cursor:pointer;text-align:center}.ned-flow-step.plan,.ned-flow-step.ship{border-color:#f2d08d;background:#fff8e9}.ned-flow-step:not(:last-child):after{content:"›";position:absolute;right:-16px;top:22px;color:#2468e8;font-size:23px;font-weight:900}.ned-flow-step b{display:block;font-size:11.5px;font-weight:950;margin-top:2px;white-space:nowrap}.ned-flow-step small{display:block;margin-top:8px;font-size:9px;color:#7c8da2;white-space:nowrap}
-  .ned-bottom{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(320px,1fr);gap:16px;align-items:start}.ned-table-wrap{overflow:auto}.ned-panel table{width:100%;border-collapse:collapse;font-size:11px}.ned-panel th{padding:11px 10px;background:#f7f9fb;color:#51657d;text-align:left;font-weight:900;white-space:nowrap}.ned-panel td{padding:11px 10px;border-top:1px solid #edf1f5;color:#293d55;white-space:nowrap}.ned-panel tbody tr:hover{background:#fafcff}.ned-link{border:0;background:transparent;color:#174ea6;font:inherit;font-weight:800;cursor:pointer;padding:0}.ned-status{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:24px;padding:0 9px;border-radius:13px;font-size:9.5px;font-weight:900}.ned-status.blue{color:#1f5fc7;background:#e4efff}.ned-status.green{color:#16763b;background:#dcf8e6}.ned-status.orange{color:#b45b08;background:#fff0d8}.ned-status.red{color:#bf2437;background:#ffe3e6}.ned-status.gray{color:#65758a;background:#edf1f5}.ned-empty{padding:34px!important;text-align:center!important;color:#8a99aa!important}.ned-alert-panel{min-height:100%}.ned-tasks{display:grid;gap:10px;padding:12px 14px 16px}.ned-task{width:100%;display:flex;align-items:center;gap:10px;padding:12px 13px;border:0;border-radius:10px;text-align:left;cursor:pointer;background:#eef5ff;color:#174ea6}.ned-task.red{background:#ffeded;color:#b61d32}.ned-task.orange{background:#fff3df;color:#a85208}.ned-task.green{background:#e8f8ed;color:#16763b}.ned-task.purple{background:#f0edff;color:#6652b7}.ned-task>span{min-width:0;flex:1}.ned-task b{display:block;font-size:11.5px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ned-task small{display:block;margin-top:4px;font-size:9.5px;color:#6f8097;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ned-task em{font-size:10px;font-style:normal;font-weight:950;white-space:nowrap}.ned-task-empty{padding:36px 12px;text-align:center;color:#8391a3;font-size:11px}
-  @media(max-width:1500px){.ned-kpis{gap:10px}.ned-flow{grid-template-columns:repeat(11,100px)}.ned-bottom{grid-template-columns:minmax(0,1.5fr) minmax(300px,.8fr)}}
-  @media(max-width:1180px){.namo-enterprise-dashboard{margin:-20px -16px -30px;padding-left:16px;padding-right:16px}.ned-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ned-kpis article:last-child{grid-column:span 2}.ned-bottom{grid-template-columns:1fr}.ned-alert-panel{margin-top:0}}
-  @media(max-width:760px){.namo-enterprise-dashboard{padding-left:10px;padding-right:10px}.ned-page-head{align-items:flex-start}.ned-page-head h1{font-size:22px}.ned-page-head p{font-size:10px}.ned-kpis{grid-template-columns:1fr}.ned-kpis article:last-child{grid-column:auto}.ned-flow{grid-template-columns:repeat(11,105px);padding-left:12px;padding-right:12px}.ned-bottom{display:block}.ned-alert-panel{margin-top:14px}}
+  .namo-enterprise-dashboard{--ink:#182b45;--muted:#738197;--line:#e2e8f0;--bg:#f4f6f9;min-height:0;margin:-20px -24px 0;padding:18px 24px 24px;background:var(--bg);color:var(--ink);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif}
+  .namo-enterprise-dashboard *{box-sizing:border-box}
+  .namo-enterprise-dashboard button{font-family:inherit}
+  .namo-enterprise-dashboard svg{width:20px;height:20px;flex:none}
+  .namo-enterprise-dashboard .ned-page-head{min-height:66px;display:flex;align-items:center;padding:0 0 16px}
+  .namo-enterprise-dashboard .ned-page-head h1{margin:0;font-size:25px;line-height:1.25;font-weight:750;letter-spacing:-.8px;color:var(--ink)}
+  .namo-enterprise-dashboard .ned-page-head p{margin:6px 0 0;font-size:12px;color:var(--muted);font-weight:450}
+  .namo-enterprise-dashboard .ned-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:0 0 20px}
+  .namo-enterprise-dashboard .ned-kpis article{--accent:#416eac;--tint:#edf3fa;position:relative;min-width:0;height:140px;padding:16px 19px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(24,43,69,.035);overflow:hidden}
+  .namo-enterprise-dashboard .ned-kpis article.orange{--accent:#ad7938;--tint:#faf4ea}
+  .namo-enterprise-dashboard .ned-kpis article.red{--accent:#b65a64;--tint:#faf0f2}
+  .namo-enterprise-dashboard .ned-kpis article.green{--accent:#368773;--tint:#edf6f2}
+  .namo-enterprise-dashboard .ned-kpis article.slate{--accent:#66758c;--tint:#f0f3f7}
+  .namo-enterprise-dashboard .ned-metric-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+  .namo-enterprise-dashboard .ned-metric-head>span{font-size:12px;font-weight:600;letter-spacing:-.2px;color:#566880}
+  .namo-enterprise-dashboard .ned-metric-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+  .namo-enterprise-dashboard .ned-metric-icon svg{width:19px;height:19px}
+  .namo-enterprise-dashboard .ned-kpis strong{display:block;margin-top:10px;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.8px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-kpis strong small{font-size:12px;letter-spacing:0;font-weight:500;color:#7b899c;margin-left:3px}
+  .namo-enterprise-dashboard .ned-kpis p{margin:9px 0 0;color:#7b889a;font-size:10.5px;line-height:1.4;font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .namo-enterprise-dashboard .ned-panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 14px rgba(24,43,69,.025);overflow:hidden}
+  .namo-enterprise-dashboard .ned-panel>header{position:static!important;min-height:60px;height:auto!important;padding:13px 20px;display:flex!important;align-items:center;gap:12px;background:#fff!important;border:0;border-bottom:1px solid #edf1f5;box-shadow:none!important}
+  .namo-enterprise-dashboard .ned-panel h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.3px;color:var(--ink)}
+  .namo-enterprise-dashboard .ned-panel header>span,.namo-enterprise-dashboard .ned-panel header>button{margin-left:auto}
+  .namo-enterprise-dashboard .ned-panel header>span{font-size:11px;font-weight:600;color:#526b8f;background:#f0f4f9;border-radius:7px;padding:5px 8px}
+  .namo-enterprise-dashboard .ned-panel header button{height:32px;padding:0 10px;border:1px solid #e1e7ef;border-radius:7px;background:#fff;color:#5f7390;font-size:11px;font-weight:550;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+  .namo-enterprise-dashboard .ned-panel header button svg{width:13px;height:13px}
+  .namo-enterprise-dashboard .ned-bottom{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(310px,1fr);gap:18px;align-items:stretch}
+  .namo-enterprise-dashboard .ned-table-wrap{overflow:auto;scrollbar-width:none;-ms-overflow-style:none}
+  .namo-enterprise-dashboard .ned-panel table{width:100%;border-collapse:collapse;font-size:12px}
+  .namo-enterprise-dashboard .ned-panel th{height:40px;padding:10px 14px;background:#f8fafc;color:#758398;text-align:left;font-size:11px;font-weight:550;white-space:nowrap;border-bottom:1px solid #edf1f5}
+  .namo-enterprise-dashboard .ned-panel td{height:48px;padding:10px 14px;border-top:1px solid #f0f3f6;color:#40536d;font-weight:450;white-space:nowrap}
+  .namo-enterprise-dashboard .ned-panel tbody tr:hover{background:#f8fafc}
+  .namo-enterprise-dashboard .ned-panel .ned-quantity{text-align:right;font-variant-numeric:tabular-nums}
+  .namo-enterprise-dashboard .ned-quantity small{font-size:10px;color:#8190a3}
+  .namo-enterprise-dashboard .ned-link{border:0;background:transparent;color:#426b9f;font:inherit;font-weight:550;cursor:pointer;padding:0}
+  .namo-enterprise-dashboard .ned-link:hover{text-decoration:underline}
+  .namo-enterprise-dashboard .ned-status{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:58px;height:25px;padding:0 9px;border-radius:6px;font-size:10px;font-weight:550;background:#f1f4f8;color:#67768c}
+  .namo-enterprise-dashboard .ned-status:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
+  .namo-enterprise-dashboard .ned-status.blue{color:#4976ad;background:#eef4fb}.namo-enterprise-dashboard .ned-status.green{color:#3f8673;background:#eef6f2}.namo-enterprise-dashboard .ned-status.orange{color:#a47a44;background:#faf5ec}.namo-enterprise-dashboard .ned-status.red{color:#b45c68;background:#fbf0f2}
+  .namo-enterprise-dashboard .ned-empty{padding:52px 18px!important;text-align:center!important;color:#7b899c!important}
+  .namo-enterprise-dashboard .ned-tasks{display:grid;gap:0;padding:3px 18px 8px}
+  .namo-enterprise-dashboard .ned-task{--accent:#587ca9;--tint:#eff4fa;width:100%;min-height:70px;display:flex;align-items:center;gap:10px;padding:12px 0;border:0;border-bottom:1px solid #f0f3f6;border-radius:0;text-align:left;cursor:pointer;background:#fff;color:var(--ink)}
+  .namo-enterprise-dashboard .ned-task:last-child{border-bottom:0}
+  .namo-enterprise-dashboard .ned-task.red{--accent:#b45e68;--tint:#faf0f2}.namo-enterprise-dashboard .ned-task.orange{--accent:#a67d45;--tint:#faf5ec}.namo-enterprise-dashboard .ned-task.green{--accent:#418573;--tint:#eff6f2}.namo-enterprise-dashboard .ned-task.purple{--accent:#7b70a1;--tint:#f3f1f8}
+  .namo-enterprise-dashboard .ned-task-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;background:var(--tint);color:var(--accent)}
+  .namo-enterprise-dashboard .ned-task-icon svg{width:17px;height:17px}
+  .namo-enterprise-dashboard .ned-task>span{min-width:0;flex:1}
+  .namo-enterprise-dashboard .ned-task b{display:block;font-size:12px;line-height:1.4;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .namo-enterprise-dashboard .ned-task small{display:block;margin-top:4px;font-size:10px;color:#8793a4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .namo-enterprise-dashboard .ned-task em{font-size:10px;font-style:normal;font-weight:550;white-space:nowrap;color:var(--accent)}
+  .namo-enterprise-dashboard .ned-task:hover{background:#fafbfd}
+  .namo-enterprise-dashboard .ned-task-empty{padding:52px 12px;text-align:center;color:#7b899c;font-size:12px}
+  .namo-enterprise-dashboard button:focus-visible{outline:2px solid #5a83b9;outline-offset:2px}
+  /* Hide only dashboard scrollbars; wheel, touch and keyboard scrolling stay usable. */
+  html:has(.namo-enterprise-dashboard),body:has(.namo-enterprise-dashboard),#root:has(.namo-enterprise-dashboard),#root>div:has(.namo-enterprise-dashboard),#root>div>main:has(.namo-enterprise-dashboard),.namo-enterprise-dashboard{scrollbar-width:none!important;-ms-overflow-style:none!important;scroll-behavior:auto!important;scrollbar-gutter:auto!important}
+  html:has(.namo-enterprise-dashboard)::-webkit-scrollbar,body:has(.namo-enterprise-dashboard)::-webkit-scrollbar,#root:has(.namo-enterprise-dashboard)::-webkit-scrollbar,#root>div:has(.namo-enterprise-dashboard)::-webkit-scrollbar,#root>div>main:has(.namo-enterprise-dashboard)::-webkit-scrollbar,.namo-enterprise-dashboard::-webkit-scrollbar,.namo-enterprise-dashboard .ned-table-wrap::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+  @media(max-width:1250px){.namo-enterprise-dashboard .ned-kpis{gap:10px}.namo-enterprise-dashboard .ned-kpis article{padding:14px;height:134px}.namo-enterprise-dashboard .ned-kpis strong{font-size:25px}.namo-enterprise-dashboard .ned-bottom{grid-template-columns:minmax(0,1.65fr) minmax(285px,1fr);gap:14px}.namo-enterprise-dashboard .ned-panel th,.namo-enterprise-dashboard .ned-panel td{padding-left:10px;padding-right:10px}}
+  @media(max-width:960px){.namo-enterprise-dashboard{margin:-20px -16px 0;padding:16px}.namo-enterprise-dashboard .ned-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.namo-enterprise-dashboard .ned-bottom{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-tasks{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}}
+  @media(max-width:620px){.namo-enterprise-dashboard{padding:14px 10px}.namo-enterprise-dashboard .ned-page-head h1{font-size:22px}.namo-enterprise-dashboard .ned-page-head p{font-size:10px}.namo-enterprise-dashboard .ned-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.namo-enterprise-dashboard .ned-kpis article:last-child{grid-column:span 2}.namo-enterprise-dashboard .ned-tasks{grid-template-columns:1fr}.namo-enterprise-dashboard .ned-panel>header{padding:12px 14px}.namo-enterprise-dashboard .ned-panel h2{font-size:13px}}
   `;
-
   function DashboardTab(){
     var rootRef=React.useRef(null),state=React.useState([]),purchases=state[0],setPurchases=state[1],revState=React.useState(0),revision=revState[0],setRevision=revState[1];
     var loadPurchases=React.useCallback(function(){return fetch("/api/purchase-orders",{credentials:"same-origin"}).then(function(r){return r.ok?r.json():Promise.reject(new Error("purchase api"));}).then(function(p){if(p&&p.success&&Array.isArray(p.data))setPurchases(p.data);}).catch(function(){var fallback=storageRows("qmes-erp-purchase-v1");if(!fallback.length)fallback=storageRows("erp:purchase");setPurchases(fallback);});},[]);
     React.useEffect(function(){loadPurchases();var refresh=function(){setRevision(function(v){return v+1;});loadPurchases();},events=["qmes:erp-data-changed","qmes:data-updated","qmes:shared-sync-complete","qmes:mes-master-ready"];events.forEach(function(n){window.addEventListener(n,refresh);});var timer=window.setInterval(refresh,30000);return function(){events.forEach(function(n){window.removeEventListener(n,refresh);});window.clearInterval(timer);};},[loadPurchases]);
     var data=React.useMemo(function(){return dashboardData(purchases);},[purchases,revision]),html=React.useMemo(function(){return markup(data);},[data]);
     React.useEffect(function(){var root=rootRef.current;if(!root)return;var click=function(event){var target=event.target.closest("[data-tab]");if(!target)return;event.preventDefault();navigate(target.getAttribute("data-tab"),target.getAttribute("data-menu"));};root.addEventListener("click",click);return function(){root.removeEventListener("click",click);};},[html]);
-    return h("div",{className:"namo-enterprise-dashboard",ref:rootRef},h("style",{dangerouslySetInnerHTML:{__html:dashboardCss}}),h("div",{dangerouslySetInnerHTML:{__html:html}}));
+    return h("div",{className:"namo-enterprise-dashboard","data-dashboard-version":"20261002-refined1",ref:rootRef},h("style",{dangerouslySetInnerHTML:{__html:dashboardCss}}),h("div",{dangerouslySetInnerHTML:{__html:html}}));
   }
   window.DashboardTab=DashboardTab;
 })();

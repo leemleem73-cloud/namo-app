@@ -108,9 +108,7 @@ function syncIdentity(header){
   const user=currentUser();
   const name=clean(user.name)||"사용자";
   const dept=clean(user.dept)||clean(user.department);
-  const position=clean(user.position)||clean(user.title)||clean(user.rank)||clean(user.jobTitle);
-  const details=[dept,position].filter(Boolean).join(",");
-  const label=details?name+"("+details+")":name;
+  const label=dept?name+"("+dept+")":name;
   const nameNode=header.querySelector(".qh-name");
   if(nameNode.textContent!==label)nameNode.textContent=label;
   const button=header.querySelector(".qh-account-btn");
@@ -126,7 +124,7 @@ function build(){
 
   const header=document.createElement("header");
   header.id=HEADER_ID;
-  header.dataset.qmesHeaderVersion="20261002-account-dept-position1";
+  header.dataset.qmesHeaderVersion="20261002-account-dept-only2";
   header.innerHTML=`
     <button type="button" class="qh-brand" aria-label="통합 대시보드">
       <img class="qh-logo" src="https://www.namochemical.com/img/svg/img_logo.svg" alt="나모케미칼 로고">
