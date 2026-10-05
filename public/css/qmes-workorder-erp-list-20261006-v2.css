@@ -1,0 +1,500 @@
+/* QMES Workorder ERP list owner - 2026-10-02
+ * Fresh owner. Legacy Sales/Due workorder list styles removed.
+ */
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>*{visibility:hidden!important}
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>#qmes-workorder-erp-list-v1,
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-wo-issue-shell,
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-modal-backdrop{visibility:visible!important}
+.qmes-workorder-erp-list-v1{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+.qmes-workorder-erp-list-v1>#qmes-workorder-erp-list-v1{display:block!important;width:100%!important;visibility:visible!important}
+.qmes-workorder-erp-list-v1>div:not(#qmes-workorder-erp-list-v1):not(.qmes-wo-issue-shell):not(.qmes-modal-backdrop),
+.qmes-workorder-erp-list-v1>section:not(#qmes-workorder-erp-list-v1):not(.qmes-wo-issue-shell):not(.qmes-modal-backdrop){display:none!important}
+.qmes-workorder-erp-list-v1 .qmes-wo-issue-shell{display:block!important;width:100%!important;margin:10px 0!important;visibility:visible!important}
+.qmes-workorder-erp-list-v1 .qmes-modal-backdrop{display:flex!important;visibility:visible!important;opacity:1!important;z-index:9999!important}
+
+#qmes-workorder-erp-list-v1{font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;color:#253443;background:transparent}
+#qmes-workorder-erp-list-v1 *{box-sizing:border-box}
+#qmes-workorder-erp-list-v1 .qerp-head{height:48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d9dee5;background:transparent;padding:0 2px 0 4px}
+#qmes-workorder-erp-list-v1 .qerp-title-wrap{display:flex;align-items:center;gap:10px}
+#qmes-workorder-erp-list-v1 .qerp-title{margin:0;font-size:20px;line-height:1;font-weight:750;letter-spacing:-.4px;color:#1f2f3e}
+#qmes-workorder-erp-list-v1 .qerp-sub{font-size:9px;letter-spacing:.8px;color:#9aa5af;font-weight:650}
+#qmes-workorder-erp-list-v1 .qerp-actions{display:flex;align-items:center;gap:6px}
+#qmes-workorder-erp-list-v1 button{font-family:inherit}
+#qmes-workorder-erp-list-v1 .qerp-btn,#qmes-workorder-erp-list-v1 .qerp-filter-actions button{height:30px;border:1px solid #cfd6de;background:#fff;border-radius:3px;padding:0 11px;font-size:10px;font-weight:700;color:#475767;cursor:pointer}
+#qmes-workorder-erp-list-v1 .qerp-btn.primary,#qmes-workorder-erp-list-v1 .qerp-filter-actions .primary{background:#2189d6;border-color:#2189d6;color:#fff}
+#qmes-workorder-erp-list-v1 .qerp-filter{border:1px solid #d7dde4;background:#fafbfc;margin:8px 0 8px;padding:10px 12px}
+#qmes-workorder-erp-list-v1 .qerp-filter-row{display:grid;grid-template-columns:minmax(330px,1.65fr) .72fr .95fr .72fr .72fr 1.25fr auto;gap:10px;align-items:end}
+#qmes-workorder-erp-list-v1 .qerp-filter label{min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);gap:6px;align-items:center}
+#qmes-workorder-erp-list-v1 .qerp-filter label:first-child{grid-template-columns:58px minmax(280px,1fr)}
+#qmes-workorder-erp-list-v1 .qerp-filter label>span{font-size:10px;font-weight:750;color:#43515d;text-align:right;white-space:nowrap}
+#qmes-workorder-erp-list-v1 .qerp-filter input,#qmes-workorder-erp-list-v1 .qerp-filter select{width:100%;height:30px;border:1px solid #cfd6dd;border-radius:2px;background:#fff;padding:0 8px;color:#2f3d49;font-size:10px;outline:none}
+#qmes-workorder-erp-list-v1 .qerp-filter input:focus,#qmes-workorder-erp-list-v1 .qerp-filter select:focus{border-color:#4aa1df;box-shadow:0 0 0 1px #4aa1df inset}
+#qmes-workorder-erp-list-v1 .qerp-date{display:grid;grid-template-columns:minmax(128px,1fr) 18px minmax(128px,1fr);align-items:center;gap:4px}
+#qmes-workorder-erp-list-v1 .qerp-date input{min-width:128px!important;width:100%!important;padding:0 8px!important;font-variant-numeric:tabular-nums}
+#qmes-workorder-erp-list-v1 .qerp-date b{text-align:center;color:#7a8792;font-size:10px;font-weight:600}
+#qmes-workorder-erp-list-v1 .qerp-filter-actions{display:flex;gap:5px}
+#qmes-workorder-erp-list-v1 .qerp-grid-shell{border-top:2px solid #69747e;border-left:1px solid #d5dbe1;border-right:1px solid #d5dbe1;border-bottom:1px solid #d5dbe1;background:#fff}
+#qmes-workorder-erp-list-v1 .qerp-grid-toolbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:1px solid #d7dde4;background:#fff}
+#qmes-workorder-erp-list-v1 .qerp-grid-toolbar strong{font-size:11px;color:#263746}
+#qmes-workorder-erp-list-v1 .qerp-grid-toolbar span{font-size:9px;color:#8b97a2}
+#qmes-workorder-erp-list-v1 .qerp-scroll{overflow:auto;scrollbar-width:thin;scrollbar-color:#b8c0c8 #eef1f4}
+#qmes-workorder-erp-list-v1 .qerp-table{width:100%;min-width:1700px;border-collapse:collapse;table-layout:fixed;font-size:10px}
+#qmes-workorder-erp-list-v1 .qerp-table th{height:34px;padding:0 6px;border-right:1px solid #d6dde4;border-bottom:1px solid #cbd3db;background:#f3f5f7;color:#364653;text-align:center;font-weight:750;white-space:nowrap}
+#qmes-workorder-erp-list-v1 .qerp-table td{height:36px;padding:0 6px;border-right:1px solid #e0e5ea;border-bottom:1px solid #e2e7eb;background:#fff;color:#3c4b58;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#qmes-workorder-erp-list-v1 .qerp-table tbody tr:nth-child(even) td{background:#fbfcfd}
+#qmes-workorder-erp-list-v1 .qerp-table tbody tr:hover td{background:#eef6fc}
+#qmes-workorder-erp-list-v1 .qerp-table td.left{text-align:left}
+#qmes-workorder-erp-list-v1 .qerp-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+#qmes-workorder-erp-list-v1 .qrl-link{border:0;background:transparent;color:#1678bb;font-size:10px;font-weight:750;padding:0;cursor:pointer}
+#qmes-workorder-erp-list-v1 .qrl-link:hover{text-decoration:underline}
+#qmes-workorder-erp-list-v1 .qsd-badge{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:20px;padding:0 7px;border-radius:2px;border:1px solid #d3d9df;background:#f7f8f9;color:#53616d;font-size:9px;font-weight:700}
+#qmes-workorder-erp-list-v1 .qsd-badge.good{background:#eef8f1;border-color:#bcdcc5;color:#337448}
+#qmes-workorder-erp-list-v1 .qsd-badge.blue{background:#edf5fb;border-color:#bfd7ea;color:#2b6f9f}
+#qmes-workorder-erp-list-v1 .qsd-badge.warn{background:#fff8e9;border-color:#ead5a7;color:#87671f}
+#qmes-workorder-erp-list-v1 .qsd-badge.bad{background:#fff0f0;border-color:#e5b8b8;color:#a44343}
+#qmes-workorder-erp-list-v1 .qrl-actions{display:flex;align-items:center;justify-content:center;gap:3px}
+#qmes-workorder-erp-list-v1 .qrl-actions button{height:22px;border:1px solid #cbd3da;background:#fff;border-radius:2px;padding:0 6px;color:#4e5e6b;font-size:8.5px;font-weight:700;cursor:pointer}
+#qmes-workorder-erp-list-v1 .qrl-actions .qrl-delete-btn{border-color:#e1b5b5!important;color:#b34848!important}
+#qmes-workorder-erp-list-v1 .qrl-foot{min-height:34px;display:flex;align-items:center;justify-content:center;gap:4px;border-top:1px solid #e1e6ea;background:#fff}
+#qmes-workorder-erp-list-v1 .qrl-page{width:28px;height:24px;border:1px solid #cfd6dc;background:#fff;border-radius:2px;font-size:9px;color:#55636f}
+#qmes-workorder-erp-list-v1 .qrl-page.active{background:#2389d1;border-color:#2389d1;color:#fff}
+#qmes-workorder-erp-list-v1 .qsd-empty{height:120px!important;text-align:center!important;color:#8b97a2!important}
+
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(1),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(1){width:42px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(2),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(2){width:90px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(3),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(3){width:118px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(4),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(4){width:125px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(5),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(5){width:150px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(6),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(6){width:112px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(7),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(7){width:82px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(8),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(8){width:48px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(9),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(9){width:94px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(10),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(10){width:70px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(11),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(11){width:90px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(12),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(12){width:90px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(13),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(13){width:90px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(14),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(14){width:64px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(15),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(15){width:66px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(16),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(16){width:82px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(17),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(17){width:90px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(18),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(18){width:110px}
+#qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(19),#qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(19){width:120px}
+
+@media(max-width:1200px){
+ #qmes-workorder-erp-list-v1 .qerp-filter-row{grid-template-columns:minmax(300px,1.5fr) .7fr .9fr .7fr .7fr 1fr auto;gap:6px}
+ #qmes-workorder-erp-list-v1 .qerp-filter label{grid-template-columns:50px minmax(0,1fr)}
+}
+/* workorder print preview final clean shell 2026-09-30 */
+.qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  background:#f5f7fa!important;
+  backdrop-filter:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:14px!important;
+}
+.qmes-wo-viewer.qmes-wo-output-preview{
+  width:min(68vw,1040px)!important;
+  max-width:1040px!important;
+  height:78vh!important;
+  max-height:78vh!important;
+  background:#ffffff!important;
+  background-color:#ffffff!important;
+  color:#1f2937!important;
+  border:1px solid #dbe3ea!important;
+  border-radius:10px!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.08)!important;
+  overflow:auto!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head{
+  min-height:44px!important;
+  height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  background:#ffffff!important;
+  border-bottom:1px solid #e2e8f0!important;
+  color:#1f2937!important;
+  padding:0 12px!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head>div:first-child{
+  display:none!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head>div:last-child{
+  margin-left:auto!important;
+  transform:none!important;
+}
+.qmes-wo-output-preview .qmes-wo-preview-edit-btn{
+  display:none!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  width:100%!important;
+  max-width:920px!important;
+  margin:8px auto 14px!important;
+  zoom:.66!important;
+  transform-origin:top center!important;
+  box-shadow:none!important;
+}
+
+
+/* direct print: no preview screen 2026-09-30 */
+body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  opacity:0!important;
+  pointer-events:none!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+}
+
+/* Work order page background cleanup - 2026-10-02 */
+.qmes-workorder-erp-list-v1,
+.qmes-workorder-erp-list-v1 #qmes-workorder-erp-list-v1,
+.qmes-workorder-erp-list-v1>#qmes-workorder-erp-list-v1{
+  background:transparent!important;
+}
+.qmes-workorder-erp-list-v1 .qerp-head,
+.qmes-workorder-erp-list-v1 .qerp-title-wrap{
+  background:transparent!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-sub{display:none!important}
+
+/* Customer dropdown full-text fix - 2026-10-02 */
+#qmes-workorder-erp-list-v1 #qwf2-customer{
+  min-width:150px!important;
+  width:100%!important;
+  padding:0 28px 0 9px!important;
+  font-size:10px!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2){
+  grid-template-columns:48px minmax(150px,1fr)!important;
+}
+
+/* ERP work-order date range: full date text + fixed calendar owner */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:minmax(390px,1.9fr) minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(260px,1.35fr) auto!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:first-child{
+  grid-template-columns:62px minmax(320px,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date{
+  grid-template-columns:minmax(145px,1fr) 18px minmax(145px,1fr)!important;
+  gap:5px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date input{
+  min-width:145px!important;
+  width:100%!important;
+  height:32px!important;
+  padding:0 34px 0 9px!important;
+  font-size:10px!important;
+  font-variant-numeric:tabular-nums!important;
+  text-overflow:clip!important;
+}
+
+/* ERP filter final width alignment - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:
+    minmax(390px,1.75fr)
+    minmax(210px,1fr)
+    minmax(210px,1fr)
+    minmax(165px,.82fr)
+    minmax(165px,.82fr)
+    minmax(250px,1.25fr)
+    auto!important;
+  gap:12px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label{
+  grid-template-columns:62px minmax(0,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2),
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3){
+  grid-template-columns:62px minmax(142px,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 #qwf2-customer,
+#qmes-workorder-erp-list-v1 #qwf2-product{
+  min-width:142px!important;
+  width:100%!important;
+  height:32px!important;
+}
+
+/* Work order ERP filter after approval-status removal - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:
+    minmax(390px,1.8fr)
+    minmax(210px,1fr)
+    minmax(210px,1fr)
+    minmax(170px,.85fr)
+    minmax(300px,1.45fr)
+    auto!important;
+}
+
+/* ERP filter right-edge clipping fix - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter{
+  overflow:visible!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  display:grid!important;
+  grid-template-columns:
+    minmax(330px,1.55fr)
+    minmax(155px,.86fr)
+    minmax(155px,.86fr)
+    minmax(145px,.76fr)
+    minmax(240px,1.22fr)
+    126px!important;
+  gap:8px!important;
+  align-items:end!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label{
+  min-width:0!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:first-child{
+  grid-template-columns:58px minmax(0,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2),
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3),
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(4),
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(5){
+  grid-template-columns:58px minmax(0,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date{
+  grid-template-columns:minmax(125px,1fr) 16px minmax(125px,1fr)!important;
+  gap:4px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date input{
+  min-width:125px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-search{
+  min-width:0!important;
+}
+#qmes-workorder-erp-list-v1 #qwf2-q{
+  min-width:0!important;
+  width:100%!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-actions{
+  display:grid!important;
+  grid-template-columns:58px 58px!important;
+  gap:6px!important;
+  width:126px!important;
+  min-width:126px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-actions button{
+  width:58px!important;
+  min-width:58px!important;
+  padding:0!important;
+}
+@media(max-width:1500px){
+  #qmes-workorder-erp-list-v1 .qerp-filter-row{
+    grid-template-columns:
+      minmax(300px,1.45fr)
+      minmax(140px,.8fr)
+      minmax(140px,.8fr)
+      minmax(130px,.7fr)
+      minmax(210px,1.1fr)
+      118px!important;
+    gap:6px!important;
+  }
+  #qmes-workorder-erp-list-v1 .qerp-filter-actions{
+    grid-template-columns:56px 56px!important;
+    width:118px!important;
+    min-width:118px!important;
+  }
+  #qmes-workorder-erp-list-v1 .qerp-filter-actions button{
+    width:56px!important;
+    min-width:56px!important;
+  }
+}
+
+/* ERP filter spacing refinement - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  column-gap:16px!important;
+  row-gap:10px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label{
+  column-gap:9px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label>span{
+  padding-right:2px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date{
+  gap:7px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-actions{
+  margin-left:4px!important;
+}
+
+/* ERP filter position fine-tune - 2026-10-02 */
+#qmes-workorder-erp-list-v1 .qerp-filter{
+  padding-left:6px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter-row{
+  margin-left:-4px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(4){
+  transform:translateX(-8px)!important;
+}
+
+/* Work order detail compact light modal - 2026-10-06 */
+.qmes-modal-backdrop:has(.qmes-wo-detail-preview){
+  position:fixed!important;
+  left:54px!important;
+  right:0!important;
+  top:108px!important;
+  bottom:0!important;
+  inset:108px 0 0 54px!important;
+  width:auto!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:16px!important;
+  margin:0!important;
+  background:rgba(241,245,249,.72)!important;
+  backdrop-filter:none!important;
+  overflow:hidden!important;
+  z-index:2147482000!important;
+}
+.qmes-wo-viewer.qmes-wo-detail-preview{
+  width:min(1120px,calc(100vw - 130px))!important;
+  max-width:1120px!important;
+  height:min(660px,calc(100vh - 160px))!important;
+  max-height:660px!important;
+  margin:0!important;
+  border:1px solid #cfd9e3!important;
+  border-radius:10px!important;
+  box-shadow:0 18px 46px rgba(37,58,82,.18)!important;
+  background:#fff!important;
+  color:#26384a!important;
+  overflow:hidden!important;
+}
+.qmes-wo-detail-preview .qmes-wo-viewer-head{
+  position:sticky!important;
+  top:0!important;
+  z-index:20!important;
+  min-height:44px!important;
+  height:44px!important;
+  padding:0 14px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  background:linear-gradient(180deg,#ffffff 0%,#f7fafc 100%)!important;
+  border-bottom:1px solid #d9e2ea!important;
+  color:#24364a!important;
+}
+.qmes-wo-detail-preview .qmes-wo-viewer-head>div:first-child,
+.qmes-wo-detail-preview .qmes-wo-viewer-head>div:last-child{transform:none!important}
+.qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-100{
+  color:#1f3447!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+.qmes-wo-detail-preview .qmes-wo-viewer-head .text-slate-500{
+  color:#6d7f90!important;
+  font-size:9px!important;
+}
+.qmes-wo-detail-preview .qmes-wo-preview-edit-btn,
+.qmes-wo-detail-preview .qmes-modal-close{
+  height:28px!important;
+  min-width:50px!important;
+  padding:0 9px!important;
+  border:1px solid #cbd6df!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#41566a!important;
+  font-size:10px!important;
+  font-weight:750!important;
+}
+.qmes-wo-detail-preview .qmes-modal-close{
+  min-width:28px!important;
+  width:28px!important;
+  padding:0!important;
+  font-size:18px!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert,
+.qmes-wo-detail-preview .doc-paper{
+  width:calc(100% - 24px)!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:calc(100% - 56px)!important;
+  max-height:none!important;
+  margin:8px 12px 12px!important;
+  padding:10px 12px!important;
+  border:1px solid #dde5ec!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#334155!important;
+  box-shadow:none!important;
+  overflow:auto!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert [class*="bg-slate-"],
+.qmes-wo-detail-preview .doc-paper [class*="bg-slate-"]{
+  background:#fff!important;
+  background-color:#fff!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert [class*="text-slate-"],
+.qmes-wo-detail-preview .doc-paper [class*="text-slate-"],
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-sky-300,
+.qmes-wo-detail-preview .qmes-issued-preview-cert .text-emerald-300{
+  color:#334155!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert [class*="border-slate-"],
+.qmes-wo-detail-preview .doc-paper [class*="border-slate-"]{
+  border-color:#d8e1e9!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert table,
+.qmes-wo-detail-preview .doc-paper table{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  background:#fff!important;
+  border-collapse:collapse!important;
+  table-layout:auto!important;
+  font-size:10px!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert th,
+.qmes-wo-detail-preview .doc-paper th{
+  padding:6px 7px!important;
+  background:#f3f6f9!important;
+  color:#344756!important;
+  border-color:#d5dde4!important;
+  font-size:9px!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert td,
+.qmes-wo-detail-preview .doc-paper td{
+  padding:6px 7px!important;
+  background:#fff!important;
+  color:#3d4f5e!important;
+  border-color:#dce3e9!important;
+  font-size:9.5px!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert tbody tr:nth-child(even) td,
+.qmes-wo-detail-preview .doc-paper tbody tr:nth-child(even) td{
+  background:#fbfcfd!important;
+}
+.qmes-wo-detail-preview .qmes-issued-preview-cert tfoot td,
+.qmes-wo-detail-preview .qmes-issued-preview-cert tfoot th,
+.qmes-wo-detail-preview .doc-paper tfoot td,
+.qmes-wo-detail-preview .doc-paper tfoot th{
+  background:#f4f6f8!important;
+  color:#2e4050!important;
+  font-weight:800!important;
+}
+.qmes-wo-detail-preview .qmes-detail-only{margin-top:8px!important}
+.qmes-wo-detail-preview .qmes-detail-only>div:first-child{
+  color:#2d4358!important;
+  font-size:11px!important;
+  margin-bottom:5px!important;
+}
+@media(max-width:900px){
+  .qmes-modal-backdrop:has(.qmes-wo-detail-preview){
+    inset:108px 0 0 0!important;
+    left:0!important;
+    padding:8px!important;
+  }
+  .qmes-wo-viewer.qmes-wo-detail-preview{
+    width:calc(100vw - 16px)!important;
+    max-width:none!important;
+    height:calc(100vh - 124px)!important;
+    max-height:none!important;
+  }
+}
