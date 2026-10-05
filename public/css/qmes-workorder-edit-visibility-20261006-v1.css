@@ -1,0 +1,13 @@
+/* Work order edit visibility bridge - 2026-10-06
+ * When native edit mode opens, hide only the ERP list owner so the edit form is immediately visible.
+ */
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2):has(>.qmes-wo-issue-shell)>#qmes-workorder-erp-list-v1{
+  display:none!important;
+  visibility:hidden!important;
+}
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-wo-issue-shell{
+  display:block!important;
+  visibility:visible!important;
+  width:100%!important;
+  margin:0!important;
+}
