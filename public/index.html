@@ -250,4 +250,30 @@
   <script src="./js/qmes-purchase-edit-force-20260928-v2.js?v=20260928-2"></script>
   <script src="./js/qmes-purchase-edit-force-20260928-v3.js?v=20260928-3"></script>
   <script src="./js/qmes-purchase-edit-force-20260928-v4.js?v=20260928-4"></script>
+
+<style id="qmes-sidebar-amaranth-gapfix-20261006-v1">
+/* Amaranth-style sidebar: collapsed rail never reserves the expanded menu width. */
+html body #qmes-erp-sidebar{
+  width:54px!important;
+  max-width:54px!important;
+}
+html body #qmes-erp-sidebar:hover{
+  width:182px!important;
+  max-width:182px!important;
+  box-shadow:4px 0 16px rgba(20,43,70,.16)!important;
+}
+html body #root>div>main{
+  margin-left:54px!important;
+  width:calc(100% - 54px)!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+html body.qmes-erp-menu-closed #root>div>main{
+  margin-left:54px!important;
+  width:calc(100% - 54px)!important;
+}
+html body #root>div>main .namo-enterprise-dashboard{
+  max-width:none!important;
+}
+</style>
 </html>
