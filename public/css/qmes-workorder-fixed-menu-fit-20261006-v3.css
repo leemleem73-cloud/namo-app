@@ -1,0 +1,188 @@
+/* Work-order fixed Amaranth menu: full-width fit and post-print clipping fix - 2026-10-06 */
+body.qmes-fixed-production-menu{
+  overflow-x:hidden!important;
+}
+body.qmes-fixed-production-menu #root>div>main{
+  margin-left:268px!important;
+  width:calc(100% - 268px)!important;
+  max-width:calc(100% - 268px)!important;
+  min-width:0!important;
+  padding-left:16px!important;
+  padding-right:16px!important;
+  box-sizing:border-box!important;
+  overflow-x:hidden!important;
+}
+body.qmes-fixed-production-menu .flex.flex-col.gap-4:has(.qmes-issued-table-v2),
+body.qmes-fixed-production-menu .qmes-workorder-erp-list-v1,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1{
+  position:relative!important;
+  inset:auto!important;
+  left:auto!important;
+  right:auto!important;
+  transform:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+body.qmes-fixed-production-menu .flex.flex-col.gap-4:has(.qmes-issued-table-v2){
+  overflow:visible!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-head,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-grid-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter{
+  overflow:hidden!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-row{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  transform:none!important;
+  grid-template-columns:
+    minmax(270px,1.42fr)
+    minmax(120px,.78fr)
+    minmax(125px,.82fr)
+    minmax(115px,.74fr)
+    minmax(195px,1.08fr)
+    112px!important;
+  column-gap:6px!important;
+  row-gap:8px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:first-child,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(4){
+  min-width:0!important;
+  transform:none!important;
+  grid-template-columns:52px minmax(0,1fr)!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-date{
+  min-width:0!important;
+  grid-template-columns:minmax(104px,1fr) 14px minmax(104px,1fr)!important;
+  gap:3px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-date input{
+  min-width:0!important;
+  width:100%!important;
+  padding-left:6px!important;
+  padding-right:25px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-actions{
+  width:112px!important;
+  min-width:112px!important;
+  margin-left:0!important;
+  grid-template-columns:53px 53px!important;
+  gap:6px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-actions button{
+  width:53px!important;
+  min-width:53px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  scrollbar-gutter:stable!important;
+  margin:0!important;
+  transform:none!important;
+  padding-bottom:2px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table{
+  width:max(100%,1400px)!important;
+  max-width:none!important;
+  min-width:1400px!important;
+  table-layout:fixed!important;
+  margin:0!important;
+  transform:none!important;
+  font-size:8.5px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table th,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table td{
+  min-width:0!important;
+  max-width:none!important;
+  padding-left:3px!important;
+  padding-right:3px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:8.4px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(1),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(1){width:2.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(2),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(2){width:6%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(3),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(3){width:7%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(4),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(4){width:6.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(5),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(5){width:7%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(6),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(6){width:7%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(7),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(7){width:5.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(8),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(8){width:2.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(9),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(9){width:6%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(10),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(10){width:3.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(11),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(11){width:5.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(12),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(12){width:5.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(13),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(13){width:5.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(14),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(14){width:4%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(15),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(15){width:3.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(16),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(16){width:5.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(17),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(17){width:6%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(18),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(18){width:3.5%!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(19),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(19){width:6%!important}
+@media(max-width:1250px){
+  body.qmes-fixed-production-menu #root>div>main{
+    margin-left:248px!important;
+    width:calc(100% - 248px)!important;
+    max-width:calc(100% - 248px)!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  body.qmes-fixed-production-menu #qmes-erp-fixed-production-menu{width:194px!important}
+  body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-row{
+    grid-template-columns:1fr 1fr 1fr!important;
+  }
+  body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-actions{
+    width:auto!important;
+    min-width:0!important;
+  }
+}
+
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar{height:12px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar-track{background:#eef2f5!important;border-top:1px solid #d9e0e7!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar-thumb{background:#b7c2cc!important;border-radius:6px!important;border:2px solid #eef2f5!important}
