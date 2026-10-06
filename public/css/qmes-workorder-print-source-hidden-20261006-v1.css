@@ -1,0 +1,52 @@
+/* Work order print source only.
+ * The old on-screen print preview is intentionally removed.
+ * Keep the print source rendered off-canvas so print measurements remain valid.
+ */
+.qmes-modal-backdrop:has(.qmes-wo-output-preview){
+  position:fixed!important;
+  left:-100000px!important;
+  top:0!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:1100px!important;
+  height:auto!important;
+  min-height:800px!important;
+  display:block!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:visible!important;
+  background:#fff!important;
+  backdrop-filter:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  z-index:-2147480000!important;
+}
+.qmes-wo-viewer.qmes-wo-output-preview{
+  position:relative!important;
+  width:1040px!important;
+  max-width:1040px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  overflow:visible!important;
+  background:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.qmes-wo-output-preview .qmes-wo-viewer-head{
+  display:none!important;
+}
+.qmes-wo-output-preview .qmes-issued-preview-cert{
+  display:block!important;
+  width:920px!important;
+  max-width:920px!important;
+  min-width:920px!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0!important;
+  overflow:visible!important;
+  opacity:1!important;
+  visibility:visible!important;
+  background:#fff!important;
+}
