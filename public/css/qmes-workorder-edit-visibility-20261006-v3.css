@@ -1,0 +1,67 @@
+/* Work order edit visibility bridge - 2026-10-06
+ * When native edit mode opens, hide only the ERP list owner so the edit form is immediately visible.
+ */
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2):has(>.qmes-wo-issue-shell)>#qmes-workorder-erp-list-v1{
+  display:none!important;
+  visibility:hidden!important;
+}
+.flex.flex-col.gap-4:has(.qmes-issued-table-v2)>.qmes-wo-issue-shell{
+  display:block!important;
+  visibility:visible!important;
+  width:100%!important;
+  margin:0!important;
+}
+
+
+/* 2026-10-06 v2
+ * Editing removes the native issued table from React, so the old :has(.qmes-issued-table-v2)
+ * selector no longer matched. Hide only the ERP list whenever the edit shell itself exists.
+ * This reveals the edit form in the exact same main-content position without scrolling.
+ */
+.flex.flex-col.gap-4:has(>.qmes-wo-issue-shell)>#qmes-workorder-erp-list-v1{
+  display:none!important;
+  visibility:hidden!important;
+}
+.flex.flex-col.gap-4:has(>.qmes-wo-issue-shell)>.qmes-wo-issue-shell{
+  display:block!important;
+  visibility:visible!important;
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+}
+
+
+/* v3: edit form is a body portal so both edit buttons open the same fixed editor.
+   It never shifts the work-order management screen. */
+body>.qmes-wo-edit-portal{
+  position:fixed!important;
+  top:112px!important;
+  left:292px!important;
+  right:20px!important;
+  bottom:18px!important;
+  z-index:2147483200!important;
+  display:block!important;
+  visibility:visible!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:12px!important;
+  width:auto!important;
+  max-width:none!important;
+  transform:none!important;
+  background:#f7f9fc!important;
+  border:1px solid #d8e1e9!important;
+  border-radius:10px!important;
+  box-shadow:0 18px 54px rgba(27,54,78,.18)!important;
+}
+@media(max-width:1250px){
+  body>.qmes-wo-edit-portal{left:270px!important;right:10px!important}
+}
+@media(max-width:900px){
+  body>.qmes-wo-edit-portal{left:62px!important;right:8px!important;top:108px!important;bottom:8px!important}
+}
