@@ -1,0 +1,24 @@
+/* Work order bottom horizontal scrollbar restore - 2026-10-06
+ * Scope: work-order grid scrollbar only.
+ */
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll{
+  overflow-x:auto!important;
+  scrollbar-width:thin!important;
+  scrollbar-color:#b8c0c8 #eef1f4!important;
+  padding-bottom:0!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table{
+  min-width:1700px!important;
+  max-width:none!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar{
+  height:10px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar-track{
+  background:#eef1f4!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll::-webkit-scrollbar-thumb{
+  background:#b8c0c8!important;
+  border-radius:6px!important;
+  border:2px solid #eef1f4!important;
+}
