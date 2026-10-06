@@ -1,0 +1,99 @@
+
+/* Work-order fixed-menu fit patch - 2026-10-06
+ * Only applies while the Amaranth-style work-order menu is visible.
+ */
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-head,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-grid-shell{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter-row{
+  grid-template-columns:
+    minmax(285px,1.45fr)
+    minmax(130px,.78fr)
+    minmax(135px,.82fr)
+    minmax(120px,.72fr)
+    minmax(210px,1.12fr)
+    112px!important;
+  gap:6px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:first-child,
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(2),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3){
+  grid-template-columns:54px minmax(0,1fr)!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-date{
+  grid-template-columns:minmax(112px,1fr) 14px minmax(112px,1fr)!important;
+  gap:3px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-date input{
+  min-width:112px!important;
+  padding-left:7px!important;
+  padding-right:28px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-scroll{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table{
+  width:100%!important;
+  min-width:1267px!important;
+  table-layout:fixed!important;
+  font-size:9px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table th{
+  padding:0 4px!important;
+  font-size:8.5px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qerp-table td{
+  padding:0 4px!important;
+  font-size:8.8px!important;
+}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(1),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(1){width:36px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(2),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(2){width:70px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(3),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(3){width:85px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(4),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(4){width:90px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(5),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(5){width:95px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(6),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(6){width:85px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(7),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(7){width:62px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(8),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(8){width:38px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(9),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(9){width:72px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(10),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(10){width:45px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(11),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(11){width:66px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(12),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(12){width:66px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(13),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(13){width:66px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(14),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(14){width:50px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(15),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(15){width:50px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(16),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(16){width:58px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(17),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(17){width:68px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(18),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(18){width:75px!important}
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table th:nth-child(19),
+body.qmes-fixed-production-menu #qmes-workorder-erp-list-v1 .qwf2-table td:nth-child(19){width:90px!important}
