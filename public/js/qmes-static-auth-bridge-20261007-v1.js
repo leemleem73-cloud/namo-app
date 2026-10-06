@@ -83,7 +83,7 @@
 
   function wire(){
     const box=$("#currentUser");if(!box)return;
-    box.addEventListener("click",e=>{const a=e.target.closest("[data-auth]")?.dataset.auth;if(a==="password"){e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}if(a==="logout"){e.stopPropagation();logout();return;}box.classList.toggle("qauth-open");});
+    box.addEventListener("mouseenter",()=>box.classList.add("qauth-open"));box.addEventListener("mouseleave",()=>box.classList.remove("qauth-open"));box.addEventListener("click",e=>{const a=e.target.closest("[data-auth]")?.dataset.auth;if(a==="password"){e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}if(a==="logout"){e.stopPropagation();logout();return;}box.classList.add("qauth-open");});
     document.addEventListener("click",e=>{if(box&&!box.contains(e.target))box.classList.remove("qauth-open")});
   }
 
