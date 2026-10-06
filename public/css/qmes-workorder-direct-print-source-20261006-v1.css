@@ -1,0 +1,34 @@
+/* Work order direct-print source only - never visible in QMES screen */
+.qmes-workorder-direct-print-source-host{
+  position:fixed!important;
+  left:-100000px!important;
+  top:0!important;
+  width:960px!important;
+  max-width:960px!important;
+  height:auto!important;
+  overflow:visible!important;
+  background:#fff!important;
+  pointer-events:none!important;
+  z-index:-2147480000!important;
+}
+.qmes-workorder-direct-print-source-viewer{
+  width:960px!important;
+  max-width:960px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:#fff!important;
+}
+.qmes-workorder-direct-print-source-viewer .qmes-issued-preview-cert{
+  display:block!important;
+  position:relative!important;
+  width:900px!important;
+  max-width:900px!important;
+  min-width:900px!important;
+  height:auto!important;
+  margin:0!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:visible!important;
+}
