@@ -1,0 +1,12 @@
+/* 2026-10-06: work order filter item-name label clipping fix only. */
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3){
+  grid-template-columns:70px minmax(0,1fr)!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-filter label:nth-child(3)>span{
+  width:70px!important;
+  min-width:70px!important;
+  padding-right:2px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
