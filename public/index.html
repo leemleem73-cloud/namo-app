@@ -589,7 +589,7 @@ thead{background:#f4f7fa}
       <div class="menu" data-page="approval"><div class="ico">✍</div><div class="label">전자결재</div></div>
       <div class="menu" data-page="standard"><div class="ico">📚</div><div class="label">기준서 관리</div></div>
       <div class="menu-title admin-only" data-admin-only>ADMIN</div>
-      <div class="menu admin-only" data-admin-only data-page="adminEmployees"><div class="ico">👥</div><div class="label">직원등록현황</div></div>
+      <div class="menu admin-only" data-admin-only data-page="adminEmployees"><div class="ico">👥</div><div class="label">관리자 직원현황</div></div>
       <div class="nav-toggle" id="navToggle">☰</div>
     </div>
   </aside>
@@ -707,7 +707,7 @@ const toastEl = document.getElementById('toast');
 const currentUserEl=document.getElementById('currentUser');
 const roleParam=new URLSearchParams(window.location.search).get('role');
 const CURRENT_USER_ROLE=(roleParam && ['admin','관리자'].includes(roleParam.toLowerCase?.()||roleParam))?'관리자':(currentUserEl?.dataset.role||'일반');
-function isAdminUser(){ return CURRENT_USER_ROLE==='관리자' || CURRENT_USER_ROLE.toLowerCase?.()==='admin'; }
+function isAdminUser(){ const liveRole=(window.__QMES_CURRENT_USER__?.role || currentUserEl?.dataset.role || CURRENT_USER_ROLE || '').toString(); return liveRole==='관리자' || liveRole.toLowerCase()==='admin'; }
 function applyAdminVisibility(){
   document.querySelectorAll('[data-admin-only]').forEach(el=>el.style.display=isAdminUser()?'':'none');
   if(roleParam && isAdminUser()){
