@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+require('./qmes-vendor-static-preload.js');
 
 require('./attendance-core-safe.js');
 require('./attendance-correction-safe.js');
@@ -54,6 +55,7 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
       // Retired QMES shell/ERP assets: old cached PC pages can still request these
       // removed files. Never let the SPA HTML fallback be parsed as JavaScript.
       const retiredQmesJs =
+        pathname === '/js/qmes-amaranth-v41-clean-20261006.js' ||
         pathname.startsWith('/js/qmes-erp-') ||
         (pathname.startsWith('/js/qmes-collapsible-') &&
          pathname !== '/js/qmes-collapsible-side-menu-20261001-v5.js');
