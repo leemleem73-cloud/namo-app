@@ -1442,11 +1442,11 @@ app.post('/api/auth/signup', async (req, res) => {
 
     await db(
       `INSERT INTO users (name, email, password_hash, department, title, role, status)
-       VALUES ($1, $2, $3, $4, $5, 'user', 'APPROVED')`,
+       VALUES ($1, $2, $3, $4, $5, 'user', 'PENDING')`,
       [name, email, hash, department, title]
     );
 
-    ok(res, null, '회원가입이 완료되었습니다.');
+    ok(res, null, '회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
   } catch (err) {
     fail(res, 500, err.message);
   }
