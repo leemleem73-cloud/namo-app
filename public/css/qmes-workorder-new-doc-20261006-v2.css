@@ -1,0 +1,125 @@
+/* Document-style new work order registration - 2026-10-06 */
+.qmes-workorder-new-doc-layer{
+  position:fixed!important;inset:0!important;z-index:2147483000!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  padding:18px!important;background:rgba(239,243,247,.72)!important;
+  overscroll-behavior:contain!important;box-sizing:border-box!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+}
+.qmes-workorder-new-doc-paper{
+  width:min(920px,calc(100vw - 36px))!important;
+  max-height:calc(100vh - 36px)!important;
+  overflow:auto!important;background:#fff!important;color:#1f2f3d!important;
+  border:1px solid #c8d3dd!important;border-radius:4px!important;
+  box-shadow:0 22px 60px rgba(30,49,67,.20)!important;
+  padding:18px!important;box-sizing:border-box!important;
+}
+.qmes-workorder-new-doc-head{
+  position:relative!important;display:grid!important;grid-template-columns:200px 1fr 240px!important;
+  align-items:center!important;gap:14px!important;border-bottom:2px solid #153c6b!important;
+  padding:0 34px 12px 0!important;margin-bottom:10px!important;min-height:58px!important;
+}
+.qmes-workorder-new-doc-brand img{width:155px!important;height:auto!important;display:block!important}
+.qmes-workorder-new-doc-title{text-align:center!important;line-height:1.05!important}
+.qmes-workorder-new-doc-title strong{display:block!important;font-size:24px!important;font-weight:900!important;letter-spacing:-.5px!important;color:#152b42!important}
+.qmes-workorder-new-doc-title span{display:block!important;margin-top:5px!important;font-size:9px!important;letter-spacing:1.4px!important;color:#8391a0!important}
+.qmes-workorder-new-doc-meta{font-size:10px!important;line-height:1.7!important;text-align:right!important;color:#5b6d7c!important}
+.qmes-workorder-new-doc-meta b{color:#213a52!important;font-weight:800!important}
+.qmes-workorder-new-doc-close{
+  position:absolute!important;right:0!important;top:0!important;width:28px!important;height:28px!important;
+  border:1px solid #cbd5df!important;border-radius:6px!important;background:#fff!important;color:#53697d!important;
+  font-size:21px!important;line-height:1!important;cursor:pointer!important;
+}
+.qmes-workorder-new-doc-section{margin-top:10px!important}
+.qmes-workorder-new-doc-section-title{
+  min-height:28px!important;display:flex!important;align-items:center!important;padding:0 9px!important;
+  background:#173f72!important;color:#fff!important;font-size:11px!important;font-weight:850!important;
+  border:1px solid #173f72!important;box-sizing:border-box!important;
+}
+.qmes-workorder-new-doc-section-title-row{justify-content:space-between!important}
+.qmes-workorder-new-doc-add{
+  height:22px!important;padding:0 8px!important;border:1px solid rgba(255,255,255,.65)!important;
+  border-radius:3px!important;background:#fff!important;color:#174b80!important;font-size:9px!important;font-weight:850!important;cursor:pointer!important;
+}
+.qmes-workorder-new-doc-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:10px!important}
+.qmes-workorder-new-doc-table th,.qmes-workorder-new-doc-table td{
+  border:1px solid #9fb0c1!important;padding:4px!important;height:34px!important;box-sizing:border-box!important;
+}
+.qmes-workorder-new-doc-table th{background:#eef3f8!important;color:#33495e!important;font-weight:800!important;text-align:center!important}
+.qmes-workorder-new-doc-table td{background:#fff!important}
+.qmes-workorder-new-doc-table input,.qmes-workorder-new-doc-table select{
+  width:100%!important;height:26px!important;border:0!important;border-bottom:1px solid #c6d1dc!important;border-radius:0!important;
+  background:#fff!important;color:#24384a!important;padding:0 5px!important;font-size:10px!important;outline:none!important;box-sizing:border-box!important;
+}
+.qmes-workorder-new-doc-table input:focus,.qmes-workorder-new-doc-table select:focus{border-bottom-color:#2687cf!important;background:#f8fbfe!important}
+.qmes-workorder-new-doc-material-wrap{overflow:auto!important}
+.qmes-workorder-new-doc-material{min-width:820px!important}
+.qmes-workorder-new-doc-material thead th{height:28px!important;background:#e8eef5!important}
+.qmes-workorder-new-doc-material td,.qmes-workorder-new-doc-material th{height:30px!important;padding:2px 3px!important}
+.qmes-workorder-new-doc-material th:nth-child(1){width:42px!important}
+.qmes-workorder-new-doc-material th:nth-child(2){width:130px!important}
+.qmes-workorder-new-doc-material th:nth-child(3){width:140px!important}
+.qmes-workorder-new-doc-material th:nth-child(4){width:70px!important}
+.qmes-workorder-new-doc-material th:nth-child(5),.qmes-workorder-new-doc-material th:nth-child(6){width:90px!important}
+.qmes-workorder-new-doc-material th:nth-child(7){width:86px!important}
+.qmes-workorder-new-doc-material th:nth-child(8){width:58px!important}
+.qmes-workorder-new-doc-material th:nth-child(9){width:120px!important}
+.qmes-workorder-new-doc-material th:nth-child(10){width:50px!important}
+.qmes-workorder-new-doc-table .center{text-align:center!important}
+.qmes-workorder-new-doc-table .num{text-align:right!important;font-variant-numeric:tabular-nums!important}
+.qmes-workorder-new-doc-remove{
+  width:22px!important;height:22px!important;border:1px solid #e7b6b6!important;border-radius:3px!important;
+  background:#fff5f5!important;color:#cc4343!important;font-weight:900!important;cursor:pointer!important;
+}
+.qmes-workorder-new-doc-total th,.qmes-workorder-new-doc-total td{background:#f4f7fa!important;font-weight:850!important}
+.qmes-workorder-new-doc-remarks{
+  display:block!important;width:100%!important;min-height:58px!important;resize:vertical!important;
+  border:1px solid #9fb0c1!important;border-top:0!important;padding:8px!important;color:#26394a!important;
+  background:#fff!important;font-size:10px!important;box-sizing:border-box!important;outline:none!important;
+}
+.qmes-workorder-new-doc-footer{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;
+  margin-top:12px!important;padding-top:10px!important;border-top:1px solid #d5dde5!important;
+  color:#7a8793!important;font-size:9px!important;
+}
+.qmes-workorder-new-doc-footer>div{display:flex!important;gap:7px!important}
+.qmes-workorder-new-doc-cancel,.qmes-workorder-new-doc-save{
+  height:30px!important;min-width:68px!important;padding:0 12px!important;border-radius:4px!important;font-size:10px!important;font-weight:850!important;cursor:pointer!important;
+}
+.qmes-workorder-new-doc-cancel{border:1px solid #c7d1da!important;background:#fff!important;color:#4e6173!important}
+.qmes-workorder-new-doc-save{border:1px solid #176ea9!important;background:#197fc0!important;color:#fff!important}
+@media(max-width:900px){
+  .qmes-workorder-new-doc-head{grid-template-columns:150px 1fr 180px!important}
+  .qmes-workorder-new-doc-brand img{width:130px!important}
+  .qmes-workorder-new-doc-title strong{font-size:20px!important}
+}
+
+
+/* v2: render the new work-order document directly inside the main content area.
+   No fixed overlay, no dim backdrop, no floating window. */
+.qmes-workorder-new-doc-page{
+  position:relative!important;
+  inset:auto!important;
+  z-index:auto!important;
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  overscroll-behavior:contain!important;
+  box-sizing:border-box!important;
+}
+.qmes-workorder-new-doc-page>.qmes-workorder-new-doc-paper{
+  width:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow:visible!important;
+  margin:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  border:1px solid #c8d3dd!important;
+  padding:18px!important;
+}
