@@ -1,0 +1,139 @@
+/* NAMO QMES - V41 CLEAN live shell/style bridge
+ * Applies the approved V41 CLEAN HTML visual system to the live QMES shell.
+ * IQC / PQC / OQC / Equipment inner screens are intentionally preserved.
+ */
+:root{
+  --qv41-bg:#f4f6f9;
+  --qv41-panel:#ffffff;
+  --qv41-line:#e5e9f0;
+  --qv41-text:#1f2937;
+  --qv41-muted:#6b7280;
+  --qv41-nav:#162033;
+  --qv41-nav2:#1c2940;
+  --qv41-primary:#2563eb;
+  --qv41-primary-soft:#eaf1ff;
+  --qv41-success:#16a34a;
+  --qv41-warning:#f59e0b;
+  --qv41-danger:#dc2626;
+  --qv41-shadow:0 8px 22px rgba(15,23,42,.06);
+  --qmes-shell-sidebar-width:76px;
+}
+
+html,body{font-family:"Pretendard","Noto Sans KR",Arial,sans-serif!important;background:var(--qv41-bg)!important;color:var(--qv41-text)!important;}
+body.qv41-nav-open{--qmes-shell-sidebar-width:232px;}
+
+/* Hide legacy/react headers while keeping the React tree alive. */
+html body #root>div>header{display:none!important;}
+html body #qmes-erp-header.qv41-topbar{
+  position:fixed!important;left:0!important;right:0!important;top:0!important;height:58px!important;z-index:22000!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  padding:0 20px 0 14px!important;box-sizing:border-box!important;
+  background:#fff!important;background-image:none!important;filter:none!important;
+  border:0!important;border-bottom:1px solid var(--qv41-line)!important;
+  box-shadow:0 2px 10px rgba(15,23,42,.035)!important;color:var(--qv41-text)!important;
+}
+.qv41-brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.4px;min-width:0}
+.qv41-brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#0f4ea4,#3b82f6);color:#fff;display:grid;place-items:center;font-size:15px;box-shadow:0 5px 12px rgba(37,99,235,.22);flex:0 0 auto}
+.qv41-brand-name{font-size:18px;color:#162033;white-space:nowrap}.qv41-brand-name span{color:var(--qv41-primary)}
+.qv41-top-actions{display:flex;align-items:center;gap:12px;min-width:0}
+.qv41-top-chip{height:34px;padding:0 12px;border:1px solid var(--qv41-line);border-radius:8px;display:flex;align-items:center;gap:7px;background:#fff;font-size:12px;font-weight:700;color:#374151;cursor:pointer;white-space:nowrap}
+.qv41-top-chip:hover{background:#f8fafc;border-color:#d7dee7}
+.qv41-user{display:flex;align-items:center;gap:10px;padding-left:8px;position:relative}
+.qv41-avatar{width:34px;height:34px;border-radius:50%;background:#eef2f7;display:grid;place-items:center;font-weight:800;color:#475569;flex:0 0 auto}
+.qv41-user-button{border:0;background:transparent;padding:0;cursor:pointer;display:flex;align-items:center;gap:10px;color:inherit;text-align:left}
+.qv41-user-meta{line-height:1.15;white-space:nowrap}.qv41-user-meta b{font-size:12px;color:#27364a}.qv41-user-meta small{font-size:10px;color:var(--qv41-muted)}
+.qv41-account-menu{position:absolute;right:0;top:43px;width:170px;background:#fff;border:1px solid #dce3eb;border-radius:9px;box-shadow:0 16px 36px rgba(15,23,42,.14);padding:6px;display:none;z-index:23000}
+.qv41-user.open .qv41-account-menu{display:block}
+.qv41-account-menu button{width:100%;height:34px;border:0;background:#fff;border-radius:6px;text-align:left;padding:0 10px;font-size:11px;font-weight:700;color:#405066;cursor:pointer}
+.qv41-account-menu button:hover{background:#f4f7fa}.qv41-account-menu button.danger{color:#c24141}
+
+html body #qmes-erp-sidebar.qv41-sidebar{
+  position:fixed!important;left:0!important;top:58px!important;bottom:0!important;width:76px!important;height:calc(100vh - 58px)!important;
+  z-index:21000!important;background:var(--qv41-nav)!important;color:#cdd6e3!important;overflow:hidden!important;
+  border:0!important;box-shadow:none!important;transition:width .18s ease!important;
+}
+body.qv41-nav-open #qmes-erp-sidebar.qv41-sidebar{width:232px!important;}
+.qv41-nav-wrap{height:100%;padding:10px 8px 58px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;box-sizing:border-box}
+.qv41-menu-title{font-size:10px;color:#8291a8;text-transform:uppercase;margin:12px 10px 6px;white-space:nowrap;opacity:0;transition:opacity .12s ease}
+body.qv41-nav-open .qv41-menu-title{opacity:1}
+.qv41-menu{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s ease;margin:0 0 3px;background:transparent;color:#cdd6e3;text-align:left}
+.qv41-menu:hover{background:var(--qv41-nav2);color:#fff}.qv41-menu.active{background:#2457a8;color:#fff}
+.qv41-menu-ico{width:26px;text-align:center;font-size:17px;flex:0 0 26px;line-height:1}.qv41-menu-label{font-size:13px;font-weight:650;opacity:0;transition:.12s;overflow:hidden;text-overflow:ellipsis}
+body.qv41-nav-open .qv41-menu-label{opacity:1}
+.qv41-nav-toggle{position:absolute;bottom:12px;left:14px;width:48px;height:34px;border-radius:8px;background:#22314b;border:1px solid #30415f;color:#cdd6e3;display:grid;place-items:center;cursor:pointer;font-size:15px}
+body.qv41-nav-open .qv41-nav-toggle{left:auto;right:14px}
+
+/* The whole main window moves together with the sidebar, exactly like the V41 CLEAN HTML. */
+html body #root>div>main{
+  position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  margin-top:58px!important;margin-left:76px!important;width:calc(100% - 76px)!important;
+  min-height:calc(100vh - 58px)!important;height:auto!important;max-height:none!important;
+  padding:20px 22px 28px!important;box-sizing:border-box!important;overflow:visible!important;
+  background:var(--qv41-bg)!important;transition:margin-left .18s ease,width .18s ease!important;
+}
+body.qv41-nav-open #root>div>main{margin-left:232px!important;width:calc(100% - 232px)!important;}
+
+/* Generic V41 CLEAN content restyle. Excluded inspection/equipment tabs do not receive these inner overrides. */
+body.qv41-restyle #root>div>main{color:var(--qv41-text)!important;background:var(--qv41-bg)!important;}
+body.qv41-restyle #root>div>main h1{font-size:22px!important;letter-spacing:-.7px!important;color:#182436!important;margin-top:0!important}
+body.qv41-restyle #root>div>main h2{color:#1b2a3c!important;letter-spacing:-.4px!important}
+body.qv41-restyle #root>div>main p{color:#64748b}
+body.qv41-restyle #root>div>main section,
+body.qv41-restyle #root>div>main [class*="Panel"],
+body.qv41-restyle #root>div>main [class*="panel"]{
+  border-color:var(--qv41-line)!important;
+}
+body.qv41-restyle #root>div>main [class*="bg-slate-950"],
+body.qv41-restyle #root>div>main [class*="bg-slate-900"],
+body.qv41-restyle #root>div>main [class*="bg-slate-800"]{background:#fff!important;color:var(--qv41-text)!important;}
+body.qv41-restyle #root>div>main [class*="border-slate-"]{border-color:#e1e7ee!important;}
+body.qv41-restyle #root>div>main [class*="text-slate-100"],
+body.qv41-restyle #root>div>main [class*="text-slate-200"],
+body.qv41-restyle #root>div>main [class*="text-slate-300"]{color:#334155!important;}
+body.qv41-restyle #root>div>main [class*="text-slate-400"],
+body.qv41-restyle #root>div>main [class*="text-slate-500"],
+body.qv41-restyle #root>div>main [class*="text-slate-600"]{color:#64748b!important;}
+body.qv41-restyle #root>div>main table{width:100%;border-collapse:collapse!important;font-size:12px!important;background:#fff!important;color:#334155!important;}
+body.qv41-restyle #root>div>main thead{background:#f8fafc!important;color:#475569!important;}
+body.qv41-restyle #root>div>main th,
+body.qv41-restyle #root>div>main td{border-color:#edf0f4!important;}
+body.qv41-restyle #root>div>main tbody tr:hover{background:#f8fbff!important;}
+body.qv41-restyle #root>div>main input,
+body.qv41-restyle #root>div>main select,
+body.qv41-restyle #root>div>main textarea{background:#fff!important;color:#334155!important;border-color:#d9e1ea!important;box-shadow:none!important;}
+body.qv41-restyle #root>div>main input:focus,
+body.qv41-restyle #root>div>main select:focus,
+body.qv41-restyle #root>div>main textarea:focus{border-color:#6ba0de!important;box-shadow:0 0 0 3px rgba(37,99,235,.08)!important;outline:none!important;}
+body.qv41-restyle #root>div>main button{font-family:"Pretendard","Noto Sans KR",Arial,sans-serif;}
+body.qv41-restyle #root>div>main [class*="rounded-xl"],
+body.qv41-restyle #root>div>main [class*="rounded-2xl"]{border-radius:12px!important;}
+body.qv41-restyle #root>div>main [class*="shadow"]{box-shadow:var(--qv41-shadow)!important;}
+
+/* Known live modules: make their outer frames match the approved HTML while preserving behavior/data. */
+body.qv41-restyle .qmes-sales-delivery-dashboard,
+body.qv41-restyle .qmes-workorder-erp-list,
+body.qv41-restyle .qmes-inventory-enterprise,
+body.qv41-restyle .qmes-production-process-management,
+body.qv41-restyle .qmes-equipment-management-layout,
+body.qv41-restyle #qmes-inventory-host{
+  background:transparent!important;color:var(--qv41-text)!important;
+}
+body.qv41-restyle .qmes-sales-delivery-dashboard > *,
+body.qv41-restyle .qmes-workorder-erp-list > *,
+body.qv41-restyle #qmes-inventory-host > *{
+  border-color:var(--qv41-line)!important;
+}
+
+/* Keep the four approved screens internally untouched; shell still remains V41 CLEAN. */
+body.qv41-protected #root>div>main{background:#f4f6f9!important;}
+
+.qv41-toast{position:fixed;right:22px;bottom:22px;background:#162033;color:#fff;padding:11px 15px;border-radius:9px;font-size:12px;box-shadow:0 12px 30px rgba(15,23,42,.22);opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s;z-index:24000}.qv41-toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .qv41-top-chip.hide-sm{display:none}
+  html body #qmes-erp-sidebar.qv41-sidebar{width:58px!important}
+  body.qv41-nav-open #qmes-erp-sidebar.qv41-sidebar{width:200px!important}
+  html body #root>div>main{margin-left:58px!important;width:calc(100% - 58px)!important;padding:16px!important}
+  body.qv41-nav-open #root>div>main{margin-left:200px!important;width:calc(100% - 200px)!important}
+  .qv41-user-meta{display:none}
+}
