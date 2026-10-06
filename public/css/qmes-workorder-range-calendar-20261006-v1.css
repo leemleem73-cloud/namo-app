@@ -1,0 +1,185 @@
+/* Work order instruction-period range calendar — benchmark style, red-marked shortcut rows removed. */
+#qmes-workorder-erp-list-v1 .qerp-date.qmes-amaranth-range-bound{
+  display:block!important;
+  position:relative!important;
+  min-width:260px!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-date.qmes-amaranth-range-bound>#qwf2-from,
+#qmes-workorder-erp-list-v1 .qerp-date.qmes-amaranth-range-bound>#qwf2-to,
+#qmes-workorder-erp-list-v1 .qerp-date.qmes-amaranth-range-bound>b{
+  display:none!important;
+}
+#qmes-workorder-erp-list-v1 .qmes-workorder-range-display{
+  width:100%!important;
+  height:30px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  padding:0 8px!important;
+  border:1px solid #5a8ff0!important;
+  border-radius:2px!important;
+  background:#fff!important;
+  color:#1f2937!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  box-shadow:none!important;
+}
+#qmes-workorder-erp-list-v1 .qmes-workorder-range-display:hover,
+#qmes-workorder-erp-list-v1 .qmes-workorder-range-display:focus{
+  border-color:#2f75e8!important;
+  outline:none!important;
+}
+#qmes-workorder-erp-list-v1 .qmes-workorder-range-display .qmes-range-value{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+}
+#qmes-workorder-erp-list-v1 .qmes-workorder-range-display .qmes-range-icon{
+  width:16px!important;
+  height:16px!important;
+  flex:0 0 16px!important;
+  color:#3f4b57!important;
+}
+#qmes-workorder-range-calendar-20261006-v1{
+  position:fixed!important;
+  z-index:2147483646!important;
+  width:min(432px,calc(100vw - 12px))!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid #9ca3af!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#222!important;
+  box-shadow:0 8px 26px rgba(31,41,55,.20)!important;
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  user-select:none!important;
+  box-sizing:border-box!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 *{box-sizing:border-box!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-cal-body{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  background:#fff!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-month{
+  min-width:0!important;
+  padding:10px 8px 8px!important;
+  background:#fff!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-month:first-child{
+  border-right:1px solid #e2e5e9!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-month-head{
+  height:28px!important;
+  display:grid!important;
+  grid-template-columns:24px 24px 1fr 24px 24px!important;
+  align-items:center!important;
+  margin-bottom:6px!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-nav{
+  width:24px!important;
+  height:24px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#929aa2!important;
+  font-size:17px!important;
+  line-height:24px!important;
+  font-weight:500!important;
+  cursor:pointer!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-nav:hover{color:#222!important;background:#f3f4f6!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-month-title{
+  text-align:center!important;
+  color:#111!important;
+  font-size:15px!important;
+  line-height:28px!important;
+  font-weight:800!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-week,
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-days{
+  display:grid!important;
+  grid-template-columns:repeat(7,1fr)!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-week{
+  height:28px!important;
+  align-items:center!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-week span{
+  text-align:center!important;
+  color:#606870!important;
+  font-size:10px!important;
+  font-weight:700!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-week span:first-child{color:#ef4444!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-days{
+  grid-auto-rows:28px!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day{
+  position:relative!important;
+  width:100%!important;
+  height:28px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#333!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  line-height:28px!important;
+  text-align:center!important;
+  cursor:pointer!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day:hover{background:#eef6ff!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day.sun{color:#ff3333!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day.other{color:#b8bdc3!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day.in-range{background:#e7f2ff!important}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-day.selected{
+  background:#2d8cff!important;
+  color:#fff!important;
+  font-weight:800!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-foot{
+  min-height:42px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  padding:6px 10px!important;
+  border-top:1px solid #dfe3e7!important;
+  background:#fff!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-summary{
+  color:#8a9198!important;
+  font-size:10px!important;
+  font-weight:500!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-foot-actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-foot-btn{
+  height:26px!important;
+  min-width:36px!important;
+  padding:0 8px!important;
+  border:1px solid #d1d5db!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#4b5563!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  cursor:pointer!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-foot-btn.confirm{
+  color:#374151!important;
+  border-color:#c7ccd2!important;
+}
+#qmes-workorder-range-calendar-20261006-v1 .qmes-range-foot-btn:hover{background:#f3f4f6!important}
