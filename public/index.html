@@ -567,7 +567,7 @@ thead{background:#f4f7fa}
       <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
       <div class="user" id="currentUser" data-role="부장">
         <div class="avatar">임</div>
-        <div class="user-meta"><b>임흥배 부장</b><br><small>품질경영팀</small></div>
+        <div class="user-meta"><b>임흥배 부장</b><br><small>품질부</small></div>
       </div>
     </div>
   </header>
@@ -713,7 +713,7 @@ function applyAdminVisibility(){
   if(roleParam && isAdminUser()){
     currentUserEl?.setAttribute('data-role','관리자');
     const meta=currentUserEl?.querySelector('.user-meta');
-    if(meta) meta.innerHTML='<b>관리자</b><br><small>시스템관리</small>';
+    if(meta) meta.innerHTML='<b>관리자</b><br><small>관리부</small>';
   }
 }
 
@@ -1296,11 +1296,16 @@ function openEquipmentRegister(){
 }
 
 const ADMIN_EMPLOYEES=[
-  {no:'NMC-001',name:'임흥배',dept:'품질경영팀',position:'부장',account:'lhb',role:'일반사용자',date:'2026-01-02',status:'사용',last:'2026-10-06 14:08'},
-  {no:'NMC-002',name:'관리자',dept:'시스템관리',position:'관리자',account:'admin',role:'관리자',date:'2025-09-01',status:'사용',last:'2026-10-06 13:42'},
-  {no:'NMC-003',name:'김OO',dept:'생산팀',position:'과장',account:'prod01',role:'일반사용자',date:'2026-02-12',status:'사용',last:'2026-10-06 08:13'},
-  {no:'NMC-004',name:'이OO',dept:'품질경영팀',position:'대리',account:'qa02',role:'일반사용자',date:'2026-03-05',status:'사용',last:'2026-10-05 17:31'},
-  {no:'NMC-005',name:'박OO',dept:'연구소',position:'사원',account:'rnd03',role:'일반사용자',date:'2026-09-28',status:'승인대기',last:'-'}
+  {no:'U-0001',name:'관리자',dept:'관리부',position:'관리자',account:'관리자',role:'관리자',date:'-',status:'사용',last:'-'},
+  {no:'U-0002',name:'김종혁',dept:'대표',position:'대표이사',account:'김종혁',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0003',name:'김세희',dept:'연구소',position:'이사',account:'김세희',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0004',name:'정영기',dept:'연구소',position:'이사',account:'정영기',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0005',name:'박지헌',dept:'연구소',position:'연구원',account:'박지헌',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0006',name:'박도훈',dept:'생산부',position:'대리',account:'박도훈',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0007',name:'문지훈',dept:'생산부',position:'주임',account:'문지훈',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0008',name:'김현진',dept:'영업부',position:'과장',account:'김현진',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0009',name:'임흥배',dept:'품질부',position:'부장',account:'임흥배',role:'일반사용자',date:'-',status:'사용',last:'-'},
+  {no:'U-0010',name:'박현아',dept:'품질부',position:'사원',account:'박현아',role:'일반사용자',date:'-',status:'사용',last:'-'}
 ];
 function employeeStatusBadge(status){
   if(status==='사용') return '<span class="badge b-green">사용</span>';
@@ -1321,7 +1326,7 @@ function adminEmployeesShell(){
     </div>
     <div class="erp-admin-filter">
       <div class="f"><label>사업장</label><select class="input"><option>1000. 기본 사업장</option></select></div>
-      <div class="f"><label>부서</label><select class="input admin-dept-filter"><option value="">전체 부서</option><option>품질경영팀</option><option>생산팀</option><option>연구소</option><option>시스템관리</option></select></div>
+      <div class="f"><label>부서</label><select class="input admin-dept-filter"><option value="">전체 부서</option><option>대표</option><option>연구소</option><option>생산부</option><option>영업부</option><option>품질부</option><option>관리부</option></select></div>
       <div class="f"><label>사원</label><input class="input admin-emp-search" placeholder="이름 / 사번 / 계정ID"></div>
       <div class="f"><label>등록기간</label><input class="input" type="month" value="2026-10"></div>
       <div class="f"><label>권한</label><select class="input admin-role-filter"><option value="">전체</option><option>일반사용자</option><option>관리자</option></select></div>
@@ -1329,8 +1334,8 @@ function adminEmployeesShell(){
     </div>
     <div class="erp-admin-tabs"><button class="erp-admin-tab active" type="button">직원별</button><button class="erp-admin-tab" type="button">부서별</button></div>
     <div class="erp-admin-tablewrap">
-      <table class="erp-admin-table"><thead><tr><th style="width:42px">NO</th><th style="width:86px">사번</th><th style="width:110px">직원명</th><th style="width:120px">부서</th><th style="width:90px">직급</th><th style="width:110px">계정 ID</th><th style="width:90px">권한</th><th style="width:100px">등록일</th><th style="width:90px">상태</th><th style="width:140px">최종접속</th><th style="width:120px">관리</th></tr></thead><tbody>
-      ${ADMIN_EMPLOYEES.map((e,i)=>`<tr class="admin-emp-row" data-index="${i}" data-dept="${e.dept}" data-role="${e.role}" data-status="${e.status}"><td>${i+1}</td><td>${e.no}</td><td class="left"><span class="emp-name">${e.name}</span><span class="emp-sub">${e.account}@namochemical</span></td><td>${e.dept}</td><td>${e.position}</td><td>${e.account}</td><td><span class="role-chip ${e.role==='관리자'?'admin':''}">${e.role}</span></td><td>${e.date}</td><td>${employeeStatusBadge(e.status)}</td><td>${e.last}</td><td><div class="emp-actions"><button class="btn admin-emp-edit" type="button">수정</button><button class="btn admin-emp-lock" type="button">${e.status==='사용'?'중지':'승인'}</button></div></td></tr>`).join('')}
+      <table class="erp-admin-table"><thead><tr><th style="width:42px">NO</th><th style="width:86px">사번</th><th style="width:110px">직원명</th><th style="width:120px">부서</th><th style="width:90px">직급</th><th style="width:110px">계정 ID</th><th style="width:90px">권한</th><th style="width:100px">등록일</th><th style="width:90px">상태</th><th style="width:140px">최종접속</th><th style="width:190px">관리</th></tr></thead><tbody>
+      ${ADMIN_EMPLOYEES.map((e,i)=>`<tr class="admin-emp-row" data-index="${i}" data-dept="${e.dept}" data-role="${e.role}" data-status="${e.status}"><td>${i+1}</td><td>${e.no}</td><td class="left"><span class="emp-name">${e.name}</span><span class="emp-sub">계정 ID · ${e.account}</span></td><td>${e.dept}</td><td>${e.position}</td><td>${e.account}</td><td><span class="role-chip ${e.role==='관리자'?'admin':''}">${e.role}</span></td><td>${e.date}</td><td>${employeeStatusBadge(e.status)}</td><td>${e.last}</td><td><div class="emp-actions"><button class="btn admin-emp-edit" type="button">수정</button><button class="btn admin-emp-lock" type="button">${e.status==='사용'?'중지':'승인'}</button>${e.name==='관리자'?'':'<button class="btn admin-emp-delete" type="button">삭제</button>'}</div></td></tr>`).join('')}
       </tbody></table>
     </div>
     <div class="erp-admin-total"><div>합계</div><div></div><div class="count">등록 ${ADMIN_EMPLOYEES.length}명 · 사용 ${active}명 · 승인대기 ${pending}명</div></div>
@@ -1339,7 +1344,7 @@ function adminEmployeesShell(){
 
 function employeeEditorMarkup(emp={},idx=null){
   const isNew=idx===null || idx===undefined;
-  const dept=emp.dept||'품질경영팀';
+  const dept=emp.dept||'품질부';
   const position=emp.position||'사원';
   const role=emp.role||'일반사용자';
   const status=emp.status||'사용';
@@ -1360,7 +1365,7 @@ function employeeEditorMarkup(emp={},idx=null){
         <div class="employee-edit-cell"><label>사번</label><input data-field="no" value="${emp.no||''}" placeholder="NMC-000"></div>
         <div class="employee-edit-cell"><label>성명</label><input data-field="name" value="${emp.name||''}" placeholder="직원명 입력"></div>
         <div class="employee-edit-cell"><label>입사일</label><input data-field="date" type="date" value="${emp.date||''}"></div>
-        <div class="employee-edit-cell"><label>부서</label><select data-field="dept"><option ${sel(dept,'품질경영팀')}>품질경영팀</option><option ${sel(dept,'생산팀')}>생산팀</option><option ${sel(dept,'연구소')}>연구소</option><option ${sel(dept,'구매팀')}>구매팀</option><option ${sel(dept,'경영지원')}>경영지원</option><option ${sel(dept,'시스템관리')}>시스템관리</option></select></div>
+        <div class="employee-edit-cell"><label>부서</label><select data-field="dept"><option ${sel(dept,'대표')}>대표</option><option ${sel(dept,'연구소')}>연구소</option><option ${sel(dept,'생산부')}>생산부</option><option ${sel(dept,'영업부')}>영업부</option><option ${sel(dept,'품질부')}>품질부</option><option ${sel(dept,'관리부')}>관리부</option></select></div>
         <div class="employee-edit-cell"><label>직급</label><select data-field="position"><option ${sel(position,'사원')}>사원</option><option ${sel(position,'대리')}>대리</option><option ${sel(position,'과장')}>과장</option><option ${sel(position,'차장')}>차장</option><option ${sel(position,'부장')}>부장</option><option ${sel(position,'이사')}>이사</option><option ${sel(position,'대표이사')}>대표이사</option><option ${sel(position,'관리자')}>관리자</option></select></div>
         <div class="employee-edit-cell"><label>휴대전화</label><input data-field="phone" value="${emp.phone||''}" placeholder="010-0000-0000"></div>
         <div class="employee-edit-cell"><label>이메일</label><input data-field="email" value="${emp.email||''}" placeholder="name@namochemical.com"></div>
@@ -1369,7 +1374,7 @@ function employeeEditorMarkup(emp={},idx=null){
     <div class="employee-edit-section">
       <div class="employee-edit-section-title">계정 및 QMES 권한</div>
       <div class="employee-edit-grid">
-        <div class="employee-edit-cell"><label>계정 ID</label><input data-field="account" value="${emp.account||''}" placeholder="로그인 ID"></div>
+        <div class="employee-edit-cell"><label>계정 ID</label><input data-field="account" value="${emp.name||emp.account||''}" placeholder="성명과 동일" readonly></div>
         <div class="employee-edit-cell"><label>권한</label><select data-field="role"><option ${sel(role,'일반사용자')}>일반사용자</option><option ${sel(role,'관리자')}>관리자</option></select></div>
         <div class="employee-edit-cell"><label>계정상태</label><select data-field="status"><option ${sel(status,'사용')}>사용</option><option ${sel(status,'승인대기')}>승인대기</option><option ${sel(status,'사용중지')}>사용중지</option></select></div>
         <div class="employee-edit-cell"><label>초기 비밀번호</label><input data-field="password" type="password" placeholder="신규/초기화 시 입력"></div>
@@ -1394,6 +1399,9 @@ function openEmployeeRegister(emp,idx=null){
   if(!isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
   const isNew=idx===null || idx===undefined;
   openModal(isNew?'직원 신규등록':'직원정보 수정',amaranthScreen('adminEmployees',employeeEditorMarkup(emp||{},idx),isNew?'new':'detail',isNew?'직원 신규등록':'직원정보 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="employeeSave" type="button">저장</button>');
+  const employeeNameField=document.querySelector('.employee-erp-editor [data-field="name"]');
+  const employeeAccountField=document.querySelector('.employee-erp-editor [data-field="account"]');
+  employeeNameField?.addEventListener('input',()=>{if(employeeAccountField) employeeAccountField.value=employeeNameField.value.trim();});
   document.getElementById('employeeSave')?.addEventListener('click',()=>{
     const root=document.querySelector('.employee-erp-editor');
     if(!root) return;
@@ -1401,9 +1409,9 @@ function openEmployeeRegister(emp,idx=null){
     const record={
       no:get('no') || `NMC-${String(ADMIN_EMPLOYEES.length+1).padStart(3,'0')}`,
       name:get('name') || '신규직원',
-      dept:get('dept') || '품질경영팀',
+      dept:get('dept') || '품질부',
       position:get('position') || '사원',
-      account:get('account') || `user${ADMIN_EMPLOYEES.length+1}`,
+      account:get('name') || get('account') || '신규직원',
       role:get('role') || '일반사용자',
       date:get('date') || new Date().toISOString().slice(0,10),
       status:get('status') || '사용',
@@ -1440,6 +1448,17 @@ function wireAdminEmployees(section){
   section.querySelectorAll('.admin-emp-row').forEach(row=>row.addEventListener('click',e=>{if(e.target.closest('button'))return;const i=Number(row.dataset.index);openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
   section.querySelectorAll('.admin-emp-edit').forEach((btn,i)=>btn.addEventListener('click',e=>{e.stopPropagation();openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
   section.querySelectorAll('.admin-emp-lock').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();toast(btn.textContent.trim()==='중지'?'계정 사용중지 처리 화면입니다.':'계정 승인 처리 화면입니다.');}));
+  section.querySelectorAll('.admin-emp-delete').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const row=btn.closest('.admin-emp-row');
+    const idx=Number(row?.dataset.index);
+    const emp=ADMIN_EMPLOYEES[idx];
+    if(!emp || emp.name==='관리자') return;
+    if(!window.confirm(emp.name+' 직원을 삭제하시겠습니까?')) return;
+    ADMIN_EMPLOYEES.splice(idx,1);
+    buildAdminEmployees();
+    toast(emp.name+' 직원이 삭제되었습니다.');
+  }));
 }
 function buildAdminEmployees(){
   const section=document.getElementById('adminEmployees');
