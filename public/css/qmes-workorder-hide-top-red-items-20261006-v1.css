@@ -1,0 +1,4 @@
+/* QMES work order: remove only the red-marked top title/action row. */
+#qmes-workorder-erp-list-v1 .qerp-head{
+  display:none !important;
+}
