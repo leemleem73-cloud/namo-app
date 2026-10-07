@@ -42,11 +42,12 @@
 
   function norm(a){return {id:a?.id||"",uid:a?.uid||"",name:a?.name||"사용자",email:a?.email||"",dept:a?.department||a?.dept||"",position:a?.title||a?.position||"",role:a?.role||"user",mustChangePassword:Boolean(a?.mustChangePassword)}}
   function save(u){try{sessionStorage.setItem(KEY,JSON.stringify(u))}catch(_){} window.__QMES_CURRENT_USER__=u;}
-  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;}
+  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box)box.style.visibility="hidden";}
 
   function apply(u){
     save(u);
     const box=$("#currentUser"); if(!box) return;
+    box.style.visibility="visible";
     const av=$(".avatar",box), meta=$(".user-meta",box);
     if(av) av.textContent=(u.name||"사").slice(0,1);
     if(meta){const pos=String(u.position||"").trim();const name=String(u.name||"").trim();const same=pos&&name&&pos.replace(/\s+/g,"")===name.replace(/\s+/g,"");const suffix=pos&&!same?" "+esc(pos):"";meta.innerHTML=`<b>${esc(name)}${suffix}</b><br><small>${esc(u.dept)}</small>`;}
