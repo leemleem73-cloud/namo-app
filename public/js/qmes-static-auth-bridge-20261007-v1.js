@@ -13,8 +13,8 @@
     el.textContent=`
     #currentUser{position:relative;cursor:pointer;user-select:none}
     #currentUser .qauth-arrow{font-size:10px;color:#94a3b8;margin-left:2px}
-    .qauth-menu{position:absolute;right:0;top:44px;width:170px;background:#fff;border:1px solid #d8e1ea;border-radius:8px;box-shadow:0 14px 34px rgba(15,23,42,.16);padding:6px;display:none;z-index:9000}
-    #currentUser.qauth-open .qauth-menu{display:block}
+    .qauth-menu{position:absolute;right:0;top:calc(100% + 4px);width:180px;background:#fff;border:1px solid #d8e1ea;border-radius:8px;box-shadow:0 14px 34px rgba(15,23,42,.16);padding:6px;display:none;z-index:9000}
+    #currentUser.qauth-open .qauth-menu{display:block}#currentUser.qauth-open:after{content:"";position:absolute;right:0;top:100%;width:190px;height:8px;z-index:8999}
     .qauth-menu button{width:100%;height:34px;border:0;border-radius:6px;background:#fff;text-align:left;padding:0 10px;font-size:11px;font-weight:800;color:#334155;cursor:pointer}
     .qauth-menu button:hover{background:#f4f7fb}.qauth-menu .danger{color:#c24141}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
@@ -115,9 +115,18 @@
   }
 
   function wire(){
-    const box=$("#currentUser");if(!box)return;
-    box.addEventListener("mouseenter",()=>box.classList.add("qauth-open"));box.addEventListener("mouseleave",()=>box.classList.remove("qauth-open"));box.addEventListener("click",e=>{const a=e.target.closest("[data-auth]")?.dataset.auth;if(a==="password"){e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}if(a==="logout"){e.stopPropagation();logout();return;}box.classList.add("qauth-open");});
-    document.addEventListener("click",e=>{if(box&&!box.contains(e.target))box.classList.remove("qauth-open")});
+    const box=$("#currentUser");if(!box||box.dataset.qauthWired==="1")return;
+    box.dataset.qauthWired="1";
+    box.addEventListener("mouseenter",()=>box.classList.add("qauth-open"));
+    box.addEventListener("click",e=>{
+      const a=e.target.closest("[data-auth]")?.dataset.auth;
+      if(a==="password"){e.preventDefault();e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}
+      if(a==="logout"){e.preventDefault();e.stopPropagation();logout();return;}
+      e.stopPropagation();
+      box.classList.add("qauth-open");
+    });
+    document.addEventListener("click",e=>{if(!box.contains(e.target))box.classList.remove("qauth-open")});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape")box.classList.remove("qauth-open")});
   }
 
   async function boot(){
