@@ -565,6 +565,30 @@ thead{background:#f4f7fa}
         <div class="avatar"></div>
         <div class="user-meta"><b></b><br><small></small></div>
       </div>
+      <script>
+      (function(){
+        try{
+          const raw=sessionStorage.getItem('qmes-current-user-v1');
+          if(!raw) return;
+          const u=JSON.parse(raw)||{};
+          const box=document.getElementById('currentUser');
+          if(!box||!u.name) return;
+          const name=String(u.name||'').trim();
+          const position=String(u.position||u.title||'').trim();
+          const dept=String(u.dept||u.department||'').trim();
+          const role=String(u.role||'').trim();
+          const av=box.querySelector('.avatar');
+          const meta=box.querySelector('.user-meta');
+          if(av) av.textContent=name.slice(0,1);
+          if(meta){
+            const pos=position&&position!==name?' '+position:'';
+            meta.innerHTML='<b>'+name+pos+'</b><br><small>'+dept+'</small>';
+          }
+          if(role) box.dataset.role=role;
+          window.__QMES_CURRENT_USER__={...u,name,position,dept,role};
+        }catch(_){}
+      })();
+      </script>
       <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
     </div>
   </header>
