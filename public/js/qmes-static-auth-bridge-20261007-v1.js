@@ -20,15 +20,23 @@
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
     .qauth-overlay{background:linear-gradient(135deg,#07162b,#0c3156)}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
-    .qauth-card,.qauth-modal{width:min(420px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+    .qauth-card{width:min(940px,94vw);background:#fff;border-radius:18px;padding:0;box-shadow:0 24px 64px rgba(0,0,0,.30);display:grid;grid-template-columns:minmax(0,1.12fr) minmax(360px,.88fr);overflow:hidden}
+    .qauth-modal{width:min(460px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+    .qauth-login-photo{min-height:500px;background-image:linear-gradient(180deg,rgba(4,22,42,.16),rgba(4,22,42,.62)),url('/qmes-login.jpg');background-size:cover;background-position:center;position:relative}
+    .qauth-login-photo-inner{position:absolute;left:34px;right:34px;bottom:32px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.28)}
+    .qauth-login-photo-inner span{display:block;font-size:13px;font-weight:800;letter-spacing:2px;opacity:.92}.qauth-login-photo-inner strong{display:block;font-size:38px;line-height:1.05;margin-top:7px}.qauth-login-photo-inner small{display:block;margin-top:10px;font-size:12px;font-weight:700;opacity:.9}
+    .qauth-login-panel{padding:34px 32px;display:flex;flex-direction:column;justify-content:center}
     .qauth-card h2,.qauth-modal h3{margin:0 0 18px;color:#172033}
     .qauth-card h2{text-align:center;font-size:23px}.qauth-modal h3{font-size:17px}
     .qauth-card label,.qauth-modal label{display:block;font-size:11px;font-weight:800;color:#475569;margin:10px 0 6px}
-    .qauth-card input,.qauth-modal input{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:0 11px;font:inherit;font-size:12px;outline:none}
+    .qauth-card input,.qauth-modal input,.qauth-modal select{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:0 11px;font:inherit;font-size:12px;outline:none;background:#fff}
     .qauth-error{min-height:18px;margin-top:8px;font-size:11px;font-weight:700;color:#dc2626}
     .qauth-primary{width:100%;height:44px;margin-top:14px;border:0;border-radius:8px;background:#174d7e;color:#fff;font-weight:900;cursor:pointer}
+    .qauth-signup-link{width:100%;height:40px;margin-top:8px;border:1px solid #b9c8d6;border-radius:8px;background:#fff;color:#174d7e;font-weight:900;cursor:pointer}
+    .qauth-signup-link:hover{background:#f3f7fb}
     .qauth-actions{display:flex;gap:8px;margin-top:14px}.qauth-actions button{flex:1;height:40px;border-radius:8px;font-weight:850;cursor:pointer}
     .qauth-cancel{border:1px solid #d8e1ea;background:#fff;color:#475569}.qauth-save{border:1px solid #2563eb;background:#2563eb;color:#fff}
+    @media(max-width:760px){.qauth-card{grid-template-columns:1fr;width:min(440px,94vw)}.qauth-login-photo{display:none}.qauth-login-panel{padding:26px}}
     `; document.head.appendChild(el);
   }
 
@@ -51,14 +59,39 @@
   function loginScreen(msg=""){
     $("#qauth-login")?.remove();
     const o=document.createElement("div");o.id="qauth-login";o.className="qauth-overlay";
-    o.innerHTML=`<form class="qauth-card"><h2>나모케미칼 QMES</h2><label>아이디 또는 사번</label><input id="qa-id" autocomplete="username"><label>비밀번호</label><input id="qa-pw" type="password" autocomplete="current-password"><div id="qa-err" class="qauth-error">${esc(msg)}</div><button class="qauth-primary" type="submit">로그인</button></form>`;
+    o.innerHTML=`<form class="qauth-card"><div class="qauth-login-photo"><div class="qauth-login-photo-inner"><span>NAMO CHEMICAL</span><strong>QMES</strong><small>Quality & Manufacturing Execution System</small></div></div><div class="qauth-login-panel"><h2>나모케미칼 QMES</h2><label>아이디 또는 사번</label><input id="qa-id" autocomplete="username"><label>비밀번호</label><input id="qa-pw" type="password" autocomplete="current-password"><div id="qa-err" class="qauth-error">${esc(msg)}</div><button class="qauth-primary" type="submit">로그인</button><button class="qauth-signup-link" type="button">회원가입</button></div></form>`;
     document.body.appendChild(o);
+    $(".qauth-signup-link",o)?.addEventListener("click",()=>signupModal());
     $("form",o).addEventListener("submit",async e=>{
-      e.preventDefault();const id=$("#qa-id",o).value.trim(),pw=$("#qa-pw",o).value,err=$("#qa-err",o),btn=$("button",o);
+      e.preventDefault();const id=$("#qa-id",o).value.trim(),pw=$("#qa-pw",o).value,err=$("#qa-err",o),btn=$(".qauth-primary",o);
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
       btn.disabled=true;btn.textContent="로그인 확인 중...";
       try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
       catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{btn.disabled=false;btn.textContent="로그인";}
+    });
+  }
+
+  function signupModal(){
+    $("#qauth-signup")?.remove();
+    const b=document.createElement("div");b.id="qauth-signup";b.className="qauth-modal-bg";
+    b.innerHTML=`<div class="qauth-modal"><h3>회원가입</h3><label>성명</label><input id="qs-name" autocomplete="name"><label>부서</label><select id="qs-dept"><option>대표</option><option>연구소</option><option>생산부</option><option>영업부</option><option>품질부</option><option>관리부</option></select><label>직급</label><select id="qs-title"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>대표이사</option></select><label>이메일</label><input id="qs-email" type="email" autocomplete="email" placeholder="name@namochemical.com"><label>비밀번호</label><input id="qs-pw" type="password" autocomplete="new-password"><label>비밀번호 확인</label><input id="qs-pw2" type="password" autocomplete="new-password"><div id="qs-err" class="qauth-error"></div><div class="qauth-actions"><button class="qauth-cancel" type="button">취소</button><button class="qauth-save" type="button">가입 신청</button></div></div>`;
+    document.body.appendChild(b);
+    $(".qauth-cancel",b)?.addEventListener("click",()=>b.remove());
+    $(".qauth-save",b)?.addEventListener("click",async()=>{
+      const name=$("#qs-name",b).value.trim(),department=$("#qs-dept",b).value,title=$("#qs-title",b).value,email=$("#qs-email",b).value.trim().toLowerCase(),pw=$("#qs-pw",b).value,pw2=$("#qs-pw2",b).value,err=$("#qs-err",b),btn=$(".qauth-save",b);
+      if(!name||!email||!pw){err.textContent="성명, 이메일, 비밀번호를 입력해 주세요.";return;}
+      if(pw.length<4){err.textContent="비밀번호는 4자 이상 입력해 주세요.";return;}
+      if(pw!==pw2){err.textContent="비밀번호 확인이 일치하지 않습니다.";return;}
+      btn.disabled=true;btn.textContent="가입 신청 중...";
+      try{
+        const r=await fetch("/api/auth/signup",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,email,password:pw,department,title})});
+        const p=await r.json().catch(()=>({success:false}));
+        if(!r.ok||!p.success)throw new Error(p.message||"회원가입 신청에 실패했습니다.");
+        b.remove();
+        const errBox=$("#qa-err");
+        if(errBox){errBox.style.color="#16724a";errBox.textContent=p.message||"회원가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.";}
+      }catch(x){err.textContent=x.message||"회원가입 신청에 실패했습니다."}
+      finally{btn.disabled=false;btn.textContent="가입 신청";}
     });
   }
 
