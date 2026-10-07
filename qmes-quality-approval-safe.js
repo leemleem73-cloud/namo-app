@@ -124,6 +124,72 @@ async function notify(userId, title, message, page, approvalId) {
   );
 }
 
+async function ensureMissingIqcApprovals() {
+  await ensureSchema();
+  const manager = await getQualityManager();
+  if (!manager) return 0;
+
+  const missing = await pool.query(`
+    SELECT i.id::text AS record_id,
+           i.inspector,
+           i.item,
+           i.lot,
+           i.created_at,
+           u.id AS writer_user_id,
+           u.name AS writer_name
+    FROM iqc i
+    LEFT JOIN users u ON u.name = i.inspector
+    LEFT JOIN qmes_quality_approvals a
+      ON a.doc_type='IQC' AND a.record_id=i.id::text
+    WHERE a.id IS NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(COALESCE(i.items_json,'[]'::jsonb)) x
+        WHERE COALESCE(x->>'name','')='원본시트'
+      )
+      AND COALESCE(i.sign_approver,'{}'::jsonb) = '{}'::jsonb
+    ORDER BY i.created_at DESC
+    LIMIT 100
+  `);
+
+  let created = 0;
+  for (const row of missing.rows) {
+    const writerId = row.writer_user_id || null;
+    const writerName = row.writer_name || row.inspector || '작성자';
+    const title = '수입검사 성적서 검토·승인';
+
+    const ins = await pool.query(
+      `INSERT INTO qmes_quality_approvals
+       (doc_type,record_id,title,page,writer_user_id,writer_name,
+        reviewer_user_id,reviewer_name,approver_user_id,approver_name,status,created_at,updated_at)
+       VALUES('IQC',$1,$2,'approval',$3,$4,$5,$6,$5,$6,'PENDING',COALESCE($7,NOW()),NOW())
+       ON CONFLICT DO NOTHING
+       RETURNING id`,
+      [row.record_id,title,writerId,writerName,manager.id,manager.name||'',row.created_at]
+    );
+
+    if (ins.rowCount) {
+      const approvalId = ins.rows[0].id;
+      await notify(
+        manager.id,
+        'IQC 검토·승인 요청',
+        `${writerName}님이 수입검사 성적서 검토·승인을 요청했습니다.`,
+        'approval',
+        approvalId
+      );
+      await updateSourceSignatures(
+        'IQC',
+        row.record_id,
+        {id:writerId,name:writerName,department:'',title:''},
+        manager,
+        false
+      );
+      created++;
+    }
+  }
+  return created;
+}
+
 function install(app) {
   if (app.__qmesQualityApprovalSafeInstalled) return;
   app.__qmesQualityApprovalSafeInstalled = true;
@@ -194,6 +260,7 @@ function install(app) {
   app.get('/api/qmes-quality/approvals', requireLogin, async (req, res) => {
     try {
       await ensureSchema();
+      await ensureMissingIqcApprovals();
       const u = req.session.user || {};
       const admin = isAdmin(req);
       const q = await pool.query(
@@ -277,6 +344,7 @@ function install(app) {
   app.get('/api/qmes-quality/notifications', requireLogin, async (req, res) => {
     try {
       await ensureSchema();
+      await ensureMissingIqcApprovals();
       const q = await pool.query(
         `SELECT n.*,a.doc_type,a.record_id,a.status AS approval_status,a.writer_name,a.reviewer_name,a.approver_name,a.approved_at
          FROM qmes_quality_notifications n
