@@ -954,8 +954,8 @@ thead{background:#f4f7fa}
       <div class="menu" data-page="quality"><div class="ico">✅</div><div class="label">품질관리</div></div>
       <div class="menu" data-page="approval"><div class="ico">✍</div><div class="label">전자결재</div></div>
       <div class="menu" data-page="standard"><div class="ico">📚</div><div class="label">기준서 관리</div></div>
-      <div class="menu-title">ADMIN</div>
-      <div class="menu" data-page="adminEmployees"><div class="ico">👥</div><div class="label">직원등록현황</div></div>
+      <div class="menu-title" data-admin-only>ADMIN</div>
+      <div class="menu" data-page="adminEmployees" data-admin-only><div class="ico">👥</div><div class="label">직원등록현황</div></div>
       <div class="nav-toggle" id="navToggle">☰</div>
     </div>
   </aside>
@@ -1028,7 +1028,7 @@ thead{background:#f4f7fa}
     <section class="module-page" id="quality"></section>
     <section class="module-page" id="approval"></section>
     <section class="module-page" id="standard"></section>
-    <section class="module-page" id="adminEmployees"></section>
+    <section class="module-page" id="adminEmployees" data-admin-only></section>
     <section class="module-page main-workspace" id="mainWorkspace">
       <div class="workspace-shell">
         <div class="workspace-head">
@@ -1074,6 +1074,10 @@ function restoreQmesPage(){
   let pageId='';
   try{pageId=sessionStorage.getItem(QMES_LAST_PAGE_KEY)||'';}catch(e){}
   if(!pageId) return false;
+  if(pageId==='adminEmployees' && !isAdminUser()){
+    try{sessionStorage.removeItem(QMES_LAST_PAGE_KEY);}catch(e){}
+    return false;
+  }
   const page=document.getElementById(pageId);
   const menu=[...document.querySelectorAll('.menu')].find(x=>x.dataset.page===pageId);
   if(!page || !menu) return false;
@@ -1858,6 +1862,10 @@ function wireAdminEmployees(section){
 function buildAdminEmployees(){
   const section=document.getElementById('adminEmployees');
   if(!section) return;
+  if(!isAdminUser()){
+    section.innerHTML='';
+    return;
+  }
   section.innerHTML=adminEmployeesShell();
   wireAdminEmployees(section);
 }
