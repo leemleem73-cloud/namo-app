@@ -1948,7 +1948,7 @@ function qualityApprovalShell(){
         <div class="filters"><input class="input quality-approval-search" placeholder="문서번호 / 제목 / 작성자 검색"></div>
         <div class="table-tools"><button class="btn quality-approval-refresh" type="button">새로고침</button></div>
       </div>
-      <div class="module-body"><table><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="8">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="module-body"><table><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th><th>비고</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="9">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
     </div>`;
 }
 function qualityApprovalDate(value){
@@ -1982,8 +1982,9 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
           ? `<button class="btn primary quality-approve-btn" type="button" data-approval-id="${a.id}">검토·승인</button>`
           : '';
         const status=pending?'<span class="badge b-yellow">승인대기</span>':'<span class="badge b-green">승인완료</span>';
-        return `<tr><td>${i+1}</td><td>${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td></tr>`;
-      }).join(''):'<tr><td colspan="8">현재 결재 요청이 없습니다.</td></tr>';
+        const remark=a.status==='APPROVED'?'검토·승인 완료':'검토·승인 대기';
+        return `<tr><td>${i+1}</td><td>${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td><div style="font-size:11px;color:#64748b;margin-bottom:6px">${remark}</div><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="height:26px;padding:0 9px;color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
+      }).join(''):'<tr><td colspan="9">현재 결재 요청이 없습니다.</td></tr>';
     };
     render();
     section.querySelector('.quality-approval-search')?.addEventListener('input',render,{once:false});
@@ -1998,8 +1999,20 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
         await loadQualityNotifications();
       }catch(e){toast(e.message||'검토·승인에 실패했습니다.');btn.disabled=false;}
     }));
+    section.querySelectorAll('.quality-delete-btn').forEach(btn=>btn.addEventListener('click',async()=>{
+      if(!confirm('이 결재 문서를 삭제하시겠습니까?')) return;
+      btn.disabled=true;
+      try{
+        const r=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(btn.dataset.approvalId),{method:'DELETE',credentials:'same-origin'});
+        const p=await r.json();
+        if(!r.ok||!p.success) throw new Error(p.message||'삭제 실패');
+        toast('결재 문서를 삭제했습니다.');
+        await loadQualityApprovals(section);
+        await loadQualityNotifications();
+      }catch(e){toast(e.message||'결재 문서 삭제에 실패했습니다.');btn.disabled=false;}
+    }));
   }catch(e){
-    tbody.innerHTML='<tr><td colspan="8">결재 목록을 불러오지 못했습니다.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9">결재 목록을 불러오지 못했습니다.</td></tr>';
   }
 }
 async function qmesRequestQualityApproval(docType,recordId,title,page='approval'){
