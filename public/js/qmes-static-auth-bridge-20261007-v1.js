@@ -22,7 +22,7 @@
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
     .qauth-card{width:min(1320px,96vw);background:transparent;border-radius:0;padding:0;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(380px,.72fr);gap:48px;overflow:visible;align-items:center}
     .qauth-modal{width:min(460px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
-    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration.webp?v=20261007-1');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative}
+    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration-hd.svg?v=20261007-hd2');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;image-rendering:auto}
     .qauth-login-photo-inner{display:none}
     .qauth-login-photo-inner span{display:block;font-size:13px;font-weight:800;letter-spacing:2px;opacity:.92}.qauth-login-photo-inner strong{display:block;font-size:38px;line-height:1.05;margin-top:7px}.qauth-login-photo-inner small{display:block;margin-top:10px;font-size:12px;font-weight:700;opacity:.9}
     .qauth-login-panel{padding:48px 44px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.96);border-radius:22px;box-shadow:0 18px 50px rgba(31,41,55,.08);min-height:600px}
