@@ -2163,8 +2163,21 @@ async function loadQualityNotifications(){
     rows.forEach(n=>{
       const el=document.createElement('div');
       el.className='notify-item';
-      el.dataset.kind='approval';
-      el.dataset.page=n.page||'approval';
+      const sourceText=[n.doc_type,n.document_type,n.title,n.message,n.page].filter(Boolean).join(' ').toUpperCase();
+      let qualityKind='approval';
+      let targetPage=n.page||'approval';
+      if(sourceText.includes('IQC')||sourceText.includes('수입검사')){
+        qualityKind='iqc approval';
+        targetPage='incoming';
+      }else if(sourceText.includes('IPQC')||sourceText.includes('PQC')||sourceText.includes('공정검사')){
+        qualityKind='pqc approval';
+        targetPage='process';
+      }else if(sourceText.includes('OQC')||sourceText.includes('출하검사')){
+        qualityKind='oqc approval';
+        targetPage='outgoing';
+      }
+      el.dataset.kind=qualityKind;
+      el.dataset.page=targetPage;
       el.dataset.source='quality';
       el.dataset.approvalId=n.approval_id||'';
       const pending=n.approval_status==='PENDING';
@@ -2956,7 +2969,8 @@ notifyTabs?.addEventListener('click',e=>{
   const filter=btn.dataset.filter;
   let visible=0;
   notifyList?.querySelectorAll('.notify-item').forEach(item=>{
-    const show=filter==='all'||item.dataset.kind===filter;
+    const kinds=String(item.dataset.kind||'').split(/\s+/).filter(Boolean);
+    const show=filter==='all'||kinds.includes(filter);
     item.classList.toggle('hidden',!show);
     if(show)visible++;
   });
