@@ -590,10 +590,33 @@ thead{background:#f4f7fa}
       <img class="brand-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-restore2" alt="NAMO Chemical">
     </div>
     <div class="top-actions">
-      <div class="user" id="currentUser" data-role="">
+      <div class="user" id="currentUser" data-role="" style="visibility:hidden">
         <div class="avatar"></div>
         <div class="user-meta"><b></b><br><small></small></div>
+        <span class="qauth-arrow" aria-hidden="true">▼</span>
       </div>
+      <script>
+      (function(){
+        try{
+          var box=document.getElementById('currentUser');
+          var raw=sessionStorage.getItem('qmes-current-user-v1');
+          if(!box||!raw)return;
+          var u=JSON.parse(raw);
+          if(!u||typeof u!=='object')return;
+          var name=String(u.name||'').trim();
+          var pos=String(u.position||u.title||'').trim();
+          var dept=String(u.dept||u.department||'').trim();
+          var av=box.querySelector('.avatar');
+          var b=box.querySelector('.user-meta b');
+          var s=box.querySelector('.user-meta small');
+          if(av)av.textContent=(name||'사').slice(0,1);
+          if(b)b.textContent=name+(pos&&pos.replace(/\s+/g,'')!==name.replace(/\s+/g,'')?' '+pos:'');
+          if(s)s.textContent=dept;
+          box.dataset.role=String(u.role||'');
+          box.style.visibility='visible';
+        }catch(_){}
+      })();
+      </script>
       <span class="top-divider" aria-hidden="true"></span>
       <button class="top-chip hide-sm" id="notifyBtn" type="button" title="통합알림" aria-label="통합알림">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
@@ -2295,7 +2318,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-auth8"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-auth9"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch3-photo"></script>
 </body>
 </html>
