@@ -43,6 +43,31 @@
   .user{display:flex;align-items:center;gap:8px;padding:0 6px 0 0;height:40px}
   .avatar{width:34px;height:34px;border-radius:50%;background:#eef2f7;display:grid;place-items:center;font-weight:700;color:#475569}
   .user-meta{line-height:1.12;min-width:92px}.user-meta b{font-size:12px}.user-meta small{font-size:10px;color:var(--muted)}
+  .notify-panel{position:absolute;right:84px;top:48px;width:382px;height:560px;background:#fff;border:1px solid #dfe5ec;border-radius:0 0 10px 10px;box-shadow:0 18px 46px rgba(15,23,42,.20);display:none;z-index:9500;overflow:hidden;color:#202733}
+  .notify-panel.open{display:flex;flex-direction:column}
+  .notify-panel:before{content:"";position:absolute;right:55px;top:-7px;width:14px;height:14px;background:#fff;border-left:1px solid #dfe5ec;border-top:1px solid #dfe5ec;transform:rotate(45deg)}
+  .notify-head{height:48px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #e6eaf0;background:#fff;font-size:14px;font-weight:900}
+  .notify-head svg{width:17px;height:17px;margin-right:7px;fill:none;stroke:#4b5563;stroke-width:1.8}
+  .notify-tools{padding:10px 16px;border-bottom:1px solid #edf0f4;background:#fff}
+  .notify-tool-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#475569}
+  .notify-tool-actions{display:flex;align-items:center;gap:7px}
+  .notify-mini-btn{height:28px;padding:0 9px;border:1px solid #d7dde5;border-radius:5px;background:#fff;color:#475569;font-size:10.5px;font-weight:700;cursor:pointer}
+  .notify-mini-btn:hover{background:#f7f9fc}
+  .notify-tabs{display:flex;gap:6px;overflow-x:auto;padding:11px 0 2px;scrollbar-width:none}
+  .notify-tabs::-webkit-scrollbar{display:none}
+  .notify-tab{height:27px;padding:0 10px;border:1px solid #dfe4ea;border-radius:999px;background:#fff;color:#3f4752;font-size:10.5px;font-weight:700;white-space:nowrap;cursor:pointer}
+  .notify-tab.active{border-color:#2581cf;color:#1671bb;background:#f4faff}
+  .notify-date{height:34px;display:flex;align-items:center;padding:0 18px;background:#f3f5f7;border-bottom:1px solid #e5e9ee;font-size:10.5px;font-weight:900;color:#3d4651}
+  .notify-list{flex:1;overflow-y:auto;background:#fff}
+  .notify-item{display:grid;grid-template-columns:38px 1fr auto;gap:8px;padding:13px 16px;border-bottom:1px solid #f0f2f5;cursor:pointer}
+  .notify-item:hover{background:#f8fbff}
+  .notify-item.hidden{display:none}
+  .notify-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#eaf1fb;color:#3a78bd;font-size:14px;font-weight:900}
+  .notify-copy b{display:block;font-size:11.5px;color:#3b4450;margin-bottom:4px}.notify-copy span{display:block;font-size:10.5px;color:#7a8491;line-height:1.45}
+  .notify-time{font-size:9.5px;color:#98a1ad;white-space:nowrap;padding-top:1px}
+  .notify-empty{display:none;padding:45px 20px;text-align:center;color:#9aa3ad;font-size:11px}
+  .notify-footer{height:34px;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;border-top:1px solid #edf0f4;background:#fbfcfe;font-size:9.5px;color:#9aa3ad}
+  #notifyBtn.notify-active{background:#eef5fd;color:#1e6fae}
 
   .sidebar{grid-row:2;background:var(--nav);color:#cdd6e3;overflow:hidden;transition:.18s ease;position:relative;z-index:10}
   .nav-wrap{height:100%;padding:10px 8px;overflow:auto}
@@ -579,6 +604,66 @@ thead{background:#f4f7fa}
       <button class="top-chip hide-sm" id="guideBtn" type="button" title="이용가이드" aria-label="이용가이드">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.7c-1 .8-1.9 1.3-1.9 2.6M12 17h.01"/></svg>
       </button>
+
+      <div class="notify-panel" id="notifyPanel" aria-label="QMES 통합알림">
+        <div class="notify-head">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          통합알림
+        </div>
+        <div class="notify-tools">
+          <div class="notify-tool-row">
+            <span>전체 알림</span>
+            <div class="notify-tool-actions">
+              <button class="notify-mini-btn" id="notifyReadAll" type="button">모두읽음</button>
+              <button class="notify-mini-btn" id="notifyClose" type="button">닫기</button>
+            </div>
+          </div>
+          <div class="notify-tabs" id="notifyTabs">
+            <button class="notify-tab active" type="button" data-filter="all">전체</button>
+            <button class="notify-tab" type="button" data-filter="work">작업지시</button>
+            <button class="notify-tab" type="button" data-filter="iqc">수입검사</button>
+            <button class="notify-tab" type="button" data-filter="pqc">공정검사</button>
+            <button class="notify-tab" type="button" data-filter="oqc">출하검사</button>
+            <button class="notify-tab" type="button" data-filter="approval">전자결재</button>
+            <button class="notify-tab" type="button" data-filter="delivery">납기</button>
+          </div>
+        </div>
+        <div class="notify-date" id="notifyDateLabel"></div>
+        <div class="notify-list" id="notifyList">
+          <div class="notify-item" data-kind="delivery" data-page="orders">
+            <div class="notify-dot">!</div>
+            <div class="notify-copy"><b>[납기임박] 수주 납기 확인</b><span>요청 납기가 임박한 수주 3건이 있습니다.</span></div>
+            <div class="notify-time">09:10</div>
+          </div>
+          <div class="notify-item" data-kind="iqc" data-page="incoming">
+            <div class="notify-dot">I</div>
+            <div class="notify-copy"><b>[수입검사] 검사 대기</b><span>입고 LOT 수입검사 대기 2건을 확인해 주세요.</span></div>
+            <div class="notify-time">09:02</div>
+          </div>
+          <div class="notify-item" data-kind="work" data-page="work">
+            <div class="notify-dot">W</div>
+            <div class="notify-copy"><b>[작업지시] 생산 대기</b><span>생산 대기 작업지시 8건이 등록되어 있습니다.</span></div>
+            <div class="notify-time">08:55</div>
+          </div>
+          <div class="notify-item" data-kind="pqc" data-page="process">
+            <div class="notify-dot">P</div>
+            <div class="notify-copy"><b>[공정검사] 검사 확인</b><span>진행 중 생산 LOT의 공정검사 결과를 확인해 주세요.</span></div>
+            <div class="notify-time">08:47</div>
+          </div>
+          <div class="notify-item" data-kind="oqc" data-page="outgoing">
+            <div class="notify-dot">O</div>
+            <div class="notify-copy"><b>[출하검사] 출하 대기</b><span>출하 예정 완제품 LOT의 최종검사 상태를 확인해 주세요.</span></div>
+            <div class="notify-time">08:35</div>
+          </div>
+          <div class="notify-item" data-kind="approval" data-page="approval">
+            <div class="notify-dot">A</div>
+            <div class="notify-copy"><b>[전자결재] 결재 대기</b><span>검토 또는 승인이 필요한 결재문서가 있습니다.</span></div>
+            <div class="notify-time">08:21</div>
+          </div>
+          <div class="notify-empty" id="notifyEmpty">해당 알림이 없습니다.</div>
+        </div>
+        <div class="notify-footer">NAMO CHEMICAL QMES · 통합알림</div>
+      </div>
     </div>
   </header>
 
@@ -2148,7 +2233,57 @@ document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대�
 document.getElementById('allViewBtn').addEventListener('click',()=>{
   document.querySelector('.menu[data-page="orders"]').click(); toast('수주납기 전체현황으로 이동했습니다.');
 });
-document.getElementById('notifyBtn').addEventListener('click',()=>openModal('통합알림','<div class="status-list"><div class="status-row"><span>납기 임박</span><div class="track"><div class="fill warn" style="width:72%"></div></div><span class="pct">3건</span></div><div class="status-row"><span>검사 대기</span><div class="track"><div class="fill" style="width:48%"></div></div><span class="pct">2건</span></div></div>'));
+const notifyBtn=document.getElementById('notifyBtn');
+const notifyPanel=document.getElementById('notifyPanel');
+const notifyTabs=document.getElementById('notifyTabs');
+const notifyList=document.getElementById('notifyList');
+const notifyEmpty=document.getElementById('notifyEmpty');
+const notifyDateLabel=document.getElementById('notifyDateLabel');
+const notifyDate=new Date();
+if(notifyDateLabel) notifyDateLabel.textContent=`${String(notifyDate.getMonth()+1).padStart(2,'0')}.${String(notifyDate.getDate()).padStart(2,'0')} ${['일','월','화','수','목','금','토'][notifyDate.getDay()]}요일`;
+
+function closeNotifyPanel(){
+  notifyPanel?.classList.remove('open');
+  notifyBtn?.classList.remove('notify-active');
+}
+notifyBtn?.addEventListener('click',e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('currentUser')?.classList.remove('qauth-open');
+  const opening=!notifyPanel?.classList.contains('open');
+  closeNotifyPanel();
+  if(opening){notifyPanel?.classList.add('open');notifyBtn?.classList.add('notify-active');}
+});
+document.getElementById('notifyClose')?.addEventListener('click',closeNotifyPanel);
+document.getElementById('notifyReadAll')?.addEventListener('click',()=>{
+  document.querySelectorAll('#notifyList .notify-item').forEach(el=>el.style.opacity='.55');
+  toast('통합알림을 모두 읽음 처리했습니다.');
+});
+notifyTabs?.addEventListener('click',e=>{
+  const btn=e.target.closest('.notify-tab');
+  if(!btn)return;
+  notifyTabs.querySelectorAll('.notify-tab').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  const filter=btn.dataset.filter;
+  let visible=0;
+  notifyList?.querySelectorAll('.notify-item').forEach(item=>{
+    const show=filter==='all'||item.dataset.kind===filter;
+    item.classList.toggle('hidden',!show);
+    if(show)visible++;
+  });
+  if(notifyEmpty)notifyEmpty.style.display=visible?'none':'block';
+});
+notifyList?.addEventListener('click',e=>{
+  const item=e.target.closest('.notify-item');
+  if(!item)return;
+  const page=item.dataset.page;
+  const menu=document.querySelector(`.menu[data-page="${page}"]`);
+  closeNotifyPanel();
+  if(menu)menu.click();
+});
+document.addEventListener('click',e=>{
+  if(notifyPanel?.classList.contains('open')&&!notifyPanel.contains(e.target)&&!notifyBtn?.contains(e.target))closeNotifyPanel();
+});
 document.getElementById('orgBtn')?.addEventListener('click',()=>openModal('조직도','<div class="detail-grid"><div class="key">회사</div><div>나모케미칼</div><div class="key">부서</div><div>대표 · 연구소 · 생산부 · 영업부 · 품질부 · 관리부</div></div>'));
 document.getElementById('guideBtn')?.addEventListener('click',()=>openModal('이용가이드','<div style="line-height:1.8;font-size:12px;color:#475569">상단 사용자 메뉴에서 개인정보 설정 및 로그아웃을 할 수 있습니다.<br>좌측 메뉴에서 QMES 각 업무 화면으로 이동합니다.</div>'));
 
