@@ -1967,12 +1967,6 @@ function issueInspectionReport(id,row){
         <div class="report-support-row"><div class="label">추적성</div><div class="value">${info.trace}<br><span class="muted">원자재/작업지시/생산 LOT/완제품 LOT 간 추적 가능 여부 확인</span></div></div>
         <div class="report-support-row"><div class="label">특이사항</div><div class="value">특이사항 없음<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
       </div>
-      <div class="report-sign">
-        <div class="label">확인</div>
-        <div class="sign-cell"><div class="sign-role">작성자</div><div class="sign-line"></div><div class="sign-name">${inspector}</div></div>
-        <div class="sign-cell"><div class="sign-role">검토자</div><div class="sign-line"></div><div class="sign-name">품질책임자</div></div>
-        <div class="sign-cell"><div class="sign-role">승인자</div><div class="sign-line"></div><div class="sign-name">승인권자</div></div>
-      </div>
       <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
     </div>`;
   openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button><button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
