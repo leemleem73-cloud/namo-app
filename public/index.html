@@ -1028,6 +1028,34 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape' && mainWorkspace.cla
 
 const NAMO_RAW_MATERIALS=['NMP','분산제','세라믹','중간배치','바인더','SBR'];
 const INCOMING_STORE_KEY='namo_qmes_incoming_materials_v1';
+const IQC_PAGE_CACHE_KEY='qmes-iqc-page-cache-v1';
+function saveIncomingPageCache(rows){
+  try{sessionStorage.setItem(IQC_PAGE_CACHE_KEY,JSON.stringify({rows:Array.isArray(rows)?rows:[],savedAt:Date.now()}));}catch(e){}
+}
+function applyIncomingMetrics(section,rows){
+  rows=Array.isArray(rows)?rows:[];
+  const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+  const total=rows.length;
+  const todayCount=rows.filter(x=>iqcDateText(x.date)===today).length;
+  const pass=rows.filter(x=>iqcJudge(x)==='합격').length;
+  const pending=Math.max(0,total-pass);
+  const setMetric=(key,val)=>{const el=section.querySelector('[data-iqc-metric="'+key+'"]');if(el)el.innerHTML=String(val)+'<small>건</small>';};
+  setMetric('total',total);
+  setMetric('today',todayCount);
+  setMetric('pass',pass);
+  setMetric('pending',pending);
+}
+function restoreIncomingPageCache(section){
+  try{
+    const cached=JSON.parse(sessionStorage.getItem(IQC_PAGE_CACHE_KEY)||'null');
+    const rows=Array.isArray(cached?.rows)?cached.rows:null;
+    if(!rows)return false;
+    section._iqcRows=rows;
+    applyIncomingMetrics(section,rows);
+    renderIncomingPage(section,section._iqcPage||1);
+    return true;
+  }catch(e){return false;}
+}
 function getIncomingMaterials(){
   try{
     const saved=JSON.parse(localStorage.getItem(INCOMING_STORE_KEY)||'[]');
@@ -1904,13 +1932,8 @@ async function loadIncomingFromDb(section){
     const rows=Array.isArray(p.data)?p.data:[];
     section._iqcRows=rows;
     updateIncomingMaterialsFromDb(rows);
-    const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
-    const total=rows.length;
-    const todayCount=rows.filter(x=>iqcDateText(x.date)===today).length;
-    const pass=rows.filter(x=>iqcJudge(x)==='합격').length;
-    const pending=Math.max(0,total-pass);
-    const setMetric=(key,val)=>{const el=section.querySelector('[data-iqc-metric="'+key+'"]');if(el)el.innerHTML=String(val)+'<small>건</small>';};
-    setMetric('total',total);setMetric('today',todayCount);setMetric('pass',pass);setMetric('pending',pending);
+    saveIncomingPageCache(rows);
+    applyIncomingMetrics(section,rows);
     renderIncomingPage(section,1);
     wireModule(section,'incoming');
   }catch(err){
@@ -2040,7 +2063,10 @@ function buildModule(id){
   }
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
-    if(id==='incoming') setTimeout(()=>loadIncomingFromDb(section),0);
+    if(id==='incoming'){
+      restoreIncomingPageCache(section);
+      setTimeout(()=>loadIncomingFromDb(section),0);
+    }
   }else{
     section.innerHTML=`
       <div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div><div class="date-badge">QMES</div></div>
