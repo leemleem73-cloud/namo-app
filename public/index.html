@@ -331,7 +331,7 @@
 /* Standard inspection report entry - unified IQC/IPQC/OQC */
 .std-inspection{background:#fff;border:1px solid #d9e1ea;min-height:640px}
 .std-inspection-head{display:grid;grid-template-columns:180px 1fr 320px;border-bottom:2px solid #334155;background:#fff}
-.std-inspection-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #cfd8e3;font-weight:900;font-size:15px;color:#194a8d;letter-spacing:.3px}
+.std-inspection-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #cfd8e3;font-weight:900;font-size:15px;color:#194a8d;letter-spacing:.3px;padding:10px 14px}.std-namo-logo{display:block;width:150px;max-width:100%;height:auto;object-fit:contain}
 .std-inspection-title{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:74px;border-right:1px solid #cfd8e3}
 .std-inspection-title b{font-size:22px;letter-spacing:-.7px;color:#172033}.std-inspection-title span{margin-top:5px;font-size:9px;color:#8a96a8;letter-spacing:.6px}
 .std-inspection-doc{display:grid;grid-template-columns:76px 1fr;font-size:10px}.std-inspection-doc>div{display:flex;align-items:center;padding:6px 8px;border-bottom:1px solid #dbe2ea}.std-inspection-doc>div:nth-last-child(-n+2){border-bottom:0}.std-inspection-doc .k{justify-content:center;background:#f4f6f8;font-weight:800;color:#4b596d;border-right:1px solid #dbe2ea}
@@ -2138,7 +2138,7 @@ function standardInspectionForm(type){
     <div class="k">CoA 상태</div><div class="v"><select><option>대기</option><option>확인완료</option><option>발행완료</option><option>미확인</option></select></div>`;
   return `<div class="std-inspection premium" data-inspection-type="${type}">
     <div class="std-inspection-head">
-      <div class="std-inspection-logo"><div class="corp">NAMO <span>QMES</span></div><small>NAMOCHEMICAL</small></div>
+      <div class="std-inspection-logo"><img class="std-namo-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-logo1" alt="NAMO Chemical"></div>
       <div class="std-inspection-title"><div class="doc-chip">${conf.doc} QUALITY RECORD</div><b>${conf.title}</b><span>${conf.sub}</span></div>
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
