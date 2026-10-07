@@ -1133,10 +1133,10 @@ function premiumInspectionShell(id,title,desc,cols){
         <div class="ip-tag">${meta.tag}</div>
       </div>
       <div class="ip-metrics">
-        <div class="ip-metric"><div class="k">전체 검사</div><div class="v">${meta.total}<small>건</small></div></div>
-        <div class="ip-metric"><div class="k">금일 검사</div><div class="v">${meta.today}<small>건</small></div></div>
-        <div class="ip-metric good"><div class="k">합격</div><div class="v">${meta.pass}<small>건</small></div></div>
-        <div class="ip-metric warn"><div class="k">진행 / 대기</div><div class="v">${meta.pending}<small>건</small></div></div>
+        <div class="ip-metric"><div class="k">전체 검사</div><div class="v" data-iqc-metric="total">${meta.total}<small>건</small></div></div>
+        <div class="ip-metric"><div class="k">금일 검사</div><div class="v" data-iqc-metric="today">${meta.today}<small>건</small></div></div>
+        <div class="ip-metric good"><div class="k">합격</div><div class="v" data-iqc-metric="pass">${meta.pass}<small>건</small></div></div>
+        <div class="ip-metric warn"><div class="k">진행 / 대기</div><div class="v" data-iqc-metric="pending">${meta.pending}<small>건</small></div></div>
       </div>
     </div>
     <div class="ip-panel">
@@ -1151,7 +1151,7 @@ function premiumInspectionShell(id,title,desc,cols){
       </div>
       <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
       <tbody></tbody></table></div>
-      <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><span>총 0건 표시</span></div>
+      <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><span class="ip-count">총 0건 표시</span></div>
     </div>
   </div>`;
 }
@@ -1559,6 +1559,54 @@ function buildAdminEmployees(){
   wireAdminEmployees(section);
 }
 
+function iqcItems(row){
+  try{
+    const v=typeof row.items_json==='string'?JSON.parse(row.items_json):(row.items_json||[]);
+    return Array.isArray(v)?v:[];
+  }catch(_){return [];}
+}
+function iqcJudge(row){
+  const items=iqcItems(row);
+  const master=items.find(x=>String(x?.name||'').includes('판정'));
+  return String(master?.judge||master?.value||'합격').trim()||'합격';
+}
+function iqcItemSummary(row){
+  const items=iqcItems(row);
+  return items.filter(x=>['포장상태','외관'].includes(String(x?.name||''))).map(x=>String(x.name)).join(' / ')||'포장상태 / 외관';
+}
+function iqcRowHtml(row,index){
+  const judge=iqcJudge(row);
+  const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td>${index+1}</td><td class="left">${row.date||'-'}</td><td class="left">${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td></tr>`;
+}
+function updateIncomingMaterialsFromDb(rows){
+  const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
+  try{localStorage.setItem(INCOMING_STORE_KEY,JSON.stringify(list));}catch(_){}
+}
+async function loadIncomingFromDb(section){
+  if(!section||section.id!=='incoming')return;
+  const tbody=section.querySelector('tbody');
+  if(!tbody)return;
+  try{
+    const r=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store'});
+    const p=await r.json().catch(()=>({success:false,data:[]}));
+    if(!r.ok||!p.success)throw new Error(p.message||'수입검사 조회 실패');
+    const rows=Array.isArray(p.data)?p.data:[];
+    tbody.innerHTML=rows.map((row,i)=>iqcRowHtml(row,i)).join('');
+    updateIncomingMaterialsFromDb(rows);
+    const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+    const total=rows.length;
+    const todayCount=rows.filter(x=>String(x.date||'').slice(0,10)===today).length;
+    const pass=rows.filter(x=>iqcJudge(x)==='합격').length;
+    const pending=Math.max(0,total-pass);
+    const setMetric=(key,val)=>{const el=section.querySelector('[data-iqc-metric="'+key+'"]');if(el)el.innerHTML=String(val)+'<small>건</small>';};
+    setMetric('total',total);setMetric('today',todayCount);setMetric('pass',pass);setMetric('pending',pending);
+    const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+total+'건 표시';
+    wireModule(section,'incoming');
+  }catch(err){
+    tbody.innerHTML='<tr><td colspan="9" style="padding:28px;text-align:center;color:#94a3b8">수입검사 데이터를 불러오지 못했습니다.</td></tr>';
+  }
+}
 function buildModule(id){
   const [title,desc,cols] = pageInfo[id];
   const section=document.getElementById(id);
@@ -1574,6 +1622,7 @@ function buildModule(id){
   }
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
+    if(id==='incoming') setTimeout(()=>loadIncomingFromDb(section),0);
   }else{
     section.innerHTML=`
       <div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div><div class="date-badge">QMES</div></div>
@@ -1623,6 +1672,8 @@ function sample(c,i,id){
 }
 
 function wireModule(section,id){
+  if(!section||section.dataset.moduleWired==='1') return;
+  section.dataset.moduleWired='1';
   const title=pageInfo[id][0];
   const search=section.querySelector('.search-input');
   search.addEventListener('input',()=>{
@@ -1986,13 +2037,32 @@ function initStandardInspectionForm(type){
     const saveBtn=document.getElementById('modalSave');
     if(saveBtn){
       const replacement=saveBtn.cloneNode(true); saveBtn.replaceWith(replacement);
-      replacement.addEventListener('click',()=>{
+      replacement.addEventListener('click',async()=>{
         const name=document.getElementById('incomingMaterialName')?.value||'';
         const lot=document.getElementById('incomingMaterialLot')?.value.trim()||'';
         const supplier=document.getElementById('incomingSupplier')?.value.trim()||'';
         const date=document.getElementById('incomingDate')?.value||'';
-        if(name && lot) saveIncomingMaterial({name,lot,supplier,date,judge:overall?.value||'대기'});
-        closeModal(); toast('수입검사 성적서가 저장되었습니다. (시안 데이터)');
+        const inspector=[...root.querySelectorAll('.std-info input')].find(x=>x.placeholder==='검사자 입력')?.value.trim()||window.__QMES_CURRENT_USER__?.name||'';
+        const items=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>({
+          name:tr.querySelector('.item')?.textContent?.trim()||'',
+          values:[...tr.querySelectorAll('.std-measure')].map(x=>x.value),
+          judge:tr.querySelector('.std-row-judge')?.value||'대기'
+        }));
+        if(!name||!lot||!supplier||!date||!inspector){toast('검사일자, 검사자, 공급업체, 원료명, LOT를 입력해 주세요.');return;}
+        replacement.disabled=true;
+        try{
+          const r=await fetch('/api/iqc',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+            date,lot,supplier,item:name,inspector,incomingQty:null,qty:null,failQty:0,items
+          })});
+          const p=await r.json().catch(()=>({success:false}));
+          if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
+          saveIncomingMaterial({name,lot,supplier,date,judge:overall?.value||'대기'});
+          closeModal();
+          const section=document.getElementById('incoming');
+          if(section){section.dataset.moduleWired='';await loadIncomingFromDb(section);}
+          toast('수입검사 저장 및 목록 자동 업데이트 완료');
+        }catch(err){toast(err.message||'수입검사 저장에 실패했습니다.');}
+        finally{replacement.disabled=false;}
       });
     }
   }
