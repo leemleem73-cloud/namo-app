@@ -15,14 +15,14 @@
   overflow:auto !important;
 }
 #qauth-login.qmes-login-pro .qauth-card{
-  width:min(1540px,97vw) !important;
+  width:min(560px,94vw) !important;
   min-height:100vh !important;
   margin:0 auto !important;
-  padding:32px 44px !important;
+  padding:32px 20px !important;
   box-sizing:border-box !important;
   display:grid !important;
-  grid-template-columns:minmax(0,1.72fr) minmax(390px,.68fr) !important;
-  gap:54px !important;
+  grid-template-columns:1fr !important;
+  gap:0 !important;
   align-items:center !important;
   background:transparent !important;
   border:0 !important;
@@ -31,7 +31,7 @@
   overflow:visible !important;
 }
 #qauth-login.qmes-login-pro .qauth-login-photo{
-  display:block !important;
+  display:none !important;
   width:100% !important;
   height:min(820px,calc(100vh - 64px)) !important;
   min-height:600px !important;
