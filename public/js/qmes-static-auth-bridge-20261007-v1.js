@@ -4,6 +4,7 @@
   if(window.__NAMO_QMES_STATIC_AUTH_BRIDGE__) return;
   window.__NAMO_QMES_STATIC_AUTH_BRIDGE__=true;
   const KEY="qmes-current-user-v1";
+  const LAST_LOGIN_KEY="qmes-last-login-at-v1";
   const $=(s,r=document)=>r.querySelector(s);
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -14,21 +15,21 @@
     #currentUser{position:relative;cursor:pointer;user-select:none}
     #currentUser .qauth-arrow{font-size:10px;color:#94a3b8;margin-left:2px;transition:transform .16s ease}
     #currentUser.qauth-open .qauth-arrow{transform:rotate(180deg)}
-    .qauth-menu{position:absolute;right:-6px;top:calc(100% + 14px);width:336px;background:#f7f9fc;border:1px solid #e3e8ef;border-radius:18px;box-shadow:0 22px 55px rgba(15,23,42,.20);padding:18px;display:none;z-index:9000;cursor:default}
-    .qauth-menu:before{content:"";position:absolute;right:34px;top:-8px;width:16px;height:16px;background:#f7f9fc;border-left:1px solid #e3e8ef;border-top:1px solid #e3e8ef;transform:rotate(45deg)}
+    .qauth-menu{position:absolute;right:-6px;top:calc(100% + 12px);width:288px;background:#f7f9fc;border:1px solid #e3e8ef;border-radius:15px;box-shadow:0 18px 42px rgba(15,23,42,.18);padding:14px;display:none;z-index:9000;cursor:default}
+    .qauth-menu:before{content:"";position:absolute;right:31px;top:-7px;width:14px;height:14px;background:#f7f9fc;border-left:1px solid #e3e8ef;border-top:1px solid #e3e8ef;transform:rotate(45deg)}
     #currentUser.qauth-open .qauth-menu{display:block}
-    .qauth-profile-head{display:grid;grid-template-columns:58px 1fr;gap:13px;align-items:center;padding:2px 4px 16px}
-    .qauth-profile-avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#eef1f5;color:#64748b;font-size:23px;font-weight:900;border:1px solid #e4e8ee}
-    .qauth-profile-copy{min-width:0}.qauth-profile-copy strong{display:block;font-size:19px;line-height:1.25;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .qauth-profile-copy span{display:block;margin-top:5px;font-size:12px;font-weight:700;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .qauth-menu-panel{background:#fff;border:1px solid #edf0f4;border-radius:13px;padding:0 14px;overflow:hidden}
-    .qauth-org-row,.qauth-action{width:100%;min-height:58px;display:grid;grid-template-columns:25px 1fr 18px;gap:9px;align-items:center;border:0;border-bottom:1px solid #edf0f4;background:#fff;color:#252b34;text-align:left;padding:0;font:inherit}
+    .qauth-profile-head{display:grid;grid-template-columns:46px 1fr;gap:11px;align-items:center;padding:1px 3px 12px}
+    .qauth-profile-avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#eef1f5;color:#64748b;font-size:18px;font-weight:900;border:1px solid #e4e8ee}
+    .qauth-profile-copy{min-width:0}.qauth-profile-copy strong{display:block;font-size:16px;line-height:1.25;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-profile-copy span{display:block;margin-top:4px;font-size:11px;font-weight:700;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-menu-panel{background:#fff;border:1px solid #edf0f4;border-radius:11px;padding:0 12px;overflow:hidden}
+    .qauth-org-row,.qauth-action{width:100%;min-height:47px;display:grid;grid-template-columns:22px 1fr 16px;gap:8px;align-items:center;border:0;border-bottom:1px solid #edf0f4;background:#fff;color:#252b34;text-align:left;padding:0;font:inherit}
     .qauth-action{cursor:pointer}.qauth-action:last-child{border-bottom:0}
-    .qauth-action:hover{background:#f8fafc}.qauth-menu-icon{width:25px;text-align:center;color:#7b8490;font-size:18px}
-    .qauth-menu-label{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .qauth-menu-caret{font-size:17px;color:#a1a8b0;text-align:right}
+    .qauth-action:hover{background:#f8fafc}.qauth-menu-icon{width:22px;text-align:center;color:#7b8490;font-size:16px}
+    .qauth-menu-label{font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-menu-caret{font-size:15px;color:#a1a8b0;text-align:right}
     .qauth-action.danger .qauth-menu-label{color:#b42318}
-    .qauth-current-status{padding:13px 2px 0;text-align:right;font-size:11px;color:#9aa3ad;font-weight:700}
+    .qauth-current-status{padding:10px 2px 0;text-align:right;font-size:10.5px;color:#9aa3ad;font-weight:700}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
     .qauth-overlay{background:linear-gradient(135deg,#fbfcff 0%,#f6f8ff 58%,#f1efff 100%);padding:0}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
@@ -55,6 +56,13 @@
   function norm(a){return {id:a?.id||"",uid:a?.uid||"",name:a?.name||"사용자",email:a?.email||"",dept:a?.department||a?.dept||"",position:a?.title||a?.position||"",role:a?.role||"user",mustChangePassword:Boolean(a?.mustChangePassword)}}
   function save(u){try{sessionStorage.setItem(KEY,JSON.stringify(u))}catch(_){} window.__QMES_CURRENT_USER__=u;}
   function load(){try{const v=JSON.parse(sessionStorage.getItem(KEY)||"null");return v&&typeof v==="object"?norm(v):null;}catch(_){return null;}}
+  function setLastLoginAt(value){try{localStorage.setItem(LAST_LOGIN_KEY,String(value||Date.now()))}catch(_){}}
+  function getLastLoginAt(){try{return Number(localStorage.getItem(LAST_LOGIN_KEY)||0)||0}catch(_){return 0}}
+  function formatLastLogin(value){
+    const d=new Date(Number(value)||Date.now());
+    const p=n=>String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
   function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){box.style.visibility="visible";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.textContent="";if(meta)meta.innerHTML="<b></b><br><small></small>";}}
 
   function apply(u){
@@ -68,10 +76,15 @@
     $(".qauth-menu",box)?.remove();
     const account=String(u.uid||u.email||u.name||"사용자").trim();
     const accountLabel=account.includes("@")?account.split("@")[0]:account;
-    const orgLabel=["나모케미칼",u.dept,u.position].filter(Boolean).map(v=>String(v).trim()).filter(Boolean).join(" · ");
+    const nameText=String(u.name||"").trim();
+    const positionText=String(u.position||"").trim();
+    const orgParts=["나모케미칼",u.dept,(positionText&&positionText!==nameText)?positionText:""].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
+    const orgLabel=orgParts.join(" · ");
+    const lastLogin=getLastLoginAt()||Date.now();
+    if(!getLastLoginAt())setLastLoginAt(lastLogin);
     const m=document.createElement("div");
     m.className="qauth-menu";
-    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${esc((u.name||"사").slice(0,1))}</div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">현재 접속 중</div>`;
+    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${esc((u.name||"사").slice(0,1))}</div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
     box.appendChild(m);
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
     document.querySelectorAll("[data-admin-only]").forEach(el=>el.style.display=admin?"":"none");
@@ -88,7 +101,7 @@
       e.preventDefault();const id=$("#qa-id",o).value.trim(),pw=$("#qa-pw",o).value,err=$("#qa-err",o),btn=$(".qauth-primary",o),saveId=Boolean($("#qa-save-id",o)?.checked);
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
       btn.disabled=true;btn.textContent="로그인 확인 중...";
-      try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
+      try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
       catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{btn.disabled=false;btn.textContent="로그인";}
     });
   }
