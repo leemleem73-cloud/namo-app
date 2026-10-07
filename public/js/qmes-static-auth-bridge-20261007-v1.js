@@ -120,6 +120,7 @@
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
       btn.disabled=true;btn.textContent="로그인 확인 중...";
       wait.classList.add("is-active");
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
       catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{wait.classList.remove("is-active");btn.disabled=false;btn.textContent="로그인";}
     });
