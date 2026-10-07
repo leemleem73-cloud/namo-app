@@ -3909,9 +3909,10 @@ app.get('*', (_req, res) => {
 
 ensureSchema()
   .then(async () => {
-    await ensurePurchaseHistory();
-    await ensurePurchaseIqcReconciliation();
-    await ensurePendingIqcFromUnmatchedPurchases();
+    // QMES reset mode: do not recreate historical purchase/IQC demo data on startup.
+    // await ensurePurchaseHistory();
+    // await ensurePurchaseIqcReconciliation();
+    // await ensurePendingIqcFromUnmatchedPurchases();
 
     const adminEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const adminPassword = String(process.env.ADMIN_PASSWORD || '');
