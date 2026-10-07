@@ -318,7 +318,7 @@
 .ip-metric{border:1px solid #e3e9f1;border-radius:12px;background:rgba(255,255,255,.88);padding:12px 14px;min-height:70px}.ip-metric .k{font-size:10px;color:#7b8798;font-weight:700;margin-bottom:7px}.ip-metric .v{font-size:21px;line-height:1;font-weight:900;color:#17243a}.ip-metric .v small{font-size:10px;color:#93a0b2;margin-left:4px}.ip-metric.good .v{color:#14804a}.ip-metric.warn .v{color:#b56f09}.ip-metric.bad .v{color:#c83d3d}
 .ip-panel{background:#fff;border:1px solid #dfe5ed;border-radius:15px;box-shadow:0 8px 24px rgba(15,23,42,.045);overflow:hidden}
 .ip-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:15px 18px;border-bottom:1px solid #e8edf3;background:#fbfcfe}.ip-filter-row{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end}.ip-filter{display:flex;flex-direction:column;gap:5px}.ip-filter label{font-size:9px;font-weight:800;color:#7a8698}.ip-filter .input{min-width:145px;height:34px;background:#fff}.ip-filter.search .input{min-width:210px}.ip-actions{display:flex;gap:7px}.ip-actions .btn{height:34px;border-radius:8px;font-weight:800}.ip-actions .primary{padding:0 14px;background:#173d6f;border-color:#173d6f}.ip-actions .primary:hover{background:#102f57}
-.ip-table-wrap{overflow:auto;padding:0}.ip-table{min-width:980px}.ip-table thead{background:#f3f6fa}.ip-table th{height:42px;font-size:10px;font-weight:800;color:#536177;border-bottom:1px solid #dfe5ed}.ip-table td{height:48px;font-size:11px;color:#2f3c50}.ip-table tbody tr{transition:.12s}.ip-table tbody tr:hover{background:#f7faff}.ip-table tbody tr:last-child td{border-bottom:0}.ip-table .report-issue,.ip-table .mini-report{height:27px;border-radius:6px;font-size:10px;font-weight:800;padding:0 9px}.ip-table .report-issue{color:#245b9e;border-color:#cbdaf0;background:#f5f9ff}
+.ip-table-wrap{overflow:auto;padding:0}.ip-table{min-width:980px}.ip-table thead{background:#f3f6fa}.ip-table th{height:42px;font-size:10px;font-weight:800;color:#536177;border-bottom:1px solid #dfe5ed}.ip-table td{height:48px;font-size:11px;color:#2f3c50}.ip-table tbody tr{transition:.12s}.ip-table tbody tr:hover{background:#f7faff}.ip-table tbody tr:last-child td{border-bottom:0}.ip-table .report-issue,.ip-table .mini-report,.ip-table .iqc-edit-btn,.ip-table .iqc-delete-btn{height:27px;border-radius:6px;font-size:10px;font-weight:800;padding:0 9px}.ip-table .report-issue{color:#245b9e;border-color:#cbdaf0;background:#f5f9ff}.ip-table .iqc-edit-btn{color:#315f94;border:1px solid #cbd8e7;background:#f7faff;cursor:pointer}.ip-table .iqc-delete-btn{color:#b42318;border:1px solid #f1c6c2;background:#fff7f6;cursor:pointer}.ip-table .iqc-remark{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#5f6c7b}
 .ip-footnote{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-top:1px solid #e8edf3;background:#fbfcfd;font-size:10px;color:#8691a1;gap:12px}.ip-footnote b{color:#425169}
 .ip-pagination{display:flex;align-items:center;justify-content:center;gap:4px;flex:1}.ip-page-btn{min-width:28px;height:28px;padding:0 8px;border:1px solid #dbe3ec;border-radius:6px;background:#fff;color:#536177;font-size:10px;font-weight:800;cursor:pointer}.ip-page-btn:hover{background:#f2f7fd;border-color:#b8cbe2}.ip-page-btn.active{background:#2f73d9;border-color:#2f73d9;color:#fff}.ip-page-btn:disabled{opacity:.35;cursor:default}
 /* Premium inline inspection entry */
@@ -881,7 +881,7 @@ const pageInfo = {
   purchase:['구매발주 관리','원부자재 발주와 요청입고, 발주상태를 관리합니다.', ['발주일자','공급업체','품목명','수량','요청입고','발주상태','IQC']],
   work:['작업지시서','나모케미칼 절연 슬러리 생산 LOT 중심으로 작업지시와 생산 진행현황을 관리합니다.', ['작업지시번호','고객사','제품명','생산 LOT NO','설비명','작업자','계획수량','작업기간','진행상태']],
   inventory:['재고현황','원료 및 완제품의 현재 재고현황을 확인합니다.', ['구분','품목코드','품목명','LOT NO','현재고','단위','상태']],
-  incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일','공급업체','품목명','원료 LOT','검사항목','검사합부','검사자','성적서']],
+  incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','검사항목','검사합부','검사자','성적서','비고','수정','삭제']],
   process:['공정검사','생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.', ['검사일자','작업지시번호','제품명','생산 LOT NO','공정명','검사항목','검사합부','검사자','성적서']],
   outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','성적서','CoA']],
   lotTrace:['LOT 추적','원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향 추적합니다.', ['원료 LOT','작업지시번호','생산 LOT NO','완제품 LOT','고객사','출하일','추적상태']],
@@ -1572,14 +1572,89 @@ function iqcItemSummary(row){
   const items=iqcItems(row);
   return items.filter(x=>['포장상태','외관'].includes(String(x?.name||''))).map(x=>String(x.name)).join(' / ')||'포장상태 / 외관';
 }
+function iqcDateText(value){
+  if(!value)return '-';
+  const raw=String(value);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return raw.slice(0,10);
+  return d.toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+}
+function iqcRemark(row){
+  const items=iqcItems(row);
+  const remark=items.find(x=>String(x?.name||'').trim()==='비고');
+  return String(remark?.value||row.remark||'').trim();
+}
 function iqcRowHtml(row,index){
   const judge=iqcJudge(row);
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
-  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td>${index+1}</td><td class="left">${row.date||'-'}</td><td class="left">${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td></tr>`;
+  const remark=iqcRemark(row);
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td>${index+1}</td><td class="left">${iqcDateText(row.date)}</td><td class="left">${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</td><td><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></td><td><button class="iqc-delete-btn" type="button" data-iqc-delete>삭제</button></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
   try{localStorage.setItem(INCOMING_STORE_KEY,JSON.stringify(list));}catch(_){}
+}
+function updateIqcRemarkItems(row,remark){
+  const items=iqcItems(row).filter(x=>String(x?.name||'').trim()!=='비고');
+  items.push({name:'비고',value:String(remark||''),judge:''});
+  return items;
+}
+function editIncomingRecord(section,row){
+  const date=iqcDateText(row.date)==='-'?'':iqcDateText(row.date);
+  const remark=iqcRemark(row);
+  const html=`<div class="form-grid">
+    <div class="form-item"><label>입고일자</label><input id="iqcEditDate" type="date" value="${date}"></div>
+    <div class="form-item"><label>공급업체</label><input id="iqcEditSupplier" type="text" value="${String(row.supplier||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label>품목명</label><input id="iqcEditItem" type="text" value="${String(row.item||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
+  </div>`;
+  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정'),'<button class="btn" id="modalCancel" type="button">취소</button><button class="btn primary" id="iqcEditSave" type="button">수정 저장</button>');
+  document.getElementById('iqcEditSave')?.addEventListener('click',async()=>{
+    const body={
+      date:document.getElementById('iqcEditDate')?.value||date,
+      lot:document.getElementById('iqcEditLot')?.value.trim()||'',
+      supplier:document.getElementById('iqcEditSupplier')?.value.trim()||'',
+      item:document.getElementById('iqcEditItem')?.value.trim()||'',
+      inspector:document.getElementById('iqcEditInspector')?.value.trim()||'',
+      incomingQty:row.incoming_qty,
+      qty:row.qty,
+      failQty:row.fail,
+      packagingType:row.packaging_type||'',
+      packagingTypeOther:row.packaging_type_other||'',
+      packageQty:row.package_qty,
+      unitWeight:row.unit_weight,
+      calculatedWeight:row.calculated_weight,
+      barcodeQty:row.barcode_qty,
+      items:updateIqcRemarkItems(row,document.getElementById('iqcEditRemark')?.value||''),
+      signWriter:row.sign_writer||{},
+      signReviewer:row.sign_reviewer||{},
+      signApprover:row.sign_approver||{}
+    };
+    if(!body.date||!body.lot||!body.supplier||!body.item||!body.inspector){toast('입고일자, 공급업체, 품목명, LOT, 검사자를 입력해 주세요.');return;}
+    try{
+      const r=await fetch('/api/iqc/'+encodeURIComponent(row.id),{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const p=await r.json().catch(()=>({success:false}));
+      if(!r.ok||!p.success)throw new Error(p.message||'수정 실패');
+      closeModal();
+      section.dataset.moduleWired='';
+      await loadIncomingFromDb(section,section._iqcPage||1);
+      toast('수입검사 수정 완료');
+    }catch(err){toast(err.message||'수입검사 수정에 실패했습니다.');}
+  });
+}
+async function deleteIncomingRecord(section,row){
+  if(!confirm('해당 수입검사 기록을 삭제하시겠습니까?'))return;
+  try{
+    const r=await fetch('/api/iqc/'+encodeURIComponent(row.id),{method:'DELETE',credentials:'same-origin'});
+    const p=await r.json().catch(()=>({success:false}));
+    if(!r.ok||!p.success)throw new Error(p.message||'삭제 실패');
+    section.dataset.moduleWired='';
+    await loadIncomingFromDb(section,section._iqcPage||1);
+    toast('수입검사 삭제 완료');
+  }catch(err){toast(err.message||'수입검사 삭제에 실패했습니다.');}
 }
 function wireIncomingPageRows(section){
   section.querySelectorAll('.data-row').forEach(row=>{
@@ -1589,6 +1664,18 @@ function wireIncomingPageRows(section){
   section.querySelectorAll('.report-issue').forEach(btn=>btn.addEventListener('click',e=>{
     e.stopPropagation();
     issueInspectionReport('incoming',btn.closest('tr'));
+  }));
+  section.querySelectorAll('[data-iqc-edit]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const id=btn.closest('tr')?.dataset.iqcId;
+    const row=(section._iqcRows||[]).find(x=>String(x.id)===String(id));
+    if(row)editIncomingRecord(section,row);
+  }));
+  section.querySelectorAll('[data-iqc-delete]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const id=btn.closest('tr')?.dataset.iqcId;
+    const row=(section._iqcRows||[]).find(x=>String(x.id)===String(id));
+    if(row)deleteIncomingRecord(section,row);
   }));
 }
 function renderIncomingPage(section,page=1){
@@ -1602,7 +1689,7 @@ function renderIncomingPage(section,page=1){
   const endDate=section.querySelector('.ip-end-date')?.value||'';
   const status=section.querySelector('.ip-status-filter')?.value||'전체';
   const filtered=allRows.filter(row=>{
-    const date=String(row.date||'').slice(0,10);
+    const date=iqcDateText(row.date);
     const text=[row.date,row.supplier,row.item,row.lot,row.inspector,iqcItemSummary(row),iqcJudge(row)].join(' ').toLowerCase();
     if(q&&!text.includes(q))return false;
     if(startDate&&date<startDate)return false;
@@ -1617,7 +1704,7 @@ function renderIncomingPage(section,page=1){
   const start=(current-1)*pageSize;
   const pageRows=filtered.slice(start,start+pageSize);
   tbody.innerHTML=pageRows.map((row,i)=>iqcRowHtml(row,start+i)).join('');
-  if(!pageRows.length)tbody.innerHTML='<tr><td colspan="9" style="padding:28px;text-align:center;color:#94a3b8">조회된 수입검사 데이터가 없습니다.</td></tr>';
+  if(!pageRows.length)tbody.innerHTML='<tr><td colspan="12" style="padding:28px;text-align:center;color:#94a3b8">조회된 수입검사 데이터가 없습니다.</td></tr>';
   wireIncomingPageRows(section);
   if(count){
     const from=filtered.length?start+1:0;
@@ -1649,7 +1736,7 @@ async function loadIncomingFromDb(section){
     updateIncomingMaterialsFromDb(rows);
     const today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const total=rows.length;
-    const todayCount=rows.filter(x=>String(x.date||'').slice(0,10)===today).length;
+    const todayCount=rows.filter(x=>iqcDateText(x.date)===today).length;
     const pass=rows.filter(x=>iqcJudge(x)==='합격').length;
     const pending=Math.max(0,total-pass);
     const setMetric=(key,val)=>{const el=section.querySelector('[data-iqc-metric="'+key+'"]');if(el)el.innerHTML=String(val)+'<small>건</small>';};
@@ -1657,7 +1744,7 @@ async function loadIncomingFromDb(section){
     renderIncomingPage(section,1);
     wireModule(section,'incoming');
   }catch(err){
-    tbody.innerHTML='<tr><td colspan="9" style="padding:28px;text-align:center;color:#94a3b8">수입검사 데이터를 불러오지 못했습니다.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="12" style="padding:28px;text-align:center;color:#94a3b8">수입검사 데이터를 불러오지 못했습니다.</td></tr>';
   }
 }
 function buildModule(id){
@@ -1760,7 +1847,7 @@ function issueInspectionReport(id,row){
     const idx=cols.indexOf(name);
     return idx>=0 && vals[idx] ? vals[idx] : '-';
   };
-  const inspectionDate=id==='incoming'?val('입고일'):(val('검사일자')!=='-'?val('검사일자'):val('검사일'));
+  const inspectionDate=id==='incoming'?val('입고일자'):(val('검사일자')!=='-'?val('검사일자'):val('검사일'));
   const inspector=val('검사자');
   const reportNoPrefix=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
   const dateDigits=(inspectionDate||'').replace(/\D/g,'') || new Date().toISOString().slice(0,10).replace(/-/g,'');
