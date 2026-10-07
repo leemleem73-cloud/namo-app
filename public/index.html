@@ -589,7 +589,7 @@ thead{background:#f4f7fa}
 <script id="qmes-client-data-reset-20261007">
 (function(){
   try{
-    var marker='qmes-client-reset-20261007-v1';
+    var marker='qmes-client-reset-20261007-v2';
     if(localStorage.getItem(marker)==='done') return;
     var keep=['qmes-saved-login-id-v1','qmes-last-login-at-v1'];
     var remove=[];
@@ -1583,7 +1583,7 @@ function buildModule(id){
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
         </div>
         <div class="module-body"><table><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
-        <tbody>${[1,2,3,4,5,6].map(i=>`<tr class="data-row clickable" tabindex="0"><td>${i}</td>${cols.map((c,j)=>`<td class="${j<2?'left':''}">${sample(c,i,id)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+        <tbody></tbody></table></div>
       </div>`;
   }
   wireModule(section,id);
