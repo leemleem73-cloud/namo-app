@@ -33,7 +33,7 @@
     display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 14px;z-index:20
   }
   .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.4px}
-  .brand-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#0f4ea4,#3b82f6);color:#fff;display:grid;place-items:center;font-size:15px;box-shadow:0 5px 12px rgba(37,99,235,.22)}
+  .brand-logo{width:46px;height:32px;display:block;object-fit:contain;object-position:center;background:transparent;box-shadow:none}
   .brand-name{font-size:18px}.brand-name span{color:var(--primary)}
   .top-actions{display:flex;align-items:center;gap:14px}
   .top-chip{height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:7px;background:#fff;font-size:13px;color:#374151}
@@ -559,11 +559,10 @@ thead{background:#f4f7fa}
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-logo">N</div>
+      <img class="brand-logo" src="./assets/namo-mobile-logo.svg?v=20261007-1" alt="NAMO logo">
       <div class="brand-name">NAMO <span>QMES</span></div>
     </div>
     <div class="top-actions">
-      <button class="top-chip hide-sm" id="companyBtn" type="button">🏭 나모케미칼</button>
       <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
       <div class="user" id="currentUser" data-role="부장">
         <div class="avatar">임</div>
@@ -2138,7 +2137,6 @@ document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대�
 document.getElementById('allViewBtn').addEventListener('click',()=>{
   document.querySelector('.menu[data-page="orders"]').click(); toast('수주납기 전체현황으로 이동했습니다.');
 });
-document.getElementById('companyBtn').addEventListener('click',()=>openModal('나모케미칼','<div class="detail-grid"><div class="key">시스템</div><div>NAMO QMES</div><div class="key">회사</div><div>나모케미칼</div><div class="key">환경</div><div>HTML UI 시안</div></div>'));
 document.getElementById('notifyBtn').addEventListener('click',()=>openModal('알림','<div class="status-list"><div class="status-row"><span>납기 임박</span><div class="track"><div class="fill warn" style="width:72%"></div></div><span class="pct">3건</span></div><div class="status-row"><span>검사 대기</span><div class="track"><div class="fill" style="width:48%"></div></div><span class="pct">2건</span></div></div>'));
 
 document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
@@ -2149,6 +2147,6 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-auth2"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-auth3"></script>
 </body>
 </html>
