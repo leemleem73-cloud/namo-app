@@ -2194,7 +2194,7 @@ document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대�
 document.getElementById('allViewBtn').addEventListener('click',()=>{
   document.querySelector('.menu[data-page="orders"]').click(); toast('수주납기 전체현황으로 이동했습니다.');
 });
-
+document.getElementById('notifyBtn').addEventListener('click',()=>openModal('알림','<div class="status-list"><div class="status-row"><span>납기 임박</span><div class="track"><div class="fill warn" style="width:72%"></div></div><span class="pct">3건</span></div><div class="status-row"><span>검사 대기</span><div class="track"><div class="fill" style="width:48%"></div></div><span class="pct">2건</span></div></div>'));
 
 document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   row.classList.add('clickable'); row.addEventListener('click',()=>{
