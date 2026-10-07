@@ -1998,13 +1998,34 @@ async function loadIncomingFromDb(section){
 }
 function qualityApprovalShell(){
   return `
+    <style>
+      #approval .quality-approval-table{table-layout:fixed;width:100%}
+      #approval .quality-approval-table th,#approval .quality-approval-table td{padding:7px 6px;font-size:11px;line-height:1.25;vertical-align:middle}
+      #approval .quality-approval-table th:nth-child(1){width:44px}
+      #approval .quality-approval-table th:nth-child(2){width:150px}
+      #approval .quality-approval-table th:nth-child(3){width:82px}
+      #approval .quality-approval-table th:nth-child(4){width:250px}
+      #approval .quality-approval-table th:nth-child(5){width:82px}
+      #approval .quality-approval-table th:nth-child(6){width:170px}
+      #approval .quality-approval-table th:nth-child(7){width:92px}
+      #approval .quality-approval-table th:nth-child(8){width:150px}
+      #approval .quality-approval-table th:nth-child(9){width:130px}
+      #approval .quality-approval-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      #approval .quality-approval-table td:nth-child(4){text-align:left}
+      #approval .quality-approve-btn,#approval .quality-delete-btn{height:24px!important;padding:0 7px!important;font-size:10px!important;margin-left:4px}
+      #approval .quality-approval-pager{display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 0 2px}
+      #approval .quality-page-btn{min-width:28px;height:26px;padding:0 7px;border:1px solid #d8e0e8;background:#fff;border-radius:5px;font-size:10.5px;cursor:pointer}
+      #approval .quality-page-btn.active{background:#2457a8;color:#fff;border-color:#2457a8}
+      #approval .quality-page-btn:disabled{opacity:.4;cursor:default}
+    </style>
     <div class="page-head"><div><h1>전자결재</h1><p>품질문서 검토·승인 요청과 처리상태를 관리합니다.</p></div><div class="date-badge">QMES</div></div>
     <div class="module-shell">
       <div class="module-toolbar">
         <div class="filters"><input class="input quality-approval-search" placeholder="문서번호 / 제목 / 작성자 검색"></div>
         <div class="table-tools"><button class="btn quality-approval-refresh" type="button">새로고침</button></div>
       </div>
-      <div class="module-body"><table><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th><th>비고</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="9">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="module-body"><table class="quality-approval-table"><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th><th>비고</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="9">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="quality-approval-pager"></div>
     </div>`;
 }
 function qualityApprovalDate(value){
@@ -2023,15 +2044,24 @@ function canCurrentUserApproveQuality(a){
 async function loadQualityApprovals(section=document.getElementById('approval')){
   if(!section) return;
   const tbody=section.querySelector('.quality-approval-body');
+  const pager=section.querySelector('.quality-approval-pager');
+  const PAGE_SIZE=10;
   try{
     const r=await fetch('/api/qmes-quality/approvals',{credentials:'same-origin'});
     const p=await r.json();
     if(!r.ok||!p.success) throw new Error(p.message||'결재 목록 조회 실패');
     const rows=Array.isArray(p.data)?p.data:[];
     section._qualityApprovals=rows;
+    let currentPage=1;
+
     const render=()=>{
       const q=(section.querySelector('.quality-approval-search')?.value||'').trim().toLowerCase();
-      const list=rows.filter(a=>[a.doc_type,a.title,a.writer_name,a.approver_name,qualityApprovalDocNo(a)].join(' ').toLowerCase().includes(q));
+      const filtered=rows.filter(a=>[a.doc_type,a.title,a.writer_name,a.approver_name,qualityApprovalDocNo(a)].join(' ').toLowerCase().includes(q));
+      const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+      if(currentPage>totalPages) currentPage=totalPages;
+      const from=(currentPage-1)*PAGE_SIZE;
+      const list=filtered.slice(from,from+PAGE_SIZE);
+
       tbody.innerHTML=list.length?list.map((a,i)=>{
         const pending=a.status!=='APPROVED';
         const action=pending&&canCurrentUserApproveQuality(a)
@@ -2039,36 +2069,71 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
           : '';
         const status=pending?'<span class="badge b-yellow">승인대기</span>':'<span class="badge b-green">승인완료</span>';
         const remark=a.status==='APPROVED'?'검토·승인 완료':'검토·승인 대기';
-        return `<tr><td>${i+1}</td><td>${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td><div style="font-size:11px;color:#64748b;margin-bottom:6px">${remark}</div><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="height:26px;padding:0 9px;color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
+        return `<tr><td>${from+i+1}</td><td title="${qualityApprovalDocNo(a)}">${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left" title="${a.title||'-'}">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td><div style="font-size:10px;color:#64748b;margin-bottom:4px">${remark}</div><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
       }).join(''):'<tr><td colspan="9">현재 결재 요청이 없습니다.</td></tr>';
+
+      if(pager){
+        if(filtered.length<=PAGE_SIZE){pager.innerHTML='';}
+        else{
+          let buttons=`<button class="quality-page-btn" data-quality-page="${currentPage-1}" ${currentPage===1?'disabled':''}>이전</button>`;
+          for(let n=1;n<=totalPages;n++) buttons+=`<button class="quality-page-btn ${n===currentPage?'active':''}" data-quality-page="${n}">${n}</button>`;
+          buttons+=`<button class="quality-page-btn" data-quality-page="${currentPage+1}" ${currentPage===totalPages?'disabled':''}>다음</button>`;
+          pager.innerHTML=buttons;
+        }
+      }
     };
+
     render();
-    section.querySelector('.quality-approval-search')?.addEventListener('input',render,{once:false});
-    section.querySelectorAll('.quality-approve-btn').forEach(btn=>btn.addEventListener('click',async()=>{
-      btn.disabled=true;
-      try{
-        const r=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(btn.dataset.approvalId)+'/approve',{method:'POST',credentials:'same-origin'});
-        const p=await r.json();
-        if(!r.ok||!p.success) throw new Error(p.message||'승인 실패');
-        toast('검토·승인이 완료되었습니다.');
-        await loadQualityApprovals(section);
-        await loadQualityNotifications();
-      }catch(e){toast(e.message||'검토·승인에 실패했습니다.');btn.disabled=false;}
-    }));
-    section.querySelectorAll('.quality-delete-btn').forEach(btn=>btn.addEventListener('click',async()=>{
-      if(!confirm('이 결재 문서를 삭제하시겠습니까?')) return;
-      btn.disabled=true;
-      try{
-        const r=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(btn.dataset.approvalId),{method:'DELETE',credentials:'same-origin'});
-        const p=await r.json();
-        if(!r.ok||!p.success) throw new Error(p.message||'삭제 실패');
-        toast('결재 문서를 삭제했습니다.');
-        await loadQualityApprovals(section);
-        await loadQualityNotifications();
-      }catch(e){toast(e.message||'결재 문서 삭제에 실패했습니다.');btn.disabled=false;}
-    }));
+
+    const search=section.querySelector('.quality-approval-search');
+    if(search && !search.dataset.qualityPagerWired){
+      search.dataset.qualityPagerWired='1';
+      search.addEventListener('input',()=>{currentPage=1;render();});
+    }
+    if(pager && !pager.dataset.qualityPagerWired){
+      pager.dataset.qualityPagerWired='1';
+      pager.addEventListener('click',e=>{
+        const btn=e.target.closest('[data-quality-page]');
+        if(!btn||btn.disabled)return;
+        currentPage=Number(btn.dataset.qualityPage)||1;
+        render();
+      });
+    }
+    if(!tbody.dataset.qualityActionsWired){
+      tbody.dataset.qualityActionsWired='1';
+      tbody.addEventListener('click',async e=>{
+        const approveBtn=e.target.closest('.quality-approve-btn');
+        if(approveBtn){
+          approveBtn.disabled=true;
+          try{
+            const rr=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(approveBtn.dataset.approvalId)+'/approve',{method:'POST',credentials:'same-origin'});
+            const pp=await rr.json();
+            if(!rr.ok||!pp.success) throw new Error(pp.message||'승인 실패');
+            toast('검토·승인이 완료되었습니다.');
+            await loadQualityApprovals(section);
+            await loadQualityNotifications();
+          }catch(err){toast(err.message||'검토·승인에 실패했습니다.');approveBtn.disabled=false;}
+          return;
+        }
+        const deleteBtn=e.target.closest('.quality-delete-btn');
+        if(deleteBtn){
+          if(!confirm('이 결재 문서를 삭제하시겠습니까?')) return;
+          deleteBtn.disabled=true;
+          try{
+            const rr=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(deleteBtn.dataset.approvalId),{method:'DELETE',credentials:'same-origin'});
+            const textBody=await rr.text();
+            let pp={}; try{pp=textBody?JSON.parse(textBody):{};}catch(_e){throw new Error(rr.ok?'삭제 응답 오류':'삭제 API 오류');}
+            if(!rr.ok||!pp.success) throw new Error(pp.message||'삭제 실패');
+            toast('결재 문서를 삭제했습니다.');
+            await loadQualityApprovals(section);
+            await loadQualityNotifications();
+          }catch(err){toast(err.message||'결재 문서 삭제에 실패했습니다.');deleteBtn.disabled=false;}
+        }
+      });
+    }
   }catch(e){
     tbody.innerHTML='<tr><td colspan="9">결재 목록을 불러오지 못했습니다.</td></tr>';
+    if(pager)pager.innerHTML='';
   }
 }
 async function qmesRequestQualityApproval(docType,recordId,title,page='approval'){
