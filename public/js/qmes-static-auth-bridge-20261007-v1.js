@@ -12,11 +12,23 @@
     const el=document.createElement("style"); el.id="qmes-auth-style";
     el.textContent=`
     #currentUser{position:relative;cursor:pointer;user-select:none}
-    #currentUser .qauth-arrow{font-size:10px;color:#94a3b8;margin-left:2px}
-    .qauth-menu{position:absolute;right:0;top:calc(100% + 4px);width:180px;background:#fff;border:1px solid #d8e1ea;border-radius:8px;box-shadow:0 14px 34px rgba(15,23,42,.16);padding:6px;display:none;z-index:9000}
-    #currentUser.qauth-open .qauth-menu{display:block}#currentUser.qauth-open:after{content:"";position:absolute;right:0;top:100%;width:190px;height:8px;z-index:8999}
-    .qauth-menu button{width:100%;height:34px;border:0;border-radius:6px;background:#fff;text-align:left;padding:0 10px;font-size:11px;font-weight:800;color:#334155;cursor:pointer}
-    .qauth-menu button:hover{background:#f4f7fb}.qauth-menu .danger{color:#c24141}
+    #currentUser .qauth-arrow{font-size:10px;color:#94a3b8;margin-left:2px;transition:transform .16s ease}
+    #currentUser.qauth-open .qauth-arrow{transform:rotate(180deg)}
+    .qauth-menu{position:absolute;right:-6px;top:calc(100% + 14px);width:336px;background:#f7f9fc;border:1px solid #e3e8ef;border-radius:18px;box-shadow:0 22px 55px rgba(15,23,42,.20);padding:18px;display:none;z-index:9000;cursor:default}
+    .qauth-menu:before{content:"";position:absolute;right:34px;top:-8px;width:16px;height:16px;background:#f7f9fc;border-left:1px solid #e3e8ef;border-top:1px solid #e3e8ef;transform:rotate(45deg)}
+    #currentUser.qauth-open .qauth-menu{display:block}
+    .qauth-profile-head{display:grid;grid-template-columns:58px 1fr;gap:13px;align-items:center;padding:2px 4px 16px}
+    .qauth-profile-avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#eef1f5;color:#64748b;font-size:23px;font-weight:900;border:1px solid #e4e8ee}
+    .qauth-profile-copy{min-width:0}.qauth-profile-copy strong{display:block;font-size:19px;line-height:1.25;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-profile-copy span{display:block;margin-top:5px;font-size:12px;font-weight:700;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-menu-panel{background:#fff;border:1px solid #edf0f4;border-radius:13px;padding:0 14px;overflow:hidden}
+    .qauth-org-row,.qauth-action{width:100%;min-height:58px;display:grid;grid-template-columns:25px 1fr 18px;gap:9px;align-items:center;border:0;border-bottom:1px solid #edf0f4;background:#fff;color:#252b34;text-align:left;padding:0;font:inherit}
+    .qauth-action{cursor:pointer}.qauth-action:last-child{border-bottom:0}
+    .qauth-action:hover{background:#f8fafc}.qauth-menu-icon{width:25px;text-align:center;color:#7b8490;font-size:18px}
+    .qauth-menu-label{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-menu-caret{font-size:17px;color:#a1a8b0;text-align:right}
+    .qauth-action.danger .qauth-menu-label{color:#b42318}
+    .qauth-current-status{padding:13px 2px 0;text-align:right;font-size:11px;color:#9aa3ad;font-weight:700}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
     .qauth-overlay{background:linear-gradient(135deg,#fbfcff 0%,#f6f8ff 58%,#f1efff 100%);padding:0}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
@@ -53,7 +65,14 @@
     if(av) av.textContent=(u.name||"사").slice(0,1);
     if(meta){const pos=String(u.position||"").trim();const name=String(u.name||"").trim();const same=pos&&name&&pos.replace(/\s+/g,"")===name.replace(/\s+/g,"");const suffix=pos&&!same?" "+esc(pos):"";meta.innerHTML=`<b>${esc(name)}${suffix}</b><br><small>${esc(u.dept)}</small>`;}
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
-    if(!$(".qauth-menu",box)){const m=document.createElement("div");m.className="qauth-menu";m.innerHTML='<button type="button" data-auth="password">비밀번호 변경</button><button type="button" class="danger" data-auth="logout">로그아웃</button>';box.appendChild(m);}
+    $(".qauth-menu",box)?.remove();
+    const account=String(u.uid||u.email||u.name||"사용자").trim();
+    const accountLabel=account.includes("@")?account.split("@")[0]:account;
+    const orgLabel=["나모케미칼",u.dept,u.position].filter(Boolean).map(v=>String(v).trim()).filter(Boolean).join(" · ");
+    const m=document.createElement("div");
+    m.className="qauth-menu";
+    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${esc((u.name||"사").slice(0,1))}</div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">현재 접속 중</div>`;
+    box.appendChild(m);
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
     document.querySelectorAll("[data-admin-only]").forEach(el=>el.style.display=admin?"":"none");
   }
@@ -120,13 +139,14 @@
   function wire(){
     const box=$("#currentUser");if(!box||box.dataset.qauthWired==="1")return;
     box.dataset.qauthWired="1";
-    box.addEventListener("mouseenter",()=>box.classList.add("qauth-open"));
     box.addEventListener("click",e=>{
       const a=e.target.closest("[data-auth]")?.dataset.auth;
-      if(a==="password"){e.preventDefault();e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}
+      if(a==="profile"){e.preventDefault();e.stopPropagation();box.classList.remove("qauth-open");passwordModal(false);return;}
       if(a==="logout"){e.preventDefault();e.stopPropagation();logout();return;}
+      if(e.target.closest(".qauth-menu")){e.stopPropagation();return;}
+      e.preventDefault();
       e.stopPropagation();
-      box.classList.add("qauth-open");
+      box.classList.toggle("qauth-open");
     });
     document.addEventListener("click",e=>{if(!box.contains(e.target))box.classList.remove("qauth-open")});
     document.addEventListener("keydown",e=>{if(e.key==="Escape")box.classList.remove("qauth-open")});
