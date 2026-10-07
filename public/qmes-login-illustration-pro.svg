@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="920" viewBox="0 0 1500 920">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".55" stop-color="#fafbff"/><stop offset="1" stop-color="#f0efff"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset=".35" stop-color="#eef1fb"/><stop offset=".7" stop-color="#bdc6e4"/><stop offset="1" stop-color="#7f8bad"/></linearGradient>
+ <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8d78ff"/><stop offset=".55" stop-color="#6e5af5"/><stop offset="1" stop-color="#4437d8"/></linearGradient>
+ <linearGradient id="road" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9b8dff"/><stop offset="1" stop-color="#5d51df"/></linearGradient>
+ <filter id="ds" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="15" flood-color="#5962b8" flood-opacity=".20"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="20"/></filter>
+</defs>
+<rect width="1500" height="920" fill="url(#bg)"/>
+<path d="M55 735C260 615 430 660 600 555s312-145 510-55 260 35 360-28v355H55Z" fill="#eeefff" opacity=".62"/>
+<g opacity=".32"><ellipse cx="340" cy="780" rx="245" ry="55" fill="#cdd2ff" filter="url(#soft)"/><ellipse cx="930" cy="735" rx="330" ry="70" fill="#d7d8ff" filter="url(#soft)"/></g>
+
+<!-- dashboard -->
+<g filter="url(#ds)">
+ <path d="M190 120h275a26 26 0 0 1 26 26v155a26 26 0 0 1-26 26H190a26 26 0 0 1-26-26V146a26 26 0 0 1 26-26Z" fill="#fff" stroke="#dfe4f5" stroke-width="4"/>
+ <path d="M210 273V172h225" fill="none" stroke="#d7dcef" stroke-width="4"/>
+ <rect x="245" y="226" width="30" height="47" rx="5" fill="#bbb2ff"/><rect x="298" y="194" width="30" height="79" rx="5" fill="#9587ff"/><rect x="351" y="157" width="30" height="116" rx="5" fill="#6c5df1"/>
+ <path d="M210 249c55-16 79 13 119-36s73-25 111-69" fill="none" stroke="url(#violet)" stroke-width="9" stroke-linecap="round"/>
+</g>
+
+<!-- factory platform -->
+<g filter="url(#ds)">
+ <path d="M310 560 688 337l465 221-387 241Z" fill="#f6f7ff" stroke="#dfe4f5" stroke-width="4"/>
+ <path d="M402 514 678 355l276 132-282 166Z" fill="#fff" stroke="#d8deef" stroke-width="4"/>
+ <path d="M531 445 675 365l157 75-146 83Z" fill="#fbfcff" stroke="#d3daee" stroke-width="3"/>
+ <path d="M531 445 686 523v145l-155-77Z" fill="#e9edf9"/><path d="M686 523 832 440v145l-146 83Z" fill="#cfd7ec"/>
+ <g fill="#6875d8"><rect x="568" y="498" width="27" height="45" rx="4"/><rect x="611" y="520" width="27" height="45" rx="4"/><rect x="728" y="493" width="29" height="42" rx="4"/></g>
+</g>
+
+<!-- vessels -->
+<g filter="url(#ds)" stroke="#aeb9d6" stroke-width="4">
+ <g><ellipse cx="448" cy="436" rx="50" ry="19" fill="#fff"/><rect x="398" y="436" width="100" height="155" fill="url(#metal)"/><ellipse cx="448" cy="591" rx="50" ry="19" fill="#b9c2dc"/></g>
+ <g><ellipse cx="565" cy="387" rx="46" ry="18" fill="#fff"/><rect x="519" y="387" width="92" height="175" fill="url(#metal)"/><ellipse cx="565" cy="562" rx="46" ry="18" fill="#b9c2dc"/></g>
+ <g><ellipse cx="758" cy="455" rx="47" ry="18" fill="#fff"/><rect x="711" y="455" width="94" height="164" fill="url(#metal)"/><ellipse cx="758" cy="619" rx="47" ry="18" fill="#b9c2dc"/></g>
+ <rect x="622" y="227" width="34" height="235" rx="15" fill="url(#metal)"/><rect x="674" y="253" width="31" height="209" rx="14" fill="url(#metal)"/><rect x="835" y="283" width="35" height="205" rx="14" fill="url(#metal)"/>
+</g>
+<g fill="none" stroke="url(#violet)" stroke-width="14" stroke-linecap="round">
+ <path d="M448 462c38 0 45-42 71-42"/><path d="M611 417c44 0 45-57 11-57"/><path d="M805 483c55 0 50-61 81-61"/>
+</g>
+
+<!-- road -->
+<g fill="none" stroke-linecap="round"><path d="M220 674 507 505 786 642 1115 452" stroke="#e0e3fb" stroke-width="84"/><path d="M220 674 507 505 786 642 1115 452" stroke="url(#road)" stroke-width="34"/></g>
+
+<!-- quality shield -->
+<g filter="url(#ds)"><path d="M1000 188 1085 218v76c0 76-50 119-85 139-35-20-85-63-85-139v-76Z" fill="url(#violet)" stroke="#e2e4ff" stroke-width="10"/><path d="m957 294 31 32 57-69" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></g>
+
+<!-- robot line -->
+<g filter="url(#ds)">
+ <path d="m856 577 212-110 213 103-222 128Z" fill="#f8f9ff" stroke="#dde2f3" stroke-width="4"/>
+ <path d="M918 593 1114 688" stroke="#7163eb" stroke-width="18" stroke-linecap="round"/>
+ <g stroke="#5f58d7" stroke-width="18" stroke-linecap="round" fill="none"><path d="m1010 570 27-67 51-29"/><path d="m1135 624 39-68 43-10"/></g>
+ <g fill="#fff" stroke="#bdc7e2" stroke-width="4"><circle cx="1010" cy="570" r="27"/><circle cx="1135" cy="624" r="27"/></g>
+ <g fill="#fff" stroke="#ccd3e8" stroke-width="3"><rect x="1035" y="601" width="46" height="43" rx="7"/><rect x="1103" y="634" width="46" height="43" rx="7"/><rect x="1170" y="665" width="46" height="43" rx="7"/></g>
+</g>
+
+<!-- warehouse -->
+<g filter="url(#ds)"><path d="m680 724 227-123 241 114-237 136Z" fill="#f7f8ff" stroke="#d9dfef" stroke-width="4"/><path d="m752 690 157-82 167 79-167 91Z" fill="#fff"/><path d="m909 778 167-91v108l-167 94Z" fill="#cfd7e9"/><path d="m752 690 157 88v111l-157-85Z" fill="#e8ecf7"/><g fill="#6470d9"><rect x="803" y="750" width="42" height="58" rx="4"/><rect x="864" y="783" width="42" height="58" rx="4"/></g></g>
+
+<!-- trucks -->
+<g filter="url(#ds)">
+ <g transform="translate(170 660)"><path d="M0 38h126l44 37v41H0Z" fill="#fff" stroke="#b7c1de" stroke-width="4"/><rect x="13" y="53" width="88" height="42" rx="6" fill="#cad3f3"/><rect x="118" y="55" width="43" height="31" rx="5" fill="#7b84e4"/><circle cx="42" cy="117" r="18" fill="#46506d"/><circle cx="139" cy="117" r="18" fill="#46506d"/></g>
+ <g transform="translate(1035 760) scale(.86)"><path d="M0 38h126l44 37v41H0Z" fill="#fff" stroke="#b7c1de" stroke-width="4"/><rect x="13" y="53" width="88" height="42" rx="6" fill="#cad3f3"/><rect x="118" y="55" width="43" height="31" rx="5" fill="#7b84e4"/><circle cx="42" cy="117" r="18" fill="#46506d"/><circle cx="139" cy="117" r="18" fill="#46506d"/></g>
+</g>
+
+<!-- data cloud -->
+<g filter="url(#ds)"><path d="M230 758c0-41 34-74 75-74 26 0 49 13 62 33 10-6 21-9 33-9 32 0 58 25 58 57 0 8-2 15-4 21H249c-11-5-19-15-19-28Z" fill="url(#violet)"/><rect x="267" y="801" width="160" height="68" rx="19" fill="#fff" stroke="#c5cee9" stroke-width="4"/><path d="M296 824h102m-102 23h102" stroke="#6b61e5" stroke-width="8" stroke-linecap="round"/></g>
+
+<!-- labels -->
+<g font-family="Pretendard,Noto Sans KR,Malgun Gothic,Arial,sans-serif" fill="#17213e">
+ <g font-size="24" font-weight="900"><text x="48" y="148">실시간 모니터링</text><text x="40" y="395">원자재 관리</text><text x="1118" y="168">품질관리</text><text x="1182" y="420">생산관리</text><text x="44" y="824">통합 데이터</text><text x="1138" y="823">출하 및 공급망</text></g>
+ <g font-size="17" font-weight="650" fill="#788198"><text x="48" y="178">데이터로 보는 생산 현장</text><text x="40" y="425">안정적인 공급, 연결된 LOT 추적</text><text x="1118" y="198">신뢰하는 품질, 지속 가능한 경쟁력</text><text x="1182" y="450">효율적인 공정 운영, 최적의 생산운영</text><text x="44" y="854">하나로 연결된 스마트한 의사결정</text><text x="1138" y="853">정확한 납기, 더 큰 신뢰</text></g>
+</g>
+<g stroke="#6b5cf1" stroke-width="4" fill="none" stroke-linecap="round"><path d="M260 148h52"/><circle cx="321" cy="148" r="6" fill="#6b5cf1"/><path d="M220 395h65"/><circle cx="294" cy="395" r="6" fill="#6b5cf1"/><path d="M1115 177h-55"/><circle cx="1050" cy="177" r="6" fill="#6b5cf1"/><path d="M1178 429h-56"/><circle cx="1112" cy="429" r="6" fill="#6b5cf1"/><path d="M205 826h72"/><circle cx="286" cy="826" r="6" fill="#6b5cf1"/><path d="M1135 826h-71"/><circle cx="1055" cy="826" r="6" fill="#6b5cf1"/></g>
+</svg>

@@ -18,25 +18,32 @@
     .qauth-menu button{width:100%;height:34px;border:0;border-radius:6px;background:#fff;text-align:left;padding:0 10px;font-size:11px;font-weight:800;color:#334155;cursor:pointer}
     .qauth-menu button:hover{background:#f4f7fb}.qauth-menu .danger{color:#c24141}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
-    .qauth-overlay{background:#f7f9fc}
+    .qauth-overlay{background:linear-gradient(135deg,#fbfcff 0%,#f7f8ff 56%,#f4f2ff 100%);padding:0}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
-    .qauth-card{width:min(1320px,96vw);background:transparent;border-radius:0;padding:0;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(380px,.72fr);gap:48px;overflow:visible;align-items:center}
+    .qauth-card{width:min(1560px,96vw);min-height:100vh;background:transparent;border-radius:0;padding:34px 48px;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.72fr) minmax(390px,.72fr);gap:58px;overflow:visible;align-items:center;box-sizing:border-box}
     .qauth-modal{width:min(460px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
-    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration-hd.svg?v=20261007-hd2');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;image-rendering:auto}
+    .qauth-login-photo{height:min(820px,calc(100vh - 68px));min-height:600px;background-image:url('/qmes-login-illustration-pro.svg?v=20261007-pro3');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;image-rendering:auto}
     .qauth-login-photo-inner{display:none}
-    .qauth-login-photo-inner span{display:block;font-size:13px;font-weight:800;letter-spacing:2px;opacity:.92}.qauth-login-photo-inner strong{display:block;font-size:38px;line-height:1.05;margin-top:7px}.qauth-login-photo-inner small{display:block;margin-top:10px;font-size:12px;font-weight:700;opacity:.9}
-    .qauth-login-panel{padding:48px 44px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.96);border-radius:22px;box-shadow:0 18px 50px rgba(31,41,55,.08);min-height:600px}
-    .qauth-card h2,.qauth-modal h3{margin:0 0 18px;color:#172033}
-    .qauth-card h2{text-align:center;font-size:23px}.qauth-modal h3{font-size:17px}
+    .qauth-login-panel{width:min(420px,100%);justify-self:center;padding:42px 30px;display:flex;flex-direction:column;justify-content:center;background:transparent;border-radius:0;box-shadow:none;min-height:560px}
+    .qauth-brandline{width:52px;height:2px;background:#6759ff;margin-bottom:22px}
+    .qauth-card h2,.qauth-modal h3{margin:0;color:#121a3a}
+    .qauth-card h2{text-align:left;font-size:34px;line-height:1.15;font-weight:950;letter-spacing:-1.5px}.qauth-card h2 em{font-style:normal;color:#5d50f6}
+    .qauth-subtitle{margin:14px 0 28px;color:#8a91a8;font-size:14px;font-weight:650;letter-spacing:-.2px}
     .qauth-card label,.qauth-modal label{display:block;font-size:11px;font-weight:800;color:#475569;margin:10px 0 6px}
-    .qauth-card input,.qauth-modal input,.qauth-modal select{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:0 11px;font:inherit;font-size:12px;outline:none;background:#fff}
+    .qauth-card .qauth-field-label{display:none}
+    .qauth-card input,.qauth-modal input,.qauth-modal select{width:100%;height:52px;border:1px solid #d9deeb;border-radius:12px;padding:0 15px;font:inherit;font-size:13px;outline:none;background:rgba(255,255,255,.92);box-sizing:border-box;transition:.16s}
+    .qauth-card input:focus{border-color:#786cff;box-shadow:0 0 0 3px rgba(109,92,255,.10)}
     .qauth-error{min-height:18px;margin-top:8px;font-size:11px;font-weight:700;color:#dc2626}
-    .qauth-primary{width:100%;height:44px;margin-top:14px;border:0;border-radius:8px;background:#174d7e;color:#fff;font-weight:900;cursor:pointer}
-    .qauth-signup-link{width:100%;height:40px;margin-top:8px;border:1px solid #b9c8d6;border-radius:8px;background:#fff;color:#174d7e;font-weight:900;cursor:pointer}
-    .qauth-signup-link:hover{background:#f3f7fb}.qauth-login-options{display:flex;align-items:center;justify-content:space-between;margin:2px 0 2px}.qauth-id-save{display:flex!important;align-items:center;gap:7px;margin:0!important;font-size:11px!important;font-weight:800!important;color:#475569!important;cursor:pointer}.qauth-id-save input{width:15px!important;height:15px!important;margin:0!important;accent-color:#2563eb}
+    .qauth-primary{width:100%;height:54px;margin-top:16px;border:0;border-radius:12px;background:linear-gradient(90deg,#7b62ff,#4f3df2);box-shadow:0 12px 28px rgba(93,80,246,.22);color:#fff;font-size:15px;font-weight:900;cursor:pointer}
+    .qauth-primary:hover{filter:brightness(.98)}
+    .qauth-signup-link{width:100%;height:48px;margin-top:12px;border:1px solid #9f94ff;border-radius:12px;background:#fff;color:#4037b9;font-size:14px;font-weight:900;cursor:pointer}
+    .qauth-signup-link:hover{background:#faf9ff}
+    .qauth-login-options{display:flex;align-items:center;justify-content:space-between;margin:8px 0 0}
+    .qauth-id-save{display:flex!important;align-items:center;gap:8px;margin:0!important;font-size:12px!important;font-weight:800!important;color:#515a73!important;cursor:pointer}
+    .qauth-id-save input{width:15px!important;height:15px!important;margin:0!important;accent-color:#6656f5}
     .qauth-actions{display:flex;gap:8px;margin-top:14px}.qauth-actions button{flex:1;height:40px;border-radius:8px;font-weight:850;cursor:pointer}
     .qauth-cancel{border:1px solid #d8e1ea;background:#fff;color:#475569}.qauth-save{border:1px solid #2563eb;background:#2563eb;color:#fff}
-    @media(max-width:900px){.qauth-card{grid-template-columns:1fr;width:min(460px,94vw)}.qauth-login-photo{display:none}.qauth-login-panel{padding:28px;min-height:auto}}
+    @media(max-width:980px){.qauth-card{grid-template-columns:1fr;width:min(480px,96vw);padding:20px;min-height:100vh}.qauth-login-photo{display:none}.qauth-login-panel{padding:28px 22px;min-height:auto;width:100%}.qauth-card h2{text-align:center;font-size:28px}.qauth-brandline{margin-left:auto;margin-right:auto}.qauth-subtitle{text-align:center}}
     `; document.head.appendChild(el);
   }
 
@@ -59,7 +66,7 @@
   function loginScreen(msg=""){
     $("#qauth-login")?.remove();
     const o=document.createElement("div");o.id="qauth-login";o.className="qauth-overlay";
-    o.innerHTML=`<form class="qauth-card"><div class="qauth-login-photo"><div class="qauth-login-photo-inner"><span>NAMO CHEMICAL</span><strong>QMES</strong><small>Quality & Manufacturing Execution System</small></div></div><div class="qauth-login-panel"><h2>나모케미칼 QMES</h2><label>아이디 또는 사번</label><input id="qa-id" autocomplete="username"><label>비밀번호</label><input id="qa-pw" type="password" autocomplete="current-password"><div id="qa-err" class="qauth-error">${esc(msg)}</div><div class="qauth-login-options"><label class="qauth-id-save"><input id="qa-save-id" type="checkbox"><span>ID 저장</span></label></div><button class="qauth-primary" type="submit">로그인</button><button class="qauth-signup-link" type="button">회원가입</button></div></form>`;
+    o.innerHTML=`<form class="qauth-card"><div class="qauth-login-photo" aria-hidden="true"></div><div class="qauth-login-panel"><div class="qauth-brandline"></div><h2>나모케미칼 <em>QMES</em></h2><div class="qauth-subtitle">품질로 더 나은 가치를 만드는 스마트 제조 혁신</div><label class="qauth-field-label">아이디 또는 사번</label><input id="qa-id" autocomplete="username" placeholder="아이디 또는 사번"><label class="qauth-field-label">비밀번호</label><input id="qa-pw" type="password" autocomplete="current-password" placeholder="비밀번호"><div id="qa-err" class="qauth-error">${esc(msg)}</div><div class="qauth-login-options"><label class="qauth-id-save"><input id="qa-save-id" type="checkbox"><span>ID 저장</span></label></div><button class="qauth-primary" type="submit">로그인&nbsp;&nbsp;→</button><button class="qauth-signup-link" type="button">회원가입</button></div></form>`;
     document.body.appendChild(o);
     try{const savedId=localStorage.getItem("qmes-saved-login-id-v1")||"";if(savedId){$("#qa-id",o).value=savedId;$("#qa-save-id",o).checked=true;}}catch(_){}
     $(".qauth-signup-link",o)?.addEventListener("click",()=>signupModal());
@@ -68,7 +75,7 @@
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
       btn.disabled=true;btn.textContent="로그인 확인 중...";
       try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
-      catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{btn.disabled=false;btn.textContent="로그인";}
+      catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{btn.disabled=false;btn.innerHTML="로그인&nbsp;&nbsp;→";}
     });
   }
 
