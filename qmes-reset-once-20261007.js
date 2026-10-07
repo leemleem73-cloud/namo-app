@@ -15,6 +15,7 @@ const pool = new Pool({
 });
 
 const TARGET_TABLES = [
+  'audit_logs',
   'certificates',
   'worklog_materials',
   'worklog',
@@ -72,7 +73,7 @@ const TARGET_TABLES = [
     await client.query(
       `INSERT INTO qmes_maintenance_markers(marker_key, note)
        VALUES ($1, $2)`,
-      [token, 'QMES operational/test data reset; users, sessions, attendance, NAMO Talk, inventory masters preserved']
+      [token, 'QMES full module transaction reset; users, sessions, attendance, NAMO Talk and fixed master configuration preserved']
     );
 
     await client.query('COMMIT');
