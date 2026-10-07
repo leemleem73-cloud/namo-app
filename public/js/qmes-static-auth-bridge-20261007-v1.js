@@ -42,7 +42,8 @@
 
   function norm(a){return {id:a?.id||"",uid:a?.uid||"",name:a?.name||"사용자",email:a?.email||"",dept:a?.department||a?.dept||"",position:a?.title||a?.position||"",role:a?.role||"user",mustChangePassword:Boolean(a?.mustChangePassword)}}
   function save(u){try{sessionStorage.setItem(KEY,JSON.stringify(u))}catch(_){} window.__QMES_CURRENT_USER__=u;}
-  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box)box.style.visibility="hidden";}
+  function load(){try{const v=JSON.parse(sessionStorage.getItem(KEY)||"null");return v&&typeof v==="object"?norm(v):null;}catch(_){return null;}}
+  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){box.style.visibility="visible";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.textContent="";if(meta)meta.innerHTML="<b></b><br><small></small>";}}
 
   function apply(u){
     save(u);
@@ -133,6 +134,8 @@
 
   async function boot(){
     style();wire();
+    const cached=load();
+    if(cached) apply(cached);
     try{const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data)throw 0;const u=norm(p.data);apply(u);if(u.mustChangePassword)passwordModal(true);}
     catch(_){clear();loginScreen();}
   }
