@@ -20,16 +20,16 @@
     #currentUser.qauth-open .qauth-menu{display:block}
     .qauth-profile-head{display:grid;grid-template-columns:46px 1fr;gap:11px;align-items:center;padding:1px 3px 12px}
     .qauth-profile-avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#eef1f5;color:#64748b;font-size:18px;font-weight:900;border:1px solid #e4e8ee}
-    .qauth-profile-copy{min-width:0}.qauth-profile-copy strong{display:block;font-size:16px;line-height:1.25;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .qauth-profile-copy span{display:block;margin-top:4px;font-size:11px;font-weight:700;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-profile-copy{min-width:0}.qauth-profile-copy strong{display:block;font-size:14px;line-height:1.25;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-profile-copy span{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .qauth-menu-panel{background:#fff;border:1px solid #edf0f4;border-radius:11px;padding:0 12px;overflow:hidden}
     .qauth-org-row,.qauth-action{width:100%;min-height:47px;display:grid;grid-template-columns:22px 1fr 16px;gap:8px;align-items:center;border:0;border-bottom:1px solid #edf0f4;background:#fff;color:#252b34;text-align:left;padding:0;font:inherit}
     .qauth-action{cursor:pointer}.qauth-action:last-child{border-bottom:0}
     .qauth-action:hover{background:#f8fafc}.qauth-menu-icon{width:22px;text-align:center;color:#7b8490;font-size:16px}
-    .qauth-menu-label{font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qauth-menu-label{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .qauth-menu-caret{font-size:15px;color:#a1a8b0;text-align:right}
     .qauth-action.danger .qauth-menu-label{color:#b42318}
-    .qauth-current-status{padding:10px 2px 0;text-align:right;font-size:10.5px;color:#9aa3ad;font-weight:700}
+    .qauth-current-status{padding:10px 2px 0;text-align:right;font-size:9.5px;color:#9aa3ad;font-weight:700}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
     .qauth-overlay{background:linear-gradient(135deg,#fbfcff 0%,#f6f8ff 58%,#f1efff 100%);padding:0}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
