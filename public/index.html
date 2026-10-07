@@ -34,9 +34,9 @@
   }
   .brand{display:flex;align-items:center;gap:0;font-weight:800;letter-spacing:-.4px}
   .brand-logo{width:174px;height:30px;display:block;object-fit:contain;object-position:left center;background:transparent;box-shadow:none}
-  .top-actions{display:flex;align-items:center;gap:14px;margin-right:84px}
+  .top-actions{display:flex;align-items:center;gap:20px;margin-right:32px}
   .top-chip{height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:7px;background:#fff;font-size:13px;color:#374151}
-  .user{display:flex;align-items:center;gap:10px;padding:0 8px}.user.auth-pending{visibility:hidden}
+  .user{display:flex;align-items:center;gap:10px;padding:0 8px}
   .avatar{width:34px;height:34px;border-radius:50%;background:#eef2f7;display:grid;place-items:center;font-weight:700;color:#475569}
   .user-meta{line-height:1.15}.user-meta b{font-size:13px}.user-meta small{font-size:11px;color:var(--muted)}
 
@@ -561,9 +561,9 @@ thead{background:#f4f7fa}
       <img class="brand-logo" src="./logo.png?v=20261007-homepage-logo2" alt="나모케미칼">
     </div>
     <div class="top-actions">
-      <div class="user auth-pending" id="currentUser" data-role="" style="visibility:hidden">
-        <div class="avatar"></div>
-        <div class="user-meta"><b></b><br><small></small></div>
+      <div class="user" id="currentUser" data-role="부장">
+        <div class="avatar">임</div>
+        <div class="user-meta"><b>임흥배 부장</b><br><small>품질부</small></div>
       </div>
       <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
     </div>
@@ -1444,23 +1444,7 @@ function wireAdminEmployees(section){
   section.querySelectorAll('.erp-admin-tab').forEach(tab=>tab.addEventListener('click',()=>{section.querySelectorAll('.erp-admin-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');toast(tab.textContent.trim()+' 보기로 전환했습니다.');}));
   section.querySelectorAll('.admin-emp-row').forEach(row=>row.addEventListener('click',e=>{if(e.target.closest('button'))return;const i=Number(row.dataset.index);openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
   section.querySelectorAll('.admin-emp-edit').forEach((btn,i)=>btn.addEventListener('click',e=>{e.stopPropagation();openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
-  section.querySelectorAll('.admin-emp-lock').forEach(btn=>btn.addEventListener('click',async e=>{
-    e.stopPropagation();
-    const row=btn.closest('.admin-emp-row');
-    const idx=Number(row?.dataset.index);
-    const emp=ADMIN_EMPLOYEES[idx];
-    if(!emp) return;
-    if(emp.status==='사용'){toast('계정 사용중지 처리 화면입니다.');return;}
-    if(!emp.serverId){toast('서버 회원정보를 확인할 수 없습니다.');return;}
-    try{
-      const r=await fetch('/api/admin/users/'+encodeURIComponent(emp.serverId)+'/approve',{method:'POST',credentials:'same-origin',cache:'no-store'});
-      const p=await r.json().catch(()=>({success:false}));
-      if(!r.ok||!p.success) throw new Error(p.message||'승인 처리에 실패했습니다.');
-      emp.status='사용';
-      renderAdminEmployees();
-      toast(emp.name+' 계정이 승인되었습니다.');
-    }catch(err){toast(err.message||'승인 처리에 실패했습니다.');}
-  }));
+  section.querySelectorAll('.admin-emp-lock').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();toast(btn.textContent.trim()==='중지'?'계정 사용중지 처리 화면입니다.':'계정 승인 처리 화면입니다.');}));
   section.querySelectorAll('.admin-emp-delete').forEach(btn=>btn.addEventListener('click',e=>{
     e.stopPropagation();
     const row=btn.closest('.admin-emp-row');
@@ -1473,53 +1457,11 @@ function wireAdminEmployees(section){
     toast(emp.name+' 직원이 삭제되었습니다.');
   }));
 }
-function renderAdminEmployees(){
+function buildAdminEmployees(){
   const section=document.getElementById('adminEmployees');
   if(!section) return;
   section.innerHTML=adminEmployeesShell();
   wireAdminEmployees(section);
-}
-async function syncAdminEmployeesFromServer(){
-  const section=document.getElementById('adminEmployees');
-  if(!section) return;
-  try{
-    const r=await fetch('/api/admin/users',{credentials:'same-origin',cache:'no-store'});
-    const p=await r.json().catch(()=>({success:false,data:[]}));
-    if(!r.ok||!p.success||!Array.isArray(p.data)) return;
-    p.data.forEach(u=>{
-      const email=String(u.email||'').trim().toLowerCase();
-      const idx=ADMIN_EMPLOYEES.findIndex(e=>
-        (u.id&&e.serverId===u.id) ||
-        (email&&String(e.email||'').trim().toLowerCase()===email) ||
-        (!e.serverId&&e.name===u.name)
-      );
-      const current=idx>=0?ADMIN_EMPLOYEES[idx]:null;
-      const status=String(u.status||'').toUpperCase()==='APPROVED'?'사용':String(u.status||'').toUpperCase()==='PENDING'?'승인대기':'사용중지';
-      const role=(String(u.role||'').toLowerCase()==='admin'||u.role==='관리자')?'관리자':'일반사용자';
-      const created=u.created_at?String(u.created_at).slice(0,10):(current?.date||'-');
-      const record={
-        no:current?.no||(status==='승인대기'?'신규':'-'),
-        name:u.name||current?.name||'사용자',
-        dept:u.department||current?.dept||'-',
-        position:u.title||current?.position||'-',
-        account:u.name||u.email||current?.account||'-',
-        role,
-        date:created,
-        status,
-        last:current?.last||'-',
-        phone:current?.phone||'',
-        email:u.email||current?.email||'',
-        note:current?.note||'',
-        serverId:u.id||current?.serverId||null
-      };
-      if(idx>=0) Object.assign(ADMIN_EMPLOYEES[idx],record); else ADMIN_EMPLOYEES.push(record);
-    });
-    renderAdminEmployees();
-  }catch(_err){}
-}
-function buildAdminEmployees(refreshServer=false){
-  renderAdminEmployees();
-  if(refreshServer) syncAdminEmployeesFromServer();
 }
 
 function buildModule(id){
@@ -2174,7 +2116,7 @@ function exportTable(section,title){
 }
 
 Object.keys(pageInfo).forEach(buildModule);
-buildAdminEmployees(true);
+buildAdminEmployees();
 applyAdminVisibility();
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
@@ -2186,7 +2128,6 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
   document.getElementById(m.dataset.page).classList.add('active');
-  if(m.dataset.page==='adminEmployees') syncAdminEmployeesFromServer();
   content.scrollTop=0;
 }));
 
@@ -2204,7 +2145,6 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-login-pro6"></script>
-<script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch2"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-auth3"></script>
 </body>
 </html>
