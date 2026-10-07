@@ -54,6 +54,7 @@
   function apply(u){
     save(u);
     const box=$("#currentUser"); if(!box) return;
+    box.classList.remove("auth-pending");
     const av=$(".avatar",box), meta=$(".user-meta",box);
     if(av) av.textContent=(u.name||"사").slice(0,1);
     if(meta){const positionLabel=u.position&&u.position!==u.name?" "+esc(u.position):"";meta.innerHTML=`<b>${esc(u.name)}${positionLabel}</b><br><small>${esc(u.dept)}</small>`;}
