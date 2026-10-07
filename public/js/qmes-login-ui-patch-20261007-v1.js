@@ -60,9 +60,7 @@
   border-radius:26px !important;
   box-shadow:0 22px 60px rgba(49,54,100,.10) !important;
 }
-#qauth-login.qmes-login-pro .qmes-login-brandline{
-  width:52px;height:2px;margin:0 0 23px;background:#6658f5;border-radius:4px;
-}
+#qauth-login.qmes-login-pro .qmes-login-brandline{display:none !important;}
 #qauth-login.qmes-login-pro h2{
   margin:0 !important;
   text-align:left !important;
@@ -173,11 +171,7 @@
       if(h2.textContent.trim()!=="나모케미칼 QMES" || !h2.querySelector("em")){
         h2.innerHTML='나모케미칼 <em>QMES</em>';
       }
-      if(!panel.querySelector(".qmes-login-brandline")){
-        const line=document.createElement("div");
-        line.className="qmes-login-brandline";
-        panel.insertBefore(line,h2);
-      }
+      panel.querySelector(".qmes-login-brandline")?.remove();
       if(!panel.querySelector(".qmes-login-subtitle")){
         const sub=document.createElement("div");
         sub.className="qmes-login-subtitle";
