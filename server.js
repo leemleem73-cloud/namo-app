@@ -18,6 +18,7 @@ require('./mobile-hard-entry-preload.js');
 require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
 require('./access-permissions-safe-20260923-v2.js');
+require('./qmes-quality-approval-safe.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
 const publicRouter = path.resolve(__dirname, 'public', 'js', 'router.jsx');
