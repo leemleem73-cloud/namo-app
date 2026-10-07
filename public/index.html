@@ -2040,6 +2040,7 @@ function issueInspectionReport(id,row){
   const finalJudge=val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격');
   const issueDate=new Date().toLocaleDateString('ko-KR');
   const docType=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
+  const approval=qmesQualityApprovalPeople();
   const body=`
     <div class="report-sheet report-${id}" id="reportSheet">
       <div class="report-doc-head">
@@ -2048,7 +2049,7 @@ function issueInspectionReport(id,row){
         <div class="report-approval">
           <div class="approval-label">결재</div>
           <div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div>
-          <div class="approval-cell">${inspector}</div><div class="approval-cell"></div><div class="approval-cell"></div>
+          <div class="approval-cell">${approval.writer}</div><div class="approval-cell">${approval.reviewer}</div><div class="approval-cell">${approval.approver}</div>
         </div>
       </div>
       <div class="report-meta">
@@ -2245,7 +2246,21 @@ function standardInspectionRows(type){
   }[type]||[];
   return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
 }
+function qmesQualityApprovalPeople(){
+  const current=window.__QMES_CURRENT_USER__||{};
+  const writerName=String(current.name||'').trim();
+  const writerPos=String(current.position||current.title||'').trim();
+  const writer=writerName ? (writerName+(writerPos?' '+writerPos:'')) : '로그인 사용자';
+  const rank={사원:1,주임:2,대리:3,과장:4,차장:5,부장:6,이사:7,상무:8,전무:9,대표이사:10,관리자:99};
+  const qualityManagers=(typeof ADMIN_EMPLOYEES!=='undefined'?ADMIN_EMPLOYEES:[])
+    .filter(e=>e&&e.status==='사용'&&e.dept==='품질부'&&(rank[e.position]||0)>=6)
+    .sort((a,b)=>(rank[b.position]||0)-(rank[a.position]||0));
+  const manager=qualityManagers.find(e=>e.position==='부장')||qualityManagers[0]||null;
+  const managerLabel=manager ? (manager.name+(manager.position?' '+manager.position:'')) : '품질부 부장';
+  return {writer,reviewer:managerLabel,approver:managerLabel};
+}
 function standardInspectionForm(type){
+  const approval=qmesQualityApprovalPeople();
   const conf={
     incoming:{title:'수입검사 성적서',sub:'INCOMING INSPECTION REPORT',doc:'IQC',docNo:'IQC-QA-001',section:'입고 / 검사 기본정보',summary:'LOT 단위 수입검사'},
     process:{title:'공정검사 성적서',sub:'IN-PROCESS INSPECTION REPORT',doc:'IPQC',docNo:'IPQC-QA-001',section:'생산 / 검사 기본정보',summary:'공정 품질 확인 / n=3'},
@@ -2300,9 +2315,9 @@ function standardInspectionForm(type){
     <div class="std-premium-remarks"><div class="k">비고</div><textarea placeholder="검사 특이사항, 부적합 내용 및 조치사항을 입력하세요"></textarea></div>
     <div class="std-approval-row">
       <div class="approval-label">전자결재</div>
-      <div class="std-approval-item"><span>작성</span><b>검사자</b><small>검사 저장 시 자동기록</small></div>
-      <div class="std-approval-item"><span>검토</span><b>검토자</b><small>권한에 따라 선택</small></div>
-      <div class="std-approval-item"><span>승인</span><b>승인자</b><small>권한에 따라 선택</small></div>
+      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b><small>로그인 본인</small></div>
+      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b><small>품질 관련 문서 · 품질부 부장</small></div>
+      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b><small>품질 관련 문서 · 품질부 부장</small></div>
     </div>
     <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
