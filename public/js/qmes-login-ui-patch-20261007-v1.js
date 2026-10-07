@@ -170,7 +170,9 @@
 
     const h2=panel.querySelector("h2");
     if(h2){
-      h2.innerHTML='나모케미칼 <em>QMES</em>';
+      if(h2.textContent.trim()!=="나모케미칼 QMES" || !h2.querySelector("em")){
+        h2.innerHTML='나모케미칼 <em>QMES</em>';
+      }
       if(!panel.querySelector(".qmes-login-brandline")){
         const line=document.createElement("div");
         line.className="qmes-login-brandline";
@@ -190,7 +192,9 @@
     if(pw) pw.placeholder="비밀번호";
 
     const login=panel.querySelector(".qauth-primary");
-    if(login && !login.disabled) login.innerHTML="로그인&nbsp;&nbsp;→";
+    if(login && !login.disabled && login.textContent.replace(/\s+/g," ").trim()!=="로그인 →"){
+      login.textContent="로그인 →";
+    }
   }
 
   ensureStyle();
