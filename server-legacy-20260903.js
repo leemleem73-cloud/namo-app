@@ -7,6 +7,8 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 require('dotenv').config();
+const { ensureInventorySchema } = require('./inventory-server');
+const { runQmesOperationalResetOnce } = require('./qmes-data-reset-once-20261007');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -3909,7 +3911,9 @@ app.get('*', (_req, res) => {
 
 ensureSchema()
   .then(async () => {
-    await ensurePurchaseHistory();
+    await ensureInventorySchema();
+    await runQmesOperationalResetOnce();
+    // Historical purchase seed intentionally disabled after the 2026-10-07 operational data reset.
     await ensurePurchaseIqcReconciliation();
     await ensurePendingIqcFromUnmatchedPurchases();
 
