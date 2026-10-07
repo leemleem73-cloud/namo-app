@@ -50,6 +50,18 @@
     .qauth-actions{display:flex;gap:8px;margin-top:14px}.qauth-actions button{flex:1;height:40px;border-radius:8px;font-weight:850;cursor:pointer}
     .qauth-cancel{border:1px solid #d8e1ea;background:#fff;color:#475569}.qauth-save{border:1px solid #2563eb;background:#2563eb;color:#fff}
     @media(max-width:900px){.qauth-card{grid-template-columns:1fr;width:min(460px,94vw)}.qauth-login-photo{display:none}.qauth-login-panel{padding:28px;min-height:auto}}
+
+    /* NAMO Talk-inspired login progress: only shown while authentication is pending. */
+    #qauth-login .namo-login-wait{position:absolute;inset:0;z-index:12;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:rgba(250,248,255,.97);backdrop-filter:blur(5px);color:#51438d;font-size:14px;font-weight:800}
+    #qauth-login .namo-login-wait.is-active{display:flex}
+    #qauth-login .namo-wait-face{width:84px;height:84px;border-radius:50%;position:relative;background:radial-gradient(circle at 34% 24%,#f5f0ff 0%,#dcd2ff 29%,#b8a4fa 60%,#8c77e5 100%);box-shadow:0 6px 18px rgba(116,90,196,.26),inset 0 1px 7px rgba(255,255,255,.9);animation:namoWaitHop 1.05s ease-in-out infinite}
+    #qauth-login .namo-wait-face:before{content:"";position:absolute;top:40%;left:30%;width:6px;height:6px;border-radius:50%;background:#27304b;box-shadow:24px 0 #27304b;animation:namoWaitBlink 3.4s ease-in-out infinite}
+    #qauth-login .namo-wait-face:after{content:"";position:absolute;top:43%;left:42%;width:14px;height:9px;border:3px solid #27304b;border-top:0;border-left:0;border-right:0;border-radius:0 0 12px 12px}
+    #qauth-login .namo-wait-shadow{width:58px;height:9px;margin-top:-5px;border-radius:50%;background:rgba(100,77,171,.14);animation:namoWaitShadow 1.05s ease-in-out infinite}
+    @keyframes namoWaitHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+    @keyframes namoWaitShadow{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(.72);opacity:.45}}
+    @keyframes namoWaitBlink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.18)}}
+    @media(prefers-reduced-motion:reduce){#qauth-login .namo-wait-face,#qauth-login .namo-wait-face:before,#qauth-login .namo-wait-shadow{animation:none}}
     `; document.head.appendChild(el);
   }
 
@@ -95,14 +107,21 @@
     const o=document.createElement("div");o.id="qauth-login";o.className="qauth-overlay";
     o.innerHTML=`<form class="qauth-card"><div class="qauth-login-photo"><div class="qauth-login-photo-inner"><span>NAMO CHEMICAL</span><strong>QMES</strong><small>Quality & Manufacturing Execution System</small></div></div><div class="qauth-login-panel"><h2>나모케미칼 QMES</h2><label>아이디 또는 사번</label><input id="qa-id" autocomplete="username"><label>비밀번호</label><input id="qa-pw" type="password" autocomplete="current-password"><div id="qa-err" class="qauth-error">${esc(msg)}</div><div class="qauth-login-options"><label class="qauth-id-save"><input id="qa-save-id" type="checkbox"><span>ID 저장</span></label></div><button class="qauth-primary" type="submit">로그인</button><button class="qauth-signup-link" type="button">회원가입</button></div></form>`;
     document.body.appendChild(o);
+    const wait=document.createElement("div");
+    wait.className="namo-login-wait";
+    wait.setAttribute("role","status");
+    wait.setAttribute("aria-live","polite");
+    wait.innerHTML='<div class="namo-wait-face" aria-hidden="true"></div><div class="namo-wait-shadow" aria-hidden="true"></div><span>로그인 중입니다...</span>';
+    o.appendChild(wait);
     try{const savedId=localStorage.getItem("qmes-saved-login-id-v1")||"";if(savedId){$("#qa-id",o).value=savedId;$("#qa-save-id",o).checked=true;}}catch(_){}
     $(".qauth-signup-link",o)?.addEventListener("click",()=>signupModal());
     $("form",o).addEventListener("submit",async e=>{
       e.preventDefault();const id=$("#qa-id",o).value.trim(),pw=$("#qa-pw",o).value,err=$("#qa-err",o),btn=$(".qauth-primary",o),saveId=Boolean($("#qa-save-id",o)?.checked);
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
       btn.disabled=true;btn.textContent="로그인 확인 중...";
+      wait.classList.add("is-active");
       try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
-      catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{btn.disabled=false;btn.textContent="로그인";}
+      catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{wait.classList.remove("is-active");btn.disabled=false;btn.textContent="로그인";}
     });
   }
 
