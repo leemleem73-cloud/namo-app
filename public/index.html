@@ -807,6 +807,25 @@ const workspaceBody = document.getElementById('workspaceBody');
 const workspaceFoot = document.getElementById('workspaceFoot');
 const workspaceBack = document.getElementById('workspaceBack');
 let workspacePreviousPage = 'dashboard';
+const QMES_LAST_PAGE_KEY='qmes-last-page-v1';
+function rememberQmesPage(pageId){
+  if(!pageId || pageId==='mainWorkspace') return;
+  try{sessionStorage.setItem(QMES_LAST_PAGE_KEY,pageId);}catch(e){}
+}
+function restoreQmesPage(){
+  let pageId='';
+  try{pageId=sessionStorage.getItem(QMES_LAST_PAGE_KEY)||'';}catch(e){}
+  if(!pageId) return false;
+  const page=document.getElementById(pageId);
+  const menu=[...document.querySelectorAll('.menu')].find(x=>x.dataset.page===pageId);
+  if(!page || !menu) return false;
+  document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
+  menu.classList.add('active');
+  page.classList.add('active');
+  workspacePreviousPage=pageId;
+  return true;
+}
 const toastEl = document.getElementById('toast');
 
 const currentUserEl=document.getElementById('currentUser');
@@ -2432,6 +2451,7 @@ function exportTable(section,title){
 Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
 applyAdminVisibility();
+restoreQmesPage();
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
@@ -2442,6 +2462,7 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
   document.getElementById(m.dataset.page).classList.add('active');
+  rememberQmesPage(m.dataset.page);
   content.scrollTop=0;
 }));
 
