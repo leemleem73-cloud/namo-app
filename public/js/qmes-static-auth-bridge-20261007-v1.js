@@ -49,7 +49,7 @@
     const box=$("#currentUser"); if(!box) return;
     const av=$(".avatar",box), meta=$(".user-meta",box);
     if(av) av.textContent=(u.name||"사").slice(0,1);
-    if(meta) meta.innerHTML=`<b>${esc(u.name)}${u.position?" "+esc(u.position):""}</b><br><small>${esc(u.dept)}</small>`;
+    if(meta){const pos=String(u.position||"").trim();const name=String(u.name||"").trim();const suffix=pos&&pos!==name?" "+esc(pos):"";meta.innerHTML=`<b>${esc(name)}${suffix}</b><br><small>${esc(u.dept)}</small>`;}
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
     if(!$(".qauth-menu",box)){const m=document.createElement("div");m.className="qauth-menu";m.innerHTML='<button type="button" data-auth="password">비밀번호 변경</button><button type="button" class="danger" data-auth="logout">로그아웃</button>';box.appendChild(m);}
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
