@@ -380,14 +380,14 @@ try {
 
 // Import approved historical incoming-inspection ledger rows into the shared IQC store.
 // The importer is idempotent and never overwrites an existing matching inspection.
-require('./iqc-history-seed-20260923-v2.js');
+// Disabled after 2026-10-07 QMES data reset: require('./iqc-history-seed-20260923-v2.js');
 
 // Ensure the 18 approved legacy purchase rows are present in purchase_orders.
 // Missing rows are inserted; only SYSTEM-created legacy rows may be refreshed.
 // User-created purchase orders are never overwritten.
-require('./purchase-history-repair-20260923-v2.js');
-require('./purchase-order-date-align-20260928-v1.js');
-require('./workorder-history-repair-20260928-v2.js');
+// Disabled after 2026-10-07 QMES data reset: require('./purchase-history-repair-20260923-v2.js');
+// Disabled after 2026-10-07 QMES data reset: require('./purchase-order-date-align-20260928-v1.js');
+// Disabled after 2026-10-07 QMES data reset: require('./workorder-history-repair-20260928-v2.js');
 
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
