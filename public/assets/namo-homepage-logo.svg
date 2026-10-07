@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 106" role="img" aria-label="NAMO Chemical">
+  <rect width="520" height="106" fill="none"/>
+  <g>
+    <g fill="#1D2088">
+      <path d="M8 8h13l14 46v43H8V8z"/>
+      <path d="M63 8h13l13 43v46H63V8z"/>
+      <path d="M143 9h-12l-26 87h25l13-43V9z"/>
+    </g>
+    <g fill="#7FBE26">
+      <path d="M23 9h25l14 46v41H49L23 9z"/>
+      <path d="M78 9h25l14 42-13 44L78 9z"/>
+      <path d="M144 8h28v90h-28V8z"/>
+    </g>
+  </g>
+  <text x="198" y="65" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#172033" letter-spacing="-1">NAMO Chemical</text>
+</svg>
