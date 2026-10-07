@@ -208,7 +208,7 @@ function install(app) {
       let approval = null;
       if (recordId) {
         const existing = await pool.query(
-          'SELECT * FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 LIMIT 1',
+          'SELECT * FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 AND status <> \'DELETED\' LIMIT 1',
           [docType, recordId]
         );
         if (existing.rowCount) {
@@ -260,9 +260,10 @@ function install(app) {
       const admin = isAdmin(req);
       const q = await pool.query(
         admin
-          ? `SELECT * FROM qmes_quality_approvals ORDER BY created_at DESC LIMIT 200`
+          ? `SELECT * FROM qmes_quality_approvals WHERE status <> 'DELETED' ORDER BY created_at DESC LIMIT 200`
           : `SELECT * FROM qmes_quality_approvals
-             WHERE writer_user_id=$1 OR reviewer_user_id=$1 OR approver_user_id=$1
+             WHERE status <> 'DELETED'
+               AND (writer_user_id=$1 OR reviewer_user_id=$1 OR approver_user_id=$1)
              ORDER BY created_at DESC LIMIT 200`,
         admin ? [] : [u.id]
       );
@@ -333,6 +334,33 @@ function install(app) {
     } catch (e) {
       console.error('[QMES quality approve]', e);
       return fail(res, 500, '검토·승인 처리에 실패했습니다.');
+    }
+  });
+
+  app.delete('/api/qmes-quality/approvals/:id', requireLogin, async (req, res) => {
+    try {
+      await ensureSchema();
+      const current = await pool.query('SELECT * FROM qmes_quality_approvals WHERE id=$1 AND status <> \'DELETED\' LIMIT 1', [req.params.id]);
+      if (!current.rowCount) return fail(res, 404, '결재 문서를 찾을 수 없습니다.');
+
+      const approval = current.rows[0];
+      const u = req.session.user || {};
+      const allowed = isAdmin(req)
+        || String(u.id || '') === String(approval.writer_user_id || '')
+        || String(u.id || '') === String(approval.reviewer_user_id || '')
+        || String(u.id || '') === String(approval.approver_user_id || '');
+      if (!allowed) return fail(res, 403, '삭제 권한이 없습니다.');
+
+      await pool.query('DELETE FROM qmes_quality_notifications WHERE approval_id=$1', [approval.id]);
+      await pool.query(
+        "UPDATE qmes_quality_approvals SET status='DELETED', updated_at=NOW() WHERE id=$1",
+        [approval.id]
+      );
+
+      return ok(res, null, '결재 문서가 삭제되었습니다.');
+    } catch (e) {
+      console.error('[QMES quality approval delete]', e);
+      return fail(res, 500, '결재 문서 삭제에 실패했습니다.');
     }
   });
 
