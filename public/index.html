@@ -1945,7 +1945,7 @@ function issueInspectionReport(id,row){
         <div class="sign-cell"><div class="sign-role">검토자</div><div class="sign-line"></div><div class="sign-name">품질책임자</div></div>
         <div class="sign-cell"><div class="sign-role">승인자</div><div class="sign-line"></div><div class="sign-name">승인권자</div></div>
       </div>
-      <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질경영팀</b></span><span>QMES ELECTRONIC RECORD</span></div>
+      <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
     </div>`;
   openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button><button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
   document.getElementById('printReportBtn')?.addEventListener('click',()=>printInspectionReport(title));
@@ -2143,7 +2143,7 @@ function standardInspectionForm(type){
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
         <div class="k">Rev.</div><div class="v">0</div>
-        <div class="k">작성부서</div><div class="v">품질경영팀</div>
+        <div class="k">작성부서</div><div class="v">품질부</div>
         <div class="k">상태</div><div class="v">신규작성</div>
       </div>
     </div>
@@ -2167,7 +2167,7 @@ function standardInspectionForm(type){
       <div class="std-approval-item"><span>검토</span><b>검토자</b><small>권한에 따라 선택</small></div>
       <div class="std-approval-item"><span>승인</span><b>승인자</b><small>권한에 따라 선택</small></div>
     </div>
-    <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질경영팀</b></div>
+    <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
 }
 function initStandardInspectionForm(type){
