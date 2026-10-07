@@ -391,4 +391,10 @@ try {
 
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
+
+// Render production starts with "node server.js", not the package.json start script.
+// Import the approved incoming-inspection ledger into the real IQC table on every deploy.
+// The sync script is idempotent (same date/LOT/supplier/item updates instead of duplicating).
+require('./iqc-ledger-autosync-20261007.js');
+
 require('./server-legacy-20260903.js');
