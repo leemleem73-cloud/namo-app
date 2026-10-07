@@ -1917,9 +1917,117 @@ async function loadIncomingFromDb(section){
     tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">수입검사 데이터를 불러오지 못했습니다.</td></tr>';
   }
 }
+function qualityApprovalShell(){
+  return `
+    <div class="page-head"><div><h1>전자결재</h1><p>품질문서 검토·승인 요청과 처리상태를 관리합니다.</p></div><div class="date-badge">QMES</div></div>
+    <div class="module-shell">
+      <div class="module-toolbar">
+        <div class="filters"><input class="input quality-approval-search" placeholder="문서번호 / 제목 / 작성자 검색"></div>
+        <div class="table-tools"><button class="btn quality-approval-refresh" type="button">새로고침</button></div>
+      </div>
+      <div class="module-body"><table><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="8">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
+    </div>`;
+}
+function qualityApprovalDate(value){
+  if(!value) return '-';
+  try{return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}catch(e){return String(value);}
+}
+function qualityApprovalDocNo(a){
+  const id=String(a?.record_id||'').replace(/-/g,'').slice(-8);
+  return `${a?.doc_type||'QMS'}-${id||a?.id||''}`;
+}
+function canCurrentUserApproveQuality(a){
+  const u=window.__QMES_CURRENT_USER__||{};
+  if(String(u.role||'').toLowerCase()==='admin') return true;
+  return String(u.id||'')===String(a?.reviewer_user_id||'') || String(u.id||'')===String(a?.approver_user_id||'');
+}
+async function loadQualityApprovals(section=document.getElementById('approval')){
+  if(!section) return;
+  const tbody=section.querySelector('.quality-approval-body');
+  try{
+    const r=await fetch('/api/qmes-quality/approvals',{credentials:'same-origin'});
+    const p=await r.json();
+    if(!r.ok||!p.success) throw new Error(p.message||'결재 목록 조회 실패');
+    const rows=Array.isArray(p.data)?p.data:[];
+    section._qualityApprovals=rows;
+    const render=()=>{
+      const q=(section.querySelector('.quality-approval-search')?.value||'').trim().toLowerCase();
+      const list=rows.filter(a=>[a.doc_type,a.title,a.writer_name,a.approver_name,qualityApprovalDocNo(a)].join(' ').toLowerCase().includes(q));
+      tbody.innerHTML=list.length?list.map((a,i)=>{
+        const pending=a.status!=='APPROVED';
+        const action=pending&&canCurrentUserApproveQuality(a)
+          ? `<button class="btn primary quality-approve-btn" type="button" data-approval-id="${a.id}">검토·승인</button>`
+          : '';
+        const status=pending?'<span class="badge b-yellow">승인대기</span>':'<span class="badge b-green">승인완료</span>';
+        return `<tr><td>${i+1}</td><td>${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td></tr>`;
+      }).join(''):'<tr><td colspan="8">현재 결재 요청이 없습니다.</td></tr>';
+    };
+    render();
+    section.querySelector('.quality-approval-search')?.addEventListener('input',render,{once:false});
+    section.querySelectorAll('.quality-approve-btn').forEach(btn=>btn.addEventListener('click',async()=>{
+      btn.disabled=true;
+      try{
+        const r=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(btn.dataset.approvalId)+'/approve',{method:'POST',credentials:'same-origin'});
+        const p=await r.json();
+        if(!r.ok||!p.success) throw new Error(p.message||'승인 실패');
+        toast('검토·승인이 완료되었습니다.');
+        await loadQualityApprovals(section);
+        await loadQualityNotifications();
+      }catch(e){toast(e.message||'검토·승인에 실패했습니다.');btn.disabled=false;}
+    }));
+  }catch(e){
+    tbody.innerHTML='<tr><td colspan="8">결재 목록을 불러오지 못했습니다.</td></tr>';
+  }
+}
+async function qmesRequestQualityApproval(docType,recordId,title,page='approval'){
+  if(!recordId) return {success:false,message:'저장된 문서 ID가 없습니다.'};
+  try{
+    const r=await fetch('/api/qmes-quality/approvals/request',{
+      method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({docType,recordId,title,page})
+    });
+    const p=await r.json();
+    if(!r.ok||!p.success) throw new Error(p.message||'결재요청 실패');
+    await loadQualityNotifications();
+    return p;
+  }catch(e){
+    console.error('[QMES quality approval request]',e);
+    return {success:false,message:e.message||'결재요청 실패'};
+  }
+}
+async function loadQualityNotifications(){
+  if(!notifyList) return;
+  try{
+    const r=await fetch('/api/qmes-quality/notifications',{credentials:'same-origin'});
+    const p=await r.json();
+    if(!r.ok||!p.success) throw new Error(p.message||'알림 조회 실패');
+    const rows=Array.isArray(p.data)?p.data:[];
+    notifyList.querySelectorAll('.notify-item[data-source="quality"]').forEach(x=>x.remove());
+    rows.forEach(n=>{
+      const el=document.createElement('div');
+      el.className='notify-item';
+      el.dataset.kind='approval';
+      el.dataset.page=n.page||'approval';
+      el.dataset.source='quality';
+      el.dataset.approvalId=n.approval_id||'';
+      const pending=n.approval_status==='PENDING';
+      el.innerHTML=`<div class="notify-dot">${pending?'결':'✓'}</div><div class="notify-copy"><b>${n.title||'품질문서 알림'}</b><span>${n.message||''}</span></div><div class="notify-time">${pending?'승인대기':'완료'}<br>${qualityApprovalDate(n.created_at)}</div>`;
+      notifyList.appendChild(el);
+    });
+    if(notifyEmpty) notifyEmpty.style.display=rows.length?'none':'block';
+  }catch(e){
+    console.error('[QMES quality notifications]',e);
+  }
+}
 function buildModule(id){
   const [title,desc,cols] = pageInfo[id];
   const section=document.getElementById(id);
+  if(id==='approval'){
+    section.innerHTML=qualityApprovalShell();
+    section.querySelector('.quality-approval-refresh')?.addEventListener('click',()=>loadQualityApprovals(section));
+    loadQualityApprovals(section);
+    return;
+  }
   if(id==='lotTrace'){
     section.innerHTML=lotTraceShell();
     wireLotTrace(section);
@@ -2076,7 +2184,7 @@ function issueInspectionReport(id,row){
         <div class="report-approval">
           <div class="approval-label">결재</div>
           <div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div>
-          <div class="approval-cell">${approval.writer}</div><div class="approval-cell">${approval.reviewer}</div><div class="approval-cell">${approval.approver}</div>
+          <div class="approval-cell" data-report-sign="writer">${approval.writer}</div><div class="approval-cell" data-report-sign="reviewer">검토 대기</div><div class="approval-cell" data-report-sign="approver">승인 대기</div>
         </div>
       </div>
       <div class="report-meta">
@@ -2113,6 +2221,20 @@ function issueInspectionReport(id,row){
       <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
     </div>`;
   openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button><button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
+  const recordId=row?.dataset?.iqcId||row?.dataset?.recordId||row?.dataset?.id||'';
+  if(recordId){
+    fetch('/api/qmes-quality/approvals/record?docType='+encodeURIComponent(docType)+'&recordId='+encodeURIComponent(recordId),{credentials:'same-origin'})
+      .then(r=>r.json()).then(p=>{
+        if(!p?.success||!p.data)return;
+        const a=p.data;
+        const reviewer=document.querySelector('[data-report-sign="reviewer"]');
+        const approver=document.querySelector('[data-report-sign="approver"]');
+        if(a.status==='APPROVED'){
+          if(reviewer) reviewer.textContent=a.reviewer_name||'검토완료';
+          if(approver) approver.textContent=a.approver_name||'승인완료';
+        }
+      }).catch(()=>{});
+  }
   document.getElementById('printReportBtn')?.addEventListener('click',()=>printInspectionReport(title));
 }
 function printInspectionReport(title){
@@ -2343,8 +2465,8 @@ function standardInspectionForm(type){
     <div class="std-approval-row">
       <div class="approval-label">전자결재</div>
       <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b><small>로그인 본인</small></div>
-      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b><small>품질 관련 문서 · 품질부 부장</small></div>
-      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b><small>품질 관련 문서 · 품질부 부장</small></div>
+      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b><small>검토 대기 · 품질부 부장</small></div>
+      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b><small>승인 대기 · 품질부 부장</small></div>
     </div>
     <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
@@ -2384,6 +2506,8 @@ function initStandardInspectionForm(type){
           })});
           const p=await r.json().catch(()=>({success:false}));
           if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
+          const approvalReq=await qmesRequestQualityApproval('IQC',p.data?.id,'수입검사 성적서 검토·승인','approval');
+          if(!approvalReq?.success) toast('검사는 저장되었지만 검토·승인 알림 전송에 실패했습니다.');
           saveIncomingMaterial({name,lot,supplier,date,judge:overall?.value||'대기'});
           closeModal();
           const section=document.getElementById('incoming');
@@ -2656,11 +2780,12 @@ notifyBtn?.addEventListener('click',e=>{
   document.getElementById('currentUser')?.classList.remove('qauth-open');
   const opening=!notifyPanel?.classList.contains('open');
   closeNotifyPanel();
-  if(opening){notifyPanel?.classList.add('open');notifyBtn?.classList.add('notify-active');}
+  if(opening){notifyPanel?.classList.add('open');notifyBtn?.classList.add('notify-active');loadQualityNotifications();}
 });
 document.getElementById('notifyClose')?.addEventListener('click',closeNotifyPanel);
-document.getElementById('notifyReadAll')?.addEventListener('click',()=>{
+document.getElementById('notifyReadAll')?.addEventListener('click',async()=>{
   document.querySelectorAll('#notifyList .notify-item').forEach(el=>el.style.opacity='.55');
+  try{await fetch('/api/qmes-quality/notifications/read-all',{method:'POST',credentials:'same-origin'});}catch(e){}
   toast('통합알림을 모두 읽음 처리했습니다.');
 });
 notifyTabs?.addEventListener('click',e=>{
@@ -2684,6 +2809,7 @@ notifyList?.addEventListener('click',e=>{
   const menu=document.querySelector(`.menu[data-page="${page}"]`);
   closeNotifyPanel();
   if(menu)menu.click();
+  if(page==='approval') loadQualityApprovals(document.getElementById('approval'));
 });
 document.addEventListener('click',e=>{
   if(notifyPanel?.classList.contains('open')&&!notifyPanel.contains(e.target)&&!notifyBtn?.contains(e.target))closeNotifyPanel();
@@ -2691,6 +2817,7 @@ document.addEventListener('click',e=>{
 document.getElementById('orgBtn')?.addEventListener('click',()=>openModal('조직도','<div class="detail-grid"><div class="key">회사</div><div>나모케미칼</div><div class="key">부서</div><div>대표 · 연구소 · 생산부 · 영업부 · 품질부 · 관리부</div></div>'));
 document.getElementById('guideBtn')?.addEventListener('click',()=>openModal('이용가이드','<div style="line-height:1.8;font-size:12px;color:#475569">상단 사용자 메뉴에서 개인정보 설정 및 로그아웃을 할 수 있습니다.<br>좌측 메뉴에서 QMES 각 업무 화면으로 이동합니다.</div>'));
 
+loadQualityNotifications();
 document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   row.classList.add('clickable'); row.addEventListener('click',()=>{
     const cells=[...row.children].map(x=>x.innerText.trim());
