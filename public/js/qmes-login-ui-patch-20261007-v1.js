@@ -35,10 +35,12 @@
   width:100% !important;
   height:min(820px,calc(100vh - 64px)) !important;
   min-height:600px !important;
-  background-image:url('/qmes-login-illustration-pro.svg?v=20261007-loginpatch1') !important;
-  background-size:contain !important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.02),rgba(28,35,62,.08)),url('https://images.unsplash.com/photo-1696541681346-b8787dbed51c?auto=format&fit=crop&fm=jpg&q=88&w=2400') !important;
+  background-size:cover !important;
   background-repeat:no-repeat !important;
   background-position:center center !important;
+  border-radius:22px !important;
+  box-shadow:0 24px 60px rgba(32,42,72,.14) !important;
   border:0 !important;
   border-radius:0 !important;
   box-shadow:none !important;
