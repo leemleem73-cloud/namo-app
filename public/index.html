@@ -32,9 +32,9 @@
     grid-column:1/3;height:58px;background:#fff;border-bottom:1px solid var(--line);
     display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 14px;z-index:20
   }
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.4px;min-width:250px}
-  .brand-logo{display:block;width:190px;height:34px;object-fit:contain;object-position:left center;border:0;background:transparent;box-shadow:none;border-radius:0}
-  .brand-name{font-size:19px;line-height:1}.brand-name span{color:var(--primary)}
+  .brand{display:flex;align-items:center;min-width:120px}
+  .brand-logo{display:block;width:92px;height:44px;object-fit:contain;object-position:left center;border:0;background:transparent!important;box-shadow:none!important;border-radius:0}
+  .brand-name{display:none!important}
   .top-actions{display:flex;align-items:center;gap:14px;position:absolute;right:220px;top:12px;margin:0!important}#companyBtn{display:none!important}
   .top-chip{height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:7px;background:#fff;font-size:13px;color:#374151}
   .user{display:flex;align-items:center;gap:10px;padding-left:8px}
@@ -559,8 +559,7 @@ thead{background:#f4f7fa}
 <div class="app" id="app">
   <header class="topbar">
     <div class="brand">
-      <img class="brand-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-official2" alt="나모케미칼" onerror="this.onerror=null;this.src='./logo.png?v=20261007-official2'">
-      <div class="brand-name"><span>QMES</span></div>
+      <img class="brand-logo" src="./assets/namo-mobile-logo.svg?v=20261007-transparent1" alt="나모케미칼">
     </div>
     <div class="top-actions">
       <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
