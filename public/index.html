@@ -2228,7 +2228,42 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-login-pro6"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261007-login-pro7"></script>
+<script>
+(function(){
+  const box=document.getElementById('currentUser');
+  if(!box) return;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function render(raw){
+    if(!raw) return false;
+    const name=String(raw.name||'').trim();
+    if(!name) return false;
+    const dept=String(raw.department||raw.dept||'').trim();
+    const position=String(raw.title||raw.position||'').trim();
+    const role=String(raw.role||'').trim();
+    const av=box.querySelector('.avatar');
+    const meta=box.querySelector('.user-meta');
+    if(av) av.textContent=name.slice(0,1);
+    if(meta){
+      const pos=position&&position!==name?' '+position:'';
+      meta.innerHTML='<b>'+esc(name)+esc(pos)+'</b><br><small>'+esc(dept)+'</small>';
+    }
+    if(role) box.dataset.role=role;
+    box.style.visibility='visible';
+    window.__QMES_CURRENT_USER__={...raw,name,dept,position,role};
+    try{sessionStorage.setItem('qmes-current-user-v1',JSON.stringify(window.__QMES_CURRENT_USER__));}catch(_){}
+    return true;
+  }
+  (async()=>{
+    try{
+      const r=await window.fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
+      const p=await r.json().catch(()=>null);
+      if(r.ok&&p&&p.success&&render(p.data)) return;
+    }catch(_){}
+    try{render(JSON.parse(sessionStorage.getItem('qmes-current-user-v1')||'null'));}catch(_){}
+  })();
+})();
+</script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch2"></script>
 </body>
 </html>
