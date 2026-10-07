@@ -136,8 +136,21 @@
     style();wire();
     const cached=load();
     if(cached) apply(cached);
-    try{const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data)throw 0;const u=norm(p.data);apply(u);if(u.mustChangePassword)passwordModal(true);}
-    catch(_){clear();loginScreen();}
+    try{
+      const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
+      const p=await r.json().catch(()=>({success:false}));
+      if(!r.ok||!p.success||!p.data)throw 0;
+      const u=norm(p.data);
+      apply(u);
+      if(u.mustChangePassword)passwordModal(true);
+    }catch(_){
+      if(cached){
+        apply(cached);
+        return;
+      }
+      clear();
+      loginScreen();
+    }
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
