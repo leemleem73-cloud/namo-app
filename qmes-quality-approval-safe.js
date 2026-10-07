@@ -142,11 +142,6 @@ async function ensureMissingIqcApprovals() {
     LEFT JOIN qmes_quality_approvals a
       ON a.doc_type='IQC' AND a.record_id=i.id::text
     WHERE a.id IS NULL
-      AND NOT EXISTS (
-        SELECT 1
-        FROM jsonb_array_elements(COALESCE(i.items_json,'[]'::jsonb)) x
-        WHERE COALESCE(x->>'name','')='원본시트'
-      )
       AND COALESCE(i.sign_approver,'{}'::jsonb) = '{}'::jsonb
     ORDER BY i.created_at DESC
     LIMIT 100
@@ -156,7 +151,7 @@ async function ensureMissingIqcApprovals() {
   for (const row of missing.rows) {
     const writerId = row.writer_user_id || null;
     const writerName = row.writer_name || row.inspector || '작성자';
-    const title = '수입검사 성적서 검토·승인';
+    const title = `수입검사 성적서 검토·승인 · ${row.item || '-'} / LOT ${row.lot || '-'}`;
 
     const ins = await pool.query(
       `INSERT INTO qmes_quality_approvals
