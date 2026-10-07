@@ -584,6 +584,64 @@ thead{background:#f4f7fa}
 @media(max-width:1100px){.am-split{grid-template-columns:210px minmax(0,1fr)}.am-section-body>.form-grid,.am-inline-edit-grid{grid-template-columns:1fr}.am-section-body>.form-grid>.form-item.full,.am-inline-cell.full{grid-column:auto}}
 @media(max-width:760px){.am-split{grid-template-columns:1fr}.am-list-pane{display:none}.am-detail-pane{padding:0 8px 16px}.am-section-body>.form-grid>.form-item,.am-inline-cell{grid-template-columns:104px minmax(0,1fr)}}
 
+
+  /* QMES readability patch 2026-10-07 */
+  .module-page{
+    color:#111827;
+  }
+  .module-page .module-shell,
+  .module-page .module-body,
+  .module-page .module-toolbar,
+  .module-page .filters,
+  .module-page table,
+  .module-page thead,
+  .module-page tbody,
+  .module-page th,
+  .module-page td{
+    color:#111827;
+  }
+  .module-page table{
+    font-size:13px;
+  }
+  .module-page th,
+  .module-page td{
+    font-size:13px;
+    font-weight:600;
+    color:#111827;
+  }
+  .module-page thead th{
+    font-weight:800;
+    color:#111111;
+  }
+  .module-page .input,
+  .module-page input,
+  .module-page select,
+  .module-page textarea{
+    color:#111111;
+    font-size:13px;
+    font-weight:600;
+  }
+  .module-page input::placeholder,
+  .module-page textarea::placeholder{
+    color:#4b5563;
+    opacity:1;
+  }
+  .module-page .module-toolbar,
+  .module-page .filters{
+    font-size:13px;
+  }
+  .module-page .btn:not(.primary),
+  .module-page button:not(.primary){
+    font-size:12px;
+    font-weight:700;
+  }
+  .module-page .page-head h1,
+  .module-page h1,
+  .module-page h2,
+  .module-page h3{
+    color:#111111;
+  }
+
 </style>
 </head>
 <body>
