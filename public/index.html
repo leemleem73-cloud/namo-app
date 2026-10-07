@@ -2032,7 +2032,7 @@ function issueInspectionReport(id,row){
     <div class="report-sheet report-${id}" id="reportSheet">
       <div class="report-doc-head">
         <div class="report-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
-        <div class="report-title-box"><h2>${title}</h2><small>QUALITY INSPECTION REPORT</small></div>
+        <div class="report-title-box"><h2>${title}</h2></div>
         <div class="report-approval">
           <div class="approval-label">결재</div>
           <div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div>
@@ -2264,7 +2264,7 @@ function standardInspectionForm(type){
   return `<div class="std-inspection premium" data-inspection-type="${type}">
     <div class="std-inspection-head">
       <div class="std-inspection-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
-      <div class="std-inspection-title"><div class="doc-chip">${conf.doc} QUALITY RECORD</div><b>${conf.title}</b><span>${conf.sub}</span></div>
+      <div class="std-inspection-title"><b>${conf.title}</b></div>
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
         <div class="k">Rev.</div><div class="v">0</div>
@@ -2272,7 +2272,7 @@ function standardInspectionForm(type){
         <div class="k">상태</div><div class="v">신규작성</div>
       </div>
     </div>
-    <div class="std-premium-band"><span class="band-title">QUALITY ASSURANCE · INSPECTION CONTROL · TRACEABILITY</span><span class="band-right"><span class="record-dot"></span><span class="record-pill">QMES 전자기록</span></span></div>
+    <div class="std-premium-band"><span class="band-title"></span><span class="band-right"><span class="record-dot"></span><span class="record-pill">QMES 전자기록</span></span></div>
     <div class="std-section-title"><span class="sec-no">01</span><span class="sec-name">${conf.section}</span><small>검사 대상 및 추적정보</small></div>
     <div class="std-info">${info}</div>
     <div class="std-section-title"><span class="sec-no">02</span><span class="sec-name">검사 결과</span><small>검사기준 · 측정값 · 항목별 판정</small></div>
