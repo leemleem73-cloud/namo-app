@@ -752,11 +752,8 @@ thead{background:#f4f7fa}
       <div class="table-card">
         <div class="card-head"><b>금일 주요 진행현황</b><div class="table-tools"><button class="btn" id="refreshBtn" type="button">새로고침</button><button class="btn primary" id="allViewBtn" type="button">전체보기</button></div></div>
         <div style="overflow:auto"><table><thead><tr><th>NO</th><th>구분</th><th>고객사</th><th>제품명</th><th>LOT NO</th><th>요청납기</th><th>진행상태</th><th>담당</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>수주</td><td class="left">현대자동차</td><td class="left">절연 슬러리 A</td><td>NMC-261006-01</td><td>2026-10-08</td><td><span class="badge b-blue">생산진행</span></td><td>생산팀</td></tr>
-          <tr><td>2</td><td>구매</td><td class="left">협력사 A</td><td class="left">NMP</td><td>RM-261006-03</td><td>2026-10-07</td><td><span class="badge b-green">IQC 완료</span></td><td>구매팀</td></tr>
-          <tr><td>3</td><td>출하</td><td class="left">현대자동차</td><td class="left">절연 슬러리 B</td><td>NMC-261005-04</td><td>2026-10-06</td><td><span class="badge b-yellow">출하대기</span></td><td>품질팀</td></tr>
-          <tr><td>4</td><td>품질</td><td class="left">사내</td><td class="left">완제품 검사</td><td>NMC-261006-02</td><td>2026-10-06</td><td><span class="badge b-red">검사중</span></td><td>품질팀</td></tr>
+        <tbody id="dashboardTodayBody">
+          <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
     </section>
