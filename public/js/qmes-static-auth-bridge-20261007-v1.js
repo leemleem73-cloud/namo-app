@@ -22,7 +22,7 @@
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
     .qauth-card{width:min(1320px,96vw);background:transparent;border-radius:0;padding:0;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(380px,.72fr);gap:48px;overflow:visible;align-items:center}
     .qauth-modal{width:min(460px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
-    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration-hd.svg?v=20261007-hd2');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;image-rendering:auto}
+    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration.webp?v=20261007-1');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative}
     .qauth-login-photo-inner{display:none}
     .qauth-login-photo-inner span{display:block;font-size:13px;font-weight:800;letter-spacing:2px;opacity:.92}.qauth-login-photo-inner strong{display:block;font-size:38px;line-height:1.05;margin-top:7px}.qauth-login-photo-inner small{display:block;margin-top:10px;font-size:12px;font-weight:700;opacity:.9}
     .qauth-login-panel{padding:48px 44px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.96);border-radius:22px;box-shadow:0 18px 50px rgba(31,41,55,.08);min-height:600px}
@@ -49,7 +49,7 @@
     const box=$("#currentUser"); if(!box) return;
     const av=$(".avatar",box), meta=$(".user-meta",box);
     if(av) av.textContent=(u.name||"사").slice(0,1);
-    if(meta){const positionLabel=u.position&&u.position!==u.name?" "+esc(u.position):"";meta.innerHTML=`<b>${esc(u.name)}${positionLabel}</b><br><small>${esc(u.dept)}</small>`;}
+    if(meta) meta.innerHTML=`<b>${esc(u.name)}${u.position?" "+esc(u.position):""}</b><br><small>${esc(u.dept)}</small>`;
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
     if(!$(".qauth-menu",box)){const m=document.createElement("div");m.className="qauth-menu";m.innerHTML='<button type="button" data-auth="password">비밀번호 변경</button><button type="button" class="danger" data-auth="logout">로그아웃</button>';box.appendChild(m);}
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
