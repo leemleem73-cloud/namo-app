@@ -18,14 +18,14 @@
     .qauth-menu button{width:100%;height:34px;border:0;border-radius:6px;background:#fff;text-align:left;padding:0 10px;font-size:11px;font-weight:800;color:#334155;cursor:pointer}
     .qauth-menu button:hover{background:#f4f7fb}.qauth-menu .danger{color:#c24141}
     .qauth-overlay,.qauth-modal-bg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100000}
-    .qauth-overlay{background:#f7f9fc}
+    .qauth-overlay{background:linear-gradient(135deg,#fbfcff 0%,#f6f8ff 58%,#f1efff 100%);padding:0}
     .qauth-modal-bg{background:rgba(15,23,42,.34)}
-    .qauth-card{width:min(1320px,96vw);background:transparent;border-radius:0;padding:0;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(380px,.72fr);gap:48px;overflow:visible;align-items:center}
+    .qauth-card{width:min(1900px,98vw);min-height:100vh;background:transparent;border-radius:0;padding:24px 36px;box-shadow:none;display:grid;grid-template-columns:minmax(0,1.8fr) minmax(390px,.62fr);gap:38px;overflow:visible;align-items:center;box-sizing:border-box}
     .qauth-modal{width:min(460px,100%);background:#fff;border-radius:16px;padding:26px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
-    .qauth-login-photo{min-height:640px;background-image:url('/qmes-login-illustration-hd.svg?v=20261007-hd1');background-size:contain;background-repeat:no-repeat;background-position:center;position:relative}
+    .qauth-login-photo{height:min(760px,calc(100vh - 56px));min-height:620px;background-image:url('/qmes-login-illustration-pro.svg?v=20261007-pro4');background-size:contain;background-repeat:no-repeat;background-position:center center;position:relative}
     .qauth-login-photo-inner{display:none}
     .qauth-login-photo-inner span{display:block;font-size:13px;font-weight:800;letter-spacing:2px;opacity:.92}.qauth-login-photo-inner strong{display:block;font-size:38px;line-height:1.05;margin-top:7px}.qauth-login-photo-inner small{display:block;margin-top:10px;font-size:12px;font-weight:700;opacity:.9}
-    .qauth-login-panel{padding:48px 44px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.96);border-radius:22px;box-shadow:0 18px 50px rgba(31,41,55,.08);min-height:600px}
+    .qauth-login-panel{width:min(430px,100%);justify-self:center;padding:48px 44px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,.96);border-radius:22px;box-shadow:0 18px 50px rgba(31,41,55,.08);min-height:600px;box-sizing:border-box}
     .qauth-card h2,.qauth-modal h3{margin:0 0 18px;color:#172033}
     .qauth-card h2{text-align:center;font-size:23px}.qauth-modal h3{font-size:17px}
     .qauth-card label,.qauth-modal label{display:block;font-size:11px;font-weight:800;color:#475569;margin:10px 0 6px}
