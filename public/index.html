@@ -35,11 +35,14 @@
   .brand{display:flex;align-items:center;min-width:270px;height:58px;overflow:visible}
   .brand-logo{display:block;width:205px;height:auto;max-height:42px;object-fit:contain;object-position:left center;border:0;background:transparent!important;box-shadow:none!important;border-radius:0;image-rendering:auto}
   .brand-name{display:none!important}
-  .top-actions{display:flex;align-items:center;gap:14px;position:absolute;right:220px;top:12px;margin:0!important}#companyBtn{display:none!important}
-  .top-chip{height:34px;padding:0 12px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:7px;background:#fff;font-size:13px;color:#374151}
-  .user{display:flex;align-items:center;gap:10px;padding-left:8px}
+  .top-actions{display:flex;align-items:center;gap:7px;position:absolute;right:26px;top:7px;height:44px;margin:0!important}#companyBtn{display:none!important}
+  .top-chip{width:36px;height:36px;padding:0;border:0;border-radius:8px;display:grid;place-items:center;background:transparent;color:#506079;cursor:pointer;transition:.15s ease}
+  .top-chip:hover{background:#f1f5f9;color:#1f3b5d}
+  .top-chip svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .top-divider{width:1px;height:24px;background:#dfe5ec;margin:0 3px}
+  .user{display:flex;align-items:center;gap:8px;padding:0 6px 0 0;height:40px}
   .avatar{width:34px;height:34px;border-radius:50%;background:#eef2f7;display:grid;place-items:center;font-weight:700;color:#475569}
-  .user-meta{line-height:1.15}.user-meta b{font-size:13px}.user-meta small{font-size:11px;color:var(--muted)}
+  .user-meta{line-height:1.12;min-width:92px}.user-meta b{font-size:12px}.user-meta small{font-size:10px;color:var(--muted)}
 
   .sidebar{grid-row:2;background:var(--nav);color:#cdd6e3;overflow:hidden;transition:.18s ease;position:relative;z-index:10}
   .nav-wrap{height:100%;padding:10px 8px;overflow:auto}
@@ -562,11 +565,20 @@ thead{background:#f4f7fa}
       <img class="brand-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-restore2" alt="NAMO Chemical">
     </div>
     <div class="top-actions">
-      <button class="top-chip hide-sm" id="notifyBtn" type="button">🔔 알림</button>
       <div class="user" id="currentUser" data-role="">
         <div class="avatar"></div>
         <div class="user-meta"><b></b><br><small></small></div>
       </div>
+      <span class="top-divider" aria-hidden="true"></span>
+      <button class="top-chip hide-sm" id="notifyBtn" type="button" title="통합알림" aria-label="통합알림">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+      </button>
+      <button class="top-chip hide-sm" id="orgBtn" type="button" title="조직도" aria-label="조직도">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M12 7.2v4.2M5 15.8v-3h14v3"/></svg>
+      </button>
+      <button class="top-chip hide-sm" id="guideBtn" type="button" title="이용가이드" aria-label="이용가이드">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.7c-1 .8-1.9 1.3-1.9 2.6M12 17h.01"/></svg>
+      </button>
     </div>
   </header>
 
@@ -2136,7 +2148,9 @@ document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대�
 document.getElementById('allViewBtn').addEventListener('click',()=>{
   document.querySelector('.menu[data-page="orders"]').click(); toast('수주납기 전체현황으로 이동했습니다.');
 });
-document.getElementById('notifyBtn').addEventListener('click',()=>openModal('알림','<div class="status-list"><div class="status-row"><span>납기 임박</span><div class="track"><div class="fill warn" style="width:72%"></div></div><span class="pct">3건</span></div><div class="status-row"><span>검사 대기</span><div class="track"><div class="fill" style="width:48%"></div></div><span class="pct">2건</span></div></div>'));
+document.getElementById('notifyBtn').addEventListener('click',()=>openModal('통합알림','<div class="status-list"><div class="status-row"><span>납기 임박</span><div class="track"><div class="fill warn" style="width:72%"></div></div><span class="pct">3건</span></div><div class="status-row"><span>검사 대기</span><div class="track"><div class="fill" style="width:48%"></div></div><span class="pct">2건</span></div></div>'));
+document.getElementById('orgBtn')?.addEventListener('click',()=>openModal('조직도','<div class="detail-grid"><div class="key">회사</div><div>나모케미칼</div><div class="key">부서</div><div>대표 · 연구소 · 생산부 · 영업부 · 품질부 · 관리부</div></div>'));
+document.getElementById('guideBtn')?.addEventListener('click',()=>openModal('이용가이드','<div style="line-height:1.8;font-size:12px;color:#475569">상단 사용자 메뉴에서 개인정보 설정 및 로그아웃을 할 수 있습니다.<br>좌측 메뉴에서 QMES 각 업무 화면으로 이동합니다.</div>'));
 
 document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   row.classList.add('clickable'); row.addEventListener('click',()=>{
