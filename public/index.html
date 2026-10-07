@@ -586,6 +586,23 @@ thead{background:#f4f7fa}
 </style>
 </head>
 <body>
+<script id="qmes-client-data-reset-20261007">
+(function(){
+  try{
+    var marker='qmes-client-reset-20261007-v1';
+    if(localStorage.getItem(marker)==='done') return;
+    var keep=['qmes-saved-login-id-v1','qmes-last-login-at-v1'];
+    var remove=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i)||'';
+      if(k===marker||keep.indexOf(k)>=0) continue;
+      if(/^(namo_qmes_|qmes-|work|iqc|pqc|oqc|inventory|purchase|order|lot|approval|quality)/i.test(k)) remove.push(k);
+    }
+    remove.forEach(function(k){localStorage.removeItem(k);});
+    localStorage.setItem(marker,'done');
+  }catch(_){}
+})();
+</script>
 <div class="app" id="app">
   <header class="topbar">
     <button class="brand brand-home" id="brandHomeBtn" type="button" aria-label="메인 종합 대시보드로 이동">
@@ -655,37 +672,7 @@ thead{background:#f4f7fa}
         </div>
         <div class="notify-date" id="notifyDateLabel"></div>
         <div class="notify-list" id="notifyList">
-          <div class="notify-item" data-kind="delivery" data-page="orders">
-            <div class="notify-dot">!</div>
-            <div class="notify-copy"><b>[납기임박] 수주 납기 확인</b><span>요청 납기가 임박한 수주 3건이 있습니다.</span></div>
-            <div class="notify-time">09:10</div>
-          </div>
-          <div class="notify-item" data-kind="iqc" data-page="incoming">
-            <div class="notify-dot">I</div>
-            <div class="notify-copy"><b>[수입검사] 검사 대기</b><span>입고 LOT 수입검사 대기 2건을 확인해 주세요.</span></div>
-            <div class="notify-time">09:02</div>
-          </div>
-          <div class="notify-item" data-kind="work" data-page="work">
-            <div class="notify-dot">W</div>
-            <div class="notify-copy"><b>[작업지시] 생산 대기</b><span>생산 대기 작업지시 8건이 등록되어 있습니다.</span></div>
-            <div class="notify-time">08:55</div>
-          </div>
-          <div class="notify-item" data-kind="pqc" data-page="process">
-            <div class="notify-dot">P</div>
-            <div class="notify-copy"><b>[공정검사] 검사 확인</b><span>진행 중 생산 LOT의 공정검사 결과를 확인해 주세요.</span></div>
-            <div class="notify-time">08:47</div>
-          </div>
-          <div class="notify-item" data-kind="oqc" data-page="outgoing">
-            <div class="notify-dot">O</div>
-            <div class="notify-copy"><b>[출하검사] 출하 대기</b><span>출하 예정 완제품 LOT의 최종검사 상태를 확인해 주세요.</span></div>
-            <div class="notify-time">08:35</div>
-          </div>
-          <div class="notify-item" data-kind="approval" data-page="approval">
-            <div class="notify-dot">A</div>
-            <div class="notify-copy"><b>[전자결재] 결재 대기</b><span>검토 또는 승인이 필요한 결재문서가 있습니다.</span></div>
-            <div class="notify-time">08:21</div>
-          </div>
-          <div class="notify-empty" id="notifyEmpty">해당 알림이 없습니다.</div>
+          <div class="notify-empty" id="notifyEmpty" style="display:block">해당 알림이 없습니다.</div>
         </div>
         <div class="notify-footer">NAMO CHEMICAL QMES · 통합알림</div>
       </div>
@@ -727,12 +714,12 @@ thead{background:#f4f7fa}
       </div>
 
       <div class="kpis">
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">금일 수주</span><span class="kpi-icon">📝</span></div><div class="kpi-value">12</div><small>건</small></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">생산 대기</span><span class="kpi-icon">⏳</span></div><div class="kpi-value">8</div><small>건</small></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">생산 진행</span><span class="kpi-icon">⚙️</span></div><div class="kpi-value">5</div><small>건</small></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">품질 검사</span><span class="kpi-icon">🔎</span></div><div class="kpi-value">4</div><small>건</small></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">출하 대기</span><span class="kpi-icon">🚚</span></div><div class="kpi-value">7</div><small>건</small></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-title">납기 준수율</span><span class="kpi-icon">🎯</span></div><div class="kpi-value">96.4%</div><small>OTIF 기준</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">금일 수주</span><span class="kpi-icon">📝</span></div><div class="kpi-value">0</div><small>건</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">생산 대기</span><span class="kpi-icon">⏳</span></div><div class="kpi-value">0</div><small>건</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">생산 진행</span><span class="kpi-icon">⚙️</span></div><div class="kpi-value">0</div><small>건</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">품질 검사</span><span class="kpi-icon">🔎</span></div><div class="kpi-value">0</div><small>건</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">출하 대기</span><span class="kpi-icon">🚚</span></div><div class="kpi-value">0</div><small>건</small></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-title">납기 준수율</span><span class="kpi-icon">🎯</span></div><div class="kpi-value">0%</div><small>OTIF 기준</small></div>
       </div>
 
       <div class="grid">
@@ -740,23 +727,23 @@ thead{background:#f4f7fa}
           <div class="card-head"><b>월간 출하현황</b><span>단위 : LOT</span></div>
           <div class="card-body">
             <div class="bars">
-              <div class="bar-col"><div class="bar" style="height:45%"></div><label>1월</label></div><div class="bar-col"><div class="bar" style="height:53%"></div><label>2월</label></div>
-              <div class="bar-col"><div class="bar" style="height:67%"></div><label>3월</label></div><div class="bar-col"><div class="bar" style="height:59%"></div><label>4월</label></div>
-              <div class="bar-col"><div class="bar" style="height:75%"></div><label>5월</label></div><div class="bar-col"><div class="bar" style="height:71%"></div><label>6월</label></div>
-              <div class="bar-col"><div class="bar" style="height:81%"></div><label>7월</label></div><div class="bar-col"><div class="bar" style="height:76%"></div><label>8월</label></div>
-              <div class="bar-col"><div class="bar" style="height:88%"></div><label>9월</label></div><div class="bar-col"><div class="bar" style="height:64%"></div><label>10월</label></div>
-              <div class="bar-col"><div class="bar" style="height:38%"></div><label>11월</label></div><div class="bar-col"><div class="bar" style="height:22%"></div><label>12월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>1월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>2월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>3월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>4월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>5월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>6월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>7월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>8월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>9월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>10월</label></div>
+              <div class="bar-col"><div class="bar" style="height:0%"></div><label>11월</label></div><div class="bar-col"><div class="bar" style="height:0%"></div><label>12월</label></div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-head"><b>납기 현황</b><span>월간 기준</span></div>
           <div class="card-body status-list">
-            <div class="status-row"><span>정상 납기</span><div class="track"><div class="fill good" style="width:82%"></div></div><span class="pct">82%</span></div>
-            <div class="status-row"><span>임박</span><div class="track"><div class="fill warn" style="width:12%"></div></div><span class="pct">12%</span></div>
-            <div class="status-row"><span>지연</span><div class="track"><div class="fill bad" style="width:6%"></div></div><span class="pct">6%</span></div>
-            <div class="status-row"><span>IQC 완료</span><div class="track"><div class="fill" style="width:91%"></div></div><span class="pct">91%</span></div>
-            <div class="status-row"><span>작업 완료</span><div class="track"><div class="fill" style="width:73%"></div></div><span class="pct">73%</span></div>
+            <div class="status-row"><span>정상 납기</span><div class="track"><div class="fill good" style="width:0%"></div></div><span class="pct">0%</span></div>
+            <div class="status-row"><span>임박</span><div class="track"><div class="fill warn" style="width:0%"></div></div><span class="pct">0%</span></div>
+            <div class="status-row"><span>지연</span><div class="track"><div class="fill bad" style="width:0%"></div></div><span class="pct">0%</span></div>
+            <div class="status-row"><span>IQC 완료</span><div class="track"><div class="fill" style="width:0%"></div></div><span class="pct">0%</span></div>
+            <div class="status-row"><span>작업 완료</span><div class="track"><div class="fill" style="width:0%"></div></div><span class="pct">0%</span></div>
           </div>
         </div>
       </div>
@@ -878,15 +865,7 @@ function getIncomingMaterials(){
     const saved=JSON.parse(localStorage.getItem(INCOMING_STORE_KEY)||'[]');
     if(Array.isArray(saved) && saved.length) return saved;
   }catch(e){}
-  const seeded=NAMO_RAW_MATERIALS.map((name,i)=>({
-    name,
-    lot:`RM-26100${i+1}-0${i+1}`,
-    supplier:`협력사 ${String.fromCharCode(65+i)}`,
-    date:`2026-10-${String(i+6).padStart(2,'0')}`,
-    judge:'합격'
-  }));
-  try{localStorage.setItem(INCOMING_STORE_KEY,JSON.stringify(seeded));}catch(e){}
-  return seeded;
+  return [];
 }
 function saveIncomingMaterial(record){
   if(!record?.name || !record?.lot) return;
@@ -1143,9 +1122,9 @@ function wireIncomingInspection(section){
 
 function premiumInspectionShell(id,title,desc,cols){
   const meta={
-    incoming:{icon:'IQC',tag:'INCOMING QUALITY',total:24,today:6,pass:23,pending:1,filter:'원료명 / LOT / 공급업체 검색'},
-    process:{icon:'IP',tag:'IN-PROCESS QUALITY',total:18,today:4,pass:17,pending:1,filter:'LOT / 작업지시 / 공정 검색'},
-    outgoing:{icon:'OQC',tag:'OUTGOING QUALITY',total:14,today:3,pass:13,pending:1,filter:'고객사 / LOT / 제품명 검색'}
+    incoming:{icon:'IQC',tag:'INCOMING QUALITY',total:0,today:0,pass:0,pending:0,filter:'원료명 / LOT / 공급업체 검색'},
+    process:{icon:'IP',tag:'IN-PROCESS QUALITY',total:0,today:0,pass:0,pending:0,filter:'LOT / 작업지시 / 공정 검색'},
+    outgoing:{icon:'OQC',tag:'OUTGOING QUALITY',total:0,today:0,pass:0,pending:0,filter:'고객사 / LOT / 제품명 검색'}
   }[id];
   return `<div class="inspection-premium">
     <div class="ip-hero">
@@ -1171,8 +1150,8 @@ function premiumInspectionShell(id,title,desc,cols){
         <div class="ip-actions"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
       </div>
       <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
-      <tbody>${[1,2,3,4,5,6].map(i=>`<tr class="data-row clickable" tabindex="0"><td>${i}</td>${cols.map((c,j)=>`<td class="${j<2?'left':''}">${sample(c,i,id)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-      <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><span>총 6건 표시</span></div>
+      <tbody></tbody></table></div>
+      <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><span>총 0건 표시</span></div>
     </div>
   </div>`;
 }
@@ -1214,14 +1193,7 @@ function lotTraceShell(){
   </div>`;
 }
 function lotTraceData(){
-  return [
-    {rawLot:'RM-261001-01',material:'NMP',supplier:'협력사 A',incomingDate:'2026-10-01',iqc:'합격',workOrder:'WO-2026-001',productionLot:'NMC-261001-01',product:'절연 슬러리 A',fgLot:'FG-261001-01',customer:'현대자동차',shipDate:'2026-10-06',oqc:'합격'},
-    {rawLot:'RM-261002-02',material:'분산제',supplier:'협력사 B',incomingDate:'2026-10-02',iqc:'합격',workOrder:'WO-2026-002',productionLot:'NMC-261002-02',product:'절연 슬러리 A',fgLot:'FG-261002-02',customer:'협력사 B',shipDate:'2026-10-07',oqc:'합격'},
-    {rawLot:'RM-261003-03',material:'세라믹',supplier:'협력사 C',incomingDate:'2026-10-03',iqc:'합격',workOrder:'WO-2026-003',productionLot:'NMC-261003-03',product:'절연 슬러리 A',fgLot:'FG-261003-03',customer:'현대자동차',shipDate:'2026-10-08',oqc:'합격'},
-    {rawLot:'RM-261004-04',material:'중간배치',supplier:'사내',incomingDate:'2026-10-04',iqc:'합격',workOrder:'WO-2026-004',productionLot:'NMC-261004-04',product:'절연 슬러리 A',fgLot:'FG-261004-04',customer:'협력사 D',shipDate:'2026-10-09',oqc:'합격'},
-    {rawLot:'RM-261005-05',material:'바인더',supplier:'협력사 E',incomingDate:'2026-10-05',iqc:'합격',workOrder:'WO-2026-005',productionLot:'NMC-261005-05',product:'절연 슬러리 A',fgLot:'FG-261005-05',customer:'현대자동차',shipDate:'2026-10-10',oqc:'합격'},
-    {rawLot:'RM-261006-06',material:'SBR',supplier:'협력사 F',incomingDate:'2026-10-06',iqc:'합격',workOrder:'WO-2026-006',productionLot:'NMC-261006-06',product:'절연 슬러리 A',fgLot:'FG-261006-06',customer:'협력사 F',shipDate:'2026-10-11',oqc:'합격'}
-  ];
+  return [];
 }
 function renderLotTraceResult(record,mode){
   const body=document.getElementById('lotResultBody');
