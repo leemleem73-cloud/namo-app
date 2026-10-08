@@ -54,6 +54,23 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border:1px solid #d7dfe8!important;border-top:0!important;
   border-radius:0 0 7px 7px!important;box-shadow:none!important;
 }
+
+/* Inspection certificate approval grid: same thin line as other report cells. */
+#mainWorkspace .workspace-body > .report-sheet .report-approval,
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-label,
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-head,
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-cell{
+  border-color:#d7dfe8!important;
+  box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-head,
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-cell{
+  border-right:1px solid #d7dfe8!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-head:last-of-type,
+#mainWorkspace .workspace-body > .report-sheet .report-approval .approval-cell:last-child{
+  border-right:0!important;
+}
 </style>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
@@ -2951,7 +2968,7 @@ function qmesQualityApprovalPeople(){
   const current=window.__QMES_CURRENT_USER__||{};
   const writerName=String(current.name||'').trim();
   const writerPos=String(current.position||current.title||'').trim();
-  const writer=writerName ? (writerName+(writerPos?' '+writerPos:'')) : '로그인 사용자';
+  const writer=writerName || '로그인 사용자';
   const rank={사원:1,주임:2,대리:3,과장:4,차장:5,부장:6,이사:7,상무:8,전무:9,대표이사:10,관리자:99};
   const qualityManagers=(typeof ADMIN_EMPLOYEES!=='undefined'?ADMIN_EMPLOYEES:[])
     .filter(e=>e&&e.status==='사용'&&e.dept==='품질부'&&(rank[e.position]||0)>=6)
