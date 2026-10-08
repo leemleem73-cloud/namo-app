@@ -597,7 +597,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
    Both sections use the same four-track grid, avoiding table border rounding drift. */
 .workspace-body > .report-sheet .report-meta{
   display:grid!important;
-  grid-template-columns:13% 37% 13% 37%!important;
+  grid-template-columns:calc(13% + 2px) calc(37% - 2px) calc(13% + 2px) calc(37% - 2px)!important;
   border-color:#c8d2de!important;
 }
 .workspace-body > .report-sheet .report-meta > div:nth-child(n+5){display:none!important}
