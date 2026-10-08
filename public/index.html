@@ -2868,8 +2868,18 @@ function printInspectionReport(title){
     .report-support-row .value{min-height:29mm;overflow-wrap:anywhere}
     .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
     .report-footer{min-height:7mm}
+    /* Center the complete certificate (including Rev/Page) on A4, not just the table. */
+    html,body{width:100%;min-width:0;margin:0;padding:0}
+    .print-page-frame{width:194mm;min-height:281mm;margin:0 auto;display:flex;flex-direction:column;justify-content:center;align-items:center}
+    .print-page-content{width:194mm;max-width:100%;margin:0 auto}
+    .print-page-content .report-sheet{width:100%;margin:0 auto}
+    .print-page-content .print-outside-meta{width:100%;margin:2.5mm auto 0}
+    @media print{
+      .print-page-frame{width:194mm;height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
+      .print-page-content{break-inside:avoid;page-break-inside:avoid}
+    }
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
-  </style></head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
 }
 
