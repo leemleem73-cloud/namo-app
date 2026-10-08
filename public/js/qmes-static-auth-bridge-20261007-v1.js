@@ -75,7 +75,7 @@
     const p=n=>String(n).padStart(2,"0");
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
-  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){box.style.visibility="visible";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.textContent="";if(meta)meta.innerHTML="<b></b><br><small></small>";}}
+  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){delete box.dataset.qauthReady;box.style.visibility="hidden";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.textContent="";if(meta)meta.innerHTML="<b></b><br><small></small>";}}
 
   function apply(u){
     save(u);
@@ -98,6 +98,7 @@
     m.className="qauth-menu";
     m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20c.5-4.2 3.1-6.5 7.5-6.5s7 2.3 7.5 6.5"></path></svg></div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
     box.appendChild(m);
+    box.dataset.qauthReady="1";
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
     document.querySelectorAll("[data-admin-only]").forEach(el=>el.style.display=admin?"":"none");
   }
