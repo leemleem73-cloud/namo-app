@@ -2974,7 +2974,7 @@ function qmesQualityApprovalPeople(){
     .filter(e=>e&&e.status==='사용'&&e.dept==='품질부'&&(rank[e.position]||0)>=6)
     .sort((a,b)=>(rank[b.position]||0)-(rank[a.position]||0));
   const manager=qualityManagers.find(e=>e.position==='부장')||qualityManagers[0]||null;
-  const managerLabel=manager ? (manager.name+(manager.position?' '+manager.position:'')) : '품질부 부장';
+  const managerLabel=manager ? String(manager.name||'').trim() : '담당자 미지정';
   return {writer,reviewer:managerLabel,approver:managerLabel};
 }
 function standardInspectionForm(type){
