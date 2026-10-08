@@ -935,8 +935,8 @@ thead{background:#f4f7fa}
           var av=box.querySelector('.avatar');
           var b=box.querySelector('.user-meta b');
           var s=box.querySelector('.user-meta small');
-          if(av)av.textContent=(name||'사').slice(0,1);
-          if(b)b.textContent=name+(pos&&pos.replace(/\s+/g,'')!==name.replace(/\s+/g,'')?' '+pos:'');
+          if(av)av.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20c.5-4.2 3.1-6.5 7.5-6.5s7 2.3 7.5 6.5"></path></svg>';
+          if(b)b.textContent=name;
           if(s)s.textContent=dept;
           box.dataset.role=String(u.role||'');
           box.style.visibility='visible';
@@ -3251,7 +3251,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-mascot2"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-profile-sync1"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch3-photo"></script>
 </body>
 </html>
