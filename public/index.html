@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
 <style id="qmes-initial-view-20261008">
+/* Keep the profile hidden until the auth bridge renders its final state. */
+#currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
+
 html[data-qmes-view-state="preparing"] .content{visibility:hidden}
 </style>
 <script id="qmes-initial-view-20261008-boot">
@@ -921,28 +924,8 @@ thead{background:#f4f7fa}
         <div class="user-meta"><b></b><br><small></small></div>
         <span class="qauth-arrow" aria-hidden="true">▼</span>
       </div>
-      <script>
-      (function(){
-        try{
-          var box=document.getElementById('currentUser');
-          var raw=sessionStorage.getItem('qmes-current-user-v1');
-          if(!box||!raw)return;
-          var u=JSON.parse(raw);
-          if(!u||typeof u!=='object')return;
-          var name=String(u.name||'').trim();
-          var pos=String(u.position||u.title||'').trim();
-          var dept=String(u.dept||u.department||'').trim();
-          var av=box.querySelector('.avatar');
-          var b=box.querySelector('.user-meta b');
-          var s=box.querySelector('.user-meta small');
-          if(av)av.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20c.5-4.2 3.1-6.5 7.5-6.5s7 2.3 7.5 6.5"></path></svg>';
-          if(b)b.textContent=name;
-          if(s)s.textContent=dept;
-          box.dataset.role=String(u.role||'');
-          box.style.visibility='visible';
-        }catch(_){}
-      })();
-      </script>
+      <!-- The auth bridge owns profile rendering; do not pre-render cached identity. -->
+
       <span class="top-divider" aria-hidden="true"></span>
       <button class="top-chip hide-sm" id="notifyBtn" type="button" title="통합알림" aria-label="통합알림">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
@@ -3251,7 +3234,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   });
 });
 </script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-profile-sync1"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-profile-no-flash2"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch3-photo"></script>
 </body>
 </html>
