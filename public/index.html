@@ -4,6 +4,24 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
+<style id="qmes-initial-view-20261008">
+html[data-qmes-view-state="preparing"] .content{visibility:hidden}
+</style>
+<script id="qmes-initial-view-20261008-boot">
+(function(){
+  const root=document.documentElement;
+  root.setAttribute('data-qmes-view-state','preparing');
+  document.addEventListener('DOMContentLoaded',()=>{
+    requestAnimationFrame(()=>{
+      try{
+        document.querySelector('.module-page.active')?._fitIncomingColumns?.();
+      }finally{
+        root.setAttribute('data-qmes-view-state','ready');
+      }
+    });
+  },{once:true});
+})();
+</script>
 <style>
   :root{
     --bg:#f4f6f9;
@@ -1115,6 +1133,7 @@ function restoreQmesPage(){
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   menu.classList.add('active');
   page.classList.add('active');
+  page._fitIncomingColumns?.();
   workspacePreviousPage=pageId;
   return true;
 }
@@ -1162,6 +1181,7 @@ function closeModal(){
   const target=document.getElementById(workspacePreviousPage) || document.getElementById('dashboard');
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   target?.classList.add('active');
+  target?._fitIncomingColumns?.();
   content.scrollTop=0;
 }
 workspaceBack.addEventListener('click',closeModal);
@@ -1532,6 +1552,8 @@ function wireIncomingColumnResize(section){
     // Capture the current visible layout once; later resizing keeps this reference.
     if(!baseline){baseline=widths.slice();apply();save();}
   }
+  // Fit synchronously when shown, before the browser can paint fallback widths.
+  section._fitIncomingColumns=fitContainer;
   headers.forEach((th,i)=>{
     const label=document.createElement('span');
     label.className='iqc-column-label';label.textContent=labels[i];
@@ -3161,7 +3183,9 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspacePreviousPage=m.dataset.page;
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
-  document.getElementById(m.dataset.page).classList.add('active');
+  const page=document.getElementById(m.dataset.page);
+  page.classList.add('active');
+  page._fitIncomingColumns?.();
   rememberQmesPage(m.dataset.page);
   content.scrollTop=0;
 }));
