@@ -593,31 +593,34 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   box-shadow:none!important;
 }
 
-/* Align document metadata and inspection-date/supplier columns on screen.
-   Both sections use the same four-track grid, avoiding table border rounding drift. */
+/* Certificate preview: use one exact column track definition for both rows.
+   Remove the previous 2px nudge: it caused the boundaries to diverge. */
+.workspace-body > .report-sheet{
+  --report-line:#c8d2de;
+  --report-info-columns:13fr 37fr 13fr 37fr;
+}
 .workspace-body > .report-sheet .report-meta{
   display:grid!important;
-  grid-template-columns:calc(13% + 2px) 37% 13% calc(37% - 2px)!important;
-  border-color:#c8d2de!important;
+  grid-template-columns:var(--report-info-columns)!important;
+  border-color:var(--report-line)!important;
 }
 .workspace-body > .report-sheet .report-meta > div:nth-child(n+5){display:none!important}
 .workspace-body > .report-sheet .report-basic{
   display:block!important;
   width:100%!important;
-  border-color:#c8d2de!important;
+  border-color:var(--report-line)!important;
 }
 .workspace-body > .report-sheet .report-basic > tbody{display:block!important;width:100%}
 .workspace-body > .report-sheet .report-basic tr{
   display:grid!important;
-  grid-template-columns:13% 37% 13% 37%!important;
+  grid-template-columns:var(--report-info-columns)!important;
   width:100%;
 }
 .workspace-body > .report-sheet .report-basic tr > *{
   min-width:0;
   box-sizing:border-box;
-  border-color:#c8d2de!important;
+  border-color:var(--report-line)!important;
 }
-.workspace-body > .report-sheet{--report-line:#c8d2de}
 /* Premium issued report preview */
 .report-sheet{border:1px solid #d3dce7!important;box-shadow:0 16px 40px rgba(17,39,67,.09)!important;border-radius:10px!important;overflow:hidden!important}.report-doc-head{border-bottom:0!important}.report-logo{background:#fff!important;color:#172033!important;border-right:1px solid #d9e1ea!important;padding:8px 10px}.report-logo .report-main-logo{display:block;width:165px;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box{background:linear-gradient(180deg,#fff,#fbfcfe)!important}.report-title-box h2{color:#142e4d!important;font-size:22px!important}.report-title-box small{letter-spacing:1.6px!important}.report-meta .label,.report-basic th,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f5f7fa!important;color:#4c5d72!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important;letter-spacing:.2px}.report-inspection th{background:#eaf0f6!important;color:#33475f!important}.report-inspection td.pass,.report-summary .final{color:#0f7a51!important}.report-footer{background:#fbfcfd!important;border-top:1px solid #e4e9ef!important}
 
@@ -2868,7 +2871,7 @@ function printInspectionReport(title){
     .report-sheet{border:1.1px solid #64748b;border-top:4px solid #173d6f!important}.report-logo{background:#fff!important;color:#172033!important}.report-logo .report-main-logo{display:block;width:28mm;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box h2{color:#153558!important;font-size:21px!important}.report-title-box small{color:#7890a9!important;letter-spacing:1.5px!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important}.report-inspection th{background:#eaf0f6!important;color:#304760!important}.report-basic th,.report-meta .label,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f4f7fa!important;color:#465b72!important}.report-inspection tbody tr:nth-child(even) td{background:#fbfcfd}.report-summary .final,.report-inspection td.pass{color:#0f7a51!important}.report-footer{border-top:1px solid #dbe2ea;background:#fbfcfd!important}.report-footer b{color:#2f4863!important}
     /* Print-only A4 alignment: shared column geometry and content-sized sections. */
     /* Match document number/type columns to inspection date/supplier below. */
-    .report-meta{grid-template-columns:calc(13% + 2px) 37% 13% calc(37% - 2px)!important}
+    .report-meta{grid-template-columns:13fr 37fr 13fr 37fr!important}
     .report-meta>div{min-width:0}
     .report-footer{height:auto;min-height:7mm;gap:4mm;flex-wrap:nowrap}
     .print-outside-meta{width:194mm;margin:2.5mm auto 0;display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
@@ -2876,7 +2879,7 @@ function printInspectionReport(title){
     .report-sheet{width:194mm;height:auto;min-height:0;display:block;overflow:visible}
     .report-doc-head{grid-template-columns:30mm minmax(0,1fr) 52mm;min-height:21mm}
     .report-doc-head>*{min-width:0}
-    .report-meta{grid-template-columns:calc(13% + 2px) 37% 13% calc(37% - 2px)!important}
+    .report-meta{grid-template-columns:13fr 37fr 13fr 37fr!important}
     .report-meta>div{min-width:0;overflow-wrap:anywhere}
     .report-basic{border-collapse:collapse}
     .report-inspection{border-collapse:collapse}
@@ -2913,8 +2916,8 @@ function printInspectionReport(title){
     .report-support-row .label,.report-sign .label,.report-sign .sign-cell{
       border-color:var(--issued-line)!important;
     }
-    .report-meta{grid-template-columns:calc(13% + 2px) 37% 13% calc(37% - 2px)!important}
-    .report-meta>div{border-right:1px solid var(--issued-line)}
+    .report-meta{grid-template-columns:13fr 37fr 13fr 37fr!important}
+    .report-meta{width:100%;grid-template-columns:13fr 37fr 13fr 37fr!important}\n    .report-meta>div{border-right:1px solid var(--issued-line)}
     .report-meta>div:last-child{border-right:0}
     .report-basic{width:100%;table-layout:fixed;border-collapse:collapse}
     .report-basic col:nth-child(1),.report-basic col:nth-child(3){width:13%!important}
