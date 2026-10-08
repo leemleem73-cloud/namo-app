@@ -597,12 +597,27 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
    Remove the previous 2px nudge: it caused the boundaries to diverge. */
 .workspace-body > .report-sheet{
   --report-line:#c8d2de;
-  --report-info-columns:13fr 37fr 13fr 37fr;
+  --report-info-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr);
 }
 .workspace-body > .report-sheet .report-meta{
   display:grid!important;
   grid-template-columns:var(--report-info-columns)!important;
   border-color:var(--report-line)!important;
+}
+.workspace-body > .report-sheet .report-meta,
+.workspace-body > .report-sheet .report-basic{
+  box-sizing:border-box!important;
+  width:100%!important;
+  border:1px solid var(--report-line)!important;
+  border-radius:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+.workspace-body > .report-sheet .report-meta > div{
+  min-width:0!important;
+  box-sizing:border-box!important;
 }
 .workspace-body > .report-sheet .report-meta > div:nth-child(n+5){display:none!important}
 .workspace-body > .report-sheet .report-basic{
