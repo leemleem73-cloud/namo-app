@@ -2889,8 +2889,16 @@ function printInspectionReport(title){
       border-color:var(--issued-line)!important;
     }
     .report-meta{grid-template-columns:13fr 37fr 13fr 37fr!important}
-    .report-meta{width:100%;grid-template-columns:13fr 37fr 13fr 37fr!important}\n    .report-meta>div{border-right:1px solid var(--issued-line)}
+    .report-meta{width:100%;grid-template-columns:13% 37% 13% 37%!important}
+    .report-meta>div{border-right:1px solid var(--issued-line)}
     .report-meta>div:last-child{border-right:0}
+    /* Print-only: use identical border-box tracks for document info and basic info. */
+    .report-meta,.report-basic{width:100%;box-sizing:border-box;border-left:0;border-right:0}
+    .report-meta{grid-template-columns:13% 37% 13% 37%!important}
+    .report-basic{display:block!important;table-layout:auto;border-collapse:separate;border-spacing:0}
+    .report-basic tbody{display:block;width:100%}
+    .report-basic tr{display:grid;grid-template-columns:13% 37% 13% 37%;width:100%}
+    .report-basic tr>*{box-sizing:border-box;min-width:0}
     .report-basic{width:100%;table-layout:fixed;border-collapse:collapse}
     .report-basic col:nth-child(1),.report-basic col:nth-child(3){width:13%!important}
     .report-basic col:nth-child(2),.report-basic col:nth-child(4){width:37%!important}
