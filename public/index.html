@@ -867,7 +867,7 @@ thead{background:#f4f7fa}
 #incoming .inspection-premium .ip-toolbar{border-bottom:0}
 #incoming .inspection-premium .ip-footnote{border-top:0;border-radius:0}
 #incoming .inspection-premium .ip-table-wrap{border:0;border-top:1px solid #dce2e8;border-bottom:1px solid #dce2e8;border-radius:0;overflow:auto;background:#fff}
-#incoming .inspection-premium .ip-table{min-width:100%!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#incoming .inspection-premium .ip-table{min-width:0!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
 #incoming .inspection-premium .ip-table thead{background:#f2ecfb!important}
 #incoming .inspection-premium .ip-table th{position:relative;height:34px!important;background:#f2ecfb!important;color:#51416b!important;font-size:12px!important;font-weight:600!important;padding:6px 12px!important;border:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #ded5eb!important;text-align:center;white-space:nowrap;overflow:visible}
 #incoming .inspection-premium .ip-table td{height:36px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:4px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1514,23 +1514,7 @@ function wireIncomingColumnResize(section){
   table.insertBefore(group,table.firstChild);
   const handles=[];
   let containerWidth=0;
-  function fillSpace(exclude=-1){
-    let extra=wrap.clientWidth-widths.reduce((sum,width)=>sum+width,0);
-    while(extra>0){
-      const flexible=widths.map((width,i)=>i).filter(i=>i!==exclude&&widths[i]<720);
-      if(!flexible.length)break;
-      const total=flexible.reduce((sum,i)=>sum+widths[i],0);
-      let added=0;
-      flexible.forEach(i=>{
-        const grow=Math.min(720-widths[i],extra-added,Math.max(1,Math.floor(extra*widths[i]/total)));
-        widths[i]+=grow;added+=grow;
-      });
-      if(!added)break;
-      extra-=added;
-    }
-  }
-  function apply(exclude=-1){
-    fillSpace(exclude);
+  function apply(){
     widths.forEach((width,i)=>{
       columns[i].style.width=width+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -1593,13 +1577,13 @@ function wireIncomingColumnResize(section){
       else active.snapped=Math.abs(raw-reference)<=8||(previous<reference&&raw>=reference)||(previous>reference&&raw<=reference);
       widths[i]=active.snapped?reference:Math.max(minimums[i],Math.min(720,raw));
       handle.setAttribute('data-snapped',String(active.snapped));
-      apply(i);
+      apply();
     });
     handle.addEventListener('pointerup',finish);
     handle.addEventListener('pointercancel',finish);
     handle.addEventListener('lostpointercapture',finish);
     handle.addEventListener('dblclick',event=>{
-      event.preventDefault();event.stopPropagation();customized=true;widths[i]=baseline?.[i]??initial[i];apply(i);save();
+      event.preventDefault();event.stopPropagation();customized=true;widths[i]=baseline?.[i]??initial[i];apply();save();
     });
     handle.addEventListener('keydown',event=>{
       const step=event.shiftKey?30:10;
@@ -1612,7 +1596,7 @@ function wireIncomingColumnResize(section){
       event.preventDefault();event.stopPropagation();customized=true;
       const reference=baseline?.[i]??initial[i];
       if((event.key==='ArrowLeft'||event.key==='ArrowRight')&&((widths[i]<reference&&next>=reference)||(widths[i]>reference&&next<=reference)))next=reference;
-      widths[i]=Math.max(minimums[i],Math.min(720,next));apply(i);save();
+      widths[i]=Math.max(minimums[i],Math.min(720,next));apply();save();
     });
   });
   apply();
