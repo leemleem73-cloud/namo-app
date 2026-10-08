@@ -463,6 +463,70 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .workspace-body > .report-sheet .report-basic tr:last-child > *,
 .workspace-body > .report-sheet .report-inspection tbody tr:last-child > *{border-bottom:0}
 
+/* Inspection certificate screen: consistent crisp one-pixel lines.
+   Scoped to the workspace view; printable report styles are unchanged. */
+.workspace-body > .report-sheet{
+  --report-line:#d7dfe8;
+}
+.workspace-body > .report-sheet .report-doc-head,
+.workspace-body > .report-sheet .report-meta,
+.workspace-body > .report-sheet .report-basic,
+.workspace-body > .report-sheet .report-summary,
+.workspace-body > .report-sheet .report-support-row,
+.workspace-body > .report-sheet .report-sign,
+.workspace-body > .report-sheet .report-footer{
+  border:1px solid var(--report-line)!important;
+  box-shadow:none!important;
+}
+.workspace-body > .report-sheet .report-doc-head,
+.workspace-body > .report-sheet .report-meta,
+.workspace-body > .report-sheet .report-basic,
+.workspace-body > .report-sheet .report-summary,
+.workspace-body > .report-sheet .report-support-row,
+.workspace-body > .report-sheet .report-sign,
+.workspace-body > .report-sheet .report-footer{
+  border-radius:9px;
+}
+.workspace-body > .report-sheet .report-logo,
+.workspace-body > .report-sheet .report-title-box,
+.workspace-body > .report-sheet .report-meta > div,
+.workspace-body > .report-sheet .report-basic th,
+.workspace-body > .report-sheet .report-basic td,
+.workspace-body > .report-sheet .report-inspection th,
+.workspace-body > .report-sheet .report-inspection td,
+.workspace-body > .report-sheet .report-summary > div,
+.workspace-body > .report-sheet .report-support-row .label,
+.workspace-body > .report-sheet .report-sign .label,
+.workspace-body > .report-sheet .report-sign .sign-cell{
+  border-color:var(--report-line)!important;
+}
+.workspace-body > .report-sheet .report-basic{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+.workspace-body > .report-sheet .report-basic tr:last-child > *,
+.workspace-body > .report-sheet .report-inspection tbody tr:last-child > *{
+  border-bottom:0!important;
+}
+.workspace-body > .report-sheet .report-basic tr > :last-child,
+.workspace-body > .report-sheet .report-inspection tr > :last-child{
+  border-right:0!important;
+}
+.workspace-body > .report-sheet .report-section-title{
+  border:1px solid var(--report-line)!important;
+  border-bottom:0!important;
+  border-radius:9px 9px 0 0;
+  box-shadow:none!important;
+}
+.workspace-body > .report-sheet .report-inspection{
+  border:1px solid var(--report-line)!important;
+  border-top:0!important;
+  border-radius:0 0 9px 9px;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  box-shadow:none!important;
+}
+
 /* Premium issued report preview */
 .report-sheet{border:1px solid #d3dce7!important;box-shadow:0 16px 40px rgba(17,39,67,.09)!important;border-radius:10px!important;overflow:hidden!important}.report-doc-head{border-bottom:0!important}.report-logo{background:#fff!important;color:#172033!important;border-right:1px solid #d9e1ea!important;padding:8px 10px}.report-logo .report-main-logo{display:block;width:165px;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box{background:linear-gradient(180deg,#fff,#fbfcfe)!important}.report-title-box h2{color:#142e4d!important;font-size:22px!important}.report-title-box small{letter-spacing:1.6px!important}.report-meta .label,.report-basic th,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f5f7fa!important;color:#4c5d72!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important;letter-spacing:.2px}.report-inspection th{background:#eaf0f6!important;color:#33475f!important}.report-inspection td.pass,.report-summary .final{color:#0f7a51!important}.report-footer{background:#fbfcfd!important;border-top:1px solid #e4e9ef!important}
 
