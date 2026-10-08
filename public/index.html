@@ -2863,8 +2863,9 @@ function printInspectionReport(title){
     .report-summary{grid-template-columns:22mm minmax(0,1fr) 22mm minmax(0,1fr) 22mm minmax(0,1fr)}
     .report-summary>div{min-width:0}
     .report-support{display:block;min-height:0}
-    .report-support-row{grid-template-columns:24mm minmax(0,1fr);min-height:16mm}
-    .report-support-row .value{min-height:16mm;overflow-wrap:anywhere}
+    /* Restore comfortable writing space for inspection conditions, traceability and notes. */
+    .report-support-row{grid-template-columns:24mm minmax(0,1fr);min-height:29mm}
+    .report-support-row .value{min-height:29mm;overflow-wrap:anywhere}
     .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
     .report-footer{min-height:7mm}
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
