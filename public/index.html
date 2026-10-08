@@ -843,6 +843,30 @@ thead{background:#f4f7fa}
   }
 
 </style>
+<style id="namo-iqc-resizable-grid-20261008">
+/* Scoped to the incoming list; certificate/print tables keep their own layout. */
+#incoming .inspection-premium .ip-table-wrap{border:1px solid #dce2e8;border-radius:6px;overflow:auto;background:#fff}
+#incoming .inspection-premium .ip-table{min-width:0;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#incoming .inspection-premium .ip-table thead{background:#f4f5f7!important}
+#incoming .inspection-premium .ip-table th{position:relative;height:38px!important;background:#f4f5f7!important;color:#394454!important;font-size:12px!important;font-weight:600!important;padding:8px 12px!important;border:0!important;border-right:1px solid #e1e5eb!important;border-bottom:1px solid #d7dfe8!important;text-align:center;white-space:nowrap;overflow:visible}
+#incoming .inspection-premium .ip-table td{height:42px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:8px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#incoming .inspection-premium .ip-table th:first-child,#incoming .inspection-premium .ip-table td:first-child{width:auto!important;min-width:0!important;max-width:none!important;padding:8px 6px!important;text-align:center}
+#incoming .inspection-premium .ip-table th:last-child,#incoming .inspection-premium .ip-table td:last-child{border-right:0!important}
+#incoming .inspection-premium .ip-table tbody tr:nth-child(even) td{background:#fcfdff!important}
+#incoming .inspection-premium .ip-table tbody tr:hover td{background:#eef6ff!important}
+#incoming .inspection-premium .ip-table tbody td:nth-child(3),#incoming .inspection-premium .ip-table tbody td:nth-child(4),#incoming .inspection-premium .ip-table tbody td:nth-child(5),#incoming .inspection-premium .ip-table tbody td:nth-child(6),#incoming .inspection-premium .ip-table tbody td:nth-child(10){text-align:left}
+#incoming .inspection-premium .ip-table .badge{font-size:10.5px;padding:4px 8px}
+#incoming .inspection-premium .ip-table .report-issue,#incoming .inspection-premium .ip-table .mini-report,#incoming .inspection-premium .ip-table .iqc-edit-btn,#incoming .inspection-premium .ip-table .iqc-delete-btn{height:27px;padding:0 9px;border-radius:5px;font-size:11px;font-weight:600}
+#incoming .inspection-premium .ip-table .iqc-remark{min-width:0;max-width:none}
+#incoming .inspection-premium .iqc-remark-actions{justify-content:flex-start}
+#incoming .iqc-column-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#incoming .iqc-column-resize{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;touch-action:none;z-index:1;outline:none}
+#incoming .iqc-column-resize:after{content:'';position:absolute;top:8px;bottom:8px;right:2px;width:2px;border-radius:2px;background:transparent}
+#incoming .iqc-column-resize:hover:after,#incoming .iqc-column-resize:focus-visible:after{background:#438bda}
+#incoming .iqc-column-resize:focus-visible{box-shadow:inset 0 0 0 1px #438bda}
+#incoming .iqc-resizing,#incoming .iqc-resizing *{cursor:col-resize!important;user-select:none!important}
+@media print{#incoming .iqc-column-resize{display:none}}
+</style>
 </head>
 <body>
 <script id="qmes-client-data-reset-20261007">
@@ -1425,6 +1449,91 @@ function wireIncomingInspection(section){
     stepText.textContent=`${step}/4 · ${card.dataset.name}`;
     progress.style.width=`${Math.max(0,(step-1)*25)}%`;
   }));
+}
+
+// Incoming-inspection columns: screen layout only; never writes inspection data.
+function wireIncomingColumnResize(section){
+  if(section?.id!=='incoming')return;
+  const table=section.querySelector('.ip-table');
+  const wrap=section.querySelector('.ip-table-wrap');
+  if(!table||!wrap||table.dataset.columnsWired)return;
+  table.dataset.columnsWired='1';
+  const headers=[...table.querySelectorAll('thead th')];
+  const defaults=[52,112,155,180,155,180,96,100,120,210];
+  const minimums=[44,92,90,100,90,100,76,76,90,160];
+  const storageKey='namo-iqc-column-widths-v1';
+  const labels=headers.map(th=>th.textContent.trim());
+  let saved;
+  try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
+  const available=wrap.clientWidth||section.parentElement?.clientWidth||Math.max(320,window.innerWidth-120);
+  const scale=available/defaults.reduce((sum,width)=>sum+width,0);
+  const initial=defaults.map((width,i)=>Math.max(minimums[i],Math.min(720,Math.round(width*scale))));
+  let widths=initial.slice();
+  if(saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length){
+    widths=saved.widths.map((width,i)=>Number.isFinite(width)?Math.max(minimums[i],Math.min(720,width)):initial[i]);
+  }
+  const group=document.createElement('colgroup');
+  const columns=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
+  table.insertBefore(group,table.firstChild);
+  const handles=[];
+  function apply(){
+    widths.forEach((width,i)=>{
+      columns[i].style.width=width+'px';
+      handles[i]?.setAttribute('aria-valuenow',String(width));
+    });
+    table.style.setProperty('width',widths.reduce((sum,width)=>sum+width,0)+'px','important');
+  }
+  function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths}));}catch(_){}
+  }
+  headers.forEach((th,i)=>{
+    const label=document.createElement('span');
+    label.className='iqc-column-label';label.textContent=labels[i];
+    th.replaceChildren(label);
+    const handle=document.createElement('span');
+    handle.className='iqc-column-resize';
+    handle.tabIndex=0;
+    handle.setAttribute('role','separator');
+    handle.setAttribute('aria-orientation','vertical');
+    handle.setAttribute('aria-label',labels[i]+' 열 너비');
+    handle.setAttribute('aria-valuemin',String(minimums[i]));
+    handle.setAttribute('aria-valuemax','720');
+    handle.title='드래그: 열 너비 조절 · 두 번 클릭: 기본 너비';
+    th.appendChild(handle);handles.push(handle);
+    let active=null;
+    function finish(event){
+      if(!active||event.pointerId!==active.id)return;
+      active=null;wrap.classList.remove('iqc-resizing');save();
+      if(handle.hasPointerCapture(event.pointerId))handle.releasePointerCapture(event.pointerId);
+    }
+    handle.addEventListener('pointerdown',event=>{
+      if(event.button!==0)return;
+      event.preventDefault();event.stopPropagation();
+      active={id:event.pointerId,x:event.clientX,width:widths[i]};
+      handle.setPointerCapture(event.pointerId);wrap.classList.add('iqc-resizing');
+    });
+    handle.addEventListener('pointermove',event=>{
+      if(!active||event.pointerId!==active.id)return;
+      widths[i]=Math.round(Math.max(minimums[i],Math.min(720,active.width+event.clientX-active.x)));
+      apply();
+    });
+    handle.addEventListener('pointerup',finish);
+    handle.addEventListener('pointercancel',finish);
+    handle.addEventListener('lostpointercapture',finish);
+    handle.addEventListener('dblclick',event=>{
+      event.preventDefault();event.stopPropagation();widths[i]=initial[i];apply();save();
+    });
+    handle.addEventListener('keydown',event=>{
+      const step=event.shiftKey?30:10;
+      let next=widths[i];
+      if(event.key==='ArrowLeft')next-=step;
+      else if(event.key==='ArrowRight')next+=step;
+      else if(event.key==='Home')next=minimums[i];
+      else if(event.key==='End')next=720;
+      else return;
+      event.preventDefault();event.stopPropagation();widths[i]=Math.max(minimums[i],Math.min(720,next));apply();save();
+    });
+  });
+  apply();
 }
 
 function premiumInspectionShell(id,title,desc,cols){
@@ -2274,6 +2383,7 @@ function buildModule(id){
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
     if(id==='incoming'){
+      wireIncomingColumnResize(section);
       restoreIncomingPageCache(section);
       setTimeout(()=>loadIncomingFromDb(section),0);
     }
