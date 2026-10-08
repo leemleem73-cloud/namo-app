@@ -9,11 +9,17 @@
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
 
 html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:hidden}
+/* Hide the default active dashboard immediately when another saved menu is pending. */
+html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
 </style>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
   const root=document.documentElement;
   root.setAttribute('data-qmes-view-state','preparing');
+  try{
+    const saved=sessionStorage.getItem('qmes-last-page-v1');
+    if(saved && saved!=='dashboard')root.setAttribute('data-qmes-pending-page',saved);
+  }catch(_){};
   document.addEventListener('DOMContentLoaded',()=>{
     requestAnimationFrame(()=>{
       try{
@@ -3143,6 +3149,7 @@ applyAdminVisibility();
 restoreQmesPage();
 // Reveal the selected menu only after the saved page has been restored.
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
+document.documentElement.removeAttribute('data-qmes-pending-page');
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
