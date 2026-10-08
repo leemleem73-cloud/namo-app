@@ -1148,11 +1148,11 @@ let navHoverTimer=null;
 const cancelNavHover=()=>{if(navHoverTimer!==null){clearTimeout(navHoverTimer);navHoverTimer=null;}};
 sidebar.addEventListener('mouseenter',()=>{
   cancelNavHover();
-  if(!app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.add('nav-open');navHoverTimer=null;},220);
+  if(!app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.add('nav-open');navHoverTimer=null;},160);
 });
 sidebar.addEventListener('mouseleave',()=>{
   cancelNavHover();
-  if(app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.remove('nav-open');navHoverTimer=null;},420);
+  if(app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.remove('nav-open');navHoverTimer=null;},300);
 });
 navToggle.addEventListener('click',(e)=>{e.stopPropagation();cancelNavHover();app.classList.toggle('nav-open')});
 
