@@ -2825,6 +2825,13 @@ function printInspectionReport(title){
   if(printMeta){
     [...printMeta.children].slice(4).forEach(cell=>cell.remove());
   }
+  // The print copy uses a single grid geometry for both information sections.
+  // Remove the table colgroup only in this clone; the normal report is untouched.
+  const printBasic=printSheet.querySelector('.report-basic');
+  if(printBasic){
+    const cols=printBasic.querySelector('colgroup');
+    if(cols) cols.remove();
+  }
   // Rev. and Page belong below the report's outer border, not inside a cell.
   const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span><span>Page 1 / 1</span></div>';
   w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>
@@ -2906,6 +2913,20 @@ function printInspectionReport(title){
     .report-approval .approval-head:nth-child(4),
     .report-approval .approval-cell:last-child{border-right:0}
     .report-inspection{border-collapse:collapse}
+    /* Definitive print-only alignment: both sections share identical inner width and tracks. */
+    .report-meta,.report-basic{
+      width:100%!important;
+      box-sizing:border-box!important;
+      border-left:0!important;
+      border-right:0!important;
+      margin:0!important;
+      padding:0!important;
+    }
+    .report-meta{display:grid!important;grid-template-columns:repeat(1,minmax(0,13fr)) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr)!important}
+    .report-basic{display:block!important;border-collapse:separate!important;border-spacing:0!important;table-layout:auto!important}
+    .report-basic tbody{display:block!important;width:100%!important}
+    .report-basic tr{display:grid!important;grid-template-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr)!important;width:100%!important}
+    .report-meta>div,.report-basic tr>*{min-width:0!important;box-sizing:border-box!important}
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
   </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
