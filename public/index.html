@@ -2825,17 +2825,8 @@ function printInspectionReport(title){
   if(printMeta){
     [...printMeta.children].slice(4).forEach(cell=>cell.remove());
   }
-  const printFooter=printSheet.querySelector('.report-footer');
-  if(printFooter){
-    const revision=document.createElement('span');
-    revision.className='print-revision';
-    revision.textContent='Rev. 0';
-    const page=document.createElement('span');
-    page.className='print-page';
-    page.textContent='Page 1 / 1';
-    printFooter.prepend(revision);
-    printFooter.append(page);
-  }
+  // Rev. and Page belong below the report's outer border, not inside a cell.
+  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span><span>Page 1 / 1</span></div>';
   w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>
     @page{size:A4 portrait;margin:8mm}
     *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{width:194mm;margin:0 auto;font-family:Arial,'Noto Sans KR',sans-serif;color:#172033}
@@ -2855,8 +2846,7 @@ function printInspectionReport(title){
     .report-meta{grid-template-columns:13% 37% 13% 37%!important}
     .report-meta>div{min-width:0}
     .report-footer{height:auto;min-height:7mm;gap:4mm;flex-wrap:nowrap}
-    .report-footer .print-revision{margin-right:auto;font-weight:800}
-    .report-footer .print-page{margin-left:auto;font-weight:800}
+    .print-outside-meta{width:194mm;margin:2.5mm auto 0;display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
 
     .report-sheet{width:194mm;height:auto;min-height:0;display:block;overflow:visible}
     .report-doc-head{grid-template-columns:30mm minmax(0,1fr) 52mm;min-height:21mm}
@@ -2878,7 +2868,7 @@ function printInspectionReport(title){
     .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
     .report-footer{min-height:7mm}
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
-  </style></head><body>${printSheet.outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  </style></head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
 }
 
