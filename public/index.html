@@ -9,6 +9,7 @@
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
 
 html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:hidden}
+html:not([data-qmes-menu-ready="1"]) .sidebar .menu{transition:none!important}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
 </style>
@@ -978,7 +979,7 @@ thead{background:#f4f7fa}
   <aside class="sidebar" id="sidebar">
     <div class="nav-wrap">
       <div class="menu-title">QMES MENU</div>
-      <div class="menu active" data-page="dashboard"><div class="ico">▦</div><div class="label">종합 대시보드</div></div>
+      <div class="menu" data-page="dashboard"><div class="ico">▦</div><div class="label">종합 대시보드</div></div>
       <div class="menu" data-page="orders"><div class="ico">📅</div><div class="label">수주납기 관리</div></div>
       <div class="menu" data-page="purchase"><div class="ico">🧾</div><div class="label">구매발주 관리</div></div>
       <div class="menu" data-page="work"><div class="ico">🛠</div><div class="label">작업지시서</div></div>
@@ -998,7 +999,7 @@ thead{background:#f4f7fa}
   </aside>
 
   <main class="content">
-    <section class="module-page active" id="dashboard">
+    <section class="module-page" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
         <div class="date-badge">2026.10.06 화요일</div>
@@ -3146,7 +3147,10 @@ function exportTable(section,title){
 Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
 applyAdminVisibility();
-restoreQmesPage();
+if(!restoreQmesPage()){
+  document.querySelector('.menu[data-page="dashboard"]')?.classList.add('active');
+  document.getElementById('dashboard')?.classList.add('active');
+}
 // Reveal the selected menu only after the saved page has been restored.
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
 document.documentElement.removeAttribute('data-qmes-pending-page');
