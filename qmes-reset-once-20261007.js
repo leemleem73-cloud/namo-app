@@ -1,5 +1,11 @@
 'use strict';
 
+// A saved reset token must never reset data during a normal web deployment.
+if (!process.argv.includes('--confirm-operational-reset')) {
+  console.log('[QMES-RESET] explicit maintenance confirmation missing; skipped');
+  process.exit(0);
+}
+
 const { Pool } = require('pg');
 require('dotenv').config();
 

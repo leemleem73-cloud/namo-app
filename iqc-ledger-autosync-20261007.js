@@ -1,5 +1,11 @@
 'use strict';
 
+// Import only through an explicit maintenance invocation. A UI deployment
+// must never refresh ledger rows over user-edited inspection results.
+if (!process.argv.includes('--import-approved-ledger')) {
+  console.log('[QMES-IQC-AUTO] explicit ledger import not requested; skipped');
+} else {
+
 require('dotenv').config();
 const { Pool } = require('pg');
 
@@ -112,3 +118,5 @@ const pool=new Pool({
   console.error('[QMES-IQC-AUTO] fatal:',error);
   process.exitCode=1;
 });
+
+}
