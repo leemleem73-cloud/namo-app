@@ -82,21 +82,21 @@
     const box=$("#currentUser"); if(!box) return;
     box.style.visibility="visible";
     const av=$(".avatar",box), meta=$(".user-meta",box);
-    if(av) av.textContent=(u.name||"사").slice(0,1);
-    if(meta){const pos=String(u.position||"").trim();const name=String(u.name||"").trim();const same=pos&&name&&pos.replace(/\s+/g,"")===name.replace(/\s+/g,"");const suffix=pos&&!same?" "+esc(pos):"";meta.innerHTML=`<b>${esc(name)}${suffix}</b><br><small>${esc(u.dept)}</small>`;}
+    if(av) av.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20c.5-4.2 3.1-6.5 7.5-6.5s7 2.3 7.5 6.5"></path></svg>';
+    if(meta){const name=String(u.name||"").trim();meta.innerHTML=`<b>${esc(name)}</b><br><small>${esc(u.dept)}</small>`;}
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
     $(".qauth-menu",box)?.remove();
     const account=String(u.uid||u.email||u.name||"사용자").trim();
     const accountLabel=account.includes("@")?account.split("@")[0]:account;
     const nameText=String(u.name||"").trim();
     const positionText=String(u.position||"").trim();
-    const orgParts=["나모케미칼",u.dept,(positionText&&positionText!==nameText)?positionText:""].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
+    const orgParts=["나모케미칼",u.dept].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
     const orgLabel=orgParts.join(" · ");
     const lastLogin=getLastLoginAt()||Date.now();
     if(!getLastLoginAt())setLastLoginAt(lastLogin);
     const m=document.createElement("div");
     m.className="qauth-menu";
-    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${esc((u.name||"사").slice(0,1))}</div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
+    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20c.5-4.2 3.1-6.5 7.5-6.5s7 2.3 7.5 6.5"></path></svg></div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
     box.appendChild(m);
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
     document.querySelectorAll("[data-admin-only]").forEach(el=>el.style.display=admin?"":"none");
