@@ -846,7 +846,7 @@ thead{background:#f4f7fa}
 <style id="namo-iqc-resizable-grid-20261008">
 /* Scoped to the incoming list; certificate/print tables keep their own layout. */
 #incoming .inspection-premium .ip-table-wrap{border:1px solid #dce2e8;border-radius:6px;overflow:auto;background:#fff}
-#incoming .inspection-premium .ip-table{min-width:0;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#incoming .inspection-premium .ip-table{min-width:100%!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
 #incoming .inspection-premium .ip-table thead{background:#f2ecfb!important}
 #incoming .inspection-premium .ip-table th{position:relative;height:38px!important;background:#f2ecfb!important;color:#51416b!important;font-size:12px!important;font-weight:600!important;padding:8px 12px!important;border:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #ded5eb!important;text-align:center;white-space:nowrap;overflow:visible}
 #incoming .inspection-premium .ip-table td{height:42px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:8px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1466,17 +1466,43 @@ function wireIncomingColumnResize(section){
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
   const available=wrap.clientWidth||section.parentElement?.clientWidth||Math.max(320,window.innerWidth-120);
-  const scale=available/defaults.reduce((sum,width)=>sum+width,0);
-  const initial=defaults.map((width,i)=>Math.max(minimums[i],Math.min(720,Math.round(width*scale))));
+  function defaultWidths(available){
+    const scale=available/defaults.reduce((sum,width)=>sum+width,0);
+    const fitted=defaults.map((width,i)=>Math.max(minimums[i],Math.min(720,Math.floor(width*scale))));
+    let spare=Math.max(0,available-fitted.reduce((sum,width)=>sum+width,0));
+    for(let i=fitted.length-1;i>=0&&spare>0;i--){
+      const grow=Math.min(720-fitted[i],spare);fitted[i]+=grow;spare-=grow;
+    }
+    return fitted;
+  }
+  let initial=defaultWidths(available);
   let widths=initial.slice();
-  if(saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length){
+  let customized=!!(saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length);
+  if(customized){
     widths=saved.widths.map((width,i)=>Number.isFinite(width)?Math.max(minimums[i],Math.min(720,width)):initial[i]);
   }
   const group=document.createElement('colgroup');
   const columns=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
   table.insertBefore(group,table.firstChild);
   const handles=[];
-  function apply(){
+  let containerWidth=0;
+  function fillSpace(exclude=-1){
+    let extra=wrap.clientWidth-widths.reduce((sum,width)=>sum+width,0);
+    while(extra>0){
+      const flexible=widths.map((width,i)=>i).filter(i=>i!==exclude&&widths[i]<720);
+      if(!flexible.length)break;
+      const total=flexible.reduce((sum,i)=>sum+widths[i],0);
+      let added=0;
+      flexible.forEach(i=>{
+        const grow=Math.min(720-widths[i],extra-added,Math.max(1,Math.floor(extra*widths[i]/total)));
+        widths[i]+=grow;added+=grow;
+      });
+      if(!added)break;
+      extra-=added;
+    }
+  }
+  function apply(exclude=-1){
+    fillSpace(exclude);
     widths.forEach((width,i)=>{
       columns[i].style.width=width+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -1484,6 +1510,14 @@ function wireIncomingColumnResize(section){
     table.style.setProperty('width',widths.reduce((sum,width)=>sum+width,0)+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths}));}catch(_){}
+  }
+  function fitContainer(){
+    const available=wrap.clientWidth;
+    if(!available||available===containerWidth)return;
+    containerWidth=available;
+    initial=defaultWidths(available);
+    if(!customized)widths=initial.slice();
+    apply();
   }
   headers.forEach((th,i)=>{
     const label=document.createElement('span');
@@ -1508,19 +1542,20 @@ function wireIncomingColumnResize(section){
     handle.addEventListener('pointerdown',event=>{
       if(event.button!==0)return;
       event.preventDefault();event.stopPropagation();
+      fitContainer();customized=true;
       active={id:event.pointerId,x:event.clientX,width:widths[i]};
       handle.setPointerCapture(event.pointerId);wrap.classList.add('iqc-resizing');
     });
     handle.addEventListener('pointermove',event=>{
       if(!active||event.pointerId!==active.id)return;
       widths[i]=Math.round(Math.max(minimums[i],Math.min(720,active.width+event.clientX-active.x)));
-      apply();
+      apply(i);
     });
     handle.addEventListener('pointerup',finish);
     handle.addEventListener('pointercancel',finish);
     handle.addEventListener('lostpointercapture',finish);
     handle.addEventListener('dblclick',event=>{
-      event.preventDefault();event.stopPropagation();widths[i]=initial[i];apply();save();
+      event.preventDefault();event.stopPropagation();customized=true;widths[i]=initial[i];apply(i);save();
     });
     handle.addEventListener('keydown',event=>{
       const step=event.shiftKey?30:10;
@@ -1530,10 +1565,20 @@ function wireIncomingColumnResize(section){
       else if(event.key==='Home')next=minimums[i];
       else if(event.key==='End')next=720;
       else return;
-      event.preventDefault();event.stopPropagation();widths[i]=Math.max(minimums[i],Math.min(720,next));apply();save();
+      event.preventDefault();event.stopPropagation();customized=true;widths[i]=Math.max(minimums[i],Math.min(720,next));apply(i);save();
     });
   });
   apply();
+  fitContainer();
+  // The incoming module is built while hidden. Observe its visible width,
+  // including navigation, sidebar changes and subsequent window resizing.
+  if(typeof ResizeObserver!=='undefined'){
+    const observer=new ResizeObserver(()=>{
+      if(!table.isConnected){observer.disconnect();return;}
+      fitContainer();
+    });
+    observer.observe(wrap);
+  }
 }
 
 function premiumInspectionShell(id,title,desc,cols){
