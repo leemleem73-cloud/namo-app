@@ -2878,6 +2878,26 @@ function printInspectionReport(title){
       .print-page-frame{width:194mm;height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
       .print-page-content{break-inside:avoid;page-break-inside:avoid}
     }
+    /* Single shared grid geometry and border tone for issued certificates. */
+    .report-sheet{--issued-line:#c8d2de;border:1px solid var(--issued-line)}
+    .report-doc-head,.report-meta,.report-summary,.report-section-title,
+    .report-support-row,.report-sign{border-color:var(--issued-line)!important}
+    .report-logo,.report-title-box,.approval-label,.approval-head,.approval-cell,
+    .report-meta>div,.report-basic th,.report-basic td,
+    .report-inspection th,.report-inspection td,.report-summary>div,
+    .report-support-row .label,.report-sign .label,.report-sign .sign-cell{
+      border-color:var(--issued-line)!important;
+    }
+    .report-meta{grid-template-columns:13% 37% 13% 37%!important}
+    .report-meta>div{border-right:1px solid var(--issued-line)}
+    .report-meta>div:last-child{border-right:0}
+    .report-basic{width:100%;table-layout:fixed;border-collapse:collapse}
+    .report-basic col:nth-child(1),.report-basic col:nth-child(3){width:13%!important}
+    .report-basic col:nth-child(2),.report-basic col:nth-child(4){width:37%!important}
+    .report-approval{grid-template-columns:9mm repeat(3,minmax(0,1fr))}
+    .report-approval .approval-head:nth-child(4),
+    .report-approval .approval-cell:last-child{border-right:0}
+    .report-inspection{border-collapse:collapse}
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
   </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
