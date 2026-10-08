@@ -86,8 +86,7 @@
     if(meta){const name=String(u.name||"").trim();meta.innerHTML=`<b>${esc(name)}</b><br><small>${esc(u.dept)}</small>`;}
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
     $(".qauth-menu",box)?.remove();
-    const account=String(u.uid||u.email||u.name||"사용자").trim();
-    const accountLabel=account.includes("@")?account.split("@")[0]:account;
+    const accountLabel=String(u.name||"사용자").trim();
     const nameText=String(u.name||"").trim();
     const positionText=String(u.position||"").trim();
     const orgParts=["나모케미칼",u.dept].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
