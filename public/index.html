@@ -593,34 +593,6 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   box-shadow:none!important;
 }
 
-/* Certificate preview: use one exact column track definition for both rows.
-   Remove the previous 2px nudge: it caused the boundaries to diverge. */
-.workspace-body > .report-sheet{
-  --report-line:#c8d2de;
-  --report-info-columns:13fr 37fr 13fr 37fr;
-}
-.workspace-body > .report-sheet .report-meta{
-  display:grid!important;
-  grid-template-columns:var(--report-info-columns)!important;
-  border-color:var(--report-line)!important;
-}
-.workspace-body > .report-sheet .report-meta > div:nth-child(n+5){display:none!important}
-.workspace-body > .report-sheet .report-basic{
-  display:block!important;
-  width:100%!important;
-  border-color:var(--report-line)!important;
-}
-.workspace-body > .report-sheet .report-basic > tbody{display:block!important;width:100%}
-.workspace-body > .report-sheet .report-basic tr{
-  display:grid!important;
-  grid-template-columns:var(--report-info-columns)!important;
-  width:100%;
-}
-.workspace-body > .report-sheet .report-basic tr > *{
-  min-width:0;
-  box-sizing:border-box;
-  border-color:var(--report-line)!important;
-}
 /* Premium issued report preview */
 .report-sheet{border:1px solid #d3dce7!important;box-shadow:0 16px 40px rgba(17,39,67,.09)!important;border-radius:10px!important;overflow:hidden!important}.report-doc-head{border-bottom:0!important}.report-logo{background:#fff!important;color:#172033!important;border-right:1px solid #d9e1ea!important;padding:8px 10px}.report-logo .report-main-logo{display:block;width:165px;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box{background:linear-gradient(180deg,#fff,#fbfcfe)!important}.report-title-box h2{color:#142e4d!important;font-size:22px!important}.report-title-box small{letter-spacing:1.6px!important}.report-meta .label,.report-basic th,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f5f7fa!important;color:#4c5d72!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important;letter-spacing:.2px}.report-inspection th{background:#eaf0f6!important;color:#33475f!important}.report-inspection td.pass,.report-summary .final{color:#0f7a51!important}.report-footer{background:#fbfcfd!important;border-top:1px solid #e4e9ef!important}
 
