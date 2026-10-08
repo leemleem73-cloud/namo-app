@@ -100,7 +100,8 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   #notifyBtn.notify-active{background:#eef5fd;color:#1e6fae}
 
   .sidebar{grid-row:2;background:var(--nav);color:#cdd6e3;overflow:hidden;transition:.18s ease;position:relative;z-index:10}
-  .nav-wrap{height:100%;padding:10px 8px;overflow:auto}
+  .nav-wrap{height:100%;padding:10px 8px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none}
+  .nav-wrap::-webkit-scrollbar{display:none;width:0;height:0}
   .menu-title{font-size:10px;color:#8291a8;text-transform:uppercase;margin:12px 10px 6px;white-space:nowrap}
   .menu{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s ease;margin-bottom:3px}
   .menu:hover{background:var(--nav2);color:#fff}.menu.active{background:#2457a8;color:#fff}
