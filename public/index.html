@@ -2753,7 +2753,7 @@ function issueInspectionReport(id,row){
         <div class="report-approval">
           <div class="approval-label">결재</div>
           <div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div>
-          <div class="approval-cell" data-report-sign="writer">${approval.writer}</div><div class="approval-cell" data-report-sign="reviewer">검토 대기</div><div class="approval-cell" data-report-sign="approver">승인 대기</div>
+          <div class="approval-cell" data-report-sign="writer">${approval.writer}</div><div class="approval-cell" data-report-sign="reviewer">${approval.reviewer}</div><div class="approval-cell" data-report-sign="approver">${approval.approver}</div>
         </div>
       </div>
       <div class="report-meta">
@@ -2799,8 +2799,8 @@ function issueInspectionReport(id,row){
         const reviewer=document.querySelector('[data-report-sign="reviewer"]');
         const approver=document.querySelector('[data-report-sign="approver"]');
         if(a.status==='APPROVED'){
-          if(reviewer) reviewer.textContent=a.reviewer_name||'검토완료';
-          if(approver) approver.textContent=a.approver_name||'승인완료';
+          if(reviewer) reviewer.textContent=a.reviewer_name||approval.reviewer;
+          if(approver) approver.textContent=a.approver_name||approval.approver;
         }
       }).catch(()=>{});
   }
