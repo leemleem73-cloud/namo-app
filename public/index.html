@@ -2832,6 +2832,26 @@ function printInspectionReport(title){
     .report-sign{display:grid;grid-template-columns:24mm repeat(3,1fr);border-bottom:1px solid #8d97a2;min-height:22mm}.report-sign .label{display:flex;align-items:center;justify-content:center;background:#eef1f4;border-right:1px solid #8d97a2;font-size:9px;font-weight:900}.report-sign .sign-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-right:1px solid #8d97a2;font-size:8.5px}.report-sign .sign-cell:last-child{border-right:0}.report-sign .sign-role{font-weight:800}.report-sign .sign-line{width:70%;border-bottom:1px solid #88929d;height:8px}.report-sign .sign-name{font-size:8px;color:#596579}.report-footer{height:7mm;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:7.8px;color:#667085}.report-footer b{color:#344054}
     /* V32 premium print certificate */
     .report-sheet{border:1.1px solid #64748b;border-top:4px solid #173d6f!important}.report-logo{background:#fff!important;color:#172033!important}.report-logo .report-main-logo{display:block;width:28mm;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box h2{color:#153558!important;font-size:21px!important}.report-title-box small{color:#7890a9!important;letter-spacing:1.5px!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important}.report-inspection th{background:#eaf0f6!important;color:#304760!important}.report-basic th,.report-meta .label,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f4f7fa!important;color:#465b72!important}.report-inspection tbody tr:nth-child(even) td{background:#fbfcfd}.report-summary .final,.report-inspection td.pass{color:#0f7a51!important}.report-footer{border-top:1px solid #dbe2ea;background:#fbfcfd!important}.report-footer b{color:#2f4863!important}
+    /* Print-only A4 alignment: shared column geometry and content-sized sections. */
+    .report-sheet{width:194mm;height:auto;min-height:0;display:block;overflow:visible}
+    .report-doc-head{grid-template-columns:30mm minmax(0,1fr) 52mm;min-height:21mm}
+    .report-doc-head>*{min-width:0}
+    .report-meta{grid-template-columns:17mm minmax(0,1fr) 17mm minmax(0,1fr) 14mm 19mm 14mm 19mm}
+    .report-meta>div{min-width:0;overflow-wrap:anywhere}
+    .report-basic{border-collapse:collapse}
+    .report-inspection{border-collapse:collapse}
+    .report-inspection col.no{width:5%}.report-inspection col.item{width:15%}
+    .report-inspection col.spec{width:26%}.report-inspection col.method{width:14%}
+    .report-inspection col.measure{width:8%}.report-inspection col.judge{width:8%}
+    .report-inspection td.item,.report-inspection td.spec{text-align:center;padding-left:3px}
+    .report-inspection th,.report-inspection td{overflow-wrap:anywhere}
+    .report-summary{grid-template-columns:22mm minmax(0,1fr) 22mm minmax(0,1fr) 22mm minmax(0,1fr)}
+    .report-summary>div{min-width:0}
+    .report-support{display:block;min-height:0}
+    .report-support-row{grid-template-columns:24mm minmax(0,1fr);min-height:16mm}
+    .report-support-row .value{min-height:16mm;overflow-wrap:anywhere}
+    .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
+    .report-footer{min-height:7mm}
     @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.report-sheet{page-break-inside:avoid}}
   </style></head><body>${sheet.outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
