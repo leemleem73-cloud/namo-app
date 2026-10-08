@@ -8,7 +8,7 @@
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
 
-html[data-qmes-view-state="preparing"] .content{visibility:hidden}
+html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:hidden}
 </style>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
@@ -3141,6 +3141,8 @@ Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
 applyAdminVisibility();
 restoreQmesPage();
+// Reveal the selected menu only after the saved page has been restored.
+document.documentElement.setAttribute('data-qmes-menu-ready','1');
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
