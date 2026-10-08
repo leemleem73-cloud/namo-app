@@ -12,6 +12,48 @@ html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="
 html:not([data-qmes-menu-ready="1"]) .sidebar .menu{transition:none!important}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
+
+/* 2026-10-08: inspection report crisp edges — final cascade override.
+   Avoid rounded nested outlines and the double border at the workspace top. */
+#mainWorkspace .workspace-body:has(> .report-sheet){padding:12px!important;background:#f4f7fa!important}
+#mainWorkspace .workspace-body > .report-sheet{
+  border:0!important;border-top:0!important;border-radius:0!important;
+  box-shadow:none!important;background:transparent!important;overflow:visible!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-doc-head,
+#mainWorkspace .workspace-body > .report-sheet .report-meta,
+#mainWorkspace .workspace-body > .report-sheet .report-basic,
+#mainWorkspace .workspace-body > .report-sheet .report-summary,
+#mainWorkspace .workspace-body > .report-sheet .report-support-row,
+#mainWorkspace .workspace-body > .report-sheet .report-sign,
+#mainWorkspace .workspace-body > .report-sheet .report-footer{
+  border:1px solid #d7dfe8!important;border-radius:7px!important;
+  box-shadow:none!important;outline:0!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-doc-head{
+  border-bottom:1px solid #d7dfe8!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-doc-head > *,
+#mainWorkspace .workspace-body > .report-sheet .report-meta > *,
+#mainWorkspace .workspace-body > .report-sheet .report-basic th,
+#mainWorkspace .workspace-body > .report-sheet .report-basic td,
+#mainWorkspace .workspace-body > .report-sheet .report-summary > *,
+#mainWorkspace .workspace-body > .report-sheet .report-inspection th,
+#mainWorkspace .workspace-body > .report-sheet .report-inspection td{
+  border-color:#d7dfe8!important;box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-basic tr > :last-child,
+#mainWorkspace .workspace-body > .report-sheet .report-inspection tr > :last-child{border-right:0!important}
+#mainWorkspace .workspace-body > .report-sheet .report-basic tr:last-child > *,
+#mainWorkspace .workspace-body > .report-sheet .report-inspection tbody tr:last-child > *{border-bottom:0!important}
+#mainWorkspace .workspace-body > .report-sheet .report-section-title{
+  border:1px solid #d7dfe8!important;border-bottom:0!important;
+  border-radius:7px 7px 0 0!important;box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > .report-sheet .report-inspection{
+  border:1px solid #d7dfe8!important;border-top:0!important;
+  border-radius:0 0 7px 7px!important;box-shadow:none!important;
+}
 </style>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
