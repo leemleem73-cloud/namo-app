@@ -1143,9 +1143,18 @@ function applyAdminVisibility(){
   }
 }
 
-sidebar.addEventListener('mouseenter',()=>app.classList.add('nav-open'));
-sidebar.addEventListener('mouseleave',()=>app.classList.remove('nav-open'));
-navToggle.addEventListener('click',(e)=>{e.stopPropagation();app.classList.toggle('nav-open')});
+// Small hover delays prevent the sidebar from opening/closing on brief pointer crossings.
+let navHoverTimer=null;
+const cancelNavHover=()=>{if(navHoverTimer!==null){clearTimeout(navHoverTimer);navHoverTimer=null;}};
+sidebar.addEventListener('mouseenter',()=>{
+  cancelNavHover();
+  if(!app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.add('nav-open');navHoverTimer=null;},220);
+});
+sidebar.addEventListener('mouseleave',()=>{
+  cancelNavHover();
+  if(app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.remove('nav-open');navHoverTimer=null;},420);
+});
+navToggle.addEventListener('click',(e)=>{e.stopPropagation();cancelNavHover();app.classList.toggle('nav-open')});
 
 function toast(msg){
   toastEl.textContent=msg; toastEl.classList.add('show');
