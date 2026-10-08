@@ -5,6 +5,7 @@
   window.__NAMO_QMES_STATIC_AUTH_BRIDGE__=true;
   const KEY="qmes-current-user-v1";
   const LAST_LOGIN_KEY="qmes-last-login-at-v1";
+  const PROFILE_AVATAR=`<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="currentColor" d="M24 6c-7 0-11 5-11 11v3c0 5 2 9 6 11v4C9 37 4 42 3 48h42c-1-6-6-11-16-13v-4c4-2 6-6 6-11v-3c0-6-4-11-11-11z"/></svg>`;
   const $=(s,r=document)=>r.querySelector(s);
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -75,28 +76,25 @@
     const p=n=>String(n).padStart(2,"0");
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
-  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){box.style.visibility="visible";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.textContent="";if(meta)meta.innerHTML="<b></b><br><small></small>";}}
+  function clear(){try{sessionStorage.removeItem(KEY)}catch(_){} delete window.__QMES_CURRENT_USER__;const box=$("#currentUser");if(box){box.style.visibility="visible";const av=$(".avatar",box),meta=$(".user-meta",box);if(av)av.innerHTML=PROFILE_AVATAR;if(meta)meta.innerHTML="<b></b><br><small></small>";}}
 
   function apply(u){
     save(u);
     const box=$("#currentUser"); if(!box) return;
     box.style.visibility="visible";
     const av=$(".avatar",box), meta=$(".user-meta",box);
-    if(av) av.textContent=(u.name||"사").slice(0,1);
-    if(meta){const pos=String(u.position||"").trim();const name=String(u.name||"").trim();const same=pos&&name&&pos.replace(/\s+/g,"")===name.replace(/\s+/g,"");const suffix=pos&&!same?" "+esc(pos):"";meta.innerHTML=`<b>${esc(name)}${suffix}</b><br><small>${esc(u.dept)}</small>`;}
+    if(av) av.innerHTML=PROFILE_AVATAR;
+    const nameText=String(u.name||"사용자").trim();
+    if(meta)meta.innerHTML=`<b>${esc(nameText)}</b><br><small>${esc(u.dept)}</small>`;
     if(!$(".qauth-arrow",box)){const a=document.createElement("span");a.className="qauth-arrow";a.textContent="▼";box.appendChild(a);}
     $(".qauth-menu",box)?.remove();
-    const account=String(u.uid||u.email||u.name||"사용자").trim();
-    const accountLabel=account.includes("@")?account.split("@")[0]:account;
-    const nameText=String(u.name||"").trim();
-    const positionText=String(u.position||"").trim();
-    const orgParts=["나모케미칼",u.dept,(positionText&&positionText!==nameText)?positionText:""].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
+    const orgParts=["나모케미칼",u.dept].map(v=>String(v||"").trim()).filter((v,i,a)=>v&&a.indexOf(v)===i);
     const orgLabel=orgParts.join(" · ");
     const lastLogin=getLastLoginAt()||Date.now();
     if(!getLastLoginAt())setLastLoginAt(lastLogin);
     const m=document.createElement("div");
     m.className="qauth-menu";
-    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${esc((u.name||"사").slice(0,1))}</div><div class="qauth-profile-copy"><strong>${esc(accountLabel)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
+    m.innerHTML=`<div class="qauth-profile-head"><div class="qauth-profile-avatar">${PROFILE_AVATAR}</div><div class="qauth-profile-copy"><strong>${esc(nameText)}</strong><span>${esc(orgLabel||"나모케미칼")}</span></div></div><div class="qauth-menu-panel"><div class="qauth-org-row"><span class="qauth-menu-icon">⌘</span><span class="qauth-menu-label">${esc(orgLabel||"나모케미칼")}</span><span class="qauth-menu-caret">⌄</span></div><button type="button" class="qauth-action" data-auth="profile"><span class="qauth-menu-icon">⚙</span><span class="qauth-menu-label">개인정보설정</span><span></span></button><button type="button" class="qauth-action danger" data-auth="logout"><span class="qauth-menu-icon">⏻</span><span class="qauth-menu-label">로그아웃</span><span></span></button></div><div class="qauth-current-status">최근접속: ${esc(formatLastLogin(lastLogin))}</div>`;
     box.appendChild(m);
     const admin=String(u.role||"").toLowerCase()==="admin"||u.role==="관리자";
     document.querySelectorAll("[data-admin-only]").forEach(el=>el.style.display=admin?"":"none");
