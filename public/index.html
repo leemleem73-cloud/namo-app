@@ -446,6 +446,23 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .std-premium-footer{height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#fbfcfd;color:#8793a4;font-size:8.5px}.std-premium-footer b{color:#4f6075}.std-premium-footer .secure{display:flex;align-items:center;gap:6px;color:#54708f;font-weight:800}.std-premium-footer .secure:before{content:"";width:7px;height:7px;border-radius:2px;background:#173d6f;box-shadow:inset 0 0 0 2px #d8e5f4}
 @media(max-width:1200px){.std-inspection.premium .std-inspection-head{grid-template-columns:150px 1fr 280px}.std-summary-grid{grid-template-columns:repeat(2,1fr)}.std-summary-card:nth-child(2){border-right:0}.std-summary-card:nth-child(-n+2){border-bottom:1px solid #e0e6ed}}
 
+/* Screen-only report outline cleanup: keep one outer edge per card.
+   Printed A4 report styles remain untouched. */
+.workspace-body > .report-sheet{
+  border:0!important;
+  border-top:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  overflow:visible!important;
+}
+.workspace-body > .report-sheet .report-basic th:last-child,
+.workspace-body > .report-sheet .report-basic td:last-child,
+.workspace-body > .report-sheet .report-inspection th:last-child,
+.workspace-body > .report-sheet .report-inspection td:last-child{border-right:0}
+.workspace-body > .report-sheet .report-basic tr:last-child > *,
+.workspace-body > .report-sheet .report-inspection tbody tr:last-child > *{border-bottom:0}
+
 /* Premium issued report preview */
 .report-sheet{border:1px solid #d3dce7!important;box-shadow:0 16px 40px rgba(17,39,67,.09)!important;border-radius:10px!important;overflow:hidden!important}.report-doc-head{border-bottom:0!important}.report-logo{background:#fff!important;color:#172033!important;border-right:1px solid #d9e1ea!important;padding:8px 10px}.report-logo .report-main-logo{display:block;width:165px;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box{background:linear-gradient(180deg,#fff,#fbfcfe)!important}.report-title-box h2{color:#142e4d!important;font-size:22px!important}.report-title-box small{letter-spacing:1.6px!important}.report-meta .label,.report-basic th,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f5f7fa!important;color:#4c5d72!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important;letter-spacing:.2px}.report-inspection th{background:#eaf0f6!important;color:#33475f!important}.report-inspection td.pass,.report-summary .final{color:#0f7a51!important}.report-footer{background:#fbfcfd!important;border-top:1px solid #e4e9ef!important}
 
