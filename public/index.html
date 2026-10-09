@@ -1052,6 +1052,28 @@ thead{background:#f4f7fa}
 #incoming .iqc-resizing,#incoming .iqc-resizing *{cursor:col-resize!important;user-select:none!important}
 @media print{#incoming .iqc-column-resize{display:none}}
 </style>
+
+<!-- qmes-list-frame-unify-20261009: visual-only harmonization; do not alter data or events -->
+<style id="qmes-list-frame-unify-20261009">
+/* Shared list-frame geometry based on IQC. Exclude report, modal, and nested detail tables. */
+.module-page .module-shell {border:1px solid #d7dfe8!important;border-radius:6px!important;box-shadow:none!important;background:#fff!important;overflow:hidden}
+.module-page .module-shell > .module-toolbar {min-height:51px;border-bottom:1px solid #d7dfe8!important;background:#fbfcfe!important;gap:12px}
+.module-page .module-shell > .module-body {padding:0!important;min-height:132px;background:#fff!important}
+.module-page .module-shell > .module-body > table,
+.module-page .module-shell > .module-body > div > table,
+#dashboard .table-card > div > table {width:100%!important;border-collapse:collapse!important;border-spacing:0!important;background:#fff!important;border:0!important}
+.module-page .module-shell > .module-body > table > thead > tr > th,
+.module-page .module-shell > .module-body > div > table > thead > tr > th,
+#dashboard .table-card > div > table > thead > tr > th {height:42px!important;background:#f2ecfb!important;color:#30263d!important;font-size:13px!important;font-weight:800!important;text-align:center!important;vertical-align:middle!important;border:1px solid #d6cfdf!important;padding:7px 8px!important}
+.module-page .module-shell > .module-body > table > tbody > tr > td,
+.module-page .module-shell > .module-body > div > table > tbody > tr > td,
+#dashboard .table-card > div > table > tbody > tr > td {height:44px!important;background:#fff!important;color:#263347!important;font-size:13px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #e1e5eb!important;padding:7px 8px!important}
+.module-page .module-shell > .module-body > table > tbody > tr:only-child > td[colspan],
+.module-page .module-shell > .module-body > div > table > tbody > tr:only-child > td[colspan],
+#dashboard .table-card > div > table > tbody > tr:only-child > td[colspan] {height:90px!important;color:#344054!important;font-size:13px!important}
+#dashboard .table-card {border:1px solid #d7dfe8!important;border-radius:6px!important;box-shadow:none!important;overflow:hidden}
+#dashboard .table-card > .card-head {min-height:48px;background:#fbfcfe!important;border-bottom:1px solid #d7dfe8!important}
+</style>
 </head>
 <body>
 <script id="qmes-client-data-reset-20261007">
