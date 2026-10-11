@@ -2902,6 +2902,8 @@ function printInspectionReport(title){
     .report-support-row{grid-template-columns:24mm minmax(0,1fr);min-height:29mm}
     .report-support-row .value{min-height:29mm;overflow-wrap:anywhere;display:flex;flex-direction:column;justify-content:center}
     .report-support-row .value,.report-support-row .value .muted{color:#172033!important}
+    .report-support-row .value:has(.support-text){align-items:center;text-align:center}
+    .report-support-row .support-text{width:100%;text-align:center}
     .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
     .report-footer{height:auto;min-height:7mm;gap:4mm;flex-wrap:nowrap}
     .print-outside-meta{width:100%;margin:2.5mm auto 0;display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
