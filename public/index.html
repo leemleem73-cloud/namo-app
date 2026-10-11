@@ -1958,7 +1958,7 @@ const NAMO_EQUIPMENT_CP = [
 ];
 function equipmentShell(){
   const rows=NAMO_EQUIPMENT_CP.map((e,i)=>`<tr class="eq-row" data-index="${i}" data-group="${e.group}">
-    <td>${e.no}</td><td class="left"><div class="eq-name">${e.name}</div></td><td>${e.group}</td><td class="left"><div class="eq-use">${e.use}</div></td><td class="left"><div class="eq-std">${e.standard}</div></td><td class="left"><div class="eq-method">${e.method}</div></td><td><span class="eq-cycle">${e.cycle}</span></td><td>${e.last}</td><td>${e.next}</td><td><span class="eq-status ${e.statusClass}">${e.status}</span></td></tr>`).join('');
+    <td style="width:48px;min-width:48px;max-width:48px;text-align:center">${i+1}</td><td class="left"><div class="eq-name">${e.name}</div></td><td>${e.group}</td><td class="left"><div class="eq-use">${e.use}</div></td><td class="left"><div class="eq-std">${e.standard}</div></td><td class="left"><div class="eq-method">${e.method}</div></td><td><span class="eq-cycle">${e.cycle}</span></td><td>${e.last}</td><td>${e.next}</td><td><span class="eq-status ${e.statusClass}">${e.status}</span></td></tr>`).join('');
   return `<div class="eq-page">
     <section class="eq-hero">
       <div class="eq-hero-top"><div><h1>설비관리</h1><p>나모케미칼 관리계획서 기준 생산설비·검사/측정설비 관리 현황</p></div><div class="eq-cp-badge">CONTROL PLAN · Rev.4 기준</div></div>
@@ -1973,7 +1973,7 @@ function equipmentShell(){
       <div class="eq-tabs"><button class="eq-tab active" data-eq-filter="all">전체 설비</button><button class="eq-tab" data-eq-filter="생산설비">생산설비</button><button class="eq-tab" data-eq-filter="검사·측정설비">검사·측정설비</button></div>
       <div class="eq-actions"><input class="eq-search" id="eqSearch" placeholder="설비명 · 관리항목 검색"><button class="eq-btn" id="eqExport">엑셀</button><button class="eq-btn primary" id="eqCheckRegister">+ 점검등록</button></div>
     </div></section>
-    <section class="eq-table-card"><div class="eq-table-title"><b>설비 관리대장</b><span>관리계획서 설비/관리기준/확인방법/주기 연계</span></div><div class="eq-table-wrap"><table class="eq-table"><thead><tr><th>설비번호</th><th>설비명</th><th>구분</th><th>용도</th><th>관리기준</th><th>확인방법</th><th>관리주기</th><th>최근점검</th><th>차기점검</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+    <section class="eq-table-card"><div class="eq-table-title"><b>설비 관리대장</b><span>관리계획서 설비/관리기준/확인방법/주기 연계</span></div><div class="eq-table-wrap"><table class="eq-table"><thead><tr><th style="width:48px;min-width:48px;max-width:48px;text-align:center">No</th><th>설비명</th><th>구분</th><th>용도</th><th>관리기준</th><th>확인방법</th><th>관리주기</th><th>최근점검</th><th>차기점검</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table></div></section>
     <section class="eq-detail-card" id="eqDetail"></section>
   </div>`;
 }
