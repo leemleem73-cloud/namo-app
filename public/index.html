@@ -3257,7 +3257,7 @@ function qmesIqcBarcodeSvg(value){
 function printInspectionReport(title){
   const sheet=document.getElementById('reportSheet');
   if(!sheet) return;
-  const w=window.open('','_blank','width=1280,height=900');
+  const w=window.open('','_blank','width=1280,height=900,left=-20000,top=-20000');
   if(!w){toast('팝업 차단을 해제해 주세요.');return;}
   // Print-only copy: align document metadata to the basic-info columns.
   // Keep the on-screen report and its stored data untouched.
@@ -3356,7 +3356,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body style="visibility:hidden">${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>requestAnimationFrame(()=>{document.body.style.visibility="visible";window.focus();setTimeout(()=>window.print(),120)}))});<\/script></body></html>`);
+</head><body style="visibility:hidden">${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>requestAnimationFrame(()=>{window.focus();setTimeout(()=>window.print(),120)}))});<\/script></body></html>`);
   w.document.close();
 }
 
