@@ -2885,6 +2885,9 @@ function printInspectionReport(title){
     .report-meta{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr);border-bottom:1px solid var(--issued-line)}
     .report-meta>div{min-width:0;box-sizing:border-box;overflow-wrap:anywhere;border-right:1px solid var(--issued-line)}
     .report-meta>div:last-child{border-right:0}
+    /* Center values in document metadata and basic inspection information. */
+    .report-meta .value,.report-basic td{justify-content:center!important;text-align:center!important;vertical-align:middle!important}
+    .report-basic td{align-content:center}
     .report-basic{display:block;table-layout:auto;border-collapse:separate;border-spacing:0}
     .report-basic tbody{display:block;width:100%}
     .report-basic tr{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr);width:100%}
