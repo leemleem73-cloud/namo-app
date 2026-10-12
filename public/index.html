@@ -3290,18 +3290,43 @@ function qmesIqcBarcodeSvg(value){
 function printInspectionReport(title){
   const sheet=document.getElementById('reportSheet');
   if(!sheet) return;
-  // Build the print document off-screen. Do not open an intermediate about:blank window.
+  // Keep one print job per click. The iframe's initial about:blank load
+  // is not the certificate document and must never trigger printing.
+  if(window.__qmesCertificatePrintBusy)return;
+  window.__qmesCertificatePrintBusy=true;
   const printFrame=document.createElement('iframe');
   printFrame.setAttribute('aria-hidden','true');
   printFrame.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
-  let printFrameLoaded=false;
-  printFrame.addEventListener('load',()=>{
-    if(printFrameLoaded)return;
-    printFrameLoaded=true;
+  let started=false;
+  let cleanupTimer;
+  const cleanup=()=>{
+    clearTimeout(cleanupTimer);
+    printFrame.remove();
+    window.__qmesCertificatePrintBusy=false;
+  };
+  printFrame.addEventListener('load',async()=>{
+    const doc=printFrame.contentDocument;
+    // Ignore the first blank document; wait for srcdoc and the real report.
+    if(started||!doc?.querySelector('#reportSheet'))return;
+    started=true;
     const win=printFrame.contentWindow;
-    if(win)win.addEventListener('afterprint',()=>setTimeout(()=>printFrame.remove(),500),{once:true});
+    win.addEventListener('afterprint',()=>setTimeout(cleanup,300),{once:true});
+    try{
+      await doc.fonts.ready;
+      await Promise.all(Array.from(doc.images).map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
+        img.addEventListener('load',resolve,{once:true});
+        img.addEventListener('error',resolve,{once:true});
+        setTimeout(resolve,1500);
+      })));
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      win.focus();
+      win.print();
+    }catch(err){
+      cleanup();
+      toast('성적서 인쇄 준비 중 오류가 발생했습니다.');
+    }
   });
-  const fallbackCleanup=setTimeout(()=>printFrame.remove(),120000);
+  cleanupTimer=setTimeout(cleanup,120000);
   // Print-only copy: align document metadata to the basic-info columns.
   // Keep the on-screen report and its stored data untouched.
   const printSheet=sheet.cloneNode(true);
@@ -3399,7 +3424,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",async()=>{document.body.style.visibility="visible";try{await document.fonts.ready;await Promise.all(Array.from(document.images).map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true});setTimeout(resolve,1500)})))}catch(e){}requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{window.focus();window.print()},500)))},{once:true});<\/script></body></html>`;
+</head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
   printFrame.srcdoc=printHtml;
 }
