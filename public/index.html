@@ -1847,11 +1847,12 @@ function lotTraceShell(){
   return `<div class="lot-shell lot-premium-shell">
     <div class="lot-hero lot-premium-hero">
       <div class="lot-hero-top">
-        <div class="lot-hero-copy"><div class="lot-eyebrow">NAMO QMES · TRACEABILITY CONTROL</div><h1>LOT 추적관리</h1><p>원자재 입고부터 생산 · 완제품 · 출하까지 전체 이력을 하나의 흐름으로 확인합니다.</p></div>
-        <div class="lot-hero-status"><span>TRACE STATUS</span><b>100%</b><small>LOT 연결성 정상</small></div>
+        <div class="lot-hero-copy"><div class="lot-eyebrow">NAMO QMES · TRACEABILITY CONTROL</div><h1>LOT 추적관리</h1><p>원자재 LOT → 중간재 배치 → 완제품 LOT → 출하의 연결 이력을 조회합니다.</p></div>
+        <div class="lot-hero-status"><span>TRACE STATUS</span><b style="font-size:17px">확인 필요</b><small>중간재 배치 연계 준비 중</small></div>
       </div>
-      <div class="lot-mode-tabs">
+      <div class="lot-mode-tabs" style="grid-template-columns:repeat(3,minmax(0,1fr))">
         <button class="lot-mode-btn active" id="lotRawMode" type="button"><span>RAW MATERIAL</span><b>원자재 LOT 조회</b></button>
+        <button class="lot-mode-btn" id="lotIntermediateMode" type="button"><span>INTERMEDIATE BATCH</span><b>중간재 배치 조회</b></button>
         <button class="lot-mode-btn" id="lotFinishedMode" type="button"><span>FINISHED GOODS</span><b>완제품 LOT 조회</b></button>
       </div>
     </div>
@@ -1918,15 +1919,16 @@ function wireLotTrace(section){
   let mode='raw';
   const rawBtn=section.querySelector('#lotRawMode');
   const fgBtn=section.querySelector('#lotFinishedMode');
+  const midBtn=section.querySelector('#lotIntermediateMode');
   const input=section.querySelector('#lotQueryInput');
   const label=section.querySelector('#lotQueryLabel');
   const help=section.querySelector('#lotHelp');
   const setMode=(next)=>{
     mode=next;
-    rawBtn.classList.toggle('active',mode==='raw'); fgBtn.classList.toggle('active',mode==='finished');
-    label.textContent=mode==='raw'?'원자재 LOT':'완제품 LOT';
-    input.placeholder=mode==='raw'?'예: RM-261001-01':'예: FG-261001-01'; input.value='';
-    help.innerHTML=mode==='raw'?'<b>원자재 조회:</b> 원료 LOT를 기준으로 작업지시 → 생산 LOT → 완제품 LOT → 출하정보까지 확인합니다.':'<b>완제품 조회:</b> 완제품 LOT를 기준으로 생산 LOT → 작업지시 → 사용 원자재 LOT까지 역추적합니다.';
+    rawBtn.classList.toggle('active',mode==='raw'); midBtn.classList.toggle('active',mode==='intermediate'); fgBtn.classList.toggle('active',mode==='finished');
+    label.textContent=mode==='raw'?'원자재 LOT':mode==='intermediate'?'중간재 배치번호':'완제품 LOT';
+    input.placeholder=mode==='raw'?'예: RM-261001-01':mode==='intermediate'?'중간재 배치번호 입력':'예: FG-261001-01'; input.value='';
+    help.innerHTML=mode==='raw'?'<b>원자재 조회:</b> 원료 LOT를 기준으로 작업지시 → 생산 LOT → 완제품 LOT → 출하정보까지 확인합니다.':mode==='intermediate'?'<b>중간재 배치 조회:</b> 원자재 투입 LOT · 중간재 배치 · 완제품 LOT 간 연결정보를 조회할 예정입니다. 실제 배치 데이터 연계 전에는 추적완료로 표시하지 않습니다.':'<b>완제품 조회:</b> 완제품 LOT를 기준으로 생산 LOT → 작업지시 → 사용 원자재 LOT까지 역추적합니다.';
     document.getElementById('lotSummary').innerHTML='';
     document.getElementById('lotResultTitle').textContent='LOT 추적 결과';
     document.getElementById('lotResultMeta').textContent='조회할 LOT를 입력하세요.';
@@ -1935,11 +1937,18 @@ function wireLotTrace(section){
   const search=()=>{
     const q=input.value.trim().toUpperCase();
     if(!q){toast('LOT 번호를 입력해주세요.'); input.focus(); return;}
+    if(mode==='intermediate'){
+      document.getElementById('lotSummary').innerHTML='';
+      document.getElementById('lotResultTitle').textContent='중간재 배치 추적 결과';
+      document.getElementById('lotResultMeta').textContent='배치 데이터 연계 대기';
+      document.getElementById('lotResultBody').innerHTML='<div class="lot-empty"><div class="icon">⌕</div><b>중간재 배치 데이터 연계 대기</b><span>원자재 LOT ↔ 중간재 배치 ↔ 완제품 LOT Mapping 등록 및 연동 후 조회할 수 있습니다.</span></div>';
+      return;
+    }
     const data=lotTraceData();
     const rec=data.find(r=>(mode==='raw'?r.rawLot:r.fgLot).toUpperCase()===q) || data.find(r=>(mode==='raw'?r.rawLot:r.fgLot).toUpperCase().includes(q));
     renderLotTraceResult(rec,mode);
   };
-  rawBtn.addEventListener('click',()=>setMode('raw')); fgBtn.addEventListener('click',()=>setMode('finished'));
+  rawBtn.addEventListener('click',()=>setMode('raw')); midBtn.addEventListener('click',()=>setMode('intermediate')); fgBtn.addEventListener('click',()=>setMode('finished'));
   section.querySelector('#lotSearchBtn').addEventListener('click',search);
   section.querySelector('#lotResetBtn').addEventListener('click',()=>setMode(mode));
   input.addEventListener('keydown',e=>{if(e.key==='Enter') search();});
