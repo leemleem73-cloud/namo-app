@@ -1284,22 +1284,22 @@ thead{background:#f4f7fa}
 #work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
 </style>
 <style id="qmes-iqc-border-only-20261012">
-/* Only line color/width on the incoming issued certificate; no geometry or content changes. */
-#reportSheet.report-incoming,
+/* IQC certificate: one border owner per grid edge, never all four sides per cell. */
+#reportSheet.report-incoming{border-color:#b6c5d5!important}
 #reportSheet.report-incoming :is(.report-doc-head,.report-logo,.report-title-box,.report-approval,.approval-label,.approval-head,.approval-cell,.report-meta,.report-basic,.report-section-title,.report-inspection,.report-summary,.report-support-row,.report-sign,.report-footer),
 #reportSheet.report-incoming :is(.report-basic,.report-inspection) :is(th,td),
-#reportSheet.report-incoming :is(.report-meta,.report-summary,.report-support-row) > * {
- border-color:#b6c5d5!important;
+#reportSheet.report-incoming :is(.report-meta,.report-summary,.report-support-row)>*{border-color:#b6c5d5!important}
+#reportSheet.report-incoming .report-inspection{border-collapse:collapse!important;border-spacing:0!important}
+#reportSheet.report-incoming .report-inspection th,
+#reportSheet.report-incoming .report-inspection td{
+ border-left:0!important;border-top:0!important;
+ border-right:1px solid #b6c5d5!important;border-bottom:1px solid #b6c5d5!important;
 }
-#reportSheet.report-incoming :is(.report-doc-head,.report-logo,.report-title-box,.report-approval,.approval-label,.approval-head,.approval-cell,.report-meta,.report-basic,.report-section-title,.report-inspection,.report-summary,.report-support-row,.report-sign,.report-footer),
-#reportSheet.report-incoming :is(.report-basic,.report-inspection) :is(th,td),
-#reportSheet.report-incoming :is(.report-meta,.report-summary,.report-support-row) > * {
- border-top-width:1px!important;border-bottom-width:1px!important;
- border-left-width:1px!important;border-right-width:1px!important;
-}
-#reportSheet.report-incoming :is(.report-basic,.report-inspection) tr > :last-child{
- border-right-width:0!important;
-}
+#reportSheet.report-incoming .report-inspection tr>:last-child{border-right:0!important}
+#reportSheet.report-incoming .report-inspection tbody tr:last-child>*{border-bottom:0!important}
+#reportSheet.report-incoming .report-basic th,
+#reportSheet.report-incoming .report-basic td{border-left:0!important;border-top:0!important}
+#reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
 </style>
 </head>
 <body>
