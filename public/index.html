@@ -2922,7 +2922,24 @@ function printInspectionReport(title){
       .print-page-frame{height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
       .print-page-content,.report-sheet{break-inside:avoid;page-break-inside:avoid}
     }
-  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
+  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>{
+  const alignIssuedDividers=()=>{
+    const firstBasicLabel=document.querySelector('.report-basic tr > th');
+    const supportRows=document.querySelectorAll('.report-support-row');
+    if(firstBasicLabel&&supportRows.length){
+      const labelWidth=firstBasicLabel.getBoundingClientRect().width;
+      if(labelWidth>0){
+        supportRows.forEach(row=>{
+          row.style.setProperty('grid-template-columns',labelWidth+'px minmax(0,1fr)','important');
+        });
+      }
+    }
+  };
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    alignIssuedDividers();
+    window.print();
+  }));
+};<\/script></body></html>`);
   w.document.close();
 }
 
