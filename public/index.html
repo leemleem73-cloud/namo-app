@@ -1093,14 +1093,17 @@ thead{background:#f4f7fa}
 #equipment .eq-table tbody td:not(.left){text-align:center!important}
 </style>
 <style id="qmes-work-list-iqc-aligned-20261012">
-#work .module-body{padding:0;overflow:auto}
-#work .work-list-table{border:0;border-radius:0;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:100%;background:#fff}
-#work .work-list-table th,#work .work-list-table td{box-sizing:border-box;text-align:center;vertical-align:middle;border-right:1px solid #e5ebf2;border-bottom:1px solid #e5ebf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 7px}
-#work .work-list-table th{position:relative;height:36px;background:#f1ebfa;color:#51416e;font-size:11px;font-weight:700}
-#work .work-list-table td{height:47px;background:#fff;color:#465570;font-size:11px;font-weight:500}
-#work .work-list-table tbody tr:nth-child(even) td{background:#f8fafc}
-#work .work-list-table tbody tr:hover td{background:#eaf3ff}
-#work .work-list-table th:last-child,#work .work-list-table td:last-child{border-right:0}
+/* Work list: one border per grid line, matching incoming inspection. */
+#work .module-shell>.module-body{padding:0!important;overflow:auto}
+#work .module-shell>.module-body>.work-list-table{border:0!important;border-radius:0!important;border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;min-width:100%;background:#fff!important}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th,
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td{box-sizing:border-box!important;text-align:center!important;vertical-align:middle!important;border:0!important;border-right:1px solid #e5eaf0!important;border-bottom:1px solid #e5eaf0!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:7px 8px!important;font-size:11px!important}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th{position:relative;height:36px!important;background:#f2ecfb!important;color:#51416e!important;font-weight:700!important;border-bottom-color:#d6cfdf!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td{height:44px!important;background:#fff!important;color:#465570!important;font-weight:500!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:nth-child(even)>td{background:#f8fafc!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:hover>td{background:#eaf3ff!important}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th:last-child,
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td:last-child{border-right:0!important}
 #work .work-list-table .iqc-column-resize:hover:after,#work .work-list-table .iqc-column-resize:focus-visible:after{content:'';position:absolute;top:7px;bottom:7px;right:2px;width:2px;background:#438bda}
 #work .work-list-table td .btn{font-size:11px;padding:4px 9px;color:#315f94;border:1px solid #cbd8e7;background:#f7faff;border-radius:5px}
 #work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
