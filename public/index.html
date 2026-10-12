@@ -113,7 +113,16 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
       var first=basic&&basic.querySelector('tbody tr:first-child > th:first-child');
       if(!header||!first)return;
       var width=first.getBoundingClientRect().width;
-      if(width>0)header.style.setProperty('--qmes-iqc-first-column',width+'px');
+      if(width>0){
+        // Set the real grid tracks, not just a CSS variable: later theme rules
+        // may override the certificate header and metadata columns.
+        var track=width+'px';
+        header.style.setProperty('--qmes-iqc-first-column',track);
+        header.style.setProperty('grid-template-columns',track+' minmax(0,1fr) 300px','important');
+        var meta=sheet.querySelector('.report-meta');
+        if(meta)meta.style.setProperty('grid-template-columns',
+          track+' minmax(0,1fr) 86px minmax(0,1fr) 70px 100px 70px 100px','important');
+      }
     });
   }
   var queued=false;
