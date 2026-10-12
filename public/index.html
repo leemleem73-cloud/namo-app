@@ -2679,8 +2679,37 @@ async function loadQualityNotifications(){
   }
 }
 const WORK_LOCAL_KEY='namo_qmes_work_orders_v1';
+let workSharedRows=null, workSyncBusy=null;
+const WORK_API='/api/qmes/work-orders';
+async function workApi(method,path='',body){
+  const response=await fetch(WORK_API+path,{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.success)throw new Error(result.message||'공용 서버 저장/조회 실패');
+  return result;
+}
+async function refreshSharedWorkOrders(){
+  if(workSyncBusy)return workSyncBusy;
+  workSyncBusy=(async()=>{
+    const response=await workApi('GET');
+    const remote=Array.isArray(response.data)?response.data:[];
+    const local=readWorkOrders();
+    const ids=new Set(remote.map(x=>x&&x.id));
+    for(const row of local){
+      if(!row||!row.id||ids.has(row.id))continue;
+      const result=await workApi('POST','',row);
+      if(result.data&&result.data.created){remote.unshift(row);ids.add(row.id);}
+      else {const refreshed=await workApi('GET');remote.splice(0,remote.length,...(Array.isArray(refreshed.data)?refreshed.data:[]));ids.clear();remote.forEach(x=>ids.add(x.id));}
+    }
+    workSharedRows=remote;
+    try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
+    renderSavedWorkOrders();
+  })().catch(error=>{console.error('[QMES work sync]',error);toast('작업지시서 서버 조회 실패: '+error.message);}).finally(()=>{workSyncBusy=null;});
+  return workSyncBusy;
+}
+window.addEventListener('focus',()=>{if(document.getElementById('work')?.classList.contains('active'))refreshSharedWorkOrders();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('work')?.classList.contains('active'))refreshSharedWorkOrders();});
 function readWorkOrders(){
-  try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows:[];}catch(_){return [];}
+  if(workSharedRows)return workSharedRows;try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows:[];}catch(_){return [];}
 }
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
@@ -2698,12 +2727,12 @@ function renderSavedWorkOrders(){
     const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
     edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
     const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='삭제';del.style.marginLeft='5px';
-    del.addEventListener('click',e=>{e.stopPropagation();if(!confirm('이 작업지시서를 삭제하시겠습니까?'))return;const remaining=readWorkOrders().filter(x=>x.id!==order.id);try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remaining));renderSavedWorkOrders();toast('삭제되었습니다.');}catch(_){toast('삭제에 실패했습니다.');}});
+    del.addEventListener('click',async e=>{e.stopPropagation();if(!confirm('이 작업지시서를 삭제하시겠습니까?'))return;try{await workApi('DELETE','/'+encodeURIComponent(order.id));const remaining=readWorkOrders().filter(x=>x.id!==order.id);workSharedRows=remaining;localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remaining));renderSavedWorkOrders();toast('삭제되었습니다.');}catch(error){toast('서버 삭제 실패: '+error.message);}});
     actions.append(edit,del);tr.appendChild(actions);
     tbody.appendChild(tr);
   });
 }
-function saveWorkOrderForm(editId=''){
+async function saveWorkOrderForm(editId=''){
   const form=document.querySelector('.work-form');
   if(!form)return;
   const basic=[...form.querySelectorAll('.work-basic-grid .form-item')];
@@ -2721,9 +2750,11 @@ function saveWorkOrderForm(editId=''){
   const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('textarea')?.value||''};
   if(editId){const idx=orders.findIndex(x=>x.id===editId);if(idx<0){toast('수정할 작업지시서를 찾을 수 없습니다.');return;}orders[idx]=record;}
   else orders.unshift(record);
-  try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}
-  catch(e){toast('저장 공간 오류로 작업지시서를 저장하지 못했습니다.');return;}
-  closeModal();renderSavedWorkOrders();toast('작업지시서가 이 브라우저에 저장되었습니다.');
+  try{await workApi(editId?'PUT':'POST',editId?'/'+encodeURIComponent(savedId):'',record);}
+  catch(e){toast('공용 서버 저장 실패: '+e.message);return;}
+  workSharedRows=orders;
+  try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}catch(_e){}
+  closeModal();renderSavedWorkOrders();toast('작업지시서가 공용 서버에 저장되었습니다.');
 }
 function wireWorkColumnResize(section){
   const wrap=section?.querySelector('.module-body'),table=wrap?.querySelector('table');
@@ -2808,7 +2839,7 @@ function buildModule(id){
       </div>`;
   }
   wireModule(section,id);
-  if(id==='work'){renderSavedWorkOrders();wireWorkColumnResize(section);}
+  if(id==='work'){renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);}
   wireIncomingInspection(section);
 }
 function sample(c,i,id){
