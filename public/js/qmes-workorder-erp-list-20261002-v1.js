@@ -101,6 +101,45 @@ function markup(){
  '<table class="qerp-table qwf2-table"><thead><tr><th>No</th><th>지시일</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT NO.</th><th>계획수량</th><th>단위</th><th>생산예정일</th><th>설비</th><th>투입계획량</th><th>실투입량</th><th>생산수량</th><th>수율</th><th>PQC</th><th>진행상태</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody></tbody></table></div><div class="qrl-foot"></div></section>'+
  '';
 }
+
+/* Isolated workorder column resize: each column retains its own pixel width. */
+function initWorkorderColumnResize(){
+ var host=state.host,table=host&&host.querySelector(".qwf2-table");
+ if(!table||table.dataset.qmesResizeReady==="1")return;
+ var heads=Array.from(table.querySelectorAll("thead th"));
+ if(!heads.length)return;
+ var key="qmes-workorder-erp-column-widths-v2";
+ var defaults=[42,90,118,125,150,112,82,48,94,70,90,90,90,64,66,82,90,110,120];
+ var saved=[];try{saved=JSON.parse(localStorage.getItem(key)||"[]")}catch(_){}
+ var widths=defaults.map(function(w,i){var n=Number(saved[i]);return Number.isFinite(n)&&n>=44&&n<=900?n:w});
+ var group=document.createElement("colgroup");
+ widths.forEach(function(w){var col=document.createElement("col");col.style.width=w+"px";group.appendChild(col)});
+ table.insertBefore(group,table.firstChild);
+ function apply(){
+  Array.from(group.children).forEach(function(col,i){col.style.width=widths[i]+"px"});
+  table.style.width=widths.reduce(function(a,b){return a+b},0)+"px";
+ }
+ apply();
+ heads.forEach(function(th,i){
+  var handle=document.createElement("span");
+  handle.className="qmes-wo-col-resize-handle";
+  handle.setAttribute("role","separator");
+  handle.setAttribute("aria-label",th.textContent+" 열 너비 조절");
+  handle.addEventListener("pointerdown",function(e){
+   if(e.button!==0)return;
+   e.preventDefault();e.stopPropagation();
+   var start=e.clientX,initial=widths[i];
+   handle.setPointerCapture(e.pointerId);
+   function move(ev){widths[i]=Math.max(44,Math.min(900,initial+ev.clientX-start));apply()}
+   function end(){handle.removeEventListener("pointermove",move);handle.removeEventListener("pointerup",end);handle.removeEventListener("pointercancel",end);try{localStorage.setItem(key,JSON.stringify(widths))}catch(_){}}
+   handle.addEventListener("pointermove",move);handle.addEventListener("pointerup",end);handle.addEventListener("pointercancel",end);
+  });
+  handle.addEventListener("dblclick",function(e){e.stopPropagation();widths[i]=defaults[i];apply();try{localStorage.setItem(key,JSON.stringify(widths))}catch(_){}});
+  th.appendChild(handle);
+ });
+ table.dataset.qmesResizeReady="1";
+}
+
 function findNativeRow(raw){return [].slice.call(document.querySelectorAll(".qmes-issued-table-v2 tbody tr")).find(function(tr){var td=tr.querySelector("td");return clean(td&&td.textContent)===clean(raw)})||null}
 function nativeAction(raw,type){
  var tr=findNativeRow(raw);if(!tr)return false;
@@ -156,7 +195,7 @@ function bind(){
 function mount(){
  var root=findRoot();if(!root)return;if(state.root!==root){state.root=root;state.host=null;state.signature=""}
  root.classList.add("qmes-workorder-erp-list-v1");root.setAttribute("data-qmes-workorder-owner","erp-list-v1");
- if(!state.host||!state.host.isConnected){var host=document.createElement("section");host.id="qmes-workorder-erp-list-v1";host.className="qmes-workorder-erp-v1";host.innerHTML=markup();root.insertBefore(host,root.firstChild);state.host=host;bind()}
+ if(!state.host||!state.host.isConnected){var host=document.createElement("section");host.id="qmes-workorder-erp-list-v1";host.className="qmes-workorder-erp-v1";host.innerHTML=markup();root.insertBefore(host,root.firstChild);state.host=host;bind();initWorkorderColumnResize()}
  var nextRows=sourceRows(root);
  var nextSignature="";
  try{nextSignature=JSON.stringify(nextRows.map(function(r){return [r.rawKey,r.date,r.customer,r.product,r.plan,r.actual,r.plannedDate,r.equipment,r.worker,r.status,r.remarks]}))}catch(_){}
