@@ -83,13 +83,11 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .report-sheet.report-incoming .report-support{flex:0 0 auto!important;min-height:0!important;grid-template-rows:repeat(3,auto)!important}
 .report-sheet.report-incoming .report-support-row{min-height:0!important}
 .report-sheet.report-incoming .report-support-row .value{min-height:0!important;padding:5px 9px!important;line-height:1.35!important}
-/* IQC certificate screen: remove the invisible 36px label row so text is centered in the full card. */
-.report-sheet.report-incoming .report-support-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important}
-.report-sheet.report-incoming .report-support-row>.label{display:none!important;height:0!important;padding:0!important;margin:0!important;border:0!important}
-.report-sheet.report-incoming .report-support-row>.value{flex:1!important;width:100%!important;min-height:78px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-/* IQC certificate screen: center the text inside the three support cards. */
-.report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-.report-sheet.report-incoming .report-support-row .value>*{text-align:center!important}
+/* IQC certificate modal: position text against the full card, not an offset inner row. */
+.report-sheet.report-incoming .report-support-row{position:relative!important;display:block!important;min-height:78px!important;padding:0!important}
+.report-sheet.report-incoming .report-support-row>.label{display:none!important}
+.report-sheet.report-incoming .report-support-row>.value{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;padding:4px 10px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.report-sheet.report-incoming .report-support-row>.value>*{text-align:center!important}
 .report-sheet.report-incoming .report-iqc-barcode{flex:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:4px 0;border-bottom:1px solid #c8d2de;background:#fff}
 .report-sheet.report-incoming .report-iqc-barcode svg{width:155px;max-width:75%;height:26px;fill:#111}
 .report-sheet.report-incoming .report-iqc-barcode span{font:700 9px monospace;letter-spacing:.5px;color:#172033}
