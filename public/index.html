@@ -2631,10 +2631,16 @@ function renderSavedWorkOrders(){
     values.forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);});
     tr.addEventListener('click',e=>{if(!e.target.closest('button'))showRowDetail('work',tr);});
     tr.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('work',tr);});
+    const actions=document.createElement('td');
+    const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
+    edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
+    const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='삭제';del.style.marginLeft='5px';
+    del.addEventListener('click',e=>{e.stopPropagation();if(!confirm('이 작업지시서를 삭제하시겠습니까?'))return;const remaining=readWorkOrders().filter(x=>x.id!==order.id);try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remaining));renderSavedWorkOrders();toast('삭제되었습니다.');}catch(_){toast('삭제에 실패했습니다.');}});
+    actions.append(edit,del);tr.appendChild(actions);
     tbody.appendChild(tr);
   });
 }
-function saveWorkOrderForm(){
+function saveWorkOrderForm(editId=''){
   const form=document.querySelector('.work-form');
   if(!form)return;
   const basic=[...form.querySelectorAll('.work-basic-grid .form-item')];
@@ -2648,7 +2654,10 @@ function saveWorkOrderForm(){
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
   const fields={'작업지시번호':id,'고객사':input('고객사명'),'제품명':product,'생산 LOT NO':lot,'설비명':input('설비명'),'작업자':input('작업자'),'계획수량':input('계획수량'),'작업기간':[input('작업 시작일'),input('작업 종료일')].filter(Boolean).join(' ~ '),'진행상태':input('진행상태')};
-  orders.unshift({id,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('textarea')?.value||''});
+  const savedId=editId||id;fields['작업지시번호']=savedId;
+  const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('textarea')?.value||''};
+  if(editId){const idx=orders.findIndex(x=>x.id===editId);if(idx<0){toast('수정할 작업지시서를 찾을 수 없습니다.');return;}orders[idx]=record;}
+  else orders.unshift(record);
   try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}
   catch(e){toast('저장 공간 오류로 작업지시서를 저장하지 못했습니다.');return;}
   closeModal();renderSavedWorkOrders();toast('작업지시서가 이 브라우저에 저장되었습니다.');
@@ -3224,7 +3233,7 @@ function initStandardInspectionForm(type){
   }
 }
 
-function openNewForm(id){
+function openNewForm(id,editOrder=null){
   if(id==='work'){
     const html=`<div class="work-form">
       <div class="work-section"><div class="work-section-title">작업 기본정보</div><div class="work-section-body"><div class="work-basic-grid">
@@ -3261,8 +3270,25 @@ function openNewForm(id){
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
+    if(editOrder){
+      const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
+      const set=(label,value)=>{const el=basic.find(x=>x.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select');if(el)el.value=value||'';};
+      const f=editOrder.fields||{},period=(f['작업기간']||'').split(' ~ ');
+      set('작업지시번호',editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);set('생산구분',editOrder.productionType);
+      const tbody=document.querySelector('#workMaterialTable tbody');tbody.innerHTML='';
+      const add=document.getElementById('workRowAdd');
+      (editOrder.materials||[]).forEach(m=>{
+        add.click();const row=tbody.lastElementChild;
+        const name=row.querySelector('.material-name-select');name.value=[...name.options].some(o=>o.value===m.name)?m.name:'__manual__';name.dispatchEvent(new Event('change'));
+        if(name.value==='__manual__')row.querySelector('.material-name-manual').value=m.name||'';
+        const lot=row.querySelector('.material-lot-select');lot.value=[...lot.options].some(o=>o.value===m.lot)?m.lot:'__manual__';lot.dispatchEvent(new Event('change'));
+        if(lot.value==='__manual__')row.querySelector('.material-lot-manual').value=m.lot||'';
+        row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
+      });
+      document.querySelector('.work-form textarea').value=editOrder.note||'';
+    }
     const workSave=document.getElementById('modalSave');
-    if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',saveWorkOrderForm);}
+    if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
     enableWorkModalDrag();
     return;
   }
