@@ -79,12 +79,13 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   vertical-align:middle!important;
 }
 /* Center the date and inspector VALUES below the inspection-results table. */
-#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-summary > div:nth-child(2),
-#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-summary > div:nth-child(4){
-  text-align:center!important;
-  align-content:center!important;
+/* The issued certificate is rendered inside a modal, not workspace-body. */
+.report-sheet.report-incoming .report-summary > div:nth-child(2),
+.report-sheet.report-incoming .report-summary > div:nth-child(4){
+  display:flex!important;
+  align-items:center!important;
   justify-content:center!important;
-  vertical-align:middle!important;
+  text-align:center!important;
 }
 /* Incoming IQC certificate: keep all metadata tracks stable; match the
    header logo divider to the 13% basic-information label column. */
