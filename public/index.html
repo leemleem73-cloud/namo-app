@@ -78,6 +78,12 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   text-align:center!important;
   vertical-align:middle!important;
 }
+/* Center saved inspection date and inspector name in issued IQC certificate. */
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic tbody tr:first-child > td:first-of-type,
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic tbody tr:nth-child(3) > td:first-of-type{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
 /* Incoming IQC certificate: keep all metadata tracks stable; match the
    header logo divider to the 13% basic-information label column. */
 #mainWorkspace .workspace-body > .report-sheet.report-incoming .report-doc-head{
