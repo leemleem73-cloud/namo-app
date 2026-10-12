@@ -3287,7 +3287,7 @@ function printInspectionReport(title){
     /* Issued A4 report: consolidated print-only layout (no stacked overrides). */
     :root{--issued-line:#c8d2de;--issued-label-width:13%}
     html,body{width:100%;min-width:0;margin:0;padding:0}
-    .print-page-frame{width:194mm;min-height:281mm;margin:0 auto;padding-top:10mm;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .print-page-frame{width:194mm;min-height:0;margin:0 auto;padding:0;display:block}
     .print-page-content{width:100%;margin:0 auto}
     .report-sheet{width:100%;height:auto;min-height:0;display:block;overflow:visible;border:1px solid var(--issued-line)!important;border-top:1px solid var(--issued-line)!important}
     .report-doc-head{grid-template-columns:15% minmax(0,1fr) 52mm;min-height:21mm}
@@ -3331,8 +3331,11 @@ function printInspectionReport(title){
     .report-sign .sign-line{border-color:var(--issued-line)!important}
     @media print{
       body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .print-page-frame{height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
-      .print-page-content,.report-sheet{break-inside:avoid;page-break-inside:avoid}
+      html,body{height:auto!important;min-height:0!important}
+      .print-page-frame{height:auto!important;min-height:0!important;padding:0!important;display:block!important;break-before:avoid!important;page-break-before:avoid!important;break-after:avoid!important;page-break-after:avoid!important}
+      .print-page-content{height:auto!important;min-height:0!important;break-before:avoid!important;page-break-before:avoid!important}
+      .report-sheet{break-inside:auto!important;page-break-inside:auto!important}
+      .report-doc-head,.report-meta,.report-basic tr,.report-inspection tr,.report-summary,.report-support-row,.report-footer{break-inside:avoid;page-break-inside:avoid}
     }
   </style>
 
