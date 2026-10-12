@@ -43,8 +43,11 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 #mainWorkspace .workspace-body > .report-sheet .report-inspection td{
   border-color:#d7dfe8!important;box-shadow:none!important;
 }
+/* Rightmost cell owns the outer stroke; avoid a pale/doubled table edge. */
+#mainWorkspace .workspace-body > .report-sheet .report-basic,
+#mainWorkspace .workspace-body > .report-sheet .report-inspection{border-right:0!important}
 #mainWorkspace .workspace-body > .report-sheet .report-basic tr > :last-child,
-#mainWorkspace .workspace-body > .report-sheet .report-inspection tr > :last-child{border-right:0!important}
+#mainWorkspace .workspace-body > .report-sheet .report-inspection tr > :last-child{border-right:1px solid #d7dfe8!important}
 #mainWorkspace .workspace-body > .report-sheet .report-basic tr:last-child > *,
 #mainWorkspace .workspace-body > .report-sheet .report-inspection tbody tr:last-child > *{border-bottom:0!important}
 #mainWorkspace .workspace-body > .report-sheet .report-section-title{
