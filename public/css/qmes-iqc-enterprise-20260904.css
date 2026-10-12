@@ -234,3 +234,19 @@ html body #root#root#root#root#root#root>div>main .qmes-iqc-page .qmes-iqc-ledge
   font-size:10px!important;
   line-height:1.25!important;
 }
+
+/* IQC date field typography only - 2026-10-13 */
+/* Match start/end date text to the inspection-status '전체' select.
+   Scope strictly to IQC record filter; no layout, border or data changes. */
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"],
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit-text,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit-year-field,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit-month-field,
+html body #root>div>main .qmes-iqc-page .qmes-iqc-record-filter input[type="date"]::-webkit-datetime-edit-day-field {
+  font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif!important;
+  font-size:11px!important;
+  font-weight:650!important;
+  color:#2e4557!important;
+}
