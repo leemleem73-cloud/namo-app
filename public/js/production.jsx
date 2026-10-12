@@ -1764,7 +1764,15 @@ function IssueWoTab() {
         const doc = DB.woDocs[viewingWo] || {};
         if (!batch) return null;
 
-        const inputs = Array.isArray(doc.inputs) ? doc.inputs : [];
+        // Preview uses the same work-order inputs as the editor, including legacy field names.
+        // Read-only normalization: never overwrite or clear stored records.
+        const inputs = (Array.isArray(doc.inputs) ? doc.inputs : []).map((it, i) => {
+          const plan = it.plan ?? it.std ?? it.plannedQty ?? it.planQty ?? it.planned ?? null;
+          const act = it.act ?? it.actual ?? it.actualQty ?? it.actualInput ?? null;
+          const materialLot = it.materialLot || it.lot || it.lotNo || it.rawMaterialLot || "";
+          return { ...it, seq: it.seq || i + 1, name: it.name || it.materialName || it.rawMaterialName || "",
+            materialLot, plan, std: plan, act, unit: it.unit || "kg" };
+        });
         const plannedTotal = inputs.reduce((sum, it) => sum + Number(it.plan ?? it.std ?? 0), 0);
         const actualTotal = inputs.reduce((sum, it) => sum + (Number(it.act) || 0), 0);
 
