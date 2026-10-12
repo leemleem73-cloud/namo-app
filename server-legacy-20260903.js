@@ -1452,6 +1452,20 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
+// IP addresses are operational security data: accessible only to administrators.
+let ipAuditReady;
+function ensureIpAudit(){
+  if(!ipAuditReady)ipAuditReady=db(`CREATE TABLE IF NOT EXISTS qmes_login_ip_audit (
+    id BIGSERIAL PRIMARY KEY, user_id UUID NOT NULL, user_name TEXT NOT NULL,
+    ip_address TEXT NOT NULL, logged_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`).catch(error=>{ipAuditReady=null;throw error;});
+  return ipAuditReady;
+}
+function requestClientIp(req){
+  // Express req.ip uses the direct socket address unless trusted proxies are configured.
+  // Do not blindly trust a client-supplied X-Forwarded-For header.
+  return String(req.ip||req.socket?.remoteAddress||'').slice(0,128);
+}
 app.post('/api/auth/login', async (req, res) => {
   try {
     const loginId = txt(req.body.loginId || req.body.email);
@@ -1495,6 +1509,11 @@ app.post('/api/auth/login', async (req, res) => {
       });
     });
 
+    try {
+      await ensureIpAudit();
+      await db('INSERT INTO qmes_login_ip_audit(user_id,user_name,ip_address) VALUES($1,$2,$3)',
+        [user.id,user.name,requestClientIp(req)]);
+    } catch (auditError) { console.error('[QMES] login IP audit error', auditError); }
     return ok(res, { user: req.session.user }, '로그인 성공');
   } catch (err) {
     fail(res, 500, err.message);
@@ -3687,6 +3706,14 @@ app.delete('/api/instruments/:id', requireLogin, async (req, res) => {
   }
 });
 
+app.get('/api/admin/login-ip-history/:id', requireAdmin, async (req,res)=>{
+  try {
+    await ensureIpAudit();
+    const r=await db('SELECT ip_address,logged_at FROM qmes_login_ip_audit WHERE user_id=$1 ORDER BY logged_at DESC LIMIT 100',[req.params.id]);
+    ok(res,r.rows);
+  }catch(error){fail(res,500,'접속 이력을 조회할 수 없습니다.');}
+});
+
 app.get('/api/admin/users', requireAdmin, async (_req, res) => {
   try {
     const r = await db(`
@@ -3694,6 +3721,12 @@ app.get('/api/admin/users', requireAdmin, async (_req, res) => {
       FROM users
       ORDER BY created_at DESC
     `);
+    try{
+      await ensureIpAudit();
+      const logins=await db('SELECT DISTINCT ON (user_id) user_id,ip_address,logged_at FROM qmes_login_ip_audit ORDER BY user_id,logged_at DESC');
+      const recent=new Map(logins.rows.map(row=>[String(row.user_id),row]));
+      r.rows.forEach(row=>{const login=recent.get(String(row.id));row.last_login_ip=login?.ip_address||null;row.last_login_at=login?.logged_at||null;});
+    }catch(auditError){console.error('[QMES] IP history lookup error',auditError);}
     ok(res, r.rows);
   } catch (err) {
     fail(res, 500, err.message);
