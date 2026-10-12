@@ -2927,9 +2927,18 @@ function printInspectionReport(title){
     const firstBasicLabel=document.querySelector('.report-basic tr > th');
     const supportRows=document.querySelectorAll('.report-support-row');
     const summary=document.querySelector('.report-summary');
+    const meta=document.querySelector('.report-meta');
+    const basicRows=document.querySelectorAll('.report-basic tr');
     if(firstBasicLabel&&supportRows.length){
       const labelWidth=firstBasicLabel.getBoundingClientRect().width;
       if(labelWidth>0){
+        const fullWidth=firstBasicLabel.closest('.report-basic').getBoundingClientRect().width;
+        const valueWidth=(fullWidth-2*labelWidth)/2;
+        if(fullWidth>0&&valueWidth>0){
+          const fourCols=labelWidth+'px '+valueWidth+'px '+labelWidth+'px '+valueWidth+'px';
+          if(meta) meta.style.setProperty('grid-template-columns',fourCols,'important');
+          basicRows.forEach(row=>row.style.setProperty('grid-template-columns',fourCols,'important'));
+        }
         supportRows.forEach(row=>{
           row.style.setProperty('grid-template-columns',labelWidth+'px minmax(0,1fr)','important');
         });
