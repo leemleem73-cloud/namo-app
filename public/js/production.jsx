@@ -1034,12 +1034,12 @@ function IssueWoTab() {
     const workType = d.workType || r.workType || productBom.workType || "완제품";
     setShowIssueForm(true);
     setEditingWo(r.no);
-    setForm({ workType, product:r.item, tank:r.tank, qty:"", prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" });
+    setForm({ workType, product:r.item, tank:r.tank, qty:String(d.plan ?? r.plan ?? ""), prodDate:r.due, lotNo:r.no, site:r.no?.[0]||"C", hours:d.hours||"7h", timeRange:d.timeRange||(r.shift?.split(" · ")[1]||""), shiftType:d.shiftType||(r.shift?.split(" · ")[0]||"일반"), worker:r.worker||"" });
     setPlanItems((d.inputs?.length ? d.inputs : productBom.items).map((it, i) => ({
       seq:i+1, name:it.name, materialLot:it.materialLot || it.lot || "",
       containerNo:it.containerNo || "", inputStatus:it.inputStatus || "신규",
       availableQty:it.availableQty ?? "",
-      base:it.base ?? "", plan:it.plan ?? it.std ?? "", actual:it.act ?? "",
+      base:it.base ?? "", plan:it.plan ?? it.std ?? "", actual:it.act ?? it.actual ?? "",
       remaining:it.remaining ?? null, unit:it.unit||"kg", note:it.note||""
     })));
     setPackRows(d.packaging?.length ? d.packaging : [blankPackRow()]);
@@ -1764,7 +1764,15 @@ function IssueWoTab() {
         const doc = DB.woDocs[viewingWo] || {};
         if (!batch) return null;
 
-        const inputs = doc.inputs || [];
+        // Preview uses the same work-order inputs as the editor, including legacy field names.
+        // Read-only normalization: never overwrite or clear stored records.
+        const inputs = (Array.isArray(doc.inputs) ? doc.inputs : []).map((it, i) => {
+          const plan = it.plan ?? it.std ?? it.plannedQty ?? it.planQty ?? it.planned ?? null;
+          const act = it.act ?? it.actual ?? it.actualQty ?? it.actualInput ?? null;
+          const materialLot = it.materialLot || it.lot || it.lotNo || it.rawMaterialLot || "";
+          return { ...it, seq: it.seq || i + 1, name: it.name || it.materialName || it.rawMaterialName || "",
+            materialLot, plan, std: plan, act, unit: it.unit || "kg" };
+        });
         const plannedTotal = inputs.reduce((sum, it) => sum + Number(it.plan ?? it.std ?? 0), 0);
         const actualTotal = inputs.reduce((sum, it) => sum + (Number(it.act) || 0), 0);
 
