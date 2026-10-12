@@ -2695,26 +2695,35 @@ async function loadIncomingFromDb(section){
   if(!section||section.id!=='incoming')return;
   const tbody=section.querySelector('tbody');
   if(!tbody)return;
-  try{
-    const r=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store'});
-    const p=await r.json().catch(()=>({success:false,data:[]}));
-    if(!r.ok||!p.success)throw new Error(p.message||'수입검사 조회 실패');
-    const rows=Array.isArray(p.data)?p.data:[];
-    section._iqcRows=rows;
-    updateIncomingMaterialsFromDb(rows);
-    saveIncomingPageCache(rows);
-    applyIncomingMetrics(section,rows);
-    renderIncomingPage(section,1);
-    wireModule(section,'incoming');
-  }catch(err){
-    // A transient API failure must not erase the already-rendered cached rows.
-    console.error('[IQC] 조회 실패 - 기존 목록 유지:',err);
-    if(Array.isArray(section._iqcRows)&&section._iqcRows.length){
+  const requestId=(section._iqcRequestId||0)+1;
+  section._iqcRequestId=requestId;
+  let lastError;
+  for(let attempt=0;attempt<3;attempt++){
+    if(attempt)await new Promise(resolve=>setTimeout(resolve,500*attempt));
+    if(section._iqcRequestId!==requestId||!section.isConnected)return;
+    try{
+      const r=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const p=await r.json();
+      if(!p||p.success!==true||!Array.isArray(p.data))throw new Error(p?.message||'수입검사 응답 형식 오류');
+      if(section._iqcRequestId!==requestId||!section.isConnected)return;
+      const rows=p.data;
+      section._iqcRows=rows;
+      updateIncomingMaterialsFromDb(rows);
+      saveIncomingPageCache(rows);
+      applyIncomingMetrics(section,rows);
       renderIncomingPage(section,section._iqcPage||1);
-      toast('수입검사 서버 조회에 실패하여 기존 목록을 유지합니다.');
-    }else{
-      tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">수입검사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</td></tr>';
-    }
+      wireModule(section,'incoming');
+      return;
+    }catch(err){lastError=err;}
+  }
+  if(section._iqcRequestId!==requestId||!section.isConnected)return;
+  console.error('[IQC] 서버 조회 3회 실패:',lastError);
+  if(Array.isArray(section._iqcRows)){
+    renderIncomingPage(section,section._iqcPage||1);
+    toast('수입검사 서버 연결이 불안정하여 기존 목록을 표시합니다.');
+  }else{
+    tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">수입검사 조회 실패: 서버 연결을 확인해 주세요.</td></tr>';
   }
 }
 function qualityApprovalShell(){
