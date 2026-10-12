@@ -2615,6 +2615,44 @@ async function loadQualityNotifications(){
     console.error('[QMES quality notifications]',e);
   }
 }
+const WORK_LOCAL_KEY='namo_qmes_work_orders_v1';
+function readWorkOrders(){
+  try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows:[];}catch(_){return [];}
+}
+function renderSavedWorkOrders(){
+  const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
+  if(!tbody)return;
+  tbody.querySelectorAll('tr[data-work-saved]').forEach(r=>r.remove());
+  const cols=pageInfo.work[2];
+  readWorkOrders().forEach((order,index)=>{
+    const tr=document.createElement('tr');
+    tr.className='data-row';tr.tabIndex=0;tr.dataset.workSaved=order.id;
+    const values=[readWorkOrders().length-index,...cols.map(c=>order.fields[c]||'-')];
+    values.forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);});
+    tr.addEventListener('click',e=>{if(!e.target.closest('button'))showRowDetail('work',tr);});
+    tr.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('work',tr);});
+    tbody.appendChild(tr);
+  });
+}
+function saveWorkOrderForm(){
+  const form=document.querySelector('.work-form');
+  if(!form)return;
+  const basic=[...form.querySelectorAll('.work-basic-grid .form-item')];
+  const input=(label)=>basic.find(el=>el.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select')?.value.trim()||'';
+  const lot=input('생산 LOT NO'),product=input('제품명');
+  if(!lot||!product){toast('제품명과 생산 LOT NO를 입력해 주세요.');return;}
+  const rows=[...form.querySelectorAll('#workMaterialTable tbody tr')].map(row=>({
+    name:row.querySelector('.material-name-select')?.value==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():row.querySelector('.material-name-select')?.value,
+    lot:row.querySelector('.material-lot-select')?.value==='__manual__'?row.querySelector('.material-lot-manual')?.value.trim():row.querySelector('.material-lot-select')?.value,
+    plan:row.querySelector('.plan-input')?.value||'',actual:row.querySelector('.actual-input')?.value||''
+  })).filter(r=>r.name||r.lot||r.plan||r.actual);
+  const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
+  const fields={'작업지시번호':id,'고객사':input('고객사명'),'제품명':product,'생산 LOT NO':lot,'설비명':input('설비명'),'작업자':input('작업자'),'계획수량':input('계획수량'),'작업기간':[input('작업 시작일'),input('작업 종료일')].filter(Boolean).join(' ~ '),'진행상태':input('진행상태')};
+  orders.unshift({id,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('textarea')?.value||''});
+  try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}
+  catch(e){toast('저장 공간 오류로 작업지시서를 저장하지 못했습니다.');return;}
+  closeModal();renderSavedWorkOrders();toast('작업지시서가 이 브라우저에 저장되었습니다.');
+}
 function buildModule(id){
   const [title,desc,cols] = pageInfo[id];
   const section=document.getElementById(id);
@@ -2654,6 +2692,7 @@ function buildModule(id){
       </div>`;
   }
   wireModule(section,id);
+  if(id==='work')renderSavedWorkOrders();
   wireIncomingInspection(section);
 }
 function sample(c,i,id){
@@ -3222,6 +3261,8 @@ function openNewForm(id){
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
+    const workSave=document.getElementById('modalSave');
+    if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',saveWorkOrderForm);}
     enableWorkModalDrag();
     return;
   }
