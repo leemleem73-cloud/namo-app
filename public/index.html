@@ -3308,7 +3308,7 @@ function printInspectionReport(title){
     if(cols) cols.remove();
   }
   // Rev. and Page belong below the report's outer border, not inside a cell.
-  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span></div>';
+  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span><span>1 / 1 Page</span></div>';
   w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>
     @page{size:A4 portrait;margin:8mm}
     *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{width:194mm;margin:0 auto;font-family:Arial,'Noto Sans KR',sans-serif;color:#172033}
