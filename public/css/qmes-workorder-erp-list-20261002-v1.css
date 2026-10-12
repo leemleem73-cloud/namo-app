@@ -548,3 +548,19 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
 #qmes-workorder-erp-list-v1 .qrl-foot{
  border-top:0!important;border-bottom:0!important;
 }
+
+
+/* IQC-style compact footer: title left, pagination center, totals right */
+#qmes-workorder-erp-list-v1 .qrl-footer{
+ position:relative;min-height:38px;display:grid;grid-template-columns:1fr auto 1fr;
+ align-items:center;gap:12px;padding:0 10px;border-top:1px solid #d9e1e8;
+ background:#fff;color:#7a8b9d;font-size:10px;
+}
+#qmes-workorder-erp-list-v1 .qrl-footer-brand{justify-self:start;white-space:nowrap}
+#qmes-workorder-erp-list-v1 .qrl-footer-brand strong{color:#62758a;font-weight:700}
+#qmes-workorder-erp-list-v1 .qrl-footer .qrl-foot{
+ display:flex!important;justify-self:center;justify-content:center;align-items:center;
+ gap:5px;min-height:34px!important;border:0!important;background:transparent!important;
+}
+#qmes-workorder-erp-list-v1 .qrl-footer .qrl-foot-count{justify-self:end;white-space:nowrap;color:#7a8b9d}
+#qmes-workorder-erp-list-v1 .qrl-footer .qrl-page{width:25px;height:25px;font-size:11px}
