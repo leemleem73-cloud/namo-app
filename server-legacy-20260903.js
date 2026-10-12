@@ -9,6 +9,8 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
+// Render uses one trusted ingress proxy; use its forwarded client IP for audit logs.
+app.set('trust proxy', 1);
 const port = process.env.PORT || 3000;
 
 const pool = new Pool({
