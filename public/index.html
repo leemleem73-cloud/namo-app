@@ -2463,15 +2463,48 @@ function wireAdminEmployees(section){
     toast(emp.name+' 직원이 삭제되었습니다.');
   }));
 }
-function buildAdminEmployees(){
+// Keep employee roster in sync with the PostgreSQL users table used by QMES login.
+let employeeRosterRequest=0;
+async function buildAdminEmployees(){
   const section=document.getElementById('adminEmployees');
-  if(!section) return;
-  if(!isAdminUser()){
-    section.innerHTML='';
-    return;
+  if(!section)return;
+  if(!isAdminUser()){section.innerHTML='';return;}
+  const request=++employeeRosterRequest;
+  section.innerHTML='<div style="padding:18px">직원등록현황을 불러오는 중입니다.</div>';
+  try{
+    const response=await fetch('/api/admin/users',{credentials:'same-origin',cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const payload=await response.json();
+    if(!payload.success||!Array.isArray(payload.data))throw new Error(payload.message||'응답 오류');
+    if(request!==employeeRosterRequest)return;
+    const previous=new Map(ADMIN_EMPLOYEES.map(row=>[String(row.name),row]));
+    const used=new Set(ADMIN_EMPLOYEES.map(row=>row.no));
+    let serial=1;
+    const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const rows=payload.data.map(u=>{
+      const name=String(u.name||'').trim();
+      const prior=previous.get(name)||{};
+      let no=String(u.uid||prior.no||'').trim();
+      if(!no){
+        while(used.has('U-'+String(serial).padStart(4,'0')))serial++;
+        no='U-'+String(serial++).padStart(4,'0');
+      }
+      used.add(no);
+      return {no:safe(no),name:safe(name),dept:safe(u.department||prior.dept||''),
+        position:safe(u.title||prior.position||''),account:safe(u.uid||name),
+        role:u.role==='admin'?'관리자':'일반사용자',
+        date:safe(u.created_at?String(u.created_at).slice(0,10):'-'),
+        status:u.status==='APPROVED'?'사용':u.status==='PENDING'?'승인대기':'사용중지',
+        last:safe(prior.last||'-'),email:safe(u.email||''),dbId:u.id};
+    });
+    ADMIN_EMPLOYEES.splice(0,ADMIN_EMPLOYEES.length,...rows);
+    section.innerHTML=adminEmployeesShell();
+    wireAdminEmployees(section);
+  }catch(error){
+    if(request!==employeeRosterRequest)return;
+    console.error('[QMES] Employee DB roster failed:',error);
+    section.innerHTML='<div style="padding:18px;color:#b42318">DB 직원 목록 조회에 실패했습니다. 새로고침 후 다시 시도하세요.</div>';
   }
-  section.innerHTML=adminEmployeesShell();
-  wireAdminEmployees(section);
 }
 
 function iqcItems(row){
