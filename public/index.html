@@ -2167,6 +2167,16 @@ function adminEmployeesShell(){
   </div>`;
 }
 
+function nextAdminEmployeeNumber(){
+  const existing=new Set(ADMIN_EMPLOYEES.map(e=>String(e.no||'').trim().toUpperCase()));
+  let n=1;
+  for(const emp of ADMIN_EMPLOYEES){
+    const match=String(emp.no||'').match(/^U-(\d+)$/i);
+    if(match)n=Math.max(n,Number(match[1])+1);
+  }
+  while(existing.has('U-'+String(n).padStart(4,'0')))n++;
+  return 'U-'+String(n).padStart(4,'0');
+}
 function employeeEditorMarkup(emp={},idx=null){
   const isNew=idx===null || idx===undefined;
   const dept=emp.dept||'품질부';
@@ -2187,7 +2197,7 @@ function employeeEditorMarkup(emp={},idx=null){
       <div class="employee-edit-section-title">기본 인사정보</div>
       <div class="employee-edit-grid">
         <div class="employee-edit-cell"><label>사업장</label><select data-field="site"><option>1000. 기본 사업장</option></select></div>
-        <div class="employee-edit-cell"><label>사번</label><input data-field="no" value="${emp.no||''}" placeholder="NMC-000"></div>
+        <div class="employee-edit-cell"><label>사번 (자동 발급)</label><input data-field="no" value="${isNew?nextAdminEmployeeNumber():(emp.no||'')}" readonly title="사번은 자동 발급되며 수정할 수 없습니다."></div>
         <div class="employee-edit-cell"><label>성명</label><input data-field="name" value="${emp.name||''}" placeholder="직원명 입력"></div>
         <div class="employee-edit-cell"><label>입사일</label><input data-field="date" type="date" value="${emp.date||''}"></div>
         <div class="employee-edit-cell"><label>부서</label><select data-field="dept"><option ${sel(dept,'대표')}>대표</option><option ${sel(dept,'연구소')}>연구소</option><option ${sel(dept,'생산부')}>생산부</option><option ${sel(dept,'영업부')}>영업부</option><option ${sel(dept,'품질부')}>품질부</option><option ${sel(dept,'관리부')}>관리부</option></select></div>
@@ -2232,14 +2242,14 @@ function openEmployeeRegister(emp,idx=null){
     if(!root) return;
     const get=f=>root.querySelector(`[data-field="${f}"]`)?.value?.trim?.()||root.querySelector(`[data-field="${f}"]`)?.value||'';
     const record={
-      no:get('no') || `NMC-${String(ADMIN_EMPLOYEES.length+1).padStart(3,'0')}`,
+      no:isNew?nextAdminEmployeeNumber():(emp?.no||get('no')),
       name:get('name') || '신규직원',
       dept:get('dept') || '품질부',
       position:get('position') || '사원',
       account:get('name') || get('account') || '신규직원',
       role:get('role') || '일반사용자',
       date:get('date') || new Date().toISOString().slice(0,10),
-      status:get('status') || '사용',
+      status:isNew?'사용':(get('status') || '사용'),
       last:isNew?'-':(emp?.last||'-'),
       phone:get('phone'),email:get('email'),note:get('note')
     };
