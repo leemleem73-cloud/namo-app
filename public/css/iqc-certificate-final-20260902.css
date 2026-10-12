@@ -246,18 +246,15 @@ html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-fail{
   }
 }
 
-
-/* 2026-10-12: IQC certificate outer-right grid edge.
-   Use the same 1px solid color as the left edge; do not alter layout or data. */
-html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table {
-  border-right: 1px solid #475569 !important;
-}
-html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table tr > :last-child {
-  border-right: 1px solid #475569 !important;
+/* 2026-10-12: Right edge only. Keep the left edge and every cell untouched.
+   A separate inset stroke avoids collapsed-border conflicts / missing segments. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) {
+  box-shadow: inset -1px 0 0 #9fb2c9 !important;
 }
 @media print {
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table,
-  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table tr > :last-child {
-    border-right: 1px solid #475569 !important;
+  body.print-doc #qmes-print-root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) {
+    box-shadow: inset -1px 0 0 #9fb2c9 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
