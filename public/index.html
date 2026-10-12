@@ -2458,9 +2458,11 @@ function wireAdminEmployees(section){
     const emp=ADMIN_EMPLOYEES[idx];
     if(!emp || emp.name==='관리자') return;
     if(!window.confirm(emp.name+' 직원을 삭제하시겠습니까?')) return;
-    ADMIN_EMPLOYEES.splice(idx,1);
-    buildAdminEmployees();
-    toast(emp.name+' 직원이 삭제되었습니다.');
+    if(!emp.dbId){toast('DB 계정 식별자가 없어 삭제할 수 없습니다.');return;}
+    fetch('/api/admin/users/'+encodeURIComponent(emp.dbId),{method:'DELETE',credentials:'same-origin',cache:'no-store'})
+      .then(async response=>{const result=await response.json();if(!response.ok||!result.success)throw Error(result.message||'삭제 실패');return buildAdminEmployees();})
+      .then(()=>toast(emp.name+' 회원이 DB에서 삭제되었습니다.'))
+      .catch(error=>{console.error('[QMES] 회원 삭제 실패',error);alert('회원 삭제 실패: '+error.message);});
   }));
 }
 // Keep employee roster in sync with the PostgreSQL users table used by QMES login.
