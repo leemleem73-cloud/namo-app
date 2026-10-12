@@ -89,7 +89,8 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border-radius:0!important;
 }
 #mainWorkspace .workspace-body > .report-sheet.report-incoming .report-doc-head{
-  grid-template-columns:13% minmax(0,1fr) 300px!important;
+  /* The first column is synchronized to the actual basic-info TH width. */
+  grid-template-columns:var(--qmes-iqc-first-column,13%) minmax(0,1fr) 300px!important;
 }
 #mainWorkspace .workspace-body > .report-sheet.report-incoming .report-meta{
   grid-template-columns:13% minmax(0,1fr) 86px minmax(0,1fr) 70px 100px 70px 100px!important;
@@ -103,6 +104,32 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border-right:1px solid #d7dfe8!important;
 }
 </style>
+<script id="qmes-iqc-header-border-sync-20261012">
+(function(){
+  function syncIncomingBorders(){
+    document.querySelectorAll('.report-sheet.report-incoming').forEach(function(sheet){
+      var basic=sheet.querySelector('.report-basic');
+      var header=sheet.querySelector('.report-doc-head');
+      var first=basic&&basic.querySelector('tbody tr:first-child > th:first-child');
+      if(!header||!first)return;
+      var width=first.getBoundingClientRect().width;
+      if(width>0)header.style.setProperty('--qmes-iqc-first-column',width+'px');
+    });
+  }
+  var queued=false;
+  function queueSync(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(function(){queued=false;syncIncomingBorders();});
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    queueSync();
+    var root=document.getElementById('mainWorkspace')||document.body;
+    new MutationObserver(queueSync).observe(root,{childList:true,subtree:true});
+    window.addEventListener('resize',queueSync,{passive:true});
+  });
+})();
+</script>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
   const root=document.documentElement;
