@@ -82,7 +82,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
    Scope includes modal and print, not only the main workspace. */
 .report-sheet.report-incoming .report-doc-head{
   display:grid!important;
-  grid-template-columns:13% minmax(0,1fr) 300px!important;
+  grid-template-columns:15% minmax(0,1fr) 300px!important;
   width:100%!important;
   box-sizing:border-box!important;
 }
@@ -102,10 +102,10 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border-collapse:collapse!important;
 }
 .report-sheet.report-incoming .report-basic colgroup col:first-child{
-  width:13%!important;
+  width:15%!important;
 }
 .report-sheet.report-incoming .report-basic colgroup col:nth-child(2){
-  width:37%!important;
+  width:35%!important;
 }
 .report-sheet.report-incoming .report-basic tbody td{
   text-align:center!important;
@@ -117,6 +117,20 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   align-items:center!important;
   justify-content:center!important;
   text-align:center!important;
+}
+
+/* The issued IQC report uses one common 15/35/15/35 grid for
+   document number, inspection fields and the logo's left divider. */
+.report-sheet.report-incoming .report-meta{
+  grid-template-columns:15% 35% 15% 35%!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+.report-sheet.report-incoming .report-meta > div:nth-child(n+5){
+  display:none!important;
+}
+.report-sheet.report-incoming .report-basic tbody tr{
+  grid-template-columns:15% 35% 15% 35%!important;
 }
 </style>
 
@@ -3161,7 +3175,7 @@ function printInspectionReport(title){
     .print-page-frame{width:194mm;min-height:281mm;margin:0 auto;padding-top:10mm;display:flex;flex-direction:column;align-items:center;justify-content:center}
     .print-page-content{width:100%;margin:0 auto}
     .report-sheet{width:100%;height:auto;min-height:0;display:block;overflow:visible;border:1px solid var(--issued-line)!important;border-top:1px solid var(--issued-line)!important}
-    .report-doc-head{grid-template-columns:30mm minmax(0,1fr) 52mm;min-height:21mm}
+    .report-doc-head{grid-template-columns:15% minmax(0,1fr) 52mm;min-height:21mm}
     .report-doc-head>*{min-width:0}
     .report-meta,.report-basic{width:100%;box-sizing:border-box;border-left:0;border-right:0;margin:0;padding:0}
     /* Both sections have the exact same four columns and inner width. */
