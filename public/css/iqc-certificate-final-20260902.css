@@ -245,3 +245,19 @@ html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-fail{
     font-size:15px!important;
   }
 }
+
+
+/* 2026-10-12: IQC certificate outer-right grid edge.
+   Use the same 1px solid color as the left edge; do not alter layout or data. */
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table {
+  border-right: 1px solid #475569 !important;
+}
+html body #root .doc-paper.qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table tr > :last-child {
+  border-right: 1px solid #475569 !important;
+}
+@media print {
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table,
+  body.print-doc #qmes-print-root .qmes-iqc-doc:not(.qmes-wo-cert) .qmes-iqc2-table tr > :last-child {
+    border-right: 1px solid #475569 !important;
+  }
+}
