@@ -59,6 +59,40 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border-radius:0 0 7px 7px!important;box-shadow:none!important;
 }
 
+/* 2026-10-12: Unified IQC issued-certificate grid, including every right-edge segment. */
+#mainWorkspace .workspace-body > .report-sheet.report-incoming{
+  --iqc-grid-line:#bdcddd;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming :is(
+ .report-doc-head,.report-meta,.report-basic,.report-summary,
+ .report-inspection,.report-support-row,.report-sign,.report-footer,
+ .report-approval,.report-section-title){
+  border-color:var(--iqc-grid-line)!important;
+  border-width:1px!important;
+  box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming :is(
+ .report-doc-head,.report-meta,.report-basic,.report-summary,
+ .report-inspection,.report-support-row,.report-sign,.report-footer,
+ .report-approval) :is(th,td,.label,.value,.approval-label,.approval-head,.approval-cell){
+  border-color:var(--iqc-grid-line)!important;
+  box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic,
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-inspection{
+  border-right:1px solid var(--iqc-grid-line)!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic tr > :last-child,
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-inspection tr > :last-child{
+  border-right:0!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-section-title{
+  border-bottom:0!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-inspection{
+  border-top:0!important;
+}
+
 /* Inspection certificate approval grid: same thin line as other report cells. */
 #mainWorkspace .workspace-body > .report-sheet .report-approval,
 #mainWorkspace .workspace-body > .report-sheet .report-approval .approval-label,
