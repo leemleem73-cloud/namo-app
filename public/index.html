@@ -1284,22 +1284,23 @@ thead{background:#f4f7fa}
 #work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
 </style>
 <style id="qmes-iqc-border-only-20261012">
-/* IQC certificate: one border owner per grid edge, never all four sides per cell. */
-#reportSheet.report-incoming{border-color:#b6c5d5!important}
-#reportSheet.report-incoming :is(.report-doc-head,.report-logo,.report-title-box,.report-approval,.approval-label,.approval-head,.approval-cell,.report-meta,.report-basic,.report-section-title,.report-inspection,.report-summary,.report-support-row,.report-sign,.report-footer),
-#reportSheet.report-incoming :is(.report-basic,.report-inspection) :is(th,td),
-#reportSheet.report-incoming :is(.report-meta,.report-summary,.report-support-row)>*{border-color:#b6c5d5!important}
-#reportSheet.report-incoming .report-inspection{border-collapse:collapse!important;border-spacing:0!important}
-#reportSheet.report-incoming .report-inspection th,
-#reportSheet.report-incoming .report-inspection td{
- border-left:0!important;border-top:0!important;
- border-right:1px solid #b6c5d5!important;border-bottom:1px solid #b6c5d5!important;
+/* IQC: keep the original layout. Paint grid edges only once. */
+#reportSheet.report-incoming{--iqc-line:#b6c5d5;border-color:var(--iqc-line)!important}
+#reportSheet.report-incoming .report-inspection{
+ border-collapse:separate!important;border-spacing:0!important;
+ border:0!important;border-left:1px solid var(--iqc-line)!important;
+ border-right:1px solid var(--iqc-line)!important;
+ border-bottom:1px solid var(--iqc-line)!important;
+}
+#reportSheet.report-incoming .report-inspection :is(th,td){
+ border:0!important;border-right:1px solid var(--iqc-line)!important;
+ border-bottom:1px solid var(--iqc-line)!important;
+ box-shadow:none!important;outline:0!important;
 }
 #reportSheet.report-incoming .report-inspection tr>:last-child{border-right:0!important}
 #reportSheet.report-incoming .report-inspection tbody tr:last-child>*{border-bottom:0!important}
-#reportSheet.report-incoming .report-basic th,
-#reportSheet.report-incoming .report-basic td{border-left:0!important;border-top:0!important}
-#reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
+#reportSheet.report-incoming .report-basic :is(th,td){border-color:var(--iqc-line)!important}
+#reportSheet.report-incoming :is(.report-doc-head,.report-meta,.report-basic,.report-summary,.report-support-row,.report-section-title,.report-approval,.report-sign,.report-footer){border-color:var(--iqc-line)!important}
 </style>
 </head>
 <body>
