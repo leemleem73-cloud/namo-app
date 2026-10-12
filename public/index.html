@@ -1115,6 +1115,13 @@ thead{background:#f4f7fa}
     color:#4b5563!important;
   }
 
+/* Equal IQC PQC OQC cards - benchmark-inspired scope */
+#lotTrace .lot-detail-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:stretch!important}
+#lotTrace .lot-detail-grid .lot-detail-box,
+#lotTrace .lot-detail-grid .lot-detail-box:has(.lot-detail-title):first-child,
+#lotTrace .lot-detail-grid .lot-trace-result-iqc{grid-column:auto!important;width:100%!important;min-width:0!important;align-self:stretch!important}
+#lotTrace .lot-detail-grid .lot-detail-box .lot-detail-table{min-width:460px!important}
+@media(max-width:1250px){#lotTrace .lot-detail-grid{grid-template-columns:repeat(1,minmax(0,1fr))!important}}
 </style>
 <style id="namo-iqc-resizable-grid-20261008">
 /* Scoped to the incoming list; certificate/print tables keep their own layout. */
