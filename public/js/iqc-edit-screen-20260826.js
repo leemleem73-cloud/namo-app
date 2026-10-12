@@ -51,6 +51,17 @@
     return v == null ? fallback : String(v);
   }
 
+  // Normalize legacy and localized dates for native date inputs without changing stored data.
+  function dateInputValue(value){
+    const raw=String(value==null?'':value).trim();
+    if(!raw)return '';
+    const match=raw.match(/(\\d{4})[.\\/년-]\\s*(\\d{1,2})[.\\/월-]\\s*(\\d{1,2})/);
+    if(!match)return '';
+    const iso=match[1]+'-'+match[2].padStart(2,'0')+'-'+match[3].padStart(2,'0');
+    const date=new Date(iso+'T12:00:00');
+    return !Number.isNaN(date.getTime())&&date.getFullYear()===Number(match[1])&&date.getMonth()+1===Number(match[2])&&date.getDate()===Number(match[3])?iso:'';
+  }
+
   function stripUnit(value){
     return String(value == null ? '' : value).replace(/\s*(kg|g|t|EA|L|매|장|캔)\s*$/i,'').trim();
   }
@@ -226,8 +237,8 @@
           <section class="qmes-iqc-edit-section"><h4>기본정보</h4><div class="qmes-iqc-edit-grid">
             ${purchaseSelectField(record)}
             ${field('입고번호','inNo',val(record,'inNo'), 'text', 'readonly')}
-            ${field('입고일자','recvDate',val(record,'recv').slice(0,10),'date')}
-            ${field('검사일자','inspectDate',val(record,'inspectedAt',val(record,'recv')).slice(0,10),'date')}
+            ${field('입고일자','recvDate',dateInputValue(record.recvDate||record.recv||record.receivedAt||record.receiptDate),'date')}
+            ${field('검사일자','inspectDate',dateInputValue(record.inspectedAt||record.inspectDate||record.recvDate||record.recv),'date')}
             ${field('LOT No.','lot',val(record,'lot'))}
             ${field('원재료명','name',val(record,'name'),'text','readonly')}
             ${field('업체명','supplier',val(record,'supplier') === '-' ? '' : val(record,'supplier'),'text','readonly')}
