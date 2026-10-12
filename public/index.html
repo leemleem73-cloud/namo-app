@@ -3253,7 +3253,7 @@ function initNamochemicalWorkForm(){
     });
   }
   function materialOptions(selected=''){
-    return '<option value="">원료명 선택</option>'+NAMO_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('');
+    return '<option value="">원료명 선택</option>'+NAMO_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('')+'<option value="__manual__">직접 입력</option>';
   }
   function fillLotOptions(row,name){
     const lotSelect=row.querySelector('.material-lot-select');
@@ -3262,14 +3262,23 @@ function initNamochemicalWorkForm(){
     lotSelect.innerHTML=lots.length
       ? '<option value="">원료 LOT 선택</option>'+lots.map(l=>`<option>${l}</option>`).join('')
       : '<option value="">수입검사 등록 LOT 없음</option>';
-    lotSelect.disabled=!lots.length;
+    lotSelect.innerHTML+='<option value="__manual__">직접 입력</option>';
+    lotSelect.disabled=false;
+    row.querySelector('.material-lot-manual').style.display='none';
   }
   function addRow(name=''){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td></td><td><select class="material-name-select">${materialOptions(name)}</select></td><td><select class="material-lot-select"><option value="">원료 LOT 선택</option></select></td><td><input class="plan-input" type="number" min="0" step="0.01" placeholder="계획투입량 입력"></td><td><input class="actual-input" type="number" step="0.01" placeholder="실적 입력 시 작성" disabled></td><td><input class="ratio-input" type="number" step="0.01" placeholder="자동계산" readonly></td><td><button class="btn row-del" type="button">삭제</button></td>`;
+    tr.innerHTML=`<td></td><td><select class="material-name-select">${materialOptions(name)}</select><input class="material-name-manual" type="text" placeholder="원료명 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><select class="material-lot-select"><option value="">원료 LOT 선택</option><option value="__manual__">직접 입력</option></select><input class="material-lot-manual" type="text" placeholder="원료 LOT NO 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><input class="plan-input" type="number" min="0" step="0.01" placeholder="계획투입량 입력"></td><td><input class="actual-input" type="number" step="0.01" placeholder="실적 입력 시 작성" disabled></td><td><input class="ratio-input" type="number" step="0.01" placeholder="자동계산" readonly></td><td><button class="btn row-del" type="button">삭제</button></td>`;
     tbody.appendChild(tr);
     const nameSelect=tr.querySelector('.material-name-select');
-    nameSelect?.addEventListener('change',()=>fillLotOptions(tr,nameSelect.value));
+    nameSelect?.addEventListener('change',()=>{
+      const manual=nameSelect.value==='__manual__';
+      tr.querySelector('.material-name-manual').style.display=manual?'block':'none';
+      fillLotOptions(tr,manual?'':nameSelect.value);
+    });
+    tr.querySelector('.material-lot-select')?.addEventListener('change',e=>{
+      tr.querySelector('.material-lot-manual').style.display=e.target.value==='__manual__'?'block':'none';
+    });
     tr.querySelector('.plan-input')?.addEventListener('input',recalc);
     tr.querySelector('.row-del')?.addEventListener('click',()=>{tr.remove();renumber();recalc();});
     if(name) fillLotOptions(tr,name);
