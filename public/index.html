@@ -3571,6 +3571,14 @@ function exportTable(section,title){
 Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
 applyAdminVisibility();
+// Recheck administrator-only menu visibility when asynchronous login restores the role.
+// The existing administrator authorization check remains unchanged.
+if (currentUserEl && typeof MutationObserver !== 'undefined') {
+  new MutationObserver(() => applyAdminVisibility()).observe(currentUserEl, {
+    attributes: true,
+    attributeFilter: ['data-role', 'data-qauth-ready']
+  });
+}
 if(!restoreQmesPage()){
   document.querySelector('.menu[data-page="dashboard"]')?.classList.add('active');
   document.getElementById('dashboard')?.classList.add('active');
