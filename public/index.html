@@ -2882,7 +2882,7 @@ function printInspectionReport(title){
     .report-doc-head>*{min-width:0}
     .report-meta,.report-basic{width:100%;box-sizing:border-box;border-left:0;border-right:0;margin:0;padding:0}
     /* Both sections have the exact same four columns and inner width. */
-    .report-meta{display:grid;grid-template-columns:13% 37% 13% 37%;border-bottom:1px solid var(--issued-line)}
+    .report-meta{display:grid;grid-template-columns:15% 35% 15% 35%;border-bottom:1px solid var(--issued-line)}
     .report-meta>div{min-width:0;box-sizing:border-box;overflow-wrap:anywhere;border-right:1px solid var(--issued-line)}
     .report-meta>div:last-child{border-right:0}
     /* Center values in document metadata and basic inspection information. */
@@ -2890,7 +2890,7 @@ function printInspectionReport(title){
     .report-basic td{align-content:center}
     .report-basic{display:block;table-layout:auto;border-collapse:separate;border-spacing:0}
     .report-basic tbody{display:block;width:100%}
-    .report-basic tr{display:grid;grid-template-columns:13% 37% 13% 37%;width:100%}
+    .report-basic tr{display:grid;grid-template-columns:15% 35% 15% 35%;width:100%}
     .report-basic tr>*{min-width:0;box-sizing:border-box;border-right:1px solid var(--issued-line);border-bottom:1px solid var(--issued-line)}
     .report-basic tr>*:last-child{border-right:0}
     /* Print-only: center six field labels and their values, not inspection conditions. */
@@ -2901,10 +2901,10 @@ function printInspectionReport(title){
     .report-inspection col.measure{width:8%}.report-inspection col.judge{width:8%}
     .report-inspection td.item,.report-inspection td.spec{text-align:center;padding-left:3px}
     .report-inspection th,.report-inspection td{overflow-wrap:anywhere}
-    .report-summary{grid-template-columns:repeat(3,13% 20.333333%)}
+    .report-summary{grid-template-columns:repeat(3,15% 18.333333%)}
     .report-summary>div{min-width:0}
     .report-support{display:block;min-height:0}
-    .report-support-row{grid-template-columns:13% minmax(0,1fr);min-height:29mm}
+    .report-support-row{grid-template-columns:15% minmax(0,1fr);min-height:29mm}
     .report-support-row .value{min-height:29mm;overflow-wrap:anywhere;display:flex;flex-direction:column;justify-content:center}
     .report-support-row .value,.report-support-row .value .muted{color:#172033!important}
     .report-support-row .value:has(.support-text){align-items:stretch;text-align:left}
