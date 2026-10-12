@@ -8,7 +8,8 @@
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
 
-html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:hidden}
+/* Fail open: never hide the entire workspace or navigation while booting. */
+html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:visible}
 html:not([data-qmes-menu-ready="1"]) .sidebar .menu{transition:none!important}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
@@ -147,8 +148,10 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
     requestAnimationFrame(()=>{
       try{
         document.querySelector('.module-page.active')?._fitIncomingColumns?.();
-      }finally{
+      }catch(err){console.warn('QMES optional layout fit failed',err)}
+      finally{
         root.setAttribute('data-qmes-view-state','ready');
+        root.setAttribute('data-qmes-menu-ready','1');
       }
     });
   },{once:true});
