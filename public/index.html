@@ -3390,7 +3390,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body style="visibility:hidden">${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>{window.focus();window.print()})},{once:true});<\/script></body></html>`);
+</head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>{window.focus();window.print()})},{once:true});<\/script></body></html>`);
   w.document.close();
 }
 
