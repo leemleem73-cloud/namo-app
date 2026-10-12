@@ -1,0 +1,28 @@
+/* Isolated workorder view. Retains original registration and DB handlers. */
+(function(){
+'use strict';
+if(window.__namoSafeWork1013)return;window.__namoSafeWork1013=true;
+const root=document.getElementById('work');if(!root)return;
+const css='#work .nw-view{background:#fff;border:1px solid #d7e0e9;font-size:13px;color:#2b394b}#work .nw-h{background:#1688e6;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}#work .nw-h strong{font-size:16px}#work .nw-view button{cursor:pointer;border:1px solid #bdd0e1;background:#fff;padding:7px 11px;border-radius:3px}#work .nw-search{background:#f4f7fa;padding:12px}#work .nw-search input{min-width:260px;padding:8px;border:1px solid #cbd6e1}#work .nw-title{background:#eaf0f6;border-bottom:1px solid #d8e1eb;padding:11px;font-weight:700}#work .nw-scroll{overflow:auto;max-height:330px}#work .nw-view table{width:100%;border-collapse:collapse;white-space:nowrap}#work .nw-view td,#work .nw-view th{border:1px solid #dde5ed;padding:9px;text-align:center}#work .nw-view th{background:#edf1f5}#work .nw-view tr:hover{background:#e7f2fe}#work .nw-view .nw-link{color:#0875cd;text-decoration:underline;border:0;background:none}#work .nw-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:13px}#work .nw-info div{border:1px solid #e1e6ed;padding:10px}#work .nw-info b{display:block;color:#59687a;font-size:11px;margin-bottom:5px}#work .nw-tabs{padding:10px;display:flex;gap:6px}#work .nw-tabs .on{background:#1688e6;color:white}#work .nw-panel{padding:12px;overflow:auto;min-height:90px}';
+const style=document.createElement('style');style.textContent=css;document.head.append(style);
+let records=[],selected='',tab='materials',q='',inflight=false;
+const keys=['작업지시번호','고객사','제품명','생산 LOT NO','설비명','작업자','계획수량','작업기간','진행상태'];
+const val=(r,k)=>k==='작업지시번호'?r.id:String((r.fields||{})[k]??'-');
+function E(t,txt){const n=document.createElement(t);if(txt!=null)n.textContent=String(txt);return n}
+function B(txt,fn){const n=E('button',txt);n.type='button';n.onclick=fn;return n}
+function build(){
+const box=E('div');box.className='nw-view';const header=E('div');header.className='nw-h';header.append(E('strong','작업지시서 등록 및 조회'),B('+ 신규 작업지시서 등록',()=>openNewForm('work')));box.append(header);
+const search=E('div');search.className='nw-search';const input=E('input');input.placeholder='작업지시번호 / 고객사 / 제품명 / LOT 검색';input.oninput=()=>{q=input.value.toLowerCase();draw()};search.append(input,B('새로고침',load));box.append(search,E('div',''));
+const title=E('div','작업지시 현황');title.className='nw-title';box.append(title);
+const sc=E('div');sc.className='nw-scroll';const table=E('table'),thead=E('thead'),hr=E('tr');['NO',...keys,'관리'].forEach(k=>hr.append(E('th',k)));thead.append(hr);const tbody=E('tbody');table.append(thead,tbody);sc.append(table);box.append(sc);
+const dt=E('div','작업지시 상세내역');dt.className='nw-title';box.append(dt);const info=E('div');info.className='nw-info';box.append(info);const tabs=E('div');tabs.className='nw-tabs';const panel=E('div');panel.className='nw-panel';box.append(tabs,panel);box.parts={tbody,info,tabs,panel};root.replaceChildren(box);draw();
+}
+function draw(){const box=root.querySelector('.nw-view');if(!box)return;const p=box.parts;p.tbody.replaceChildren();records.filter(r=>[r.id,...Object.values(r.fields||{})].join(' ').toLowerCase().includes(q)).forEach((r,i)=>{const tr=E('tr');[i+1,...keys.map(k=>val(r,k))].forEach((v,j)=>{const td=E('td');if(j===1){const b=B(v,()=>{selected=r.id;details()});b.className='nw-link';td.append(b)}else td.textContent=v;tr.append(td)});const a=E('td');a.append(B('수정',()=>openNewForm('work',r)));tr.append(a);p.tbody.append(tr)});details()}
+function details(){const box=root.querySelector('.nw-view');if(!box)return;const p=box.parts,r=records.find(x=>x.id===selected);p.info.replaceChildren();p.tabs.replaceChildren();p.panel.replaceChildren();if(!r){p.panel.textContent='상단 작업지시번호를 선택하세요.';return}keys.forEach(k=>{const d=E('div'),b=E('b',k);d.append(b,E('span',val(r,k)));p.info.append(d)});
+[['materials','원재료 투입내역'],['process','생산공정'],['lot','LOT 추적']].forEach(([k,label])=>{const b=B(label,()=>{tab=k;details()});if(tab===k)b.className='on';p.tabs.append(b)});
+if(tab!=='materials'){p.panel.textContent=tab==='process'?'생산공정 정보는 기존 생산관리 메뉴에서 확인하세요.':'상세 LOT 이력은 기존 LOT 추적 메뉴에서 확인하세요.';return}
+const t=E('table'),h=E('tr');['NO','원료명','원료 LOT','계획투입량(kg)','실투입량(kg)'].forEach(x=>h.append(E('th',x)));const th=E('thead');th.append(h);const tb=E('tbody');(r.materials||[]).forEach((m,i)=>{const tr=E('tr');[i+1,m.name||'-',m.lot||'-',m.plan||'-',m.actual||'-'].forEach(x=>tr.append(E('td',x)));tb.append(tr)});t.append(th,tb);p.panel.append(t)}
+async function load(){if(inflight)return;inflight=true;try{const res=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);const json=await res.json();if(!json.success||!Array.isArray(json.data))throw Error('Invalid data');records=json.data;draw()}catch(err){console.error('[Namo workorder]',err);const p=root.querySelector('.nw-panel');if(p)p.textContent='DB 조회 오류: 새로고침을 눌러주세요.'}finally{inflight=false}}
+function activate(){setTimeout(()=>{if(!root.classList.contains('active'))return;try{if(!root.querySelector('.nw-view'))build();load()}catch(e){console.error('[Namo workorder view]',e)}},120)}
+document.querySelectorAll('.sidebar .menu[data-page="work"]').forEach(el=>el.addEventListener('click',activate));if(root.classList.contains('active'))activate();
+})();
