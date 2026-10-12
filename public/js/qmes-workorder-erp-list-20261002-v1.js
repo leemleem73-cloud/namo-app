@@ -83,6 +83,10 @@ function renderTable(){
  else body.innerHTML=shown.map(function(r,i){var y=r.yield==null?"-":r.yield.toFixed(1)+"%";return '<tr data-src="'+r.index+'">'+
  '<td>'+(start+i+1)+'</td><td>'+esc(r.date)+'</td><td><button class="qrl-link" data-act="detail">'+esc(r.workOrderNo)+'</button></td><td>'+esc(r.customer)+'</td><td class="left">'+esc(r.product)+'</td><td>'+esc(r.productionLotNo)+'</td><td class="num">'+(r.plan>0?fmt(r.plan):"-")+'</td><td>kg</td><td>'+esc(r.plannedDate)+'</td><td>'+esc(r.equipment)+'</td><td class="num">'+fmt(r.plan)+'</td><td class="num">'+(r.actual?fmt(r.actual):"-")+'</td><td class="num">'+(r.actual?fmt(r.actual):"-")+'</td><td>'+y+'</td><td>'+badge(r.pqc)+'</td><td>'+badge(r.status)+'</td><td>'+esc(r.worker)+'</td><td class="left">'+esc(r.remarks)+'</td><td><span class="qrl-actions"><button data-act="print">인쇄</button><button data-act="edit">수정</button>'+(del?'<button class="qrl-delete-btn" data-act="delete">삭제</button>':'')+'</span></td></tr>'}).join("");
  foot.innerHTML=Array.from({length:pages},function(_,i){var p=i+1;return '<button type="button" class="qrl-page '+(p===state.page?"active":"")+'" data-page="'+p+'">'+p+'</button>'}).join("");
+ var count=state.filtered.length;
+ var from=count?start+1:0,to=count?Math.min(start+PAGE_SIZE,count):0;
+ var label=state.host.querySelector(".qrl-foot-count");
+ if(label)label.textContent="총 "+count+"건 · "+from+"-"+to+" 표시";
 }
 function render(){renderCustomers();renderKpis();renderTable()}
 function markup(){
@@ -98,7 +102,7 @@ function markup(){
  '<div class="qerp-filter-actions"><button type="button" class="primary" data-top="search">조회</button><button type="button" data-top="reset">초기화</button></div>'+
  '</div></section>'+
  '<section class="qerp-grid-shell"><div class="qerp-grid-toolbar"><strong>생산지시 목록</strong><span>작업지시 현황</span></div><div class="qerp-scroll">'+
- '<table class="qerp-table qwf2-table"><thead><tr><th>No</th><th>지시일</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT NO.</th><th>계획수량</th><th>단위</th><th>생산예정일</th><th>설비</th><th>투입계획량</th><th>실투입량</th><th>생산수량</th><th>수율</th><th>PQC</th><th>진행상태</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody></tbody></table></div><div class="qrl-foot"></div></section>'+
+ '<table class="qerp-table qwf2-table"><thead><tr><th>No</th><th>지시일</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT NO.</th><th>계획수량</th><th>단위</th><th>생산예정일</th><th>설비</th><th>투입계획량</th><th>실투입량</th><th>생산수량</th><th>수율</th><th>PQC</th><th>진행상태</th><th>작업자</th><th>비고</th><th>관리</th></tr></thead><tbody></tbody></table></div><div class="qrl-footer"><span class="qrl-footer-brand"><strong>QMES Quality Control</strong><span> · LOT 기반 검사지원 관리</span></span><div class="qrl-foot"></div><span class="qrl-foot-count"></span></div></section>'+
  '';
 }
 
