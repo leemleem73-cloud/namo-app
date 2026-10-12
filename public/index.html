@@ -87,6 +87,36 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .report-sheet.report-incoming .report-iqc-barcode svg{width:245px;max-width:85%;height:40px;fill:#111}
 .report-sheet.report-incoming .report-iqc-barcode span{font:700 10px monospace;letter-spacing:.5px;color:#172033}
 @media print{.report-sheet.report-incoming .report-iqc-barcode{break-inside:avoid}}
+/* Match the first three IQC basic rows to the four-column metadata grid.
+   Browser table auto-distribution was stretching the right-hand label. */
+.report-sheet.report-incoming .report-basic{
+  display:block!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+.report-sheet.report-incoming .report-basic tbody{
+  display:block!important;
+  width:100%!important;
+}
+.report-sheet.report-incoming .report-basic tbody tr{
+  display:grid!important;
+  grid-template-columns:calc(15% + 5px) calc(35% - 5px) 15% 35%!important;
+  width:100%!important;
+}
+.report-sheet.report-incoming .report-basic tbody tr > th,
+.report-sheet.report-incoming .report-basic tbody tr > td{
+  box-sizing:border-box!important;
+  min-width:0!important;
+  width:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  border-right:1px solid #c8d2de!important;
+}
+.report-sheet.report-incoming .report-basic tbody tr > :last-child{
+  border-right:0!important;
+}
 /* IQC issued report: shared left divider and centered saved values.
    Scope includes modal and print, not only the main workspace. */
 .report-sheet.report-incoming .report-doc-head{
