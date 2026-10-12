@@ -3402,6 +3402,21 @@ function printInspectionReport(title){
     .report-meta>div,.report-basic th,.report-basic td,.report-inspection th,.report-inspection td,
     .report-summary>div,.report-support-row .label,.report-sign .label,.report-sign .sign-cell,
     .report-sign .sign-line{border-color:var(--issued-line)!important}
+    /* Certificate print border normalization: one consistent grid line. */
+    .report-sheet{--issued-line:#c8d2de}
+    .report-doc-head,.report-meta,.report-basic,.report-inspection,.report-summary,.report-support,.report-sign,.report-footer,.report-iqc-barcode{border-color:var(--issued-line)}
+    .report-doc-head,.report-meta,.report-section-title,.report-summary,.report-footer{border-bottom:1px solid var(--issued-line)}
+    .report-basic,.report-inspection{width:100%;border-spacing:0}
+    .report-basic tr>*,.report-inspection tr>*{border-right:1px solid var(--issued-line);border-bottom:1px solid var(--issued-line)}
+    .report-basic tr>*:last-child,.report-inspection tr>*:last-child{border-right:0}
+    .report-summary>div{border-right:1px solid var(--issued-line)}
+    .report-summary>div:last-child{border-right:0}
+    .report-support{border-left:0;border-right:0;border-top:0}
+    .report-support-row{border:0;border-bottom:1px solid var(--issued-line)}
+    .report-support-row .label{border-right:1px solid var(--issued-line)}
+    .report-support-row:last-child{border-bottom:1px solid var(--issued-line)}
+    .report-sign .label,.report-sign .sign-cell{border-right:1px solid var(--issued-line)}
+    .report-sign .sign-cell:last-child{border-right:0}
     /* Center the three management-info card texts in the certificate print view. */
     .report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
     .report-sheet.report-incoming .report-support-row .value .muted,
