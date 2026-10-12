@@ -2906,7 +2906,21 @@ function wireModule(section,id){
 
 function issueInspectionReport(id,row){
   const cols=['NO',...pageInfo[id][2]];
-  const vals=[...row.children].map(td=>td.innerText.trim());
+  const vals=[...row.children].map(td=>{
+    // Exclude row action buttons (수정/삭제) from the editable cell value.
+    const clone=td.cloneNode(true);
+    clone.querySelectorAll('button,.qmes-row-actions,[data-action],[data-act]').forEach(el=>el.remove());
+    return clone.textContent.trim();
+  });
+  if(id==='incoming'){
+    const dateCell=row.children[1];
+    const savedDate=dateCell?.querySelector('time')?.getAttribute('datetime')
+      ||dateCell?.querySelector('input[type="date"]')?.value
+      ||dateCell?.getAttribute('data-date')||row.getAttribute('data-recv-date');
+    if(savedDate)vals[1]=savedDate;
+    const noteIndex=cols.indexOf('비고');
+    if(noteIndex>=0 && /^-?\\s*수정\\s*삭제\\s*$/.test(vals[noteIndex]||''))vals[noteIndex]='-';
+  }
   const val=(name)=>{
     const idx=cols.indexOf(name);
     return idx>=0 && vals[idx] ? vals[idx] : '-';
@@ -3169,15 +3183,24 @@ function amaranthScreen(id,editorHtml,mode='new',label=''){
     </section>
   </div>`;
 }
+function amDateValue(value){
+  const text=String(value==null?'':value).trim();
+  const match=text.match(/(\\d{4})[.\\/년-]\\s*(\\d{1,2})[.\\/월-]\\s*(\\d{1,2})/);
+  if(!match)return '';
+  const y=Number(match[1]),m=Number(match[2]),d=Number(match[3]);
+  const dt=new Date(y,m-1,d);
+  return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d
+    ? match[1]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0') : '';
+}
 function amEditorField(c,id,value=''){
   const v=amEsc(value);
-  if(c.includes('일')||c.includes('납기')||c.includes('기간')) return `<input type="date" value="${/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value))?v:''}">`;
+  if(c.includes('일')||c.includes('납기')||c.includes('기간')) return `<input type="date" value="${amDateValue(value)}">`;
   if(c.includes('수량')||c.includes('현재고')) return `<input type="number" min="0" value="${String(value).replace(/,/g,'').match(/^\\d+(\\.\\d+)?$/)?String(value).replace(/,/g,''):''}" placeholder="0">`;
   if(c.includes('상태')||c.includes('판정')||c.includes('IQC')||c.includes('합부')) return `<select><option ${value==='대기'?'selected':''}>대기</option><option ${value==='진행'?'selected':''}>진행</option><option ${['완료','합격'].includes(value)?'selected':''}>완료</option><option ${value==='불합격'?'selected':''}>불합격</option></select>`;
   return `<input type="text" value="${v}" placeholder="${amEsc(c)} 입력">`;
 }
 function amEditableDetail(id,cols,vals){
-  return `<div class="am-inline-edit-grid">${cols.map((c,i)=>`<div class="am-inline-cell ${c==='비고'?'full':''}"><label>${amEsc(c)}</label>${amEditorField(c,id,vals[i]||'')}</div>`).join('')}<div class="am-inline-cell full"><label>비고</label><textarea placeholder="내용을 입력하세요"></textarea></div></div>`;
+  return `<div class="am-inline-edit-grid">${cols.map((c,i)=>`<div class="am-inline-cell ${c==='비고'?'full':''}"><label>${amEsc(c)}</label>${amEditorField(c,id,vals[i]||'')}</div>`).join('')}</div>`;
 }
 function wireAmaranthScreen(){
   const root=workspaceBody.querySelector('.am-split'); if(!root) return;
