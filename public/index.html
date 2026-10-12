@@ -2873,7 +2873,7 @@ function printInspectionReport(title){
     /* V32 premium print certificate */
     .report-sheet{border:1.1px solid #64748b;border-top:4px solid #173d6f!important}.report-logo{background:#fff!important;color:#172033!important}.report-logo .report-main-logo{display:block;width:28mm;max-width:100%;height:auto;object-fit:contain;background:transparent}.report-title-box h2{color:#153558!important;font-size:21px!important}.report-title-box small{color:#7890a9!important;letter-spacing:1.5px!important}.report-section-title{background:#173d6f!important;color:#fff!important;border-color:#173d6f!important}.report-inspection th{background:#eaf0f6!important;color:#304760!important}.report-basic th,.report-meta .label,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f4f7fa!important;color:#465b72!important}.report-inspection tbody tr:nth-child(even) td{background:#fbfcfd}.report-summary .final,.report-inspection td.pass{color:#0f7a51!important}.report-footer{border-top:1px solid #dbe2ea;background:#fbfcfd!important}.report-footer b{color:#2f4863!important}
     /* Issued A4 report: consolidated print-only layout (no stacked overrides). */
-    :root{--issued-line:#c8d2de}
+    :root{--issued-line:#c8d2de;--issued-label-width:13%}
     html,body{width:100%;min-width:0;margin:0;padding:0}
     .print-page-frame{width:194mm;min-height:281mm;margin:0 auto;padding-top:10mm;display:flex;flex-direction:column;align-items:center;justify-content:center}
     .print-page-content{width:100%;margin:0 auto}
@@ -2882,7 +2882,7 @@ function printInspectionReport(title){
     .report-doc-head>*{min-width:0}
     .report-meta,.report-basic{width:100%;box-sizing:border-box;border-left:0;border-right:0;margin:0;padding:0}
     /* Both sections have the exact same four columns and inner width. */
-    .report-meta{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr);border-bottom:1px solid var(--issued-line)}
+    .report-meta{display:grid;grid-template-columns:13% 37% 13% 37%;border-bottom:1px solid var(--issued-line)}
     .report-meta>div{min-width:0;box-sizing:border-box;overflow-wrap:anywhere;border-right:1px solid var(--issued-line)}
     .report-meta>div:last-child{border-right:0}
     /* Center values in document metadata and basic inspection information. */
@@ -2922,39 +2922,7 @@ function printInspectionReport(title){
       .print-page-frame{height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
       .print-page-content,.report-sheet{break-inside:avoid;page-break-inside:avoid}
     }
-  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>{
-  const alignIssuedDividers=()=>{
-    const firstBasicLabel=document.querySelector('.report-basic tr > th');
-    const supportRows=document.querySelectorAll('.report-support-row');
-    const summary=document.querySelector('.report-summary');
-    const meta=document.querySelector('.report-meta');
-    const basicRows=document.querySelectorAll('.report-basic tr');
-    if(firstBasicLabel&&supportRows.length){
-      const labelWidth=firstBasicLabel.getBoundingClientRect().width;
-      if(labelWidth>0){
-        const fullWidth=firstBasicLabel.closest('.report-basic').getBoundingClientRect().width;
-        const valueWidth=(fullWidth-2*labelWidth)/2;
-        if(fullWidth>0&&valueWidth>0){
-          const fourCols=labelWidth+'px '+valueWidth+'px '+labelWidth+'px '+valueWidth+'px';
-          if(meta) meta.style.setProperty('grid-template-columns',fourCols,'important');
-          basicRows.forEach(row=>row.style.setProperty('grid-template-columns',fourCols,'important'));
-        }
-        supportRows.forEach(row=>{
-          row.style.setProperty('grid-template-columns',labelWidth+'px minmax(0,1fr)','important');
-        });
-        if(summary){
-          const contentWidth=summary.getBoundingClientRect().width;
-          const valueWidth=Math.max(0,(contentWidth-3*labelWidth)/3);
-          summary.style.setProperty('grid-template-columns',Array(3).fill(labelWidth+'px '+valueWidth+'px').join(' '),'important');
-        }
-      }
-    }
-  };
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    alignIssuedDividers();
-    window.print();
-  }));
-};<\/script></body></html>`);
+  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
 }
 
