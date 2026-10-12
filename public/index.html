@@ -78,8 +78,39 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   text-align:center!important;
   vertical-align:middle!important;
 }
-/* Center the date and inspector VALUES below the inspection-results table. */
-/* The issued certificate is rendered inside a modal, not workspace-body. */
+/* IQC issued report: shared left divider and centered saved values.
+   Scope includes modal and print, not only the main workspace. */
+.report-sheet.report-incoming .report-doc-head{
+  display:grid!important;
+  grid-template-columns:13% minmax(0,1fr) 300px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+.report-sheet.report-incoming .report-logo{
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.report-sheet.report-incoming .report-logo img{
+  max-width:calc(100% - 8px)!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+.report-sheet.report-incoming .report-basic{
+  width:100%!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.report-sheet.report-incoming .report-basic colgroup col:first-child{
+  width:13%!important;
+}
+.report-sheet.report-incoming .report-basic colgroup col:nth-child(2){
+  width:37%!important;
+}
+.report-sheet.report-incoming .report-basic tbody td{
+  text-align:center!important;
+  vertical-align:middle!important;
+}
 .report-sheet.report-incoming .report-summary > div:nth-child(2),
 .report-sheet.report-incoming .report-summary > div:nth-child(4){
   display:flex!important;
@@ -87,62 +118,9 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   justify-content:center!important;
   text-align:center!important;
 }
-/* Incoming IQC certificate: keep all metadata tracks stable; match the
-   header logo divider to the 13% basic-information label column. */
-#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-doc-head{
-  grid-template-columns:13% minmax(0,1fr) 300px!important;
-}
-#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-logo{
-  min-width:0!important;
-  overflow:hidden!important;
-}
-#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-logo img{
-  max-width:calc(100% - 8px)!important;
-  height:auto!important;
-  object-fit:contain!important;
-}
 </style>
 
-<script id="qmes-iqc-label-divider-align-20261012">
-(function(){
-  function align(){
-    document.querySelectorAll('.report-sheet.report-incoming').forEach(function(sheet){
-      var logo=sheet.querySelector('.report-logo'),meta=sheet.querySelector('.report-meta'),basic=sheet.querySelector('.report-basic');
-      if(!logo||!meta||!basic)return;
-      var width=logo.getBoundingClientRect().width;
-      if(!width||width<30)return;
-      // Align only label dividers; preserve the document-number and other value widths.
-      var cols=basic.querySelectorAll('colgroup col');
-      if(cols.length>=4){
-        cols[0].style.setProperty('width',width+'px','important');
-        cols[1].style.setProperty('width','calc(50% - '+width+'px)','important');
-        basic.style.setProperty('table-layout','fixed','important');
-        basic.querySelectorAll('tbody tr > th:first-child').forEach(function(th){
-          th.style.setProperty('width',width+'px','important');
-          th.style.setProperty('min-width',width+'px','important');
-          th.style.setProperty('max-width',width+'px','important');
-        });
-      }
-      var tracks=getComputedStyle(meta).gridTemplateColumns.split(/\\s+/).map(parseFloat);
-      if(tracks.length===8&&tracks.every(Number.isFinite)){
-        var delta=width-tracks[0];
-        if(Math.abs(delta)>0.5&&tracks[1]-delta>50){
-          tracks[0]=width;tracks[1]-=delta;
-          meta.style.setProperty('grid-template-columns',tracks.map(function(x){return x+'px';}).join(' '),'important');
-        }
-      }
-    });
-  }
-  var pending=false;
-  function queue(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;align();});}
-  function start(){
-    queue();
-    new MutationObserver(queue).observe(document.getElementById('mainWorkspace')||document.body,{childList:true,subtree:true});
-    window.addEventListener('resize',queue,{passive:true});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
-</script>
+
 <script id="qmes-initial-view-20261008-boot">
 (function(){
   const root=document.documentElement;
