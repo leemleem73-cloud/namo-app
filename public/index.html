@@ -3290,8 +3290,22 @@ function qmesIqcBarcodeSvg(value){
 function printInspectionReport(title){
   const sheet=document.getElementById('reportSheet');
   if(!sheet) return;
-  const w=window.open('','_blank','width=1280,height=900,left=-20000,top=-20000');
-  if(!w){toast('팝업 차단을 해제해 주세요.');return;}
+  // Print from a hidden same-origin iframe, not a visible about:blank popup.
+  const frame=document.createElement('iframe');
+  frame.setAttribute('aria-hidden','true');
+  frame.style.cssText='position:fixed!important;left:0!important;top:0!important;width:0!important;height:0!important;border:0!important;opacity:0!important;pointer-events:none!important;';
+  document.body.appendChild(frame);
+  const w=frame.contentWindow;
+  if(!w){frame.remove();toast('인쇄 화면을 준비하지 못했습니다.');return;}
+  let printStarted=false;
+  const cleanup=()=>{setTimeout(()=>{if(frame.isConnected)frame.remove()},1200)};
+  w.addEventListener('afterprint',cleanup);
+  frame.addEventListener('load',()=>{
+    if(printStarted)return;
+    printStarted=true;
+    setTimeout(()=>{try{w.focus();w.print()}catch(e){cleanup();toast('인쇄 화면을 열지 못했습니다.')}},250);
+  },{once:true});
+  setTimeout(()=>{if(frame.isConnected)frame.remove()},120000);
   // Print-only copy: align document metadata to the basic-info columns.
   // Keep the on-screen report and its stored data untouched.
   const printSheet=sheet.cloneNode(true);
@@ -3389,7 +3403,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body style="visibility:hidden">${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>requestAnimationFrame(()=>{window.focus();setTimeout(()=>window.print(),120)}))});<\/script></body></html>`);
+</head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`);
   w.document.close();
 }
 
