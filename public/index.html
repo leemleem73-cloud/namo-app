@@ -1952,16 +1952,35 @@ function wireLotTrace(section){
       const result=await response.json();
       if(!response.ok||!result.success||!Array.isArray(result.data))throw new Error(result.message||'LOT 조회 API 오류');
       if(mode!==requestedMode||input.value.trim().toUpperCase()!==q)return;
-      const rows=result.data.filter(row=>String(requestedMode==='raw'?row.lotNo:row.finishedLot||'').trim().toUpperCase().includes(q));
+      const norm=v=>String(v??'').trim().toUpperCase();
+      const rows=result.data.filter(row=>norm(requestedMode==='raw'?row.lotNo:row.finishedLot).includes(q));
+      const linkedLots=new Set(rows.map(row=>norm(row.finishedLot)).filter(Boolean));
+      const relatedLot=lot=>norm(lot)===q||linkedLots.has(norm(lot));
+      const endpoints=['iqc','pqc','oqc'];
+      const inspections=await Promise.all(endpoints.map(async type=>{
+        try{
+          const res=await fetch('/api/'+type,{credentials:'same-origin',cache:'no-store'});
+          const json=await res.json();
+          if(!res.ok||!json.success||!Array.isArray(json.data))throw new Error(json.message||'조회 오류');
+          return {type,rows:json.data,error:null};
+        }catch(err){return {type,rows:[],error:err.message||'연결 실패'};}
+      }));
+      if(mode!==requestedMode||norm(input.value)!==q)return;
+      const matches=inspections.map(g=>({...g,rows:g.rows.filter(row=>relatedLot(row.lot))}));
+      const any=rows.length||matches.some(g=>g.rows.length);
       title.textContent=requestedMode==='raw'?'원자재 LOT 추적 결과':'완제품 LOT 역추적 결과';
-      if(!rows.length){
-        meta.textContent='작업실적 연동 데이터에서 일치하는 LOT가 없습니다.';
-        body.innerHTML='<div class="lot-empty"><div class="icon">!</div><b>조회 결과 없음</b><span>해당 LOT의 작업실적 또는 원재료 투입기록 등록 여부를 확인해주세요.</span></div>';return;
+      if(!any){
+        meta.textContent='연결된 LOT 정보를 찾을 수 없습니다.';
+        body.innerHTML='<div class="lot-empty"><div class="icon">!</div><b>조회 결과 없음</b><span>LOT 번호와 저장된 검사·작업실적을 확인해주세요.</span></div>';
+        return;
       }
-      const uniqueLots=new Set(rows.map(x=>x.finishedLot).filter(Boolean));
-      meta.textContent='실제 작업실적 '+uniqueLots.size+'개 생산 LOT · 원료투입 '+rows.length+'건';
-      summary.innerHTML='<div class="lot-stat"><div class="k">조회 LOT</div><div class="v">'+escapeLot(q)+'</div></div><div class="lot-stat"><div class="k">연결 생산 LOT</div><div class="v">'+uniqueLots.size+'</div></div><div class="lot-stat"><div class="k">원료투입 기록</div><div class="v">'+rows.length+'</div></div>';
-      body.innerHTML='<div style="overflow:auto"><table class="lot-detail-table" style="width:100%;min-width:730px"><thead><tr><th>생산일자</th><th>원재료 LOT</th><th>원재료명</th><th>협력사</th><th>투입량</th><th>생산/완제품 LOT</th><th>작업자</th></tr></thead><tbody>'+rows.map(row=>'<tr><td>'+escapeLot(String(row.workDate||'').slice(0,10))+'</td><td>'+escapeLot(row.lotNo||'-')+'</td><td>'+escapeLot(row.material||'-')+'</td><td>'+escapeLot(row.supName||'-')+'</td><td>'+escapeLot(row.inputQty||'-')+'</td><td>'+escapeLot(row.finishedLot||'-')+'</td><td>'+escapeLot(row.worker||'-')+'</td></tr>').join('')+'</tbody></table></div><p style="font-size:11px;color:#63758a;margin:12px">작업실적 및 원료투입 내역 기준입니다. 수입·공정·출하검사 및 출하 연결은 별도 확인이 필요합니다.</p>';
+      const titles={iqc:'수입검사 (IQC)',pqc:'공정검사 (PQC)',oqc:'출하검사 (OQC)'};
+      const total=matches.reduce((n,g)=>n+g.rows.length,0);
+      meta.textContent='원료투입 '+rows.length+'건 · 생산 LOT '+linkedLots.size+'개 · 검사 '+total+'건';
+      summary.innerHTML='<div class="lot-stat"><div class="k">조회 LOT</div><div class="v">'+escapeLot(q)+'</div></div><div class="lot-stat"><div class="k">생산 LOT</div><div class="v">'+linkedLots.size+'</div></div><div class="lot-stat"><div class="k">검사기록</div><div class="v">'+total+'</div></div>';
+      const prod=rows.length?'<div class="lot-detail-box"><div class="lot-detail-title">작업실적 / 원료 투입</div><div style="overflow:auto"><table class="lot-detail-table"><thead><tr><th>생산일</th><th>원자재 LOT</th><th>원료명</th><th>공급업체</th><th>투입량</th><th>생산 LOT</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+escapeLot(String(x.workDate||'').slice(0,10))+'</td><td>'+escapeLot(x.lotNo||'-')+'</td><td>'+escapeLot(x.material||'-')+'</td><td>'+escapeLot(x.supName||'-')+'</td><td>'+escapeLot(x.inputQty||'-')+'</td><td>'+escapeLot(x.finishedLot||'-')+'</td></tr>').join('')+'</tbody></table></div></div>':'';
+      const insp=matches.map(group=>'<div class="lot-detail-box"><div class="lot-detail-title">'+titles[group.type]+' ('+group.rows.length+'건)</div>'+(group.error?'<p>서버 조회 실패: '+escapeLot(group.error)+'</p>':group.rows.length?'<table class="lot-detail-table"><thead><tr><th>검사일</th><th>LOT</th><th>품목</th><th>업체 / 고객사</th><th>판정</th></tr></thead><tbody>'+group.rows.map(x=>'<tr><td>'+escapeLot(String(x.date||'').slice(0,10))+'</td><td>'+escapeLot(x.lot)+'</td><td>'+escapeLot(x.item||x.product||'-')+'</td><td>'+escapeLot(x.supplier||x.customer||'-')+'</td><td>'+escapeLot(x.judge||'미확인')+'</td></tr>').join('')+'</tbody></table>':'<p>연결된 검사 기록이 없습니다.</p>')+'</div>').join('');
+      body.innerHTML='<div class="lot-detail-grid">'+prod+insp+'</div><p style="padding:12px;font-size:11px;color:#63758a">생산 LOT가 일치하는 검사만 연동했습니다. 출하실적 및 작업지시번호 연결은 별도 데이터 매핑이 필요하며, 미연결 기록을 추적완료로 표시하지 않습니다.</p>';
     }catch(error){
       title.textContent='LOT 추적 조회 실패';meta.textContent='서버 데이터 조회 오류';
       body.textContent='실제 LOT 기록을 불러오지 못했습니다: '+(error.message||'연결 상태를 확인하세요.');
