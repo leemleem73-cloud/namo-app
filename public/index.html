@@ -3332,6 +3332,11 @@ function printInspectionReport(title){
     .report-meta>div,.report-basic th,.report-basic td,.report-inspection th,.report-inspection td,
     .report-summary>div,.report-support-row .label,.report-sign .label,.report-sign .sign-cell,
     .report-sign .sign-line{border-color:var(--issued-line)!important}
+    /* Center the three management-info card texts in the certificate print view. */
+    .report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+    .report-sheet.report-incoming .report-support-row .value .muted,
+    .report-sheet.report-incoming .report-support-row .value .support-text{width:100%;text-align:center!important}
+    .report-sheet.report-incoming .report-support-row .value:has(.support-text){align-items:center!important;text-align:center!important}
     /* IQC barcode sizing must be defined in the standalone print window too. */
     .report-sheet.report-incoming .report-iqc-barcode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2mm 0;border-bottom:1px solid #c8d2de;break-inside:avoid}
     .report-sheet.report-incoming .report-iqc-barcode svg{display:block;width:62mm!important;max-width:62mm!important;height:14mm!important;flex:none}
