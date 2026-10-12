@@ -3433,7 +3433,17 @@ function printInspectionReport(title){
     .report-sheet.report-incoming .report-iqc-barcode{border-top:0!important;border-bottom:0!important;box-shadow:none!important}
     .report-sheet.report-incoming .report-footer{border-top:1px solid var(--issued-line)!important;border-bottom:0!important;box-shadow:none!important}
     .report-sheet.report-incoming .report-support-row:last-child{border-bottom:1px solid var(--issued-line)!important}
-    .report-sheet.report-incoming{border-bottom:1px solid var(--issued-line)!important}
+    .report-sheet.report-incoming{box-sizing:border-box!important;width:100%!important;border-left:1px solid var(--issued-line)!important;border-right:1px solid var(--issued-line)!important;border-bottom:1px solid var(--issued-line)!important}
+    /* Inner sections use the same outer edges; only the sheet draws left/right borders. */
+    .report-sheet.report-incoming .report-doc-head,
+    .report-sheet.report-incoming .report-meta,
+    .report-sheet.report-incoming .report-basic,
+    .report-sheet.report-incoming .report-inspection,
+    .report-sheet.report-incoming .report-summary,
+    .report-sheet.report-incoming .report-section-title,
+    .report-sheet.report-incoming .report-support,
+    .report-sheet.report-incoming .report-iqc-barcode,
+    .report-sheet.report-incoming .report-footer{box-sizing:border-box!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;border-left:0!important;border-right:0!important}
     /* Center the three management-info card texts in the certificate print view. */
     .report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
     .report-sheet.report-incoming .report-support-row .value .muted,
