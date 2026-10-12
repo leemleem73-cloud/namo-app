@@ -78,6 +78,15 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   text-align:center!important;
   vertical-align:middle!important;
 }
+/* Compact IQC management fields and reserve a separate barcode strip. */
+.report-sheet.report-incoming .report-support{min-height:0!important;flex:0 0 auto!important;grid-template-rows:repeat(3,auto)!important}
+.report-sheet.report-incoming .report-support-row{min-height:0!important}
+.report-sheet.report-incoming .report-support-row .label{min-height:25px!important;height:auto!important;padding:5px 8px!important}
+.report-sheet.report-incoming .report-support-row .value{min-height:25px!important;height:auto!important;padding:5px 10px!important;line-height:1.3!important}
+.report-sheet.report-incoming .report-barcode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 10px;border-bottom:1px solid #c8d2de;background:#fff;flex:none}
+.report-sheet.report-incoming .report-barcode svg{display:block;width:240px;max-width:90%;height:42px;fill:#111827}
+.report-sheet.report-incoming .report-barcode span{font:700 10px/1.2 monospace;letter-spacing:1px;color:#172033}
+@media print{.report-sheet.report-incoming .report-barcode{break-inside:avoid;page-break-inside:avoid}.report-sheet.report-incoming .report-support-row{min-height:0!important}.report-sheet.report-incoming .report-support-row .value{min-height:0!important}}
 /* IQC issued report: shared left divider and centered saved values.
    Scope includes modal and print, not only the main workspace. */
 .report-sheet.report-incoming .report-doc-head{
@@ -3113,6 +3122,7 @@ function issueInspectionReport(id,row){
         <div class="report-support-row"><div class="label">추적성</div><div class="value">${info.trace}<br><span class="muted">원자재/작업지시/생산 LOT/완제품 LOT 간 추적 가능 여부 확인</span></div></div>
         <div class="report-support-row"><div class="label">특이사항</div><div class="value">특이사항 없음<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
       </div>
+      ${id==='incoming'?qmesReportBarcode(reportNo):''}
       <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
     </div>`;
   const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto" checked> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
@@ -3244,6 +3254,650 @@ function printInspectionReport(title){
 }
 
 
+function qmesReportBarcode(value){
+  // Code 39: printable SVG, no network or external script dependency.
+  const patterns={'0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn','K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn','-':'nwnnnnwnw','.':'wwnnnnwnn',' ':'nwwnnnwnn','*':'nwnnwnwnn','{return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));}
+function amModuleTitle(id){
+  if(id==='adminEmployees') return '직원등록현황';
+  return pageInfo[id]?.[0] || '업무관리';
+}
+function amListData(id){
+  if(id==='adminEmployees' && typeof ADMIN_EMPLOYEES!=='undefined') return ADMIN_EMPLOYEES.map((e,i)=>({index:i,primary:e.name||e.no||`직원 ${i+1}`,secondary:`${e.dept||'-'} · ${e.position||'-'} · ${e.account||'-'}`}));
+  const section=document.getElementById(id);
+  const rows=section?[...section.querySelectorAll('.data-row')]:[];
+  return rows.slice(0,20).map((row,i)=>{
+    const cells=[...row.children].map(td=>td.innerText.trim());
+    return {index:i,primary:cells[1]||`NO ${i+1}`,secondary:[cells[2],cells[3]].filter(Boolean).join(' · ')};
+  });
+}
+function amaranthScreen(id,editorHtml,mode='new',label=''){
+  const title=amModuleTitle(id), list=amListData(id);
+  const count=list.length;
+  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${mode==='detail'&&i===0?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
+  const modeText=mode==='new'?'신규등록':'상세 / 수정';
+  return `<div class="am-split" data-am-screen="${id}">
+    <aside class="am-list-pane">
+      <div class="am-list-title"><b>${title} 목록</b><span>${count}건</span></div>
+      <div class="am-list-controls"><select><option>전체</option></select><input class="am-list-search" type="text" placeholder="${title} 검색"></div>
+      <div class="am-list-count">${count} ${title}</div>
+      <div class="am-list-items">${listHtml}</div>
+      <button class="am-list-add" type="button" data-am-add="${id}">⊕ 추가</button>
+    </aside>
+    <section class="am-detail-pane">
+      <div class="am-detail-top"><div class="title-wrap"><b>${label||title+' '+modeText}</b><small>${mode==='new'?'새 항목을 직접 입력합니다.':'항목을 직접 수정할 수 있습니다.'}</small></div><div class="am-detail-actions"><button class="am-top-btn" type="button" data-am-back>목록</button><button class="am-top-btn primary" type="button" data-am-save>저장</button></div></div>
+      <div class="am-section"><div class="am-section-head"><b>기본설정</b><span>직접입력</span></div><div class="am-section-body">${editorHtml}</div></div>
+      <div class="am-detail-note">변경 내용은 저장 버튼을 눌러 반영합니다. 실제 운영 연동 시 변경자와 변경일시가 자동 기록됩니다.</div>
+    </section>
+  </div>`;
+}
+function amDateValue(value){
+  const text=String(value==null?'':value).trim();
+  const match=text.match(/(\\d{4})[.\\/년-]\\s*(\\d{1,2})[.\\/월-]\\s*(\\d{1,2})/);
+  if(!match)return '';
+  const y=Number(match[1]),m=Number(match[2]),d=Number(match[3]);
+  const dt=new Date(y,m-1,d);
+  return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d
+    ? match[1]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0') : '';
+}
+function amEditorField(c,id,value=''){
+  const v=amEsc(value);
+  if(c.includes('일')||c.includes('납기')||c.includes('기간')) return `<input type="date" value="${amDateValue(value)}">`;
+  if(c.includes('수량')||c.includes('현재고')) return `<input type="number" min="0" value="${String(value).replace(/,/g,'').match(/^\\d+(\\.\\d+)?$/)?String(value).replace(/,/g,''):''}" placeholder="0">`;
+  if(c.includes('상태')||c.includes('판정')||c.includes('IQC')||c.includes('합부')) return `<select><option ${value==='대기'?'selected':''}>대기</option><option ${value==='진행'?'selected':''}>진행</option><option ${['완료','합격'].includes(value)?'selected':''}>완료</option><option ${value==='불합격'?'selected':''}>불합격</option></select>`;
+  return `<input type="text" value="${v}" placeholder="${amEsc(c)} 입력">`;
+}
+function amEditableDetail(id,cols,vals){
+  return `<div class="am-inline-edit-grid">${cols.map((c,i)=>`<div class="am-inline-cell ${c==='비고'?'full':''}"><label>${amEsc(c)}</label>${amEditorField(c,id,vals[i]||'')}</div>`).join('')}</div>`;
+}
+function wireAmaranthScreen(){
+  const root=workspaceBody.querySelector('.am-split'); if(!root) return;
+  const id=root.dataset.amScreen;
+  const items=[...root.querySelectorAll('.am-list-item')];
+  root.querySelector('.am-list-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
+  items.forEach(btn=>btn.addEventListener('click',()=>{
+    if(id==='adminEmployees'){
+      const idx=Number(btn.dataset.amIndex); if(typeof openEmployeeEditor==='function' && ADMIN_EMPLOYEES[idx]) openEmployeeEditor(ADMIN_EMPLOYEES[idx],idx); return;
+    }
+    const row=document.querySelectorAll(`#${id} .data-row`)[Number(btn.dataset.amIndex)]; if(row) showRowDetail(id,row);
+  }));
+  root.querySelector('[data-am-add]')?.addEventListener('click',()=>{
+    if(id==='adminEmployees'){ if(typeof openEmployeeEditor==='function') openEmployeeEditor(null,null); return; }
+    openNewForm(id);
+  });
+  root.querySelector('[data-am-back]')?.addEventListener('click',closeModal);
+  root.querySelector('[data-am-save]')?.addEventListener('click',()=>document.getElementById('modalSave')?.click());
+}
+
+function showRowDetail(id,row){
+  const cols=['NO',...pageInfo[id][2]];
+  const vals=[...row.children].map(td=>td.innerText.trim());
+  if(id==='work'){
+    const get=(name)=>{const idx=cols.indexOf(name);return idx>=0?(vals[idx]||'-'):'-';};
+    const html=`<div class="work-detail-doc">
+      <div class="work-detail-head"><div class="work-detail-logo">NAMO QMES</div><div class="work-detail-title">작 업 지 시 서</div><div class="work-detail-meta"><div class="k">회사</div><div>(주)나모케미칼</div><div class="k">설비</div><div>HSM</div></div></div>
+      <table class="work-detail-table"><tbody>
+        <tr><th>작업지시번호</th><td>${get('작업지시번호')}</td><th>생산 LOT NO</th><td>${get('생산 LOT NO')}</td></tr>
+        <tr><th>고객사</th><td>${get('고객사')}</td><th>제품명</th><td>${get('제품명')}</td></tr>
+        <tr><th>계획수량</th><td>${get('계획수량')}</td><th>작업기간</th><td>${get('작업기간')}</td></tr>
+        <tr><th>설비명</th><td>HSM</td><th>작업자</th><td>${get('작업자')}</td></tr>
+        <tr><th>진행상태</th><td colspan="3">${get('진행상태')}</td></tr>
+      </tbody></table>
+      <div class="work-detail-section">원료 투입계획</div>
+      <table class="work-material-table"><thead><tr><th class="no">NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율(%)(자동계산)</th></tr></thead><tbody>
+        <tr><td>1</td><td>NMP</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+        <tr><td>2</td><td>분산제</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+        <tr><td>3</td><td>세라믹</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+        <tr><td>4</td><td>중간배치</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+        <tr><td>5</td><td>바인더</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+        <tr><td>6</td><td>SBR</td><td>-</td><td>-</td><td></td><td>-</td></tr>
+      </tbody></table>
+      <div class="work-detail-section">기본 공정순서</div>
+      <div class="work-section-body"><div class="work-process-grid">
+        <div class="work-process-step"><div class="step">STEP 1</div><b>A탱크 원료 투입</b><p>NMP / 분산제 / 세라믹 투입</p></div>
+        <div class="work-process-step"><div class="step">STEP 2</div><b>High Shear</b><p>선분산 공정 진행</p></div>
+        <div class="work-process-step"><div class="step">STEP 3</div><b>A탱크 추가 투입</b><p>바인더 / SBR 추가</p></div>
+        <div class="work-process-step"><div class="step">STEP 4</div><b>교차 순환 Mixing</b><p>A↔B 탱크 교차 순환</p></div>
+      </div></div>
+    </div>`;
+    openModal('작업지시서 상세',amaranthScreen('work',html,'detail','작업지시서 상세'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    return;
+  }
+  const html=amEditableDetail(id,cols,vals);
+  openModal(pageInfo[id][0]+' 상세',amaranthScreen(id,html,'detail',pageInfo[id][0]+' 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+}
+
+function stdMeasureCell(kind,idx){
+  if(kind==='qual') return `<select class="std-measure"><option value="">선택</option><option>적합</option><option>부적합</option></select>`;
+  if(kind==='coa') return idx===1?`<select class="std-measure"><option value="">선택</option><option>확인</option><option>미확인</option></select>`:`<div class="dash">-</div>`;
+  return `<input class="std-measure" type="number" step="any" inputmode="decimal" placeholder="측정값">`;
+}
+function standardInspectionRows(type){
+  const rows={
+    incoming:[
+      ['외관','이물질 혼입 및 외관 이상 없을 것','육안','qual'],
+      ['라벨','품명·LOT·표기사항 일치할 것','육안','qual'],
+      ['중량','표시중량 및 입고기준 만족','저울','num'],
+      ['COA 확인','공급사 COA 및 LOT 일치 확인','문서확인','coa']
+    ],
+    process:[
+      ['외관','이물질 혼입 없을 것','육안','qual'],
+      ['입도(Dmax)','<10 μm','입도분석기','num'],
+      ['점도','1,500±300 cP','점도계','num'],
+      ['고형분','20.0±1.0 wt%','Drying Oven','num']
+    ],
+    outgoing:[
+      ['외관','이물질 혼입 없을 것','육안','qual'],
+      ['입도(Dmax)','<10 μm','입도분석기','num'],
+      ['점도','1,500±300 cP','점도계','num'],
+      ['수분율','<2,000 ppm','수분측정기','num'],
+      ['고형분','20.0±1.0 wt%','Drying Oven','num'],
+      ['접착력','≥400 gf/12.7mm','인장시험기','num'],
+      ['절연저항','≥200 MΩ (Overflow)','절연저항계','num'],
+      ['전해액 안정성','미탈리','육안','qual']
+    ]
+  }[type]||[];
+  return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
+}
+function qmesQualityApprovalPeople(){
+  const current=window.__QMES_CURRENT_USER__||{};
+  const writerName=String(current.name||'').trim();
+  const writerPos=String(current.position||current.title||'').trim();
+  const writer=writerName || '로그인 사용자';
+  const rank={사원:1,주임:2,대리:3,과장:4,차장:5,부장:6,이사:7,상무:8,전무:9,대표이사:10,관리자:99};
+  const qualityManagers=(typeof ADMIN_EMPLOYEES!=='undefined'?ADMIN_EMPLOYEES:[])
+    .filter(e=>e&&e.status==='사용'&&e.dept==='품질부'&&(rank[e.position]||0)>=6)
+    .sort((a,b)=>(rank[b.position]||0)-(rank[a.position]||0));
+  const manager=qualityManagers.find(e=>e.position==='부장')||qualityManagers[0]||null;
+  const managerLabel=manager ? String(manager.name||'').trim() : '담당자 미지정';
+  return {writer,reviewer:managerLabel,approver:managerLabel};
+}
+function standardInspectionForm(type){
+  const approval=qmesQualityApprovalPeople();
+  const conf={
+    incoming:{title:'수입검사 성적서',sub:'INCOMING INSPECTION REPORT',doc:'IQC',docNo:'IQC-QA-001',section:'입고 / 검사 기본정보',summary:'LOT 단위 수입검사'},
+    process:{title:'공정검사 성적서',sub:'IN-PROCESS INSPECTION REPORT',doc:'IPQC',docNo:'IPQC-QA-001',section:'생산 / 검사 기본정보',summary:'공정 품질 확인 / n=3'},
+    outgoing:{title:'출하검사 성적서',sub:'OUTGOING INSPECTION REPORT',doc:'OQC',docNo:'OQC-QA-001',section:'출하 / 검사 기본정보',summary:'출하 전 최종검사 / n=3'}
+  }[type];
+  let info='';
+  if(type==='incoming') info=`
+    <div class="k">검사일자</div><div class="v"><input id="incomingDate" type="date"></div>
+    <div class="k">입고일자</div><div class="v"><input type="date"></div>
+    <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
+    <div class="k">공급업체</div><div class="v"><input id="incomingSupplier" type="text" placeholder="공급업체 입력"></div>
+    <div class="k">원료명</div><div class="v"><select id="incomingMaterialName"><option value="">원료명 선택</option>${NAMO_RAW_MATERIALS.map(x=>`<option>${x}</option>`).join('')}</select></div>
+    <div class="k">원료 LOT</div><div class="v"><input id="incomingMaterialLot" type="text" placeholder="원료 LOT 입력"></div>`;
+  if(type==='process') info=`
+    <div class="k">검사일자</div><div class="v"><input type="date"></div>
+    <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
+    <div class="k">작업지시번호</div><div class="v"><input type="text" placeholder="작업지시번호 입력"></div>
+    <div class="k">제품명</div><div class="v"><input type="text" placeholder="제품명 입력"></div>
+    <div class="k">생산 LOT NO</div><div class="v"><input type="text" placeholder="생산 LOT NO 입력"></div>
+    <div class="k">공정명</div><div class="v"><select><option>선분산</option><option>Mixing</option><option>교차 순환</option></select></div>`;
+  if(type==='outgoing') info=`
+    <div class="k">검사일자</div><div class="v"><input type="date"></div>
+    <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
+    <div class="k">고객사</div><div class="v"><input type="text" placeholder="고객사 입력"></div>
+    <div class="k">제품명</div><div class="v"><input type="text" placeholder="제품명 입력"></div>
+    <div class="k">완제품 LOT</div><div class="v"><input type="text" placeholder="완제품 LOT 입력"></div>
+    <div class="k">CoA 상태</div><div class="v"><select><option>대기</option><option>확인완료</option><option>발행완료</option><option>미확인</option></select></div>`;
+  return `<div class="std-inspection premium" data-inspection-type="${type}">
+    <div class="std-inspection-head">
+      <div class="std-inspection-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
+      <div class="std-inspection-title"><b>${conf.title}</b></div>
+      <div class="std-inspection-doc">
+        <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
+        <div class="k">Rev.</div><div class="v">0</div>
+        <div class="k">작성부서</div><div class="v">품질부</div>
+        <div class="k">상태</div><div class="v">신규작성</div>
+      </div>
+    </div>
+    <div class="std-premium-band"><span class="band-title"></span><span class="band-right"><span class="record-dot"></span><span class="record-pill">QMES 전자기록</span></span></div>
+    <div class="std-section-title"><span class="sec-no">01</span><span class="sec-name">${conf.section}</span><small>검사 대상 및 추적정보</small></div>
+    <div class="std-info">${info}</div>
+    <div class="std-section-title"><span class="sec-no">02</span><span class="sec-name">검사 결과</span><small>검사기준 · 측정값 · 항목별 판정</small></div>
+    <div class="std-result-wrap"><table class="std-result"><colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="m"><col class="m"><col class="m"><col class="judge"></colgroup><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>${standardInspectionRows(type)}</tbody></table></div>
+    <div class="std-section-title"><span class="sec-no">03</span><span class="sec-name">종합 판정</span><small>검사결과 종합 및 기록 상태</small></div>
+    <div class="std-summary-grid">
+      <div class="std-summary-card emphasis"><div class="label"><span class="dot"></span>최종판정</div><div class="value"><select id="stdOverallJudge"><option>대기</option><option>합격</option><option>불합격</option></select></div></div>
+      <div class="std-summary-card"><div class="label"><span class="dot"></span>검사상태</div><div class="value"><select><option>검사중</option><option>검사완료</option><option>보류</option></select></div></div>
+      <div class="std-summary-card"><div class="label"><span class="dot"></span>샘플링 기준</div><div class="value">${conf.summary}</div></div>
+      <div class="std-summary-card"><div class="label"><span class="dot"></span>기록 유형</div><div class="value">QMES Electronic Record</div></div>
+    </div>
+    <div class="std-section-title"><span class="sec-no">04</span><span class="sec-name">특이사항 / 조치사항</span><small>부적합 발생 시 NCR·시정조치 번호 기록</small></div>
+    <div class="std-premium-remarks"><div class="k">비고</div><textarea placeholder="검사 특이사항, 부적합 내용 및 조치사항을 입력하세요"></textarea></div>
+    <div class="std-approval-row">
+      <div class="approval-label">전자결재</div>
+      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b><small>로그인 본인</small></div>
+      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b><small>검토 대기 · 품질부 부장</small></div>
+      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b><small>승인 대기 · 품질부 부장</small></div>
+    </div>
+    <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
+  </div>`;
+}
+function initStandardInspectionForm(type){
+  const root=document.querySelector(`.std-inspection[data-inspection-type="${type}"]`);
+  if(!root) return;
+  const judges=[...root.querySelectorAll('.std-row-judge')];
+  const overall=root.querySelector('#stdOverallJudge');
+  const syncOverall=()=>{
+    const vals=judges.map(x=>x.value);
+    if(vals.includes('불합격')) overall.value='불합격';
+    else if(vals.length && vals.every(x=>x==='합격')) overall.value='합격';
+    else overall.value='대기';
+  };
+  judges.forEach(x=>x.addEventListener('change',syncOverall));
+  if(type==='incoming'){
+    const saveBtn=document.getElementById('modalSave');
+    if(saveBtn){
+      const replacement=saveBtn.cloneNode(true); saveBtn.replaceWith(replacement);
+      replacement.addEventListener('click',async()=>{
+        const name=document.getElementById('incomingMaterialName')?.value||'';
+        const lot=document.getElementById('incomingMaterialLot')?.value.trim()||'';
+        const supplier=document.getElementById('incomingSupplier')?.value.trim()||'';
+        const date=document.getElementById('incomingDate')?.value||'';
+        const inspector=[...root.querySelectorAll('.std-info input')].find(x=>x.placeholder==='검사자 입력')?.value.trim()||window.__QMES_CURRENT_USER__?.name||'';
+        const items=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>({
+          name:tr.querySelector('.item')?.textContent?.trim()||'',
+          values:[...tr.querySelectorAll('.std-measure')].map(x=>x.value),
+          judge:tr.querySelector('.std-row-judge')?.value||'대기'
+        }));
+        if(!name||!lot||!supplier||!date||!inspector){toast('검사일자, 검사자, 공급업체, 원료명, LOT를 입력해 주세요.');return;}
+        replacement.disabled=true;
+        try{
+          const r=await fetch('/api/iqc',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+            date,lot,supplier,item:name,inspector,incomingQty:null,qty:null,failQty:0,items
+          })});
+          const p=await r.json().catch(()=>({success:false}));
+          if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
+          const approvalReq=await qmesRequestQualityApproval('IQC',p.data?.id,'수입검사 성적서 검토·승인','approval');
+          if(!approvalReq?.success) toast('검사는 저장되었지만 검토·승인 알림 전송에 실패했습니다.');
+          saveIncomingMaterial({name,lot,supplier,date,judge:overall?.value||'대기'});
+          closeModal();
+          const section=document.getElementById('incoming');
+          if(section){section.dataset.moduleWired='';await loadIncomingFromDb(section);}
+          toast('수입검사 저장 및 목록 자동 업데이트 완료');
+        }catch(err){toast(err.message||'수입검사 저장에 실패했습니다.');}
+        finally{replacement.disabled=false;}
+      });
+    }
+  }
+}
+
+function openNewForm(id,editOrder=null){
+  if(id==='work'){
+    const html=`<div class="work-form">
+      <div class="work-section"><div class="work-section-title">작업 기본정보</div><div class="work-section-body"><div class="work-basic-grid">
+        <div class="form-item"><label>작업지시번호</label><input id="workOrderNo" type="text" value="자동생성" readonly></div>
+        <div class="form-item"><label>작업일자</label><input type="date"></div>
+        <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력"></div>
+        <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 직접 입력"></div>
+        <div class="form-item"><label>생산 LOT NO</label><input type="text" placeholder="생산 LOT NO 입력"></div>
+        <div class="form-item"><label>설비명</label><select><option>HSM</option></select></div>
+        <div class="form-item"><label>작업자</label><input type="text" placeholder="작업자 입력"></div>
+        <div class="form-item"><label>계획수량</label><input id="workPlanQty" type="number" min="0" step="0.01" placeholder="숫자만 입력"></div>
+        <div class="form-item"><label>작업 시작일</label><input type="date"></div>
+        <div class="form-item"><label>작업 종료일</label><input type="date"></div>
+        <div class="form-item"><label>진행상태</label><select><option>대기</option><option>진행</option><option>완료</option></select></div>
+        <div class="form-item"><label>생산구분</label><select><option>정규생산</option><option>시험생산</option><option>재작업</option></select></div>
+      </div></div></div>
+
+      <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
+        <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
+        <table class="work-material-table" id="workMaterialTable"><thead><tr><th class="no">NO</th><th class="name">원료명</th><th class="lot">원료 LOT NO</th><th class="plan">계획투입량(kg)</th><th class="actual">실투입량(kg)</th><th class="ratio">투입비율(%)(자동계산)</th><th class="act">관리</th></tr></thead><tbody></tbody></table>
+        <div class="work-note">※ 원료명과 원료 LOT는 수입검사 등록정보와 연동됩니다. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
+      </div></div>
+
+      <div class="work-section"><div class="work-section-title">기본 공정순서</div><div class="work-section-body"><div class="work-process-grid">
+        <div class="work-process-step"><div class="step">STEP 1</div><b>A탱크 원료 투입</b><p>NMP / 분산제 / 세라믹 투입</p></div>
+        <div class="work-process-step"><div class="step">STEP 2</div><b>High Shear</b><p>A탱크에서 선분산 진행</p></div>
+        <div class="work-process-step"><div class="step">STEP 3</div><b>A탱크 추가 투입</b><p>바인더 / SBR 추가 후 Mixing</p></div>
+        <div class="work-process-step"><div class="step">STEP 4</div><b>교차 순환</b><p>Mixing 중 A↔B 탱크 교차 순환</p></div>
+      </div></div></div>
+
+      <div class="work-section"><div class="work-section-title">작업지시사항</div><div class="work-section-body"><div class="form-item"><textarea placeholder="작업 시 주의사항 및 특이사항 입력"></textarea></div></div></div>
+    </div>`;
+    openModal('신규 작업지시서 등록',amaranthScreen('work',html,'new','신규 작업지시서 등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
+    document.querySelector('.modal')?.classList.add('work-mode');
+    modalBackdrop.classList.add('work-backdrop');
+    initNamochemicalWorkForm();
+    if(editOrder){
+      const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
+      const set=(label,value)=>{const el=basic.find(x=>x.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select');if(el)el.value=value||'';};
+      const f=editOrder.fields||{},period=(f['작업기간']||'').split(' ~ ');
+      set('작업지시번호',editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);set('생산구분',editOrder.productionType);
+      const tbody=document.querySelector('#workMaterialTable tbody');tbody.innerHTML='';
+      const add=document.getElementById('workRowAdd');
+      (editOrder.materials||[]).forEach(m=>{
+        add.click();const row=tbody.lastElementChild;
+        const name=row.querySelector('.material-name-select');name.value=[...name.options].some(o=>o.value===m.name)?m.name:'__manual__';name.dispatchEvent(new Event('change'));
+        if(name.value==='__manual__')row.querySelector('.material-name-manual').value=m.name||'';
+        const lot=row.querySelector('.material-lot-select');lot.value=[...lot.options].some(o=>o.value===m.lot)?m.lot:'__manual__';lot.dispatchEvent(new Event('change'));
+        if(lot.value==='__manual__')row.querySelector('.material-lot-manual').value=m.lot||'';
+        row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
+      });
+      document.querySelector('.work-form textarea').value=editOrder.note||'';
+    }
+    const workSave=document.getElementById('modalSave');
+    if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
+    enableWorkModalDrag();
+    return;
+  }
+  if(id==='incoming' || id==='process' || id==='outgoing'){
+    const title={incoming:'수입검사 성적서 등록',process:'공정검사 성적서 등록',outgoing:'출하검사 성적서 등록'}[id];
+    const html=standardInspectionForm(id);
+    openModal(title,amaranthScreen(id,html,'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">검사 저장</button>');
+    initStandardInspectionForm(id);
+    return;
+  }
+  const cols=pageInfo[id][2];
+  const html='<div class="form-grid">'+cols.map((c,i)=>`<div class="form-item ${i===cols.length-1?'full':''}"><label>${c}</label>${fieldFor(c,id)}</div>`).join('')+'<div class="form-item full"><label>비고</label><textarea placeholder="내용을 입력하세요"></textarea></div></div>';
+  openModal(pageInfo[id][0]+' 신규등록',amaranthScreen(id,html,'new',pageInfo[id][0]+' 신규등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
+}
+function initNamochemicalWorkForm(){
+  const tbody=document.querySelector('#workMaterialTable tbody');
+  const addBtn=document.getElementById('workRowAdd');
+  const planQty=document.getElementById('workPlanQty');
+  if(!tbody || !addBtn) return;
+  const defaults=[...NAMO_RAW_MATERIALS];
+  function renumber(){[...tbody.rows].forEach((r,i)=>r.cells[0].textContent=i+1);}
+  function recalc(){
+    const rows=[...tbody.querySelectorAll('tr')];
+    const total=rows.reduce((sum,row)=>sum+(parseFloat(row.querySelector('.plan-input')?.value||'0')||0),0);
+    rows.forEach(row=>{
+      const plan=parseFloat(row.querySelector('.plan-input')?.value||'0')||0;
+      const ratio=row.querySelector('.ratio-input');
+      if(ratio) ratio.value=total>0 && plan>0 ? ((plan/total)*100).toFixed(2) : '';
+    });
+  }
+  function materialOptions(selected=''){
+    return '<option value="">원료명 선택</option>'+NAMO_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('')+'<option value="__manual__">직접 입력</option>';
+  }
+  function fillLotOptions(row,name){
+    const lotSelect=row.querySelector('.material-lot-select');
+    if(!lotSelect) return;
+    const lots=incomingLotsFor(name);
+    lotSelect.innerHTML=lots.length
+      ? '<option value="">원료 LOT 선택</option>'+lots.map(l=>`<option>${l}</option>`).join('')
+      : '<option value="">수입검사 등록 LOT 없음</option>';
+    lotSelect.innerHTML+='<option value="__manual__">직접 입력</option>';
+    lotSelect.disabled=false;
+    row.querySelector('.material-lot-manual').style.display='none';
+  }
+  function addRow(name=''){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td></td><td><select class="material-name-select">${materialOptions(name)}</select><input class="material-name-manual" type="text" placeholder="원료명 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><select class="material-lot-select"><option value="">원료 LOT 선택</option><option value="__manual__">직접 입력</option></select><input class="material-lot-manual" type="text" placeholder="원료 LOT NO 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><input class="plan-input" type="number" min="0" step="0.01" placeholder="계획투입량 입력"></td><td><input class="actual-input" type="number" min="0" step="0.01" placeholder="실투입량 입력"></td><td><input class="ratio-input" type="number" step="0.01" placeholder="자동계산" readonly></td><td><button class="btn row-del" type="button">삭제</button></td>`;
+    tbody.appendChild(tr);
+    const nameSelect=tr.querySelector('.material-name-select');
+    nameSelect?.addEventListener('change',()=>{
+      const manual=nameSelect.value==='__manual__';
+      tr.querySelector('.material-name-manual').style.display=manual?'block':'none';
+      fillLotOptions(tr,manual?'':nameSelect.value);
+    });
+    tr.querySelector('.material-lot-select')?.addEventListener('change',e=>{
+      tr.querySelector('.material-lot-manual').style.display=e.target.value==='__manual__'?'block':'none';
+    });
+    tr.querySelector('.plan-input')?.addEventListener('input',recalc);
+    tr.querySelector('.row-del')?.addEventListener('click',()=>{tr.remove();renumber();recalc();});
+    if(name) fillLotOptions(tr,name);
+    renumber();
+  }
+  defaults.forEach(addRow);
+  addBtn.addEventListener('click',()=>addRow(''));
+}
+
+function enableWorkModalDrag(){
+  const modal=document.querySelector('.modal.work-mode');
+  const head=modal?.querySelector('.modal-head');
+  if(!modal || !head) return;
+  let dragging=false,startX=0,startY=0,baseX=0,baseY=0;
+  const down=(e)=>{
+    if(e.target.closest('button')) return;
+    dragging=true;startX=e.clientX;startY=e.clientY;
+    const m=modal.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    baseX=m?parseFloat(m[1]):0;baseY=m?parseFloat(m[2]):0;
+    document.body.style.userSelect='none';
+  };
+  const move=(e)=>{if(!dragging)return;modal.style.transform=`translate(${baseX+e.clientX-startX}px, ${baseY+e.clientY-startY}px)`;};
+  const up=()=>{dragging=false;document.body.style.userSelect='';};
+  head.addEventListener('mousedown',down);
+  window.addEventListener('mousemove',move,{passive:true});
+  window.addEventListener('mouseup',up,{passive:true});
+}
+
+function fieldFor(c,id){
+  if(id==='incoming' && c==='검사항목') return '<select><option value="">검사항목 선택</option><option>외관</option><option>라벨</option><option>중량</option><option>COA 확인</option></select>';
+  if(c.includes('일')||c.includes('납기')||c.includes('기간')) return '<input type="date">';
+  if(c.includes('수량')||c.includes('현재고')) return '<input type="number" min="0" placeholder="0">';
+  if(c.includes('상태')||c.includes('판정')||c.includes('IQC')) return '<select><option>대기</option><option>진행</option><option>완료</option></select>';
+  return `<input type="text" placeholder="${c} 입력">`;
+}
+function renderProcessJudgePanel(item){
+  const wrap=document.getElementById('processJudgeField');
+  if(!wrap) return;
+  const map={
+    '외관':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>외관</b><span class="spec">이물질 혼입 없을 것</span></div><div class="process-device">육안</div></div><div class="process-judge"><button class="judge-btn" type="button">이상없음</button><button class="judge-btn" type="button">이상있음</button></div></div>`,
+    '입도(Dmax)':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>입도(Dmax)</b><span class="spec">&lt;10 μm</span></div><div class="process-device">입도분석기</div></div><div class="measure-grid">${[1,2,3].map(n=>`<div class="measure-item"><label>${n}회 측정</label><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}</div></div>`,
+    '점도':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>점도</b><span class="spec">1,500±300 cP</span></div><div class="process-device">점도계</div></div><div class="measure-grid">${[1,2,3].map(n=>`<div class="measure-item"><label>${n}회 측정</label><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}</div></div>`,
+    '고형분':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>고형분</b><span class="spec">20.0±1.0 wt%</span></div><div class="process-device">Drying Oven</div></div><div class="measure-grid">${[1,2,3].map(n=>`<div class="measure-item"><label>${n}회 측정</label><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}</div></div>`
+  };
+  wrap.innerHTML=`${map[item]||''}`;
+  wrap.querySelectorAll('.judge-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    btn.parentElement.querySelectorAll('.judge-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }));
+}
+function initProcessForm(){
+  const select=document.getElementById('processItemSelect');
+  if(!select) return;
+  renderProcessJudgePanel(select.value);
+  select.addEventListener('change',()=>renderProcessJudgePanel(select.value));
+}
+
+function renderIncomingJudgePanel(item){
+  const wrap=document.getElementById('incomingJudgeField');
+  if(!wrap) return;
+  const map={
+    '외관':{title:'검사항목 판정', body:`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>외관</b><span class="spec">이물질 혼입 없을 것</span></div><div class="process-device">육안</div></div><div class="process-judge"><button class="judge-btn" type="button">이상없음</button><button class="judge-btn" type="button">이상있음</button></div></div>`},
+    '라벨':{title:'검사항목 판정', body:`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>라벨</b><span class="spec">표기 정보 이상 없을 것</span></div><div class="process-device">육안</div></div><div class="process-judge"><button class="judge-btn" type="button">정상</button><button class="judge-btn" type="button">이상</button></div></div>`},
+    '중량':{title:'검사항목 판정', body:`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>중량</b><span class="spec">기준 중량 확인</span></div><div class="process-device">저울</div></div><div class="measure-grid"><div class="measure-item"><label>측정값</label><input type="number" step="any" placeholder="측정값"></div><div class="measure-item"><label>판정</label><select style="width:100%;height:86px;border:1px solid #cfd9e5;border-radius:12px;background:#fff;text-align:center;font-size:24px;color:#1f2937;outline:none"><option>합격</option><option>불합격</option></select></div><div class="measure-item"><label>비고</label><input type="text" placeholder="비고"></div></div></div>`},
+    'COA 확인':{title:'검사항목 판정', body:`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>COA 확인</b><span class="spec">COA 문서 확인</span></div><div class="process-device">문서확인</div></div><div class="process-judge"><button class="judge-btn" type="button">확인완료</button><button class="judge-btn" type="button">미확인</button></div></div>`}
+  };
+  wrap.innerHTML=`${map[item]?.body||''}`;
+  wrap.querySelectorAll('.judge-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    btn.parentElement.querySelectorAll('.judge-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }));
+}
+function initIncomingForm(){
+  const select=document.getElementById('incomingItemSelect');
+  if(!select) return;
+  renderIncomingJudgePanel(select.value);
+  select.addEventListener('change',()=>renderIncomingJudgePanel(select.value));
+  document.getElementById('modalSave')?.addEventListener('click',()=>{
+    const name=document.getElementById('incomingMaterialName')?.value||'';
+    const lot=document.getElementById('incomingMaterialLot')?.value.trim()||'';
+    const supplier=document.getElementById('incomingSupplier')?.value.trim()||'';
+    const date=document.getElementById('incomingDate')?.value||'';
+    const judge=[...document.querySelectorAll('#modalBody select')].find(s=>[...s.options].some(o=>o.text==='합격'&&o.text==='불합격'))?.value||'완료';
+    if(name && lot) saveIncomingMaterial({name,lot,supplier,date,judge});
+  });
+}
+
+
+function renderOutgoingJudgePanel(item){
+  const wrap=document.getElementById('outgoingJudgeField');
+  if(!wrap) return;
+  const overflowRows=[1,2,3].map(n=>`<div class="overflow-row"><div class="overflow-no">${n}회</div><button class="judge-btn selected" type="button">Overflow</button><input type="text" placeholder="측정값"></div>`).join('');
+  const stabilityRows=[1,2,3].map(n=>`<div class="overflow-row"><div class="overflow-no">${n}회</div><button class="judge-btn selected" type="button">미탈리</button><button class="judge-btn" type="button">탈리</button></div>`).join('');
+  const measure3=(label)=>`${[1,2,3].map(n=>`<div class="measure-item"><label>${n}회 ${label}</label><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}`;
+  const map={
+    '외관':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>외관</b><span class="spec">이물질 혼입 없을 것</span></div><div class="process-device">육안</div></div><div class="process-judge"><button class="judge-btn" type="button">이상없음</button><button class="judge-btn" type="button">이상있음</button></div></div>`,
+    '입도(Dmax)':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>입도(Dmax)</b><span class="spec">&lt;10 μm</span></div><div class="process-device">입도분석기</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
+    '점도':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>점도</b><span class="spec">1,500±300 cP</span></div><div class="process-device">점도계</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
+    '수분율':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>수분율</b><span class="spec">&lt;2,000 ppm</span></div><div class="process-device">수분측정기</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
+    '고형분':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>고형분</b><span class="spec">20.0±1.0 wt%</span></div><div class="process-device">Drying Oven</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
+    '접착력':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>접착력</b><span class="spec">≥400 gf/12.7mm</span></div><div class="process-device">인장시험기</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
+    '절연저항':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>절연저항</b><span class="spec">≥200 MΩ (Overflow)</span></div><div class="process-device">절연저항계</div></div><div class="process-judge process-judge-top"><button class="judge-btn" type="button">3회 모두 Overflow</button></div><div class="overflow-grid">${overflowRows}</div></div>`,
+    '전해액 안정성':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">탈리 / 미탈리</span></div><div class="process-device">육안</div></div><div class="overflow-grid">${stabilityRows}</div></div>`,
+    'COA 확인':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>COA 확인</b><span class="spec">COA 문서 확인</span></div><div class="process-device">문서확인</div></div><div class="process-judge"><button class="judge-btn" type="button">확인완료</button><button class="judge-btn" type="button">미확인</button></div></div>`
+  };
+  wrap.innerHTML=`${map[item]||''}`;
+  wrap.querySelectorAll('.judge-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    const group=btn.parentElement;
+    if(group && group.classList.contains('process-judge')) group.querySelectorAll('.judge-btn').forEach(b=>b.classList.remove('selected'));
+    if(group && group.classList.contains('overflow-row')) group.querySelectorAll('.judge-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }));
+}
+function initOutgoingForm(){
+  const select=document.getElementById('outgoingItemSelect');
+  if(!select) return;
+  renderOutgoingJudgePanel(select.value);
+  select.addEventListener('change',()=>renderOutgoingJudgePanel(select.value));
+}
+
+function exportTable(section,title){
+  const rows=[...section.querySelectorAll('table tr')].filter(r=>r.style.display!=='none').map(r=>[...r.children].map(c=>'"'+c.innerText.replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=title+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500);
+  toast('엑셀용 CSV 파일을 생성했습니다.');
+}
+
+Object.keys(pageInfo).forEach(buildModule);
+buildAdminEmployees();
+applyAdminVisibility();
+// Recheck administrator-only menu visibility when asynchronous login restores the role.
+// The existing administrator authorization check remains unchanged.
+if (currentUserEl && typeof MutationObserver !== 'undefined') {
+  new MutationObserver(() => {
+    applyAdminVisibility();
+    // Employee table was initially cleared before login completed; restore it for admins.
+    if (isAdminUser()) buildAdminEmployees();
+    else document.getElementById('adminEmployees')?.replaceChildren();
+  }).observe(currentUserEl, {
+    attributes: true,
+    attributeFilter: ['data-role', 'data-qauth-ready']
+  });
+}
+if(!restoreQmesPage()){
+  document.querySelector('.menu[data-page="dashboard"]')?.classList.add('active');
+  document.getElementById('dashboard')?.classList.add('active');
+}
+// Reveal the selected menu only after the saved page has been restored.
+document.documentElement.setAttribute('data-qmes-menu-ready','1');
+document.documentElement.removeAttribute('data-qmes-pending-page');
+
+document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
+  if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
+  document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
+  m.classList.add('active');
+  workspacePreviousPage=m.dataset.page;
+  workspaceBody.innerHTML='';
+  workspaceFoot.innerHTML='';
+  const page=document.getElementById(m.dataset.page);
+  page.classList.add('active');
+  page._fitIncomingColumns?.();
+  rememberQmesPage(m.dataset.page);
+  content.scrollTop=0;
+}));
+
+document.getElementById('brandHomeBtn')?.addEventListener('click',()=>{
+  const dashMenu=document.querySelector('.menu[data-page="dashboard"]');
+  if(dashMenu){dashMenu.click();return;}
+  document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('dashboard')?.classList.add('active');
+  content.scrollTop=0;
+});
+document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대시보드가 새로고침되었습니다.');});
+document.getElementById('allViewBtn').addEventListener('click',()=>{
+  document.querySelector('.menu[data-page="orders"]').click(); toast('수주납기 전체현황으로 이동했습니다.');
+});
+const notifyBtn=document.getElementById('notifyBtn');
+const notifyPanel=document.getElementById('notifyPanel');
+const notifyTabs=document.getElementById('notifyTabs');
+const notifyList=document.getElementById('notifyList');
+const notifyEmpty=document.getElementById('notifyEmpty');
+const notifyDateLabel=document.getElementById('notifyDateLabel');
+const notifyDate=new Date();
+if(notifyDateLabel) notifyDateLabel.textContent=`${String(notifyDate.getMonth()+1).padStart(2,'0')}.${String(notifyDate.getDate()).padStart(2,'0')} ${['일','월','화','수','목','금','토'][notifyDate.getDay()]}요일`;
+
+function closeNotifyPanel(){
+  notifyPanel?.classList.remove('open');
+  notifyBtn?.classList.remove('notify-active');
+}
+notifyBtn?.addEventListener('click',e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('currentUser')?.classList.remove('qauth-open');
+  const opening=!notifyPanel?.classList.contains('open');
+  closeNotifyPanel();
+  if(opening){notifyPanel?.classList.add('open');notifyBtn?.classList.add('notify-active');loadQualityNotifications();}
+});
+document.getElementById('notifyClose')?.addEventListener('click',closeNotifyPanel);
+document.getElementById('notifyReadAll')?.addEventListener('click',async()=>{
+  document.querySelectorAll('#notifyList .notify-item').forEach(el=>el.style.opacity='.55');
+  try{await fetch('/api/qmes-quality/notifications/read-all',{method:'POST',credentials:'same-origin'});}catch(e){}
+  toast('통합알림을 모두 읽음 처리했습니다.');
+});
+notifyTabs?.addEventListener('click',e=>{
+  const btn=e.target.closest('.notify-tab');
+  if(!btn)return;
+  notifyTabs.querySelectorAll('.notify-tab').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  const filter=btn.dataset.filter;
+  let visible=0;
+  notifyList?.querySelectorAll('.notify-item').forEach(item=>{
+    const kinds=String(item.dataset.kind||'').split(/\s+/).filter(Boolean);
+    const show=filter==='all'||kinds.includes(filter);
+    item.classList.toggle('hidden',!show);
+    if(show)visible++;
+  });
+  if(notifyEmpty)notifyEmpty.style.display=visible?'none':'block';
+});
+notifyList?.addEventListener('click',e=>{
+  const item=e.target.closest('.notify-item');
+  if(!item)return;
+  const page=item.dataset.page;
+  const menu=document.querySelector(`.menu[data-page="${page}"]`);
+  closeNotifyPanel();
+  if(menu)menu.click();
+  if(page==='approval') loadQualityApprovals(document.getElementById('approval'));
+});
+document.addEventListener('click',e=>{
+  if(notifyPanel?.classList.contains('open')&&!notifyPanel.contains(e.target)&&!notifyBtn?.contains(e.target))closeNotifyPanel();
+});
+document.getElementById('orgBtn')?.addEventListener('click',()=>openModal('조직도','<div class="detail-grid"><div class="key">회사</div><div>나모케미칼</div><div class="key">부서</div><div>대표 · 연구소 · 생산부 · 영업부 · 품질부 · 관리부</div></div>'));
+document.getElementById('guideBtn')?.addEventListener('click',()=>openModal('이용가이드','<div style="line-height:1.8;font-size:12px;color:#475569">상단 사용자 메뉴에서 개인정보 설정 및 로그아웃을 할 수 있습니다.<br>좌측 메뉴에서 QMES 각 업무 화면으로 이동합니다.</div>'));
+
+loadQualityNotifications();
+document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
+  row.classList.add('clickable'); row.addEventListener('click',()=>{
+    const cells=[...row.children].map(x=>x.innerText.trim());
+    const keys=['NO','구분','고객사','제품명','LOT NO','요청납기','진행상태','담당'];
+    openModal('금일 진행현황 상세','<div class="detail-grid">'+keys.map((k,i)=>`<div class="key">${k}</div><div>${cells[i]||'-'}</div>`).join('')+'</div>');
+  });
+});
+</script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-profile-no-flash2"></script>
+<script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch3-photo"></script>
+</body>
+</html>
+:'nwnwnwnnn','/':'nwnwnnnwn','+':'nwnnnwnwn','%':'nnnwnwnwn'};
+  const raw=String(value||'').toUpperCase();
+  if(!raw||[...raw].some(c=>!patterns[c]))return '';
+  let x=8;const bars=[];
+  for(const char of '*'+raw+'*'){
+    const pattern=patterns[char];
+    for(let i=0;i<9;i++){
+      const width=pattern[i]==='w'?3:1;
+      if(i%2===0)bars.push('<rect x="'+x+'" y="3" width="'+width+'" height="43"/>');
+      x+=width;
+    }
+    x+=1;
+  }
+  return '<div class="report-barcode" aria-label="성적서 바코드 '+amEsc(raw)+'"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(x+8)+' 50" role="img" aria-label="Code 39 barcode" preserveAspectRatio="none">'+bars.join('')+'</svg><span>'+amEsc(raw)+'</span></div>';
+}
 function amEsc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));}
 function amModuleTitle(id){
   if(id==='adminEmployees') return '직원등록현황';
