@@ -2721,7 +2721,7 @@ async function loadIncomingFromDb(section){
   console.error('[IQC] 서버 조회 3회 실패:',lastError);
   if(Array.isArray(section._iqcRows)){
     renderIncomingPage(section,section._iqcPage||1);
-    toast('수입검사 서버 연결이 불안정하여 기존 목록을 표시합니다.');
+    /* background sync error: console only, no bottom popup */
   }else{
     tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">수입검사 조회 실패: 서버 연결을 확인해 주세요.</td></tr>';
   }
@@ -2944,7 +2944,7 @@ async function refreshSharedWorkOrders(){
     workSharedRows=remote;
     try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
     renderSavedWorkOrders();
-  })().catch(error=>{console.error('[QMES work sync]',error);toast('작업지시서 서버 조회 실패: '+error.message);}).finally(()=>{workSyncBusy=null;});
+  })().catch(error=>{console.error('[QMES work sync]',error);/* background sync error: console only, no bottom popup */}).finally(()=>{workSyncBusy=null;});
   return workSyncBusy;
 }
 window.addEventListener('focus',()=>{if(document.getElementById('work')?.classList.contains('active'))refreshSharedWorkOrders();});
