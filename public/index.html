@@ -1819,7 +1819,7 @@ function premiumInspectionShell(id,title,desc,cols){
         </div>
         <div class="ip-actions"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
       </div>
-      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th style="min-width:145px">비고</th>':''}</tr></thead>
       <tbody></tbody></table></div>
       <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><div class="ip-pagination" aria-label="수입검사 페이지"></div><span class="ip-count">총 0건 표시</span></div>
     </div>
@@ -2631,7 +2631,7 @@ function renderSavedWorkOrders(){
     values.forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);});
     tr.addEventListener('click',e=>{if(!e.target.closest('button'))showRowDetail('work',tr);});
     tr.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('work',tr);});
-    const actions=document.createElement('td');
+    const actions=document.createElement('td');actions.style.whiteSpace='nowrap';
     const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
     edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
     const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='삭제';del.style.marginLeft='5px';
