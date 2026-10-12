@@ -3417,6 +3417,11 @@ function printInspectionReport(title){
     .report-support-row{box-sizing:border-box!important;width:100%!important;border:0!important;border-bottom:1px solid var(--issued-line)!important;border-radius:0!important;margin:0!important}
     .report-support-row .label{border-color:var(--issued-line)!important}
     .report-sign .label,.report-sign .sign-cell{border-color:var(--issued-line)!important}
+    /* Barcode/footer: adjacent sections share one 1px divider only. */
+    .report-sheet.report-incoming .report-iqc-barcode{border-top:0!important;border-bottom:0!important;box-shadow:none!important}
+    .report-sheet.report-incoming .report-footer{border-top:1px solid var(--issued-line)!important;border-bottom:0!important;box-shadow:none!important}
+    .report-sheet.report-incoming .report-support-row:last-child{border-bottom:1px solid var(--issued-line)!important}
+    .report-sheet.report-incoming{border-bottom:1px solid var(--issued-line)!important}
     /* Center the three management-info card texts in the certificate print view. */
     .report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
     .report-sheet.report-incoming .report-support-row .value .muted,
