@@ -2328,7 +2328,7 @@ function adminEmployeesShell(){
     <div class="erp-admin-tabs"><button class="erp-admin-tab active" type="button">직원별</button><button class="erp-admin-tab" type="button">부서별</button></div>
     <div class="erp-admin-tablewrap">
       <table class="erp-admin-table"><thead><tr><th style="width:42px">NO</th><th style="width:86px">사번</th><th style="width:110px">직원명</th><th style="width:120px">부서</th><th style="width:90px">직급</th><th style="width:110px">계정 ID</th><th style="width:90px">권한</th><th style="width:100px">등록일</th><th style="width:90px">상태</th><th style="width:140px">최종접속</th><th style="width:190px">관리</th></tr></thead><tbody>
-      ${ADMIN_EMPLOYEES.map((e,i)=>`<tr class="admin-emp-row" data-index="${i}" data-dept="${e.dept}" data-role="${e.role}" data-status="${e.status}"><td>${i+1}</td><td>${e.no}</td><td class="left"><span class="emp-name">${e.name}</span><span class="emp-sub">계정 ID · ${e.account}</span></td><td>${e.dept}</td><td>${e.position}</td><td>${e.account}</td><td><span class="role-chip ${e.role==='관리자'?'admin':''}">${e.role}</span></td><td>${e.date}</td><td>${employeeStatusBadge(e.status)}</td><td>${e.last}</td><td><div class="emp-actions"><button class="btn admin-emp-edit" type="button">수정</button><button class="btn admin-emp-lock" type="button">${e.status==='사용'?'중지':'승인'}</button>${e.name==='관리자'?'':'<button class="btn admin-emp-delete" type="button">삭제</button>'}</div></td></tr>`).join('')}
+      ${ADMIN_EMPLOYEES.map((e,i)=>`<tr class="admin-emp-row" data-index="${i}" data-dept="${e.dept}" data-role="${e.role}" data-status="${e.status}"><td>${i+1}</td><td>${e.no}</td><td class="left"><span class="emp-name">${e.name}</span><span class="emp-sub">계정 ID · ${e.account}</span></td><td>${e.dept}</td><td>${e.position}</td><td>${e.account}</td><td><span class="role-chip ${e.role==='관리자'?'admin':''}">${e.role}</span></td><td>${e.date}</td><td>${employeeStatusBadge(e.status)}</td><td><button class="btn admin-ip-history" type="button" title="접속 IP 이력 조회">${e.last}<span style="display:block;font-size:10px">${e.lastIp||"-"}</span></button></td><td><div class="emp-actions"><button class="btn admin-emp-edit" type="button">수정</button><button class="btn admin-emp-lock" type="button">${e.status==='사용'?'중지':'승인'}</button>${e.name==='관리자'?'':'<button class="btn admin-emp-delete" type="button">삭제</button>'}</div></td></tr>`).join('')}
       </tbody></table>
     </div>
     <div class="erp-admin-total"><div>합계</div><div></div><div class="count">등록 ${ADMIN_EMPLOYEES.length}명 · 사용 ${active}명 · 승인대기 ${pending}명</div></div>
@@ -2450,6 +2450,18 @@ function wireAdminEmployees(section){
   section.querySelectorAll('.erp-admin-tab').forEach(tab=>tab.addEventListener('click',()=>{section.querySelectorAll('.erp-admin-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');toast(tab.textContent.trim()+' 보기로 전환했습니다.');}));
   section.querySelectorAll('.admin-emp-row').forEach(row=>row.addEventListener('click',e=>{if(e.target.closest('button'))return;const i=Number(row.dataset.index);openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
   section.querySelectorAll('.admin-emp-edit').forEach((btn,i)=>btn.addEventListener('click',e=>{e.stopPropagation();openEmployeeRegister(ADMIN_EMPLOYEES[i],i);}));
+  section.querySelectorAll('.admin-ip-history').forEach((btn,i)=>btn.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const emp=ADMIN_EMPLOYEES[i];
+    if(!emp?.dbId)return;
+    try{
+      const response=await fetch('/api/admin/login-ip-history/'+encodeURIComponent(emp.dbId),{credentials:'same-origin',cache:'no-store'});
+      const payload=await response.json();
+      if(!response.ok||!payload.success)throw Error(payload.message||'조회 실패');
+      const entries=(payload.data||[]).map(item=>new Date(item.logged_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+'  /  '+item.ip_address);
+      window.alert(emp.name+' 접속 IP 이력 (최근 100건)\\n'+(entries.length?entries.join('\\n'):'기록 없음'));
+    }catch(error){window.alert('IP 접속 이력 조회 실패: '+error.message);}
+  }));
   section.querySelectorAll('.admin-emp-lock').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();toast(btn.textContent.trim()==='중지'?'계정 사용중지 처리 화면입니다.':'계정 승인 처리 화면입니다.');}));
   section.querySelectorAll('.admin-emp-delete').forEach(btn=>btn.addEventListener('click',e=>{
     e.stopPropagation();
@@ -2497,7 +2509,7 @@ async function buildAdminEmployees(){
         role:u.role==='admin'?'관리자':'일반사용자',
         date:safe(u.created_at?String(u.created_at).slice(0,10):'-'),
         status:u.status==='APPROVED'?'사용':u.status==='PENDING'?'승인대기':'사용중지',
-        last:safe(prior.last||'-'),email:safe(u.email||''),dbId:u.id};
+        last:safe(u.last_login_at?new Date(u.last_login_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'-'),lastIp:safe(u.last_login_ip||'-'),email:safe(u.email||''),dbId:u.id};
     });
     ADMIN_EMPLOYEES.splice(0,ADMIN_EMPLOYEES.length,...rows);
     section.innerHTML=adminEmployeesShell();
