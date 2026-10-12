@@ -645,6 +645,17 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   @media(max-width:1100px){.lot-search-grid{grid-template-columns:1fr 1fr}.lot-search-btn,.lot-reset-btn{width:100%}.lot-summary{grid-template-columns:repeat(2,1fr)}.lot-flow{grid-template-columns:1fr;gap:10px}.lot-step:not(:last-child):after{content:'↓';right:auto;left:50%;top:auto;bottom:-23px;transform:translateX(-50%)}.lot-detail-grid{grid-template-columns:1fr}}
 
 
+/* LOT trace result table: prevent shared document/table styles clipping IQC dates. */
+#lotTrace .lot-detail-grid{align-items:start!important}
+#lotTrace .lot-detail-box{min-width:0!important;overflow-x:auto!important;overflow-y:visible!important}
+#lotTrace .lot-detail-box .lot-detail-table{width:100%!important;min-width:480px!important;border-collapse:separate!important;border-spacing:0!important;table-layout:auto!important}
+#lotTrace .lot-detail-box .lot-detail-table thead,
+#lotTrace .lot-detail-box .lot-detail-table tbody,
+#lotTrace .lot-detail-box .lot-detail-table tr{height:auto!important;max-height:none!important;overflow:visible!important}
+#lotTrace .lot-detail-box .lot-detail-table th,
+#lotTrace .lot-detail-box .lot-detail-table td{box-sizing:border-box!important;position:static!important;width:auto!important;height:auto!important;min-height:34px!important;padding:10px 12px!important;line-height:1.5!important;vertical-align:middle!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;font-size:12px!important}
+#lotTrace .lot-detail-box .lot-detail-table th{font-weight:750!important}
+
 /* LOT Trace premium refinement */
 .lot-premium-shell{gap:18px}
 .lot-premium-hero{position:relative;overflow:hidden;padding:26px 28px 22px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(120deg,#0b2340 0%,#10375f 54%,#1a527f 100%);box-shadow:0 18px 44px rgba(10,35,64,.22)}
