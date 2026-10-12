@@ -102,10 +102,10 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   border-collapse:collapse!important;
 }
 .report-sheet.report-incoming .report-basic colgroup col:first-child{
-  width:15%!important;
+  width:calc(15% + 5px)!important;
 }
 .report-sheet.report-incoming .report-basic colgroup col:nth-child(2){
-  width:35%!important;
+  width:calc(35% - 5px)!important;
 }
 .report-sheet.report-incoming .report-basic tbody td{
   text-align:center!important;
@@ -122,15 +122,15 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 /* The issued IQC report uses one common 15/35/15/35 grid for
    document number, inspection fields and the logo's left divider. */
 .report-sheet.report-incoming .report-meta{
-  grid-template-columns:15% 35% 15% 35%!important;
+  grid-template-columns:calc(15% + 5px) calc(35% - 5px) 15% 35%!important;
   width:100%!important;
   box-sizing:border-box!important;
 }
 .report-sheet.report-incoming .report-meta > div:nth-child(n+5){
   display:none!important;
 }
-.report-sheet.report-incoming .report-basic tbody tr{
-  grid-template-columns:15% 35% 15% 35%!important;
+ .report-sheet.report-incoming .report-basic tbody tr{
+  grid-template-columns:calc(15% + 5px) calc(35% - 5px) 15% 35%!important;
 }
 </style>
 
