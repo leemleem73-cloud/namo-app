@@ -3356,7 +3356,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>setTimeout(()=>{window.focus();window.print()},200))});<\/script></body></html>`);
+</head><body style="visibility:hidden">${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>requestAnimationFrame(()=>{document.body.style.visibility="visible";window.focus();setTimeout(()=>window.print(),120)}))});<\/script></body></html>`);
   w.document.close();
 }
 
