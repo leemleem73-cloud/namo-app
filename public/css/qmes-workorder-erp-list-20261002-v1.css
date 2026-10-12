@@ -511,3 +511,40 @@ body.qmes-workorder-direct-printing .qmes-modal-backdrop:has(.qmes-wo-output-pre
     inset:auto 0 0 0!important;
   }
 }
+
+
+/* 2026-10-12: workorder grid bottom outline and independent column drag handles */
+#qmes-workorder-erp-list-v1 .qerp-grid-shell{
+ border:1px solid #d5dbe1!important;
+ border-top:2px solid #69747e!important;
+ overflow:hidden!important;
+}
+#qmes-workorder-erp-list-v1 .qerp-scroll{
+ border-bottom:1px solid #d5dbe1!important;
+}
+#qmes-workorder-erp-list-v1 .qwf2-table{
+ border-collapse:separate!important;
+ border-spacing:0!important;
+ table-layout:fixed!important;
+ min-width:0!important;
+}
+#qmes-workorder-erp-list-v1 .qwf2-table th,
+#qmes-workorder-erp-list-v1 .qwf2-table td{
+ border-left:0!important;
+ border-top:0!important;
+ border-right:1px solid #d6dde4!important;
+ border-bottom:1px solid #d6dde4!important;
+}
+#qmes-workorder-erp-list-v1 .qwf2-table th:last-child,
+#qmes-workorder-erp-list-v1 .qwf2-table td:last-child{border-right:0!important}
+#qmes-workorder-erp-list-v1 .qwf2-table thead th{position:relative!important}
+#qmes-workorder-erp-list-v1 .qmes-wo-col-resize-handle{
+ position:absolute;right:-5px;top:0;bottom:0;width:10px;
+ z-index:4;cursor:col-resize;touch-action:none;user-select:none;
+}
+#qmes-workorder-erp-list-v1 .qmes-wo-col-resize-handle:hover{
+ background:rgba(33,137,214,.16);
+}
+#qmes-workorder-erp-list-v1 .qrl-foot{
+ border-top:0!important;border-bottom:0!important;
+}
