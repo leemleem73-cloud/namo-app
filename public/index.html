@@ -3574,7 +3574,12 @@ applyAdminVisibility();
 // Recheck administrator-only menu visibility when asynchronous login restores the role.
 // The existing administrator authorization check remains unchanged.
 if (currentUserEl && typeof MutationObserver !== 'undefined') {
-  new MutationObserver(() => applyAdminVisibility()).observe(currentUserEl, {
+  new MutationObserver(() => {
+    applyAdminVisibility();
+    // Employee table was initially cleared before login completed; restore it for admins.
+    if (isAdminUser()) buildAdminEmployees();
+    else document.getElementById('adminEmployees')?.replaceChildren();
+  }).observe(currentUserEl, {
     attributes: true,
     attributeFilter: ['data-role', 'data-qauth-ready']
   });
