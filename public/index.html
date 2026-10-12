@@ -105,8 +105,14 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
       // Align only label dividers; preserve the document-number and other value widths.
       var cols=basic.querySelectorAll('colgroup col');
       if(cols.length>=4){
-        cols[0].style.setProperty('width',width+'px');
-        cols[1].style.setProperty('width','calc(50% - '+width+'px)');
+        cols[0].style.setProperty('width',width+'px','important');
+        cols[1].style.setProperty('width','calc(50% - '+width+'px)','important');
+        basic.style.setProperty('table-layout','fixed','important');
+        basic.querySelectorAll('tbody tr > th:first-child').forEach(function(th){
+          th.style.setProperty('width',width+'px','important');
+          th.style.setProperty('min-width',width+'px','important');
+          th.style.setProperty('max-width',width+'px','important');
+        });
       }
       var tracks=getComputedStyle(meta).gridTemplateColumns.split(/\\s+/).map(parseFloat);
       if(tracks.length===8&&tracks.every(Number.isFinite)){
