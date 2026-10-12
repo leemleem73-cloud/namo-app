@@ -1092,6 +1092,19 @@ thead{background:#f4f7fa}
 #lotTrace .lot-history table tbody td{text-align:center!important}
 #equipment .eq-table tbody td:not(.left){text-align:center!important}
 </style>
+<style id="qmes-work-list-iqc-aligned-20261012">
+#work .module-body{padding:0;overflow:auto}
+#work .work-list-table{border:0;border-radius:0;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:100%;background:#fff}
+#work .work-list-table th,#work .work-list-table td{box-sizing:border-box;text-align:center;vertical-align:middle;border-right:1px solid #e5ebf2;border-bottom:1px solid #e5ebf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 7px}
+#work .work-list-table th{position:relative;height:36px;background:#f1ebfa;color:#51416e;font-size:11px;font-weight:700}
+#work .work-list-table td{height:47px;background:#fff;color:#465570;font-size:11px;font-weight:500}
+#work .work-list-table tbody tr:nth-child(even) td{background:#f8fafc}
+#work .work-list-table tbody tr:hover td{background:#eaf3ff}
+#work .work-list-table th:last-child,#work .work-list-table td:last-child{border-right:0}
+#work .work-list-table .iqc-column-resize:hover:after,#work .work-list-table .iqc-column-resize:focus-visible:after{content:'';position:absolute;top:7px;bottom:7px;right:2px;width:2px;background:#438bda}
+#work .work-list-table td .btn{font-size:11px;padding:4px 9px;color:#315f94;border:1px solid #cbd8e7;background:#f7faff;border-radius:5px}
+#work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -3015,17 +3028,7 @@ function printInspectionReport(title){
       .print-page-content,.report-sheet{break-inside:avoid;page-break-inside:avoid}
     }
   </style>
-<style id="qmes-work-table-match-iqc-20261012">
-#work .module-body{padding:0;overflow:auto}
-#work .work-list-table{border:0;border-radius:0;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:100%;width:100%;background:#fff}
-#work .work-list-table th,#work .work-list-table td{box-sizing:border-box;text-align:center;vertical-align:middle;border-right:1px solid #dfe5ed;border-bottom:1px solid #dfe5ed;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 7px}
-#work .work-list-table th{height:42px;background:#f3f6fa;color:#536177;font-size:11px;font-weight:800}
-#work .work-list-table td{height:48px;background:#fff;color:#2f3c50;font-size:11px}
-#work .work-list-table tr:hover td{background:#f7faff}
-#work .work-list-table th:last-child,#work .work-list-table td:last-child{border-right:0}
-#work .work-list-table .iqc-column-resize:hover:after,#work .work-list-table .iqc-column-resize:focus-visible:after{content:'';position:absolute;top:7px;bottom:7px;right:2px;width:2px;background:#438bda}
-#work .work-list-table td .btn{font-size:10px;padding:5px 9px}
-</style>
+
 </head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
 }
