@@ -2893,6 +2893,8 @@ function printInspectionReport(title){
     .report-basic tr{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,37fr) minmax(0,13fr) minmax(0,37fr);width:100%}
     .report-basic tr>*{min-width:0;box-sizing:border-box;border-right:1px solid var(--issued-line);border-bottom:1px solid var(--issued-line)}
     .report-basic tr>*:last-child{border-right:0}
+    /* Print-only: center six field labels and their values, not inspection conditions. */
+    .report-basic tr>th,.report-basic tr>td{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
     .report-inspection{border-collapse:collapse}
     .report-inspection col.no{width:5%}.report-inspection col.item{width:15%}
     .report-inspection col.spec{width:26%}.report-inspection col.method{width:14%}
@@ -2905,8 +2907,8 @@ function printInspectionReport(title){
     .report-support-row{grid-template-columns:24mm minmax(0,1fr);min-height:29mm}
     .report-support-row .value{min-height:29mm;overflow-wrap:anywhere;display:flex;flex-direction:column;justify-content:center}
     .report-support-row .value,.report-support-row .value .muted{color:#172033!important}
-    .report-support-row .value:has(.support-text){align-items:center;text-align:center}
-    .report-support-row .support-text{width:100%;text-align:center}
+    .report-support-row .value:has(.support-text){align-items:stretch;text-align:left}
+    .report-support-row .support-text{width:100%;text-align:left}
     .report-sign{grid-template-columns:24mm repeat(3,minmax(0,1fr))}
     .report-footer{height:auto;min-height:7mm;gap:4mm;flex-wrap:nowrap}
     .print-outside-meta{width:100%;margin:2.5mm auto 0;display:flex;justify-content:space-between;align-items:center;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
