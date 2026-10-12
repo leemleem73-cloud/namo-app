@@ -2740,7 +2740,7 @@ function buildModule(id){
           <div class="filters"><input class="input search-input" placeholder="검색어 입력"><input class="input" type="date"><input class="input" type="date"></div>
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
         </div>
-        <div class="module-body"><table class="${id==='work'?'work-list-table':''}"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <div class="module-body"><table class="${id==='work'?'work-list-table':''}"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th>비고</th>':''}</tr></thead>
         <tbody></tbody></table></div>
       </div>`;
   }
