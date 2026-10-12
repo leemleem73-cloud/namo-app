@@ -2901,7 +2901,7 @@ function printInspectionReport(title){
     .report-inspection col.measure{width:8%}.report-inspection col.judge{width:8%}
     .report-inspection td.item,.report-inspection td.spec{text-align:center;padding-left:3px}
     .report-inspection th,.report-inspection td{overflow-wrap:anywhere}
-    .report-summary{grid-template-columns:22mm minmax(0,1fr) 22mm minmax(0,1fr) 22mm minmax(0,1fr)}
+    .report-summary{grid-template-columns:repeat(3,minmax(0,13fr) minmax(0,20.333333fr))}
     .report-summary>div{min-width:0}
     .report-support{display:block;min-height:0}
     .report-support-row{grid-template-columns:13% minmax(0,1fr);min-height:29mm}
@@ -2926,12 +2926,18 @@ function printInspectionReport(title){
   const alignIssuedDividers=()=>{
     const firstBasicLabel=document.querySelector('.report-basic tr > th');
     const supportRows=document.querySelectorAll('.report-support-row');
+    const summary=document.querySelector('.report-summary');
     if(firstBasicLabel&&supportRows.length){
       const labelWidth=firstBasicLabel.getBoundingClientRect().width;
       if(labelWidth>0){
         supportRows.forEach(row=>{
           row.style.setProperty('grid-template-columns',labelWidth+'px minmax(0,1fr)','important');
         });
+        if(summary){
+          const contentWidth=summary.getBoundingClientRect().width;
+          const valueWidth=Math.max(0,(contentWidth-3*labelWidth)/3);
+          summary.style.setProperty('grid-template-columns',Array(3).fill(labelWidth+'px '+valueWidth+'px').join(' '),'important');
+        }
       }
     }
   };
