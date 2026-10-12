@@ -3390,7 +3390,7 @@ function printInspectionReport(title){
     }
   </style>
 
-</head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",()=>{requestAnimationFrame(()=>{window.focus();window.print()})},{once:true});<\/script></body></html>`);
+</head><body>${printSheet.outerHTML}${printOutsideMeta}<script>window.addEventListener("load",async()=>{document.body.style.visibility="visible";try{await document.fonts.ready;await Promise.all(Array.from(document.images).map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener("load",resolve,{once:true});img.addEventListener("error",resolve,{once:true});setTimeout(resolve,1500)})))}catch(e){}requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{window.focus();window.print()},500)))},{once:true});<\/script></body></html>`);
   w.document.close();
 }
 
