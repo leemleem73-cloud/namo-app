@@ -3402,21 +3402,19 @@ function printInspectionReport(title){
     .report-meta>div,.report-basic th,.report-basic td,.report-inspection th,.report-inspection td,
     .report-summary>div,.report-support-row .label,.report-sign .label,.report-sign .sign-cell,
     .report-sign .sign-line{border-color:var(--issued-line)!important}
-    /* Certificate print border normalization: one consistent grid line. */
-    .report-sheet{--issued-line:#c8d2de}
-    .report-doc-head,.report-meta,.report-basic,.report-inspection,.report-summary,.report-support,.report-sign,.report-footer,.report-iqc-barcode{border-color:var(--issued-line)}
-    .report-doc-head,.report-meta,.report-section-title,.report-summary,.report-footer{border-bottom:1px solid var(--issued-line)}
-    .report-basic,.report-inspection{width:100%;border-spacing:0}
-    .report-basic tr>*,.report-inspection tr>*{border-right:1px solid var(--issued-line);border-bottom:1px solid var(--issued-line)}
-    .report-basic tr>*:last-child,.report-inspection tr>*:last-child{border-right:0}
-    .report-summary>div{border-right:1px solid var(--issued-line)}
-    .report-summary>div:last-child{border-right:0}
-    .report-support{border-left:0;border-right:0;border-top:0}
-    .report-support-row{border:0;border-bottom:1px solid var(--issued-line)}
-    .report-support-row .label{border-right:1px solid var(--issued-line)}
-    .report-support-row:last-child{border-bottom:1px solid var(--issued-line)}
-    .report-sign .label,.report-sign .sign-cell{border-right:1px solid var(--issued-line)}
-    .report-sign .sign-cell:last-child{border-right:0}
+    /* Print certificate: one owner for each divider; no doubled table borders. */
+    .report-sheet{--issued-line:#c8d2de;box-sizing:border-box!important}
+    .report-doc-head,.report-meta,.report-section-title,.report-basic,.report-inspection,.report-summary,.report-support,.report-sign,.report-footer{box-sizing:border-box!important;width:100%!important;margin-left:0!important;margin-right:0!important;border-color:var(--issued-line)!important}
+    .report-basic,.report-inspection{border-collapse:separate!important;border-spacing:0!important;border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important}
+    .report-basic tr>*,.report-inspection tr>*{border-left:0!important;border-top:0!important;border-right:1px solid var(--issued-line)!important;border-bottom:1px solid var(--issued-line)!important}
+    .report-basic tr>*:last-child,.report-inspection tr>*:last-child{border-right:0!important}
+    .report-summary{border:0!important;border-radius:0!important;margin-top:0!important;border-bottom:1px solid var(--issued-line)!important;grid-template-columns:15% 18.333333% 15% 18.333333% 15% 18.333334%!important}
+    .report-summary>div{box-sizing:border-box!important;border-left:0!important;border-top:0!important;border-bottom:0!important;border-right:1px solid var(--issued-line)!important}
+    .report-summary>div:last-child{border-right:0!important}
+    .report-support{border:0!important;border-radius:0!important;margin:0!important}
+    .report-support-row{box-sizing:border-box!important;width:100%!important;border:0!important;border-bottom:1px solid var(--issued-line)!important;border-radius:0!important;margin:0!important}
+    .report-support-row .label{border-color:var(--issued-line)!important}
+    .report-sign .label,.report-sign .sign-cell{border-color:var(--issued-line)!important}
     /* Center the three management-info card texts in the certificate print view. */
     .report-sheet.report-incoming .report-support-row .value{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
     .report-sheet.report-incoming .report-support-row .value .muted,
