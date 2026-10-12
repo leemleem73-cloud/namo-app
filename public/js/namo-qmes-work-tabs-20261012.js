@@ -4,7 +4,7 @@
 if(window.__namoWorkTabs)return;
 window.__namoWorkTabs=true;
 const MAX=9;
-let tabs=[],active='';
+let tabs=[],active='',skipNextMenuActivation=false;
 const safePage=p=>/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(p||'');
 function menuFor(page){return Array.from(document.querySelectorAll('.sidebar .menu[data-page]')).find(el=>el.dataset.page===page);}
 function titleFor(el){return (el?.querySelector('.label')?.textContent||el?.textContent||'').trim();}
@@ -25,7 +25,7 @@ item.setAttribute('role','button');item.tabIndex=0;item.setAttribute('aria-label
 item.addEventListener('click',()=>navigate(tab.page));
 item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();navigate(tab.page)}});
 const close=document.createElement('button');close.type='button';close.className='namo-tab-close';close.setAttribute('aria-label',tab.title+' 탭 닫기');close.textContent='×';
-close.addEventListener('click',e=>{e.stopPropagation();const index=tabs.findIndex(t=>t.page===tab.page);if(index<0)return;const wasActive=active===tab.page;tabs.splice(index,1);if(wasActive){const next=tabs[Math.min(index,tabs.length-1)];if(next)navigate(next.page);else navigate('dashboard');}else render();});
+close.addEventListener('click',e=>{e.stopPropagation();const index=tabs.findIndex(t=>t.page===tab.page);if(index<0)return;const wasActive=active===tab.page;tabs.splice(index,1);if(wasActive){const next=tabs[Math.min(index,tabs.length-1)];if(next)navigate(next.page);else {const home=menuFor('dashboard');active='';if(home){skipNextMenuActivation=true;home.click();}render();}}else render();});
 item.append(label,close);root.append(item);
 });
 root.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'nearest'});
@@ -43,7 +43,7 @@ function navigate(page){const el=menuFor(page);if(el){el.click();activate(page);
 document.querySelector('.sidebar')?.addEventListener('click',e=>{
 const menu=e.target.closest('.menu[data-page]');
 if(!menu||!menuFor(menu.dataset.page))return;
-queueMicrotask(()=>activate(menu.dataset.page));
+queueMicrotask(()=>{if(skipNextMenuActivation){skipNextMenuActivation=false;return;}activate(menu.dataset.page);});
 });
 document.getElementById('brandHomeBtn')?.addEventListener('click',()=>queueMicrotask(()=>activate('dashboard')));
 const selected=document.querySelector('.sidebar .menu.active[data-page]')?.dataset.page||'dashboard';
