@@ -117,6 +117,36 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .report-sheet.report-incoming .report-basic tbody tr > :last-child{
   border-right:0!important;
 }
+/* IQC basic info: force grid cells to fill their tracks (table cell sizing
+   was shrinking the first label and leaving an empty gap). */
+.report-sheet.report-incoming table.report-basic{display:block!important;width:100%!important}
+.report-sheet.report-incoming table.report-basic colgroup{display:none!important}
+.report-sheet.report-incoming table.report-basic tbody{display:block!important;width:100%!important}
+.report-sheet.report-incoming table.report-basic tbody tr{
+  display:grid!important;
+  grid-template-columns:calc(15% + 5px) calc(35% - 5px) 15% 35%!important;
+  width:100%!important;
+  align-items:stretch!important;
+}
+.report-sheet.report-incoming table.report-basic tbody tr > th,
+.report-sheet.report-incoming table.report-basic tbody tr > td{
+  display:flex!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:6px 8px!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  border-radius:0!important;
+  border-right:1px solid #c8d2de!important;
+}
+.report-sheet.report-incoming table.report-basic tbody tr > :last-child{border-right:0!important}
 /* IQC issued report: shared left divider and centered saved values.
    Scope includes modal and print, not only the main workspace. */
 .report-sheet.report-incoming .report-doc-head{
