@@ -2662,6 +2662,50 @@ function saveWorkOrderForm(editId=''){
   catch(e){toast('저장 공간 오류로 작업지시서를 저장하지 못했습니다.');return;}
   closeModal();renderSavedWorkOrders();toast('작업지시서가 이 브라우저에 저장되었습니다.');
 }
+function wireWorkColumnResize(section){
+  const wrap=section?.querySelector('.module-body'),table=wrap?.querySelector('table');
+  if(!table||table.dataset.workResizeWired)return;
+  table.dataset.workResizeWired='1';
+  const headers=[...table.querySelectorAll('thead th')];
+  const defaults=[50,220,120,145,180,100,135,115,130,110,140];
+  const mins=[44,140,85,100,130,75,85,85,90,85,125];
+  const key='namo-work-column-widths-v1',labels=headers.map(x=>x.textContent.trim());
+  let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
+  const valid=saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length;
+  let custom=!!valid, widths=[],baseline=null,containerWidth=0;
+  const group=document.createElement('colgroup');
+  const cols=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
+  table.insertBefore(group,table.firstChild);
+  const handles=[];
+  function fit(){
+    const available=wrap.clientWidth;if(!available)return;
+    if(!containerWidth||(!custom&&available!==containerWidth)){
+      const scale=available/defaults.reduce((a,b)=>a+b,0);
+      const natural=defaults.map((n,i)=>Math.max(mins[i],Math.round(n*scale)));
+      if(!custom){widths=natural;baseline=natural.slice();}
+      else if(!widths.length){widths=saved.widths.map((n,i)=>Math.max(mins[i],Math.min(720,Number(n)||natural[i])));baseline=natural.slice();}
+      containerWidth=available;apply();
+    }
+  }
+  function apply(){cols.forEach((col,i)=>col.style.width=widths[i]+'px');table.style.width=widths.reduce((a,b)=>a+b,0)+'px';}
+  function save(){try{localStorage.setItem(key,JSON.stringify({labels,widths}));}catch(_){}}
+  headers.forEach((th,i)=>{
+    th.style.position='relative';
+    const handle=document.createElement('span');handle.className='iqc-column-resize';
+    handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-label',labels[i]+' 열 너비');
+    handle.title='드래그: 열 너비 조절 · 두 번 클릭: 기본 너비';
+    th.appendChild(handle);handles.push(handle);
+    let drag=null;
+    handle.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.preventDefault();e.stopPropagation();fit();drag={id:e.pointerId,x:e.clientX,width:widths[i]};handle.setPointerCapture(e.pointerId);});
+    handle.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;widths[i]=Math.max(mins[i],Math.min(720,drag.width+e.clientX-drag.x));custom=true;apply();});
+    const end=e=>{if(!drag||e.pointerId!==drag.id)return;drag=null;save();};
+    handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);handle.addEventListener('lostpointercapture',()=>{if(drag){drag=null;save();}});
+    handle.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();fit();widths[i]=baseline[i];custom=true;apply();save();});
+    handle.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();fit();widths[i]=Math.max(mins[i],Math.min(720,widths[i]+(e.key==='ArrowRight'?10:-10)));custom=true;apply();save();});
+  });
+  section._fitIncomingColumns=fit;fit();
+  if(typeof ResizeObserver!=='undefined'){const obs=new ResizeObserver(()=>{if(!table.isConnected){obs.disconnect();return;}fit();});obs.observe(wrap);}
+}
 function buildModule(id){
   const [title,desc,cols] = pageInfo[id];
   const section=document.getElementById(id);
@@ -2696,12 +2740,12 @@ function buildModule(id){
           <div class="filters"><input class="input search-input" placeholder="검색어 입력"><input class="input" type="date"><input class="input" type="date"></div>
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
         </div>
-        <div class="module-body"><table><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <div class="module-body"><table class="${id==='work'?'work-list-table':''}"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
         <tbody></tbody></table></div>
       </div>`;
   }
   wireModule(section,id);
-  if(id==='work')renderSavedWorkOrders();
+  if(id==='work'){renderSavedWorkOrders();wireWorkColumnResize(section);}
   wireIncomingInspection(section);
 }
 function sample(c,i,id){
@@ -2970,7 +3014,19 @@ function printInspectionReport(title){
       .print-page-frame{height:281mm;min-height:0;break-after:avoid;page-break-after:avoid}
       .print-page-content,.report-sheet{break-inside:avoid;page-break-inside:avoid}
     }
-  </style></head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
+  </style>
+<style id="qmes-work-table-match-iqc-20261012">
+#work .module-body{padding:0;overflow:auto}
+#work .work-list-table{border:0;border-radius:0;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:100%;width:100%;background:#fff}
+#work .work-list-table th,#work .work-list-table td{box-sizing:border-box;text-align:center;vertical-align:middle;border-right:1px solid #dfe5ed;border-bottom:1px solid #dfe5ed;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 7px}
+#work .work-list-table th{height:42px;background:#f3f6fa;color:#536177;font-size:11px;font-weight:800}
+#work .work-list-table td{height:48px;background:#fff;color:#2f3c50;font-size:11px}
+#work .work-list-table tr:hover td{background:#f7faff}
+#work .work-list-table th:last-child,#work .work-list-table td:last-child{border-right:0}
+#work .work-list-table .iqc-column-resize:hover:after,#work .work-list-table .iqc-column-resize:focus-visible:after{content:'';position:absolute;top:7px;bottom:7px;right:2px;width:2px;background:#438bda}
+#work .work-list-table td .btn{font-size:10px;padding:5px 9px}
+</style>
+</head><body><main class="print-page-frame"><div class="print-page-content">${printSheet.outerHTML}${printOutsideMeta}</div></main><script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
 }
 
