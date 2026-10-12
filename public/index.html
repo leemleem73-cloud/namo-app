@@ -78,6 +78,30 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   text-align:center!important;
   vertical-align:middle!important;
 }
+/* Incoming certificate: align the logo edge, document metadata and basic-info grid. */
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-doc-head,
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-meta,
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic{
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  border-radius:0!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-doc-head{
+  grid-template-columns:13% minmax(0,1fr) 300px!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-meta{
+  grid-template-columns:13% minmax(0,1fr) 86px minmax(0,1fr) 70px 100px 70px 100px!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-basic{
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+#mainWorkspace .workspace-body > .report-sheet.report-incoming .report-logo{
+  box-sizing:border-box!important;
+  border-right:1px solid #d7dfe8!important;
+}
 </style>
 <script id="qmes-initial-view-20261008-boot">
 (function(){
