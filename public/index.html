@@ -3757,7 +3757,7 @@ async function loadHistoricalInspectionRows(section,id){
         openModal(title,amaranthScreen('process',html,'detail',title),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
         const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
         if(!root)return;
-        const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')];
+        const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
         const vals=[get('검사일자'),get('검사자'),get('작업지시번호'),get('제품명'),lot,get('공정명')];
         inputs.forEach((input,i)=>{
           const value=vals[i]||'';
@@ -3775,7 +3775,16 @@ async function loadHistoricalInspectionRows(section,id){
           const remarks=root.querySelector('.std-premium-remarks textarea');
           if(remarks)remarks.value=draft.remarks||'';
         }
-        root.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=true);
+        // This report is an editable preview: allow inspector and work-order selection.
+        initStandardInspectionForm('process');
+        const inspector=root.querySelector('.pqc-inspector-select');
+        const inspectorManual=root.querySelector('.pqc-inspector-manual');
+        if(inspector&&get('검사자')&&[...inspector.options].some(o=>o.value===get('검사자')))inspector.value=get('검사자');
+        if(inspectorManual)inspectorManual.style.display=inspector?.value==='__manual__'?'block':'none';
+        const lotField=root.querySelector('.std-info .v input[placeholder="생산 LOT NO 입력"]');
+        if(lotField&&lot&&lot!=='-')lotField.value=lot;
+        // Avoid falsely presenting the preview as an issued or saved inspection.
+
         const status=root.querySelector('.std-inspection-doc .v:last-child');
         if(status)status.textContent=draft?'임시저장 초안':'검사결과 미입력';
       }));
@@ -4463,7 +4472,7 @@ function initStandardInspectionForm(type){
   };
   judges.forEach(x=>x.addEventListener('change',syncOverall));
   if(type==='process'){
-    const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')];
+    const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
     const lotInput=inputs[4];
     const inspectorSelect=root.querySelector('.pqc-inspector-select');
     const inspectorManual=root.querySelector('.pqc-inspector-manual');
