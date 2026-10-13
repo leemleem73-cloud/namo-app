@@ -4020,30 +4020,34 @@ async function loadHistoricalInspectionRows(section,id){
         const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
         if(!root)return;
         const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
-        const vals=[get('검사일자'),get('검사자'),get('작업지시번호'),get('제품명'),lot,get('공정명')];
+        let detail=null;
+        try{detail=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}')[String(lot).trim().toUpperCase()]||null}catch(error){console.warn('[QMES] PQC report detail fields',error)}
+        const fields=detail?.fields||{};
+        const source={
+          date:fields['검사일자']||get('검사일자'),
+          inspector:fields['검사자']==='__manual__'?(detail?.inspectorManual||''):fields['검사자']||get('검사자'),
+          workOrder:detail?.workOrder||get('작업지시번호'),
+          product:fields['제품명']||get('제품명'),
+          lot:fields['생산 LOT NO']||lot,
+          process:fields['공정명']||'절연슬러리 제조'
+        };
+        const reportValues=[source.date,source.inspector,source.workOrder,source.product,source.lot,source.process];
         inputs.forEach((input,i)=>{
-          const value=vals[i]||'';
-          if(value&&value!=='-'&&input.tagName==='INPUT')input.value=value;
-          else if(value&&value!=='-'&&input.tagName==='SELECT'&&[...input.options].some(o=>o.value===value))input.value=value;
+          const value=String(reportValues[i]||'').trim();
+          if(!value||value==='-')return;
+          if(input.tagName==='SELECT'){
+            if(![...input.options].some(option=>option.value===value))input.add(new Option(value,value));
+            input.value=value;
+          }else input.value=value;
         });
-        let draft=null;
-        try{draft=JSON.parse(localStorage.getItem('namo_qmes_pqc_report_drafts_v1')||'{}')[String(lot).toUpperCase()]}catch(_){}
-        if(draft){
-          inputs.forEach((input,i)=>{if(draft.fields?.[i]!=null)input.value=draft.fields[i];});
-          root.querySelectorAll('.std-measure').forEach((input,i)=>{if(draft.measures?.[i]!=null)input.value=draft.measures[i];});
-          root.querySelectorAll('.std-row-judge').forEach((input,i)=>{if(draft.judges?.[i]!=null)input.value=draft.judges[i];});
-          const overall=root.querySelector('#stdOverallJudge');
-          if(overall)overall.value=draft.overall||'대기';
-          const remarks=root.querySelector('.std-premium-remarks textarea');
-          if(remarks)remarks.value=draft.remarks||'';
-        }
+        const inspectorManual=root.querySelector('.pqc-inspector-manual');
+        if(inspectorManual)inspectorManual.style.display='none';
         // Certificate is read-only: values and judgments come only from the PQC detail draft.
         const hasDetail=hydratePqcReportFromDetail(root,lot);
         const inspector=root.querySelector('.pqc-inspector-select');
-        if(inspector&&get('검사자')&&[...inspector.options].some(o=>o.value===get('검사자')))inspector.value=get('검사자');
         root.querySelectorAll('.std-info input,.std-info select,.std-premium-remarks textarea').forEach(el=>{el.disabled=true;});
         const lotField=root.querySelector('.std-info .v input[placeholder="생산 LOT NO 입력"]');
-        if(lotField&&lot&&lot!=='-')lotField.value=lot;
+        if(lotField&&source.lot&&source.lot!=='-')lotField.value=source.lot;
         const status=root.querySelector('.std-inspection-doc .v:last-child');
         if(status)status.textContent=hasDetail?'상세/수정 입력값 반영':'검사결과 미입력';
       }));
