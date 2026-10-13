@@ -10,9 +10,9 @@
   const API="/api/qmes/work-orders";
   const str=v=>String(v==null?"":v).trim();
   const up=v=>str(v).toUpperCase();
-  // MB- is the display prefix for intermediate material LOTs; the official production LOT remains unchanged.
-  const batchKey=v=>up(v).replace(/^MB-/,"");
-  const batchLabel=v=>batchKey(v)?"MB-"+batchKey(v):"MB-";
+  // MB is the display prefix for intermediate material LOTs; legacy MB- values remain supported.
+  const batchKey=v=>up(v).replace(/^MB-?/,"");
+  const batchLabel=v=>batchKey(v)?"MB"+batchKey(v):"MB";
   const esc=v=>str(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const num=v=>{const n=Number(v);return Number.isFinite(n)&&n>0?n:0;};
   const lot=r=>up(r?.fields?.["생산 LOT NO"]);
@@ -52,7 +52,7 @@
     type.style.display=show?"block":"none";
     hint.style.display=show?"block":"none";
     if(!show){lotInput.removeAttribute("list");return;}
-    if(!str(lotInput.value))lotInput.value="MB-";
+    if(!str(lotInput.value)||up(lotInput.value)==="MB-")lotInput.value="MB";
     lotInput.setAttribute("list",values.id);
     values.replaceChildren();
     const kind=str(type.value);
@@ -87,11 +87,11 @@
     choice.parentNode.append(sel,help);
     lotInput.parentNode.appendChild(list);
     choice.addEventListener("change",()=>{
-      if(choice.value==="중간배치")lotInput.value="MB-";
-      else if(/^MB-/i.test(str(lotInput.value)))lotInput.value="";
+      if(choice.value==="중간배치")lotInput.value="MB";
+      else if(/^MB-?/i.test(str(lotInput.value)))lotInput.value="";
       refreshRow(tr);
     });
-    sel.addEventListener("change",()=>{lotInput.value="MB-";refreshRow(tr);});
+    sel.addEventListener("change",()=>{lotInput.value="MB";refreshRow(tr);});
     lotInput.addEventListener("input",()=>refreshRow(tr));
     lotInput.addEventListener("change",()=>{
       if(choice.value==="중간배치"&&batchKey(lotInput.value)){
