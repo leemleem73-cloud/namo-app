@@ -3518,7 +3518,18 @@ function wireWorkColumnResize(section){
       containerWidth=available;apply();
     }
   }
-  function apply(){cols.forEach((col,i)=>col.style.width=widths[i]+'px');table.style.setProperty('width',widths.reduce((a,b)=>a+b,0)+'px','important');}
+  function apply(){
+    if(!widths.length)return;
+    const available=Math.ceil(wrap.clientWidth);
+    const actual=widths.slice();
+    let free=Math.max(0,available-actual.reduce((sum,n)=>sum+n,0));
+    // Only spread remaining right-side whitespace across existing middle columns.
+    // Do not change saved user column widths or the NO/remarks column.
+    const recipients=[1,2,3,4,5,6,7,8,9].filter(i=>i<actual.length-1);
+    recipients.forEach((i,k)=>{const piece=k===recipients.length-1?free:Math.floor(free/(recipients.length-k));actual[i]+=piece;free-=piece;});
+    cols.forEach((col,i)=>col.style.width=actual[i]+'px');
+    table.style.setProperty('width',Math.max(available,actual.reduce((sum,n)=>sum+n,0))+'px','important');
+  }
   function save(){try{localStorage.setItem(key,JSON.stringify({labels,widths}));}catch(_){}}
   headers.forEach((th,i)=>{
     th.style.position='relative';
