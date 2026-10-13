@@ -3727,6 +3727,9 @@ async function loadHistoricalInspectionRows(section,id){
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
+        if(id==='process'&&cols[index]==='비고'){
+          return '<td><button type="button" class="btn mini-report pqc-remarks-edit">수정</button></td>';
+        }
         return '<td>'+safe(v)+'</td>';
       }).join('');
       return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+cells+'</tr>';
@@ -3736,6 +3739,11 @@ async function loadHistoricalInspectionRows(section,id){
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+rows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=rows.length;
     if(id==='process'){
+      tbody.querySelectorAll('.pqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{
+        event.stopPropagation();
+        const tr=button.closest('tr');
+        if(tr)showRowDetail('process',tr);
+      }));
       tbody.querySelectorAll('.pqc-report-view').forEach(button=>button.addEventListener('click',event=>{
         event.stopPropagation();
         const tr=button.closest('tr');
