@@ -1,0 +1,152 @@
+/* NAMO QMES: work-order material section only. Existing inputs and data remain untouched. */
+#mainWorkspace .work-form .nwm-material {
+  border:1px solid #d4e0eb!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  overflow:hidden!important;
+}
+#mainWorkspace .work-form .nwm-material>.work-section-title {
+  background:#edf3f9!important;
+  border-bottom:1px solid #d6e2ed!important;
+  color:#244667!important;
+  min-height:43px!important;
+  padding:11px 16px!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+#mainWorkspace .work-form .nwm-material>.work-section-body {padding:14px 16px 16px!important;background:#fff!important}
+#mainWorkspace .work-form .nwm-material .work-material-tools {
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  flex-wrap:wrap!important;gap:8px 14px!important;margin:0 0 12px!important;
+  padding:9px 13px!important;min-height:53px!important;background:#f8fbfe!important;
+  border:1px solid #e0e9f2!important;border-radius:7px!important;
+}
+#mainWorkspace .work-form .nwm-material .nwm-tools-label {display:flex;align-items:center;gap:11px;min-width:0;flex-wrap:wrap}
+#mainWorkspace .work-form .nwm-material .nwm-tools-count {display:inline-flex;align-items:center;gap:7px;color:#2b4967;font-size:12.5px;font-weight:800;white-space:nowrap}
+#mainWorkspace .work-form .nwm-material .nwm-count {padding:4px 9px;background:#e8f2fc;color:#17619d;border:1px solid #d1e1f1;border-radius:5px;font-variant-numeric:tabular-nums}
+#mainWorkspace .work-form .nwm-material .nwm-tools-hint {font-size:11.5px;color:#75889a;font-weight:500}
+#mainWorkspace .work-form .nwm-material #workRowAdd {
+  height:35px!important;min-width:110px!important;margin:0!important;padding:0 13px!important;
+  border:1px solid #abc9e4!important;border-radius:6px!important;background:#fff!important;
+  color:#1263a2!important;font-weight:750!important;font-size:12px!important;
+  white-space:nowrap!important;box-shadow:none!important
+}
+#mainWorkspace .work-form .nwm-material #workRowAdd:hover {background:#e9f4ff!important;border-color:#6ba4d6!important}
+#mainWorkspace .work-form .nwm-material .nwm-table-wrap {
+  overflow-x:auto!important;overflow-y:visible!important;
+  border:1px solid #d1deeb!important;border-radius:7px!important;
+  background:#fff!important;scrollbar-width:thin
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable {
+  width:100%!important;min-width:980px!important;margin:0!important;
+  border:0!important;border-collapse:separate!important;border-spacing:0!important;
+  table-layout:fixed!important;background:#fff!important;font-size:12px!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable thead th {
+  height:43px!important;padding:10px 8px!important;border:0!important;
+  border-right:1px solid #d5e1ed!important;border-bottom:1px solid #cbd9e6!important;
+  background:#eaf1f8!important;color:#284964!important;font-size:12px!important;
+  font-weight:800!important;text-align:center!important;line-height:1.25!important;white-space:nowrap
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable thead th:last-child {border-right:0!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.no {width:5%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.name {width:20%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.lot {width:24%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.plan {width:16%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.actual {width:16%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.ratio {width:13%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th.act {width:6%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable th .nwm-unit {color:#698095;font-weight:600;font-size:11px}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody td {
+  border:0!important;border-right:1px solid #ecf1f7!important;
+  border-bottom:1px solid #dfe8f1!important;background:#fff!important;
+  padding:7px 9px!important;min-height:52px!important;
+  vertical-align:middle!important;text-align:center!important;
+  color:#354b61!important;font-size:12px!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody td:last-child {border-right:0!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody tr:last-child td {border-bottom:0!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody tr:nth-child(even)>td {background:#fbfdff!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody tr:hover>td {background:#f0f7ff!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody tr.nwm-mid-row>td {background:#f3f8ff!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody tr.nwm-mid-row>td:nth-child(2) {box-shadow:inset 3px 0 0 #4b93cb}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody td:first-child {
+  font-weight:800!important;color:#59718b!important;font-size:12px!important;font-variant-numeric:tabular-nums
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable input,
+#mainWorkspace .work-form .nwm-material #workMaterialTable select {
+  display:block;box-sizing:border-box!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:37px!important;min-height:37px!important;margin:0!important;padding:0 10px!important;
+  border:1px solid #cedbe8!important;border-radius:5px!important;
+  background:#fff!important;color:#233f5b!important;font-size:12px!important;
+  font-weight:600!important;box-shadow:none!important;outline:0!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable input:focus,
+#mainWorkspace .work-form .nwm-material #workMaterialTable select:focus {
+  border-color:#5d9bd1!important;box-shadow:0 0 0 2px rgba(46,127,200,.12)!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable input::placeholder {color:#8799aa!important;font-weight:400!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .material-name-select,
+#mainWorkspace .work-form .nwm-material #workMaterialTable .material-name-manual,
+#mainWorkspace .work-form .nwm-material #workMaterialTable .material-lot-manual {text-align:left!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .plan-input,
+#mainWorkspace .work-form .nwm-material #workMaterialTable .actual-input,
+#mainWorkspace .work-form .nwm-material #workMaterialTable .ratio-input {text-align:right!important;font-variant-numeric:tabular-nums}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .ratio-input {
+  background:#f0f5fa!important;color:#265c86!important;border-color:#e1e8f0!important;
+  font-weight:750!important;cursor:default!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .material-name-manual {margin-top:6px!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-lot-inline {
+  display:flex!important;align-items:center!important;justify-content:stretch!important;
+  gap:6px!important;width:100%!important;min-width:0!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-lot-inline .material-lot-manual {flex:1 1 auto!important;width:100%!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-lot-inline .namo-mid-kind {
+  display:none;flex:0 0 99px!important;width:99px!important;max-width:99px!important;
+  height:37px!important;padding:0 5px!important;color:#235b8d!important;
+  background:#eef6ff!important;border-color:#bcd6eb!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-mid-row .nwm-lot-inline .namo-mid-kind {display:block!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .namo-mid-hint {
+  margin-top:5px!important;font-size:10.5px!important;
+  line-height:1.4!important;color:#73889c!important;text-align:left!important;
+  white-space:normal!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .namo-mid-hint[style*="display: none"] {display:none!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-mid-tag {
+  display:none!important;margin-top:5px!important;align-items:center!important;
+  width:max-content!important;padding:2px 7px!important;border-radius:4px!important;
+  border:1px solid #cce0f4!important;background:#eaf4ff!important;
+  color:#2b719f!important;font-size:10px!important;font-weight:750!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-mid-row .nwm-mid-tag {display:inline-flex!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable button.row-del {
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:43px!important;height:29px!important;
+  border:1px solid #e8cccc!important;border-radius:5px!important;
+  background:#fff!important;color:#b15d5f!important;padding:0 7px!important;margin:0!important;
+  font-size:11px!important;font-weight:700!important;box-shadow:none!important
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable button.row-del:hover {background:#fff2f2!important;border-color:#dca3a3!important}
+#mainWorkspace .work-form .nwm-material .nwm-summary {
+  display:flex;justify-content:flex-end;align-items:center;gap:15px;
+  flex-wrap:wrap;padding:11px 14px;margin-top:0;
+  border:1px solid #d1deeb;border-top:0;border-radius:0 0 7px 7px;
+  background:#f5f9fd;color:#526981;font-size:12px;font-weight:600
+}
+#mainWorkspace .work-form .nwm-material .nwm-summary-item {display:inline-flex;align-items:baseline;gap:7px;white-space:nowrap}
+#mainWorkspace .work-form .nwm-material .nwm-summary-item strong {color:#255a84;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+#mainWorkspace .work-form .nwm-material .nwm-summary-item .nwm-summary-unit {color:#6a8298;font-size:11px}
+#mainWorkspace .work-form .nwm-material .nwm-summary-divider {width:1px;height:16px;background:#d7e4f0}
+#mainWorkspace .work-form .nwm-material .work-note {
+  margin-top:12px!important;padding:9px 12px!important;
+  background:#fafcff!important;border-left:3px solid #bdd4e9!important;border-radius:4px!important;
+  color:#6c8095!important;font-size:11px!important;line-height:1.65!important
+}
+@media(max-width:840px){
+ #mainWorkspace .work-form .nwm-material>.work-section-body{padding:12px!important}
+ #mainWorkspace .work-form .nwm-material .nwm-tools-hint{display:none!important}
+ #mainWorkspace .work-form .nwm-material .nwm-summary{justify-content:flex-start}
+}
