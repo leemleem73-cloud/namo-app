@@ -12,6 +12,9 @@
 /* Fail open: never hide the entire workspace or navigation while booting. */
 html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="1"]) .sidebar .menu{visibility:visible}
 html:not([data-qmes-menu-ready="1"]) .sidebar .menu{transition:none!important}
+/* Prevent old work/dashboard content from flashing before saved work tab is restored. */
+html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #dashboard{visibility:hidden!important}
+html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
 
