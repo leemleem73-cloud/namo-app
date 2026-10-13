@@ -1601,6 +1601,23 @@ thead{background:#f4f7fa}
 }
 .std-inspection[data-inspection-type="process"] table.std-result tr > :first-child{border-left:1px solid #e7ecf2!important}
 .std-inspection[data-inspection-type="process"] table.std-result tr > :last-child{border-right:1px solid #e7ecf2!important}
+</style><style id="pqc-report-remove-outer-double-20261014">
+/* Outer frame belongs to the certificate; don't draw a second frame at the table edges. */
+.std-inspection.premium[data-inspection-type="process"] .std-result-wrap{
+ border-left:0!important;border-right:0!important;outline:0!important;box-shadow:none!important;
+}
+.std-inspection.premium[data-inspection-type="process"] table.std-result{
+ border-left:0!important;border-right:0!important;outline:0!important;box-shadow:none!important;
+}
+.std-inspection.premium[data-inspection-type="process"] table.std-result tr>:first-child{
+ border-left:0!important;
+}
+.std-inspection.premium[data-inspection-type="process"] table.std-result tr>:last-child{
+ border-right:0!important;
+}
+.std-inspection.premium[data-inspection-type="process"]{
+ border-color:#e7ecf2!important;box-shadow:none!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
