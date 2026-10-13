@@ -1555,7 +1555,7 @@ thead{background:#f4f7fa}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-single-ui-1"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-a4print-1"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -3487,7 +3487,11 @@ async function saveWorkOrderForm(editId=''){
   catch(e){toast('공용 서버 저장 실패: '+e.message);return;}
   workSharedRows=orders;
   try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}catch(_e){}
+  const shouldPrint=form.dataset.workPrintAfterSave==='1';
+  const reservedPrintWindow=window.__namoWorkPrintWindow||null;
   closeModal();renderSavedWorkOrders();toast('작업지시서가 공용 서버에 저장되었습니다.');
+  if(shouldPrint&&typeof window.namoPrintWorkOrder==='function')window.namoPrintWorkOrder(record,reservedPrintWindow);
+  window.__namoWorkPrintWindow=null;
 }
 function wireWorkColumnResize(section){
   const wrap=section?.querySelector('.module-body'),table=wrap?.querySelector('table');
@@ -4441,7 +4445,7 @@ function openNewForm(id,editOrder=null){
 
       <div class="work-section"><div class="work-section-title">작업지시사항</div><div class="work-section-body"><div class="form-item"><textarea placeholder="작업 시 주의사항 및 특이사항 입력"></textarea></div></div></div>
     </div>`;
-    openModal('신규 작업지시서 등록',amaranthScreen('work',html,'new','신규 작업지시서 등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
+    openModal('신규 작업지시서 등록',amaranthScreen('work',html,'new','신규 작업지시서 등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn" id="workSavePrint" type="button">저장 후 인쇄</button><button class="btn primary" id="modalSave" type="button">저장</button>');
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
@@ -4463,6 +4467,12 @@ function openNewForm(id,editOrder=null){
     }
     const workSave=document.getElementById('modalSave');
     if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
+    document.getElementById('workSavePrint')?.addEventListener('click',()=>{
+      const form=document.querySelector('.work-form');if(!form)return;
+      form.dataset.workPrintAfterSave='1';
+      window.__namoWorkPrintWindow=window.open('','_blank','width=980,height=760,scrollbars=yes');
+      document.getElementById('modalSave')?.click();
+    });
     enableWorkModalDrag();
     return;
   }
