@@ -1227,6 +1227,13 @@ thead{background:#f4f7fa}
 #incoming .iqc-resizing,#incoming .iqc-resizing *{cursor:col-resize!important;user-select:none!important}
 @media print{#incoming .iqc-column-resize{display:none}}
 </style>
+<style id="iqc-bulk-select-20261013">
+#incoming .iqc-select-head,#incoming .iqc-select-number{display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;cursor:pointer}
+#incoming .iqc-select-head input,#incoming .iqc-select-number input{width:13px;height:13px;margin:0;accent-color:#4f46e5;flex:none}
+#incoming .iqc-select-head span,#incoming .iqc-select-number span{font:inherit}
+#incoming .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+#incoming .iqc-bulk-delete[hidden]{display:none!important}
+</style>
 <style id="namo-process-grid-matching-iqc-20261013">
 /* Process list only: same header/cell borders and sizing as incoming inspection. */
 #process .inspection-premium .ip-panel{border:1px solid #dce2e8;border-radius:6px;box-shadow:none;background:#fff;overflow:hidden}
@@ -2396,9 +2403,9 @@ function premiumInspectionShell(id,title,desc,cols){
           <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="text" readonly placeholder="연-월-일" autocomplete="off"></div>
           <div class="ip-filter"><label>검사상태</label><select class="input ip-status-filter"><option>전체</option><option>합격</option><option>불합격</option><option>대기</option></select></div>
         </div>
-        <div class="ip-actions"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
+        <div class="ip-actions">${id==='incoming'?'<button class="btn iqc-bulk-delete" type="button" disabled hidden>선택 삭제 (0)</button>':''}<button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
       </div>
-      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th style="min-width:145px">비고</th>':''}</tr></thead>
+      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>${id==='incoming'?'<label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="현재 페이지 전체 선택"><span>NO</span></label>':'NO'}</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th style="min-width:145px">비고</th>':''}</tr></thead>
       <tbody></tbody></table></div>
       <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><div class="ip-pagination" aria-label="수입검사 페이지"></div><span class="ip-count">총 0건 표시</span></div>
     </div>
@@ -2944,7 +2951,7 @@ function iqcRowHtml(row,index){
   const judge=iqcJudge(row);
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
   const remark=iqcRemark(row);
-  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td>${index+1}</td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button><button class="iqc-delete-btn" type="button" data-iqc-delete>삭제</button></div></td></tr>`;
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button><button class="iqc-delete-btn" type="button" data-iqc-delete>삭제</button></div></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
@@ -3013,7 +3020,7 @@ async function deleteIncomingRecord(section,row){
 }
 function wireIncomingPageRows(section){
   section.querySelectorAll('.data-row').forEach(row=>{
-    row.addEventListener('click',e=>{if(e.target.closest('button'))return;showRowDetail('incoming',row);});
+    row.addEventListener('click',e=>{if(e.target.closest('button,input,label'))return;showRowDetail('incoming',row);});
     row.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('incoming',row);});
   });
   section.querySelectorAll('.report-issue').forEach(btn=>btn.addEventListener('click',e=>{
@@ -3065,6 +3072,45 @@ function renderIncomingPage(section,page=1){
   tbody.innerHTML=pageRows.map((row,i)=>iqcRowHtml(row,start+i)).join('');
   if(!pageRows.length)tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">조회된 수입검사 데이터가 없습니다.</td></tr>';
   wireIncomingPageRows(section);
+  // Bulk selection is limited to the currently visible page. Never delete without confirmation.
+  const selected=section._iqcSelectedIds instanceof Set?section._iqcSelectedIds:new Set();
+  section._iqcSelectedIds=selected;
+  const rowBoxes=[...tbody.querySelectorAll('.iqc-select-row')];
+  const selectAll=section.querySelector('.iqc-select-all');
+  const bulkBtn=section.querySelector('.iqc-bulk-delete');
+  function refreshSelection(){
+    rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;box.checked=!!id&&selected.has(String(id));});
+    const countSelected=selected.size;
+    if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected;bulkBtn.textContent='선택 삭제 ('+countSelected+')';}
+    if(selectAll){const checked=rowBoxes.filter(b=>b.checked).length;selectAll.checked=!!rowBoxes.length&&checked===rowBoxes.length;selectAll.indeterminate=checked>0&&checked<rowBoxes.length;}
+  }
+  rowBoxes.forEach(box=>box.addEventListener('change',()=>{
+    const id=box.closest('tr')?.dataset.iqcId;if(!id)return;
+    if(box.checked)selected.add(String(id));else selected.delete(String(id));
+    refreshSelection();
+  }));
+  if(selectAll)selectAll.onchange=()=>{
+    rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;if(id){if(selectAll.checked)selected.add(String(id));else selected.delete(String(id));}});
+    refreshSelection();
+  };
+  if(bulkBtn)bulkBtn.onclick=async()=>{
+    const ids=[...selected];
+    if(!ids.length)return;
+    if(!confirm('선택한 수입검사 '+ids.length+'건을 삭제하시겠습니까?\\n삭제 후 복구할 수 없습니다.'))return;
+    bulkBtn.disabled=true;
+    let deleted=0;
+    for(const id of ids){
+      try{
+        const response=await fetch('/api/iqc/'+encodeURIComponent(id),{method:'DELETE',credentials:'same-origin'});
+        const payload=await response.json().catch(()=>({success:false}));
+        if(!response.ok||!payload.success)throw Error(payload.message||'삭제 실패');
+        selected.delete(id);deleted++;
+      }catch(err){toast('일부 삭제 실패: '+(err.message||'서버 오류'));break;}
+    }
+    await loadIncomingFromDb(section);
+    toast(deleted+'건 삭제 완료');
+  };
+  refreshSelection();
   if(count){
     const from=filtered.length?start+1:0;
     const to=Math.min(start+pageSize,filtered.length);
