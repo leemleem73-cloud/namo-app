@@ -1,4 +1,4 @@
-/* Incoming inspection only: compact date picker; original date inputs remain the source of truth. */
+/* Inspection date picker shared by incoming, process, outgoing; existing inputs and layouts preserved. */
 (()=>{'use strict';
 const css=`
 .inspection-premium .iqc-mini-wrap{position:relative;display:inline-block;vertical-align:bottom}
@@ -52,5 +52,5 @@ function install(section){
 }
 document.addEventListener('click',e=>{const b=e.target.closest?.('.iqc-mini-calendar button');if(b&&pop){if(b.dataset.shift){month.setMonth(month.getMonth()+Number(b.dataset.shift));draw()}else if(b.dataset.date)choose(b.dataset.date);else if(b.hasAttribute('data-today'))choose(fmt(new Date()));else if(b.hasAttribute('data-clear'))choose('');return}if(pop&&!e.target.closest?.('.iqc-mini-calendar,.ip-start-date,.ip-end-date'))close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',close);window.addEventListener('scroll',close,true);
-const observer=new MutationObserver(()=>{document.querySelectorAll('#incoming').forEach(install)});observer.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('#incoming').forEach(install);
+const observer=new MutationObserver(()=>{document.querySelectorAll('#incoming,#process,#outgoing').forEach(install)});observer.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('#incoming,#process,#outgoing').forEach(install);
 })();
