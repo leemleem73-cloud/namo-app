@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
-<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-date-nowrap-1">
+<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-single-ui-1">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -1325,26 +1325,7 @@ thead{background:#f4f7fa}
 #lotTrace .lot-history table tbody td{text-align:center!important}
 #equipment .eq-table tbody td:not(.left){text-align:center!important}
 </style>
-<style id="qmes-work-list-iqc-aligned-20261012">
-/* Mirror the actual IQC list cells; neutralize shared 1px all-sides borders. */
-#work .module-shell>.module-body{padding:0!important;overflow:auto!important}
-#work .module-shell>.module-body>.work-list-table{border:0!important;border-radius:0!important;border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;min-width:100%;background:#fff!important}
-#work .module-shell>.module-body>.work-list-table>thead>tr>th{box-sizing:border-box!important;position:relative!important;height:42px!important;background:#edf2f7!important;color:#263b54!important;font-size:13px!important;font-weight:700!important;padding:11px 8px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #cbd7e4!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
-#work .module-shell>.module-body>.work-list-table>tbody>tr>td{box-sizing:border-box!important;height:42px!important;background:#fff!important;color:#344960!important;font-size:13px!important;font-weight:400!important;padding:10px 8px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #dce4ed!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
-#work .module-shell>.module-body>.work-list-table>thead>tr>th:first-child,
-#work .module-shell>.module-body>.work-list-table>tbody>tr>td:first-child{padding-left:6px!important;padding-right:6px!important}
-#work .module-shell>.module-body>.work-list-table>thead>tr>th:last-child,
-#work .module-shell>.module-body>.work-list-table>tbody>tr>td:last-child{border-right:0!important}
-#work .module-shell>.module-body>.work-list-table>tbody>tr:last-child>td{border-bottom:1px solid #dce4ed!important}
-#work .module-shell>.module-body>.work-list-table>tbody>tr:nth-child(even)>td{background:#fafcfe!important}
-#work .module-shell>.module-body>.work-list-table>tbody>tr:hover>td{background:#eef6ff!important}
-#work .work-list-table th .iqc-column-resize{position:absolute;top:0;right:0;width:10px;height:100%;cursor:col-resize;touch-action:none;z-index:3;display:block;outline:none}
-#work .work-list-table th .iqc-column-resize:after{content:'';position:absolute;right:2px;top:8px;bottom:8px;width:2px;background:transparent;border-radius:2px}
-#work .work-list-table th .iqc-column-resize:hover:after,#work .work-list-table th .iqc-column-resize:focus-visible:after{background:#438bda}
-#work .work-list-table .iqc-column-resize:hover:after,#work .work-list-table .iqc-column-resize:focus-visible:after{content:'';position:absolute;top:7px;bottom:7px;right:2px;width:2px;background:#438bda}
-#work .work-list-table td .btn{height:24px;padding:0 9px;border-radius:5px;font-size:11px;font-weight:600;color:#315f94;border:1px solid #cbd8e7;background:#f7faff}
-#work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
-</style>
+
 <style id="qmes-iqc-border-only-20261012">
 /* IQC: keep the original layout. Paint grid edges only once. */
 #reportSheet.report-incoming{--iqc-line:#b6c5d5;border-color:var(--iqc-line)!important}
@@ -1553,7 +1534,7 @@ thead{background:#f4f7fa}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-period-presets-1"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-single-ui-1"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -3312,9 +3293,13 @@ async function refreshSharedWorkOrders(){
       if(result.data&&result.data.created){remote.unshift(row);ids.add(row.id);}
       else {const refreshed=await workApi('GET');remote.splice(0,remote.length,...(Array.isArray(refreshed.data)?refreshed.data:[]));ids.clear();remote.forEach(x=>ids.add(x.id));}
     }
+    const existing=readWorkOrders();
+    const changed=JSON.stringify(existing)!==JSON.stringify(remote);
     workSharedRows=remote;
-    try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
-    renderSavedWorkOrders();
+    if(changed){
+      try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
+      renderSavedWorkOrders();
+    }
   })().catch(error=>{console.error('[QMES work sync]',error);/* background sync error: console only, no bottom popup */}).finally(()=>{workSyncBusy=null;});
   return workSyncBusy;
 }
