@@ -4357,12 +4357,24 @@ function showRowDetail(id,row){
       ['생산 LOT NO',lot],
       ['공정명','PQC'],
       ['검사항목','외관 / 점도 / 입도 / 고형분'],
-      ['검사합부',get('검사합부')==='검사대기'?'검사대기':'합격'],
-      ['검사자',get('검사자')]
-    ].map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
+      
+    ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
+    '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
+    '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
     '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder"><option value="">작업지시서에서 선택</option></select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    const judge=document.querySelector('[data-pqc-field="검사합부"]');
+    if(judge)judge.value=['대기','합격','불합격'].includes(get('검사합부'))?get('검사합부'):(get('검사합부')==='검사대기'?'대기':'합격');
+    const inspector=document.getElementById('pqcDetailInspector');
+    const inspectorManual=document.getElementById('pqcDetailInspectorManual');
+    if(inspector){
+      const existing=get('검사자');
+      if(['문지훈','박현아'].includes(existing))inspector.value=existing;
+      else if(existing&&existing!=='-'){inspector.value='__manual__';if(inspectorManual)inspectorManual.value=existing;}
+      const toggle=()=>{if(inspectorManual)inspectorManual.style.display=inspector.value==='__manual__'?'block':'none';};
+      inspector.addEventListener('change',toggle);toggle();
+    }
     const select=document.getElementById('pqcDetailWorkOrder');
     const fill=async()=>{
       const orders=[];
@@ -4381,7 +4393,7 @@ function showRowDetail(id,row){
         const fields=order.fields||{};
         const no=String(fields['작업지시번호']||order.id||'');
         if(!no||seen.has(no))return;seen.add(no);
-        const option=new Option(no+' / '+String(fields['생산 LOT NO']||'-'),no);
+        const option=new Option(no,no);
         option.dataset.lot=String(fields['생산 LOT NO']||'');
         option.dataset.product=String(fields['제품명']||'');
         select.add(option);
