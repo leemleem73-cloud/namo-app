@@ -1203,7 +1203,7 @@ thead{background:#f4f7fa}
 #incoming .inspection-premium .ip-toolbar{border-bottom:0}
 #incoming .inspection-premium .ip-footnote{border-top:0;border-radius:0}
 #incoming .inspection-premium .ip-table-wrap{border:0;border-top:1px solid #dce2e8;border-bottom:1px solid #dce2e8;border-radius:0;overflow:auto;background:#fff}
-#incoming .inspection-premium .ip-table{min-width:0!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#incoming .inspection-premium .ip-table{min-width:100%!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
 #incoming .inspection-premium .ip-table thead{background:#f2ecfb!important}
 #incoming .inspection-premium .ip-table th{position:relative;height:34px!important;background:#f2ecfb!important;color:#51416b!important;font-size:12px!important;font-weight:600!important;padding:6px 12px!important;border:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #ded5eb!important;text-align:center;white-space:nowrap;overflow:visible}
 #incoming .inspection-premium .ip-table td{height:36px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:4px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1234,7 +1234,7 @@ thead{background:#f4f7fa}
 #process .inspection-premium .ip-footnote{border-top:0;border-radius:0}
 #process .inspection-premium .ip-table-wrap{border:0;border-top:1px solid #dce2e8;border-bottom:0;border-radius:0;overflow:auto;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
 #process .inspection-premium .ip-table-wrap::-webkit-scrollbar{width:0;height:0;display:none}
-#process .inspection-premium .ip-table{min-width:0!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#process .inspection-premium .ip-table{min-width:100%!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
 #process .inspection-premium .ip-table thead{background:#f2ecfb!important}
 #process .inspection-premium .ip-table th{position:relative;height:34px!important;background:#f2ecfb!important;color:#51416b!important;font-size:12px!important;font-weight:600!important;padding:6px 12px!important;border:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #ded5eb!important;text-align:center;white-space:nowrap;overflow:visible}
 #process .inspection-premium .ip-table td{height:36px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:4px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1265,7 +1265,7 @@ thead{background:#f4f7fa}
 #outgoing .inspection-premium .ip-footnote{border-top:0;border-radius:0}
 #outgoing .inspection-premium .ip-table-wrap{border:0;border-top:1px solid #dce2e8;border-bottom:0;border-radius:0;overflow:auto;background:#fff;scrollbar-width:none;-ms-overflow-style:none}
 #outgoing .inspection-premium .ip-table-wrap::-webkit-scrollbar{width:0;height:0;display:none}
-#outgoing .inspection-premium .ip-table{min-width:0!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
+#outgoing .inspection-premium .ip-table{min-width:100%!important;table-layout:fixed;border-collapse:separate!important;border-spacing:0!important;border:0!important;background:#fff!important}
 #outgoing .inspection-premium .ip-table thead{background:#f2ecfb!important}
 #outgoing .inspection-premium .ip-table th{position:relative;height:34px!important;background:#f2ecfb!important;color:#51416b!important;font-size:12px!important;font-weight:600!important;padding:6px 12px!important;border:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #ded5eb!important;text-align:center;white-space:nowrap;overflow:visible}
 #outgoing .inspection-premium .ip-table td{height:36px;font-size:12px!important;font-weight:400!important;color:#344054!important;padding:4px 12px!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;background:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1985,7 +1985,7 @@ function wireIncomingColumnResize(section){
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
@@ -2132,7 +2132,7 @@ function wireProcessColumnResize(section){
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
@@ -2279,7 +2279,7 @@ function wireOutgoingColumnResize(section){
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
