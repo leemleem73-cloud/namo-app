@@ -1,8 +1,8 @@
 /* Incoming inspection only: compact date picker; original date inputs remain the source of truth. */
 (()=>{'use strict';
 const css=`
-.inspection-premium.iqc-date-font-only .iqc-mini-wrap{position:relative}
-.inspection-premium.iqc-date-font-only .iqc-mini-trigger{width:100%;height:100%;min-height:32px;background:transparent;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0 5px}
+.inspection-premium .iqc-mini-wrap{position:relative;display:inline-block;vertical-align:bottom}
+.inspection-premium .iqc-mini-trigger{position:absolute;inset:0;width:100%;height:100%;min-height:0;background:#fff;border:1px solid #cbd5e1;border-radius:4px;color:#334155;font:700 11px inherit;text-align:left;cursor:pointer;padding:0 7px;white-space:nowrap}
 .iqc-mini-calendar{position:fixed;z-index:2147483000;width:190px;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 6px 18px #0002;padding:7px;color:#334155;font:11px Arial,sans-serif}
 .iqc-mini-calendar *{box-sizing:border-box}
 .iqc-mini-calendar .iqc-mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}
@@ -24,7 +24,30 @@ const rect=active.parentElement.getBoundingClientRect();const left=Math.max(5,Ma
 }
 function choose(value){if(!active)return;active.value=value;active.dispatchEvent(new Event('change',{bubbles:true}));const btn=active.parentElement.querySelector('.iqc-mini-trigger');if(btn)btn.textContent=value||'연도-월-일';close()}
 function open(input){if(active===input){close();return}close();active=input;month=input.value?new Date(input.value+'T12:00:00'):new Date();if(Number.isNaN(month.getTime()))month=new Date();pop=document.createElement('div');pop.className='iqc-mini-calendar';pop.setAttribute('role','dialog');pop.setAttribute('aria-label','날짜 선택');document.body.append(pop);draw()}
-function install(section){if(!section||section.dataset.iqcMiniReady)return;section.dataset.iqcMiniReady='1';for(const input of section.querySelectorAll('.ip-start-date,.ip-end-date')){if(input.type!=='date')continue;const wrap=document.createElement('div');wrap.className='iqc-mini-wrap';input.parentNode.insertBefore(wrap,input);wrap.append(input);input.style.position='absolute';input.style.opacity='0';input.style.pointerEvents='none';input.style.width='1px';input.style.height='1px';const btn=document.createElement('button');btn.type='button';btn.className='iqc-mini-trigger input';btn.textContent=input.value||'연도-월-일';btn.setAttribute('aria-label',input.classList.contains('ip-start-date')?'시작일 달력 열기':'종료일 달력 열기');wrap.append(btn);btn.addEventListener('click',()=>open(input));input.addEventListener('change',()=>{btn.textContent=input.value||'연도-월-일'})}}
+function install(section){
+ if(!section||section.dataset.iqcMiniReady)return;
+ const inputs=[...section.querySelectorAll('.ip-start-date,.ip-end-date')].filter(el=>el.type==='date');
+ if(inputs.length!==2)return;
+ section.dataset.iqcMiniReady='1';
+ for(const input of inputs){
+   if(input.closest('.iqc-mini-wrap'))continue;
+   const wrap=document.createElement('div');
+   wrap.className='iqc-mini-wrap';
+   input.before(wrap);
+   wrap.append(input);
+   /* Keep the original input as the sole layout-sizing element. The button
+      overlays it; no second row, width change, or duplicate date control. */
+   input.style.visibility='hidden';
+   const btn=document.createElement('button');
+   btn.type='button';
+   btn.className='iqc-mini-trigger input';
+   btn.textContent=input.value||'연도-월-일';
+   btn.setAttribute('aria-label',input.classList.contains('ip-start-date')?'시작일 달력 열기':'종료일 달력 열기');
+   wrap.append(btn);
+   btn.addEventListener('click',()=>open(input));
+   input.addEventListener('change',()=>{btn.textContent=input.value||'연도-월-일'});
+ }
+}
 document.addEventListener('click',e=>{const b=e.target.closest?.('.iqc-mini-calendar button');if(b&&pop){if(b.dataset.shift){month.setMonth(month.getMonth()+Number(b.dataset.shift));draw()}else if(b.dataset.date)choose(b.dataset.date);else if(b.hasAttribute('data-today'))choose(fmt(new Date()));else if(b.hasAttribute('data-clear'))choose('');return}if(pop&&!e.target.closest?.('.iqc-mini-calendar,.iqc-mini-trigger'))close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.addEventListener('resize',close);window.addEventListener('scroll',close,true);
 const observer=new MutationObserver(()=>{document.querySelectorAll('#incoming .inspection-premium.iqc-date-font-only,section#incoming').forEach(install)});observer.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('#incoming').forEach(install);
