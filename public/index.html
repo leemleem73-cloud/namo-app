@@ -1629,6 +1629,25 @@ thead{background:#f4f7fa}
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:100%!important;min-height:40px!important;text-align:center!important;
 }
+</style><style id="pqc-summary-true-center-20261014">
+/* Center summary values against the entire cell, not below the hidden label. */
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2){
+ position:relative!important;display:flex!important;align-items:center!important;
+ justify-content:center!important;padding:0 14px!important;
+}
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2)>.label{
+ display:none!important;
+}
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2)>.value{
+ width:100%!important;height:100%!important;min-height:84px!important;
+ margin:0!important;padding:0!important;display:flex!important;
+ align-items:center!important;justify-content:center!important;text-align:center!important;
+}
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2) .pqc-report-readonly-value{
+ width:100%!important;min-height:0!important;height:auto!important;
+ line-height:1.4!important;text-align:center!important;
+ display:block!important;margin:0!important;padding:0!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
