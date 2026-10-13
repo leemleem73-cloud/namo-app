@@ -137,3 +137,10 @@
 #namo-work-detail .nwd-content{max-width:100%;overflow-x:auto}
 #namo-work-detail .nwd-grid,#namo-work-detail .nwd-tabs,#namo-work-detail .nwd-content>table,#namo-work-detail .nwd-content>div>table{max-width:100%;box-sizing:border-box}
 #work .work-list-table td:last-child .btn{margin-right:3px}
+
+/* Work order remarks: Print / Edit / Delete aligned in a single line. */
+#work .work-list-table th:last-child,#work .work-list-table td:last-child{min-width:194px!important;padding:6px 10px!important}
+#work .work-list-table .work-row-actions{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;max-width:100%}
+#work .work-list-table .work-row-actions .btn{height:28px!important;min-width:43px;padding:0 8px!important;margin:0!important;border-radius:5px!important}
+#work .work-list-table .work-row-actions .work-order-print-btn{background:#e7f2ff!important;color:#145993!important;border:1px solid #b9d3ed!important}
+#work .work-list-table .work-row-actions .work-order-print-btn:hover{background:#d9eaff!important}
