@@ -3030,7 +3030,7 @@ async function saveWorkOrderForm(editId=''){
   if(!lot||!product){toast('제품명과 생산 LOT NO를 입력해 주세요.');return;}
   const rows=[...form.querySelectorAll('#workMaterialTable tbody tr')].map(row=>({
     name:row.querySelector('.material-name-select')?.value==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():row.querySelector('.material-name-select')?.value,
-    lot:row.querySelector('.material-lot-select')?.value==='__manual__'?row.querySelector('.material-lot-manual')?.value.trim():row.querySelector('.material-lot-select')?.value,
+    lot:row.querySelector('.material-lot-manual')?.value.trim()||'',
     plan:row.querySelector('.plan-input')?.value||'',actual:row.querySelector('.actual-input')?.value||''
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
@@ -3833,7 +3833,7 @@ function openNewForm(id,editOrder=null){
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
         <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
         <table class="work-material-table" id="workMaterialTable"><thead><tr><th class="no">NO</th><th class="name">원료명</th><th class="lot">원료 LOT NO</th><th class="plan">계획투입량(kg)</th><th class="actual">실투입량(kg)</th><th class="ratio">투입비율(%)(자동계산)</th><th class="act">관리</th></tr></thead><tbody></tbody></table>
-        <div class="work-note">※ 원료명과 원료 LOT는 수입검사 등록정보와 연동됩니다. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
+        <div class="work-note">※ 원료 LOT NO는 직접 입력하며 수입검사에 등록된 LOT와 일치하도록 입력해 주세요. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
       </div></div>
 
       <div class="work-section"><div class="work-section-title">기본 공정순서</div><div class="work-section-body"><div class="work-process-grid">
@@ -3860,8 +3860,7 @@ function openNewForm(id,editOrder=null){
         add.click();const row=tbody.lastElementChild;
         const name=row.querySelector('.material-name-select');name.value=[...name.options].some(o=>o.value===m.name)?m.name:'__manual__';name.dispatchEvent(new Event('change'));
         if(name.value==='__manual__')row.querySelector('.material-name-manual').value=m.name||'';
-        const lot=row.querySelector('.material-lot-select');lot.value=[...lot.options].some(o=>o.value===m.lot)?m.lot:'__manual__';lot.dispatchEvent(new Event('change'));
-        if(lot.value==='__manual__')row.querySelector('.material-lot-manual').value=m.lot||'';
+        row.querySelector('.material-lot-manual').value=m.lot||'';
         row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
       });
       document.querySelector('.work-form textarea').value=editOrder.note||'';
@@ -3901,33 +3900,17 @@ function initNamochemicalWorkForm(){
   function materialOptions(selected=''){
     return '<option value="">원료명 선택</option>'+NAMO_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('')+'<option value="__manual__">직접 입력</option>';
   }
-  function fillLotOptions(row,name){
-    const lotSelect=row.querySelector('.material-lot-select');
-    if(!lotSelect) return;
-    const lots=incomingLotsFor(name);
-    lotSelect.innerHTML=lots.length
-      ? '<option value="">원료 LOT 선택</option>'+lots.map(l=>`<option>${l}</option>`).join('')
-      : '<option value="">수입검사 등록 LOT 없음</option>';
-    lotSelect.innerHTML+='<option value="__manual__">직접 입력</option>';
-    lotSelect.disabled=false;
-    row.querySelector('.material-lot-manual').style.display='none';
-  }
   function addRow(name=''){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td></td><td><select class="material-name-select">${materialOptions(name)}</select><input class="material-name-manual" type="text" placeholder="원료명 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><select class="material-lot-select"><option value="">원료 LOT 선택</option><option value="__manual__">직접 입력</option></select><input class="material-lot-manual" type="text" placeholder="원료 LOT NO 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><input class="plan-input" type="number" min="0" step="0.01" placeholder="계획투입량 입력"></td><td><input class="actual-input" type="number" min="0" step="0.01" placeholder="실투입량 입력"></td><td><input class="ratio-input" type="number" step="0.01" placeholder="자동계산" readonly></td><td><button class="btn row-del" type="button">삭제</button></td>`;
+    tr.innerHTML=`<td></td><td><select class="material-name-select">${materialOptions(name)}</select><input class="material-name-manual" type="text" placeholder="원료명 직접 입력" style="display:none;margin-top:5px;width:100%"></td><td><input class="material-lot-manual" type="text" placeholder="원료 LOT NO 입력" autocomplete="off"></td><td><input class="plan-input" type="number" min="0" step="0.01" placeholder="계획투입량 입력"></td><td><input class="actual-input" type="number" min="0" step="0.01" placeholder="실투입량 입력"></td><td><input class="ratio-input" type="number" step="0.01" placeholder="자동계산" readonly></td><td><button class="btn row-del" type="button">삭제</button></td>`;
     tbody.appendChild(tr);
     const nameSelect=tr.querySelector('.material-name-select');
     nameSelect?.addEventListener('change',()=>{
       const manual=nameSelect.value==='__manual__';
       tr.querySelector('.material-name-manual').style.display=manual?'block':'none';
-      fillLotOptions(tr,manual?'':nameSelect.value);
-    });
-    tr.querySelector('.material-lot-select')?.addEventListener('change',e=>{
-      tr.querySelector('.material-lot-manual').style.display=e.target.value==='__manual__'?'block':'none';
     });
     tr.querySelector('.plan-input')?.addEventListener('input',recalc);
     tr.querySelector('.row-del')?.addEventListener('click',()=>{tr.remove();renumber();recalc();});
-    if(name) fillLotOptions(tr,name);
     renumber();
   }
   defaults.forEach(addRow);
