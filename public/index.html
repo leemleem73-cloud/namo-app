@@ -1233,6 +1233,14 @@ thead{background:#f4f7fa}
 #incoming .iqc-select-head span,#incoming .iqc-select-number span{font:inherit}
 #incoming .inspection-premium .ip-actions .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3;font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;height:27px!important;padding:0 9px!important;border-radius:4px!important}
 #incoming .inspection-premium .ip-actions .export-btn{font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;height:27px!important;padding:0 9px!important;border-radius:4px!important}
+.iqc-delete-backdrop{position:fixed;inset:0;z-index:99999;background:rgba(30,20,45,.35);display:flex;align-items:center;justify-content:center;padding:20px}
+.iqc-delete-dialog{width:min(360px,100%);background:#fff;border:1px solid #d8c7ed;border-radius:12px;box-shadow:0 18px 50px rgba(49,31,75,.22);padding:20px;font-family:inherit;color:#39294c}
+.iqc-delete-dialog h3{font-size:15px;font-weight:800;margin:0 0 12px;color:#634b91}
+.iqc-delete-dialog p{font-size:13px;line-height:1.6;margin:0 0 20px;white-space:normal;overflow-wrap:anywhere}
+.iqc-delete-buttons{display:flex;justify-content:flex-end;gap:8px}
+.iqc-delete-buttons button{height:32px;min-width:62px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #d7c7ea;background:#fff;color:#5b477b}
+.iqc-delete-buttons [data-accept]{background:#eee4fa;border-color:#d5bceb;color:#67428f}
+.iqc-delete-buttons button:hover{filter:brightness(.97)}
 #incoming .iqc-bulk-delete[hidden]{display:none!important}
 </style>
 <style id="namo-process-grid-matching-iqc-20261013">
@@ -2949,6 +2957,23 @@ function iqcRemark(row){
   const remark=items.find(x=>String(x?.name||'').trim()==='비고');
   return String(remark?.value||row.remark||'').trim();
 }
+function confirmIqcBulkDelete(count){
+  return new Promise(resolve=>{
+    const backdrop=document.createElement('div');
+    backdrop.className='iqc-delete-backdrop';
+    backdrop.innerHTML='<div class="iqc-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="iqc-delete-title" aria-describedby="iqc-delete-desc"><h3 id="iqc-delete-title">선택 삭제 확인</h3><p id="iqc-delete-desc"></p><div class="iqc-delete-buttons"><button type="button" data-cancel>취소</button><button type="button" data-accept>삭제</button></div></div>';
+    backdrop.querySelector('#iqc-delete-desc').textContent='선택한 수입검사 '+count+'건을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.';
+    let done=false;
+    const finish=value=>{if(done)return;done=true;document.removeEventListener('keydown',onKey);backdrop.remove();resolve(value);};
+    const onKey=e=>{if(e.key==='Escape'){e.preventDefault();finish(false);}};
+    backdrop.querySelector('[data-cancel]').addEventListener('click',()=>finish(false));
+    backdrop.querySelector('[data-accept]').addEventListener('click',()=>finish(true));
+    backdrop.addEventListener('click',e=>{if(e.target===backdrop)finish(false);});
+    document.addEventListener('keydown',onKey);
+    document.body.appendChild(backdrop);
+    backdrop.querySelector('[data-cancel]').focus();
+  });
+}
 function iqcRowHtml(row,index){
   const judge=iqcJudge(row);
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
@@ -3098,7 +3123,7 @@ function renderIncomingPage(section,page=1){
   if(bulkBtn)bulkBtn.onclick=async()=>{
     const ids=[...selected];
     if(!ids.length)return;
-    if(!confirm('선택한 수입검사 '+ids.length+'건을 삭제하시겠습니까?\\n삭제 후 복구할 수 없습니다.'))return;
+    if(!await confirmIqcBulkDelete(ids.length))return;
     bulkBtn.disabled=true;
     let deleted=0;
     for(const id of ids){
