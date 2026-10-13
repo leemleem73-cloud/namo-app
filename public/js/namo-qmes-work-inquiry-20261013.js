@@ -17,15 +17,20 @@ function init(){
  document.head.appendChild(style);
  // Work-order-only presentation; keep the existing data and action handlers.
  style.textContent += '#work .page-head{display:none!important}#work .module-shell{background:#fff!important;border:1px solid #d5dfe9!important;border-radius:3px!important;overflow:visible!important}#work .nwi-header{display:block!important;width:100%!important;padding:14px 16px 4px!important;border:0!important}#work .nwi-title{font-size:16px;font-weight:800;color:#203247}#work .nwi-subtitle{color:#8393a7;font-size:11px;font-weight:400;margin-left:10px}#work .module-toolbar{padding:0 14px!important;min-height:0!important;border:0!important;background:transparent!important}#work .module-toolbar .table-tools{display:flex!important;gap:6px}#work .module-toolbar .new-btn{font-size:12px!important;padding:8px 12px!important}#work .nwi-list-head{padding:12px 14px 8px;display:flex;justify-content:space-between;color:#243344;font-size:13px;font-weight:700}#namo-work-inquiry{border-bottom:1px solid #e3e8ef!important}#namo-work-inquiry .nwi-actions{margin-top:10px}#namo-work-detail{border-radius:3px!important}#namo-work-detail .nwd-head{background:#fff!important}#namo-work-detail .nwd-content{min-height:180px}#namo-work-detail .nwd-cell b{white-space:normal!important}#work .work-list-table tbody tr.nwi-selected>td{background:#dcefff!important}#work .work-list-table tbody tr[data-work-saved] td:nth-child(2){color:#146fc4;font-weight:700;text-decoration:underline;cursor:pointer}';
- const workTitle=document.createElement('div');workTitle.className='nwi-header';
- const t=document.createElement('div');t.innerHTML='<span class="nwi-title">작업지시서 등록 및 조회</span><span class="nwi-subtitle">생산 LOT 기반 작업지시 관리</span>';
- workTitle.appendChild(t);
- const toolbarForTitle=shell.querySelector('.module-toolbar');
- if(toolbarForTitle){toolbarForTitle.querySelector('.filters')?.remove();shell.insertBefore(workTitle,toolbarForTitle);workTitle.appendChild(toolbarForTitle);}section.querySelector('.page-head')?.remove();
+ let head=shell.querySelector('.nwi-header');
+ if(!head){
+   head=document.createElement('div');head.className='nwi-header';
+   head.innerHTML='<div class="nwi-title"><strong>작업지시서 등록 및 조회</strong></div>';
+   const existingToolbar=shell.querySelector('.module-toolbar');
+   existingToolbar?.querySelector('.filters')?.remove();
+   if(existingToolbar)head.appendChild(existingToolbar);
+   shell.prepend(head);
+ }
+ section.querySelector('.page-head')?.remove();
  style.textContent+="#work .nwi-header{display:flex!important;justify-content:space-between!important;align-items:center!important;flex-wrap:wrap!important;gap:12px!important;padding:10px 15px!important;width:100%!important}#work .nwi-header>.module-toolbar{width:auto!important;flex:0 0 auto!important;margin:0 0 0 auto!important;padding:0!important;min-height:0!important;border:0!important}#work .nwi-header>.module-toolbar .table-tools{display:flex!important;gap:6px!important}#namo-work-inquiry .nwi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 14px!important}#namo-work-inquiry label span{flex:0 0 78px!important;min-width:78px!important} @media(max-width:1050px){#namo-work-inquiry .nwi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:700px){#namo-work-inquiry .nwi-grid{grid-template-columns:1fr!important}}";
  const panel=document.createElement('div');panel.id='namo-work-inquiry';
  panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+(i===3?'<select data-filter="'+i+'"><option value="">전체</option><option>대기</option><option>진행</option><option>완료</option></select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
- const toolbar=shell.querySelector('.module-toolbar');toolbar?.insertAdjacentElement('afterend',panel);
+ head.insertAdjacentElement('afterend',panel);
  const listHead=document.createElement('div');listHead.className='nwi-list-head';
  listHead.innerHTML='<span>▸ 작업지시 현황</span><span id="nwi-list-total">총 0건</span>';
  const tableWrap=shell.querySelector('.module-body');if(tableWrap)shell.insertBefore(listHead,tableWrap);
