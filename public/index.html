@@ -4115,6 +4115,26 @@ function issueInspectionReport(id,row){
       ['전해액 안정성','미탈리','육안','미탈리','미탈리','미탈리','합격']
     ]
   };
+  // PQC report reads the measurements saved in the detail/edit screen, not demo figures.
+  if(id==='process'){
+    try{
+      const lotKey=String(val('생산 LOT NO')||'').trim().toUpperCase();
+      const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
+      const draft=drafts[lotKey];
+      if(draft&&draft.measurements){
+        for(const record of itemSets.process){
+          const values=draft.measurements[record[0]];
+          if(!Array.isArray(values))continue;
+          for(let i=0;i<3;i++)record[i+3]=String(values[i]??'').trim()||'-';
+          const complete=values.length>=3&&values.slice(0,3).every(v=>String(v??'').trim()!=='');
+          const valid=record[0]==='외관'?v=>v==='이상없음':record[0]==='입도(Dmax)'?v=>Number(v)<10:record[0]==='점도'?v=>Number(v)>=1200&&Number(v)<=1800:v=>Number(v)>=19&&Number(v)<=21;
+          record[6]=!complete?'대기':values.slice(0,3).every(valid)?'합격':'불합격';
+        }
+      }else{
+        itemSets.process.forEach(record=>{record[3]='-';record[4]='-';record[5]='-';record[6]='대기';});
+      }
+    }catch(error){console.warn('[QMES] PQC report measurements:',error);}
+  }
   const items=itemSets[id]||[];
   const finalJudge=val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격');
   const issueDate=new Date().toLocaleDateString('ko-KR');
