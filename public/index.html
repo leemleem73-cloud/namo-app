@@ -4361,7 +4361,7 @@ function showRowDetail(id,row){
     ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
-    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" style="visibility:hidden" aria-label="작업지시번호"><option value="">작업지시번호 선택</option></select></div>'+
+    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호"><option value="'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'">'+safe(get('작업지시번호')==='-'?'작업지시번호 선택':get('작업지시번호'))+'</option></select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -4376,10 +4376,7 @@ function showRowDetail(id,row){
       inspector.addEventListener('change',toggle);toggle();
     }
     const select=document.getElementById('pqcDetailWorkOrder');
-    if(select){
-      select.disabled=true;
-      select.style.visibility='hidden';
-    }
+    // Keep the existing work-order number visible while loading additional options.
     const fill=async()=>{
       const orders=[];
       try{
@@ -4392,7 +4389,8 @@ function showRowDetail(id,row){
         if(Array.isArray(local))orders.push(...local);
       }catch(_){}
       if(!select||!select.isConnected)return;
-      select.replaceChildren(new Option('작업지시번호 선택',''));
+      const current=select.value;
+      select.replaceChildren(new Option(current||'작업지시번호 선택',current));
       const seen=new Set();
       orders.forEach(order=>{
         const fields=order.fields||{};
@@ -4405,9 +4403,8 @@ function showRowDetail(id,row){
       });
       const matching=[...select.options].find(o=>o.dataset.lot===lot);
       if(matching)select.value=matching.value;
-      else if(select.options.length===1)select.options[0].textContent='연결된 작업지시번호 없음';
-      select.disabled=select.options.length===1;
-      select.style.visibility='visible';
+      else if(current)select.value=current;
+      select.disabled=false;
     };
     select?.addEventListener('change',()=>{
       const option=select.selectedOptions[0];
@@ -4418,6 +4415,42 @@ function showRowDetail(id,row){
       if(lotInput&&option.dataset.lot)lotInput.value=option.dataset.lot;
     });
     fill();
+    const draftKey='namo_qmes_pqc_detail_drafts_v1';
+    const readDraft=()=>{
+      try{return JSON.parse(localStorage.getItem(draftKey)||'{}')[String(lot).trim().toUpperCase()]||null;}catch(_){return null;}
+    };
+    const existingDraft=readDraft();
+    if(existingDraft){
+      Object.entries(existingDraft.fields||{}).forEach(([key,value])=>{
+        const field=[...document.querySelectorAll('[data-pqc-field]')].find(el=>el.dataset.pqcField===key);
+        if(field)field.value=value;
+      });
+      if(existingDraft.workOrder&&select){
+        if(![...select.options].some(o=>o.value===existingDraft.workOrder))select.add(new Option(existingDraft.workOrder,existingDraft.workOrder));
+        select.value=existingDraft.workOrder;
+      }
+      if(existingDraft.inspectorManual&&inspectorManual)inspectorManual.value=existingDraft.inspectorManual;
+      inspector?.dispatchEvent(new Event('change'));
+    }
+    const saveButton=document.getElementById('modalSave');
+    if(saveButton){
+      const replacement=saveButton.cloneNode(true);
+      saveButton.replaceWith(replacement);
+      replacement.textContent='임시저장';
+      replacement.addEventListener('click',()=>{
+        const fields={};
+        document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
+        const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
+        if(!key){toast('생산 LOT NO를 입력해 주세요.');return;}
+        const draft={fields,workOrder:select?.value||'',inspectorManual:inspectorManual?.value||'',savedAt:new Date().toISOString()};
+        try{
+          const drafts=JSON.parse(localStorage.getItem(draftKey)||'{}');
+          drafts[key]=draft;
+          localStorage.setItem(draftKey,JSON.stringify(drafts));
+          toast('공정검사 상세 내용을 이 브라우저에 임시저장했습니다. 서버 저장은 아직 연결되지 않았습니다.');
+        }catch(error){toast('임시저장 실패: '+error.message);}
+      });
+    }
     return;
   }
   const html=amEditableDetail(id,cols,vals);
