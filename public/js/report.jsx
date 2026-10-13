@@ -183,7 +183,7 @@ function QualityInspectionViewer({ type, record, records = [], onClose }) {
   if (!record) return null;
   const isIqc = type === "IQC";
   const title = isIqc ? "수입검사 성적서" : type === "PQC" ? "공정검사 성적서" : "출하검사 성적서";
-  const lotRows = isIqc ? [] : records.filter((r) => r.lot === record.lot);
+  const lotRows = isIqc ? [] : records.filter((r) => r.lot === record.lot && (type !== "PQC" || (record.groupId ? (r.groupId ? r.groupId === record.groupId : String(r.date || "").slice(0,10) === String(record.date || "").slice(0,10)) : String(r.date || "").slice(0,10) === String(record.date || "").slice(0,10))));
   const latestByItem = {};
   lotRows.forEach((r) => { if (!latestByItem[r.check]) latestByItem[r.check] = r; });
   const orderedRows = isIqc ? [] : Object.values(latestByItem);
