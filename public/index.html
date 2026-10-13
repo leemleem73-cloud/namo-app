@@ -1546,6 +1546,16 @@ thead{background:#f4f7fa}
 #reportSheet.report-process .report-inspection thead tr > *{border-top:0!important}
 #mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tbody tr:last-child > *,
 #reportSheet.report-process .report-inspection tbody tr:last-child > *{border-bottom:0!important}
+</style><style id="pqc-report-no-dark-borders-20261014">
+#reportSheet.report-process .report-inspection,
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection{
+ border:0!important;outline:0!important;box-shadow:none!important;
+ border-collapse:separate!important;border-spacing:0!important;
+}
+#reportSheet.report-process .report-inspection tr>*,
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tr>*{
+ border-color:#e6eaf0!important;box-shadow:none!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4243,26 +4253,26 @@ function qmesIqcBarcodeSvg(value){
     </div>`;
   const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto" checked> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
   openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
-  // PQC report: clear legacy cell borders and paint each shared edge only once.
+  // PQC report: remove dark inherited borders, retain one very light divider.
   if(id==='process'){
     const grid=document.querySelector('#reportSheet.report-process table.report-inspection');
     if(grid){
       const set=(el,prop,value)=>el.style.setProperty(prop,value,'important');
-      set(grid,'border-collapse','collapse');
-      set(grid,'border-spacing','0');
+      const light='#e6eaf0';
       set(grid,'border','0');
+      set(grid,'border-collapse','separate');
+      set(grid,'border-spacing','0');
       set(grid,'box-shadow','none');
       set(grid,'outline','none');
-      const rows=[...grid.rows];
-      rows.forEach((tr,ri)=>{
+      [...grid.rows].forEach((tr,ri)=>{
         [...tr.cells].forEach((cell,ci)=>{
           set(cell,'border','0');
           set(cell,'box-shadow','none');
           set(cell,'outline','none');
-          set(cell,'border-right','1px solid #d7dfe8');
-          set(cell,'border-bottom','1px solid #d7dfe8');
-          if(ri===0)set(cell,'border-top','1px solid #d7dfe8');
-          if(ci===0)set(cell,'border-left','1px solid #d7dfe8');
+          set(cell,'border-right','1px solid '+light);
+          set(cell,'border-bottom','1px solid '+light);
+          if(ri===0)set(cell,'border-top','1px solid '+light);
+          if(ci===0)set(cell,'border-left','1px solid '+light);
         });
       });
     }
