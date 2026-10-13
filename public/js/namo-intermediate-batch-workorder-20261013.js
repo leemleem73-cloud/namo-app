@@ -142,7 +142,8 @@
     }).catch(e=>console.warn("[intermediate-batch] LOT list unavailable",e));
   }
   let queued=false;
-  const target=document.getElementById("modalBody");
+  // openModal() renders the live work-order editor in #workspaceBody (not the legacy #modalBody).
+  const target=document.getElementById("workspaceBody")||document.getElementById("modalBody");
   if(target){
     const observer=new MutationObserver(()=>{
       if(queued)return;
