@@ -1309,18 +1309,19 @@ thead{background:#f4f7fa}
 
 
 <style id="iqc-date-text-size-20261013">
-/* One typography for both placeholder (연-월-일) and selected YYYY-MM-DD. */
+/* Use an explicit Korean-capable sans-serif font for both placeholder and selected date.
+   Inherited font resolved differently for ASCII digits and Korean placeholders. */
 .inspection-premium .ip-filter-row input.ip-start-date[type="text"],
 .inspection-premium .ip-filter-row input.ip-end-date[type="text"],
 .inspection-premium .ip-filter-row input.ip-start-date[type="text"]::placeholder,
 .inspection-premium .ip-filter-row input.ip-end-date[type="text"]::placeholder {
- font-family:inherit!important;
+ font-family:Arial,"Malgun Gothic","맑은 고딕",sans-serif!important;
  font-size:11px!important;
  font-weight:400!important;
  font-style:normal!important;
- letter-spacing:normal!important;
+ letter-spacing:0!important;
  color:#334155!important;
- opacity:1;
+ opacity:1!important;
 }
 </style>
 </head>
