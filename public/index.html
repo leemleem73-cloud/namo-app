@@ -1648,6 +1648,37 @@ thead{background:#f4f7fa}
  line-height:1.4!important;text-align:center!important;
  display:block!important;margin:0!important;padding:0!important;
 }
+</style><style id="pqc-approval-neat-align-20261014">
+/* Keep the electronic approval title and three approval cards evenly aligned. */
+.std-inspection[data-inspection-type="process"] .std-approval-row{
+ grid-template-columns:140px repeat(3,minmax(0,1fr))!important;
+ align-items:stretch!important;min-height:108px!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-row>.approval-label{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ text-align:center!important;padding:12px!important;
+ border-right:1px solid #e6eaf0!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item{
+ display:grid!important;grid-template-rows:20px 30px 24px!important;
+ align-content:center!important;justify-items:center!important;
+ gap:2px!important;padding:10px 12px!important;min-width:0!important;
+ text-align:center!important;border-right:1px solid #e6eaf0!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item:last-child{border-right:0!important}
+.std-inspection[data-inspection-type="process"] .std-approval-item span,
+.std-inspection[data-inspection-type="process"] .std-approval-item b,
+.std-inspection[data-inspection-type="process"] .std-approval-item small{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ margin:0!important;padding:0!important;line-height:1.3!important;
+ text-align:center!important;min-width:0!important;width:100%!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item b{
+ max-width:110px!important;border-bottom:1px solid #e6eaf0!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item small{
+ white-space:normal!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
