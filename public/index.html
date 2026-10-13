@@ -1305,12 +1305,18 @@ thead{background:#f4f7fa}
 </style>
 
 <style id="iqc-date-typography-only-20261013">
-/* 수입검사 시작일/종료일 날짜 텍스트만 검사상태 '전체'와 통일 */
-.inspection-premium.iqc-date-font-only .ip-filter-row input.ip-start-date[type="date"],
-.inspection-premium.iqc-date-font-only .ip-filter-row input.ip-end-date[type="date"],
-.inspection-premium.iqc-date-font-only .ip-filter-row input.ip-start-date[type="date"]::-webkit-datetime-edit,
-.inspection-premium.iqc-date-font-only .ip-filter-row input.ip-end-date[type="date"]::-webkit-datetime-edit {
- font-family:inherit!important;font-size:inherit!important;font-weight:inherit!important;letter-spacing:inherit!important;
+/* IQC start/end date glyph size matches status filter '전체'; no layout changes. */
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"],
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit,
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit-year-field,
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit-month-field,
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit-day-field,
+.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type="date"]::-webkit-datetime-edit-text {
+ font-size:11px!important;
+ font-weight:400!important;
+ font-family:Arial,"Malgun Gothic",sans-serif!important;
+ letter-spacing:normal!important;
 }
 </style>
 </head>
