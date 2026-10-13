@@ -3672,7 +3672,13 @@ function wireInspectionBulkSelect(section,id){
   const tbody=section.querySelector('tbody');
   const head=section.querySelector('.iqc-select-all');
   const button=section.querySelector('.iqc-bulk-delete');
-  if(!tbody||!head||!button)return;
+  const pager=section.querySelector('.ip-pagination');
+  const count=section.querySelector('.ip-count');
+  if(!tbody||!head||!button||!pager)return;
+  const pageSize=10;
+  let allRows=[...tbody.querySelectorAll('tr.data-row')];
+  let current=1;
+  let rendering=false;
   function update(){
     const boxes=[...tbody.querySelectorAll('.iqc-select-row')];
     const selected=boxes.filter(box=>box.checked);
@@ -3681,34 +3687,54 @@ function wireInspectionBulkSelect(section,id){
     head.checked=boxes.length>0&&selected.length===boxes.length;
     head.indeterminate=selected.length>0&&selected.length<boxes.length;
   }
-  function prepare(){
-    [...tbody.querySelectorAll('tr.data-row')].forEach((row,i)=>{
-      if(row.querySelector('.iqc-select-row'))return;
+  function render(){
+    rendering=true;
+    observer.disconnect();
+    const totalPages=Math.max(1,Math.ceil(allRows.length/pageSize));
+    current=Math.min(Math.max(1,current),totalPages);
+    const start=(current-1)*pageSize;
+    const visible=allRows.slice(start,start+pageSize);
+    tbody.replaceChildren(...visible);
+    visible.forEach((row,i)=>{
       const cell=row.cells[0];if(!cell)return;
-      const label=document.createElement('label');label.className='iqc-select-number';
-      const box=document.createElement('input');box.type='checkbox';box.className='iqc-select-row';box.setAttribute('aria-label',(i+1)+'번 검사 선택');
-      const num=document.createElement('span');num.textContent=cell.textContent.trim();
-      label.append(box,num);cell.replaceChildren(label);
+      let label=cell.querySelector('.iqc-select-number');
+      if(!label){
+        label=document.createElement('label');label.className='iqc-select-number';
+        const box=document.createElement('input');box.type='checkbox';box.className='iqc-select-row';
+        const num=document.createElement('span');label.append(box,num);cell.replaceChildren(label);
+      }
+      const num=label.querySelector('span');
+      if(num)num.textContent=String(start+i+1);
+      label.querySelector('input')?.setAttribute('aria-label',(start+i+1)+'번 검사 선택');
     });
+    if(count)count.textContent='총 '+allRows.length+'건 · '+(allRows.length?start+1:0)+'-'+Math.min(start+pageSize,allRows.length)+' 표시';
+    let html='<button class="ip-page-btn" type="button" data-page="'+(current-1)+'" '+(current===1?'disabled':'')+'>‹</button>';
+    for(let i=1;i<=totalPages;i++)html+='<button class="ip-page-btn '+(i===current?'active':'')+'" type="button" data-page="'+i+'">'+i+'</button>';
+    html+='<button class="ip-page-btn" type="button" data-page="'+(current+1)+'" '+(current===totalPages?'disabled':'')+'>›</button>';
+    pager.innerHTML=html;
+    pager.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(btn.disabled)return;current=Number(btn.dataset.page);render();
+    }));
     update();
+    observer.observe(tbody,{childList:true});
+    rendering=false;
   }
+  const observer=new MutationObserver(()=>{
+    if(rendering)return;
+    const newRows=[...tbody.querySelectorAll('tr.data-row')];
+    if(newRows.some(row=>!allRows.includes(row))){
+      allRows=newRows;current=1;render();
+    }
+  });
   tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
   head.addEventListener('change',()=>{tbody.querySelectorAll('.iqc-select-row').forEach(box=>{box.checked=head.checked;});update();});
   button.addEventListener('click',async()=>{
     const rows=[...tbody.querySelectorAll('tr.data-row')].filter(row=>row.querySelector('.iqc-select-row:checked'));
     if(!rows.length)return;
     if(!await confirmIqcBulkDelete(rows.length,id==='process'?'공정검사':'출하검사'))return;
-    // Only delete records with an explicit server identifier; never remove UI rows
-    // and pretend they were permanently deleted.
-    if(rows.some(row=>!row.dataset.inspectionId)){
-      alert('이 검사 목록은 서버 삭제 기능이 연결되지 않았습니다. 데이터 보호를 위해 삭제하지 않았습니다.');
-      return;
-    }
     alert('이 검사 목록은 서버 삭제 기능이 연결되지 않았습니다. 데이터 보호를 위해 삭제하지 않았습니다.');
   });
-  const observer=new MutationObserver(()=>prepare());
-  observer.observe(tbody,{childList:true});
-  prepare();
+  render();
 }
 function wireModule(section,id){
   if(!section||section.dataset.moduleWired==='1') return;
