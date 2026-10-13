@@ -2394,7 +2394,7 @@ function wireOutgoingColumnResize(section){
 function premiumInspectionShell(id,title,desc,cols){
   const meta={
     incoming:{icon:'IQC',tag:'INCOMING QUALITY',total:0,today:0,pass:0,pending:0,filter:'원료명 / LOT / 공급업체 검색'},
-    process:{icon:'IP',tag:'IN-PROCESS QUALITY',total:0,today:0,pass:0,pending:0,filter:'LOT / 작업지시 / 공정 검색'},
+    process:{icon:'PQC',tag:'IN-PROCESS QUALITY',total:0,today:0,pass:0,pending:0,filter:'LOT / 작업지시 / 공정 검색'},
     outgoing:{icon:'OQC',tag:'OUTGOING QUALITY',total:0,today:0,pass:0,pending:0,filter:'고객사 / LOT / 제품명 검색'}
   }[id];
   return `<div class="inspection-premium">
