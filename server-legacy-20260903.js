@@ -3171,19 +3171,28 @@ bindCrud('nonconform', (b) => ({
 let qmesWorkOrderStoreReady;
 async function ensureQmesWorkOrderStore() {
   if (!qmesWorkOrderStoreReady) {
-    qmesWorkOrderStoreReady = db(`CREATE TABLE IF NOT EXISTS qmes_work_order_documents (
-      id TEXT PRIMARY KEY,
-      document JSONB NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`).catch(error => { qmesWorkOrderStoreReady = null; throw error; });
+    qmesWorkOrderStoreReady = (async () => {
+      await db(`CREATE TABLE IF NOT EXISTS qmes_work_order_documents (
+        id TEXT PRIMARY KEY,
+        document JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+      // Tombstones prevent cached copies on other PCs from re-creating deleted orders.
+      await db(`CREATE TABLE IF NOT EXISTS qmes_work_order_deletions (
+        id TEXT PRIMARY KEY,
+        deleted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+    })().catch(error => { qmesWorkOrderStoreReady = null; throw error; });
   }
   return qmesWorkOrderStoreReady;
 }
 app.get('/api/qmes/work-orders', requireLogin, async (_req,res) => {
   try {
     await ensureQmesWorkOrderStore();
-    const result = await db('SELECT document FROM qmes_work_order_documents ORDER BY created_at DESC');
+    const result = await db(`SELECT doc.document FROM qmes_work_order_documents AS doc
+      WHERE NOT EXISTS (SELECT 1 FROM qmes_work_order_deletions AS gone WHERE gone.id=doc.id)
+      ORDER BY doc.created_at DESC`);
     ok(res, result.rows.map(r => r.document));
   } catch(e) { fail(res,500,e.message); }
 });
@@ -3193,7 +3202,9 @@ app.post('/api/qmes/work-orders', requireLogin, async (req,res) => {
     const id=String(document.id||'').trim();
     if(!/^WO-[A-Za-z0-9_-]{6,60}$/.test(id) || !document.fields || typeof document.fields!=='object' || Array.isArray(document.fields)) return fail(res,400,'올바른 작업지시서가 아닙니다.');
     await ensureQmesWorkOrderStore();
-    const result=await db('INSERT INTO qmes_work_order_documents (id,document) VALUES ($1,$2::jsonb) ON CONFLICT (id) DO NOTHING RETURNING id',[id,JSON.stringify(document)]);
+    const result=await db(`INSERT INTO qmes_work_order_documents (id,document)
+      SELECT $1,$2::jsonb WHERE NOT EXISTS (SELECT 1 FROM qmes_work_order_deletions WHERE id=$1)
+      ON CONFLICT (id) DO NOTHING RETURNING id`,[id,JSON.stringify(document)]);
     ok(res,{id,created:result.rowCount===1},result.rowCount?'작업지시서가 저장되었습니다.':'이미 등록된 작업지시서입니다.');
   } catch(e) { fail(res,500,e.message); }
 });
@@ -3202,7 +3213,9 @@ app.put('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
     const id=String(req.params.id||'').trim(),document=req.body||{};
     if(document.id!==id||!document.fields||typeof document.fields!=='object') return fail(res,400,'작업지시서 정보가 일치하지 않습니다.');
     await ensureQmesWorkOrderStore();
-    const result=await db('UPDATE qmes_work_order_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1 RETURNING id',[id,JSON.stringify(document)]);
+    const result=await db(`UPDATE qmes_work_order_documents SET document=$2::jsonb,updated_at=NOW()
+      WHERE id=$1 AND NOT EXISTS (SELECT 1 FROM qmes_work_order_deletions WHERE id=$1)
+      RETURNING id`,[id,JSON.stringify(document)]);
     if(!result.rowCount) return fail(res,404,'수정할 작업지시서를 찾을 수 없습니다.');
     ok(res,{id});
   } catch(e) { fail(res,500,e.message); }
@@ -3210,9 +3223,21 @@ app.put('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
 app.delete('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
   try {
     await ensureQmesWorkOrderStore();
-    const result=await db('DELETE FROM qmes_work_order_documents WHERE id=$1 RETURNING id',[String(req.params.id||'')]);
+    const id=String(req.params.id||'').trim();
+    // Deletion and its durable tombstone are one atomic database statement.
+    const result=await db(`WITH removed AS (
+        DELETE FROM qmes_work_order_documents WHERE id=$1 RETURNING id
+      ), marked AS (
+        INSERT INTO qmes_work_order_deletions (id,deleted_at)
+        SELECT id,NOW() FROM removed
+        ON CONFLICT (id) DO UPDATE SET deleted_at=EXCLUDED.deleted_at
+        RETURNING id
+      )
+      SELECT id FROM marked
+      UNION ALL SELECT id FROM qmes_work_order_deletions WHERE id=$1
+      LIMIT 1`,[id]);
     if(!result.rowCount) return fail(res,404,'삭제할 작업지시서를 찾을 수 없습니다.');
-    ok(res,{id:req.params.id});
+    ok(res,{id});
   } catch(e) { fail(res,500,e.message); }
 });
 
