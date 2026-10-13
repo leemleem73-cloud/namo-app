@@ -32,6 +32,76 @@ function init(){
  const panel=document.createElement('div');panel.id='namo-work-inquiry';
  panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+(i===3?'<select data-filter="'+i+'"><option value="">전체</option><option>대기</option><option>진행</option><option>완료</option></select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
  head.insertAdjacentElement('afterend',panel);
+ // Date-range UI only: keep original start/end filters and their search behavior.
+ (function installInstructionPeriod(){
+  const start=panel.querySelector('[data-filter="4"]'),end=panel.querySelector('[data-filter="5"]');
+  if(!start||!end)return;
+  const startLabel=start.closest('label'),endLabel=end.closest('label');
+  const rangeLabel=document.createElement('label');
+  rangeLabel.className='nwi-period-label';
+  rangeLabel.innerHTML='<span>지시기간</span><button type="button" class="nwi-period-trigger" aria-label="지시기간 달력 열기" aria-expanded="false"><span class="nwi-period-value">기간 선택</span><span class="nwi-period-icon">▦</span></button>';
+  startLabel.before(rangeLabel);startLabel.hidden=true;endLabel.hidden=true;
+  const pop=document.createElement('div');pop.className='nwi-period-popup';pop.hidden=true;
+  pop.innerHTML='<div class="nwi-period-months"></div><div class="nwi-period-footer"><span class="nwi-period-summary">기간을 선택하세요</span><div><button type="button" class="btn nwi-period-cancel">취소</button><button type="button" class="btn primary nwi-period-ok">확인</button></div></div>';
+  rangeLabel.after(pop);
+  const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+  const parse=v=>v?new Date(v+'T12:00:00'):null;
+  const today=new Date();let base=new Date(today.getFullYear(),today.getMonth(),1),a=null,b=null;
+  const trigger=rangeLabel.querySelector('.nwi-period-trigger'),value=rangeLabel.querySelector('.nwi-period-value');
+  function redraw(){
+   const months=pop.querySelector('.nwi-period-months');months.innerHTML='';
+   for(let k=0;k<2;k++){
+    const d=new Date(base.getFullYear(),base.getMonth()+k,1),y=d.getFullYear(),m=d.getMonth();
+    const block=document.createElement('div');block.className='nwi-period-month';
+    const top=document.createElement('div');top.className='nwi-period-month-head';
+    const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','이전 달');prev.onclick=()=>{base=new Date(base.getFullYear(),base.getMonth()-1,1);redraw()};
+    const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','다음 달');next.onclick=()=>{base=new Date(base.getFullYear(),base.getMonth()+1,1);redraw()};
+    const title=document.createElement('strong');title.textContent=y+'.'+String(m+1).padStart(2,'0');top.append(prev,title,next);block.appendChild(top);
+    const grid=document.createElement('div');grid.className='nwi-period-days';
+    ['일','월','화','수','목','금','토'].forEach(w=>{const x=document.createElement('b');x.textContent=w;grid.appendChild(x)});
+    const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+    for(let i=0;i<first;i++)grid.appendChild(document.createElement('i'));
+    for(let n=1;n<=days;n++){
+     const date=new Date(y,m,n),key=fmt(date),btn=document.createElement('button');btn.type='button';btn.textContent=n;
+     if((a&&key===fmt(a))||(b&&key===fmt(b)))btn.classList.add('selected');
+     else if(a&&b&&date>a&&date<b)btn.classList.add('between');
+     btn.onclick=()=>{if(!a||b){a=date;b=null}else if(date<a){b=a;a=date}else{b=date}redraw()};
+     grid.appendChild(btn);
+    }
+    block.appendChild(grid);months.appendChild(block);
+   }
+   pop.querySelector('.nwi-period-summary').textContent=a?(fmt(a)+(b?' ~ '+fmt(b):' ~ 종료일 선택')):'시작일과 종료일을 선택하세요';
+  }
+  function close(){pop.hidden=true;trigger.setAttribute('aria-expanded','false')}
+  trigger.onclick=()=>{if(!pop.hidden){close();return}a=parse(start.value);b=parse(end.value);if(a)base=new Date(a.getFullYear(),a.getMonth(),1);redraw();pop.hidden=false;trigger.setAttribute('aria-expanded','true')};
+  pop.querySelector('.nwi-period-cancel').onclick=close;
+  pop.querySelector('.nwi-period-ok').onclick=()=>{if(!a||!b)return;start.value=fmt(a);end.value=fmt(b);value.textContent=fmt(a)+' ~ '+fmt(b);close()};
+  document.addEventListener('pointerdown',e=>{if(!pop.hidden&&!pop.contains(e.target)&&!rangeLabel.contains(e.target))close()});
+  panel.querySelector('#nwi-clear').addEventListener('click',()=>{value.textContent='기간 선택';a=null;b=null;close()});
+  const st=document.createElement('style');st.textContent=`
+  #namo-work-inquiry label[hidden]{display:none!important}
+  #namo-work-inquiry .nwi-period-label{position:relative}
+  #namo-work-inquiry .nwi-period-trigger{height:38px;width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:0 11px;background:#fff;color:#263b53;border:1px solid #bdcddd;border-radius:4px;cursor:pointer;font-size:13px}
+  #namo-work-inquiry .nwi-period-icon{font-size:21px;color:#6f8398}
+  #namo-work-inquiry .nwi-period-popup{position:absolute;z-index:9999;width:min(650px,calc(100vw - 100px));padding:16px;background:white;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2)}
+  #namo-work-inquiry .nwi-period-popup[hidden]{display:none!important}
+  #namo-work-inquiry .nwi-period-months{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  #namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:1px solid #e0e7ef;padding-left:16px}
+  #namo-work-inquiry .nwi-period-month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;color:#243a54;font-size:18px}
+  #namo-work-inquiry .nwi-period-month-head button{border:0;background:transparent;color:#667b90;font-size:27px;cursor:pointer}
+  #namo-work-inquiry .nwi-period-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+  #namo-work-inquiry .nwi-period-days b{font-size:12px;padding:6px 0;color:#65788b}
+  #namo-work-inquiry .nwi-period-days button{min-height:34px;font-size:13px;background:transparent;border:0;cursor:pointer;border-radius:2px;color:#30455e}
+  #namo-work-inquiry .nwi-period-days button:hover,#namo-work-inquiry .nwi-period-days button.between{background:#e4f1ff}
+  #namo-work-inquiry .nwi-period-days button.selected{background:#1688ea;color:#fff}
+  #namo-work-inquiry .nwi-period-days button:nth-child(7n+1){color:#dc4545}
+  #namo-work-inquiry .nwi-period-days button.selected:nth-child(7n+1){color:#fff}
+  #namo-work-inquiry .nwi-period-footer{border-top:1px solid #e1e8f0;margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;color:#63788e;font-size:12px}
+  #namo-work-inquiry .nwi-period-footer button{padding:7px 12px}
+  @media(max-width:700px){#namo-work-inquiry .nwi-period-months{grid-template-columns:1fr}#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:0;padding-left:0}}
+  `;document.head.appendChild(st);
+ })();
+
  const listHead=document.createElement('div');listHead.className='nwi-list-head';
  listHead.innerHTML='<span>▸ 작업지시 현황</span><span id="nwi-list-total">총 0건</span>';
  const tableWrap=shell.querySelector('.module-body');if(tableWrap)shell.insertBefore(listHead,tableWrap);
