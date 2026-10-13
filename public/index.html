@@ -4411,6 +4411,61 @@ function initStandardInspectionForm(type){
     else overall.value='대기';
   };
   judges.forEach(x=>x.addEventListener('change',syncOverall));
+  if(type==='process'){
+    const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')];
+    const lotInput=inputs[4];
+    const fill=async()=>{
+      const lot=String(lotInput?.value||'').trim().toUpperCase();
+      if(!lot)return;
+      let orders=[];
+      try{
+        const response=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
+        const data=await response.json();
+        if(response.ok&&data.success!==false&&Array.isArray(data.data))orders.push(...data.data);
+      }catch(error){console.warn('[QMES] PQC order lookup',error);}
+      try{
+        const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
+        if(Array.isArray(cached))orders.push(...cached);
+      }catch(_){}
+      const order=orders.find(o=>String(o?.fields?.['생산 LOT NO']||'').trim().toUpperCase()===lot);
+      if(!order)return;
+      if(inputs[2]&&!inputs[2].value)inputs[2].value=order.fields?.['작업지시번호']||order.id||'';
+      if(inputs[3]&&!inputs[3].value)inputs[3].value=order.fields?.['제품명']||'';
+      const date=String(order.workDate||'');
+      if(inputs[0]&&!inputs[0].value&&date.length===10)inputs[0].value=date;
+    };
+    lotInput?.addEventListener('change',fill);
+    const save=document.getElementById('modalSave');
+    if(save){
+      const button=save.cloneNode(true);save.replaceWith(button);
+      button.textContent='임시저장';
+      button.title='서버 등록이 아닌 이 브라우저의 공정검사 성적서 초안 저장';
+      const key='namo_qmes_pqc_report_drafts_v1';
+      button.addEventListener('click',()=>{
+        const lot=String(lotInput?.value||'').trim().toUpperCase();
+        if(!lot){toast('생산 LOT NO를 입력해 주세요.');return;}
+        const draft={fields:inputs.map(x=>x.value),measures:[...root.querySelectorAll('.std-measure')].map(x=>x.value),judges:judges.map(x=>x.value),overall:overall?.value||'대기',remarks:root.querySelector('.std-premium-remarks textarea')?.value||'',savedAt:new Date().toISOString()};
+        try{
+          const drafts=JSON.parse(localStorage.getItem(key)||'{}');
+          drafts[lot]=draft;localStorage.setItem(key,JSON.stringify(drafts));
+          toast('성적서 초안을 이 브라우저에 임시저장했습니다. 서버 검사기록은 변경되지 않았습니다.');
+        }catch(error){toast('임시저장 실패: '+error.message);}
+      });
+      lotInput?.addEventListener('change',()=>{
+        try{
+          const drafts=JSON.parse(localStorage.getItem(key)||'{}');
+          const draft=drafts[String(lotInput.value||'').trim().toUpperCase()];
+          if(!draft)return;
+          inputs.forEach((x,i)=>{if(draft.fields[i]!=null)x.value=draft.fields[i];});
+          root.querySelectorAll('.std-measure').forEach((x,i)=>{if(draft.measures[i]!=null)x.value=draft.measures[i];});
+          judges.forEach((x,i)=>{if(draft.judges[i]!=null)x.value=draft.judges[i];});
+          if(overall)overall.value=draft.overall||'대기';
+          const remarks=root.querySelector('.std-premium-remarks textarea');
+          if(remarks)remarks.value=draft.remarks||'';
+        }catch(_){}
+      });
+    }
+  }
   if(type==='incoming'){
     const saveBtn=document.getElementById('modalSave');
     if(saveBtn){
