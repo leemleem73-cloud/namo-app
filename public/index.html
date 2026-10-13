@@ -4351,6 +4351,26 @@ function showRowDetail(id,row){
     const get=name=>vals[cols.indexOf(name)]||'';
     const lot=get('생산 LOT NO');
     const safe=amEsc;
+    // Build the dropdown before opening the detail view: no placeholder-to-value flash.
+    const currentOrder=get('작업지시번호')==='-'?'':get('작업지시번호');
+    let cachedOrders=[];
+    try{
+      const local=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
+      if(Array.isArray(local))cachedOrders=local;
+    }catch(_){}
+    if(Array.isArray(workSharedRows))cachedOrders.push(...workSharedRows);
+    const options=new Map();
+    for(const order of cachedOrders){
+      const fields=order?.fields||{};
+      const no=String(fields['작업지시번호']||order?.id||'').trim();
+      if(no&&!options.has(no))options.set(no,{lot:String(fields['생산 LOT NO']||''),product:String(fields['제품명']||'')});
+    }
+    if(currentOrder&&!options.has(currentOrder))options.set(currentOrder,{lot,product:get('제품명')});
+    let initialOrder=currentOrder;
+    if(!initialOrder){
+      for(const [no,meta] of options){if(meta.lot===lot){initialOrder=no;break;}}
+    }
+    const orderOptions='<option value="">작업지시번호 선택</option>'+[...options].map(([no,meta])=>'<option value="'+safe(no)+'" data-lot="'+safe(meta.lot)+'" data-product="'+safe(meta.product)+'"'+(no===initialOrder?' selected':'')+'>'+safe(no)+'</option>').join('');
     const html='<div class="am-inline-edit-grid">'+[
       ['검사일자',get('검사일자')],
       ['제품명',get('제품명')],
@@ -4361,7 +4381,7 @@ function showRowDetail(id,row){
     ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
-    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호" style="visibility:hidden"><option value="'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'">'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'</option></select></div>'+
+    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호">'+orderOptions+'</select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -4376,36 +4396,27 @@ function showRowDetail(id,row){
       inspector.addEventListener('change',toggle);toggle();
     }
     const select=document.getElementById('pqcDetailWorkOrder');
-    // Keep the existing work-order number visible while loading additional options.
+    // Refresh available choices in the background without changing the selected number.
     const fill=async()=>{
-      const orders=[];
       try{
         const response=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
+        if(!response.ok)return;
         const data=await response.json();
-        if(response.ok&&data.success!==false&&Array.isArray(data.data))orders.push(...data.data);
+        if(data.success===false||!Array.isArray(data.data)||!select?.isConnected)return;
+        const selected=select.value;
+        const seen=new Set([...select.options].map(o=>o.value));
+        for(const order of data.data){
+          const fields=order?.fields||{};
+          const no=String(fields['작업지시번호']||order?.id||'').trim();
+          if(!no||seen.has(no))continue;
+          seen.add(no);
+          const option=new Option(no,no);
+          option.dataset.lot=String(fields['생산 LOT NO']||'');
+          option.dataset.product=String(fields['제품명']||'');
+          select.add(option);
+        }
+        select.value=selected;
       }catch(error){console.warn('[QMES] detail work orders',error);}
-      try{
-        const local=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
-        if(Array.isArray(local))orders.push(...local);
-      }catch(_){}
-      if(!select||!select.isConnected)return;
-      const current=select.value;
-      select.replaceChildren(new Option(current||'',current));
-      const seen=new Set();
-      orders.forEach(order=>{
-        const fields=order.fields||{};
-        const no=String(fields['작업지시번호']||order.id||'');
-        if(!no||seen.has(no))return;seen.add(no);
-        const option=new Option(no,no);
-        option.dataset.lot=String(fields['생산 LOT NO']||'');
-        option.dataset.product=String(fields['제품명']||'');
-        select.add(option);
-      });
-      const matching=[...select.options].find(o=>o.dataset.lot===lot);
-      if(matching)select.value=matching.value;
-      else if(current)select.value=current;
-      select.disabled=false;
-      select.style.visibility='visible';
     };
     select?.addEventListener('change',()=>{
       const option=select.selectedOptions[0];
