@@ -125,3 +125,15 @@
   #namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:0;padding-left:0}
   #work .nwi-header{align-items:flex-start!important}
 }
+
+/* Work-order aligned layout and print action 20261013 */
+#work .module-shell>.nwi-list-head{margin-left:16px!important;margin-right:16px!important;padding-left:12px!important;padding-right:12px!important;box-sizing:border-box!important}
+#work .module-shell>.module-body{margin-left:16px!important;margin-right:16px!important;box-sizing:border-box!important;max-width:calc(100% - 32px)!important}
+#work>#namo-work-detail{margin-left:16px!important;margin-right:16px!important;max-width:calc(100% - 32px)!important;box-sizing:border-box!important}
+#namo-work-detail .nwd-head{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important}
+#namo-work-detail .nwd-print-btn{flex:0 0 auto;height:35px;padding:0 18px;border:1px solid #1766ac;border-radius:7px;color:#fff;background:#1766ac;font-size:12.5px;font-weight:800;cursor:pointer}
+#namo-work-detail .nwd-print-btn:hover:not(:disabled){background:#0f528e}
+#namo-work-detail .nwd-print-btn:disabled{opacity:.55;cursor:wait}
+#namo-work-detail .nwd-content{max-width:100%;overflow-x:auto}
+#namo-work-detail .nwd-grid,#namo-work-detail .nwd-tabs,#namo-work-detail .nwd-content>table,#namo-work-detail .nwd-content>div>table{max-width:100%;box-sizing:border-box}
+#work .work-list-table td:last-child .btn{margin-right:3px}
