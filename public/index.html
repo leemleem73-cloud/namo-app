@@ -3725,7 +3725,7 @@ async function loadHistoricalInspectionRows(section,id){
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='성적서'){
-          return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">보기</button></td>';
+          return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
         return '<td>'+safe(v)+'</td>';
       }).join('');
