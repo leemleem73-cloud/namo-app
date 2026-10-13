@@ -1620,6 +1620,15 @@ thead{background:#f4f7fa}
 }
 </style><style id="pqc-report-readonly-detail-values-20261014">
 .std-inspection[data-inspection-type="process"] .pqc-report-readonly-value{display:block;text-align:center;line-height:34px;min-height:34px;color:#26354a;font-weight:700}
+</style><style id="pqc-report-summary-center-20261014">
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2) .value{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ min-height:40px!important;text-align:center!important;
+}
+.std-inspection[data-inspection-type="process"] .std-summary-card:nth-child(-n+2) .pqc-report-readonly-value{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-height:40px!important;text-align:center!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4868,7 +4877,15 @@ function hydratePqcReportFromDetail(root,lot){
   });
   const all=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>tr.cells[7]?.textContent?.trim()||'대기');
   const overall=root.querySelector('#stdOverallJudge');
-  if(overall){const label=all.includes('불합격')?'불합격':all.length&&all.every(x=>x==='합격')?'합격':'대기';overall.replaceWith(Object.assign(document.createElement('span'),{className:'pqc-report-readonly-value',textContent:label}))}
+  const detailJudge=String(draft?.fields?.['검사합부']||'').trim();
+  const computed=all.includes('불합격')?'불합격':all.length&&all.every(x=>x==='합격')?'합격':'대기';
+  const label=['합격','불합격','대기'].includes(detailJudge)?detailJudge:computed;
+  if(overall){overall.replaceWith(Object.assign(document.createElement('span'),{className:'pqc-report-readonly-value',textContent:label}))}
+  const state=root.querySelector('.std-summary-card:nth-child(2) .value select');
+  if(state){
+    const stateLabel=label==='대기'?'검사중':'검사완료';
+    state.replaceWith(Object.assign(document.createElement('span'),{className:'pqc-report-readonly-value',textContent:stateLabel}));
+  }
   return !!draft;
 }
 function qmesQualityApprovalPeople(){
