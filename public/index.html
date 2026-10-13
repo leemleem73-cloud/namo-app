@@ -3568,7 +3568,7 @@ function buildModule(id){
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
     if(id==='process')wireProcessColumnResize(section);
-    if(id==='process'||id==='outgoing')setTimeout(()=>wireInspectionBulkSelect(section,id),0);
+    if(id==='process'||id==='outgoing')wireInspectionBulkSelect(section,id);
     if(id==='process'||id==='outgoing')setTimeout(()=>loadHistoricalInspectionRows(section,id),0);
     if(id==='outgoing')wireOutgoingColumnResize(section);
     if(id==='incoming'){
@@ -3657,6 +3657,8 @@ async function loadHistoricalInspectionRows(section,id){
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
       return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+values.slice(0,cols.length).map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
+    section._inspectionRowsLoaded=rows.length;
+    section._inspectionBulkRefresh?.();
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+rows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=rows.length;
     section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
@@ -3734,6 +3736,9 @@ function wireInspectionBulkSelect(section,id){
     if(!await confirmIqcBulkDelete(rows.length,id==='process'?'공정검사':'출하검사'))return;
     alert('이 검사 목록은 서버 삭제 기능이 연결되지 않았습니다. 데이터 보호를 위해 삭제하지 않았습니다.');
   });
+  section._inspectionBulkRefresh=()=>{
+    allRows=[...tbody.querySelectorAll('tr.data-row')];current=1;render();
+  };
   render();
 }
 function wireModule(section,id){
