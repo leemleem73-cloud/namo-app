@@ -1231,7 +1231,7 @@ thead{background:#f4f7fa}
 #incoming .iqc-select-head,#incoming .iqc-select-number{display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;cursor:pointer}
 #incoming .iqc-select-head input,#incoming .iqc-select-number input{width:13px;height:13px;margin:0;accent-color:#4f46e5;flex:none}
 #incoming .iqc-select-head span,#incoming .iqc-select-number span{font:inherit}
-#incoming .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+#incoming .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3;font-family:inherit;font-size:9.5px;font-weight:800;line-height:1;height:27px;padding:0 9px;border-radius:4px}
 #incoming .iqc-bulk-delete[hidden]{display:none!important}
 </style>
 <style id="namo-process-grid-matching-iqc-20261013">
@@ -2952,7 +2952,7 @@ function iqcRowHtml(row,index){
   const judge=iqcJudge(row);
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
   const remark=iqcRemark(row);
-  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button><button class="iqc-delete-btn" type="button" data-iqc-delete>삭제</button></div></td></tr>`;
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
