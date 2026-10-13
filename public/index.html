@@ -4391,7 +4391,7 @@ function standardInspectionForm(type){
   const approval=qmesQualityApprovalPeople();
   const conf={
     incoming:{title:'수입검사 성적서',sub:'INCOMING INSPECTION REPORT',doc:'IQC',docNo:'IQC-QA-001',section:'입고 / 검사 기본정보',summary:'LOT 단위 수입검사'},
-    process:{title:'공정검사 성적서',sub:'IN-PROCESS INSPECTION REPORT',doc:'IPQC',docNo:'IPQC-QA-001',section:'생산 / 검사 기본정보',summary:'공정 품질 확인 / n=3'},
+    process:{title:'공정검사 성적서',sub:'IN-PROCESS INSPECTION REPORT',doc:'PQC',docNo:'PQC-QA-001',section:'생산 / 검사 기본정보',summary:'공정 품질 확인 / n=3'},
     outgoing:{title:'출하검사 성적서',sub:'OUTGOING INSPECTION REPORT',doc:'OQC',docNo:'OQC-QA-001',section:'출하 / 검사 기본정보',summary:'출하 전 최종검사 / n=3'}
   }[type];
   let info='';
@@ -4404,11 +4404,11 @@ function standardInspectionForm(type){
     <div class="k">원료 LOT</div><div class="v"><input id="incomingMaterialLot" type="text" placeholder="원료 LOT 입력"></div>`;
   if(type==='process') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
-    <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
-    <div class="k">작업지시번호</div><div class="v"><input type="text" placeholder="작업지시번호 입력"></div>
+    <div class="k">검사자</div><div class="v"><select class="pqc-inspector-select"><option value="">검사자 선택</option><option>박현아</option><option>문지훈</option><option value="__manual__">직접선택</option></select><input class="pqc-inspector-manual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:5px"></div>
+    <div class="k">작업지시번호</div><div class="v"><select class="pqc-workorder-select"><option value="">작업지시서에서 선택</option></select></div>
     <div class="k">제품명</div><div class="v"><input type="text" placeholder="제품명 입력"></div>
     <div class="k">생산 LOT NO</div><div class="v"><input type="text" placeholder="생산 LOT NO 입력"></div>
-    <div class="k">공정명</div><div class="v"><select><option>선분산</option><option>Mixing</option><option>교차 순환</option></select></div>`;
+    <div class="k">공정명</div><div class="v"><select><option>절연슬러리 제조</option></select></div>`;
   if(type==='outgoing') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
     <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
@@ -4465,27 +4465,58 @@ function initStandardInspectionForm(type){
   if(type==='process'){
     const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')];
     const lotInput=inputs[4];
-    const fill=async()=>{
-      const lot=String(lotInput?.value||'').trim().toUpperCase();
-      if(!lot)return;
-      let orders=[];
+    const inspectorSelect=root.querySelector('.pqc-inspector-select');
+    const inspectorManual=root.querySelector('.pqc-inspector-manual');
+    inspectorSelect?.addEventListener('change',()=>{
+      if(inspectorManual)inspectorManual.style.display=inspectorSelect.value==='__manual__'?'block':'none';
+    });
+    const orderSelect=root.querySelector('.pqc-workorder-select');
+    let orders=[];
+    const normalized=value=>String(value??'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const applyOrder=order=>{
+      if(!order)return;
+      const fields=order.fields||{};
+      if(inputs[3])inputs[3].value=fields['제품명']||'';
+      if(lotInput)lotInput.value=fields['생산 LOT NO']||'';
+      const date=String(order.workDate||'');
+      if(inputs[0]&&!inputs[0].value&&date.length===10)inputs[0].value=date;
+    };
+    const loadOrders=async()=>{
       try{
         const response=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
         const data=await response.json();
         if(response.ok&&data.success!==false&&Array.isArray(data.data))orders.push(...data.data);
-      }catch(error){console.warn('[QMES] PQC order lookup',error);}
+      }catch(error){console.warn('[QMES] PQC work-order lookup',error);}
       try{
         const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
         if(Array.isArray(cached))orders.push(...cached);
       }catch(_){}
-      const order=orders.find(o=>String(o?.fields?.['생산 LOT NO']||'').trim().toUpperCase()===lot);
-      if(!order)return;
-      if(inputs[2]&&!inputs[2].value)inputs[2].value=order.fields?.['작업지시번호']||order.id||'';
-      if(inputs[3]&&!inputs[3].value)inputs[3].value=order.fields?.['제품명']||'';
-      const date=String(order.workDate||'');
-      if(inputs[0]&&!inputs[0].value&&date.length===10)inputs[0].value=date;
+      const seen=new Set();
+      orders=orders.filter(order=>{
+        const id=String(order?.fields?.['작업지시번호']||order?.id||'');
+        if(!id||seen.has(id))return false;
+        seen.add(id);return true;
+      });
+      if(orderSelect){
+        const selected=orderSelect.value;
+        orderSelect.replaceChildren(new Option('작업지시서에서 선택',''));
+        orders.forEach(order=>{
+          const fields=order.fields||{};
+          const id=String(fields['작업지시번호']||order.id||'');
+          orderSelect.add(new Option(id+' / '+String(fields['생산 LOT NO']||'-'),id));
+        });
+        if(orders.some(o=>String(o?.fields?.['작업지시번호']||o?.id)===selected))orderSelect.value=selected;
+      }
     };
-    lotInput?.addEventListener('change',fill);
+    orderSelect?.addEventListener('change',()=>{
+      const selected=orders.find(o=>String(o?.fields?.['작업지시번호']||o?.id)===orderSelect.value);
+      applyOrder(selected);
+    });
+    lotInput?.addEventListener('change',()=>{
+      const order=orders.find(o=>normalized(o?.fields?.['생산 LOT NO'])===normalized(lotInput.value));
+      if(order&&orderSelect){orderSelect.value=String(order.fields?.['작업지시번호']||order.id);applyOrder(order);}
+    });
+    loadOrders();
     const save=document.getElementById('modalSave');
     if(save){
       const button=save.cloneNode(true);save.replaceWith(button);
@@ -4495,7 +4526,7 @@ function initStandardInspectionForm(type){
       button.addEventListener('click',()=>{
         const lot=String(lotInput?.value||'').trim().toUpperCase();
         if(!lot){toast('생산 LOT NO를 입력해 주세요.');return;}
-        const draft={fields:inputs.map(x=>x.value),measures:[...root.querySelectorAll('.std-measure')].map(x=>x.value),judges:judges.map(x=>x.value),overall:overall?.value||'대기',remarks:root.querySelector('.std-premium-remarks textarea')?.value||'',savedAt:new Date().toISOString()};
+        const draft={inspectorManual:inspectorManual?.value||'',fields:inputs.map(x=>x.value),measures:[...root.querySelectorAll('.std-measure')].map(x=>x.value),judges:judges.map(x=>x.value),overall:overall?.value||'대기',remarks:root.querySelector('.std-premium-remarks textarea')?.value||'',savedAt:new Date().toISOString()};
         try{
           const drafts=JSON.parse(localStorage.getItem(key)||'{}');
           drafts[lot]=draft;localStorage.setItem(key,JSON.stringify(drafts));
@@ -4508,6 +4539,8 @@ function initStandardInspectionForm(type){
           const draft=drafts[String(lotInput.value||'').trim().toUpperCase()];
           if(!draft)return;
           inputs.forEach((x,i)=>{if(draft.fields[i]!=null)x.value=draft.fields[i];});
+          if(inspectorManual)inspectorManual.value=draft.inspectorManual||'';
+          if(inspectorManual)inspectorManual.style.display=inspectorSelect?.value==='__manual__'?'block':'none';
           root.querySelectorAll('.std-measure').forEach((x,i)=>{if(draft.measures[i]!=null)x.value=draft.measures[i];});
           judges.forEach((x,i)=>{if(draft.judges[i]!=null)x.value=draft.judges[i];});
           if(overall)overall.value=draft.overall||'대기';
