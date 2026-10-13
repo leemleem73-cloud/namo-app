@@ -2041,8 +2041,8 @@ function premiumInspectionShell(id,title,desc,cols){
       <div class="ip-toolbar">
         <div class="ip-filter-row">
           <div class="ip-filter search"><label>통합검색</label><input class="input search-input" placeholder="${meta.filter}"></div>
-          <div class="ip-filter"><label>시작일</label><input class="input ip-start-date" type="date"></div>
-          <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="date"></div>
+          <div class="ip-filter"><label>시작일</label><input class="input ip-start-date" type="${id==='incoming'?'text':'date'}" ${id==='incoming'?'readonly data-compact-date="1" placeholder="년-월-일"':''}></div>
+          <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="${id==='incoming'?'text':'date'}" ${id==='incoming'?'readonly data-compact-date="1" placeholder="년-월-일"':''}></div>
           <div class="ip-filter"><label>검사상태</label><select class="input ip-status-filter"><option>전체</option><option>합격</option><option>불합격</option><option>대기</option></select></div>
         </div>
         <div class="ip-actions"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
@@ -3359,6 +3359,8 @@ function qmesIqcBarcodeSvg(value){
     if(!win){toast('팝업을 허용해주세요.');return false;}
     const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>출하 제품 라벨</title><style>@page{size:'+width+'mm '+height+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#111}.label{width:'+width+'mm;height:'+height+'mm;padding:3mm;display:flex;flex-direction:column;justify-content:space-between}h3{font-size:12pt;margin:0 0 2mm}table{width:100%;border-collapse:collapse;font-size:9pt}td{border:1px solid #333;padding:2mm;text-align:center}td:first-child{width:48%;font-weight:700}.footer{font-size:8pt;text-align:center;margin-top:2mm}.note{font-size:7pt;text-align:center}</style></head><body><section class="label"><h3>NAMO Chemical · 출하 제품 라벨</h3><table><tr><td>제품명 (Grd.)</td><td>'+esc(grd)+'</td></tr><tr><td>제조번호 (Lot No.)</td><td>'+esc(lot)+'</td></tr><tr><td>수량 (Qty)</td><td>'+esc(qty)+'</td></tr><tr><td>제조일 (Mfg. Date)</td><td>'+esc(mfg)+'</td></tr></table><div class="note">GHS 표시: 승인된 제품 SDS 기준으로 별도 확인</div><div class="footer">NAMO Chemicals Co., Ltd.</div></section><script>window.onload=function(){window.focus();window.print()};<\\/script>
 <style id="iqc-compact-calendar-20261013">
+.iqc-date-font-only input[data-compact-date]{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='1.8'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M7 3v4M17 3v4M3 10h18'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:27px!important;font-size:11px!important;font-weight:700!important}
+
 .iqc-date-font-only .ip-filter{position:relative}
 .iqc-compact-calendar{position:absolute;top:100%;left:0;margin-top:3px;width:148px;box-sizing:border-box;padding:5px;background:#fff;border:1px solid #cbd5e1;border-radius:5px;box-shadow:0 5px 16px #0002;z-index:10050;font:11px Arial,sans-serif;color:#253246}
 .iqc-compact-calendar .icc-head{display:flex;align-items:center;justify-content:space-between;gap:2px;margin-bottom:5px}
@@ -3393,9 +3395,9 @@ function setup(input){if(input.dataset.iccReady)return;input.dataset.iccReady='1
  }draw();};
  input.addEventListener('pointerdown',show,true);input.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '||e.key==='ArrowDown')show(e);if(e.key==='Escape')close()},true);
 }
-function init(){document.querySelectorAll('.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type=date]').forEach(setup)}
+function init(){document.querySelectorAll('.inspection-premium.iqc-date-font-only .ip-filter-row input[data-compact-date]').forEach(setup)}
 new MutationObserver(()=>{if(opened&&!opened.isConnected)opened=null;init()}).observe(document.body,{childList:true,subtree:true});init();
-document.addEventListener('pointerdown',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.iqc-date-font-only .ip-filter input[type=date]'))close()},true);
+document.addEventListener('pointerdown',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.iqc-date-font-only .ip-filter input[data-compact-date]'))close()},true);
 })();
 </script>
 </body></html>';
