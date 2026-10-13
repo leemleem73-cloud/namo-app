@@ -3569,6 +3569,7 @@ function buildModule(id){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
     if(id==='process')wireProcessColumnResize(section);
     if(id==='process'||id==='outgoing')setTimeout(()=>wireInspectionBulkSelect(section,id),0);
+    if(id==='process'||id==='outgoing')setTimeout(()=>loadHistoricalInspectionRows(section,id),0);
     if(id==='outgoing')wireOutgoingColumnResize(section);
     if(id==='incoming'){
       wireIncomingColumnResize(section);
@@ -3624,6 +3625,48 @@ function sample(c,i,id){
   return '-';
 }
 
+async function loadHistoricalInspectionRows(section,id){
+  if(!section||!['process','outgoing'].includes(id))return;
+  const tbody=section.querySelector('tbody');
+  if(!tbody)return;
+  const request=(section._historicalRequest||0)+1;section._historicalRequest=request;
+  const kind=id==='process'?'pqc':'oqc';
+  try{
+    const response=await fetch('/api/qmes-sync/'+kind+'?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+    if(!response.ok)throw Error('서버 응답 '+response.status);
+    const result=await response.json();
+    if(result.success===false||!Array.isArray(result.data))throw Error(result.message||'기록 응답 형식 오류');
+    if(section._historicalRequest!==request||!section.isConnected)return;
+    const rows=[];
+    const seen=new Set();
+    result.data.forEach(record=>{
+      let payload=record.payload||{};
+      if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch(_){payload={}}}
+      if(payload.deleted)return;
+      (Array.isArray(payload.rows)?payload.rows:[]).forEach(row=>{
+        const key=String(row.id||row.groupId+'|'+row.check);
+        if(seen.has(key))return;seen.add(key);rows.push(row);
+      });
+    });
+    rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+    const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const cols=pageInfo[id][2];
+    tbody.innerHTML=rows.length?rows.map((row,i)=>{
+      const values=id==='process'
+        ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,row.stage||row.note,row.check,row.judge,row.inspector,'-',row.remarks||'-']
+        :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
+      return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+values.slice(0,cols.length).map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>';
+    }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
+    const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+rows.length+'건 표시';
+    const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=rows.length;
+    section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
+    section._fitProcessColumns?.();section._fitOutgoingColumns?.();
+  }catch(error){
+    if(section._historicalRequest!==request||!section.isConnected)return;
+    tbody.innerHTML='<tr><td colspan="'+(pageInfo[id][2].length+1)+'" style="text-align:center;padding:24px">기존 검사 기록 조회 실패: '+String(error.message||'연결 오류').replace(/[&<>]/g,'')+'</td></tr>';
+    console.warn('[QMES] '+kind+' history read failed',error);
+  }
+}
 function wireInspectionBulkSelect(section,id){
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
