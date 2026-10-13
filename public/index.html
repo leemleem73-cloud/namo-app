@@ -3723,12 +3723,55 @@ async function loadHistoricalInspectionRows(section,id){
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,row.stage||row.note,row.check,row.judge,row.inspector,'-',row.remarks||'-']
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
-      return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+values.slice(0,cols.length).map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>';
+      const cells=values.slice(0,cols.length).map((v,index)=>{
+        if(id==='process'&&cols[index]==='성적서'){
+          return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">보기</button></td>';
+        }
+        return '<td>'+safe(v)+'</td>';
+      }).join('');
+      return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
     section._inspectionRowsLoaded=rows.length;
     section._inspectionBulkRefresh?.();
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+rows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=rows.length;
+    if(id==='process'){
+      tbody.querySelectorAll('.pqc-report-view').forEach(button=>button.addEventListener('click',event=>{
+        event.stopPropagation();
+        const tr=button.closest('tr');
+        if(!tr)return;
+        const get=label=>{
+          const index=pageInfo.process[2].indexOf(label);
+          return index>=0?tr.cells[index+1]?.textContent?.trim()||'':'';
+        };
+        const lot=get('생산 LOT NO'),title='공정검사 성적서';
+        const html=standardInspectionForm('process');
+        openModal(title,amaranthScreen('process',html,'detail',title),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
+        const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
+        if(!root)return;
+        const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')];
+        const vals=[get('검사일자'),get('검사자'),get('작업지시번호'),get('제품명'),lot,get('공정명')];
+        inputs.forEach((input,i)=>{
+          const value=vals[i]||'';
+          if(value&&value!=='-'&&input.tagName==='INPUT')input.value=value;
+          else if(value&&value!=='-'&&input.tagName==='SELECT'&&[...input.options].some(o=>o.value===value))input.value=value;
+        });
+        let draft=null;
+        try{draft=JSON.parse(localStorage.getItem('namo_qmes_pqc_report_drafts_v1')||'{}')[String(lot).toUpperCase()]}catch(_){}
+        if(draft){
+          inputs.forEach((input,i)=>{if(draft.fields?.[i]!=null)input.value=draft.fields[i];});
+          root.querySelectorAll('.std-measure').forEach((input,i)=>{if(draft.measures?.[i]!=null)input.value=draft.measures[i];});
+          root.querySelectorAll('.std-row-judge').forEach((input,i)=>{if(draft.judges?.[i]!=null)input.value=draft.judges[i];});
+          const overall=root.querySelector('#stdOverallJudge');
+          if(overall)overall.value=draft.overall||'대기';
+          const remarks=root.querySelector('.std-premium-remarks textarea');
+          if(remarks)remarks.value=draft.remarks||'';
+        }
+        root.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=true);
+        const status=root.querySelector('.std-inspection-doc .v:last-child');
+        if(status)status.textContent=draft?'임시저장 초안':'검사결과 미입력';
+      }));
+    }
     section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
     section._fitProcessColumns?.();section._fitOutgoingColumns?.();
   }catch(error){
