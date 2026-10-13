@@ -1524,6 +1524,28 @@ thead{background:#f4f7fa}
 #reportSheet.report-process .report-inspection tr>*:last-child{border-right:0!important}
 #reportSheet.report-process .report-inspection thead tr>*{border-top:0!important}
 #reportSheet.report-process .report-inspection tbody tr:last-child>*{border-bottom:0!important}
+</style><style id="pqc-report-grid-final-specificity-20261014">
+/* Override the older workspace report styles at their own specificity. */
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection,
+#reportSheet.report-process .report-inspection{
+ border-collapse:collapse!important;border-spacing:0!important;
+ border:1px solid #d7dfe8!important;border-radius:0!important;
+ outline:none!important;box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tr > th,
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tr > td,
+#reportSheet.report-process .report-inspection tr > th,
+#reportSheet.report-process .report-inspection tr > td{
+ border:1px solid #d7dfe8!important;box-shadow:none!important;
+}
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tr > :first-child,
+#reportSheet.report-process .report-inspection tr > :first-child{border-left:0!important}
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tr > :last-child,
+#reportSheet.report-process .report-inspection tr > :last-child{border-right:0!important}
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection thead tr > *,
+#reportSheet.report-process .report-inspection thead tr > *{border-top:0!important}
+#mainWorkspace .workspace-body > #reportSheet.report-process .report-inspection tbody tr:last-child > *,
+#reportSheet.report-process .report-inspection tbody tr:last-child > *{border-bottom:0!important}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
