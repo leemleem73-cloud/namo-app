@@ -4376,6 +4376,10 @@ function showRowDetail(id,row){
       inspector.addEventListener('change',toggle);toggle();
     }
     const select=document.getElementById('pqcDetailWorkOrder');
+    if(select){
+      select.disabled=true;
+      select.options[0].textContent='작업지시번호 불러오는 중';
+    }
     const fill=async()=>{
       const orders=[];
       try{
@@ -4388,6 +4392,7 @@ function showRowDetail(id,row){
         if(Array.isArray(local))orders.push(...local);
       }catch(_){}
       if(!select||!select.isConnected)return;
+      select.replaceChildren(new Option('작업지시번호 선택',''));
       const seen=new Set();
       orders.forEach(order=>{
         const fields=order.fields||{};
@@ -4400,6 +4405,8 @@ function showRowDetail(id,row){
       });
       const matching=[...select.options].find(o=>o.dataset.lot===lot);
       if(matching)select.value=matching.value;
+      else if(select.options.length===1)select.options[0].textContent='연결된 작업지시번호 없음';
+      select.disabled=select.options.length===1;
     };
     select?.addEventListener('change',()=>{
       const option=select.selectedOptions[0];
