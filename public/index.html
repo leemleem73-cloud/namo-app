@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
-<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-approved-screen-1">
+<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-full-premium-2">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -3526,15 +3526,26 @@ function wireWorkColumnResize(section){
   }
   function apply(){
     if(!widths.length)return;
-    const available=Math.ceil(wrap.clientWidth);
-    const actual=widths.slice();
-    let free=Math.max(0,available-actual.reduce((sum,n)=>sum+n,0));
-    // Only spread remaining right-side whitespace across existing middle columns.
-    // Do not change saved user column widths or the NO/remarks column.
-    const recipients=[1,2,3,4,5,6,7,8,9].filter(i=>i<actual.length-1);
-    recipients.forEach((i,k)=>{const piece=k===recipients.length-1?free:Math.floor(free/(recipients.length-k));actual[i]+=piece;free-=piece;});
+    const available=Math.max(0,Math.floor(wrap.clientWidth-2));
+    const source=widths.map((n,i)=>Math.max(mins[i],Number(n)||defaults[i]));
+    // Preserve column proportions, but do not let old saved pixel widths force a
+    // wide scrollbar on standard desktop screens. Only scroll on truly narrow screens.
+    const minimumTotal=mins.reduce((a,b)=>a+b,0);
+    const target=Math.max(minimumTotal,available);
+    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,140):n);
+    const minimumWidth=minimums.reduce((a,b)=>a+b,0);
+    const usable=Math.max(target,minimumWidth);
+    const elastic=source.map((n,i)=>Math.max(0,n-minimums[i]));
+    const elasticTotal=elastic.reduce((a,b)=>a+b,0);
+    let spare=usable-minimumWidth;
+    const actual=minimums.map((n,i)=>{
+      const add=elasticTotal?Math.floor(spare*elastic[i]/elasticTotal):Math.floor(spare/minimums.length);
+      return n+add;
+    });
+    const delta=usable-actual.reduce((a,b)=>a+b,0);
+    actual[actual.length-2]+=delta;
     cols.forEach((col,i)=>col.style.width=actual[i]+'px');
-    table.style.setProperty('width',Math.max(available,actual.reduce((sum,n)=>sum+n,0))+'px','important');
+    table.style.setProperty('width',usable+'px','important');
   }
   function save(){try{localStorage.setItem(key,JSON.stringify({labels,widths}));}catch(_){}}
   headers.forEach((th,i)=>{
