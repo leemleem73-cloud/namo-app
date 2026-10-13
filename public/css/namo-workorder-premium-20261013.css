@@ -1,45 +1,97 @@
-/* NAMO work-order premium design 2026-10-13. Scoped to #work only. */
-#work .module-shell{background:#fff!important;border:1px solid #cbd7e4!important;border-radius:5px!important;box-shadow:0 4px 14px rgba(24,51,83,.09)!important;overflow:visible!important}
-#work .nwi-header{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:56px!important;padding:13px 18px!important;gap:12px!important;border-bottom:1px solid #d7e2ed!important;background:#fff!important}
-#work .nwi-title,#work .nwi-title strong{color:#1e344f!important;font-size:18px!important;font-weight:800!important;letter-spacing:-.35px!important}
-#work .nwi-header>.module-toolbar{width:auto!important;flex:0 0 auto!important;margin-left:auto!important;padding:0!important;min-height:0!important;border:0!important;background:transparent!important}
+/* NAMO QMES: single work-order appearance source. No other QMES module rules. */
+
+/* Do not paint an unfinished, former work-order shell on refresh. */
+#work .page-head{display:none!important}
+#work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
+#work .module-shell{background:#fff!important;border:1px solid #d5dfe9!important;border-radius:3px!important;box-shadow:0 4px 14px rgba(24,51,83,.07)!important;overflow:visible!important}
+#work .nwi-header{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:12px!important;width:100%!important;min-height:54px!important;padding:10px 15px!important;background:#fff!important;border:0!important}
+#work .nwi-title,#work .nwi-title strong{color:#172c45!important;font-size:17px!important;font-weight:800!important;letter-spacing:-.35px!important}
+#work .nwi-header>.module-toolbar{width:auto!important;flex:0 0 auto!important;margin:0 0 0 auto!important;padding:0!important;min-height:0!important;border:0!important;background:transparent!important;display:flex!important;align-items:center!important;justify-content:flex-end!important}
+#work .module-toolbar>.filters{display:none!important}
+#work .nwi-header>.module-toolbar .table-tools{display:flex!important;gap:6px!important;margin-left:auto!important}
 #work .nwi-header .btn{height:35px!important;border-radius:4px!important;padding:8px 14px!important;font-size:12px!important;font-weight:700!important}
 #work .nwi-header .btn.primary{background:#1688ea!important;color:#fff!important;border-color:#1688ea!important}
-#namo-work-inquiry{padding:18px!important;background:#f8fafc!important;border-bottom:1px solid #d8e2eb!important}
-#namo-work-inquiry .nwi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px 18px!important}
-#namo-work-inquiry label{display:flex!important;align-items:center!important;min-width:0!important;gap:8px!important;color:#2f435b!important;font-size:13px!important;font-weight:700!important}
-#namo-work-inquiry label span{min-width:80px!important;flex:0 0 80px!important;text-align:right!important}
 
-/* Work-order instruction period only: avoid generic label span 80px width on date and icon. */
-#namo-work-inquiry .nwi-period-trigger>.nwi-period-value{flex:1 1 auto!important;min-width:0!important;width:auto!important;white-space:nowrap!important;text-align:left!important;overflow:hidden!important;text-overflow:clip!important;line-height:1.2!important}
-#namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{flex:0 0 24px!important;min-width:24px!important;width:24px!important;white-space:nowrap!important;text-align:center!important}
+/* Filter controls */
+#namo-work-inquiry{padding:16px 18px 13px!important;background:#fff!important;border-bottom:1px solid #e3e8ef!important}
+#namo-work-inquiry .nwi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 14px!important}
+#namo-work-inquiry label{display:flex!important;align-items:center!important;min-width:0!important;gap:8px!important;color:#314358!important;font-size:12px!important;font-weight:700!important}
+#namo-work-inquiry label[hidden]{display:none!important}
+#namo-work-inquiry label>span{flex:0 0 78px!important;min-width:78px!important;text-align:right!important;overflow-wrap:anywhere}
+#namo-work-inquiry input,#namo-work-inquiry select{height:34px!important;min-width:0!important;width:100%!important;padding:0 9px!important;font-size:13px!important;color:#293d52!important;border:1px solid #cfd9e5!important;border-radius:5px!important;background:#fff!important}
+#namo-work-inquiry input:focus,#namo-work-inquiry select:focus{outline:2px solid rgba(22,137,237,.12)!important;border-color:#1689ed!important}
+#namo-work-inquiry .nwi-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;margin-top:10px!important}
+#namo-work-inquiry .nwi-actions .btn{height:35px!important;border-radius:5px!important;padding:7px 13px!important;font-weight:700!important}
+#namo-work-inquiry .nwi-count{margin-right:auto!important;color:#526578;font-size:12px}
+#work .nwi-list-head{padding:12px 14px 8px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;color:#243344!important;font-size:13px!important;font-weight:700!important;border-top:0!important;border-bottom:2px solid #b9cada!important}
 
-#namo-work-inquiry input,#namo-work-inquiry select{height:36px!important;min-width:0!important;width:100%!important;padding:0 10px!important;font-size:13px!important;color:#294059!important;border:1px solid #cbd7e3!important;border-radius:4px!important;background:#fff!important}
-#namo-work-inquiry input:focus,#namo-work-inquiry select:focus{outline:2px solid rgba(22,136,234,.16)!important;border-color:#1688ea!important}
-#namo-work-inquiry .nwi-actions{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin-top:14px!important}
-#namo-work-inquiry .nwi-actions .btn{height:35px!important;padding:7px 14px!important;border-radius:4px!important;font-weight:700!important}
-#work .nwi-list-head{padding:14px 18px 10px!important;font-size:14px!important;font-weight:800!important;color:#213853!important;border-bottom:2px solid #b9cada!important}
-#work .module-body{padding:0!important;overflow-x:auto!important}
-#work .work-list-table{border-collapse:collapse!important;min-width:1080px!important}
-#work .work-list-table thead th{background:#edf2f7!important;color:#263b54!important;border:1px solid #cbd7e4!important;font-size:13px!important;font-weight:700!important;padding:11px 8px!important}
-#work .work-list-table tbody td{color:#344960!important;border:1px solid #dce4ed!important;font-size:13px!important;padding:11px 8px!important}
-#work .work-list-table tbody tr:nth-child(even) td{background:#fafcfe!important}
-#work .work-list-table tbody tr:hover td{background:#edf6ff!important}
-#work .work-list-table tbody tr.nwi-selected td{background:#dceeff!important}
+/* One consistent blue-grey table on every render, including F5. */
+#work .module-shell>.module-body{padding:0!important;overflow:auto!important}
+#work .module-shell>.module-body>.work-list-table{border:0!important;border-radius:0!important;border-collapse:collapse!important;border-spacing:0!important;table-layout:fixed!important;min-width:1080px!important;background:#fff!important}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th{box-sizing:border-box!important;position:relative!important;height:42px!important;background:#edf2f7!important;color:#263b54!important;font-size:13px!important;font-weight:700!important;padding:11px 8px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #cbd7e4!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td{box-sizing:border-box!important;height:42px!important;background:#fff!important;color:#344960!important;font-size:13px!important;font-weight:400!important;padding:10px 8px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #dce4ed!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
+#work .work-list-table thead th:first-child,#work .work-list-table tbody td:first-child{padding-left:6px!important;padding-right:6px!important}
+#work .work-list-table thead th:last-child,#work .work-list-table tbody td:last-child{border-right:0!important}
+#work .work-list-table tbody tr:last-child>td{border-bottom:1px solid #dce4ed!important}
+#work .work-list-table tbody tr:nth-child(even)>td{background:#fafcfe!important}
+#work .work-list-table tbody tr:hover>td{background:#eef6ff!important}
+#work .work-list-table tbody tr.nwi-selected>td{background:#dcefff!important}
+#work .work-list-table tbody tr[hidden]{display:none!important}
 #work .work-list-table tbody tr[data-work-saved] td:nth-child(2){color:#006fc7!important;text-decoration:underline!important;font-weight:700!important;cursor:pointer!important}
-#namo-work-detail{margin-top:14px!important;border:1px solid #cbd7e4!important;border-radius:5px!important;background:#fff!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(24,51,83,.07)!important}
-#namo-work-detail .nwd-head{background:#f8fafc!important;border-bottom:2px solid #cbd8e5!important;padding:13px 18px!important;font-size:16px!important;font-weight:800!important;color:#213852!important;height:auto!important;min-height:48px!important}
-#namo-work-detail .nwd-content{padding:17px 18px 24px!important;color:#2e435c!important}
-#namo-work-detail .nwd-grid{border-color:#d2dde8!important}
-#namo-work-detail .nwd-cell{border-color:#d2dde8!important}
-#namo-work-detail .nwd-cell b{background:#edf2f7!important;color:#284059!important;flex:0 0 105px!important;padding:11px!important}
-#namo-work-detail .nwd-cell span{padding:11px!important}
-#namo-work-detail .nwd-tab{font-size:13px!important;font-weight:700!important;padding:10px 15px!important;border-radius:4px 4px 0 0!important}
-#namo-work-detail .nwd-tab.active{background:#1688ea!important;border-color:#1688ea!important;color:#fff!important}
-#namo-work-detail th{background:#edf2f7!important;color:#293e56!important;font-size:13px!important;padding:10px!important}
-#namo-work-detail td{font-size:13px!important;padding:10px!important}
-@media(max-width:1120px){#namo-work-inquiry .nwi-grid,#namo-work-detail .nwd-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-@media(max-width:700px){#namo-work-inquiry .nwi-grid,#namo-work-detail .nwd-grid{grid-template-columns:1fr!important}#work .nwi-header{flex-wrap:wrap!important}}
+#work .work-list-table th .iqc-column-resize{position:absolute;top:0;right:0;width:10px;height:100%;cursor:col-resize;touch-action:none;z-index:3;display:block;outline:none}
+#work .work-list-table th .iqc-column-resize:after{content:'';position:absolute;right:2px;top:8px;bottom:8px;width:2px;background:transparent;border-radius:2px}
+#work .work-list-table th .iqc-column-resize:hover:after,#work .work-list-table th .iqc-column-resize:focus-visible:after{background:#438bda}
+#work .work-list-table td .btn{height:24px;padding:0 9px;border-radius:5px;font-size:11px;font-weight:600;color:#315f94;border:1px solid #cbd8e7;background:#f7faff}
+#work .work-list-table td .btn:last-child{color:#b42318;border-color:#f1c6c2;background:#fff7f6}
 
-/* F5: do not expose unfinished legacy work-order shell before range picker initializes. */
-#work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
+/* Work-order detail and tabs */
+#namo-work-detail{margin-top:12px!important;border:1px solid #d5dfe9!important;border-radius:3px!important;background:#fff!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(24,51,83,.07)!important}
+#namo-work-detail .nwd-head{min-height:48px!important;height:auto!important;padding:12px 17px!important;background:#fff!important;color:#172c45!important;border-bottom:1px solid #e1e7ef!important;font-size:15px!important;font-weight:800!important}
+#namo-work-detail .nwd-content{padding:15px 17px 22px!important;min-height:180px;color:#36465b}
+#namo-work-detail .nwd-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #dbe3ed;border-left:1px solid #dbe3ed}
+#namo-work-detail .nwd-cell{display:flex;min-width:0;border-right:1px solid #dbe3ed;border-bottom:1px solid #dbe3ed}
+#namo-work-detail .nwd-cell b{flex:0 0 105px!important;padding:11px!important;background:#eef3f8!important;color:#2b4058!important;font-weight:700!important;white-space:normal!important}
+#namo-work-detail .nwd-cell span{padding:11px!important;overflow-wrap:anywhere}
+#namo-work-detail .nwd-tabs{display:flex;gap:4px;margin:14px 0 10px;border-bottom:1px solid #d5dfe9}
+#namo-work-detail .nwd-tab{padding:10px 15px!important;border:1px solid #d5dfe9;border-bottom:0;border-radius:5px 5px 0 0!important;background:#f5f7fa;cursor:pointer;font-size:13px!important;font-weight:700!important}
+#namo-work-detail .nwd-tab.active{background:#1688ea!important;color:#fff!important;border-color:#1688ea!important}
+#namo-work-detail table{width:100%;border-collapse:collapse;margin-top:10px}
+#namo-work-detail th,#namo-work-detail td{border:1px solid #dce4ed!important;padding:10px!important;text-align:center;font-size:13px!important}
+#namo-work-detail th{background:#eef3f8!important;color:#263a50!important}
+
+/* Date range picker and eight presets, no JS-injected competing CSS. */
+#namo-work-inquiry .nwi-period-label{position:relative}
+#namo-work-inquiry .nwi-period-trigger{height:38px;width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:0 11px;background:#fff;color:#263b53;border:1px solid #bdcddd;border-radius:4px;cursor:pointer;font-size:13px}
+#namo-work-inquiry .nwi-period-trigger>.nwi-period-value{flex:1 1 auto!important;min-width:0!important;width:auto!important;white-space:nowrap!important;text-align:left!important;overflow:hidden!important;line-height:1.2!important}
+#namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{flex:0 0 24px!important;min-width:24px!important;width:24px!important;white-space:nowrap!important;text-align:center!important;font-size:21px;color:#6f8398}
+#namo-work-inquiry .nwi-period-popup{position:absolute;z-index:9999;width:min(650px,calc(100vw - 100px));padding:16px;background:white;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2)}
+#namo-work-inquiry .nwi-period-popup[hidden]{display:none!important}
+#namo-work-inquiry .nwi-period-presets{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-bottom:12px}
+#namo-work-inquiry .nwi-period-preset{min-height:32px;padding:5px 2px;border:1px solid #d5dce5;background:#fff;border-radius:2px;color:#33465d;font-family:inherit;font-size:12px;line-height:1.2;cursor:pointer;white-space:nowrap}
+#namo-work-inquiry .nwi-period-preset:hover,#namo-work-inquiry .nwi-period-preset:focus-visible{border-color:#1688ea;background:#eaf4ff;color:#126fae}
+#namo-work-inquiry .nwi-period-months{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:1px solid #e0e7ef;padding-left:16px}
+#namo-work-inquiry .nwi-period-month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;color:#243a54;font-size:18px}
+#namo-work-inquiry .nwi-period-month-head button{border:0;background:transparent;color:#667b90;font-size:27px;cursor:pointer}
+#namo-work-inquiry .nwi-period-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+#namo-work-inquiry .nwi-period-days b{font-size:12px;padding:6px 0;color:#65788b}
+#namo-work-inquiry .nwi-period-days button{min-height:34px;font-size:13px;background:transparent;border:0;cursor:pointer;border-radius:2px;color:#30455e}
+#namo-work-inquiry .nwi-period-days button:hover,#namo-work-inquiry .nwi-period-days button.between{background:#e4f1ff}
+#namo-work-inquiry .nwi-period-days button.selected{background:#1688ea;color:#fff}
+#namo-work-inquiry .nwi-period-days button:nth-child(7n+1){color:#dc4545}
+#namo-work-inquiry .nwi-period-days button.selected:nth-child(7n+1){color:#fff}
+#namo-work-inquiry .nwi-period-footer{border-top:1px solid #e1e8f0;margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;color:#63788e;font-size:12px}
+#namo-work-inquiry .nwi-period-footer button{padding:7px 12px}
+
+@media(max-width:1120px){
+  #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #namo-work-detail .nwd-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+  #namo-work-inquiry{padding:12px!important}
+  #namo-work-inquiry .nwi-grid,#namo-work-detail .nwd-grid{grid-template-columns:1fr!important}
+  #namo-work-inquiry .nwi-period-presets{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #namo-work-inquiry .nwi-period-months{grid-template-columns:1fr}
+  #namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:0;padding-left:0}
+  #work .nwi-header{align-items:flex-start!important}
+}
