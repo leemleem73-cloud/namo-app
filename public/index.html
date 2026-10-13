@@ -4361,7 +4361,7 @@ function showRowDetail(id,row){
     ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
-    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder"><option value="">작업지시서에서 선택</option></select></div>'+
+    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" style="visibility:hidden" aria-label="작업지시번호"><option value="">작업지시번호 선택</option></select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -4378,7 +4378,7 @@ function showRowDetail(id,row){
     const select=document.getElementById('pqcDetailWorkOrder');
     if(select){
       select.disabled=true;
-      select.options[0].textContent='작업지시번호 불러오는 중';
+      select.style.visibility='hidden';
     }
     const fill=async()=>{
       const orders=[];
@@ -4407,6 +4407,7 @@ function showRowDetail(id,row){
       if(matching)select.value=matching.value;
       else if(select.options.length===1)select.options[0].textContent='연결된 작업지시번호 없음';
       select.disabled=select.options.length===1;
+      select.style.visibility='visible';
     };
     select?.addEventListener('change',()=>{
       const option=select.selectedOptions[0];
