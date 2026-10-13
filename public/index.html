@@ -1942,8 +1942,8 @@ function wireIncomingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[52,112,155,180,155,180,96,100,120,210];
-  const minimums=[52,92,90,100,90,100,76,76,90,160];
+  const defaults=[52,112,155,180,155,180,96,100,120,125];
+  const minimums=[52,92,90,100,90,100,76,76,90,100];
   const storageKey='namo-iqc-column-widths-v1';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -1953,7 +1953,7 @@ function wireIncomingColumnResize(section){
     const scale=available/defaults.reduce((sum,width)=>sum+width,0);
     const fitted=defaults.map((width,i)=>Math.max(minimums[i],Math.min(720,Math.floor(width*scale))));
     let spare=Math.max(0,available-fitted.reduce((sum,width)=>sum+width,0));
-    for(let i=fitted.length-1;i>=0&&spare>0;i--){
+    for(let i=fitted.length-2;i>=1&&spare>0;i--){
       const grow=Math.min(720-fitted[i],spare);fitted[i]+=grow;spare-=grow;
     }
     return fitted;
@@ -1976,12 +1976,13 @@ function wireIncomingColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
+    effective[effective.length-1]=Math.min(effective[effective.length-1],145);
     const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
     if(free>0&&effective.length>1){
-      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
+      const total=effective.slice(1,-1).reduce((sum,width)=>sum+width,0);
       let assigned=0;
-      for(let j=1;j<effective.length;j++){
-        const extra=j===effective.length-1?free-assigned:Math.floor(free*effective[j]/total);
+      for(let j=1;j<effective.length-1;j++){
+        const extra=j===effective.length-2?free-assigned:Math.floor(free*effective[j]/total);
         effective[j]+=extra;assigned+=extra;
       }
     }
@@ -2011,7 +2012,7 @@ function wireIncomingColumnResize(section){
   headers.forEach((th,i)=>{
     const label=document.createElement('span');
     label.className='iqc-column-label';label.textContent=labels[i];
-    th.replaceChildren(label);
+    if(i===0){const existing=th.querySelector('.iqc-select-head');if(existing){existing.querySelector('span')?.replaceWith(label);th.replaceChildren(existing);}else th.replaceChildren(label);}else th.replaceChildren(label);
     const handle=document.createElement('span');
     handle.className='iqc-column-resize';
     handle.tabIndex=0;
