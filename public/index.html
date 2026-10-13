@@ -3092,6 +3092,15 @@ function buildModule(id){
     wireEquipment(section);
     return;
   }
+  if(id==='work'){
+    section.innerHTML=`<div class="module-shell">
+      <div class="nwi-header"><div class="nwi-title"><strong>작업지시서 등록 및 조회</strong></div>
+      <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
+      <div class="module-body"><table class="work-list-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
+    </div>`;
+    wireModule(section,id);renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
+    return;
+  }
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
     if(id==='incoming'){
