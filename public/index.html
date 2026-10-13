@@ -4389,13 +4389,14 @@ function showRowDetail(id,row){
       ['제품명',get('제품명')],
       ['생산 LOT NO',lot],
       ['공정명','PQC'],
-      ['검사항목','외관 / 점도 / 입도 / 고형분'],
-      
     ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
     '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호">'+orderOptions+'</select></div>'+
-    '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
+    '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>'+
+    '<div class="am-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;text-align:center"><thead><tr><th>검사항목</th><th>관리기준 (SPEC)</th><th>측정 1</th><th>측정 2</th><th>측정 3</th><th>판정</th></tr></thead><tbody>'+
+    [['외관','이상 없음',1],['점도','&lt; 3,000 cps',3],['입도(Dmax)','≤ 10.0 μm',3],['고형분','20.0 ± 1.0 %',3]].map(([item,spec,count])=>'<tr><th style="padding:10px;border:1px solid #dce2eb">'+item+'</th><td style="padding:10px;border:1px solid #dce2eb">'+spec+'</td>'+Array.from({length:3},(_,i)=>'<td style="padding:7px;border:1px solid #dce2eb">'+(i>=count?'—':item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="'+(i+1)+'회" style="width:100%;min-width:85px">')+'</td>').join('')+'<td style="padding:10px;border:1px solid #dce2eb" data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
+    '</tbody></table></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
     if(judge)judge.value=['대기','합격','불합격'].includes(get('검사합부'))?get('검사합부'):(get('검사합부')==='검사대기'?'대기':'합격');
@@ -4444,11 +4445,25 @@ function showRowDetail(id,row){
     const readDraft=()=>{
       try{return JSON.parse(localStorage.getItem(draftKey)||'{}')[String(lot).trim().toUpperCase()]||null;}catch(_){return null;}
     };
+    const refreshPqcJudges=()=>{
+      const specs={'점도':v=>v<3000,'입도(Dmax)':v=>v<=10,'고형분':v=>v>=19&&v<=21,'외관':v=>v==='이상없음'};
+      for(const [item,valid] of Object.entries(specs)){
+        const inputs=[...document.querySelectorAll('[data-pqc-measure]')].filter(el=>el.dataset.pqcMeasure===item);
+        const values=inputs.map(el=>el.value.trim());
+        const result=values.some(v=>v==='')?'대기':values.every(v=>item==='외관'?valid(v):Number.isFinite(Number(v))&&valid(Number(v)))?'합격':'불합격';
+        const target=[...document.querySelectorAll('[data-pqc-item-judge]')].find(el=>el.dataset.pqcItemJudge===item);
+        if(target)target.textContent=result;
+      }
+    };
+    document.querySelectorAll('[data-pqc-measure]').forEach(el=>el.addEventListener('input',refreshPqcJudges));
     const existingDraft=readDraft();
     if(existingDraft){
       Object.entries(existingDraft.fields||{}).forEach(([key,value])=>{
         const field=[...document.querySelectorAll('[data-pqc-field]')].find(el=>el.dataset.pqcField===key);
         if(field)field.value=value;
+      });
+      Object.entries(existingDraft.measurements||{}).forEach(([item,values])=>{
+        [...document.querySelectorAll('[data-pqc-measure]')].filter(el=>el.dataset.pqcMeasure===item).forEach((el,i)=>{el.value=values[i]??'';});
       });
       if(existingDraft.workOrder&&select){
         if(![...select.options].some(o=>o.value===existingDraft.workOrder))select.add(new Option(existingDraft.workOrder,existingDraft.workOrder));
@@ -4457,6 +4472,7 @@ function showRowDetail(id,row){
       if(existingDraft.inspectorManual&&inspectorManual)inspectorManual.value=existingDraft.inspectorManual;
       inspector?.dispatchEvent(new Event('change'));
     }
+    refreshPqcJudges();
     const saveButton=document.getElementById('modalSave');
     if(saveButton){
       const replacement=saveButton.cloneNode(true);
@@ -4469,7 +4485,11 @@ function showRowDetail(id,row){
         if(!key){toast('생산 LOT NO를 입력해 주세요.');return;}
         const chosenInspector=fields['검사자']==='__manual__'?String(inspectorManual?.value||'').trim():fields['검사자'];
         if(fields['검사자']==='__manual__'&&!chosenInspector){toast('검사자 이름을 입력해 주세요.');return;}
-        const draft={fields,workOrder:select?.value||'',inspectorManual:inspectorManual?.value||'',savedAt:new Date().toISOString()};
+        const measurements={};
+        document.querySelectorAll('[data-pqc-measure]').forEach(el=>{
+          (measurements[el.dataset.pqcMeasure]??=[])[Number(el.dataset.measureIndex)]=el.value;
+        });
+        const draft={fields,measurements,workOrder:select?.value||'',inspectorManual:inspectorManual?.value||'',savedAt:new Date().toISOString()};
         try{
           const drafts=JSON.parse(localStorage.getItem(draftKey)||'{}');
           drafts[key]=draft;
