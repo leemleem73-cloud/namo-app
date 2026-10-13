@@ -146,7 +146,7 @@
     const measured=qty(record);
     if(producer&&(!TYPES.includes(str(record?.intermediateBatch?.kind))||status(record)==="완료"&&measured<=0))
       return {ok:false,message:"중간배치 종류를 선택하고 생산 완료 시 실제 제조량을 입력하세요."};
-    if(!producer&&!items.some(r=>r.name==="중간배치"))return {ok:true};
+    if(!producer&&!items.some(r=>r.name==="중간배치"&&(str(r.lot)||num(r.plan)||num(r.actual))))return {ok:true};
     let data;
     try{data=await getDocs();}catch(e){return {ok:false,message:"공용 DB에서 중간배치 LOT를 확인하지 못했습니다. 저장하지 않았습니다."};}
     if(producer){
