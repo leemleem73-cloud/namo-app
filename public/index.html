@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
-<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-2">
+<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261013-work-f5-6">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -3114,7 +3114,7 @@ function buildModule(id){
       <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
-    wireModule(section,id);renderSavedWorkOrders();wireWorkColumnResize(section);window.namoWorkInquiryInit?.();setTimeout(refreshSharedWorkOrders,0);
+    wireModule(section,id);window.namoWorkInquiryInit?.();renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
     return;
   }
   if(['incoming','process','outgoing'].includes(id)){
