@@ -7,7 +7,16 @@
 
   var css=[
     '#mainWorkspace .work-basic-grid .nwp-original-date{display:none!important}',
-    '#mainWorkspace .work-basic-grid .nwp-range-field{grid-column:span 2;min-width:0}',
+    '#mainWorkspace .work-basic-grid .nwp-range-field{grid-column:span 1!important;min-width:0;width:100%;max-width:100%}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;column-gap:14px!important;row-gap:16px!important;align-items:start!important}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.span2):not(.span4):not(.nwp-original-date){grid-column:span 1!important;min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.nwp-original-date)>label{display:block!important;margin:0 0 7px!important;color:#315171!important;font-size:12px!important;font-weight:750!important;line-height:1.35!important}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.nwp-original-date)>input,#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.nwp-original-date)>select,#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid .nwp-range-button{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:38px!important;min-height:38px!important;margin:0!important;border:1px solid #ccdae7!important;border-radius:7px!important;background:#fff!important;color:#273e59!important;font-size:13px!important;padding:8px 11px!important}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid .nwp-range-button{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;box-shadow:none!important;font-weight:600!important}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.nwp-original-date)>input:focus,#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid>.form-item:not(.nwp-original-date)>select:focus,#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid .nwp-range-button:focus-visible{border-color:#518fc5!important;outline:2px solid rgba(22,111,187,.12)!important;outline-offset:0!important}',
+    '@media(max-width:1650px){#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}',
+    '@media(max-width:820px){#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
+    '@media(max-width:480px){#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid{grid-template-columns:minmax(0,1fr)!important}}',
     '#mainWorkspace .nwp-range-button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:36px;padding:0 11px;border:1px solid #c6d5e5;border-radius:6px;background:#fff;color:#233e5b;cursor:pointer;text-align:left;font-size:12px;font-weight:600}',
     '#mainWorkspace .nwp-range-button:focus-visible{outline:2px solid #8abef1;outline-offset:1px}',
     '#mainWorkspace .nwp-range-button .nwp-range-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
@@ -35,7 +44,7 @@
     '#nwp-period-popup-20261014 .nwp-actions button{border:1px solid #c4d5e5;border-radius:4px;background:#fff;padding:8px 13px}',
     '#nwp-period-popup-20261014 .nwp-actions button.nwp-confirm{background:#166fbb;color:#fff;border-color:#166fbb}',
     '#nwp-period-popup-20261014 .nwp-actions button:disabled{opacity:.5;cursor:not-allowed}',
-    '@media(max-width:640px){#mainWorkspace .work-basic-grid .nwp-range-field{grid-column:span 2}#nwp-period-popup-20261014 .nwp-presets{grid-template-columns:repeat(4,minmax(0,1fr))}#nwp-period-popup-20261014 .nwp-months{grid-template-columns:1fr}#nwp-period-popup-20261014 .nwp-month+.nwp-month{border-left:0;border-top:1px solid #e0e7ef;padding:12px 0 0}}'
+    '@media(max-width:640px){#mainWorkspace .work-basic-grid .nwp-range-field{grid-column:span 1!important}#nwp-period-popup-20261014 .nwp-presets{grid-template-columns:repeat(4,minmax(0,1fr))}#nwp-period-popup-20261014 .nwp-months{grid-template-columns:1fr}#nwp-period-popup-20261014 .nwp-month+.nwp-month{border-left:0;border-top:1px solid #e0e7ef;padding:12px 0 0}}'
   ].join('\n');
   var style=document.createElement('style');
   style.id='namo-workorder-unified-period-style';
