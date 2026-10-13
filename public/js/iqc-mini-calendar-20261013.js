@@ -12,8 +12,8 @@ const css=`
 .iqc-mini-calendar .iqc-mini-grid>*{min-width:0;height:23px;text-align:center;padding:0}
 .iqc-mini-calendar .iqc-mini-week{height:19px;color:#64748b;line-height:19px}
 .iqc-mini-calendar .iqc-mini-grid button:hover,.iqc-mini-calendar .iqc-mini-grid button[aria-selected=true]{background:#dbeafe;color:#1d4ed8}
-.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"]{background:#e0f2fe;color:#075985;font-weight:800;box-shadow:inset 0 0 0 1px #0284c7}
-.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"][aria-selected="true"]{background:#2563eb;color:#fff;box-shadow:inset 0 0 0 1px #1d4ed8}
+.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"]{background:#f0e9ff;color:#65429c;font-weight:800;box-shadow:none;border:0}
+.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"][aria-selected="true"]{background:#e9ddff;color:#58378e;box-shadow:none;border:0}
 .iqc-mini-calendar .iqc-mini-foot{display:flex;justify-content:space-between;margin-top:5px;border-top:1px solid #e2e8f0;padding-top:5px}
 `;
 const style=document.createElement('style');style.id='iqc-mini-calendar-style';style.textContent=css;document.head.append(style);
