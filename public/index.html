@@ -3468,7 +3468,7 @@ async function saveWorkOrderForm(editId=''){
   if(!lot||!product){toast('제품명과 생산 LOT NO를 입력해 주세요.');return;}
   const rows=[...form.querySelectorAll('#workMaterialTable tbody tr')].map(row=>({
     name:row.querySelector('.material-name-select')?.value==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():row.querySelector('.material-name-select')?.value,
-    lot:row.querySelector('.material-lot-manual')?.value.trim()||'',
+    lot:(row.querySelector('.material-name-select')?.value==='중간배치' && /^MB-$/i.test(row.querySelector('.material-lot-manual')?.value.trim()||''))?'':(row.querySelector('.material-lot-manual')?.value.trim()||''),
     plan:row.querySelector('.plan-input')?.value||'',actual:row.querySelector('.actual-input')?.value||'',
     batchType:row.querySelector('.material-name-select')?.value==='중간배치'?(row.querySelector('.namo-mid-kind')?.value||''):''
   })).filter(r=>r.name||r.lot||r.plan||r.actual);

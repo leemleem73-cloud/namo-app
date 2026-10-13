@@ -10,6 +10,9 @@
   const API="/api/qmes/work-orders";
   const str=v=>String(v==null?"":v).trim();
   const up=v=>str(v).toUpperCase();
+  // MB- is the display prefix for intermediate material LOTs; the official production LOT remains unchanged.
+  const batchKey=v=>up(v).replace(/^MB-/,"");
+  const batchLabel=v=>batchKey(v)?"MB-"+batchKey(v):"MB-";
   const esc=v=>str(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const num=v=>{const n=Number(v);return Number.isFinite(n)&&n>0?n:0;};
   const lot=r=>up(r?.fields?.["생산 LOT NO"]);
@@ -31,7 +34,7 @@
   function consumed(d,midLot,excludeId){
     return d.filter(r=>!mid(r)&&status(r)==="완료"&&str(r.id)!==str(excludeId))
       .flatMap(r=>Array.isArray(r.materials)?r.materials:[])
-      .filter(m=>str(m.name)==="중간배치"&&up(m.lot)===up(midLot))
+      .filter(m=>str(m.name)==="중간배치"&&batchKey(m.lot)===batchKey(midLot))
       .reduce((sum,m)=>sum+num(m.actual),0);
   }
   function ready(d){
@@ -49,17 +52,18 @@
     type.style.display=show?"block":"none";
     hint.style.display=show?"block":"none";
     if(!show){lotInput.removeAttribute("list");return;}
+    if(!str(lotInput.value))lotInput.value="MB-";
     lotInput.setAttribute("list",values.id);
     values.replaceChildren();
     const kind=str(type.value);
     const candidates=ready(docs).filter(r=>r.intermediateBatch?.kind===kind && qty(r)-consumed(docs,lot(r))>0);
     candidates.forEach(r=>{
       const x=document.createElement("option");
-      x.value=lot(r);
+      x.value=batchLabel(lot(r));
       x.label=kind+" / 잔량 "+(qty(r)-consumed(docs,lot(r))).toFixed(2)+"kg";
       values.appendChild(x);
     });
-    const found=ready(docs).find(r=>lot(r)===up(lotInput.value)&&r.intermediateBatch?.kind===kind);
+    const found=ready(docs).find(r=>lot(r)===batchKey(lotInput.value)&&r.intermediateBatch?.kind===kind);
     hint.textContent=found?
       "사용 가능 수량(완료 이력 기준): "+(qty(found)-consumed(docs,lot(found))).toFixed(2)+"kg":
       candidates.length?"중간배치 LOT 선택 또는 입력 (완료 시 등록 여부 검증)":"선택한 종류의 완료된 중간배치 LOT가 없습니다.";
@@ -82,9 +86,19 @@
     list.className="namo-mid-list";list.id="namo-mid-list-"+(++listSerial);
     choice.parentNode.append(sel,help);
     lotInput.parentNode.appendChild(list);
-    choice.addEventListener("change",()=>refreshRow(tr));
-    sel.addEventListener("change",()=>{lotInput.value="";refreshRow(tr);});
+    choice.addEventListener("change",()=>{
+      if(choice.value==="중간배치")lotInput.value="MB-";
+      else if(/^MB-/i.test(str(lotInput.value)))lotInput.value="";
+      refreshRow(tr);
+    });
+    sel.addEventListener("change",()=>{lotInput.value="MB-";refreshRow(tr);});
     lotInput.addEventListener("input",()=>refreshRow(tr));
+    lotInput.addEventListener("change",()=>{
+      if(choice.value==="중간배치"&&batchKey(lotInput.value)){
+        lotInput.value=batchLabel(lotInput.value);
+      }
+      refreshRow(tr);
+    });
     refreshRow(tr);
   }
   function prepForm(form){
@@ -146,7 +160,7 @@
     const measured=qty(record);
     if(producer&&(!TYPES.includes(str(record?.intermediateBatch?.kind))||status(record)==="완료"&&measured<=0))
       return {ok:false,message:"중간배치 종류를 선택하고 생산 완료 시 실제 제조량을 입력하세요."};
-    if(!producer&&!items.some(r=>r.name==="중간배치"&&(str(r.lot)||num(r.plan)||num(r.actual))))return {ok:true};
+    if(!producer&&!items.some(r=>r.name==="중간배치"&&(batchKey(r.lot)||num(r.plan)||num(r.actual))))return {ok:true};
     let data;
     try{data=await getDocs();}catch(e){return {ok:false,message:"공용 DB에서 중간배치 LOT를 확인하지 못했습니다. 저장하지 않았습니다."};}
     if(producer){
@@ -156,16 +170,16 @@
         return {ok:false,message:"이미 투입된 중간배치 사용량보다 제조량이 적습니다."};
       return {ok:true};
     }
-    const selected=items.filter(r=>r.name==="중간배치"&&(r.lot||r.plan||r.actual));
+    const selected=items.filter(r=>r.name==="중간배치"&&(batchKey(r.lot)||num(r.plan)||num(r.actual)));
     for(const item of selected){
-      if(!str(item.lot))return {ok:false,message:"중간배치 LOT 번호를 입력하세요."};
+      if(!batchKey(item.lot))return {ok:false,message:"중간배치 LOT 번호를 입력하세요."};
       if(!TYPES.includes(str(item.batchType)))return {ok:false,message:"SBR / PVDF / SBS 중간배치 종류를 선택하세요."};
-      const source=data.find(r=>mid(r)&&lot(r)===up(item.lot)&&r.intermediateBatch?.kind===item.batchType);
+      const source=data.find(r=>mid(r)&&lot(r)===batchKey(item.lot)&&r.intermediateBatch?.kind===item.batchType);
       if(status(record)==="완료"){
         if(!source||status(source)!=="완료"||!qty(source))
           return {ok:false,message:"제조 완료가 확인된 중간배치 LOT만 실제 투입 처리할 수 있습니다."};
         if(!num(item.actual))return {ok:false,message:"완제품 생산 완료 시 중간배치 실투입량을 입력하세요."};
-        const all=selected.filter(x=>up(x.lot)===up(item.lot)).reduce((sum,x)=>sum+num(x.actual),0);
+        const all=selected.filter(x=>batchKey(x.lot)===batchKey(item.lot)).reduce((sum,x)=>sum+num(x.actual),0);
         if(all>qty(source)-consumed(data,lot(source),editId)+0.0000001)
           return {ok:false,message:"중간배치 "+up(item.lot)+"의 실제 투입량이 사용 가능한 수량을 초과했습니다."};
       }
@@ -179,13 +193,13 @@
     const body=document.getElementById("lotResultBody");
     const summary=document.getElementById("lotSummary");
     if(!input||!title||!meta||!body||!summary)return;
-    const q=up(input.value);if(!q){input.focus();return;}
+    const q=up(input.value);if(!batchKey(q)){input.focus();return;}
     title.textContent="중간배치 LOT 조회 중";meta.textContent="공용 작업지시서 조회";
     body.textContent="등록된 중간배치 LOT를 확인하고 있습니다.";summary.replaceChildren();
     try{
       const data=await getDocs();
       if(!document.getElementById("lotIntermediateMode")?.classList.contains("active")||q!==up(input.value))return;
-      const matches=data.filter(r=>mid(r)&&lot(r).includes(q));
+      const matches=data.filter(r=>mid(r)&&lot(r).includes(batchKey(q)));
       title.textContent="중간배치 LOT 추적 결과";
       if(!matches.length){
         meta.textContent="일치하는 중간배치 LOT 없음";
@@ -197,15 +211,15 @@
       const result=matches.map(r=>{
         const batchLot=lot(r);
         const parents=Array.isArray(r.materials)?r.materials.filter(x=>str(x.name)||str(x.lot)):[];
-        const children=data.filter(x=>!mid(x)&&Array.isArray(x.materials)&&x.materials.some(m=>m.name==="중간배치"&&up(m.lot)===batchLot));
+        const children=data.filter(x=>!mid(x)&&Array.isArray(x.materials)&&x.materials.some(m=>m.name==="중간배치"&&batchKey(m.lot)===batchKey(batchLot)));
         linked+=children.length;
         const raw=parents.map(m=>'<tr><td>'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.actual||m.plan||"-")+'</td></tr>').join("");
         const fg=children.map(x=>{
-          const total=x.materials.filter(m=>m.name==="중간배치"&&up(m.lot)===batchLot).reduce((sum,m)=>sum+num(m.actual),0);
+          const total=x.materials.filter(m=>m.name==="중간배치"&&batchKey(m.lot)===batchKey(batchLot)).reduce((sum,m)=>sum+num(m.actual),0);
           return '<tr><td>'+esc(x.id)+'</td><td>'+esc(lot(x))+'</td><td>'+esc(status(x))+'</td><td>'+esc(total?total+" kg":"미확정")+'</td></tr>';
         }).join("");
         const actual=qty(r);const taken=consumed(data,batchLot);
-        return '<div class="lot-detail-box" style="margin:12px 0"><div class="lot-detail-title">'+esc(r.intermediateBatch?.kind)+" / "+esc(batchLot)+'</div>'+
+        return '<div class="lot-detail-box" style="margin:12px 0"><div class="lot-detail-title">'+esc(r.intermediateBatch?.kind)+" / "+esc(batchLabel(batchLot))+'</div>'+
           '<p style="margin:10px 12px;color:#345;font-size:12px">작업지시: '+esc(r.id)+' · 제조상태: '+esc(status(r)||"미확인")+
           ' · 실제 제조량: '+(actual?actual.toFixed(2)+" kg":"미확정")+
           ' · 완료 투입량: '+taken.toFixed(2)+' kg · 잔량: '+(actual?(actual-taken).toFixed(2)+" kg":"미확정")+'</p>'+
