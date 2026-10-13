@@ -144,3 +144,11 @@
 #work .work-list-table .work-row-actions .btn{height:28px!important;min-width:43px;padding:0 8px!important;margin:0!important;border-radius:5px!important}
 #work .work-list-table .work-row-actions .work-order-print-btn{background:#e7f2ff!important;color:#145993!important;border:1px solid #b9d3ed!important}
 #work .work-list-table .work-row-actions .work-order-print-btn:hover{background:#d9eaff!important}
+
+/* 2026-10-13: align the work-detail frame with the work-list table edges. */
+/* The list sits inside the module-shell's 1px border; detail is its sibling. */
+#work>#namo-work-detail{
+  margin-left:17px!important;
+  margin-right:17px!important;
+  max-width:calc(100% - 34px)!important;
+}
