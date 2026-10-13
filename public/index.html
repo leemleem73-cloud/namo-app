@@ -3728,7 +3728,7 @@ async function loadHistoricalInspectionRows(section,id){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
         if(id==='process'&&cols[index]==='비고'){
-          return '<td></td>';
+          return '<td><button type="button" class="btn mini-report pqc-remarks-edit">수정</button></td>';
         }
         return '<td>'+safe(v)+'</td>';
       }).join('');
