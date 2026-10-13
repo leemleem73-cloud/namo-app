@@ -197,12 +197,10 @@
       apply(u);
       if(u.mustChangePassword)passwordModal(true);
     }catch(_){
-      if(cached){
-        apply(cached);
-        return;
-      }
+      // A cached profile is display-only; it must never masquerade as a live session.
+      // The server returns 401 to PQC/OQC/work-order APIs when req.session.user is absent.
       clear();
-      loginScreen();
+      loginScreen("로그인 세션이 만료되었거나 인증이 확인되지 않았습니다. 다시 로그인해 주세요.");
     }
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
