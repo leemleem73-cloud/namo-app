@@ -1,0 +1,37 @@
+/* NAMO work-order premium design 2026-10-13. Scoped to #work only. */
+#work .module-shell{background:#fff!important;border:1px solid #cbd7e4!important;border-radius:5px!important;box-shadow:0 4px 14px rgba(24,51,83,.09)!important;overflow:visible!important}
+#work .nwi-header{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:56px!important;padding:13px 18px!important;gap:12px!important;border-bottom:1px solid #d7e2ed!important;background:#fff!important}
+#work .nwi-title,#work .nwi-title strong{color:#1e344f!important;font-size:18px!important;font-weight:800!important;letter-spacing:-.35px!important}
+#work .nwi-header>.module-toolbar{width:auto!important;flex:0 0 auto!important;margin-left:auto!important;padding:0!important;min-height:0!important;border:0!important;background:transparent!important}
+#work .nwi-header .btn{height:35px!important;border-radius:4px!important;padding:8px 14px!important;font-size:12px!important;font-weight:700!important}
+#work .nwi-header .btn.primary{background:#1688ea!important;color:#fff!important;border-color:#1688ea!important}
+#namo-work-inquiry{padding:18px!important;background:#f8fafc!important;border-bottom:1px solid #d8e2eb!important}
+#namo-work-inquiry .nwi-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px 18px!important}
+#namo-work-inquiry label{display:flex!important;align-items:center!important;min-width:0!important;gap:8px!important;color:#2f435b!important;font-size:13px!important;font-weight:700!important}
+#namo-work-inquiry label span{min-width:80px!important;flex:0 0 80px!important;text-align:right!important}
+#namo-work-inquiry input,#namo-work-inquiry select{height:36px!important;min-width:0!important;width:100%!important;padding:0 10px!important;font-size:13px!important;color:#294059!important;border:1px solid #cbd7e3!important;border-radius:4px!important;background:#fff!important}
+#namo-work-inquiry input:focus,#namo-work-inquiry select:focus{outline:2px solid rgba(22,136,234,.16)!important;border-color:#1688ea!important}
+#namo-work-inquiry .nwi-actions{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:8px!important;margin-top:14px!important}
+#namo-work-inquiry .nwi-actions .btn{height:35px!important;padding:7px 14px!important;border-radius:4px!important;font-weight:700!important}
+#work .nwi-list-head{padding:14px 18px 10px!important;font-size:14px!important;font-weight:800!important;color:#213853!important;border-bottom:2px solid #b9cada!important}
+#work .module-body{padding:0!important;overflow-x:auto!important}
+#work .work-list-table{border-collapse:collapse!important;min-width:1080px!important}
+#work .work-list-table thead th{background:#edf2f7!important;color:#263b54!important;border:1px solid #cbd7e4!important;font-size:13px!important;font-weight:700!important;padding:11px 8px!important}
+#work .work-list-table tbody td{color:#344960!important;border:1px solid #dce4ed!important;font-size:13px!important;padding:11px 8px!important}
+#work .work-list-table tbody tr:nth-child(even) td{background:#fafcfe!important}
+#work .work-list-table tbody tr:hover td{background:#edf6ff!important}
+#work .work-list-table tbody tr.nwi-selected td{background:#dceeff!important}
+#work .work-list-table tbody tr[data-work-saved] td:nth-child(2){color:#006fc7!important;text-decoration:underline!important;font-weight:700!important;cursor:pointer!important}
+#namo-work-detail{margin-top:14px!important;border:1px solid #cbd7e4!important;border-radius:5px!important;background:#fff!important;overflow:hidden!important;box-shadow:0 4px 14px rgba(24,51,83,.07)!important}
+#namo-work-detail .nwd-head{background:#f8fafc!important;border-bottom:2px solid #cbd8e5!important;padding:13px 18px!important;font-size:16px!important;font-weight:800!important;color:#213852!important;height:auto!important;min-height:48px!important}
+#namo-work-detail .nwd-content{padding:17px 18px 24px!important;color:#2e435c!important}
+#namo-work-detail .nwd-grid{border-color:#d2dde8!important}
+#namo-work-detail .nwd-cell{border-color:#d2dde8!important}
+#namo-work-detail .nwd-cell b{background:#edf2f7!important;color:#284059!important;flex:0 0 105px!important;padding:11px!important}
+#namo-work-detail .nwd-cell span{padding:11px!important}
+#namo-work-detail .nwd-tab{font-size:13px!important;font-weight:700!important;padding:10px 15px!important;border-radius:4px 4px 0 0!important}
+#namo-work-detail .nwd-tab.active{background:#1688ea!important;border-color:#1688ea!important;color:#fff!important}
+#namo-work-detail th{background:#edf2f7!important;color:#293e56!important;font-size:13px!important;padding:10px!important}
+#namo-work-detail td{font-size:13px!important;padding:10px!important}
+@media(max-width:1120px){#namo-work-inquiry .nwi-grid,#namo-work-detail .nwd-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:700px){#namo-work-inquiry .nwi-grid,#namo-work-detail .nwd-grid{grid-template-columns:1fr!important}#work .nwi-header{flex-wrap:wrap!important}}
