@@ -2049,8 +2049,8 @@ function premiumInspectionShell(id,title,desc,cols){
       <div class="ip-toolbar">
         <div class="ip-filter-row">
           <div class="ip-filter search"><label>통합검색</label><input class="input search-input" placeholder="${meta.filter}"></div>
-          <div class="ip-filter"><label>시작일</label><input class="input ip-start-date" type="date"></div>
-          <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="date"></div>
+          <div class="ip-filter"><label>시작일</label><input class="input ip-start-date" type="text" readonly placeholder="연-월-일" autocomplete="off"></div>
+          <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="text" readonly placeholder="연-월-일" autocomplete="off"></div>
           <div class="ip-filter"><label>검사상태</label><select class="input ip-status-filter"><option>전체</option><option>합격</option><option>불합격</option><option>대기</option></select></div>
         </div>
         <div class="ip-actions"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
