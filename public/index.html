@@ -3405,6 +3405,7 @@ async function loadQualityNotifications(){
 }
 const WORK_LOCAL_KEY='namo_qmes_work_orders_v1';
 let workSharedRows=null, workSyncBusy=null;
+const workDeletingIds=new Set();
 const WORK_API='/api/qmes/work-orders';
 async function workApi(method,path='',body){
   const response=await fetch(WORK_API+path,{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
@@ -3415,30 +3416,21 @@ async function workApi(method,path='',body){
 async function refreshSharedWorkOrders(){
   if(workSyncBusy)return workSyncBusy;
   workSyncBusy=(async()=>{
+    // Shared database is authoritative. Never upload a stale browser cache
+    // during a refresh: it would recreate deleted documents on another PC.
     const response=await workApi('GET');
-    const remote=Array.isArray(response.data)?response.data:[];
-    const local=readWorkOrders();
-    const ids=new Set(remote.map(x=>x&&x.id));
-    for(const row of local){
-      if(!row||!row.id||ids.has(row.id))continue;
-      const result=await workApi('POST','',row);
-      if(result.data&&result.data.created){remote.unshift(row);ids.add(row.id);}
-      else {const refreshed=await workApi('GET');remote.splice(0,remote.length,...(Array.isArray(refreshed.data)?refreshed.data:[]));ids.clear();remote.forEach(x=>ids.add(x.id));}
-    }
-    const existing=readWorkOrders();
-    const changed=JSON.stringify(existing)!==JSON.stringify(remote);
+    const remote=(Array.isArray(response.data)?response.data:[]).filter(row=>row&&!workDeletingIds.has(String(row.id)));
     workSharedRows=remote;
-    if(changed){
-      try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
-      renderSavedWorkOrders();
-    }
-  })().catch(error=>{console.error('[QMES work sync]',error);/* background sync error: console only, no bottom popup */}).finally(()=>{workSyncBusy=null;});
+    try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remote));}catch(_){}
+    renderSavedWorkOrders();
+  })().catch(error=>{console.error('[QMES work sync]',error);}).finally(()=>{workSyncBusy=null;});
   return workSyncBusy;
 }
 window.addEventListener('focus',()=>{if(document.getElementById('work')?.classList.contains('active'))refreshSharedWorkOrders();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('work')?.classList.contains('active'))refreshSharedWorkOrders();});
 function readWorkOrders(){
-  if(workSharedRows)return workSharedRows;try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows:[];}catch(_){return [];}
+  if(workSharedRows)return workSharedRows.filter(row=>!workDeletingIds.has(String(row?.id)));
+  try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows.filter(row=>!workDeletingIds.has(String(row?.id))):[];}catch(_){return [];}
 }
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
@@ -3466,7 +3458,28 @@ function renderSavedWorkOrders(){
     const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
     edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
     const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='삭제';del.style.marginLeft='5px';
-    del.addEventListener('click',async e=>{e.stopPropagation();if(!confirm('이 작업지시서를 삭제하시겠습니까?'))return;try{await workApi('DELETE','/'+encodeURIComponent(order.id));const remaining=readWorkOrders().filter(x=>x.id!==order.id);workSharedRows=remaining;localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(remaining));renderSavedWorkOrders();toast('삭제되었습니다.');}catch(error){toast('서버 삭제 실패: '+error.message);}});
+    del.addEventListener('click',async e=>{
+      e.stopPropagation();
+      const id=String(order.id);
+      if(workDeletingIds.has(id)||!confirm('이 작업지시서를 삭제하시겠습니까?'))return;
+      workDeletingIds.add(id);
+      del.disabled=true;
+      renderSavedWorkOrders(); // Remove row immediately after confirmation.
+      try{
+        await workApi('DELETE','/'+encodeURIComponent(id));
+        workSharedRows=(workSharedRows||[]).filter(row=>String(row?.id)!==id);
+        try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(workSharedRows));}catch(_){}
+        toast('삭제되었습니다.');
+      }catch(error){
+        toast('서버 삭제 실패: '+error.message);
+        alert('작업지시서를 삭제하지 못했습니다.\n'+error.message);
+      }finally{
+        workDeletingIds.delete(id);
+        if(workSyncBusy)await workSyncBusy;
+        await refreshSharedWorkOrders();
+        renderSavedWorkOrders();
+      }
+    });
     actions.append(edit,del);tr.appendChild(actions);
     tbody.appendChild(tr);
   });
