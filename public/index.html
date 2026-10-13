@@ -2013,7 +2013,7 @@ function premiumInspectionShell(id,title,desc,cols){
     process:{icon:'IP',tag:'IN-PROCESS QUALITY',total:0,today:0,pass:0,pending:0,filter:'LOT / 작업지시 / 공정 검색'},
     outgoing:{icon:'OQC',tag:'OUTGOING QUALITY',total:0,today:0,pass:0,pending:0,filter:'고객사 / LOT / 제품명 검색'}
   }[id];
-  return `<div class="inspection-premium${false?' iqc-date-font-only':''}">
+  return `<div class="inspection-premium">
     <div class="ip-hero">
       <div class="ip-head">
         <div class="ip-title"><div class="ip-icon">${meta.icon}</div><div><h1>${title}</h1><p>${desc}</p></div></div>
