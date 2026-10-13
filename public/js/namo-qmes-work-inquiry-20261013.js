@@ -42,12 +42,13 @@ function init(){
   rangeLabel.innerHTML='<span>지시기간</span><button type="button" class="nwi-period-trigger" aria-label="지시기간 달력 열기" aria-expanded="false"><span class="nwi-period-value">기간 선택</span><span class="nwi-period-icon">▦</span></button>';
   startLabel.before(rangeLabel);startLabel.hidden=true;endLabel.hidden=true;
   const pop=document.createElement('div');pop.className='nwi-period-popup';pop.hidden=true;
-  pop.innerHTML='<div class="nwi-period-months"></div><div class="nwi-period-footer"><span class="nwi-period-summary">기간을 선택하세요</span><div><button type="button" class="btn nwi-period-cancel">취소</button><button type="button" class="btn primary nwi-period-ok">확인</button></div></div>';
+  pop.innerHTML='<div class="nwi-period-presets" role="group" aria-label="지시기간 빠른 선택">'+['올해','오늘까지','오늘','전일','주간','전주','당월','이전달'].map(name=>'<button type="button" class="nwi-period-preset">'+name+'</button>').join('')+'</div><div class="nwi-period-months"></div><div class="nwi-period-footer"><span class="nwi-period-summary">기간을 선택하세요</span><div><button type="button" class="btn nwi-period-cancel">취소</button><button type="button" class="btn primary nwi-period-ok">확인</button></div></div>';
   rangeLabel.after(pop);
   const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
   const parse=v=>v?new Date(v+'T12:00:00'):null;
-  const today=new Date();let base=new Date(today.getFullYear(),today.getMonth(),1),a=null,b=null;
+  const today=new Date(),firstOfMonth=new Date(today.getFullYear(),today.getMonth(),1),todayLocal=new Date(today.getFullYear(),today.getMonth(),today.getDate());let base=new Date(firstOfMonth),a=new Date(firstOfMonth),b=new Date(todayLocal);
   const trigger=rangeLabel.querySelector('.nwi-period-trigger'),value=rangeLabel.querySelector('.nwi-period-value');
+  value.textContent=fmt(a)+' ~ '+fmt(b);
   function redraw(){
    const months=pop.querySelector('.nwi-period-months');months.innerHTML='';
    for(let k=0;k<2;k++){
@@ -72,17 +73,36 @@ function init(){
    }
    pop.querySelector('.nwi-period-summary').textContent=a?(fmt(a)+(b?' ~ '+fmt(b):' ~ 종료일 선택')):'시작일과 종료일을 선택하세요';
   }
+  function weekMonday(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+  function preset(name){
+   const y=today.getFullYear(),m=today.getMonth(),day=today.getDate();
+   if(name==='올해'){a=new Date(y,0,1);b=new Date(y,11,31)}
+   else if(name==='오늘까지'){a=new Date(y,0,1);b=new Date(todayLocal)}
+   else if(name==='오늘'){a=new Date(todayLocal);b=new Date(todayLocal)}
+   else if(name==='전일'){a=new Date(y,m,day-1);b=new Date(a)}
+   else if(name==='주간'){a=weekMonday(today);b=new Date(a);b.setDate(b.getDate()+6)}
+   else if(name==='전주'){b=weekMonday(today);b.setDate(b.getDate()-1);a=new Date(b);a.setDate(a.getDate()-6)}
+   else if(name==='당월'){a=new Date(y,m,1);b=new Date(y,m+1,0)}
+   else if(name==='이전달'){a=new Date(y,m-1,1);b=new Date(y,m,0)}
+   else return;
+   base=new Date(a.getFullYear(),a.getMonth(),1);redraw();
+  }
+  pop.querySelectorAll('.nwi-period-preset').forEach(btn=>btn.addEventListener('click',()=>preset(btn.textContent.trim())));
   function close(){pop.hidden=true;trigger.setAttribute('aria-expanded','false')}
-  trigger.onclick=()=>{if(!pop.hidden){close();return}a=parse(start.value);b=parse(end.value);if(a)base=new Date(a.getFullYear(),a.getMonth(),1);redraw();pop.hidden=false;trigger.setAttribute('aria-expanded','true')};
+  trigger.onclick=()=>{if(!pop.hidden){close();return}a=parse(start.value);b=parse(end.value);if(!a&&!b&&value.textContent!=='기간 선택'){a=new Date(firstOfMonth);b=new Date(todayLocal)}if(a)base=new Date(a.getFullYear(),a.getMonth(),1);redraw();pop.hidden=false;trigger.setAttribute('aria-expanded','true')};
   pop.querySelector('.nwi-period-cancel').onclick=close;
   pop.querySelector('.nwi-period-ok').onclick=()=>{if(!a||!b)return;start.value=fmt(a);end.value=fmt(b);value.textContent=fmt(a)+' ~ '+fmt(b);close()};
   document.addEventListener('pointerdown',e=>{if(!pop.hidden&&!pop.contains(e.target)&&!rangeLabel.contains(e.target))close()});
+  panel.querySelector('#nwi-search').addEventListener('click',()=>{if(!start.value&&!end.value&&value.textContent!=='기간 선택'){start.value=fmt(firstOfMonth);end.value=fmt(todayLocal)}});
   panel.querySelector('#nwi-clear').addEventListener('click',()=>{value.textContent='기간 선택';a=null;b=null;close()});
   const st=document.createElement('style');st.textContent=`
   #namo-work-inquiry label[hidden]{display:none!important}
   #namo-work-inquiry .nwi-period-label{position:relative}
   #namo-work-inquiry .nwi-period-trigger{height:38px;width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:0 11px;background:#fff;color:#263b53;border:1px solid #bdcddd;border-radius:4px;cursor:pointer;font-size:13px}
   #namo-work-inquiry .nwi-period-icon{font-size:21px;color:#6f8398}
+  #namo-work-inquiry .nwi-period-presets{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-bottom:12px}
+  #namo-work-inquiry .nwi-period-preset{min-height:32px;padding:5px 2px;border:1px solid #d5dce5;background:#fff;border-radius:2px;color:#33465d;font-family:inherit;font-size:12px;line-height:1.2;cursor:pointer;white-space:nowrap}
+  #namo-work-inquiry .nwi-period-preset:hover,#namo-work-inquiry .nwi-period-preset:focus-visible{border-color:#1688ea;background:#eaf4ff;color:#126fae}
   #namo-work-inquiry .nwi-period-popup{position:absolute;z-index:9999;width:min(650px,calc(100vw - 100px));padding:16px;background:white;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2)}
   #namo-work-inquiry .nwi-period-popup[hidden]{display:none!important}
   #namo-work-inquiry .nwi-period-months{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -98,7 +118,7 @@ function init(){
   #namo-work-inquiry .nwi-period-days button.selected:nth-child(7n+1){color:#fff}
   #namo-work-inquiry .nwi-period-footer{border-top:1px solid #e1e8f0;margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;color:#63788e;font-size:12px}
   #namo-work-inquiry .nwi-period-footer button{padding:7px 12px}
-  @media(max-width:700px){#namo-work-inquiry .nwi-period-months{grid-template-columns:1fr}#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:0;padding-left:0}}
+  @media(max-width:700px){#namo-work-inquiry .nwi-period-presets{grid-template-columns:repeat(4,minmax(0,1fr))}#namo-work-inquiry .nwi-period-months{grid-template-columns:1fr}#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:0;padding-left:0}}
   `;document.head.appendChild(st);
  })();
 
