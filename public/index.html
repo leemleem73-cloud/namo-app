@@ -1936,7 +1936,7 @@ function wireIncomingColumnResize(section){
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[52,112,155,180,155,180,96,100,120,210];
-  const minimums=[44,92,90,100,90,100,76,76,90,160];
+  const minimums=[52,92,90,100,90,100,76,76,90,160];
   const storageKey='namo-iqc-column-widths-v1';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -1965,6 +1965,7 @@ function wireIncomingColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
+    widths[0]=52; // Shared compact NO column across all three inspection lists.
     widths.forEach((width,i)=>{
       columns[i].style.width=width+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -2070,7 +2071,7 @@ function wireProcessColumnResize(section){
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[52,115,155,165,150,140,140,105,105,110,160];
-  const minimums=[44,90,100,100,90,90,90,76,76,80,100];
+  const minimums=[52,90,100,100,90,90,90,76,76,80,100];
   const storageKey='namo-process-column-widths-v1';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -2099,6 +2100,7 @@ function wireProcessColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
+    widths[0]=52; // Shared compact NO column across all three inspection lists.
     widths.forEach((width,i)=>{
       columns[i].style.width=width+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -2204,7 +2206,7 @@ function wireOutgoingColumnResize(section){
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[52,135,160,170,175,155,110,115,125,110];
-  const minimums=[44,90,100,100,100,90,76,76,80,80];
+  const minimums=[52,90,100,100,100,90,76,76,80,80];
   const storageKey='namo-outgoing-column-widths-v1';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -2233,6 +2235,7 @@ function wireOutgoingColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
+    widths[0]=52; // Shared compact NO column across all three inspection lists.
     widths.forEach((width,i)=>{
       columns[i].style.width=width+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
