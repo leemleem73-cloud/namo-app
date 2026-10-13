@@ -12,6 +12,8 @@ const css=`
 .iqc-mini-calendar .iqc-mini-grid>*{min-width:0;height:23px;text-align:center;padding:0}
 .iqc-mini-calendar .iqc-mini-week{height:19px;color:#64748b;line-height:19px}
 .iqc-mini-calendar .iqc-mini-grid button:hover,.iqc-mini-calendar .iqc-mini-grid button[aria-selected=true]{background:#dbeafe;color:#1d4ed8}
+.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"]{background:#e0f2fe;color:#075985;font-weight:800;box-shadow:inset 0 0 0 1px #0284c7}
+.iqc-mini-calendar .iqc-mini-grid button[data-current-day="true"][aria-selected="true"]{background:#2563eb;color:#fff;box-shadow:inset 0 0 0 1px #1d4ed8}
 .iqc-mini-calendar .iqc-mini-foot{display:flex;justify-content:space-between;margin-top:5px;border-top:1px solid #e2e8f0;padding-top:5px}
 `;
 const style=document.createElement('style');style.id='iqc-mini-calendar-style';style.textContent=css;document.head.append(style);
@@ -19,7 +21,7 @@ let pop=null,active=null,month=null;
 const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 function close(){pop?.remove();pop=null;active=null}
 function draw(){if(!pop||!active)return;const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();
-pop.innerHTML='<div class="iqc-mini-head"><button type="button" class="iqc-mini-nav" data-shift="-1" aria-label="이전 달">‹</button><span>'+y+'년 '+(m+1)+'월</span><button type="button" class="iqc-mini-nav" data-shift="1" aria-label="다음 달">›</button></div><div class="iqc-mini-grid">'+['일','월','화','수','목','금','토'].map(x=>'<span class="iqc-mini-week">'+x+'</span>').join('')+Array.from({length:first},()=>'<span></span>').join('')+Array.from({length:count},(_,i)=>{const d=fmt(new Date(y,m,i+1));return '<button type="button" data-date="'+d+'" aria-selected="'+(active.value===d)+'">'+(i+1)+'</button>'}).join('')+'</div><div class="iqc-mini-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button></div>';
+pop.innerHTML='<div class="iqc-mini-head"><button type="button" class="iqc-mini-nav" data-shift="-1" aria-label="이전 달">‹</button><span>'+y+'년 '+(m+1)+'월</span><button type="button" class="iqc-mini-nav" data-shift="1" aria-label="다음 달">›</button></div><div class="iqc-mini-grid">'+['일','월','화','수','목','금','토'].map(x=>'<span class="iqc-mini-week">'+x+'</span>').join('')+Array.from({length:first},()=>'<span></span>').join('')+Array.from({length:count},(_,i)=>{const d=fmt(new Date(y,m,i+1));return '<button type="button" data-date="'+d+'" data-current-day="'+(d===fmt(new Date()))+'" aria-current="'+(d===fmt(new Date())?'date':'false')+'" aria-selected="'+(active.value===d)+'">'+(i+1)+'</button>'}).join('')+'</div><div class="iqc-mini-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button></div>';
 const rect=active.getBoundingClientRect();const width=Math.max(90,Math.min(rect.width,innerWidth-10));pop.style.width=width+'px';pop.style.minWidth='0';pop.style.maxWidth=width+'px';const left=Math.max(5,Math.min(rect.left,innerWidth-width-5));const top=rect.bottom+4+205>innerHeight?Math.max(5,rect.top-212):rect.bottom+4;pop.style.left=left+'px';pop.style.top=top+'px';
 }
 function choose(value){if(!active)return;active.value=value;active.dispatchEvent(new Event('change',{bubbles:true}));close()}
