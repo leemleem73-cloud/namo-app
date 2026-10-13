@@ -1310,6 +1310,25 @@ thead{background:#f4f7fa}
 
 <style id="iqc-date-text-size-20261013">
 /* Typography only: incoming inspection date fields, no structural or calendar changes. */
+/* The custom calendar uses readonly text inputs; keep their selected dates
+   visually identical to the unselected date placeholder and status field. */
+.inspection-premium .ip-filter-row input.ip-start-date[type="text"],
+.inspection-premium .ip-filter-row input.ip-end-date[type="text"] {
+ font-family:inherit!important;
+ font-size:11px!important;
+ font-weight:700!important;
+ letter-spacing:normal!important;
+ color:#334155!important;
+}
+.inspection-premium .ip-filter-row input.ip-start-date[type="text"]::placeholder,
+.inspection-premium .ip-filter-row input.ip-end-date[type="text"]::placeholder {
+ font-family:inherit!important;
+ font-size:11px!important;
+ font-weight:700!important;
+ color:#334155!important;
+ opacity:1;
+}
+
 .inspection-premium .ip-filter-row input.ip-start-date[type="date"],
 .inspection-premium .ip-filter-row input.ip-end-date[type="date"],
 .inspection-premium .ip-filter-row input.ip-start-date[type="date"]::-webkit-datetime-edit,
