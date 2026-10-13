@@ -1965,15 +1965,27 @@ function wireIncomingColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
-    widths[0]=52; // Shared compact NO column across all three inspection lists.
+    widths[0]=52; // Keep NO narrow in every inspection list.
+    // Distribute unused space over other columns, preserving their relative sizes.
+    // Do not overwrite saved user widths or force the table beyond the viewport.
+    const effective=widths.slice();
+    const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
+    if(free>0&&effective.length>1){
+      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
+      let assigned=0;
+      for(let j=1;j<effective.length;j++){
+        const extra=j===effective.length-1?free-assigned:Math.floor(free*effective[j]/total);
+        effective[j]+=extra;assigned+=extra;
+      }
+    }
     widths.forEach((width,i)=>{
-      columns[i].style.width=width+'px';
+      columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
       const reference=baseline?.[i]??initial[i];
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',widths.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
@@ -2100,15 +2112,27 @@ function wireProcessColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
-    widths[0]=52; // Shared compact NO column across all three inspection lists.
+    widths[0]=52; // Keep NO narrow in every inspection list.
+    // Distribute unused space over other columns, preserving their relative sizes.
+    // Do not overwrite saved user widths or force the table beyond the viewport.
+    const effective=widths.slice();
+    const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
+    if(free>0&&effective.length>1){
+      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
+      let assigned=0;
+      for(let j=1;j<effective.length;j++){
+        const extra=j===effective.length-1?free-assigned:Math.floor(free*effective[j]/total);
+        effective[j]+=extra;assigned+=extra;
+      }
+    }
     widths.forEach((width,i)=>{
-      columns[i].style.width=width+'px';
+      columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
       const reference=baseline?.[i]??initial[i];
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',widths.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
@@ -2235,15 +2259,27 @@ function wireOutgoingColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
-    widths[0]=52; // Shared compact NO column across all three inspection lists.
+    widths[0]=52; // Keep NO narrow in every inspection list.
+    // Distribute unused space over other columns, preserving their relative sizes.
+    // Do not overwrite saved user widths or force the table beyond the viewport.
+    const effective=widths.slice();
+    const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
+    if(free>0&&effective.length>1){
+      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
+      let assigned=0;
+      for(let j=1;j<effective.length;j++){
+        const extra=j===effective.length-1?free-assigned:Math.floor(free*effective[j]/total);
+        effective[j]+=extra;assigned+=extra;
+      }
+    }
     widths.forEach((width,i)=>{
-      columns[i].style.width=width+'px';
+      columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
       const reference=baseline?.[i]??initial[i];
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',widths.reduce((sum,width)=>sum+width,0)+'px','important');
+    table.style.setProperty('width',effective.reduce((sum,width)=>sum+width,0)+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
