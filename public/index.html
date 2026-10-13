@@ -3680,6 +3680,29 @@ async function loadHistoricalInspectionRows(section,id){
         if(seen.has(key))return;seen.add(key);rows.push(row);
       });
     });
+    // Surface the two existing work orders in PQC without inventing inspection measurements.
+    if(id==='process'){
+      let workOrders=[];
+      try{
+        const workResponse=await fetch('/api/qmes/work-orders?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+        const workJson=await workResponse.json();
+        if(workResponse.ok&&workJson.success&&Array.isArray(workJson.data))workOrders=workJson.data;
+      }catch(error){console.warn('[QMES] work-order lookup for PQC',error);}
+      if(!workOrders.length)workOrders=readWorkOrders();
+      for(const lot of ['DBF2401','DBF2501']){
+        if(rows.some(row=>String(row.lot||'').trim().toUpperCase()===lot))continue;
+        const order=workOrders.find(o=>String(o?.fields?.['생산 LOT NO']||'').trim().toUpperCase()===lot);
+        if(!order)continue;
+        const fields=order.fields||{};
+        const rawDate=String(order.workDate||fields['작업기간']||'').slice(0,10);
+        rows.push({
+          id:'work-linked-'+lot,date:/^\\d{4}-\\d{2}-\\d{2}$/.test(rawDate)?rawDate:'-',
+          workOrderNo:fields['작업지시번호']||order.id||'-',
+          product:fields['제품명']||'-',lot,stage:'작업지시서 연동',
+          check:'미입력',judge:'미판정',inspector:'-',remarks:'작업지시서 기반 · 검사결과 미입력'
+        });
+      }
+    }
     rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
