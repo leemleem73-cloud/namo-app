@@ -3716,12 +3716,25 @@ async function loadHistoricalInspectionRows(section,id){
         });
       }
     }
+    if(id==='process'){
+      try{
+        const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
+        for(const row of rows){
+          const draft=drafts[String(row.lot||'').trim().toUpperCase()];
+          if(!draft?.fields)continue;
+          const fields=draft.fields;
+          if(fields['검사자'])row.inspector=fields['검사자']==='__manual__'?(draft.inspectorManual||'-'):fields['검사자'];
+          if(fields['검사합부'])row.judge=fields['검사합부'];
+          if(draft.workOrder)row.workOrderNo=draft.workOrder;
+        }
+      }catch(error){console.warn('[QMES] PQC local draft overlay',error);}
+    }
     rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
     tbody.innerHTML=rows.length?rows.map((row,i)=>{
       const values=id==='process'
-        ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',row.judge==='검사대기'?'검사대기':'합격',row.inspector,'',row.remarks||'-']
+        ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='성적서'){
@@ -4454,12 +4467,26 @@ function showRowDetail(id,row){
         document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
         const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
         if(!key){toast('생산 LOT NO를 입력해 주세요.');return;}
+        const chosenInspector=fields['검사자']==='__manual__'?String(inspectorManual?.value||'').trim():fields['검사자'];
+        if(fields['검사자']==='__manual__'&&!chosenInspector){toast('검사자 이름을 입력해 주세요.');return;}
         const draft={fields,workOrder:select?.value||'',inspectorManual:inspectorManual?.value||'',savedAt:new Date().toISOString()};
         try{
           const drafts=JSON.parse(localStorage.getItem(draftKey)||'{}');
           drafts[key]=draft;
           localStorage.setItem(draftKey,JSON.stringify(drafts));
-          toast('공정검사 상세 내용을 이 브라우저에 임시저장했습니다. 서버 저장은 아직 연결되지 않았습니다.');
+          // Reflect the saved draft in the existing PQC list immediately.
+          const list=document.querySelector('[data-inspection-id="process"]')||document.querySelector('[data-inspection-type="process"]');
+          const tableRows=[...document.querySelectorAll('.data-row')];
+          const cols=pageInfo.process[2];
+          const lotIndex=cols.indexOf('생산 LOT NO')+1;
+          const inspectorIndex=cols.indexOf('검사자')+1;
+          const judgeIndex=cols.indexOf('검사합부')+1;
+          for(const tr of tableRows){
+            if(String(tr.cells[lotIndex]?.textContent||'').trim().toUpperCase()!==key)continue;
+            if(inspectorIndex>0&&tr.cells[inspectorIndex])tr.cells[inspectorIndex].textContent=chosenInspector||'-';
+            if(judgeIndex>0&&tr.cells[judgeIndex])tr.cells[judgeIndex].textContent=fields['검사합부']||'대기';
+          }
+          toast('브라우저 임시저장 완료. 목록의 검사자·검사합부에 반영됩니다. 서버 저장은 아직 연결되지 않았습니다.');
         }catch(error){toast('임시저장 실패: '+error.message);}
       });
     }
