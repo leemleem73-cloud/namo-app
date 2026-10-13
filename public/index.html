@@ -3350,9 +3350,19 @@ function readWorkOrders(){
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
   if(!tbody)return;
-  tbody.querySelectorAll('tr[data-work-saved]').forEach(r=>r.remove());
+  // Keep unchanged rows attached to avoid blinking when shared data refreshes.
+  const prior=new Map([...tbody.querySelectorAll('tr[data-work-saved]')].map(r=>[r.dataset.workSaved,r]));
+  const seen=new Set();
   const cols=pageInfo.work[2];
   readWorkOrders().forEach((order,index)=>{
+    if(!order||!order.id)return;
+    seen.add(String(order.id));
+    const priorRow=prior.get(String(order.id));
+    if(priorRow){
+      const colsNow=pageInfo.work[2],valuesNow=[readWorkOrders().length-index,...colsNow.map(c=>order.fields?.[c]||'-')];
+      valuesNow.forEach((v,i)=>{if(priorRow.cells[i]&&priorRow.cells[i].textContent!==String(v))priorRow.cells[i].textContent=String(v);});
+      return;
+    }
     const tr=document.createElement('tr');
     tr.className='data-row';tr.tabIndex=0;tr.dataset.workSaved=order.id;
     const values=[readWorkOrders().length-index,...cols.map(c=>order.fields[c]||'-')];
@@ -3367,6 +3377,9 @@ function renderSavedWorkOrders(){
     actions.append(edit,del);tr.appendChild(actions);
     tbody.appendChild(tr);
   });
+  prior.forEach((row,id)=>{if(!seen.has(id))row.remove();});
+  const target=readWorkOrders().map(x=>String(x?.id||''));
+  target.forEach((id,i)=>{const row=[...tbody.querySelectorAll('tr[data-work-saved]')].find(r=>r.dataset.workSaved===id);if(row&&tbody.children[i]!==row)tbody.insertBefore(row,tbody.children[i]||null);});
 }
 async function saveWorkOrderForm(editId=''){
   const form=document.querySelector('.work-form');
@@ -3418,6 +3431,7 @@ function wireWorkColumnResize(section){
   }
   function fit(){
     const available=wrap.clientWidth;if(!available)return;
+    if(containerWidth&&Math.abs(available-containerWidth)<4)return;
     if(!containerWidth||(!custom&&available!==containerWidth)){
       const scale=available/defaults.reduce((a,b)=>a+b,0);
       const natural=fitRemarks(defaults.map((n,i)=>Math.max(mins[i],Math.round(n*scale))));
