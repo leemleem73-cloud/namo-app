@@ -1618,6 +1618,8 @@ thead{background:#f4f7fa}
 .std-inspection.premium[data-inspection-type="process"]{
  border-color:#e7ecf2!important;box-shadow:none!important;
 }
+</style><style id="pqc-report-readonly-detail-values-20261014">
+.std-inspection[data-inspection-type="process"] .pqc-report-readonly-value{display:block;text-align:center;line-height:34px;min-height:34px;color:#26354a;font-weight:700}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4035,18 +4037,15 @@ async function loadHistoricalInspectionRows(section,id){
           const remarks=root.querySelector('.std-premium-remarks textarea');
           if(remarks)remarks.value=draft.remarks||'';
         }
-        // This report is an editable preview: allow inspector and work-order selection.
-        initStandardInspectionForm('process');
+        // Certificate is read-only: values and judgments come only from the PQC detail draft.
+        const hasDetail=hydratePqcReportFromDetail(root,lot);
         const inspector=root.querySelector('.pqc-inspector-select');
-        const inspectorManual=root.querySelector('.pqc-inspector-manual');
         if(inspector&&get('검사자')&&[...inspector.options].some(o=>o.value===get('검사자')))inspector.value=get('검사자');
-        if(inspectorManual)inspectorManual.style.display=inspector?.value==='__manual__'?'block':'none';
+        root.querySelectorAll('.std-info input,.std-info select,.std-premium-remarks textarea').forEach(el=>{el.disabled=true;});
         const lotField=root.querySelector('.std-info .v input[placeholder="생산 LOT NO 입력"]');
         if(lotField&&lot&&lot!=='-')lotField.value=lot;
-        // Avoid falsely presenting the preview as an issued or saved inspection.
-
         const status=root.querySelector('.std-inspection-doc .v:last-child');
-        if(status)status.textContent=draft?'임시저장 초안':'검사결과 미입력';
+        if(status)status.textContent=hasDetail?'상세/수정 입력값 반영':'검사결과 미입력';
       }));
     }
     section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
@@ -4838,6 +4837,35 @@ function standardInspectionRows(type){
     ]
   }[type]||[];
   return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
+}
+function hydratePqcReportFromDetail(root,lot){
+  if(!root)return false;
+  let draft=null;
+  try{draft=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}')[String(lot||'').trim().toUpperCase()]}catch(error){console.warn('[QMES] PQC detail lookup',error)}
+  const measurements=draft?.measurements||{};
+  const rules={'외관':v=>v==='이상없음','입도(Dmax)':v=>Number(v)<10,'점도':v=>Number(v)>=1200&&Number(v)<=1800,'고형분':v=>Number(v)>=19&&Number(v)<=21};
+  root.querySelectorAll('.std-result tbody tr').forEach(tr=>{
+    const item=tr.querySelector('.item')?.textContent?.trim();
+    const values=Array.isArray(measurements[item])?measurements[item]:[];
+    const cells=[...tr.cells].slice(4,7);
+    cells.forEach((cell,i)=>{
+      const value=String(values[i]??'').trim();
+      cell.replaceChildren();
+      const span=document.createElement('span');
+      span.className='pqc-report-readonly-value';
+      span.textContent=value||'—';
+      cell.appendChild(span);
+    });
+    const valid=rules[item];
+    const complete=values.length>=3&&values.slice(0,3).every(v=>String(v??'').trim()!=='');
+    const result=!complete?'대기':values.slice(0,3).every(v=>valid?.(v))?'합격':'불합격';
+    const judgeCell=tr.cells[7];
+    if(judgeCell){judgeCell.replaceChildren();const span=document.createElement('span');span.className='pqc-report-readonly-value';span.textContent=result;judgeCell.appendChild(span)}
+  });
+  const all=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>tr.cells[7]?.textContent?.trim()||'대기');
+  const overall=root.querySelector('#stdOverallJudge');
+  if(overall){const label=all.includes('불합격')?'불합격':all.length&&all.every(x=>x==='합격')?'합격':'대기';overall.replaceWith(Object.assign(document.createElement('span'),{className:'pqc-report-readonly-value',textContent:label}))}
+  return !!draft;
 }
 function qmesQualityApprovalPeople(){
   const current=window.__QMES_CURRENT_USER__||{};
