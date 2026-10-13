@@ -1241,6 +1241,11 @@ thead{background:#f4f7fa}
 .iqc-delete-buttons button{height:32px;min-width:62px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #d7c7ea;background:#fff;color:#5b477b}
 .iqc-delete-buttons [data-accept]{background:#eee4fa;border-color:#d5bceb;color:#67428f}
 .iqc-delete-buttons button:hover{filter:brightness(.97)}
+#process .iqc-select-head,#process .iqc-select-number,#outgoing .iqc-select-head,#outgoing .iqc-select-number{display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;cursor:pointer}
+#process .iqc-select-head input,#process .iqc-select-number input,#outgoing .iqc-select-head input,#outgoing .iqc-select-number input{width:13px;height:13px;margin:0;accent-color:#4f46e5;flex:none}
+#process .iqc-select-head span,#process .iqc-select-number span,#outgoing .iqc-select-head span,#outgoing .iqc-select-number span{font:inherit}
+#process .inspection-premium .ip-actions .iqc-bulk-delete,#outgoing .inspection-premium .ip-actions .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3;font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;height:27px!important;padding:0 9px!important;border-radius:4px!important}
+#process .iqc-bulk-delete[hidden],#outgoing .iqc-bulk-delete[hidden]{display:none!important}
 #incoming .iqc-bulk-delete[hidden]{display:none!important}
 </style>
 <style id="namo-process-grid-matching-iqc-20261013">
@@ -2168,7 +2173,7 @@ function wireProcessColumnResize(section){
   headers.forEach((th,i)=>{
     const label=document.createElement('span');
     label.className='iqc-column-label';label.textContent=labels[i];
-    th.replaceChildren(label);
+    if(i===0){const existing=th.querySelector('.iqc-select-head');if(existing){existing.querySelector('span')?.replaceWith(label);th.replaceChildren(existing);}else th.replaceChildren(label);}else th.replaceChildren(label);
     const handle=document.createElement('span');
     handle.className='iqc-column-resize';
     handle.tabIndex=0;
@@ -2315,7 +2320,7 @@ function wireOutgoingColumnResize(section){
   headers.forEach((th,i)=>{
     const label=document.createElement('span');
     label.className='iqc-column-label';label.textContent=labels[i];
-    th.replaceChildren(label);
+    if(i===0){const existing=th.querySelector('.iqc-select-head');if(existing){existing.querySelector('span')?.replaceWith(label);th.replaceChildren(existing);}else th.replaceChildren(label);}else th.replaceChildren(label);
     const handle=document.createElement('span');
     handle.className='iqc-column-resize';
     handle.tabIndex=0;
@@ -2413,9 +2418,9 @@ function premiumInspectionShell(id,title,desc,cols){
           <div class="ip-filter"><label>종료일</label><input class="input ip-end-date" type="text" readonly placeholder="연-월-일" autocomplete="off"></div>
           <div class="ip-filter"><label>검사상태</label><select class="input ip-status-filter"><option>전체</option><option>합격</option><option>불합격</option><option>대기</option></select></div>
         </div>
-        <div class="ip-actions">${id==='incoming'?'<button class="btn iqc-bulk-delete" type="button" disabled hidden>선택 삭제 (0)</button>':''}<button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
+        <div class="ip-actions"><button class="btn iqc-bulk-delete" type="button" disabled hidden>선택 삭제 (0)</button><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 검사등록</button></div>
       </div>
-      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th>${id==='incoming'?'<label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="현재 페이지 전체 선택"><span>NO</span></label>':'NO'}</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th style="min-width:145px">비고</th>':''}</tr></thead>
+      <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th><label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="현재 목록 전체 선택"><span>NO</span></label></th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th style="min-width:145px">비고</th>':''}</tr></thead>
       <tbody></tbody></table></div>
       <div class="ip-footnote"><span><b>QMES Quality Control</b> · LOT 기반 검사이력 관리</span><div class="ip-pagination" aria-label="수입검사 페이지"></div><span class="ip-count">총 0건 표시</span></div>
     </div>
@@ -2957,12 +2962,12 @@ function iqcRemark(row){
   const remark=items.find(x=>String(x?.name||'').trim()==='비고');
   return String(remark?.value||row.remark||'').trim();
 }
-function confirmIqcBulkDelete(count){
+function confirmIqcBulkDelete(count,kind='수입검사'){
   return new Promise(resolve=>{
     const backdrop=document.createElement('div');
     backdrop.className='iqc-delete-backdrop';
     backdrop.innerHTML='<div class="iqc-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="iqc-delete-title" aria-describedby="iqc-delete-desc"><h3 id="iqc-delete-title">선택 삭제 확인</h3><p id="iqc-delete-desc"></p><div class="iqc-delete-buttons"><button type="button" data-cancel>취소</button><button type="button" data-accept>삭제</button></div></div>';
-    backdrop.querySelector('#iqc-delete-desc').textContent='선택한 수입검사 '+count+'건을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.';
+    backdrop.querySelector('#iqc-delete-desc').textContent='선택한 '+kind+' '+count+'건을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.';
     let done=false;
     const finish=value=>{if(done)return;done=true;document.removeEventListener('keydown',onKey);backdrop.remove();resolve(value);};
     const onKey=e=>{if(e.key==='Escape'){e.preventDefault();finish(false);}};
@@ -3563,6 +3568,7 @@ function buildModule(id){
   if(['incoming','process','outgoing'].includes(id)){
     section.innerHTML=premiumInspectionShell(id,title,desc,cols);
     if(id==='process')wireProcessColumnResize(section);
+    if(id==='process'||id==='outgoing')setTimeout(()=>wireInspectionBulkSelect(section,id),0);
     if(id==='outgoing')wireOutgoingColumnResize(section);
     if(id==='incoming'){
       wireIncomingColumnResize(section);
@@ -3618,6 +3624,49 @@ function sample(c,i,id){
   return '-';
 }
 
+function wireInspectionBulkSelect(section,id){
+  if(!section||!['process','outgoing'].includes(id))return;
+  const tbody=section.querySelector('tbody');
+  const head=section.querySelector('.iqc-select-all');
+  const button=section.querySelector('.iqc-bulk-delete');
+  if(!tbody||!head||!button)return;
+  function update(){
+    const boxes=[...tbody.querySelectorAll('.iqc-select-row')];
+    const selected=boxes.filter(box=>box.checked);
+    button.hidden=!selected.length;button.disabled=!selected.length;
+    button.textContent='선택 삭제 ('+selected.length+')';
+    head.checked=boxes.length>0&&selected.length===boxes.length;
+    head.indeterminate=selected.length>0&&selected.length<boxes.length;
+  }
+  function prepare(){
+    [...tbody.querySelectorAll('tr.data-row')].forEach((row,i)=>{
+      if(row.querySelector('.iqc-select-row'))return;
+      const cell=row.cells[0];if(!cell)return;
+      const label=document.createElement('label');label.className='iqc-select-number';
+      const box=document.createElement('input');box.type='checkbox';box.className='iqc-select-row';box.setAttribute('aria-label',(i+1)+'번 검사 선택');
+      const num=document.createElement('span');num.textContent=cell.textContent.trim();
+      label.append(box,num);cell.replaceChildren(label);
+    });
+    update();
+  }
+  tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
+  head.addEventListener('change',()=>{tbody.querySelectorAll('.iqc-select-row').forEach(box=>{box.checked=head.checked;});update();});
+  button.addEventListener('click',async()=>{
+    const rows=[...tbody.querySelectorAll('tr.data-row')].filter(row=>row.querySelector('.iqc-select-row:checked'));
+    if(!rows.length)return;
+    if(!await confirmIqcBulkDelete(rows.length,id==='process'?'공정검사':'출하검사'))return;
+    // Only delete records with an explicit server identifier; never remove UI rows
+    // and pretend they were permanently deleted.
+    if(rows.some(row=>!row.dataset.inspectionId)){
+      alert('이 검사 목록은 서버 삭제 기능이 연결되지 않았습니다. 데이터 보호를 위해 삭제하지 않았습니다.');
+      return;
+    }
+    alert('이 검사 목록은 서버 삭제 기능이 연결되지 않았습니다. 데이터 보호를 위해 삭제하지 않았습니다.');
+  });
+  const observer=new MutationObserver(()=>prepare());
+  observer.observe(tbody,{childList:true});
+  prepare();
+}
 function wireModule(section,id){
   if(!section||section.dataset.moduleWired==='1') return;
   section.dataset.moduleWired='1';
@@ -3639,7 +3688,7 @@ function wireModule(section,id){
   if(id!=='incoming'){
     section.querySelectorAll('.data-row').forEach(row=>{
       const show=()=>showRowDetail(id,row);
-      row.addEventListener('click',e=>{if(e.target.closest('button'))return;show()});
+      row.addEventListener('click',e=>{if(e.target.closest('button,input,label'))return;show()});
       row.addEventListener('keydown',e=>{if(e.key==='Enter')show()});
     });
     section.querySelectorAll('.report-issue').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();issueInspectionReport(id,btn.closest('tr'));}));
