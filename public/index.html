@@ -3357,7 +3357,48 @@ function qmesIqcBarcodeSvg(value){
     const esc=v=>String(v).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
     const win=window.open('','_blank','width=800,height=700');
     if(!win){toast('팝업을 허용해주세요.');return false;}
-    const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>출하 제품 라벨</title><style>@page{size:'+width+'mm '+height+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#111}.label{width:'+width+'mm;height:'+height+'mm;padding:3mm;display:flex;flex-direction:column;justify-content:space-between}h3{font-size:12pt;margin:0 0 2mm}table{width:100%;border-collapse:collapse;font-size:9pt}td{border:1px solid #333;padding:2mm;text-align:center}td:first-child{width:48%;font-weight:700}.footer{font-size:8pt;text-align:center;margin-top:2mm}.note{font-size:7pt;text-align:center}</style></head><body><section class="label"><h3>NAMO Chemical · 출하 제품 라벨</h3><table><tr><td>제품명 (Grd.)</td><td>'+esc(grd)+'</td></tr><tr><td>제조번호 (Lot No.)</td><td>'+esc(lot)+'</td></tr><tr><td>수량 (Qty)</td><td>'+esc(qty)+'</td></tr><tr><td>제조일 (Mfg. Date)</td><td>'+esc(mfg)+'</td></tr></table><div class="note">GHS 표시: 승인된 제품 SDS 기준으로 별도 확인</div><div class="footer">NAMO Chemicals Co., Ltd.</div></section><script>window.onload=function(){window.focus();window.print()};<\\/script></body></html>';
+    const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>출하 제품 라벨</title><style>@page{size:'+width+'mm '+height+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#111}.label{width:'+width+'mm;height:'+height+'mm;padding:3mm;display:flex;flex-direction:column;justify-content:space-between}h3{font-size:12pt;margin:0 0 2mm}table{width:100%;border-collapse:collapse;font-size:9pt}td{border:1px solid #333;padding:2mm;text-align:center}td:first-child{width:48%;font-weight:700}.footer{font-size:8pt;text-align:center;margin-top:2mm}.note{font-size:7pt;text-align:center}</style></head><body><section class="label"><h3>NAMO Chemical · 출하 제품 라벨</h3><table><tr><td>제품명 (Grd.)</td><td>'+esc(grd)+'</td></tr><tr><td>제조번호 (Lot No.)</td><td>'+esc(lot)+'</td></tr><tr><td>수량 (Qty)</td><td>'+esc(qty)+'</td></tr><tr><td>제조일 (Mfg. Date)</td><td>'+esc(mfg)+'</td></tr></table><div class="note">GHS 표시: 승인된 제품 SDS 기준으로 별도 확인</div><div class="footer">NAMO Chemicals Co., Ltd.</div></section><script>window.onload=function(){window.focus();window.print()};<\\/script>
+<style id="iqc-compact-calendar-20261013">
+.iqc-date-font-only .ip-filter{position:relative}
+.iqc-compact-calendar{position:absolute;top:100%;left:0;margin-top:3px;width:148px;box-sizing:border-box;padding:5px;background:#fff;border:1px solid #cbd5e1;border-radius:5px;box-shadow:0 5px 16px #0002;z-index:10050;font:11px Arial,sans-serif;color:#253246}
+.iqc-compact-calendar .icc-head{display:flex;align-items:center;justify-content:space-between;gap:2px;margin-bottom:5px}
+.iqc-compact-calendar button{cursor:pointer;border:0;background:transparent;color:inherit;font:inherit;padding:0}
+.iqc-compact-calendar .icc-head button{width:19px;height:22px}
+.iqc-compact-calendar .icc-month{font-weight:700;white-space:nowrap}
+.iqc-compact-calendar .icc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;text-align:center}
+.iqc-compact-calendar .icc-grid span,.iqc-compact-calendar .icc-grid button{display:flex;justify-content:center;align-items:center;height:19px;min-width:0}
+.iqc-compact-calendar .icc-grid span{font-size:10px;color:#64748b}
+.iqc-compact-calendar .icc-grid button:hover,.iqc-compact-calendar .icc-grid button:focus{background:#e2e8f0;outline:0;border-radius:2px}
+.iqc-compact-calendar .icc-grid button[aria-current=date]{background:#e7eef8;font-weight:700}
+.iqc-compact-calendar .icc-grid button.icc-selected{background:#334155;color:white;border-radius:2px}
+.iqc-compact-calendar .icc-foot{display:flex;justify-content:space-between;margin-top:5px;border-top:1px solid #e2e8f0;padding-top:5px}
+.iqc-compact-calendar .icc-foot button{color:#1d5caa}
+</style>
+<script id="iqc-compact-calendar-20261013-js">
+(()=>{
+let opened=null;
+const pad=n=>String(n).padStart(2,'0');
+function close(){if(opened){opened.remove();opened=null;}}
+function setup(input){if(input.dataset.iccReady)return;input.dataset.iccReady='1';
+ const show=(e)=>{if(e){e.preventDefault();e.stopPropagation();}if(opened?.dataset.owner===input.className){close();return;}close();
+ const date=input.value?new Date(input.value+'T12:00:00'):new Date();let y=date.getFullYear(),m=date.getMonth();
+ const pop=document.createElement('div');pop.className='iqc-compact-calendar';pop.dataset.owner=input.className;pop.setAttribute('role','dialog');pop.setAttribute('aria-label','날짜 선택');input.parentElement.appendChild(pop);opened=pop;
+ function draw(){const first=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate(),today=new Date();pop.replaceChildren();
+ const head=document.createElement('div');head.className='icc-head';const prev=document.createElement('button'),next=document.createElement('button'),title=document.createElement('span');prev.type=next.type='button';prev.textContent='‹';next.textContent='›';title.className='icc-month';title.textContent=y+'년 '+(m+1)+'월';head.append(prev,title,next);pop.append(head);
+ prev.onclick=()=>{m--;if(m<0){m=11;y--;}draw()};next.onclick=()=>{m++;if(m>11){m=0;y++;}draw()};
+ const grid=document.createElement('div');grid.className='icc-grid';['일','월','화','수','목','금','토'].forEach(t=>{const el=document.createElement('span');el.textContent=t;grid.append(el)});
+ for(let i=0;i<first;i++)grid.append(document.createElement('span'));
+ for(let d=1;d<=count;d++){const btn=document.createElement('button');btn.type='button';btn.textContent=d;const iso=y+'-'+pad(m+1)+'-'+pad(d);if(iso===input.value)btn.className='icc-selected';if(y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate())btn.setAttribute('aria-current','date');btn.onclick=()=>{input.value=iso;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));close()};grid.append(btn)}pop.append(grid);
+ const foot=document.createElement('div');foot.className='icc-foot';const clear=document.createElement('button'),now=document.createElement('button');clear.type=now.type='button';clear.textContent='지우기';now.textContent='오늘';clear.onclick=()=>{input.value='';input.dispatchEvent(new Event('change',{bubbles:true}));close()};now.onclick=()=>{const t=new Date();input.value=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());input.dispatchEvent(new Event('change',{bubbles:true}));close()};foot.append(clear,now);pop.append(foot);
+ }draw();};
+ input.addEventListener('pointerdown',show,true);input.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '||e.key==='ArrowDown')show(e);if(e.key==='Escape')close()},true);
+}
+function init(){document.querySelectorAll('.inspection-premium.iqc-date-font-only .ip-filter-row input:is(.ip-start-date,.ip-end-date)[type=date]').forEach(setup)}
+new MutationObserver(()=>{if(opened&&!opened.isConnected)opened=null;init()}).observe(document.body,{childList:true,subtree:true});init();
+document.addEventListener('pointerdown',e=>{if(opened&&!opened.contains(e.target)&&!e.target.closest('.iqc-date-font-only .ip-filter input[type=date]'))close()},true);
+})();
+</script>
+</body></html>';
     win.document.open();win.document.write(html);win.document.close();return true;
   };
   if(id==='outgoing')document.getElementById('shipLabelPrint')?.addEventListener('click',printShipLabel);
