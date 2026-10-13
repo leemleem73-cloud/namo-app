@@ -1483,6 +1483,7 @@ thead{background:#f4f7fa}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-prepaint3"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -3098,7 +3099,7 @@ function buildModule(id){
       <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
-    wireModule(section,id);renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
+    wireModule(section,id);renderSavedWorkOrders();wireWorkColumnResize(section);window.namoWorkInquiryInit?.();setTimeout(refreshSharedWorkOrders,0);
     return;
   }
   if(['incoming','process','outgoing'].includes(id)){
@@ -4153,7 +4154,6 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 });
 </script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261012-1"></script>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261013-f5-fix2"></script>
 <script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261008-profile-no-flash2"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261007-loginpatch3-photo"></script>
 </body>
