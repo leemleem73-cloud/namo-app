@@ -3,8 +3,8 @@
 const css=`
 .inspection-premium .iqc-mini-wrap{position:relative;display:inline-block;vertical-align:bottom}
 .inspection-premium .iqc-mini-trigger{position:absolute;inset:0;width:100%;height:100%;min-height:0;background:#fff;border:1px solid #cbd5e1;border-radius:4px;color:#334155;font:700 11px inherit;text-align:left;cursor:pointer;padding:0 7px;white-space:nowrap}
-.iqc-mini-calendar{position:fixed;z-index:2147483000;width:175px;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 6px 18px #0002;padding:7px;color:#334155;font:11px Arial,sans-serif}
-.iqc-mini-calendar *{box-sizing:border-box}
+.iqc-mini-calendar{position:fixed;z-index:2147483000;width:175px;min-width:0!important;max-width:175px!important;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 6px 18px #0002;padding:7px;color:#334155;font:11px Arial,sans-serif}
+.iqc-mini-calendar *{box-sizing:border-box;min-width:0}.iqc-mini-calendar .iqc-mini-head span{white-space:nowrap;font-size:11px}.iqc-mini-calendar .iqc-mini-grid button{width:100%;padding:0}
 .iqc-mini-calendar .iqc-mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}
 .iqc-mini-calendar button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:4px}
 .iqc-mini-calendar .iqc-mini-nav{padding:4px 7px}
