@@ -4361,7 +4361,7 @@ function showRowDetail(id,row){
     ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
-    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호"><option value="'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'">'+safe(get('작업지시번호')==='-'?'작업지시번호 선택':get('작업지시번호'))+'</option></select></div>'+
+    '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호" style="visibility:hidden"><option value="'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'">'+safe(get('작업지시번호')==='-'?'':get('작업지시번호'))+'</option></select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -4390,7 +4390,7 @@ function showRowDetail(id,row){
       }catch(_){}
       if(!select||!select.isConnected)return;
       const current=select.value;
-      select.replaceChildren(new Option(current||'작업지시번호 선택',current));
+      select.replaceChildren(new Option(current||'',current));
       const seen=new Set();
       orders.forEach(order=>{
         const fields=order.fields||{};
@@ -4405,6 +4405,7 @@ function showRowDetail(id,row){
       if(matching)select.value=matching.value;
       else if(current)select.value=current;
       select.disabled=false;
+      select.style.visibility='visible';
     };
     select?.addEventListener('change',()=>{
       const option=select.selectedOptions[0];
