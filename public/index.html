@@ -3057,13 +3057,22 @@ function wireWorkColumnResize(section){
   const cols=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
   table.insertBefore(group,table.firstChild);
   const handles=[];
+  // Limit only the work-order remarks/actions column and reuse the extra width in existing columns.
+  function fitRemarks(w){
+    const last=w.length-1, cap=128;
+    if(last<1||w[last]<=cap)return w;
+    let free=w[last]-cap;w[last]=cap;
+    const selected=[1,2,3,4,6,8].filter(i=>i<last);
+    selected.forEach((i,k)=>{const d=k===selected.length-1?free:Math.floor(free/(selected.length-k));w[i]+=d;free-=d;});
+    return w;
+  }
   function fit(){
     const available=wrap.clientWidth;if(!available)return;
     if(!containerWidth||(!custom&&available!==containerWidth)){
       const scale=available/defaults.reduce((a,b)=>a+b,0);
-      const natural=defaults.map((n,i)=>Math.max(mins[i],Math.round(n*scale)));
+      const natural=fitRemarks(defaults.map((n,i)=>Math.max(mins[i],Math.round(n*scale))));
       if(!custom){widths=natural;baseline=natural.slice();}
-      else if(!widths.length){widths=saved.widths.map((n,i)=>Math.max(mins[i],Math.min(720,Number(n)||natural[i])));baseline=natural.slice();}
+      else if(!widths.length){widths=fitRemarks(saved.widths.map((n,i)=>Math.max(mins[i],Math.min(720,Number(n)||natural[i]))));baseline=natural.slice();}
       containerWidth=available;apply();
     }
   }
