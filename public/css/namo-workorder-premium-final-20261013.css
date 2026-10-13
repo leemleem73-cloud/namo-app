@@ -1,0 +1,20 @@
+/* Work-order scoped final theme, loaded after legacy scripts. */
+#work .module-shell>.module-body>.work-list-table>thead>tr>th{background:#e7eef6!important;color:#18344f!important;font-size:13px!important;font-weight:750!important;height:43px!important;padding:10px 8px!important;border:1px solid #cad6e4!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td{font-size:13px!important;color:#27415d!important;height:40px!important;padding:9px 8px!important;border-bottom:1px solid #d9e3ee!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr.nwi-selected>td{background:#deedff!important}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:hover>td{background:#eef6ff!important}
+#work .module-shell>.module-body>.work-list-table{table-layout:auto!important}
+#work .module-shell>.nwi-header{min-height:60px!important;padding:13px 20px!important;border-bottom:1px solid #cfdae5!important;background:#fff!important}
+#work .module-shell>.nwi-header .nwi-title,#work .module-shell>.nwi-header .nwi-title strong{font-size:18px!important;font-weight:800!important;color:#18344f!important}
+#work .module-shell>#namo-work-inquiry{background:#f4f8fc!important;padding:18px 20px!important;border-bottom:1px solid #d3e0ec!important}
+#work .module-shell>#namo-work-inquiry .nwi-grid{gap:15px 20px!important}
+#work .module-shell>#namo-work-inquiry input,#work .module-shell>#namo-work-inquiry select{height:38px!important;border-radius:4px!important;border:1px solid #bdcddd!important;font-size:13px!important}
+#work .module-shell>.nwi-list-head{background:#fff!important;padding:15px 20px!important;border-bottom:2px solid #c7d5e4!important;font-size:14px!important}
+#work>#namo-work-detail{margin-top:15px!important;border:1px solid #cbd9e6!important;border-radius:5px!important;background:white!important}
+#work>#namo-work-detail>.nwd-head{font-size:16px!important;color:#18344f!important;background:#f4f8fc!important;padding:14px 20px!important;border-bottom:2px solid #cbd9e6!important}
+#work>#namo-work-detail .nwd-content{padding:18px 20px!important;font-size:13px!important}
+#work>#namo-work-detail .nwd-grid .nwd-cell b{background:#eaf1f8!important;font-size:13px!important;padding:11px!important}
+#work>#namo-work-detail .nwd-grid .nwd-cell span{font-size:13px!important;padding:11px!important}
+#work>#namo-work-detail .nwd-tabs .nwd-tab{font-size:13px!important;padding:10px 16px!important;font-weight:700!important}
+#work>#namo-work-detail table th{background:#e7eef6!important;color:#18344f!important;font-size:13px!important;padding:11px!important}
+#work>#namo-work-detail table td{font-size:13px!important;padding:10px!important}
