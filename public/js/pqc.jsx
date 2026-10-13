@@ -67,9 +67,13 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const inspectionGroupKey = (row) => {
     const explicit = String(row?.groupId || "").trim();
     if (explicit) return explicit;
+    // A stable inspection number takes priority: the same LOT may be inspected
+    // more than once on a single day. Never merge distinct inspections by date.
+    const id = String(row?.id || "").trim();
+    if (id) return id.replace(/-\d+$/, "");
     const lot = String(row?.lot || "").trim();
     const date = String(row?.date || row?.shipDate || "").slice(0, 10);
-    return lot || date ? `${lot}|${date}` : String(row?.id || "").replace(/-\d+$/, "");
+    return lot || date ? `${lot}|${date}` : "";
   };
   const inspectionMeasurements = (row) => {
     if (!row) return [];
