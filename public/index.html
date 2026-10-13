@@ -1399,7 +1399,18 @@ thead{background:#f4f7fa}
 .am-split[data-am-screen="process"] .pqc-detail-measure-table input::placeholder{color:#9ca9b9!important}
 .am-split[data-am-screen="process"] .pqc-detail-measure-table td[data-pqc-item-judge]{font-weight:700!important;color:#66758c!important}
 </style>
-</head>
+<style id="pqc-detail-report-columns">
+.am-split[data-am-screen="process"] .pqc-detail-measure-table{table-layout:fixed!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:first-child{width:auto!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(2){width:auto!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:last-child{width:auto!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(1){width:5%!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(2){width:12%!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(3){width:20%!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(4){width:13%!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table th:nth-child(8){width:10%!important}
+.am-split[data-am-screen="process"] .pqc-detail-measure-table td:nth-child(3){text-align:left!important}
+</style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
 <div class="app" id="app">
@@ -4422,8 +4433,8 @@ function showRowDetail(id,row){
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
     '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호">'+orderOptions+'</select></div>'+
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>'+
-    '<div class="am-section pqc-detail-measure-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table class="pqc-detail-measure-table" style="width:100%;border-collapse:separate;border-spacing:0;text-align:center"><thead><tr><th>검사항목</th><th>관리기준 (SPEC)</th><th>측정 1</th><th>측정 2</th><th>측정 3</th><th>판정</th></tr></thead><tbody>'+
-    [['외관','이상 없음',1],['점도','&lt; 3,000 cps',3],['입도(Dmax)','≤ 10.0 μm',3],['고형분','20.0 ± 1.0 %',3]].map(([item,spec,count])=>'<tr><th style="padding:10px;border:1px solid #dce2eb">'+item+'</th><td style="padding:10px;border:1px solid #dce2eb">'+spec+'</td>'+Array.from({length:3},(_,i)=>'<td style="padding:7px;border:1px solid #dce2eb">'+(i>=count?'—':item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="'+(i+1)+'회" style="width:100%;min-width:85px">')+'</td>').join('')+'<td style="padding:10px;border:1px solid #dce2eb" data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
+    '<div class="am-section pqc-detail-measure-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table class="pqc-detail-measure-table" style="width:100%;border-collapse:separate;border-spacing:0;text-align:center"><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>'+
+    [['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','&lt;10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['고형분','20.0±1.0 wt%','Drying Oven']].map(([item,spec,method],idx)=>'<tr><td>'+(idx+1)+'</td><th>'+item+'</th><td>'+spec+'</td><td>'+method+'</td>'+Array.from({length:3},(_,i)=>'<td>'+(item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="측정값">')+'</td>').join('')+'<td data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
     '</tbody></table></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -4474,7 +4485,7 @@ function showRowDetail(id,row){
       try{return JSON.parse(localStorage.getItem(draftKey)||'{}')[String(lot).trim().toUpperCase()]||null;}catch(_){return null;}
     };
     const refreshPqcJudges=()=>{
-      const specs={'점도':v=>v<3000,'입도(Dmax)':v=>v<=10,'고형분':v=>v>=19&&v<=21,'외관':v=>v==='이상없음'};
+      const specs={'점도':v=>v>=1200&&v<=1800,'입도(Dmax)':v=>v<10,'고형분':v=>v>=19&&v<=21,'외관':v=>v==='이상없음'};
       for(const [item,valid] of Object.entries(specs)){
         const inputs=[...document.querySelectorAll('[data-pqc-measure]')].filter(el=>el.dataset.pqcMeasure===item);
         const values=inputs.map(el=>el.value.trim());
