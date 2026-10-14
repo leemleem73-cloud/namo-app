@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<title>NAMO QMES | 통합 업무 포털</title>
+<style>
+:root { --ink:#15324b;--navy:#0a2438;--muted:#6e8296;--brand:#138cab;--sky:#cde5ee;--round:20px;--shadow:0 18px 54px rgba(7,35,56,.19);}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Pretendard,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid #54cced;outline-offset:3px}
+svg{display:block}
+.icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.icon.small{width:16px;height:16px}.icon.large{width:24px;height:24px}
+.page{min-height:100vh;display:flex;overflow:hidden;background:#0b2a3b}
+.rail{width:72px;min-width:72px;min-height:100vh;z-index:11;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 8px 14px;background:linear-gradient(180deg,#0a2a41 0%,#0c2940 55%,#102d3e 100%);border-right:1px solid rgba(255,255,255,.11);box-shadow:9px 0 26px rgba(0,16,30,.13)}
+.rail button{width:48px;height:46px;background:transparent;border:0;display:grid;place-items:center;color:#9db2c2;border-radius:13px;transition:background .2s,color .2s,transform .2s;position:relative}
+.rail button:hover{background:rgba(255,255,255,.13);color:white;transform:translateY(-1px)}
+.rail button.active{color:white;background:linear-gradient(150deg,#2994bc,#1d668e);box-shadow:0 7px 18px rgba(2,20,39,.24)}
+.rail button.active::before{content:"";position:absolute;left:-8px;top:13px;bottom:13px;width:3px;border-radius:0 4px 4px 0;background:#77dbf1}
+.rail-brand{height:55px;display:grid;place-items:center;margin-bottom:8px}
+.rail-brand span{display:grid;place-items:center;width:41px;height:41px;border:1px solid rgba(190,233,245,.37);border-radius:13px;color:#effaff;font-size:22px;letter-spacing:-3px;font-weight:900;background:rgba(43,152,174,.2);padding-right:4px}
+.rail-label{display:none}
+.rail-line{height:1px;width:29px;background:rgba(255,255,255,.17);margin:9px 0}
+.rail-spacer{flex:1}
+.workspace{min-width:0;flex:1;display:flex;flex-direction:column;position:relative;min-height:100vh}
+.notice{height:53px;min-height:53px;display:flex;align-items:center;gap:12px;padding:0 30px 0 35px;background:linear-gradient(90deg,#e3f6ff 0%,#d2ecfc 65%,#eaf5fc 100%);color:#205a81;font-size:12px;white-space:nowrap;overflow:hidden;border-bottom:1px solid #ffffff75;z-index:4}
+.notice .announce-icon{height:31px;width:31px;display:grid;place-items:center;color:#1978ae;background:white;border-radius:10px;box-shadow:0 2px 12px #95c6e365}
+.notice strong{font-size:13px;color:#17466d}
+.notice .tag{font-size:10px;border-radius:5px;padding:5px 8px;background:#328bc7;color:white;font-weight:750;margin-left:5px}
+.notice .message{opacity:.86;overflow:hidden;text-overflow:ellipsis}
+.notice .spacer{flex:1}
+.notice .notice-close{color:#668cab;border:0;background:transparent;display:flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:7px}
+.notice .notice-close:hover{background:#bbddf2}
+.stage{flex:1;min-height:660px;position:relative;overflow:hidden;background:#123651;isolation:isolate}
+.stage::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,32,55,.71) 0%,rgba(10,47,72,.48) 43%,rgba(12,46,72,.24) 74%,rgba(10,34,54,.43) 100%),linear-gradient(0deg,rgba(4,32,46,.74) 0%,transparent 32%,rgba(4,30,49,.13) 75%,rgba(1,26,47,.34) 100%);z-index:-1}
+.scene{position:absolute;inset:0;height:100%;width:100%;z-index:-2;pointer-events:none}
+.scene #ambient{transition:opacity .3s}
+.stage.light-mode::before{background:linear-gradient(90deg,rgba(9,53,73,.57) 0%,rgba(17,70,93,.37) 55%,rgba(27,66,85,.3) 100%),linear-gradient(0deg,rgba(6,36,47,.66),transparent 42%,rgba(17,36,59,.1))}
+.topbar{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:28px 33px 0 45px;color:#fff;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{height:38px;width:38px;border:1.2px solid rgba(255,255,255,.56);border-radius:12px;background:rgba(255,255,255,.15);display:grid;place-items:center;box-shadow:inset 0 0 13px rgba(255,255,255,.05)}
+.brand-mark svg{width:26px;height:26px}
+.brand-name{font-size:24px;line-height:1;letter-spacing:-.045em;font-weight:850}
+.brand-name span{color:#d9f9ff}
+.brand-sub{font-size:10px;letter-spacing:.22em;margin-top:5px;opacity:.73;font-weight:700}
+.bar-right{display:flex;align-items:center;gap:15px}
+.today{font-size:12px;opacity:.9;letter-spacing:.015em;font-weight:500}
+.top-divider{width:1px;height:23px;background:rgba(255,255,255,.24)}
+.top-btn{width:37px;height:37px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.19);border-radius:11px;display:grid;place-items:center;color:white;backdrop-filter:blur(5px);position:relative;transition:.2s}
+.top-btn:hover{background:rgba(255,255,255,.24)}
+.top-btn.has-dot::after{position:absolute;top:7px;right:7px;width:6px;height:6px;background:#76edcf;border-radius:100%;content:"";box-shadow:0 0 0 2px #234964}
+.account{display:flex;align-items:center;gap:10px;padding-left:3px}
+.avatar{height:36px;width:36px;background:linear-gradient(145deg,#f0fbff,#cbe8f1);border-radius:50%;display:grid;place-items:center;color:#447d95;border:2px solid #ffffff65}
+.user-info{line-height:1.45;text-align:left}
+.user-info b{font-size:12px;font-weight:730}
+.user-info span{display:block;font-size:10px;opacity:.72}
+.mockup-tag{font-size:10px;letter-spacing:.01em;border:1px solid #ffffff5c;padding:6px 10px;border-radius:30px;background:#ffffff26;white-space:nowrap}
+.hero{position:absolute;left:50%;top:42%;transform:translate(-55%,-50%);width:min(850px,calc(100% - 420px));z-index:2;color:#fff;text-align:center;padding-top:60px}
+.hero .eyebrow{font-weight:750;font-size:12px;letter-spacing:.24em;color:#c6ecf4;display:flex;align-items:center;justify-content:center;gap:11px;text-shadow:0 1px 10px rgba(0,0,0,.1)}
+.hero .eyebrow::before,.hero .eyebrow::after{content:"";width:22px;height:1px;background:rgba(199,231,239,.65)}
+.hero h1{margin:21px 0 16px;font-weight:800;font-size:clamp(35px,3.45vw,58px);line-height:1.33;letter-spacing:-.074em;text-shadow:0 8px 28px rgba(4,29,46,.24);white-space:nowrap}
+.hero h1 em{font-style:normal;color:#e5fbff;position:relative}
+.hero-desc{margin:0 auto;color:#e5f3f8;letter-spacing:-.02em;font-size:14px;line-height:1.85;font-weight:450;text-shadow:0 3px 15px #0e304886}
+.search-box{margin:33px auto 0;width:min(690px,100%);height:61px;display:flex;align-items:center;padding:7px 7px 7px 22px;border:1px solid #ffffffd9;border-radius:18px;background:rgba(255,255,255,.96);box-shadow:0 15px 37px rgba(7,29,46,.23);position:relative}
+.search-box:focus-within{box-shadow:0 15px 37px rgba(7,29,46,.23),0 0 0 4px rgba(117,227,238,.2)}
+.search-box>svg{color:#6893aa;height:22px;width:22px}
+.search-box input{flex:1;min-width:0;height:100%;padding:0 15px;background:none;border:0;outline:none!important;color:#1b455c;font-size:14px}
+.search-box input::placeholder{color:#859dad}
+.search-box .search-submit{height:46px;min-width:100px;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:13px;background:linear-gradient(128deg,#188bb3,#146c9f);color:white;font-weight:760;font-size:13px;box-shadow:0 6px 14px rgba(35,122,161,.19)}
+.search-box .search-submit:hover{background:linear-gradient(128deg,#137aa8,#0e608f)}
+.suggest-wrap{width:min(690px,100%);margin:auto;position:relative}
+.search-dropdown{position:absolute;z-index:10;left:0;right:0;top:7px;background:#fff;border:1px solid #dceaf2;border-radius:15px;box-shadow:0 20px 44px rgba(0,22,39,.26);padding:9px;display:none;text-align:left;color:#1b4057;max-height:290px;overflow:auto}
+.search-dropdown.open{display:block}
+.search-dropdown-title{font-size:11px;font-weight:750;color:#93a6b2;padding:10px 12px 7px}
+.search-result{display:flex;align-items:center;gap:10px;width:100%;padding:11px;border:0;background:#fff;color:#1f4357;border-radius:10px;text-align:left}
+.search-result:hover,.search-result:focus-visible{background:#eff7fc}
+.search-result span{flex:1;font-size:13px;font-weight:650}
+.search-result small{font-size:10px;color:#8ca0af}
+.search-result .icon{color:#197ead}
+.quick-search{margin-top:15px;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;color:#d9edf4;font-size:11px}
+.quick-search strong{font-weight:600;opacity:.85;margin-right:4px}
+.quick-search button{border:1px solid rgba(246,255,255,.28);color:#effbff;background:rgba(255,255,255,.13);border-radius:40px;padding:6px 12px;font-size:11px;transition:background .15s}
+.quick-search button:hover{background:rgba(255,255,255,.28)}
+.right-side{z-index:3;position:absolute;right:30px;top:111px;width:287px;display:flex;flex-direction:column;gap:12px}
+.side-card{background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.8);border-radius:17px;padding:20px 20px 15px;color:#20445d;box-shadow:0 14px 36px rgba(10,32,53,.13);backdrop-filter:blur(10px)}
+.card-heading{display:flex;align-items:center;gap:11px;margin-bottom:17px}
+.card-heading>.bubble{height:38px;width:38px;display:grid;place-items:center;background:#e8f5ff;color:#1987b3;border-radius:12px}
+.card-heading>div:nth-child(2){flex:1}
+.card-heading h2{font-size:14px;letter-spacing:-.05em;margin:0 0 3px}
+.card-heading p{margin:0;font-size:10px;color:#8597a4}
+.card-heading .more{height:27px;width:27px;display:grid;place-items:center;border:0;background:#f2f7f9;border-radius:8px;color:#7e96a5}
+.task-row{padding:11px 0;display:flex;align-items:center;gap:10px;border-top:1px solid #edf1f4;text-align:left}
+.task-icon{height:31px;width:31px;display:grid;place-items:center;color:#398cb3;border-radius:9px;background:#f1f8fc}
+.task-row .detail{flex:1;min-width:0}
+.task-row .detail b{font-size:11.5px;display:block;margin-bottom:4px;letter-spacing:-.025em}
+.task-row .detail small{display:block;font-size:10px;color:#93a3af}
+.task-row .placeholder{font-size:10px;color:#79a2b2;background:#edf7fb;border-radius:7px;padding:5px 7px;white-space:nowrap}
+.notice-card{background:rgba(12,43,66,.61);color:#f8fdff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.24);border-radius:15px;padding:19px 19px 15px;box-shadow:0 12px 30px rgba(8,30,46,.15)}
+.notice-card .head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:750}
+.notice-card .head .mini-pill{font-size:9px;color:#c5f5f2;border:1px solid #ffffff50;border-radius:30px;padding:3px 8px;font-weight:550}
+.notice-card p{font-size:11px;color:#d0e4ed;line-height:1.8;margin:13px 0 5px;letter-spacing:-.018em}
+.notice-card button{background:transparent;border:0;padding:6px 0;color:#adeef2;font-size:11px;display:flex;align-items:center;gap:6px}
+.dock-wrap{position:absolute;z-index:5;left:50%;transform:translateX(-50%);bottom:32px;width:max-content;max-width:calc(100% - 340px);display:flex;flex-direction:column;align-items:center;gap:9px}
+.dock-caption{font-size:10px;font-weight:750;letter-spacing:.14em;color:rgba(238,255,255,.82);text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.dock{display:flex;align-items:end;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.37);padding:13px 17px 12px;border-radius:23px;background:linear-gradient(100deg,rgba(235,246,252,.91),rgba(239,251,251,.88));box-shadow:0 19px 51px rgba(5,23,38,.32), inset 0 1px rgba(255,255,255,.7);backdrop-filter:blur(15px)}
+.app{width:73px;min-width:65px;padding:2px 0;border:0;border-radius:13px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#3b5669;transition:transform .18s,background .18s}
+.app:hover{transform:translateY(-7px);background:rgba(255,255,255,.51)}
+.app .tile{height:51px;width:51px;display:grid;place-items:center;color:white;border-radius:14px;box-shadow:inset 0 1px 1px #ffffff60,0 7px 12px rgba(32,69,96,.14)}
+.app .tile svg{width:27px;height:27px;stroke-width:1.7}
+.app .title{font-size:10.5px;font-weight:800;white-space:nowrap;letter-spacing:-.05em}
+.tile.t1{background:linear-gradient(140deg,#25a4c6,#1e6ea1)}
+.tile.t2{background:linear-gradient(140deg,#6782e9,#465dc6)}
+.tile.t3{background:linear-gradient(140deg,#29b8a8,#138e95)}
+.tile.t4{background:linear-gradient(140deg,#eab962,#e68d43)}
+.tile.t5{background:linear-gradient(140deg,#aa84db,#7f60c2)}
+.tile.t6{background:linear-gradient(140deg,#65adcc,#3d88c2)}
+.tile.t7{background:linear-gradient(140deg,#288fc5,#2b66a4)}
+.tile.t8{background:linear-gradient(140deg,#54ad9d,#258e84)}
+.tile.t9{background:linear-gradient(140deg,#d690ae,#b36694)}
+.tile.t10{background:linear-gradient(140deg,#8695a6,#5a7d98)}
+.stage-foot{position:absolute;bottom:12px;right:27px;color:#ffffff8f;font-size:10px;letter-spacing:.02em;z-index:2}
+.view-only{position:absolute;bottom:17px;left:30px;color:#d1e7ed;z-index:2;font-size:10px;opacity:.9}
+.scene-note{position:absolute;left:43px;bottom:116px;color:rgba(241,250,252,.8);font-size:11px;font-weight:550;z-index:2;display:flex;align-items:center;gap:10px}
+.scene-note .line{height:1px;width:25px;background:#d8ebed80}
+.toast{position:fixed;bottom:154px;left:50%;transform:translate(-50%,15px);background:rgba(9,39,62,.94);border:1px solid #ffffff35;color:white;padding:13px 18px;border-radius:12px;z-index:40;font-size:12px;box-shadow:0 14px 30px rgba(7,30,46,.2);opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.float-panel{position:absolute;z-index:12;display:none;background:#fff;color:#183e55;box-shadow:0 20px 48px rgba(4,27,48,.27);border-radius:16px;border:1px solid #e4edf2;overflow:hidden}
+.float-panel.visible{display:block}
+.notification-panel{right:188px;top:80px;width:312px}
+.float-panel .fp-head{display:flex;justify-content:space-between;align-items:center;background:#f6fbfd;padding:17px 19px;border-bottom:1px solid #e5eff5;font-size:13px;font-weight:800}
+.fp-head button{background:transparent;border:0;color:#7c95a4}
+.float-panel .fp-body{padding:17px 19px;color:#536d80;font-size:12px;line-height:1.8}
+.float-panel .fp-body b{color:#245c77}
+.nav-panel{top:93px;left:13px;width:251px}
+.nav-panel .fp-body{padding:5px}
+.nav-row{padding:10px 13px;border:0;width:100%;text-align:left;background:#fff;color:#315972;display:flex;align-items:center;gap:9px;border-radius:8px;font-size:12px;font-weight:600}
+.nav-row:hover{background:#eef7fb;color:#187fa9}
+.nav-row .icon{width:17px;height:17px}
+@media(min-width:1750px){.right-side{right:43px;width:312px;top:126px}.hero{top:42%;transform:translate(-54%,-50%)}.dock{gap:10px;padding:16px 24px}.app{width:79px}.stage-foot{right:37px}}
+@media(max-width:1350px){.right-side{width:245px;right:22px}.side-card{padding:16px 14px 12px}.notice-card{padding:16px}.hero{width:calc(100% - 320px);transform:translate(-60%,-50%)}.hero h1{font-size:38px}.dock-wrap{max-width:calc(100% - 180px);bottom:26px}.dock{gap:2px;padding:12px}.app{width:65px;min-width:58px}.app .tile{width:45px;height:45px}.app .tile svg{width:24px;height:24px}.app .title{font-size:10px}}
+@media(max-width:1080px){.rail{width:60px;min-width:60px}.rail button{width:43px}.topbar{padding:23px 26px}.right-side{display:none}.hero{width:min(760px,calc(100% - 90px));transform:translate(-50%,-50%);top:43%}.hero h1{font-size:clamp(38px,5vw,58px)}.dock-wrap{max-width:calc(100% - 35px)}.dock{gap:5px}.notice{padding-left:25px}.scene-note{bottom:142px}}
+@media(max-width:750px){.rail{width:52px;min-width:52px;padding:13px 4px}.rail button{width:41px;height:42px}.rail-brand span{height:36px;width:36px;font-size:20px}.rail-line{margin:5px}.notice{height:48px;min-height:48px;padding:0 12px;gap:6px}.notice .announce-icon,.notice strong,.notice .tag{display:none}.notice .message{font-size:10px}.stage{min-height:740px}.topbar{padding:20px 16px 0 18px}.brand-name{font-size:21px}.brand-sub{font-size:8px}.brand-mark{width:33px;height:33px}.today,.top-divider,.mockup-tag{display:none}.bar-right{gap:7px}.top-btn{height:33px;width:33px}.user-info{display:none}.avatar{height:33px;width:33px}.hero{width:calc(100% - 38px);top:41%;padding:0 0 30px}.hero .eyebrow{font-size:10px}.hero h1{font-size:clamp(24px,5vw,34px);white-space:normal;margin:16px 0}.hero-desc{font-size:11px;max-width:340px}.search-box{height:53px;margin-top:26px;padding:5px 5px 5px 14px;border-radius:15px}.search-box input{font-size:12px}.search-box .search-submit{height:42px;min-width:65px;padding:0 11px;font-size:11px}.quick-search{gap:5px}.quick-search button{font-size:10px;padding:6px 8px}.dock-wrap{max-width:calc(100% - 24px);width:100%;bottom:25px}.dock{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:530px;gap:8px;padding:13px}.app{width:100%}.app .title{font-size:9px}.scene-note{display:none}.stage-foot{display:none}.view-only{display:none}}
+@media(max-height:760px) and (min-width:1080px){.stage{min-height:590px}.topbar{padding-top:20px}.hero{top:39%;padding-top:25px}.hero h1{margin:14px 0;font-size:clamp(32px,3vw,47px)}.search-box{margin-top:22px}.right-side{top:80px}.dock-wrap{bottom:19px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Operational QMES portal: the real left sidebar is rendered by the parent app. */
+.page{width:100%;min-height:100dvh}
+.workspace{width:100%;min-width:0}
+.stage{min-height:calc(100dvh - 53px)}
+.task-row[data-action]{width:100%;background:transparent;border:0;border-top:1px solid #edf1f4;padding:11px 0;font:inherit;color:inherit;cursor:pointer}
+.task-row[data-action]:hover{background:#f4faff}
+.task-row[data-action]:focus-visible{outline:2px solid #3db0d6;outline-offset:2px}
+@media(max-width:750px){.stage{min-height:740px}}
+</style>
+</head>
+<body>
+<!-- QMES operational portal: existing navigation and business data are owned by the parent application. -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+ <symbol id="ico-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+ <symbol id="ico-house" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="ico-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></symbol>
+ <symbol id="ico-clipboard" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3h6v2M9 11h6M9 15h6M9 19h3"/></symbol>
+ <symbol id="ico-factory" viewBox="0 0 24 24"><path d="M3 21V9l7 4V9l7 4V4h4v17zM3 21h18M7 17h1m4 0h1m4 0h1"/></symbol>
+ <symbol id="ico-flask" viewBox="0 0 24 24"><path d="M9 3h6m-5 0v7L4 20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l-6-10V3M8 15h8M10 18h1m3-1h1"/></symbol>
+ <symbol id="ico-shield" viewBox="0 0 24 24"><path d="m12 2 8 4v6c0 5-3 8-8 10-5-2-8-5-8-10V6zM8.3 12.3l2.4 2.4 5-5"/></symbol>
+ <symbol id="ico-checklist" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 9 1.5 1.5L12 8m2 1h3M8 15l1.5 1.5L12 14m2 1h3"/></symbol>
+ <symbol id="ico-truck" viewBox="0 0 24 24"><path d="M2 6h12v12H2zM14 10h4l4 4v4h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+ <symbol id="ico-scan" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4m6 0h4a1 1 0 0 1 1 1v4M4 15v4a1 1 0 0 0 1 1h4m6 0h4a1 1 0 0 0 1-1v-4M3 12h18M8 9v6m4-6v6m4-6v6"/></symbol>
+ <symbol id="ico-box" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5zM3 7v10l9 5 9-5V7M12 12v10"/></symbol>
+ <symbol id="ico-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M10 2h4l.7 3.1 2 1.1 3-.9 2 3.5-2.3 2.1v2.2l2.3 2.1-2 3.5-3-.9-2 1.1L14 22h-4l-.7-3.1-2-1.1-3 .9-2-3.5 2.3-2.1v-2.2L2.3 8.8l2-3.5 3 .9 2-1.1z"/></symbol>
+ <symbol id="ico-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5"/></symbol>
+ <symbol id="ico-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16 16 5 5"/></symbol>
+ <symbol id="ico-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+ <symbol id="ico-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c0-4.5 3-7 7.5-7s7.5 2.5 7.5 7"/></symbol>
+ <symbol id="ico-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+ <symbol id="ico-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+ <symbol id="ico-close" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></symbol>
+ <symbol id="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5m0-14.2-1.5 1.5M6.4 17.6l-1.5 1.5"/></symbol>
+ <symbol id="ico-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v5m10-5v5M3 10h18m-13 4h3m3 0h3m-9 4h3"/></symbol>
+ <symbol id="ico-inbox" viewBox="0 0 24 24"><path d="M4 4h16l2 12v4H2v-4zM2 16h6l2 3h4l2-3h6"/></symbol>
+ <symbol id="ico-magnifier" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></symbol>
+ <symbol id="ico-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+ <symbol id="ico-file" viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m8 0v6h5M8 13h8M8 17h8"/></symbol>
+</svg>
+<div class="page" id="namo-portal-root">
+ <div class="workspace">
+  <div id="notice" class="notice" role="status">
+   <span class="announce-icon"><svg class="icon"><use href="#ico-bell"/></svg></span>
+   <strong>공지사항을 확인해주세요.</strong><span class="tag">운영안내</span>
+   <span class="message">작업지시 · 품질검사 · LOT 추적 등 주요 업무를 바로 이용할 수 있습니다.</span>
+   <div class="spacer"></div>
+   <button type="button" class="notice-close" title="공지 닫기" aria-label="공지 닫기" id="close-notice"><svg class="icon small"><use href="#ico-close"/></svg></button>
+  </div>
+  <main class="stage" id="stage">
+   <!-- Original vector illustration of an industrial chemical plant at dusk, no external image dependencies. -->
+   <svg class="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2=".77" y2="1"><stop offset="0%" stop-color="#164b6e"/><stop offset="33%" stop-color="#497e99"/><stop offset="70%" stop-color="#a5b0af"/><stop offset="100%" stop-color="#e4ab80"/></linearGradient>
+      <linearGradient id="horizon" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d5b2a2" stop-opacity=".45"/><stop offset="100%" stop-color="#234e61" stop-opacity=".8"/></linearGradient>
+      <radialGradient id="sunlight"><stop offset="0" stop-color="#feeec6" stop-opacity=".95"/><stop offset=".38" stop-color="#ffcfa4" stop-opacity=".5"/><stop offset="1" stop-color="#ffce8a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="vignette"><stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#081e34" stop-opacity=".44"/></radialGradient>
+      <linearGradient id="tower" x1="0" x2="1"><stop stop-color="#274e62"/><stop offset=".23" stop-color="#60879a"/><stop offset=".57" stop-color="#244d65"/><stop offset="1" stop-color="#132e43"/></linearGradient>
+      <linearGradient id="metal" x1="0" x2="1"><stop stop-color="#456a7e"/><stop offset=".3" stop-color="#789cac"/><stop offset=".65" stop-color="#295469"/><stop offset="1" stop-color="#173b53"/></linearGradient>
+      <linearGradient id="warehouse" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#416c7b"/><stop offset="100%" stop-color="#173349"/></linearGradient>
+      <filter id="glow"><feGaussianBlur stdDeviation="23"/></filter>
+      <filter id="cloudBlur"><feGaussianBlur stdDeviation="20"/></filter>
+      <pattern id="windows" width="46" height="23" patternUnits="userSpaceOnUse"><rect width="46" height="23" fill="none"/><rect x="8" y="7" width="13" height="5" rx="1" fill="#f9d19e" opacity=".58"/><rect x="28" y="7" width="12" height="5" rx="1" fill="#a9d0d0" opacity=".3"/></pattern>
+      <pattern id="truss" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M0 0 32 32M32 0 0 32M0 0h32M0 32h32" stroke="#91b3b8" stroke-opacity=".48" fill="none" stroke-width="1.5"/></pattern>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sky)"/>
+    <ellipse cx="1178" cy="380" rx="580" ry="405" fill="url(#sunlight)"/>
+    <g opacity=".26" filter="url(#cloudBlur)" fill="#eddbca">
+      <path d="M650 115c205 7 220-37 378-24s244 64 429 7v69c-215 43-400-9-567 12s-295 12-420-1z"/>
+      <path d="M830 230c120-13 221-54 326-23s191 59 400 9v54c-276 58-437-9-599 18s-215-1-312 8z"/>
+      <path d="M-90 335c237-71 390 4 608-31l80 64c-307 43-502-16-690 39z"/>
+    </g>
+    <path d="M0 550Q155 491 334 533t284-8q161-57 337 17t354-38q145-50 291 27v370H0z" fill="#608190" opacity=".53"/>
+    <path d="M0 618Q168 562 340 606t290-1q188-62 369 7t370-8q148-26 231 7v280H0z" fill="#355e72" opacity=".74"/>
+    <path d="M0 665Q205 628 335 669t311 1q195-44 363 2t333-7q120-26 258 16v219H0z" fill="#244b61"/>
+    <rect x="0" y="720" width="1600" height="180" fill="#163b4f"/>
+    <!-- left refinery towers -->
+    <g opacity=".86">
+     <rect x="26" y="479" width="72" height="259" rx="5" fill="url(#tower)"/><rect x="37" y="491" width="49" height="8" fill="#7898aa" opacity=".8"/>
+     <rect x="45" y="460" width="30" height="20" fill="#3b6177"/><path d="M62 459v-94" stroke="#6d8997" stroke-width="8"/><path d="M45 420h35m-35-37h35" stroke="#9bb9bd" stroke-width="4"/>
+     <rect x="136" y="510" width="62" height="222" rx="5" fill="url(#metal)"/><ellipse cx="167" cy="510" rx="31" ry="10" fill="#718e9a"/><path d="M136 546h62m-62 70h62m-62 51h62" stroke="#91adbb" stroke-width="3" opacity=".6"/>
+     <rect x="224" y="427" width="41" height="310" fill="url(#tower)"/><rect x="231" y="391" width="27" height="40" fill="#3b637a"/><path d="M232 410h26m-26-13h26" stroke="#9dc4cc" opacity=".65"/>
+     <rect x="288" y="535" width="70" height="200" rx="2" fill="url(#warehouse)"/>
+     <path d="M0 593h377M0 619h398M0 680h425" stroke="#96acaf" stroke-width="8" opacity=".61"/>
+     <path d="M102 535h134m-30 77h150" stroke="#7197a6" stroke-width="11"/>
+     <path d="M0 543v185m392-235v230" stroke="#16394e" stroke-width="20"/>
+     <rect x="0" y="698" width="461" height="79" fill="url(#warehouse)"/>
+     <rect x="0" y="708" width="461" height="44" fill="url(#windows)"/>
+     <rect x="0" y="695" width="461" height="8" fill="#7498a3" opacity=".7"/>
+    </g>
+    <!-- center low factory warehouses -->
+    <path d="M376 679 431 630h160l54 49v99H376z" fill="#2d536a"/><path d="M431 630h160l54 49H376z" fill="#7997a3" opacity=".72"/>
+    <rect x="400" y="706" width="231" height="55" fill="url(#windows)"/>
+    <rect x="670" y="661" width="234" height="120" fill="#23485e"/><path d="M655 661h263v12H655z" fill="#7e999e" opacity=".8"/>
+    <rect x="700" y="692" width="175" height="62" fill="url(#windows)"/>
+    <g stroke="#4e7889" stroke-width="6" fill="none" opacity=".9"><path d="M322 720h870"/><path d="M332 684h814"/><path d="M365 734V609m174 120V626m146 101V622m145 109V642"/></g>
+    <!-- right large chemical production plant -->
+    <g opacity=".94">
+      <rect x="1022" y="482" width="66" height="266" rx="5" fill="url(#metal)"/>
+      <ellipse cx="1055" cy="482" rx="33" ry="13" fill="#8babb2"/>
+      <path d="M1022 523h66m-66 55h66m-66 57h66m-66 55h66" stroke="#92aeb7" stroke-width="3" opacity=".57"/>
+      <rect x="1112" y="406" width="59" height="344" rx="6" fill="url(#tower)"/>
+      <ellipse cx="1141" cy="406" rx="29" ry="11" fill="#85a5ad"/>
+      <rect x="1123" y="364" width="37" height="45" fill="#426e80"/>
+      <path d="M1123 380h37m-37 18h37" stroke="#acc8c7" stroke-width="3"/>
+      <path d="M1141 362V313" stroke="#799bad" stroke-width="9"/>
+      <rect x="1192" y="481" width="57" height="273" fill="url(#metal)"/>
+      <ellipse cx="1220" cy="481" rx="28" ry="10" fill="#91abb2"/>
+      <path d="M1192 530h57m-57 60h57m-57 60h57" stroke="#9bb7b8" stroke-width="4" opacity=".63"/>
+      <rect x="1273" y="382" width="27" height="374" fill="url(#tower)"/><rect x="1267" y="410" width="39" height="12" rx="2" fill="#8db0b4"/>
+      <path d="M1286 382V310" stroke="#9bb5b8" stroke-width="9"/><rect x="1280" y="295" width="14" height="20" fill="#b0c6be"/>
+      <rect x="1316" y="540" width="80" height="213" rx="4" fill="url(#warehouse)"/>
+      <rect x="1323" y="554" width="66" height="15" fill="#a0b8b9" opacity=".65"/>
+      <rect x="1411" y="458" width="75" height="294" rx="4" fill="url(#metal)"/>
+      <ellipse cx="1448" cy="458" rx="37" ry="12" fill="#90a7b0"/>
+      <path d="M1411 498h75m-75 67h75m-75 66h75" stroke="#acc1c2" stroke-width="3" opacity=".65"/>
+      <path d="M1022 483h464M999 544h510M1009 605h502M986 688h556" stroke="#a7b9ba" stroke-opacity=".6" stroke-width="9"/>
+      <rect x="1026" y="551" width="469" height="9" fill="url(#truss)" opacity=".62"/>
+      <rect x="1009" y="688" width="499" height="65" fill="#173a50" opacity=".65"/>
+      <path d="M1084 741V453m107 287V468m120 274V473m120 264V476" stroke="#6d909c" stroke-width="4" opacity=".8"/>
+      <path d="M1083 452h359m-388-20h343" stroke="#b1c2c1" stroke-width="5" opacity=".65"/>
+      <path d="M1033 460h430" stroke="#456d7d" stroke-width="15"/>
+      <path d="M990 638h580" stroke="#8eacaf" stroke-width="13" opacity=".7"/>
+    </g>
+    <rect x="950" y="743" width="650" height="155" fill="#153a4f"/><rect x="960" y="754" width="630" height="51" fill="url(#windows)"/>
+    <path d="M910 744h690" stroke="#73959c" stroke-width="10" opacity=".7"/>
+    <!-- industrial skyline ambience / groundlights -->
+    <g filter="url(#glow)" opacity=".65" fill="#ffc17c"><circle cx="1241" cy="640" r="15"/><circle cx="1479" cy="667" r="11"/><circle cx="1045" cy="690" r="9"/><circle cx="205" cy="699" r="11"/><circle cx="329" cy="687" r="8"/></g>
+    <g fill="#ffdfa7" opacity=".88"><circle cx="1241" cy="640" r="3"/><circle cx="1479" cy="667" r="3"/><circle cx="1045" cy="690" r="3"/><circle cx="205" cy="699" r="2"/><circle cx="329" cy="687" r="2"/></g>
+    <path d="M0 814 Q340 788 562 811t422-12q270-13 616 9v92H0z" fill="#0d2f44"/>
+    <path d="M0 850 Q310 815 535 846t468-8q343-15 597 7v55H0z" fill="#0a293c"/>
+    <rect width="1600" height="900" fill="url(#vignette)"/>
+   </svg>
+   <header class="topbar">
+     <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 30 30"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.2" d="M5 22V8l10 14V8l10 14V8"/><circle cx="25" cy="8" r="2.5" fill="#81e4e8"/></svg></div>
+      <div><div class="brand-name">NAMO <span>QMES</span></div><div class="brand-sub">CHEMICAL · SMART QUALITY</div></div>
+     </div>
+     <div class="bar-right">
+      <span class="today" id="today-date">—</span>
+      <span class="top-divider"></span>
+      <button class="top-btn" type="button" id="change-scene" title="배경 색상 전환" aria-label="배경 색상 전환"><svg class="icon"><use href="#ico-sun"/></svg></button>
+      <button class="top-btn has-dot" type="button" id="notify-toggle" aria-label="알림 확인" title="알림 확인"><svg class="icon"><use href="#ico-bell"/></svg></button>
+      <div class="account"><div class="avatar"><svg class="icon"><use href="#ico-user"/></svg></div><div class="user-info"><b id="portal-account-name">QMES 사용자</b><span>나모케미칼 통합 업무</span></div></div>
+      <span class="mockup-tag">QMES PORTAL</span>
+     </div>
+   </header>
+   <section class="hero" aria-labelledby="hero-title">
+     <div class="eyebrow">WELCOME TO NAMO QMES</div>
+     <h1 id="hero-title">생산은 더 스마트하게,<br/><em>품질은 더 완벽하게.</em></h1>
+     <p class="hero-desc">원료 입고부터 생산·검사·출하·LOT 추적까지<br/>나모케미칼의 모든 업무를 하나의 화면에서 시작하세요.</p>
+     <form class="search-box" id="search-form" role="search" autocomplete="off">
+       <svg class="icon"><use href="#ico-search"/></svg>
+       <input type="search" id="search-input" aria-label="통합 업무 검색" placeholder="업무 메뉴 검색 · 작업지시 · LOT 추적" />
+       <button class="search-submit" type="submit">통합검색 <svg class="icon small"><use href="#ico-arrow"/></svg></button>
+     </form>
+     <div class="suggest-wrap"><div class="search-dropdown" id="search-dropdown" role="listbox"></div></div>
+     <div class="quick-search"><strong>빠른 검색</strong><button type="button" data-query="작업지시"># 작업지시</button><button type="button" data-query="수입검사"># 수입검사</button><button type="button" data-query="제품 LOT"># 제품 LOT</button><button type="button" data-query="출하검사"># 출하검사</button></div>
+   </section>
+   <aside class="right-side" aria-label="업무 현황">
+      <div class="side-card">
+       <div class="card-heading"><div class="bubble"><svg class="icon large"><use href="#ico-clipboard"/></svg></div><div><h2>나의 업무 현황</h2><p>오늘 처리할 업무를 확인하세요</p></div><button class="more" type="button" data-action="나의 업무 현황" title="업무 상태 확인"><svg class="icon small"><use href="#ico-chevron"/></svg></button></div>
+       <button class="task-row" type="button" data-action="작업지시"><div class="task-icon"><svg class="icon small"><use href="#ico-inbox"/></svg></div><div class="detail"><b>수신 작업지시</b><small>부서별 신규 작업지시</small></div><span class="placeholder">업무 열기 ↗</span></button>
+       <button class="task-row" type="button" data-action="품질관리"><div class="task-icon"><svg class="icon small"><use href="#ico-checklist"/></svg></div><div class="detail"><b>검사 및 승인 대기</b><small>수입 · 공정 · 출하검사</small></div><span class="placeholder">업무 열기 ↗</span></button>
+       <button class="task-row" type="button" data-action="출하검사"><div class="task-icon"><svg class="icon small"><use href="#ico-shield"/></svg></div><div class="detail"><b>부적합 · 출하보류</b><small>품질 이상 알림</small></div><span class="placeholder">업무 열기 ↗</span></button>
+      </div>
+      <div class="notice-card"><div class="head">품질·생산 공지 <span class="mini-pill">NOTICE</span></div><p>작업지시 전달, 검사 승인, LOT 이력 등 중요한 알림을 한곳에서 확인할 수 있습니다.</p><button type="button" data-action="공지사항">전체 공지 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
+   </aside>
+   <div class="scene-note"><span class="line"></span>CHEMICAL PROCESS · QUALITY ASSURANCE</div>
+   <section class="dock-wrap" aria-label="주요 업무 바로가기"><div class="dock-caption">QUICK ACCESS · 주요 업무 바로가기</div>
+     <div class="dock">
+       <button class="app" type="button" data-action="종합현황"><span class="tile t1"><svg class="icon"><use href="#ico-dashboard"/></svg></span><span class="title">종합현황</span></button>
+       <button class="app" type="button" data-action="작업지시"><span class="tile t2"><svg class="icon"><use href="#ico-clipboard"/></svg></span><span class="title">작업지시</span></button>
+       <button class="app" type="button" data-action="생산관리"><span class="tile t3"><svg class="icon"><use href="#ico-factory"/></svg></span><span class="title">생산관리</span></button>
+       <button class="app" type="button" data-action="수입검사"><span class="tile t4"><svg class="icon"><use href="#ico-flask"/></svg></span><span class="title">수입검사</span></button>
+       <button class="app" type="button" data-action="공정검사"><span class="tile t5"><svg class="icon"><use href="#ico-checklist"/></svg></span><span class="title">공정검사</span></button>
+       <button class="app" type="button" data-action="출하검사"><span class="tile t6"><svg class="icon"><use href="#ico-truck"/></svg></span><span class="title">출하검사</span></button>
+       <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><svg class="icon"><use href="#ico-scan"/></svg></span><span class="title">LOT 추적</span></button>
+       <button class="app" type="button" data-action="재고관리"><span class="tile t8"><svg class="icon"><use href="#ico-box"/></svg></span><span class="title">재고관리</span></button>
+       <button class="app" type="button" data-action="설비관리"><span class="tile t9"><svg class="icon"><use href="#ico-settings"/></svg></span><span class="title">설비관리</span></button>
+       <button class="app" type="button" data-action="직원관리"><span class="tile t10"><svg class="icon"><use href="#ico-users"/></svg></span><span class="title">직원관리</span></button>
+     </div>
+   </section>
+   <div class="view-only">NAMO CHEMICAL · SMART WORKSPACE</div>
+   <div class="stage-foot">© NAMO CHEMICAL · QMES PORTAL</div>
+   <div id="notification-panel" class="float-panel notification-panel"><div class="fp-head">알림 센터 <button type="button" class="panel-close" aria-label="닫기"><svg class="icon small"><use href="#ico-close"/></svg></button></div><div class="fp-body">실제 알림은 기존 QMES 알림센터에서 확인하세요.</div></div>
+   <div id="nav-panel" class="float-panel nav-panel"><div class="fp-head"><span id="nav-panel-title">전체 메뉴</span><button type="button" class="panel-close" aria-label="닫기"><svg class="icon small"><use href="#ico-close"/></svg></button></div><div class="fp-body" id="nav-panel-body"></div></div>
+  </main>
+ </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+ 'use strict';
+ const byId=id=>document.getElementById(id);
+ const data=[
+  {name:'종합현황',hint:'대시보드 · 실시간 운영 현황',icon:'dashboard'},
+  {name:'작업지시',hint:'생산작업 지시서 작성 · 발송',icon:'clipboard'},
+  {name:'생산관리',hint:'배치생산 · 생산실적 · 투입량',icon:'factory'},
+  {name:'수입검사',hint:'원료 및 자재 검사',icon:'flask'},
+  {name:'공정검사',hint:'공정 품질검사 · 판정',icon:'checklist'},
+  {name:'출하검사',hint:'출하성적서 · 출하 승인',icon:'truck'},
+  {name:'LOT 추적',hint:'원료 · 중간배치 · 제품 · 출하 LOT',icon:'scan'},
+  {name:'재고관리',hint:'원료 · 제품 · 현장 재고',icon:'box'},
+  {name:'설비관리',hint:'설비 현황 · 점검 · 이력',icon:'settings'},
+  {name:'직원관리',hint:'직원등록 현황 · 부서 관리',icon:'users'}
+ ];
+ const date=byId('today-date');
+ date.textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
+ let toastTimeout;
+ const toast=(msg)=>{const el=byId('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2900)};
+ function action(name){
+  closeAll();
+  const routes={'종합현황':'dashboard','작업지시':'work','생산관리':'work',
+    '수입검사':'incoming','공정검사':'process','출하검사':'outgoing','품질관리':'quality',
+    'LOT 추적':'lotTrace','재고관리':'inventory','설비관리':'equipment','직원관리':'adminEmployees'};
+  if(name==='공지사항'||name==='나의 업무 현황'){
+    window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'notify'},location.origin);
+    return;
+  }
+  const page=routes[name];
+  if(!page){toast('왼쪽 메뉴에서 업무를 선택해주세요.');return;}
+  window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page},location.origin);
+}
+ document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>action(btn.dataset.action)));
+ byId('close-notice').addEventListener('click',()=>{byId('notice').style.display='none'});
+ byId('change-scene').addEventListener('click',()=>{byId('stage').classList.toggle('light-mode');toast(byId('stage').classList.contains('light-mode')?'밝은 배경 톤으로 전환했습니다.':'기본 배경 톤으로 전환했습니다.')});
+ function closeAll(){byId('notification-panel').classList.remove('visible');byId('nav-panel').classList.remove('visible');byId('search-dropdown').classList.remove('open')}
+ byId('notify-toggle').addEventListener('click',()=>action('공지사항'));
+ document.querySelectorAll('.panel-close').forEach(btn=>btn.addEventListener('click',closeAll));
+ const nav=byId('nav-panel'),navBody=byId('nav-panel-body');
+ document.querySelectorAll('[data-nav]').forEach(btn=>btn.addEventListener('click',()=>{
+   const name=btn.dataset.nav;
+   if(name==='메인 홈'){closeAll();document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b===btn));toast('현재 메인 포털 화면입니다.');return;}
+   const on=nav.classList.contains('visible')&&byId('nav-panel-title').textContent===name;
+   closeAll();if(on)return;
+   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b===btn));
+   byId('nav-panel-title').textContent=name;
+   const options=(name==='전체 메뉴'||name==='품질관리')?
+    (name==='품질관리'?data.filter(x=>['수입검사','공정검사','출하검사','LOT 추적'].includes(x.name)):data):
+    data.filter(x=>x.name===name||name==='종합 대시보드'&&x.name==='종합현황');
+   navBody.replaceChildren();
+   options.forEach(item=>{const b=document.createElement('button');b.className='nav-row';b.type='button';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span>';b.querySelector('span').textContent=item.name;b.addEventListener('click',()=>action(item.name));navBody.append(b)});
+   if(!options.length)navBody.textContent='메뉴 연결 예정';
+   nav.classList.add('visible');
+ }));
+ const input=byId('search-input'),dropdown=byId('search-dropdown');
+ function renderResults(q){dropdown.replaceChildren();const normalized=q.trim().toLocaleLowerCase();if(!normalized){dropdown.classList.remove('open');return}
+   const results=data.filter(x=>(x.name+' '+x.hint).toLocaleLowerCase().includes(normalized)).slice(0,6);
+   const label=document.createElement('div');label.className='search-dropdown-title';label.textContent=results.length?'메뉴 검색 결과':'검색 결과 없음';dropdown.append(label);
+   if(results.length){results.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='search-result';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span><small></small>';b.querySelector('span').textContent=item.name;b.querySelector('small').textContent=item.hint;b.addEventListener('click',()=>{input.value=item.name;action(item.name)});dropdown.append(b)})}
+   else{const p=document.createElement('div');p.style.cssText='padding:10px 12px 17px;font-size:12px;color:#8298a5';p.textContent='현재 시안에서는 업무 메뉴명만 검색할 수 있습니다. 실제 LOT·작업지시 검색은 연동이 필요합니다.';dropdown.append(p)}
+   dropdown.classList.add('open');
+ }
+ input.addEventListener('input',()=>renderResults(input.value));input.addEventListener('focus',()=>{if(input.value.trim())renderResults(input.value)});
+ byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=data.find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
+ document.querySelectorAll('[data-query]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.query;input.focus();renderResults(input.value)}));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();input.blur()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();input.focus()}});
+ document.addEventListener('click',e=>{if(!e.target.closest('.search-box')&&!e.target.closest('.search-dropdown')&&!e.target.closest('.quick-search'))dropdown.classList.remove('open')});
+})();
+</script>
+<script id="namo-portal-child-bridge-20261014">
+(function(){
+  'use strict';
+  const channel='NAMO_QMES_PORTAL_20261014';
+  window.addEventListener('message',function(e){
+    if(e.origin!==location.origin || e.source!==window.parent || !e.data || e.data.channel!==channel)return;
+    if(e.data.type==='profile'){
+      const name=document.getElementById('portal-account-name');
+      if(name)name.textContent=String(e.data.name||'QMES 사용자').slice(0,50);
+    }
+  });
+  if(window.parent!==window)window.parent.postMessage({channel:channel,type:'ready'},location.origin);
+})();
+</script>
+</body>
+</html>
