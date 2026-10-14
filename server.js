@@ -389,6 +389,8 @@ try {
 // Disabled after 2026-10-07 QMES data reset: require('./purchase-history-repair-20260923-v2.js');
 // Disabled after 2026-10-07 QMES data reset: require('./purchase-order-date-align-20260928-v1.js');
 // Disabled after 2026-10-07 QMES data reset: require('./workorder-history-repair-20260928-v2.js');
+// Approved May 2026 seven-row import: missing-only, no overwrite, same QMES work order table.
+require('./qmes-may2026-workorder-import-20261014.js');
 
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
