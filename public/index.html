@@ -1988,27 +1988,27 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 #namo-operation-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(250,247,255,.28);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #namo-operation-overlay .namo-operation-card{display:flex;align-items:center;gap:12px;padding:16px 22px;border:1px solid #e4d4fa;border-radius:18px;background:#f7efff;color:#70459c;box-shadow:0 12px 35px rgba(106,72,150,.13);font-size:13px;font-weight:700}
-#namo-operation-overlay .namo-operation-spinner{width:25px;height:25px;border-radius:50%;border:3px solid #dfcdf7;border-top-color:#9365c4;animation:namo-operation-spin .75s linear infinite}
-@keyframes namo-operation-spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-spinner{animation-duration:2s}}
+#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce .65s ease-in-out infinite alternate}
+@keyframes namo-operation-bounce{from{transform:translateY(2px)}to{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-mascot{animation:none}}
 </style>
 <script id="namo-global-operation-loader">
 (function(){
   if(window.__namoOperationLoaderInstalled)return;
   window.__namoOperationLoaderInstalled=true;
-  var pending=0,showTimer=null,hideTimer=null,overlay=null;
+  var pending=0,showTimer=null,hideTimer=null,overlay=null,visibleAt=0;
   function getOverlay(){
     if(!document.body)return null;
-    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-spinner" aria-hidden="true"></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
+    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><svg width="42" height="46" viewBox="0 0 42 46" xmlns="http://www.w3.org/2000/svg"><path d="M21 2C16 10 5 19 5 29a16 16 0 0 0 32 0C37 19 26 10 21 2Z" fill="#c5a1f2" stroke="#9568c9" stroke-width="1.5"/><ellipse cx="15.5" cy="28" rx="2" ry="2.5" fill="#50346e"/><ellipse cx="26.5" cy="28" rx="2" ry="2.5" fill="#50346e"/><path d="M18 34q3 3 6 0" fill="none" stroke="#50346e" stroke-width="1.7" stroke-linecap="round"/><circle cx="10.5" cy="33" r="3" fill="#e8a6d9" opacity=".75"/><circle cx="31.5" cy="33" r="3" fill="#e8a6d9" opacity=".75"/></svg></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
     return overlay;
   }
   function start(){
     pending++;clearTimeout(hideTimer);
-    if(pending===1){clearTimeout(showTimer);showTimer=setTimeout(function(){if(pending>0){var el=getOverlay();if(el)el.classList.add('is-visible');}},450);}
+    if(pending===1){clearTimeout(showTimer);showTimer=setTimeout(function(){if(pending>0){var el=getOverlay();if(el){el.classList.add('is-visible');visibleAt=Date.now();}}},0);}
   }
   function stop(){
     pending=Math.max(0,pending-1);
-    if(!pending){clearTimeout(showTimer);hideTimer=setTimeout(function(){if(overlay)overlay.classList.remove('is-visible');},120);}
+    if(!pending){clearTimeout(showTimer);hideTimer=setTimeout(function(){if(overlay)overlay.classList.remove('is-visible');},Math.max(0,550-(Date.now()-visibleAt)));}
   }
   window.namoOperationLoading={start:start,stop:stop};
   if(typeof window.fetch==='function'){
