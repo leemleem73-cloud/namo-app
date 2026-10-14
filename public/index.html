@@ -5553,11 +5553,25 @@ function showRowDetail(id,row){
             });
             const result=await response.json().catch(()=>({}));
             if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
-            toast('공정검사 저장 완료 · 목록 및 성적서에 반영됩니다.');
+            // Return explicitly to the PQC data list, regardless of the prior workspace route.
             closeModal();
             const section=document.getElementById('process');
-            if(section)await loadHistoricalInspectionRows(section,'process');
-          }catch(error){toast('서버 저장 실패: '+error.message);}
+            if(section){
+              document.querySelectorAll('.module-page').forEach(page=>page.classList.remove('active'));
+              section.classList.add('active');
+              workspacePreviousPage='process';
+              try{await loadHistoricalInspectionRows(section,'process');}
+              catch(refreshError){console.warn('[PQC] list refresh after save',refreshError);}
+            }
+            toast('공정검사 저장 완료 · 목록에 반영되었습니다.');
+          }catch(error){
+            console.error('[PQC] save failed',error);
+            const message='공정검사 저장 실패: '+String(error.message||error);
+            toast(message);
+            let warning=workspaceBody.querySelector('#pqcSaveErrorNotice');
+            if(!warning){warning=document.createElement('div');warning.id='pqcSaveErrorNotice';warning.setAttribute('role','alert');warning.style.cssText='position:sticky;bottom:0;z-index:10;padding:12px 16px;background:#fff1f3;color:#a02040;border:1px solid #efb8c4;border-radius:8px;font-size:13px';workspaceBody.prepend(warning);}
+            warning.textContent=message;
+          }
           finally{saveButton.disabled=false;}
         }catch(error){toast('임시저장 실패: '+error.message);}
       });
