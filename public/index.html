@@ -4898,7 +4898,50 @@ function printPqcCertificateOnly(){
  const doc=frame.contentDocument;
  doc.open();doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>공정검사 성적서</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,"Malgun Gothic",sans-serif;color:#172033;font-size:9px}.std-inspection{width:100%!important;max-width:none!important;min-width:0!important;overflow:visible!important;background:white}.std-inspection *{max-width:100%;min-width:0}.std-inspection table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}.std-inspection th,.std-inspection td{border:1px solid #dce3ec!important;padding:5px 3px!important;text-align:center!important;overflow-wrap:anywhere}.std-inspection .std-premium-remarks,.std-inspection .std-approval-row{width:100%!important}.print-field-value{display:inline-block;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;font-weight:600}.std-inspection button,.std-inspection .am-detail-actions{display:none!important}.std-inspection .std-approval-row{min-height:0!important}.std-inspection .pqc-approval-heading{height:24px!important}.std-inspection .pqc-approval-person{height:30px!important}.std-inspection .std-premium-remarks{height:60px!important;min-height:60px!important}section{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body></body></html>');doc.close();
  doc.body.appendChild(doc.importNode(copy,true));
- const win=frame.contentWindow;
+ 
+// Apply a dedicated, single-stroke A4 print layout without modifying the live form.
+const printStyle=doc.createElement('style');
+printStyle.textContent=`
+@page{size:A4 portrait;margin:11mm}
+html,body{width:100%!important;background:#fff!important}
+body{font-family:"Malgun Gothic",Arial,sans-serif!important;font-size:10px!important;color:#253044!important}
+.std-inspection.premium{display:block!important;width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important}
+.std-inspection-head{display:grid!important;grid-template-columns:24% 43% 33%!important;align-items:stretch!important;gap:0!important;margin:0 0 10px!important;border:1px solid #aeb9c9!important}
+.std-inspection-head>div{min-width:0!important;padding:9px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important}
+.std-inspection-head>div:last-child{border-right:0!important;padding:0!important}
+.std-inspection-logo{display:flex!important;align-items:center!important;justify-content:center!important}
+.std-inspection-logo img{display:block!important;width:95%!important;max-width:125px!important;max-height:48px!important;object-fit:contain!important}
+.std-inspection-title{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.std-inspection-title b{font-size:19px!important;letter-spacing:1px!important;white-space:nowrap!important}
+.std-inspection-doc{display:grid!important;grid-template-columns:40% 60%!important;align-content:stretch!important}
+.std-inspection-doc>.k,.std-inspection-doc>.v{padding:5px 4px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;border:0!important;border-bottom:1px solid #d4dce6!important;border-right:1px solid #d4dce6!important}
+.std-inspection-doc>.v{border-right:0!important}
+.std-inspection-doc>:nth-last-child(-n+2){border-bottom:0!important}
+.std-premium-band{display:none!important}
+.std-section-title{display:flex!important;align-items:center!important;gap:7px!important;margin:13px 0 6px!important;padding:5px 7px!important;border:0!important;border-bottom:1px solid #aeb9c9!important;background:#f4f6fa!important;break-after:avoid!important}
+.std-section-title .sec-no{font-weight:700!important;color:#72619c!important}
+.std-section-title small{margin-left:auto!important;font-size:8px!important}
+.std-info{display:grid!important;grid-template-columns:17% 33% 17% 33%!important;gap:0!important;border:1px solid #aeb9c9!important;border-right:0!important;border-bottom:0!important}
+.std-info>.k,.std-info>.v{display:flex!important;align-items:center!important;min-width:0!important;margin:0!important;padding:7px 6px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-bottom:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important}
+.std-info>.k{background:#f4f6fa!important;font-weight:700!important;justify-content:center!important;text-align:center!important}
+.std-info>.v{justify-content:center!important;text-align:center!important}
+.std-result-wrap{width:100%!important;overflow:visible!important;border:0!important}
+.std-result{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;border:1px solid #aeb9c9!important}
+.std-result th,.std-result td{border:1px solid #aeb9c9!important;padding:7px 3px!important;font-size:9px!important;vertical-align:middle!important;box-shadow:none!important}
+.std-result th{background:#f4f6fa!important}
+.std-summary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;border:1px solid #aeb9c9!important;border-right:0!important;border-bottom:0!important}
+.std-summary-card{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;min-height:35px!important;padding:7px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-bottom:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important;background:white!important}
+.std-summary-card .label{font-weight:700!important}
+.std-summary-card .dot{display:none!important}
+.std-premium-remarks,.std-approval-row{border-color:#aeb9c9!important;border-radius:0!important;box-shadow:none!important}
+.std-approval-row{min-height:0!important}
+.std-inspection input,.std-inspection select,.std-inspection textarea{display:none!important}
+.std-inspection .print-field-value{display:inline!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font-size:9px!important;font-weight:500!important}
+.std-inspection button,.std-inspection .am-detail-actions{display:none!important}
+.std-inspection section,.std-result tr,.std-summary-card{break-inside:avoid!important}
+`;
+doc.head.appendChild(printStyle);
+const win=frame.contentWindow;
  win.addEventListener('afterprint',()=>setTimeout(()=>frame.remove(),250),{once:true});
  setTimeout(()=>{win.focus();win.print();},180);
  setTimeout(()=>frame.remove(),120000);
