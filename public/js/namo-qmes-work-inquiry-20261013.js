@@ -282,11 +282,11 @@ function print(){
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length){win.close();alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
- const parts=pages.map(page=>page.match(/<main class="paper">[\\s\\S]*?<\\/main>/)?.[0]).filter(Boolean);
+ const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length){win.close();alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
  let html=pages[0].replace(parts[0],parts.join('\\n'));
  html=html.replace('</style>','.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}\\n</style>');
- html=html.replace(/<title>[^<]*<\\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
+ html=html.replace(/<title>[^<]*<\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
  win.document.open();win.document.write(html);win.document.close();
  }catch(error){win.close();console.error('[QMES bulk print]',error);alert('선택 인쇄 오류: '+error.message)}
 }
