@@ -4225,6 +4225,7 @@ async function loadHistoricalInspectionRows(section,id){
         const lot=get('생산 LOT NO'),title='공정검사 성적서';
         const html=standardInspectionForm('process');
         openModal(title,amaranthScreen('process',html,'detail',title),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
+        arrangePqcWorkspaceActions();
         const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
         if(!root)return;
         const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
@@ -4828,6 +4829,20 @@ function wireAmaranthScreen(){
   root.querySelector('[data-am-save]')?.addEventListener('click',()=>document.getElementById('modalSave')?.click());
 }
 
+function arrangePqcWorkspaceActions(){
+  const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
+  const top=pane?.querySelector('.am-detail-actions');
+  if(!top)return;
+  const back=top.querySelector('[data-am-back]');
+  const save=top.querySelector('[data-am-save]');
+  if(!back||!save)return;
+  const print=document.createElement('button');
+  print.type='button';print.className='am-top-btn';print.textContent='인쇄';
+  print.addEventListener('click',()=>window.print());
+  top.replaceChildren(print);
+  back.textContent='목록';save.textContent='저장';
+  workspaceFoot.replaceChildren(back,save);
+}
 function showRowDetail(id,row){
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>td.innerText.trim());
@@ -5386,6 +5401,7 @@ function openNewForm(id,editOrder=null){
     const title={incoming:'수입검사 성적서 등록',process:'공정검사 성적서 등록',outgoing:'출하검사 성적서 등록'}[id];
     const html=standardInspectionForm(id);
     openModal(title,amaranthScreen(id,html,'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">검사 저장</button>');
+    if(id==='process')arrangePqcWorkspaceActions();
     initStandardInspectionForm(id);
     return;
   }
