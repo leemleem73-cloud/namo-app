@@ -317,12 +317,12 @@ svg{display:block}
    </section>
    <aside class="right-side" aria-label="업무 현황">
       <div class="side-card">
-       <div class="card-heading"><div class="bubble"><svg class="icon large"><use href="#ico-clipboard"/></svg></div><div><h2>나의 업무 현황</h2><p>오늘 처리할 업무를 확인하세요</p></div><button class="more" type="button" data-action="나의 업무 현황" title="업무 상태 확인"><svg class="icon small"><use href="#ico-chevron"/></svg></button></div>
-       <button class="task-row" type="button" data-action="작업지시"><div class="task-icon"><svg class="icon small"><use href="#ico-inbox"/></svg></div><div class="detail"><b>수신 작업지시</b><small>부서별 신규 작업지시</small></div><span class="placeholder">업무 열기 ↗</span></button>
-       <button class="task-row" type="button" data-action="품질관리"><div class="task-icon"><svg class="icon small"><use href="#ico-checklist"/></svg></div><div class="detail"><b>검사 및 승인 대기</b><small>수입 · 공정 · 출하검사</small></div><span class="placeholder">업무 열기 ↗</span></button>
-       <button class="task-row" type="button" data-action="출하검사"><div class="task-icon"><svg class="icon small"><use href="#ico-shield"/></svg></div><div class="detail"><b>부적합 · 출하보류</b><small>품질 이상 알림</small></div><span class="placeholder">업무 열기 ↗</span></button>
+       <div class="card-heading"><div class="bubble"><svg class="icon large"><use href="#ico-clipboard"/></svg></div><div><h2>나의 업무 현황</h2><p>현재 QMES 등록 데이터를 자동으로 확인합니다</p></div><button class="more" type="button" data-action="나의 업무 현황" title="업무 상태 확인"><svg class="icon small"><use href="#ico-chevron"/></svg></button></div>
+       <button class="task-row" type="button" data-action="작업지시"><div class="task-icon"><svg class="icon small"><use href="#ico-inbox"/></svg></div><div class="detail"><b>작업지시 및 생산 현황</b><small id="portal-work-summary">작업지시 현황 확인 중</small></div><span class="placeholder">업무 열기 ↗</span></button>
+       <button class="task-row" type="button" data-action="수입검사"><div class="task-icon"><svg class="icon small"><use href="#ico-checklist"/></svg></div><div class="detail"><b>품질검사 및 판정 현황</b><small id="portal-quality-summary">검사 현황 확인 중</small></div><span class="placeholder">업무 열기 ↗</span></button>
+       <button class="task-row" type="button" data-action="LOT 추적"><div class="task-icon"><svg class="icon small"><use href="#ico-shield"/></svg></div><div class="detail"><b>LOT 추적 및 재고 현황</b><small id="portal-lot-summary">LOT 및 재고 업무 바로가기</small></div><span class="placeholder">업무 열기 ↗</span></button>
       </div>
-      <div class="notice-card"><div class="head">품질·생산 공지 <span class="mini-pill">NOTICE</span></div><p>작업지시 전달, 검사 승인, LOT 이력 등 중요한 알림을 한곳에서 확인할 수 있습니다.</p><button type="button" data-action="공지사항">전체 공지 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
+      <div class="notice-card"><div class="head">QMES 업무 공지 <span class="mini-pill">NOTICE</span></div><p><span id="portal-notice-summary">작업지시 발송·수신 및 품질검사 알림을 확인 중입니다.</span></p><button type="button" data-action="공지사항">전체 공지 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
    </aside>
    
    <section class="dock-wrap" aria-label="주요 업무 바로가기">
@@ -363,6 +363,51 @@ svg{display:block}
   {name:'설비관리',hint:'설비 현황 · 점검 · 이력',icon:'settings'},
   {name:'직원관리',hint:'직원등록 현황 · 부서 관리',icon:'users'}
  ];
+ // Lightweight read-only dashboard refresh. Never write, approve, or mutate QMES records.
+ const setSummary=(id,msg)=>{const el=byId(id);if(el)el.textContent=msg;};
+ let refreshInFlight=false;
+ const qmesRead=async(url)=>{
+   const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),8000);
+   try{
+     const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+     if(!response.ok)throw Error('HTTP '+response.status);
+     const payload=await response.json();
+     if(payload.success!==true||!Array.isArray(payload.data))throw Error('응답 형식 오류');
+     return payload.data;
+   }finally{clearTimeout(timeout);}
+ };
+ async function refreshPortalWorkStatus(){
+   if(refreshInFlight||document.hidden)return;
+   refreshInFlight=true;
+   try{
+     const requests=await Promise.allSettled([
+       qmesRead('/api/qmes/work-orders'),
+       qmesRead('/api/iqc'),qmesRead('/api/pqc'),qmesRead('/api/oqc'),
+       qmesRead('/api/qmes-quality/notifications')
+     ]);
+     const get=i=>requests[i].status==='fulfilled'?requests[i].value:null;
+     const orders=get(0);
+     if(orders){
+       const open=orders.filter(x=>!/(완료|종료|취소|complete|closed|cancelled)/i.test(String(x.status||x['진행상태']||x['현재진행상태']||''))).length;
+       setSummary('portal-work-summary','전체 '+orders.length+'건 · 진행 및 상태확인 '+open+'건');
+     }else setSummary('portal-work-summary','작업지시 화면에서 현황 확인');
+     const inspections=[get(1),get(2),get(3)];
+     if(inspections.every(Array.isArray))
+       setSummary('portal-quality-summary','수입 '+inspections[0].length+' · 공정 '+inspections[1].length+' · 출하 '+inspections[2].length+'건');
+     else setSummary('portal-quality-summary','수입 · 공정 · 출하검사 현황 확인');
+     setSummary('portal-lot-summary','원료 · 중간배치 · 제품 LOT 및 재고 확인');
+     const alerts=get(4);
+     if(alerts){
+       const pending=alerts.filter(x=>String(x.approval_status||'').toUpperCase()==='PENDING').length;
+       setSummary('portal-notice-summary',pending?'품질검사 승인대기 '+pending+'건 · QMES 알림센터에서 세부사항을 확인하세요.':'품질검사 알림 '+alerts.length+'건 · 작업지시 발송·수신 알림은 QMES 알림센터에서 확인하세요.');
+     }else setSummary('portal-notice-summary','작업지시 발송·수신 및 품질검사 알림은 QMES 알림센터에서 확인하세요.');
+   }catch(e){console.warn('[QMES portal refresh]',e);}
+   finally{refreshInFlight=false;}
+ }
+ refreshPortalWorkStatus();
+ setInterval(refreshPortalWorkStatus,30000);
+ window.addEventListener('focus',refreshPortalWorkStatus);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPortalWorkStatus();});
  const visibleMenuData=()=>byId('namo-portal-root')?.dataset.portalAdmin==='1'
    ?data:data.filter(x=>x.name!=='직원관리');
  const date=byId('today-date');
