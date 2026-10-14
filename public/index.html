@@ -4839,6 +4839,23 @@ function printInspectionReport(title){
     outline:0!important;border:0!important;box-shadow:none!important;
   }
 }
+
+/* IQC: one border owner at each shared edge, no doubled strokes */
+@media print {
+ .report-sheet{border:1px solid #d0d9e4!important;outline:0!important;box-shadow:none!important}
+ .report-doc-head,.report-meta,.report-basic,.report-inspection,.report-summary,.report-support,.report-sign{outline:0!important;box-shadow:none!important}
+ .report-doc-head{border-top:0!important;border-left:0!important;border-right:0!important}
+ .report-meta,.report-summary,.report-support,.report-sign{border-left:0!important;border-right:0!important;border-top:0!important}
+ .report-basic,.report-inspection{border-collapse:collapse!important;border-spacing:0!important;border:0!important}
+ .report-basic th,.report-basic td,.report-inspection th,.report-inspection td{border:1px solid #d0d9e4!important}
+ .report-basic tr>:first-child,.report-inspection tr>:first-child{border-left:0!important}
+ .report-basic tr>:last-child,.report-inspection tr>:last-child{border-right:0!important}
+ .report-section-title{border-left:0!important;border-right:0!important;border-top:0!important}
+ .report-support-row{border-left:0!important;border-right:0!important;border-top:0!important}
+ .report-support-row:last-child{border-bottom:0!important}
+ .report-sign{border-bottom:0!important}
+ .report-footer{border-bottom:0!important}
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
