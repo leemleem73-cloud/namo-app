@@ -4891,13 +4891,19 @@ function printPqcCertificateOnly(){
  .header{display:grid;grid-template-columns:22% 51% 27%;height:76px;border:1px solid #b9c7d8;border-bottom:0}.logo,.title{display:flex;align-items:center;justify-content:center;border-right:1px solid #b9c7d8}.logo img{max-width:92%;max-height:44px;object-fit:contain}.title{font-size:21px;font-weight:800;letter-spacing:1px}.approval{display:grid;grid-template-columns:repeat(3,1fr)}.approval>div{display:grid;grid-template-rows:24px 1fr;border-right:1px solid #b9c7d8;text-align:center}.approval>div:last-child{border-right:0}.approval b{background:#f1f5f9;border-bottom:1px solid #b9c7d8;padding:6px 0}.approval span{display:flex;align-items:center;justify-content:center;font-size:9px}
  .info th{width:17%}.info td{width:33%}.band{background:#1b3d68;color:white;font-weight:700;padding:8px 10px;margin-top:0}.result th,.result td{padding:9px 4px;font-size:9px}.result th{background:#f1f5f9}.result col.no{width:6%}.result col.item{width:16%}.result col.spec{width:27%}.result col.method{width:15%}.result col.measure{width:9%}.result col.judge{width:9%}
  .meta td,.meta th{padding:10px 5px}.good{color:#087842;font-weight:800}.management th{width:15%}.management td{text-align:left;padding:17px 12px;white-space:pre-wrap;line-height:1.7}.management tr{height:75px}.management tr:last-child{height:55px}tr{break-inside:avoid}h1{margin:0}
- </style></head><body><div class="sheet">
+ .header{border-color:#cbd5e1!important}.logo,.title{border-color:#cbd5e1!important}.title{color:#1d416b!important}
+th,td{border-color:#d7dfe9!important}th,.result th,.approval b{background:#f6f8fb!important}
+.band{background:#1c4069!important;padding:9px 11px!important}
+.info td,.result td{color:#344154!important}
+.management tr{height:58px!important}.management tr:last-child{height:46px!important}
+.meta th{width:18%!important}.meta td{text-align:center!important;font-weight:700!important}
+</style></head><body><div class="sheet">
  <div class="header"><div class="logo"><img src="https://www.namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical"></div><div class="title">공정검사 성적서</div><div class="approval"><div><b>작성</b><span>${escape(approval[0]||'-')}</span></div><div><b>검토</b><span>${escape(approval[1]||'-')}</span></div><div><b>승인</b><span>${escape(approval[2]||'-')}</span></div></div></div>
  <table class="info">${infoRows}</table>
  <div class="band">검사 결과</div>
  <table class="result"><colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"><col class="measure"><col class="measure"><col class="judge"></colgroup><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th><th>1회</th><th>2회</th><th>3회</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table>
- <table class="meta"><tr><th>검사일자</th><td>${escape(entries[0].value)}</td><th>검사자</th><td>${escape(entries[1].value)}</td><th>종합판정</th><td class="${overall==='합격'?'good':''}">${escape(overall)}</td></tr></table>
- <div class="band">검사 관리정보</div><table class="management"><tr><th>검사조건</th><td>샘플링: LOT당 1회 / n=3　 검사장소: 품질검사실　 적용기준: 공정검사 기준서</td></tr><tr><th>추적성</th><td>작업지시번호: ${escape(entries[2].value)}　 생산 LOT: ${escape(entries[4].value)}</td></tr><tr><th>특이사항</th><td>${escape(remark)||'특이사항 없음'}</td></tr></table>
+ <table class="meta"><tr><th>종합판정</th><td class="${overall==='합격'?'good':''}">${escape(overall)}</td></tr></table>
+ <div class="band">검사 관리정보</div><table class="management"><tr><th>검사조건</th><td>LOT당 1회 / n=3　·　품질검사실　·　공정검사 기준서</td></tr><tr><th>추적성</th><td>작업지시번호 및 생산 LOT는 상단 기본정보 참조</td></tr><tr><th>특이사항</th><td>${escape(remark)||'특이사항 없음'}</td></tr></table>
  </div></body></html>`);doc.close();
  const win=frame.contentWindow;win.addEventListener('afterprint',()=>setTimeout(()=>frame.remove(),500),{once:true});
  setTimeout(()=>{win.focus();win.print();},350);setTimeout(()=>frame.remove(),120000);
