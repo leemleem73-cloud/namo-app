@@ -3819,10 +3819,12 @@ function renderIncomingPage(section,page=1){
   const rowBoxes=[...tbody.querySelectorAll('.iqc-select-row')];
   const selectAll=section.querySelector('.iqc-select-all');
   const bulkBtn=section.querySelector('.iqc-bulk-delete');
+  const printBtn=qmesBulkPrintButton(section,'incoming');
   function refreshSelection(){
     rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;box.checked=!!id&&selected.has(String(id));});
     const countSelected=selected.size;
     if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected;bulkBtn.textContent='선택 삭제 ('+countSelected+')';}
+    if(printBtn){printBtn.hidden=!countSelected;printBtn.disabled=!countSelected;printBtn.textContent='선택 인쇄 ('+countSelected+')';}
     if(selectAll){const checked=rowBoxes.filter(b=>b.checked).length;selectAll.checked=!!rowBoxes.length&&checked===rowBoxes.length;selectAll.indeterminate=checked>0&&checked<rowBoxes.length;}
   }
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
@@ -4573,11 +4575,32 @@ async function loadHistoricalInspectionRows(section,id){
     console.warn('[QMES] '+kind+' history read failed',error);
   }
 }
+
+/* Selected certificate batch print: one browser print job, one sheet per record. */
+function qmesBulkPrintButton(section,id){
+ const actions=section.querySelector('.ip-actions');if(!actions)return;
+ let btn=actions.querySelector('.qmes-bulk-print');
+ if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn qmes-bulk-print';btn.hidden=true;btn.disabled=true;btn.style.cssText='height:27px;padding:0 10px;border:1px solid #d6c3ef;border-radius:5px;background:#f3ebff;color:#7854a8;font-size:10px;font-weight:800';btn.textContent='선택 인쇄 (0)';const del=actions.querySelector('.iqc-bulk-delete');if(del)del.after(btn);else actions.prepend(btn);}
+ btn.onclick=async()=>{
+  const rows=id==='incoming'?[...section.querySelectorAll('tbody tr.data-row')].filter(r=>section._iqcSelectedIds?.has(String(r.dataset.iqcId))):[...section.querySelectorAll('tbody tr.data-row')].filter(r=>r.querySelector('.iqc-select-row:checked'));
+  if(!rows.length)return;
+  const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
+  if(!ok)return;
+  const sheets=rows.map(r=>issueInspectionReport(id,r,true));if(sheets.some(x=>!x)){toast('성적서 생성에 실패했습니다.');return;}
+  const frame=document.createElement('iframe');frame.style.cssText='position:fixed;width:1px;height:1px;opacity:0;border:0;pointer-events:none';document.body.appendChild(frame);
+  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\\n');
+  const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>선택 성적서 인쇄</title><style>'+css+'\\n@page{size:A4 portrait;margin:8mm}html,body{background:white!important;margin:0!important;padding:0!important}.qmes-print-page{display:block;break-after:page;page-break-after:always;width:194mm;margin:0 auto}.qmes-print-page:last-child{break-after:auto;page-break-after:auto}.qmes-print-page .report-sheet{display:flex!important;position:static!important;width:194mm!important;max-width:194mm!important;min-height:270mm!important;margin:0 auto!important;box-shadow:none!important}</style></head><body>'+sheets.map(x=>'<div class="qmes-print-page">'+x+'</div>').join('')+'</body></html>';
+  frame.onload=async()=>{try{await frame.contentDocument.fonts.ready;frame.contentWindow.focus();frame.contentWindow.print();}catch(e){toast('인쇄창을 열지 못했습니다.')}setTimeout(()=>frame.remove(),90000)};
+  frame.srcdoc=html;
+ };
+ return btn;
+}
 function wireInspectionBulkSelect(section,id){
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
   const head=section.querySelector('.iqc-select-all');
   const button=section.querySelector('.iqc-bulk-delete');
+  const printBtn=qmesBulkPrintButton(section,id);
   const pager=section.querySelector('.ip-pagination');
   const count=section.querySelector('.ip-count');
   if(!tbody||!head||!button||!pager)return;
@@ -4590,6 +4613,7 @@ function wireInspectionBulkSelect(section,id){
     const selected=boxes.filter(box=>box.checked);
     button.hidden=!selected.length;button.disabled=!selected.length;
     button.textContent='선택 삭제 ('+selected.length+')';
+    if(printBtn){printBtn.hidden=!selected.length;printBtn.disabled=!selected.length;printBtn.textContent='선택 인쇄 ('+selected.length+')';}
     head.checked=boxes.length>0&&selected.length===boxes.length;
     head.indeterminate=selected.length>0&&selected.length<boxes.length;
   }
@@ -4711,7 +4735,7 @@ function wireModule(section,id){
   section.querySelectorAll('.mini-report').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();openModal('CoA','<p style="font-size:13px;margin:0">CoA 미리보기 화면입니다. 실제 QMES 연동 시 PDF/CoA 파일을 연결할 수 있습니다.</p>')}));
 }
 
-function issueInspectionReport(id,row){
+function issueInspectionReport(id,row,bulkRenderOnly=false){
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>{
     // Exclude row action buttons (수정/삭제) from the editable cell value.
@@ -4867,6 +4891,7 @@ function qmesIqcBarcodeSvg(value){
       <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
     </div>`;
   const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto" checked> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
+  if(bulkRenderOnly){const tmp=document.createElement('div');tmp.innerHTML=body;return tmp.querySelector('#reportSheet')?.outerHTML||null;}
   openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
   // PQC report: remove dark inherited borders, retain one very light divider.
   if(id==='process'){
