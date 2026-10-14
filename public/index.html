@@ -5372,6 +5372,22 @@ function printInspectionReport(title,batchSheets){
  #reportSheet.report-process .report-basic{table-layout:fixed!important}
  #reportSheet.report-process .report-basic tr>*{box-sizing:border-box!important}
 }
+/* PQC print fine-line cleanup: one uniform border owner and centered page. */
+@media print{
+ html{width:100%!important;margin:0!important;padding:0!important}
+ body:has(> #reportSheet.report-process){box-sizing:border-box!important;width:194mm!important;max-width:194mm!important;margin:0 auto!important;padding:0!important}
+ body> #reportSheet.report-process{box-sizing:border-box!important;display:block!important;width:100%!important;max-width:100%!important;margin:0 auto!important;border:0.6px solid #d4dce5!important;outline:0!important;box-shadow:none!important;overflow:hidden!important}
+ #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support,#reportSheet.report-process .report-footer{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-shadow:none!important;outline:none!important}
+ #reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection{border-collapse:collapse!important;border-spacing:0!important;border-left:0!important;border-right:0!important}
+ #reportSheet.report-process .report-basic tr>*,#reportSheet.report-process .report-inspection tr>*{border-color:#d4dce5!important;border-width:0 0.6px 0.6px 0!important;box-shadow:none!important;outline:0!important}
+ #reportSheet.report-process .report-basic tr>:last-child,#reportSheet.report-process .report-inspection tr>:last-child{border-right:0!important}
+ #reportSheet.report-process .report-meta>div,#reportSheet.report-process .report-summary>div,#reportSheet.report-process .report-doc-head>.report-logo,#reportSheet.report-process .report-doc-head>.report-title-box,#reportSheet.report-process .report-approval>* ,#reportSheet.report-process .report-support-row .label{border-color:#d4dce5!important;border-width:0 0.6px 0.6px 0!important;box-shadow:none!important}
+ #reportSheet.report-process .report-support-row{border:0!important;border-bottom:0.6px solid #d4dce5!important}
+ #reportSheet.report-process .report-summary{border-top:0.6px solid #d4dce5!important;border-bottom:0.6px solid #d4dce5!important}
+ #reportSheet.report-process .report-section-title{border-bottom:0!important}
+ #reportSheet.report-process .report-footer{border-top:0.6px solid #d4dce5!important}
+ body:has(> #reportSheet.report-process)>.print-outside-meta{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}
+}
 /* PQC-only vertical position: preserve IQC layout, sizes and border rules. */
 @media print{
  #reportSheet.report-pqc-print{
