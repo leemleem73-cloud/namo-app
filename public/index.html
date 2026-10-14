@@ -5381,49 +5381,22 @@ function printInspectionReport(title,batchSheets){
   transform:translateY(7mm)!important;
  }
 }
-/* Process certificate print only: thin consistent grid and centered sheet. */
+/* PQC single and selected-batch prints: each divider has exactly one owner. */
 @media print{
- body:has(#reportSheet.report-process){width:194mm!important;max-width:194mm!important;margin-left:auto!important;margin-right:auto!important;padding:0!important}
- #reportSheet.report-process{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;border:1px solid #d4dce5!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support,#reportSheet.report-process .report-footer{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support-row,#reportSheet.report-process .report-footer{border-color:#d4dce5!important;border-width:0 0 1px!important}
- #reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection{border-collapse:collapse!important;border-spacing:0!important;border-left:0!important;border-right:0!important}
- #reportSheet.report-process .report-basic tr>*,#reportSheet.report-process .report-inspection tr>*{border-color:#d4dce5!important;border-width:0 1px 1px 0!important;box-shadow:none!important}
- #reportSheet.report-process .report-basic tr>:last-child,#reportSheet.report-process .report-inspection tr>:last-child{border-right:0!important}
- #reportSheet.report-process .report-doc-head>.report-logo,#reportSheet.report-process .report-doc-head>.report-title-box,#reportSheet.report-process .report-approval>*,#reportSheet.report-process .report-meta>div,#reportSheet.report-process .report-summary>div,#reportSheet.report-process .report-support-row .label{border-color:#d4dce5!important;border-right-width:1px!important;box-shadow:none!important}
- #reportSheet.report-process .report-summary{border-top:0!important;border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-process .report-inspection tbody tr:last-child>td{border-bottom:0!important}
- /* The final support row owns the divider; the footer must not draw a second line. */
- #reportSheet.report-process .report-support-row:last-child{border-bottom:0!important}
- #reportSheet.report-process .report-support{border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-process .report-footer{border-top:0!important;border-bottom:0!important}
- /* Match the thin horizontal stroke in the screenshot: prevent doubled vertical dividers. */
- #reportSheet.report-process .report-support-row .label{border:0!important;border-right:1px solid #d4dce5!important;box-shadow:none!important;outline:0!important}
- #reportSheet.report-process .report-support-row .value{border:0!important;box-shadow:none!important;outline:0!important}
- #reportSheet.report-process .report-support-row{border-top:0!important;border-left:0!important;border-right:0!important;border-bottom:1px solid #d4dce5!important;box-shadow:none!important;outline:0!important}
- #reportSheet.report-process .report-support-row:last-child{border-bottom:0!important}
- /* Single-stroke grid for ALL process certificate print sections. */
- #reportSheet.report-process{--pqc-line:#d4dce5!important;border:1px solid var(--pqc-line)!important}
- #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support,#reportSheet.report-process .report-footer{border-left:0!important;border-right:0!important;border-top:0!important;border-bottom:0!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support-row,#reportSheet.report-process .report-footer{border-bottom:1px solid var(--pqc-line)!important}
- #reportSheet.report-process .report-doc-head>*,#reportSheet.report-process .report-approval>*,#reportSheet.report-process .report-meta>*,#reportSheet.report-process .report-summary>*,#reportSheet.report-process .report-support-row .label{border-left:0!important;border-top:0!important;border-bottom:0!important;border-right:1px solid var(--pqc-line)!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-doc-head>*:last-child,#reportSheet.report-process .report-approval>*:last-child,#reportSheet.report-process .report-meta>*:nth-child(4n),#reportSheet.report-process .report-summary>*:last-child{border-right:0!important}
- #reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection{border:0!important;border-collapse:collapse!important;border-spacing:0!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-basic tr>*,#reportSheet.report-process .report-inspection tr>*{border-left:0!important;border-top:0!important;border-right:1px solid var(--pqc-line)!important;border-bottom:1px solid var(--pqc-line)!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-basic tr>:last-child,#reportSheet.report-process .report-inspection tr>:last-child{border-right:0!important}
- #reportSheet.report-process .report-inspection tbody tr:last-child>*{border-bottom:0!important}
- #reportSheet.report-process .report-support-row{border-left:0!important;border-top:0!important;border-right:0!important;border-bottom:1px solid var(--pqc-line)!important}
- #reportSheet.report-process .report-support-row:last-child{border-bottom:0!important}
- #reportSheet.report-process .report-support{border-bottom:1px solid var(--pqc-line)!important}
- #reportSheet.report-process .report-footer{border-top:0!important;border-bottom:0!important}
- /* Approval box: right edge is owned by the outer report frame only. */
- #reportSheet.report-process .report-doc-head>.report-approval{box-sizing:border-box!important;border-left:0!important;border-right:0!important;outline:0!important;box-shadow:none!important;min-width:0!important}
- #reportSheet.report-process .report-approval .approval-label,#reportSheet.report-process .report-approval .approval-head,#reportSheet.report-process .report-approval .approval-cell{box-sizing:border-box!important;border-left:0!important;border-right:1px solid #d4dce5!important;border-top:0!important;border-bottom:0!important;outline:0!important;box-shadow:none!important}
- #reportSheet.report-process .report-approval .approval-head{border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-process .report-approval .approval-label{border-bottom:0!important}
- #reportSheet.report-process .report-approval .approval-cell:last-child,#reportSheet.report-process .report-approval .approval-head:nth-child(4){border-right:0!important}
- #reportSheet.report-process .report-doc-head{border-right:0!important}
- body:has(#reportSheet.report-process)>.print-outside-meta{width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print){--pqc-line:#d4dce5;box-sizing:border-box!important;border:1px solid var(--pqc-line)!important;outline:0!important;box-shadow:none!important}
+ /* Clear legacy IQC strokes inherited by the PQC-only template as well. */
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) *{border:0!important;outline:0!important;box-shadow:none!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print)>*{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-basic,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-inspection{border-collapse:separate!important;border-spacing:0!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-doc-head,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-meta,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-section-title,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-summary,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-support-row,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-sign{border-bottom:1px solid var(--pqc-line)!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-logo,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-title-box,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-label,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-head,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-cell,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-meta>div:not(:last-child),#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-summary>div:not(:last-child),#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-support-row .label,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-sign .label,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-sign .sign-cell:not(:last-child){border-right:1px solid var(--pqc-line)!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-head{border-bottom:1px solid var(--pqc-line)!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-head:nth-child(4),#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .approval-cell:last-child{border-right:0!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-basic tr>*,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-inspection tr>*{border-right:1px solid var(--pqc-line)!important;border-bottom:1px solid var(--pqc-line)!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-basic tr>:last-child,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-inspection tr>:last-child{border-right:0!important}
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-sign .sign-line{border-bottom:1px solid var(--pqc-line)!important}
+ /* Last support row owns the footer separator; the sheet owns the outer frame. */
+ #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-support,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-footer{border:0!important}
 }
 </style>
 
