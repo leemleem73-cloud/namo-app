@@ -4155,6 +4155,7 @@ function readWorkOrders(){
   if(workSharedRows)return workSharedRows.filter(row=>!workDeletingIds.has(String(row?.id)));
   try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows.filter(row=>!workDeletingIds.has(String(row?.id))):[];}catch(_){return [];}
 }
+window.qmesGetWorkOrders=()=>readWorkOrders();
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
   if(!tbody)return;
