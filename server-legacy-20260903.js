@@ -2497,6 +2497,41 @@ async function ensurePendingIqcFromUnmatchedPurchases() {
   }
 }
 
+// PQC row deletion is registered in the server entry itself, independent of preloads.
+app.get('/api/qmes-sync/pqc/delete-row', requireLogin, (req,res) =>
+  ok(res,{operation:'pqc-delete-row',version:'20261015-direct1'}));
+
+app.post('/api/qmes-sync/pqc/delete-row', requireLogin, async (req,res)=>{
+  const key=txt(req.body?.recordKey),index=req.body?.rowIndex,rowId=txt(req.body?.rowId);
+  if(!key||!Number.isInteger(index)||index<0||!rowId)return fail(res,400,'삭제할 검사 기록 정보가 부족합니다.');
+  let client,committed=false;
+  try{
+    client=await pool.connect();
+    await client.query('BEGIN');
+    await client.query("SET LOCAL lock_timeout = '5s'");
+    await client.query("SET LOCAL statement_timeout = '10s'");
+    const before=await client.query(
+      "SELECT payload FROM qmes_sync_records WHERE record_type='pqc' AND record_key=$1 FOR UPDATE",[key]);
+    if(!before.rows.length)throw Object.assign(Error('원본 검사 기록이 없습니다.'),{status:404});
+    const payload=jsonObj(before.rows[0].payload),rows=payload.rows;
+    if(!Array.isArray(rows)||String(rows[index]?.id??'')!==rowId)
+      throw Object.assign(Error('검사 기록이 변경되었습니다. 목록을 새로고침한 뒤 다시 선택해 주세요.'),{status:409});
+    const next=rows.slice();next.splice(index,1);
+    const updated={...payload,rows:next};
+    await client.query(
+      "UPDATE qmes_sync_records SET payload=$2::jsonb,updated_at=NOW(),updated_by=$3 WHERE record_type='pqc' AND record_key=$1",
+      [key,JSON.stringify(updated),txt(req.session.user.name)]);
+    await client.query('COMMIT');committed=true;
+    await auditLog(req,'DELETE','qmes_sync_records','pqc:'+key,payload,updated)
+      .catch(error=>console.warn('PQC deletion audit failed:',error.message));
+    return ok(res,{deleted:1},'공정검사 1건 삭제 완료');
+  }catch(error){
+    if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
+    console.error('PQC selected deletion failed:',error);
+    return fail(res,error.status||500,error.status?error.message:'공정검사 삭제 처리에 실패했습니다.');
+  }finally{if(client)client.release();}
+});
+
 app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   const type = qmesSyncType(req, res);
   if (!type) return;
