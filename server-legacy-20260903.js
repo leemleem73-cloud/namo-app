@@ -2497,6 +2497,56 @@ async function ensurePendingIqcFromUnmatchedPurchases() {
   }
 }
 
+// One atomic request for selected IQC/PQC/OQC records.
+app.get('/api/qmes/inspections/:kind/delete-selected',requireLogin,(req,res)=>{
+  if(!['iqc','pqc','oqc'].includes(req.params.kind))return fail(res,400,'지원하지 않는 검사 유형입니다.');
+  return ok(res,{operation:'inspection-delete-selected',version:'20261015-batch1'});
+});
+app.post('/api/qmes/inspections/:kind/delete-selected',requireLogin,async(req,res)=>{
+  const kind=req.params.kind,input=req.body?.targets;
+  if(!['iqc','pqc','oqc'].includes(kind)||!Array.isArray(input)||!input.length||input.length>1000)
+    return fail(res,400,'삭제할 검사 기록을 확인해 주세요.');
+  const targets=kind==='iqc'?[...new Set(input.map(v=>txt(v)))]:
+    [...new Map(input.map(t=>[txt(t?.recordKey)+'|'+String(t?.rowIndex),t])).values()];
+  if(kind==='iqc'?targets.some(v=>!v):targets.some(t=>!txt(t?.recordKey)||!Number.isInteger(t?.rowIndex)||t.rowIndex<0||!txt(t?.rowId)))
+    return fail(res,400,'삭제할 원본 검사 기록 정보가 부족합니다.');
+  let client,committed=false;
+  try{
+    client=await pool.connect();await client.query('BEGIN');
+    await client.query("SET LOCAL lock_timeout = '5s'");
+    await client.query("SET LOCAL statement_timeout = '10s'");
+    if(kind==='iqc'){
+      const before=await client.query('SELECT id FROM iqc WHERE id::text=ANY($1::text[]) ORDER BY id FOR UPDATE',[targets]);
+      if(before.rows.length!==targets.length)throw Object.assign(Error('선택한 수입검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+      await client.query('DELETE FROM iqc WHERE id::text=ANY($1::text[])',[targets]);
+    }else{
+      const keys=[...new Set(targets.map(t=>txt(t.recordKey)))].sort();
+      const before=await client.query(
+        'SELECT record_key,payload FROM qmes_sync_records WHERE record_type=$1 AND record_key=ANY($2::text[]) ORDER BY record_key FOR UPDATE',[kind,keys]);
+      if(before.rows.length!==keys.length)throw Object.assign(Error('원본 검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+      const updates=[];
+      for(const record of before.rows){
+        const payload=jsonObj(record.payload),rows=payload.rows,selected=targets.filter(t=>txt(t.recordKey)===String(record.record_key));
+        if(!Array.isArray(rows)||selected.some(t=>String(rows[t.rowIndex]?.id??'')!==txt(t.rowId)))
+          throw Object.assign(Error('선택한 검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+        const indices=new Set(selected.map(t=>t.rowIndex));
+        updates.push({key:record.record_key,payload:{...payload,rows:rows.filter((row,index)=>!indices.has(index))}});
+      }
+      for(const update of updates)await client.query(
+        'UPDATE qmes_sync_records SET payload=$3::jsonb,updated_at=NOW(),updated_by=$4 WHERE record_type=$1 AND record_key=$2',
+        [kind,update.key,JSON.stringify(update.payload),txt(req.session.user.name)]);
+    }
+    await client.query('COMMIT');committed=true;
+    await auditLog(req,'DELETE',kind==='iqc'?'iqc':'qmes_sync_records',kind+':selected',{targets},null)
+      .catch(error=>console.warn('Inspection batch deletion audit failed:',error.message));
+    return ok(res,{deleted:targets.length},targets.length+'건 삭제 완료');
+  }catch(error){
+    if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
+    console.error('Inspection batch deletion failed:',error);
+    return fail(res,error.status||500,error.status?error.message:'선택 삭제에 실패했습니다. 삭제되지 않은 기록은 목록에 유지됩니다.');
+  }finally{if(client)client.release();}
+});
+
 // PQC row deletion is registered in the server entry itself, independent of preloads.
 app.get('/api/qmes-sync/pqc/delete-row', requireLogin, (req,res) =>
   ok(res,{operation:'pqc-delete-row',version:'20261015-direct1'}));

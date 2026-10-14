@@ -3850,7 +3850,7 @@ function renderIncomingPage(section,page=1){
   function refreshSelection(){
     rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;box.checked=!!id&&selected.has(String(id));});
     const countSelected=selected.size;
-    if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected;bulkBtn.textContent='선택 삭제 ('+countSelected+')';}
+    if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected||Boolean(section._inspectionDeleting);bulkBtn.textContent=section._inspectionDeleting?'삭제 처리 중...':'선택 삭제 ('+countSelected+')';}
     if(printBtn){printBtn.hidden=!countSelected;printBtn.disabled=!countSelected;printBtn.textContent='선택 인쇄 ('+countSelected+')';}
     if(selectAll){const checked=rowBoxes.filter(b=>b.checked).length;selectAll.checked=!!rowBoxes.length&&checked===rowBoxes.length;selectAll.indeterminate=checked>0&&checked<rowBoxes.length;}
   }
@@ -3864,21 +3864,18 @@ function renderIncomingPage(section,page=1){
     refreshSelection();
   };
   if(bulkBtn)bulkBtn.onclick=async()=>{
-    const ids=[...selected];
-    if(!ids.length)return;
-    if(!await confirmIqcBulkDelete(ids.length))return;
-    bulkBtn.disabled=true;
-    let deleted=0;
-    for(const id of ids){
-      try{
-        const response=await fetch('/api/iqc/'+encodeURIComponent(id),{method:'DELETE',credentials:'same-origin'});
-        const payload=await response.json().catch(()=>({success:false}));
-        if(!response.ok||!payload.success)throw Error(payload.message||'삭제 실패');
-        selected.delete(id);deleted++;
-      }catch(err){toast('일부 삭제 실패: '+(err.message||'서버 오류'));break;}
-    }
+    if(section._inspectionDeleting)return;
+    const ids=[...selected];if(!ids.length)return;
+    section._inspectionDeleting=true;let deleted=0,message='';
+    try{
+      if(!await confirmIqcBulkDelete(ids.length))return;
+      refreshSelection();
+      deleted=await deleteInspectionSelection('iqc',ids);
+      ids.forEach(id=>selected.delete(id));
+    }catch(error){message=error.message||'수입검사 선택 삭제 실패';}
+    finally{section._inspectionDeleting=false;refreshSelection();}
     await loadIncomingFromDb(section);
-    toast(deleted+'건 삭제 완료');
+    toast(message||('수입검사 '+deleted+'건 삭제 완료'));
   };
   refreshSelection();
   if(count){
@@ -3916,6 +3913,7 @@ async function loadIncomingFromDb(section){
       if(section._iqcRequestId!==requestId||!section.isConnected)return;
       const rows=p.data;
       section._iqcRows=rows;
+      if(section._iqcSelectedIds instanceof Set){const validIds=new Set(rows.map(row=>String(row.id)));for(const id of section._iqcSelectedIds)if(!validIds.has(String(id)))section._iqcSelectedIds.delete(id);}
       updateIncomingMaterialsFromDb(rows);
       saveIncomingPageCache(rows);
       applyIncomingMetrics(section,rows);
@@ -4583,6 +4581,9 @@ async function loadHistoricalInspectionRows(section,id){
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
       const cells=values.slice(0,cols.length).map((v,index)=>{
+        if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
+          return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
+        }
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
@@ -4598,6 +4599,9 @@ async function loadHistoricalInspectionRows(section,id){
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=displayRows.length;
     if(id==='process'){
+      tbody.querySelectorAll('.pqc-work-order-link').forEach(button=>button.addEventListener('click',event=>{
+        event.stopPropagation();openPqcLinkedWorkOrder(button.dataset.workOrder).catch(error=>toast(error.message||'작업지시서 조회 실패'));
+      }));
       tbody.querySelectorAll('.pqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{
         event.stopPropagation();
         const tr=button.closest('tr');
@@ -4676,21 +4680,31 @@ function qmesBulkPrintButton(section,id){
  };
  return btn;
 }
-async function deleteSelectedPqcRow(target){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),15000);
+async function deleteInspectionSelection(kind,targets){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
   try{
-    const response=await fetch('/api/qmes-sync/pqc/delete-row',{
+    const response=await fetch('/api/qmes/inspections/'+kind+'/delete-selected',{
       method:'POST',credentials:'same-origin',signal:controller.signal,
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(target)
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({targets})
     });
     const result=await response.json().catch(()=>({}));
-    if(!response.ok||result.success!==true)throw Error(result.message||('공정검사 삭제 실패 · 서버 응답 '+response.status));
+    if(!response.ok||result.success!==true)throw Error(result.message||('선택 삭제 실패 · 서버 응답 '+response.status));
+    return result.data?.deleted??targets.length;
   }catch(error){
     if(controller.signal.aborted)throw Error('서버 응답이 지연됐습니다. 목록에서 삭제 여부를 확인한 뒤 다시 시도해 주세요.');
     throw error;
   }finally{clearTimeout(timer);}
+}
+async function openPqcLinkedWorkOrder(number){
+  const menu=document.querySelector('#sidebar .menu[data-page="work"]');
+  if(!menu)return;
+  menu.click();
+  await refreshSharedWorkOrders();
+  const row=[...document.querySelectorAll('#work tr[data-work-saved]')].find(row=>row.cells[1]?.textContent.trim()===number);
+  if(!row){toast('해당 작업지시서를 찾을 수 없습니다. 작업지시서 목록을 확인해 주세요.');return;}
+  const link=row.cells[1].querySelector('a,button');
+  if(link)link.click();else row.cells[1].click();
+  row.scrollIntoView({block:'center',behavior:'smooth'});
 }
 
 function wireInspectionBulkSelect(section,id){
@@ -4707,13 +4721,15 @@ function wireInspectionBulkSelect(section,id){
   let current=1;
   let rendering=false;
   function update(){
-    const boxes=[...tbody.querySelectorAll('.iqc-select-row')];
+    const boxes=allRows.flatMap(row=>[...row.querySelectorAll('.iqc-select-row')]);
     const selected=boxes.filter(box=>box.checked);
     button.hidden=!selected.length;button.disabled=!selected.length||Boolean(section._inspectionDeleting);
     button.textContent=section._inspectionDeleting?'삭제 처리 중...':'선택 삭제 ('+selected.length+')';
     if(printBtn){printBtn.hidden=!selected.length;printBtn.disabled=!selected.length;printBtn.textContent='선택 인쇄 ('+selected.length+')';}
-    head.checked=boxes.length>0&&selected.length===boxes.length;
-    head.indeterminate=selected.length>0&&selected.length<boxes.length;
+    const visible=[...tbody.querySelectorAll('.iqc-select-row:not(:disabled)')],checked=visible.filter(box=>box.checked);
+    head.checked=visible.length>0&&checked.length===visible.length;
+    head.indeterminate=checked.length>0&&checked.length<visible.length;
+    if(printBtn){printBtn.hidden=!checked.length;printBtn.disabled=!checked.length||Boolean(section._inspectionDeleting);printBtn.textContent='선택 인쇄 ('+checked.length+')';}
   }
   function render(){
     rendering=true;
@@ -4733,7 +4749,8 @@ function wireInspectionBulkSelect(section,id){
       }
       const num=label.querySelector('span');
       if(num)num.textContent=String(start+i+1);
-      label.querySelector('input')?.setAttribute('aria-label',(start+i+1)+'번 검사 선택');
+      const box=label.querySelector('input');
+      if(box){box.setAttribute('aria-label',(start+i+1)+'번 검사 선택');box.disabled=!row.dataset.sourceKey||!row.dataset.sourceId;if(box.disabled){box.checked=false;box.title='아직 저장된 검사 기록이 없어 선택 삭제할 수 없습니다.';}}
     });
     if(count)count.textContent='총 '+allRows.length+'건 · '+(allRows.length?start+1:0)+'-'+Math.min(start+pageSize,allRows.length)+' 표시';
     let html='<button class="ip-page-btn" type="button" data-page="'+(current-1)+'" '+(current===1?'disabled':'')+'>‹</button>';
@@ -4755,12 +4772,11 @@ function wireInspectionBulkSelect(section,id){
     }
   });
   tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
-  head.addEventListener('change',()=>{tbody.querySelectorAll('.iqc-select-row').forEach(box=>{box.checked=head.checked;});update();});
+  head.addEventListener('change',()=>{tbody.querySelectorAll('.iqc-select-row:not(:disabled)').forEach(box=>{box.checked=head.checked;});update();});
   button.addEventListener('click',async()=>{
     if(section._inspectionDeleting)return;
-    const rows=[...tbody.querySelectorAll('tr.data-row')].filter(row=>row.querySelector('.iqc-select-row:checked'));
+    const rows=allRows.filter(row=>row.querySelector('.iqc-select-row:checked'));
     if(!rows.length)return;
-    if(id!=='process'){toast('출하검사 삭제는 아직 지원하지 않습니다.');return;}
     const targets=rows.map(row=>({recordKey:row.dataset.sourceKey,rowIndex:Number(row.dataset.sourceIndex),rowId:row.dataset.sourceId}));
     if(targets.some(t=>!t.recordKey||!t.rowId||!Number.isInteger(t.rowIndex)||t.rowIndex<0)){
       toast('원본 기록을 확인할 수 없는 항목이 있습니다. 삭제하지 않았습니다.');return;
@@ -4768,14 +4784,10 @@ function wireInspectionBulkSelect(section,id){
     section._inspectionDeleting=true;
     let deleted=0,errorMessage='',loadingStarted=false;
     try{
-      if(!await confirmIqcBulkDelete(rows.length,'공정검사'))return;
+      if(!await confirmIqcBulkDelete(rows.length,id==='process'?'공정검사':'출하검사'))return;
       update();
       window.namoOperationLoading?.start();loadingStarted=true;
-      targets.sort((x,y)=>x.recordKey===y.recordKey?y.rowIndex-x.rowIndex:x.recordKey.localeCompare(y.recordKey));
-      for(const target of targets){
-        await deleteSelectedPqcRow(target);
-        deleted++;
-      }
+      deleted=await deleteInspectionSelection(id==='process'?'pqc':'oqc',targets);
     }catch(error){errorMessage=error.message||'공정검사 삭제 실패';}
     finally{
       if(loadingStarted)window.namoOperationLoading?.stop();
@@ -4784,8 +4796,8 @@ function wireInspectionBulkSelect(section,id){
     }
     // Refresh once after the batch; background reads must not restart the loader.
     await loadHistoricalInspectionRows(section,id);
-    if(errorMessage)toast((deleted?'공정검사 '+deleted+'건 삭제 완료 · ':'')+'삭제 중단: '+errorMessage);
-    else if(deleted)toast('공정검사 '+deleted+'건 삭제 완료');
+    if(errorMessage)toast('삭제 중단: '+errorMessage);
+    else if(deleted)toast((id==='process'?'공정검사':'출하검사')+' '+deleted+'건 삭제 완료');
   });
   section._inspectionBulkRefresh=()=>{
     allRows=[...tbody.querySelectorAll('tr.data-row')];current=1;render();
