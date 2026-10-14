@@ -11,6 +11,22 @@
    return value.data;
  };
  let inboxBusy=false;
+ function refreshDispatchBadge(count){
+   const btn=document.getElementById('notifyBtn');
+   if(!btn)return;
+   btn.dataset.workDispatchUnread=String(count);
+   let badge=btn.querySelector('.namo-work-dispatch-badge');
+   if(!badge){
+     badge=document.createElement('span');
+     badge.className='namo-work-dispatch-badge';
+     badge.style.cssText='position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;border-radius:10px;background:#d83939;color:#fff;font:700 10px/15px sans-serif;text-align:center;box-sizing:border-box;pointer-events:none;';
+     btn.style.position='relative';
+     btn.append(badge);
+   }
+   badge.textContent=count>99?'99+':String(count);
+   badge.hidden=!count;
+   badge.style.display=count?'block':'none';
+ }
  async function loadInbox(){
    if(inboxBusy)return;
    const list=document.getElementById('notifyList');
@@ -19,6 +35,7 @@
    try{
      const rows=await api('/inbox');
      list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(n=>n.remove());
+     refreshDispatchBadge((rows||[]).filter(n=>!n.read_at).length);
      (rows||[]).forEach(n=>{
        const div=document.createElement('div');
        div.className='notify-item';
@@ -41,12 +58,16 @@
    const row=e.target.closest?.('.notify-item[data-source="work-dispatch"]');
    if(!row)return;
    const id=row.dataset.dispatchId;
-   if(id)api('/inbox/'+encodeURIComponent(id)+'/read',{method:'POST'}).then(()=>{row.querySelector('.notify-time').textContent='확인';}).catch(console.warn);
+   if(id)api('/inbox/'+encodeURIComponent(id)+'/read',{method:'POST'}).then(()=>{row.querySelector('.notify-time').textContent='확인';loadInbox();}).catch(console.warn);
  },true);
  document.getElementById('notifyBtn')?.addEventListener('click',()=>setTimeout(loadInbox,80));
  document.querySelector('#notifyTabs .notify-tab[data-filter="work"]')?.addEventListener('click',()=>setTimeout(loadInbox,20));
  window.addEventListener('focus',()=>{if(document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
+ // Refresh the current user's alerts across devices even with the panel closed.
+ setInterval(()=>{if(!document.hidden)loadInbox();},30000);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>loadInbox(),{once:true});
+ else loadInbox();
  window.namoWorkDispatchInit=async function(editId){
    const form=document.querySelector('.work-form'),list=form?.querySelector('#namoWorkDepartments'),people=form?.querySelector('#namoWorkEmployees');
    const button=form?.querySelector('#namoWorkSend'),status=form?.querySelector('#namoWorkSendStatus'),count=form?.querySelector('#namoWorkSendCount'),reset=form?.querySelector('#namoWorkSendReset');
