@@ -5,10 +5,10 @@ if(window.__namoWorkInquiry20261013)return;
 window.__namoWorkInquiry20261013=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 window.namoPrintWorkOrder=printWorkOrderDocument;
-function printWorkOrderDocument(record,reservedWindow){
+function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  if(!record||!record.id){window.alert('저장된 작업지시서를 선택해 주세요.');return false;}
- const win=reservedWindow||window.open('','_blank','width=980,height=760,scrollbars=yes');
- if(!win){window.alert('인쇄창이 차단됐습니다. 사이트의 팝업을 허용해주세요.');return false;}
+ const win=renderOnly?null:(reservedWindow||window.open('','_blank','width=980,height=760,scrollbars=yes'));
+ if(!win&&!renderOnly){window.alert('인쇄창이 차단됐습니다. 사이트의 팝업을 허용해주세요.');return false;}
  const f=record.fields||{},materials=Array.isArray(record.materials)?record.materials:[];
  const safe=v=>esc(v===undefined||v===null||String(v).trim()===''?'-':v);
  const num=v=>{const t=String(v??'').trim().replace(/,/g,'');const n=Number(t);return t&&Number.isFinite(n)?n:0};
@@ -73,6 +73,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <h2>04. 작업지시사항</h2><div class="note">${safe(record.note)}</div>
 <div class="footer"><span>작업지시번호: ${safe(record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
 </main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print()},250)});</script></body></html>`;
+ if(renderOnly)return html;
  try{win.document.open();win.document.write(html);win.document.close();return true;}
  catch(error){console.error('[QMES work print]',error);window.alert('인쇄 화면을 열지 못했습니다. 다시 시도해주세요.');return false;}
 }
@@ -277,7 +278,15 @@ function print(){
  const saved=typeof readWorkOrders==='function'?readWorkOrders():[];
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length)return alert('인쇄할 작업지시서를 선택해 주세요.');
- docs.forEach(r=>{if(typeof window.namoPrintWorkOrder==='function')window.namoPrintWorkOrder(r)});
+ const pages=docs.map(r=>printWorkOrderDocument(r,null,true));
+ const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
+ if(parts.length!==docs.length)return alert('선택 인쇄 문서를 준비하지 못했습니다.');
+ const w=window.open('','_blank','width=980,height=760,scrollbars=yes');
+ if(!w)return alert('인쇄 팝업을 허용해 주세요.');
+ let html=pages[0].replace(parts[0],parts.join('\n'));
+ html=html.replace('</style>','.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}\n</style>');
+ html=html.replace(/<title>[^<]*<\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
+ w.document.open();w.document.write(html);w.document.close();
 }
 async function remove(){
  if(busy)return;
