@@ -1990,8 +1990,8 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 #namo-operation-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(250,247,255,.86);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #namo-operation-overlay .namo-operation-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;color:#9270c7;box-shadow:none;font-size:15px;font-weight:700}
-#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce .95s ease-in-out infinite alternate}
-#namo-operation-overlay .namo-operation-mascot img{display:block;object-fit:contain;image-rendering:auto;filter:none}
+#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce .5s ease-in-out infinite}
+#namo-operation-overlay .namo-operation-mascot img{display:block;object-fit:contain;image-rendering:auto;filter:none;width:150px;height:auto;border-radius:16px}
 @keyframes namo-operation-bounce{0%,100%{transform:translateY(3px) scale(1.025,.975)}50%{transform:translateY(-9px) scale(.985,1.015)}}
 @media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-mascot{animation:none}}
 </style>
@@ -2002,32 +2002,45 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
   var pending=0,showTimer=null,hideTimer=null,overlay=null,visibleAt=0;
   function getOverlay(){
     if(!document.body)return null;
-    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="110" height="121" alt="" src="data:image/png;base64,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"></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
+    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=original-1"></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
     return overlay;
   }
+  var minimumVisibleMs=1000;
+  function show(){
+    var el=getOverlay();
+    if(!el)return false;
+    if(!el.classList.contains('is-visible')){
+      el.classList.add('is-visible');
+      visibleAt=Date.now();
+    }
+    return true;
+  }
+  function hideWhenIdle(){
+    clearTimeout(hideTimer);
+    if(pending)return;
+    hideTimer=setTimeout(function(){
+      if(pending)return;
+      if(overlay)overlay.classList.remove('is-visible');
+    },Math.max(0,minimumVisibleMs-(Date.now()-visibleAt)));
+  }
   function start(){
-    pending++;clearTimeout(hideTimer);
-    if(pending===1){clearTimeout(showTimer);showTimer=setTimeout(function(){if(pending>0){var el=getOverlay();if(el){el.classList.add('is-visible');visibleAt=Date.now();}}},0);}
+    pending++;
+    clearTimeout(hideTimer);
+    clearTimeout(showTimer);
+    // Show synchronously so even an immediately resolved save displays the mascot.
+    if(!show())showTimer=setTimeout(function(){if(pending)show();},0);
   }
   function stop(){
     pending=Math.max(0,pending-1);
-    if(!pending){clearTimeout(showTimer);hideTimer=setTimeout(function(){if(overlay)overlay.classList.remove('is-visible');},Math.max(0,1000-(Date.now()-visibleAt)));}
+    if(!pending){clearTimeout(showTimer);hideWhenIdle();}
   }
-  // namo-refresh-loader-hook: display the same mascot while the page restores its UI.
+  // Use the same one-second mascot for page restoration.
   function showRefreshLoading(){
-    var el=getOverlay();
-    if(!el)return;
-    el.classList.add('is-visible');
-    visibleAt=Date.now();
-    var began=visibleAt;
-    function finish(){
-      var delay=Math.max(0,1000-(Date.now()-began));
-      setTimeout(function(){if(pending===0&&overlay)overlay.classList.remove('is-visible');},delay);
-    }
-    if(document.readyState==='complete')finish();
-    else window.addEventListener('load',finish,{once:true});
-    // Never trap the user if a resource stalls.
-    setTimeout(function(){if(pending===0&&overlay)overlay.classList.remove('is-visible');},5000);
+    if(!show())return;
+    if(document.readyState==='complete')hideWhenIdle();
+    else window.addEventListener('load',hideWhenIdle,{once:true});
+    // Never trap the user if a resource stalls; this also respects active writes.
+    setTimeout(hideWhenIdle,5000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showRefreshLoading,{once:true});
   else showRefreshLoading();
