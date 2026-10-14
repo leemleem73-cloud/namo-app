@@ -6,7 +6,7 @@
 <title>NAMO QMES</title>
 <link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261014-inquiry-calendar-490">
 <link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261014-mat2">
-<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261014-dispatch4">
+<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261014-dispatch5">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -5737,14 +5737,9 @@ function openNewForm(id,editOrder=null){
       <div class="work-section"><div class="work-section-title">발송 대상 및 수신부서</div><div class="work-section-body">
         <div class="namo-work-send-panel">
           <div class="namo-dispatch-info">발송 경로: QMES 내부 알림 → 작업지시 · 직원등록현황에 등록된 승인 직원에게 전달됩니다.</div>
-          <div class="namo-dispatch-grid">
-            <div class="namo-dispatch-card"><div class="namo-dispatch-card-head"><strong>발송 대상</strong><span>부서 전체 또는 해당자를 선택하세요.</span></div>
-              <div class="namo-dispatch-tip">부서명 옆 체크박스는 <strong>해당 부서 전체 선택</strong>입니다.<br>부서명 아래에서 <strong>수신할 해당자만 개별 체크</strong>할 수도 있습니다.</div>
-            </div>
-            <div class="namo-dispatch-card"><div class="namo-dispatch-card-head"><strong>수신부서 및 해당자</strong><span>부서명 아래 직원등록현황의 해당자가 표시됩니다. 복수 선택 가능합니다.</span></div>
-              <div id="namoWorkDepartments" class="namo-work-dept-list"><span>직원등록현황을 불러오는 중입니다.</span></div>
-              <div id="namoWorkEmployees" class="namo-dispatch-employees" hidden></div>
-            </div>
+          <div class="namo-dispatch-simple">
+            <div class="namo-dispatch-line"><div class="namo-dispatch-label"><strong>수신부서</strong><span>복수 선택</span></div><div id="namoWorkDepartments" class="namo-work-dept-list">직원등록현황을 불러오는 중입니다.</div></div>
+            <div class="namo-dispatch-line namo-dispatch-people-row"><div class="namo-dispatch-label"><strong>해당자</strong><span>개별 선택·해제</span></div><div id="namoWorkEmployees" class="namo-dispatch-employees">수신부서를 선택하면 해당 직원이 표시됩니다.</div></div>
           </div>
           <div class="namo-work-send-actions"><span id="namoWorkSendCount">선택 부서 0개 · 예상 수신자 0명</span><span id="namoWorkSendStatus" role="status"></span><button type="button" class="btn" id="namoWorkSendReset">선택 초기화</button><button type="button" class="btn" id="namoWorkSend" disabled>저장 후 발송</button></div>
         </div>
@@ -6114,7 +6109,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-mat2"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch4"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch5"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
 </body>
 </html>
