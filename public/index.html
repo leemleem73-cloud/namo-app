@@ -5017,23 +5017,95 @@ function printInspectionReport(title,batchSheets){
     }
   });
   cleanupTimer=setTimeout(cleanup,120000);
-  // Print-only copy: align document metadata to the basic-info columns.
-  // Keep the on-screen report and its stored data untouched.
-  const printSheet=sheet.cloneNode(true);
-  const printMeta=printSheet.querySelector('.report-meta');
-  if(printMeta){
-    [...printMeta.children].slice(4).forEach(cell=>cell.remove());
+  function preparePrintSheet(source){
+    const copy=source.cloneNode(true);
+    const meta=copy.querySelector('.report-meta');
+    if(meta)[...meta.children].slice(4).forEach(cell=>cell.remove());
+    copy.querySelector('.report-basic colgroup')?.remove();
+    if(copy.matches('.report-process,.report-pqc-print')){
+      // Screen-only important borders must not survive into either print path.
+      for(const el of [copy,...copy.querySelectorAll('*')]){
+        for(const prop of [...el.style]){
+          if(/^(border(?:-|$)|outline(?:-|$)|box-shadow$)/.test(prop))el.style.removeProperty(prop);
+        }
+      }
+    }
+    return copy;
   }
-  // The print copy uses a single grid geometry for both information sections.
-  // Remove the table colgroup only in this clone; the normal report is untouched.
-  const printBasic=printSheet.querySelector('.report-basic');
-  if(printBasic){
-    const cols=printBasic.querySelector('colgroup');
-    if(cols) cols.remove();
-  }
+  const printSheet=preparePrintSheet(sheet);
   // Rev. and Page belong below the report's outer border, not inside a cell.
   const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span><span>1 / 1 Page</span></div>';
-  const printHtml=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>
+    const isPqcPrint=sheet.matches('.report-process,.report-pqc-print');
+  // PQC uses one isolated stylesheet in both screen preview and print media.
+  const reportPrintStyles=isPqcPrint ? `/* PQC print v2: standalone styles shared by single and selected printing. */
+@page{size:A4 portrait;margin:8mm}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#fff}
+body{width:194mm;max-width:100%;margin:0 auto;font-family:Arial,'Noto Sans KR',sans-serif;color:#172033}
+.report-sheet{--pqc-line:#d4dce5;width:100%;height:auto;margin:0 auto;border:1px solid var(--pqc-line);background:#fff;display:block;overflow:hidden}
+.report-sheet *{border:0;outline:0;box-shadow:none;min-width:0}
+.report-sheet>*{width:100%;margin:0}
+.report-doc-head{display:grid;grid-template-columns:15% minmax(0,1fr) 52mm;min-height:21mm}
+.report-logo,.report-title-box{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--pqc-line)}
+.report-logo{padding:3mm 2mm;background:#fff}
+.report-main-logo{display:block;width:28mm;max-width:100%;height:auto;object-fit:contain}
+.report-title-box{flex-direction:column}
+.report-title-box h2{margin:0;color:#153558;font-size:21px;letter-spacing:.4px}
+.report-title-box small{margin-top:3px;color:#7890a9;font-size:7.5px;letter-spacing:1.5px}
+.report-approval{display:grid;grid-template-columns:9mm repeat(3,minmax(0,1fr));grid-template-rows:6mm 1fr;font-size:7.5px}
+.approval-label,.approval-head,.approval-cell{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--pqc-line)}
+.approval-label{grid-row:1/3;font-weight:800;background:#eef1f4}
+.approval-head{font-weight:800;background:#eef1f4;border-bottom:1px solid var(--pqc-line)}
+.approval-cell{font-size:9px}
+.approval-head:nth-child(4),.approval-cell:last-child{border-right:0}
+.report-doc-head,.report-meta,.report-section-title,.report-summary,.report-support-row,.report-sign{border-bottom:1px solid var(--pqc-line)}
+.report-meta{display:grid;grid-template-columns:15% 35% 15% 35%}
+.report-meta>div{min-height:9mm;padding:4px 6px;display:flex;align-items:center;justify-content:center;font-size:8.7px;text-align:center;overflow-wrap:anywhere;border-right:1px solid var(--pqc-line)}
+.report-meta>div:last-child{border-right:0}
+.report-meta .label,.report-basic th,.report-summary .label,.report-support-row .label,.report-sign .label{background:#f4f7fa;color:#465b72;font-weight:800}
+.report-meta .value{font-weight:700}
+.report-basic{display:block;width:100%;border-collapse:separate;border-spacing:0}
+.report-basic tbody{display:block;width:100%}
+.report-basic tr{display:grid;grid-template-columns:15% 35% 15% 35%;width:100%}
+.report-basic tr>*{height:10.5mm;padding:5px 7px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;overflow-wrap:anywhere}
+.report-basic td{font-weight:600}
+.report-basic tr>*,.report-inspection tr>*{border-right:1px solid var(--pqc-line);border-bottom:1px solid var(--pqc-line)}
+.report-basic tr>:last-child,.report-inspection tr>:last-child{border-right:0}
+.report-section-title{height:7.5mm;padding:0 8px;display:flex;align-items:center;background:#173d6f;color:#fff;font-size:10.5px;font-weight:900}
+.report-inspection{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.report-inspection th,.report-inspection td{padding:4px 3px;font-size:8.6px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}
+.report-inspection th{height:8.5mm;background:#eaf0f6;color:#304760;font-weight:800}
+.report-inspection td{height:14.5mm}
+.report-inspection td.item{font-weight:800}
+.report-inspection td.pass,.report-summary .final{font-weight:900;color:#0f7a51}
+.report-inspection tbody tr:nth-child(even) td{background:#fbfcfd}
+.report-inspection col.no{width:5%}.report-inspection col.item{width:15%}
+.report-inspection col.spec{width:26%}.report-inspection col.method{width:14%}
+.report-inspection col.measure{width:8%}.report-inspection col.judge{width:8%}
+.report-summary{display:grid;grid-template-columns:repeat(3,15% 18.333333%)}
+.report-summary>div{height:11mm;padding:5px 7px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;border-right:1px solid var(--pqc-line)}
+.report-summary>div:last-child{border-right:0}
+.report-summary .final{font-size:11px}
+.report-support{display:block}
+.report-support-row{display:grid;grid-template-columns:15% minmax(0,1fr);min-height:29mm}
+.report-support-row .label{display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;border-right:1px solid var(--pqc-line)}
+.report-support-row .value{min-height:29mm;padding:6px 8px;font-size:8.8px;line-height:1.5;overflow-wrap:anywhere;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.report-support-row .value .muted,.report-support-row .value .support-text{width:100%;color:#172033;text-align:center}
+.report-sign{display:grid;grid-template-columns:24mm repeat(3,minmax(0,1fr));min-height:22mm}
+.report-sign .label,.report-sign .sign-cell{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--pqc-line);font-size:9px}
+.report-sign .sign-cell{flex-direction:column;gap:5px;font-size:8.5px}
+.report-sign .sign-cell:last-child{border-right:0}
+.report-sign .sign-role{font-weight:800}
+.report-sign .sign-line{width:70%;height:8px;border-bottom:1px solid var(--pqc-line)}
+.report-sign .sign-name{font-size:8px;color:#596579}
+.report-footer{min-height:7mm;padding:0 8px;display:flex;justify-content:space-between;align-items:center;gap:4mm;font-size:7.8px;color:#667085;background:#fbfcfd}
+.report-footer b{color:#2f4863}
+.print-outside-meta{width:100%;margin:2.5mm auto 0;display:flex;justify-content:space-between;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
+.report-pqc-print,.report-pqc-print+.print-outside-meta{transform:translateY(7mm)}
+.report-doc-head,.report-meta,.report-basic tr,.report-inspection tr,.report-summary,.report-support-row,.report-footer{break-inside:avoid;page-break-inside:avoid}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+` : `
     @page{size:A4 portrait;margin:8mm}
     *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff}body{width:194mm;margin:0 auto;font-family:Arial,'Noto Sans KR',sans-serif;color:#172033}
     .report-sheet{width:194mm;height:276mm;margin:0 auto;border:1.2px solid #5d6875;background:#fff;color:#172033;display:flex;flex-direction:column;overflow:hidden}
@@ -5398,9 +5470,10 @@ function printInspectionReport(title,batchSheets){
  /* Last support row owns the footer separator; the sheet owns the outer frame. */
  #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-support,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-footer{border:0!important}
 }
-</style>
+`;
+const printHtml=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>${reportPrintStyles}</style>
 
-</head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=source.cloneNode(true);const meta=copy.querySelector(".report-meta");if(meta)[...meta.children].slice(4).forEach(cell=>cell.remove());copy.querySelector(".report-basic colgroup")?.remove();return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
+</head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=preparePrintSheet(source);return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
   printFrame.srcdoc=printHtml;
 }
@@ -6571,3 +6644,4 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <!-- work batch UI disabled pending main-screen recovery -->
 </body>
 </html>
+
