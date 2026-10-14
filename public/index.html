@@ -1947,7 +1947,6 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 /* Reuse original authenticated QMES header controls, with portal appearance. */
 #app > header.topbar .top-actions{gap:10px!important;right:64px!important;top:7px!important;align-items:center!important;height:44px!important;max-width:calc(100% - 380px)}
 #app > header.topbar .top-actions > .top-divider,
-#app > header.topbar #orgBtn,
 #app > header.topbar #guideBtn{display:none!important}
 #app > header.topbar #namoPortalTopDate{order:1;display:block;font-size:11.5px;font-weight:700;color:#53697f;white-space:nowrap;margin-right:4px;letter-spacing:-.15px}
 #app > header.topbar #namoPortalTopDivider{order:2;display:block;width:1px;height:22px;background:#dce6ef;margin:0 4px 0 2px}
@@ -1955,10 +1954,13 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 #app > header.topbar #namoPortalTopTheme:hover{background:#dceef8;color:#177fa8}
 #app > header.topbar #namoPortalTopTheme svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #app > header.topbar #notifyBtn{order:4;display:grid!important;place-items:center;position:relative!important;width:36px;height:36px;flex:0 0 36px;padding:0!important;color:#456e89;background:#eef5fa;border:1px solid #dfebf3;border-radius:10px}
+#app > header.topbar #orgBtn{order:5;display:grid!important;place-items:center;width:36px;height:36px;flex:0 0 36px;padding:0!important;color:#456e89;background:#eef5fa;border:1px solid #dfebf3;border-radius:10px;cursor:pointer}
+#app > header.topbar #orgBtn:hover{color:#147fa6;background:#dceef8;border-color:#b8dcee}
+#app > header.topbar #orgBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #app > header.topbar #notifyBtn:hover,
 #app > header.topbar #notifyBtn.notify-active{color:#147fa6;background:#dceef8;border-color:#b8dcee}
 #app > header.topbar #notifyBtn.namo-portal-has-alerts::after{content:"";position:absolute;right:5px;top:5px;width:7px;height:7px;background:#20a7a1;border:1px solid #fff;border-radius:50%;pointer-events:none}
-#app > header.topbar #currentUser{order:5;display:flex;align-items:center;gap:8px!important;margin-left:3px;height:44px!important;padding:0 3px!important;flex:0 1 auto;min-width:0;max-width:180px;border-radius:10px}
+#app > header.topbar #currentUser{order:6;display:flex;align-items:center;gap:8px!important;margin-left:3px;height:44px!important;padding:0 3px!important;flex:0 1 auto;min-width:0;max-width:180px;border-radius:10px}
 #app > header.topbar #currentUser:hover{background:#f3f8fb}
 #app > header.topbar #currentUser .avatar{width:34px;height:34px;min-width:34px;background:#e0f3fa;color:#217fa5;border:1px solid #c9e5f1}
 #app > header.topbar #currentUser .user-meta{display:block!important;line-height:1.18;min-width:0;max-width:125px}
@@ -1976,7 +1978,8 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
  #app > header.topbar #currentUser .user-meta{display:none!important}
  #app > header.topbar .top-actions{right:20px!important;gap:6px!important}
  #app > header.topbar #namoPortalTopTheme,
- #app > header.topbar #notifyBtn{width:32px;height:32px;flex-basis:32px}
+ #app > header.topbar #notifyBtn,
+ #app > header.topbar #orgBtn{width:32px;height:32px;flex-basis:32px}
  #app > header.topbar #currentUser{max-width:42px}
  #app > header.topbar #notifyPanel{right:12px}
 }
