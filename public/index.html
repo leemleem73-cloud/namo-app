@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<link id="namo-mascot-preload" rel="preload" as="image" href="./assets/namo-original-loading-20261014.svg?v=short-lashes-together-3">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
@@ -1999,48 +2000,65 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 (function(){
   if(window.__namoOperationLoaderInstalled)return;
   window.__namoOperationLoaderInstalled=true;
-  var pending=0,showTimer=null,hideTimer=null,overlay=null,visibleAt=0;
+  var pending=0,hideTimer=null,overlay=null,visibleAt=0;
+  var imageReady=false,wantShow=false,refreshPending=false;
+  var minimumVisibleMs=1000;
   function getOverlay(){
     if(!document.body)return null;
-    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=transparent-slow-2"></span><span>처리 중입니다...</span></div>';document.body.appendChild(overlay);}
+    if(!overlay){
+      overlay=document.createElement('div');overlay.id='namo-operation-overlay';
+      overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
+      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=short-lashes-together-3"></span><span>처리 중입니다...</span></div>';
+      var img=overlay.querySelector('img');
+      function ready(){
+        if(imageReady)return;
+        imageReady=true;
+        if(wantShow){show();hideWhenIdle();}
+      }
+      function failed(){
+        // Fail open without ever displaying a text-only loading state.
+        wantShow=false;refreshPending=false;
+        console.warn('[QMES] Loading mascot could not be prepared.');
+      }
+      document.body.appendChild(overlay);
+      if(typeof img.decode==='function')img.decode().then(ready,failed);
+      else if(img.complete&&img.naturalWidth>0)ready();
+      else{img.addEventListener('load',ready,{once:true});img.addEventListener('error',failed,{once:true});}
+    }
     return overlay;
   }
-  var minimumVisibleMs=1000;
   function show(){
+    wantShow=true;
     var el=getOverlay();
-    if(!el)return false;
+    // The entire card stays hidden until the image can render with its text.
+    if(!el||!imageReady)return false;
     if(!el.classList.contains('is-visible')){
-      el.classList.add('is-visible');
-      visibleAt=Date.now();
+      el.classList.add('is-visible');visibleAt=Date.now();
     }
     return true;
   }
   function hideWhenIdle(){
     clearTimeout(hideTimer);
-    if(pending)return;
+    if(pending||refreshPending||!overlay||!overlay.classList.contains('is-visible'))return;
     hideTimer=setTimeout(function(){
-      if(pending)return;
-      if(overlay)overlay.classList.remove('is-visible');
+      if(pending||refreshPending)return;
+      overlay.classList.remove('is-visible');wantShow=false;
     },Math.max(0,minimumVisibleMs-(Date.now()-visibleAt)));
   }
   function start(){
-    pending++;
-    clearTimeout(hideTimer);
-    clearTimeout(showTimer);
-    // Show synchronously so even an immediately resolved save displays the mascot.
-    if(!show())showTimer=setTimeout(function(){if(pending)show();},0);
+    pending++;clearTimeout(hideTimer);show();
   }
   function stop(){
     pending=Math.max(0,pending-1);
-    if(!pending){clearTimeout(showTimer);hideWhenIdle();}
+    if(!pending)hideWhenIdle();
   }
-  // Use the same one-second mascot for page restoration.
   function showRefreshLoading(){
-    if(!show())return;
-    if(document.readyState==='complete')hideWhenIdle();
-    else window.addEventListener('load',hideWhenIdle,{once:true});
-    // Never trap the user if a resource stalls; this also respects active writes.
-    setTimeout(hideWhenIdle,5000);
+    refreshPending=true;show();
+    function finish(){refreshPending=false;hideWhenIdle();}
+    if(document.readyState==='complete')finish();
+    else window.addEventListener('load',finish,{once:true});
+    // Never trap the user if a page resource stalls.
+    setTimeout(finish,5000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showRefreshLoading,{once:true});
   else showRefreshLoading();
