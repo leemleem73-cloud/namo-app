@@ -2270,9 +2270,17 @@ function applyAdminVisibility(){
   }
 }
 
-// QMES navigation: selecting an icon opens its page without expanding the sidebar.
-// The separate navToggle is the only control that opens/closes the complete left menu.
-const cancelNavHover=()=>{};
+// Small hover delays prevent the sidebar from opening/closing on brief pointer crossings.
+let navHoverTimer=null;
+const cancelNavHover=()=>{if(navHoverTimer!==null){clearTimeout(navHoverTimer);navHoverTimer=null;}};
+sidebar.addEventListener('mouseenter',()=>{
+  cancelNavHover();
+  if(!app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.add('nav-open');navHoverTimer=null;},160);
+});
+sidebar.addEventListener('mouseleave',()=>{
+  cancelNavHover();
+  if(app.classList.contains('nav-open'))navHoverTimer=setTimeout(()=>{app.classList.remove('nav-open');navHoverTimer=null;},300);
+});
 const updateNavToggleLabel=()=>{const expanded=app.classList.contains('nav-open');navToggle.setAttribute('aria-label',expanded?'메뉴 접기':'메뉴 펼치기');navToggle.title=expanded?'메뉴 접기':'메뉴 펼치기';navToggle.setAttribute('aria-expanded',String(expanded));};
 const navToggleObserver=new MutationObserver(updateNavToggleLabel);
 navToggleObserver.observe(app,{attributes:true,attributeFilter:['class']});
@@ -6197,19 +6205,8 @@ if(!restoreQmesPage()){
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
 document.documentElement.removeAttribute('data-qmes-pending-page');
 
-// Clicking a collapsed sidebar icon must activate that business module directly.
-document.querySelectorAll('#sidebar .menu[data-page] > .ico').forEach(icon=>{
-  icon.addEventListener('click',function(event){
-    event.stopPropagation();
-    const menu=icon.closest('.menu[data-page]');
-    if(menu)menu.click();
-  });
-});
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
-  // Keep the icon rail compact after every successful page selection.
-  app.classList.remove('nav-open');
-  updateNavToggleLabel();
   document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   m.classList.add('active');
