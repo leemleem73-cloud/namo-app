@@ -4789,7 +4789,17 @@ function printInspectionReport(title){
       .report-sheet{break-inside:auto!important;page-break-inside:auto!important}
       .report-doc-head,.report-meta,.report-basic tr,.report-inspection tr,.report-summary,.report-support-row,.report-footer{break-inside:avoid;page-break-inside:avoid}
     }
-  </style>
+  /* 2026-10-14 IQC print border alignment: avoid right-edge printer clipping */
+@media print{
+ body{width:100%!important;max-width:190mm!important;margin:0 auto!important}
+ .print-page-frame,.print-page-content,.report-sheet{width:100%!important;max-width:190mm!important;margin-left:auto!important;margin-right:auto!important}
+ .report-sheet{border:1px solid #b7c4d3!important;border-top:1px solid #b7c4d3!important;overflow:hidden!important}
+ .report-doc-head,.report-meta,.report-basic,.report-inspection,.report-summary,.report-support,.report-support-row{box-sizing:border-box!important;max-width:100%!important}
+ .report-basic,.report-inspection{border-collapse:collapse!important;border-spacing:0!important}
+ .report-basic th,.report-basic td,.report-inspection th,.report-inspection td{border-color:#c6d1df!important}
+ .report-support-row{border-right:0!important}
+}
+</style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
@@ -4897,6 +4907,18 @@ th,td{border-color:#d7dfe9!important}th,.result th,.approval b{background:#f6f8f
 .info td,.result td{color:#344154!important}
 .management tr{height:58px!important}.management tr:last-child{height:46px!important}
 .meta th{width:18%!important}.meta td{text-align:center!important;font-weight:700!important}
+/* Align PQC report geometry to IQC, with one outer stroke per table */
+.sheet{width:100%!important;max-width:190mm!important}
+.header{border:1px solid #b7c4d3!important;border-bottom:0!important;grid-template-columns:22% 50% 28%!important}
+.info,.result,.meta,.management{width:100%!important;border:1px solid #b7c4d3!important;border-collapse:collapse!important;border-spacing:0!important}
+.info th,.info td,.result th,.result td,.meta th,.meta td,.management th,.management td{border:1px solid #c6d1df!important}
+.info th,.result th,.meta th,.management th{background:#f2f5f9!important;color:#344960!important}
+.band{margin:0!important;padding:8px 10px!important;background:#1c416e!important;color:#fff!important;border:0!important}
+.info th,.info td{height:38px!important}
+.result th{height:30px!important}.result td{height:43px!important}
+.meta th,.meta td{height:38px!important}
+.management th{width:16%!important}.management td{padding:12px 14px!important}
+.management tr{height:78px!important}.management tr:last-child{height:65px!important}
 </style></head><body><div class="sheet">
  <div class="header"><div class="logo"><img src="https://www.namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical"></div><div class="title">공정검사 성적서</div><div class="approval"><div><b>작성</b><span>${escape(approval[0]||'-')}</span></div><div><b>검토</b><span>${escape(approval[1]||'-')}</span></div><div><b>승인</b><span>${escape(approval[2]||'-')}</span></div></div></div>
  <table class="info">${infoRows}</table>
