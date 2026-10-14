@@ -4912,7 +4912,7 @@ function arrangePqcWorkspaceActions(){
   if(!back||!save)return;
   const print=document.createElement('button');
   print.type='button';print.className='am-top-btn';print.textContent='인쇄';
-  print.addEventListener('click',()=>{document.body.classList.add('pqc-print-only');window.print();setTimeout(()=>document.body.classList.remove('pqc-print-only'),1500);});
+  print.addEventListener('click',printPqcCertificateOnly);
   top.replaceChildren(print);
   back.textContent='목록';save.textContent='저장';
   workspaceFoot.replaceChildren(back,save);
@@ -5000,7 +5000,7 @@ function showRowDetail(id,row){
         printButton.type='button';
         printButton.className='am-top-btn';
         printButton.textContent='인쇄';
-        printButton.addEventListener('click',()=>{document.body.classList.add('pqc-print-only');window.print();setTimeout(()=>document.body.classList.remove('pqc-print-only'),1500);});
+        printButton.addEventListener('click',printPqcCertificateOnly);
         topActions.replaceChildren(printButton);
         workspaceFoot.replaceChildren(backButton,saveButton);
         backButton.textContent='목록';
