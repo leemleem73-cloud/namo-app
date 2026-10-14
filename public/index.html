@@ -5040,6 +5040,7 @@ function drawPqcPrintGrid(doc){
     const svg=doc.createElementNS(ns,'svg');
     svg.setAttribute('class','pqc-print-grid');svg.setAttribute('aria-hidden','true');
     svg.setAttribute('width',width);svg.setAttribute('height',height);
+    svg.style.width=width+'px';svg.style.height=height+'px';
     svg.setAttribute('viewBox','0 0 '+width+' '+height);
     const path=doc.createElementNS(ns,'path');
     path.setAttribute('d',commands.join(' '));path.setAttribute('fill','none');
@@ -5058,7 +5059,7 @@ function printInspectionReport(title,batchSheets){
   window.__qmesCertificatePrintBusy=true;
   const printFrame=document.createElement('iframe');
   printFrame.setAttribute('aria-hidden','true');
-  printFrame.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
+  printFrame.style.cssText='position:fixed;left:-20000px;top:0;width:194mm;height:281mm;border:0;opacity:0;pointer-events:none';
   let started=false;
   let cleanupTimer;
   const cleanup=()=>{
