@@ -159,6 +159,10 @@ svg{display:block}
 /* The user controls now live in the parent QMES header.
    Keep DOM hooks so the existing portal palette and notification actions work. */
 #namo-portal-root .stage > header.topbar{display:none!important}
+
+/* portal-staff-admin-only-20261014: employee shortcut is hidden by default until the active login is admin. */
+#namo-portal-root .dock [data-action="직원관리"]{display:none!important}
+#namo-portal-root[data-portal-admin="1"] .dock [data-action="직원관리"]{display:flex!important}
 </style>
 </head>
 <body>
@@ -354,12 +358,17 @@ svg{display:block}
   {name:'설비관리',hint:'설비 현황 · 점검 · 이력',icon:'settings'},
   {name:'직원관리',hint:'직원등록 현황 · 부서 관리',icon:'users'}
  ];
+ const visibleMenuData=()=>byId('namo-portal-root')?.dataset.portalAdmin==='1'
+   ?data:data.filter(x=>x.name!=='직원관리');
  const date=byId('today-date');
  date.textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
  let toastTimeout;
  const toast=(msg)=>{const el=byId('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2900)};
  function action(name){
   closeAll();
+  if(name==='직원관리' && byId('namo-portal-root')?.dataset.portalAdmin!=='1'){
+    toast('관리자 권한이 필요합니다.');return;
+  }
   const routes={'종합현황':'dashboard','작업지시':'work','생산관리':'work',
     '수입검사':'incoming','공정검사':'process','출하검사':'outgoing','품질관리':'quality',
     'LOT 추적':'lotTrace','재고관리':'inventory','설비관리':'equipment','직원관리':'adminEmployees'};
@@ -386,8 +395,8 @@ svg{display:block}
    document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b===btn));
    byId('nav-panel-title').textContent=name;
    const options=(name==='전체 메뉴'||name==='품질관리')?
-    (name==='품질관리'?data.filter(x=>['수입검사','공정검사','출하검사','LOT 추적'].includes(x.name)):data):
-    data.filter(x=>x.name===name||name==='종합 대시보드'&&x.name==='종합현황');
+    (name==='품질관리'?visibleMenuData().filter(x=>['수입검사','공정검사','출하검사','LOT 추적'].includes(x.name)):visibleMenuData()):
+    visibleMenuData().filter(x=>x.name===name||name==='종합 대시보드'&&x.name==='종합현황');
    navBody.replaceChildren();
    options.forEach(item=>{const b=document.createElement('button');b.className='nav-row';b.type='button';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span>';b.querySelector('span').textContent=item.name;b.addEventListener('click',()=>action(item.name));navBody.append(b)});
    if(!options.length)navBody.textContent='메뉴 연결 예정';
@@ -395,15 +404,16 @@ svg{display:block}
  }));
  const input=byId('search-input'),dropdown=byId('search-dropdown');
  function renderResults(q){dropdown.replaceChildren();const normalized=q.trim().toLocaleLowerCase();if(!normalized){dropdown.classList.remove('open');return}
-   const results=data.filter(x=>(x.name+' '+x.hint).toLocaleLowerCase().includes(normalized)).slice(0,6);
+   const results=visibleMenuData().filter(x=>(x.name+' '+x.hint).toLocaleLowerCase().includes(normalized)).slice(0,6);
    const label=document.createElement('div');label.className='search-dropdown-title';label.textContent=results.length?'메뉴 검색 결과':'검색 결과 없음';dropdown.append(label);
    if(results.length){results.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='search-result';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span><small></small>';b.querySelector('span').textContent=item.name;b.querySelector('small').textContent=item.hint;b.addEventListener('click',()=>{input.value=item.name;action(item.name)});dropdown.append(b)})}
    else{const p=document.createElement('div');p.style.cssText='padding:10px 12px 17px;font-size:12px;color:#8298a5';p.textContent='현재 시안에서는 업무 메뉴명만 검색할 수 있습니다. 실제 LOT·작업지시 검색은 연동이 필요합니다.';dropdown.append(p)}
    dropdown.classList.add('open');
  }
  input.addEventListener('input',()=>renderResults(input.value));input.addEventListener('focus',()=>{if(input.value.trim())renderResults(input.value)});
- byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=data.find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
+ byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=visibleMenuData().find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
  document.querySelectorAll('[data-query]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.query;input.focus();renderResults(input.value)}));
+ document.addEventListener('namo-portal-auth-change',()=>{closeAll();if(input.value.trim()==='직원관리')input.value='';});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();input.blur()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();input.focus()}});
  document.addEventListener('click',e=>{if(!e.target.closest('.search-box')&&!e.target.closest('.search-dropdown')&&!e.target.closest('.quick-search'))dropdown.classList.remove('open')});
 })();
@@ -417,6 +427,14 @@ svg{display:block}
     if(e.data.type==='profile'){
       const name=document.getElementById('portal-account-name');
       if(name)name.textContent=String(e.data.name||'QMES 사용자').slice(0,50);
+      const root=document.getElementById('namo-portal-root');
+      if(root){
+        const next=e.data.isAdmin===true?'1':'0';
+        if(root.dataset.portalAdmin!==next){
+          root.dataset.portalAdmin=next;
+          document.dispatchEvent(new Event('namo-portal-auth-change'));
+        }
+      }
     }
     if(e.data.type==='toggle-scene'){
       document.getElementById('change-scene')?.click();
