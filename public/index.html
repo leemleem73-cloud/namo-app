@@ -1828,6 +1828,41 @@ thead{background:#f4f7fa}
  min-height:0!important;height:100%!important;max-height:72px!important;
  box-sizing:border-box!important;resize:none!important;overflow-y:auto!important;
 }
+</style><style id="pqc-detail-layout-unified-20261014">
+/* PQC detail screen only; IQC and print templates stay untouched. */
+@media screen {
+ .std-inspection.premium[data-inspection-type="process"]{
+   --pqc-line:#d4dce5;
+   border:1px solid var(--pqc-line)!important;
+   box-shadow:none!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-inspection-head{
+   border-bottom:1px solid var(--pqc-line)!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-inspection-logo,
+ .std-inspection.premium[data-inspection-type="process"] .std-inspection-title{
+   border-right:1px solid var(--pqc-line)!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-info{
+   border-color:var(--pqc-line)!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-info>.k,
+ .std-inspection.premium[data-inspection-type="process"] .std-info>.v{
+   border-color:var(--pqc-line)!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-result{
+   border-collapse:collapse!important;border-spacing:0!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-result th,
+ .std-inspection.premium[data-inspection-type="process"] .std-result td{
+   border:1px solid var(--pqc-line)!important;
+ }
+ .std-inspection.premium[data-inspection-type="process"] .std-summary-card,
+ .std-inspection.premium[data-inspection-type="process"] .std-premium-remarks,
+ .std-inspection.premium[data-inspection-type="process"] .std-approval-row{
+   border-color:var(--pqc-line)!important;
+ }
+}
 </style><style id="pqc-clean-print-layout-20261014">
 @media print{
  @page{size:A4 landscape;margin:10mm}
