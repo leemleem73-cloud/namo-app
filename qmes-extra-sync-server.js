@@ -74,7 +74,7 @@ function install(app) {
     if(!req.session?.user)return res.status(401).json({success:false,message:'로그인이 필요합니다.'});
     const d=req.body||{},fields=d.fields||{},date=String(fields['검사일자']||'').trim(),
       lot=String(fields['생산 LOT NO']||'').trim(),order=String(d.workOrder||'').trim();
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!lot||!order)
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!lot||!order)
       return res.status(400).json({success:false,message:'검사일자, 작업지시번호, 생산 LOT NO를 입력해 주세요.'});
     const key='detail:'+encodeURIComponent(date)+'|'+encodeURIComponent(order)+'|'+encodeURIComponent(lot.toUpperCase());
     const record={id:key,date,workOrderNo:order,product:String(fields['제품명']||''),lot,
