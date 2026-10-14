@@ -6,6 +6,7 @@
 <title>NAMO QMES</title>
 <link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261014-inquiry-calendar-490">
 <link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261014-mat2">
+<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261014-dispatch1">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -4021,7 +4022,7 @@ async function saveWorkOrderForm(editId=''){
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
   const fields={'작업지시번호':id,'고객사':input('고객사명'),'제품명':product,'생산 LOT NO':lot,'설비명':input('설비명'),'작업자':input('작업자'),'계획수량':input('계획수량'),'작업기간':[input('작업 시작일'),input('작업 종료일')].filter(Boolean).join(' ~ '),'진행상태':input('진행상태')};
   const savedId=editId||id;fields['작업지시번호']=savedId;
-  const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('textarea')?.value||''};
+  const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||''};
   if(record.productionType==='중간배치')record.intermediateBatch={kind:form.querySelector('#namoMidWorkKind')?.value||'',actualQty:form.querySelector('#namoMidProduced')?.value||''};
   if(typeof window.namoValidateIntermediateWorkorder==='function'){
     const validation=await window.namoValidateIntermediateWorkorder({editId,rows,record});
@@ -5714,19 +5715,21 @@ function openNewForm(id,editOrder=null){
         <div class="work-note">※ 원료 LOT NO는 직접 입력하며 수입검사에 등록된 LOT와 일치하도록 입력해 주세요. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
       </div></div>
 
-      <div class="work-section"><div class="work-section-title">기본 공정순서</div><div class="work-section-body"><div class="work-process-grid">
-        <div class="work-process-step"><div class="step">STEP 1</div><b>A탱크 원료 투입</b><p>NMP / 분산제 / 세라믹 투입</p></div>
-        <div class="work-process-step"><div class="step">STEP 2</div><b>High Shear</b><p>A탱크에서 선분산 진행</p></div>
-        <div class="work-process-step"><div class="step">STEP 3</div><b>A탱크 추가 투입</b><p>바인더 / SBR 추가 후 Mixing</p></div>
-        <div class="work-process-step"><div class="step">STEP 4</div><b>교차 순환</b><p>Mixing 중 A↔B 탱크 교차 순환</p></div>
-      </div></div></div>
+      <div class="work-section"><div class="work-section-title">작업지시사항</div><div class="work-section-body"><div class="form-item"><textarea id="namoWorkInstructions" placeholder="작업 시 주의사항 및 특이사항 입력"></textarea></div></div></div>
 
-      <div class="work-section"><div class="work-section-title">작업지시사항</div><div class="work-section-body"><div class="form-item"><textarea placeholder="작업 시 주의사항 및 특이사항 입력"></textarea></div></div></div>
+      <div class="work-section"><div class="work-section-title">발송 대상 및 수신부서</div><div class="work-section-body">
+        <div class="namo-work-send-panel">
+          <div class="namo-work-send-head"><strong>수신부서 선택</strong><span>공용 서버 저장 후 선택한 부서에 발송합니다.</span></div>
+          <div id="namoWorkDepartments" class="namo-work-dept-list"><span>부서 목록을 불러오는 중입니다.</span></div>
+          <div class="namo-work-send-actions"><button type="button" class="btn" id="namoWorkSend" disabled>저장 후 선택부서 발송</button><span id="namoWorkSendStatus">발송은 별도 확인 후 진행됩니다.</span></div>
+        </div>
+      </div></div>
     </div>`;
     openModal('신규 작업지시서 등록',amaranthScreen('work',html,'new','신규 작업지시서 등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn" id="workSavePrint" type="button">저장 후 인쇄</button><button class="btn primary" id="modalSave" type="button">저장</button>');
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
+    window.namoWorkDispatchInit?.(editOrder?.id||'');
     if(editOrder){
       const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
       const set=(label,value)=>{const el=basic.find(x=>x.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select');if(el)el.value=value||'';};
@@ -5741,7 +5744,7 @@ function openNewForm(id,editOrder=null){
         row.querySelector('.material-lot-manual').value=m.lot||'';
         row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
       });
-      document.querySelector('.work-form textarea').value=editOrder.note||'';
+      document.querySelector('#namoWorkInstructions').value=editOrder.note||'';
     }
     const workSave=document.getElementById('modalSave');
     if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
@@ -6086,6 +6089,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-mat2"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch1"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
 </body>
 </html>
