@@ -4414,6 +4414,40 @@ function sample(c,i,id){
   return '-';
 }
 
+function matchPqcWorkOrder(row,orders){
+  const norm=v=>String(v??'').trim().toUpperCase().replace(/\s+/g,'');
+  const lot=norm(row.lot);
+  if(!lot||lot==='-')return null;
+  const byNo=new Map();
+  for(const order of orders||[]){
+    const fields=order?.fields||{};
+    const no=String(fields['작업지시번호']||order?.workOrderNo||(/^WO-/i.test(String(order?.id||''))?order.id:'')).trim();
+    const lots=[fields['생산 LOT NO'],fields['생산 LOT'],fields['LOT NO'],order?.lot,order?.lotNo,order?.productionLot];
+    if(no&&lots.some(v=>norm(v)===lot)&&!byNo.has(no))byNo.set(no,order);
+  }
+  let candidates=[...byNo.values()];
+  const number=o=>String(o.fields?.['작업지시번호']||o.workOrderNo||o.id).trim();
+  if(candidates.length===1)return candidates[0];
+  const current=norm(row.workOrderNo||row.orderNo);
+  const known=candidates.filter(o=>norm(number(o))===current);
+  if(known.length===1)return known[0];
+  const product=norm(row.product);
+  if(product&&product!=='-'){
+    const same=candidates.filter(o=>norm(o.fields?.['제품명']||o.product)===product);
+    if(same.length)candidates=same;
+    if(candidates.length===1)return candidates[0];
+  }
+  const date=String(row.date||'');
+  if(/^\d{4}-\d{2}-\d{2}$/.test(date)){
+    const same=candidates.filter(o=>String(o.workDate||o.fields?.['작업기간']||'').slice(0,10)===date);
+    if(same.length===1)return same[0];
+  }
+  return null;
+}
+function pqcWorkOrderNumber(order){
+  return String(order?.fields?.['작업지시번호']||order?.workOrderNo||order?.id||'').trim();
+}
+
 async function loadHistoricalInspectionRows(section,id){
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
@@ -4452,21 +4486,26 @@ async function loadHistoricalInspectionRows(section,id){
         localStorage.setItem('namo_qmes_pqc_detail_drafts_v1',JSON.stringify(drafts));
       }catch(error){console.warn('[PQC] persisted detail cache',error);}
     }
+    let pqcWorkOrderSources=[];
     // Read-only PQC linkage: never insert fabricated inspection results.
     if(id==='process'){
       const sources=[];
+      let authoritativeOrders=false;
       try{
         const response=await fetch('/api/qmes/work-orders?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
         if(response.ok){
           const json=await response.json();
-          if(json.success!==false&&Array.isArray(json.data))sources.push(...json.data);
+          if(json.success!==false&&Array.isArray(json.data)){sources.push(...json.data);authoritativeOrders=true;}
         }
       }catch(error){console.warn('[QMES] PQC work-order fetch',error);}
-      try{
-        const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
-        if(Array.isArray(cached))sources.push(...cached);
-      }catch(_){}
-      if(Array.isArray(workSharedRows))sources.push(...workSharedRows);
+      if(!authoritativeOrders){
+        try{const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');if(Array.isArray(cached))sources.push(...cached);}catch(_){}
+        if(Array.isArray(workSharedRows))sources.push(...workSharedRows);
+      }else{
+        workSharedRows=sources.slice();
+        try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(sources));}catch(_){}
+      }
+      pqcWorkOrderSources=sources;
       const normalized=value=>String(value??'').toUpperCase().replace(/[^A-Z0-9]/g,'');
       for(const lot of ['DBF2401','DBF2501']){
         if(rows.some(row=>normalized(row.lot)===lot))continue;
@@ -4501,6 +4540,14 @@ async function loadHistoricalInspectionRows(section,id){
         }
       }catch(error){console.warn('[QMES] PQC local draft overlay',error);}
     }
+    // Resolve every PQC row after draft overlays so stale local numbers cannot win.
+    if(id==='process'){
+      for(const row of rows){
+        const order=matchPqcWorkOrder(row,pqcWorkOrderSources);
+        if(order)row.workOrderNo=pqcWorkOrderNumber(order);
+      }
+    }
+    if(section._historicalRequest!==request||!section.isConnected)return;
     // PQC list: one visible row per inspection date + work order + production LOT.
     // Source records remain untouched; never delete or merge persisted measurements.
     let displayRows=rows;
@@ -4569,7 +4616,7 @@ async function loadHistoricalInspectionRows(section,id){
         const source={
           date:fields['검사일자']||get('검사일자'),
           inspector:fields['검사자']==='__manual__'?(detail?.inspectorManual||''):fields['검사자']||get('검사자'),
-          workOrder:detail?.workOrder||get('작업지시번호'),
+          workOrder:get('작업지시번호')||detail?.workOrder,
           product:fields['제품명']||get('제품명'),
           lot:fields['생산 LOT NO']||lot,
           process:fields['공정명']||'절연슬러리 제조'
@@ -5744,7 +5791,8 @@ function showRowDetail(id,row){
     if(currentOrder&&!options.has(currentOrder))options.set(currentOrder,{lot,product:get('제품명')});
     let initialOrder=currentOrder;
     if(!initialOrder){
-      for(const [no,meta] of options){if(meta.lot===lot){initialOrder=no;break;}}
+      const match=matchPqcWorkOrder({lot,product:get('제품명'),date:get('검사일자')},cachedOrders);
+      if(match)initialOrder=pqcWorkOrderNumber(match);
     }
     const orderOptions='<option value="">작업지시번호 선택</option>'+[...options].map(([no,meta])=>'<option value="'+safe(no)+'" data-lot="'+safe(meta.lot)+'" data-product="'+safe(meta.product)+'"'+(no===initialOrder?' selected':'')+'>'+safe(no)+'</option>').join('');
     const html='<div class="am-inline-edit-grid">'+[
@@ -5851,7 +5899,7 @@ function showRowDetail(id,row){
       });
       if(existingDraft.workOrder&&select){
         if(![...select.options].some(o=>o.value===existingDraft.workOrder))select.add(new Option(existingDraft.workOrder,existingDraft.workOrder));
-        select.value=existingDraft.workOrder;
+        select.value=currentOrder||existingDraft.workOrder;
       }
       if(existingDraft.inspectorManual&&inspectorManual)inspectorManual.value=existingDraft.inspectorManual;
       inspector?.dispatchEvent(new Event('change'));
@@ -6150,7 +6198,7 @@ function initStandardInspectionForm(type){
       applyOrder(selected);
     });
     lotInput?.addEventListener('change',()=>{
-      const order=orders.find(o=>normalized(o?.fields?.['생산 LOT NO'])===normalized(lotInput.value));
+      const order=matchPqcWorkOrder({lot:lotInput.value,product:inputs[3]?.value,date:inputs[0]?.value},orders);
       if(order&&orderSelect){orderSelect.value=String(order.fields?.['작업지시번호']||order.id);applyOrder(order);}
     });
     loadOrders();
