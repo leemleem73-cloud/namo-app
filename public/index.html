@@ -4070,9 +4070,10 @@ function renderSavedWorkOrders(){
   const target=readWorkOrders().map(x=>String(x?.id||''));
   target.forEach((id,i)=>{const row=[...tbody.querySelectorAll('tr[data-work-saved]')].find(r=>r.dataset.workSaved===id);if(row&&tbody.children[i]!==row)tbody.insertBefore(row,tbody.children[i]||null);});
 }
-async function saveWorkOrderForm(editId=''){
+async function saveWorkOrderForm(editId='',options={}){
   const form=document.querySelector('.work-form');
-  if(!form)return;
+  if(!form)return null;
+  const persistId=editId||form.dataset.workDispatchSavedId||'';
   const basic=[...form.querySelectorAll('.work-basic-grid .form-item')];
   const input=(label)=>basic.find(el=>el.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select')?.value.trim()||'';
   const lot=input('생산 LOT NO'),product=input('제품명');
@@ -4085,25 +4086,29 @@ async function saveWorkOrderForm(editId=''){
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
   const fields={'작업지시번호':id,'고객사':input('고객사명'),'제품명':product,'생산 LOT NO':lot,'설비명':input('설비명'),'작업자':input('작업자'),'계획수량':input('계획수량'),'작업기간':[input('작업 시작일'),input('작업 종료일')].filter(Boolean).join(' ~ '),'진행상태':input('진행상태')};
-  const savedId=editId||id;fields['작업지시번호']=savedId;
+  const savedId=persistId||id;fields['작업지시번호']=savedId;
   const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||''};
   if(record.productionType==='중간배치')record.intermediateBatch={kind:form.querySelector('#namoMidWorkKind')?.value||'',actualQty:form.querySelector('#namoMidProduced')?.value||''};
   if(typeof window.namoValidateIntermediateWorkorder==='function'){
-    const validation=await window.namoValidateIntermediateWorkorder({editId,rows,record});
+    const validation=await window.namoValidateIntermediateWorkorder({editId:persistId,rows,record});
     if(validation&&!validation.ok){toast(validation.message||'중간배치 연결 정보를 확인하세요.');return;}
   }
-  if(editId){const idx=orders.findIndex(x=>x.id===editId);if(idx<0){toast('수정할 작업지시서를 찾을 수 없습니다.');return;}orders[idx]=record;}
+  if(persistId){const idx=orders.findIndex(x=>x.id===persistId);if(idx<0){toast('수정할 작업지시서를 찾을 수 없습니다.');return;}orders[idx]=record;}
   else orders.unshift(record);
-  try{await workApi(editId?'PUT':'POST',editId?'/'+encodeURIComponent(savedId):'',record);}
+  try{const response=await workApi(persistId?'PUT':'POST',persistId?'/'+encodeURIComponent(savedId):'',record);if(!persistId&&response.data?.created===false)throw new Error('작업지시번호 중복');}
   catch(e){toast('공용 서버 저장 실패: '+e.message);return;}
   workSharedRows=orders;
   try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}catch(_e){}
-  const shouldPrint=form.dataset.workPrintAfterSave==='1';
+  form.dataset.workDispatchSavedId=savedId;
+  const idBox=form.querySelector('#workOrderNo');if(idBox)idBox.value=savedId;
+  const shouldPrint=!options.keepOpen&&form.dataset.workPrintAfterSave==='1';
   const reservedPrintWindow=window.__namoWorkPrintWindow||null;
-  closeModal();renderSavedWorkOrders();toast('작업지시서가 공용 서버에 저장되었습니다.');
+  if(!options.keepOpen)closeModal();renderSavedWorkOrders();toast('작업지시서가 공용 서버에 저장되었습니다.');
   if(shouldPrint&&typeof window.namoPrintWorkOrder==='function')window.namoPrintWorkOrder(record,reservedPrintWindow);
-  window.__namoWorkPrintWindow=null;
+  if(!options.keepOpen)window.__namoWorkPrintWindow=null;
+  return savedId;
 }
+window.namoSaveWorkOrderForDispatch=(id='')=>saveWorkOrderForm(id,{keepOpen:true});
 function wireWorkColumnResize(section){
   const wrap=section?.querySelector('.module-body'),table=wrap?.querySelector('table');
   if(!table||table.dataset.workResizeWired)return;
