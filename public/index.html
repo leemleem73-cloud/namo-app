@@ -1818,6 +1818,16 @@ thead{background:#f4f7fa}
  font-size:10.5px!important;font-weight:800!important;line-height:1.3!important;
  color:#293c54!important;text-align:center!important;
 }
+</style><style id="pqc-remarks-match-approval-height-20261014">
+/* Match the remarks row to the 72px electronic approval row without changing its content. */
+.std-inspection.premium[data-inspection-type="process"] .std-premium-remarks{
+ min-height:72px!important;height:72px!important;
+ grid-template-columns:150px minmax(0,1fr)!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .std-premium-remarks textarea{
+ min-height:0!important;height:100%!important;max-height:72px!important;
+ box-sizing:border-box!important;resize:none!important;overflow-y:auto!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
