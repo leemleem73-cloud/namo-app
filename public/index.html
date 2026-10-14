@@ -2010,6 +2010,24 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
     pending=Math.max(0,pending-1);
     if(!pending){clearTimeout(showTimer);hideTimer=setTimeout(function(){if(overlay)overlay.classList.remove('is-visible');},Math.max(0,550-(Date.now()-visibleAt)));}
   }
+  // namo-refresh-loader-hook: display the same mascot while the page restores its UI.
+  function showRefreshLoading(){
+    var el=getOverlay();
+    if(!el)return;
+    el.classList.add('is-visible');
+    visibleAt=Date.now();
+    var began=visibleAt;
+    function finish(){
+      var delay=Math.max(0,650-(Date.now()-began));
+      setTimeout(function(){if(pending===0&&overlay)overlay.classList.remove('is-visible');},delay);
+    }
+    if(document.readyState==='complete')finish();
+    else window.addEventListener('load',finish,{once:true});
+    // Never trap the user if a resource stalls.
+    setTimeout(function(){if(pending===0&&overlay)overlay.classList.remove('is-visible');},5000);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showRefreshLoading,{once:true});
+  else showRefreshLoading();
   window.namoOperationLoading={start:start,stop:stop};
   if(typeof window.fetch==='function'){
     var nativeFetch=window.fetch;
