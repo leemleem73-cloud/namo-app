@@ -47,7 +47,8 @@ function installWorkDispatchRoutes(app){
   app.get('/api/qmes-work-dispatch/departments',login,async(req,res)=>{
     try{
       const result=await pool.query(
-        "SELECT TRIM(department) AS name,COUNT(*)::int AS members "+
+        "SELECT TRIM(department) AS name,COUNT(*)::int AS members, "+
+        "JSON_AGG(JSON_BUILD_OBJECT('id',id,'name',name,'title',COALESCE(title,'')) ORDER BY name) AS staff "+
         "FROM users WHERE status='APPROVED' AND NULLIF(TRIM(department),'') IS NOT NULL "+
         "GROUP BY TRIM(department) ORDER BY TRIM(department)"
       );
@@ -64,12 +65,19 @@ function installWorkDispatchRoutes(app){
     const departments=Array.isArray(raw) ? [...new Set(raw.map(trim).filter(Boolean))] : [];
     const note=trim(req.body && req.body.note);
     const requestKey=trim(req.body && req.body.requestKey);
+    const sendMode=trim(req.body && req.body.sendMode)||'department';
+    const selectedUserIds=Array.isArray(req.body && req.body.recipientUserIds)
+      ? [...new Set(req.body.recipientUserIds.map(trim).filter(Boolean))] : [];
     if(!/^WO-[A-Za-z0-9_-]{6,60}$/.test(documentId))
       return fail(res,400,'유효한 작업지시번호가 필요합니다.');
     if(!departments.length || departments.length>12 || departments.some(x=>x.length>60))
       return fail(res,400,'수신부서를 1개 이상 선택해 주세요.');
     if(note.length>500 || !/^[A-Za-z0-9_-]{10,100}$/.test(requestKey))
       return fail(res,400,'발송정보를 확인해 주세요.');
+    if(!['department','staff'].includes(sendMode) || selectedUserIds.length>200 ||
+       (sendMode==='staff' && !selectedUserIds.length) ||
+       selectedUserIds.some(id=>!/^[a-f0-9-]{36}$/i.test(id)))
+      return fail(res,400,'발송 대상 직원 선택을 확인해 주세요.');
     let client;
     try{
       await ensureSchema();
@@ -88,7 +96,16 @@ function installWorkDispatchRoutes(app){
       );
       const grouped=new Map(departments.map(dept=>[dept,[]]));
       users.rows.forEach(user=>{if(grouped.has(user.department))grouped.get(user.department).push(user.id);});
-      const missing=departments.filter(dept=>!grouped.get(dept).length);
+      const allowed=new Set(users.rows.map(user=>String(user.id)));
+      if(sendMode==='staff' && selectedUserIds.some(id=>!allowed.has(id))){
+        await client.query('ROLLBACK');
+        return fail(res,409,'선택한 직원이 승인된 수신부서 직원등록현황과 일치하지 않습니다.');
+      }
+      const selected=new Set(selectedUserIds);
+      const recipients=new Map(departments.map(dept=>[
+        dept,sendMode==='staff'?grouped.get(dept).filter(id=>selected.has(String(id))):grouped.get(dept)
+      ]));
+      const missing=departments.filter(dept=>!recipients.get(dept).length);
       if(missing.length){
         await client.query('ROLLBACK');
         return fail(res,409,'수신 가능한 승인 사용자가 없는 부서: '+missing.join(', '));
@@ -96,7 +113,7 @@ function installWorkDispatchRoutes(app){
       let recipientTotal=0;
       const dispatchIds=[];
       for(const department of departments){
-        const recipientIds=grouped.get(department);
+        const recipientIds=recipients.get(department);
         const inserted=await client.query(
           'INSERT INTO qmes_work_order_dispatches '+
           '(work_order_id,department,request_key,sender_user_id,sender_name,note,recipient_count) '+
