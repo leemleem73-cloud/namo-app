@@ -82,6 +82,9 @@ app.use(
   })
 );
 
+// Register work-order dispatch routes after session middleware.
+require('./qmes-work-dispatch-20261014.js').installWorkDispatchRoutes(app);
+
 // Register PostgreSQL inventory APIs even when production starts with `node server.js` directly.
 require('./inventory-server').installInventoryRoutes(app);
 
