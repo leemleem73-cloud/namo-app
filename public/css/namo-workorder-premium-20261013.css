@@ -138,10 +138,10 @@
 #namo-work-detail .nwd-grid,#namo-work-detail .nwd-tabs,#namo-work-detail .nwd-content>table,#namo-work-detail .nwd-content>div>table{max-width:100%;box-sizing:border-box}
 #work .work-list-table td:last-child .btn{margin-right:3px}
 
-/* Work order remarks: Print / Edit / Delete aligned in a single line. */
-#work .work-list-table th:last-child,#work .work-list-table td:last-child{min-width:194px!important;padding:6px 10px!important}
-#work .work-list-table .work-row-actions{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;max-width:100%}
-#work .work-list-table .work-row-actions .btn{height:28px!important;min-width:43px;padding:0 8px!important;margin:0!important;border-radius:5px!important}
+/* Work order remarks: give Print / Edit / Delete proper breathing room. */
+#work .work-list-table th:last-child,#work .work-list-table td:last-child{min-width:220px!important;padding:8px 16px!important;box-sizing:border-box!important;text-align:center!important}
+#work .work-list-table .work-row-actions{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;white-space:nowrap!important;max-width:100%!important;vertical-align:middle!important}
+#work .work-list-table .work-row-actions .btn{height:30px!important;min-width:48px!important;padding:0 9px!important;margin:0!important;border-radius:5px!important;font-size:11.5px!important;line-height:1!important}
 #work .work-list-table .work-row-actions .work-order-print-btn{background:#e7f2ff!important;color:#145993!important;border:1px solid #b9d3ed!important}
 #work .work-list-table .work-row-actions .work-order-print-btn:hover{background:#d9eaff!important}
 
