@@ -4293,10 +4293,29 @@ async function loadHistoricalInspectionRows(section,id){
         }
       }catch(error){console.warn('[QMES] PQC local draft overlay',error);}
     }
-    rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+    // PQC list: one visible row per inspection date + work order + production LOT.
+    // Source records remain untouched; never delete or merge persisted measurements.
+    let displayRows=rows;
+    if(id==='process'){
+      const grouped=new Map();
+      const norm=value=>String(value??'').trim().toUpperCase();
+      for(const row of rows){
+        const date=norm(row.date),order=norm(row.workOrderNo||row.orderNo),lot=norm(row.lot);
+        // Without a usable date/LOT, do not collapse unrelated records.
+        const valid=date&&date!=='-'&&lot&&lot!=='-';
+        const key=valid?[date,order,lot].join('||'):'unique:'+String(row.id||grouped.size);
+        const existing=grouped.get(key);
+        if(!existing){grouped.set(key,row);continue;}
+        const quality=r=>[r.workOrderNo||r.orderNo,r.inspector,r.product,r.judge]
+          .filter(v=>v&&v!=='-'&&v!=='대기'&&v!=='검사대기').length;
+        if(quality(row)>quality(existing))grouped.set(key,row);
+      }
+      displayRows=[...grouped.values()];
+    }
+    displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
-    tbody.innerHTML=rows.length?rows.map((row,i)=>{
+    tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
         :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
@@ -4311,10 +4330,10 @@ async function loadHistoricalInspectionRows(section,id){
       }).join('');
       return '<tr class="data-row" tabindex="0"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
-    section._inspectionRowsLoaded=rows.length;
+    section._inspectionRowsLoaded=displayRows.length;
     section._inspectionBulkRefresh?.();
-    const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+rows.length+'건 표시';
-    const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=rows.length;
+    const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
+    const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=displayRows.length;
     if(id==='process'){
       tbody.querySelectorAll('.pqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{
         event.stopPropagation();
