@@ -4292,6 +4292,20 @@ async function loadHistoricalInspectionRows(section,id){
         rows.push({...row,__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
       });
     });
+    // Synchronize persisted PQC measurements to the existing detail/report reader.
+    if(id==='process'){
+      try{
+        const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
+        for(const row of rows){
+          if(!row.measurements||!row.detailFields)continue;
+          const key=String(row.lot||'').trim().toUpperCase();
+          if(!key)continue;
+          drafts[key]={fields:row.detailFields,measurements:row.measurements,
+            workOrder:row.workOrderNo||'',inspectorManual:row.inspector||'',savedAt:new Date().toISOString()};
+        }
+        localStorage.setItem('namo_qmes_pqc_detail_drafts_v1',JSON.stringify(drafts));
+      }catch(error){console.warn('[PQC] persisted detail cache',error);}
+    }
     // Read-only PQC linkage: never insert fabricated inspection results.
     if(id==='process'){
       const sources=[];
