@@ -3995,9 +3995,9 @@ function wireWorkColumnResize(section){
   if(!table||table.dataset.workResizeWired)return;
   table.dataset.workResizeWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[50,220,120,145,180,100,135,115,130,110,140];
-  const mins=[44,140,85,100,130,75,85,85,90,85,125];
-  const key='namo-work-column-widths-v1',labels=headers.map(x=>x.textContent.trim());
+  const defaults=[50,205,115,142,176,96,134,112,140,106,240];
+  const mins=[44,138,86,102,130,75,88,85,92,82,236];
+  const key='namo-work-column-widths-v2',labels=headers.map(x=>x.textContent.trim());
   let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
   const valid=saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length;
   let custom=!!valid, widths=[],baseline=null,containerWidth=0;
@@ -4005,9 +4005,9 @@ function wireWorkColumnResize(section){
   const cols=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
   table.insertBefore(group,table.firstChild);
   const handles=[];
-  // Limit only the work-order remarks/actions column and reuse the extra width in existing columns.
+  // Balance every work-order column while reserving enough width for Print / Edit / Delete.
   function fitRemarks(w){
-    const last=w.length-1, cap=128;
+    const last=w.length-1, cap=240;
     if(last<1||w[last]<=cap)return w;
     let free=w[last]-cap;w[last]=cap;
     const selected=[1,2,3,4,6,8].filter(i=>i<last);
@@ -4033,7 +4033,7 @@ function wireWorkColumnResize(section){
     // wide scrollbar on standard desktop screens. Only scroll on truly narrow screens.
     const minimumTotal=mins.reduce((a,b)=>a+b,0);
     const target=Math.max(minimumTotal,available);
-    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,140):n);
+    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,236):n);
     const minimumWidth=minimums.reduce((a,b)=>a+b,0);
     const usable=Math.max(target,minimumWidth);
     const elastic=source.map((n,i)=>Math.max(0,n-minimums[i]));
