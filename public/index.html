@@ -4541,13 +4541,28 @@ function wireInspectionBulkSelect(section,id){
     targets.sort((x,y)=>x.recordKey===y.recordKey?y.rowIndex-x.rowIndex:x.recordKey.localeCompare(y.recordKey));
     for(const target of targets){
       try{
-        const response=await fetch('/api/qmes-sync/pqc/delete-row',{
+        // Use the production QMES sync API to tombstone the source row.
+        // Do not rely on an undeployed custom delete endpoint.
+        const sourceResponse=await fetch('/api/qmes-sync/pqc?_qmesFresh='+Date.now(),{
+          credentials:'same-origin',cache:'no-store'
+        });
+        const sourceResult=await sourceResponse.json().catch(()=>({}));
+        if(!sourceResponse.ok||sourceResult.success===false||!Array.isArray(sourceResult.data))
+          throw Error(sourceResult.message||'원본 검사 기록 조회 실패');
+        const source=sourceResult.data.find(item=>String(item.record_key)===target.recordKey);
+        if(!source)throw Error('원본 검사 기록을 찾을 수 없습니다.');
+        const payload=typeof source.payload==='string'?JSON.parse(source.payload):source.payload;
+        if(!Array.isArray(payload?.rows)||String(payload.rows[target.rowIndex]?.id??'')!==target.rowId)
+          throw Error('검사 기록이 변경되었습니다. 목록을 새로고침해 주세요.');
+        const updatedRows=payload.rows.slice();
+        updatedRows.splice(target.rowIndex,1);
+        const response=await fetch('/api/qmes-sync/pqc',{
           method:'POST',credentials:'same-origin',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(target)
+          body:JSON.stringify({key:target.recordKey,payload:{...payload,rows:updatedRows}})
         });
         const result=await response.json().catch(()=>({}));
-        if(!response.ok||!result.success)throw Error(result.message||'삭제 실패');
+        if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
         deleted++;
       }catch(error){toast('삭제 중단: '+error.message);break;}
     }
