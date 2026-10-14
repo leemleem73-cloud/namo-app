@@ -7,6 +7,7 @@ const pool = new Pool({
 });
 let schemaPromise = null;
 const trim = value => String(value == null ? '' : value).trim();
+const excludedDept = name => ['GUEST','대표'].includes(trim(name).toUpperCase());
 const ok = (res,data,message) => res.json({success:true,data:data == null ? null : data,message:message||'OK'});
 const fail = (res,code,message) => res.status(code).json({success:false,message,data:null});
 const login = (req,res,next) => req.session && req.session.user && req.session.user.id
@@ -50,6 +51,7 @@ function installWorkDispatchRoutes(app){
         "SELECT TRIM(department) AS name,COUNT(*)::int AS members, "+
         "JSON_AGG(JSON_BUILD_OBJECT('id',id,'name',name,'title',COALESCE(title,'')) ORDER BY name) AS staff "+
         "FROM users WHERE status='APPROVED' AND NULLIF(TRIM(department),'') IS NOT NULL "+
+        "AND UPPER(TRIM(department)) NOT IN ('GUEST','대표') "+
         "GROUP BY TRIM(department) ORDER BY TRIM(department)"
       );
       ok(res,result.rows);
@@ -70,7 +72,7 @@ function installWorkDispatchRoutes(app){
       ? [...new Set(req.body.recipientUserIds.map(trim).filter(Boolean))] : [];
     if(!/^WO-[A-Za-z0-9_-]{6,60}$/.test(documentId))
       return fail(res,400,'유효한 작업지시번호가 필요합니다.');
-    if(!departments.length || departments.length>12 || departments.some(x=>x.length>60))
+    if(!departments.length || departments.length>12 || departments.some(x=>x.length>60 || excludedDept(x)))
       return fail(res,400,'수신부서를 1개 이상 선택해 주세요.');
     if(note.length>500 || !/^[A-Za-z0-9_-]{10,100}$/.test(requestKey))
       return fail(res,400,'발송정보를 확인해 주세요.');
@@ -91,7 +93,8 @@ function installWorkDispatchRoutes(app){
       if(!order.rowCount){await client.query('ROLLBACK');return fail(res,404,'먼저 작업지시서를 저장해 주세요.');}
       const users=await client.query(
         "SELECT id,TRIM(department) AS department FROM users WHERE status='APPROVED' "+
-        "AND TRIM(department)=ANY($1::text[])",
+        "AND UPPER(TRIM(department)) NOT IN ('GUEST','대표') "+
+        "AND TRIM(department)=ANY($1::text[])"
         [departments]
       );
       const grouped=new Map(departments.map(dept=>[dept,[]]));
