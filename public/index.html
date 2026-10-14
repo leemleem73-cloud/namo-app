@@ -4875,6 +4875,28 @@ function printInspectionReport(title){
  .report-sheet.report-incoming .report-basic tr:last-child>*{border-bottom:0!important}
  .report-sheet.report-incoming .report-section-title{border-top:0!important;border-left:0!important;border-right:0!important;border-bottom:1px solid #d4dce5!important}
 }
+
+/* IQC border cleanup: consistent pale outer edges and no inset dark outlines */
+@media print{
+ .report-sheet,.report-sheet.report-incoming{border:1px solid #d4dce5!important;outline:0!important;box-shadow:none!important}
+ .report-sheet *, .report-sheet *::before,.report-sheet *::after{outline:0!important;box-shadow:none!important}
+ .report-sheet .report-doc-head,.report-sheet .report-meta,.report-sheet .report-summary,.report-sheet .report-support,.report-sheet .report-support-row,.report-sheet .report-sign,.report-sheet .report-footer{
+  border-left:0!important;border-right:0!important;border-top:0!important;border-color:#d4dce5!important;
+ }
+ .report-sheet .report-support-row .label,.report-sheet .report-support-row .value,
+ .report-sheet .report-summary>div,.report-sheet .report-meta>div,
+ .report-sheet .report-doc-head>div,.report-sheet .report-sign>div{
+  border-color:#d4dce5!important;
+ }
+ .report-sheet .report-support-row .value{border-left:0!important;border-right:0!important}
+ .report-sheet .report-support-row .label{border-left:0!important}
+ .report-sheet .report-support-row:last-child{border-bottom:0!important}
+ .report-sheet .report-footer{border-bottom:0!important}
+ .report-sheet .report-basic,.report-sheet .report-inspection{border-left:0!important;border-right:0!important}
+ .report-sheet .report-basic tr>:first-child,.report-sheet .report-inspection tr>:first-child{border-left:0!important}
+ .report-sheet .report-basic tr>:last-child,.report-sheet .report-inspection tr>:last-child{border-right:0!important}
+ .report-sheet .report-support-row,.report-sheet .report-summary,.report-sheet .report-footer{width:100%!important}
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
