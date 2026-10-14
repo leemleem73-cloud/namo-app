@@ -5527,12 +5527,24 @@ function showRowDetail(id,row){
           }
           saveButton.disabled=true;
           try{
-            const response=await fetch('/api/qmes-sync/pqc/save-detail',{
+            // Use the existing, deployed QMES sync API (not a separate new route).
+            const date=String(fields['검사일자']||'').trim();
+            const order=String(select?.value||'').trim();
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!order){
+              throw Error('검사일자와 작업지시번호를 확인해 주세요.');
+            }
+            const recordKey='detail:'+encodeURIComponent(date)+'|'+encodeURIComponent(order)+'|'+encodeURIComponent(key);
+            const record={id:recordKey,date,workOrderNo:order,
+              product:String(fields['제품명']||''),lot:String(fields['생산 LOT NO']||''),
+              stage:'PQC',check:'외관 / 입도 / 점도 / 고형분',
+              judge:String(fields['검사합부']||'대기'),inspector:chosenInspector||'',
+              remarks:String(fields['비고']||''),measurements,detailFields:fields};
+            const response=await fetch('/api/qmes-sync/pqc',{
               method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({fields,measurements,workOrder:select?.value||'',inspector:chosenInspector})
+              body:JSON.stringify({key:recordKey,payload:{rows:[record]}})
             });
             const result=await response.json().catch(()=>({}));
-            if(!response.ok||!result.success)throw Error(result.message||'서버 저장 실패');
+            if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
             toast('공정검사 저장 완료 · 목록 및 성적서에 반영됩니다.');
             closeModal();
             const section=document.getElementById('process');
