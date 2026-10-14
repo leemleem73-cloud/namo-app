@@ -275,20 +275,33 @@ function scan(){
  });update()
 }
 function print(){
- const win=window.open('','_blank','width=980,height=760,scrollbars=yes');
- if(!win){alert('인쇄 팝업을 허용해 주세요.');return}
  try{
  const saved=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
- if(!docs.length){win.close();alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
+ if(!docs.length){alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
  const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
- if(parts.length!==docs.length){win.close();alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
- let html=pages[0].replace(parts[0],parts.join('\\n'));
- html=html.replace('</style>','.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}\\n</style>');
+ if(parts.length!==docs.length){alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
+ let html=pages[0].replace(parts[0],parts.join('\n'));
+ html=html.replace('</style>','@media print{.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}}\n</style>');
  html=html.replace(/<title>[^<]*<\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
- win.document.open();win.document.write(html);win.document.close();
- }catch(error){win.close();console.error('[QMES bulk print]',error);alert('선택 인쇄 오류: '+error.message)}
+ html=html.replace(/<script>window\.addEventListener\('load'[\s\S]*?<\/script>/,'');
+ const old=document.getElementById('qmes-bulk-print-frame');if(old)old.remove();
+ const frame=document.createElement('iframe');frame.id='qmes-bulk-print-frame';frame.setAttribute('aria-hidden','true');
+ frame.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
+ let printed=false;
+ const cleanup=()=>{if(frame.isConnected)frame.remove()};
+ const expiry=setTimeout(cleanup,120000);
+ frame.addEventListener('load',()=>{
+  if(printed||!frame.contentDocument?.querySelector('.paper'))return;
+  printed=true;
+  const w=frame.contentWindow;
+  w.addEventListener('afterprint',()=>{clearTimeout(expiry);setTimeout(cleanup,600)},{once:true});
+  Promise.resolve(frame.contentDocument.fonts?.ready).then(()=>setTimeout(()=>{try{w.focus();w.print()}catch(err){clearTimeout(expiry);cleanup();alert('인쇄 미리보기 오류: '+err.message)}},200));
+ });
+ document.body.appendChild(frame);
+ frame.srcdoc=html;
+ }catch(error){console.error('[QMES bulk print]',error);alert('선택 인쇄 오류: '+error.message)}
 }
 async function remove(){
  if(busy)return;
