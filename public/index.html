@@ -4421,7 +4421,7 @@ async function loadHistoricalInspectionRows(section,id){
   const request=(section._historicalRequest||0)+1;section._historicalRequest=request;
   const kind=id==='process'?'pqc':'oqc';
   try{
-    const response=await fetch('/api/qmes-sync/'+kind+'?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+    const response=await fetch('/api/qmes-sync/'+kind+'?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
     if(!response.ok)throw Error('서버 응답 '+response.status);
     const result=await response.json();
     if(result.success===false||!Array.isArray(result.data))throw Error(result.message||'기록 응답 형식 오류');
@@ -4456,7 +4456,7 @@ async function loadHistoricalInspectionRows(section,id){
     if(id==='process'){
       const sources=[];
       try{
-        const response=await fetch('/api/qmes/work-orders?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+        const response=await fetch('/api/qmes/work-orders?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
         if(response.ok){
           const json=await response.json();
           if(json.success!==false&&Array.isArray(json.data))sources.push(...json.data);
@@ -4621,6 +4621,23 @@ function qmesBulkPrintButton(section,id){
  };
  return btn;
 }
+async function deleteSelectedPqcRow(target){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const response=await fetch('/api/qmes-sync/pqc/delete-row',{
+      method:'POST',credentials:'same-origin',signal:controller.signal,
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(target)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||result.success!==true)throw Error(result.message||('공정검사 삭제 실패 · 서버 응답 '+response.status));
+  }catch(error){
+    if(controller.signal.aborted)throw Error('서버 응답이 지연됐습니다. 목록에서 삭제 여부를 확인한 뒤 다시 시도해 주세요.');
+    throw error;
+  }finally{clearTimeout(timer);}
+}
+
 function wireInspectionBulkSelect(section,id){
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
@@ -4637,8 +4654,8 @@ function wireInspectionBulkSelect(section,id){
   function update(){
     const boxes=[...tbody.querySelectorAll('.iqc-select-row')];
     const selected=boxes.filter(box=>box.checked);
-    button.hidden=!selected.length;button.disabled=!selected.length;
-    button.textContent='선택 삭제 ('+selected.length+')';
+    button.hidden=!selected.length;button.disabled=!selected.length||Boolean(section._inspectionDeleting);
+    button.textContent=section._inspectionDeleting?'삭제 처리 중...':'선택 삭제 ('+selected.length+')';
     if(printBtn){printBtn.hidden=!selected.length;printBtn.disabled=!selected.length;printBtn.textContent='선택 인쇄 ('+selected.length+')';}
     head.checked=boxes.length>0&&selected.length===boxes.length;
     head.indeterminate=selected.length>0&&selected.length<boxes.length;
@@ -4685,6 +4702,7 @@ function wireInspectionBulkSelect(section,id){
   tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
   head.addEventListener('change',()=>{tbody.querySelectorAll('.iqc-select-row').forEach(box=>{box.checked=head.checked;});update();});
   button.addEventListener('click',async()=>{
+    if(section._inspectionDeleting)return;
     const rows=[...tbody.querySelectorAll('tr.data-row')].filter(row=>row.querySelector('.iqc-select-row:checked'));
     if(!rows.length)return;
     if(id!=='process'){toast('출하검사 삭제는 아직 지원하지 않습니다.');return;}
@@ -4692,40 +4710,27 @@ function wireInspectionBulkSelect(section,id){
     if(targets.some(t=>!t.recordKey||!t.rowId||!Number.isInteger(t.rowIndex)||t.rowIndex<0)){
       toast('원본 기록을 확인할 수 없는 항목이 있습니다. 삭제하지 않았습니다.');return;
     }
-    if(!await confirmIqcBulkDelete(rows.length,'공정검사'))return;
-    button.disabled=true;
-    let deleted=0;
-    // Descending indices keep remaining row indices stable within each record.
-    targets.sort((x,y)=>x.recordKey===y.recordKey?y.rowIndex-x.rowIndex:x.recordKey.localeCompare(y.recordKey));
-    for(const target of targets){
-      try{
-        // Use the production QMES sync API to tombstone the source row.
-        // Do not rely on an undeployed custom delete endpoint.
-        const sourceResponse=await fetch('/api/qmes-sync/pqc?_qmesFresh='+Date.now(),{
-          credentials:'same-origin',cache:'no-store'
-        });
-        const sourceResult=await sourceResponse.json().catch(()=>({}));
-        if(!sourceResponse.ok||sourceResult.success===false||!Array.isArray(sourceResult.data))
-          throw Error(sourceResult.message||'원본 검사 기록 조회 실패');
-        const source=sourceResult.data.find(item=>String(item.record_key)===target.recordKey);
-        if(!source)throw Error('원본 검사 기록을 찾을 수 없습니다.');
-        const payload=typeof source.payload==='string'?JSON.parse(source.payload):source.payload;
-        if(!Array.isArray(payload?.rows)||String(payload.rows[target.rowIndex]?.id??'')!==target.rowId)
-          throw Error('검사 기록이 변경되었습니다. 목록을 새로고침해 주세요.');
-        const updatedRows=payload.rows.slice();
-        updatedRows.splice(target.rowIndex,1);
-        const response=await fetch('/api/qmes-sync/pqc',{
-          method:'POST',credentials:'same-origin',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({key:target.recordKey,payload:{...payload,rows:updatedRows}})
-        });
-        const result=await response.json().catch(()=>({}));
-        if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
+    section._inspectionDeleting=true;
+    let deleted=0,errorMessage='',loadingStarted=false;
+    try{
+      if(!await confirmIqcBulkDelete(rows.length,'공정검사'))return;
+      update();
+      window.namoOperationLoading?.start();loadingStarted=true;
+      targets.sort((x,y)=>x.recordKey===y.recordKey?y.rowIndex-x.rowIndex:x.recordKey.localeCompare(y.recordKey));
+      for(const target of targets){
+        await deleteSelectedPqcRow(target);
         deleted++;
-      }catch(error){toast('삭제 중단: '+error.message);break;}
+      }
+    }catch(error){errorMessage=error.message||'공정검사 삭제 실패';}
+    finally{
+      if(loadingStarted)window.namoOperationLoading?.stop();
+      section._inspectionDeleting=false;
+      update();
     }
+    // Refresh once after the batch; background reads must not restart the loader.
     await loadHistoricalInspectionRows(section,id);
-    if(deleted)toast('공정검사 '+deleted+'건 삭제 완료');
+    if(errorMessage)toast((deleted?'공정검사 '+deleted+'건 삭제 완료 · ':'')+'삭제 중단: '+errorMessage);
+    else if(deleted)toast('공정검사 '+deleted+'건 삭제 완료');
   });
   section._inspectionBulkRefresh=()=>{
     allRows=[...tbody.querySelectorAll('tr.data-row')];current=1;render();
