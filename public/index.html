@@ -6196,6 +6196,14 @@ if(!restoreQmesPage()){
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
 document.documentElement.removeAttribute('data-qmes-pending-page');
 
+// Clicking a collapsed sidebar icon must activate that business module directly.
+document.querySelectorAll('#sidebar .menu[data-page] > .ico').forEach(icon=>{
+  icon.addEventListener('click',function(event){
+    event.stopPropagation();
+    const menu=icon.closest('.menu[data-page]');
+    if(menu)menu.click();
+  });
+});
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
   // Keep the icon rail compact after every successful page selection.
