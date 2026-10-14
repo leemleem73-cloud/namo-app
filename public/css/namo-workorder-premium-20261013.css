@@ -64,24 +64,24 @@
 #namo-work-inquiry .nwi-period-trigger{height:38px;width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:0 11px;background:#fff;color:#263b53;border:1px solid #bdcddd;border-radius:7px;cursor:pointer;font-size:13px}
 #namo-work-inquiry .nwi-period-trigger>.nwi-period-value{flex:1 1 auto!important;min-width:0!important;width:auto!important;white-space:nowrap!important;text-align:left!important;overflow:hidden!important;line-height:1.2!important}
 #namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{flex:0 0 24px!important;min-width:24px!important;width:24px!important;white-space:nowrap!important;text-align:center!important;font-size:21px;color:#6f8398}
-#namo-work-inquiry .nwi-period-popup{position:absolute;z-index:9999;width:min(650px,calc(100vw - 100px));padding:16px;background:white;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2)}
+#namo-work-inquiry .nwi-period-popup{position:absolute;z-index:9999;box-sizing:border-box;width:min(490px,calc(100vw - 20px));max-height:calc(100vh - 16px);overflow:auto;padding:11px;background:#fff;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2);color:#263d55;font-size:12px}
 #namo-work-inquiry .nwi-period-popup[hidden]{display:none!important}
-#namo-work-inquiry .nwi-period-presets{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-bottom:12px}
-#namo-work-inquiry .nwi-period-preset{min-height:32px;padding:5px 2px;border:1px solid #d5dce5;background:#fff;border-radius:2px;color:#33465d;font-family:inherit;font-size:12px;line-height:1.2;cursor:pointer;white-space:nowrap}
+#namo-work-inquiry .nwi-period-presets{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;margin-bottom:9px}
+#namo-work-inquiry .nwi-period-preset{min-height:27px;padding:3px 1px;border:1px solid #d5dce5;background:#fff;border-radius:2px;color:#33465d;font-family:inherit;font-size:12px;line-height:1.2;cursor:pointer;white-space:nowrap}
 #namo-work-inquiry .nwi-period-preset:hover,#namo-work-inquiry .nwi-period-preset:focus-visible{border-color:#1688ea;background:#eaf4ff;color:#126fae}
-#namo-work-inquiry .nwi-period-months{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:1px solid #e0e7ef;padding-left:16px}
-#namo-work-inquiry .nwi-period-month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;color:#243a54;font-size:18px}
-#namo-work-inquiry .nwi-period-month-head button{border:0;background:transparent;color:#667b90;font-size:27px;cursor:pointer}
-#namo-work-inquiry .nwi-period-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
-#namo-work-inquiry .nwi-period-days b{font-size:12px;padding:6px 0;color:#65788b}
-#namo-work-inquiry .nwi-period-days button{min-height:34px;font-size:13px;background:transparent;border:0;cursor:pointer;border-radius:2px;color:#30455e}
+#namo-work-inquiry .nwi-period-months{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#namo-work-inquiry .nwi-period-month+.nwi-period-month{border-left:1px solid #e0e7ef;padding-left:9px}
+#namo-work-inquiry .nwi-period-month-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px;color:#243a54;font-size:12px}
+#namo-work-inquiry .nwi-period-month-head button{border:1px solid #d4e0ec;border-radius:4px;width:24px;height:24px;background:#fff;color:#667b90;font-size:18px;cursor:pointer}
+#namo-work-inquiry .nwi-period-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+#namo-work-inquiry .nwi-period-days b{font-size:11px;padding:7px 0;color:#72849a}
+#namo-work-inquiry .nwi-period-days button{min-height:25px;padding:2px 0;font-size:12px;background:#fff;border:1px solid transparent;cursor:pointer;border-radius:3px;color:#30455e}
 #namo-work-inquiry .nwi-period-days button:hover,#namo-work-inquiry .nwi-period-days button.between{background:#e4f1ff}
 #namo-work-inquiry .nwi-period-days button.selected{background:#1688ea;color:#fff}
 #namo-work-inquiry .nwi-period-days button:nth-child(7n+1){color:#dc4545}
 #namo-work-inquiry .nwi-period-days button.selected:nth-child(7n+1){color:#fff}
-#namo-work-inquiry .nwi-period-footer{border-top:1px solid #e1e8f0;margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;color:#63788e;font-size:12px}
-#namo-work-inquiry .nwi-period-footer button{padding:7px 12px}
+#namo-work-inquiry .nwi-period-footer{border-top:1px solid #e1e8f0;margin-top:9px;padding-top:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:#63788e;font-size:12px}
+#namo-work-inquiry .nwi-period-footer button{padding:8px 13px}
 
 
 /* Premium work-order registration/editor (the other QMES modules are unaffected). */
