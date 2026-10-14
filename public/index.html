@@ -5489,22 +5489,15 @@ function showRowDetail(id,row){
       inspector?.dispatchEvent(new Event('change'));
     }
     refreshPqcJudges();
-    // The visible footer save button is moved from the detail pane, not #modalSave.
-    // Route it through the same validated save handler below.
-    const visiblePqcSave=workspaceFoot.querySelector('[data-am-save]');
-    if(visiblePqcSave){
-      visiblePqcSave.addEventListener('click',e=>{
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        document.getElementById('modalSave')?.click();
-      },true);
-    }
-    const saveButton=document.getElementById('modalSave');
+    // Attach directly to the real footer button: the old #modalSave was removed
+    // by workspaceFoot.replaceChildren() when the detail actions were relocated.
+    const saveButton=workspaceFoot.querySelector('[data-am-save]');
     if(saveButton){
-      const replacement=saveButton.cloneNode(true);
-      saveButton.replaceWith(replacement);
-      replacement.textContent='저장';
-      replacement.addEventListener('click',async()=>{
+      saveButton.textContent='저장';
+      saveButton.onclick=null;
+      saveButton.addEventListener('click',async(event)=>{
+        event.preventDefault();
+        event.stopImmediatePropagation();
         const fields={};
         document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
         const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
@@ -5532,7 +5525,7 @@ function showRowDetail(id,row){
             if(inspectorIndex>0&&tr.cells[inspectorIndex])tr.cells[inspectorIndex].textContent=chosenInspector||'-';
             if(judgeIndex>0&&tr.cells[judgeIndex])tr.cells[judgeIndex].textContent=fields['검사합부']||'대기';
           }
-          replacement.disabled=true;
+          saveButton.disabled=true;
           try{
             const response=await fetch('/api/qmes-sync/pqc/save-detail',{
               method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
@@ -5545,7 +5538,7 @@ function showRowDetail(id,row){
             const section=document.getElementById('process');
             if(section)await loadHistoricalInspectionRows(section,'process');
           }catch(error){toast('서버 저장 실패: '+error.message);}
-          finally{replacement.disabled=false;}
+          finally{saveButton.disabled=false;}
         }catch(error){toast('임시저장 실패: '+error.message);}
       });
     }
