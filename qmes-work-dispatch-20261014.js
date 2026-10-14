@@ -94,7 +94,7 @@ function installWorkDispatchRoutes(app){
       const users=await client.query(
         "SELECT id,TRIM(department) AS department FROM users WHERE status='APPROVED' "+
         "AND UPPER(TRIM(department)) NOT IN ('GUEST','대표') "+
-        "AND TRIM(department)=ANY($1::text[])"
+        "AND TRIM(department)=ANY($1::text[])",
         [departments]
       );
       const grouped=new Map(departments.map(dept=>[dept,[]]));
