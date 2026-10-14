@@ -44,76 +44,73 @@
  document.getElementById('notifyBtn')?.addEventListener('click',()=>setTimeout(loadInbox,10));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
  window.namoWorkDispatchInit=async function(editId){
-   const form=document.querySelector('.work-form'), list=form?.querySelector('#namoWorkDepartments');
-   const button=form?.querySelector('#namoWorkSend'), status=form?.querySelector('#namoWorkSendStatus');
-   const employees=form?.querySelector('#namoWorkEmployees'),count=form?.querySelector('#namoWorkSendCount');
-   const reset=form?.querySelector('#namoWorkSendReset');
-   if(!list||!button||!status||!employees)return;
-   let savedId=editId||'',sending=false,departments=[];
-   const mode=()=>form.querySelector('input[name="namoWorkSendMode"]:checked')?.value||'department';
-   const chosen=()=>[...list.querySelectorAll('input:checked')].map(x=>x.value);
-   const staff=()=>[...employees.querySelectorAll('input:checked')].map(x=>x.value);
-   function render(){
-     const selected=new Set(chosen()),staffMode=mode()==='staff';
-     const previous=new Set(staff());
-     employees.hidden=!staffMode;
-     employees.replaceChildren();
-     if(staffMode){
-       for(const group of departments.filter(x=>selected.has(x.name))){
-         const heading=document.createElement('div');heading.className='namo-employee-dept-title';
-         heading.textContent=group.name+' 해당자';
-         employees.append(heading);
-         for(const person of group.staff||[]){
-           const label=document.createElement('label'),check=document.createElement('input');
-           check.type='checkbox';check.value=person.id;check.name='namoWorkEmployee';check.checked=previous.has(String(person.id));
-           label.append(check,document.createTextNode(person.name+(person.title?' · '+person.title:'')));
-           employees.append(label);
-         }
-       }
-       if(!employees.children.length)employees.textContent='먼저 수신부서를 선택해 주세요.';
-     }
-     updateCount();
-   }
-   function updateCount(){
-     const selected=new Set(chosen());
-     const people=mode()==='staff'?staff().length:departments.filter(x=>selected.has(x.name)).reduce((n,x)=>n+Number(x.members||0),0);
-     count.textContent='선택 부서 '+selected.size+'개 · 예상 수신자 '+people+'명';
-     button.disabled=sending||!selected.size||!people;
+   const form=document.querySelector('.work-form'),list=form?.querySelector('#namoWorkDepartments');
+   const button=form?.querySelector('#namoWorkSend'),status=form?.querySelector('#namoWorkSendStatus');
+   const count=form?.querySelector('#namoWorkSendCount'),reset=form?.querySelector('#namoWorkSendReset');
+   const employees=form?.querySelector('#namoWorkEmployees');
+   if(!list||!button||!status||!count)return;
+   let sending=false,departments=[];
+   // Department and employee checkboxes stay together inside the department card.
+   if(employees)employees.hidden=true;
+   const checkedPeople=()=>[...list.querySelectorAll('input[data-employee]:checked')];
+   const recipientIds=()=>checkedPeople().map(el=>el.value);
+   const checkedDepartments=()=>[...list.querySelectorAll('.namo-dept-group')].filter(group=>group.querySelector('input[data-employee]:checked')).map(group=>group.dataset.department);
+   function update(){
+     let countDepartments=checkedDepartments().length,people=recipientIds().length;
+     count.textContent='선택 부서 '+countDepartments+'개 · 예상 수신자 '+people+'명';
+     button.disabled=sending||!people;
+     list.querySelectorAll('.namo-dept-group').forEach(group=>{
+       const head=group.querySelector('input[data-department]');
+       const checks=[...group.querySelectorAll('input[data-employee]')];
+       head.checked=checks.length>0&&checks.every(x=>x.checked);
+       head.indeterminate=checks.some(x=>x.checked)&&!head.checked;
+       group.classList.toggle('namo-selected',checks.some(x=>x.checked));
+     });
    }
    try{
-     departments=await api('/departments');
+     departments=(await api('/departments')).filter(d=>!['GUEST','대표'].includes(String(d.name||'').trim().toUpperCase()));
      if(!form.isConnected)return;
      list.replaceChildren();
-     if(!departments?.length){list.textContent='승인된 부서가 없습니다.';return;}
+     if(!departments.length){list.textContent='발송 가능한 승인 직원이 없습니다.';return;}
      departments.forEach(dept=>{
-       const label=document.createElement('label'),check=document.createElement('input');
-       check.type='checkbox';check.value=dept.name;check.name='namoDispatchDepartment';
-       const names=(dept.staff||[]).map(person=>person.name).filter(Boolean);
-       const title=document.createElement('strong');title.textContent=dept.name;
-       const people=document.createElement('small');people.textContent=names.join(', ')||'등록 직원 없음';
-       label.append(check,title,people);
-       list.append(label);
+       const group=document.createElement('div');group.className='namo-dept-group';group.dataset.department=dept.name;
+       const head=document.createElement('label');head.className='namo-dept-head';
+       const all=document.createElement('input');all.type='checkbox';all.dataset.department=dept.name;
+       const title=document.createElement('strong');title.textContent=dept.name+' 전체 선택';
+       head.append(all,title);group.append(head);
+       const people=document.createElement('div');people.className='namo-dept-people';
+       for(const person of dept.staff||[]){
+         const label=document.createElement('label');label.className='namo-person-check';
+         const input=document.createElement('input');input.type='checkbox';input.dataset.employee='1';input.value=person.id;
+         const name=document.createElement('span');name.textContent=person.name+(person.title?' · '+person.title:'');
+         label.append(input,name);people.append(label);
+       }
+       if(!people.children.length){const empty=document.createElement('small');empty.textContent='등록 직원 없음';people.append(empty);}
+       group.append(people);list.append(group);
+       all.addEventListener('change',()=>{people.querySelectorAll('input[data-employee]').forEach(x=>x.checked=all.checked);update();});
+       people.addEventListener('change',update);
      });
-     list.addEventListener('change',render);
-     form.querySelectorAll('input[name="namoWorkSendMode"]').forEach(x=>x.addEventListener('change',render));
-     employees.addEventListener('change',updateCount);
-     reset?.addEventListener('click',()=>{list.querySelectorAll('input').forEach(x=>x.checked=false);render();status.textContent='';});
-     render();
-   }catch(e){list.textContent='직원등록현황 조회 실패: '+e.message;return;}
+     // Keep the old mode inputs functional: the actual recipients are always the checked employees.
+     form.querySelectorAll('input[name="namoWorkSendMode"]').forEach(radio=>radio.addEventListener('change',update));
+     reset?.addEventListener('click',()=>{
+       list.querySelectorAll('input').forEach(x=>{x.checked=false;x.indeterminate=false;});
+       status.textContent='';update();
+     });
+     update();
+   }catch(err){list.textContent='직원등록현황 조회 실패: '+err.message;return;}
    button.addEventListener('click',async()=>{
      if(sending)return;
-     const names=chosen(),sendMode=mode(),ids=staff();
-     if(!names.length||(sendMode==='staff'&&!ids.length)){status.textContent='수신부서 및 수신 직원을 선택해 주세요.';return;}
-     if(!window.confirm(names.join(', ')+'에 작업지시서를 발송하시겠습니까?'))return;
-     if(!savedId){status.textContent='먼저 작업지시서를 저장한 뒤 수정 화면에서 발송해 주세요.';return;}
-     sending=true;updateCount();status.textContent='선택한 부서에 발송 중...';
+     const departmentsSelected=checkedDepartments(),ids=recipientIds();
+     if(!ids.length){status.textContent='부서의 해당자를 체크해 주세요.';return;}
+     if(!editId){status.textContent='작업지시서를 먼저 저장한 후 수정 화면에서 발송할 수 있습니다.';return;}
+     if(!window.confirm(departmentsSelected.join(', ')+'의 선택된 '+ids.length+'명에게 발송하시겠습니까?'))return;
+     sending=true;update();status.textContent='작업지시서 발송 중...';
      try{
-       const key='wd-'+savedId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
-       const payload={documentId:savedId,departments:names,sendMode,recipientUserIds:ids,requestKey:key,note:''};
-       const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-       status.textContent='발송 완료: '+result.departments.join(', ')+' / 수신 '+result.recipientTotal+'명';
-     }catch(e){status.textContent='발송 실패: '+e.message;}
-     finally{sending=false;updateCount();}
+       const key='wd-'+editId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
+       const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documentId:editId,departments:departmentsSelected,sendMode:'staff',recipientUserIds:ids,requestKey:key,note:''})});
+       status.textContent='발송 완료: '+result.recipientTotal+'명 · QMES 내부 알림';
+     }catch(err){status.textContent='발송 실패: '+err.message;}
+     finally{sending=false;update();}
    });
  };
 })();
