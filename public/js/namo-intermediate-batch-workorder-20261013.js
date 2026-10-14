@@ -108,9 +108,7 @@
     const grid=field?.parentNode;
     if(!production||!grid)return;
     form.dataset.namoMidForm="1";
-    if(![...production.options].some(x=>x.value==="중간배치")){
-      const option=new Option("중간배치","중간배치");production.add(option);
-    }
+    // Keep intermediate batch in material inputs, not new production categories.
     const kind=document.createElement("div");kind.className="form-item namo-mid-info";
     kind.innerHTML='<label>중간배치 종류</label><select id="namoMidWorkKind"><option value="">선택</option><option>SBR</option><option>PVDF</option><option>SBS</option></select>';
     const produced=document.createElement("div");produced.className="form-item namo-mid-info";
@@ -127,6 +125,9 @@
       if(!form.isConnected)return;
       const current=data.find(x=>x.id===editId);
       if(current&&mid(current)){
+        if(![...production.options].some(x=>x.value==="중간배치")){
+          production.add(new Option("중간배치 (기존 이력)","중간배치"));
+        }
         production.value="중간배치";
         kind.querySelector("select").value=TYPES.includes(str(current.intermediateBatch?.kind))?current.intermediateBatch.kind:"";
         produced.querySelector("input").value=current.intermediateBatch?.actualQty||"";
