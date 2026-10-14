@@ -30,8 +30,10 @@
        div.innerHTML='<div class="notify-dot">'+(isNew?'지':'✓')+'</div><div class="notify-copy"><b>작업지시 '+esc(n.work_order_id)+'</b><span>'+esc(n.department)+' · '+esc(n.product||'-')+' · LOT '+esc(n.lot||'-')+'<br>발송: '+esc(n.sender_name||'-')+'</span></div><div class="notify-time">'+(isNew?'미확인':'확인')+'</div>';
        list.appendChild(div);
      });
+     const active=document.querySelector('#notifyTabs .notify-tab.active')?.dataset.filter||'all';
+     list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(row=>row.classList.toggle('hidden',active!=='all'&&active!=='work'));
      const blank=document.getElementById('notifyEmpty');
-     if(blank)blank.style.display=list.querySelector('.notify-item')?'none':'block';
+     if(blank)blank.style.display=[...list.querySelectorAll('.notify-item')].some(el=>!el.classList.contains('hidden'))?'none':'block';
    }catch(e){console.warn('[work dispatch] inbox',e);}
    finally{inboxBusy=false;}
  }
@@ -41,7 +43,9 @@
    const id=row.dataset.dispatchId;
    if(id)api('/inbox/'+encodeURIComponent(id)+'/read',{method:'POST'}).then(()=>{row.querySelector('.notify-time').textContent='확인';}).catch(console.warn);
  },true);
- document.getElementById('notifyBtn')?.addEventListener('click',()=>setTimeout(loadInbox,10));
+ document.getElementById('notifyBtn')?.addEventListener('click',()=>setTimeout(loadInbox,80));
+ document.querySelector('#notifyTabs .notify-tab[data-filter="work"]')?.addEventListener('click',()=>setTimeout(loadInbox,20));
+ window.addEventListener('focus',()=>{if(document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
  window.namoWorkDispatchInit=async function(editId){
    const form=document.querySelector('.work-form'),list=form?.querySelector('#namoWorkDepartments'),people=form?.querySelector('#namoWorkEmployees');
@@ -112,7 +116,8 @@
        status.textContent='저장 완료 · 수신 담당자에게 발송 중...';
        const key='wd-'+orderId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
        const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documentId:orderId,departments:names,sendMode:'staff',recipientUserIds:recipients,requestKey:key,note:''})});
-       status.textContent='발송 완료 · '+result.recipientTotal+'명 수신';
+       status.textContent='발송 완료 · '+result.recipientTotal+'명 QMES 알림 전달';
+       await loadInbox();
      }catch(err){status.textContent='발송 실패: '+err.message;}
      finally{sending=false;update();}
    });
