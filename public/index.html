@@ -1987,9 +1987,9 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 <style id="namo-global-operation-loader">
 #namo-operation-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(250,247,255,.28);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
-#namo-operation-overlay .namo-operation-card{display:flex;align-items:center;gap:12px;padding:16px 22px;border:1px solid #e4d4fa;border-radius:18px;background:#f7efff;color:#70459c;box-shadow:0 12px 35px rgba(106,72,150,.13);font-size:13px;font-weight:700}
-#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce .65s ease-in-out infinite alternate}
-@keyframes namo-operation-bounce{from{transform:translateY(2px)}to{transform:translateY(-5px)}}
+#namo-operation-overlay .namo-operation-card{display:flex;align-items:center;gap:13px;padding:15px 21px;border:1px solid #e4d4fa;border-radius:18px;background:#f7efff;color:#70459c;box-shadow:0 12px 35px rgba(106,72,150,.13);font-size:13px;font-weight:700}
+#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce .7s cubic-bezier(.34,1.5,.64,1) infinite alternate}
+@keyframes namo-operation-bounce{from{transform:translateY(3px) scale(1.04,.96) rotate(-4deg)}to{transform:translateY(-7px) scale(.97,1.04) rotate(4deg)}}
 @media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-mascot{animation:none}}
 </style>
 <script id="namo-global-operation-loader">
@@ -1999,7 +1999,7 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
   var pending=0,showTimer=null,hideTimer=null,overlay=null,visibleAt=0;
   function getOverlay(){
     if(!document.body)return null;
-    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><svg width="42" height="46" viewBox="0 0 42 46" xmlns="http://www.w3.org/2000/svg"><path d="M21 2C16 10 5 19 5 29a16 16 0 0 0 32 0C37 19 26 10 21 2Z" fill="#c5a1f2" stroke="#9568c9" stroke-width="1.5"/><ellipse cx="15.5" cy="28" rx="2" ry="2.5" fill="#50346e"/><ellipse cx="26.5" cy="28" rx="2" ry="2.5" fill="#50346e"/><path d="M18 34q3 3 6 0" fill="none" stroke="#50346e" stroke-width="1.7" stroke-linecap="round"/><circle cx="10.5" cy="33" r="3" fill="#e8a6d9" opacity=".75"/><circle cx="31.5" cy="33" r="3" fill="#e8a6d9" opacity=".75"/></svg></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
+    if(!overlay){overlay=document.createElement('div');overlay.id='namo-operation-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><svg width="49" height="49" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="namoMascotGlow" cx="32%" cy="23%" r="78%"><stop stop-color="#eee0ff"/><stop offset=".55" stop-color="#d8b9fa"/><stop offset="1" stop-color="#b58ae8"/></radialGradient></defs><ellipse cx="28" cy="49" rx="16" ry="3.5" fill="#aa87d5" opacity=".16"/><circle cx="28" cy="26" r="22" fill="url(#namoMascotGlow)" stroke="#9d70d2" stroke-width="1.5"/><ellipse cx="20.5" cy="27" rx="2.5" ry="3.2" fill="#59357f"/><ellipse cx="35.5" cy="27" rx="2.5" ry="3.2" fill="#59357f"/><circle cx="21.3" cy="26" r=".85" fill="white"/><circle cx="36.3" cy="26" r=".85" fill="white"/><path d="M24 34q4 4.5 8 0" fill="none" stroke="#72489b" stroke-width="2" stroke-linecap="round"/><ellipse cx="13.5" cy="33" rx="4.3" ry="2.8" fill="#f4a8ce" opacity=".65"/><ellipse cx="42.5" cy="33" rx="4.3" ry="2.8" fill="#f4a8ce" opacity=".65"/><ellipse cx="19" cy="14" rx="9" ry="4.5" fill="white" opacity=".24" transform="rotate(-28 19 14)"/></svg></span><span>처리 중이에요...</span></div>';document.body.appendChild(overlay);}
     return overlay;
   }
   function start(){
