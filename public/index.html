@@ -5002,6 +5002,14 @@ function printInspectionReport(title){
    border-bottom:0!important;
  }
 }
+
+@media print{
+ #reportSheet.report-incoming .report-doc-head{border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-approval{border-bottom:0!important}
+ #reportSheet.report-incoming .report-approval .approval-label,
+ #reportSheet.report-incoming .report-approval .approval-cell{border-bottom:0!important}
+ #reportSheet.report-incoming .report-meta{border-top:0!important}
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
