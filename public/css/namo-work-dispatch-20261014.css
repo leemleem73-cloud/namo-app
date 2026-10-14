@@ -34,3 +34,14 @@
 .work-form .namo-staff-group label input{position:static!important;width:14px;height:14px;margin:0;accent-color:#2674e9}
 .work-form .namo-work-send-actions{margin-top:10px;padding:10px 12px}
 @media(max-width:650px){.work-form .namo-dispatch-line{grid-template-columns:1fr;gap:8px}}
+
+/* Polished work order dispatch actions */
+.work-form .namo-work-send-actions{display:flex;align-items:center;justify-content:flex-end;gap:11px;padding:13px 14px;background:#f6f9fc;border:1px solid #e1e9f2;border-radius:8px}
+.work-form #namoWorkSendCount{margin-right:auto;font-size:12px;color:#365674}
+.work-form #namoWorkSendReset,.work-form #namoWorkSend{display:inline-flex;align-items:center;justify-content:center;min-width:112px;min-height:38px;box-sizing:border-box;padding:0 17px;border-radius:7px;font-size:12px;font-weight:750;letter-spacing:-.01em;transition:background .15s,border-color .15s,box-shadow .15s}
+.work-form #namoWorkSendReset{border:1px solid #cbd8e6;background:#fff;color:#415d78}
+.work-form #namoWorkSendReset:hover{border-color:#99adc4;background:#f1f5fa}
+.work-form #namoWorkSend{min-width:134px;border:1px solid #1867d5;background:#226fe7;color:#fff;box-shadow:0 2px 5px rgba(31,102,192,.15)}
+.work-form #namoWorkSend:not(:disabled):hover{background:#135fcf;box-shadow:0 3px 8px rgba(31,102,192,.25)}
+.work-form #namoWorkSend:disabled{opacity:.48;box-shadow:none}
+.work-form #namoWorkSendStatus{flex:0 1 auto;min-width:0;color:#536f8d}
