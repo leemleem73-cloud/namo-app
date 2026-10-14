@@ -102,12 +102,16 @@
      if(sending)return;
      const valid=groups().filter(d=>selected.get(d.name).size>0),names=valid.map(d=>d.name),recipients=valid.flatMap(d=>[...selected.get(d.name)]);
      if(!recipients.length){status.textContent='수신부서와 해당자를 선택해 주세요.';return;}
-     if(!editId){status.textContent='작업지시서를 저장한 뒤 수정 화면에서 발송해 주세요.';return;}
+     let orderId=editId||form.dataset.namoSavedWorkOrderId||'';
+     if(!window.namoSaveWorkOrderForDispatch){status.textContent='저장 연동을 불러오지 못했습니다. 화면을 새로고침해 주세요.';return;}
      if(!window.confirm(names.join(', ')+' · '+recipients.length+'명에게 발송하시겠습니까?'))return;
-     sending=true;update();status.textContent='발송 중...';
+     sending=true;update();status.textContent='작업지시서 저장 중...';
      try{
-       const key='wd-'+editId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
-       const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documentId:editId,departments:names,sendMode:'staff',recipientUserIds:recipients,requestKey:key,note:''})});
+       orderId=await window.namoSaveWorkOrderForDispatch(orderId);
+       if(!orderId){status.textContent='저장에 실패해 발송하지 않았습니다.';return;}
+       status.textContent='저장 완료 · 수신 담당자에게 발송 중...';
+       const key='wd-'+orderId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
+       const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documentId:orderId,departments:names,sendMode:'staff',recipientUserIds:recipients,requestKey:key,note:''})});
        status.textContent='발송 완료 · '+result.recipientTotal+'명 수신';
      }catch(err){status.textContent='발송 실패: '+err.message;}
      finally{sending=false;update();}
