@@ -1282,12 +1282,16 @@ thead{background:#f4f7fa}
 </style>
 <style id="pqc-list-row-height-20261014">
 /* PQC list rows only: add breathing room without changing IQC or certificate. */
-#process .inspection-premium .ip-table tbody tr{height:44px!important}
-#process .inspection-premium .ip-table tbody td{
- height:44px!important;
- padding-top:8px!important;
- padding-bottom:8px!important;
- vertical-align:middle!important;
+#process .inspection-premium .ip-table tbody tr{height:46px!important;min-height:46px!important}
+#process .inspection-premium .ip-table tbody tr > td,
+#process .inspection-premium .ip-table tbody tr > th{
+ box-sizing:border-box!important;
+ height:46px!important;min-height:46px!important;
+ padding-top:10px!important;padding-bottom:10px!important;
+ line-height:20px!important;vertical-align:middle!important;
+}
+#process .inspection-premium .ip-table tbody tr > td:first-child{
+ padding-top:10px!important;padding-bottom:10px!important;
 }
 </style>
 <style id="namo-outgoing-grid-matching-iqc-20261013">
