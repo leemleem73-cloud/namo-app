@@ -278,7 +278,7 @@ function print(){
  const saved=typeof readWorkOrders==='function'?readWorkOrders():[];
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length)return alert('인쇄할 작업지시서를 선택해 주세요.');
- const pages=docs.map(r=>printWorkOrderDocument(r,null,true));
+ const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
  const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length)return alert('선택 인쇄 문서를 준비하지 못했습니다.');
  const w=window.open('','_blank','width=980,height=760,scrollbars=yes');
