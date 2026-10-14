@@ -55,13 +55,17 @@
    const staff=()=>[...employees.querySelectorAll('input:checked')].map(x=>x.value);
    function render(){
      const selected=new Set(chosen()),staffMode=mode()==='staff';
+     const previous=new Set(staff());
      employees.hidden=!staffMode;
      employees.replaceChildren();
      if(staffMode){
        for(const group of departments.filter(x=>selected.has(x.name))){
+         const heading=document.createElement('div');heading.className='namo-employee-dept-title';
+         heading.textContent=group.name+' 해당자';
+         employees.append(heading);
          for(const person of group.staff||[]){
            const label=document.createElement('label'),check=document.createElement('input');
-           check.type='checkbox';check.value=person.id;check.name='namoWorkEmployee';
+           check.type='checkbox';check.value=person.id;check.name='namoWorkEmployee';check.checked=previous.has(String(person.id));
            label.append(check,document.createTextNode(person.name+(person.title?' · '+person.title:'')));
            employees.append(label);
          }
@@ -84,7 +88,10 @@
      departments.forEach(dept=>{
        const label=document.createElement('label'),check=document.createElement('input');
        check.type='checkbox';check.value=dept.name;check.name='namoDispatchDepartment';
-       label.append(check,document.createTextNode(dept.name+' · '+dept.members+'명'));
+       const names=(dept.staff||[]).map(person=>person.name).filter(Boolean);
+       const title=document.createElement('strong');title.textContent=dept.name;
+       const people=document.createElement('small');people.textContent=names.join(', ')||'등록 직원 없음';
+       label.append(check,title,people);
        list.append(label);
      });
      list.addEventListener('change',render);
