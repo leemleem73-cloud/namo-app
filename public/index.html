@@ -5442,7 +5442,10 @@ function showRowDetail(id,row){
     fill();
     const draftKey='namo_qmes_pqc_detail_drafts_v1';
     const readDraft=()=>{
-      try{return JSON.parse(localStorage.getItem(draftKey)||'{}')[String(lot).trim().toUpperCase()]||null;}catch(_){return null;}
+      try{
+        const saved=JSON.parse(localStorage.getItem(draftKey)||'{}');
+        return saved[String(lot).trim().toUpperCase()]||null;
+      }catch(_){return null;}
     };
     const refreshPqcJudges=()=>{
       const specs={'점도':v=>v>=1200&&v<=1800,'입도(Dmax)':v=>v<10,'고형분':v=>v>=19&&v<=21,'외관':v=>v==='이상없음'};
@@ -5476,8 +5479,8 @@ function showRowDetail(id,row){
     if(saveButton){
       const replacement=saveButton.cloneNode(true);
       saveButton.replaceWith(replacement);
-      replacement.textContent='임시저장';
-      replacement.addEventListener('click',()=>{
+      replacement.textContent='저장';
+      replacement.addEventListener('click',async()=>{
         const fields={};
         document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
         const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
@@ -5505,7 +5508,20 @@ function showRowDetail(id,row){
             if(inspectorIndex>0&&tr.cells[inspectorIndex])tr.cells[inspectorIndex].textContent=chosenInspector||'-';
             if(judgeIndex>0&&tr.cells[judgeIndex])tr.cells[judgeIndex].textContent=fields['검사합부']||'대기';
           }
-          toast('브라우저 임시저장 완료. 목록의 검사자·검사합부에 반영됩니다. 서버 저장은 아직 연결되지 않았습니다.');
+          replacement.disabled=true;
+          try{
+            const response=await fetch('/api/qmes-sync/pqc/save-detail',{
+              method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({fields,measurements,workOrder:select?.value||'',inspector:chosenInspector})
+            });
+            const result=await response.json().catch(()=>({}));
+            if(!response.ok||!result.success)throw Error(result.message||'서버 저장 실패');
+            toast('공정검사 저장 완료 · 목록 및 성적서에 반영됩니다.');
+            closeModal();
+            const section=document.getElementById('process');
+            if(section)await loadHistoricalInspectionRows(section,'process');
+          }catch(error){toast('서버 저장 실패: '+error.message);}
+          finally{replacement.disabled=false;}
         }catch(error){toast('임시저장 실패: '+error.message);}
       });
     }
@@ -5864,6 +5880,14 @@ function openNewForm(id,editOrder=null){
       document.getElementById('modalSave')?.click();
     });
     enableWorkModalDrag();
+    return;
+  }
+  if(id==='process'){
+    const cols=pageInfo.process[2];
+    const defaults={'검사일자':new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}),'검사합부':'대기','공정명':'PQC'};
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>신규</td>'+cols.map(name=>'<td>'+amEsc(defaults[name]||'-')+'</td>').join('');
+    showRowDetail('process',tr);
     return;
   }
   if(id==='incoming' || id==='process' || id==='outgoing'){
