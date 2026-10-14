@@ -4930,6 +4930,28 @@ function printInspectionReport(title){
 #reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
 #reportSheet.report-incoming .report-approval .approval-head,#reportSheet.report-incoming .report-approval .approval-label{border-bottom:1px solid #d4dce5!important}
 }
+
+/* IQC print: restore missing single grid separators only */
+@media print{
+ #reportSheet.report-incoming .report-sheet{border-color:#d4dce5!important}
+ #reportSheet.report-incoming .report-doc-head{border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-doc-head>.report-logo,
+ #reportSheet.report-incoming .report-doc-head>.report-title-box{border-right:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-approval .approval-head,
+ #reportSheet.report-incoming .report-approval .approval-cell{border-right:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-meta{border-bottom:0!important}
+ #reportSheet.report-incoming .report-meta>div{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-meta>div:nth-child(4n){border-right:0!important}
+ #reportSheet.report-incoming .report-basic tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
+ #reportSheet.report-incoming .report-inspection tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-inspection tr>:last-child{border-right:0!important}
+ #reportSheet.report-incoming .report-summary{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-summary>div{border-right:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-summary>div:last-child{border-right:0!important}
+ #reportSheet.report-incoming .report-support-row{border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-incoming .report-support-row .label{border-right:1px solid #d4dce5!important}
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
