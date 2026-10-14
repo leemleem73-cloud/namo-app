@@ -4900,6 +4900,24 @@ function showRowDetail(id,row){
     [['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','&lt;10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['고형분','20.0±1.0 wt%','Drying Oven']].map(([item,spec,method],idx)=>'<tr><td>'+(idx+1)+'</td><th>'+item+'</th><td>'+spec+'</td><td>'+method+'</td>'+Array.from({length:3},(_,i)=>'<td>'+(item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="측정값">')+'</td>').join('')+'<td data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
     '</tbody></table></div></div>';
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    // PQC detail: relocate existing wired top actions to the footer; keep save behavior intact.
+    {
+      const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
+      const topActions=pane?.querySelector('.am-detail-actions');
+      const backButton=topActions?.querySelector('[data-am-back]');
+      const saveButton=topActions?.querySelector('[data-am-save]');
+      if(topActions && backButton && saveButton){
+        const printButton=document.createElement('button');
+        printButton.type='button';
+        printButton.className='am-top-btn';
+        printButton.textContent='인쇄';
+        printButton.addEventListener('click',()=>window.print());
+        topActions.replaceChildren(printButton);
+        workspaceFoot.replaceChildren(backButton,saveButton);
+        backButton.textContent='목록';
+        saveButton.textContent='저장';
+      }
+    }
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
     if(judge)judge.value=['대기','합격','불합격'].includes(get('검사합부'))?get('검사합부'):(get('검사합부')==='검사대기'?'대기':'합격');
     const inspector=document.getElementById('pqcDetailInspector');
