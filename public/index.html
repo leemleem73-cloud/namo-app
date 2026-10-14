@@ -5045,6 +5045,34 @@ function printInspectionReport(title){
  #reportSheet.report-incoming .report-approval .approval-cell{border-bottom:0!important}
  #reportSheet.report-incoming .report-meta{border-top:0!important}
 }
+
+/* PQC-only print geometry. The locked IQC report is unaffected. */
+@media print{
+ body:has(#reportSheet.report-pqc-print){
+  min-height:281mm!important;display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+ }
+ #reportSheet.report-pqc-print{
+  height:auto!important;min-height:0!important;
+  flex:none!important;margin:auto!important;
+  border:1px solid #d4dce5!important;
+  border-top:1px solid #d4dce5!important;
+  border-bottom:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-pqc-print .report-support{
+  flex:none!important;min-height:0!important;
+  display:grid!important;grid-template-rows:repeat(3,15mm)!important;
+ }
+ #reportSheet.report-pqc-print .report-support-row:last-child{
+  border-bottom:0!important;
+ }
+ #reportSheet.report-pqc-print .report-footer{
+  border-top:1px solid #d4dce5!important;
+ }
+ body:has(#reportSheet.report-pqc-print) .print-outside-meta{
+  margin-top:2mm!important;
+ }
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
@@ -5147,7 +5175,7 @@ function printPqcCertificateOnly(){
  if(previous){toast('다른 성적서 화면을 닫고 다시 시도해 주세요.');return;}
  const holder=document.createElement('div');
  holder.style.cssText='position:fixed;left:-20000px;top:0;width:900px;pointer-events:none';
- holder.innerHTML=`<div class="report-sheet report-incoming" id="reportSheet">
+ holder.innerHTML=`<div class="report-sheet report-incoming report-pqc-print" id="reportSheet">
  <div class="report-doc-head"><div class="report-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div><div class="report-title-box"><h2>공정검사 성적서</h2></div>
  <div class="report-approval"><div class="approval-label">결재</div><div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div><div class="approval-cell">${esc(approval[0]||'-')}</div><div class="approval-cell">${esc(approval[1]||'-')}</div><div class="approval-cell">${esc(approval[2]||'-')}</div></div></div>
  <div class="report-meta"><div class="label">문서번호</div><div class="value">PQC-QA-001</div><div class="label">문서구분</div><div class="value">PQC</div></div>
