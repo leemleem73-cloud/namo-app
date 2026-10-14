@@ -1721,6 +1721,28 @@ thead{background:#f4f7fa}
  padding:8px!important;margin:0!important;box-sizing:border-box!important;
  border:0!important;text-align:center!important;
 }
+</style><style id="pqc-approval-plain-two-row-grid-20261014">
+/* Plain two-row approval cells: no shaded badges, only one horizontal divider. */
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item{
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:1fr 1fr!important;align-content:stretch!important;
+ justify-items:stretch!important;gap:0!important;padding:0!important;
+ background:#fff!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item>span,
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item>b{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;
+ margin:0!important;padding:0 8px!important;box-sizing:border-box!important;
+ background:#fff!important;color:#293c54!important;text-align:center!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item>span{
+ border:0!important;border-bottom:1px solid #e0e6ed!important;
+ font-size:11px!important;font-weight:800!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item>b{
+ border:0!important;font-size:11px!important;font-weight:800!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5049,9 +5071,9 @@ function standardInspectionForm(type){
     <div class="std-premium-remarks"><div class="k">비고</div><textarea placeholder="검사 특이사항, 부적합 내용 및 조치사항을 입력하세요"></textarea></div>
     <div class="std-approval-row">
       <div class="approval-label">전자결재</div>
-      <div class="std-approval-item" style="display:grid!important;grid-template-rows:44px 1fr!important;gap:0!important;padding:0!important;align-content:stretch!important"><span style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:44px!important;box-sizing:border-box!important;border-bottom:1px solid #dce3eb!important;background:#f7f9fc!important">작성</span><b style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;max-width:none!important;border:0!important;margin:0!important;padding:8px!important;box-sizing:border-box!important">${approval.writer}</b></div>
-      <div class="std-approval-item" style="display:grid!important;grid-template-rows:44px 1fr!important;gap:0!important;padding:0!important;align-content:stretch!important"><span style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:44px!important;box-sizing:border-box!important;border-bottom:1px solid #dce3eb!important;background:#f7f9fc!important">검토</span><b style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;max-width:none!important;border:0!important;margin:0!important;padding:8px!important;box-sizing:border-box!important">${approval.reviewer}</b></div>
-      <div class="std-approval-item" style="display:grid!important;grid-template-rows:44px 1fr!important;gap:0!important;padding:0!important;align-content:stretch!important"><span style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:44px!important;box-sizing:border-box!important;border-bottom:1px solid #dce3eb!important;background:#f7f9fc!important">승인</span><b style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;max-width:none!important;border:0!important;margin:0!important;padding:8px!important;box-sizing:border-box!important">${approval.approver}</b></div>
+      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b></div>
+      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b></div>
+      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b></div>
     </div>
     <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
