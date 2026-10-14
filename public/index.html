@@ -230,6 +230,19 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 .qmes-print-confirm .iqc-delete-dialog h3{color:#244260!important}
 .qmes-print-confirm .iqc-delete-buttons button{border-color:#cbd8e5!important;color:#244260!important}
 .qmes-print-confirm .iqc-delete-buttons [data-yes]{background:#e8f0f8!important;border-color:#cbd8e5!important;color:#244260!important}
+
+/* Selection print/delete buttons: exactly matching dimensions and typography. */
+#incoming .inspection-premium .ip-actions .qmes-bulk-print,
+#process .inspection-premium .ip-actions .qmes-bulk-print,
+#outgoing .inspection-premium .ip-actions .qmes-bulk-print{
+ box-sizing:border-box!important;height:27px!important;padding:0 9px!important;border-radius:4px!important;
+ font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ border:1px solid #cbd8e5!important;background:#e8f0f8!important;color:#244260!important;
+}
+#incoming .inspection-premium .ip-actions .qmes-bulk-print[hidden],
+#process .inspection-premium .ip-actions .qmes-bulk-print[hidden],
+#outgoing .inspection-premium .ip-actions .qmes-bulk-print[hidden]{display:none!important}
 </style>
 
 
