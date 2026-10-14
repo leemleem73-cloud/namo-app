@@ -224,6 +224,12 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
 #incoming .inspection-premium .ip-table thead th,
 #process .inspection-premium .ip-table thead th,
 #outgoing .inspection-premium .ip-table thead th{background:#e8f0f8!important;color:#244260!important;border-color:#cbd8e5!important}
+
+/* Selected print confirmation: work-order blue-grey palette. */
+.qmes-print-confirm .iqc-delete-dialog{border-color:#cbd8e5!important;color:#244260!important}
+.qmes-print-confirm .iqc-delete-dialog h3{color:#244260!important}
+.qmes-print-confirm .iqc-delete-buttons button{border-color:#cbd8e5!important;color:#244260!important}
+.qmes-print-confirm .iqc-delete-buttons [data-yes]{background:#e8f0f8!important;border-color:#cbd8e5!important;color:#244260!important}
 </style>
 
 
@@ -4588,11 +4594,11 @@ async function loadHistoricalInspectionRows(section,id){
 function qmesBulkPrintButton(section,id){
  const actions=section.querySelector('.ip-actions');if(!actions)return;
  let btn=actions.querySelector('.qmes-bulk-print');
- if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn qmes-bulk-print';btn.hidden=true;btn.disabled=true;btn.style.cssText='height:27px;padding:0 10px;border:1px solid #d6c3ef;border-radius:5px;background:#f3ebff;color:#7854a8;font-size:10px;font-weight:800';btn.textContent='선택 인쇄 (0)';const del=actions.querySelector('.iqc-bulk-delete');if(del)del.after(btn);else actions.prepend(btn);}
+ if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn qmes-bulk-print';btn.hidden=true;btn.disabled=true;btn.style.cssText='height:27px;padding:0 10px;border:1px solid #cbd8e5;border-radius:5px;background:#e8f0f8;color:#244260;font-size:10px;font-weight:800';btn.textContent='선택 인쇄 (0)';const del=actions.querySelector('.iqc-bulk-delete');if(del)del.before(btn);else actions.prepend(btn);}
  btn.onclick=async()=>{
   const rows=id==='incoming'?[...section.querySelectorAll('tbody tr.data-row')].filter(r=>section._iqcSelectedIds?.has(String(r.dataset.iqcId))):[...section.querySelectorAll('tbody tr.data-row')].filter(r=>r.querySelector('.iqc-select-row:checked'));
   if(!rows.length)return;
-  const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
+  const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop qmes-print-confirm';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
   if(!ok)return;
   const sheets=rows.map(r=>issueInspectionReport(id,r,true));if(sheets.some(x=>!x)){toast('성적서 생성에 실패했습니다.');return;}
   const nodes=sheets.map(markup=>{const box=document.createElement('div');box.innerHTML=markup;return box.querySelector('#reportSheet');});
