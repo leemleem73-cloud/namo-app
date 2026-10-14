@@ -1988,9 +1988,12 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 }
 </style>
 <style id="namo-global-operation-loader">
-#namo-operation-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:transparent;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
+html[data-namo-operation-loading] body{background:#fff!important}
+html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data-namo-operation-loading] body > :not(#namo-operation-overlay) *{visibility:hidden!important}
+#namo-operation-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:none}
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
-#namo-operation-overlay .namo-operation-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;color:#000;box-shadow:none;font-size:15px;font-weight:700}
+#namo-operation-overlay .namo-operation-card{opacity:0;visibility:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;color:#000;box-shadow:none;font-size:15px;font-weight:700}
+#namo-operation-overlay.is-image-ready .namo-operation-card{opacity:1;visibility:visible}
 #namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;transform-origin:63.022113% 50%;animation:namo-operation-bounce 1.2s ease-in-out infinite}
 #namo-operation-overlay .namo-operation-mascot img{display:block;object-fit:contain;image-rendering:auto;filter:none;width:150px;height:auto;border-radius:0}
 /* The round face is centered at x=756.5 in the original 500..907 viewport: 19.53317px right of the 150px image center. */
@@ -2002,9 +2005,17 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 (function(){
   if(window.__namoOperationLoaderInstalled)return;
   window.__namoOperationLoaderInstalled=true;
-  var pending=0,hideTimer=null,overlay=null,visibleAt=0;
-  var imageReady=false,wantShow=false,refreshPending=false;
+  var root=document.documentElement;
+  // Set in the head, before the workspace can paint its previous data.
+  root.setAttribute('data-namo-operation-loading','preparing');
+  var pending=0,hideTimer=null,imageWaitTimer=null,overlay=null,visibleAt=0;
+  var imageReady=false,imageFailed=false,wantShow=false,refreshPending=false;
   var minimumVisibleMs=1000;
+  function hideOverlay(){
+    clearTimeout(hideTimer);
+    if(overlay){overlay.classList.remove('is-visible');overlay.classList.remove('is-image-ready');}
+    root.removeAttribute('data-namo-operation-loading');wantShow=false;
+  }
   function getOverlay(){
     if(!document.body)return null;
     if(!overlay){
@@ -2013,16 +2024,17 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
       overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=short-lashes-visible-together-4"></span><span class="namo-operation-message">처리 중입니다...</span></div>';
       var img=overlay.querySelector('img');
       function ready(){
-        if(imageReady)return;
-        imageReady=true;
+        if(imageReady||imageFailed)return;
+        clearTimeout(imageWaitTimer);imageReady=true;
         if(wantShow){show();hideWhenIdle();}
       }
       function failed(){
-        // Fail open without ever displaying a text-only loading state.
-        wantShow=false;refreshPending=false;
+        imageFailed=true;refreshPending=false;clearTimeout(imageWaitTimer);
+        hideOverlay();
         console.warn('[QMES] Loading mascot could not be prepared.');
       }
       document.body.appendChild(overlay);
+      imageWaitTimer=setTimeout(failed,5000);
       if(typeof img.decode==='function')img.decode().then(ready,failed);
       else if(img.complete&&img.naturalWidth>0)ready();
       else{img.addEventListener('load',ready,{once:true});img.addEventListener('error',failed,{once:true});}
@@ -2030,21 +2042,24 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
     return overlay;
   }
   function show(){
-    wantShow=true;
+    wantShow=true;root.setAttribute('data-namo-operation-loading','active');
     var el=getOverlay();
-    // The entire card stays hidden until the image can render with its text.
-    if(!el||!imageReady)return false;
-    if(!el.classList.contains('is-visible')){
-      el.classList.add('is-visible');visibleAt=Date.now();
+    if(imageFailed){hideOverlay();return false;}
+    if(!el)return false;
+    // Show an empty white screen immediately; image and label reveal together.
+    el.classList.add('is-visible');
+    if(!imageReady)return false;
+    if(!el.classList.contains('is-image-ready')){
+      el.classList.add('is-image-ready');visibleAt=Date.now();
     }
     return true;
   }
   function hideWhenIdle(){
     clearTimeout(hideTimer);
-    if(pending||refreshPending||!overlay||!overlay.classList.contains('is-visible'))return;
+    if(pending||refreshPending||!imageReady||!overlay||!overlay.classList.contains('is-image-ready'))return;
     hideTimer=setTimeout(function(){
       if(pending||refreshPending)return;
-      overlay.classList.remove('is-visible');wantShow=false;
+      hideOverlay();
     },Math.max(0,minimumVisibleMs-(Date.now()-visibleAt)));
   }
   function start(){
@@ -2059,7 +2074,6 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
     function finish(){refreshPending=false;hideWhenIdle();}
     if(document.readyState==='complete')finish();
     else window.addEventListener('load',finish,{once:true});
-    // Never trap the user if a page resource stalls.
     setTimeout(finish,5000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showRefreshLoading,{once:true});
