@@ -4856,6 +4856,25 @@ function printInspectionReport(title){
  .report-sign{border-bottom:0!important}
  .report-footer{border-bottom:0!important}
 }
+
+/* Final IQC stroke ownership: right edge from sheet only, rows 1px only */
+@media print{
+ .report-sheet.report-incoming{border:1px solid #d4dce5!important;border-top:1px solid #d4dce5!important}
+ .report-sheet.report-incoming .report-inspection{border:0!important;border-collapse:collapse!important;border-spacing:0!important;outline:none!important}
+ .report-sheet.report-incoming .report-inspection tr{border:0!important;outline:0!important;box-shadow:none!important}
+ .report-sheet.report-incoming .report-inspection tr>th,
+ .report-sheet.report-incoming .report-inspection tr>td{
+   border:0!important;border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important;
+   outline:0!important;box-shadow:none!important;background-clip:padding-box!important;
+ }
+ .report-sheet.report-incoming .report-inspection tr>:last-child{border-right:0!important}
+ .report-sheet.report-incoming .report-inspection tbody tr:last-child>*{border-bottom:0!important}
+ .report-sheet.report-incoming .report-basic{border:0!important;border-collapse:collapse!important;border-spacing:0!important}
+ .report-sheet.report-incoming .report-basic tr>*{border:0!important;border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important;outline:0!important}
+ .report-sheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
+ .report-sheet.report-incoming .report-basic tr:last-child>*{border-bottom:0!important}
+ .report-sheet.report-incoming .report-section-title{border-top:0!important;border-left:0!important;border-right:0!important;border-bottom:1px solid #d4dce5!important}
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
