@@ -275,18 +275,20 @@ function scan(){
  });update()
 }
 function print(){
- const saved=typeof readWorkOrders==='function'?readWorkOrders():[];
+ const win=window.open('','_blank','width=980,height=760,scrollbars=yes');
+ if(!win){alert('인쇄 팝업을 허용해 주세요.');return}
+ try{
+ const saved=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
- if(!docs.length)return alert('인쇄할 작업지시서를 선택해 주세요.');
+ if(!docs.length){win.close();alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
- const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
- if(parts.length!==docs.length)return alert('선택 인쇄 문서를 준비하지 못했습니다.');
- const w=window.open('','_blank','width=980,height=760,scrollbars=yes');
- if(!w)return alert('인쇄 팝업을 허용해 주세요.');
- let html=pages[0].replace(parts[0],parts.join('\n'));
- html=html.replace('</style>','.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}\n</style>');
- html=html.replace(/<title>[^<]*<\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
- w.document.open();w.document.write(html);w.document.close();
+ const parts=pages.map(page=>page.match(/<main class="paper">[\\s\\S]*?<\\/main>/)?.[0]).filter(Boolean);
+ if(parts.length!==docs.length){win.close();alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
+ let html=pages[0].replace(parts[0],parts.join('\\n'));
+ html=html.replace('</style>','.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}\\n</style>');
+ html=html.replace(/<title>[^<]*<\\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
+ win.document.open();win.document.write(html);win.document.close();
+ }catch(error){win.close();console.error('[QMES bulk print]',error);alert('선택 인쇄 오류: '+error.message)}
 }
 async function remove(){
  if(busy)return;
