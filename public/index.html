@@ -6,7 +6,7 @@
 <title>NAMO QMES</title>
 <link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261014-inquiry-calendar-490">
 <link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261014-mat2">
-<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261014-dispatch1">
+<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261014-dispatch2">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -5719,9 +5719,17 @@ function openNewForm(id,editOrder=null){
 
       <div class="work-section"><div class="work-section-title">발송 대상 및 수신부서</div><div class="work-section-body">
         <div class="namo-work-send-panel">
-          <div class="namo-work-send-head"><strong>수신부서 선택</strong><span>공용 서버 저장 후 선택한 부서에 발송합니다.</span></div>
-          <div id="namoWorkDepartments" class="namo-work-dept-list"><span>부서 목록을 불러오는 중입니다.</span></div>
-          <div class="namo-work-send-actions"><button type="button" class="btn" id="namoWorkSend" disabled>저장 후 선택부서 발송</button><span id="namoWorkSendStatus">발송은 별도 확인 후 진행됩니다.</span></div>
+          <div class="namo-dispatch-info">직원등록현황의 승인된 부서 및 직원에게 작업지시서를 발송합니다.</div>
+          <div class="namo-dispatch-grid">
+            <div class="namo-dispatch-card"><div class="namo-dispatch-card-head"><strong>발송 대상</strong><span>발송 범위를 선택하세요.</span></div>
+              <div class="namo-dispatch-radio"><label><input type="radio" name="namoWorkSendMode" value="department" checked> 부서 전체</label><label><input type="radio" name="namoWorkSendMode" value="staff"> 지정 직원</label></div>
+              <div id="namoWorkEmployees" class="namo-dispatch-employees" hidden></div>
+            </div>
+            <div class="namo-dispatch-card"><div class="namo-dispatch-card-head"><strong>수신부서</strong><span>복수 선택 가능합니다.</span></div>
+              <div id="namoWorkDepartments" class="namo-work-dept-list"><span>직원등록현황을 불러오는 중입니다.</span></div>
+            </div>
+          </div>
+          <div class="namo-work-send-actions"><span id="namoWorkSendCount">선택 부서 0개 · 예상 수신자 0명</span><span id="namoWorkSendStatus" role="status"></span><button type="button" class="btn" id="namoWorkSendReset">선택 초기화</button><button type="button" class="btn" id="namoWorkSend" disabled>저장 후 발송</button></div>
         </div>
       </div></div>
     </div>`;
@@ -6089,7 +6097,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-mat2"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch1"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch2"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
 </body>
 </html>
