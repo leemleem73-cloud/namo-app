@@ -4587,11 +4587,9 @@ function qmesBulkPrintButton(section,id){
   const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
   if(!ok)return;
   const sheets=rows.map(r=>issueInspectionReport(id,r,true));if(sheets.some(x=>!x)){toast('성적서 생성에 실패했습니다.');return;}
-  const frame=document.createElement('iframe');frame.style.cssText='position:fixed;width:1px;height:1px;opacity:0;border:0;pointer-events:none';document.body.appendChild(frame);
-  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\\n');
-  const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>선택 성적서 인쇄</title><style>'+css+'\\n@page{size:A4 portrait;margin:8mm}html,body{background:white!important;margin:0!important;padding:0!important}.qmes-print-page{display:block;break-after:page;page-break-after:always;width:194mm;margin:0 auto}.qmes-print-page:last-child{break-after:auto;page-break-after:auto}.qmes-print-page .report-sheet{display:flex!important;position:static!important;width:194mm!important;max-width:194mm!important;min-height:270mm!important;margin:0 auto!important;box-shadow:none!important}</style></head><body>'+sheets.map(x=>'<div class="qmes-print-page">'+x+'</div>').join('')+'</body></html>';
-  frame.onload=async()=>{try{await frame.contentDocument.fonts.ready;frame.contentWindow.focus();frame.contentWindow.print();}catch(e){toast('인쇄창을 열지 못했습니다.')}setTimeout(()=>frame.remove(),90000)};
-  frame.srcdoc=html;
+  const nodes=sheets.map(markup=>{const box=document.createElement('div');box.innerHTML=markup;return box.querySelector('#reportSheet');});
+  if(nodes.some(node=>!node)){toast('성적서 준비에 실패했습니다.');return;}
+  printInspectionReport('선택 성적서 인쇄',nodes);
  };
  return btn;
 }
@@ -4952,8 +4950,8 @@ function qmesIqcBarcodeSvg(value){
     printInspectionReport(title);
   });
 }
-function printInspectionReport(title){
-  const sheet=document.getElementById('reportSheet');
+function printInspectionReport(title,batchSheets){
+  const sheet=batchSheets?.[0]||document.getElementById('reportSheet');
   if(!sheet) return;
   // Keep one print job per click. The iframe's initial about:blank load
   // is not the certificate document and must never trigger printing.
@@ -5348,7 +5346,7 @@ function printInspectionReport(title){
 }
 </style>
 
-</head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
+</head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=source.cloneNode(true);const meta=copy.querySelector(".report-meta");if(meta)[...meta.children].slice(4).forEach(cell=>cell.remove());copy.querySelector(".report-basic colgroup")?.remove();return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
   printFrame.srcdoc=printHtml;
 }
