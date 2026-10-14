@@ -5243,96 +5243,96 @@ function printInspectionReport(title,batchSheets){
 
 @media print{#reportSheet .report-summary{border-bottom:1px solid #d4dce5!important}#reportSheet .report-support .report-support-row{border-bottom:1px solid #d4dce5!important}}
 
-@media print{#reportSheet.report-incoming .report-summary{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}}
+@media print{#reportSheet:is(.report-incoming,.report-process) .report-summary{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}}
 
 @media print{
-#reportSheet.report-incoming .report-doc-head{border-bottom:1px solid #d4dce5!important}
-#reportSheet.report-incoming .report-meta{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
-#reportSheet.report-incoming .report-meta>div{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
-#reportSheet.report-incoming .report-meta>div:nth-child(4n){border-right:0!important}
-#reportSheet.report-incoming .report-basic tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
-#reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
-#reportSheet.report-incoming .report-approval .approval-head,#reportSheet.report-incoming .report-approval .approval-label{border-bottom:1px solid #d4dce5!important}
+#reportSheet:is(.report-incoming,.report-process) .report-doc-head{border-bottom:1px solid #d4dce5!important}
+#reportSheet:is(.report-incoming,.report-process) .report-meta{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+#reportSheet:is(.report-incoming,.report-process) .report-meta>div{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+#reportSheet:is(.report-incoming,.report-process) .report-meta>div:nth-child(4n){border-right:0!important}
+#reportSheet:is(.report-incoming,.report-process) .report-basic tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+#reportSheet:is(.report-incoming,.report-process) .report-basic tr>:last-child{border-right:0!important}
+#reportSheet:is(.report-incoming,.report-process) .report-approval .approval-head,#reportSheet:is(.report-incoming,.report-process) .report-approval .approval-label{border-bottom:1px solid #d4dce5!important}
 }
 
 /* IQC print: restore missing single grid separators only */
 @media print{
- #reportSheet.report-incoming .report-sheet{border-color:#d4dce5!important}
- #reportSheet.report-incoming .report-doc-head{border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-doc-head>.report-logo,
- #reportSheet.report-incoming .report-doc-head>.report-title-box{border-right:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-approval .approval-head,
- #reportSheet.report-incoming .report-approval .approval-cell{border-right:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-meta{border-bottom:0!important}
- #reportSheet.report-incoming .report-meta>div{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-meta>div:nth-child(4n){border-right:0!important}
- #reportSheet.report-incoming .report-basic tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-basic tr>:last-child{border-right:0!important}
- #reportSheet.report-incoming .report-inspection tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-inspection tr>:last-child{border-right:0!important}
- #reportSheet.report-incoming .report-summary{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-summary>div{border-right:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-summary>div:last-child{border-right:0!important}
- #reportSheet.report-incoming .report-support-row{border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-support-row .label{border-right:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-sheet{border-color:#d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head{border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head>.report-logo,
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head>.report-title-box{border-right:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-head,
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-cell{border-right:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-meta{border-bottom:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-meta>div{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-meta>div:nth-child(4n){border-right:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-basic tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-basic tr>:last-child{border-right:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-inspection tr>*{border-right:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-inspection tr>:last-child{border-right:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-summary{border-top:1px solid #d4dce5!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-summary>div{border-right:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-summary>div:last-child{border-right:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-support-row{border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-support-row .label{border-right:1px solid #d4dce5!important}
 }
 
 /* IQC header: restore vertical divisions and use hairline strokes */
 @media print{
- #reportSheet.report-incoming .report-doc-head{
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head{
   border-bottom:1px solid #d4dce5!important;
  }
- #reportSheet.report-incoming .report-logo,
- #reportSheet.report-incoming .report-title-box{
+ #reportSheet:is(.report-incoming,.report-process) .report-logo,
+ #reportSheet:is(.report-incoming,.report-process) .report-title-box{
   border-right:1px solid #d4dce5!important;
  }
- #reportSheet.report-incoming .report-approval{
+ #reportSheet:is(.report-incoming,.report-process) .report-approval{
   border-left:0!important;
  }
- #reportSheet.report-incoming .report-approval .approval-label,
- #reportSheet.report-incoming .report-approval .approval-head,
- #reportSheet.report-incoming .report-approval .approval-cell{
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-label,
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-head,
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-cell{
   border-right:1px solid #d4dce5!important;
  }
- #reportSheet.report-incoming .report-approval .approval-head{
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-head{
   border-bottom:1px solid #d4dce5!important;
  }
- #reportSheet.report-incoming .report-doc-head *,
- #reportSheet.report-incoming .report-meta>div,
- #reportSheet.report-incoming .report-basic tr>*{
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head *,
+ #reportSheet:is(.report-incoming,.report-process) .report-meta>div,
+ #reportSheet:is(.report-incoming,.report-process) .report-basic tr>*{
   border-color:#d4dce5!important;
  }
- #reportSheet.report-incoming .report-meta{
+ #reportSheet:is(.report-incoming,.report-process) .report-meta{
   border-top:0!important;border-bottom:0!important;
  }
- #reportSheet.report-incoming .report-doc-head,
- #reportSheet.report-incoming .report-meta,
- #reportSheet.report-incoming .report-basic{
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head,
+ #reportSheet:is(.report-incoming,.report-process) .report-meta,
+ #reportSheet:is(.report-incoming,.report-process) .report-basic{
   box-shadow:none!important;outline:0!important;
  }
 }
 
 /* IQC summary upper edge: one owner, 1px */
 @media print{
- #reportSheet.report-incoming .report-inspection tbody tr:last-child>td{
+ #reportSheet:is(.report-incoming,.report-process) .report-inspection tbody tr:last-child>td{
    border-bottom:0!important;
  }
- #reportSheet.report-incoming .report-summary{
+ #reportSheet:is(.report-incoming,.report-process) .report-summary{
    border-top:1px solid #d4dce5!important;
    border-bottom:1px solid #d4dce5!important;
  }
- #reportSheet.report-incoming .report-summary>div{
+ #reportSheet:is(.report-incoming,.report-process) .report-summary>div{
    border-top:0!important;
    border-bottom:0!important;
  }
 }
 
 @media print{
- #reportSheet.report-incoming .report-doc-head{border-bottom:1px solid #d4dce5!important}
- #reportSheet.report-incoming .report-approval{border-bottom:0!important}
- #reportSheet.report-incoming .report-approval .approval-label,
- #reportSheet.report-incoming .report-approval .approval-cell{border-bottom:0!important}
- #reportSheet.report-incoming .report-meta{border-top:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-doc-head{border-bottom:1px solid #d4dce5!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-approval{border-bottom:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-label,
+ #reportSheet:is(.report-incoming,.report-process) .report-approval .approval-cell{border-bottom:0!important}
+ #reportSheet:is(.report-incoming,.report-process) .report-meta{border-top:0!important}
 }
 
 /* PQC-only vertical position: preserve IQC layout, sizes and border rules. */
