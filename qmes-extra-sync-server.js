@@ -69,6 +69,29 @@ function install(app) {
     }
   });
 
+  // Canonical PQC detail save: one record per date/work order/LOT, with measurements.
+  app.post('/api/qmes-sync/pqc/save-detail',async(req,res)=>{
+    if(!req.session?.user)return res.status(401).json({success:false,message:'로그인이 필요합니다.'});
+    const d=req.body||{},fields=d.fields||{},date=String(fields['검사일자']||'').trim(),
+      lot=String(fields['생산 LOT NO']||'').trim(),order=String(d.workOrder||'').trim();
+    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!lot||!order)
+      return res.status(400).json({success:false,message:'검사일자, 작업지시번호, 생산 LOT NO를 입력해 주세요.'});
+    const key='detail:'+encodeURIComponent(date)+'|'+encodeURIComponent(order)+'|'+encodeURIComponent(lot.toUpperCase());
+    const record={id:key,date,workOrderNo:order,product:String(fields['제품명']||''),lot,
+      stage:String(fields['공정명']||'PQC'),check:'외관 / 입도 / 점도 / 고형분',
+      judge:String(fields['검사합부']||'대기'),inspector:String(d.inspector||''),
+      remarks:String(fields['비고']||''),measurements:d.measurements||{},detailFields:fields};
+    try{
+      await pool.query(`INSERT INTO qmes_sync_records(record_type,record_key,payload,updated_by,updated_at)
+        VALUES('pqc',$1,$2::jsonb,$3,NOW())
+        ON CONFLICT(record_type,record_key) DO UPDATE SET payload=EXCLUDED.payload,
+          updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
+        [key,JSON.stringify({rows:[record]}),String(req.session.user.name||req.session.user.email||'')]);
+      return res.json({success:true,data:record});
+    }catch(error){console.error('PQC detail save failed',error);
+      return res.status(500).json({success:false,message:'공정검사 저장에 실패했습니다.'});}
+  });
+
   // Delete exactly one selected PQC row from its originating shared record.
   // Never delete an entire shared payload containing other inspection rows.
   app.post('/api/qmes-sync/pqc/delete-row', async (req,res)=>{
