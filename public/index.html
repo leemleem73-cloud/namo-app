@@ -1743,6 +1743,37 @@ thead{background:#f4f7fa}
 .std-inspection.premium[data-inspection-type="process"] .std-approval-row>.std-approval-item>b{
  border:0!important;font-size:11px!important;font-weight:800!important;
 }
+</style><style id="pqc-approval-real-table-layout-20261014">
+/* Use actual two-row table cells, avoiding inherited badge span and b styling. */
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.pqc-approval-table-cell{
+ display:block!important;padding:0!important;margin:0!important;min-width:0!important;
+ background:white!important;border-right:1px solid #e0e6ed!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .std-approval-row>.pqc-approval-table-cell:last-child{border-right:0!important}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table{
+ display:table!important;width:100%!important;height:100%!important;
+ table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;
+ margin:0!important;padding:0!important;background:white!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table tbody{
+ display:table-row-group!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table tr{
+ display:table-row!important;height:50%!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table th,
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table td{
+ display:table-cell!important;width:100%!important;vertical-align:middle!important;
+ text-align:center!important;padding:10px!important;box-sizing:border-box!important;
+ background:#fff!important;color:#293c54!important;font-size:11px!important;
+ font-weight:800!important;box-shadow:none!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table th{
+ border:0!important;border-bottom:1px solid #e0e6ed!important;
+}
+.std-inspection.premium[data-inspection-type="process"] .pqc-approval-inner-table td{
+ border:0!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5071,9 +5102,9 @@ function standardInspectionForm(type){
     <div class="std-premium-remarks"><div class="k">비고</div><textarea placeholder="검사 특이사항, 부적합 내용 및 조치사항을 입력하세요"></textarea></div>
     <div class="std-approval-row">
       <div class="approval-label">전자결재</div>
-      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b></div>
-      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b></div>
-      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b></div>
+      <div class="std-approval-item pqc-approval-table-cell"><table class="pqc-approval-inner-table"><tbody><tr><th>작성</th></tr><tr><td>${approval.writer}</td></tr></tbody></table></div>
+      <div class="std-approval-item pqc-approval-table-cell"><table class="pqc-approval-inner-table"><tbody><tr><th>검토</th></tr><tr><td>${approval.reviewer}</td></tr></tbody></table></div>
+      <div class="std-approval-item pqc-approval-table-cell"><table class="pqc-approval-inner-table"><tbody><tr><th>승인</th></tr><tr><td>${approval.approver}</td></tr></tbody></table></div>
     </div>
     <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
