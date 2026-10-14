@@ -4980,6 +4980,7 @@ function qmesIqcBarcodeSvg(value){
 }
 // The print document draws its PQC grid once, after fonts and images settle.
 function drawPqcPrintGrid(doc){
+  const measured=[];
   const ns='http://www.w3.org/2000/svg';
   for(const sheet of doc.querySelectorAll('.report-sheet:is(.report-process,.report-pqc-print)')){
     sheet.querySelector('.pqc-print-grid')?.remove();
@@ -5047,7 +5048,9 @@ function drawPqcPrintGrid(doc){
     path.setAttribute('stroke','#c5d0dc');path.setAttribute('stroke-width','1');
     path.setAttribute('shape-rendering','crispEdges');
     svg.appendChild(path);sheet.appendChild(svg);
+    measured.push({width,height,lineSegments:commands.length});
   }
+  return measured;
 }
 
 function printInspectionReport(title,batchSheets){
@@ -5082,7 +5085,8 @@ function printInspectionReport(title,batchSheets){
         setTimeout(resolve,1500);
       })));
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      drawPqcPrintGrid(doc);
+      const gridGeometry=drawPqcPrintGrid(doc);
+      if(gridGeometry.length)document.body.dataset.qmesPqcPrintGrid=JSON.stringify(gridGeometry);
       win.focus();
       win.print();
     }catch(err){
