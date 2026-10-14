@@ -5489,6 +5489,16 @@ function showRowDetail(id,row){
       inspector?.dispatchEvent(new Event('change'));
     }
     refreshPqcJudges();
+    // The visible footer save button is moved from the detail pane, not #modalSave.
+    // Route it through the same validated save handler below.
+    const visiblePqcSave=workspaceFoot.querySelector('[data-am-save]');
+    if(visiblePqcSave){
+      visiblePqcSave.addEventListener('click',e=>{
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        document.getElementById('modalSave')?.click();
+      },true);
+    }
     const saveButton=document.getElementById('modalSave');
     if(saveButton){
       const replacement=saveButton.cloneNode(true);
