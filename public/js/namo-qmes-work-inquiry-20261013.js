@@ -322,3 +322,5 @@ async function remove(){
 const style=document.createElement('style');style.textContent='.wo-bulk-check,.wo-bulk-all{width:15px;height:15px;margin-right:8px;vertical-align:middle;accent-color:#2563eb;cursor:pointer}.wo-bulk-controls{display:inline-flex;gap:7px;margin-right:10px}.wo-bulk-controls[hidden]{display:none!important}.wo-bulk-controls .wo-bulk-print{background:#eaf3ff;color:#245482;border:1px solid #c8daed}.wo-bulk-controls .wo-bulk-delete{background:#fff1f1;color:#b23535;border:1px solid #e9cccc}';document.head.appendChild(style);
 const observer=new MutationObserver(ms=>{if(queued||!ms.some(m=>m.target.closest?.('#work')||[...m.addedNodes].some(n=>n.nodeType===1&&(n.id==='work'||n.querySelector?.('#work')))))return;queued=true;requestAnimationFrame(()=>{queued=false;scan()})});observer.observe(document.body,{childList:true,subtree:true});scan();
 })();
+
+;(function(){if(document.querySelector('script[data-qmes-wo-mail]'))return;const script=document.createElement('script');script.dataset.qmesWoMail='1';script.src='./js/qmes-workorder-mail-composer-20261015.js?v=1';document.head.appendChild(script)})();
