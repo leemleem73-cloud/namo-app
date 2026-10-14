@@ -5416,6 +5416,13 @@ function printInspectionReport(title,batchSheets){
  #reportSheet.report-process .report-support-row:last-child{border-bottom:0!important}
  #reportSheet.report-process .report-support{border-bottom:1px solid var(--pqc-line)!important}
  #reportSheet.report-process .report-footer{border-top:0!important;border-bottom:0!important}
+ /* Approval box: right edge is owned by the outer report frame only. */
+ #reportSheet.report-process .report-doc-head>.report-approval{box-sizing:border-box!important;border-left:0!important;border-right:0!important;outline:0!important;box-shadow:none!important;min-width:0!important}
+ #reportSheet.report-process .report-approval .approval-label,#reportSheet.report-process .report-approval .approval-head,#reportSheet.report-process .report-approval .approval-cell{box-sizing:border-box!important;border-left:0!important;border-right:1px solid #d4dce5!important;border-top:0!important;border-bottom:0!important;outline:0!important;box-shadow:none!important}
+ #reportSheet.report-process .report-approval .approval-head{border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-process .report-approval .approval-label{border-bottom:0!important}
+ #reportSheet.report-process .report-approval .approval-cell:last-child,#reportSheet.report-process .report-approval .approval-head:nth-child(4){border-right:0!important}
+ #reportSheet.report-process .report-doc-head{border-right:0!important}
  body:has(#reportSheet.report-process)>.print-outside-meta{width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}
 }
 </style>
