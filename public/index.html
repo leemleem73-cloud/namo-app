@@ -5525,7 +5525,7 @@ function openNewForm(id,editOrder=null){
         <div class="form-item"><label>작업 시작일</label><input type="date"></div>
         <div class="form-item"><label>작업 종료일</label><input type="date"></div>
         <div class="form-item"><label>진행상태</label><select><option>대기</option><option>진행</option><option>완료</option></select></div>
-        <div class="form-item"><label>생산구분</label><select><option>정규생산</option><option>시험생산</option><option>재작업</option></select></div>
+        <div class="form-item"><label>생산구분</label><select><option>양산</option><option>파일럿 생산</option><option>시험생산</option><option>샘플생산</option></select></div>
       </div></div></div>
 
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
@@ -5551,7 +5551,7 @@ function openNewForm(id,editOrder=null){
       const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
       const set=(label,value)=>{const el=basic.find(x=>x.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select');if(el)el.value=value||'';};
       const f=editOrder.fields||{},period=(f['작업기간']||'').split(' ~ ');
-      set('작업지시번호',editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);set('생산구분',editOrder.productionType);
+      set('작업지시번호',editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);const typeSelect=basic.find(x=>x.querySelector('label')?.textContent.trim()==='생산구분')?.querySelector('select');if(typeSelect&&editOrder.productionType&&!Array.from(typeSelect.options).some(x=>x.value===editOrder.productionType))typeSelect.add(new Option(editOrder.productionType+' (기존 이력)',editOrder.productionType));set('생산구분',editOrder.productionType);
       const tbody=document.querySelector('#workMaterialTable tbody');tbody.innerHTML='';
       const add=document.getElementById('workRowAdd');
       (editOrder.materials||[]).forEach(m=>{
