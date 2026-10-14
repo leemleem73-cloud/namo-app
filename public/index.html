@@ -4952,6 +4952,41 @@ function printInspectionReport(title){
  #reportSheet.report-incoming .report-support-row{border-bottom:1px solid #d4dce5!important}
  #reportSheet.report-incoming .report-support-row .label{border-right:1px solid #d4dce5!important}
 }
+
+/* IQC header: restore vertical divisions and use hairline strokes */
+@media print{
+ #reportSheet.report-incoming .report-doc-head{
+  border-bottom:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-logo,
+ #reportSheet.report-incoming .report-title-box{
+  border-right:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-approval{
+  border-left:0!important;
+ }
+ #reportSheet.report-incoming .report-approval .approval-label,
+ #reportSheet.report-incoming .report-approval .approval-head,
+ #reportSheet.report-incoming .report-approval .approval-cell{
+  border-right:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-approval .approval-head{
+  border-bottom:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-doc-head *,
+ #reportSheet.report-incoming .report-meta>div,
+ #reportSheet.report-incoming .report-basic tr>*{
+  border-color:#d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-meta{
+  border-top:0!important;border-bottom:0!important;
+ }
+ #reportSheet.report-incoming .report-doc-head,
+ #reportSheet.report-incoming .report-meta,
+ #reportSheet.report-incoming .report-basic{
+  box-shadow:none!important;outline:0!important;
+ }
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
