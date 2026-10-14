@@ -56,15 +56,18 @@
       var count=String(rows.length);
       if(toolbar.textContent!==count)toolbar.textContent=count;
     }
-    var totalPlan=0,totalActual=0;
+    var totalPlan=0,totalActual=0,totalRatio=0;
     rows.forEach(function(row){
       totalPlan+=num(row.querySelector('.plan-input'));
       totalActual+=num(row.querySelector('.actual-input'));
+      totalRatio+=num(row.querySelector('.ratio-input'));
     });
     var planned=form.querySelector('.nwm-plan-total');
     var actual=form.querySelector('.nwm-actual-total');
     if(planned&&planned.textContent!==fmt(totalPlan))planned.textContent=fmt(totalPlan);
     if(actual&&actual.textContent!==fmt(totalActual))actual.textContent=fmt(totalActual);
+    var ratio=form.querySelector('.nwm-ratio-total');
+    if(ratio&&ratio.textContent!==fmt(totalRatio))ratio.textContent=fmt(totalRatio);
   }
   function prepareRow(row){
     if(!row.dataset.nwmListeners){
@@ -97,19 +100,26 @@
         copy.appendChild(el('span','nwm-tools-hint','원료 선택 → LOT 입력 → 계획량 입력'));
         toolbar.insertBefore(copy,toolbar.firstChild);
       }
-      var summary=el('div','nwm-summary');
-      var planned=el('span','nwm-summary-item');
-      planned.appendChild(el('span','','계획투입 합계'));
-      planned.appendChild(el('strong','nwm-plan-total','0.00'));
-      planned.appendChild(el('span','nwm-summary-unit','kg'));
-      summary.appendChild(planned);
-      summary.appendChild(el('span','nwm-summary-divider'));
-      var actual=el('span','nwm-summary-item');
-      actual.appendChild(el('span','','실투입 합계'));
-      actual.appendChild(el('strong','nwm-actual-total','0.00'));
-      actual.appendChild(el('span','nwm-summary-unit','kg'));
-      summary.appendChild(actual);
-      wrap.after(summary);
+      // Totals are real table footer cells, sharing the header column widths.
+      var footer=el('tfoot','nwm-summary');
+      var totalRow=el('tr','nwm-summary-row');
+      var titleCell=el('td','nwm-summary-caption','합계');
+      titleCell.colSpan=3;
+      totalRow.appendChild(titleCell);
+      function totalCell(field,valueClass,unit){
+        var cell=el('td','nwm-summary-item');
+        cell.appendChild(el('span','nwm-summary-field-label',field));
+        cell.appendChild(el('strong',valueClass,'0.00'));
+        cell.appendChild(el('span','nwm-summary-unit',unit));
+        return cell;
+      }
+      totalRow.appendChild(totalCell('계획투입량','nwm-plan-total','kg'));
+      totalRow.appendChild(totalCell('실투입량','nwm-actual-total','kg'));
+      totalRow.appendChild(totalCell('투입비율','nwm-ratio-total','%'));
+      totalRow.appendChild(el('td','nwm-summary-actions'));
+      footer.appendChild(totalRow);
+      table.appendChild(footer);
+
 
       // Event delegation survives additions/deletions and does not replace
       // the existing recalculation, validation or server save handlers.
