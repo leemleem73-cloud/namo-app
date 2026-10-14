@@ -5381,6 +5381,20 @@ function printInspectionReport(title,batchSheets){
   transform:translateY(7mm)!important;
  }
 }
+/* Process certificate print only: thin consistent grid and centered sheet. */
+@media print{
+ body:has(#reportSheet.report-process){width:194mm!important;max-width:194mm!important;margin-left:auto!important;margin-right:auto!important;padding:0!important}
+ #reportSheet.report-process{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;border:1px solid #d4dce5!important;outline:0!important;box-shadow:none!important}
+ #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support,#reportSheet.report-process .report-footer{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important;box-shadow:none!important}
+ #reportSheet.report-process .report-doc-head,#reportSheet.report-process .report-meta,#reportSheet.report-process .report-summary,#reportSheet.report-process .report-support-row,#reportSheet.report-process .report-footer{border-color:#d4dce5!important;border-width:0 0 1px!important}
+ #reportSheet.report-process .report-basic,#reportSheet.report-process .report-inspection{border-collapse:collapse!important;border-spacing:0!important;border-left:0!important;border-right:0!important}
+ #reportSheet.report-process .report-basic tr>*,#reportSheet.report-process .report-inspection tr>*{border-color:#d4dce5!important;border-width:0 1px 1px 0!important;box-shadow:none!important}
+ #reportSheet.report-process .report-basic tr>:last-child,#reportSheet.report-process .report-inspection tr>:last-child{border-right:0!important}
+ #reportSheet.report-process .report-doc-head>.report-logo,#reportSheet.report-process .report-doc-head>.report-title-box,#reportSheet.report-process .report-approval>*,#reportSheet.report-process .report-meta>div,#reportSheet.report-process .report-summary>div,#reportSheet.report-process .report-support-row .label{border-color:#d4dce5!important;border-right-width:1px!important;box-shadow:none!important}
+ #reportSheet.report-process .report-summary{border-top:0!important;border-bottom:1px solid #d4dce5!important}
+ #reportSheet.report-process .report-inspection tbody tr:last-child>td{border-bottom:0!important}
+ body:has(#reportSheet.report-process)>.print-outside-meta{width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}
+}
 </style>
 
 </head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=source.cloneNode(true);const meta=copy.querySelector(".report-meta");if(meta)[...meta.children].slice(4).forEach(cell=>cell.remove());copy.querySelector(".report-basic colgroup")?.remove();return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
