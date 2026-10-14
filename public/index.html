@@ -4444,6 +4444,13 @@ function matchPqcWorkOrder(row,orders){
   }
   return null;
 }
+function pqcWorkOrderLotMismatch(row,orders){
+  const norm=v=>String(v??'').trim().toUpperCase().replace(/\s+/g,'');
+  const current=norm(row.workOrderNo||row.orderNo),lot=norm(row.lot);
+  if(!current||current==='-'||!lot||lot==='-')return false;
+  const known=(orders||[]).filter(o=>norm(pqcWorkOrderNumber(o))===current);
+  return known.length>0&&!known.some(o=>[o.fields?.['생산 LOT NO'],o.fields?.['생산 LOT'],o.fields?.['LOT NO'],o.lot,o.lotNo,o.productionLot].some(v=>norm(v)===lot));
+}
 function pqcWorkOrderNumber(order){
   return String(order?.fields?.['작업지시번호']||order?.workOrderNo||order?.id||'').trim();
 }
@@ -4545,6 +4552,7 @@ async function loadHistoricalInspectionRows(section,id){
       for(const row of rows){
         const order=matchPqcWorkOrder(row,pqcWorkOrderSources);
         if(order)row.workOrderNo=pqcWorkOrderNumber(order);
+        else if(pqcWorkOrderLotMismatch(row,pqcWorkOrderSources)){row.workOrderNo='-';row.orderNo='-';}
       }
     }
     if(section._historicalRequest!==request||!section.isConnected)return;
