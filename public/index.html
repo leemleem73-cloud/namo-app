@@ -4897,6 +4897,23 @@ function printInspectionReport(title){
  .report-sheet .report-basic tr>:last-child,.report-sheet .report-inspection tr>:last-child{border-right:0!important}
  .report-sheet .report-support-row,.report-sheet .report-summary,.report-sheet .report-footer{width:100%!important}
 }
+
+/* IQC print border-free diagnostic stage: remove all certificate strokes */
+@media print {
+ .report-sheet,.report-sheet *,
+ .report-sheet *::before,.report-sheet *::after {
+   border:0 none!important;
+   border-top:0 none!important;
+   border-right:0 none!important;
+   border-bottom:0 none!important;
+   border-left:0 none!important;
+   outline:0 none!important;
+   box-shadow:none!important;
+ }
+ .print-page-frame,.print-page-content,.print-outside-meta{
+   border:0 none!important;outline:0 none!important;box-shadow:none!important;
+ }
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
