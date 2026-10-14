@@ -147,6 +147,14 @@ svg{display:block}
 @media(max-height:760px) and (min-width:1080px){.stage{min-height:590px}.topbar{padding-top:20px}.hero{top:39%;padding-top:25px}.hero h1{margin:14px 0;font-size:clamp(32px,3vw,47px)}.search-box{margin-top:22px}.right-side{top:80px}.dock-wrap{bottom:19px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
+/* QMES shortcut icons match the existing left navigation glyphs. */
+.dock .app .tile .qmes-sidebar-glyph{
+ display:inline-flex;align-items:center;justify-content:center;
+ font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",system-ui,sans-serif;
+ font-size:24px;font-weight:500;line-height:1;letter-spacing:0;
+ text-shadow:0 1px 1px rgba(0,0,0,.12);
+}
+@media(max-width:1350px){.dock .app .tile .qmes-sidebar-glyph{font-size:22px}}
 /* Operational QMES portal: the real left sidebar is rendered by the parent app. */
 .page{width:100%;min-height:100dvh}
 .workspace{width:100%;min-width:0}
@@ -319,16 +327,16 @@ svg{display:block}
    
    <section class="dock-wrap" aria-label="주요 업무 바로가기">
      <div class="dock">
-       <button class="app" type="button" data-action="종합현황"><span class="tile t1"><svg class="icon"><use href="#ico-dashboard"/></svg></span><span class="title">종합현황</span></button>
-       <button class="app" type="button" data-action="작업지시"><span class="tile t2"><svg class="icon"><use href="#ico-clipboard"/></svg></span><span class="title">작업지시</span></button>
-       <button class="app" type="button" data-action="생산관리"><span class="tile t3"><svg class="icon"><use href="#ico-factory"/></svg></span><span class="title">생산관리</span></button>
-       <button class="app" type="button" data-action="수입검사"><span class="tile t4"><svg class="icon"><use href="#ico-flask"/></svg></span><span class="title">수입검사</span></button>
-       <button class="app" type="button" data-action="공정검사"><span class="tile t5"><svg class="icon"><use href="#ico-checklist"/></svg></span><span class="title">공정검사</span></button>
-       <button class="app" type="button" data-action="출하검사"><span class="tile t6"><svg class="icon"><use href="#ico-truck"/></svg></span><span class="title">출하검사</span></button>
-       <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><svg class="icon"><use href="#ico-scan"/></svg></span><span class="title">LOT 추적</span></button>
-       <button class="app" type="button" data-action="재고관리"><span class="tile t8"><svg class="icon"><use href="#ico-box"/></svg></span><span class="title">재고관리</span></button>
-       <button class="app" type="button" data-action="설비관리"><span class="tile t9"><svg class="icon"><use href="#ico-settings"/></svg></span><span class="title">설비관리</span></button>
-       <button class="app" type="button" data-action="직원관리"><span class="tile t10"><svg class="icon"><use href="#ico-users"/></svg></span><span class="title">직원관리</span></button>
+       <button class="app" type="button" data-action="종합현황"><span class="tile t1"><span class="qmes-sidebar-glyph" aria-hidden="true">▦</span></span><span class="title">종합현황</span></button>
+       <button class="app" type="button" data-action="작업지시"><span class="tile t2"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">작업지시</span></button>
+       <button class="app" type="button" data-action="생산관리"><span class="tile t3"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">생산관리</span></button>
+       <button class="app" type="button" data-action="수입검사"><span class="tile t4"><span class="qmes-sidebar-glyph" aria-hidden="true">🔬</span></span><span class="title">수입검사</span></button>
+       <button class="app" type="button" data-action="공정검사"><span class="tile t5"><span class="qmes-sidebar-glyph" aria-hidden="true">🧪</span></span><span class="title">공정검사</span></button>
+       <button class="app" type="button" data-action="출하검사"><span class="tile t6"><span class="qmes-sidebar-glyph" aria-hidden="true">📋</span></span><span class="title">출하검사</span></button>
+       <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><span class="qmes-sidebar-glyph" aria-hidden="true">🔎</span></span><span class="title">LOT 추적</span></button>
+       <button class="app" type="button" data-action="재고관리"><span class="tile t8"><span class="qmes-sidebar-glyph" aria-hidden="true">📦</span></span><span class="title">재고관리</span></button>
+       <button class="app" type="button" data-action="설비관리"><span class="tile t9"><span class="qmes-sidebar-glyph" aria-hidden="true">⚙️</span></span><span class="title">설비관리</span></button>
+       <button class="app" type="button" data-action="직원관리"><span class="tile t10"><span class="qmes-sidebar-glyph" aria-hidden="true">👥</span></span><span class="title">직원관리</span></button>
      </div>
    </section>
    
