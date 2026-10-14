@@ -4987,6 +4987,21 @@ function printInspectionReport(title){
   box-shadow:none!important;outline:0!important;
  }
 }
+
+/* IQC summary upper edge: one owner, 1px */
+@media print{
+ #reportSheet.report-incoming .report-inspection tbody tr:last-child>td{
+   border-bottom:0!important;
+ }
+ #reportSheet.report-incoming .report-summary{
+   border-top:1px solid #d4dce5!important;
+   border-bottom:1px solid #d4dce5!important;
+ }
+ #reportSheet.report-incoming .report-summary>div{
+   border-top:0!important;
+   border-bottom:0!important;
+ }
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
