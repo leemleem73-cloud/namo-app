@@ -4870,81 +4870,37 @@ function wireAmaranthScreen(){
 }
 
 function printPqcCertificateOnly(){
- const root=workspaceBody.querySelector('.am-split[data-am-screen="process"] .std-inspection');
+ const root=workspaceBody.querySelector('.am-split[data-am-screen="process"] .std-inspection')||document.querySelector('.std-inspection[data-inspection-type="process"]');
  if(!root){toast('공정검사 성적서를 찾을 수 없습니다.');return;}
- const copy=root.cloneNode(true);
- const originals=root.querySelectorAll('input,select,textarea');
- const clones=copy.querySelectorAll('input,select,textarea');
- originals.forEach((el,i)=>{
-  const dest=clones[i];if(!dest)return;
-  if(el.tagName==='SELECT'){
-   const opt=el.options[el.selectedIndex];const span=document.createElement('span');
-   span.className='print-field-value';span.textContent=opt?.textContent||'';
-   dest.replaceWith(span);
-  }else if(el.tagName==='TEXTAREA'){
-   const span=document.createElement('span');span.className='print-field-value';
-   span.textContent=el.value||'';dest.replaceWith(span);
-  }else if(el.type==='checkbox'||el.type==='radio'){
-   dest.checked=el.checked;
-  }else{
-   const span=document.createElement('span');span.className='print-field-value';
-   span.textContent=el.value||'';dest.replaceWith(span);
-  }
- });
- const frame=document.createElement('iframe');
- frame.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none';
- frame.setAttribute('aria-hidden','true');
- document.body.appendChild(frame);
+ const read=(node)=>{if(!node)return '';if(node.matches('input,textarea'))return node.value||'';if(node.matches('select'))return node.options[node.selectedIndex]?.textContent?.trim()||'';const el=node.querySelector('input:not([style*="display:none"]),select,textarea');return el?read(el):node.textContent?.trim()||'';};
+ const escape=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const vals=[...root.querySelectorAll('.std-info>.v')].map(read);
+ const fields=['검사일자','검사자','작업지시번호','제품명','생산 LOT NO','공정명'];
+ const entries=fields.map((name,i)=>({name,value:vals[i]||'-'}));
+ const approval=[...root.querySelectorAll('.pqc-approval-person')].map(read);
+ const rows=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>'<tr>'+[...tr.children].map(td=>'<td>'+escape(read(td))+'</td>').join('')+'</tr>').join('');
+ const summary=[...root.querySelectorAll('.std-summary-card')].map(card=>({label:read(card.querySelector('.label')).replace(/^●\\s*/,''),value:read(card.querySelector('.value'))}));
+ const overall=summary.find(x=>x.label.includes('최종판정'))?.value||'-';
+ const remark=read(root.querySelector('.std-premium-remarks textarea'))||'';
+ const infoRows=[0,2,4].map(i=>'<tr><th>'+escape(entries[i].name)+'</th><td>'+escape(entries[i].value)+'</td><th>'+escape(entries[i+1].name)+'</th><td>'+escape(entries[i+1].value)+'</td></tr>').join('');
+ const frame=document.createElement('iframe');frame.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none';frame.setAttribute('aria-hidden','true');document.body.appendChild(frame);
  const doc=frame.contentDocument;
- doc.open();doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>공정검사 성적서</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,"Malgun Gothic",sans-serif;color:#172033;font-size:9px}.std-inspection{width:100%!important;max-width:none!important;min-width:0!important;overflow:visible!important;background:white}.std-inspection *{max-width:100%;min-width:0}.std-inspection table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}.std-inspection th,.std-inspection td{border:1px solid #dce3ec!important;padding:5px 3px!important;text-align:center!important;overflow-wrap:anywhere}.std-inspection .std-premium-remarks,.std-inspection .std-approval-row{width:100%!important}.print-field-value{display:inline-block;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;font-weight:600}.std-inspection button,.std-inspection .am-detail-actions{display:none!important}.std-inspection .std-approval-row{min-height:0!important}.std-inspection .pqc-approval-heading{height:24px!important}.std-inspection .pqc-approval-person{height:30px!important}.std-inspection .std-premium-remarks{height:60px!important;min-height:60px!important}section{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body></body></html>');doc.close();
- doc.body.appendChild(doc.importNode(copy,true));
- 
-// Apply a dedicated, single-stroke A4 print layout without modifying the live form.
-const printStyle=doc.createElement('style');
-printStyle.textContent=`
-@page{size:A4 portrait;margin:11mm}
-html,body{width:100%!important;background:#fff!important}
-body{font-family:"Malgun Gothic",Arial,sans-serif!important;font-size:10px!important;color:#253044!important}
-.std-inspection.premium{display:block!important;width:100%!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important}
-.std-inspection-head{display:grid!important;grid-template-columns:24% 43% 33%!important;align-items:stretch!important;gap:0!important;margin:0 0 10px!important;border:1px solid #aeb9c9!important}
-.std-inspection-head>div{min-width:0!important;padding:9px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important}
-.std-inspection-head>div:last-child{border-right:0!important;padding:0!important}
-.std-inspection-logo{display:flex!important;align-items:center!important;justify-content:center!important}
-.std-inspection-logo img{display:block!important;width:95%!important;max-width:125px!important;max-height:48px!important;object-fit:contain!important}
-.std-inspection-title{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-.std-inspection-title b{font-size:19px!important;letter-spacing:1px!important;white-space:nowrap!important}
-.std-inspection-doc{display:grid!important;grid-template-columns:40% 60%!important;align-content:stretch!important}
-.std-inspection-doc>.k,.std-inspection-doc>.v{padding:5px 4px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;border:0!important;border-bottom:1px solid #d4dce6!important;border-right:1px solid #d4dce6!important}
-.std-inspection-doc>.v{border-right:0!important}
-.std-inspection-doc>:nth-last-child(-n+2){border-bottom:0!important}
-.std-premium-band{display:none!important}
-.std-section-title{display:flex!important;align-items:center!important;gap:7px!important;margin:13px 0 6px!important;padding:5px 7px!important;border:0!important;border-bottom:1px solid #aeb9c9!important;background:#f4f6fa!important;break-after:avoid!important}
-.std-section-title .sec-no{font-weight:700!important;color:#72619c!important}
-.std-section-title small{margin-left:auto!important;font-size:8px!important}
-.std-info{display:grid!important;grid-template-columns:17% 33% 17% 33%!important;gap:0!important;border:1px solid #aeb9c9!important;border-right:0!important;border-bottom:0!important}
-.std-info>.k,.std-info>.v{display:flex!important;align-items:center!important;min-width:0!important;margin:0!important;padding:7px 6px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-bottom:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important}
-.std-info>.k{background:#f4f6fa!important;font-weight:700!important;justify-content:center!important;text-align:center!important}
-.std-info>.v{justify-content:center!important;text-align:center!important}
-.std-result-wrap{width:100%!important;overflow:visible!important;border:0!important}
-.std-result{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;border:1px solid #aeb9c9!important}
-.std-result th,.std-result td{border:1px solid #aeb9c9!important;padding:7px 3px!important;font-size:9px!important;vertical-align:middle!important;box-shadow:none!important}
-.std-result th{background:#f4f6fa!important}
-.std-summary-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;border:1px solid #aeb9c9!important;border-right:0!important;border-bottom:0!important}
-.std-summary-card{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;min-height:35px!important;padding:7px!important;border:0!important;border-right:1px solid #aeb9c9!important;border-bottom:1px solid #aeb9c9!important;border-radius:0!important;box-shadow:none!important;background:white!important}
-.std-summary-card .label{font-weight:700!important}
-.std-summary-card .dot{display:none!important}
-.std-premium-remarks,.std-approval-row{border-color:#aeb9c9!important;border-radius:0!important;box-shadow:none!important}
-.std-approval-row{min-height:0!important}
-.std-inspection input,.std-inspection select,.std-inspection textarea{display:none!important}
-.std-inspection .print-field-value{display:inline!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font-size:9px!important;font-weight:500!important}
-.std-inspection button,.std-inspection .am-detail-actions{display:none!important}
-.std-inspection section,.std-result tr,.std-summary-card{break-inside:avoid!important}
-`;
-doc.head.appendChild(printStyle);
-const win=frame.contentWindow;
- win.addEventListener('afterprint',()=>setTimeout(()=>frame.remove(),250),{once:true});
- setTimeout(()=>{win.focus();win.print();},180);
- setTimeout(()=>frame.remove(),120000);
+ doc.open();doc.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>공정검사 성적서</title><style>
+ @page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{margin:0;font:10px "Malgun Gothic",Arial,sans-serif;color:#1d3451;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .sheet{width:100%;margin:0 auto}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #b9c7d8;padding:9px 6px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}th{background:#f1f5f9;font-weight:700}
+ .header{display:grid;grid-template-columns:22% 51% 27%;height:76px;border:1px solid #b9c7d8;border-bottom:0}.logo,.title{display:flex;align-items:center;justify-content:center;border-right:1px solid #b9c7d8}.logo img{max-width:92%;max-height:44px;object-fit:contain}.title{font-size:21px;font-weight:800;letter-spacing:1px}.approval{display:grid;grid-template-columns:repeat(3,1fr)}.approval>div{display:grid;grid-template-rows:24px 1fr;border-right:1px solid #b9c7d8;text-align:center}.approval>div:last-child{border-right:0}.approval b{background:#f1f5f9;border-bottom:1px solid #b9c7d8;padding:6px 0}.approval span{display:flex;align-items:center;justify-content:center;font-size:9px}
+ .info th{width:17%}.info td{width:33%}.band{background:#1b3d68;color:white;font-weight:700;padding:8px 10px;margin-top:0}.result th,.result td{padding:9px 4px;font-size:9px}.result th{background:#f1f5f9}.result col.no{width:6%}.result col.item{width:16%}.result col.spec{width:27%}.result col.method{width:15%}.result col.measure{width:9%}.result col.judge{width:9%}
+ .meta td,.meta th{padding:10px 5px}.good{color:#087842;font-weight:800}.management th{width:15%}.management td{text-align:left;padding:17px 12px;white-space:pre-wrap;line-height:1.7}.management tr{height:75px}.management tr:last-child{height:55px}tr{break-inside:avoid}h1{margin:0}
+ </style></head><body><div class="sheet">
+ <div class="header"><div class="logo"><img src="https://www.namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical"></div><div class="title">공정검사 성적서</div><div class="approval"><div><b>작성</b><span>${escape(approval[0]||'-')}</span></div><div><b>검토</b><span>${escape(approval[1]||'-')}</span></div><div><b>승인</b><span>${escape(approval[2]||'-')}</span></div></div></div>
+ <table class="info">${infoRows}</table>
+ <div class="band">검사 결과</div>
+ <table class="result"><colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"><col class="measure"><col class="measure"><col class="judge"></colgroup><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th><th>1회</th><th>2회</th><th>3회</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table>
+ <table class="meta"><tr><th>검사일자</th><td>${escape(entries[0].value)}</td><th>검사자</th><td>${escape(entries[1].value)}</td><th>종합판정</th><td class="${overall==='합격'?'good':''}">${escape(overall)}</td></tr></table>
+ <div class="band">검사 관리정보</div><table class="management"><tr><th>검사조건</th><td>샘플링: LOT당 1회 / n=3　 검사장소: 품질검사실　 적용기준: 공정검사 기준서</td></tr><tr><th>추적성</th><td>작업지시번호: ${escape(entries[2].value)}　 생산 LOT: ${escape(entries[4].value)}</td></tr><tr><th>특이사항</th><td>${escape(remark)||'특이사항 없음'}</td></tr></table>
+ </div></body></html>`);doc.close();
+ const win=frame.contentWindow;win.addEventListener('afterprint',()=>setTimeout(()=>frame.remove(),500),{once:true});
+ setTimeout(()=>{win.focus();win.print();},350);setTimeout(()=>frame.remove(),120000);
 }
 function arrangePqcWorkspaceActions(){
   const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
