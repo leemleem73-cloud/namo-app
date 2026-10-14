@@ -1679,6 +1679,27 @@ thead{background:#f4f7fa}
 .std-inspection[data-inspection-type="process"] .std-approval-item small{
  white-space:normal!important;
 }
+</style><style id="pqc-remarks-approval-column-match-20261014">
+/* Use one label width and one divider position for remarks and approval. */
+.std-inspection[data-inspection-type="process"] .std-premium-remarks,
+.std-inspection[data-inspection-type="process"] .std-approval-row{
+ grid-template-columns:150px minmax(0,1fr)!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-row{
+ grid-template-columns:150px repeat(3,minmax(0,1fr))!important;
+}
+.std-inspection[data-inspection-type="process"] .std-premium-remarks>.k,
+.std-inspection[data-inspection-type="process"] .std-approval-row>.approval-label{
+ border-right:1px solid #e0e6ed!important;
+ background:#f4f6f9!important;
+ box-sizing:border-box!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item{
+ grid-template-rows:22px 30px!important;gap:4px!important;
+}
+.std-inspection[data-inspection-type="process"] .std-approval-item b{
+ border-bottom:0!important;max-width:none!important;
+}
 </style></head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5007,9 +5028,9 @@ function standardInspectionForm(type){
     <div class="std-premium-remarks"><div class="k">비고</div><textarea placeholder="검사 특이사항, 부적합 내용 및 조치사항을 입력하세요"></textarea></div>
     <div class="std-approval-row">
       <div class="approval-label">전자결재</div>
-      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b><small>로그인 본인</small></div>
-      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b><small>검토 대기 · 품질부 부장</small></div>
-      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b><small>승인 대기 · 품질부 부장</small></div>
+      <div class="std-approval-item"><span>작성</span><b>${approval.writer}</b></div>
+      <div class="std-approval-item"><span>검토</span><b>${approval.reviewer}</b></div>
+      <div class="std-approval-item"><span>승인</span><b>${approval.approver}</b></div>
     </div>
     <div class="std-premium-footer"><span>검사기준 및 측정값 확인 후 저장하십시오.</span><span class="secure">관리본 · 전자기록</span><b>(주)나모케미칼 품질부</b></div>
   </div>`;
