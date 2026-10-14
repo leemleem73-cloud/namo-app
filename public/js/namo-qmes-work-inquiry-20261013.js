@@ -260,11 +260,11 @@ function update(){
 }
 function scan(){
  const root=section(),table=root?.querySelector('.work-list-table');if(!table)return;
- const tools=root.querySelector('.nwi-header .table-tools');
+ const tools=root.querySelector('#namo-work-inquiry .nwi-actions');
  if(tools&&!tools.querySelector('.wo-bulk-controls')){
   const bar=document.createElement('span');bar.className='wo-bulk-controls';bar.hidden=true;
   bar.innerHTML='<button type="button" class="btn wo-bulk-print">선택 인쇄</button><button type="button" class="btn wo-bulk-delete">선택 삭제</button>';
-  tools.prepend(bar);bar.querySelector('.wo-bulk-print').onclick=print;bar.querySelector('.wo-bulk-delete').onclick=remove;
+  const clear=tools.querySelector('#nwi-clear');if(clear)tools.insertBefore(bar,clear);else tools.appendChild(bar);bar.querySelector('.wo-bulk-print').onclick=print;bar.querySelector('.wo-bulk-delete').onclick=remove;
  }
  const th=table.querySelector('thead th');if(th&&!th.querySelector('.wo-bulk-all')){
   const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-all';c.setAttribute('aria-label','전체 선택');c.onclick=e=>e.stopPropagation();c.onchange=()=>{rows().forEach(r=>c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved));update()};th.prepend(c)
