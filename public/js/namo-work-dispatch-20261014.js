@@ -45,39 +45,68 @@
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
  window.namoWorkDispatchInit=async function(editId){
    const form=document.querySelector('.work-form'), list=form?.querySelector('#namoWorkDepartments');
-   const button=form?.querySelector('#namoWorkSend'),status=form?.querySelector('#namoWorkSendStatus');
-   if(!list||!button||!status)return;
-   let savedId=editId||'',sending=false;
+   const button=form?.querySelector('#namoWorkSend'), status=form?.querySelector('#namoWorkSendStatus');
+   const employees=form?.querySelector('#namoWorkEmployees'),count=form?.querySelector('#namoWorkSendCount');
+   const reset=form?.querySelector('#namoWorkSendReset');
+   if(!list||!button||!status||!employees)return;
+   let savedId=editId||'',sending=false,departments=[];
+   const mode=()=>form.querySelector('input[name="namoWorkSendMode"]:checked')?.value||'department';
+   const chosen=()=>[...list.querySelectorAll('input:checked')].map(x=>x.value);
+   const staff=()=>[...employees.querySelectorAll('input:checked')].map(x=>x.value);
+   function render(){
+     const selected=new Set(chosen()),staffMode=mode()==='staff';
+     employees.hidden=!staffMode;
+     employees.replaceChildren();
+     if(staffMode){
+       for(const group of departments.filter(x=>selected.has(x.name))){
+         for(const person of group.staff||[]){
+           const label=document.createElement('label'),check=document.createElement('input');
+           check.type='checkbox';check.value=person.id;check.name='namoWorkEmployee';
+           label.append(check,document.createTextNode(person.name+(person.title?' · '+person.title:'')));
+           employees.append(label);
+         }
+       }
+       if(!employees.children.length)employees.textContent='먼저 수신부서를 선택해 주세요.';
+     }
+     updateCount();
+   }
+   function updateCount(){
+     const selected=new Set(chosen());
+     const people=mode()==='staff'?staff().length:departments.filter(x=>selected.has(x.name)).reduce((n,x)=>n+Number(x.members||0),0);
+     count.textContent='선택 부서 '+selected.size+'개 · 예상 수신자 '+people+'명';
+     button.disabled=sending||!selected.size||!people;
+   }
    try{
-     const departments=await api('/departments');
+     departments=await api('/departments');
      if(!form.isConnected)return;
      list.replaceChildren();
-     if(!departments?.length){list.textContent='발송 가능한 승인 부서가 없습니다.';return;}
+     if(!departments?.length){list.textContent='승인된 부서가 없습니다.';return;}
      departments.forEach(dept=>{
-       const l=document.createElement('label'),check=document.createElement('input');
+       const label=document.createElement('label'),check=document.createElement('input');
        check.type='checkbox';check.value=dept.name;check.name='namoDispatchDepartment';
-       l.append(check,document.createTextNode(dept.name+' ('+dept.members+'명)'));
-       list.append(l);
+       label.append(check,document.createTextNode(dept.name+' · '+dept.members+'명'));
+       list.append(label);
      });
-     button.disabled=false;
-   }catch(e){list.textContent='부서 조회 실패: '+e.message;return;}
+     list.addEventListener('change',render);
+     form.querySelectorAll('input[name="namoWorkSendMode"]').forEach(x=>x.addEventListener('change',render));
+     employees.addEventListener('change',updateCount);
+     reset?.addEventListener('click',()=>{list.querySelectorAll('input').forEach(x=>x.checked=false);render();status.textContent='';});
+     render();
+   }catch(e){list.textContent='직원등록현황 조회 실패: '+e.message;return;}
    button.addEventListener('click',async()=>{
      if(sending)return;
-     const names=[...list.querySelectorAll('input:checked')].map(x=>x.value);
-     if(!names.length){status.textContent='수신부서를 선택해 주세요.';return;}
+     const names=chosen(),sendMode=mode(),ids=staff();
+     if(!names.length||(sendMode==='staff'&&!ids.length)){status.textContent='수신부서 및 수신 직원을 선택해 주세요.';return;}
      if(!window.confirm(names.join(', ')+'에 작업지시서를 발송하시겠습니까?'))return;
-     sending=true;button.disabled=true;status.textContent='저장 확인 및 발송 중...';
+     if(!savedId){status.textContent='먼저 작업지시서를 저장한 뒤 수정 화면에서 발송해 주세요.';return;}
+     sending=true;updateCount();status.textContent='선택한 부서에 발송 중...';
      try{
-       if(!savedId){
-         status.textContent='신규 작업지시서는 먼저 저장해 주세요. 저장 후 목록에서 수정으로 열어 발송할 수 있습니다.';
-         return;
-       }
        const key='wd-'+savedId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
-       const payload={documentId:savedId,departments:names,requestKey:key,note:''};
+       const payload={documentId:savedId,departments:names,sendMode,recipientUserIds:ids,requestKey:key,note:''};
        const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-       status.textContent='발송 완료: '+result.departments.join(', ')+' · '+result.recipientTotal+'명 수신';
+       status.textContent='발송 완료: '+result.departments.join(', ')+' / 수신 '+result.recipientTotal+'명';
      }catch(e){status.textContent='발송 실패: '+e.message;}
-     finally{sending=false;button.disabled=false;}
+     finally{sending=false;updateCount();}
    });
  };
 })();
