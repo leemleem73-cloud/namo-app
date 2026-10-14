@@ -150,3 +150,21 @@
  #mainWorkspace .work-form .nwm-material .nwm-tools-hint{display:none!important}
  #mainWorkspace .work-form .nwm-material .nwm-summary{justify-content:flex-start}
 }
+
+/* Native table footer: three totals align with their input columns. */
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary{
+ display:table-footer-group!important;width:auto!important;margin:0!important;padding:0!important;
+ border:0!important;background:#f1f6fb!important;gap:0!important;
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary tr{display:table-row!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary td{
+ display:table-cell!important;box-sizing:border-box!important;background:#f1f6fb!important;
+ border-top:1px solid #cbd9e6!important;border-right:1px solid #d5e1ed!important;
+ padding:8px 9px!important;height:43px!important;vertical-align:middle!important;
+ text-align:right!important;color:#31516d!important;white-space:nowrap!important;
+}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary td:last-child{border-right:0!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary .nwm-summary-caption{text-align:center!important;font-weight:800!important}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary .nwm-summary-field-label{font-size:10px;color:#60778c;font-weight:600;margin-right:6px}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary strong{font-size:12px;color:#1d5d91;font-weight:800;font-variant-numeric:tabular-nums}
+#mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary .nwm-summary-unit{font-size:10px;margin-left:4px;color:#74899c}
