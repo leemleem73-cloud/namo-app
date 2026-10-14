@@ -4977,6 +4977,77 @@ function qmesIqcBarcodeSvg(value){
     printInspectionReport(title);
   });
 }
+// The print document draws its PQC grid once, after fonts and images settle.
+function drawPqcPrintGrid(doc){
+  const ns='http://www.w3.org/2000/svg';
+  for(const sheet of doc.querySelectorAll('.report-sheet:is(.report-process,.report-pqc-print)')){
+    sheet.querySelector('.pqc-print-grid')?.remove();
+    const bounds=sheet.getBoundingClientRect();
+    if(!bounds.width||!bounds.height)continue;
+    const width=bounds.width,height=bounds.height;
+    const snap=(v,max)=>Math.max(.5,Math.min(Math.round(v-.5)+.5,max-.5));
+    const x=v=>snap(v-bounds.left,width),y=v=>snap(v-bounds.top,height);
+    const segments=[];
+    const horizontal=(y1,x1=.5,x2=width-.5)=>segments.push(['h',y1,x1,x2]);
+    const vertical=(x1,y1,y2)=>segments.push(['v',x1,y1,y2]);
+    horizontal(.5);horizontal(height-.5);
+    vertical(.5,.5,height-.5);vertical(width-.5,.5,height-.5);
+    const rect=el=>el.getBoundingClientRect();
+    const divider=el=>{const r=rect(el);vertical(x(r.right),y(r.top),y(r.bottom));};
+    const bottom=el=>horizontal(y(rect(el).bottom));
+    for(const el of sheet.querySelectorAll('.report-doc-head,.report-meta,.report-section-title,.report-summary,.report-support-row,.report-sign'))bottom(el);
+    for(const el of sheet.querySelectorAll('.report-logo,.report-title-box,.approval-label,.report-support-row .label,.report-sign .label'))divider(el);
+    for(const group of sheet.querySelectorAll('.report-meta,.report-summary')){
+      for(const cell of [...group.children].slice(0,-1))divider(cell);
+    }
+    for(const table of sheet.querySelectorAll('.report-basic,.report-inspection')){
+      for(const row of table.querySelectorAll('tr')){
+        bottom(row);
+        for(const cell of [...row.children].slice(0,-1))divider(cell);
+      }
+    }
+    const approval=sheet.querySelector('.report-approval');
+    if(approval){
+      const heads=[...approval.querySelectorAll('.approval-head')];
+      const cells=[...approval.querySelectorAll('.approval-cell')];
+      for(const el of heads.slice(0,-1))divider(el);
+      for(const el of cells.slice(0,-1))divider(el);
+      if(heads.length){const first=rect(heads[0]),last=rect(heads[heads.length-1]);horizontal(y(first.bottom),x(first.left),x(last.right));}
+    }
+    const signCells=[...sheet.querySelectorAll('.report-sign .sign-cell')];
+    for(const el of signCells.slice(0,-1))divider(el);
+    for(const el of sheet.querySelectorAll('.report-sign .sign-line')){const r=rect(el);horizontal(y(r.bottom),x(r.left),x(r.right));}
+    // Join overlapping/adjacent collinear segments so no stroke is painted twice.
+    const lines=new Map();
+    for(const [axis,fixed,start,end] of segments){
+      if(end<=start)continue;
+      const key=axis+':'+fixed;
+      if(!lines.has(key))lines.set(key,{axis,fixed,ranges:[]});
+      lines.get(key).ranges.push([start,end]);
+    }
+    const commands=[];
+    for(const {axis,fixed,ranges} of lines.values()){
+      ranges.sort((a,b)=>a[0]-b[0]);
+      const merged=[];
+      for(const range of ranges){
+        const previous=merged[merged.length-1];
+        if(previous&&range[0]<=previous[1]+.01)previous[1]=Math.max(previous[1],range[1]);
+        else merged.push([...range]);
+      }
+      for(const [start,end] of merged)commands.push(axis==='h'?'M '+start+' '+fixed+' H '+end:'M '+fixed+' '+start+' V '+end);
+    }
+    const svg=doc.createElementNS(ns,'svg');
+    svg.setAttribute('class','pqc-print-grid');svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('width',width);svg.setAttribute('height',height);
+    svg.setAttribute('viewBox','0 0 '+width+' '+height);
+    const path=doc.createElementNS(ns,'path');
+    path.setAttribute('d',commands.join(' '));path.setAttribute('fill','none');
+    path.setAttribute('stroke','#c5d0dc');path.setAttribute('stroke-width','1');
+    path.setAttribute('shape-rendering','crispEdges');
+    svg.appendChild(path);sheet.appendChild(svg);
+  }
+}
+
 function printInspectionReport(title,batchSheets){
   const sheet=batchSheets?.[0]||document.getElementById('reportSheet');
   if(!sheet) return;
@@ -5009,6 +5080,7 @@ function printInspectionReport(title,batchSheets){
         setTimeout(resolve,1500);
       })));
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      drawPqcPrintGrid(doc);
       win.focus();
       win.print();
     }catch(err){
@@ -5103,6 +5175,10 @@ body{width:194mm;max-width:100%;margin:0 auto;font-family:Arial,'Noto Sans KR',s
 .print-outside-meta{width:100%;margin:2.5mm auto 0;display:flex;justify-content:space-between;font-size:8px;font-weight:700;color:#475569;padding:0 1mm;break-inside:avoid}
 .report-pqc-print,.report-pqc-print+.print-outside-meta{transform:translateY(7mm)}
 .report-doc-head,.report-meta,.report-basic tr,.report-inspection tr,.report-summary,.report-support-row,.report-footer{break-inside:avoid;page-break-inside:avoid}
+/* PQC print v3: one measured grid, with continuous outer edges. */
+.report-sheet{position:relative;overflow:visible;border-color:transparent!important}
+.report-sheet *{border-color:transparent!important;outline:0!important;box-shadow:none!important}
+.report-sheet>.pqc-print-grid{position:absolute;left:-1px;top:-1px;width:calc(100% + 2px);height:calc(100% + 2px);margin:0;overflow:visible;pointer-events:none;z-index:1}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 
 ` : `
