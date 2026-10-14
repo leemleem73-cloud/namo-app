@@ -16,6 +16,6 @@
 <path d="M704 395 Q704 400 713 403 M698 404 Q702 409 712 406" fill="none" stroke="url(#skin-left)" stroke-width="8" stroke-linecap="round"/>
 <path d="M821 395 Q820 401 812 403 M826 404 Q822 409 813 406" fill="none" stroke="url(#skin-right)" stroke-width="8" stroke-linecap="round"/>
 <use href="#originalMascot" clip-path="url(#original-pupils)"/>
-<path d="M708.5 402.5 Q707 402 706.5 400.8 M707.8 406 Q706.2 406.4 705.3 405.8 M816 402.5 Q817.5 402 818 400.8 M816.5 406 Q818 406.4 819 405.8" fill="none" stroke="#57356f" stroke-width="1.1" stroke-linecap="round" opacity=".22"/>
+<path d="M710.3 402.7 Q707 402.1 706 399.9 M708.8 406.8 Q705.7 407.8 704 406 M815.1 402.7 Q818.3 402.1 819.4 399.9 M816.2 406.8 Q819.3 407.8 821 406" fill="none" stroke="#57356f" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
 </g>
 </svg>
