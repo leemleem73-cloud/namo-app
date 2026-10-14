@@ -4799,6 +4799,46 @@ function printInspectionReport(title){
  .report-basic th,.report-basic td,.report-inspection th,.report-inspection td{border-color:#c6d1df!important}
  .report-support-row{border-right:0!important}
 }
+
+/* IQC single-line border correction — print only, 2026-10-14 */
+@media print {
+  .report-sheet {
+    border:1px solid #d0d9e4!important;
+    border-top:1px solid #d0d9e4!important;
+    outline:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+  }
+  .report-doc-head,.report-meta,.report-summary,.report-support-row,
+  .report-sign,.report-section-title {border-color:#d0d9e4!important}
+  .report-logo,.report-title-box,.approval-label,.approval-head,.approval-cell,
+  .report-meta>*,.report-summary>div,.report-support-row .label,
+  .report-sign .label,.report-sign .sign-cell {border-color:#d0d9e4!important}
+  .report-basic,.report-inspection {
+    width:100%!important;
+    border-collapse:collapse!important;
+    border-spacing:0!important;
+    border-left:0!important;
+    border-right:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+  }
+  .report-basic th,.report-basic td,.report-inspection th,.report-inspection td {
+    border:1px solid #d0d9e4!important;
+    box-shadow:none!important;
+  }
+  .report-basic tr>:first-child,.report-inspection tr>:first-child {border-left:0!important}
+  .report-basic tr>:last-child,.report-inspection tr>:last-child {border-right:0!important}
+  .report-support,.report-support-row,.report-summary,.report-meta {
+    border-left:0!important;border-right:0!important;
+  }
+  .report-support-row .value:last-child,.report-summary>div:last-child {
+    border-right:0!important;
+  }
+  .print-page-frame,.print-page-content {
+    outline:0!important;border:0!important;box-shadow:none!important;
+  }
+}
 </style>
 
 </head><body>${printSheet.outerHTML}${printOutsideMeta}</body></html>`;
