@@ -4869,6 +4869,40 @@ function wireAmaranthScreen(){
   root.querySelector('[data-am-save]')?.addEventListener('click',()=>document.getElementById('modalSave')?.click());
 }
 
+function printPqcCertificateOnly(){
+ const root=workspaceBody.querySelector('.am-split[data-am-screen="process"] .std-inspection');
+ if(!root){toast('공정검사 성적서를 찾을 수 없습니다.');return;}
+ const copy=root.cloneNode(true);
+ const originals=root.querySelectorAll('input,select,textarea');
+ const clones=copy.querySelectorAll('input,select,textarea');
+ originals.forEach((el,i)=>{
+  const dest=clones[i];if(!dest)return;
+  if(el.tagName==='SELECT'){
+   const opt=el.options[el.selectedIndex];const span=document.createElement('span');
+   span.className='print-field-value';span.textContent=opt?.textContent||'';
+   dest.replaceWith(span);
+  }else if(el.tagName==='TEXTAREA'){
+   const span=document.createElement('span');span.className='print-field-value';
+   span.textContent=el.value||'';dest.replaceWith(span);
+  }else if(el.type==='checkbox'||el.type==='radio'){
+   dest.checked=el.checked;
+  }else{
+   const span=document.createElement('span');span.className='print-field-value';
+   span.textContent=el.value||'';dest.replaceWith(span);
+  }
+ });
+ const frame=document.createElement('iframe');
+ frame.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none';
+ frame.setAttribute('aria-hidden','true');
+ document.body.appendChild(frame);
+ const doc=frame.contentDocument;
+ doc.open();doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>공정검사 성적서</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,"Malgun Gothic",sans-serif;color:#172033;font-size:9px}.std-inspection{width:100%!important;max-width:none!important;min-width:0!important;overflow:visible!important;background:white}.std-inspection *{max-width:100%;min-width:0}.std-inspection table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}.std-inspection th,.std-inspection td{border:1px solid #dce3ec!important;padding:5px 3px!important;text-align:center!important;overflow-wrap:anywhere}.std-inspection .std-premium-remarks,.std-inspection .std-approval-row{width:100%!important}.print-field-value{display:inline-block;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;font-weight:600}.std-inspection button,.std-inspection .am-detail-actions{display:none!important}.std-inspection .std-approval-row{min-height:0!important}.std-inspection .pqc-approval-heading{height:24px!important}.std-inspection .pqc-approval-person{height:30px!important}.std-inspection .std-premium-remarks{height:60px!important;min-height:60px!important}section{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body></body></html>');doc.close();
+ doc.body.appendChild(doc.importNode(copy,true));
+ const win=frame.contentWindow;
+ win.addEventListener('afterprint',()=>setTimeout(()=>frame.remove(),250),{once:true});
+ setTimeout(()=>{win.focus();win.print();},180);
+ setTimeout(()=>frame.remove(),120000);
+}
 function arrangePqcWorkspaceActions(){
   const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
   const top=pane?.querySelector('.am-detail-actions');
