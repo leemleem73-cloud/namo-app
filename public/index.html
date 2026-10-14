@@ -1991,8 +1991,10 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
 #namo-operation-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:transparent;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s}
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #namo-operation-overlay .namo-operation-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;color:#000;box-shadow:none;font-size:15px;font-weight:700}
-#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;animation:namo-operation-bounce 1.2s ease-in-out infinite}
+#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;transform-origin:63.022113% 50%;animation:namo-operation-bounce 1.2s ease-in-out infinite}
 #namo-operation-overlay .namo-operation-mascot img{display:block;object-fit:contain;image-rendering:auto;filter:none;width:150px;height:auto;border-radius:0}
+/* The round face is centered at x=756.5 in the original 500..907 viewport: 19.53317px right of the 150px image center. */
+#namo-operation-overlay .namo-operation-message{transform:translateX(19.53317px);text-align:center;white-space:nowrap}
 @keyframes namo-operation-bounce{0%,100%{transform:translateY(2px) scale(1.01,.99)}50%{transform:translateY(-8px) scale(.995,1.005)}}
 @media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-mascot{animation:none}}
 </style>
@@ -2008,7 +2010,7 @@ main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;over
     if(!overlay){
       overlay=document.createElement('div');overlay.id='namo-operation-overlay';
       overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
-      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=short-lashes-visible-together-4"></span><span>처리 중입니다...</span></div>';
+      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-original-loading-20261014.svg?v=short-lashes-visible-together-4"></span><span class="namo-operation-message">처리 중입니다...</span></div>';
       var img=overlay.querySelector('img');
       function ready(){
         if(imageReady)return;
