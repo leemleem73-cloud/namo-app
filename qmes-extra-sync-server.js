@@ -69,6 +69,38 @@ function install(app) {
     }
   });
 
+  // Delete exactly one selected PQC row from its originating shared record.
+  // Never delete an entire shared payload containing other inspection rows.
+  app.post('/api/qmes-sync/pqc/delete-row', async (req,res)=>{
+    if(!req.session?.user)return res.status(401).json({success:false,message:'로그인이 필요합니다.'});
+    const key=String(req.body?.recordKey||'');
+    const index=req.body?.rowIndex;
+    const rowId=String(req.body?.rowId??'');
+    if(!key||!Number.isInteger(index)||index<0||!rowId)
+      return res.status(400).json({success:false,message:'삭제할 검사 기록 정보가 부족합니다.'});
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const result=await client.query(
+        "SELECT payload FROM qmes_sync_records WHERE record_type='pqc' AND record_key=$1 FOR UPDATE",[key]);
+      if(!result.rows.length)throw Object.assign(new Error('원본 검사 기록이 없습니다.'),{status:404});
+      const payload=result.rows[0].payload||{};
+      const rows=payload.rows;
+      if(!Array.isArray(rows)||!rows[index]||String(rows[index].id??'')!==rowId)
+        throw Object.assign(new Error('검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+      const next=rows.slice();next.splice(index,1);
+      await client.query(
+        "UPDATE qmes_sync_records SET payload=$3::jsonb,updated_at=NOW(),updated_by=$4 WHERE record_type=$1 AND record_key=$2",
+        ['pqc',key,JSON.stringify({...payload,rows:next}),String(req.session.user.name||req.session.user.email||'')]);
+      await client.query('COMMIT');
+      return res.json({success:true,deleted:1});
+    }catch(error){
+      await client.query('ROLLBACK').catch(()=>{});
+      console.error('PQC row delete failed',error);
+      return res.status(error.status||500).json({success:false,message:error.status?error.message:'공정검사 삭제 처리에 실패했습니다.'});
+    }finally{client.release();}
+  });
+
   app.get('/api/qmes-sync/oqc', async (req, res) => {
     if (!req.session?.user) return res.status(401).json({ success:false, message:'로그인이 필요합니다.', data:null });
     try {
