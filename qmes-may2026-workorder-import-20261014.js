@@ -75,3 +75,5 @@ async function run(){if(!process.env.DATABASE_URL){console.warn('[QMES MAY IMPOR
 setTimeout(run,4000);
 
 require('./qmes-april2026-workorder-import-20261015.js');
+
+require('./qmes-jan2026-workorder-import-20261015.js');
