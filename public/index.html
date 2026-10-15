@@ -5816,7 +5816,7 @@ function showRowDetail(id,row){
     for(const order of cachedOrders){
       const fields=order?.fields||{};
       const no=String(fields['작업지시번호']||order?.id||'').trim();
-      if(no&&!options.has(no))options.set(no,{lot:String(fields['생산 LOT NO']||''),product:String(fields['제품명']||'')});
+      if(no&&!options.has(no))options.set(no,{lot:String(fields['생산 LOT NO']||''),product:String(fields['제품명']||''),date:String(order.workDate||fields['작업기간']||'').slice(0,10)});
     }
     if(currentOrder&&!options.has(currentOrder))options.set(currentOrder,{lot,product:get('제품명')});
     let initialOrder=currentOrder;
@@ -5824,7 +5824,7 @@ function showRowDetail(id,row){
       const match=matchPqcWorkOrder({lot,product:get('제품명'),date:get('검사일자')},cachedOrders);
       if(match)initialOrder=pqcWorkOrderNumber(match);
     }
-    const orderOptions='<option value="">작업지시번호 선택</option>'+[...options].map(([no,meta])=>'<option value="'+safe(no)+'" data-lot="'+safe(meta.lot)+'" data-product="'+safe(meta.product)+'"'+(no===initialOrder?' selected':'')+'>'+safe(no)+'</option>').join('');
+    const orderOptions='<option value="">작업지시번호 선택</option>'+[...options].map(([no,meta])=>'<option value="'+safe(no)+'" data-lot="'+safe(meta.lot)+'" data-product="'+safe(meta.product)+'" data-work-date="'+safe(meta.date||'')+'"'+(no===initialOrder?' selected':'')+'>'+safe(no)+'</option>').join('');
     const html='<div class="am-inline-edit-grid">'+[
       ['검사일자',get('검사일자')],
       ['제품명',get('제품명')],
@@ -5869,7 +5869,7 @@ function showRowDetail(id,row){
       inspector.addEventListener('change',toggle);toggle();
     }
     const select=document.getElementById('pqcDetailWorkOrder');
-    // Refresh available choices in the background without changing the selected number.
+    // Replace stale cached choices with the server's work-order numbers.
     const fill=async()=>{
       try{
         const response=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
@@ -5877,18 +5877,18 @@ function showRowDetail(id,row){
         const data=await response.json();
         if(data.success===false||!Array.isArray(data.data)||!select?.isConnected)return;
         const selected=select.value;
-        const seen=new Set([...select.options].map(o=>o.value));
+        const matched=data.data.find(order=>pqcWorkOrderNumber(order)===selected||String(order.id)===selected);
+        select.replaceChildren(new Option('작업지시번호 선택',''));
         for(const order of data.data){
-          const fields=order?.fields||{};
-          const no=String(fields['작업지시번호']||order?.id||'').trim();
-          if(!no||seen.has(no))continue;
-          seen.add(no);
+          const fields=order?.fields||{},no=pqcWorkOrderNumber(order);
+          if(!no)continue;
           const option=new Option(no,no);
           option.dataset.lot=String(fields['생산 LOT NO']||'');
           option.dataset.product=String(fields['제품명']||'');
+          option.dataset.workDate=String(order.workDate||fields['작업기간']||'').slice(0,10);
           select.add(option);
         }
-        select.value=selected;
+        if(matched)select.value=pqcWorkOrderNumber(matched);
       }catch(error){console.warn('[QMES] detail work orders',error);}
     };
     select?.addEventListener('change',()=>{
@@ -5898,6 +5898,8 @@ function showRowDetail(id,row){
       const lotInput=document.querySelector('[data-pqc-field="생산 LOT NO"]');
       if(product&&option.dataset.product)product.value=option.dataset.product;
       if(lotInput&&option.dataset.lot)lotInput.value=option.dataset.lot;
+      const dateInput=document.querySelector('[data-pqc-field="검사일자"]');
+      if(dateInput&&/^\d{4}-\d{2}-\d{2}$/.test(option.dataset.workDate||''))dateInput.value=option.dataset.workDate;
     });
     fill();
     const draftKey='namo_qmes_pqc_detail_drafts_v1';
