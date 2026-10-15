@@ -6823,8 +6823,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <style id="pqc-centered-choice-style">
 .pqc-centered-choice{position:relative;display:block;width:100%;min-width:0}
 .pqc-centered-choice>select{display:none!important}
-.pqc-centered-choice .pqc-choice-trigger{position:relative;display:block;width:100%;height:38px;box-sizing:border-box;border:1px solid #dce3ed;border-radius:6px;background:#fff;color:#26364a;padding:0 28px!important;font:inherit;font-weight:500;cursor:pointer;text-align:center!important}
-.pqc-choice-trigger .pqc-choice-label{display:block;width:100%;text-align:center!important}
+.pqc-centered-choice .pqc-choice-trigger{position:relative;display:block;width:100%;height:38px;box-sizing:border-box;border:1px solid #dce3ed;border-radius:6px;background:#fff;color:#26364a;padding:0!important;white-space:nowrap;font:inherit;font-weight:500;cursor:pointer;text-align:center!important}
+.pqc-choice-trigger .pqc-choice-label{display:block;width:100%;white-space:nowrap;text-align:center!important}
 .pqc-choice-trigger .pqc-choice-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;line-height:1;pointer-events:none}
 .pqc-choice-trigger:focus-visible{outline:0;border-color:#a5a4db;box-shadow:0 0 0 2px #efedff}
 .pqc-choice-trigger:disabled{cursor:default;opacity:.7}
@@ -6849,7 +6849,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
       return;
     }
     const wrap=document.createElement('div');wrap.className='pqc-centered-choice';
-    select.before(wrap);wrap.append(select);select.hidden=true;select.tabIndex=-1;
+    select.before(wrap);wrap.append(select);select.hidden=true;select.style.setProperty('display','none','important');select.tabIndex=-1;
     const trigger=document.createElement('button');trigger.type='button';trigger.className='pqc-choice-trigger';
     trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
     const label=document.createElement('span');label.className='pqc-choice-label';
