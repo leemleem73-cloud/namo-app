@@ -4201,6 +4201,9 @@ window.qmesGetWorkOrders=()=>sortWorkOrdersLatest(readWorkOrders());
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
   if(!tbody)return;
+  // Prevent painting the full unpaginated set while shared rows are updated.
+  const priorVisibility=tbody.style.visibility;
+  tbody.style.visibility='hidden';
   // Keep unchanged rows attached to avoid blinking when shared data refreshes.
   const prior=new Map([...tbody.querySelectorAll('tr[data-work-saved]')].map(r=>[r.dataset.workSaved,r]));
   const seen=new Set();
@@ -4259,6 +4262,7 @@ function renderSavedWorkOrders(){
       if(section.isConnected && typeof window.namoWorkInquiryRefresh==='function')window.namoWorkInquiryRefresh();
     });
   }
+  tbody.style.visibility=priorVisibility;
 }
 function nextWorkOrderDisplayNumber(date,orders){
   const prefix='WO-'+date.replace(/-/g,'')+'-';
