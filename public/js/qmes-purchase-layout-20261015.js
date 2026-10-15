@@ -98,5 +98,17 @@ const cleanLayout=document.createElement('style');cleanLayout.textContent=`
 #purchase .module-toolbar .table-tools{grid-column:2!important;grid-row:1!important;display:flex!important;align-self:start!important;gap:8px!important;margin:0!important}
 @media(max-width:1100px){#purchase .module-toolbar{grid-template-columns:1fr!important}#purchase .module-toolbar .table-tools{grid-column:1!important;grid-row:2!important;justify-content:end!important}#purchase .module-toolbar .filters{grid-template-columns:repeat(2,minmax(150px,1fr))!important;grid-template-rows:auto!important}#purchase .module-toolbar .filters>.search-input,#purchase .module-toolbar .filters>.pcal-root,#purchase .qpu-more label:first-child,#purchase .qpu-more label:nth-child(2),#purchase .qpu-more .qpu-search,#purchase .qpu-more .qpu-clear{grid-column:auto!important;grid-row:auto!important}}
 `;document.head.append(cleanLayout);
+const alignmentFix=document.createElement('style');alignmentFix.textContent=`
+#purchase .module-toolbar .filters{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#purchase .qpu-more .qpu-clear{grid-column:3!important;grid-row:2!important;justify-self:end!important;margin-right:68px!important}
+#purchase .qpu-more .qpu-search{grid-column:3!important;grid-row:2!important;justify-self:end!important}
+#purchase .qpu-popup footer{flex-shrink:0!important;min-height:48px!important;align-items:center!important;gap:10px!important;padding:10px 16px!important}
+#purchase .qpu-popup .qpu-list{min-height:80px!important}
+.qpu-popup{box-sizing:border-box!important;min-width:420px!important;min-height:340px!important;overflow:hidden!important}
+.qpu-popup .qpu-list{min-height:0!important}
+.qpu-popup footer{box-sizing:border-box!important;flex-shrink:0!important;background:#f8fbff!important}
+.qpu-popup .qpu-head button{cursor:pointer!important}
+@media(max-width:1100px){#purchase .qpu-more .qpu-clear,#purchase .qpu-more .qpu-search{grid-column:auto!important;grid-row:auto!important;margin-right:0!important}}
+`;document.head.append(alignmentFix);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
