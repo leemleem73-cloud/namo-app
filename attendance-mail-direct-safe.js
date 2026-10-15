@@ -192,7 +192,7 @@ function install(app){
       if(!ids.length||ids.length>50||ids.some(id=>!/^[0-9a-f-]{36}$/i.test(id)))return fail(res,400,'수신 담당자를 다시 선택해 주세요.','INVALID_RECIPIENTS');
       const orderId=String(req.body?.documentId||'').trim().slice(0,100);
       if(!orderId)return fail(res,400,'작업지시서를 먼저 저장해 주세요.','ORDER_REQUIRED');
-      const map={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com'};
+      const map={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com','임흥배':'hbleem@namochemical.com'};
       const q=await pool.query("SELECT id,name,email,department,status FROM users WHERE id::text=ANY($1::text[]) AND COALESCE(status,'APPROVED') NOT IN ('REJECTED','INACTIVE','DISABLED','DELETED','WITHDRAWN')",[ids]);
       if(q.rows.length!==ids.length)return fail(res,400,'등록되지 않았거나 비활성 상태인 담당자가 포함되어 있습니다.','INVALID_STAFF');
       const recipients=q.rows.map(x=>({...x,email:String(x.email||map[String(x.name||'').trim()]||'').trim()}));
