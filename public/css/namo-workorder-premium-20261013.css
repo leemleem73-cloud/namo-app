@@ -228,3 +228,8 @@
 #work .module-shell>.module-body>.work-list-table>tbody>tr>td:nth-child(2) a{
  color:#006fc7!important;text-decoration:underline!important;text-decoration-color:#006fc7!important;font-weight:700!important;
 }
+
+/* Brighter process-inspection-style number links; scoped to number text only. */
+#work .work-list-table tbody tr td:nth-child(2),
+#work .work-list-table tbody tr td:nth-child(2) a,
+#work .work-list-table tbody tr td:nth-child(2) *{color:#1689ed!important;text-decoration-color:#1689ed!important;}
