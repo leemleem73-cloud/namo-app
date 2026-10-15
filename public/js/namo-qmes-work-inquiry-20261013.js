@@ -197,7 +197,7 @@ function init(){
    group.prepend(print);
   });
  }
- let workPage=1,lastWorkQuery='';
+ let workPage=1,lastWorkQuery='',hasSearched=false;
  try{workPage=Math.max(1,Number(sessionStorage.getItem('namo-work-list-page'))||1);}catch(_){}
  const pager=document.createElement('div');pager.className='nwi-pagination';pager.setAttribute('aria-label','작업지시서 페이지');pager.style.cssText='display:flex;justify-content:center;gap:6px;padding:12px';tableWrap.insertAdjacentElement('afterend',pager);
  function filter(){
@@ -207,13 +207,14 @@ function init(){
   const matching=[];
   getRows().forEach(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
-   const matches=q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
+   const matches=hasSearched&&q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
    tr.hidden=!matches;tr.style.setProperty('display',matches?'table-row':'none','important');if(matches){count++;matching.push(tr);}
   });
-  const pages=Math.max(1,Math.ceil(matching.length/10));if(matching.length)workPage=Math.min(workPage,pages);
+  const pages=Math.max(1,Math.ceil(matching.length/10));workPage=Math.min(workPage,pages);
   const start=(workPage-1)*10;
   matching.forEach((tr,i)=>{const visible=i>=start&&i<start+10;tr.hidden=!visible;tr.style.setProperty('display',visible?'table-row':'none','important');});
   pager.replaceChildren();
+  if(!hasSearched){panel.querySelector('.nwi-count').textContent='';const total=section.querySelector('#nwi-list-total');if(total)total.textContent='';return;}
   for(const [page,label]of [[workPage-1,'‹'],...Array.from({length:pages},(_,i)=>[i+1,String(i+1)]),[workPage+1,'›']]){
     const button=document.createElement('button');button.type='button';button.textContent=label;button.className='btn'+(page===workPage?' active':'');button.setAttribute('aria-label',label==='‹'?'이전 페이지':label==='›'?'다음 페이지':page+'페이지');button.disabled=page<1||page>pages;
     if(page===workPage)button.style.cssText='background:#2f7de1;color:#fff';
@@ -223,9 +224,9 @@ function init(){
   panel.querySelector('.nwi-count').textContent='조회 '+count+'건';
   const total=section.querySelector('#nwi-list-total');if(total)total.textContent='총 '+count+'건';
  }
- panel.querySelector('#nwi-search').addEventListener('click',filter);
- panel.querySelector('#nwi-clear').addEventListener('click',()=>{controls.forEach(x=>x.value='');filter()});
- controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();filter()}}));
+ panel.querySelector('#nwi-search').addEventListener('click',()=>{hasSearched=true;workPage=1;filter();});
+ panel.querySelector('#nwi-clear').addEventListener('click',()=>{controls.forEach(x=>x.value='');hasSearched=false;workPage=1;filter()});
+ controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();hasSearched=true;workPage=1;filter()}}));
  function draw(row,order){
   const cells=[...row.cells].map(c=>c.textContent.trim()),fields=order?.fields||{};
   const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[1]],['고객사',fields['고객사']||cells[2]],['제품명',fields['제품명']||cells[3]],['생산 LOT',fields['생산 LOT NO']||cells[4]],['설비명',fields['설비명']||cells[5]],['작업자',fields['작업자']||cells[6]],['계획수량',fields['계획수량']||cells[7]],['작업기간',fields['작업기간']||cells[8]],['진행상태',fields['진행상태']||cells[9]],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
