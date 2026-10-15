@@ -169,7 +169,7 @@ function init(){
  detail.innerHTML='<div class="nwd-head">작업지시 상세내역</div><div class="nwd-content">상단 작업지시 목록에서 항목을 선택하세요.</div>';
  shell.insertAdjacentElement('afterend',detail);
  const controls=[...panel.querySelectorAll('[data-filter]')];let activeId='',activeTab='materials',activeRecord=null;
- const getRows=()=>[...tbody.querySelectorAll('tr[data-work-saved], tr.data-row')].filter(tr=>tr.cells.length>1);
+ const getRows=()=>[...tbody.children].filter(tr=>tr.tagName==='TR'&&tr.cells.length>1);
  // Respect the native hidden state even when another stylesheet sets table-row display.
  if(!document.getElementById('nwi-hidden-row-style')){
   const style=document.createElement('style');style.id='nwi-hidden-row-style';
@@ -225,8 +225,8 @@ function init(){
   }):[];
   // Count the rows actually present, without changing how records are loaded.
   // Some legacy work-order rows do not carry data-work-saved/data-row.
-  const availableRows=[...tbody.querySelectorAll('tr')].filter(tr=>tr.cells.length>1);
-  const effectiveMatching=hasSearched&&matching.length===0&&q.every(v=>!v)?availableRows:matching;
+  const availableRows=getRows();
+  const effectiveMatching=matching;
   const count=effectiveMatching.length,pages=Math.max(1,Math.ceil(count/10));
   workPage=Math.min(Math.max(1,workPage),pages);
   const visible=new Set(effectiveMatching.slice((workPage-1)*10,workPage*10));
