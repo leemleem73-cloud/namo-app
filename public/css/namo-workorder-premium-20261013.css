@@ -152,3 +152,11 @@
   margin-right:17px!important;
   max-width:calc(100% - 34px)!important;
 }
+
+/* 2026-10-15: Match incoming inspection's square, light table grid. Scope: work-order list only. */
+#work .module-shell>.module-body{border-radius:0!important;border-color:#dce2e8!important;}
+#work .module-shell>.module-body>.work-list-table{border-radius:0!important;border-collapse:separate!important;border-spacing:0!important;}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th{border-radius:0!important;border-right:1px solid #e4dcee!important;border-bottom:1px solid #e4dcee!important;}
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td{border-radius:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important;}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th:last-child,
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td:last-child{border-right:0!important;}
