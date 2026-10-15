@@ -219,3 +219,6 @@
 #work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="2"]>tr:nth-child(-n+10),
 #work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="2"]>tr:nth-child(n+21),
 #work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="3"]>tr:nth-child(-n+20){display:none!important;}
+
+/* Never paint intermediate rows while search re-applies the ten-row window. */
+#work .work-list-table tbody.nwi-reconciling{visibility:hidden!important;}
