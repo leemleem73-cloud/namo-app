@@ -4555,8 +4555,26 @@ async function loadHistoricalInspectionRows(section,id){
       }
     }
     if(section._historicalRequest!==request||!section.isConnected)return;
-    // Each saved inspection remains individually visible and selectable.
+    // PQC list: one visible row per inspection date + work order + production LOT.
+    // Source records remain untouched; never delete or merge persisted measurements.
     let displayRows=rows;
+    if(id==='process'){
+      const grouped=new Map(),groupSources=new Map();
+      const norm=value=>String(value??'').trim().toUpperCase();
+      for(const row of rows){
+        const date=norm(row.date),order=norm(row.workOrderNo||row.orderNo),lot=norm(row.lot);
+        // Without a usable date/LOT, do not collapse unrelated records.
+        const valid=date&&date!=='-'&&lot&&lot!=='-';
+        const key=valid?[date,order,lot].join('||'):'unique:'+String(row.id||grouped.size);
+        const list=groupSources.get(key)||[];if(row.__sourceRecordKey&&row.__sourceRowId)list.push({recordKey:row.__sourceRecordKey,rowIndex:row.__sourceRowIndex,rowId:row.__sourceRowId});groupSources.set(key,list);
+        const existing=grouped.get(key);
+        if(!existing){grouped.set(key,row);continue;}
+        const quality=r=>[r.workOrderNo||r.orderNo,r.inspector,r.product,r.judge]
+          .filter(v=>v&&v!=='-'&&v!=='대기'&&v!=='검사대기').length;
+        if(quality(row)>quality(existing))grouped.set(key,row);
+      }
+      displayRows=[...grouped.entries()].map(([key,row])=>({...row,__deleteTargets:groupSources.get(key)||[]}));
+    }
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
@@ -4577,7 +4595,7 @@ async function loadHistoricalInspectionRows(section,id){
         }
         return '<td>'+safe(v)+'</td>';
       }).join('');
-      return '<tr class="data-row" tabindex="0" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
+      return '<tr class="data-row" tabindex="0" data-delete-targets="'+safe(JSON.stringify(row.__deleteTargets||[]))+'" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
     section._inspectionRowsLoaded=displayRows.length;
     section._inspectionBulkRefresh?.();
@@ -4761,7 +4779,7 @@ function wireInspectionBulkSelect(section,id){
     if(section._inspectionDeleting)return;
     const rows=allRows.filter(row=>row.querySelector('.iqc-select-row:checked'));
     if(!rows.length)return;
-    const targets=rows.map(row=>({recordKey:row.dataset.sourceKey,rowIndex:Number(row.dataset.sourceIndex),rowId:row.dataset.sourceId}));
+    const targets=rows.flatMap(row=>{try{const all=JSON.parse(row.dataset.deleteTargets||'[]');if(all.length)return all;}catch(_){}return [{recordKey:row.dataset.sourceKey,rowIndex:Number(row.dataset.sourceIndex),rowId:row.dataset.sourceId}];});
     if(targets.some(t=>!t.recordKey||!t.rowId||!Number.isInteger(t.rowIndex)||t.rowIndex<0)){
       toast('원본 기록을 확인할 수 없는 항목이 있습니다. 삭제하지 않았습니다.');return;
     }
