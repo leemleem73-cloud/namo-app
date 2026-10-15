@@ -156,7 +156,7 @@ function init(){
   function close(){pop.hidden=true;trigger.setAttribute('aria-expanded','false')}
   trigger.onclick=()=>{if(!pop.hidden){close();return}a=parse(start.value);b=parse(end.value);if(!a&&!b&&value.textContent!=='기간 선택'){a=new Date(firstOfMonth);b=new Date(todayLocal)}if(a)base=new Date(a.getFullYear(),a.getMonth(),1);redraw();pop.hidden=false;trigger.setAttribute('aria-expanded','true')};
   pop.querySelector('.nwi-period-cancel').onclick=close;
-  pop.querySelector('.nwi-period-ok').onclick=()=>{if(!a||!b)return;start.value=fmt(a);end.value=fmt(b);value.textContent=fmt(a)+' ~ '+fmt(b);close()};
+  pop.querySelector('.nwi-period-ok').onclick=()=>{if(!a||!b)return;start.value=fmt(a);end.value=fmt(b);value.textContent=fmt(a)+' ~ '+fmt(b);close();filter()};
   document.addEventListener('pointerdown',e=>{if(!pop.hidden&&!pop.contains(e.target)&&!rangeLabel.contains(e.target))close()});
   panel.querySelector('#nwi-search').addEventListener('click',()=>{if(!start.value&&!end.value&&value.textContent!=='기간 선택'){start.value=fmt(firstOfMonth);end.value=fmt(todayLocal)}});
   panel.querySelector('#nwi-clear').addEventListener('click',()=>{value.textContent='기간 선택';a=null;b=null;close()});
@@ -199,7 +199,7 @@ function init(){
  }
  function filter(){
   ensureRowPrintButtons();
-  const q=controls.map(x=>x.value.trim().toLowerCase());let count=0;
+  const q=controls.map(x=>x.value.trim().toLowerCase());const range=panel.querySelector('.nwi-period-value')?.textContent||'';const found=range.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);if(found){if(!q[4])q[4]=found[1];if(!q[5])q[5]=found[2]}let count=0;
   getRows().forEach(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    const matches=q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
