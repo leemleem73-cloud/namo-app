@@ -2307,6 +2307,31 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
 </div>
 <div class="toast" id="toast"></div>
 
+<style id="namo-work-square-grid-20261015">
+/* Work-order list only: square, consistent 1px grid matching incoming inspection. */
+#work .module-body .work-list-table {
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  border:1px solid #dce2e8!important;
+  border-radius:0!important;
+}
+#work .module-body .work-list-table th,
+#work .module-body .work-list-table td {
+  border-radius:0!important;
+  border-top:0!important;
+  border-left:0!important;
+  border-right:1px solid #eef1f4!important;
+  border-bottom:1px solid #e8edf2!important;
+  box-sizing:border-box!important;
+}
+#work .module-body .work-list-table thead th {
+  border-right-color:#e4dcee!important;
+  border-bottom-color:#e4dcee!important;
+}
+#work .module-body .work-list-table th:last-child,
+#work .module-body .work-list-table td:last-child {border-right:0!important;}
+#work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
+</style>
 <script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261015-first-page19"></script>
 <script>
 const app = document.getElementById('app');
