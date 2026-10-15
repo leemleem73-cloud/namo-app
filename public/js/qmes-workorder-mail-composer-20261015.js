@@ -31,4 +31,4 @@ scan();
 })();
 ;(function(){if(document.querySelector('script[data-qmes-customer-picker]'))return;const t=document.createElement('script');t.dataset.qmesCustomerPicker='1';t.src='./js/qmes-customer-picker-20261015.js?v=7';document.head.appendChild(t)})();
 
-;(function(){if(document.querySelector('script[data-qmes-auto-lot]'))return;const t=document.createElement('script');t.dataset.qmesAutoLot='1';t.src='./js/qmes-auto-production-lot-20261015.js?v=1';document.head.appendChild(t)})();
+;(function(){if(document.querySelector('script[data-qmes-auto-lot]'))return;const t=document.createElement('script');t.dataset.qmesAutoLot='1';t.src='./js/qmes-auto-production-lot-20261015.js?v=2';document.head.appendChild(t)})();
