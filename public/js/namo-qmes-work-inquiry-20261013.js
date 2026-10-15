@@ -170,13 +170,6 @@ function init(){
  shell.insertAdjacentElement('afterend',detail);
  const controls=[...panel.querySelectorAll('[data-filter]')];let activeId='',activeTab='materials',activeRecord=null;
  const getRows=()=>[...tbody.querySelectorAll('tr[data-work-saved], tr.data-row')].filter(tr=>tr.cells.length>1);
- // Restrict visibility to rows explicitly selected by pagination. This also
- // protects against styles or later render passes making every row visible.
- if(!document.getElementById('nwi-work-page-visibility')){
-   const style=document.createElement('style');style.id='nwi-work-page-visibility';
-   style.textContent='#work .work-list-table tbody tr:not([data-nwi-page-visible="1"]){display:none!important}';
-   document.head.appendChild(style);
- }
  function ensureRowPrintButtons(){
   getRows().forEach(tr=>{
    const actions=tr.cells[tr.cells.length-1];
@@ -213,14 +206,13 @@ function init(){
   const queryKey=JSON.stringify(q);if(lastWorkQuery&&lastWorkQuery!==queryKey)workPage=1;lastWorkQuery=queryKey;
   const matching=[];
   getRows().forEach(tr=>{
-   tr.removeAttribute('data-nwi-page-visible');
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    const matches=hasSearched&&q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
    tr.hidden=!matches;tr.style.setProperty('display',matches?'table-row':'none','important');if(matches){count++;matching.push(tr);}
   });
   const pages=Math.max(1,Math.ceil(matching.length/10));workPage=Math.min(workPage,pages);
   const start=(workPage-1)*10;
-  matching.forEach((tr,i)=>{const visible=i>=start&&i<start+10;tr.hidden=!visible;if(visible)tr.dataset.nwiPageVisible='1';tr.style.setProperty('display',visible?'table-row':'none','important');});
+  matching.forEach((tr,i)=>{const visible=i>=start&&i<start+10;tr.hidden=!visible;tr.style.setProperty('display',visible?'table-row':'none','important');});
   pager.replaceChildren();
   if(!hasSearched){panel.querySelector('.nwi-count').textContent='';const total=section.querySelector('#nwi-list-total');if(total)total.textContent='';return;}
   for(const [page,label]of [[workPage-1,'‹'],...Array.from({length:pages},(_,i)=>[i+1,String(i+1)]),[workPage+1,'›']]){
