@@ -33,4 +33,4 @@ scan();
 
 ;(function(){if(document.querySelector('script[data-qmes-auto-lot]'))return;const t=document.createElement('script');t.dataset.qmesAutoLot='1';t.src='./js/qmes-auto-production-lot-20261015.js?v=2';document.head.appendChild(t)})();
 
-;(function(){if(document.querySelector('script[data-qmes-purchase-layout]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseLayout='1';t.src='./js/qmes-purchase-layout-20261015.js?v=3';document.head.appendChild(t)})();
+;(function(){if(document.querySelector('script[data-qmes-purchase-layout]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseLayout='1';t.src='./js/qmes-purchase-layout-20261015.js?v=4';document.head.appendChild(t)})();
