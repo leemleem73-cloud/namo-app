@@ -285,10 +285,24 @@ function init(){
   }catch(err){console.warn('[work inquiry] detail fetch:',err);}
  },true);
  detail.addEventListener('click',e=>{const tab=e.target.closest('[data-nwd-tab]');if(!tab||!activeId)return;activeTab=tab.dataset.nwdTab;const row=getRows().find(x=>x.dataset.workSaved===activeId);if(row)draw(row,activeRecord);});
- let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;filter();})});
- window.namoWorkInquiryRefresh=filter;
+ let queued=false;
+ const refreshCurrentTable=()=>{
+  if(!tbody.isConnected || section.querySelector('.work-list-table tbody')!==tbody){
+   observer.disconnect();
+   if(window.namoWorkInquiryRefresh===refreshCurrentTable)window.namoWorkInquiryRefresh=null;
+   window.namoWorkInquiryInit?.();
+   return;
+  }
+  filter();
+ };
+ const observer=new MutationObserver(()=>{
+  if(queued)return;
+  queued=true;
+  requestAnimationFrame(()=>{queued=false;refreshCurrentTable();});
+ });
+ window.namoWorkInquiryRefresh=refreshCurrentTable;
  observer.observe(tbody,{childList:true});
- filter();
+ refreshCurrentTable();
 }
 window.namoWorkInquiryInit=init;
 function boot(){init();if(document.getElementById('namo-work-inquiry'))return;const obs=new MutationObserver(()=>{if(document.querySelector('#work .work-list-table')){init();if(document.getElementById('namo-work-inquiry'))obs.disconnect()}});obs.observe(document.body,{childList:true,subtree:true});}
