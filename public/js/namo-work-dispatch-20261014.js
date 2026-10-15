@@ -72,6 +72,11 @@
    const form=document.querySelector('.work-form'),list=form?.querySelector('#namoWorkDepartments'),people=form?.querySelector('#namoWorkEmployees');
    const button=form?.querySelector('#namoWorkSend'),status=form?.querySelector('#namoWorkSendStatus'),count=form?.querySelector('#namoWorkSendCount'),reset=form?.querySelector('#namoWorkSendReset');
    if(!list||!people||!button||!count||!status)return;
+   const staffEmails={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com'};
+   const emailButton=document.createElement('button');
+   emailButton.type='button';emailButton.className='btn';emailButton.id='namoWorkEmailCompose';
+   emailButton.textContent='이메일 작성';emailButton.disabled=true;emailButton.title='선택한 담당자에게 이메일을 작성합니다. 실제 전송은 메일 프로그램에서 확인 후 진행합니다.';
+   button.before(emailButton);
    let departments=[],sending=false;
    const selected=new Map();
    const groups=()=>departments.filter(d=>selected.has(d.name));
@@ -115,6 +120,9 @@
      const total=valid.reduce((n,d)=>n+selected.get(d.name).size,0);
      count.textContent='선택 부서 '+valid.length+'개 · 수신자 '+total+'명';
      button.disabled=sending||!total;
+     const mailTotal=groups().reduce((n,d)=>n+(d.staff||[]).filter(p=>selected.get(d.name).has(String(p.id))&&staffEmails[String(p.name||'').trim()]).length,0);
+     emailButton.disabled=sending||!mailTotal;
+     emailButton.title=mailTotal+'명 이메일 작성 (메일 앱에서 직접 발송)';
    }
    try{
      departments=(await api('/departments')).filter(d=>!['GUEST','대표'].includes(String(d.name||'').trim().toUpperCase()));
@@ -123,6 +131,22 @@
      render();
    }catch(err){list.textContent='부서 조회 실패: '+err.message;return;}
    reset?.addEventListener('click',()=>{selected.clear();status.textContent='';render();});
+   emailButton.addEventListener('click',()=>{
+     if(sending)return;
+     const selectedStaff=groups().flatMap(d=>(d.staff||[]).filter(p=>selected.get(d.name).has(String(p.id))));
+     const emails=[...new Set(selectedStaff.map(p=>staffEmails[String(p.name||'').trim()]).filter(Boolean))];
+     if(!emails.length){status.textContent='이메일이 등록된 수신 담당자를 선택해 주세요.';return;}
+     const missing=selectedStaff.filter(p=>!staffEmails[String(p.name||'').trim()]).map(p=>p.name);
+     const orderNumber=form.querySelector('#workOrderNo')?.value?.trim()||editId||'미지정';
+     const instructions=form.querySelector('#namoWorkInstructions')?.value?.trim()||'';
+     const basic=[...form.querySelectorAll('.work-basic-grid .form-item')];
+     const field=name=>basic.find(x=>x.querySelector('label')?.textContent.trim()===name)?.querySelector('input,select')?.value?.trim()||'-';
+     const subject='[NAMO QMES] 작업지시서 '+orderNumber;
+     const body=['나모케미칼 QMES 작업지시서 전달드립니다.','','작업지시번호: '+orderNumber,'고객사: '+field('고객사명'),'제품명: '+field('제품명'),'생산 LOT NO: '+field('생산 LOT NO'),'','작업지시사항:',instructions||'-','','QMES: https://qmes.namochemical.com/','', '※ 본 메일은 작성 초안입니다. 내용을 확인한 후 발송해 주세요.'].join('\\n');
+     if(missing.length&&!window.confirm('이메일이 확인되지 않은 담당자 '+missing.join(', ')+'님은 제외됩니다. '+emails.length+'명에게 이메일을 작성할까요?'))return;
+     window.location.href='mailto:'+emails.join(',')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+     status.textContent='이메일 작성 창을 열었습니다 · '+emails.length+'명 (실제 발송 여부는 메일 앱에서 확인)';
+   });
    button.addEventListener('click',async()=>{
      if(sending)return;
      const valid=groups().filter(d=>selected.get(d.name).size>0),names=valid.map(d=>d.name),recipients=valid.flatMap(d=>[...selected.get(d.name)]);
