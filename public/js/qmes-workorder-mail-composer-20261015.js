@@ -33,9 +33,9 @@ scan();
 
 ;(function(){if(document.querySelector('script[data-qmes-auto-lot]'))return;const t=document.createElement('script');t.dataset.qmesAutoLot='1';t.src='./js/qmes-auto-production-lot-20261015.js?v=2';document.head.appendChild(t)})();
 
-;(function(){if(document.querySelector('script[data-qmes-purchase-layout]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseLayout='1';t.src='./js/qmes-purchase-layout-20261015.js?v=13';document.head.appendChild(t)})();
+;(function(){if(document.querySelector('script[data-qmes-purchase-layout]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseLayout='1';t.src='./js/qmes-purchase-layout-20261015.js?v=14';document.head.appendChild(t)})();
 
 ;(function(){if(document.querySelector('script[data-qmes-purchase-calendar]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseCalendar='1';t.src='./js/qmes-purchase-calendar-20261015.js?v=2';document.head.appendChild(t)})();
 
 
-;(function(){if(document.querySelector('script[data-qpu-db-list]'))return;const t=document.createElement('script');t.dataset.qpuDbList='1';t.src='./js/qmes-purchase-db-list-20261015.js?v=3';document.head.append(t)})();
+;(function(){if(document.querySelector('script[data-qpu-db-list]'))return;const t=document.createElement('script');t.dataset.qpuDbList='1';t.src='./js/qmes-purchase-db-list-20261015.js?v=4';document.head.append(t)})();
