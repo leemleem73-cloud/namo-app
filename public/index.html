@@ -1140,7 +1140,7 @@ thead{background:#f4f7fa}
 
 
   /* Expand content clearance for all QMES pages while navigation overlay is open. */
-  .app.nav-open > .content{padding-left:178px!important;box-sizing:border-box!important}
+  .app.nav-open > .content:not(:has(> #purchase.active)){padding-left:178px!important;box-sizing:border-box!important}
 
   /* QMES sidebar anti-jitter patch 2026-10-07 */
   /* 좌측 메뉴 확장 시 메인 화면 폭을 밀지 않고 오버레이로 표시 */
