@@ -2119,6 +2119,18 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
   }
 })();
 </script>
+<style id="pqc-measure-center-20261015">
+.std-inspection[data-inspection-type="process"] .std-result input,
+.std-inspection[data-inspection-type="process"] .std-result select,
+.am-split[data-am-screen="process"] .pqc-detail-measure-table input,
+.am-split[data-am-screen="process"] .pqc-detail-measure-table select{
+ text-align:center!important;text-align-last:center!important;
+}
+.std-inspection[data-inspection-type="process"] .std-result select option,
+.am-split[data-am-screen="process"] .pqc-detail-measure-table select option{
+ text-align:center!important;text-align-last:center!important;
+}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4560,7 +4572,7 @@ async function loadHistoricalInspectionRows(section,id){
       for(const row of rows){
         const order=matchPqcWorkOrder(row,pqcWorkOrderSources);
         if(order)row.workOrderNo=pqcWorkOrderNumber(order);
-        else if(pqcWorkOrderLotMismatch(row,pqcWorkOrderSources)){row.workOrderNo='-';row.orderNo='-';}
+        else {row.workOrderNo='-';row.orderNo='-';}
       }
     }
     if(section._historicalRequest!==request||!section.isConnected)return;
