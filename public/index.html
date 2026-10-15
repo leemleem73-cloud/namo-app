@@ -5647,10 +5647,11 @@ function amListData(id){
     return {index:i,primary:cells[1]||`NO ${i+1}`,secondary:[cells[2],cells[3]].filter(Boolean).join(' · ')};
   });
 }
-function amaranthScreen(id,editorHtml,mode='new',label=''){
+function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
+  const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):0;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
-  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${mode==='detail'&&i===0?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
+  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${mode==='detail'&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
   return `<div class="am-split" data-am-screen="${id}">
     <aside class="am-list-pane">
@@ -5828,7 +5829,7 @@ function showRowDetail(id,row){
     '<div class="am-section pqc-detail-measure-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table class="pqc-detail-measure-table" style="width:100%;border-collapse:separate;border-spacing:0;text-align:center"><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>'+
     [['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','&lt;10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['고형분','20.0±1.0 wt%','Drying Oven']].map(([item,spec,method],idx)=>'<tr><td>'+(idx+1)+'</td><th>'+item+'</th><td>'+spec+'</td><td>'+method+'</td>'+Array.from({length:3},(_,i)=>'<td>'+(item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="측정값">')+'</td>').join('')+'<td data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
     '</tbody></table></div></div>';
-    openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     // PQC detail: relocate existing wired top actions to the footer; keep save behavior intact.
     {
       const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
