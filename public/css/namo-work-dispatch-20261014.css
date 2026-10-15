@@ -45,3 +45,22 @@
 .work-form #namoWorkSend:not(:disabled):hover{background:#135fcf;box-shadow:0 3px 8px rgba(31,102,192,.25)}
 .work-form #namoWorkSend:disabled{opacity:.48;box-shadow:none}
 .work-form #namoWorkSendStatus{flex:0 1 auto;min-width:0;color:#536f8d}
+
+/* 2026-10-15: identical premium action button geometry; work-order dispatch only. */
+.work-form .namo-work-send-actions #namoWorkSendReset,
+.work-form .namo-work-send-actions #namoWorkEmailCompose{
+  appearance:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 116px!important;width:116px!important;min-width:116px!important;max-width:116px!important;
+  height:38px!important;min-height:38px!important;max-height:38px!important;
+  box-sizing:border-box!important;padding:0 12px!important;margin:0!important;
+  border-radius:7px!important;font-size:12px!important;line-height:1.2!important;
+  font-weight:750!important;letter-spacing:-.015em!important;white-space:nowrap!important;
+  cursor:pointer;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.work-form .namo-work-send-actions #namoWorkSendReset{border:1px solid #cbd7e5!important;background:#fff!important;color:#375675!important;box-shadow:0 1px 2px rgba(22,49,82,.04)!important}
+.work-form .namo-work-send-actions #namoWorkEmailCompose{border:1px solid #1964cf!important;background:#226edf!important;color:#fff!important;box-shadow:0 2px 6px rgba(28,94,188,.16)!important}
+.work-form .namo-work-send-actions #namoWorkSendReset:hover{background:#f3f7fb!important;border-color:#a4bad1!important}
+.work-form .namo-work-send-actions #namoWorkEmailCompose:not(:disabled):hover{background:#165fca!important;box-shadow:0 3px 9px rgba(28,94,188,.22)!important}
+.work-form .namo-work-send-actions #namoWorkEmailCompose:disabled{opacity:.52;cursor:not-allowed;box-shadow:none!important}
+.work-form .namo-work-send-actions #namoWorkReset:focus-visible,
+.work-form .namo-work-send-actions #namoWorkEmailCompose:focus-visible{outline:2px solid #73a7ec;outline-offset:2px}
