@@ -12,12 +12,11 @@ function setup(){
  const isNew=id.value.trim()==='자동생성';
  if(!isNew)return;
  const container=lot.closest('.form-item');lot.readOnly=true;lot.placeholder='작업일자 선택 시 자동 생성';
- const help=document.createElement('small');help.className='qmes-auto-lot-note';help.textContent='규칙: 생산사이트 + 연도 + 월 + 일 + 당일 생산순번 (01~99)';
- container.append(help);
+
  const site=document.createElement('select');site.className='qmes-auto-lot-site';site.setAttribute('aria-label','생산사이트');
  [['D','D 양산'],['C','C Pilot'],['B','B Lab'],['A','A 외부사이트(OEM)']].forEach(([value,text])=>site.add(new Option(text,value)));
- const title=document.createElement('small');title.textContent='생산사이트';title.className='qmes-auto-lot-site-label';
- container.append(title,site);
+ 
+ lot.insertAdjacentElement('afterend',site);
  function applyType(){if(type.value==='양산')site.value='D';else if(type.value==='파일럿 생산')site.value='C';else if(type.value==='시험생산'||type.value==='샘플생산')site.value='B'}
  function generate(){
   const d=date.value;
@@ -28,7 +27,7 @@ function setup(){
   const docs=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
   const used=new Set(docs.map(x=>String(x?.fields?.['생산 LOT NO']||'').trim().toUpperCase()));
   let seq=1;while(seq<=99&&used.has(prefix+String(seq).padStart(2,'0')))seq++;
-  if(seq>99){lot.value='';help.textContent='당일 생산순번 99건 초과: 관리자를 확인해 주세요.';return}
+  if(seq>99){lot.value='';alert('당일 생산순번이 99건을 초과했습니다.');return}
   lot.value=prefix+String(seq).padStart(2,'0');
   lot.dispatchEvent(new Event('input',{bubbles:true}));
  }
@@ -36,6 +35,6 @@ function setup(){
  type.addEventListener('change',()=>{applyType();generate()});
  applyType();generate();
 }
-const style=document.createElement('style');style.textContent='.qmes-auto-lot-note{display:block;font-size:11px;color:#63758a;margin-top:5px}.qmes-auto-lot-site-label{display:block;color:#63758a;font-size:11px;margin-top:6px}.work-basic-grid .qmes-auto-lot-site{width:100%;max-width:240px;height:30px;font-size:12px;margin-top:3px}';document.head.append(style);
+const style=document.createElement('style');style.textContent='.work-basic-grid .qmes-auto-lot-site{display:none!important}';document.head.append(style);
 new MutationObserver(setup).observe(document.body,{childList:true,subtree:true});setup();
 })();
