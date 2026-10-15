@@ -29,3 +29,4 @@ new MutationObserver(ms=>{if(queued||!ms.some(m=>m.target.closest?.('#work')||Ar
 document.addEventListener('change',e=>{if(e.target.matches?.('.wo-bulk-check,.wo-bulk-all'))queueMicrotask(scan)},true);
 scan();
 })();
+;(function(){if(document.querySelector('script[data-qmes-customer-picker]'))return;const t=document.createElement('script');t.dataset.qmesCustomerPicker='1';t.src='./js/qmes-customer-picker-20261015.js?v=1';document.head.appendChild(t)})();
