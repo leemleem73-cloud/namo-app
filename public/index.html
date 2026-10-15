@@ -4725,6 +4725,7 @@ function wireInspectionBulkSelect(section,id){
   if(!tbody||!head||!button||!pager)return;
   const pageSize=10;
   let allRows=[...tbody.querySelectorAll('tr.data-row')];
+  section._inspectionAllRows=allRows;
   const pageStateKey='namo-inspection-page:'+id;
   let current=1;
   try{const saved=Number(sessionStorage.getItem(pageStateKey));if(Number.isInteger(saved)&&saved>0)current=saved;}catch(_){}
@@ -4780,7 +4781,7 @@ function wireInspectionBulkSelect(section,id){
     if(rendering)return;
     const newRows=[...tbody.querySelectorAll('tr.data-row')];
     if(newRows.some(row=>!allRows.includes(row))){
-      allRows=newRows;render();
+      allRows=newRows;section._inspectionAllRows=allRows;render();
     }
   });
   tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
@@ -4813,7 +4814,7 @@ function wireInspectionBulkSelect(section,id){
   });
   section._inspectionBulkRefresh=()=>{
     // Preserve the current page after saving; render clamps it if rows were removed.
-    allRows=[...tbody.querySelectorAll('tr.data-row')];render();
+    allRows=[...tbody.querySelectorAll('tr.data-row')];section._inspectionAllRows=allRows;render();
   };
   render();
 }
@@ -5661,7 +5662,7 @@ function amListData(id){
       secondary:[r.supplier,r.item,r.lot].filter(Boolean).join(' · ')
     }));
   }
-  const rows=section?[...section.querySelectorAll('.data-row')]:[];
+  const rows=section?( ['process','outgoing'].includes(id)&&Array.isArray(section._inspectionAllRows)?section._inspectionAllRows:[...section.querySelectorAll('.data-row')]):[];
   return rows.map((row,i)=>{
     const cells=[...row.children].map(td=>td.innerText.trim());
     return {index:i,primary:cells[1]||`NO ${i+1}`,secondary:[cells[2],cells[3]].filter(Boolean).join(' · ')};
@@ -5764,7 +5765,7 @@ function wireAmaranthScreen(){
     if(id==='adminEmployees'){
       const idx=Number(btn.dataset.amIndex); if(typeof openEmployeeEditor==='function' && ADMIN_EMPLOYEES[idx]) openEmployeeEditor(ADMIN_EMPLOYEES[idx],idx); return;
     }
-    const row=document.querySelectorAll(`#${id} .data-row`)[Number(btn.dataset.amIndex)];
+    const row=['process','outgoing'].includes(id)?document.getElementById(id)?._inspectionAllRows?.[Number(btn.dataset.amIndex)]:document.querySelectorAll(`#${id} .data-row`)[Number(btn.dataset.amIndex)];
     if(id==='work'&&row?.dataset.workSaved){const order=readWorkOrders().find(o=>String(o.id)===row.dataset.workSaved);if(order)openNewForm('work',order);return;}
     if(row) showRowDetail(id,row);
   }));
