@@ -39,4 +39,4 @@ scan();
 
 ;(function(){if(document.querySelector('script[data-qmes-purchase-iqc-import]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseIqcImport='1';t.src='./js/qmes-purchase-iqc-import-20261015.js?v=2';document.head.appendChild(t)})();
 
-;(function(){if(document.querySelector('script[data-qpu-db-list]'))return;const t=document.createElement('script');t.dataset.qpuDbList='1';t.src='./js/qmes-purchase-db-list-20261015.js?v=1';document.head.append(t)})();
+;(function(){if(document.querySelector('script[data-qpu-db-list]'))return;const t=document.createElement('script');t.dataset.qpuDbList='1';t.src='./js/qmes-purchase-db-list-20261015.js?v=2';document.head.append(t)})();
