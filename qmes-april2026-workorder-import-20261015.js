@@ -17,6 +17,7 @@ async function run(){
   const seq=day==='0415'&&qty===62?'002':day==='0421'&&lot==='DBD2102'?'002':'001';
   const id='WO-2026'+day+'-'+seq;
   const doc={id,workDate:date,productionType:'일반',fields:{'작업지시번호':id,'고객사':'현대자동차','제품명':'NBA20HM05','생산 LOT NO':lot,'설비명':'HSM','작업자':'','계획수량':String(qty),'작업기간':date+' ~ '+date,'진행상태':'대기'},materials:(quantities[day+'-'+qty]||quantities[day]||[]).map((v,i)=>({name:materialNames[i],lot:'',plan:String(v),actual:actuals[day+'-'+qty]?.[i]==null?'':String(actuals[day+'-'+qty][i])})),note:'2026년 4월 원본 작업지시서 이력 등록 (원료 투입 자료 확인 필요)'};
+  await c.query("UPDATE qmes_work_order_documents SET document=jsonb_set(document,'{materials}',$2::jsonb,true),updated_at=NOW() WHERE id=$1 AND document->>'note' LIKE '2026년 4월 원본%' AND jsonb_typeof(document->'materials')='array' AND jsonb_array_length(document->'materials')=0",[id,JSON.stringify(doc.materials)]);
   const result=await c.query("INSERT INTO qmes_work_order_documents(id,document) SELECT $1,$2::jsonb WHERE NOT EXISTS(SELECT 1 FROM qmes_work_order_deletions WHERE id=$1) AND NOT EXISTS(SELECT 1 FROM qmes_work_order_documents WHERE document->>'workDate'=$3 AND document->'fields'->>'생산 LOT NO'=$4 AND document->'fields'->>'계획수량'=$5) ON CONFLICT(id) DO NOTHING",[id,JSON.stringify(doc),date,lot,String(qty)]);
   count+=result.rowCount||0;
  }
