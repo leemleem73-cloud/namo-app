@@ -201,7 +201,7 @@
 #work .module-shell>.module-body>.work-list-table>tbody>tr.nwi-selected>td{background:#dcefff!important;}
 
 /* Restore comfortable incoming-inspection list proportions; do not squeeze work-order columns. */
-#work .module-shell>.module-body>.work-list-table{min-width:1500px!important;width:100%!important;}
+#work .module-shell>.module-body>.work-list-table{min-width:100%!important;width:100%!important;}
 #work .module-shell>.module-body>.work-list-table>thead>tr>th{height:34px!important;padding:6px 12px!important;}
 #work .module-shell>.module-body>.work-list-table>tbody>tr>td{height:46px!important;min-height:46px!important;padding:8px 12px!important;}
 
