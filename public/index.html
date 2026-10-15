@@ -2131,6 +2131,7 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
  text-align:center!important;text-align-last:center!important;
 }
 </style>
+<style id="pqc-judge-colors">[data-pqc-judge="불합격"]{color:#dc2626!important;font-weight:800!important}[data-pqc-judge="합격"]{color:#15803d!important;font-weight:800!important}[data-pqc-judge="대기"]{color:#64748b!important}</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4434,6 +4435,29 @@ function sample(c,i,id){
   return '-';
 }
 
+function evaluatePqcMeasurements(measurements){
+  const rules={'외관':v=>v==='이상없음','입도(Dmax)':v=>Number.isFinite(Number(v))&&Number(v)<10,
+    '점도':v=>Number.isFinite(Number(v))&&Number(v)>=1200&&Number(v)<=1800,
+    '고형분':v=>Number.isFinite(Number(v))&&Number(v)>=19&&Number(v)<=21};
+  const items={};
+  for(const [item,valid]of Object.entries(rules)){
+    const values=Array.from({length:3},(_,i)=>String(measurements?.[item]?.[i]??'').trim());
+    items[item]=values.some(v=>v!==''&&!valid(v))?'불합격':values.every(v=>v!==''&&valid(v))?'합격':'대기';
+  }
+  const all=Object.values(items);
+  return {items,overall:all.includes('불합격')?'불합격':all.every(v=>v==='합격')?'합격':'대기'};
+}
+function pqcRecordForRow(row){
+  return document.getElementById('process')?._pqcRecords?.get(String(row?.dataset?.sourceKey||'')+'|'+String(row?.dataset?.sourceId||''))||null;
+}
+function pqcDraftForRow(row){
+  const record=pqcRecordForRow(row);if(!record)return null;
+  return {fields:{...record.detailFields,'검사일자':record.date,'제품명':record.product,'생산 LOT NO':record.lot,
+    '검사합부':record.measurements?evaluatePqcMeasurements(record.measurements).overall:(record.judge||'대기'),
+    '검사자':record.detailFields?.['검사자']||(['문지훈','박현아'].includes(record.inspector)?record.inspector:record.inspector?'__manual__':''),'비고':record.remarks||'','공정명':record.stage||'PQC'},
+    measurements:record.measurements||{},workOrder:record.workOrderNo||'',inspectorManual:record.inspector||''};
+}
+
 function matchPqcWorkOrder(row,orders){
   const norm=v=>String(v??'').trim().toUpperCase().replace(/\s+/g,'');
   const lot=norm(row.lot);
@@ -4494,25 +4518,12 @@ async function loadHistoricalInspectionRows(section,id){
       if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch(_){payload={}}}
       if(payload.deleted)return;
       (Array.isArray(payload.rows)?payload.rows:[]).forEach((row,rowIndex)=>{
-        const key=String(row.id||row.groupId+'|'+row.check);
+        const key=String(record.record_key||'')+'|'+String(row.id||row.groupId+'|'+row.check);
         if(seen.has(key))return;seen.add(key);
         rows.push({...row,__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
       });
     });
-    // Synchronize persisted PQC measurements to the existing detail/report reader.
-    if(id==='process'){
-      try{
-        const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
-        for(const row of rows){
-          if(!row.measurements||!row.detailFields)continue;
-          const key=String(row.lot||'').trim().toUpperCase();
-          if(!key)continue;
-          drafts[key]={fields:row.detailFields,measurements:row.measurements,
-            workOrder:row.workOrderNo||'',inspectorManual:row.inspector||'',savedAt:new Date().toISOString()};
-        }
-        localStorage.setItem('namo_qmes_pqc_detail_drafts_v1',JSON.stringify(drafts));
-      }catch(error){console.warn('[PQC] persisted detail cache',error);}
-    }
+    if(id==='process')section._pqcRecords=new Map(rows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
     let pqcWorkOrderSources=[];
     // Read-only PQC linkage: never insert fabricated inspection results.
     if(id==='process'){
@@ -4554,19 +4565,7 @@ async function loadHistoricalInspectionRows(section,id){
         });
       }
     }
-    if(id==='process'){
-      try{
-        const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
-        for(const row of rows){
-          const draft=drafts[String(row.lot||'').trim().toUpperCase()];
-          if(!draft?.fields)continue;
-          const fields=draft.fields;
-          if(fields['검사자'])row.inspector=fields['검사자']==='__manual__'?(draft.inspectorManual||'-'):fields['검사자'];
-          if(fields['검사합부'])row.judge=fields['검사합부'];
-          if(draft.workOrder)row.workOrderNo=draft.workOrder;
-        }
-      }catch(error){console.warn('[QMES] PQC local draft overlay',error);}
-    }
+    if(id==='process')for(const row of rows)if(row.measurements)row.judge=evaluatePqcMeasurements(row.measurements).overall;
     // Resolve every PQC row after draft overlays so stale local numbers cannot win.
     if(id==='process'){
       for(const row of rows){
@@ -4576,25 +4575,8 @@ async function loadHistoricalInspectionRows(section,id){
       }
     }
     if(section._historicalRequest!==request||!section.isConnected)return;
-    // PQC list: one visible row per inspection date + work order + production LOT.
-    // Source records remain untouched; never delete or merge persisted measurements.
+    // Each saved inspection remains individually visible and selectable.
     let displayRows=rows;
-    if(id==='process'){
-      const grouped=new Map();
-      const norm=value=>String(value??'').trim().toUpperCase();
-      for(const row of rows){
-        const date=norm(row.date),order=norm(row.workOrderNo||row.orderNo),lot=norm(row.lot);
-        // Without a usable date/LOT, do not collapse unrelated records.
-        const valid=date&&date!=='-'&&lot&&lot!=='-';
-        const key=valid?[date,order,lot].join('||'):'unique:'+String(row.id||grouped.size);
-        const existing=grouped.get(key);
-        if(!existing){grouped.set(key,row);continue;}
-        const quality=r=>[r.workOrderNo||r.orderNo,r.inspector,r.product,r.judge]
-          .filter(v=>v&&v!=='-'&&v!=='대기'&&v!=='검사대기').length;
-        if(quality(row)>quality(existing))grouped.set(key,row);
-      }
-      displayRows=[...grouped.values()];
-    }
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
@@ -4606,6 +4588,7 @@ async function loadHistoricalInspectionRows(section,id){
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
+        if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
@@ -4644,8 +4627,7 @@ async function loadHistoricalInspectionRows(section,id){
         const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
         if(!root)return;
         const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
-        let detail=null;
-        try{detail=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}')[String(lot).trim().toUpperCase()]||null}catch(error){console.warn('[QMES] PQC report detail fields',error)}
+        const detail=pqcDraftForRow(tr);
         const fields=detail?.fields||{};
         const source={
           date:fields['검사일자']||get('검사일자'),
@@ -4667,7 +4649,7 @@ async function loadHistoricalInspectionRows(section,id){
         const inspectorManual=root.querySelector('.pqc-inspector-manual');
         if(inspectorManual)inspectorManual.style.display='none';
         // Certificate is read-only: values and judgments come only from the PQC detail draft.
-        const hasDetail=hydratePqcReportFromDetail(root,lot);
+        const hasDetail=hydratePqcReportFromDetail(root,lot,detail);
         const inspector=root.querySelector('.pqc-inspector-select');
         root.querySelectorAll('.std-info input,.std-info select,.std-premium-remarks textarea').forEach(el=>{el.disabled=true;});
         const lotField=root.querySelector('.std-info .v input[placeholder="생산 LOT NO 입력"]');
@@ -4925,9 +4907,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   // PQC report reads the measurements saved in the detail/edit screen, not demo figures.
   if(id==='process'){
     try{
-      const lotKey=String(val('생산 LOT NO')||'').trim().toUpperCase();
-      const drafts=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}');
-      const draft=drafts[lotKey];
+      const draft=pqcDraftForRow(row);
       if(draft&&draft.measurements){
         for(const record of itemSets.process){
           const values=draft.measurements[record[0]];
@@ -4935,7 +4915,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
           for(let i=0;i<3;i++)record[i+3]=String(values[i]??'').trim()||'-';
           const complete=values.length>=3&&values.slice(0,3).every(v=>String(v??'').trim()!=='');
           const valid=record[0]==='외관'?v=>v==='이상없음':record[0]==='입도(Dmax)'?v=>Number(v)<10:record[0]==='점도'?v=>Number(v)>=1200&&Number(v)<=1800:v=>Number(v)>=19&&Number(v)<=21;
-          record[6]=!complete?'대기':values.slice(0,3).every(valid)?'합격':'불합격';
+          record[6]=evaluatePqcMeasurements(draft.measurements).items[record[0]]||'대기';
         }
       }else{
         itemSets.process.forEach(record=>{record[3]='-';record[4]='-';record[5]='-';record[6]='대기';});
@@ -5915,21 +5895,16 @@ function showRowDetail(id,row){
     });
     fill();
     const draftKey='namo_qmes_pqc_detail_drafts_v1';
-    const readDraft=()=>{
-      try{
-        const saved=JSON.parse(localStorage.getItem(draftKey)||'{}');
-        return saved[String(lot).trim().toUpperCase()]||null;
-      }catch(_){return null;}
-    };
+    const persisted=pqcRecordForRow(row);
+    const readDraft=()=>pqcDraftForRow(row);
     const refreshPqcJudges=()=>{
-      const specs={'점도':v=>v>=1200&&v<=1800,'입도(Dmax)':v=>v<10,'고형분':v=>v>=19&&v<=21,'외관':v=>v==='이상없음'};
-      for(const [item,valid] of Object.entries(specs)){
-        const inputs=[...document.querySelectorAll('[data-pqc-measure]')].filter(el=>el.dataset.pqcMeasure===item);
-        const values=inputs.map(el=>el.value.trim());
-        const result=values.some(v=>v==='')?'대기':values.every(v=>item==='외관'?valid(v):Number.isFinite(Number(v))&&valid(Number(v)))?'합격':'불합격';
-        const target=[...document.querySelectorAll('[data-pqc-item-judge]')].find(el=>el.dataset.pqcItemJudge===item);
-        if(target)target.textContent=result;
-      }
+      const measurements={};
+      document.querySelectorAll('[data-pqc-measure]').forEach(el=>(measurements[el.dataset.pqcMeasure]??=[])[Number(el.dataset.measureIndex)]=el.value);
+      const result=evaluatePqcMeasurements(measurements);
+      document.querySelectorAll('[data-pqc-item-judge]').forEach(el=>{const value=result.items[el.dataset.pqcItemJudge]||'대기';el.textContent=value;el.dataset.pqcJudge=value;});
+      const overall=document.querySelector('[data-pqc-field="검사합부"]');
+      if(overall){overall.value=result.overall;overall.disabled=true;overall.dataset.pqcJudge=result.overall;}
+      return result;
     };
     document.querySelectorAll('[data-pqc-measure]').forEach(el=>el.addEventListener('input',refreshPqcJudges));
     const existingDraft=readDraft();
@@ -5958,6 +5933,7 @@ function showRowDetail(id,row){
       saveButton.addEventListener('click',async(event)=>{
         event.preventDefault();
         event.stopImmediatePropagation();
+        refreshPqcJudges();
         const fields={};
         document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
         const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
@@ -5970,38 +5946,23 @@ function showRowDetail(id,row){
         });
         const draft={fields,measurements,workOrder:select?.value||'',inspectorManual:inspectorManual?.value||'',savedAt:new Date().toISOString()};
         try{
-          const drafts=JSON.parse(localStorage.getItem(draftKey)||'{}');
-          drafts[key]=draft;
-          localStorage.setItem(draftKey,JSON.stringify(drafts));
-          // Reflect the saved draft in the existing PQC list immediately.
-          const list=document.querySelector('[data-inspection-id="process"]')||document.querySelector('[data-inspection-type="process"]');
-          const tableRows=[...document.querySelectorAll('.data-row')];
-          const cols=pageInfo.process[2];
-          const lotIndex=cols.indexOf('생산 LOT NO')+1;
-          const inspectorIndex=cols.indexOf('검사자')+1;
-          const judgeIndex=cols.indexOf('검사합부')+1;
-          for(const tr of tableRows){
-            if(String(tr.cells[lotIndex]?.textContent||'').trim().toUpperCase()!==key)continue;
-            if(inspectorIndex>0&&tr.cells[inspectorIndex])tr.cells[inspectorIndex].textContent=chosenInspector||'-';
-            if(judgeIndex>0&&tr.cells[judgeIndex])tr.cells[judgeIndex].textContent=fields['검사합부']||'대기';
-          }
           saveButton.disabled=true;
           try{
             // Use the existing, deployed QMES sync API (not a separate new route).
             const date=String(fields['검사일자']||'').trim();
-            const order=String(select?.value||'').trim();
-            if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!order){
+            const order=String(select?.value||'-').trim();
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){
               throw Error('검사일자와 작업지시번호를 확인해 주세요.');
             }
-            const recordKey='detail:'+encodeURIComponent(date)+'|'+encodeURIComponent(order)+'|'+encodeURIComponent(key);
-            const record={id:recordKey,date,workOrderNo:order,
+            const recordKey=persisted?.__sourceRecordKey||'detail:'+encodeURIComponent(date)+'|'+encodeURIComponent(order)+'|'+encodeURIComponent(key)+'|'+crypto.randomUUID();
+            const record={id:persisted?.__sourceRowId||recordKey,date,workOrderNo:order,
               product:String(fields['제품명']||''),lot:String(fields['생산 LOT NO']||''),
               stage:'PQC',check:'외관 / 입도 / 점도 / 고형분',
               judge:String(fields['검사합부']||'대기'),inspector:chosenInspector||'',
               remarks:String(fields['비고']||''),measurements,detailFields:fields};
-            const response=await fetch('/api/qmes-sync/pqc',{
+            const response=await fetch('/api/qmes-sync/pqc/save-row',{
               method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({key:recordKey,payload:{rows:[record]}})
+              body:JSON.stringify({key:recordKey,source:persisted?{rowIndex:persisted.__sourceRowIndex,rowId:persisted.__sourceRowId}:null,record})
             });
             const result=await response.json().catch(()=>({}));
             if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
@@ -6066,10 +6027,8 @@ function standardInspectionRows(type){
   }[type]||[];
   return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
 }
-function hydratePqcReportFromDetail(root,lot){
+function hydratePqcReportFromDetail(root,lot,draft=null){
   if(!root)return false;
-  let draft=null;
-  try{draft=JSON.parse(localStorage.getItem('namo_qmes_pqc_detail_drafts_v1')||'{}')[String(lot||'').trim().toUpperCase()]}catch(error){console.warn('[QMES] PQC detail lookup',error)}
   const measurements=draft?.measurements||{};
   const rules={'외관':v=>v==='이상없음','입도(Dmax)':v=>Number(v)<10,'점도':v=>Number(v)>=1200&&Number(v)<=1800,'고형분':v=>Number(v)>=19&&Number(v)<=21};
   root.querySelectorAll('.std-result tbody tr').forEach(tr=>{
@@ -6086,16 +6045,16 @@ function hydratePqcReportFromDetail(root,lot){
     });
     const valid=rules[item];
     const complete=values.length>=3&&values.slice(0,3).every(v=>String(v??'').trim()!=='');
-    const result=!complete?'대기':values.slice(0,3).every(v=>valid?.(v))?'합격':'불합격';
+    const result=evaluatePqcMeasurements(measurements).items[item]||'대기';
     const judgeCell=tr.cells[7];
-    if(judgeCell){judgeCell.replaceChildren();const span=document.createElement('span');span.className='pqc-report-readonly-value';span.textContent=result;judgeCell.appendChild(span)}
+    if(judgeCell){judgeCell.replaceChildren();const span=document.createElement('span');span.className='pqc-report-readonly-value';span.textContent=result;span.dataset.pqcJudge=result;judgeCell.appendChild(span)}
   });
   const all=[...root.querySelectorAll('.std-result tbody tr')].map(tr=>tr.cells[7]?.textContent?.trim()||'대기');
   const overall=root.querySelector('#stdOverallJudge');
   const detailJudge=String(draft?.fields?.['검사합부']||'').trim();
   const computed=all.includes('불합격')?'불합격':all.length&&all.every(x=>x==='합격')?'합격':'대기';
-  const label=['합격','불합격','대기'].includes(detailJudge)?detailJudge:computed;
-  if(overall){overall.replaceWith(Object.assign(document.createElement('span'),{className:'pqc-report-readonly-value',textContent:label}))}
+  const label=evaluatePqcMeasurements(measurements).overall;
+  if(overall){const span=document.createElement('span');span.className='pqc-report-readonly-value';span.textContent=label;span.dataset.pqcJudge=label;overall.replaceWith(span);}
   const state=root.querySelector('.std-summary-card:nth-child(2) .value select');
   if(state){
     const stateLabel=label==='대기'?'검사중':'검사완료';

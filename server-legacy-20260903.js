@@ -2497,39 +2497,92 @@ async function ensurePendingIqcFromUnmatchedPurchases() {
   }
 }
 
+function evaluatePqcMeasurements(measurements){
+  const rules={'외관':v=>v==='이상없음','입도(Dmax)':v=>Number.isFinite(Number(v))&&Number(v)<10,
+    '점도':v=>Number.isFinite(Number(v))&&Number(v)>=1200&&Number(v)<=1800,
+    '고형분':v=>Number.isFinite(Number(v))&&Number(v)>=19&&Number(v)<=21};
+  const items={};
+  for(const [item,valid]of Object.entries(rules)){
+    const values=Array.from({length:3},(_,i)=>String(measurements?.[item]?.[i]??'').trim());
+    items[item]=values.some(v=>v!==''&&!valid(v))?'불합격':values.every(v=>v!==''&&valid(v))?'합격':'대기';
+  }
+  const all=Object.values(items);
+  return {items,overall:all.includes('불합격')?'불합격':all.every(v=>v==='합격')?'합격':'대기'};
+}
+
+app.get('/api/qmes-sync/pqc/save-row',requireLogin,(req,res)=>ok(res,{operation:'pqc-save-row',version:'20261015-record1'}));
+app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
+  const key=txt(req.body?.key),record=req.body?.record,source=req.body?.source;
+  if(!key||!record||!/^\d{4}-\d{2}-\d{2}$/.test(String(record.date||''))||!txt(record.lot)||!record.measurements||typeof record.measurements!=='object')
+    return fail(res,400,'검사일자, LOT와 측정값을 확인해 주세요.');
+  let client,committed=false;
+  try{
+    client=await pool.connect();await client.query('BEGIN');
+    await client.query("SET LOCAL lock_timeout = '5s'");await client.query("SET LOCAL statement_timeout = '10s'");
+    const before=await client.query("SELECT payload FROM qmes_sync_records WHERE record_type='pqc' AND record_key=$1 FOR UPDATE",[key]);
+    const payload=before.rows.length?jsonObj(before.rows[0].payload):{rows:[]};
+    const rows=Array.isArray(payload.rows)?payload.rows.slice():[];
+    const result=evaluatePqcMeasurements(record.measurements);
+    const saved={...record,judge:result.overall,detailFields:{...record.detailFields,'검사합부':result.overall}};
+    if(source){
+      const matches=rows.map((row,index)=>String(row.id??'')===txt(source.rowId)?index:-1).filter(index=>index>=0);
+      if(matches.length!==1)throw Object.assign(Error('원본 검사 기록이 변경되었습니다. 목록에서 다시 열어 주세요.'),{status:409});
+      const index=matches[0];saved.id=rows[index].id;
+      rows[index]={...rows[index],...saved};
+    }else{
+      if(before.rows.length)throw Object.assign(Error('이미 저장된 기록입니다. 목록에서 수정해 주세요.'),{status:409});
+      rows.push(saved);
+    }
+    await client.query(`INSERT INTO qmes_sync_records(record_type,record_key,payload,updated_by,updated_at)
+      VALUES('pqc',$1,$2::jsonb,$3,NOW()) ON CONFLICT(record_type,record_key)
+      DO UPDATE SET payload=EXCLUDED.payload,updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
+      [key,JSON.stringify({...payload,rows}),txt(req.session.user.name)]);
+    await client.query('COMMIT');committed=true;
+    return ok(res,saved,'공정검사 저장 완료');
+  }catch(error){
+    if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
+    return fail(res,error.status||500,error.status?error.message:'공정검사 저장에 실패했습니다.');
+  }finally{if(client)client.release();}
+});
+
 // One atomic request for selected IQC/PQC/OQC records.
 app.get('/api/qmes/inspections/:kind/delete-selected',requireLogin,(req,res)=>{
   if(!['iqc','pqc','oqc'].includes(req.params.kind))return fail(res,400,'지원하지 않는 검사 유형입니다.');
-  return ok(res,{operation:'inspection-delete-selected',version:'20261015-batch1'});
+  return ok(res,{operation:'inspection-delete-selected',version:'20261015-batch2'});
 });
 app.post('/api/qmes/inspections/:kind/delete-selected',requireLogin,async(req,res)=>{
   const kind=req.params.kind,input=req.body?.targets;
   if(!['iqc','pqc','oqc'].includes(kind)||!Array.isArray(input)||!input.length||input.length>1000)
     return fail(res,400,'삭제할 검사 기록을 확인해 주세요.');
   const targets=kind==='iqc'?[...new Set(input.map(v=>txt(v)))]:
-    [...new Map(input.map(t=>[txt(t?.recordKey)+'|'+String(t?.rowIndex),t])).values()];
+    [...new Map(input.map(t=>[txt(t?.recordKey)+'|'+txt(t?.rowId),t])).values()];
   if(kind==='iqc'?targets.some(v=>!v):targets.some(t=>!txt(t?.recordKey)||!Number.isInteger(t?.rowIndex)||t.rowIndex<0||!txt(t?.rowId)))
     return fail(res,400,'삭제할 원본 검사 기록 정보가 부족합니다.');
-  let client,committed=false;
+  let client,committed=false,deleted=0;
   try{
     client=await pool.connect();await client.query('BEGIN');
     await client.query("SET LOCAL lock_timeout = '5s'");
     await client.query("SET LOCAL statement_timeout = '10s'");
     if(kind==='iqc'){
       const before=await client.query('SELECT id FROM iqc WHERE id::text=ANY($1::text[]) ORDER BY id FOR UPDATE',[targets]);
-      if(before.rows.length!==targets.length)throw Object.assign(Error('선택한 수입검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+      deleted=before.rows.length;
       await client.query('DELETE FROM iqc WHERE id::text=ANY($1::text[])',[targets]);
     }else{
       const keys=[...new Set(targets.map(t=>txt(t.recordKey)))].sort();
       const before=await client.query(
         'SELECT record_key,payload FROM qmes_sync_records WHERE record_type=$1 AND record_key=ANY($2::text[]) ORDER BY record_key FOR UPDATE',[kind,keys]);
-      if(before.rows.length!==keys.length)throw Object.assign(Error('원본 검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
+      
       const updates=[];
       for(const record of before.rows){
         const payload=jsonObj(record.payload),rows=payload.rows,selected=targets.filter(t=>txt(t.recordKey)===String(record.record_key));
-        if(!Array.isArray(rows)||selected.some(t=>String(rows[t.rowIndex]?.id??'')!==txt(t.rowId)))
-          throw Object.assign(Error('선택한 검사 기록이 변경되었습니다. 새로고침 후 다시 선택해 주세요.'),{status:409});
-        const indices=new Set(selected.map(t=>t.rowIndex));
+        if(!Array.isArray(rows))throw Object.assign(Error('검사 원본 형식을 확인해 주세요.'),{status:409});
+        const indices=new Set();
+        for(const target of selected){
+          const matches=rows.map((row,index)=>String(row.id??'')===txt(target.rowId)?index:-1).filter(index=>index>=0);
+          if(matches.length>1)throw Object.assign(Error('검사 기록의 식별자가 중복되어 삭제하지 않았습니다.'),{status:409});
+          if(matches.length===1)indices.add(matches[0]);
+        }
+        deleted+=indices.size;
         updates.push({key:record.record_key,payload:{...payload,rows:rows.filter((row,index)=>!indices.has(index))}});
       }
       for(const update of updates)await client.query(
@@ -2539,7 +2592,7 @@ app.post('/api/qmes/inspections/:kind/delete-selected',requireLogin,async(req,re
     await client.query('COMMIT');committed=true;
     await auditLog(req,'DELETE',kind==='iqc'?'iqc':'qmes_sync_records',kind+':selected',{targets},null)
       .catch(error=>console.warn('Inspection batch deletion audit failed:',error.message));
-    return ok(res,{deleted:targets.length},targets.length+'건 삭제 완료');
+    return ok(res,{deleted},deleted+'건 삭제 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
     console.error('Inspection batch deletion failed:',error);
