@@ -4209,6 +4209,13 @@ function renderSavedWorkOrders(){
   const target=readWorkOrders().map(x=>String(x?.id||''));
   target.forEach((id,i)=>{const row=[...tbody.querySelectorAll('tr[data-work-saved]')].find(r=>r.dataset.workSaved===id);if(row&&tbody.children[i]!==row)tbody.insertBefore(row,tbody.children[i]||null);});
 }
+function nextWorkOrderDisplayNumber(date,orders){
+  const prefix='WO-'+date.replace(/-/g,'')+'-';
+  const used=(orders||[]).map(o=>String(o.fields?.['작업지시번호']||o.id||''))
+    .filter(v=>v.startsWith(prefix)).map(v=>Number(v.slice(prefix.length))).filter(Number.isInteger);
+  return prefix+String(Math.max(0,...used)+1).padStart(3,'0');
+}
+
 async function saveWorkOrderForm(editId='',options={}){
   const form=document.querySelector('.work-form');
   if(!form)return null;
@@ -4225,8 +4232,11 @@ async function saveWorkOrderForm(editId='',options={}){
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
   const fields={'작업지시번호':id,'고객사':input('고객사명'),'제품명':product,'생산 LOT NO':lot,'설비명':input('설비명'),'작업자':input('작업자'),'계획수량':input('계획수량'),'작업기간':[input('작업 시작일'),input('작업 종료일')].filter(Boolean).join(' ~ '),'진행상태':input('진행상태')};
-  const savedId=persistId||id;fields['작업지시번호']=savedId;
-  const record={id:savedId,fields,materials:rows,workDate:input('작업일자'),productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||''};
+  const savedId=persistId||id;
+  const workDay=input('작업일자')||input('작업 시작일');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(workDay)){toast('작업일자를 입력해 주세요.');return;}
+  fields['작업지시번호']=persistId?(orders.find(o=>o.id===persistId)?.fields?.['작업지시번호']||persistId):nextWorkOrderDisplayNumber(workDay,orders);
+  const record={id:savedId,fields,materials:rows,workDate:workDay,productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||''};
   if(record.productionType==='중간배치')record.intermediateBatch={kind:form.querySelector('#namoMidWorkKind')?.value||'',actualQty:form.querySelector('#namoMidProduced')?.value||''};
   if(typeof window.namoValidateIntermediateWorkorder==='function'){
     const validation=await window.namoValidateIntermediateWorkorder({editId:persistId,rows,record});
@@ -4239,7 +4249,7 @@ async function saveWorkOrderForm(editId='',options={}){
   workSharedRows=orders;
   try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(orders));}catch(_e){}
   form.dataset.workDispatchSavedId=savedId;
-  const idBox=form.querySelector('#workOrderNo');if(idBox)idBox.value=savedId;
+  const idBox=form.querySelector('#workOrderNo');if(idBox)idBox.value=fields['작업지시번호'];
   const shouldPrint=!options.keepOpen&&form.dataset.workPrintAfterSave==='1';
   const reservedPrintWindow=window.__namoWorkPrintWindow||null;
   if(!options.keepOpen)closeModal();renderSavedWorkOrders();toast('작업지시서가 공용 서버에 저장되었습니다.');
@@ -6184,18 +6194,16 @@ function initStandardInspectionForm(type){
       if(inputs[3])inputs[3].value=fields['제품명']||'';
       if(lotInput)lotInput.value=fields['생산 LOT NO']||'';
       const date=String(order.workDate||'');
-      if(inputs[0]&&!inputs[0].value&&date.length===10)inputs[0].value=date;
+      if(inputs[0]&&/^\d{4}-\d{2}-\d{2}$/.test(date))inputs[0].value=date;
     };
     const loadOrders=async()=>{
+      let authoritative=false;
       try{
         const response=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
         const data=await response.json();
-        if(response.ok&&data.success!==false&&Array.isArray(data.data))orders.push(...data.data);
+        if(response.ok&&data.success!==false&&Array.isArray(data.data)){orders=data.data;authoritative=true;}
       }catch(error){console.warn('[QMES] PQC work-order lookup',error);}
-      try{
-        const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');
-        if(Array.isArray(cached))orders.push(...cached);
-      }catch(_){}
+      if(!authoritative){try{const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');if(Array.isArray(cached))orders.push(...cached);}catch(_){}}
       const seen=new Set();
       orders=orders.filter(order=>{
         const id=String(order?.fields?.['작업지시번호']||order?.id||'');
@@ -6210,7 +6218,8 @@ function initStandardInspectionForm(type){
           const id=String(fields['작업지시번호']||order.id||'');
           orderSelect.add(new Option(id+' / '+String(fields['생산 LOT NO']||'-'),id));
         });
-        if(orders.some(o=>String(o?.fields?.['작업지시번호']||o?.id)===selected))orderSelect.value=selected;
+        const existing=orders.find(o=>pqcWorkOrderNumber(o)===selected||String(o.id)===selected);
+        if(existing)orderSelect.value=pqcWorkOrderNumber(existing);
       }
     };
     orderSelect?.addEventListener('change',()=>{
@@ -6338,7 +6347,7 @@ function openNewForm(id,editOrder=null){
       const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
       const set=(label,value)=>{const el=basic.find(x=>x.querySelector('label')?.textContent.trim()===label)?.querySelector('input,select');if(el)el.value=value||'';};
       const f=editOrder.fields||{},period=(f['작업기간']||'').split(' ~ ');
-      set('작업지시번호',editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);const typeSelect=basic.find(x=>x.querySelector('label')?.textContent.trim()==='생산구분')?.querySelector('select');if(typeSelect&&editOrder.productionType&&!Array.from(typeSelect.options).some(x=>x.value===editOrder.productionType))typeSelect.add(new Option(editOrder.productionType+' (기존 이력)',editOrder.productionType));set('생산구분',editOrder.productionType);
+      set('작업지시번호',f['작업지시번호']||editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);const typeSelect=basic.find(x=>x.querySelector('label')?.textContent.trim()==='생산구분')?.querySelector('select');if(typeSelect&&editOrder.productionType&&!Array.from(typeSelect.options).some(x=>x.value===editOrder.productionType))typeSelect.add(new Option(editOrder.productionType+' (기존 이력)',editOrder.productionType));set('생산구분',editOrder.productionType);
       const tbody=document.querySelector('#workMaterialTable tbody');tbody.innerHTML='';
       const add=document.getElementById('workRowAdd');
       (editOrder.materials||[]).forEach(m=>{

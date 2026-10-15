@@ -17,7 +17,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const used=materials.reduce((total,m)=>total+num(m.actual),0);
  const timestamp=new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false});
  const meta=[
-  ['작업지시번호',record.id,'작업일자',record.workDate],
+  ['작업지시번호',record.fields?.['작업지시번호']||record.id,'작업일자',record.workDate],
   ['고객사',f['고객사'],'제품명',f['제품명']],
   ['생산 LOT NO',f['생산 LOT NO'],'설비명',f['설비명']],
   ['계획수량 (kg)',f['계획수량'],'작업자',f['작업자']],
@@ -35,7 +35,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
   ['03','A탱크 추가 투입','바인더 / SBR 추가 후 Mixing'],
   ['04','교차 순환','A↔B 탱크 교차 순환 Mixing']
  ];
- const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>작업지시서 ${safe(record.id)}</title>
+ const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>작업지시서 ${safe(record.fields?.['작업지시번호']||record.id)}</title>
 <style>
 @page{size:A4 portrait;margin:12mm 11mm}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#1d314a;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -71,7 +71,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <h2>03. 기본 공정순서</h2>
 <div class="steps">${steps.map(x=>'<div class="step"><b>STEP '+safe(x[0])+'</b><div><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div></div>').join('')}</div>
 <h2>04. 작업지시사항</h2><div class="note">${safe(record.note)}</div>
-<div class="footer"><span>작업지시번호: ${safe(record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
+<div class="footer"><span>작업지시번호: ${safe(record.fields?.['작업지시번호']||record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
 </main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print()},250)});</script></body></html>`;
  if(renderOnly)return html;
  try{win.document.open();win.document.write(html);win.document.close();return true;}
@@ -213,12 +213,12 @@ function init(){
  controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();filter()}}));
  function draw(row,order){
   const cells=[...row.cells].map(c=>c.textContent.trim()),fields=order?.fields||{};
-  const vals=[['작업지시번호',order?.id||cells[1]],['고객사',fields['고객사']||cells[2]],['제품명',fields['제품명']||cells[3]],['생산 LOT',fields['생산 LOT NO']||cells[4]],['설비명',fields['설비명']||cells[5]],['작업자',fields['작업자']||cells[6]],['계획수량',fields['계획수량']||cells[7]],['작업기간',fields['작업기간']||cells[8]],['진행상태',fields['진행상태']||cells[9]],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
+  const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[1]],['고객사',fields['고객사']||cells[2]],['제품명',fields['제품명']||cells[3]],['생산 LOT',fields['생산 LOT NO']||cells[4]],['설비명',fields['설비명']||cells[5]],['작업자',fields['작업자']||cells[6]],['계획수량',fields['계획수량']||cells[7]],['작업기간',fields['작업기간']||cells[8]],['진행상태',fields['진행상태']||cells[9]],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
   const materials=Array.isArray(order?.materials)?order.materials:[];
   const tabs=[['materials','원재료 투입내역'],['progress','생산진행 현황'],['trace','LOT 추적정보']];
   const mats=order?'<div style="overflow-x:auto"><table><thead><tr><th>NO</th><th>원재료명</th><th>원재료 LOT</th><th>계획 투입량 (kg)</th><th>실투입량 (kg)</th></tr></thead><tbody>'+(materials.length?materials.map((m,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.plan)+'</td><td>'+esc(m.actual)+'</td></tr>').join(''):'<tr><td colspan="5">등록된 원료가 없습니다.</td></tr>')+'</tbody></table></div>':'<p>원료 정보 조회 중입니다.</p>';
   const content=activeTab==='materials'?mats:activeTab==='progress'?'<p>진행상태: '+esc(fields['진행상태']||cells[9])+' · 세부 실적은 생산진행 현황에서 확인하세요.</p>':'<p>생산 LOT: '+esc(fields['생산 LOT NO']||cells[4])+' · 검사/출하 연결정보는 LOT 추적관리에서 확인하세요.</p>';
-  detail.querySelector('.nwd-head').textContent='작업지시 상세내역  '+(order?.id||cells[1]);
+  detail.querySelector('.nwd-head').textContent='작업지시 상세내역  '+(fields['작업지시번호']||order?.id||cells[1]);
   detail.querySelector('.nwd-content').innerHTML='<div class="nwd-grid">'+vals.map(v=>'<div class="nwd-cell"><b>'+esc(v[0])+'</b><span>'+esc(v[1])+'</span></div>').join('')+'</div><div class="nwd-tabs">'+tabs.map(([key,title])=>'<button type="button" data-nwd-tab="'+key+'" class="nwd-tab '+(activeTab===key?'active':'')+'">'+title+'</button>').join('')+'</div>'+content;
  }
  tbody.addEventListener('click',async e=>{

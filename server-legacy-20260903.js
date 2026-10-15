@@ -3257,6 +3257,15 @@ bindCrud('nonconform', (b) => ({
 
 // QMES work-order documents: separate shared store; never change historical worklog tables.
 let qmesWorkOrderStoreReady;
+function normalizeKnownJuneWorkOrder(document){
+  const repairs=[
+    ['WO-20261012022208','2026-06-24','DBF2401','WO-20260624-001'],
+    ['WO-20261012041134','2026-06-25','DBF2501','WO-20260625-001']
+  ];
+  const match=repairs.find(([id,date,lot])=>document.id===id&&document.workDate===date&&document.fields?.['생산 LOT NO']===lot);
+  return match?{...document,fields:{...document.fields,'작업지시번호':match[3]}}:document;
+}
+
 async function ensureQmesWorkOrderStore() {
   if (!qmesWorkOrderStoreReady) {
     qmesWorkOrderStoreReady = (async () => {
@@ -3266,6 +3275,17 @@ async function ensureQmesWorkOrderStore() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`);
+      // Correct only the two verified June documents; preserve IDs and all measurements.
+      await db(`UPDATE qmes_work_order_documents AS doc
+        SET document=jsonb_set(doc.document,'{fields,작업지시번호}',to_jsonb(fixed.number),false),updated_at=NOW()
+        FROM (VALUES ($1::text,$2::text,$3::text,$4::text),($5::text,$6::text,$7::text,$8::text)) AS fixed(id,number,work_date,lot)
+        WHERE doc.id=fixed.id AND doc.document->>'workDate'=fixed.work_date
+          AND doc.document->'fields'->>'생산 LOT NO'=fixed.lot
+          AND doc.document->'fields'->>'작업지시번호'=doc.id
+          AND NOT EXISTS(SELECT 1 FROM qmes_work_order_documents AS other
+            WHERE other.id<>doc.id AND other.document->'fields'->>'작업지시번호'=fixed.number)`,
+        ['WO-20261012022208','WO-20260624-001','2026-06-24','DBF2401',
+         'WO-20261012041134','WO-20260625-001','2026-06-25','DBF2501']);
       // Tombstones prevent cached copies on other PCs from re-creating deleted orders.
       await db(`CREATE TABLE IF NOT EXISTS qmes_work_order_deletions (
         id TEXT PRIMARY KEY,
@@ -3286,7 +3306,7 @@ app.get('/api/qmes/work-orders', requireLogin, async (_req,res) => {
 });
 app.post('/api/qmes/work-orders', requireLogin, async (req,res) => {
   try {
-    const document=req.body||{};
+    const document=normalizeKnownJuneWorkOrder(req.body||{});
     const id=String(document.id||'').trim();
     if(!/^WO-[A-Za-z0-9_-]{6,60}$/.test(id) || !document.fields || typeof document.fields!=='object' || Array.isArray(document.fields)) return fail(res,400,'올바른 작업지시서가 아닙니다.');
     await ensureQmesWorkOrderStore();
@@ -3298,7 +3318,7 @@ app.post('/api/qmes/work-orders', requireLogin, async (req,res) => {
 });
 app.put('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
   try {
-    const id=String(req.params.id||'').trim(),document=req.body||{};
+    const id=String(req.params.id||'').trim(),document=normalizeKnownJuneWorkOrder(req.body||{});
     if(document.id!==id||!document.fields||typeof document.fields!=='object') return fail(res,400,'작업지시서 정보가 일치하지 않습니다.');
     await ensureQmesWorkOrderStore();
     const result=await db(`UPDATE qmes_work_order_documents SET document=$2::jsonb,updated_at=NOW()
