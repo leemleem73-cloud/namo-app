@@ -175,7 +175,7 @@ function init(){
  if(!document.getElementById('nwi-hidden-row-style')){
   const style=document.createElement('style');style.id='nwi-hidden-row-style';
   style.textContent='#work .work-list-table tbody tr[hidden]{display:none!important}';
-  style.textContent+='\n#work .work-list-table thead th:first-child,#work .work-list-table tbody td:first-child{position:relative!important;box-sizing:border-box!important;width:86px!important;min-width:86px!important;max-width:86px!important;padding-left:43px!important;padding-right:8px!important;text-align:center!important;white-space:nowrap!important}\n#work .work-list-table colgroup col:first-child{width:86px!important;min-width:86px!important}\n#work .work-list-table thead th:first-child::before,#work .work-list-table tbody td:first-child::before{content:"";position:absolute;left:37px;top:0;bottom:0;border-left:1px solid #d5e0eb;pointer-events:none}\n#work .work-list-table .wo-bulk-all,#work .work-list-table .wo-bulk-check{position:absolute!important;left:11px!important;top:50%!important;transform:translateY(-50%)!important;margin:0!important;width:14px!important;height:14px!important}\n';document.head.appendChild(style);
+  style.textContent+='\n#work .work-list-table th.wo-select-col,#work .work-list-table td.wo-select-col{width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;text-align:center!important;vertical-align:middle!important}\n#work .work-list-table thead th:nth-child(2),#work .work-list-table tbody td:nth-child(2){width:52px!important;min-width:44px!important;max-width:52px!important;padding:4px!important;text-align:center!important}\n#work .work-list-table .wo-bulk-all,#work .work-list-table .wo-bulk-check{position:static!important;transform:none!important;display:inline-block!important;margin:0!important;vertical-align:middle!important;width:14px!important;height:14px!important}\n';document.head.appendChild(style);
  }
  function ensureRowPrintButtons(){
   getRows().forEach(tr=>{
@@ -344,7 +344,7 @@ function scan(){
   bar.innerHTML='<button type="button" class="btn wo-bulk-print">선택 인쇄</button><button type="button" class="btn wo-bulk-delete">선택 삭제</button>';
   const clear=tools.querySelector('#nwi-clear');if(clear)tools.insertBefore(bar,clear);else tools.appendChild(bar);bar.querySelector('.wo-bulk-print').onclick=print;bar.querySelector('.wo-bulk-delete').onclick=remove;
  }
- const th=table.querySelector('thead th');if(th){const label=[...th.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());if(label&&label.textContent.trim()==='NO')label.textContent='No.';}if(th&&!th.querySelector('.wo-bulk-all')){
+ const th=table.querySelector('thead th.wo-select-col');if(th&&!th.querySelector('.wo-bulk-all')){
   const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-all';c.setAttribute('aria-label','전체 선택');c.onclick=e=>e.stopPropagation();c.onchange=()=>{rows().forEach(r=>c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved));update()};th.prepend(c)
  }
  rows().forEach(r=>{const td=r.cells[0];if(!td||td.querySelector('.wo-bulk-check'))return;
