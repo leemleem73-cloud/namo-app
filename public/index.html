@@ -4799,7 +4799,7 @@ function wireInspectionBulkSelect(section,id){
     // Refresh once after the batch; background reads must not restart the loader.
     await loadHistoricalInspectionRows(section,id);
     if(errorMessage)toast('삭제 중단: '+errorMessage);
-    else if(deleted)toast((id==='process'?'공정검사':'출하검사')+' '+deleted+'건 삭제 완료');
+    else if(deleted)toast((id==='process'?'공정검사':'출하검사')+' '+rows.length+'건 삭제 완료');
   });
   section._inspectionBulkRefresh=()=>{
     allRows=[...tbody.querySelectorAll('tr.data-row')];current=1;render();
