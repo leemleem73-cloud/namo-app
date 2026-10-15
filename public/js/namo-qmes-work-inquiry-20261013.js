@@ -257,7 +257,7 @@ function init(){
   panel.querySelector('.nwi-count').textContent='조회 '+count+'건';
   const total=section.querySelector('#nwi-list-total');if(total)total.textContent='총 '+count+'건';
  }
- panel.querySelector('#nwi-search').addEventListener('click',()=>{hasSearched=true;workPage=1;filter();});
+ panel.querySelector('#nwi-search').addEventListener('click',()=>{hasSearched=true;workPage=1;filter();requestAnimationFrame(()=>{if(tbody.isConnected)filter();});});
  panel.querySelector('#nwi-clear').addEventListener('click',()=>{controls.forEach(x=>x.value='');hasSearched=false;workPage=1;filter()});
  controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();hasSearched=true;workPage=1;filter()}}));
  function draw(row,order){
