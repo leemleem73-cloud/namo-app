@@ -5699,6 +5699,9 @@ body{width:194mm;max-width:100%;margin:0 auto;font-family:Arial,'Noto Sans KR',s
 `;
 const printHtml=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>${reportPrintStyles}${isPqcPrint ? `\n#reportSheet.report-sheet .report-inspection [data-pqc-print-judge="불합격"],#reportSheet.report-sheet .report-summary [data-pqc-print-judge="불합격"]{color:#dc2626!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}\n#reportSheet.report-sheet .report-summary .final{font-size:9px!important;line-height:inherit!important}\n` : ""}</style>
 
+<style id="namo-work-no-plain-20261016">
+#work .work-list-table tbody tr[data-work-saved] td:nth-child(2),#work .work-list-table tbody tr[data-work-saved] td:nth-child(2) *{color:#222!important;text-decoration:none!important;cursor:default!important;font-weight:400!important}
+</style>
 </head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=preparePrintSheet(source);return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
   printFrame.srcdoc=printHtml;
