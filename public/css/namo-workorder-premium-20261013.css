@@ -222,3 +222,9 @@
 
 /* Never paint intermediate rows while search re-applies the ten-row window. */
 #work .work-list-table tbody.nwi-reconciling{visibility:hidden!important;}
+
+/* Work-order number: same clear blue link appearance as process inspection. */
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td:nth-child(2),
+#work .module-shell>.module-body>.work-list-table>tbody>tr>td:nth-child(2) a{
+ color:#006fc7!important;text-decoration:underline!important;text-decoration-color:#006fc7!important;font-weight:700!important;
+}
