@@ -3754,7 +3754,7 @@ function editIncomingRecord(section,row){
     <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
   </div>`;
-  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정'),'<button class="btn" id="modalCancel" type="button">취소</button><button class="btn primary" id="iqcEditSave" type="button">수정 저장</button>');
+  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">취소</button><button class="btn primary" id="iqcEditSave" type="button">수정 저장</button>');
   document.getElementById('iqcEditSave')?.addEventListener('click',async()=>{
     const body={
       date:document.getElementById('iqcEditDate')?.value||date,
@@ -5665,7 +5665,7 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
   const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
-  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${mode==='detail'&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
+  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
   return `<div class="am-split" data-am-screen="${id}">
     <aside class="am-list-pane">
@@ -5707,7 +5707,18 @@ function wireAmaranthScreen(){
   const items=[...root.querySelectorAll('.am-list-item')];
   root.querySelector('.am-list-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
   items.forEach(btn=>btn.addEventListener('click',()=>{
-    if(id==='incoming')items.forEach(item=>item.classList.toggle('active',item===btn));
+    if(id==='incoming'){
+      items.forEach(item=>item.classList.toggle('active',item===btn));
+      const row=document.querySelectorAll('#incoming .data-row')[Number(btn.dataset.amIndex)];
+      if(row){
+        const current=workspaceBody.querySelector('.am-split[data-am-screen="incoming"]');
+        const isEdit=!!current?.querySelector('#iqcEditDate');
+        const record=(document.getElementById('incoming')?._iqcRows||[]).find(r=>String(r.id)===String(row.dataset.iqcId));
+        if(isEdit&&record)editIncomingRecord(document.getElementById('incoming'),record);
+        else showRowDetail('incoming',row);
+      }
+      return;
+    }
     if(id==='adminEmployees'){
       const idx=Number(btn.dataset.amIndex); if(typeof openEmployeeEditor==='function' && ADMIN_EMPLOYEES[idx]) openEmployeeEditor(ADMIN_EMPLOYEES[idx],idx); return;
     }
