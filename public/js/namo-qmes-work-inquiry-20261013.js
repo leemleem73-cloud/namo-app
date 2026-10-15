@@ -170,6 +170,12 @@ function init(){
  shell.insertAdjacentElement('afterend',detail);
  const controls=[...panel.querySelectorAll('[data-filter]')];let activeId='',activeTab='materials',activeRecord=null;
  const getRows=()=>[...tbody.querySelectorAll('tr[data-work-saved], tr.data-row')].filter(tr=>tr.cells.length>1);
+ // Respect the native hidden state even when another stylesheet sets table-row display.
+ if(!document.getElementById('nwi-hidden-row-style')){
+  const style=document.createElement('style');style.id='nwi-hidden-row-style';
+  style.textContent='#work .work-list-table tbody tr[hidden]{display:none!important}';
+  document.head.appendChild(style);
+ }
  function ensureRowPrintButtons(){
   getRows().forEach(tr=>{
    const actions=tr.cells[tr.cells.length-1];
