@@ -4232,11 +4232,12 @@ function renderSavedWorkOrders(){
     const priorRow=prior.get(String(order.id));
     if(priorRow){
       const colsNow=pageInfo.work[2],valuesNow=[index+1,...colsNow.map(c=>order.fields?.[c]||'-')];
-      valuesNow.forEach((v,i)=>{if(priorRow.cells[i]&&priorRow.cells[i].textContent!==String(v))priorRow.cells[i].textContent=String(v);});
+      valuesNow.forEach((v,i)=>{if(priorRow.cells[i+1]&&priorRow.cells[i+1].textContent!==String(v))priorRow.cells[i+1].textContent=String(v);});
       return;
     }
     const tr=document.createElement('tr');
     tr.className='data-row';tr.tabIndex=0;tr.dataset.workSaved=order.id;
+    const selectCell=document.createElement('td');selectCell.className='wo-select-col';tr.appendChild(selectCell);
     const values=[index+1,...cols.map(c=>order.fields[c]||'-')];
     values.forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);});
     tr.addEventListener('click',e=>{if(!e.target.closest('button'))showRowDetail('work',tr);});
@@ -4336,9 +4337,9 @@ function wireWorkColumnResize(section){
   if(!table||table.dataset.workResizeWired)return;
   table.dataset.workResizeWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[50,205,115,142,176,96,134,112,140,106,240];
-  const mins=[44,138,86,102,130,75,88,85,92,82,236];
-  const key='namo-work-column-widths-v2',labels=headers.map(x=>x.textContent.trim());
+  const defaults=[34,52,205,115,142,176,96,134,112,140,106,240];
+  const mins=[32,44,138,86,102,130,75,88,85,92,82,236];
+  const key='namo-work-column-widths-v3',labels=headers.map(x=>x.textContent.trim());
   let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
   const valid=saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length;
   let custom=!!valid, widths=[],baseline=null,containerWidth=0;
@@ -4430,7 +4431,7 @@ function buildModule(id){
     section.innerHTML=`<div class="module-shell">
       <div class="nwi-header"><div class="nwi-title"><strong>작업지시서 등록 및 조회</strong></div>
       <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
-      <div class="module-body"><table class="work-list-table"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
+      <div class="module-body"><table class="work-list-table"><thead><tr><th class="wo-select-col"></th><th>No.</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
     wireModule(section,id);window.namoWorkInquiryInit?.();renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
     return;
