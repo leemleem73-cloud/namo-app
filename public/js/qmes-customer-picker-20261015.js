@@ -5,6 +5,10 @@ const key='qmesCustomerList20261015';
 let names;try{names=JSON.parse(localStorage.getItem(key))}catch(e){}
 if(!Array.isArray(names))names=['현대자동차','삼성','LG'];
 const checked=new Set();
+const STORE='/api/qmes-sync/workorder';const STORE_KEY='master:customer-list:20261015';
+async function loadShared(){try{const res=await fetch(STORE,{credentials:'include',cache:'no-store'});if(!res.ok)throw Error('조회 실패');const j=await res.json();const arr=Array.isArray(j.data)?j.data:[];const row=arr.find(x=>x.record_key===STORE_KEY);if(Array.isArray(row?.payload?.names)){names=row.payload.names;localStorage.setItem(key,JSON.stringify(names))}}catch(e){console.warn('QMES 고객사 공용 목록 조회 실패',e)}}
+async function saveShared(){const res=await fetch(STORE,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:STORE_KEY,payload:{names}})});if(!res.ok)throw Error('중앙 DB 저장 실패');localStorage.setItem(key,JSON.stringify(names))}
+
 function init(){
  const panel=document.querySelector('#work #namo-work-inquiry');
  const input=panel?.querySelector('[data-filter="0"]');
@@ -26,9 +30,9 @@ function init(){
    names.filter(n=>n.toLowerCase().includes(search.value.toLowerCase())).forEach(n=>item(n,checked.has(n),v=>{if(v)checked.add(n);else checked.delete(n);render()}));
   };
   search.oninput=render;popup.append(search,list,buttons);
-  action('추가',()=>{const n=prompt('추가할 고객사명')?.trim();if(n&&!names.includes(n)){names.push(n);localStorage.setItem(key,JSON.stringify(names));render()}});
-  action('수정',()=>{if(checked.size!==1)return alert('수정할 고객사 1개만 선택하세요.');const old=[...checked][0],n=prompt('변경할 고객사명',old)?.trim();if(!n||(names.includes(n)&&n!==old))return;names=names.map(x=>x===old?n:x);checked.clear();checked.add(n);localStorage.setItem(key,JSON.stringify(names));render()});
-  action('삭제',()=>{if(checked.size!==1)return alert('삭제할 고객사 1개만 선택하세요.');const n=[...checked][0];if(!confirm(n+'을 선택 목록에서 삭제합니까? 기존 작업지시서는 유지됩니다.'))return;names=names.filter(x=>x!==n);checked.delete(n);localStorage.setItem(key,JSON.stringify(names));render()});
+  action('추가',()=>{const n=prompt('추가할 고객사명')?.trim();if(n&&!names.includes(n)){names.push(n);saveShared().catch(e=>alert(e.message));render()}});
+  action('수정',()=>{if(checked.size!==1)return alert('수정할 고객사 1개만 선택하세요.');const old=[...checked][0],n=prompt('변경할 고객사명',old)?.trim();if(!n||(names.includes(n)&&n!==old))return;names=names.map(x=>x===old?n:x);checked.clear();checked.add(n);saveShared().catch(e=>alert(e.message));render()});
+  action('삭제',()=>{if(checked.size!==1)return alert('삭제할 고객사 1개만 선택하세요.');const n=[...checked][0];if(!confirm(n+'을 선택 목록에서 삭제합니까? 기존 작업지시서는 유지됩니다.'))return;names=names.filter(x=>x!==n);checked.delete(n);saveShared().catch(e=>alert(e.message));render()});
   action('취소',()=>{checked.clear();snapshot.forEach(n=>checked.add(n));close()});
   action('확인',()=>{close();filter()});
   render();
@@ -51,5 +55,5 @@ function init(){
  document.addEventListener('click',e=>{if(!popup.hidden&&e.target!==input&&!popup.contains(e.target))close()});
 }
 const style=document.createElement('style');style.textContent='.qc-holder{position:relative}.qc-popup{position:absolute;z-index:10000;top:2px;left:0;width:270px;padding:10px;background:white;box-shadow:0 8px 24px #15233933;border:1px solid #cbd5e1;border-radius:6px}.qc-popup[hidden]{display:none}.qc-search{width:100%;padding:6px}.qc-list{max-height:230px;overflow:auto}.qc-list label{display:flex;gap:8px;align-items:center;padding:5px}.qc-buttons{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;margin-top:8px}.qc-buttons button{border:1px solid #ccd5e1;background:#f8fafc;padding:5px;border-radius:4px}';document.head.append(style);
-new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
+new MutationObserver(init).observe(document.body,{childList:true,subtree:true});loadShared().then(init);
 })();
