@@ -5672,6 +5672,11 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
   let selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
+  if(['process','outgoing'].includes(id)&&selectedRow){
+    const all=document.getElementById(id)?._inspectionAllRows||[];
+    const index=all.indexOf(selectedRow);
+    if(index>=0)selectedIndex=index;
+  }
   if(id==='incoming'&&selectedRow?.dataset.iqcId){
     const index=list.findIndex(x=>String(x.recordId)===String(selectedRow.dataset.iqcId));
     if(index>=0)selectedIndex=index;
