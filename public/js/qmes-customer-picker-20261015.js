@@ -58,5 +58,43 @@ function init(){
  document.addEventListener('click',e=>{if(!popup.hidden&&e.target!==input&&!popup.contains(e.target))close()});
 }
 const style=document.createElement('style');style.textContent=".qc-holder{position:fixed;top:0;left:0;width:0;height:0;z-index:10000;pointer-events:none}.qc-popup{position:fixed;z-index:10000;top:0;left:0;pointer-events:auto;box-sizing:border-box;width:185px;padding:4px;background:#fff;border:1px solid #b9c0c8;box-shadow:0 4px 12px #0002;border-radius:2px}.qc-popup[hidden]{display:none}.qc-popup .qc-search{display:block;box-sizing:border-box;width:100%;height:27px;min-width:0;padding:3px 6px;border:1px solid #c9d2dd;font-size:12px}.qc-list{max-height:210px;overflow-y:auto;overflow-x:hidden;margin:4px 0;background:#f0f7ff}.qc-list label{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;gap:6px!important;align-items:center!important;box-sizing:border-box!important;width:100%!important;height:25px!important;min-height:25px!important;padding:3px 6px!important;white-space:nowrap!important;font-size:12px!important;line-height:18px!important;letter-spacing:normal!important;cursor:pointer}.qc-list label:first-child{background:white;border-bottom:1px solid #e1e5e9}.qc-list input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;position:static!important;display:inline-block!important;flex:0 0 13px!important;width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;margin:0!important;padding:0!important}.qc-buttons{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:wrap;padding-top:5px;border-top:1px solid #e2e6eb}.qc-buttons button{font-size:11px!important;white-space:nowrap!important;background:white;border:1px solid #cbd1d8;padding:3px 5px;border-radius:2px;cursor:pointer}.qc-buttons button:nth-last-child(-n+2){background:#f8fafc}";document.head.append(style);
-new MutationObserver(init).observe(document.body,{childList:true,subtree:true});loadShared().then(init);
+
+function initCreate(){
+ const input=[...document.querySelectorAll('input[placeholder="고객사명 직접 입력"]')].find(el=>el.offsetParent!==null&&!el.dataset.qcCreate);
+ if(!input)return;
+ input.dataset.qcCreate='1';
+ const box=document.createElement('div');box.className='qc-create-picker';box.hidden=true;document.body.appendChild(box);
+ function place(){const rect=input.getBoundingClientRect();box.style.left=Math.round(rect.left)+'px';box.style.top=Math.round(rect.bottom+2)+'px';box.style.width=Math.max(190,Math.min(250,rect.width))+'px'}
+ function close(){box.hidden=true}
+ function render(searchTerm=''){
+  box.replaceChildren();
+  const search=document.createElement('input');search.type='search';search.placeholder='고객사 검색';search.className='qc-create-search';search.value=searchTerm;
+  const list=document.createElement('div');list.className='qc-create-list';
+  const footer=document.createElement('div');footer.className='qc-create-footer';
+  box.append(search,list,footer);
+  const row=(name)=>{
+   const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.checked=input.value.trim()===name;
+   check.onchange=()=>{input.value=check.checked?name:'';input.dispatchEvent(new Event('input',{bubbles:true}));close()};
+   label.append(check,document.createTextNode(' '+name));list.append(label);
+  };
+  row('전체');
+  names.filter(x=>x.toLowerCase().includes(searchTerm.toLowerCase())).forEach(row);
+  search.oninput=()=>render(search.value);
+  const action=(title,fn)=>{const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=fn;footer.append(button)};
+  action('추가',async()=>{const value=prompt('추가할 고객사명')?.trim();if(!value||names.includes(value))return;names.push(value);try{await saveShared();render()}catch(e){names=names.filter(n=>n!==value);alert('공용 DB 저장 실패')}});
+  action('수정',async()=>{const old=input.value.trim();if(!names.includes(old))return alert('수정할 고객사를 먼저 선택하세요.');const value=prompt('고객사명 수정',old)?.trim();if(!value||names.includes(value)&&value!==old)return;names=names.map(x=>x===old?value:x);try{await saveShared();input.value=value;render()}catch(e){names=names.map(x=>x===value?old:x);alert('공용 DB 저장 실패')}});
+  action('삭제',async()=>{const old=input.value.trim();if(!names.includes(old))return alert('삭제할 고객사를 먼저 선택하세요.');if(!confirm(old+' 고객사를 목록에서 삭제합니까? 기존 작업지시서는 유지됩니다.'))return;names=names.filter(x=>x!==old);try{await saveShared();input.value='';render()}catch(e){names.push(old);alert('공용 DB 저장 실패')}});
+  action('취소',close);action('확인',close);
+ }
+ const open=()=>{render();place();box.hidden=false};
+ input.addEventListener('focus',open);input.addEventListener('click',open);
+ document.addEventListener('click',e=>{if(!box.hidden&&e.target!==input&&!box.contains(e.target))close()});
+ window.addEventListener('resize',()=>{if(!box.hidden)place()});
+ window.addEventListener('scroll',()=>{if(!box.hidden)place()},true);
+}
+const createStyle=document.createElement('style');
+createStyle.textContent='.qc-create-picker{position:fixed;z-index:200000;box-sizing:border-box;background:white;border:1px solid #bdc8d7;box-shadow:0 7px 20px #11223333;padding:5px;border-radius:4px}.qc-create-picker[hidden]{display:none}.qc-create-search{box-sizing:border-box;width:100%;height:30px;font-size:12px;padding:4px 7px}.qc-create-list{max-height:160px;overflow:auto}.qc-create-list label{display:flex!important;align-items:center!important;gap:7px!important;padding:5px!important;height:26px!important;min-height:26px!important;white-space:nowrap!important;font-size:12px!important}.qc-create-list input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;position:static!important;width:14px!important;height:14px!important;min-width:14px!important;margin:0!important;padding:0!important}.qc-create-footer{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding-top:5px;border-top:1px solid #eee}.qc-create-footer button{font-size:11px;padding:4px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:3px}';
+document.head.append(createStyle);
+
+new MutationObserver(()=>{init();initCreate()}).observe(document.body,{childList:true,subtree:true});loadShared().then(()=>{init();initCreate()});
 })();
