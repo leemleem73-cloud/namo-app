@@ -173,7 +173,7 @@ function init(){
  // Respect the native hidden state even when another stylesheet sets table-row display.
  if(!document.getElementById('nwi-hidden-row-style')){
   const style=document.createElement('style');style.id='nwi-hidden-row-style';
-  style.textContent='#work .work-list-table tbody tr[hidden]{display:none!important}';
+  style.textContent='#work .work-list-table tbody tr[data-nwi-visible="0"]{display:none!important}';
   document.head.appendChild(style);
  }
  function ensureRowPrintButtons(){
@@ -218,7 +218,7 @@ function init(){
   const queryKey=JSON.stringify(q);
   if(lastWorkQuery&&lastWorkQuery!==queryKey)workPage=1;
   lastWorkQuery=queryKey;
-  const rows=getRows();
+  const rows=[...tbody.rows].filter(tr=>tr.cells.length>1);
   const matching=hasSearched?rows.filter(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    return q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
@@ -230,8 +230,11 @@ function init(){
   rows.forEach(tr=>{
    const show=visible.has(tr);
    tr.hidden=!show;
-   tr.style.display=show?'table-row':'none';
+   tr.style.setProperty('display',show?'table-row':'none','important');
+   tr.dataset.nwiVisible=show?'1':'0';
   });
+  tbody.dataset.nwiPage=String(workPage);
+  tbody.dataset.nwiSearched=hasSearched?'1':'0';
   pager.replaceChildren();
   if(!hasSearched){
    panel.querySelector('.nwi-count').textContent='';
