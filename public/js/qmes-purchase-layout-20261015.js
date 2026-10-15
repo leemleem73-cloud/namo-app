@@ -83,5 +83,20 @@ purchaseHeaderStyle.textContent=`
 @media(max-width:1450px){#purchase .module-toolbar .filters{grid-template-columns:repeat(3,minmax(125px,1fr))!important}#purchase .module-toolbar .filters>*{grid-column:auto!important}#purchase .qpu-more{display:contents!important}}
 @media(max-width:900px){#purchase .module-toolbar{flex-wrap:wrap!important}#purchase .module-toolbar .filters{grid-template-columns:repeat(2,minmax(130px,1fr))!important}}
 `;document.head.append(purchaseHeaderStyle);
+const cleanLayout=document.createElement('style');cleanLayout.textContent=`
+#purchase .module-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important;gap:12px!important;padding:16px 18px!important}
+#purchase .module-toolbar .filters{display:grid!important;grid-template-columns:minmax(190px,1fr) minmax(190px,1fr) minmax(190px,1fr) minmax(190px,1fr)!important;grid-template-rows:38px 38px!important;column-gap:18px!important;row-gap:11px!important;width:100%!important;max-width:none!important;align-items:center!important}
+#purchase .module-toolbar .filters>.search-input{grid-column:1!important;grid-row:1!important;width:100%!important;max-width:none!important}
+#purchase .module-toolbar .filters>.pcal-root{grid-column:1!important;grid-row:2!important;width:100%!important;max-width:none!important}
+#purchase .module-toolbar .filters>input[type=date]{display:none!important}
+#purchase .module-toolbar .qpu-more{display:contents!important}
+#purchase .qpu-more label:first-child{grid-column:2!important;grid-row:1!important;display:flex!important;gap:8px!important}
+#purchase .qpu-more label:nth-child(2){grid-column:3!important;grid-row:1!important;display:flex!important;gap:8px!important}
+#purchase .qpu-more label input,#purchase .qpu-more label select{flex:1!important;min-width:0!important}
+#purchase .qpu-more .qpu-clear{grid-column:3!important;grid-row:2!important;justify-self:end!important}
+#purchase .qpu-more .qpu-search{grid-column:4!important;grid-row:2!important;justify-self:end!important;background:#2563eb!important;color:white!important}
+#purchase .module-toolbar .table-tools{grid-column:2!important;grid-row:1!important;display:flex!important;align-self:start!important;gap:8px!important;margin:0!important}
+@media(max-width:1100px){#purchase .module-toolbar{grid-template-columns:1fr!important}#purchase .module-toolbar .table-tools{grid-column:1!important;grid-row:2!important;justify-content:end!important}#purchase .module-toolbar .filters{grid-template-columns:repeat(2,minmax(150px,1fr))!important;grid-template-rows:auto!important}#purchase .module-toolbar .filters>.search-input,#purchase .module-toolbar .filters>.pcal-root,#purchase .qpu-more label:first-child,#purchase .qpu-more label:nth-child(2),#purchase .qpu-more .qpu-search,#purchase .qpu-more .qpu-clear{grid-column:auto!important;grid-row:auto!important}}
+`;document.head.append(cleanLayout);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
