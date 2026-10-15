@@ -92,6 +92,16 @@ function initCreate(){
  window.addEventListener('resize',()=>{if(!box.hidden)place()});
  window.addEventListener('scroll',()=>{if(!box.hidden)place()},true);
 }
+document.addEventListener('click',function(event){
+ const item=event.target.closest?.('.am-split[data-am-screen="work"] .am-list-item');
+ if(!item)return;
+ const number=item.querySelector('b')?.textContent.trim();
+ const data=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
+ const order=data.find(o=>String(o?.fields?.['작업지시번호']||o?.id||'').trim()===number);
+ if(!order||typeof openNewForm!=='function')return;
+ event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+ openNewForm('work',order);
+},true);
 const createStyle=document.createElement('style');
 createStyle.textContent='.qc-create-picker{position:fixed;z-index:200000;box-sizing:border-box;background:white;border:1px solid #bdc8d7;box-shadow:0 7px 20px #11223333;padding:5px;border-radius:4px}.qc-create-picker[hidden]{display:none}.qc-create-search{box-sizing:border-box;width:100%;height:30px;font-size:12px;padding:4px 7px}.qc-create-list{max-height:160px;overflow:auto}.qc-create-list label{display:flex!important;align-items:center!important;gap:7px!important;padding:5px!important;height:26px!important;min-height:26px!important;white-space:nowrap!important;font-size:12px!important}.qc-create-list input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;position:static!important;width:14px!important;height:14px!important;min-width:14px!important;margin:0!important;padding:0!important}.qc-create-footer{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding-top:5px;border-top:1px solid #eee}.qc-create-footer button{font-size:11px;padding:4px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:3px}';
 document.head.append(createStyle);
