@@ -274,6 +274,29 @@
     return "₩"+won(v);
   }
 
+  // Purchase ledger display only: derive the requested fields from the verified receipt date.
+  // Never mutate existing records or change the keys used by detail/edit/delete actions.
+  function receiptDateForDisplay(r){
+    var value=clean(r&&(r.receiptDate||r.receipt_date||r.receivedDate||r.received_date||r.incomingDate||r.incoming_date)).slice(0,10);
+    if(!validDate(value)) return '';
+    var dt=new Date(value+'T12:00:00Z');
+    return !Number.isNaN(dt.getTime())&&dt.toISOString().slice(0,10)===value?value:'';
+  }
+  function purchaseDateForDisplay(r){
+    var d=receiptDateForDisplay(r);
+    if(!d) return rowDate(r);
+    var dt=new Date(d+'T12:00:00Z');dt.setUTCDate(dt.getUTCDate()-7);
+    return dt.toISOString().slice(0,10);
+  }
+  function purchaseNoForDisplay(r){
+    var d=receiptDateForDisplay(r);
+    if(!d)return rowNo(r);
+    var orderDate=purchaseDateForDisplay(r);
+    var matched=state.rows.filter(function(x){return purchaseDateForDisplay(x)===orderDate;});
+    matched.sort(function(a,b){return rowNo(a).localeCompare(rowNo(b),undefined,{numeric:true});});
+    var index=matched.indexOf(r);
+    return 'PO-'+orderDate.replace(/-/g,'')+'-'+String(Math.max(1,index+1)).padStart(3,'0');
+  }
   function render(){
     var host=state.host;
     if(!host) return;
@@ -290,14 +313,14 @@
       var product=displayProduct(r); // 19-column visible ledger: no confirmedDue / LOT / dueDiff cells
       return '<tr data-no="'+esc(no)+'">'+
         '<td>'+(start+i+1)+'</td>'+
-        '<td class="qpo-link" data-action="detail" data-no="'+esc(no)+'">'+esc(rowDate(r)||"-")+'</td>'+
-        '<td><button class="qpo-link-btn" data-action="detail" data-no="'+esc(no)+'">'+esc(no||"-")+'</button></td>'+
+        '<td class="qpo-link" data-action="detail" data-no="'+esc(no)+'">'+esc(purchaseDateForDisplay(r)||"-")+'</td>'+
+        '<td><button class="qpo-link-btn" data-action="detail" data-no="'+esc(no)+'">'+esc(purchaseNoForDisplay(r)||"-")+'</button></td>'+
         '<td>'+esc(supplier(r)||"-")+'</td>'+
         '<td class="left" title="'+esc(product)+'">'+esc(product||"-")+'</td>'+
         '<td>'+fmt(qty(r))+'</td><td>'+esc(unit(r))+'</td>'+
         '<td class="money">'+won(price(r))+'</td>'+
         '<td class="money">'+won(amount(r))+'</td>'+
-        '<td>'+esc(requested(r)||"-")+'</td>'+
+        '<td>'+esc(receiptDateForDisplay(r)||requested(r)||"-")+'</td>'+
         '<td>'+fmt(received(r))+'</td>'+
         '<td class="'+(missing>0?"short":"")+'">'+fmt(missing)+'</td>'+
         '<td>'+badge(ins)+'</td><td>'+badge(iq)+'</td>'+
