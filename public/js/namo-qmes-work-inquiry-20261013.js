@@ -234,6 +234,7 @@ function init(){
   const visible=new Set(effectiveMatching.slice((workPage-1)*10,workPage*10));
   // Apply the final page decision once per row, including unmatched records.
   tbody.dataset.nwiPaged=hasSearched?'true':'false';
+  tbody.dataset.nwiPage=String(workPage);
   availableRows.forEach(tr=>{
    const show=visible.has(tr);
    tr.dataset.nwiVisible=show?'true':'false';
