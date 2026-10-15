@@ -211,14 +211,16 @@ function init(){
   const q=controls.map(x=>x.value.trim().toLowerCase());const range=panel.querySelector('.nwi-period-value')?.textContent||'';const found=range.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);if(found&&(controls[4].value||controls[5].value)){if(!q[4])q[4]=found[1];if(!q[5])q[5]=found[2]}let count=0;
   const queryKey=JSON.stringify(q);if(lastWorkQuery&&lastWorkQuery!==queryKey)workPage=1;lastWorkQuery=queryKey;
   const matching=[];
-  getRows().forEach(tr=>{
+  const allRows=getRows();
+  allRows.forEach(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    const matches=hasSearched&&q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
    tr.hidden=!matches;tr.style.setProperty('display',matches?'table-row':'none','important');if(matches){count++;matching.push(tr);}
   });
   const pages=Math.max(1,Math.ceil(matching.length/10));workPage=Math.min(workPage,pages);
   const start=(workPage-1)*10;
-  matching.forEach((tr,i)=>{const visible=i>=start&&i<start+10;tr.hidden=!visible;tr.style.setProperty('display',visible?'table-row':'none','important');});
+  const visibleRows=new Set(matching.slice(start,start+10));
+  allRows.forEach(tr=>{const visible=visibleRows.has(tr);tr.hidden=!visible;tr.style.setProperty('display',visible?'table-row':'none','important');});
   pager.replaceChildren();
   if(!hasSearched){panel.querySelector('.nwi-count').textContent='';const total=section.querySelector('#nwi-list-total');if(total)total.textContent='';return;}
   for(const [page,label]of [[workPage-1,'‹'],...Array.from({length:pages},(_,i)=>[i+1,String(i+1)]),[workPage+1,'›']]){
