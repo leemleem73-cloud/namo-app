@@ -4544,26 +4544,6 @@ async function loadHistoricalInspectionRows(section,id){
         try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(sources));}catch(_){}
       }
       pqcWorkOrderSources=sources;
-      const normalized=value=>String(value??'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-      for(const lot of ['DBF2401','DBF2501']){
-        if(rows.some(row=>normalized(row.lot)===lot))continue;
-        const order=sources.find(o=>{
-          const fields=o?.fields||{};
-          return [fields['생산 LOT NO'],fields['생산 LOT'],fields['LOT NO'],o?.lot,o?.lotNo,o?.productionLot]
-            .some(v=>normalized(v)===lot);
-        });
-        if(!order)continue;
-        const fields=order.fields||{};
-        const rawDate=String(order.workDate||fields['작업기간']||'').slice(0,10);
-        rows.push({
-          id:'work-linked-'+lot,
-          date:/^\d{4}-\d{2}-\d{2}$/.test(rawDate)?rawDate:'-',
-          workOrderNo:fields['작업지시번호']||order.id||'-',
-          product:fields['제품명']||'-',lot,
-          stage:'PQC',check:'외관 / 점도 / 입도 / 고형분',judge:'검사대기',
-          inspector:'-',remarks:'작업지시서 기반 · 검사결과 미입력'
-        });
-      }
     }
     if(id==='process')for(const row of rows)if(row.measurements)row.judge=evaluatePqcMeasurements(row.measurements).overall;
     // Resolve every PQC row after draft overlays so stale local numbers cannot win.
