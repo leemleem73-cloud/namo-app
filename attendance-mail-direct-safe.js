@@ -184,6 +184,30 @@ function install(app){
     }
   });
 
+  // QMES work-order mail: explicitly sends only to checked, active staff IDs.
+  app.post('/api/qmes-work-dispatch/email-send',requireLogin,async(req,res)=>{
+    try{
+      if(!resendConfigured())return fail(res,503,'QMES 메일 서버(RESEND_API_KEY / RESEND_FROM_EMAIL) 설정이 필요합니다.','MAIL_NOT_CONFIGURED');
+      const ids=[...new Set((Array.isArray(req.body?.recipientUserIds)?req.body.recipientUserIds:[]).map(String))];
+      if(!ids.length||ids.length>50||ids.some(id=>!/^[0-9a-f-]{36}$/i.test(id)))return fail(res,400,'수신 담당자를 다시 선택해 주세요.','INVALID_RECIPIENTS');
+      const orderId=String(req.body?.documentId||'').trim().slice(0,100);
+      if(!orderId)return fail(res,400,'작업지시서를 먼저 저장해 주세요.','ORDER_REQUIRED');
+      const map={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com'};
+      const q=await pool.query("SELECT id,name,email,department,status FROM users WHERE id::text=ANY($1::text[]) AND COALESCE(status,'APPROVED') NOT IN ('REJECTED','INACTIVE','DISABLED','DELETED','WITHDRAWN')",[ids]);
+      if(q.rows.length!==ids.length)return fail(res,400,'등록되지 않았거나 비활성 상태인 담당자가 포함되어 있습니다.','INVALID_STAFF');
+      const recipients=q.rows.map(x=>({...x,email:String(x.email||map[String(x.name||'').trim()]||'').trim()}));
+      if(recipients.some(x=>!/^\S+@namochemical\.com$/i.test(x.email)))return fail(res,400,'이메일 주소가 없는 수신 담당자가 있습니다. 직원등록현황을 확인해 주세요.','EMAIL_MISSING');
+      const sender=await currentSender(req);
+      const fields=req.body?.fields||{};
+      const esc=x=>String(x??'-').slice(0,2000).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const html='<div style="font-family:Arial,sans-serif;line-height:1.7;color:#243247"><h2>나모케미칼 QMES 작업지시서</h2>'+
+        [['작업지시번호',orderId],['고객사',fields.customer],['제품명',fields.product],['생산 LOT',fields.lot],['작업지시사항',fields.instructions]].map(([k,v])=>'<p><b>'+esc(k)+'</b> : '+esc(v)+'</p>').join('')+
+        '<p><a href="https://qmes.namochemical.com/">QMES 작업지시서 확인</a></p></div>';
+      const messageId=await sendViaResend({sender,recipients,subject:'[NAMO QMES] 작업지시서 '+orderId,html});
+      return ok(res,{sent:recipients.length,sentDirect:true,messageId,recipients:recipients.map(x=>({name:x.name,email:x.email}))},'이메일 발송 요청이 메일 서비스에 정상 접수되었습니다.');
+    }catch(e){console.error('[QMES work mail]',e);return fail(res,500,'이메일 발송 실패: '+e.message,'WORK_MAIL_FAILED');}
+  });
+
   app.get('/api/mail-relay/jobs/next',requireRelay,async(req,res)=>{
     try{
       await ensureSchema();
