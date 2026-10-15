@@ -139,5 +139,6 @@ const singleRowLayout=document.createElement('style');singleRowLayout.textConten
 @media(max-width:1250px){#purchase .module-toolbar{flex-wrap:wrap!important}#purchase .module-toolbar .filters{flex-basis:100%!important}#purchase .module-toolbar .table-tools{margin-left:auto!important}}
 @media(max-width:900px){#purchase .module-toolbar .filters{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important}#purchase .module-toolbar .filters>.search-input,#purchase .module-toolbar .filters>.pcal-root,#purchase .qpu-more label:first-child,#purchase .qpu-more label:nth-child(2),#purchase .qpu-more .qpu-clear,#purchase .qpu-more .qpu-search{grid-column:auto!important;grid-row:auto!important}}
 `;document.head.append(singleRowLayout);
+const trimmedControls=document.createElement('style');trimmedControls.textContent='#purchase .page-head .date-badge,#purchase .qpu-more .qpu-clear,#purchase .qpu-more .qpu-search{display:none!important}#purchase .module-toolbar .filters{grid-template-columns:minmax(180px,1.35fr) minmax(170px,1.1fr) minmax(180px,1fr) minmax(145px,.85fr)!important}';document.head.append(trimmedControls);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
