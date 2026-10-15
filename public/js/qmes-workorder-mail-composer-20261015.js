@@ -36,3 +36,5 @@ scan();
 ;(function(){if(document.querySelector('script[data-qmes-purchase-layout]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseLayout='1';t.src='./js/qmes-purchase-layout-20261015.js?v=12';document.head.appendChild(t)})();
 
 ;(function(){if(document.querySelector('script[data-qmes-purchase-calendar]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseCalendar='1';t.src='./js/qmes-purchase-calendar-20261015.js?v=2';document.head.appendChild(t)})();
+
+;(function(){if(document.querySelector('script[data-qmes-purchase-iqc-import]'))return;const t=document.createElement('script');t.dataset.qmesPurchaseIqcImport='1';t.src='./js/qmes-purchase-iqc-import-20261015.js?v=1';document.head.appendChild(t)})();
