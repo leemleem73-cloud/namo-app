@@ -4224,6 +4224,7 @@ function renderSavedWorkOrders(){
   prior.forEach((row,id)=>{if(!seen.has(id))row.remove();});
   const target=sortWorkOrdersLatest(readWorkOrders()).map(x=>String(x?.id||''));
   target.forEach((id,i)=>{const row=[...tbody.querySelectorAll('tr[data-work-saved]')].find(r=>r.dataset.workSaved===id);if(row&&tbody.children[i]!==row)tbody.insertBefore(row,tbody.children[i]||null);});
+  if(typeof window.namoWorkInquiryRefresh==='function')window.namoWorkInquiryRefresh();
 }
 function nextWorkOrderDisplayNumber(date,orders){
   const prefix='WO-'+date.replace(/-/g,'')+'-';
