@@ -169,7 +169,7 @@ function init(){
  detail.innerHTML='<div class="nwd-head">작업지시 상세내역</div><div class="nwd-content">상단 작업지시 목록에서 항목을 선택하세요.</div>';
  shell.insertAdjacentElement('afterend',detail);
  const controls=[...panel.querySelectorAll('[data-filter]')];let activeId='',activeTab='materials',activeRecord=null;
- const getRows=()=>[...tbody.querySelectorAll('tr[data-work-saved]')];
+ const getRows=()=>[...tbody.querySelectorAll('tr[data-work-saved], tr.data-row')].filter(tr=>tr.cells.length>1);
  function ensureRowPrintButtons(){
   getRows().forEach(tr=>{
    const actions=tr.cells[tr.cells.length-1];
@@ -254,6 +254,7 @@ function init(){
  },true);
  detail.addEventListener('click',e=>{const tab=e.target.closest('[data-nwd-tab]');if(!tab||!activeId)return;activeTab=tab.dataset.nwdTab;const row=getRows().find(x=>x.dataset.workSaved===activeId);if(row)draw(row,activeRecord);});
  let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;filter();})});
+ window.namoWorkInquiryRefresh=filter;
  observer.observe(tbody,{childList:true});
  filter();
 }
