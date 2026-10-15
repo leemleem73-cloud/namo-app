@@ -4803,7 +4803,8 @@ function wireInspectionBulkSelect(section,id){
     else if(deleted)toast((id==='process'?'공정검사':'출하검사')+' '+rows.length+'건 삭제 완료');
   });
   section._inspectionBulkRefresh=()=>{
-    allRows=[...tbody.querySelectorAll('tr.data-row')];current=1;render();
+    // Preserve the current page after saving; render clamps it if rows were removed.
+    allRows=[...tbody.querySelectorAll('tr.data-row')];render();
   };
   render();
 }
