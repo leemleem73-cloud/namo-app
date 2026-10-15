@@ -185,3 +185,17 @@
 }
 #work .module-shell>.module-body>.work-list-table>tbody>tr>td:last-child{border-right:0!important;}
 #work .module-shell>.module-body>.work-list-table>tbody>tr:last-child>td{border-bottom:0!important;}
+
+/* Align work-order list header and row feedback with incoming inspection. */
+#work .module-shell>.module-body>.work-list-table{width:100%!important;min-width:1080px!important;table-layout:fixed!important;}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th{
+ height:34px!important;min-height:34px!important;padding:6px 12px!important;
+ font-size:12px!important;font-weight:600!important;line-height:20px!important;
+ background:#e8f0f8!important;background-clip:padding-box!important;
+ border-top:0!important;border-left:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;
+}
+#work .module-shell>.module-body>.work-list-table>thead>tr>th:last-child{border-right:0!important;background:#e8f0f8!important;}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:nth-child(even)>td{background:#fcfdff!important;}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:nth-child(odd)>td{background:#fff!important;}
+#work .module-shell>.module-body>.work-list-table>tbody>tr:hover>td{background:#eef6ff!important;}
+#work .module-shell>.module-body>.work-list-table>tbody>tr.nwi-selected>td{background:#dcefff!important;}
