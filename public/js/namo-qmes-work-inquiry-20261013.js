@@ -233,8 +233,10 @@ function init(){
   workPage=Math.min(Math.max(1,workPage),pages);
   const visible=new Set(effectiveMatching.slice((workPage-1)*10,workPage*10));
   // Apply the final page decision once per row, including unmatched records.
+  tbody.dataset.nwiPaged=hasSearched?'true':'false';
   availableRows.forEach(tr=>{
    const show=visible.has(tr);
+   tr.dataset.nwiVisible=show?'true':'false';
    tr.hidden=!show;
    tr.style.display=show?'table-row':'none';
   });
