@@ -5662,7 +5662,7 @@ function amListData(id){
   });
 }
 function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
-  const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):0;
+  const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
   const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${mode==='detail'&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
@@ -5707,6 +5707,7 @@ function wireAmaranthScreen(){
   const items=[...root.querySelectorAll('.am-list-item')];
   root.querySelector('.am-list-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
   items.forEach(btn=>btn.addEventListener('click',()=>{
+    if(id==='incoming')items.forEach(item=>item.classList.toggle('active',item===btn));
     if(id==='adminEmployees'){
       const idx=Number(btn.dataset.amIndex); if(typeof openEmployeeEditor==='function' && ADMIN_EMPLOYEES[idx]) openEmployeeEditor(ADMIN_EMPLOYEES[idx],idx); return;
     }
@@ -6007,7 +6008,7 @@ function showRowDetail(id,row){
     return;
   }
   const html=amEditableDetail(id,cols,vals);
-  openModal(pageInfo[id][0]+' 상세',amaranthScreen(id,html,'detail',pageInfo[id][0]+' 상세 / 수정'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+  openModal(pageInfo[id][0]+' 상세',amaranthScreen(id,html,'detail',pageInfo[id][0]+' 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
 }
 
 function stdMeasureCell(kind,idx){
