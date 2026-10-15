@@ -126,5 +126,12 @@ const matchWorkStyle=document.createElement('style');matchWorkStyle.textContent=
 .qpu-popup .qpu-head{background:#edf3f9!important;color:#173b61!important}
 `;document.head.append(matchWorkStyle);
 const sidebarClearance=document.createElement('style');sidebarClearance.textContent='.app.nav-open #purchase{padding-left:156px!important;box-sizing:border-box!important}.app.nav-open #purchase .pcal-pop{max-width:min(450px,calc(100vw - 255px))!important}@media(max-width:760px){.app.nav-open #purchase{padding-left:156px!important}}';document.head.append(sidebarClearance);
+const navOverlapFix=document.createElement('style');navOverlapFix.textContent=`
+/* Keep the sidebar overlay, but move purchase content beyond its 232px expanded width. */
+.app.nav-open #purchase{transform:translateX(156px)!important;width:calc(100% - 156px)!important;padding-left:0!important;transition:none!important}
+.app:not(.nav-open) #purchase{transform:none!important;width:100%!important;padding-left:0!important}
+.app.nav-open #purchase .module-toolbar .filters{min-width:0!important}
+@media(max-width:900px){.app.nav-open #purchase{transform:translateX(156px)!important;width:calc(100% - 156px)!important}}
+`;document.head.append(navOverlapFix);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
