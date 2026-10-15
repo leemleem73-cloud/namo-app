@@ -213,3 +213,9 @@
 
 /* Prevent the old 23-row flash while the inquiry list reconciles pagination. */
 #work .work-list-table tbody[data-nwi-paged="true"]>tr:not([data-nwi-visible="true"]){display:none!important;}
+
+/* Hard page-window guard: no 11th row may leak into a ten-row page. */
+#work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="1"]>tr:nth-child(n+11),
+#work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="2"]>tr:nth-child(-n+10),
+#work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="2"]>tr:nth-child(n+21),
+#work .work-list-table tbody[data-nwi-paged="true"][data-nwi-page="3"]>tr:nth-child(-n+20){display:none!important;}
