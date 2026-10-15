@@ -125,5 +125,19 @@ const matchWorkStyle=document.createElement('style');matchWorkStyle.textContent=
 #purchase .qpu-detail th{background:#e6eff8!important;color:#254665!important;border-color:#d0dcea!important}
 .qpu-popup .qpu-head{background:#edf3f9!important;color:#173b61!important}
 `;document.head.append(matchWorkStyle);
+const singleRowLayout=document.createElement('style');singleRowLayout.textContent=`
+#purchase .module-toolbar{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:nowrap!important;padding:13px 15px!important}
+#purchase .module-toolbar .filters{display:grid!important;grid-template-columns:minmax(190px,1.35fr) minmax(180px,1.05fr) minmax(180px,1fr) minmax(145px,.85fr) auto auto!important;grid-template-rows:38px!important;gap:10px!important;align-items:center!important;flex:1 1 auto!important;min-width:0!important;width:auto!important}
+#purchase .module-toolbar .filters>.search-input{grid-column:1!important;grid-row:1!important;width:100%!important}
+#purchase .module-toolbar .filters>.pcal-root{grid-column:3!important;grid-row:1!important;width:100%!important;max-width:none!important;justify-self:stretch!important}
+#purchase .qpu-more label:first-child{grid-column:2!important;grid-row:1!important;min-width:0!important}
+#purchase .qpu-more label:nth-child(2){grid-column:4!important;grid-row:1!important;min-width:0!important}
+#purchase .qpu-more .qpu-clear{grid-column:5!important;grid-row:1!important;margin:0!important;justify-self:auto!important}
+#purchase .qpu-more .qpu-search{grid-column:6!important;grid-row:1!important;margin:0!important;justify-self:auto!important}
+#purchase .module-toolbar .table-tools{display:flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto!important;margin:0 0 0 auto!important}
+#purchase .module-toolbar .filters>input[type=date]{display:none!important}
+@media(max-width:1250px){#purchase .module-toolbar{flex-wrap:wrap!important}#purchase .module-toolbar .filters{flex-basis:100%!important}#purchase .module-toolbar .table-tools{margin-left:auto!important}}
+@media(max-width:900px){#purchase .module-toolbar .filters{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important}#purchase .module-toolbar .filters>.search-input,#purchase .module-toolbar .filters>.pcal-root,#purchase .qpu-more label:first-child,#purchase .qpu-more label:nth-child(2),#purchase .qpu-more .qpu-clear,#purchase .qpu-more .qpu-search{grid-column:auto!important;grid-row:auto!important}}
+`;document.head.append(singleRowLayout);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
