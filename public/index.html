@@ -6820,6 +6820,95 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 })();
 </script>
 <!-- work batch UI disabled pending main-screen recovery -->
+<style id="pqc-centered-choice-style">
+.pqc-centered-choice{position:relative;display:block;width:100%;min-width:0}
+.pqc-centered-choice>select{display:none!important}
+.pqc-centered-choice .pqc-choice-trigger{position:relative;display:block;width:100%;height:38px;box-sizing:border-box;border:1px solid #dce3ed;border-radius:6px;background:#fff;color:#26364a;padding:0 28px!important;font:inherit;font-weight:500;cursor:pointer;text-align:center!important}
+.pqc-choice-trigger .pqc-choice-label{display:block;width:100%;text-align:center!important}
+.pqc-choice-trigger .pqc-choice-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;line-height:1;pointer-events:none}
+.pqc-choice-trigger:focus-visible{outline:0;border-color:#a5a4db;box-shadow:0 0 0 2px #efedff}
+.pqc-choice-trigger:disabled{cursor:default;opacity:.7}
+.pqc-centered-choice .pqc-choice-options{position:absolute;left:0;top:calc(100% + 3px);width:100%;box-sizing:border-box;z-index:1000;border:1px solid #a6a6a6;background:#fff;padding:0!important;margin:0;box-shadow:0 3px 9px #0002}
+.pqc-choice-options[hidden]{display:none!important}
+.pqc-centered-choice .pqc-choice-option{display:block;box-sizing:border-box;width:100%;min-height:28px;height:28px;border:0;border-radius:0;background:#fff;color:#26364a;padding:0!important;margin:0!important;font:inherit;cursor:pointer;text-align:center!important;line-height:28px!important}
+.pqc-choice-option[aria-selected="true"],.pqc-choice-option:hover,.pqc-choice-option:focus{background:#777!important;color:#fff!important;outline:0}
+</style>
+<script id="pqc-centered-choice-script">
+(function(){
+  const selector='.am-split[data-am-screen="process"] .pqc-detail-measure-table select,.std-inspection[data-inspection-type="process"] .std-result select';
+  const installed=new WeakMap();let sequence=0,openChoice=null;
+  function closeChoice(restoreFocus=false){
+    if(!openChoice)return;
+    const {trigger,list}=openChoice;list.hidden=true;trigger.setAttribute('aria-expanded','false');
+    openChoice=null;if(restoreFocus)trigger.focus();
+  }
+  function install(select){
+    if(installed.has(select)){
+      const trigger=installed.get(select);
+      if(trigger.disabled!==select.disabled)trigger.disabled=select.disabled;
+      return;
+    }
+    const wrap=document.createElement('div');wrap.className='pqc-centered-choice';
+    select.before(wrap);wrap.append(select);select.hidden=true;select.tabIndex=-1;
+    const trigger=document.createElement('button');trigger.type='button';trigger.className='pqc-choice-trigger';
+    trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
+    const label=document.createElement('span');label.className='pqc-choice-label';
+    const arrow=document.createElement('span');arrow.className='pqc-choice-arrow';arrow.textContent='⌄';arrow.setAttribute('aria-hidden','true');
+    trigger.append(label,arrow);
+    const list=document.createElement('div');list.className='pqc-choice-options';list.id='pqc-choice-'+(++sequence);
+    list.setAttribute('role','listbox');list.hidden=true;trigger.setAttribute('aria-controls',list.id);
+    const row=select.closest('tr'),cell=select.closest('td'),column=cell?.cellIndex;
+    const item=row?.querySelector('th,.item')?.textContent.trim()||'외관';
+    const round=column>=4&&column<=6?(column-3)+'차':'측정값';
+    trigger.setAttribute('aria-label',item+' '+round+' 선택');
+    wrap.append(trigger,list);installed.set(select,trigger);
+    const options=[...select.options],buttons=[];
+    function sync(){
+      label.textContent=select.selectedOptions[0]?.textContent||'선택';
+      buttons.forEach((button,index)=>button.setAttribute('aria-selected',String(index===select.selectedIndex)));
+      trigger.disabled=select.disabled;
+    }
+    function choose(index){
+      if(select.disabled||options[index]?.disabled)return;
+      select.selectedIndex=index;sync();closeChoice(true);
+      select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    options.forEach((option,index)=>{
+      const button=document.createElement('button');button.type='button';button.className='pqc-choice-option';
+      button.setAttribute('role','option');button.tabIndex=-1;button.textContent=option.textContent;button.disabled=option.disabled;
+      button.addEventListener('click',()=>choose(index));
+      button.addEventListener('keydown',event=>{
+        const keys=['ArrowDown','ArrowUp','Home','End','Escape'];if(!keys.includes(event.key))return;
+        event.preventDefault();
+        if(event.key==='Escape'){closeChoice(true);return;}
+        const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:
+          (index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;
+        buttons[next]?.focus();
+      });
+      buttons.push(button);list.append(button);
+    });
+    function open(){
+      if(select.disabled)return;
+      closeChoice();list.hidden=false;trigger.setAttribute('aria-expanded','true');openChoice={trigger,list,wrap};
+      buttons[Math.max(0,select.selectedIndex)]?.focus();
+    }
+    trigger.addEventListener('click',()=>list.hidden?open():closeChoice());
+    trigger.addEventListener('keydown',event=>{
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();open();}
+      else if(event.key==='Escape'){event.preventDefault();closeChoice();}
+    });
+    select.addEventListener('change',sync);sync();
+  }
+  document.addEventListener('pointerdown',event=>{if(openChoice&&!openChoice.wrap.contains(event.target))closeChoice();},true);
+  document.addEventListener('keydown',event=>{if(event.key==='Tab')closeChoice();},true);
+  function scan(){document.querySelectorAll(selector).forEach(install);}
+  let scheduled=false;
+  new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;scan();});})
+    .observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
+  scan();
+})();
+</script>
+
 </body>
 </html>
 
