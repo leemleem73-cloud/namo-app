@@ -76,7 +76,7 @@
    const emailButton=document.createElement('button');
    emailButton.type='button';emailButton.className='btn';emailButton.id='namoWorkEmailCompose';
    emailButton.textContent='이메일 발송';emailButton.disabled=true;emailButton.title='선택한 수신 담당자에게 QMES에서 직접 이메일을 발송합니다.';
-   button.before(emailButton);
+   button.replaceWith(emailButton);
    let departments=[],sending=false;
    const selected=new Map();
    const groups=()=>departments.filter(d=>selected.has(d.name));
@@ -119,7 +119,6 @@
      const valid=groups().filter(d=>selected.get(d.name).size>0);
      const total=valid.reduce((n,d)=>n+selected.get(d.name).size,0);
      count.textContent='선택 부서 '+valid.length+'개 · 수신자 '+total+'명';
-     button.disabled=sending||!total;
      const mailTotal=groups().reduce((n,d)=>n+(d.staff||[]).filter(p=>selected.get(d.name).has(String(p.id))&&staffEmails[String(p.name||'').trim()]).length,0);
      emailButton.disabled=sending||!mailTotal;
      emailButton.title=mailTotal+'명 QMES 이메일 직접 발송';
@@ -139,7 +138,7 @@
      if(!addressed.length){status.textContent='이메일이 등록된 수신 담당자를 선택해 주세요.';return;}
      if(missing.length){status.textContent='이메일 미등록 담당자: '+missing.map(p=>p.name).join(', ')+' · 해당자를 제외한 후 발송해 주세요.';return;}
      if(!window.namoSaveWorkOrderForDispatch){status.textContent='작업지시서 저장 기능을 확인하지 못했습니다.';return;}
-     if(!window.confirm(addressed.map(p=>p.name).join(', ')+' · '+addressed.length+'명에게 이메일을 실제 발송하시겠습니까?'))return;
+     if(!window.confirm(addressed.map(p=>p.name).join(', ')+' · '+addressed.length+'명 이메일 발송 후 전체 부서에 QMES 알림을 보내시겠습니까?'))return;
      sending=true;update();status.textContent='작업지시서 저장 중...';
      try{
        const orderId=await window.namoSaveWorkOrderForDispatch(editId||form.dataset.workDispatchSavedId||'');
@@ -151,27 +150,22 @@
          documentId:orderId,recipientUserIds:addressed.map(p=>String(p.id)),
          fields:{customer:field('고객사명'),product:field('제품명'),lot:field('생산 LOT NO'),instructions:form.querySelector('#namoWorkInstructions')?.value||''}
        })});
-       status.textContent='이메일 발송 요청 완료 · '+response.sent+'명';
+       status.textContent='이메일 발송 요청 완료 · 전 부서 QMES 알림 발송 중...';
+       const allDepartments=departments.filter(d=>(d.staff||[]).length);
+       const allIds=[...new Set(allDepartments.flatMap(d=>d.staff.map(p=>String(p.id))))];
+       if(!allIds.length)throw Error('이메일은 발송되었지만 전 부서 알림 수신자가 없습니다.');
+       try{
+         const key='wd-email-'+String(orderId).replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
+         const notice=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+           documentId:orderId,departments:allDepartments.map(d=>d.name),sendMode:'staff',recipientUserIds:allIds,requestKey:key,note:'이메일 발송에 따른 전체 부서 알림'
+         })});
+         status.textContent='이메일 '+response.sent+'명 발송 요청 완료 · 전 부서 QMES 알림 '+notice.recipientTotal+'명 전달';
+         await loadInbox();
+       }catch(noticeError){
+         status.textContent='이메일 '+response.sent+'명 발송 요청 완료 · 전 부서 알림 실패: '+noticeError.message;
+         return;
+       }
      }catch(err){status.textContent='이메일 미발송: '+err.message;}
-     finally{sending=false;update();}
-   });
-   button.addEventListener('click',async()=>{
-     if(sending)return;
-     const valid=groups().filter(d=>selected.get(d.name).size>0),names=valid.map(d=>d.name),recipients=valid.flatMap(d=>[...selected.get(d.name)]);
-     if(!recipients.length){status.textContent='수신부서와 해당자를 선택해 주세요.';return;}
-     let orderId=editId||form.dataset.namoSavedWorkOrderId||'';
-     if(!window.namoSaveWorkOrderForDispatch){status.textContent='저장 연동을 불러오지 못했습니다. 화면을 새로고침해 주세요.';return;}
-     if(!window.confirm(names.join(', ')+' · '+recipients.length+'명에게 발송하시겠습니까?'))return;
-     sending=true;update();status.textContent='작업지시서 저장 중...';
-     try{
-       orderId=await window.namoSaveWorkOrderForDispatch(orderId);
-       if(!orderId){status.textContent='저장에 실패해 발송하지 않았습니다.';return;}
-       status.textContent='저장 완료 · 수신 담당자에게 발송 중...';
-       const key='wd-'+orderId.replace(/[^A-Za-z0-9_-]/g,'')+'-'+Date.now();
-       const result=await api('/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({documentId:orderId,departments:names,sendMode:'staff',recipientUserIds:recipients,requestKey:key,note:''})});
-       status.textContent='발송 완료 · '+result.recipientTotal+'명 QMES 알림 전달';
-       await loadInbox();
-     }catch(err){status.textContent='발송 실패: '+err.message;}
      finally{sending=false;update();}
    });
  };
