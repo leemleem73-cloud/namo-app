@@ -4721,7 +4721,9 @@ function wireInspectionBulkSelect(section,id){
   if(!tbody||!head||!button||!pager)return;
   const pageSize=10;
   let allRows=[...tbody.querySelectorAll('tr.data-row')];
+  const pageStateKey='namo-inspection-page:'+id;
   let current=1;
+  try{const saved=Number(sessionStorage.getItem(pageStateKey));if(Number.isInteger(saved)&&saved>0)current=saved;}catch(_){}
   let rendering=false;
   function update(){
     const boxes=allRows.flatMap(row=>[...row.querySelectorAll('.iqc-select-row')]);
@@ -4738,7 +4740,10 @@ function wireInspectionBulkSelect(section,id){
     rendering=true;
     observer.disconnect();
     const totalPages=Math.max(1,Math.ceil(allRows.length/pageSize));
-    current=Math.min(Math.max(1,current),totalPages);
+    if(typeof section._inspectionRowsLoaded==='number'){
+      current=Math.min(Math.max(1,current),totalPages);
+      try{sessionStorage.setItem(pageStateKey,String(current));}catch(_){}
+    }
     const start=(current-1)*pageSize;
     const visible=allRows.slice(start,start+pageSize);
     tbody.replaceChildren(...visible);
@@ -4771,7 +4776,7 @@ function wireInspectionBulkSelect(section,id){
     if(rendering)return;
     const newRows=[...tbody.querySelectorAll('tr.data-row')];
     if(newRows.some(row=>!allRows.includes(row))){
-      allRows=newRows;current=1;render();
+      allRows=newRows;render();
     }
   });
   tbody.addEventListener('change',e=>{if(e.target.matches('.iqc-select-row'))update();});
