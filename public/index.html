@@ -5655,6 +5655,12 @@ function amModuleTitle(id){
 function amListData(id){
   if(id==='adminEmployees' && typeof ADMIN_EMPLOYEES!=='undefined') return ADMIN_EMPLOYEES.map((e,i)=>({index:i,primary:e.name||e.no||`직원 ${i+1}`,secondary:`${e.dept||'-'} · ${e.position||'-'} · ${e.account||'-'}`}));
   const section=document.getElementById(id);
+  if(id==='incoming'&&Array.isArray(section?._iqcRows)){
+    return [...section._iqcRows].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.created_at||'').localeCompare(String(a.created_at||''))).map((r,i)=>({
+      index:i,recordId:String(r.id),primary:iqcDateText(r.date),
+      secondary:[r.supplier,r.item,r.lot].filter(Boolean).join(' · ')
+    }));
+  }
   const rows=section?[...section.querySelectorAll('.data-row')]:[];
   return rows.map((row,i)=>{
     const cells=[...row.children].map(td=>td.innerText.trim());
@@ -5662,12 +5668,16 @@ function amListData(id){
   });
 }
 function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
-  const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
+  let selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
+  if(id==='incoming'&&selectedRow?.dataset.iqcId){
+    const index=list.findIndex(x=>String(x.recordId)===String(selectedRow.dataset.iqcId));
+    if(index>=0)selectedIndex=index;
+  }
   const pagedInspection=['incoming','process','outgoing'].includes(id);
   const initialListPage=Math.max(1,Math.floor(Math.max(0,selectedIndex)/10)+1);
-  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
+  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}" data-am-record-id="${amEsc(x.recordId||'')}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
   return `<div class="am-split" data-am-screen="${id}">
     <aside class="am-list-pane">
@@ -5736,13 +5746,18 @@ function wireAmaranthScreen(){
   items.forEach(btn=>btn.addEventListener('click',()=>{
     if(id==='incoming'){
       items.forEach(item=>item.classList.toggle('active',item===btn));
-      const row=document.querySelectorAll('#incoming .data-row')[Number(btn.dataset.amIndex)];
-      if(row){
-        const current=workspaceBody.querySelector('.am-split[data-am-screen="incoming"]');
-        const isEdit=!!current?.querySelector('#iqcEditDate');
-        const record=(document.getElementById('incoming')?._iqcRows||[]).find(r=>String(r.id)===String(row.dataset.iqcId));
-        if(isEdit&&record)editIncomingRecord(document.getElementById('incoming'),record);
-        else showRowDetail('incoming',row);
+      const section=document.getElementById('incoming');
+      const record=(section?._iqcRows||[]).find(r=>String(r.id)===btn.dataset.amRecordId);
+      const current=workspaceBody.querySelector('.am-split[data-am-screen="incoming"]');
+      const isEdit=!!current?.querySelector('#iqcEditDate');
+      if(record){
+        if(isEdit){editIncomingRecord(section,record);return;}
+        const row=[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(record.id));
+        if(row){showRowDetail('incoming',row);return;}
+        const pageSize=10;
+        const all=[...section._iqcRows].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')));
+        const index=all.findIndex(r=>String(r.id)===String(record.id));
+        if(index>=0){renderIncomingPage(section,Math.floor(index/pageSize)+1);const selected=[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(record.id));if(selected)showRowDetail('incoming',selected);}
       }
       return;
     }
