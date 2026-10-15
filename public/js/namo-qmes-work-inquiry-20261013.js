@@ -223,11 +223,15 @@ function init(){
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    return q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
   }):[];
-  const count=matching.length,pages=Math.max(1,Math.ceil(count/10));
+  // Count the rows actually present, without changing how records are loaded.
+  // Some legacy work-order rows do not carry data-work-saved/data-row.
+  const availableRows=[...tbody.querySelectorAll('tr')].filter(tr=>tr.cells.length>1);
+  const effectiveMatching=hasSearched&&matching.length===0&&q.every(v=>!v)?availableRows:matching;
+  const count=effectiveMatching.length,pages=Math.max(1,Math.ceil(count/10));
   workPage=Math.min(Math.max(1,workPage),pages);
-  const visible=new Set(matching.slice((workPage-1)*10,workPage*10));
+  const visible=new Set(effectiveMatching.slice((workPage-1)*10,workPage*10));
   // Apply the final page decision once per row, including unmatched records.
-  rows.forEach(tr=>{
+  availableRows.forEach(tr=>{
    const show=visible.has(tr);
    tr.hidden=!show;
    tr.style.display=show?'table-row':'none';
