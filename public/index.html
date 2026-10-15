@@ -5656,7 +5656,7 @@ function amListData(id){
   if(id==='adminEmployees' && typeof ADMIN_EMPLOYEES!=='undefined') return ADMIN_EMPLOYEES.map((e,i)=>({index:i,primary:e.name||e.no||`직원 ${i+1}`,secondary:`${e.dept||'-'} · ${e.position||'-'} · ${e.account||'-'}`}));
   const section=document.getElementById(id);
   const rows=section?[...section.querySelectorAll('.data-row')]:[];
-  return rows.slice(0,20).map((row,i)=>{
+  return rows.map((row,i)=>{
     const cells=[...row.children].map(td=>td.innerText.trim());
     return {index:i,primary:cells[1]||`NO ${i+1}`,secondary:[cells[2],cells[3]].filter(Boolean).join(' · ')};
   });
@@ -5665,6 +5665,8 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
   const selectedIndex=selectedRow?[...document.querySelectorAll('#'+id+' .data-row')].indexOf(selectedRow):-1;
   const title=amModuleTitle(id), list=amListData(id);
   const count=list.length;
+  const pagedInspection=['incoming','process','outgoing'].includes(id);
+  const initialListPage=Math.max(1,Math.floor(Math.max(0,selectedIndex)/10)+1);
   const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
   return `<div class="am-split" data-am-screen="${id}">
@@ -5673,6 +5675,7 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
       <div class="am-list-controls"><select><option>전체</option></select><input class="am-list-search" type="text" placeholder="${title} 검색"></div>
       <div class="am-list-count">${count} ${title}</div>
       <div class="am-list-items">${listHtml}</div>
+      ${pagedInspection?'<div class="am-list-pagination" data-am-page="'+initialListPage+'" style="display:flex;justify-content:center;gap:5px;padding:9px 4px;border-top:1px solid #e2e7ed"></div>':''}
       <button class="am-list-add" type="button" data-am-add="${id}">⊕ 추가</button>
     </aside>
     <section class="am-detail-pane">
@@ -5705,7 +5708,31 @@ function wireAmaranthScreen(){
   const root=workspaceBody.querySelector('.am-split'); if(!root) return;
   const id=root.dataset.amScreen;
   const items=[...root.querySelectorAll('.am-list-item')];
-  root.querySelector('.am-list-search')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
+  const listSearch=root.querySelector('.am-list-search');
+  const listPager=root.querySelector('.am-list-pagination');
+  if(listPager){
+    let currentPage=Math.max(1,Number(listPager.dataset.amPage)||1);
+    const drawListPage=()=>{
+      const query=(listSearch?.value||'').trim().toLowerCase();
+      const matched=items.filter(b=>b.innerText.toLowerCase().includes(query));
+      const pages=Math.max(1,Math.ceil(matched.length/10));
+      currentPage=Math.min(currentPage,pages);
+      items.forEach(b=>{b.hidden=true;b.style.display='none';});
+      matched.slice((currentPage-1)*10,currentPage*10).forEach(b=>{b.hidden=false;b.style.display='flex';});
+      listPager.replaceChildren();
+      [[currentPage-1,'‹'],...Array.from({length:pages},(_,i)=>[i+1,String(i+1)]),[currentPage+1,'›']].forEach(([page,label])=>{
+        const button=document.createElement('button');button.type='button';button.className='btn'+(page===currentPage?' active':'');button.textContent=label;
+        button.disabled=page<1||page>pages;
+        if(page===currentPage)button.style.cssText='background:#2f7de1;color:#fff';
+        button.addEventListener('click',()=>{currentPage=page;drawListPage();});
+        listPager.appendChild(button);
+      });
+    };
+    listSearch?.addEventListener('input',()=>{currentPage=1;drawListPage();});
+    drawListPage();
+  }else{
+    listSearch?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
+  }
   items.forEach(btn=>btn.addEventListener('click',()=>{
     if(id==='incoming'){
       items.forEach(item=>item.classList.toggle('active',item===btn));
