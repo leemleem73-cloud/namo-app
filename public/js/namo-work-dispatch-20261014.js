@@ -72,7 +72,7 @@
    const form=document.querySelector('.work-form'),list=form?.querySelector('#namoWorkDepartments'),people=form?.querySelector('#namoWorkEmployees');
    const button=form?.querySelector('#namoWorkSend'),status=form?.querySelector('#namoWorkSendStatus'),count=form?.querySelector('#namoWorkSendCount'),reset=form?.querySelector('#namoWorkSendReset');
    if(!list||!people||!button||!count||!status)return;
-   const staffEmails={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com'};
+   const staffEmails={'김세희':'shkim@namochemical.com','정영기':'ygjeong@namochemical.com','김현진':'hyunjinkim@namochemical.com','박도훈':'dhbak@namochemical.com','박지헌':'jhp1767@namochemical.com','박현아':'hapark@namochemical.com','문지훈':'jh4ever@namochemical.com','임흥배':'hbleem@namochemical.com'};
    const emailButton=document.createElement('button');
    emailButton.type='button';emailButton.className='btn';emailButton.id='namoWorkEmailCompose';
    emailButton.textContent='이메일 발송';emailButton.disabled=true;emailButton.title='선택한 수신 담당자에게 QMES에서 직접 이메일을 발송합니다.';
