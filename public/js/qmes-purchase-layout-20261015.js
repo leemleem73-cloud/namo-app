@@ -125,5 +125,6 @@ const matchWorkStyle=document.createElement('style');matchWorkStyle.textContent=
 #purchase .qpu-detail th{background:#e6eff8!important;color:#254665!important;border-color:#d0dcea!important}
 .qpu-popup .qpu-head{background:#edf3f9!important;color:#173b61!important}
 `;document.head.append(matchWorkStyle);
+const sidebarClearance=document.createElement('style');sidebarClearance.textContent='.app.nav-open #purchase{padding-left:156px!important;box-sizing:border-box!important}.app.nav-open #purchase .pcal-pop{max-width:min(450px,calc(100vw - 255px))!important}@media(max-width:760px){.app.nav-open #purchase{padding-left:156px!important}}';document.head.append(sidebarClearance);
 new MutationObserver(init).observe(document.body,{childList:true,subtree:true});init();
 })();
