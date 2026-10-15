@@ -457,7 +457,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   .modal-foot{height:58px;padding:0 18px;display:flex;align-items:center;justify-content:flex-end;gap:8px;border-top:1px solid var(--line);background:#fbfcfe}
   .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-item{display:flex;flex-direction:column;gap:6px}.form-item.full{grid-column:1/-1}.form-item label{font-size:11px;font-weight:700;color:#475569}.form-item input,.form-item select,.form-item textarea{border:1px solid #dfe4ea;border-radius:8px;padding:9px 10px;font:inherit;font-size:12px;background:#fff}.form-item textarea{min-height:88px;resize:vertical}
   .detail-grid{display:grid;grid-template-columns:150px 1fr;border-top:1px solid #edf0f4;border-left:1px solid #edf0f4}.detail-grid div{padding:10px 12px;border-right:1px solid #edf0f4;border-bottom:1px solid #edf0f4;font-size:12px}.detail-grid .key{background:#f8fafc;font-weight:700;color:#475569}
-  .toast{position:fixed;left:50%;right:auto;bottom:36px;max-width:min(90vw,580px);box-sizing:border-box;background:#f1e7ff;color:#684294;border:1px solid #d9c5f5;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;text-align:center;box-shadow:0 12px 28px rgba(116,76,161,.16);opacity:0;transform:translate(-50%,8px);pointer-events:none;transition:opacity .18s,transform .18s;z-index:1200}.toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast{position:fixed;left:50%;right:auto;bottom:36px;max-width:min(90vw,580px);box-sizing:border-box;background:#fff;color:#000;border:1px solid #d1d5db;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.12);opacity:0;transform:translate(-50%,8px);pointer-events:none;transition:opacity .18s,transform .18s;z-index:1200}.toast.show{opacity:1;transform:translate(-50%,0)}
   @media(max-width:760px){.form-grid{grid-template-columns:1fr}.detail-grid{grid-template-columns:110px 1fr}}
 
 .overflow-grid{display:grid;gap:14px;margin-top:16px}
@@ -4598,7 +4598,6 @@ async function loadHistoricalInspectionRows(section,id){
       return '<tr class="data-row" tabindex="0" data-delete-targets="'+safe(JSON.stringify(row.__deleteTargets||[]))+'" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
     section._inspectionRowsLoaded=displayRows.length;
-    section._inspectionBulkRefresh?.();
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=displayRows.length;
     if(id==='process'){
@@ -4620,7 +4619,7 @@ async function loadHistoricalInspectionRows(section,id){
         };
         const lot=get('생산 LOT NO'),title='공정검사 성적서';
         const html=standardInspectionForm('process');
-        openModal(title,amaranthScreen('process',html,'detail',title),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
+        openModal(title,amaranthScreen('process',html,'detail',title,tr),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
         arrangePqcWorkspaceActions();
         const root=document.querySelector('.std-inspection[data-inspection-type="process"]');
         if(!root)return;
@@ -4657,6 +4656,8 @@ async function loadHistoricalInspectionRows(section,id){
       }));
     }
     section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
+    // Bind actions to all records before pagination detaches later pages.
+    section._inspectionBulkRefresh?.();
     section._fitProcessColumns?.();section._fitOutgoingColumns?.();
   }catch(error){
     if(section._historicalRequest!==request||!section.isConnected)return;
