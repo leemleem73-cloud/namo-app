@@ -220,10 +220,11 @@ function init(){
   if(lastWorkQuery&&lastWorkQuery!==queryKey)workPage=1;
   lastWorkQuery=queryKey;
   const rows=getRows();
-  const matching=hasSearched?rows.filter(tr=>{
+  const hasActiveFilters=q.some(v=>v!=='');
+  const matching=!hasSearched?[]:!hasActiveFilters?rows:rows.filter(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
    return q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
-  }):[];
+  });
   // Count the rows actually present, without changing how records are loaded.
   // Some legacy work-order rows do not carry data-work-saved/data-row.
   const availableRows=getRows();
