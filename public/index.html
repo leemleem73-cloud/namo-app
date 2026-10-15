@@ -5180,6 +5180,9 @@ function printInspectionReport(title,batchSheets){
     if(meta)[...meta.children].slice(4).forEach(cell=>cell.remove());
     copy.querySelector('.report-basic colgroup')?.remove();
     if(copy.matches('.report-process,.report-pqc-print')){
+      copy.querySelectorAll('.report-inspection td.pass,.report-summary .final').forEach(el=>{
+        el.dataset.pqcPrintJudge=el.textContent.trim();
+      });
       // Screen-only important borders must not survive into either print path.
       for(const el of [copy,...copy.querySelectorAll('*')]){
         for(const prop of [...el.style]){
@@ -5632,7 +5635,7 @@ body{width:194mm;max-width:100%;margin:0 auto;font-family:Arial,'Noto Sans KR',s
  #reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-support,#reportSheet.report-sheet.report-sheet:is(.report-process,.report-pqc-print) .report-footer{border:0!important}
 }
 `;
-const printHtml=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>${reportPrintStyles}</style>
+const printHtml=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>${reportPrintStyles}${isPqcPrint ? `\n#reportSheet.report-sheet .report-inspection [data-pqc-print-judge="불합격"],#reportSheet.report-sheet .report-summary [data-pqc-print-judge="불합격"]{color:#dc2626!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}\n#reportSheet.report-sheet .report-summary .final{font-size:9px!important;line-height:inherit!important}\n` : ""}</style>
 
 </head><body>${batchSheets?.length ? batchSheets.map((source,index)=>{const copy=preparePrintSheet(source);return `<div style="break-after:${index===batchSheets.length-1?"auto":"page"};page-break-after:${index===batchSheets.length-1?"auto":"always"}">${copy.outerHTML}${printOutsideMeta}</div>`;}).join("") : printSheet.outerHTML+printOutsideMeta}</body></html>`;
   document.body.appendChild(printFrame);
