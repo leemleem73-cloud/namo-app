@@ -2304,7 +2304,7 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=print-to-remarks-20261013"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261015-pagination-latest1"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -4166,7 +4166,10 @@ function readWorkOrders(){
   if(workSharedRows)return workSharedRows.filter(row=>!workDeletingIds.has(String(row?.id)));
   try{const rows=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');return Array.isArray(rows)?rows.filter(row=>!workDeletingIds.has(String(row?.id))):[];}catch(_){return [];}
 }
-window.qmesGetWorkOrders=()=>readWorkOrders();
+function sortWorkOrdersLatest(rows){
+  return [...rows].sort((a,b)=>String(b.workDate||b.fields?.['작업기간']||'').slice(0,10).localeCompare(String(a.workDate||a.fields?.['작업기간']||'').slice(0,10))||String(b.id||'').localeCompare(String(a.id||'')));
+}
+window.qmesGetWorkOrders=()=>sortWorkOrdersLatest(readWorkOrders());
 function renderSavedWorkOrders(){
   const section=document.getElementById('work'),tbody=section?.querySelector('.module-body tbody');
   if(!tbody)return;
@@ -4174,18 +4177,18 @@ function renderSavedWorkOrders(){
   const prior=new Map([...tbody.querySelectorAll('tr[data-work-saved]')].map(r=>[r.dataset.workSaved,r]));
   const seen=new Set();
   const cols=pageInfo.work[2];
-  readWorkOrders().forEach((order,index)=>{
+  sortWorkOrdersLatest(readWorkOrders()).forEach((order,index)=>{
     if(!order||!order.id)return;
     seen.add(String(order.id));
     const priorRow=prior.get(String(order.id));
     if(priorRow){
-      const colsNow=pageInfo.work[2],valuesNow=[readWorkOrders().length-index,...colsNow.map(c=>order.fields?.[c]||'-')];
+      const colsNow=pageInfo.work[2],valuesNow=[index+1,...colsNow.map(c=>order.fields?.[c]||'-')];
       valuesNow.forEach((v,i)=>{if(priorRow.cells[i]&&priorRow.cells[i].textContent!==String(v))priorRow.cells[i].textContent=String(v);});
       return;
     }
     const tr=document.createElement('tr');
     tr.className='data-row';tr.tabIndex=0;tr.dataset.workSaved=order.id;
-    const values=[readWorkOrders().length-index,...cols.map(c=>order.fields[c]||'-')];
+    const values=[index+1,...cols.map(c=>order.fields[c]||'-')];
     values.forEach(value=>{const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);});
     tr.addEventListener('click',e=>{if(!e.target.closest('button'))showRowDetail('work',tr);});
     tr.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('work',tr);});
@@ -4219,7 +4222,7 @@ function renderSavedWorkOrders(){
     tbody.appendChild(tr);
   });
   prior.forEach((row,id)=>{if(!seen.has(id))row.remove();});
-  const target=readWorkOrders().map(x=>String(x?.id||''));
+  const target=sortWorkOrdersLatest(readWorkOrders()).map(x=>String(x?.id||''));
   target.forEach((id,i)=>{const row=[...tbody.querySelectorAll('tr[data-work-saved]')].find(r=>r.dataset.workSaved===id);if(row&&tbody.children[i]!==row)tbody.insertBefore(row,tbody.children[i]||null);});
 }
 function nextWorkOrderDisplayNumber(date,orders){
@@ -5706,7 +5709,9 @@ function wireAmaranthScreen(){
     if(id==='adminEmployees'){
       const idx=Number(btn.dataset.amIndex); if(typeof openEmployeeEditor==='function' && ADMIN_EMPLOYEES[idx]) openEmployeeEditor(ADMIN_EMPLOYEES[idx],idx); return;
     }
-    const row=document.querySelectorAll(`#${id} .data-row`)[Number(btn.dataset.amIndex)]; if(row) showRowDetail(id,row);
+    const row=document.querySelectorAll(`#${id} .data-row`)[Number(btn.dataset.amIndex)];
+    if(id==='work'&&row?.dataset.workSaved){const order=readWorkOrders().find(o=>String(o.id)===row.dataset.workSaved);if(order)openNewForm('work',order);return;}
+    if(row) showRowDetail(id,row);
   }));
   root.querySelector('[data-am-add]')?.addEventListener('click',()=>{
     if(id==='adminEmployees'){ if(typeof openEmployeeEditor==='function') openEmployeeEditor(null,null); return; }
@@ -5798,7 +5803,7 @@ function showRowDetail(id,row){
         <div class="work-process-step"><div class="step">STEP 4</div><b>교차 순환 Mixing</b><p>A↔B 탱크 교차 순환</p></div>
       </div></div>
     </div>`;
-    openModal('작업지시서 상세',amaranthScreen('work',html,'detail','작업지시서 상세'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    openModal('작업지시서 상세',amaranthScreen('work',html,'detail','작업지시서 상세',row),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     return;
   }
   if(id==='process'){
@@ -6320,7 +6325,7 @@ function openNewForm(id,editOrder=null){
         </div>
       </div></div>
     </div>`;
-    openModal('신규 작업지시서 등록',amaranthScreen('work',html,'new','신규 작업지시서 등록'),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn" id="workSavePrint" type="button">저장 후 인쇄</button><button class="btn primary" id="modalSave" type="button">저장</button>');
+    openModal('신규 작업지시서 등록',amaranthScreen('work',html,editOrder?'detail':'new',editOrder?'작업지시서 수정':'신규 작업지시서 등록',editOrder?[...document.querySelectorAll('#work .data-row')].find(r=>r.dataset.workSaved===String(editOrder.id)):null),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn" id="workSavePrint" type="button">저장 후 인쇄</button><button class="btn primary" id="modalSave" type="button">저장</button>');
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
