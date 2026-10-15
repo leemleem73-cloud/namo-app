@@ -113,7 +113,7 @@ function init(){
   const parse=v=>v?new Date(v+'T12:00:00'):null;
   const today=new Date(),firstOfMonth=new Date(today.getFullYear(),today.getMonth(),1),todayLocal=new Date(today.getFullYear(),today.getMonth(),today.getDate());let base=new Date(firstOfMonth),a=new Date(firstOfMonth),b=new Date(todayLocal);
   const trigger=rangeLabel.querySelector('.nwi-period-trigger'),value=rangeLabel.querySelector('.nwi-period-value');
-  value.textContent='기간 선택';
+  value.textContent=fmt(a)+' ~ '+fmt(b);
   function redraw(){
    const months=pop.querySelector('.nwi-period-months');months.innerHTML='';
    for(let k=0;k<2;k++){
@@ -158,7 +158,7 @@ function init(){
   pop.querySelector('.nwi-period-cancel').onclick=close;
   pop.querySelector('.nwi-period-ok').onclick=()=>{if(!a||!b)return;start.value=fmt(a);end.value=fmt(b);value.textContent=fmt(a)+' ~ '+fmt(b);close();filter()};
   document.addEventListener('pointerdown',e=>{if(!pop.hidden&&!pop.contains(e.target)&&!rangeLabel.contains(e.target))close()});
-  // An unset period means all work orders. Only a deliberate date selection filters the list.
+  panel.querySelector('#nwi-search').addEventListener('click',()=>{if(!start.value&&!end.value&&value.textContent!=='기간 선택'){start.value=fmt(firstOfMonth);end.value=fmt(todayLocal)}});
   panel.querySelector('#nwi-clear').addEventListener('click',()=>{value.textContent='기간 선택';a=null;b=null;close()});
  })();
 
