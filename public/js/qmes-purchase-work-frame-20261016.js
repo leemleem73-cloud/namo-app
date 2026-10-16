@@ -56,6 +56,16 @@ function init(){
  };
  function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate();});}
  new MutationObserver(schedule).observe(wrap.querySelector('tbody'),{childList:true});document.addEventListener('qmes-purchase-list-render',schedule);decorate();
+
+ // Match the current work-order inquiry tools while retaining native handlers.
+ const headTools=document.createElement('div');headTools.className='qow-head-tools';
+ query.textContent='';query.setAttribute('aria-label','조회');query.dataset.workTooltip='조회';query.innerHTML='<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75"/><path d="m13 13 4 4"/></svg>';
+ const toggle=document.createElement('button');toggle.type='button';toggle.className='btn qpp-toggle';wrap.id='qpp-result-list';const pager=shell.querySelector('.qpu-pager');if(pager)pager.id='qpp-result-pages';toggle.setAttribute('aria-controls','qpp-result-list qpp-result-pages');toggle.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg>';
+ function toggleState(){const expanded=!shell.classList.contains('qpp-list-folded');toggle.setAttribute('aria-expanded',String(expanded));toggle.setAttribute('aria-label',expanded?'구매발주 현황 접기':'구매발주 현황 펼침');toggle.dataset.workTooltip=expanded?'접기':'펼침';}
+ toggle.onclick=()=>{shell.classList.toggle('qpp-list-folded');toggleState();};query.addEventListener('click',()=>{shell.classList.remove('qpp-list-folded');toggleState();});toggleState();headTools.append(clear,query,toggle);listHead.append(headTools);
+ const dates=[...filters.querySelectorAll('input[type=date]')],trigger=calendar.querySelector('.pcal-trigger'),periodValue=trigger.querySelector('span');dates[0].dataset.purchasePeriod='start';dates[1].dataset.purchasePeriod='end';periodValue.classList.add('qpp-period-value');trigger.setAttribute('aria-label','발주기간 선택');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');
+ const syncPeriod=()=>{periodValue.textContent=dates[0].value&&dates[1].value?dates[0].value+' ~ '+dates[1].value:'기간 선택';};syncPeriod();clear.addEventListener('click',syncPeriod);dates.forEach(input=>input.addEventListener('change',syncPeriod));
+
 }
 const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .module-shell{border:1px solid #d2dfed!important;border-radius:10px!important;overflow:visible!important;background:#fff!important;box-shadow:0 8px 24px #18335313!important}
@@ -98,5 +108,68 @@ const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .qpu-pager>span{display:none}
 @media(max-width:1100px){#purchase.purchase-work-frame .qpf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){#purchase.purchase-work-frame .qpf-grid{grid-template-columns:minmax(0,1fr)}#purchase.purchase-work-frame .qpf-actions{align-items:flex-start;flex-direction:column}}
+/* Compact inquiry and result tools, matching the current work-order screen. */
+#purchase.purchase-work-frame,#purchase.purchase-work-frame .module-shell,#purchase.purchase-work-frame .module-toolbar,#purchase.purchase-work-frame .module-toolbar .filters,#purchase.purchase-work-frame .qpf-grid{min-width:0!important;box-sizing:border-box!important;max-width:100%!important}
+#purchase.purchase-work-frame .module-shell{width:100%!important}
+#purchase.purchase-work-frame .module-shell>.module-body{min-width:0!important;max-width:calc(100% - 32px)!important}
+#purchase.purchase-work-frame .module-toolbar{padding:12px 16px!important}
+#purchase.purchase-work-frame .qpf-grid{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 20px}
+#purchase.purchase-work-frame .qpf-field{flex:0 0 auto;gap:8px;margin:0}
+#purchase.purchase-work-frame .qpf-field>span{flex:0 0 auto;text-align:left;font-size:11.5px;line-height:30px;white-space:nowrap}
+#purchase.purchase-work-frame .qpf-field input,#purchase.purchase-work-frame .qpf-field select{width:144px!important;flex:0 0 144px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
+#purchase.purchase-work-frame .qpf-count,#purchase.purchase-work-frame .qpf-total{display:none!important}
+#purchase.purchase-work-frame .qpf-actions:not(:has(.btn:not([hidden]))){display:none!important}
+#purchase.purchase-work-frame .qpf-buttons .btn{height:30px!important;padding:4px 10px!important;border-radius:4px!important;font-size:11.5px!important}
+#purchase.purchase-work-frame .qpf-list-head{min-height:52px;box-sizing:border-box;padding:11px 16px!important;align-items:center;gap:10px;flex-wrap:wrap}
+#purchase.purchase-work-frame .qow-head-tools{display:flex;gap:8px;align-items:center;margin-left:auto}
+#purchase.purchase-work-frame .qow-head-tools .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px;padding:4px 10px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#40566d;font:600 11.5px/20px Arial,sans-serif;cursor:pointer;overflow:visible}
+#purchase.purchase-work-frame .qow-head-tools .qpu-search,#purchase.purchase-work-frame .qow-head-tools .qpp-toggle{width:30px;min-width:30px;padding:0}
+#purchase.purchase-work-frame .qow-head-tools .btn:hover{background:#edf5fc}
+#purchase.purchase-work-frame .qow-head-tools .btn:focus-visible{outline:2px solid #247bd1;outline-offset:2px}
+#purchase.purchase-work-frame .qpp-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+#purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]::after{content:attr(data-work-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:block;padding:6px 10px;min-width:max-content;background:#fff;color:#25384a;border:1px solid #aebdca;border-radius:3px;box-shadow:0 2px 6px #192d4124;font:600 12px/18px Arial,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;z-index:20}
+#purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]:hover::after,#purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]:focus-visible::after{opacity:1;visibility:visible}
+#purchase.purchase-work-frame .module-shell.qpp-list-folded>.module-body,#purchase.purchase-work-frame .module-shell.qpp-list-folded>.qpu-pager{display:none!important}
+#purchase.purchase-work-frame .qpf-field .pcal-root{width:208px!important;flex:0 0 208px!important}
+#purchase.purchase-work-frame .pcal-trigger{width:208px!important;height:30px!important;min-height:30px!important;padding:0 8px!important;border-radius:4px!important;font-size:12px!important;font-weight:600!important}
+#purchase.purchase-work-frame .qpp-period-value{white-space:nowrap}
 `;document.head.append(style);new MutationObserver(init).observe(document.body,{subtree:true,childList:true});init();
+})();
+
+/* Purchase inquiry date popup only. Preserve native date filters, row data and query handlers. */
+(()=>{'use strict';let popup=null,trigger=null,start='',end='',picking=false,month=null;
+const root=()=>document.querySelector('#purchase .module-toolbar');
+const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+function close(focus=false){popup?.remove();popup=null;trigger?.setAttribute('aria-expanded','false');if(focus)trigger?.focus();}
+function position(){if(!popup||!trigger)return;const r=trigger.getBoundingClientRect(),box=popup.getBoundingClientRect();popup.style.left=Math.max(6,Math.min(r.left,innerWidth-box.width-6))+'px';popup.style.top=(r.bottom+box.height+5<innerHeight?r.bottom+4:Math.max(6,r.top-box.height-4))+'px';}
+function draw(){const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<span aria-hidden="true"></span>';for(let n=1;n<=days;n++){const value=fmt(new Date(y,m,n)),weekday=(first+n-1)%7;cells+='<button type="button" data-day="'+value+'" class="'+(weekday===0||weekday===6?'weekend ':'')+(value===start||value===end?'chosen ':start&&end&&value>start&&value<end?'between ':'')+'" aria-label="'+value+'" aria-pressed="'+(value===start||value===end)+'"'+(value===today()?' aria-current="date"':'')+'>'+n+'</button>';}
+popup.innerHTML='<div class="nwm-head"><button type="button" data-month="-12" aria-label="이전 해">«</button><button type="button" data-month="-1" aria-label="이전 달">‹</button><strong>'+y+'.'+String(m+1).padStart(2,'0')+'</strong><button type="button" data-month="1" aria-label="다음 달">›</button><button type="button" data-month="12" aria-label="다음 해">»</button></div><div class="nwm-days">'+['일','월','화','수','목','금','토'].map(v=>'<span class="nwm-week">'+v+'</span>').join('')+cells+'</div><div class="nwm-hint" aria-live="polite">'+(picking?start+' ~ 종료일 선택':'시작일 → 종료일 순서로 선택')+'</div><div class="nwm-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button><button type="button" data-close>닫기</button></div>';position();}
+function apply(a,b){const panel=root();if(!panel)return;const from=panel.querySelector('[data-purchase-period="start"]'),to=panel.querySelector('[data-purchase-period="end"]'),value=panel.querySelector('.qpp-period-value');if(!from||!to||!value)return;from.value=a;to.value=b;value.textContent=a&&b?a+' ~ '+b:'기간 선택';close(true);document.querySelector('#purchase .qpu-search')?.click();}
+function open(button){if(popup){close(true);return;}const panel=root();if(!panel)return;trigger=button;panel.querySelectorAll('.pcal-pop').forEach(p=>p.hidden=true);start=panel.querySelector('[data-purchase-period="start"]')?.value||'';end=panel.querySelector('[data-purchase-period="end"]')?.value||'';picking=false;month=new Date((start||today())+'T12:00:00');month=new Date(month.getFullYear(),month.getMonth(),1);popup=document.createElement('div');popup.className='namo-purchase-mini-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','발주기간 선택');document.body.append(popup);trigger.setAttribute('aria-expanded','true');draw();popup.querySelector('[data-day="'+(start||today())+'"]')?.focus();}
+window.addEventListener('click',event=>{const button=event.target.closest?.('#purchase .module-toolbar .pcal-trigger');if(button){event.preventDefault();event.stopImmediatePropagation();open(button);return;}const action=event.target.closest?.('.namo-purchase-mini-calendar button');if(!action||!popup)return;event.preventDefault();event.stopImmediatePropagation();if(action.hasAttribute('data-month')){month=new Date(month.getFullYear(),month.getMonth()+Number(action.dataset.month),1);draw();}else if(action.dataset.day){if(!picking){start=action.dataset.day;end='';picking=true;draw();}else{end=action.dataset.day;if(end<start)[start,end]=[end,start];apply(start,end);}}else if(action.hasAttribute('data-today'))apply(today(),today());else if(action.hasAttribute('data-clear'))apply('','');else close(true);},true);
+document.addEventListener('pointerdown',event=>{if(popup&&!event.target.closest('.namo-purchase-mini-calendar,#purchase .pcal-trigger'))close();},true);
+window.addEventListener('keydown',event=>{if(popup&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close(true);}},true);
+window.addEventListener('resize',position);window.addEventListener('scroll',()=>{if(popup)close();},true);
+const style=document.createElement('style');style.textContent=`
+.namo-purchase-mini-calendar{position:fixed;z-index:2147483000;box-sizing:border-box;width:220px;max-width:calc(100vw - 12px);padding:8px;background:#fff;border:1px solid #b8c4d0;border-radius:3px;box-shadow:0 4px 14px #0002;color:#344254;font:12px Arial,"Malgun Gothic",sans-serif}
+.namo-purchase-mini-calendar *{box-sizing:border-box}
+.namo-purchase-mini-calendar button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:2px;padding:0;min-width:0;box-shadow:none}
+.namo-purchase-mini-calendar button:focus-visible{outline:2px solid #499cef;outline-offset:-2px}
+.namo-purchase-mini-calendar .nwm-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}
+.namo-purchase-mini-calendar .nwm-head strong{font-size:13px;color:#172b40}
+.namo-purchase-mini-calendar .nwm-head button{width:24px;height:25px;font-size:18px;color:#83909c}
+.namo-purchase-mini-calendar .nwm-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}
+.namo-purchase-mini-calendar .nwm-days>*{height:25px;line-height:25px;text-align:center;font-size:11px}
+.namo-purchase-mini-calendar .nwm-week{color:#89939e;font-weight:400}
+.namo-purchase-mini-calendar .weekend{color:#e14d4d}
+.namo-purchase-mini-calendar .nwm-days button:hover{background:#e4f0ff}
+.namo-purchase-mini-calendar .nwm-days .between{background:#edf5ff}
+.namo-purchase-mini-calendar .nwm-days .chosen{background:#2689ef;color:#fff}
+.namo-purchase-mini-calendar .nwm-days [aria-current="date"]:not(.chosen){font-weight:700;box-shadow:inset 0 0 0 1px #8cbcf0}
+.namo-purchase-mini-calendar .nwm-hint{font-size:10px;min-height:24px;padding-top:7px;color:#61768b;text-align:center}
+.namo-purchase-mini-calendar .nwm-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}
+.namo-purchase-mini-calendar .nwm-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}
+.namo-purchase-mini-calendar .nwm-foot [data-close]{margin-left:auto}
+`;document.head.append(style);
 })();
