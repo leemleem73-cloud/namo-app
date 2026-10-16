@@ -22,3 +22,13 @@
 @media(max-width:1350px){#work #namo-work-inquiry{display:block!important}#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(3,minmax(0,268px))!important}#work #namo-work-inquiry .nwi-actions{margin-top:10px!important}}
 @media(max-width:1000px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(2,minmax(0,268px))!important}}
 @media(max-width:650px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:minmax(0,268px)!important}}
+/* Keep query actions beside the list heading; omit duplicate result counters. */
+#work #namo-work-inquiry{position:relative!important}
+#work #namo-work-inquiry .nwi-count,#work #nwi-list-total{display:none!important}
+#work #namo-work-inquiry .nwi-actions{position:static!important}
+#work #namo-work-inquiry .nwi-actions:not(:has(.wo-bulk-controls:not([hidden]))){height:0!important;flex-basis:0!important;overflow:visible!important}
+#work #namo-work-inquiry #nwi-clear,#work #namo-work-inquiry #nwi-search{position:absolute!important;top:calc(100% + 11px)!important;z-index:2}
+#work #namo-work-inquiry #nwi-clear{right:66px!important}
+#work #namo-work-inquiry #nwi-search{right:16px!important}
+#work .module-shell>.nwi-list-head{min-height:52px!important;box-sizing:border-box!important;padding-right:190px!important}
+@media(max-width:650px){#work .module-shell>.nwi-list-head{min-height:84px!important;align-items:flex-start!important;padding-right:12px!important}#work #namo-work-inquiry #nwi-clear,#work #namo-work-inquiry #nwi-search{top:calc(100% + 43px)!important}}
