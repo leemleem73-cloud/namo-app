@@ -119,6 +119,11 @@
     o.appendChild(wait);
     try{const savedId=localStorage.getItem("qmes-saved-login-id-v1")||"";if(savedId){$("#qa-id",o).value=savedId;$("#qa-save-id",o).checked=true;}}catch(_){}
     $(".qauth-signup-link",o)?.addEventListener("click",()=>signupModal());
+    const passwordLink=document.createElement("button");
+    passwordLink.type="button";passwordLink.className="qauth-login-password-link";
+    passwordLink.textContent="비밀번호 변경";
+    $(".qauth-login-options",o).appendChild(passwordLink);
+    passwordLink.addEventListener("click",()=>loginPasswordModal(o));
     $("form",o).addEventListener("submit",async e=>{
       e.preventDefault();const id=$("#qa-id",o).value.trim(),pw=$("#qa-pw",o).value,err=$("#qa-err",o),btn=$(".qauth-primary",o),saveId=Boolean($("#qa-save-id",o)?.checked);
       if(!id||!pw){err.textContent="아이디와 비밀번호를 입력해 주세요.";return;}
@@ -128,6 +133,58 @@
       try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);o.remove();if(u.mustChangePassword) passwordModal(true);}
       catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{wait.classList.remove("is-active");btn.disabled=false;btn.textContent="로그인";}
     });
+  }
+
+  function loginPasswordModal(login){
+    if($("#qauth-login-password"))return;
+    const b=document.createElement("div");b.id="qauth-login-password";b.className="qauth-modal-bg";
+    b.innerHTML='<form class="qauth-modal" role="dialog" aria-modal="true" aria-labelledby="qlp-title"><h3 id="qlp-title">비밀번호 변경</h3><label for="qlp-id">아이디 또는 사번</label><input id="qlp-id" autocomplete="username" required><label for="qlp-current">현재 비밀번호</label><input id="qlp-current" type="password" autocomplete="current-password" required><label for="qlp-new">새 비밀번호</label><input id="qlp-new" type="password" autocomplete="new-password" minlength="4" required><label for="qlp-confirm">새 비밀번호 확인</label><input id="qlp-confirm" type="password" autocomplete="new-password" minlength="4" required><p>현재 비밀번호를 모르면 관리자에게 본인 확인 후 재설정을 요청해 주세요.</p><div class="qauth-error" role="status" aria-live="polite"></div><div class="qauth-actions"><button class="qauth-cancel" type="button">취소</button><button class="qauth-save" type="submit">변경</button></div></form>';
+    document.body.appendChild(b);
+    const form=$("form",b),cancel=$(".qauth-cancel",b),save=$(".qauth-save",b),err=$(".qauth-error",b);
+    $("#qlp-id",b).value=$("#qa-id",login).value;
+    const close=()=>{b.remove();$(".qauth-login-password-link",login)?.focus();};
+    cancel.addEventListener("click",close);
+    b.addEventListener("keydown",e=>{
+      if(e.key==="Escape"&&!save.disabled){e.preventDefault();close();}
+      if(e.key==="Tab"){
+        const controls=[...b.querySelectorAll("input,button")].filter(el=>!el.disabled);
+        if(e.shiftKey&&document.activeElement===controls[0]){e.preventDefault();controls.at(-1).focus();}
+        else if(!e.shiftKey&&document.activeElement===controls.at(-1)){e.preventDefault();controls[0].focus();}
+      }
+    });
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();if(save.disabled)return;
+      const loginId=$("#qlp-id",b).value.trim(),currentPassword=$("#qlp-current",b).value,newPassword=$("#qlp-new",b).value;
+      if(!loginId||!currentPassword){err.textContent="아이디와 현재 비밀번호를 입력해 주세요.";return;}
+      if(newPassword.length<4){err.textContent="새 비밀번호는 4자 이상 입력해 주세요.";return;}
+      if(newPassword!==$("#qlp-confirm",b).value){err.textContent="새 비밀번호 확인이 일치하지 않습니다.";return;}
+      if(newPassword===currentPassword){err.textContent="현재 비밀번호와 다른 새 비밀번호를 입력해 주세요.";return;}
+      save.disabled=true;cancel.disabled=true;err.textContent="";
+      let authenticated=false,changed=false,sessionClosed=true;
+      const request=async(url,method,body)=>{
+        const r=await fetch(url,{method,credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+        const p=await r.json().catch(()=>({success:false}));
+        if(!r.ok||!p.success)throw new Error(p.message||"요청을 완료하지 못했습니다.");
+        return p;
+      };
+      try{
+        const p=await request("/api/auth/login","POST",{loginId,password:currentPassword});
+        authenticated=true;
+        if(!p.data?.user)throw new Error("본인 확인에 실패했습니다.");
+        await request("/api/auth/password","PUT",{currentPassword,newPassword});
+        changed=true;
+      }catch(x){err.textContent=x.message||"비밀번호 변경에 실패했습니다.";}
+      finally{
+        if(authenticated){
+          try{await request("/api/auth/logout","POST",{});}
+          catch(_){sessionClosed=false;err.textContent=(changed?"비밀번호는 변경되었습니다. ":"")+"인증 세션 종료에 실패했습니다. 다시 로그인해 주세요.";}
+        }
+        save.disabled=false;cancel.disabled=false;
+        $("#qlp-current",b).value="";$("#qlp-new",b).value="";$("#qlp-confirm",b).value="";
+      }
+      if(changed){$("#qa-pw",login).value="";if(sessionClosed){close();$("#qa-err",login).textContent="비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.";}}
+    });
+    $("#qlp-id",b).focus();
   }
 
   function signupModal(){
