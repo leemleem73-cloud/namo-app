@@ -1266,10 +1266,10 @@ thead{background:#f4f7fa}
 </style>
 <style id="iqc-bulk-select-20261013">
 /* Keep the two visual cells inside the existing data column: detail/export indexes stay intact. */
-#incoming .iqc-select-head,#incoming .iqc-select-number{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:stretch;width:100%;min-height:36px;gap:0;margin:0;padding:0;white-space:nowrap;cursor:default}
+#incoming .iqc-select-head,#incoming .iqc-select-number{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:stretch;width:100%;min-height:36px;gap:0;margin:0;padding:0;white-space:nowrap;cursor:default}
 #incoming .iqc-select-head{min-height:34px}
 #incoming .iqc-select-head input,#incoming .iqc-select-number input{position:static;width:13px;height:13px;min-width:13px;margin:auto;accent-color:#4f46e5;cursor:pointer}
-#incoming .iqc-select-head span,#incoming .iqc-select-number span{display:flex;align-items:center;justify-content:center;min-width:0;margin:0;padding:0;border-left:1px solid #d5dce5;font:inherit}
+#incoming .iqc-select-head span,#incoming .iqc-select-number span{display:flex;align-items:center;justify-content:center;min-width:0;margin:0;padding:0;font:inherit}
 #incoming .iqc-select-number span{color:#000;-webkit-text-fill-color:#000;font-size:12px;font-weight:400;text-decoration:none;cursor:default}
 #incoming .inspection-premium .ip-actions .iqc-bulk-delete{background:#fff1f2;color:#be123c;border:1px solid #fecdd3;font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;height:27px!important;padding:0 9px!important;border-radius:4px!important}
 #incoming .inspection-premium .ip-actions .export-btn{font-family:inherit!important;font-size:9.5px!important;font-weight:800!important;line-height:1!important;height:27px!important;padding:0 9px!important;border-radius:4px!important}
@@ -1455,6 +1455,44 @@ thead{background:#f4f7fa}
  opacity:1!important;
 }
 </style>
+
+<style id="incoming-workorder-frame-20261016">
+/* Incoming only: reuse work-order frame dimensions without changing other menus or report tables. */
+#incoming .iqc-work-frame{padding:0!important}
+#incoming .iqc-work-frame .ip-panel{border:1px solid #d2dfed!important;border-radius:10px!important;box-shadow:0 8px 24px rgba(24,51,83,.075)!important;overflow:hidden!important;background:#fff!important}
+#incoming .iqc-register-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;min-height:64px;padding:14px 22px;border-bottom:1px solid #dbe5ef;background:#fff}
+#incoming .iqc-register-header strong{display:flex;align-items:center;gap:10px;color:#173b61;font-size:18px;font-weight:800;letter-spacing:-.4px}
+#incoming .iqc-register-header strong:before{content:'';width:3px;height:24px;background:#166fbb;border-radius:2px}
+#incoming .iqc-header-tools{display:flex;gap:6px;margin-left:auto}
+#incoming .iqc-register-header .btn,#incoming .iqc-work-frame .iqc-query-actions .ip-actions .btn{height:38px!important;padding:8px 15px!important;border-radius:7px!important;font-size:12.5px!important;font-weight:700!important;line-height:20px!important}
+#incoming .iqc-work-frame .primary{background:#166fbb!important;color:#fff!important;border-color:#166fbb!important;box-shadow:0 2px 7px rgba(22,111,187,.16)!important}
+#incoming .iqc-work-frame .ip-toolbar{display:block!important;padding:20px 22px 18px!important;background:#f3f7fb!important;border-bottom:1px solid #dae5ef!important}
+#incoming .iqc-work-frame .ip-filter-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px 20px!important}
+#incoming .iqc-work-frame .ip-filter{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;min-width:0}
+#incoming .iqc-work-frame .ip-filter>span{flex:0 0 78px;min-width:78px;text-align:right;color:#334e6b;font-size:12.5px;font-weight:700}
+#incoming .iqc-work-frame .ip-filter .input{height:38px!important;min-width:0!important;width:100%!important;padding:0 11px!important;font-size:13px!important;color:#243e5d!important;border:1px solid #c7d6e5!important;border-radius:7px!important;background:#fff!important;font-weight:400!important}
+#incoming .iqc-date-range{display:flex;align-items:center;gap:5px;min-width:0;flex:1;height:38px;border:1px solid #c7d6e5;border-radius:7px;background:#fff}
+#incoming .iqc-work-frame .iqc-date-range .input{flex:1;border:0!important;height:36px!important;background:transparent!important;padding:0 6px!important}
+#incoming .iqc-query-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
+#incoming .iqc-query-count{color:#526a83;font-size:12.5px;font-weight:700}
+#incoming .iqc-work-frame .ip-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#incoming .iqc-query-actions .qmes-bulk-print{background:#eaf3ff!important;color:#245482!important;border:1px solid #c8daed!important}
+#incoming .iqc-query-actions .iqc-bulk-mail{background:#ecf6f1!important;color:#21634b!important;border:1px solid #c9e1d6!important}
+#incoming .iqc-query-actions .iqc-bulk-delete{background:#fff1f1!important;color:#b23535!important;border:1px solid #e9cccc!important;margin-right:10px}
+#incoming .iqc-list-head{display:flex;align-items:center;justify-content:space-between;padding:17px 22px 14px;color:#1e3f64;font-size:13.5px;font-weight:800}
+#incoming .iqc-work-frame .ip-table-wrap{margin:0 16px 16px!important;border:1px solid #d5dce5!important;overflow:auto!important}
+#incoming .iqc-work-frame .ip-table th{border-right-color:#d5dce5!important;border-bottom-color:#d5dce5!important}
+#incoming .iqc-work-frame .ip-table td{height:36px!important;line-height:1.2!important;border-right-color:#d5dce5!important;border-bottom-color:#d5dce5!important}
+#incoming .iqc-work-frame .iqc-remark-text{display:inline-block;max-width:calc(100% - 54px);vertical-align:middle}
+#incoming .iqc-work-frame .iqc-remark-actions{display:inline-flex;vertical-align:middle;margin:0 0 0 6px}
+#incoming .iqc-work-frame .ip-table th:first-child,#incoming .iqc-work-frame .ip-table td:first-child{position:relative}
+#incoming .iqc-work-frame .ip-table th:first-child:before,#incoming .iqc-work-frame .ip-table tr.data-row>td:first-child:before{content:'';position:absolute;left:34px;top:0;bottom:0;width:1px;background:#d5dce5;pointer-events:none}
+#incoming .iqc-work-frame .ip-footnote{justify-content:center!important;padding:10px 16px 20px!important;background:#fff!important;border:0!important}
+#incoming .iqc-work-frame .ip-count{display:none}
+@media(max-width:1100px){#incoming .iqc-work-frame .ip-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){#incoming .iqc-work-frame .ip-filter-row{grid-template-columns:minmax(0,1fr)}#incoming .iqc-query-actions{align-items:flex-start;flex-direction:column}}
+</style>
+
 <style id="pqc-detail-measure-soft-style">
 .am-split[data-am-screen="process"] .pqc-detail-measure-section{border:0!important;background:#fff!important}
 .am-split[data-am-screen="process"] .pqc-detail-measure-section .am-section-body{padding:12px 0 4px!important}
@@ -2786,7 +2824,7 @@ function wireIncomingColumnResize(section){
   const handles=[];
   let containerWidth=0;
   function apply(){
-    widths[0]=86; // Reserve separate checkbox (38px) and NO (48px) spaces, including saved layouts.
+    widths[0]=86; // Reserve separate checkbox (34px) and NO (52px) spaces, including saved layouts.
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
@@ -3191,7 +3229,29 @@ function wireOutgoingColumnResize(section){
   }
 }
 
+// Incoming list uses the work-order inquiry frame; existing IQC selectors and cell indexes stay intact.
+function incomingWorkOrderFrame(cols){
+  const field=(name,key)=>`<label class="ip-filter"><span>${name}</span><input class="input" data-iqc-filter="${key}" placeholder="전체"></label>`;
+  return `<div class="inspection-premium iqc-work-frame"><div class="ip-panel">
+    <div class="iqc-register-header"><strong>수입검사 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 수입검사 등록</button></div></div>
+    <div class="ip-toolbar">
+      <div class="ip-filter-row">
+        ${field('공급업체','supplier')}${field('품목명','item')}${field('원료 LOT','lot')}
+        <label class="ip-filter"><span>검사상태</span><select class="input ip-status-filter"><option>전체</option><option>합격</option><option>불합격</option><option>대기</option></select></label>
+        <div class="ip-filter"><span>검사기간</span><div class="iqc-date-range"><input class="input ip-start-date" type="text" readonly placeholder="시작일" aria-label="시작일 달력 열기" autocomplete="off"><span>~</span><input class="input ip-end-date" type="text" readonly placeholder="종료일" aria-label="종료일 달력 열기" autocomplete="off"></div></div>
+        ${field('검사자','inspector')}
+        <label class="ip-filter"><span>통합검색</span><input class="input search-input" placeholder="전체"></label>
+      </div>
+      <div class="iqc-query-actions"><span class="iqc-query-count" aria-live="polite">조회 0건</span><div class="ip-actions"><button class="btn iqc-bulk-delete" type="button" disabled hidden>선택 삭제 (0)</button><button class="btn iqc-query-clear" type="button">조건 지우기</button><button class="btn primary iqc-query-search" type="button">조회</button></div></div>
+    </div>
+    <div class="iqc-list-head"><span>▸ 수입검사 현황</span><span class="iqc-list-total">총 0건</span></div>
+    <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th><label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="조회된 검사 전체 선택"><span>No.</span></label></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
+    <div class="ip-footnote"><div class="ip-pagination" aria-label="수입검사 페이지"></div><span class="ip-count"></span></div>
+  </div></div>`;
+}
+
 function premiumInspectionShell(id,title,desc,cols){
+  if(id==='incoming')return incomingWorkOrderFrame(cols);
   const meta={
     incoming:{icon:'IQC',tag:'INCOMING QUALITY',total:0,today:0,pass:0,pending:0,filter:'원료명 / LOT / 공급업체 검색'},
     process:{icon:'PQC',tag:'IN-PROCESS QUALITY',total:0,today:0,pass:0,pending:0,filter:'LOT / 작업지시 / 공정 검색'},
@@ -3882,7 +3942,9 @@ function renderIncomingPage(section,page=1){
   const startDate=section.querySelector('.ip-start-date')?.value||'';
   const endDate=section.querySelector('.ip-end-date')?.value||'';
   const status=section.querySelector('.ip-status-filter')?.value||'전체';
+  const fieldFilters=[...section.querySelectorAll('[data-iqc-filter]')].map(input=>[input.dataset.iqcFilter,input.value.trim().toLowerCase()]);
   const filtered=allRows.filter(row=>{
+    if(fieldFilters.some(([key,value])=>value&&!String(row[key]||'').toLowerCase().includes(value)))return false;
     const date=iqcDateText(row.date);
     const text=[row.date,row.supplier,row.item,row.lot,row.inspector,iqcItemSummary(row),iqcJudge(row)].join(' ').toLowerCase();
     if(q&&!text.includes(q))return false;
@@ -3899,12 +3961,14 @@ function renderIncomingPage(section,page=1){
   const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const current=Math.min(Math.max(1,Number(page)||1),totalPages);
   section._iqcPage=current;
+  const queryCount=section.querySelector('.iqc-query-count');if(queryCount)queryCount.textContent='조회 '+filtered.length+'건';
+  const listTotal=section.querySelector('.iqc-list-total');if(listTotal)listTotal.textContent='총 '+filtered.length+'건';
   const start=(current-1)*pageSize;
   const pageRows=filtered.slice(start,start+pageSize);
   tbody.innerHTML=pageRows.map((row,i)=>iqcRowHtml(row,start+i)).join('');
   if(!pageRows.length)tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">조회된 수입검사 데이터가 없습니다.</td></tr>';
   wireIncomingPageRows(section);
-  // Bulk selection is limited to the currently visible page. Never delete without confirmation.
+  // Select across the filtered result, including other pages. Never delete without confirmation.
   const selected=section._iqcSelectedIds instanceof Set?section._iqcSelectedIds:new Set();
   section._iqcSelectedIds=selected;
   const rowBoxes=[...tbody.querySelectorAll('.iqc-select-row')];
@@ -3913,16 +3977,16 @@ function renderIncomingPage(section,page=1){
   const printBtn=qmesBulkPrintButton(section,'incoming');
   const actions=section.querySelector('.ip-actions');
   let mailBtn=actions?.querySelector('.iqc-bulk-mail');
-  if(actions&&!mailBtn){mailBtn=document.createElement('button');mailBtn.type='button';mailBtn.className='btn iqc-bulk-mail';mailBtn.hidden=true;mailBtn.disabled=true;mailBtn.style.cssText='height:27px;padding:0 10px;border:1px solid #b6d8cc;border-radius:5px;background:#edf9f3;color:#206747;font-size:10px;font-weight:800';mailBtn.textContent='선택 메일 발송 (0)';if(bulkBtn)bulkBtn.before(mailBtn);else actions.prepend(mailBtn)}
-  if(mailBtn)mailBtn.onclick=()=>{const ids=new Set(selected);const rows=(section._iqcRows||[]).filter(r=>ids.has(String(r.id)));if(!rows.length){alert('선택한 검사 내역을 확인해 주세요.');return}const email=prompt('수신 이메일 주소를 입력하세요. (메일 작성창이 열립니다)');if(!email)return;const lines=rows.map((r,i)=>(i+1)+'. '+(r.item||'-')+' / LOT '+(r.lot||'-')+' / '+(r.supplier||'-')+' / '+(r.date||'-'));location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('[나모케미칼] 수입검사 선택 내역 '+rows.length+'건')+'&body='+encodeURIComponent('선택한 수입검사 내역을 전달드립니다.\\n\\n'+lines.join('\\n')+'\\n\\n※ 성적서 PDF는 별도로 첨부해 주세요.');};
+  if(actions&&!mailBtn){mailBtn=document.createElement('button');mailBtn.type='button';mailBtn.className='btn iqc-bulk-mail';mailBtn.hidden=true;mailBtn.disabled=true;mailBtn.style.cssText='height:27px;padding:0 10px;border:1px solid #b6d8cc;border-radius:5px;background:#edf9f3;color:#206747;font-size:10px;font-weight:800';mailBtn.textContent='선택 메일 전송 (0)';if(bulkBtn)bulkBtn.before(mailBtn);else actions.prepend(mailBtn)}
+  if(mailBtn)mailBtn.onclick=()=>{const ids=new Set(selected);const rows=(section._iqcRows||[]).filter(r=>ids.has(String(r.id)));if(!rows.length){alert('선택한 검사 내역을 확인해 주세요.');return}const lines=rows.map((r,i)=>(i+1)+'. '+(r.item||'-')+' / LOT '+(r.lot||'-')+' / '+(r.supplier||'-')+' / '+(r.date||'-'));location.href='mailto:?subject='+encodeURIComponent('[나모케미칼] 수입검사 선택 내역 '+rows.length+'건')+'&body='+encodeURIComponent('선택한 수입검사 내역을 전달드립니다.\n\n'+lines.join('\n')+'\n\n※ 성적서 PDF는 별도로 첨부해 주세요.');};
   function refreshSelection(){
     rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;box.checked=!!id&&selected.has(String(id));});
-    const countSelected=rowBoxes.filter(box=>box.checked).length || selected.size;
+    const countSelected=selected.size;
     if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected||Boolean(section._inspectionDeleting);bulkBtn.textContent=section._inspectionDeleting?'삭제 처리 중...':'선택 삭제 ('+countSelected+')';}
     if(printBtn){printBtn.hidden=!countSelected;printBtn.disabled=!countSelected;printBtn.textContent='선택 인쇄 ('+countSelected+')';}
-    if(mailBtn){mailBtn.hidden=!countSelected;mailBtn.disabled=!countSelected;mailBtn.textContent='선택 메일 발송 ('+countSelected+')';}
+    if(mailBtn){mailBtn.hidden=!countSelected;mailBtn.disabled=!countSelected;mailBtn.textContent='선택 메일 전송 ('+countSelected+')';}
     [bulkBtn,printBtn,mailBtn].filter(Boolean).forEach(btn=>{btn.style.setProperty('display',countSelected?'inline-flex':'none','important');btn.style.setProperty('visibility',countSelected?'visible':'hidden','important');});
-    if(selectAll){const checked=rowBoxes.filter(b=>b.checked).length;selectAll.checked=!!rowBoxes.length&&checked===rowBoxes.length;selectAll.indeterminate=checked>0&&checked<rowBoxes.length;}
+    if(selectAll){const checked=filtered.filter(row=>selected.has(String(row.id))).length;selectAll.checked=!!filtered.length&&checked===filtered.length;selectAll.indeterminate=checked>0&&checked<filtered.length;}
   }
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
     const id=box.closest('tr')?.dataset.iqcId;if(!id){refreshSelection();return;}
@@ -3930,7 +3994,7 @@ function renderIncomingPage(section,page=1){
     refreshSelection();
   }));
   if(selectAll)selectAll.onchange=()=>{
-    rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;if(id){if(selectAll.checked)selected.add(String(id));else selected.delete(String(id));}});
+    filtered.forEach(row=>{const id=String(row.id);if(selectAll.checked)selected.add(id);else selected.delete(id);});
     refreshSelection();
   };
   if(bulkBtn)bulkBtn.onclick=async()=>{
@@ -4744,7 +4808,12 @@ function qmesBulkPrintButton(section,id){
  let btn=actions.querySelector('.qmes-bulk-print');
  if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn qmes-bulk-print';btn.hidden=true;btn.disabled=true;btn.style.cssText='height:27px;padding:0 10px;border:1px solid #cbd8e5;border-radius:5px;background:#e8f0f8;color:#244260;font-size:10px;font-weight:800';btn.textContent='선택 인쇄 (0)';const del=actions.querySelector('.iqc-bulk-delete');if(del)del.before(btn);else actions.prepend(btn);}
  btn.onclick=async()=>{
-  const rows=id==='incoming'?[...section.querySelectorAll('tbody tr.data-row')].filter(r=>section._iqcSelectedIds?.has(String(r.dataset.iqcId))):[...section.querySelectorAll('tbody tr.data-row')].filter(r=>r.querySelector('.iqc-select-row:checked'));
+  const rows=id==='incoming'?(section._iqcRows||[]).flatMap((record,index)=>{
+   if(!section._iqcSelectedIds?.has(String(record.id)))return [];
+   const visible=[...section.querySelectorAll('tbody tr.data-row')].find(row=>String(row.dataset.iqcId)===String(record.id));
+   if(visible)return [visible];
+   const body=document.createElement('tbody');body.innerHTML=iqcRowHtml(record,index);return [body.firstElementChild];
+ }):[...section.querySelectorAll('tbody tr.data-row')].filter(r=>r.querySelector('.iqc-select-row:checked'));
   if(!rows.length)return;
   const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop qmes-print-confirm';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
   if(!ok)return;
@@ -4893,6 +4962,13 @@ function wireModule(section,id){
   const search=section.querySelector('.search-input');
   if(id==='incoming'){
     search?.addEventListener('input',()=>renderIncomingPage(section,1));
+    section.querySelectorAll('[data-iqc-filter]').forEach(input=>input.addEventListener('input',()=>renderIncomingPage(section,1)));
+    section.querySelector('.iqc-query-search')?.addEventListener('click',()=>renderIncomingPage(section,1));
+    section.querySelector('.iqc-query-clear')?.addEventListener('click',()=>{
+      section.querySelectorAll('[data-iqc-filter],.search-input,.ip-start-date,.ip-end-date').forEach(input=>{input.value='';});
+      const status=section.querySelector('.ip-status-filter');if(status)status.value='전체';
+      renderIncomingPage(section,1);
+    });
     section.querySelector('.ip-start-date')?.addEventListener('change',()=>renderIncomingPage(section,1));
     section.querySelector('.ip-end-date')?.addEventListener('change',()=>renderIncomingPage(section,1));
     section.querySelector('.ip-status-filter')?.addEventListener('change',()=>renderIncomingPage(section,1));
