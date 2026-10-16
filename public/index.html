@@ -3908,11 +3908,16 @@ function renderIncomingPage(section,page=1){
   const selectAll=section.querySelector('.iqc-select-all');
   const bulkBtn=section.querySelector('.iqc-bulk-delete');
   const printBtn=qmesBulkPrintButton(section,'incoming');
+  const actions=section.querySelector('.ip-actions');
+  let mailBtn=actions?.querySelector('.iqc-bulk-mail');
+  if(actions&&!mailBtn){mailBtn=document.createElement('button');mailBtn.type='button';mailBtn.className='btn iqc-bulk-mail';mailBtn.hidden=true;mailBtn.disabled=true;mailBtn.style.cssText='height:27px;padding:0 10px;border:1px solid #b6d8cc;border-radius:5px;background:#edf9f3;color:#206747;font-size:10px;font-weight:800';mailBtn.textContent='선택 메일 발송 (0)';if(bulkBtn)bulkBtn.before(mailBtn);else actions.prepend(mailBtn)}
+  if(mailBtn)mailBtn.onclick=()=>{const ids=new Set(selected);const rows=(section._iqcRows||[]).filter(r=>ids.has(String(r.id)));if(!rows.length){alert('선택한 검사 내역을 확인해 주세요.');return}const email=prompt('수신 이메일 주소를 입력하세요. (메일 작성창이 열립니다)');if(!email)return;const lines=rows.map((r,i)=>(i+1)+'. '+(r.item||'-')+' / LOT '+(r.lot||'-')+' / '+(r.supplier||'-')+' / '+(r.date||'-'));location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('[나모케미칼] 수입검사 선택 내역 '+rows.length+'건')+'&body='+encodeURIComponent('선택한 수입검사 내역을 전달드립니다.\\n\\n'+lines.join('\\n')+'\\n\\n※ 성적서 PDF는 별도로 첨부해 주세요.');};
   function refreshSelection(){
     rowBoxes.forEach(box=>{const id=box.closest('tr')?.dataset.iqcId;box.checked=!!id&&selected.has(String(id));});
     const countSelected=selected.size;
     if(bulkBtn){bulkBtn.hidden=!countSelected;bulkBtn.disabled=!countSelected||Boolean(section._inspectionDeleting);bulkBtn.textContent=section._inspectionDeleting?'삭제 처리 중...':'선택 삭제 ('+countSelected+')';}
     if(printBtn){printBtn.hidden=!countSelected;printBtn.disabled=!countSelected;printBtn.textContent='선택 인쇄 ('+countSelected+')';}
+    if(mailBtn){mailBtn.hidden=!countSelected;mailBtn.disabled=!countSelected;mailBtn.textContent='선택 메일 발송 ('+countSelected+')';}
     if(selectAll){const checked=rowBoxes.filter(b=>b.checked).length;selectAll.checked=!!rowBoxes.length&&checked===rowBoxes.length;selectAll.indeterminate=checked>0&&checked<rowBoxes.length;}
   }
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
