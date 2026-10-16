@@ -19,110 +19,90 @@ $('#npo-add').onclick=()=>{$('#npo-tbody').append(row());calc()};$('#npo-add').c
 async function save(){if(saving)return;const p=collect(),valid=p.items.filter(x=>x.item&&x.qty>0);if(!p.supplier||!valid.length||!p.orderDate||!p.requestedDueDate){notice('공급업체, 날짜, 품목명과 수량을 입력하세요.');return}if(!confirm('새 구매발주를 저장하시겠습니까?'))return;saving=true;try{const res=await fetch('/api/purchase-orders',{credentials:'include',cache:'no-store'});if(!res.ok)throw Error('발주번호 중복 확인 실패');const z=await res.json(),all=Array.isArray(z)?z:Array.isArray(z.data)?z.data:[];if(all.some(x=>String(x.purchaseNo||x.no)===p.purchaseNo))throw Error('발주번호가 중복됩니다. 발주일자를 변경해 번호를 다시 생성하세요.');const first=valid[0];const payload={purchaseNo:p.purchaseNo,orderDate:p.orderDate,requestedDueDate:p.requestedDueDate,supplier:p.supplier,item:first.item,spec:first.spec,qty:first.qty,unit:first.unit,unitPrice:first.unitPrice,amount:Math.round(valid.reduce((sum,x)=>sum+x.qty*x.unitPrice,0)),notes:[p.reason,p.notes].filter(Boolean).join(' / '),status:p.status,items:valid,requisitionNo:p.requisitionNo};const response=await fetch('/api/purchase-orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});const out=await response.json().catch(()=>({}));if(!response.ok||out.success===false)throw Error(out.message||'저장 실패');notice('저장 요청 성공: '+p.purchaseNo+'. 다품목 정보 저장 범위는 서버에서 확인이 필요합니다.');window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh'))}catch(e){notice('저장 실패: '+e.message)}finally{saving=false}}
 function printDoc(title){const p=collect(),w=window.open('','_blank');if(!w){notice('팝업 허용 후 다시 시도하세요.');return}const total=p.items.reduce((a,x)=>a+x.qty*x.unitPrice,0);w.document.write('<html lang="ko"><meta charset="UTF-8"><title>'+h(title)+'</title><style>body{font-family:"Malgun Gothic";padding:30px;color:#243e5c}h1{text-align:center}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bacbdc;padding:9px}th{background:#eef4fa}</style><h1>'+h(title)+'</h1><p>나모케미칼(주)</p><p>발주번호 '+h(p.purchaseNo)+' / 품의번호 '+h(p.requisitionNo)+'</p><p>공급업체 '+h(p.supplier)+' / 발주일자 '+h(p.orderDate)+' / 요청입고일자 '+h(p.requestedDueDate)+'</p><table><tr><th>품목명</th><th>규격</th><th>수량</th><th>단가</th><th>공급가</th></tr>'+p.items.map(x=>'<tr><td>'+h(x.item)+'</td><td>'+h(x.spec)+'</td><td>'+fmt(x.qty)+' '+h(x.unit)+'</td><td>'+fmt(x.unitPrice)+'</td><td>'+fmt(x.qty*x.unitPrice)+'</td></tr>').join('')+'</table><p>공급가 '+fmt(total)+'원 / 부가세 '+fmt(Math.round(total*.1))+'원 / 합계 '+fmt(total+Math.round(total*.1))+'원</p></html>');w.document.close();w.focus();w.print()}
 function emailDraft(){const p=collect(),email=prompt('공급업체 담당자 이메일 주소');if(!email)return;window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('[나모케미칼] 구매발주서 '+p.purchaseNo)+'&body='+encodeURIComponent('공급업체: '+p.supplier+'\n발주번호: '+p.purchaseNo+'\n발주일자: '+p.orderDate+'\n요청입고일자: '+p.requestedDueDate+'\n품목:\n'+p.items.map(x=>x.item+' '+x.qty+x.unit).join('\n'));notice('메일 작성창을 열었습니다. 실제 전송과 PDF 첨부는 메일 앱에서 완료하세요.')}
-document.addEventListener('click',e=>{const b=e.target.closest?.('button');if(!b||!modal.hidden)return;if(!b.closest('.am-split[data-am-screen="purchase"],#purchase'))return;if(!/신규\\s*(등록|발주)|^\\s*추가\\s*$/.test(b.textContent||''))return;purchaseViewingExisting=false;setTimeout(()=>{if(document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane'))open()},0)},false);
-// The legacy list has more items than the currently rendered table page.
-// Render the selected saved record directly in the existing right pane; never alter the list.
-function purchaseDetailFromSelection(item){
+
+let purchaseViewingExisting=false;
+function leaveNewEditor(){
+ modal.hidden=true;
+ if(modal.parentElement!==document.body){modal.remove();document.body.append(modal);}
+ const pane=document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane');
+ if(pane)[...pane.children].forEach(el=>el.style.removeProperty('display'));
+}
+async function showSelectedPurchase(item){
+ purchaseViewingExisting=true;
+ leaveNewEditor();
  const split=item.closest('.am-split[data-am-screen="purchase"]');
  const pane=split?.querySelector('.am-detail-pane');
  if(!pane)return;
- purchaseViewingExisting=true;
- modal.hidden=true;
- if(modal.parentElement===pane){modal.remove();document.body.appendChild(modal);}
- [...pane.children].forEach(el=>el.style.removeProperty('display'));
- const index=Number(item.dataset.amIndex);
- const source=document.querySelectorAll('#purchase .data-row')[index];
- const labels=['발주일자','공급업체','품목명','수량','요청입고','발주상태','IQC'];
- const values=source?[...source.cells].slice(1,8).map(c=>c.textContent.trim()):[];
- const title=item.querySelector('b')?.textContent?.trim()||'';
- const sub=item.querySelector('span')?.textContent?.trim()||'';
+ split.querySelectorAll('.am-list-item').forEach(b=>b.classList.toggle('active',b===item));
+ const heading=pane.querySelector('.am-detail-top .title-wrap b');
+ if(heading)heading.textContent='구매발주 관리 · 상세';
+ pane.querySelectorAll(':scope > .am-section,:scope > .am-detail-note,:scope > .npo-selected-detail').forEach(el=>el.remove());
  const detail=document.createElement('section');
  detail.className='npo-selected-detail';
- detail.style.cssText='background:#fff;border:1px solid #d9e4ef;border-radius:8px;margin-top:12px;padding:18px';
- const heading=document.createElement('h3');heading.textContent='구매발주 상세정보';heading.style.cssText='font-size:15px;color:#193c63;margin:0 0 14px';
- detail.append(heading);
- const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px';
- const pairs=source?labels.map((label,i)=>[label,values[i]||'-']):[['발주내역',title],['품목·공급업체',sub]];
- pairs.forEach(([label,value])=>{
-  const line=document.createElement('div');line.style.cssText='display:grid;grid-template-columns:105px minmax(0,1fr);align-items:center;gap:10px';
-  const name=document.createElement('strong');name.textContent=label;name.style.cssText='font-size:12px;color:#415a76';
-  const field=document.createElement('div');field.textContent=value;field.style.cssText='padding:10px;border:1px solid #d8e3ed;border-radius:5px;overflow-wrap:anywhere;font-size:12px;color:#243d57;background:#f8fafc';
-  line.append(name,field);grid.append(line);
- });
- detail.append(grid);
- const top=pane.querySelector('.am-detail-top');
- if(top){const b=top.querySelector('.title-wrap b');if(b)b.textContent='구매발주 관리 상세';}
- pane.querySelectorAll(':scope > .am-section,:scope > .am-detail-note,:scope > .npo-selected-detail').forEach(el=>el.remove());
+ detail.style.cssText='background:#fff;border:1px solid #d9e4ef;padding:20px;margin-top:12px;border-radius:8px;color:#234';
  pane.append(detail);
- split.querySelectorAll('.am-list-item').forEach(b=>b.classList.toggle('active',b===item));
-}
-// Run before the old handler; it can fail when the item is not on the rendered table page.
-document.addEventListener('click',e=>{
- const item=e.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item[data-am-id="purchase"]');
- if(!item)return;
- e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
- purchaseDetailFromSelection(item);
-},true);
-// Keep the selected purchase visible in the right pane even if the legacy table row is unavailable.
-document.addEventListener('click',e=>{
- const item=e.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item[data-am-id="purchase"]');
- if(!item)return;
- const split=item.closest('.am-split'), pane=split.querySelector('.am-detail-pane');
- if(!pane)return;
- const primary=item.querySelector('b')?.textContent?.trim()||'';
- const secondary=item.querySelector('span')?.textContent?.trim()||'';
- setTimeout(()=>{
-  const live=split.isConnected?split:document.querySelector('.am-split[data-am-screen="purchase"]');
-  if(!live)return;
-  const detail=live.querySelector('.am-detail-pane');
-  if(!detail)return;
-  // The selection must not leave the new-registration editor over the detail.
-  if(modal.parentElement===detail){modal.hidden=true;modal.remove();document.body.append(modal)}
-  [...detail.children].forEach(el=>el.style.removeProperty('display'));
-  const heading=detail.querySelector('.am-detail-top .title-wrap b');
-  if(heading)heading.textContent='구매발주 관리 · 상세 / 수정';
-  const fields=detail.querySelector('.am-section-body');
-  if(fields&&!detail.querySelector('[data-purchase-selection-view]')){
-   const note=document.createElement('div');
-   note.dataset.purchaseSelectionView='1';
-   note.style.cssText='padding:10px 12px;margin-bottom:12px;border:1px solid #d7e2ef;background:#f3f8ff;font-size:12px;color:#1b4c7c';
-   fields.prepend(note);
+ const title=document.createElement('h3');title.textContent='구매발주 상세정보';detail.append(title);
+ const status=document.createElement('p');status.textContent='선택한 발주 정보를 조회하고 있습니다.';detail.append(status);
+ const selectedTitle=item.querySelector('b')?.textContent.trim()||'';
+ const selectedExtra=item.querySelector('span')?.textContent.trim()||'';
+ const targetNo=item.dataset.amRecordId||'';
+ try{
+  const response=await fetch('/api/purchase-orders',{credentials:'include',cache:'no-store'});
+  if(!response.ok)throw Error('구매발주 조회 오류 ('+response.status+')');
+  const json=await response.json();
+  const data=Array.isArray(json)?json:Array.isArray(json.data)?json.data:Array.isArray(json.rows)?json.rows:[];
+  const unwrap=x=>{let p=x?.payload||x;if(typeof p==='string'){try{p=JSON.parse(p)}catch(e){p={}}}return p?.data&&!Array.isArray(p.data)?p.data:p};
+  const records=data.map(unwrap);
+  const normalize=x=>String(x??'').trim().toLowerCase();
+  const matches=records.filter(p=>{
+   const ids=[p.id,p.purchaseNo,p.displayPurchaseNo,p.no,p.orderNumber].filter(Boolean).map(normalize);
+   if(targetNo&&ids.includes(normalize(targetNo)))return true;
+   const raw=[p.purchaseNo,p.displayPurchaseNo,p.no,p.orderNumber,p.orderDate].filter(Boolean).map(normalize);
+   if(raw.includes(normalize(selectedTitle)))return true;
+   const supplier=normalize(p.supplier||p.vendor||'');
+   const combined=normalize(selectedTitle+' '+selectedExtra);
+   return !!supplier&&combined.includes(supplier)&&raw.some(v=>v&&combined.includes(v));
+  });
+  if(!detail.isConnected||!purchaseViewingExisting)return;
+  status.remove();
+  if(matches.length!==1){
+   const message=document.createElement('p');
+   message.textContent=matches.length?'동일한 조건의 발주가 여러 건입니다. 목록과 발주번호 연결을 확인해야 합니다.':'선택 항목과 일치하는 발주 데이터가 조회되지 않았습니다.';
+   detail.append(message);return;
   }
-  const note=detail.querySelector('[data-purchase-selection-view]');
-  if(note)note.textContent='선택한 구매발주: '+primary+(secondary?' · '+secondary:'');
-  live.querySelectorAll('.am-list-item').forEach(x=>x.classList.toggle('active',x===item));
- },0);
-},false);
-// A purchase-list selection must close the NEW overlay before the existing detail handler runs.
-document.addEventListener('click',e=>{
- const item=e.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item[data-am-id="purchase"]');
- if(!item)return;
- purchaseViewingExisting=true;
- if(modal.hidden)return;
- const pane=item.closest('.am-split')?.querySelector('.am-detail-pane');
- if(!pane)return;
- modal.hidden=true;
- pane.querySelectorAll(':scope > *').forEach(el=>{if(el!==modal)el.style.removeProperty('display')});
- modal.remove();
- document.body.appendChild(modal);
-},true);
-// Replace only the purchase NEW detail editor after the native split view is built.
-// Keep .am-list-pane and its search, pagination, add and existing records untouched.
-let purchaseMountScheduled=false;let purchaseViewingExisting=false;
-function mountPurchaseNewDetail(){
- if(!modal.hidden||purchaseViewingExisting)return;
- const split=document.querySelector('.am-split[data-am-screen="purchase"]');
- const pane=split?.querySelector('.am-detail-pane');
- const title=pane?.querySelector('.am-detail-top .title-wrap b')?.textContent||'';
- if(!pane||!/신규등록/.test(title))return;
- open();
+  const p=matches[0];
+  const values=[['발주번호',p.purchaseNo||p.no||p.orderNumber],['발주일자',p.orderDate],['요청입고일자',p.requestedDueDate||p.due],['공급업체',p.supplier||p.vendor],['품목명',p.item||p.material],['규격',p.spec],['수량',p.qty],['단가',p.unitPrice],['진행상태',p.status],['비고',p.notes]];
+  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;margin-top:16px';
+  values.forEach(([name,value])=>{const field=document.createElement('div');field.style.cssText='display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:8px';const label=document.createElement('strong');label.textContent=name;const content=document.createElement('div');content.textContent=value==null||value===''?'-':String(value);content.style.cssText='border:1px solid #d7e2ed;background:#f7faff;border-radius:5px;padding:9px;overflow-wrap:anywhere';field.append(label,content);grid.append(field);});
+  detail.append(grid);
+ }catch(error){if(detail.isConnected)status.textContent='조회 실패: '+error.message;}
 }
-const purchaseObserver=new MutationObserver(()=>{
- if(purchaseMountScheduled||!modal.hidden)return;
+document.addEventListener('click',event=>{
+ const item=event.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item');
+ if(item){
+  event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+  showSelectedPurchase(item);
+  return;
+ }
+ const button=event.target.closest?.('.am-split[data-am-screen="purchase"] [data-am-add],.am-split[data-am-screen="purchase"] .am-list-add');
+ if(button){
+  purchaseViewingExisting=false;
+  setTimeout(()=>{if(document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane'))open()},0);
+ }
+},true);
+let purchaseMountScheduled=false;
+function mountPurchaseNewDetail(){
+ if(purchaseViewingExisting||!modal.hidden)return;
+ const pane=document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane');
+ if(!pane)return;
+ const label=pane.querySelector('.am-detail-top .title-wrap b')?.textContent||'';
+ if(/신규등록/.test(label))open();
+}
+new MutationObserver(()=>{
+ if(purchaseMountScheduled||purchaseViewingExisting||!modal.hidden)return;
  purchaseMountScheduled=true;
  queueMicrotask(()=>{purchaseMountScheduled=false;mountPurchaseNewDetail()});
-});
-purchaseObserver.observe(document.body,{childList:true,subtree:true});
+}).observe(document.body,{childList:true,subtree:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountPurchaseNewDetail,{once:true});
 else mountPurchaseNewDetail();
 
