@@ -19,7 +19,7 @@ $('#npo-add').onclick=()=>{$('#npo-tbody').append(row());calc()};$('#npo-add').c
 async function save(){if(saving)return;const p=collect(),valid=p.items.filter(x=>x.item&&x.qty>0);if(!p.supplier||!valid.length||!p.orderDate||!p.requestedDueDate){notice('공급업체, 날짜, 품목명과 수량을 입력하세요.');return}if(!confirm('새 구매발주를 저장하시겠습니까?'))return;saving=true;try{const res=await fetch('/api/purchase-orders',{credentials:'include',cache:'no-store'});if(!res.ok)throw Error('발주번호 중복 확인 실패');const z=await res.json(),all=Array.isArray(z)?z:Array.isArray(z.data)?z.data:[];if(all.some(x=>String(x.purchaseNo||x.no)===p.purchaseNo))throw Error('발주번호가 중복됩니다. 발주일자를 변경해 번호를 다시 생성하세요.');const first=valid[0];const payload={purchaseNo:p.purchaseNo,orderDate:p.orderDate,requestedDueDate:p.requestedDueDate,supplier:p.supplier,item:first.item,spec:first.spec,qty:first.qty,unit:first.unit,unitPrice:first.unitPrice,amount:Math.round(valid.reduce((sum,x)=>sum+x.qty*x.unitPrice,0)),notes:[p.reason,p.notes].filter(Boolean).join(' / '),status:p.status,items:valid,requisitionNo:p.requisitionNo};const response=await fetch('/api/purchase-orders',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});const out=await response.json().catch(()=>({}));if(!response.ok||out.success===false)throw Error(out.message||'저장 실패');notice('저장 요청 성공: '+p.purchaseNo+'. 다품목 정보 저장 범위는 서버에서 확인이 필요합니다.');window.dispatchEvent(new CustomEvent('qmes:purchase-db-refresh'))}catch(e){notice('저장 실패: '+e.message)}finally{saving=false}}
 function printDoc(title){const p=collect(),w=window.open('','_blank');if(!w){notice('팝업 허용 후 다시 시도하세요.');return}const total=p.items.reduce((a,x)=>a+x.qty*x.unitPrice,0);w.document.write('<html lang="ko"><meta charset="UTF-8"><title>'+h(title)+'</title><style>body{font-family:"Malgun Gothic";padding:30px;color:#243e5c}h1{text-align:center}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bacbdc;padding:9px}th{background:#eef4fa}</style><h1>'+h(title)+'</h1><p>나모케미칼(주)</p><p>발주번호 '+h(p.purchaseNo)+' / 품의번호 '+h(p.requisitionNo)+'</p><p>공급업체 '+h(p.supplier)+' / 발주일자 '+h(p.orderDate)+' / 요청입고일자 '+h(p.requestedDueDate)+'</p><table><tr><th>품목명</th><th>규격</th><th>수량</th><th>단가</th><th>공급가</th></tr>'+p.items.map(x=>'<tr><td>'+h(x.item)+'</td><td>'+h(x.spec)+'</td><td>'+fmt(x.qty)+' '+h(x.unit)+'</td><td>'+fmt(x.unitPrice)+'</td><td>'+fmt(x.qty*x.unitPrice)+'</td></tr>').join('')+'</table><p>공급가 '+fmt(total)+'원 / 부가세 '+fmt(Math.round(total*.1))+'원 / 합계 '+fmt(total+Math.round(total*.1))+'원</p></html>');w.document.close();w.focus();w.print()}
 function emailDraft(){const p=collect(),email=prompt('공급업체 담당자 이메일 주소');if(!email)return;window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('[나모케미칼] 구매발주서 '+p.purchaseNo)+'&body='+encodeURIComponent('공급업체: '+p.supplier+'\n발주번호: '+p.purchaseNo+'\n발주일자: '+p.orderDate+'\n요청입고일자: '+p.requestedDueDate+'\n품목:\n'+p.items.map(x=>x.item+' '+x.qty+x.unit).join('\n'));notice('메일 작성창을 열었습니다. 실제 전송과 PDF 첨부는 메일 앱에서 완료하세요.')}
-document.addEventListener('click',e=>{const b=e.target.closest?.('button');if(!b||!modal.hidden)return;if(!b.closest('.am-split[data-am-screen="purchase"],#purchase'))return;if(!/신규\\s*(등록|발주)|^\\s*추가\\s*$/.test(b.textContent||''))return;setTimeout(()=>{if(document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane'))open()},0)},false);
+document.addEventListener('click',e=>{const b=e.target.closest?.('button');if(!b||!modal.hidden)return;if(!b.closest('.am-split[data-am-screen="purchase"],#purchase'))return;if(!/신규\\s*(등록|발주)|^\\s*추가\\s*$/.test(b.textContent||''))return;purchaseViewingExisting=false;setTimeout(()=>{if(document.querySelector('.am-split[data-am-screen="purchase"] .am-detail-pane'))open()},0)},false);
 // Keep the selected purchase visible in the right pane even if the legacy table row is unavailable.
 document.addEventListener('click',e=>{
  const item=e.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item[data-am-id="purchase"]');
@@ -53,7 +53,9 @@ document.addEventListener('click',e=>{
 // A purchase-list selection must close the NEW overlay before the existing detail handler runs.
 document.addEventListener('click',e=>{
  const item=e.target.closest?.('.am-split[data-am-screen="purchase"] .am-list-item[data-am-id="purchase"]');
- if(!item||modal.hidden)return;
+ if(!item)return;
+ purchaseViewingExisting=true;
+ if(modal.hidden)return;
  const pane=item.closest('.am-split')?.querySelector('.am-detail-pane');
  if(!pane)return;
  modal.hidden=true;
@@ -63,9 +65,9 @@ document.addEventListener('click',e=>{
 },true);
 // Replace only the purchase NEW detail editor after the native split view is built.
 // Keep .am-list-pane and its search, pagination, add and existing records untouched.
-let purchaseMountScheduled=false;
+let purchaseMountScheduled=false;let purchaseViewingExisting=false;
 function mountPurchaseNewDetail(){
- if(!modal.hidden)return;
+ if(!modal.hidden||purchaseViewingExisting)return;
  const split=document.querySelector('.am-split[data-am-screen="purchase"]');
  const pane=split?.querySelector('.am-detail-pane');
  const title=pane?.querySelector('.am-detail-top .title-wrap b')?.textContent||'';
