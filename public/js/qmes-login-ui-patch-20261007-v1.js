@@ -20,12 +20,12 @@
  background:transparent!important;border:0!important;box-shadow:none!important;
 }
 #qauth-login.qmes-login-pro .qauth-login-photo{display:none!important}
-#qauth-login.qmes-login-pro .qmes-company-home{position:absolute;top:20px;left:24px;z-index:2;display:inline-flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #ffffff99;border-radius:8px;background:#ffffffeb;color:#29376b;text-decoration:none;font-size:13px;font-weight:800;line-height:20px;box-shadow:0 2px 10px #243a5d12}
-#qauth-login.qmes-login-pro .qmes-company-home img{display:block;width:190px;height:auto;flex-shrink:0}
+#qauth-login.qmes-login-pro .qmes-company-home{position:absolute;top:20px;left:24px;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:4px 0;border:0;border-radius:0;background:transparent;color:#000;text-decoration:none;font-size:12px;font-weight:500;line-height:16px;box-shadow:none}
+#qauth-login.qmes-login-pro .qmes-company-home img{display:block;width:auto;height:14px;flex-shrink:0;filter:brightness(0)}
 #qauth-login.qmes-login-pro .qmes-company-home span{font-size:12px;white-space:nowrap}
-#qauth-login.qmes-login-pro .qmes-company-home:hover{text-decoration:underline;background:#fff}
+#qauth-login.qmes-login-pro .qmes-company-home:hover{text-decoration:underline;background:transparent}
 #qauth-login.qmes-login-pro .qmes-company-home:focus-visible{outline:3px solid #0864ff;outline-offset:3px}
-@media(max-width:640px){#qauth-login.qmes-login-pro .qmes-company-home{top:12px;left:12px;font-size:12px;padding:8px 10px;gap:8px}#qauth-login.qmes-login-pro .qmes-company-home img{width:150px}#qauth-login.qmes-login-pro .qmes-company-home span{font-size:11px}}
+@media(max-width:640px){#qauth-login.qmes-login-pro .qmes-company-home{top:12px;left:12px;padding:4px 0;gap:7px}#qauth-login.qmes-login-pro .qmes-company-home img{width:auto;height:12px}#qauth-login.qmes-login-pro .qmes-company-home span{font-size:11px}}
 #qauth-login.qmes-login-pro .qauth-login-panel{
  position:relative!important;left:auto!important;top:auto!important;transform:none!important;
  width:clamp(320px,22vw,442px)!important;max-width:100%!important;min-height:0!important;height:auto!important;
@@ -100,7 +100,7 @@
     if(!root.querySelector(".qmes-company-home")){
       const home=document.createElement("a");home.className="qmes-company-home";
       home.href="https://www.namochemical.com/";home.target="_blank";home.rel="noopener noreferrer";
-      home.innerHTML='<img src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주) NAMO Chemical Co., Ltd." width="464" height="96"><span>홈페이지 바로가기 ↗</span>';home.setAttribute("aria-label","나모케미칼 홈페이지 (새 탭에서 열기)");
+      home.innerHTML='<img src="https://www.namochemical.com/img/svg/img_logo.svg" alt="NAMO Chemical" referrerpolicy="no-referrer"><span>홈페이지 바로가기 ↗</span>';home.setAttribute("aria-label","나모케미칼 홈페이지 (새 탭에서 열기)");
       root.appendChild(home);
     }
     const panel=root.querySelector(".qauth-login-panel");
