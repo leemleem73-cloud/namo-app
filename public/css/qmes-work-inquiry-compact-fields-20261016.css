@@ -1,0 +1,5 @@
+/* Limit only work-order inquiry field widths on wide displays. */
+#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(4,minmax(0,320px))!important;justify-content:start!important}
+#work #namo-work-inquiry .nwi-grid>label{width:100%!important;box-sizing:border-box!important}
+@media(max-width:1100px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(2,minmax(0,320px))!important}}
+@media(max-width:650px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:minmax(0,320px)!important}}
