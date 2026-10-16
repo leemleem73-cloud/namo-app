@@ -35,7 +35,7 @@
 #qauth-login.qmes-login-pro #qa-pw{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23152f61' stroke-width='1.8'%3E%3Crect x='4' y='8' width='12' height='10' rx='2'/%3E%3Cpath d='M7 8V5a3 3 0 0 1 6 0v3m-3 4v3'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:15px center!important}
 #qauth-login.qmes-login-pro input:focus-visible{border-color:#0864ff!important;outline:3px solid #0864ff26!important}
 #qauth-login.qmes-login-pro .qmes-password-toggle{position:absolute;right:6px;top:0;height:100%;width:38px;padding:0;display:grid;place-items:center;border:0;background:transparent;color:#8997ad;cursor:pointer}
-#qauth-login.qmes-login-pro .qauth-error{min-height:calc(var(--scene-h)*.02044)!important;margin:calc(var(--scene-h)*.0064) 0 0!important;font-size:calc(var(--scene-w)*.00598)!important;line-height:1.3!important}
+#qauth-login.qmes-login-pro .qauth-error{flex-shrink:0!important;min-height:calc(var(--scene-h)*.02044)!important;margin:calc(var(--scene-h)*.0064) 0 0!important;font-size:calc(var(--scene-w)*.00598)!important;line-height:1.3!important}
 #qauth-login.qmes-login-pro .qauth-login-options{margin:calc(var(--scene-h)*.0051) 0 0!important}
 #qauth-login.qmes-login-pro .qauth-id-save{display:flex!important;align-items:center!important;gap:7px!important;margin:0!important;font-size:calc(var(--scene-w)*.00598)!important;color:#475569!important}
 #qauth-login.qmes-login-pro .qauth-id-save input{width:15px!important;height:15px!important;margin:0!important;accent-color:#0864ff}
