@@ -38,7 +38,8 @@
  color:#101a5c!important;font-size:14px!important;outline:none!important;box-shadow:0 1px 2px #12345605!important;
 }
 #qauth-login.qmes-login-pro #qa-id{margin-bottom:calc(var(--scene-h)*.01405)!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23828fa8' stroke-width='1.8'%3E%3Ccircle cx='10' cy='6' r='3'/%3E%3Cpath d='M3 18v-2a7 7 0 0 1 14 0v2'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:15px center!important}
-#qauth-login.qmes-login-pro #qa-pw{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23152f61' stroke-width='1.8'%3E%3Crect x='4' y='8' width='12' height='10' rx='2'/%3E%3Cpath d='M7 8V5a3 3 0 0 1 6 0v3m-3 4v3'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:15px center!important}
+#qauth-login.qmes-login-pro #qa-pw{background-image:none!important}
+#qauth-login.qmes-login-pro .qmes-password-lock{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#828fa8;pointer-events:none}
 #qauth-login.qmes-login-pro #qa-id{margin-bottom:10px!important}
 #qauth-login.qmes-login-pro .qmes-password-field{position:relative;flex-shrink:0}
 #qauth-login.qmes-login-pro input:focus-visible{border-color:#0864ff!important;outline:3px solid #0864ff26!important}
@@ -105,6 +106,9 @@
     if(pw){
       pw.placeholder="비밀번호";pw.setAttribute("aria-label","비밀번호");
       const wrap=document.createElement("div");wrap.className="qmes-password-field";pw.before(wrap);wrap.appendChild(pw);
+      const lock=document.createElement("span");lock.className="qmes-password-lock";lock.setAttribute("aria-hidden","true");
+      lock.innerHTML='<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="8" width="12" height="10" rx="2"/><path d="M7 8V5a3 3 0 0 1 6 0v3m-3 4v3"/></svg>';
+      wrap.appendChild(lock);
       const toggle=document.createElement("button");toggle.type="button";toggle.className="qmes-password-toggle";
       toggle.setAttribute("aria-label","비밀번호 표시");toggle.setAttribute("aria-pressed","false");
       toggle.innerHTML='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
