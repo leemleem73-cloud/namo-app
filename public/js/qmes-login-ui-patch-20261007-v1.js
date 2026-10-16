@@ -9,7 +9,7 @@
 /* Artwork fits the viewport; form dimensions are independent of image scaling. */
 #qauth-login.qmes-login-pro{
  background-color:#eaf0f8!important;
- background-image:url('/qmes-login-factory-responsive-20261016.png'),linear-gradient(145deg,#f4f7fc,#e1e9f4)!important;
+ background-image:url('/assets/qmes-login-blue-wide-20261016.svg'),linear-gradient(145deg,#f4f7fc,#e1e9f4)!important;
  background-size:contain,cover!important;background-position:center,center!important;background-repeat:no-repeat!important;
  padding:0!important;overflow:auto!important;align-items:flex-start!important;color:#071c46;
 }
@@ -51,7 +51,7 @@
 #qauth-login.qmes-login-pro input:focus-visible{border-color:#0864ff!important;outline:3px solid #0864ff26!important}
 #qauth-login.qmes-login-pro .qmes-password-toggle{position:absolute;right:6px;top:0;height:100%;width:38px;padding:0;display:grid;place-items:center;border:0;background:transparent;color:#8997ad;cursor:pointer}
 #qauth-login.qmes-login-pro .qauth-error{flex-shrink:0!important;min-height:0!important;margin:7px 0 0!important;font-size:11px!important;line-height:1.4!important;overflow-wrap:anywhere}
-#qauth-login.qmes-login-pro .qauth-error:empty{display:none!important}
+#qauth-login.qmes-login-pro .qauth-error:empty{display:block!important;min-height:30.8px!important}
 #qauth-login.qmes-login-pro .qauth-login-options{position:relative;flex-shrink:0;margin:12px 0 0!important}
 #qauth-login.qmes-login-pro .qauth-login-password-link{position:absolute;right:0;top:0;height:16px;margin:0;padding:0;border:0;background:transparent;color:#000!important;font-family:inherit;font-size:12px!important;font-weight:800!important;line-height:16px;cursor:pointer}
 #qauth-login.qmes-login-pro .qauth-login-password-link:hover{text-decoration:underline}
@@ -78,14 +78,14 @@
 
 /* Fill every screen without coupling the form size to the artwork. */
 #qauth-login.qmes-login-pro{
- background-image:url('/qmes-login-factory-responsive-20261016.png')!important;
+ background-image:url('/assets/qmes-login-blue-wide-20261016.svg')!important;
  background-size:cover!important;background-position:center!important;
 }
 @media(max-aspect-ratio:21/10){
- #qauth-login.qmes-login-pro{background-image:url('/qmes-login-factory-laptop-20261016.png')!important}
+ #qauth-login.qmes-login-pro{background-image:url('/assets/qmes-login-blue-laptop-20261016.svg')!important}
 }
 @media(max-aspect-ratio:1/1){
- #qauth-login.qmes-login-pro{background-image:url('/qmes-login-factory-phone-20261016.png')!important}
+ #qauth-login.qmes-login-pro{background-image:url('/assets/qmes-login-blue-phone-20261016.svg')!important}
 }
 @media(max-width:640px){
  #qauth-login.qmes-login-pro .qauth-card{padding:24px 16px!important;justify-content:center!important}
