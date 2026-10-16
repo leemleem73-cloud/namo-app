@@ -20,4 +20,5 @@
 <use href="#originalMascot" clip-path="url(#original-pupils)"/>
 <path d="M710.3 402.7 Q707 402.1 706 399.9 M708.8 406.8 Q705.7 407.8 704 406 M815.1 402.7 Q818.3 402.1 819.4 399.9 M816.2 406.8 Q819.3 407.8 821 406" fill="none" stroke="#57356f" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
 </g>
+<path d="M671 439l7 -6m4 10l7 -6M831 437l7 6m2 -10l7 6" fill="none" stroke="#f3c4cf" stroke-width="3.5" stroke-linecap="round" opacity=".6"/>
 </svg>
