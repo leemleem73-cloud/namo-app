@@ -8,7 +8,7 @@
   style.textContent=`
 #qauth-login.qmes-login-pro{
   --scene-w:max(100vw,256.32184vh);--scene-h:max(39.01345vw,100vh);
-  background:#e8edf3 url('/qmes-login-approved-20261016.png') center/cover no-repeat!important;
+  background:#e8edf3 url('/qmes-login-background-clean-20261016.png') center/cover no-repeat!important;
   padding:0!important;overflow:auto!important;color:#071c46;
 }
 #qauth-login.qmes-login-pro .qauth-card{position:relative;width:100%!important;min-height:100vh!important;margin:0!important;padding:0!important;display:block!important;background:transparent!important;border:0!important;box-shadow:none!important}
@@ -51,12 +51,31 @@
  #qauth-login.qmes-login-pro h2{font-size:clamp(22px,6vw,30px)!important}
  #qauth-login.qmes-login-pro .qmes-login-subtitle{white-space:normal;font-size:12px}
 }
+
+/* Text-free artwork with only the functional login controls. */
+#qauth-login.qmes-login-pro .qauth-login-panel h2,
+#qauth-login.qmes-login-pro .qmes-login-subtitle{display:none!important}
+#qauth-login.qmes-login-pro .qauth-login-panel{
+  width:min(388px,calc(100vw - 32px))!important;height:auto!important;
+  padding:40px 30px!important;top:50%;border-radius:24px!important;
+}
+#qauth-login.qmes-login-pro{
+  --scene-w:2007px;--scene-h:783px;
+}
+@media(min-width:1101px) and (min-height:581px){
+ #qauth-login.qmes-login-pro .qauth-login-panel{left:54%}
+}
+@media(max-width:1100px),(max-height:580px){
+ #qauth-login.qmes-login-pro{background:#e8edf3 url('/qmes-login-background-clean-20261016.png') center/cover no-repeat!important}
+ #qauth-login.qmes-login-pro .qauth-login-panel{top:auto;padding:36px 24px!important;background:rgba(255,255,255,.97)!important}
+}
 `;
   document.head.appendChild(style);
   function patchLogin(){
     const root=document.getElementById("qauth-login");
     if(!root) return;
     root.classList.add("qmes-login-pro");
+    root.setAttribute("aria-label","로그인");
     const panel=root.querySelector(".qauth-login-panel");
     if(!panel || panel.dataset.approvedScene) return;
     panel.dataset.approvedScene="1";
