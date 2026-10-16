@@ -53,6 +53,7 @@
 #qauth-login.qmes-login-pro .qauth-error{flex-shrink:0!important;min-height:0!important;margin:7px 0 0!important;font-size:11px!important;line-height:1.4!important;overflow-wrap:anywhere}
 #qauth-login.qmes-login-pro .qauth-error:empty{display:block!important;min-height:30.8px!important}
 #qauth-login.qmes-login-pro .qauth-login-options{position:relative;flex-shrink:0;margin:12px 0 0!important}
+#qauth-login.qmes-login-pro .qauth-error:empty + .qauth-login-options{transform:translateY(-17px)}
 #qauth-login.qmes-login-pro .qauth-login-password-link{position:absolute;right:0;top:0;height:16px;margin:0;padding:0;border:0;background:transparent;color:#000!important;font-family:inherit;font-size:12px!important;font-weight:800!important;line-height:16px;cursor:pointer}
 #qauth-login.qmes-login-pro .qauth-login-password-link:hover{text-decoration:underline}
 #qauth-login-password .qauth-modal{box-sizing:border-box;max-height:calc(100dvh - 40px);overflow-y:auto}
