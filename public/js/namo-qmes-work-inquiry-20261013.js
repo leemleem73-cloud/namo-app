@@ -176,6 +176,7 @@ function init(){
   const style=document.createElement('style');style.id='nwi-hidden-row-style';
   style.textContent='#work .work-list-table tbody tr[hidden]{display:none!important}';
   style.textContent+='\n#work .work-list-table tbody tr[data-work-saved] td:nth-child(3){color:#0874d1!important;text-decoration:underline!important;text-underline-offset:2px!important;font-weight:600!important;cursor:pointer!important}\n';
+  style.textContent+='\n#work .work-list-table tbody tr[data-work-saved] td:nth-child(2),#work .work-list-table tbody tr[data-work-saved] td:nth-child(2) *{color:#222!important;text-decoration:none!important;cursor:default!important;font-weight:400!important}\n';
   style.textContent+='\n#work .work-list-table th.wo-select-col,#work .work-list-table td.wo-select-col{width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;text-align:center!important;vertical-align:middle!important}\n#work .work-list-table thead th:nth-child(2),#work .work-list-table tbody td:nth-child(2){width:52px!important;min-width:44px!important;max-width:52px!important;padding:4px!important;text-align:center!important}\n#work .work-list-table .wo-bulk-all,#work .work-list-table .wo-bulk-check{position:static!important;transform:none!important;display:inline-block!important;margin:0!important;vertical-align:middle!important;width:14px!important;height:14px!important}\n';document.head.appendChild(style);
  }
  function ensureRowPrintButtons(){
@@ -286,7 +287,7 @@ function init(){
  }
  tbody.addEventListener('click',async e=>{
   const row=e.target.closest('tr[data-work-saved]');
-  if(!row||e.target.closest('button,input,a,select'))return;
+  if(!row||row.cells[1]?.contains(e.target)||e.target.closest('button,input,select')||(e.target.closest('a')&&!row.cells[2]?.contains(e.target)))return;
   e.stopImmediatePropagation();e.preventDefault();
   activeId=row.dataset.workSaved;activeTab='materials';activeRecord=null;
   getRows().forEach(r=>r.classList.toggle('nwi-selected',r===row));
