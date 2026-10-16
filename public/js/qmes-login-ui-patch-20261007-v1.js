@@ -21,11 +21,11 @@
 }
 #qauth-login.qmes-login-pro .qauth-login-photo{display:none!important}
 #qauth-login.qmes-login-pro .qmes-company-home{position:absolute;top:20px;left:24px;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:4px 0;border:0;border-radius:0;background:transparent;color:#000;text-decoration:none;font-size:12px;font-weight:500;line-height:16px;box-shadow:none}
-#qauth-login.qmes-login-pro .qmes-company-home img{display:block;width:auto;height:14px;flex-shrink:0;filter:brightness(0)}
-#qauth-login.qmes-login-pro .qmes-company-home span{font-size:12px;white-space:nowrap}
+#qauth-login.qmes-login-pro .qmes-company-home img{display:block;width:auto;height:17px;flex-shrink:0;filter:brightness(0)}
+#qauth-login.qmes-login-pro .qmes-company-home span{font-size:14px;white-space:nowrap}
 #qauth-login.qmes-login-pro .qmes-company-home:hover{text-decoration:underline;background:transparent}
 #qauth-login.qmes-login-pro .qmes-company-home:focus-visible{outline:3px solid #0864ff;outline-offset:3px}
-@media(max-width:640px){#qauth-login.qmes-login-pro .qmes-company-home{top:12px;left:12px;padding:4px 0;gap:7px}#qauth-login.qmes-login-pro .qmes-company-home img{width:auto;height:12px}#qauth-login.qmes-login-pro .qmes-company-home span{font-size:11px}}
+@media(max-width:640px){#qauth-login.qmes-login-pro .qmes-company-home{top:12px;left:12px;padding:4px 0;gap:7px}#qauth-login.qmes-login-pro .qmes-company-home img{width:auto;height:14px}#qauth-login.qmes-login-pro .qmes-company-home span{font-size:12px}}
 #qauth-login.qmes-login-pro .qauth-login-panel{
  position:relative!important;left:auto!important;top:auto!important;transform:none!important;
  width:clamp(320px,22vw,442px)!important;max-width:100%!important;min-height:0!important;height:auto!important;
