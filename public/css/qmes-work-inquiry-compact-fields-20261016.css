@@ -32,3 +32,10 @@
 #work #namo-work-inquiry #nwi-search{right:16px!important}
 #work .module-shell>.nwi-list-head{min-height:52px!important;box-sizing:border-box!important;padding-right:190px!important}
 @media(max-width:650px){#work .module-shell>.nwi-list-head{min-height:84px!important;align-items:flex-start!important;padding-right:12px!important}#work #namo-work-inquiry #nwi-clear,#work #namo-work-inquiry #nwi-search{top:calc(100% + 43px)!important}}
+/* Size each label/control pair together instead of reserving empty label columns. */
+#work #namo-work-inquiry .nwi-grid{display:flex!important;flex-wrap:wrap!important;gap:10px 20px!important;align-items:center!important}
+#work #namo-work-inquiry .nwi-grid>label{width:auto!important;flex:0 0 auto!important;gap:8px!important;align-items:center!important;margin:0!important}
+#work #namo-work-inquiry .nwi-grid>label>span,#work #namo-work-inquiry .nwi-grid>label:has(>[data-filter="6"])>span{flex:0 0 auto!important;min-width:0!important;width:auto!important;text-align:left!important;white-space:nowrap!important;line-height:30px!important}
+#work #namo-work-inquiry .nwi-grid input,#work #namo-work-inquiry .nwi-grid select{width:144px!important;flex:0 0 144px!important;box-sizing:border-box!important}
+#work #namo-work-inquiry .nwi-grid input[data-filter="6"]{width:160px!important;flex-basis:160px!important}
+#work #namo-work-inquiry .nwi-period-trigger{width:208px!important;flex:0 0 208px!important}
