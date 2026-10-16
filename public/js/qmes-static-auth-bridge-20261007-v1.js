@@ -55,6 +55,7 @@
     #qauth-login .namo-login-wait{position:absolute;inset:0;z-index:12;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:rgba(250,248,255,.97);backdrop-filter:blur(5px);color:#51438d;font-size:14px;font-weight:800}
     #qauth-login .namo-login-wait.is-active{display:flex}
     #qauth-login .namo-wait-face, .namo-org .namo-wait-face{width:84px;height:84px;border-radius:50%;position:relative;background:radial-gradient(circle at 34% 24%,#f5f0ff 0%,#dcd2ff 29%,#b8a4fa 60%,#8c77e5 100%);box-shadow:0 6px 18px rgba(116,90,196,.26),inset 0 1px 7px rgba(255,255,255,.9);animation:namoWaitHop 1.05s ease-in-out infinite}
+    #qauth-login .namo-wait-face{background:radial-gradient(circle at 34% 24%,#fff 0%,#fafbfc 45%,#e5e9ef 100%);box-shadow:0 6px 18px rgba(70,85,110,.18),inset 0 1px 7px rgba(255,255,255,.9)}
     #qauth-login .namo-wait-face:before, .namo-org .namo-wait-face:before{content:"";position:absolute;top:40%;left:30%;width:6px;height:6px;border-radius:50%;background:#27304b;box-shadow:24px 0 #27304b;animation:namoWaitBlink 3.4s ease-in-out infinite}
     #qauth-login .namo-wait-face:after, .namo-org .namo-wait-face:after{content:"";position:absolute;top:43%;left:42%;width:14px;height:9px;border:3px solid #27304b;border-top:0;border-left:0;border-right:0;border-radius:0 0 12px 12px}
     .namo-org .namo-org-title{display:flex;align-items:center;gap:10px}
