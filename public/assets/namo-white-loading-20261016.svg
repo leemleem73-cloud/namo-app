@@ -9,7 +9,7 @@
   <clipPath id="original-pupils"><ellipse cx="718" cy="408.6" rx="10.4" ry="11.4"/><ellipse cx="806.5" cy="408.6" rx="10.4" ry="11.4"/></clipPath>
   <filter id="white-body" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 1 0 0  0 0 1 0 0  0 0 1 0 0  0 0 0 1 0"/><feComponentTransfer><feFuncR type="table" tableValues="0 .025 .05 .15 .45 .7 .85 .92 .96 .99 1"/><feFuncG type="table" tableValues="0 .025 .05 .15 .45 .7 .85 .92 .96 .99 1"/><feFuncB type="table" tableValues="0 .025 .05 .15 .45 .7 .85 .92 .96 .99 1"/></feComponentTransfer></filter>
   <radialGradient id="white-skin" cx="34%" cy="24%" r="80%"><stop stop-color="#fff"/><stop offset=".6" stop-color="#fafbfc"/><stop offset="1" stop-color="#e5e9ef"/></radialGradient>
-  <clipPath id="face-only"><ellipse cx="757" cy="421" rx="106" ry="55"/></clipPath>
+  <clipPath id="face-only"><ellipse cx="718" cy="408.6" rx="13.5" ry="15.5"/><ellipse cx="806.5" cy="408.6" rx="13.5" ry="15.5"/><path d="M710 402 Q704 400 702 398 M710 407 Q704 410 701 407 M815 402 Q820 400 822 398 M815 407 Q821 410 824 407 M738 438 Q759 461 784 438" fill="none" stroke="white" stroke-width="8" stroke-linecap="round"/></clipPath>
 </defs>
 <ellipse cx="756.5" cy="393" rx="129.5" ry="120" fill="url(#white-skin)"/>
 <g clip-path="url(#face-only)" filter="url(#white-body)">
