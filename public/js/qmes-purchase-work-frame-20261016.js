@@ -31,12 +31,37 @@ function init(){
   const all=wrap.querySelector('.qpf-check-all');if(all){all.checked=!!matches.length&&matched===matches.length;all.indeterminate=matched>0&&matched<matches.length;}
   wrap.querySelectorAll('.qpf-check').forEach(box=>{box.checked=selected.has(box.closest('tr').dataset.purchaseKey);box.disabled=busy;});
   for(const [button,title] of [[print,'선택 인쇄'],[mail,'선택 메일 전송'],[remove,'선택 삭제']]){button.hidden=!selected.size;button.disabled=busy;button.textContent=title+' ('+selected.size+')';}
+  wrap.querySelectorAll('.qpp-row-action').forEach(button=>button.disabled=busy);
   count.textContent='조회 '+matches.length+'건';listHead.querySelector('.qpf-total').textContent='총 '+matches.length+'건';
  }
  function decorate(){
   const th=wrap.querySelector('thead th:first-child');if(th&&!th.querySelector('.qpf-check-all')){th.replaceChildren();const label=document.createElement('label');label.className='qpf-select';label.innerHTML='<input class="qpf-check-all" type="checkbox" aria-label="조회된 발주 전체 선택"><span>No.</span>';th.append(label);label.querySelector('input').onchange=event=>{api.filtered().forEach(row=>event.target.checked?selected.add(key(row)):selected.delete(key(row)));update();};}
-  wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const td=row.cells[0];if(td.querySelector('.qpf-check'))return;const value=td.textContent.trim(),label=document.createElement('label');label.className='qpf-select';const box=document.createElement('input');box.type='checkbox';box.className='qpf-check';box.setAttribute('aria-label',value+'번 발주 선택');const num=document.createElement('span');num.textContent=value;label.append(box,num);td.replaceChildren(label);box.onchange=()=>{box.checked?selected.add(row.dataset.purchaseKey):selected.delete(row.dataset.purchaseKey);update();};});update();
+  wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const td=row.cells[0];if(td.querySelector('.qpf-check'))return;const value=td.textContent.trim(),label=document.createElement('label');label.className='qpf-select';const box=document.createElement('input');box.type='checkbox';box.className='qpf-check';box.setAttribute('aria-label',value+'번 발주 선택');const num=document.createElement('span');num.textContent=value;label.append(box,num);td.replaceChildren(label);box.onchange=()=>{box.checked?selected.add(row.dataset.purchaseKey):selected.delete(row.dataset.purchaseKey);update();};});
+  wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const cell=row.cells[row.cells.length-1];if(!cell||cell.querySelector('.qpp-row-actions'))return;const group=document.createElement('span');group.className='qpp-row-actions';for(const [action,title] of [['print','인쇄'],['edit','수정'],['delete','삭제']]){const button=document.createElement('button');button.type='button';button.className='qpp-row-action qpp-row-'+action;button.dataset.purchaseAction=action;button.textContent=title;group.append(button);}cell.append(group);});update();
  }
+ const recordUrl=record=>'/api/purchase-orders/'+encodeURIComponent(key(record));
+ async function request(url,options={}){const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...options}),result=await response.json().catch(()=>({}));if(!response.ok||result.success===false)throw Error(result.message||'요청 실패 ('+response.status+')');return result.data??result;}
+ async function printRecord(record){const win=window.open('','_blank');if(!win){alert('팝업을 허용한 후 다시 인쇄해 주세요.');return;}try{const saved=await request(recordUrl(record));const columns=[['발주번호',record.displayPurchaseNo||saved.purchaseNo||saved.no],['공급업체',saved.supplier],['발주일자',saved.orderDate],['요청입고일',saved.requestedDueDate||saved.due],['확정입고일',saved.confirmedDueDate||saved.expected],['발주상태',saved.status],['비고',saved.notes]];const items=Array.isArray(saved.items)&&saved.items.length?saved.items:[saved];win.addEventListener('load',()=>win.print(),{once:true});win.document.write('<!doctype html><html lang="ko"><meta charset="UTF-8"><title>구매발주서</title><style>@page{size:A4;margin:15mm}body{font:13px Arial,"Malgun Gothic",sans-serif;color:#243e59}h1{text-align:center}table{width:100%;border-collapse:collapse;margin:18px 0}td,th{border:1px solid #bdcddd;padding:10px}th{background:#eaf2fa}tr{break-inside:avoid}</style><h1>구매발주서</h1><p>나모케미칼(주)</p><table>'+columns.map(([name,value])=>'<tr><th>'+escape(name)+'</th><td>'+escape(value||'—')+'</td></tr>').join('')+'</table><table><thead><tr><th>품목명</th><th>규격</th><th>단위</th><th>수량</th><th>단가</th><th>공급가</th></tr></thead><tbody>'+items.map(item=>'<tr>'+[item.item||item.material,item.spec,item.unit||'kg',item.qty,item.unitPrice??item.price??0,item.amount??Number(item.qty||0)*Number(item.unitPrice??item.price??0)].map(value=>'<td>'+escape(value??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table></html>');win.document.close();}catch(error){win.close?.();alert(error.message);}}
+ async function editRecord(record){
+  let saved;try{saved=await request(recordUrl(record));}catch(error){alert(error.message);return;}
+  if(document.querySelector('#qpp-edit-dialog'))return;
+  const dialog=document.createElement('dialog');dialog.id='qpp-edit-dialog';dialog.setAttribute('aria-label','구매발주 수정');
+  const fields=[['orderDate','발주일자','date'],['supplier','공급업체','text'],['item','품목명','text'],['spec','규격','text'],['qty','발주수량','number'],['unitPrice','단가','number'],['requestedDueDate','요청입고일','date'],['confirmedDueDate','확정입고일','date'],['notes','비고','text']];
+  const original={...saved,item:saved.item||saved.material||'',unitPrice:saved.unitPrice??saved.price??0,requestedDueDate:saved.requestedDueDate||saved.due||'',confirmedDueDate:saved.confirmedDueDate||saved.expected||''};
+  dialog.innerHTML='<form><header><strong>구매발주 수정</strong><button type="button" class="qpp-edit-cancel" aria-label="닫기">×</button></header><p>'+escape(record.displayPurchaseNo||saved.purchaseNo||saved.no||key(record))+'</p><div class="qpp-edit-fields">'+fields.map(([name,title,type])=>'<label><span>'+title+'</span><input name="'+name+'" type="'+type+'" value="'+escape(original[name]??'')+'"'+(['supplier','item','qty','orderDate'].includes(name)?' required':'')+(type==='number'?' min="'+(name==='qty'?'0.000001':'0')+'" step="any"':'')+'></label>').join('')+'</div><p class="qpp-edit-message" role="status"></p><footer><button type="button" class="qpp-edit-cancel">취소</button><button type="submit" class="qpp-edit-save">저장</button></footer></form>';
+  document.body.append(dialog);const close=()=>{if(!dialog.querySelector('.qpp-edit-save').disabled){dialog.close();dialog.remove();}};dialog.querySelectorAll('.qpp-edit-cancel').forEach(button=>button.onclick=close);dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.showModal();
+  dialog.querySelector('form').onsubmit=async event=>{event.preventDefault();const submit=dialog.querySelector('.qpp-edit-save');if(submit.disabled)return;const changes={};for(const [name,,type] of fields){const value=dialog.querySelector('[name="'+name+'"]').value.trim();if(String(original[name]??'')!==value)changes[name]=type==='number'?Number(value):value;}
+   if(!Object.keys(changes).length){close();return;}
+   if('qty'in changes||'unitPrice'in changes)changes.amount=Number(changes.qty??original.qty)*Number(changes.unitPrice??original.unitPrice);
+   submit.disabled=true;try{await request(recordUrl(record),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(changes)});dialog.close();dialog.remove();await api.reload();}catch(error){dialog.querySelector('.qpp-edit-message').textContent=error.message;submit.disabled=false;}
+  };
+ }
+ wrap.addEventListener('click',async event=>{const button=event.target.closest('.qpp-row-action');if(!button)return;event.preventDefault();event.stopImmediatePropagation();if(busy)return;const record=api.rows().find(row=>key(row)===button.closest('tr').dataset.purchaseKey);if(!record){alert('발주 데이터를 찾을 수 없습니다. 다시 조회해 주세요.');return;}
+  if(button.dataset.purchaseAction==='print'){await printRecord(record);return;}
+  if(button.dataset.purchaseAction==='edit'){await editRecord(record);return;}
+  if(!confirm((record.displayPurchaseNo||record.purchaseNo||record.no||'선택한 발주')+' 발주를 삭제하시겠습니까?'))return;
+  busy=true;update();try{await request(recordUrl(record),{method:'DELETE'});selected.delete(key(record));await api.reload();}catch(error){alert(error.message);}finally{busy=false;update();}
+ },true);
  wrap.addEventListener('click',event=>{if(event.target.closest('.qpf-select'))event.stopPropagation();},true);
  print.onclick=()=>{
   const records=docs();if(!records.length)return;
@@ -135,6 +160,24 @@ const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .qpf-field .pcal-root{width:208px!important;flex:0 0 208px!important}
 #purchase.purchase-work-frame .pcal-trigger{width:208px!important;height:30px!important;min-height:30px!important;padding:0 8px!important;border-radius:4px!important;font-size:12px!important;font-weight:600!important}
 #purchase.purchase-work-frame .qpp-period-value{white-space:nowrap}
+#purchase.purchase-work-frame .module-shell>.module-body table{min-width:1240px!important}
+#purchase.purchase-work-frame .module-shell>.module-body table th:last-child,#purchase.purchase-work-frame .module-shell>.module-body table td:last-child{width:190px!important;min-width:190px!important;padding:5px 8px!important}
+#purchase.purchase-work-frame .qpp-row-actions{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+#purchase.purchase-work-frame .qpp-row-action{height:30px;min-width:44px;padding:4px 10px;border:1px solid #c8daed;border-radius:5px;background:#f7faff;color:#32649a;font:600 12px/20px Arial,sans-serif;cursor:pointer}
+#purchase.purchase-work-frame .qpp-row-print{background:#eaf3ff;color:#245482}
+#purchase.purchase-work-frame .qpp-row-delete{background:#fff8f8;color:#b23535;border-color:#f0caca}
+#purchase.purchase-work-frame .qpp-row-action:disabled{opacity:.5;cursor:wait}
+#qpp-edit-dialog{width:min(720px,calc(100vw - 40px));max-height:90vh;padding:22px;border:1px solid #c8d7e6;border-radius:10px;color:#243e59;box-shadow:0 16px 50px #10283b44;font:13px Arial,"Malgun Gothic",sans-serif}
+#qpp-edit-dialog::backdrop{background:#152c4488}
+#qpp-edit-dialog header{display:flex;align-items:center;justify-content:space-between;font-size:18px}
+#qpp-edit-dialog .qpp-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+#qpp-edit-dialog label{display:flex;flex-direction:column;gap:6px;font-weight:600;min-width:0}
+#qpp-edit-dialog input{box-sizing:border-box;width:100%;height:35px;border:1px solid #c7d6e5;border-radius:4px;padding:6px 9px;font:13px Arial,sans-serif}
+#qpp-edit-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#qpp-edit-dialog button{padding:7px 14px;border:1px solid #c7d6e5;border-radius:5px;background:#fff;cursor:pointer}
+#qpp-edit-dialog .qpp-edit-save{background:#166fbb;color:white}
+#qpp-edit-dialog .qpp-edit-message{color:#b23535}
+@media(max-width:650px){#qpp-edit-dialog .qpp-edit-fields{grid-template-columns:1fr}}
 `;document.head.append(style);new MutationObserver(init).observe(document.body,{subtree:true,childList:true});init();
 })();
 
