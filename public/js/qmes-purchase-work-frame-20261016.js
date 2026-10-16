@@ -119,6 +119,8 @@ const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .qpf-field input,#purchase.purchase-work-frame .qpf-field select{width:144px!important;flex:0 0 144px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
 #purchase.purchase-work-frame .qpf-count,#purchase.purchase-work-frame .qpf-total{display:none!important}
 #purchase.purchase-work-frame .qpf-actions:not(:has(.btn:not([hidden]))){display:none!important}
+#purchase.purchase-work-frame .qpf-actions{justify-content:flex-end!important}
+#purchase.purchase-work-frame .qpf-actions>.qpf-buttons{margin-left:auto!important}
 #purchase.purchase-work-frame .qpf-buttons .btn{height:30px!important;padding:4px 10px!important;border-radius:4px!important;font-size:11.5px!important}
 #purchase.purchase-work-frame .qpf-list-head{min-height:52px;box-sizing:border-box;padding:11px 16px!important;align-items:center;gap:10px;flex-wrap:wrap}
 #purchase.purchase-work-frame .qow-head-tools{display:flex;gap:8px;align-items:center;margin-left:auto}
