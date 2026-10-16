@@ -3247,18 +3247,18 @@ function wireOutgoingColumnResize(section){
 
 // Incoming list uses the work-order inquiry frame; existing IQC selectors and cell indexes stay intact.
 // Supplier selection/master list only. Historical IQC rows are never rewritten by this picker.
-function wireIncomingSupplierPicker(section){
+function wireIncomingSupplierPicker(section,options={}){
   const input=section.querySelector('[data-iqc-filter="supplier"]');
   if(!input||input.dataset.supplierPicker)return;
   input.dataset.supplierPicker='1';input.readOnly=true;
   input.setAttribute('aria-haspopup','dialog');input.setAttribute('aria-expanded','false');
   const selected=section._iqcSupplierSelection=new Set();
-  const popup=document.createElement('div');popup.className='iqc-supplier-popup';popup.hidden=true;
+  const popup=document.createElement('div');popup.className='iqc-supplier-popup';popup.dataset.supplierFor=section.id;popup.hidden=true;
   popup.setAttribute('role','dialog');popup.setAttribute('aria-label','공급업체 선택');document.body.append(popup);
   const endpoint='/api/qmes-sync/workorder',key='master:iqc-supplier-list:20261016';
   let master={names:[],excluded:[]},draft=new Set(),busy=false,loaded=false,searchValue='';
   const clean=values=>[...new Set((Array.isArray(values)?values:[]).filter(value=>typeof value==='string').map(value=>value.trim()).filter(Boolean))];
-  function names(){return clean([...master.names,...(section._iqcRows||[]).map(row=>row.supplier)]).filter(name=>!master.excluded.includes(name)).sort((a,b)=>a.localeCompare(b,'ko'));}
+  function names(){return clean([...master.names,...(options.rows?.()||section._iqcRows||[]).map(row=>row.supplier)]).filter(name=>!master.excluded.includes(name)).sort((a,b)=>a.localeCompare(b,'ko'));}
   async function load(){
     const response=await fetch(endpoint,{credentials:'same-origin',cache:'no-store'});
     if(!response.ok)throw Error('공급업체 목록 조회 실패');
@@ -3316,7 +3316,7 @@ function wireIncomingSupplierPicker(section){
       if(await save({names:master.names.filter(value=>value!==name),excluded:clean([...master.excluded,name])})){draft.delete(name);draw();}
     });
     action('취소',close);
-    action('확인',()=>{selected.clear();draft.forEach(name=>selected.add(name));input.value=[...selected].join(', ');close();renderIncomingPage(section,1);});
+    action('확인',()=>{selected.clear();draft.forEach(name=>selected.add(name));input.value=[...selected].join(', ');close();if(options.onApply)options.onApply();else renderIncomingPage(section,1);});
     renderList();
   }
   async function open(){
@@ -7196,8 +7196,9 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 })();
 </script>
 
-<script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261015-ledger-fields-2"></script>
+<script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
 <script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261016-rightpane-only-3"></script>
+<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=1"></script>
 </body>
 </html>
 
