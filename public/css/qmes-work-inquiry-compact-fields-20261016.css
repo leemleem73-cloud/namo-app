@@ -39,3 +39,9 @@
 #work #namo-work-inquiry .nwi-grid input,#work #namo-work-inquiry .nwi-grid select{width:144px!important;flex:0 0 144px!important;box-sizing:border-box!important}
 #work #namo-work-inquiry .nwi-grid input[data-filter="6"]{width:160px!important;flex-basis:160px!important}
 #work #namo-work-inquiry .nwi-period-trigger{width:208px!important;flex:0 0 208px!important}
+/* Reference-style query icon; retain the button text as its accessible name. */
+#work #namo-work-inquiry .nwi-actions #nwi-search{width:30px!important;min-width:30px!important;padding:0!important;font-size:0!important;background:#fff!important;color:#40566d!important;border:1px solid #c7d6e5!important;box-shadow:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+#work #namo-work-inquiry #nwi-search::before{content:"";width:17px;height:17px;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none' stroke='%2340566d' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='8.5' cy='8.5' r='5.75'/%3E%3Cpath d='m13 13 4 4'/%3E%3C/svg%3E")}
+#work #namo-work-inquiry .nwi-actions #nwi-search:hover{background:#edf5fc!important;border-color:#8fabc5!important}
+#work #namo-work-inquiry .nwi-actions #nwi-search:focus-visible{outline:2px solid #247bd1!important;outline-offset:2px!important}
+#work #namo-work-inquiry #nwi-clear{right:54px!important}
