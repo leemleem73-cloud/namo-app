@@ -7,3 +7,18 @@
 @media(max-width:650px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:minmax(0,288px)!important}}
 #work #namo-work-inquiry .nwi-period-trigger{min-width:0!important;flex:1;box-sizing:border-box!important;padding:0 8px!important;font-size:12px!important}
 #work #namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{flex-basis:18px!important;min-width:18px!important;width:18px!important;font-size:18px!important}
+/* Compact reference-style inquiry strip: labels, fields and query buttons in one row. */
+#work #namo-work-inquiry{display:flex!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important;padding:12px 16px!important}
+#work #namo-work-inquiry .nwi-grid{flex:1;min-width:0;grid-template-columns:repeat(4,minmax(0,210px)) 268px minmax(0,220px)!important;gap:8px 10px!important;align-items:center!important}
+#work #namo-work-inquiry .nwi-grid>label{gap:6px!important;font-size:11.5px!important}
+#work #namo-work-inquiry .nwi-grid>label>span{flex-basis:54px!important;min-width:54px!important;font-size:11.5px!important}
+#work #namo-work-inquiry .nwi-grid>label:has(>[data-filter="6"])>span{flex-basis:70px!important;min-width:70px!important}
+#work #namo-work-inquiry .nwi-grid input,#work #namo-work-inquiry .nwi-grid select,#work #namo-work-inquiry .nwi-period-trigger{height:30px!important;min-height:30px!important;border-radius:4px!important;font-size:12px!important}
+#work #namo-work-inquiry .nwi-actions{flex:0 0 auto;gap:6px!important;margin:0!important;flex-wrap:wrap!important}
+#work #namo-work-inquiry .nwi-actions .btn{height:30px!important;min-height:30px!important;padding:4px 10px!important;border-radius:4px!important;font-size:11.5px!important;line-height:20px!important;white-space:nowrap!important}
+#work #namo-work-inquiry .nwi-count{font-size:11.5px!important;white-space:nowrap}
+#work #namo-work-inquiry:has(.wo-bulk-controls:not([hidden])) .nwi-grid{flex-basis:100%}
+#work #namo-work-inquiry:has(.wo-bulk-controls:not([hidden])) .nwi-actions{width:100%}
+@media(max-width:1350px){#work #namo-work-inquiry{display:block!important}#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(3,minmax(0,268px))!important}#work #namo-work-inquiry .nwi-actions{margin-top:10px!important}}
+@media(max-width:1000px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:repeat(2,minmax(0,268px))!important}}
+@media(max-width:650px){#work #namo-work-inquiry .nwi-grid{grid-template-columns:minmax(0,268px)!important}}
