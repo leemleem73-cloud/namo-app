@@ -65,6 +65,21 @@
  #qauth-login.qmes-login-pro .qauth-login-panel{padding:22px 26px!important}
  #qauth-login.qmes-login-pro h2{margin-bottom:18px!important;font-size:24px!important}
 }
+
+/* Fill every screen without coupling the form size to the artwork. */
+#qauth-login.qmes-login-pro{
+ background-image:url('/qmes-login-factory-responsive-20261016.png')!important;
+ background-size:cover!important;background-position:center!important;
+}
+@media(max-aspect-ratio:21/10){
+ #qauth-login.qmes-login-pro{background-image:url('/qmes-login-factory-laptop-20261016.png')!important}
+}
+@media(max-aspect-ratio:1/1){
+ #qauth-login.qmes-login-pro{background-image:url('/qmes-login-factory-phone-20261016.png')!important}
+}
+@media(max-width:640px){
+ #qauth-login.qmes-login-pro .qauth-card{padding:24px 16px!important;justify-content:center!important}
+}
 `;
   document.head.appendChild(style);
   function patchLogin(){
