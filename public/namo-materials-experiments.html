@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NAMO Materials AI - Experiment DB</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--line:#e3e9f1;--text:#172033;--muted:#718097;--blue:#1c63d8;--navy:#12305a;--green:#16835b;--red:#b63b3b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Noto Sans KR",sans-serif}.wrap{max-width:1500px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center}.title{font-size:27px;font-weight:900}.sub{color:var(--muted);margin-top:6px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.primary{background:var(--blue);border-color:var(--blue);color:#fff}.soft{background:#eef4ff;color:var(--blue)}.grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px;margin-top:18px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,70,.05)}h2{font-size:18px;margin:0 0 12px}.muted{font-size:12px;color:var(--muted)}.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.field{border:1px solid var(--line);border-radius:10px;padding:9px;background:#fbfcfe}.field label{display:block;font-size:10px;color:var(--muted);font-weight:800;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;border:0;outline:0;background:transparent;font:inherit;font-weight:700}.field textarea{min-height:58px;resize:vertical}.section{font-size:12px;font-weight:900;color:var(--navy);margin:18px 0 8px}.mat-head,.mat-row{display:grid;grid-template-columns:1.2fr 1fr .6fr 36px;gap:7px;align-items:center}.mat-head{font-size:10px;color:var(--muted);font-weight:800;padding:0 6px 5px}.mat-row{padding:6px 0;border-top:1px solid #edf1f5}.mat-row input{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}.x{border:0;background:#fff0f0;color:var(--red);border-radius:8px;height:34px;cursor:pointer}.status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;background:#eef2f7;color:#596779}.status.on{background:#e8f7f1;color:var(--green)}.dot{width:7px;height:7px;border-radius:50%;background:currentColor}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}.kpi{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px}.kpi span{font-size:11px;color:var(--muted);font-weight:700}.kpi b{display:block;font-size:23px;margin-top:5px}.table-wrap{overflow:auto;max-height:680px}table{width:100%;border-collapse:collapse;font-size:11px;min-width:900px}th,td{padding:9px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#f7f9fc;color:#647188;z-index:1}.judge{font-weight:900}.pass{color:var(--green)}.fail{color:var(--red)}.notice{background:#fff8e8;color:#7c5b1a;border:1px solid #f0dfb8;border-radius:10px;padding:10px;font-size:11px;line-height:1.5;margin-top:12px}@media(max-width:1000px){.grid{grid-template-columns:1fr}.fields,.kpis{grid-template-columns:1fr 1fr}}@media(max-width:600px){.fields,.kpis{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">NAMO Materials AI · Experiment DB</div><div class="sub">배합·공정·실제 물성을 PostgreSQL에 축적하는 1차 학습 데이터베이스</div></div>
+    <div class="actions"><span id="dbStatus" class="status"><i class="dot"></i>DB 확인 중</span><button class="btn soft" onclick="location.href='/namo-materials-ai.html'">배합 AI</button><button class="btn" onclick="location.href='/'">QMES</button></div>
+  </div>
+  <div class="kpis"><div class="kpi"><span>실험 건수</span><b id="kTotal">0</b></div><div class="kpi"><span>합격 실험</span><b id="kPass">0</b></div><div class="kpi"><span>평균 점도</span><b id="kVis">-</b></div><div class="kpi"><span>학습 준비도</span><b id="kReady">초기</b></div></div>
+  <div class="grid">
+    <section class="card">
+      <h2>실험 데이터 등록</h2><div class="muted">성공뿐 아니라 실패 배합도 반드시 저장합니다.</div>
+      <div class="section">기본정보</div>
+      <div class="fields">
+        <div class="field"><label>실험번호</label><input id="expNo" placeholder="EXP-2026-001"></div>
+        <div class="field"><label>제품/프로젝트</label><input id="project" placeholder="SBR Binder / Zn Separator"></div>
+        <div class="field"><label>실험목적</label><input id="purpose" placeholder="접착력 향상"></div>
+      </div>
+      <div class="section">원료 · LOT · 배합비</div>
+      <div class="mat-head"><div>원료명</div><div>원료 LOT</div><div>배합비 %</div><div></div></div><div id="materials"></div>
+      <button id="addMaterial" class="btn soft" type="button">+ 원료 추가</button>
+      <div class="section">공정조건</div>
+      <div class="fields">
+        <div class="field"><label>교반속도 RPM</label><input id="rpm" type="number"></div><div class="field"><label>온도 ℃</label><input id="temp" type="number" step="0.1"></div><div class="field"><label>시간 min</label><input id="time" type="number"></div>
+        <div class="field"><label>pH</label><input id="ph" type="number" step="0.01"></div><div class="field"><label>투입순서/조건</label><input id="order" placeholder="A→B→첨가제"></div><div class="field"><label>배치량 kg</label><input id="batch" type="number" step="0.01"></div>
+      </div>
+      <div class="section">실제 측정 물성</div>
+      <div class="fields">
+        <div class="field"><label>점도 cP</label><input id="viscosity" type="number"></div><div class="field"><label>고형분 %</label><input id="solid" type="number" step="0.01"></div><div class="field"><label>Dmax µm</label><input id="dmax" type="number" step="0.01"></div>
+        <div class="field"><label>접착력 index</label><input id="adhesion" type="number" step="0.01"></div><div class="field"><label>전해액 안정성 %</label><input id="stability" type="number" step="0.01"></div><div class="field"><label>수분 ppm</label><input id="moisture" type="number" step="0.01"></div>
+      </div>
+      <div class="section">판정 및 메모</div>
+      <div class="fields"><div class="field"><label>판정</label><select id="judge"><option>합격</option><option>조건부</option><option>불합격</option></select></div><div class="field"><label>실험자</label><input id="operator"></div><div class="field"><label>실험일</label><input id="expDate" type="date"></div></div>
+      <div class="field" style="margin-top:9px"><label>메모 / 실패원인</label><textarea id="note" placeholder="응집, 기포, 점도상승 등 관찰사항"></textarea></div>
+      <div class="notice">이 DB는 AI 학습용 원천데이터입니다. 물성값은 실제 시험결과만 입력하고, 예측값과 혼합하지 않습니다.</div>
+      <div class="actions" style="margin-top:14px"><button id="save" class="btn primary">PostgreSQL 저장</button><button id="clear" class="btn">입력 초기화</button></div>
+    </section>
+    <section class="card"><h2>저장된 실험</h2><div class="muted" id="listInfo">DB에서 데이터를 불러옵니다.</div><div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>실험번호</th><th>프로젝트</th><th>배합</th><th>공정</th><th>실제물성</th><th>판정</th><th>실험일/실험자</th></tr></thead><tbody id="tbody"></tbody></table></div></section>
+  </div>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), TYPE='inventory', PREFIX='materials-ai-exp:'; let records=[];
+function matRow(v={name:'',lot:'',ratio:''}){const d=document.createElement('div');d.className='mat-row';d.innerHTML=`<input class="mn" placeholder="원료명" value="${v.name||''}"><input class="ml" placeholder="LOT" value="${v.lot||''}"><input class="mr" type="number" step="0.001" placeholder="%" value="${v.ratio??''}"><button class="x" type="button">×</button>`;d.querySelector('.x').onclick=()=>{if($('#materials').children.length>1)d.remove()};return d}
+function initMaterials(){ $('#materials').innerHTML=''; [{name:'Polymer A'},{name:'Polymer B'},{name:'Additive A'},{name:'Solvent'}].forEach(x=>$('#materials').appendChild(matRow(x))); }
+$('#addMaterial').onclick=()=>$('#materials').appendChild(matRow());
+function n(id){const v=$('#'+id).value;return v===''?null:Number(v)}
+function materials(){return [...document.querySelectorAll('.mat-row')].map(r=>({name:r.querySelector('.mn').value.trim(),lot:r.querySelector('.ml').value.trim(),ratio:Number(r.querySelector('.mr').value)||0})).filter(x=>x.name)}
+async function api(url,opt={}){const r=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});const j=await r.json().catch(()=>({}));if(!r.ok||j.success===false)throw new Error(j.message||`HTTP ${r.status}`);return j.data??j}
+async function load(){try{const all=await api(`/api/qmes-sync/${TYPE}`);records=(Array.isArray(all)?all:[]).filter(x=>String(x.record_key||'').startsWith(PREFIX));$('#dbStatus').className='status on';$('#dbStatus').innerHTML='<i class="dot"></i>PostgreSQL 연결';render()}catch(e){$('#dbStatus').className='status';$('#dbStatus').innerHTML='<i class="dot"></i>DB 연결 필요';$('#listInfo').textContent='로그인 후 사용하세요: '+e.message;}}
+function p(x){return x?.payload||{}}
+function render(){records.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));$('#kTotal').textContent=records.length;const pass=records.filter(x=>p(x).judge==='합격').length;$('#kPass').textContent=pass;const vv=records.map(x=>Number(p(x).measured?.viscosity)).filter(Number.isFinite);$('#kVis').textContent=vv.length?Math.round(vv.reduce((a,b)=>a+b,0)/vv.length).toLocaleString()+' cP':'-';$('#kReady').textContent=records.length<20?'초기':records.length<50?'DOE 가능':records.length<100?'모델 시작':'학습 가능';$('#listInfo').textContent=`PostgreSQL 학습 데이터 ${records.length}건`;$('#tbody').innerHTML=records.map(x=>{const d=p(x),ms=(d.materials||[]).map(m=>`${m.name} ${m.ratio}%${m.lot?' ('+m.lot+')':''}`).join('<br>'),q=d.measured||{},pc=d.process||{};return `<tr><td><b>${d.experimentNo||''}</b></td><td>${d.project||''}<br><span class="muted">${d.purpose||''}</span></td><td>${ms}</td><td>${pc.rpm??'-'} rpm<br>${pc.temp??'-'}℃ · ${pc.time??'-'} min<br>pH ${pc.ph??'-'}</td><td>점도 <b>${q.viscosity??'-'}</b><br>고형분 ${q.solid??'-'}% · Dmax ${q.dmax??'-'}<br>접착 ${q.adhesion??'-'} · 안정성 ${q.stability??'-'}%</td><td class="judge ${d.judge==='합격'?'pass':d.judge==='불합격'?'fail':''}">${d.judge||''}</td><td>${d.experimentDate||''}<br>${d.operator||''}</td></tr>`}).join('')}
+$('#save').onclick=async()=>{const experimentNo=$('#expNo').value.trim()||`EXP-${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}`,ms=materials(),sum=ms.reduce((s,x)=>s+x.ratio,0);if(!ms.length)return alert('원료를 입력하세요.');if(Math.abs(sum-100)>0.5&&!confirm(`현재 배합비 합계가 ${sum.toFixed(3)}% 입니다. 그래도 저장할까요?`))return;const payload={schemaVersion:1,experimentNo,project:$('#project').value.trim(),purpose:$('#purpose').value.trim(),materials:ms,process:{rpm:n('rpm'),temp:n('temp'),time:n('time'),ph:n('ph'),additionOrder:$('#order').value.trim(),batchKg:n('batch')},measured:{viscosity:n('viscosity'),solid:n('solid'),dmax:n('dmax'),adhesion:n('adhesion'),stability:n('stability'),moisture:n('moisture')},judge:$('#judge').value,operator:$('#operator').value.trim(),experimentDate:$('#expDate').value,note:$('#note').value.trim(),source:'NAMO Materials AI Experiment DB'};try{await api(`/api/qmes-sync/${TYPE}`,{method:'POST',body:JSON.stringify({key:PREFIX+experimentNo,payload})});alert('실험 데이터가 PostgreSQL에 저장되었습니다.');clearForm();await load()}catch(e){alert('저장 실패: '+e.message)}};
+function clearForm(){['expNo','project','purpose','rpm','temp','time','ph','order','batch','viscosity','solid','dmax','adhesion','stability','moisture','operator','note'].forEach(id=>$('#'+id).value='');$('#judge').value='합격';$('#expDate').value=new Date().toISOString().slice(0,10);initMaterials()}
+$('#clear').onclick=clearForm;$('#expDate').value=new Date().toISOString().slice(0,10);initMaterials();load();
+})();
+</script>
+</body></html>
