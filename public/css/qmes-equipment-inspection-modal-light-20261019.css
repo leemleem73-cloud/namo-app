@@ -1,0 +1,7 @@
+/* Scoped by eq-reg for equipment inspection modal, independent of #equipment container */
+.eq-reg .eq-reg-hero{background:linear-gradient(115deg,#f1f8ff 0%,#dfedf9 52%,#c9e2f4 100%)!important;color:#153d61!important;border:1px solid #bfd7e9!important;box-shadow:0 5px 16px rgba(39,99,149,.09)!important;border-radius:14px!important}
+.eq-reg .eq-reg-hero:after{border-color:rgba(58,124,177,.12)!important;box-shadow:0 0 0 38px rgba(255,255,255,.16),0 0 0 76px rgba(255,255,255,.11)!important}
+.eq-reg .eq-reg-hero h2{color:#143e64!important;font-weight:850!important}
+.eq-reg .eq-reg-hero .eq-reg-kicker{color:#3c769e!important}
+.eq-reg .eq-reg-hero p{color:#456d8e!important}
+.eq-reg .eq-reg-hero .eq-reg-doc{background:rgba(255,255,255,.8)!important;color:#315d7e!important;border:1px solid #bad3e8!important;box-shadow:0 2px 6px rgba(26,83,131,.06)!important}
