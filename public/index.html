@@ -3654,15 +3654,12 @@ function equipmentRegisterMarkup(){
       <div class="eq-reg-card-head"><b>03 · 점검 체크리스트</b><span>설비 선택 시 관리계획서 기준 항목 자동 적용</span></div>
       <div class="eq-reg-card-body"><div class="eq-reg-checklist" id="eqRegChecklist"></div></div>
     </section>
-    <div class="eq-reg-grid">
+    <div class="eq-reg-grid" style="display:block">
       <section class="eq-reg-card">
         <div class="eq-reg-card-head"><b>04 · 이상 및 조치사항</b><span>Abnormality / Action</span></div>
         <div class="eq-reg-card-body"><div class="eq-reg-field"><label>이상내용</label><textarea id="eqRegIssue" placeholder="이상 발생 시 현상과 위치를 기록하세요"></textarea></div><div class="eq-reg-field" style="margin-top:10px"><label>조치사항</label><textarea id="eqRegAction" placeholder="조치내용, 사용중지 여부, 재점검 계획 등을 기록하세요"></textarea></div></div>
       </section>
-      <section class="eq-reg-card">
-        <div class="eq-reg-card-head"><b>05 · 점검 결과 요약</b><span>Inspection Summary</span></div>
-        <div class="eq-reg-card-body"><div class="eq-reg-summary"><div class="eq-reg-resultbox"><span>점검항목</span><b id="eqRegCount">3 항목</b></div><div class="eq-reg-resultbox"><span>정상</span><b id="eqRegGood">0</b></div><div class="eq-reg-resultbox"><span>이상</span><b id="eqRegBad">0</b></div></div><div class="eq-reg-help">설비 이상 시 사용을 중지하고 격리·보고·원인분석 및 재점검 절차를 적용합니다. 관련 기록은 설비점검표와 작업지시/검사 기록에 연결됩니다.</div></div>
-      </section>
+<div hidden aria-hidden="true"><span id="eqRegCount">0 항목</span><span id="eqRegGood">0</span><span id="eqRegBad">0</span></div>
     </div>
   </div>`;
 }
