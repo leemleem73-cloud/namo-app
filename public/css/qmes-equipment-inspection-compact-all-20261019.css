@@ -1,9 +1,9 @@
-/* Compact all equipment inspection fields and panels without changing form behavior. */
+/* Compact sections 01-04 only. Section 05 and inspection logic unchanged. */
 .eq-reg{gap:9px!important}
 .eq-reg>.eq-reg-grid>.eq-reg-card+.eq-reg-card{margin-top:9px!important}
-.eq-reg .eq-reg-card-head{min-height:34px!important;padding:7px 12px!important}
-.eq-reg .eq-reg-card-head b{font-size:12px!important}
-.eq-reg .eq-reg-card-body{padding:10px 12px!important}
+.eq-reg .eq-reg-card:not(:has(.eq-reg-summary)) .eq-reg-card-head{min-height:34px!important;padding:7px 12px!important}
+.eq-reg .eq-reg-card:not(:has(.eq-reg-summary)) .eq-reg-card-head b{font-size:12px!important}
+.eq-reg .eq-reg-card:not(:has(.eq-reg-summary)) .eq-reg-card-body{padding:10px 12px!important}
 .eq-reg .eq-reg-form{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px 11px!important}
 .eq-reg .eq-reg-field.full{grid-column:span 1!important}
 .eq-reg .eq-reg-field{gap:4px!important}
@@ -19,3 +19,5 @@
 @media(max-width:1400px){.eq-reg .eq-reg-form{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:780px){.eq-reg .eq-reg-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:520px){.eq-reg .eq-reg-form{grid-template-columns:1fr!important}}
+
+.eq-reg .eq-reg-checkrow{padding:7px 10px!important;min-height:42px!important;gap:8px!important}.eq-reg .eq-reg-noteinput{height:32px!important;min-height:32px!important;font-size:11px!important}.eq-reg .eq-reg-choice button{min-height:30px!important;padding:5px 9px!important}.eq-reg .eq-reg-stat{padding:8px 10px!important}.eq-reg .eq-reg-statusline{gap:7px!important}
