@@ -35,6 +35,16 @@ const style=document.createElement('style');style.textContent=`
 #process.process-current-work .qpc-head-tools [data-work-tooltip]::after{content:attr(data-work-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:block;padding:6px 10px;min-width:max-content;background:#fff;color:#25384a;border:1px solid #aebdca;border-radius:3px;box-shadow:0 2px 6px #192d4124;font:600 12px/18px Arial,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;z-index:20}
 #process.process-current-work .qpc-head-tools [data-work-tooltip]:hover::after,#process.process-current-work .qpc-head-tools [data-work-tooltip]:focus-visible::after{opacity:1;visibility:visible}
 #process.process-current-work .qpc-list-folded .ip-table-wrap,#process.process-current-work .qpc-list-folded .ip-footnote{display:none!important}
+
+/* Process list row proportions only: compact blue heading, roomier white rows. */
+html body #process .inspection-premium table.ip-table thead tr>th{
+ height:30px!important;min-height:30px!important;padding:4px 12px!important;line-height:18px!important;box-sizing:border-box!important
+}
+html body #process .inspection-premium table.ip-table tbody tr>td{
+ height:44px!important;min-height:44px!important;padding:8px 12px!important;line-height:18px!important;box-sizing:border-box!important
+}
+html body #process .inspection-premium table.ip-table thead tr>th:first-child,
+html body #process .inspection-premium table.ip-table tbody tr>td:first-child{padding-left:6px!important;padding-right:6px!important}
 `;document.head.append(style);
 })();
 
