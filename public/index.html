@@ -2092,11 +2092,15 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
 #namo-operation-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #namo-operation-overlay .namo-operation-card{opacity:0;visibility:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;color:#000;box-shadow:none;font-size:15px;font-weight:700}
 #namo-operation-overlay.is-image-ready .namo-operation-card{opacity:1;visibility:visible}
-#namo-operation-overlay .namo-operation-mascot{display:inline-flex;align-items:center;justify-content:center;transform-origin:63.022113% 50%;animation:namo-operation-bounce 1.2s ease-in-out infinite}
+#namo-operation-overlay .namo-operation-mascot{position:relative;padding-bottom:12px;display:inline-flex;align-items:center;justify-content:center;transform-origin:63.022113% 50%;animation:namo-operation-bounce 1.2s ease-in-out infinite}
 #namo-operation-overlay .namo-operation-mascot img{display:block;object-fit:contain;image-rendering:auto;filter:none;width:150px;height:auto;border-radius:0}
 /* The round face is centered at x=756.5 in the original 500..907 viewport: 19.53317px right of the 150px image center. */
 #namo-operation-overlay .namo-operation-message{transform:translateX(19.53317px);text-align:center;white-space:nowrap}
 
+#namo-operation-overlay .namo-operation-orbit{position:absolute;left:63.022113%;top:94.9px;width:112px;height:112px;transform:translate(-50%,-50%);pointer-events:none}
+#namo-operation-overlay .namo-operation-orbit svg{display:block;width:100%;height:100%;overflow:visible;animation:namo-operation-orbit-ccw 1.8s linear infinite;transform-origin:50% 50%}
+@keyframes namo-operation-orbit-ccw{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-orbit svg{animation:none}}
 
 @keyframes namo-operation-bounce{0%,100%{transform:translateY(2px) scale(1.01,.99)}50%{transform:translateY(-8px) scale(.995,1.005)}}
 @media(prefers-reduced-motion:reduce){#namo-operation-overlay .namo-operation-mascot{animation:none}}
@@ -2121,7 +2125,7 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
     if(!overlay){
       overlay=document.createElement('div');overlay.id='namo-operation-overlay';
       overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
-      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-blue-loading-polished-20261019.svg?v=polished-blue1"></span><span class="namo-operation-message">처리 중입니다...</span></div>';
+      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-blue-loading-polished-20261019.svg?v=polished-blue1"><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="namo-operation-message">처리 중입니다...</span></div>';
       var img=overlay.querySelector('img');
       function ready(){
         if(imageReady||imageFailed)return;
