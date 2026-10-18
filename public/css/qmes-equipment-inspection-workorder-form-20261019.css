@@ -1,0 +1,21 @@
+/* Equipment inspection registration: match the existing work-order input layout, preserve IDs and event handlers. */
+.eq-reg{display:flex!important;flex-direction:column!important;gap:16px!important;background:#fff!important}
+.eq-reg>.eq-reg-hero{display:none!important}
+.eq-reg>.eq-reg-grid{display:block!important}
+.eq-reg>.eq-reg-grid>.eq-reg-card{margin:0!important;border:1px solid #d5e1ec!important;border-radius:4px!important;box-shadow:none!important;background:#fff!important}
+.eq-reg>.eq-reg-grid>.eq-reg-card+.eq-reg-card{margin-top:15px!important}
+.eq-reg .eq-reg-card-head{min-height:43px!important;padding:10px 16px!important;background:#eaf2f9!important;border:0!important;border-bottom:1px solid #d1deeb!important;border-radius:0!important}
+.eq-reg .eq-reg-card-head b{color:#254765!important;font-size:14px!important;font-weight:800!important}
+.eq-reg .eq-reg-card-head span{color:#8a9cad!important;font-size:10px!important}
+.eq-reg .eq-reg-card-body{padding:15px 16px!important}
+.eq-reg .eq-reg-form{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:13px!important}
+.eq-reg .eq-reg-field.full{grid-column:span 2!important}
+.eq-reg .eq-reg-field{min-width:0!important;gap:8px!important}
+.eq-reg .eq-reg-field label{font-size:12px!important;color:#344e68!important;font-weight:700!important}
+.eq-reg .eq-reg-field input,.eq-reg .eq-reg-field select,.eq-reg .eq-reg-field textarea{border-radius:5px!important;border:1px solid #ccdaea!important;font-size:13px!important;color:#28405a!important;box-shadow:none!important}
+.eq-reg .eq-reg-field input,.eq-reg .eq-reg-field select{height:39px!important;padding:0 11px!important}
+.eq-reg .eq-reg-equipment{grid-template-columns:1fr 1fr!important}
+.eq-reg .eq-reg-eqbox{border-radius:5px!important;background:#f7fafc!important}
+.eq-reg .eq-reg-check,.eq-reg .eq-reg-check-row{border-radius:5px!important}
+@media(max-width:1050px){.eq-reg .eq-reg-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){.eq-reg .eq-reg-form{grid-template-columns:1fr!important}.eq-reg .eq-reg-field.full{grid-column:span 1!important}.eq-reg .eq-reg-equipment{grid-template-columns:1fr!important}}
