@@ -7088,6 +7088,25 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-totals-cols3"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261014-dispatch6"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
+<script id="qmes-dashboard-emergency-fallback-20261019">
+/* Restore original dashboard content while portal iframe remains unreliable. */
+(function(){
+  function recover(){
+    var dash=document.getElementById('dashboard');
+    var frame=document.getElementById('namoPortal20261014');
+    if(!dash)return;
+    dash.classList.remove('namo-portal-shell');
+    if(frame)frame.remove();
+    dash.style.removeProperty('display');
+    if(!document.querySelector('.module-page.active')){
+      document.querySelector('.menu[data-page="dashboard"]')?.classList.add('active');
+      dash.classList.add('active');
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',recover,{once:true});
+  else recover();
+})();
+</script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
   'use strict';
