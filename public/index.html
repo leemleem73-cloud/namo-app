@@ -2233,6 +2233,16 @@ window.addEventListener('DOMContentLoaded',function(){
 <link rel="stylesheet" href="./css/qmes-equipment-inspection-hero-light-20261019.css?v=2-modal">
 <link rel="stylesheet" href="./css/qmes-equipment-inspection-workorder-form-20261019.css?v=1">
 <link rel="stylesheet" href="./css/qmes-equipment-inspection-compact-all-20261019.css?v=sections-1-4">
+<style id="iqc-data-row-height-20261019">
+/* Incoming inspection list only; heading height remains 34px. */
+html body #incoming .inspection-premium table.ip-table tbody tr>td{
+ height:44px!important;min-height:44px!important;box-sizing:border-box!important;padding:8px 12px!important;line-height:18px!important;vertical-align:middle!important
+}
+html body #incoming .inspection-premium table.ip-table tbody tr>td:first-child{padding:0!important}
+html body #incoming .inspection-premium table.ip-table tbody .iqc-select-number{
+ height:44px!important;min-height:44px!important;box-sizing:border-box!important;align-items:center!important
+}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
