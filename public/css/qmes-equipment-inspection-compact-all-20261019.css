@@ -1,0 +1,21 @@
+/* Compact all equipment inspection fields and panels without changing form behavior. */
+.eq-reg{gap:9px!important}
+.eq-reg>.eq-reg-grid>.eq-reg-card+.eq-reg-card{margin-top:9px!important}
+.eq-reg .eq-reg-card-head{min-height:34px!important;padding:7px 12px!important}
+.eq-reg .eq-reg-card-head b{font-size:12px!important}
+.eq-reg .eq-reg-card-body{padding:10px 12px!important}
+.eq-reg .eq-reg-form{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px 11px!important}
+.eq-reg .eq-reg-field.full{grid-column:span 1!important}
+.eq-reg .eq-reg-field{gap:4px!important}
+.eq-reg .eq-reg-field label{font-size:11px!important}
+.eq-reg .eq-reg-field input,.eq-reg .eq-reg-field select{height:32px!important;padding:0 9px!important;font-size:11px!important;border-radius:4px!important}
+.eq-reg .eq-reg-field textarea{min-height:54px!important;padding:7px!important;font-size:11px!important}
+.eq-reg .eq-reg-equipment{gap:8px!important;margin-bottom:8px!important}
+.eq-reg .eq-reg-eqbox{padding:9px 10px!important;border-radius:4px!important}
+.eq-reg .eq-reg-eqbox .mini{font-size:9px!important}
+.eq-reg .eq-reg-checks,.eq-reg .eq-reg-checklist{gap:6px!important}
+.eq-reg .eq-reg-check,.eq-reg .eq-reg-check-row{padding:7px 9px!important;min-height:0!important;border-radius:4px!important}
+.eq-reg .eq-reg-note{padding:8px!important}
+@media(max-width:1400px){.eq-reg .eq-reg-form{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:780px){.eq-reg .eq-reg-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:520px){.eq-reg .eq-reg-form{grid-template-columns:1fr!important}}
