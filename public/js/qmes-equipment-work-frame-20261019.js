@@ -21,7 +21,7 @@ function init(){
  const bulk=document.createElement('div');bulk.className='eq-wo-actions';bulk.hidden=true;bulk.innerHTML='<button data-bulk-print>선택 인쇄</button><button data-bulk-delete>선택 삭제</button>';actions.prepend(bulk);
  const newBtn=document.createElement('button');newBtn.className='eq-btn primary';newBtn.textContent='+ 신규 설비 등록';actions.append(newBtn);
  const original=Array.from(tbody.rows).map((tr,i)=>({tr,i}));
- function allRecords(){return [...(window.NAMO_EQUIPMENT_CP||[]),...read()]}
+ function allRecords(){return [...(typeof NAMO_EQUIPMENT_CP!=='undefined'?NAMO_EQUIPMENT_CP:[]),...read()]}
  function render(){
   const items=allRecords();tbody.innerHTML=items.map((e,i)=>'<tr class="eq-row" data-eq-i="'+i+'" data-group="'+esc(e.group)+'"><td class="eq-wo-check"><input type="checkbox" class="eq-wo-select"></td><td>'+String(i+1)+'</td><td class="left"><strong>'+esc(e.name)+'</strong></td><td>'+esc(e.group)+'</td><td class="left">'+esc(e.use)+'</td><td class="left">'+esc(e.standard)+'</td><td class="left">'+esc(e.method)+'</td><td>'+esc(e.cycle)+'</td><td>'+esc(e.last)+'</td><td>'+esc(e.next)+'</td><td>'+esc(e.status)+'</td><td class="eq-wo-action"><button data-eq-print>인쇄</button><button data-eq-edit>수정</button><button data-eq-delete>삭제</button></td></tr>').join('');
   root.querySelector('#eqWoAll').checked=false;bulk.hidden=true;
