@@ -53,6 +53,27 @@ html body #process .inspection-premium table.ip-table td:has(input[type="checkbo
 html body #process .inspection-premium table.ip-table input[type="checkbox"]{
  display:block!important;margin:0 auto!important;float:none!important;position:static!important;transform:none!important;vertical-align:middle!important
 }
+
+/* Checkbox and No. are separate visual subcolumns within the first table cell. */
+html body #process .inspection-premium table.ip-table thead tr>th:first-child,
+html body #process .inspection-premium table.ip-table tbody tr>td:first-child{
+ padding:0!important;text-align:center!important;vertical-align:middle!important
+}
+html body #process .inspection-premium table.ip-table .iqc-select-head,
+html body #process .inspection-premium table.ip-table .iqc-select-number{
+ display:grid!important;grid-template-columns:34px minmax(0,1fr)!important;
+ align-items:center!important;justify-items:center!important;
+ width:100%!important;min-height:0!important;gap:0!important;margin:0!important;padding:0!important;box-sizing:border-box!important
+}
+html body #process .inspection-premium table.ip-table .iqc-select-head{height:24px!important}
+html body #process .inspection-premium table.ip-table .iqc-select-number{height:44px!important}
+html body #process .inspection-premium table.ip-table .iqc-select-head input[type="checkbox"],
+html body #process .inspection-premium table.ip-table .iqc-select-number input[type="checkbox"]{
+ margin:0!important;justify-self:center!important;align-self:center!important
+}
+html body #process .inspection-premium table.ip-table thead .iqc-select-head .iqc-column-label{
+ font-weight:600!important;font-family:inherit!important
+}
 `;document.head.append(style);
 })();
 
