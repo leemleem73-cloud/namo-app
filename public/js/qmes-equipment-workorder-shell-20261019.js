@@ -23,7 +23,7 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-hidden{display:none!important}
 #equipment .eq-parity-actionline{display:flex;gap:7px;align-items:center;margin-left:auto}
 #equipment .eq-parity-actionline button{height:30px;background:white;border:1px solid #d2dfee;border-radius:4px;color:#22537e;padding:0 10px;cursor:pointer}
-#equipment .eq-parity-actionline button[hidden]{display:none!important}
+#equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle]{width:32px;padding:0;display:inline-flex;justify-content:center;align-items:center}#equipment .eq-parity-actionline button[hidden]{display:none!important}
 @media(max-width:850px){#equipment .eq-parity-header{align-items:flex-start;flex-direction:column}#equipment .eq-parity-filters label{flex:1 1 180px}#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{width:100%}}
 `;document.head.append(css);
 function init(){
@@ -41,7 +41,7 @@ function init(){
  const filters=document.createElement('div');filters.className='eq-parity-filters';
  filters.innerHTML='<label>설비구분 <select data-filter-group><option value="all">전체</option><option value="생산설비">생산설비</option><option value="검사·측정설비">검사·측정설비</option></select></label><label>설비명 <input data-filter-name placeholder="전체"></label><label>관리기준 <input data-filter-standard placeholder="전체"></label><label>점검상태 <select data-filter-status><option value="">전체</option><option>정상</option><option>점검예정</option><option>교정관리</option><option>점검완료</option></select></label><label>점검일자 <input data-filter-date type="date"></label><label>설비번호 <input data-filter-number placeholder="전체"></label>';
  const summary=document.createElement('div');summary.className='eq-parity-summary';
- summary.innerHTML='<b>▸ 설비 등록 현황</b><div class="eq-parity-actionline"><button data-selected-print hidden>선택 인쇄</button><button data-selected-delete hidden>선택 삭제</button><button data-clear>조건 지우기</button><button data-find title="조회">⌕</button><button data-toggle title="접기 또는 펼치기">⌃</button></div>';
+ summary.innerHTML='<b>▸ 설비 등록 현황</b><div class="eq-parity-actionline"><button data-selected-print hidden>선택 인쇄</button><button data-selected-delete hidden>선택 삭제</button><button data-clear>조건 지우기</button><button data-find title="조회" aria-label="조회"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button><button data-toggle title="접기" aria-label="접기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg></button></div>';
  page.insertBefore(header,page.firstChild);header.after(filters,summary);
  let collapsed=false;const fields={group:filters.querySelector('[data-filter-group]'),name:filters.querySelector('[data-filter-name]'),standard:filters.querySelector('[data-filter-standard]'),status:filters.querySelector('[data-filter-status]'),date:filters.querySelector('[data-filter-date]'),number:filters.querySelector('[data-filter-number]')};
  const originalSearch=toolbar.querySelector('#eqSearch'),originalTabs=[...toolbar.querySelectorAll('.eq-tab')];
@@ -49,7 +49,7 @@ function init(){
  Object.values(fields).forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',apply));
  summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');apply()};
  summary.querySelector('[data-find]').onclick=apply;
- summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').textContent=collapsed?'⌄':'⌃'};
+ summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').innerHTML=collapsed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg>';summary.querySelector('[data-toggle]').title=collapsed?'펼치기':'접기'};
  const bulkPrint=actions.querySelector('[data-bulk-print]'),bulkDelete=actions.querySelector('[data-bulk-delete]'),printBtn=summary.querySelector('[data-selected-print]'),deleteBtn=summary.querySelector('[data-selected-delete]');
  printBtn.onclick=()=>bulkPrint.click();deleteBtn.onclick=()=>bulkDelete.click();
  const sync=()=>{const selected=page.querySelectorAll('.eq-table tbody input.eq-wo-select:checked').length;printBtn.hidden=!selected;deleteBtn.hidden=!selected};
