@@ -38,7 +38,7 @@ const style=document.createElement('style');style.textContent=`
 
 /* Process list row proportions only: compact blue heading, roomier white rows. */
 html body #process .inspection-premium table.ip-table thead tr>th{
- height:24px!important;min-height:24px!important;padding:2px 12px!important;line-height:18px!important;box-sizing:border-box!important
+ height:34px!important;min-height:34px!important;padding:6px 12px!important;line-height:1.15!important;box-sizing:border-box!important
 }
 html body #process .inspection-premium table.ip-table tbody tr>td{
  height:44px!important;min-height:44px!important;padding:8px 12px!important;line-height:18px!important;box-sizing:border-box!important
@@ -65,14 +65,14 @@ html body #process .inspection-premium table.ip-table .iqc-select-number{
  align-items:center!important;justify-items:center!important;
  width:100%!important;min-height:0!important;gap:0!important;margin:0!important;padding:0!important;box-sizing:border-box!important
 }
-html body #process .inspection-premium table.ip-table .iqc-select-head{height:24px!important}
+html body #process .inspection-premium table.ip-table .iqc-select-head{height:34px!important;color:inherit!important}
 html body #process .inspection-premium table.ip-table .iqc-select-number{height:44px!important}
 html body #process .inspection-premium table.ip-table .iqc-select-head input[type="checkbox"],
 html body #process .inspection-premium table.ip-table .iqc-select-number input[type="checkbox"]{
  margin:0!important;justify-self:center!important;align-self:center!important
 }
 html body #process .inspection-premium table.ip-table thead .iqc-select-head .iqc-column-label{
- font-weight:600!important;font-family:inherit!important
+ font-weight:600!important;font-family:inherit!important;color:inherit!important
 }
 `;document.head.append(style);
 })();
