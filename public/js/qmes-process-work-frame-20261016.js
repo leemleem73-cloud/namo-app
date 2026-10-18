@@ -38,13 +38,21 @@ const style=document.createElement('style');style.textContent=`
 
 /* Process list row proportions only: compact blue heading, roomier white rows. */
 html body #process .inspection-premium table.ip-table thead tr>th{
- height:30px!important;min-height:30px!important;padding:4px 12px!important;line-height:18px!important;box-sizing:border-box!important
+ height:24px!important;min-height:24px!important;padding:2px 12px!important;line-height:18px!important;box-sizing:border-box!important
 }
 html body #process .inspection-premium table.ip-table tbody tr>td{
  height:44px!important;min-height:44px!important;padding:8px 12px!important;line-height:18px!important;box-sizing:border-box!important
 }
 html body #process .inspection-premium table.ip-table thead tr>th:first-child,
 html body #process .inspection-premium table.ip-table tbody tr>td:first-child{padding-left:6px!important;padding-right:6px!important}
+
+html body #process .inspection-premium table.ip-table th:has(input[type="checkbox"]),
+html body #process .inspection-premium table.ip-table td:has(input[type="checkbox"]){
+ text-align:center!important;vertical-align:middle!important;padding:0!important
+}
+html body #process .inspection-premium table.ip-table input[type="checkbox"]{
+ display:block!important;margin:0 auto!important;float:none!important;position:static!important;transform:none!important;vertical-align:middle!important
+}
 `;document.head.append(style);
 })();
 
