@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<link id="namo-mascot-preload" rel="preload" as="image" href="./assets/namo-blue-loading-polished-20261019.svg?v=polished-blue1">
+<link id="namo-mascot-preload" rel="preload" as="image" href="./assets/namo-blue-loading-polished-20261019.svg?v=gray-cheeks2">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
@@ -2125,7 +2125,7 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
     if(!overlay){
       overlay=document.createElement('div');overlay.id='namo-operation-overlay';
       overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
-      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-blue-loading-polished-20261019.svg?v=polished-blue1"><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="namo-operation-message">처리 중입니다...</span></div>';
+      overlay.innerHTML='<div class="namo-operation-card"><span class="namo-operation-mascot" aria-hidden="true"><img width="150" height="140" alt="" src="./assets/namo-blue-loading-polished-20261019.svg?v=gray-cheeks2"><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="namo-operation-message">처리 중입니다...</span></div>';
       var img=overlay.querySelector('img');
       function ready(){
         if(imageReady||imageFailed)return;
