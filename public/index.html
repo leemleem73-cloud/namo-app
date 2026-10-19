@@ -5018,7 +5018,10 @@ async function loadHistoricalInspectionRows(section,id){
         if(!grouped.has(key))grouped.set(key,{...row,__groupChecks:[]});
         const item=grouped.get(key);item.__groupChecks.push(row);
         if(!item.customer&&row.customer)item.customer=row.customer;
-        if(!item.inspector&&row.inspector)item.inspector=row.inspector;
+        if(!item.inspector||item.inspector==='-'){
+          const inspector=row.inspector||row.detailFields?.['검사자']||row.fields?.['검사자']||row.inspectorName||row.createdByName;
+          if(inspector&&inspector!=='-')item.inspector=inspector;
+        }
         const targets=sources.get(key)||[];
         if(row.__sourceRecordKey&&row.__sourceRowId)targets.push({recordKey:row.__sourceRecordKey,rowIndex:row.__sourceRowIndex,rowId:row.__sourceRowId});
         sources.set(key,targets);
