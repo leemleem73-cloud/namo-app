@@ -110,6 +110,9 @@ const style=document.createElement('style');style.textContent=`
 /* Keep the complete blue heading cell metrics consistent with incoming inspection. */
 #inventory.inventory-work-frame table thead tr>th{height:34px!important;min-height:34px!important;box-sizing:border-box!important;padding:6px 12px!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;line-height:1.15!important;vertical-align:middle!important;background:#e8f0f8!important;color:#244260!important}
 #inventory.inventory-work-frame table thead tr>th:first-child{padding:0!important}
+
+/* Incoming's 34px checkbox wrapper adds the header's bottom border to its rendered row. */
+#inventory.inventory-work-frame table thead .qif-all{margin:10.5px auto!important}
 `;document.head.append(style);render();load();
 })();
 
