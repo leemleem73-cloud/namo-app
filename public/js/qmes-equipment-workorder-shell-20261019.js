@@ -26,8 +26,8 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle]{width:32px;padding:0;display:inline-flex;justify-content:center;align-items:center}#equipment .eq-parity-actionline button[hidden]{display:none!important}
 @media(max-width:850px){#equipment .eq-parity-header{align-items:flex-start;flex-direction:column}#equipment .eq-parity-filters label{flex:1 1 180px}#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{width:100%}}
 
-#equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle]{width:34px!important;min-width:34px!important;height:32px!important;min-height:32px!important;padding:0!important;display:inline-flex!important;justify-content:center!important;align-items:center!important;box-sizing:border-box!important;color:#2464a0!important;border:1px solid #c9ddef!important;border-radius:5px!important;background:#f4f9ff!important}
-#equipment .eq-parity-actionline button[data-find]:hover,#equipment .eq-parity-actionline button[data-toggle]:hover{background:#dceeff!important;color:#12548d!important;border-color:#a3c8ed!important}
+#equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle]{width:34px!important;min-width:34px!important;height:32px!important;min-height:32px!important;padding:0!important;display:inline-flex!important;justify-content:center!important;align-items:center!important;box-sizing:border-box!important;color:#2464a0!important;border:1px solid #c9ddef!important;border-radius:5px!important;background:#fff!important}
+#equipment .eq-parity-actionline button[data-find]:hover,#equipment .eq-parity-actionline button[data-toggle]:hover{background:#fff!important;color:#12548d!important;border-color:#a3c8ed!important}
 #equipment .eq-parity-actionline button[data-eq-tip]:hover:after{background:#22649b!important;color:white!important}
 #equipment .eq-parity-actionline button[data-eq-tip]{position:relative}
 
