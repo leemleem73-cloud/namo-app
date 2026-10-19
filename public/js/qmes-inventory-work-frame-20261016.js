@@ -106,6 +106,10 @@ const style=document.createElement('style');style.textContent=`
 /* Match incoming inspection number heading and native checkboxes. */
 #inventory.inventory-work-frame table thead th:nth-child(2){font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important}
 #inventory.inventory-work-frame .qif-check,#inventory.inventory-work-frame .qif-all{display:block!important;width:13px!important;height:13px!important;margin:auto!important;accent-color:#4f46e5!important;appearance:auto!important;position:static!important;float:none!important;transform:none!important}
+
+/* Keep the complete blue heading cell metrics consistent with incoming inspection. */
+#inventory.inventory-work-frame table thead tr>th{height:34px!important;min-height:34px!important;box-sizing:border-box!important;padding:6px 12px!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;line-height:1.15!important;vertical-align:middle!important;background:#e8f0f8!important;color:#244260!important}
+#inventory.inventory-work-frame table thead tr>th:first-child{padding:0!important}
 `;document.head.append(style);render();load();
 })();
 
