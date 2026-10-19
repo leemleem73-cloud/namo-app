@@ -59,10 +59,10 @@ function init(){
   page.querySelectorAll('.eq-table tbody tr').forEach(tr=>{
    const cells=tr.cells;
    const cell=i=>(cells[i]?.textContent||'').trim();
-   const matchGroup=group==='all'||cell(3)===group;
-   const matchName=!name||cell(2).toLowerCase().includes(name);
-   const matchStatus=!status||cell(10)===status;
-   const matchDate=!date||cell(8).includes(date)||cell(9).includes(date);
+   const matchGroup=group==='all'||cell(4)===group;
+   const matchName=!name||cell(3).toLowerCase().includes(name);
+   const matchStatus=!status||cell(11)===status;
+   const matchDate=!date||cell(9).includes(date)||cell(10).includes(date);
    tr.style.display=matchGroup&&matchName&&matchStatus&&matchDate?'':'none';
   });
  }
