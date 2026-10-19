@@ -5006,18 +5006,35 @@ async function loadHistoricalInspectionRows(section,id){
       }
       displayRows=[...grouped.entries()].map(([key,row])=>({...row,__deleteTargets:groupSources.get(key)||[]}));
     }
+    if(id==='outgoing'){
+      const grouped=new Map(),sources=new Map();
+      for(const row of rows){
+        const lot=String(row.lot||'').trim(),date=String(row.date||row.shipDate||'').slice(0,10);
+        const key=lot&&date?lot+'||'+date:'unique:'+String(row.id||grouped.size);
+        if(!grouped.has(key))grouped.set(key,{...row,__groupChecks:[]});
+        const item=grouped.get(key);item.__groupChecks.push(row);
+        if(!item.customer&&row.customer)item.customer=row.customer;
+        if(!item.inspector&&row.inspector)item.inspector=row.inspector;
+        const targets=sources.get(key)||[];
+        if(row.__sourceRecordKey&&row.__sourceRowId)targets.push({recordKey:row.__sourceRecordKey,rowIndex:row.__sourceRowIndex,rowId:row.__sourceRowId});
+        sources.set(key,targets);
+      }
+      displayRows=[...grouped.entries()].map(([key,row])=>({...row,__deleteTargets:sources.get(key)||[]}));
+    }
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer,row.product,row.lot,row.check,row.judge,row.inspector,'-','-'];
+        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 고형분 외 4항목',row.__groupChecks?.some(x=>x.judge==='불합격')?'불합격':row.__groupChecks?.length>=8&&row.__groupChecks.every(x=>x.judge==='합격')?'합격':'검토필요',row.inspector,'',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
+        if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
+        if(id==='outgoing'&&cols[index]==='CoA')return '<td><button type="button" class="btn mini-report oqc-remarks-edit">수정</button></td>';
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
@@ -5028,6 +5045,10 @@ async function loadHistoricalInspectionRows(section,id){
       }).join('');
       return '<tr class="data-row" tabindex="0" data-delete-targets="'+safe(JSON.stringify(row.__deleteTargets||[]))+'" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
+    if(id==='outgoing'){
+      tbody.querySelectorAll('.oqc-report-view').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)issueInspectionReport('outgoing',tr);}));
+      tbody.querySelectorAll('.oqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)showRowDetail('outgoing',tr);}));
+    }
     section._inspectionRowsLoaded=displayRows.length;
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=displayRows.length;
