@@ -171,6 +171,14 @@ svg{display:block}
 /* portal-staff-admin-only-20261014: employee shortcut is hidden by default until the active login is admin. */
 #namo-portal-root .dock [data-action="직원관리"]{display:none!important}
 #namo-portal-root[data-portal-admin="1"] .dock [data-action="직원관리"]{display:flex!important}
+
+/* 2026-10-19: photorealistic chemical plant hero; all portal controls stay unchanged.
+   Source: Wikimedia Commons, "Sunrise Texas.jpg", CC BY-SA 3.0 (Baytownbert).
+   This temporary photo is not the user-approved AI render. */
+.stage{background-color:#528bae!important;background-image:url("https://commons.wikimedia.org/wiki/Special:FilePath/Sunrise_Texas.jpg")!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
+.stage>.scene{display:none!important}
+.stage::before{background:linear-gradient(90deg,rgba(7,32,55,.19) 0%,rgba(10,47,72,.10) 50%,rgba(12,46,72,.14) 100%),linear-gradient(0deg,rgba(4,32,46,.31),transparent 26%)!important}
+.stage.light-mode::before{background:linear-gradient(90deg,rgba(7,32,55,.12),rgba(7,32,55,.07)),linear-gradient(0deg,rgba(4,32,46,.22),transparent 28%)!important}
 </style>
 </head>
 <body>
