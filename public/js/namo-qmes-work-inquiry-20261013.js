@@ -206,7 +206,7 @@ function init(){
    group.prepend(print);
   });
  }
- let workPage=1,lastWorkQuery='',hasSearched=false;
+ let workPage=1,lastWorkQuery='',hasSearched=true;
  try{workPage=Math.max(1,Number(sessionStorage.getItem('namo-work-list-page'))||1);}catch(_){}
  const pager=document.createElement('div');pager.className='nwi-pagination';pager.setAttribute('aria-label','작업지시서 페이지');pager.style.cssText='display:flex;justify-content:center;gap:6px;padding:12px';tableWrap.insertAdjacentElement('afterend',pager);
  function filter(){
