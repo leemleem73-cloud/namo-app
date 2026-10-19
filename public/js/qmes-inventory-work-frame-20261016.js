@@ -95,6 +95,13 @@ const style=document.createElement('style');style.textContent=`
 /* Match incoming inspection header and data row heights. */
 #inventory.inventory-work-frame table thead tr>th{height:34px!important;min-height:34px!important;padding-top:6px!important;padding-bottom:6px!important;line-height:1.15!important;box-sizing:border-box!important}
 #inventory.inventory-work-frame table tbody tr>td{height:44px!important;min-height:44px!important;padding-top:8px!important;padding-bottom:8px!important;line-height:18px!important;box-sizing:border-box!important}
+
+/* Use the same single grid lines and outer frame as incoming inspection. */
+#inventory.inventory-work-frame table{border-collapse:separate!important;border-spacing:0!important;border:0!important}
+#inventory.inventory-work-frame table th,#inventory.inventory-work-frame table td{border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important}
+#inventory.inventory-work-frame table thead th{border-right-color:#cbd8e5!important;border-bottom-color:#cbd8e5!important}
+#inventory.inventory-work-frame table th:last-child,#inventory.inventory-work-frame table td:last-child{border-right:0!important}
+#inventory.inventory-work-frame table tbody tr:last-child td{border-bottom:0!important}
 `;document.head.append(style);render();load();
 })();
 
