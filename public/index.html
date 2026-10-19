@@ -2283,6 +2283,16 @@ html body #approval>.module-shell>.module-body>table tbody tr>td{height:44px!imp
 html body #approval>.module-shell>.module-body>table tbody tr>td:last-child>div{display:inline-block!important;vertical-align:middle!important;margin:0 6px 0 0!important;line-height:18px!important}
 html body #approval>.module-shell>.module-body>table tbody .btn{height:24px!important;min-height:0!important;padding:0 9px!important;line-height:22px!important;box-sizing:border-box!important;vertical-align:middle!important}
 </style>
+
+<style id="qmes-continuous-card-corners-20261019">
+/* Round the painted header itself so calendars and tooltips may still overflow normally. */
+html body :is(#orders,#purchase,#work,#inventory)>.module-shell>:first-child,
+html body :is(#incoming,#process,#outgoing) .iqc-work-frame>.ip-panel>.iqc-register-header,
+html body :is(#quality,#approval,#standard)>.module-shell>.module-toolbar:first-child,
+html body #lotTrace .lot-shell>.lot-hero:first-child{border-top-left-radius:9px!important;border-top-right-radius:9px!important}
+html body #equipment>.eq-page{border-radius:10px!important}
+html body #equipment>.eq-page>.eq-parity-header:first-child{border-top-left-radius:9px!important;border-top-right-radius:9px!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
