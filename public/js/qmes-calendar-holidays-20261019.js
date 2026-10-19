@@ -23,7 +23,7 @@ const style=document.createElement('style');style.textContent=selector+' .nwm-da
 '.namo-unified-date-calendar .nwm-days .chosen{background:#2689ef;color:#fff}',
 '.namo-unified-date-calendar .nwm-days button:disabled{opacity:.35;cursor:not-allowed}',
 '.namo-unified-date-calendar .nwm-foot{display:flex;flex-wrap:nowrap;gap:3px;margin-top:7px;padding-top:7px;border-top:1px solid #e1e6eb}',
-'.namo-unified-date-calendar .nwm-foot button{flex:1 1 0;min-width:0;height:23px;padding:0 3px;border:1px solid #d3d9df;background:#fff;font-size:10px;line-height:21px;white-space:nowrap;word-break:keep-all}'
+'.namo-unified-date-calendar .nwm-foot [data-clear]{flex-grow:1.4}.namo-unified-date-calendar .nwm-foot button{flex:1 1 0;min-width:0;height:23px;padding:0 3px;border:1px solid #d3d9df;background:#fff;font-size:10px;line-height:21px;white-space:nowrap;word-break:keep-all}'
 ].join('');document.head.append(style);
 let popup=null,input=null,month=null;
 function position(){if(!popup||!input)return;const r=input.getBoundingClientRect();popup.style.width=r.width+'px';const b=popup.getBoundingClientRect();popup.style.left=Math.max(6,Math.min(r.left,innerWidth-b.width-6))+'px';popup.style.top=(r.bottom+b.height+5<innerHeight?r.bottom+4:Math.max(6,r.top-b.height-4))+'px';}
