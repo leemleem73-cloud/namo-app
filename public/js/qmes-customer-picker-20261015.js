@@ -6,7 +6,7 @@ let names;try{names=JSON.parse(localStorage.getItem(key))}catch(e){}
 if(!Array.isArray(names))names=['현대자동차','삼성','LG'];
 const checked=new Set();
 const STORE='/api/qmes-sync/workorder';const STORE_KEY='master:customer-list:20261015';
-async function loadShared(){try{const res=await fetch(STORE,{credentials:'include',cache:'no-store'});if(!res.ok)throw Error('조회 실패');const j=await res.json();const arr=Array.isArray(j.data)?j.data:[];const row=arr.find(x=>x.record_key===STORE_KEY);if(Array.isArray(row?.payload?.names)){names=row.payload.names;localStorage.setItem(key,JSON.stringify(names))}}catch(e){console.warn('QMES 고객사 공용 목록 조회 실패',e)}}
+async function loadShared(){await window.qmesAuthDataReady?.wait();try{const res=await fetch(STORE,{credentials:'include',cache:'no-store'});if(!res.ok)throw Error('조회 실패');const j=await res.json();const arr=Array.isArray(j.data)?j.data:[];const row=arr.find(x=>x.record_key===STORE_KEY);if(Array.isArray(row?.payload?.names)){names=row.payload.names;localStorage.setItem(key,JSON.stringify(names))}}catch(e){console.warn('QMES 고객사 공용 목록 조회 실패',e)}}
 async function saveShared(){const res=await fetch(STORE,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:STORE_KEY,payload:{names}})});if(!res.ok)throw Error('중앙 DB 저장 실패');localStorage.setItem(key,JSON.stringify(names))}
 
 function init(){
