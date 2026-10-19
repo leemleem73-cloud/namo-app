@@ -55,11 +55,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const workOrderForLot = (lot) => { const doc=DB.woDocs?.[lot]||{}; const batch=(DB.batches||[]).find(b=>b.no===lot)||{}; const fields=doc.fields||{}; return { product:fields['제품명']||doc.product||doc.itemName||batch.itemName||batch.item||'', customer:fields['고객사']||doc.customer||batch.customer||'', date:doc.workDate||doc.productionDate||doc.startDate||batch.due||'', actual:fields['실적수량']||doc.productionActual||batch.done||'' }; };
   const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
   const selectedLot = DB.lots?.[form.lot];
-  const rawSelectedProduct = workOrderForLot(form.lot).product || selectedBatch?.itemName || selectedBatch?.item || selectedLot?.itemName || "";
+  const rawSelectedProduct = selectedBatch?.itemName || selectedBatch?.item || selectedLot?.itemName || "";
   const selectedProduct = isOqc
     ? (rawSelectedProduct === "절연 슬러리" ? "" : rawSelectedProduct)
     : form.product;
-  const shipmentCustomer = String(workOrderForLot(form.lot).customer || form.customer || "").trim();
+  const shipmentCustomer = String(form.customer || "").trim();
   const shipmentQty = Number(String(form.shipQty || "").replace(/,/g, ""));
   const shipmentInfoComplete = shipmentCustomer !== "" && Number.isFinite(shipmentQty) && shipmentQty > 0;
   const numberLabel = isOqc ? "출하번호" : "공정번호";
@@ -543,10 +543,10 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <div><label>출하번호</label><input value={previewNo} readOnly /></div>
                 <div><label>검사일자</label><input type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})} /></div>
                 <div><label>출하일자</label><input type="date" value={form.shipDate} onChange={(e)=>setForm({...form,shipDate:e.target.value})} /></div>
-                <div><label>LOT No.</label><select value={form.lot} onChange={(e)=>{const lot=e.target.value;const wo=workOrderForLot(lot);const lotQty=DB.lots?.[lot]?.qty || (DB.batches||[]).find((b)=>b.no===lot)?.qty || "";setForm({...form,lot,customer:wo.customer||form.customer,shipQty:String(lotQty || form.shipQty || "")});}}><option value="">LOT 선택</option>{availableLots.map((lot)=><option key={lot} value={lot}>{lot}</option>)}</select></div>
+                <div><label>LOT No.</label><select value={form.lot} onChange={(e)=>{const lot=e.target.value;const lotQty=DB.lots?.[lot]?.qty || (DB.batches||[]).find((b)=>b.no===lot)?.qty || "";setForm({...form,lot,shipQty:String(lotQty || form.shipQty || "")});}}><option value="">LOT 선택</option>{availableLots.map((lot)=><option key={lot} value={lot}>{lot}</option>)}</select></div>
                 <div><label>제품명</label><input value={selectedProduct} readOnly placeholder="LOT 연동 제품명" /></div>
                 <div><label>검사자</label><input value={form.inspector || ""} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 이름 입력" /></div>
-                <div><label>고객사</label><input value={shipmentCustomer} onChange={(e)=>setForm({...form,customer:e.target.value})} placeholder="고객사 입력" /></div>
+                <div><label>고객사</label><input value={form.customer || ""} onChange={(e)=>setForm({...form,customer:e.target.value})} placeholder="고객사 입력" /></div>
                 <div><label>출하수량 (kg)</label><input type="number" min="0" step="0.1" value={form.shipQty || ""} onChange={(e)=>setForm({...form,shipQty:e.target.value})} placeholder="출하수량" /></div>
                 <div><label>납품처</label><input value={form.destination || ""} onChange={(e)=>setForm({...form,destination:e.target.value})} placeholder="납품처 입력 (선택)" /></div>
               </div>
