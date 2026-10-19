@@ -30,6 +30,9 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-actionline button[data-find]:hover,#equipment .eq-parity-actionline button[data-toggle]:hover{background:#fff!important;color:#12548d!important;border-color:#a3c8ed!important}
 #equipment .eq-parity-actionline button[data-eq-tip]:hover:after{background:#22649b!important;color:white!important}
 #equipment .eq-parity-actionline button[data-eq-tip]{position:relative}
+/* Equipment inquiry/collapse: white background, black text, scoped only. */
+#equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle],#equipment .eq-parity-actionline button[data-find]:hover,#equipment .eq-parity-actionline button[data-toggle]:hover{background:#fff!important;color:#000!important}
+
 
 `;document.head.append(css);
 function init(){
