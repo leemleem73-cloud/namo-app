@@ -5136,7 +5136,7 @@ async function loadHistoricalInspectionRows(section,id){
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const oqcListJudge=row=>{
       const checks=row.__groupChecks||[row],rules=window.qmesOqcRules;
-      const explicitFail=checks.some(check=>['불합격','NG','FAIL'].includes(String(check.judge||check.result||'').trim().toUpperCase()));
+      const explicitFail=checks.some(check=>check.inspectionDecision==='불합격'||['불합격','NG','FAIL'].includes(String(check.judge||check.result||'').trim().toUpperCase()));
       if(explicitFail)return '불합격';
       if(!rules)return '대기';
       const groups=rules.items.map(name=>checks.filter(check=>rules.canonical(check.check)===name));
@@ -5519,7 +5519,7 @@ function hydrateOqcStandardCertificate(body){
  const overall=text('.report-summary .final');
  const cards=root.querySelectorAll('.std-summary-card .value');
  if(cards[0]){const span=document.createElement('span');span.className='oqc-report-readonly-value';span.textContent=overall;span.dataset.oqcJudge=overall;cards[0].replaceChildren(span);}
- if(cards[1])cards[1].textContent=overall==='대기'?'검사중':'검사완료';
+ if(cards[1]){cards[1].textContent=source.querySelector('[data-report-shipping-status]')?.textContent|| (overall==='대기'?'검사중':'검사완료');}
  const notes=source.querySelectorAll('.report-support-row');
  const remarks=root.querySelector('.std-premium-remarks textarea');
  if(remarks){remarks.value=notes[2]?.querySelector('.value')?.childNodes[0]?.textContent?.trim()||'-';remarks.readOnly=true;}
@@ -5624,7 +5624,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     }catch(error){console.warn('[QMES] PQC report measurements:',error);}
   }
   // OQC certificates use exactly the persisted group opened by the edit screen.
-  let oqcReportOverall=null,oqcReportRemarks='';
+  let oqcReportOverall=null,oqcReportRemarks='',oqcShippingStatus='';
   if(id==='outgoing'){
     const record=document.getElementById('outgoing')?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
     const rules=window.qmesOqcRules;
@@ -5638,10 +5638,10 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
       for(let index=0;index<3;index++)item[index+3]=measurements[item[0]][index]||'-';
       item[6]=rules.evaluateItem(item[0],measurements[item[0]]);
     });
-    oqcReportOverall=rules.evaluateMeasurements(measurements).overall;
+    oqcReportOverall=records.some(row=>row.inspectionDecision==='불합격')?'불합격':rules.evaluateMeasurements(measurements).overall;
     const escapeValue=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     itemSets.outgoing.forEach(item=>{for(let index=3;index<6;index++)item[index]=escapeValue(item[index]);});
-    oqcReportRemarks=escapeValue(record.remarks||'-');
+    oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');
   }
   const items=itemSets[id]||[];
   const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
@@ -5666,7 +5666,7 @@ function qmesIqcBarcodeSvg(value){
 }
   const approval=qmesQualityApprovalPeople();
   const body=`
-    <div class="report-sheet report-${id}" id="reportSheet">
+    <div class="report-sheet report-${id}" id="reportSheet">${id==='outgoing'?'<span data-report-shipping-status hidden>'+oqcShippingStatus+'</span>':''}
       <div class="report-doc-head">
         <div class="report-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
         <div class="report-title-box"><h2>${title}</h2></div>
@@ -7751,7 +7751,7 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261019-1"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261019-auto-judge5"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261020-shipping-focus1"></script>
 </body>
 </html>
 
