@@ -74,6 +74,10 @@ html body #process .inspection-premium table.ip-table .iqc-select-number input[t
 html body #process .inspection-premium table.ip-table thead .iqc-select-head .iqc-column-label{
  font-weight:600!important;font-family:inherit!important;color:inherit!important
 }
+
+/* Match incoming inspection report/edit button colors only. */
+#process.process-current-work .inspection-premium .ip-table .pqc-report-view{color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
+#process.process-current-work .inspection-premium .ip-table .pqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
 `;document.head.append(style);
 })();
 
