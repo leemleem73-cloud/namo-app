@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script id="qmes-auth-data-ready-20261020">
+(function(){
+  let ready=false,resolveReady,pending;
+  function reset(){ready=false;pending=new Promise(resolve=>{resolveReady=resolve;});}
+  reset();
+  window.qmesAuthDataReady={
+    wait:function(){return pending;},
+    confirm:function(){if(!ready){ready=true;resolveReady();}},
+    reset:function(){if(ready)reset();}
+  };
+})();
+</script>
+
 <link id="namo-mascot-preload" rel="preload" as="image" href="./assets/namo-blue-loading-polished-20261019.svg?v=gray-cheeks2">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -4352,6 +4365,7 @@ function renderIncomingPage(section,page=1){
   }
 }
 async function loadIncomingFromDb(section){
+  await window.qmesAuthDataReady.wait();
   if(!section||section.id!=='incoming')return;
   const tbody=section.querySelector('tbody');
   if(!tbody)return;
@@ -4433,6 +4447,7 @@ function canCurrentUserApproveQuality(a){
   return String(u.id||'')===String(a?.reviewer_user_id||'') || String(u.id||'')===String(a?.approver_user_id||'');
 }
 async function loadQualityApprovals(section=document.getElementById('approval')){
+  await window.qmesAuthDataReady.wait();
   if(!section) return;
   const tbody=section.querySelector('.quality-approval-body');
   const pager=section.querySelector('.quality-approval-pager');
@@ -4544,6 +4559,7 @@ async function qmesRequestQualityApproval(docType,recordId,title,page='approval'
   }
 }
 async function loadQualityNotifications(){
+  await window.qmesAuthDataReady.wait();
   if(!notifyList) return;
   try{
     const r=await fetch('/api/qmes-quality/notifications',{credentials:'same-origin'});
@@ -4585,6 +4601,7 @@ let workSharedRows=null, workSyncBusy=null;
 const workDeletingIds=new Set();
 const WORK_API='/api/qmes/work-orders';
 async function workApi(method,path='',body){
+  if(String(method).toUpperCase()==='GET')await window.qmesAuthDataReady.wait();
   const response=await fetch(WORK_API+path,{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
   const result=await response.json().catch(()=>({}));
   if(!response.ok||!result.success)throw new Error(result.message||'공용 서버 저장/조회 실패');
@@ -4966,6 +4983,7 @@ function pqcWorkOrderNumber(order){
 }
 
 async function loadHistoricalInspectionRows(section,id){
+  await window.qmesAuthDataReady.wait();
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
   if(!tbody)return;
@@ -7339,7 +7357,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 </script>
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261012-1"></script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261016-white-loader3"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261020-auth-ready1"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
