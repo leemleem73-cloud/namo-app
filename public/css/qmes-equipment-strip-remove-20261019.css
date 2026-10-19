@@ -1,0 +1,5 @@
+/* Only remove the light-blue strip below "설비 등록 현황". */
+#equipment .eq-parity-summary{margin-bottom:0!important;border-bottom:0!important}
+#equipment .eq-table-card{margin-top:0!important;padding-top:0!important;background:#fff!important}
+#equipment .eq-table-wrap{margin-top:0!important;padding-top:0!important;background:#fff!important}
+#equipment .eq-parity-summary + .eq-table-card{border-top:0!important}
