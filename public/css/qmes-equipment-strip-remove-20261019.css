@@ -13,3 +13,6 @@
 #equipment .eq-table-card > .eq-table-title{display:none!important;height:0!important;min-height:0!important;max-height:0!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important}
 #equipment .eq-parity-summary + .eq-table-card{margin:0!important;padding-top:0!important;border-top:0!important}
 #equipment .eq-page > .eq-table-card > .eq-table-wrap{margin:0!important;padding:0!important;border:0!important}
+
+/* ROOT CAUSE: .eq-page is flex-column with gap:16px in base CSS. */
+#equipment .eq-page{gap:0!important;row-gap:0!important}
