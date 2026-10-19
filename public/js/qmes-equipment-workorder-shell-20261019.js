@@ -46,7 +46,7 @@ function init(){
  const header=document.createElement('div');header.className='eq-parity-header';header.innerHTML='<h2>설비 등록 및 조회</h2><div class="eq-parity-buttons"></div>';
  const buttons=header.querySelector('.eq-parity-buttons');
  const move=(selector,label,primary)=>{const original=actions.querySelector(selector);if(!original)return;const button=document.createElement('button');button.textContent=label;button.className=primary?'primary':'';button.onclick=()=>original.click();buttons.append(button)};
- move('#eqExport','엑셀 내보내기',false);move('#eqCheckRegister','+ 점검등록',false);move('button:not(#eqCheckRegister):not(#eqExport):not([data-bulk-print]):not([data-bulk-delete])','+ 신규 설비 등록',true);
+ move('#eqExport','엑셀 내보내기',false);move('#eqCheckRegister','점검등록',false);move('button:not(#eqCheckRegister):not(#eqExport):not([data-bulk-print]):not([data-bulk-delete])','+ 신규 설비 등록',true);
  // Explicit source is the button text, not incidental action order.
  const newSource=[...actions.querySelectorAll('button')].find(x=>x.textContent.includes('신규 설비 등록'));
  if(newSource){const b=[...buttons.children].find(x=>x.textContent.includes('신규 설비 등록'));if(b)b.onclick=()=>newSource.click()}
