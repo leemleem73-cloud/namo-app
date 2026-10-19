@@ -5,6 +5,7 @@
  const base='/api/qmes-work-dispatch';
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const api=async(path,options={})=>{
+   if(!options.method||options.method==='GET')await window.qmesAuthDataReady?.wait();
    const r=await fetch(base+path,{credentials:'same-origin',cache:'no-store',...options});
    const value=await r.json().catch(()=>({}));
    if(!r.ok||!value.success)throw Error(value.message||'서버 연결 실패');
