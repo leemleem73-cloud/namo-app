@@ -7457,6 +7457,35 @@ enhance();
 })();
 </script>
 
+
+<script id="qmes-calendar-follow-input-20261019">
+(()=>{
+const pairs=[
+['.namo-orders-mini-calendar','#orders .qof-period-trigger'],
+['.namo-purchase-mini-calendar','#purchase .module-toolbar .pcal-trigger'],
+['.namo-work-mini-calendar','#work .nwi-period-trigger'],
+['.namo-inventory-mini-calendar','#inventory .qif-period-trigger'],
+['.namo-incoming-mini-calendar','#incoming .qic-period-trigger'],
+['.namo-process-mini-calendar','#process .qpc-period-trigger'],
+['.namo-outgoing-mini-calendar','#outgoing .qoc-period-trigger'],
+['.eq-date-popup','#equipment [data-filter-date]']];
+let until=0,running=false;
+function align(){
+for(const [popupSelector,inputSelector] of pairs){
+const popup=document.querySelector(popupSelector),input=document.querySelector(inputSelector);
+if(!popup||!input||!popup.getClientRects().length||popup.hidden||!input.getClientRects().length)continue;
+const r=input.getBoundingClientRect();popup.style.width=r.width+'px';
+const box=popup.getBoundingClientRect();
+popup.style.left=Math.max(6,Math.min(r.left,innerWidth-box.width-6))+'px';
+popup.style.top=(r.bottom+box.height+5<innerHeight?r.bottom+4:Math.max(6,r.top-box.height-4))+'px';
+}}
+function follow(){until=performance.now()+500;if(running)return;running=true;requestAnimationFrame(function frame(){align();if(performance.now()<until)requestAnimationFrame(frame);else running=false;});}
+new MutationObserver(follow).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+window.addEventListener('resize',follow);
+document.addEventListener('transitionend',follow,true);
+})();
+</script>
+
 </body>
 </html>
 
