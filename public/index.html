@@ -2426,6 +2426,12 @@ html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings
 
 html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item{display:grid;grid-template-columns:128px minmax(0,1fr);gap:0;align-items:center;min-height:42px;border-right:1px solid #e0e5eb;border-bottom:1px solid #e0e5eb;padding:0;background:#fff}html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item.full{grid-column:1/-1}html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item>label{height:100%;min-height:41px;padding:0 10px;display:flex;align-items:center;justify-content:flex-end;background:#f6f8fa;color:#405267;font-size:10px;font-weight:800;border-right:1px solid #e0e5eb;margin:0}html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item>input,html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item>select,html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item>textarea{margin:5px 8px;width:calc(100% - 16px);border-radius:2px;border:1px solid #cfd7df;min-height:29px;padding:5px 8px;font-size:11px;background:#fff}html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item>textarea{min-height:68px}
 </style>
+
+<style id="qmes-work-edit-input-font-20261019">
+html body #mainWorkspace .work-form .nwp-range-button,
+html body #mainWorkspace .work-form .nwp-range-value,
+html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea){font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-style:normal!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:0!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5048,11 +5054,21 @@ async function loadHistoricalInspectionRows(section,id){
     if(id==='outgoing')section._oqcRecords=new Map(displayRows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const oqcListJudge=row=>{
+      const checks=row.__groupChecks||[row],rules=window.qmesOqcRules;
+      const explicitFail=checks.some(check=>['불합격','NG','FAIL'].includes(String(check.judge||check.result||'').trim().toUpperCase()));
+      if(explicitFail)return '불합격';
+      if(!rules)return '대기';
+      const groups=rules.items.map(name=>checks.filter(check=>rules.canonical(check.check)===name));
+      const results=groups.map((group,index)=>group.length?group.map(check=>rules.evaluateItem(rules.items[index],Array.isArray(check.measurements)&&check.measurements.length?check.measurements:String(check.value||'').split(/\s*\/\s*/))):['대기']);
+      if(results.some(group=>group.includes('불합격')))return '불합격';
+      return results.every(group=>group.every(result=>result==='합격'))?'합격':'대기';
+    };
     const cols=pageInfo[id][2];
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목','합격','박현아','',''];
+        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',oqcListJudge(row),row.inspector||'-','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
