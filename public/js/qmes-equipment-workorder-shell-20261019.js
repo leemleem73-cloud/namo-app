@@ -45,7 +45,19 @@ function init(){
  page.insertBefore(header,page.firstChild);header.after(filters,summary);
  let collapsed=false;const fields={group:filters.querySelector('[data-filter-group]'),name:filters.querySelector('[data-filter-name]'),status:filters.querySelector('[data-filter-status]'),date:filters.querySelector('[data-filter-date]'),};
  const originalSearch=toolbar.querySelector('#eqSearch'),originalTabs=[...toolbar.querySelectorAll('.eq-tab')];
- function apply(){const tab=originalTabs.find(x=>x.dataset.eqFilter===fields.group.value);if(tab&&!tab.classList.contains('active'))tab.click();if(originalSearch){originalSearch.value='';originalSearch.dispatchEvent(new Event('input',{bubbles:true}))}setTimeout(()=>{page.querySelectorAll('.eq-table tbody tr').forEach(tr=>{const cells=tr.cells;const idx=Number(tr.dataset.eqI);const origin=typeof NAMO_EQUIPMENT_CP!=='undefined'&&idx<NAMO_EQUIPMENT_CP.length?NAMO_EQUIPMENT_CP[idx]:null;const txt=i=>cells[i]?.textContent.toLowerCase()||'';const match=(txt(2).includes(fields.name.value.trim().toLowerCase()))&&(txt(10).includes(fields.status.value.trim().toLowerCase()))&&(!fields.date.value||txt(8).includes(fields.date.value));if(tr.style.display!=='none'||fields.group.value==='all')tr.style.display=match?'':'none'})},0)}
+ function apply(){
+  const group=fields.group.value,name=fields.name.value.trim().toLowerCase(),status=fields.status.value.trim(),date=fields.date.value;
+  page.querySelectorAll('.eq-table tbody tr').forEach(tr=>{
+   const cells=tr.cells;
+   const cell=i=>(cells[i]?.textContent||'').trim();
+   const matchGroup=group==='all'||cell(3)===group;
+   const matchName=!name||cell(2).toLowerCase().includes(name);
+   const matchStatus=!status||cell(10)===status;
+   const matchDate=!date||cell(8).includes(date)||cell(9).includes(date);
+   tr.style.display=matchGroup&&matchName&&matchStatus&&matchDate?'':'none';
+  });
+ }
+
  Object.values(fields).forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',apply));
  summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');apply()};
  summary.querySelector('[data-find]').onclick=apply;
