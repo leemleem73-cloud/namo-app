@@ -4623,22 +4623,30 @@ function renderSavedWorkOrders(){
   const prior=new Map([...tbody.querySelectorAll('tr[data-work-saved]')].map(r=>[r.dataset.workSaved,r]));
   const seen=new Set();
   const cols=pageInfo.work[2];
+  const workValue=(order,column)=>order.fields?.[column==='계획수량(kg)'?'계획수량':column]??'-';
+  function styleWorkColumns(row){
+    const customer=row.cells[2],workNo=row.cells[3];
+    if(customer){customer.style.setProperty('color','#334155','important');customer.style.setProperty('text-decoration','none','important');customer.style.setProperty('cursor','default','important');}
+    if(workNo){workNo.style.setProperty('color','#1565c0','important');workNo.style.setProperty('text-decoration','underline','important');workNo.style.setProperty('font-weight','700','important');workNo.style.setProperty('cursor','pointer','important');workNo.title='작업지시서 상세내역 보기';}
+  }
   sortWorkOrdersLatest(readWorkOrders()).forEach((order,index)=>{
     if(!order||!order.id)return;
     seen.add(String(order.id));
     const priorRow=prior.get(String(order.id));
     if(priorRow){
-      const colsNow=pageInfo.work[2],valuesNow=[index+1,...colsNow.map(c=>order.fields?.[c]||'-')];
+      const colsNow=pageInfo.work[2],valuesNow=[index+1,...colsNow.map(c=>workValue(order,c))];
       valuesNow.forEach((v,i)=>{if(priorRow.cells[i+1]&&priorRow.cells[i+1].textContent!==String(v))priorRow.cells[i+1].textContent=String(v);if(i===0&&priorRow.cells[1]){const c=priorRow.cells[1];c.style.setProperty('color','#222','important');c.style.setProperty('text-decoration','none','important');c.style.setProperty('cursor','default','important');c.style.setProperty('font-weight','400','important')}});
+      styleWorkColumns(priorRow);
       return;
     }
     const tr=document.createElement('tr');
     tr.className='data-row';tr.tabIndex=0;tr.dataset.workSaved=order.id;
     const selectCell=document.createElement('td');selectCell.className='wo-select-col';tr.appendChild(selectCell);
-    const values=[index+1,...cols.map(c=>order.fields[c]||'-')];
+    const values=[index+1,...cols.map(c=>workValue(order,c))];
     values.forEach((value,i)=>{const td=document.createElement('td');td.textContent=String(value);if(i===0){td.style.setProperty('color','#222','important');td.style.setProperty('text-decoration','none','important');td.style.setProperty('cursor','default','important');td.style.setProperty('font-weight','400','important')}tr.appendChild(td);});
-    tr.addEventListener('click',e=>{if(tr.cells[1]?.contains(e.target))return;if(!e.target.closest('button'))showRowDetail('work',tr);});
-    tr.addEventListener('keydown',e=>{if(e.key==='Enter')showRowDetail('work',tr);});
+    styleWorkColumns(tr);
+    tr.addEventListener('click',e=>{if(e.target.closest('td')===tr.cells[3]&&!e.target.closest('button'))showRowDetail('work',tr);});
+    tr.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement===tr)showRowDetail('work',tr);});
     const actions=document.createElement('td');actions.style.whiteSpace='nowrap';
     const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
     edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
