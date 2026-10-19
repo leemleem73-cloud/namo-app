@@ -2547,6 +2547,7 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
 
 
 // Update an existing OQC inspection group atomically; never create or replace unrelated rows.
+const oqcAutoRules=require('./public/js/qmes-oqc-rules-20261019.js');
 app.get('/api/qmes-sync/oqc/save-detail',requireLogin,(req,res)=>ok(res,{operation:'oqc-save-detail',version:'20261019-v1'}));
 app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
   const targets=req.body?.targets,fields=req.body?.fields;
@@ -2584,10 +2585,14 @@ app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
         if(target.patch.measurements!==undefined){
           const values=target.patch.measurements;patch.measurements=values;
           patch.value=values.join(' / ');
-          patch.average=values.length===3&&values.every(v=>v.trim()!==''&&Number.isFinite(Number(v)))?values.reduce((sum,v)=>sum+Number(v),0)/3:null;
+          const numeric=values.map(oqcAutoRules.parseNumber);patch.average=values.length===3&&numeric.every(n=>n!==null)?numeric.reduce((sum,v)=>sum+v,0)/3:null;
         }
         if(target.patch.judge!==undefined)patch.judge=target.patch.judge;
-        rows[index]={...old,...clean,...patch};
+        if(oqcAutoRules.items.includes(oqcAutoRules.canonical(old.check))){
+const measurements=patch.measurements??(Array.isArray(old.measurements)&&old.measurements.length?old.measurements:(old.value?String(old.value).split(/\s*\/\s*/):[]));
+patch.judge=oqcAutoRules.evaluateItem(old.check,measurements);
+}
+rows[index]={...old,...clean,...patch};
         auditBefore.push({recordKey:record.record_key,row:old});auditAfter.push({recordKey:record.record_key,row:rows[index]});
       }
       await client.query("UPDATE qmes_sync_records SET payload=$2::jsonb,updated_by=$3,updated_at=NOW() WHERE record_type='oqc' AND record_key=$1",
