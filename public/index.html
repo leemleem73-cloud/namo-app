@@ -2451,6 +2451,18 @@ html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
 </style>
 <style id="qmes-oqc-report-judgment-colors-20261020">#reportSheet.report-outgoing .fail,#reportSheet.report-outgoing .final[data-report-result="불합격"]{color:#dc2626!important}#reportSheet.report-outgoing .pending,#reportSheet.report-outgoing .final[data-report-result="대기"]{color:#66758c!important}</style>
+
+<style id="qmes-oqc-standard-certificate-20261020">
+.std-inspection[data-inspection-type="outgoing"] .oqc-report-readonly-value{display:block;text-align:center;line-height:34px;min-height:34px;color:#26354a;font-weight:700;overflow-wrap:anywhere}
+.std-inspection[data-inspection-type="outgoing"] [data-oqc-judge="합격"]{color:#15803d!important}
+.std-inspection[data-inspection-type="outgoing"] [data-oqc-judge="불합격"]{color:#dc2626!important}
+.std-inspection[data-inspection-type="outgoing"] [data-oqc-judge="대기"]{color:#66758c!important}
+.std-inspection[data-inspection-type="outgoing"] .std-summary-card:nth-child(-n+2) .value{display:flex!important;align-items:center!important;justify-content:center!important}
+.std-inspection[data-inspection-type="outgoing"] table.std-result{border-collapse:separate!important;border-spacing:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important}
+.std-inspection[data-inspection-type="outgoing"] table.std-result tr>*{border:0!important;border-right:1px solid #e7ecf2!important;border-bottom:1px solid #e7ecf2!important;box-shadow:none!important;outline:0!important}
+.std-inspection[data-inspection-type="outgoing"] table.std-result tr>*:last-child{border-right:0!important}
+.std-inspection[data-inspection-type="outgoing"] .std-result-wrap{border-left:0!important;border-right:0!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5445,6 +5457,51 @@ function wireModule(section,id){
   section.querySelectorAll('.mini-report').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();openModal('CoA','<p style="font-size:13px;margin:0">CoA 미리보기 화면입니다. 실제 QMES 연동 시 PDF/CoA 파일을 연결할 수 있습니다.</p>')}));
 }
 
+
+function hydrateOqcStandardCertificate(body){
+ const source=document.createElement('div');source.innerHTML=body;
+ const root=workspaceBody.querySelector('.std-inspection[data-inspection-type="outgoing"]');
+ if(!root)return;
+ const text=(selector)=>source.querySelector(selector)?.textContent?.trim()||'-';
+ const fields=new Map();
+ source.querySelectorAll('.report-basic tr').forEach(tr=>{for(let i=0;i<tr.cells.length;i+=2)fields.set(tr.cells[i].textContent.trim(),tr.cells[i+1]?.textContent.trim()||'-');});
+ root.querySelectorAll('.std-info>.v').forEach(cell=>{
+   const label=cell.previousElementSibling?.textContent?.trim();
+   const value=document.createElement('span');value.className='oqc-report-readonly-value';value.textContent=fields.get(label)||'-';cell.replaceChildren(value);
+ });
+ const tbody=root.querySelector('.std-result tbody');tbody.replaceChildren();
+ source.querySelectorAll('.report-inspection tbody tr').forEach(original=>{
+   const tr=document.createElement('tr');
+   [...original.cells].forEach((old,index)=>{
+     const td=document.createElement('td');
+     if(index===1)td.className='item';else if(index===2)td.className='spec';else if(index===3)td.className='method';
+     const span=document.createElement('span');span.className='oqc-report-readonly-value';span.textContent=old.textContent;
+     if(index===7)span.dataset.oqcJudge=old.textContent.trim();
+     td.append(span);tr.append(td);
+   });tbody.append(tr);
+ });
+ const overall=text('.report-summary .final');
+ const cards=root.querySelectorAll('.std-summary-card .value');
+ if(cards[0]){const span=document.createElement('span');span.className='oqc-report-readonly-value';span.textContent=overall;span.dataset.oqcJudge=overall;cards[0].replaceChildren(span);}
+ if(cards[1])cards[1].textContent=overall==='대기'?'검사중':'검사완료';
+ const notes=source.querySelectorAll('.report-support-row');
+ const remarks=root.querySelector('.std-premium-remarks textarea');
+ if(remarks){remarks.value=notes[2]?.querySelector('.value')?.childNodes[0]?.textContent?.trim()||'-';remarks.readOnly=true;}
+ const status=root.querySelector('.std-inspection-doc .v:last-child');if(status)status.textContent='저장된 검사값 반영';
+ const pane=root.closest('.am-detail-pane');
+ const hint=pane?.querySelector('.am-detail-top small');if(hint)hint.textContent='저장된 출하검사 기록을 표시합니다.';
+ const head=pane?.querySelector('.am-section-head span');if(head)head.textContent='저장기록';
+ const note=pane?.querySelector('.am-detail-note');if(note)note.textContent='측정값 변경은 출하검사 목록의 수정 버튼을 이용해 주세요.';
+ const actions=pane?.querySelector('.am-detail-actions');
+ if(actions){const print=document.createElement('button');print.className='am-top-btn';print.type='button';print.textContent='인쇄';print.addEventListener('click',()=>document.getElementById('printReportBtn')?.click());actions.replaceChildren(print);}
+ root.closest('.am-split')?.querySelector('[data-am-add]')?.remove();
+ root.closest('.am-split')?.querySelectorAll('.am-list-item').forEach(button=>button.addEventListener('click',event=>{
+   event.stopImmediatePropagation();
+   const row=document.getElementById('outgoing')?._inspectionAllRows?.[Number(button.dataset.amIndex)];
+   if(row)issueInspectionReport('outgoing',row);
+ },true));
+}
+
 function issueInspectionReport(id,row,bulkRenderOnly=false){
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>{
@@ -5620,7 +5677,8 @@ function qmesIqcBarcodeSvg(value){
     </div>`;
   const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto" checked> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
   if(bulkRenderOnly){const tmp=document.createElement('div');tmp.innerHTML=body;return tmp.querySelector('#reportSheet')?.outerHTML||null;}
-  openModal(title,body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
+  openModal(title,id==='outgoing'?amaranthScreen('outgoing',standardInspectionForm('outgoing'),'detail',title,row):body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
+  if(id==='outgoing')hydrateOqcStandardCertificate(body);
   // PQC report: remove dark inherited borders, retain one very light divider.
   if(id==='process'){
     const grid=document.querySelector('#reportSheet.report-process table.report-inspection');
@@ -5677,7 +5735,10 @@ function qmesIqcBarcodeSvg(value){
   if(id==='outgoing')document.getElementById('shipLabelPrint')?.addEventListener('click',printShipLabel);
   document.getElementById('printReportBtn')?.addEventListener('click',()=>{
     if(id==='outgoing'&&document.getElementById('shipLabelAuto')?.checked&&!printShipLabel())return;
-    printInspectionReport(title);
+    if(id==='outgoing'){
+      const holder=document.createElement('div');holder.style.cssText='position:fixed;left:-20000px;top:0;width:900px;pointer-events:none';holder.innerHTML=body;
+      document.body.append(holder);try{printInspectionReport(title);}finally{holder.remove();}
+    }else printInspectionReport(title);
   });
 }
 // The print document draws its PQC grid once, after fonts and images settle.
