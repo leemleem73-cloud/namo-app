@@ -5028,6 +5028,7 @@ async function loadHistoricalInspectionRows(section,id){
       }
       displayRows=[...grouped.entries()].map(([key,row])=>({...row,__deleteTargets:sources.get(key)||[]}));
     }
+    if(id==='outgoing')section._oqcRecords=new Map(displayRows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const cols=pageInfo[id][2];
@@ -6368,6 +6369,7 @@ function arrangePqcWorkspaceActions(){
   workspaceFoot.replaceChildren(back,save);
 }
 function showRowDetail(id,row){
+  if(id==='outgoing')return window.qmesOpenOutgoingDetail(row);
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>td.innerText.trim());
   if(id==='work'){
@@ -7559,6 +7561,7 @@ document.addEventListener('transitionend',follow,true);
 </script>
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261019-1"></script>
 </body>
 </html>
 
