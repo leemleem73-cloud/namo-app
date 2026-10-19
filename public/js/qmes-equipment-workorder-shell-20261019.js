@@ -25,6 +25,9 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-actionline button{height:30px;background:white;border:1px solid #d2dfee;border-radius:4px;color:#22537e;padding:0 10px;cursor:pointer}
 #equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle]{width:32px;padding:0;display:inline-flex;justify-content:center;align-items:center}#equipment .eq-parity-actionline button[hidden]{display:none!important}
 @media(max-width:850px){#equipment .eq-parity-header{align-items:flex-start;flex-direction:column}#equipment .eq-parity-filters label{flex:1 1 180px}#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{width:100%}}
+
+#equipment .eq-parity-actionline button[data-eq-tip]{position:relative}
+#equipment .eq-parity-actionline button[data-eq-tip]:hover:after{content:attr(data-eq-tip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#27384b;color:#fff;font-size:11px;line-height:1.2;padding:5px 8px;border-radius:4px;z-index:999;pointer-events:none}
 `;document.head.append(css);
 function init(){
  const page=document.querySelector('#equipment .eq-page');
@@ -60,8 +63,11 @@ function init(){
 
  Object.values(fields).forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',apply));
  summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');apply()};
- summary.querySelector('[data-find]').onclick=apply;
- summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').innerHTML=collapsed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg>';summary.querySelector('[data-toggle]').title=collapsed?'펼치기':'접기'};
+ const findButton=summary.querySelector('[data-find]'),toggleButton=summary.querySelector('[data-toggle]');
+ [findButton,toggleButton].forEach(b=>{b.removeAttribute('title');b.dataset.eqTip=b===findButton?'조회':'접기';});
+ findButton.onclick=()=>{apply();};
+
+ summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').innerHTML=collapsed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg>';toggleButton.dataset.eqTip=collapsed?'펼치기':'접기'};
  const bulkPrint=actions.querySelector('[data-bulk-print]'),bulkDelete=actions.querySelector('[data-bulk-delete]'),printBtn=summary.querySelector('[data-selected-print]'),deleteBtn=summary.querySelector('[data-selected-delete]');
  printBtn.onclick=()=>bulkPrint.click();deleteBtn.onclick=()=>bulkDelete.click();
  const sync=()=>{const selected=page.querySelectorAll('.eq-table tbody input.eq-wo-select:checked').length;printBtn.hidden=!selected;deleteBtn.hidden=!selected};
