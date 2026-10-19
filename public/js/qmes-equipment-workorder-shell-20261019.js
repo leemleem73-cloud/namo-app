@@ -34,6 +34,9 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-actionline button[data-find],#equipment .eq-parity-actionline button[data-toggle],#equipment .eq-parity-actionline button[data-find]:hover,#equipment .eq-parity-actionline button[data-toggle]:hover{background:#fff!important;color:#000!important}
 
 
+
+/* Equipment date popup matching work-order mini-calendar */
+.eq-date-popup{position:fixed;z-index:2147483000;box-sizing:border-box;width:220px;padding:8px;background:#fff;border:1px solid #b8c4d0;border-radius:3px;box-shadow:0 4px 14px #0002;color:#344254;font:12px Arial,"Malgun Gothic",sans-serif}.eq-date-popup[hidden]{display:none!important}.eq-date-popup *{box-sizing:border-box}.eq-date-popup button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:2px;padding:0;min-width:0;box-shadow:none}.eq-date-popup .nwm-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}.eq-date-popup .nwm-head strong{font-size:13px;color:#172b40}.eq-date-popup .nwm-head button{width:24px;height:25px;font-size:18px;color:#83909c}.eq-date-popup .nwm-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}.eq-date-popup .nwm-days>*{height:25px;line-height:25px;text-align:center;font-size:11px}.eq-date-popup .nwm-days>span{color:#89939e}.eq-date-popup .nwm-days button:hover{background:#e4f0ff}.eq-date-popup .nwm-days .between{background:#edf5ff}.eq-date-popup .nwm-days .chosen{background:#2689ef;color:#fff}.eq-date-popup .nwm-hint{font-size:10px;min-height:24px;padding-top:7px;color:#61768b;text-align:center}.eq-date-popup .nwm-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}.eq-date-popup .nwm-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}.eq-date-popup .nwm-foot [data-close-date]{margin-left:auto}
 `;document.head.append(css);
 function init(){
  const page=document.querySelector('#equipment .eq-page');
@@ -49,27 +52,36 @@ function init(){
  if(newSource){const b=[...buttons.children].find(x=>x.textContent.includes('신규 설비 등록'));if(b)b.onclick=()=>newSource.click()}
  const filters=document.createElement('div');filters.className='eq-parity-filters';
  filters.innerHTML='<label>설비구분 <select data-filter-group><option value="all">전체</option><option value="생산설비">생산설비</option><option value="검사·측정설비">검사·측정설비</option></select></label><label>설비명 <input data-filter-name placeholder="전체"></label><label>점검상태 <select data-filter-status><option value="">전체</option><option>정상</option><option>점검예정</option><option>교정관리</option><option>점검완료</option></select></label><label>점검일자 <input data-filter-date type="date"></label>';
+ const dateInput=filters.querySelector('[data-filter-date]');dateInput.type='text';dateInput.readOnly=true;dateInput.placeholder='기간 선택';dateInput.style.cursor='pointer';dateInput.setAttribute('aria-label','점검일자 선택');dateInput.dataset.dateStart='';dateInput.dataset.dateEnd='';
+ const datePopup=document.createElement('div');datePopup.className='eq-date-popup';datePopup.hidden=true;document.body.append(datePopup);let dateMonth=new Date(),dateStart='',dateEnd='',datePicking=false;
+ const fmtDate=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+ const closeDate=()=>{datePopup.hidden=true};
+ const drawDate=()=>{const y=dateMonth.getFullYear(),m=dateMonth.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<span></span>';for(let n=1;n<=days;n++){const d=fmtDate(new Date(y,m,n));cells+='<button type="button" data-day="'+d+'" class="'+(d===dateStart||d===dateEnd?'chosen':dateStart&&dateEnd&&d>dateStart&&d<dateEnd?'between':'')+'">'+n+'</button>'}datePopup.innerHTML='<div class="nwm-head"><button data-month="-12">«</button><button data-month="-1">‹</button><strong>'+y+'.'+String(m+1).padStart(2,'0')+'</strong><button data-month="1">›</button><button data-month="12">»</button></div><div class="nwm-days">'+['일','월','화','수','목','금','토'].map(v=>'<span>'+v+'</span>').join('')+cells+'</div><div class="nwm-hint">'+(datePicking?'종료일 선택':'시작일 → 종료일 순서로 선택')+'</div><div class="nwm-foot"><button data-today>오늘</button><button data-clear-date>초기화</button><button data-close-date>닫기</button></div>';const rect=dateInput.getBoundingClientRect();datePopup.style.left=Math.max(6,Math.min(rect.left,innerWidth-226))+'px';datePopup.style.top=(rect.bottom+280<innerHeight?rect.bottom+4:Math.max(6,rect.top-284))+'px'};
+ const setDate=(a,b)=>{dateStart=a;dateEnd=b;dateInput.dataset.dateStart=a;dateInput.dataset.dateEnd=b;dateInput.value=a&&b?a+' ~ '+b:'';closeDate();apply()};
+ dateInput.addEventListener('click',()=>{datePopup.hidden=!datePopup.hidden;if(!datePopup.hidden){dateMonth=new Date((dateStart||fmtDate(new Date()))+'T12:00:00');datePicking=false;drawDate()}});
+ datePopup.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();if(b.dataset.month){dateMonth=new Date(dateMonth.getFullYear(),dateMonth.getMonth()+Number(b.dataset.month),1);drawDate()}else if(b.dataset.day){if(!datePicking){dateStart=b.dataset.day;dateEnd='';datePicking=true;drawDate()}else{let a=dateStart,c=b.dataset.day;if(c<a)[a,c]=[c,a];setDate(a,c)}}else if(b.hasAttribute('data-today')){const d=fmtDate(new Date());setDate(d,d)}else if(b.hasAttribute('data-clear-date'))setDate('','');else closeDate()});
+ document.addEventListener('pointerdown',e=>{if(!datePopup.hidden&&!datePopup.contains(e.target)&&e.target!==dateInput)closeDate()});
  const summary=document.createElement('div');summary.className='eq-parity-summary';
  summary.innerHTML='<b>▸ 설비 등록 현황</b><div class="eq-parity-actionline"><button data-selected-print hidden>선택 인쇄</button><button data-selected-delete hidden>선택 삭제</button><button data-clear>조건 지우기</button><button data-find title="조회" aria-label="조회"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button><button data-toggle title="접기" aria-label="접기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg></button></div>';
  page.insertBefore(header,page.firstChild);header.after(filters,summary);
  let collapsed=false;const fields={group:filters.querySelector('[data-filter-group]'),name:filters.querySelector('[data-filter-name]'),status:filters.querySelector('[data-filter-status]'),date:filters.querySelector('[data-filter-date]'),};
  const originalSearch=toolbar.querySelector('#eqSearch'),originalTabs=[...toolbar.querySelectorAll('.eq-tab')];
  function apply(){
-  const group=fields.group.value,name=fields.name.value.trim().toLowerCase(),status=fields.status.value.trim(),date=fields.date.value;
+  const group=fields.group.value,name=fields.name.value.trim().toLowerCase(),status=fields.status.value.trim(),date=fields.date.dataset.dateStart||'',dateEnd=fields.date.dataset.dateEnd||'';
   page.querySelectorAll('.eq-table tbody tr').forEach(tr=>{
    const cells=tr.cells;
    const cell=i=>(cells[i]?.textContent||'').trim();
    const matchGroup=group==='all'||cell(4)===group;
    const matchName=!name||cell(3).toLowerCase().includes(name);
    const matchStatus=!status||cell(11)===status;
-   const matchDate=!date||cell(9).includes(date)||cell(10).includes(date);
+   const checkDates=[cell(9),cell(10)].filter(Boolean);const matchDate=!date||checkDates.some(v=>v>=date&&v<=(dateEnd||date));
    tr.style.display=matchGroup&&matchName&&matchStatus&&matchDate?'':'none';
   });
  }
 
  /* Search runs on explicit inquiry click; Enter also submits. */
  Object.values(fields).forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();apply()}}));
- summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');apply()};
+ summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');dateStart='';dateEnd='';dateInput.dataset.dateStart='';dateInput.dataset.dateEnd='';closeDate();apply()};
  const findButton=summary.querySelector('[data-find]'),toggleButton=summary.querySelector('[data-toggle]');
  const tip=document.createElement('div');tip.className='eq-hover-tip';Object.assign(tip.style,{position:'fixed',zIndex:'2147483647',pointerEvents:'none',display:'none',background:'#fff',color:'#000',border:'1px solid #c9ddef',fontSize:'12px',fontWeight:'600',padding:'6px 10px',borderRadius:'5px',boxShadow:'0 3px 10px #0003',whiteSpace:'nowrap'});document.body.appendChild(tip);
  const showTip=b=>{tip.textContent=b.dataset.eqTip;tip.style.display='block';const r=b.getBoundingClientRect(),w=tip.offsetWidth;tip.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.left+r.width/2-w/2))+'px';tip.style.top=Math.max(6,r.top-tip.offsetHeight-8)+'px';};
