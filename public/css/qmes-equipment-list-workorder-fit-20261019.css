@@ -1,0 +1,26 @@
+/* Equipment table parity with work-order register. Presentation only. */
+#equipment .eq-table-card{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+#equipment .eq-table-wrap{width:100%!important;max-width:100%!important;overflow-x:auto!important}
+#equipment .eq-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+#equipment .eq-table th,#equipment .eq-table td{box-sizing:border-box!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;height:42px!important;padding:5px 4px!important;font-size:11px!important;line-height:1.3!important;text-align:center!important}
+#equipment .eq-table td.left{text-align:left!important}
+#equipment .eq-table th:nth-child(1),#equipment .eq-table td:nth-child(1){width:3%!important}
+#equipment .eq-table th:nth-child(2),#equipment .eq-table td:nth-child(2){width:3.5%!important}
+#equipment .eq-table th:nth-child(3),#equipment .eq-table td:nth-child(3){width:10%!important}
+#equipment .eq-table th:nth-child(4),#equipment .eq-table td:nth-child(4){width:7%!important}
+#equipment .eq-table th:nth-child(5),#equipment .eq-table td:nth-child(5){width:10%!important}
+#equipment .eq-table th:nth-child(6),#equipment .eq-table td:nth-child(6){width:16%!important}
+#equipment .eq-table th:nth-child(7),#equipment .eq-table td:nth-child(7){width:16%!important}
+#equipment .eq-table th:nth-child(8),#equipment .eq-table td:nth-child(8){width:8%!important}
+#equipment .eq-table th:nth-child(9),#equipment .eq-table td:nth-child(9){width:7%!important}
+#equipment .eq-table th:nth-child(10),#equipment .eq-table td:nth-child(10){width:6%!important}
+#equipment .eq-table th:nth-child(11),#equipment .eq-table td:nth-child(11){width:5%!important}
+#equipment .eq-table th:nth-child(12),#equipment .eq-table td:nth-child(12){width:8.5%!important}
+#equipment .eq-table th{background:#e8f0f7!important;height:36px!important}
+#equipment .eq-table .eq-wo-action{white-space:nowrap!important;padding:4px 2px!important}
+#equipment .eq-table .eq-wo-action button{padding:5px!important;margin:0 1px!important;font-size:10px!important;border-radius:4px!important;min-width:0!important}
+#equipment .eq-table .eq-wo-action button[data-eq-delete]{color:#b73d36!important;border-color:#efc9c5!important;background:#fff8f7!important}
+#equipment .eq-parity-header{min-height:61px!important}
+#equipment .eq-parity-filters{min-height:54px!important;gap:10px 16px!important}
+#equipment .eq-parity-summary{min-height:45px!important}
+@media(max-width:1200px){#equipment .eq-table th,#equipment .eq-table td{font-size:10px!important;padding:4px 2px!important}#equipment .eq-table .eq-wo-action button{font-size:9px!important;padding:4px 3px!important}}
