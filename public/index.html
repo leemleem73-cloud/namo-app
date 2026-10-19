@@ -5031,11 +5031,12 @@ async function loadHistoricalInspectionRows(section,id){
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',row.__groupChecks?.some(x=>x.judge==='불합격')?'불합격':row.__groupChecks?.length>=8&&row.__groupChecks.every(x=>x.judge==='합격')?'합격':'검토필요',row.inspector,'',''];
+        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',row.__groupChecks?.some(x=>x.judge==='불합격')?'불합격':row.__groupChecks?.length>=8&&row.__groupChecks.every(x=>x.judge==='합격')?'합격':'검토필요',(row.inspector||row.__groupChecks?.find(x=>x.inspector)?.inspector||'-'),'',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
+        if(id==='outgoing'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='CoA')return '<td><button type="button" class="btn mini-report oqc-remarks-edit">수정</button></td>';
