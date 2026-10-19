@@ -8,3 +8,8 @@
 #equipment .eq-page{background:#fff!important}
 #equipment .eq-parity-summary{background:#fff!important;margin-bottom:0!important;padding-bottom:6px!important}
 #equipment .eq-table-card,#equipment .eq-table-wrap{background:#fff!important;border-top:0!important}
+
+/* Final source correction: remove the legacy empty title strip entirely. */
+#equipment .eq-table-card > .eq-table-title{display:none!important;height:0!important;min-height:0!important;max-height:0!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important}
+#equipment .eq-parity-summary + .eq-table-card{margin:0!important;padding-top:0!important;border-top:0!important}
+#equipment .eq-page > .eq-table-card > .eq-table-wrap{margin:0!important;padding:0!important;border:0!important}
