@@ -392,6 +392,8 @@ try {
 // Approved May 2026 seven-row import: missing-only, no overwrite, same QMES work order table.
 require('./qmes-may2026-workorder-import-20261014.js');
 require('./qmes-aug-oct2026-workorder-import-20261019.js');
+// Missing-only, non-approved OQC drafts from measured LOTs with matching work orders.
+require('./qmes-oqc-draft-import-20261019.js');
 
 // Ensure NAMO Talk standalone API routes are registered before the legacy server creates/listens on the Express app.
 require('./namo-talk-standalone-server.js');
