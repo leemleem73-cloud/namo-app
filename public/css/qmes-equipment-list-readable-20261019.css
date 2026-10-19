@@ -1,0 +1,8 @@
+/* Equipment list: do not hide technical standards; keep work-order table density. */
+#equipment .eq-table td:nth-child(5),#equipment .eq-table td:nth-child(6),#equipment .eq-table td:nth-child(7),#equipment .eq-table td:nth-child(8){white-space:normal!important;overflow-wrap:anywhere!important;word-break:keep-all!important;text-overflow:clip!important;line-height:1.4!important}
+#equipment .eq-table tbody tr{height:auto!important}
+#equipment .eq-table tbody td{height:auto!important;min-height:45px!important;padding-top:9px!important;padding-bottom:9px!important}
+#equipment .eq-table td:nth-child(5),#equipment .eq-table td:nth-child(6),#equipment .eq-table td:nth-child(7){text-align:left!important}
+#equipment .eq-table td:nth-child(12){overflow:visible!important}
+#equipment .eq-table .eq-wo-action button{min-height:25px!important}
+#equipment .eq-table-wrap{overflow-x:auto!important}
