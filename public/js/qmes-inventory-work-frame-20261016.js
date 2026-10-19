@@ -72,7 +72,9 @@ const style=document.createElement('style');style.textContent=`
 #inventory.inventory-work-frame table th{background:#e8f0f8!important;color:#244260!important;font-weight:600!important}
 #inventory.inventory-work-frame table tbody tr:nth-child(even)>td{background:#fafcfe!important}
 #inventory.inventory-work-frame table th:first-child,#inventory.inventory-work-frame table td:first-child{width:34px!important;padding:0!important}
-#inventory.inventory-work-frame table th:nth-child(2),#inventory.inventory-work-frame table td:nth-child(2){width:52px!important;color:#000!important;font-weight:400!important}
+#inventory.inventory-work-frame table th:nth-child(2),#inventory.inventory-work-frame table td:nth-child(2){width:52px!important}
+#inventory.inventory-work-frame table th:nth-child(2){color:#244260!important;font-weight:600!important}
+#inventory.inventory-work-frame table td:nth-child(2){color:#344054!important;font-weight:400!important}
 #inventory.inventory-work-frame table th:last-child,#inventory.inventory-work-frame table td:last-child{width:190px!important;padding:5px 8px!important}
 #inventory.inventory-work-frame .qif-check,#inventory.inventory-work-frame .qif-all{width:14px!important;height:14px!important;margin:0!important;accent-color:#2563eb!important}
 #inventory.inventory-work-frame .qif-row-actions{display:inline-flex!important;gap:8px!important}
@@ -89,6 +91,10 @@ const style=document.createElement('style');style.textContent=`
 #qif-edit-dialog button{padding:7px 14px!important;border:1px solid #c7d6e5!important;border-radius:5px!important;background:#fff!important;cursor:pointer!important}
 #qif-edit-dialog button[type=submit]{background:#166fbb!important;color:white!important}
 #qif-edit-dialog .qif-edit-message{color:#b23535!important}
+
+/* Match incoming inspection header and data row heights. */
+#inventory.inventory-work-frame table thead tr>th{height:34px!important;min-height:34px!important;padding-top:6px!important;padding-bottom:6px!important;line-height:1.15!important;box-sizing:border-box!important}
+#inventory.inventory-work-frame table tbody tr>td{height:44px!important;min-height:44px!important;padding-top:8px!important;padding-bottom:8px!important;line-height:18px!important;box-sizing:border-box!important}
 `;document.head.append(style);render();load();
 })();
 
