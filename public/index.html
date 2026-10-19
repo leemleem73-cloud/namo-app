@@ -5531,7 +5531,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     }catch(error){console.warn('[QMES] PQC report measurements:',error);}
   }
   // OQC certificates use exactly the persisted group opened by the edit screen.
-  let oqcReportOverall=null;
+  let oqcReportOverall=null,oqcReportRemarks='';
   if(id==='outgoing'){
     const record=document.getElementById('outgoing')?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
     const rules=window.qmesOqcRules;
@@ -5548,6 +5548,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     oqcReportOverall=rules.evaluateMeasurements(measurements).overall;
     const escapeValue=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     itemSets.outgoing.forEach(item=>{for(let index=3;index<6;index++)item[index]=escapeValue(item[index]);});
+    oqcReportRemarks=escapeValue(record.remarks||'-');
   }
   const items=itemSets[id]||[];
   const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
@@ -5611,7 +5612,7 @@ function qmesIqcBarcodeSvg(value){
       <div class="report-support">
         <div class="report-support-row"><div class="label">검사조건</div><div class="value"><div class="support-text"><b>샘플링:</b> ${info.sampling} &nbsp;&nbsp; <b>검사장소:</b> 품질검사실 &nbsp;&nbsp; <b>적용기준:</b> ${info.standard}</div></div></div>
         <div class="report-support-row"><div class="label">추적성</div><div class="value">${info.trace}<br><span class="muted">원자재/작업지시/생산 LOT/완제품 LOT 간 추적 가능 여부 확인</span></div></div>
-        <div class="report-support-row"><div class="label">특이사항</div><div class="value">특이사항 없음<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
+        <div class="report-support-row"><div class="label">특이사항</div><div class="value">${id==='outgoing'?oqcReportRemarks:'특이사항 없음'}<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
       </div>
       
       ${id==='incoming'?qmesIqcBarcodeSvg(reportNo):''}
