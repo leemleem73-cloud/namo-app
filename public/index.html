@@ -2450,6 +2450,7 @@ html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea
 html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-view){color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
 </style>
+<style id="qmes-oqc-report-judgment-colors-20261020">#reportSheet.report-outgoing .fail,#reportSheet.report-outgoing .final[data-report-result="불합격"]{color:#dc2626!important}#reportSheet.report-outgoing .pending,#reportSheet.report-outgoing .final[data-report-result="대기"]{color:#66758c!important}</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5529,8 +5530,27 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
       }
     }catch(error){console.warn('[QMES] PQC report measurements:',error);}
   }
+  // OQC certificates use exactly the persisted group opened by the edit screen.
+  let oqcReportOverall=null;
+  if(id==='outgoing'){
+    const record=document.getElementById('outgoing')?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
+    const rules=window.qmesOqcRules;
+    if(!record||!rules){if(!bulkRenderOnly)toast('출하검사 기록을 새로 조회한 뒤 성적서를 열어 주세요.');return null;}
+    const records=record.__groupChecks?.length?record.__groupChecks:[record];
+    const measurements={};
+    itemSets.outgoing.forEach(item=>{
+      const source=records.find(check=>rules.canonical(check.check)===item[0]);
+      const values=Array.isArray(source?.measurements)&&source.measurements.length?source.measurements:source?.value?String(source.value).split(/\s*\/\s*/):[];
+      measurements[item[0]]=[0,1,2].map(index=>String(values[index]??'').trim());
+      for(let index=0;index<3;index++)item[index+3]=measurements[item[0]][index]||'-';
+      item[6]=rules.evaluateItem(item[0],measurements[item[0]]);
+    });
+    oqcReportOverall=rules.evaluateMeasurements(measurements).overall;
+    const escapeValue=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    itemSets.outgoing.forEach(item=>{for(let index=3;index<6;index++)item[index]=escapeValue(item[index]);});
+  }
   const items=itemSets[id]||[];
-  const finalJudge=val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격');
+  const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
   const issueDate=new Date().toLocaleDateString('ko-KR');
   const docType=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
 function qmesIqcBarcodeSvg(value){
@@ -5580,12 +5600,12 @@ function qmesIqcBarcodeSvg(value){
       <table class="report-inspection">
         <colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"><col class="measure"><col class="measure"><col class="judge"></colgroup>
         <thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th><th>1회</th><th>2회</th><th>3회</th><th>판정</th></tr></thead>
-        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="pass">${r[6]}</td></tr>`).join('')}</tbody>
+        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="${id==='outgoing'?(r[6]==='불합격'?'fail':r[6]==='대기'?'pending':'pass'):'pass'}">${r[6]}</td></tr>`).join('')}</tbody>
       </table>
       <div class="report-summary">
         <div class="label">검사일자</div><div>${inspectionDate}</div>
         <div class="label">검사자</div><div>${inspector}</div>
-        <div class="label">종합판정</div><div class="final">${finalJudge}</div>
+        <div class="label">종합판정</div><div class="final" data-report-result="${finalJudge}">${finalJudge}</div>
       </div>
       <div class="report-section-title">검사 관리정보</div>
       <div class="report-support">
