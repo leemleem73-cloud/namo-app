@@ -104,10 +104,10 @@ function init(){
   const startLabel=start.closest('label'),endLabel=end.closest('label');
   const rangeLabel=document.createElement('label');
   rangeLabel.className='nwi-period-label';
-  rangeLabel.innerHTML='<span>지시기간</span><button type="button" class="nwi-period-trigger" aria-label="지시기간 달력 열기" aria-expanded="false"><span class="nwi-period-value">기간 선택</span><span class="nwi-period-icon">▦</span></button>';
+  rangeLabel.innerHTML='<span>작업기간</span><button type="button" class="nwi-period-trigger" aria-label="작업기간 달력 열기" aria-expanded="false"><span class="nwi-period-value">기간 선택</span><span class="nwi-period-icon">▦</span></button>';
   startLabel.before(rangeLabel);startLabel.hidden=true;endLabel.hidden=true;
   const pop=document.createElement('div');pop.className='nwi-period-popup';pop.hidden=true;
-  pop.innerHTML='<div class="nwi-period-presets" role="group" aria-label="지시기간 빠른 선택">'+['올해','오늘까지','오늘','전일','주간','전주','당월','이전달'].map(name=>'<button type="button" class="nwi-period-preset">'+name+'</button>').join('')+'</div><div class="nwi-period-months"></div><div class="nwi-period-footer"><span class="nwi-period-summary">기간을 선택하세요</span><div><button type="button" class="btn nwi-period-cancel">취소</button><button type="button" class="btn primary nwi-period-ok">확인</button></div></div>';
+  pop.innerHTML='<div class="nwi-period-presets" role="group" aria-label="작업기간 빠른 선택">'+['올해','오늘까지','오늘','전일','주간','전주','당월','이전달'].map(name=>'<button type="button" class="nwi-period-preset">'+name+'</button>').join('')+'</div><div class="nwi-period-months"></div><div class="nwi-period-footer"><span class="nwi-period-summary">기간을 선택하세요</span><div><button type="button" class="btn nwi-period-cancel">취소</button><button type="button" class="btn primary nwi-period-ok">확인</button></div></div>';
   rangeLabel.after(pop);
   const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
   const parse=v=>v?new Date(v+'T12:00:00'):null;
