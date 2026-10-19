@@ -2413,6 +2413,17 @@ html body #work #namo-work-inquiry .nwi-period-trigger>span.nwi-period-value:fir
 <style id="qmes-inspection-edit-label-centering-20261019">
 html body #mainWorkspace .am-split:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) .am-section-body :is(.am-inline-cell,.form-item)>label{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
 </style>
+
+<style id="qmes-iqc-edit-settings-continuous-grid-20261019">
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .form-grid.iqc-edit-settings-frame{display:block!important}
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;box-sizing:border-box!important;border:1px solid #e0e5eb!important}
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item{min-width:0!important;border:0!important;border-right:1px solid #e0e5eb!important;border-bottom:1px solid #e0e5eb!important}
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item:nth-child(2n),
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item.full{border-right:0!important}
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item.full{grid-column:1/-1!important}
+html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item:last-child{border-bottom:0!important}
+@media(max-width:650px){html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid{grid-template-columns:minmax(0,1fr)!important}html body #mainWorkspace .am-split[data-am-screen="incoming"] .iqc-edit-settings-grid>.form-item{border-right:0!important}}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4159,14 +4170,14 @@ function updateIqcRemarkItems(row,remark){
 function editIncomingRecord(section,row){
   const date=iqcDateText(row.date)==='-'?'':iqcDateText(row.date);
   const remark=iqcRemark(row);
-  const html=`<div class="form-grid">
+  const html=`<div class="form-grid iqc-edit-settings-frame"><div class="iqc-edit-settings-grid">
     <div class="form-item"><label>입고일자</label><input id="iqcEditDate" type="date" value="${date}"></div>
     <div class="form-item"><label>공급업체</label><input id="iqcEditSupplier" type="text" value="${String(row.supplier||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>품목명</label><input id="iqcEditItem" type="text" value="${String(row.item||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
-    <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item full"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
-  </div>`;
+  </div></div>`;
   openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">취소</button><button class="btn primary" id="iqcEditSave" type="button">수정 저장</button>');
   document.getElementById('iqcEditSave')?.addEventListener('click',async()=>{
     const body={
