@@ -43,7 +43,7 @@ function init(){
  const page=document.querySelector('#equipment .eq-page');
  if(!page||page===mounted||!page.querySelector('.eq-table')||!page.querySelector('.eq-actions [data-bulk-print]'))return;
  mounted=page;
- page.querySelectorAll(".eq-table thead th").forEach(th=>{if(/^no\\.?$/i.test(th.textContent.trim()))th.textContent="No.";});
+ page.querySelectorAll(".eq-table thead th").forEach(th=>{if(["NO","No","NO.","No."].includes(th.textContent.trim()))th.textContent="No.";});
  const toolbar=page.querySelector('.eq-toolbar-card'),actions=page.querySelector('.eq-actions'),tableCard=page.querySelector('.eq-table-card');
  const header=document.createElement('div');header.className='eq-parity-header';header.innerHTML='<h2>설비 등록 및 조회</h2><div class="eq-parity-buttons"></div>';
  const buttons=header.querySelector('.eq-parity-buttons');
