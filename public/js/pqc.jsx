@@ -86,6 +86,11 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   });
   const inspectionGroupJudge = (rows) => {
     if (!isOqc && !pqcGroupComplete(rows)) return "검사대기";
+    if (isOqc) {
+      const required = ["외관", "입도(Dmax)", "점도", "고형분", "접착력", "절연저항", "수분", "전해액 안정성"];
+      const complete = required.every((item) => (rows || []).some((row) => row.check === item && inspectionMeasurements(row).length > 0 && (row.judge === "합격" || row.judge === "불합격")));
+      if (!complete) return "검토필요";
+    }
     return rows.length > 0 && rows.every((row) => row.judge === "합격") ? "합격" : "불합격";
   };
   const buildInspectionGroups = (sourceRows) => {
