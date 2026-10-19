@@ -1,0 +1,16 @@
+/* Exact compact work-order table density, equipment only. */
+#equipment .eq-table{table-layout:fixed!important;width:100%!important;min-width:0!important}
+#equipment .eq-table thead th{height:34px!important;padding:5px 4px!important}
+#equipment .eq-table tbody tr{height:45px!important;max-height:45px!important}
+#equipment .eq-table tbody td{height:45px!important;max-height:45px!important;padding:5px 4px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;word-break:normal!important;line-height:1.25!important;font-size:11px!important}
+#equipment .eq-table tbody td:nth-child(5),#equipment .eq-table tbody td:nth-child(6),#equipment .eq-table tbody td:nth-child(7),#equipment .eq-table tbody td:nth-child(8){white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#equipment .eq-table td[title]{cursor:help}
+#equipment .eq-table .eq-wo-action{white-space:nowrap!important;overflow:visible!important}
+#equipment .eq-table .eq-wo-action button{height:29px!important;padding:4px 8px!important;font-size:11px!important;margin:0 2px!important;border-radius:5px!important}
+#equipment .eq-table .eq-wo-action button[data-eq-delete]{background:#fff8f7!important;color:#c33737!important;border-color:#efc9c5!important}
+#equipment .eq-parity-summary{min-height:44px!important;margin:0!important;padding:8px 16px!important}
+#equipment .eq-table-card{margin-top:0!important;padding-top:0!important}
+#equipment .eq-pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 0 5px;background:white}
+#equipment .eq-pagination button{width:30px;height:30px;background:#fff;border:1px solid #d7e2ee;color:#325574;border-radius:6px;cursor:pointer;font-size:12px}
+#equipment .eq-pagination button[aria-current=page]{background:#2777d0;color:white;border-color:#2777d0}
+#equipment .eq-pagination button:disabled{opacity:.45;cursor:default}
