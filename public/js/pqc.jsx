@@ -677,13 +677,12 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                 <th className="py-2 px-3 font-medium whitespace-nowrap">측정값</th>
                 <th className="py-2 px-3 font-medium whitespace-nowrap">판정</th>
                 <th className="text-left py-2 px-3 font-medium whitespace-nowrap">검사자</th>
-                {isOqc && <th className="text-left py-2 px-3 font-medium whitespace-nowrap">출하일자</th>}
                 <th className="py-2 px-3 font-medium whitespace-nowrap">관리</th>
               </tr>
             </thead>
             <tbody>
               {filteredRecords.length === 0 && (
-                <tr><td colSpan={isOqc ? 9 : 8} className="py-6 text-center text-sm text-slate-500">{isOqc ? "출하검사 검사 기록이 없습니다." : "검사 기록이 없습니다."}</td></tr>
+                <tr><td colSpan={8} className="py-6 text-center text-sm text-slate-500">{isOqc ? "출하검사 검사 기록이 없습니다." : "검사 기록이 없습니다."}</td></tr>
               )}
               {displayRecords.map((r) => {
                 const groupRows = getInspectionGroupRows(r);
@@ -699,7 +698,6 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
                   </td>
                   <td className="py-2.5 px-3"><Badge tone={groupJudge === "합격" ? "green" : groupJudge === "불합격" ? "red" : "yellow"}>{groupJudge}</Badge></td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs truncate" title={r.inspector || "-"}>{r.inspector || "-"}</td>
-                  {isOqc && <td className="py-2.5 px-3 text-xs font-mono text-slate-300 whitespace-nowrap">{r.shipDate || "-"}</td>}
                   <td className="py-2.5 px-2 text-center whitespace-nowrap">
                     <div className="qmes-pqc-actions">
                       <button onClick={() => setViewingRecord(r)} title="성적서 미리보기 및 출력" className="qmes-iqc-action-btn qmes-iqc-action-print qmes-unified-inspection-action"><Printer size={12} /> 출력</button>
