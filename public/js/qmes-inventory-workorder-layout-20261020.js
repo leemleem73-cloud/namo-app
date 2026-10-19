@@ -6,7 +6,7 @@ const header=root.querySelector('header'),list=root.querySelector('.stockTable')
 if(!header||!list||!h3)return;
 header.querySelector('h1').textContent='재고현황 등록 및 조회';header.querySelector('p')?.remove();
 const controls=document.createElement('div');controls.className='stock-wo-tools';controls.innerHTML='<strong>▸ 재고현황</strong><div><button id="stock-wo-clear" type="button">조건 지우기</button><button id="stock-wo-search" type="button" title="조회">⌕</button><button id="stock-wo-fold" type="button" title="접기">⌃</button></div>';
-h3.replaceWith(controls);
+controls.querySelector('strong').innerHTML='▸ 재고현황 <span id="stockCount"></span>';h3.replaceWith(controls);
 controls.querySelector('#stock-wo-clear').onclick=()=>root.querySelector('#stockClear')?.click();
 controls.querySelector('#stock-wo-search').onclick=()=>{list.hidden=false;pager.hidden=false;root.querySelector('#stockReload')?.click();};
 controls.querySelector('#stock-wo-fold').onclick=e=>{list.hidden=!list.hidden;pager.hidden=list.hidden;e.currentTarget.textContent=list.hidden?'⌄':'⌃';};
