@@ -67,13 +67,14 @@ function init(){
   });
  }
 
- Object.values(fields).forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',apply));
+ /* Search runs on explicit inquiry click; Enter also submits. */
+ Object.values(fields).forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();apply()}}));
  summary.querySelector('[data-clear]').onclick=()=>{Object.entries(fields).forEach(([k,el])=>el.value=k==='group'?'all':'');apply()};
  const findButton=summary.querySelector('[data-find]'),toggleButton=summary.querySelector('[data-toggle]');
  const tip=document.createElement('div');tip.className='eq-hover-tip';Object.assign(tip.style,{position:'fixed',zIndex:'2147483647',pointerEvents:'none',display:'none',background:'#fff',color:'#000',border:'1px solid #c9ddef',fontSize:'12px',fontWeight:'600',padding:'6px 10px',borderRadius:'5px',boxShadow:'0 3px 10px #0003',whiteSpace:'nowrap'});document.body.appendChild(tip);
  const showTip=b=>{tip.textContent=b.dataset.eqTip;tip.style.display='block';const r=b.getBoundingClientRect(),w=tip.offsetWidth;tip.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.left+r.width/2-w/2))+'px';tip.style.top=Math.max(6,r.top-tip.offsetHeight-8)+'px';};
  [findButton,toggleButton].forEach(b=>{b.removeAttribute('title');b.dataset.eqTip=b===findButton?'조회':'접기';b.addEventListener('mouseenter',()=>showTip(b));b.addEventListener('mouseleave',()=>{tip.style.display='none'});b.addEventListener('focus',()=>showTip(b));b.addEventListener('blur',()=>{tip.style.display='none'})});
- findButton.onclick=()=>{apply();};
+ findButton.onclick=()=>{apply();const rows=[...page.querySelectorAll('.eq-table tbody tr')];const shown=rows.filter(tr=>tr.style.display!=='none').length;const label=summary.querySelector('b');if(label)label.textContent='▸ 설비 등록 현황 ('+shown+'건 조회)';};
 
  summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').innerHTML=collapsed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg>';toggleButton.dataset.eqTip=collapsed?'펼치기':'접기'};
  const bulkPrint=actions.querySelector('[data-bulk-print]'),bulkDelete=actions.querySelector('[data-bulk-delete]'),printBtn=summary.querySelector('[data-selected-print]'),deleteBtn=summary.querySelector('[data-selected-delete]');
