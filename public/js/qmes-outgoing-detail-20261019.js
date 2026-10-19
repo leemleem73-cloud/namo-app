@@ -25,7 +25,7 @@ const records=record.__groupChecks?.length?record.__groupChecks:[record];
 const field=(label,key,type,value)=>'<div class="am-inline-cell"><label>'+label+'</label><input type="'+type+'" data-oqc-field="'+key+'" value="'+esc(value)+'"></div>';
 const choice=(label,key,options,current)=>'<div class="am-inline-cell"><label>'+label+'</label><select data-oqc-field="'+key+'">'+options.map(value=>'<option value="'+esc(value)+'"'+(value===current?' selected':'')+'>'+esc(value||'선택')+'</option>').join('')+'</select></div>';
 const inspector=records.map(r=>String(r.inspector||'').trim()).find(v=>v&&v!=='-')||'박현아';
-let html='<div class="am-inline-edit-grid">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+field('고객사','customer','text',record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('검사합부','inspectionDecision',['자동판정','합격','불합격'],record.inspectionDecision||'자동판정')+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+'<div class="am-inline-cell"><label>측정값 자동판정</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(record.remarks||'')+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
+let html='<div class="am-inline-edit-grid">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+field('고객사','customer','text',record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+'<div class="am-inline-cell"><label>검사합부</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(record.remarks||'')+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
 items.forEach(([name,spec,method],index)=>{const source=records.find(r=>canonical(r.check)===name),measurements=values(source);
 html+='<tr data-oqc-item="'+index+'"><td>'+(index+1)+'</td><th>'+esc(name)+'</th><td>'+esc(spec)+'</td><td>'+esc(method)+'</td>'+[0,1,2].map(i=>'<td>'+measurementCell(name,i,String(measurements[i]??''),!source)+'</td>').join('')+'<td><span data-oqc-item-judge="'+index+'" data-result="대기" aria-live="polite">대기</span></td></tr>';});
 html+='</tbody></table></div></div><div class="oqc-save-error" role="alert" hidden></div>';
@@ -38,9 +38,6 @@ const measurements={};items.forEach(([name],index)=>{const tr=pane.querySelector
 const result=window.qmesOqcRules.evaluateMeasurements(measurements);
 items.forEach(([name],index)=>{const el=pane.querySelector('[data-oqc-item-judge="'+index+'"]');el.textContent=result.items[name];el.dataset.result=result.items[name];});
 const overall=pane.querySelector('[data-oqc-overall]');overall.value=result.overall;overall.dataset.result=result.overall;
-const decision=pane.querySelector('[data-oqc-field="inspectionDecision"]');
-const pass=[...decision.options].find(option=>option.value==='합격');pass.disabled=result.overall!=='합격';
-if(decision.value==='합격'&&result.overall!=='합격')decision.value='자동판정';
 return result;
 };
 pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('input',refreshOverall);el.addEventListener('change',refreshOverall);});refreshOverall();
@@ -48,6 +45,7 @@ const note=pane.querySelector('.am-detail-note');if(note)note.textContent='저�
 save.addEventListener('click',async()=>{
 const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
+fields.inspectionDecision='자동판정';
 if(!dateValue(fields.date)||!fields.lot||!fields.inspector){warning.hidden=false;warning.textContent='검사일자, LOT, 검사자를 확인해 주세요.';return;}
 if(fields.shippingStatus==='출하완료'&&(calculated.overall!=='합격'||fields.inspectionDecision==='불합격')){warning.hidden=false;warning.textContent='검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.';return;}
 const targets=records.map(source=>{
