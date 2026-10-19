@@ -2349,6 +2349,11 @@ html body #purchase>.qpu-detail th .qpd-number::after{border-right-color:#cbd8e5
 <style id="qmes-work-detail-edge-alignment-20261019">
 html body #work>#namo-work-detail{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
 </style>
+
+<style id="qmes-orders-purchase-single-right-edge-20261019">
+/* The list frame owns the outer right border; the last cells draw no second line. */
+html body :is(#orders,#purchase).module-page>.module-shell>.module-body>table :is(thead,tbody) tr>:last-child{border-right:0!important;box-shadow:none!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
