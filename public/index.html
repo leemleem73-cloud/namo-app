@@ -2378,6 +2378,33 @@ html body #equipment .eq-parity-filters input[data-filter-date]{width:160px!impo
 <style id="qmes-calendar-month-typography-20261019">
 html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup,.namo-unified-date-calendar) .nwm-head strong{font-family:Arial,"Malgun Gothic",sans-serif!important;font-size:13px!important;font-weight:700!important;font-style:normal!important;line-height:20px!important;letter-spacing:0!important;color:#24313f!important;white-space:nowrap!important;font-variant-numeric:lining-nums tabular-nums!important}
 </style>
+
+<style id="qmes-top-filter-text-unified-20261019">
+html body :is(#orders,#purchase,#inventory,#quality,#approval,#standard).module-page>.module-shell>.module-toolbar .filters :is(input,select),
+html body #work #namo-work-inquiry .nwi-grid :is(input,select),
+html body :is(#incoming,#process,#outgoing).module-page .inspection-premium.iqc-work-frame .ip-toolbar .ip-filter-row :is(input,select),
+html body #equipment.module-page .eq-page .eq-parity-filters :is(input,select),
+html body #lotTrace.module-page .lot-shell .lot-search-grid :is(input,select),
+html body #orders.module-page .module-shell .qof-period-trigger,
+html body #purchase.module-page .module-shell .pcal-trigger,
+html body #work #namo-work-inquiry .nwi-period-trigger,
+html body #inventory.module-page .module-shell .qif-period-trigger,
+html body #incoming.module-page .inspection-premium.iqc-work-frame .qic-period-trigger,
+html body #process.module-page .inspection-premium.iqc-work-frame .qpc-period-trigger,
+html body #outgoing.module-page .inspection-premium.iqc-work-frame .qoc-period-trigger,
+html body #orders.module-page .module-shell .qof-period-trigger>span:first-child,
+html body #purchase.module-page .module-shell .pcal-trigger>span:first-child,
+html body #work #namo-work-inquiry .nwi-period-trigger>span:first-child,
+html body #inventory.module-page .module-shell .qif-period-trigger>span:first-child,
+html body #incoming.module-page .inspection-premium.iqc-work-frame .qic-period-trigger>span:first-child,
+html body #process.module-page .inspection-premium.iqc-work-frame .qpc-period-trigger>span:first-child,
+html body #outgoing.module-page .inspection-premium.iqc-work-frame .qoc-period-trigger>span:first-child{font-family:Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;font-style:normal!important;letter-spacing:0!important;color:#294763!important;text-transform:none!important}
+html body :is(#orders,#purchase,#inventory,#quality,#approval,#standard).module-page>.module-shell>.module-toolbar .filters :is(input,select)::placeholder,
+html body #work #namo-work-inquiry .nwi-grid :is(input,select)::placeholder,
+html body :is(#incoming,#process,#outgoing).module-page .inspection-premium.iqc-work-frame .ip-toolbar .ip-filter-row :is(input,select)::placeholder,
+html body #equipment.module-page .eq-page .eq-parity-filters :is(input,select)::placeholder,
+html body #lotTrace.module-page .lot-shell .lot-search-grid :is(input,select)::placeholder{font-family:Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;font-style:normal!important;letter-spacing:0!important;color:#4b5563!important;opacity:1!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
