@@ -52,6 +52,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const recordPageSize = 10;
   const availableLots = Array.from(new Set((DB.batches || []).map((b) => b.no).filter(Boolean)));
+  const workOrderForLot = (lot) => { const doc=DB.woDocs?.[lot]||{}; const batch=(DB.batches||[]).find(b=>b.no===lot)||{}; const fields=doc.fields||{}; return { product:fields['제품명']||doc.product||doc.itemName||batch.itemName||batch.item||'', customer:fields['고객사']||doc.customer||batch.customer||'', date:doc.workDate||doc.productionDate||doc.startDate||batch.due||'', actual:fields['실적수량']||doc.productionActual||batch.done||'' }; };
   const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
   const selectedLot = DB.lots?.[form.lot];
   const rawSelectedProduct = selectedBatch?.itemName || selectedBatch?.item || selectedLot?.itemName || "";
@@ -212,7 +213,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const date = form.date;
       const lotNo = form.lot.trim();
-      const product = form.product.trim();
+      const product = workOrderForLot(lotNo).product || form.product.trim();
       const baseNo = editingId || nextInspectionNo(storeKey, date, records, "id");
       const inspector = String(form.inspector || "").trim();
       const newRows = pqcItems.map((check, idx) => {
@@ -261,7 +262,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     const lotNo = form.lot.trim();
     const baseNo = editingId || nextInspectionNo(storeKey, date, records, "id");
     const matchedBatch = (DB.batches || []).find((b) => b.no === lotNo);
-    const matchedProduct = matchedBatch?.itemName || matchedBatch?.item || "";
+    const matchedProduct = workOrderForLot(lotNo).product || matchedBatch?.itemName || matchedBatch?.item || "";
     const product = matchedProduct === "절연 슬러리" ? "" : matchedProduct;
     const inspector = String(form.inspector || "").trim();
     const newRows = oqcItems.map((check, idx) => {
@@ -495,7 +496,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
               <div className="qmes-pqc-basic-row">
                 <div><label>공정번호</label><input value={previewNo} readOnly /></div>
                 <div><label>검사일자</label><input type="date" value={form.date} readOnly title="작업지시 LOT 생산일자 자동 연동" /></div>
-                <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>{const lot=e.target.value;const matched=(DB.batches||[]).find((b)=>b.no===lot);const wo=DB.woDocs?.[lot]||{};const woDate=wo.productionDate||wo.workDate||wo.startDate||wo.date||matched?.due;setForm({...form,lot,product:matched?.itemName||matched?.item||wo.product||wo.itemName||form.product,date:woDate?String(woDate).slice(0,10):form.date});}} placeholder="LOT No. 입력" /></div>
+                <div><label>LOT No.</label><input value={form.lot} onChange={(e)=>{const lot=e.target.value;const matched=(DB.batches||[]).find((b)=>b.no===lot);const wo=DB.woDocs?.[lot]||{};const woDate=wo.productionDate||wo.workDate||wo.startDate||wo.date||matched?.due;setForm({...form,lot,product:workOrderForLot(lot).product||form.product,customer:workOrderForLot(lot).customer||form.customer,date:workOrderForLot(lot).date?String(workOrderForLot(lot).date).slice(0,10):form.date});}} placeholder="LOT No. 입력" /></div>
                 <div><label>제품명</label><input value={form.product} onChange={(e)=>setForm({...form,product:e.target.value})} placeholder="제품명 입력" /></div>
                 <div><label>검사자</label><input value={form.inspector || ""} onChange={(e)=>setForm({...form,inspector:e.target.value})} placeholder="검사자 이름 입력" /></div>
               </div>
