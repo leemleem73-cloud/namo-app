@@ -1,0 +1,38 @@
+/* QMES inventory Excel import: manual preview + explicit commit; never overwrites existing LOT. */
+(function(){'use strict';
+function init(){
+const root=document.querySelector('#inventory .namo-new-stock');if(!root||root.dataset.excelImport)return;
+root.dataset.excelImport='1';
+const header=root.querySelector('header > div:last-child');if(!header)return;
+const btn=document.createElement('button');btn.type='button';btn.textContent='엑셀 불러오기';btn.style.background='#1466ae';btn.style.color='white';header.prepend(btn);
+const input=document.createElement('input');input.type='file';input.accept='.xlsx,.xls,.csv';input.hidden=true;root.append(input);
+const dlg=document.createElement('dialog');dlg.className='qmes-excel-import';dlg.innerHTML='<h2>엑셀 재고 일괄 등록</h2><p>필수: 품목코드, 품목명, LOT NO, 현재고(kg), 보관위치. 구분은 원자재(RM), 부자재(PM), 중간배치(WIP), 완제품(FG)를 사용합니다.</p><p>기존 LOT·보관위치·품질상태가 같으면 등록을 건너뛰며, 원본 데이터는 덮어쓰지 않습니다.</p><div class="qmes-import-status" role="status"></div><div class="qmes-import-table" style="max-height:45vh;overflow:auto"></div><footer style="display:flex;justify-content:flex-end;gap:8px"><button type="button" data-close>취소</button><button type="button" data-confirm disabled>검토 후 신규 등록</button></footer>';root.append(dlg);
+const stat=dlg.querySelector('.qmes-import-status'),content=dlg.querySelector('.qmes-import-table'),commit=dlg.querySelector('[data-confirm]');let prepared=[],busy=false;
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clean=x=>String(x??'').trim();const key=r=>[r.itemCode,r.lotNo,r.locationCode,r.qualityStatus].join('|').toUpperCase();
+const normalizeHeader=x=>clean(x).toLowerCase().replace(/[\s()_\-./]/g,'');
+function cell(obj,names){for(const n of names){const x=obj[normalizeHeader(n)];if(x!==undefined)return x;}return '';}
+async function xlsxFile(file){
+if(!window.XLSX){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=()=>reject(Error('엑셀 읽기 모듈을 불러오지 못했습니다. CSV 파일을 사용하거나 네트워크 연결을 확인해 주세요.'));document.head.append(s);});}
+const book=window.XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false});const sheet=book.Sheets[book.SheetNames[0]];return window.XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false});
+}
+function csvRows(txt){const rows=[];let row=[],v='',quoted=false;for(let i=0;i<txt.length;i++){const c=txt[i];if(c==='"'){if(quoted&&txt[i+1]==='"'){v+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(v);v='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&txt[i+1]==='\n')i++;row.push(v);if(row.some(x=>x.trim()))rows.push(row);row=[];v='';}else v+=c;}row.push(v);if(row.some(x=>x.trim()))rows.push(row);const head=(rows.shift()||[]).map(normalizeHeader);return rows.map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]||''])));}
+function convert(obj){const o={};for(const [k,v] of Object.entries(obj))o[normalizeHeader(k)]=v;
+let c=clean(cell(o,['구분','category','재고구분'])).toUpperCase();const kinds={'원자재':'RM','원료':'RM','부자재':'PM','중간배치':'WIP','재공품':'WIP','완제품':'FG'};c=kinds[c]||c||'RM';
+let status=clean(cell(o,['품질상태','상태','qualityStatus'])).toUpperCase();const states={'사용가능':'AVAILABLE','합격':'AVAILABLE','수입검사대기':'IQC_PENDING','IQC 대기':'IQC_PENDING','OQC 대기':'OQC_PENDING','출하검사대기':'OQC_PENDING','보류':'HOLD','부적합':'NONCONFORM'};status=states[status]||status||'AVAILABLE';
+const amount=Number(clean(cell(o,['현재고(kg)','현재고','재고수량','실사수량','수량','quantity'])).replace(/,/g,''));
+return {category:c,itemCode:clean(cell(o,['품목코드','itemCode'])).toUpperCase(),itemName:clean(cell(o,['품목명','품목','원자재명','itemName'])),lotNo:clean(cell(o,['LOT NO','LOT','LOT번호','lotNo'])).toUpperCase(),locationCode:clean(cell(o,['보관위치','위치','구역','locationCode'])).toUpperCase(),qualityStatus:status,quantity:amount,unit:'kg'};}
+btn.onclick=()=>{input.value='';input.click();};dlg.querySelector('[data-close]').onclick=()=>{if(!busy)dlg.close();};
+input.onchange=async()=>{const file=input.files?.[0];if(!file)return;prepared=[];commit.disabled=true;stat.textContent='파일을 읽고 있습니다.';content.innerHTML='';dlg.showModal();try{const rows=/\.csv$/i.test(file.name)?csvRows(await file.text()):await xlsxFile(file);if(!rows.length)throw Error('첫 번째 시트에 재고 데이터가 없습니다.');
+const existing=await fetch('/api/inventory/stock',{credentials:'same-origin',cache:'no-store'}).then(async r=>{const j=await r.json();if(!r.ok||j.success===false)throw Error('현재고 조회 실패');return j.data||j;});
+const seen=new Set(existing.map(r=>[r.item_code,r.lot_no,r.location_code,r.quality_status].join('|').toUpperCase()));
+const inside=new Set();const valid=new Set(['RM','PM','WIP','FG']),statuses=new Set(['AVAILABLE','IQC_PENDING','OQC_PENDING','HOLD','NONCONFORM','RESERVED']);
+prepared=rows.map((x,i)=>{const r=convert(x),k=key(r);let err=!r.itemCode||!r.itemName||!r.lotNo||!r.locationCode||!Number.isFinite(r.quantity)||r.quantity<=0||!valid.has(r.category)||!statuses.has(r.qualityStatus)?'필수값·수량·구분 확인':seen.has(k)?'기존 재고 중복':inside.has(k)?'파일 내 중복':'';inside.add(k);return {...r,index:i+2,error:err};});
+const ready=prepared.filter(r=>!r.error);stat.textContent='총 '+prepared.length+'건 / 신규 등록 가능 '+ready.length+'건 / 중복·오류 '+(prepared.length-ready.length)+'건. 저장 전 확인해 주세요.';
+content.innerHTML='<table style="border-collapse:collapse;width:100%;font-size:12px"><thead><tr>'+['행','구분','품목코드','품목명','LOT','위치','수량(kg)','확인'].map(x=>'<th style="border:1px solid #ddd;padding:6px">'+x+'</th>').join('')+'</tr></thead><tbody>'+prepared.map(r=>'<tr>'+[r.index,r.category,r.itemCode,r.itemName,r.lotNo,r.locationCode,r.quantity,r.error||'등록 가능'].map(v=>'<td style="border:1px solid #ddd;padding:6px">'+esc(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';commit.disabled=!ready.length;
+}catch(e){stat.textContent='파일 분석 실패: '+e.message;}};
+commit.onclick=async()=>{if(busy)return;const rows=prepared.filter(x=>!x.error);if(!rows.length)return;if(!window.confirm('신규 재고 '+rows.length+'건을 실제 QMES 재고 원장에 입고 처리합니다. 실행할까요?'))return;busy=true;commit.disabled=true;dlg.querySelector('[data-close]').disabled=true;let done=0,failed=[];for(const r of rows){try{const payload={transactionType:'RECEIPT',...r,toLocation:r.locationCode,toStatus:r.qualityStatus,referenceNo:'EXCEL-IMPORT-'+Date.now()+'-'+r.index,reason:'엑셀 신규재고 등록'};const res=await fetch('/api/inventory/transactions',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const obj=await res.json();if(!res.ok||obj.success===false)throw Error(obj.message||'등록 실패');done++;}catch(e){failed.push(r.index+'행: '+e.message);}stat.textContent='등록 중 '+(done+failed.length)+' / '+rows.length+'건';}busy=false;dlg.querySelector('[data-close]').disabled=false;stat.textContent='등록 성공 '+done+'건, 실패 '+failed.length+'건. '+failed.slice(0,4).join(' / ');if(done)root.querySelector('#stockReload')?.click();};
+const style=document.createElement('style');style.textContent='#inventory .qmes-excel-import{width:min(980px,95vw);border:1px solid #bfd0e1;border-radius:10px;padding:22px;color:#243d59}#inventory .qmes-excel-import::backdrop{background:#182d4770}#inventory .qmes-excel-import h2{margin-top:0}#inventory .qmes-excel-import footer{margin-top:14px}';document.head.append(style);
+}
+let n=0;const timer=setInterval(()=>{init();if(document.querySelector('#inventory .namo-new-stock')?.dataset.excelImport||++n>60)clearInterval(timer);},500);
+})();
