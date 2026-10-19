@@ -3,3 +3,8 @@
 #equipment .eq-table-card{margin-top:0!important;padding-top:0!important;background:#fff!important}
 #equipment .eq-table-wrap{margin-top:0!important;padding-top:0!important;background:#fff!important}
 #equipment .eq-parity-summary + .eq-table-card{border-top:0!important}
+
+/* The strip is exposed from the eq-page background between summary and table. */
+#equipment .eq-page{background:#fff!important}
+#equipment .eq-parity-summary{background:#fff!important;margin-bottom:0!important;padding-bottom:6px!important}
+#equipment .eq-table-card,#equipment .eq-table-wrap{background:#fff!important;border-top:0!important}
