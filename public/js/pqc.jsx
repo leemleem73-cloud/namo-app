@@ -59,7 +59,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const selectedProduct = isOqc
     ? (rawSelectedProduct === "절연 슬러리" ? "" : rawSelectedProduct)
     : form.product;
-  const shipmentCustomer = String(form.customer || "").trim();
+  const shipmentCustomer = String(form.customer || (isOqc && selectedProduct === "NBA20HM05" ? "현대자동차" : "")).trim();
   const shipmentQty = Number(String(form.shipQty || "").replace(/,/g, ""));
   const shipmentInfoComplete = shipmentCustomer !== "" && Number.isFinite(shipmentQty) && shipmentQty > 0;
   const numberLabel = isOqc ? "출하번호" : "공정번호";
@@ -341,7 +341,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
     dbSave();
     setEditingId(null);
     setOqcValues(makeInitialOqcValues());
-    setForm({...form,customer:"",shipQty:"",destination:"",remarks:""});
+    setForm({...form,customer:isOqc && selectedProduct === "NBA20HM05" ? "현대자동차" : "",shipQty:"",destination:"",remarks:""});
     setTried(false);
     setShowRegisterModal(false);
     // 신규등록 직후 새 검사기록이 관리 목록 첫 페이지에 바로 보이도록 조회조건을 초기화한다.
@@ -364,7 +364,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
       value: "", value1: "", value2: "", value3: "",
       judge: r.judge || "합격",
       inspector: r.inspector || groupRows.find((x)=>x.inspector)?.inspector || "",
-      customer: r.customer || groupRows.find((x)=>x.customer)?.customer || DB.lots?.[r.lot]?.ship?.customer || "",
+      customer: r.customer || groupRows.find((x)=>x.customer)?.customer || DB.lots?.[r.lot]?.ship?.customer || (isOqc && r.product === "NBA20HM05" ? "현대자동차" : ""),
       shipQty: String(r.shipQty || groupRows.find((x)=>x.shipQty)?.shipQty || DB.lots?.[r.lot]?.ship?.qty || DB.lots?.[r.lot]?.qty || ""),
       destination: r.destination || groupRows.find((x)=>x.destination)?.destination || DB.lots?.[r.lot]?.ship?.destination || "",
       remarks: r.remarks || groupRows.find((x)=>x.remarks)?.remarks || ""
