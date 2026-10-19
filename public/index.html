@@ -2354,6 +2354,14 @@ html body #work>#namo-work-detail{box-sizing:border-box!important;width:100%!imp
 /* The list frame owns the outer right border; the last cells draw no second line. */
 html body :is(#orders,#purchase).module-page>.module-shell>.module-body>table :is(thead,tbody) tr>:last-child{border-right:0!important;box-shadow:none!important}
 </style>
+
+<style id="qmes-calendar-weekends-unified-20261019">
+html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) .nwm-days>span:nth-child(1),
+html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) .nwm-days>span:nth-child(7),
+html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) .nwm-days>.weekend{color:#e14d4d!important}
+html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) .nwm-days>.weekend.chosen{color:#c53939!important;background:#fee2e2!important;box-shadow:inset 0 0 0 1px #e8a5a5!important}
+html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) :is(.nwm-head,.nwm-days){box-sizing:border-box!important;width:100%!important;margin-left:0!important;margin-right:0!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -7399,19 +7407,19 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
 <script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261016-rightpane-only-3"></script>
-<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=1"></script>
-<script defer src="./js/qmes-orders-work-frame-20261016.js?v=1"></script>
+<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261019-calendar-fit"></script>
+<script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261016.js?v=2-simple"></script>
 <script defer src="./js/qmes-lot-work-frame-20261016.js?v=1"></script>
-<script defer src="./js/qmes-work-mini-calendar-20261016.js?v=1"></script>
+<script defer src="./js/qmes-work-mini-calendar-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-work-query-toggle-20261016.js?v=20261016-tooltip-2"></script>
-<script defer src="./js/qmes-inventory-work-frame-20261016.js?v=20261019-header6"></script>
-<script defer src="./js/qmes-incoming-work-frame-20261016.js?v=1"></script>
-<script defer src="./js/qmes-process-work-frame-20261016.js?v=20261019-blue-buttons6"></script>
-<script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=1"></script>
+<script defer src="./js/qmes-inventory-work-frame-20261016.js?v=20261019-calendar-fit"></script>
+<script defer src="./js/qmes-incoming-work-frame-20261016.js?v=20261019-calendar-fit"></script>
+<script defer src="./js/qmes-process-work-frame-20261016.js?v=20261019-calendar-fit"></script>
+<script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=2"></script>
 <script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=2"></script>
-<script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=10-header-parity-20261019"></script>
+<script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261019-calendar-fit"></script>
 <script id="qmes-number-heading-labels-20261019">
 (()=>{
 const scope=':is(#orders,#purchase,#work,#inventory,#incoming,#process,#outgoing,#equipment,#quality,#approval,#standard)';
