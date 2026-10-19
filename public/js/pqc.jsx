@@ -55,7 +55,7 @@ function InspectionTab({ docName, itemKeys, initial, lotOptions, idPrefix, idSta
   const workOrderForLot = (lot) => { const doc=DB.woDocs?.[lot]||{}; const batch=(DB.batches||[]).find(b=>b.no===lot)||{}; const fields=doc.fields||{}; return { product:fields['제품명']||doc.product||doc.itemName||batch.itemName||batch.item||'', customer:fields['고객사']||doc.customer||batch.customer||'', date:doc.workDate||doc.productionDate||doc.startDate||batch.due||'', actual:fields['실적수량']||doc.productionActual||batch.done||'' }; };
   const selectedBatch = (DB.batches || []).find((b) => b.no === form.lot);
   const selectedLot = DB.lots?.[form.lot];
-  const rawSelectedProduct = selectedBatch?.itemName || selectedBatch?.item || selectedLot?.itemName || "";
+  const rawSelectedProduct = workOrderForLot(form.lot).product || selectedBatch?.itemName || selectedBatch?.item || selectedLot?.itemName || "";
   const selectedProduct = isOqc
     ? (rawSelectedProduct === "절연 슬러리" ? "" : rawSelectedProduct)
     : form.product;
