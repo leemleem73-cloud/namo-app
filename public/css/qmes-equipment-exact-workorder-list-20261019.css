@@ -1,0 +1,25 @@
+/* 2026-10-19: equipment register LIST visual parity with work-order register. Equipment only. */
+#equipment .eq-page{background:#fff!important;border:1px solid #d9e2eb!important;border-radius:7px!important}
+#equipment .eq-parity-header{min-height:55px!important;padding:11px 15px!important}
+#equipment .eq-parity-header h2{font-size:16px!important}
+#equipment .eq-parity-filters{padding:9px 14px!important;min-height:45px!important;gap:10px 14px!important}
+#equipment .eq-parity-filters label{font-size:11px!important}
+#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{height:29px!important;font-size:11px!important}
+#equipment .eq-parity-summary{padding:7px 13px!important;min-height:39px!important;margin:0!important;gap:8px!important}
+#equipment .eq-parity-summary b{font-size:12px!important}
+#equipment .eq-table-card{margin:0!important;padding:0 12px 10px!important;width:100%!important;min-width:0!important}
+#equipment .eq-table-wrap{padding:0!important;margin:0!important;overflow-x:auto!important;max-width:100%!important;width:100%!important}
+#equipment .eq-table{table-layout:auto!important;width:max-content!important;min-width:100%!important;margin:0!important;border-collapse:collapse!important;font-size:11px!important}
+#equipment .eq-table th,#equipment .eq-table td{width:auto!important;min-width:0!important;max-width:none!important;height:38px!important;padding:6px 11px!important;text-align:center!important;font-size:11px!important;line-height:1.35!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;word-break:normal!important}
+#equipment .eq-table th{height:31px!important;background:#e6eef6!important;color:#28435e!important}
+#equipment .eq-table td.left{text-align:center!important}
+#equipment .eq-table td:nth-child(3){min-width:145px!important}
+#equipment .eq-table td:nth-child(5){min-width:165px!important}
+#equipment .eq-table td:nth-child(6){min-width:240px!important}
+#equipment .eq-table td:nth-child(7){min-width:255px!important}
+#equipment .eq-table td:nth-child(8){min-width:140px!important}
+#equipment .eq-table td:nth-child(12){min-width:145px!important}
+#equipment .eq-table .eq-wo-action{white-space:nowrap!important}
+#equipment .eq-table .eq-wo-action button{font-size:10px!important;padding:5px 8px!important;margin:0 2px!important}
+#equipment .eq-table-wrap::-webkit-scrollbar{height:10px}
+#equipment .eq-table-wrap::-webkit-scrollbar-thumb{background:#b2c1d0;border-radius:8px}
