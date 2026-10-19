@@ -2545,6 +2545,63 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
   }finally{if(client)client.release();}
 });
 
+
+// Update an existing OQC inspection group atomically; never create or replace unrelated rows.
+app.get('/api/qmes-sync/oqc/save-detail',requireLogin,(req,res)=>ok(res,{operation:'oqc-save-detail',version:'20261019-v1'}));
+app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
+  const targets=req.body?.targets,fields=req.body?.fields;
+  const validDate=v=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(v||''))return false;const d=new Date(v+'T12:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===v;};
+  const allowed=['date','customer','product','lot','inspector','remarks'];
+  if(!Array.isArray(targets)||!targets.length||targets.length>16||!fields||!validDate(fields.date)||!txt(fields.lot)||!txt(fields.inspector)||
+    allowed.some(k=>fields[k]!=null&&(typeof fields[k]!=='string'||fields[k].length>2000)))
+    return fail(res,400,'검사일자, LOT, 검사자와 검사 항목을 확인해 주세요.');
+  const clean={};for(const key of allowed)if(Object.prototype.hasOwnProperty.call(fields,key))clean[key]=fields[key];
+  const signatures=new Set();
+  for(const t of targets){
+    const signature=txt(t?.recordKey)+'|'+txt(t?.rowId);
+    if(!txt(t?.recordKey)||!txt(t?.rowId)||!t.expected||!t.patch||signatures.has(signature))return fail(res,400,'검사 원본 식별자를 확인해 주세요.');
+    signatures.add(signature);
+    if(t.patch.measurements!==undefined&&(!Array.isArray(t.patch.measurements)||t.patch.measurements.length>3||t.patch.measurements.some(v=>typeof v!=='string'||v.length>100)))
+      return fail(res,400,'측정값을 확인해 주세요.');
+    if(t.patch.judge!==undefined&&!['검토필요','대기','합격','불합격'].includes(t.patch.judge))return fail(res,400,'검사 판정을 확인해 주세요.');
+  }
+  const stable=v=>v===null||typeof v!=='object'?JSON.stringify(v):Array.isArray(v)?'['+v.map(stable).join(',')+']':'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
+  let client,committed=false;
+  try{
+    client=await pool.connect();await client.query('BEGIN');
+    await client.query("SET LOCAL lock_timeout = '5s'");await client.query("SET LOCAL statement_timeout = '10s'");
+    const keys=[...new Set(targets.map(t=>txt(t.recordKey)))].sort();
+    const before=await client.query("SELECT record_key,payload FROM qmes_sync_records WHERE record_type='oqc' AND record_key=ANY($1::text[]) ORDER BY record_key FOR UPDATE",[keys]);
+    if(before.rows.length!==keys.length)throw Object.assign(Error('원본 기록이 변경되었습니다. 목록에서 다시 열어 주세요.'),{status:409});
+    const auditBefore=[],auditAfter=[];
+    for(const record of before.rows){
+      const payload=jsonObj(record.payload);if(payload.deleted||!Array.isArray(payload.rows))throw Object.assign(Error('원본 기록을 확인해 주세요.'),{status:409});
+      const rows=payload.rows.slice();
+      for(const target of targets.filter(t=>txt(t.recordKey)===String(record.record_key))){
+        const matches=rows.map((r,i)=>String(r.id??'')===txt(target.rowId)?i:-1).filter(i=>i>=0);
+        if(matches.length!==1||stable(rows[matches[0]])!==stable(target.expected))throw Object.assign(Error('다른 화면에서 이 기록이 변경되었습니다. 다시 열어 주세요.'),{status:409});
+        const index=matches[0],old=rows[index],patch={};
+        if(target.patch.measurements!==undefined){
+          const values=target.patch.measurements;patch.measurements=values;
+          patch.value=values.join(' / ');
+          patch.average=values.length===3&&values.every(v=>v.trim()!==''&&Number.isFinite(Number(v)))?values.reduce((sum,v)=>sum+Number(v),0)/3:null;
+        }
+        if(target.patch.judge!==undefined)patch.judge=target.patch.judge;
+        rows[index]={...old,...clean,...patch};
+        auditBefore.push({recordKey:record.record_key,row:old});auditAfter.push({recordKey:record.record_key,row:rows[index]});
+      }
+      await client.query("UPDATE qmes_sync_records SET payload=$2::jsonb,updated_by=$3,updated_at=NOW() WHERE record_type='oqc' AND record_key=$1",
+        [record.record_key,JSON.stringify({...payload,rows}),txt(req.session.user.name)]);
+    }
+    await client.query('COMMIT');committed=true;
+    await auditLog(req,'UPDATE','qmes_sync_records','oqc:detail',{rows:auditBefore},{rows:auditAfter}).catch(e=>console.warn('OQC edit audit:',e.message));
+    return ok(res,{updated:targets.length},'출하검사 수정 저장 완료');
+  }catch(error){
+    if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
+    return fail(res,error.status||500,error.status?error.message:'출하검사 저장에 실패했습니다. 입력 내용을 유지합니다.');
+  }finally{if(client)client.release();}
+});
+
 // One atomic request for selected IQC/PQC/OQC records.
 app.get('/api/qmes/inspections/:kind/delete-selected',requireLogin,(req,res)=>{
   if(!['iqc','pqc','oqc'].includes(req.params.kind))return fail(res,400,'지원하지 않는 검사 유형입니다.');
