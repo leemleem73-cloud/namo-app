@@ -332,6 +332,13 @@ draw=function(){
  html body #ncr .ncr-equipment-card .ncr-row-actions .ncr-btn{height:26px;min-width:0;padding:0 7px;font-size:11px;border-radius:4px;background:#f5f9ff;color:#17446f;border:1px solid #cbd8e5}
  html body #ncr .ncr-equipment-card>.ncr-message:empty{display:none}
  html body #ncr .ncr-equipment-card>.ncr-pagination{padding:14px 16px 0!important}
+ html body #ncr .ncr-equipment-card{border:1px solid #d2dfed!important;box-shadow:0 8px 24px rgba(24,51,83,.075)!important}
+ html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn,html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn.primary{background:#fff!important;color:#16446c!important;border:1px solid #cfdfef!important;box-shadow:none!important;font-size:12px!important;font-weight:700!important;font-family:Arial,'Malgun Gothic',sans-serif!important;height:36px!important;padding:0 15px!important;border-radius:5px!important}
+ html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap{border:0!important;outline:0!important;box-shadow:none!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap table{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap th,html body #ncr .ncr-equipment-card .ncr-table-wrap td{border:1px solid #d5dce5!important;outline:0!important;box-shadow:none!important}
+
  `;
  document.head.appendChild(css);
 })();
