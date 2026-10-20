@@ -2545,6 +2545,10 @@ html body #process .ip-table>thead>tr>th:nth-child(6),html body #process .ip-tab
 <style id="qmes-outgoing-list-all-check-items-20261020">
 html body #outgoing .ip-table>tbody>tr.data-row>td:nth-child(6){white-space:normal!important;text-overflow:clip!important;overflow:visible!important;word-break:keep-all!important;overflow-wrap:anywhere;line-height:1.35!important;padding:4px 6px!important}
 </style>
+<style id="qmes-four-register-white-header-buttons-20261020">
+html body :is(#incoming,#process,#outgoing) .iqc-register-header .iqc-header-tools>.btn,html body #work .nwi-header .table-tools>.btn{background:#fff!important;color:#16446c!important;border:1px solid #cfdfef!important;box-shadow:none!important;font-size:12px!important;font-weight:700!important;font-family:Arial,'Malgun Gothic',sans-serif!important;height:36px!important;padding:0 15px!important;border-radius:5px!important}
+html body :is(#incoming,#process,#outgoing) .iqc-register-header .iqc-header-tools>.btn:hover,html body #work .nwi-header .table-tools>.btn:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
+</style>
 <style id="qmes-incoming-bottom-selection-dock-20261020">
 html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
 html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
@@ -3684,7 +3688,7 @@ function incomingWorkOrderFrame(cols,id='incoming'){
   const process=id==='process',outgoing=id==='outgoing',name=process?'공정검사':outgoing?'출하검사':'수입검사';
   const field=(name,key)=>`<label class="ip-filter"><span>${name}</span><input class="input" data-iqc-filter="${key}" placeholder="전체"></label>`;
   return `<div class="inspection-premium iqc-work-frame"><div class="ip-panel">
-    <div class="iqc-register-header"><strong>${name} 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 ${name} 등록</button></div></div>
+    <div class="iqc-register-header"><strong>${name} 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn export-btn" type="button">엑셀 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 ${name} 등록</button></div></div>
     <div class="ip-toolbar">
       <div class="ip-filter-row">
         ${process?field('작업지시번호','workOrder')+field('제품명','product')+field('생산 LOT','lot'):outgoing?field('고객사','customer')+field('제품명','product')+field('완제품 LOT','lot'):field('공급업체','supplier')+field('품목명','item')+field('원료 LOT','lot')}
@@ -4963,7 +4967,7 @@ function buildModule(id){
   if(id==='work'){
     section.innerHTML=`<div class="module-shell">
       <div class="nwi-header"><div class="nwi-title"><strong>작업지시서 등록 및 조회</strong></div>
-      <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">CSV 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
+      <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">엑셀 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th class="wo-select-col"></th><th>No.</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
     wireModule(section,id);window.namoWorkInquiryInit?.();renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
