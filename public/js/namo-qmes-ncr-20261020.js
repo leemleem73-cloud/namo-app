@@ -188,7 +188,10 @@ function printReport(r){
  '<tr class="medium"><th class="side">종합 판정</th><td class="detail" colspan="3">'+val(done?(d.verification_result||'검증 완료'):'개선조치 진행 중')+'</td></tr>'+
  '<tr class="summary"><th class="side">특이사항</th><td class="detail" colspan="3">'+val(d.related_lots?('관련 LOT: '+d.related_lots):'추가 특이사항 없음')+'</td></tr>'+
  '</tbody></table><footer class="foot"><span>미리보기 · '+val(date(new Date().toISOString()))+'</span><span>(주)나모케미칼 품질부</span><span>QMES ELECTRONIC RECORD</span></footer><div class="page-number">Rev. 0</div></main><div class="print-controls" style="position:fixed;right:20px;top:16px;display:flex;gap:8px"><button onclick="window.print()" style="padding:9px 20px;background:#1768ad;color:white;border:0;border-radius:5px;cursor:pointer">인쇄</button><button onclick="window.close()" style="padding:9px 16px;border:1px solid #cbd5e1;background:white;border-radius:5px;cursor:pointer">닫기</button></div><style>@media print{.print-controls{display:none!important}}</style></body></html>';
- var w=window.open('','_blank');if(!w){notice('팝업 허용 후 다시 인쇄해 주세요.');return;}w.document.write(html);w.document.close();w.addEventListener('load',function(){w.focus();w.print();},{once:true});
+ var frame=document.getElementById('ncr-print-frame');
+ if(!frame){frame=document.createElement('iframe');frame.id='ncr-print-frame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-10000px;top:0';document.body.appendChild(frame);}
+ frame.onload=function(){try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){notice('인쇄 화면을 열지 못했습니다. 다시 시도해 주세요.');}};
+ frame.srcdoc=html;
 }
 
 /* Work-order parity enhancements, scoped only to NCR. */
