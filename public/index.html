@@ -2540,17 +2540,17 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 </style>
 
 <style id="qmes-incoming-bottom-selection-dock-20261020">
-html body #incoming .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
-html body #incoming .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
-html body #incoming .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
-html body #incoming .iqc-dock-count{color:#176fba;font-size:15px;font-weight:800}
-html body #incoming .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-html body #incoming .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
-html body #incoming .iqc-selection-dock .btn:hover{background:#dceafb!important}
-html body #incoming .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
+html body :is(#incoming,#process,#outgoing) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
+html body :is(#incoming,#process,#outgoing) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+html body :is(#incoming,#process,#outgoing) .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
+html body :is(#incoming,#process,#outgoing) .iqc-dock-count{color:#176fba;font-size:15px;font-weight:800}
+html body :is(#incoming,#process,#outgoing) .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+html body :is(#incoming,#process,#outgoing) .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
+html body :is(#incoming,#process,#outgoing) .iqc-selection-dock .btn:hover{background:#dceafb!important}
+html body :is(#incoming,#process,#outgoing) .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
 
-@media(prefers-reduced-motion:reduce){html body #incoming .iqc-selection-dock{transition:none!important}}
-@media(max-width:700px){html body #incoming .iqc-selection-dock{padding:10px;gap:10px}html body #incoming .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
+@media(prefers-reduced-motion:reduce){html body :is(#incoming,#process,#outgoing) .iqc-selection-dock{transition:none!important}}
+@media(max-width:700px){html body :is(#incoming,#process,#outgoing) .iqc-selection-dock{padding:10px;gap:10px}html body :is(#incoming,#process,#outgoing) .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
 </style>
 </head>
 <body>
@@ -4378,7 +4378,7 @@ function wireIncomingPageRows(section){
 function qmesIncomingSelectionDock(section,buttons,count){
  let dock=section.querySelector('.iqc-selection-dock');
  if(!dock){
-  dock=document.createElement('div');dock.className='iqc-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','수입검사 선택 항목 작업');
+  dock=document.createElement('div');dock.className='iqc-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label',({incoming:'수입검사',process:'공정검사',outgoing:'출하검사'}[section.id]||'검사')+' 선택 항목 작업');
   const summary=document.createElement('div');summary.className='iqc-dock-summary';summary.setAttribute('aria-live','polite');
   const number=document.createElement('strong');number.className='iqc-dock-count';const text=document.createElement('span');text.textContent='건 선택됨';summary.append(number,text);
   const actions=document.createElement('div');actions.className='iqc-dock-actions';dock.append(summary,actions);section.append(dock);
@@ -5393,6 +5393,7 @@ function wireProcessInquiry(section,id='process'){
   function update(){
     const selected=chosen(),matches=matching().filter(row=>!row.querySelector('.iqc-select-row')?.disabled),checked=matches.filter(row=>row.querySelector('.iqc-select-row:checked')).length;
     for(const [button,title] of [[print,'선택 인쇄'],[mail,'선택 메일 전송'],[remove,'선택 삭제']]){button.hidden=!selected.length;button.disabled=!selected.length||Boolean(section._inspectionDeleting);button.textContent=title+' ('+selected.length+')';button.style.setProperty('display',selected.length?'inline-flex':'none','important');}
+    qmesIncomingSelectionDock(section,[print,mail,remove],selected.length);
     head.checked=!!matches.length&&checked===matches.length;head.indeterminate=checked>0&&checked<matches.length;
   }
   function render(){
