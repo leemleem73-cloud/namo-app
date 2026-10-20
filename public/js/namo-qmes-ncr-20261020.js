@@ -18,6 +18,52 @@ function field(label,name,type,value,required,wide){
  return '<label class="'+(wide?'ncr-wide':'')+'" for="'+id+'">'+label+input+'</label>';
 }
 function selectOptions(values,current){return values.map(function(p){return '<option value="'+esc(p[0])+'"'+(p[0]===current?' selected':'')+'>'+esc(p[1])+'</option>';}).join('');}
+
+/* NCR registration layout mirrors the work-order editor while retaining NCR fields and save logic. */
+function decorateNcrForm(edit,record){
+ if(!document.getElementById('ncr-workorder-form-style')){
+  var st=document.createElement('style');st.id='ncr-workorder-form-style';
+  st.textContent='#ncr .ncr-editor-top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid #d9e3ed;font-weight:700;color:#163d60}#ncr .ncr-editor-top .ncr-btn{padding:6px 10px}#ncr .ncr-editor-shell{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:550px;background:#fff}#ncr .ncr-editor-side{border-right:1px solid #d7e1eb;min-width:0}#ncr .ncr-editor-side-title{padding:12px;font-weight:750;font-size:12px;border-bottom:1px solid #e0e8f0}#ncr .ncr-editor-side input,#ncr .ncr-editor-side select{display:block;width:calc(100% - 16px);margin:7px 8px;height:32px;border:1px solid #cbd8e6;border-radius:4px;padding:0 9px;font-size:12px;background:#fff}#ncr .ncr-editor-side-items{max-height:660px;overflow:auto}#ncr .ncr-editor-item{display:block;width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid #e2e8f0;padding:12px 10px;color:#183b59;cursor:pointer}#ncr .ncr-editor-item:hover,#ncr .ncr-editor-item.active{background:#edf5ff}#ncr .ncr-editor-item strong{display:block;font-size:12px}#ncr .ncr-editor-item small{display:block;color:#708399;font-size:10px;margin-top:4px}#ncr .ncr-editor-main{min-width:0;padding:0 12px 20px}#ncr .ncr-editor-toolbar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce5ee;padding:11px 0;margin-bottom:12px;gap:10px}#ncr .ncr-editor-toolbar strong{font-size:13px;color:#143b61}#ncr .ncr-editor-toolbar .ncr-btn{padding:6px 12px}#ncr .ncr-editor-main .ncr-form{margin:0!important;border:0!important;padding:0!important}#ncr .ncr-editor-main .ncr-form>h3,#ncr .ncr-editor-main .ncr-form>.ncr-grid{display:none!important}#ncr .ncr-section{margin:12px 0 16px;border:1px solid #d9e3ee;border-radius:5px;overflow:hidden}#ncr .ncr-section-title{background:#eaf2f9;padding:12px 14px;font-size:13px;font-weight:750;color:#1a476b}#ncr .ncr-section-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:15px}#ncr .ncr-section-grid label{min-width:0}#ncr .ncr-section-grid label.ncr-wide{grid-column:1/-1}#ncr .ncr-section-grid textarea{min-height:78px}#ncr .ncr-editor-main .ncr-actions{margin-top:10px!important}#ncr .ncr-editor-main .ncr-message{padding:0 12px}@media(max-width:850px){#ncr .ncr-editor-shell{grid-template-columns:1fr}#ncr .ncr-editor-side{display:none}#ncr .ncr-section-grid{grid-template-columns:1fr}}';
+  document.head.appendChild(st);
+ }
+ var form=root.querySelector('#ncr-form'),oldHead=root.querySelector('.ncr-head'),oldGrid=form.querySelector('.ncr-grid');
+ var top=document.createElement('div');top.className='ncr-editor-top';
+ top.innerHTML='<button type="button" class="ncr-btn" id="ncr-editor-back">← 목록으로</button><strong>'+(edit?'부적합보고서 상세 / 조치관리':'신규 부적합보고서 등록')+'</strong>';
+ var shell=document.createElement('div');shell.className='ncr-editor-shell';
+ var side=document.createElement('aside');side.className='ncr-editor-side';
+ side.innerHTML='<div class="ncr-editor-side-title">부적합보고서 목록 <span style="float:right;color:#8496aa">'+rows.length+'건</span></div><select id="ncr-editor-filter"><option value="">전체</option><option value="IQC">수입검사</option><option value="PQC">공정검사</option><option value="OQC">출하검사</option><option value="생산">생산</option><option value="고객">고객</option></select><input type="search" id="ncr-editor-search" placeholder="부적합보고서 검색"><div class="ncr-editor-side-items"></div>';
+ var main=document.createElement('div');main.className='ncr-editor-main';
+ var toolbar=document.createElement('div');toolbar.className='ncr-editor-toolbar';
+ toolbar.innerHTML='<strong>'+(edit?'부적합보고서 수정':'신규 부적합보고서 등록')+' <small style="font-weight:400;color:#91a1b2">내용을 직접 입력합니다.</small></strong><span><button type="button" class="ncr-btn" id="ncr-editor-list">목록</button> <button type="button" class="ncr-btn primary" id="ncr-editor-save">저장</button></span>';
+ main.appendChild(toolbar);main.appendChild(form);shell.append(side,main);
+ root.replaceChildren(top,shell);
+ var back=function(){view='list';render();};
+ root.querySelector('#ncr-editor-back').onclick=back;
+ root.querySelector('#ncr-editor-list').onclick=back;
+ root.querySelector('#ncr-editor-save').onclick=function(){if(form.requestSubmit)form.requestSubmit();else form.querySelector('#ncr-save').click();};
+ var groups=[
+ ['부적합 기본정보',['occurred_on','source','owner','product','lot','customer','due_on','status']],
+ ['부적합 발생 및 격리조치',['description','containment']],
+ ['원인분석 및 시정조치',['root_cause','corrective_action']],
+ ['효과 확인',['effectiveness']]
+ ];
+ groups.forEach(function(group){
+  var section=document.createElement('section');section.className='ncr-section';
+  var title=document.createElement('div');title.className='ncr-section-title';title.textContent=group[0];
+  var grid=document.createElement('div');grid.className='ncr-section-grid';
+  group[1].forEach(function(name){var el=oldGrid.querySelector('[name="'+name+'"]');if(el){var label=el.closest('label');if(label)grid.appendChild(label);}});
+  section.append(title,grid);form.insertBefore(section,form.querySelector('.ncr-message'));
+ });
+ var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
+ function refreshSide(){
+  var q=search.value.toLowerCase(),source=filter.value;
+  var items=rows.filter(function(item){return (!source||item.source===source)&&[item.report_no,item.product,item.lot,item.description].join(' ').toLowerCase().includes(q);});
+  list.innerHTML=items.map(function(item){return '<button type="button" class="ncr-editor-item'+(record&&String(record.id)===String(item.id)?' active':'')+'" data-id="'+esc(item.id)+'"><strong>'+esc(dateOnly(item.occurred_on))+'</strong><small>'+esc(item.report_no||'')+' · '+esc(item.product||'-')+'</small></button>';}).join('')||'<div style="padding:12px;font-size:12px;color:#8496aa">등록된 부적합보고서가 없습니다.</div>';
+  list.querySelectorAll('[data-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(item){return String(item.id)===btn.dataset.id;});view='edit';render();};});
+ }
+ search.oninput=refreshSide;filter.onchange=refreshSide;refreshSide();
+}
+
 function render(){
  if(view==='list')return renderList();
  var edit=view==='edit',r=edit?(selected||{}):{},status=edit?(r.status||'OPEN'):'OPEN';
@@ -37,6 +83,7 @@ function render(){
  field('완료예정일','due_on','date',dateOnly(r.due_on),false,false)+
  field('처리상태','status','select',selectOptions([['OPEN','발행'],['IN_PROGRESS','조치중'],['CLOSED','완료']],status),false,false)+
  '</div><div class="ncr-message" role="status"></div><div class="ncr-actions">'+(edit?'<button type="button" class="ncr-btn" id="ncr-print">인쇄</button>':'')+'<button type="button" class="ncr-btn" id="ncr-cancel">취소</button><button type="submit" class="ncr-btn primary" id="ncr-save">'+(edit?'조치사항 저장':'NCR 발행 및 저장')+'</button></div></form>';
+ decorateNcrForm(edit,r);
  if(edit){['occurred_on','source','product','lot','customer','description'].forEach(function(k){var el=root.querySelector('[name="'+k+'"]');if(el)el.disabled=true;});}
  root.querySelector('#ncr-back').onclick=root.querySelector('#ncr-cancel').onclick=function(){view='list';render();};
  if(edit)root.querySelector('#ncr-print').onclick=function(){printReport(r);};
