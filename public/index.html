@@ -3151,9 +3151,9 @@ function wireIncomingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,112,155,180,155,180,96,100,120,125];
-  const minimums=[86,92,90,100,90,100,76,76,90,100];
-  const storageKey='namo-iqc-column-widths-v1';
+  const defaults=[86,120,180,180,180,180,120,120,120,120];
+  const minimums=[86,100,110,110,110,110,100,100,100,100];
+  const storageKey='namo-iqc-column-widths-v2-equal';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3185,15 +3185,15 @@ function wireIncomingColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
-    effective[effective.length-1]=Math.min(effective[effective.length-1],145);
+    const equalGroups=[[1,6,7,8,9],[2,3,4,5]];
+    for(const indexes of equalGroups){
+      const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
+      indexes.forEach(i=>effective[i]=equal);
+    }
     const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
-    if(free>0&&effective.length>1){
-      const total=effective.slice(1,-1).reduce((sum,width)=>sum+width,0);
-      let assigned=0;
-      for(let j=1;j<effective.length-1;j++){
-        const extra=j===effective.length-2?free-assigned:Math.floor(free*effective[j]/total);
-        effective[j]+=extra;assigned+=extra;
-      }
+    if(free>0){
+      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
+      for(let j=1;j<effective.length;j++)effective[j]+=free*effective[j]/total;
     }
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
