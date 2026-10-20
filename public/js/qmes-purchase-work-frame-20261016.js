@@ -157,7 +157,7 @@ const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .qpf-grid{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 20px}
 #purchase.purchase-work-frame .qpf-field{flex:0 0 auto;gap:8px;margin:0}
 #purchase.purchase-work-frame .qpf-field>span{flex:0 0 auto;text-align:left;font-size:11.5px;line-height:30px;white-space:nowrap}
-#purchase.purchase-work-frame .qpf-field input,#purchase.purchase-work-frame .qpf-field select{width:144px!important;flex:0 0 144px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
+#purchase.purchase-work-frame .qpf-field input,#purchase.purchase-work-frame .qpf-field select{width:195px!important;flex:0 0 195px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
 #purchase.purchase-work-frame .qpf-count,#purchase.purchase-work-frame .qpf-total{display:none!important}
 #purchase.purchase-work-frame .qpf-actions:not(:has(.btn:not([hidden]))){display:none!important}
 #purchase.purchase-work-frame .qpf-actions{justify-content:flex-end!important}
@@ -173,8 +173,8 @@ const style=document.createElement('style');style.textContent=`
 #purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]::after{content:attr(data-work-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:block;padding:6px 10px;min-width:max-content;background:#fff;color:#25384a;border:1px solid #aebdca;border-radius:3px;box-shadow:0 2px 6px #192d4124;font:600 12px/18px Arial,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;z-index:20}
 #purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]:hover::after,#purchase.purchase-work-frame .qow-head-tools [data-work-tooltip]:focus-visible::after{opacity:1;visibility:visible}
 #purchase.purchase-work-frame .module-shell.qpp-list-folded>.module-body,#purchase.purchase-work-frame .module-shell.qpp-list-folded>.qpu-pager{display:none!important}
-#purchase.purchase-work-frame .qpf-field .pcal-root{width:208px!important;flex:0 0 208px!important}
-#purchase.purchase-work-frame .pcal-trigger{width:208px!important;height:30px!important;min-height:30px!important;padding:0 8px!important;border-radius:4px!important;font-size:12px!important;font-weight:600!important}
+#purchase.purchase-work-frame .qpf-field .pcal-root{width:195px!important;flex:0 0 195px!important}
+#purchase.purchase-work-frame .pcal-trigger{width:195px!important;height:30px!important;min-height:30px!important;padding:0 8px!important;border-radius:4px!important;font-size:12px!important;font-weight:600!important}
 #purchase.purchase-work-frame .qpp-period-value{white-space:nowrap}
 #purchase.purchase-work-frame .module-shell>.module-body table{min-width:1240px!important}
 #purchase.purchase-work-frame .module-shell>.module-body table th:last-child,#purchase.purchase-work-frame .module-shell>.module-body table td:last-child{width:190px!important;min-width:190px!important;padding:5px 8px!important}
