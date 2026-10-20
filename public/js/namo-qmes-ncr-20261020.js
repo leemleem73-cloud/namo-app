@@ -156,5 +156,58 @@ draw=function(){
 };
 render=function(){originalRender();};
 })();
+
+/* NCR-only layout parity with work order register. */
+(function(){
+var css=document.createElement('style');
+css.textContent='#ncr{padding:0!important}#ncr .ncr-head{margin:0!important;padding:15px 20px!important;background:#fff;border-radius:7px 7px 0 0!important}#ncr .ncr-head h1{border-left:3px solid #1385d8;padding-left:11px;font-size:18px!important;color:#143b61}#ncr .ncr-head p{display:none}#ncr .ncr-tools{margin:0!important;padding:12px 15px!important;border-radius:0!important;background:#f2f7fc!important}#ncr .ncr-tools label{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12px;white-space:nowrap}#ncr .ncr-tools input,#ncr .ncr-tools select{height:33px!important;min-width:105px;max-width:160px}#ncr .ncr-tools input[type=date]{min-width:140px}#ncr .ncr-table-wrap{margin:0 14px}#ncr .ncr-table-wrap th{background:#e8f0f8!important}#ncr .ncr-table-wrap tr:nth-child(odd) td{background:#f4f8fc}#ncr .ncr-list-head{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:10px 15px;font-size:13px;font-weight:700;color:#173b61}#ncr .ncr-tools[hidden]{display:none!important}#ncr .ncr-row-actions button:first-child{background:#e9f3ff;border-color:#bad5f4;color:#135b9a}#ncr .ncr-row-actions button:last-child{background:#fff7f5;border-color:#f0c5b9;color:#b42318}#ncr .ncr-pagination{padding:18px!important}#ncr .ncr-bulk{padding:8px 15px;margin:0!important;background:#fff}#ncr .ncr-head-actions{display:flex;gap:7px}#ncr .ncr-form{margin:12px 14px}';
+document.head.appendChild(css);
+var baseList=renderList,baseDraw=draw,expanded=true,filters={customer:'',product:'',lot:'',status:'',start:'',end:'',number:''};
+function filtered(){return rows.filter(function(r){
+ var d=dateOnly(r.occurred_on),has=function(v,q){return !q||String(v||'').toLowerCase().includes(q.trim().toLowerCase());};
+ return has(r.customer,filters.customer)&&has(r.product,filters.product)&&has(r.lot,filters.lot)&&
+ (!filters.status||r.status===filters.status)&&(!filters.start||d>=filters.start)&&
+ (!filters.end||d<=filters.end)&&has(r.report_no,filters.number);
+});}
+renderList=function(){
+ baseList();
+ var head=root.querySelector('.ncr-head'),newBtn=root.querySelector('#ncr-new'),actions=document.createElement('div');
+ actions.className='ncr-head-actions';newBtn.parentNode.insertBefore(actions,newBtn);
+ var csv=document.createElement('button');csv.type='button';csv.className='ncr-btn';csv.textContent='CSV 내보내기';actions.append(csv,newBtn);
+ csv.onclick=function(){
+  var data=[['NCR 번호','발생일자','구분','고객사','제품명','LOT 번호','부적합 내용','담당자','상태']].concat(filtered().map(function(r){return [r.report_no,dateOnly(r.occurred_on),r.source,r.customer,r.product,r.lot,r.description,r.owner,stateName(r.status)];}));
+  var csvText='\uFEFF'+data.map(function(row){return row.map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var url=URL.createObjectURL(new Blob([csvText],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');
+  a.href=url;a.download='NCR_reports.csv';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+ };
+ var tools=root.querySelector('.ncr-tools');
+ tools.innerHTML='<label>고객사 <input data-ncr-filter="customer" placeholder="전체"></label>'+
+ '<label>제품명 <input data-ncr-filter="product" placeholder="전체"></label>'+
+ '<label>생산 LOT <input data-ncr-filter="lot" placeholder="전체"></label>'+
+ '<label>진행상태 <select data-ncr-filter="status"><option value="">전체</option><option value="OPEN">발행</option><option value="IN_PROGRESS">조치중</option><option value="CLOSED">완료</option></select></label>'+
+ '<label>발생기간 <input type="date" data-ncr-filter="start" aria-label="시작일자"> ~ <input type="date" data-ncr-filter="end" aria-label="종료일자"></label>'+
+ '<label>NCR 번호 <input data-ncr-filter="number" placeholder="전체"></label>'+
+ '<button class="ncr-btn" id="ncr-clear" type="button">조건 지우기</button>'+
+ '<button class="ncr-btn" id="ncr-refresh" type="button" title="조회">⌕</button>'+
+ '<input id="ncr-search" type="hidden" value=""><select id="ncr-filter" hidden><option value="">전체</option></select><span id="ncr-count" hidden></span>';
+ tools.hidden=!expanded;
+ var bar=document.createElement('div');bar.className='ncr-list-head';
+ bar.innerHTML='<span>▸ 부적합보고서 현황</span><span><span id="ncr-total"></span> <button class="ncr-btn" id="ncr-toggle" type="button" title="조회 펼침 / 접기">⌃</button></span>';
+ tools.insertAdjacentElement('afterend',bar);
+ var toggle=root.querySelector('#ncr-toggle');toggle.textContent=expanded?'⌃':'⌄';
+ toggle.onclick=function(){expanded=!expanded;tools.hidden=!expanded;toggle.textContent=expanded?'⌃':'⌄';};
+ Object.keys(filters).forEach(function(k){var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value=filters[k];});
+ root.querySelector('#ncr-clear').onclick=function(){Object.keys(filters).forEach(function(k){filters[k]='';var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value='';});page=1;draw();};
+ root.querySelector('#ncr-refresh').onclick=function(){page=1;draw();load();};
+ tools.querySelectorAll('[data-ncr-filter]').forEach(function(el){el.onchange=function(){filters[el.dataset.ncrFilter]=el.value;page=1;draw();};});
+ draw();
+};
+draw=function(){
+ if(view!=='list')return;
+ var all=rows;try{rows=filtered();baseDraw();}finally{rows=all;}
+ var total=root.querySelector('#ncr-total');if(total)total.textContent='총 '+filtered().length+'건';
+};
+})();
+
 render();if(root.classList.contains('active'))load();nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
 })();
