@@ -118,7 +118,7 @@ function install(app){
   const id=Number(req.params.id),action=str(req.body?.action,20),u=req.session.user||{};
   if(!Number.isSafeInteger(id)||id<1||!['review','approve'].includes(action))return bad(res,400,'잘못된 결재 요청입니다.');
   const role=String(u.role||'').toLowerCase(),title=String(u.title||u.position||'');
-  const allowed=role==='admin'||role==='관리자'||['이사','상무','전무','부사장','대표이사','대표','사장','회장'].some(v=>title.includes(v));
+  const allowed=role==='admin'||role==='관리자'||['부장','이사','상무','전무','부사장','대표이사','대표','사장','회장'].some(v=>title.includes(v));
   if(!allowed)return bad(res,403,'검토 및 승인 권한은 이사 이상 또는 관리자에게 있습니다.');
   try{
    await schema();
