@@ -121,11 +121,11 @@ function decorateNcrForm(edit,record){
    for(var d=1;d<=cnt;d++){var val=dateText(new Date(y,m,d)),day=(off+d-1)%7;html+='<button type="button" data-day="'+val+'" class="'+(day===0||day===6?'weekend ':'')+(occurrence.value===val?'chosen':'')+'">'+d+'</button>';}
    pop.innerHTML='<div class="ncr-pc-head"><button type="button" data-shift="-12">«</button><button type="button" data-shift="-1">‹</button><strong>'+y+'.'+String(m+1).padStart(2,'0')+'</strong><button type="button" data-shift="1">›</button><button type="button" data-shift="12">»</button></div><div class="ncr-pc-days">'+html+'</div><div class="ncr-pc-hint">날짜를 선택하세요</div><div class="ncr-pc-foot"><button type="button" data-action="today">오늘</button><button type="button" data-action="clear">초기화</button><button type="button" data-action="close">닫기</button></div>';
    var rect=occurrence.getBoundingClientRect();
-   pop.style.setProperty('width',rect.width+'px','important');
-   pop.style.setProperty('min-width','0','important');
-   pop.style.setProperty('max-width',rect.width+'px','important');
+   pop.style.setProperty('width','220px','important');
+   pop.style.setProperty('min-width','220px','important');
+   pop.style.setProperty('max-width','220px','important');
    var height=pop.getBoundingClientRect().height;
-   pop.style.left=Math.max(5,Math.min(rect.left,window.innerWidth-rect.width-5))+'px';pop.style.top=(rect.bottom+height+6<window.innerHeight?rect.bottom+4:Math.max(5,rect.top-height-4))+'px';
+   pop.style.left=Math.max(5,Math.min(rect.left,window.innerWidth-225))+'px';pop.style.top=(rect.bottom+height+6<window.innerHeight?rect.bottom+4:Math.max(5,rect.top-height-4))+'px';
   }
   occurrence.addEventListener('click',function(){if(pop){closePop();return;}month=new Date((occurrence.value||today())+'T12:00:00');pop=document.createElement('div');pop.className='ncr-process-cal';document.body.appendChild(pop);drawPop();});
   document.addEventListener('click',function(e){if(!pop)return;var btn=e.target.closest&&e.target.closest('.ncr-process-cal button');if(btn){var shift=btn.getAttribute('data-shift'),day=btn.getAttribute('data-day'),action=btn.getAttribute('data-action');if(shift!==null){month=new Date(month.getFullYear(),month.getMonth()+Number(shift),1);drawPop();}else if(day)chooseDate(day);else if(action==='today')chooseDate(dateText(new Date()));else if(action==='clear')chooseDate('');else if(action==='close')closePop();return;}if(e.target!==occurrence&&!pop.contains(e.target))closePop();});
