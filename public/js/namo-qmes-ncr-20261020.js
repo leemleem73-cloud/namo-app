@@ -2,7 +2,7 @@
 'use strict';
 var root=document.getElementById('ncr'),nav=document.querySelector('.menu[data-page="ncr"]');
 if(!root||!nav)return;
-var rows=[],selected=null,view='list';
+var rows=[],selected=null,view='list',loadPromise=null,hasLoaded=false,loadError='';
 var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
 var dateOnly=function(v){return v?String(v).slice(0,10):'';};
 var today=function(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());};
@@ -193,10 +193,21 @@ async function request(path,options){
  if(!response.ok||!data.success)throw Error(data.message||'서버 요청에 실패했습니다.');
  return data.data;
 }
-async function load(){
- if(view!=='list')return;
- try{rows=await request('/api/qmes-ncr/reports');draw();notice('');}
- catch(e){notice(e.message);var tbody=root.querySelector('#ncr-rows');if(tbody)tbody.innerHTML='<tr><td colspan="10" class="ncr-empty">조회 실패: '+esc(e.message)+'</td></tr>';}
+function load(){
+ // Prefetch and menu navigation share one request; keep existing rows visible on refresh.
+ if(loadPromise)return loadPromise;
+ loadError='';
+ loadPromise=request('/api/qmes-ncr/reports').then(function(data){
+  rows=data;hasLoaded=true;
+  if(view==='list'){draw();notice('');}
+ }).catch(function(e){
+  loadError=e.message;
+  if(view==='list'){draw();notice(e.message);}
+ }).finally(function(){loadPromise=null;});
+ return loadPromise;
+}
+function warmNcrList(){
+ if(!hasLoaded&&window.__QMES_CURRENT_USER__&&document.getElementById('currentUser')?.dataset.qauthReady==='1')load();
 }
 async function loadNcrAttachments(id){var target=root.querySelector('#ncr-attachment-list');if(!target)return;try{var files=await request('/api/qmes-ncr/reports/'+id+'/attachments');target.replaceChildren();files.forEach(function(f){var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e2e8f0';var link=document.createElement('a');link.textContent=f.file_name+' ('+Math.ceil(f.file_size/1024)+'KB)';link.href='/api/qmes-ncr/attachments/'+f.id+'/download';link.style.color='#1768ad';row.appendChild(link);var del=document.createElement('button');del.type='button';del.className='ncr-btn';del.textContent='삭제';del.onclick=async function(){if(!confirm('첨부파일을 삭제하시겠습니까?'))return;try{await request('/api/qmes-ncr/attachments/'+f.id,{method:'DELETE'});loadNcrAttachments(id);}catch(e){notice(e.message);}};row.appendChild(del);target.appendChild(row);});}catch(e){target.textContent=e.message;}}
 async function save(event){
@@ -307,15 +318,9 @@ draw=function(){
  var pageRows=matched.slice((page-1)*pageSize,page*pageSize);
  root.querySelector('#ncr-count').textContent='총 '+matched.length+'건';
  root.querySelector('#ncr-rows').innerHTML=pageRows.length?pageRows.map(function(r,i){
-  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String(matched.length-((page-1)*pageSize+i))+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-print="'+r.id+'">인쇄</button><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button><button class="ncr-btn" data-ncr-delete="'+r.id+'">삭제</button></div></td></tr>';
- }).join(''):'<tr><td colspan="11" class="ncr-empty">등록된 부적합보고서가 없습니다.</td></tr>';
+  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String(matched.length-((page-1)*pageSize+i))+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button></div></td></tr>';
+ }).join(''):'<tr><td colspan="11" class="ncr-empty">'+(loadError?'조회 실패: '+esc(loadError):!hasLoaded?'조회 중입니다.':'등록된 부적합보고서가 없습니다.')+'</td></tr>';
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
- root.querySelectorAll('[data-ncr-print]').forEach(function(btn){btn.onclick=function(){var row=rows.find(function(r){return String(r.id)===btn.dataset.ncrPrint;});if(row)printReport(row);};});
- root.querySelectorAll('[data-ncr-delete]').forEach(function(btn){btn.onclick=async function(){
-  if(!window.confirm('해당 NCR 보고서를 삭제하시겠습니까?'))return;
-  try{await request('/api/qmes-ncr/reports/'+encodeURIComponent(btn.dataset.ncrDelete),{method:'DELETE'});selectedIds.delete(btn.dataset.ncrDelete);await load();}
-  catch(e){notice(e.message);}
- };});
  root.querySelectorAll('.ncr-row-select').forEach(function(el){el.onchange=function(){if(el.checked)selectedIds.add(el.value);else selectedIds.delete(el.value);updateBulk();};});
  var pager=root.querySelector('#ncr-pages');if(pager){
   pager.setAttribute('aria-label','부적합보고서 페이지');
@@ -453,7 +458,13 @@ draw=function(){
  document.head.appendChild(css);
 })();
 
-render();if(root.classList.contains('active'))load();nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
+render();if(root.classList.contains('active'))load();
+warmNcrList();
+var authBox=document.getElementById('currentUser');
+if(authBox)new MutationObserver(warmNcrList).observe(authBox,{attributes:true,attributeFilter:['data-qauth-ready']});
+nav.addEventListener('pointerenter',warmNcrList);
+nav.addEventListener('focusin',warmNcrList);
+nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
 })();
 /* Work inquiry date popup only. Preserve native date filters, row data and query handlers. */
 (()=>{'use strict';let popup=null,trigger=null,start='',end='',picking=false,month=null;
