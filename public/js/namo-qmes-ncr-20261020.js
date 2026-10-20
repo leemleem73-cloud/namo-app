@@ -349,6 +349,13 @@ draw=function(){
  html body #ncr .ncr-equipment-card .ncr-row-actions .ncr-btn{height:26px;min-width:0;padding:0 7px;font-size:11px;border-radius:4px;background:#f5f9ff;color:#17446f;border:1px solid #cbd8e5}
  html body #ncr .ncr-equipment-card>.ncr-message:empty{display:none}
  html body #ncr .ncr-equipment-card>.ncr-pagination{padding:14px 16px 0!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap th{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;color:#244260!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap td{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;color:#344054!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap tbody tr>td:nth-child(2){color:#222!important;font-weight:400!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap .ncr-link{font-family:inherit!important;font-size:12px!important;font-weight:700!important;color:#1565c0!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap .ncr-status{font-family:inherit!important;font-size:12px!important;font-weight:400!important;color:#344054!important}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap .ncr-row-actions .ncr-btn{height:24px!important;padding:0 8px!important;font-size:10px!important;font-weight:700!important;line-height:1!important}
+
  html body #ncr .ncr-equipment-card>.ncr-pagination{display:flex;align-items:center;justify-content:center;gap:4px!important}
  html body #ncr .ncr-equipment-card>.ncr-pagination button{box-sizing:border-box;min-width:24px!important;height:24px!important;padding:0 6px!important;border:1px solid #dbe3ec!important;border-radius:4px!important;background:#fff!important;color:#536177!important;font-size:12px!important;font-weight:700!important;cursor:pointer}
  html body #ncr .ncr-equipment-card>.ncr-pagination button:hover{background:#f2f7fd!important;border-color:#b8cbe2!important}
