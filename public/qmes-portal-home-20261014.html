@@ -335,7 +335,7 @@ svg{display:block}
        <button class="app" type="button" data-action="공정검사"><span class="tile t5"><span class="qmes-sidebar-glyph" aria-hidden="true">🧪</span></span><span class="title">공정검사</span></button>
        <button class="app" type="button" data-action="출하검사"><span class="tile t6"><span class="qmes-sidebar-glyph" aria-hidden="true">📋</span></span><span class="title">출하검사</span></button>
        <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><span class="qmes-sidebar-glyph" aria-hidden="true">🔎</span></span><span class="title">LOT 추적</span></button>
-       <button class="app" type="button" data-action="재고관리"><span class="tile t8"><span class="qmes-sidebar-glyph" aria-hidden="true">📦</span></span><span class="title">재고관리</span></button>
+
        <button class="app" type="button" data-action="설비관리"><span class="tile t9"><span class="qmes-sidebar-glyph" aria-hidden="true">⚙️</span></span><span class="title">설비관리</span></button>
        <button class="app" type="button" data-action="직원관리"><span class="tile t10"><span class="qmes-sidebar-glyph" aria-hidden="true">👥</span></span><span class="title">직원관리</span></button>
      </div>
@@ -360,7 +360,6 @@ svg{display:block}
   {name:'공정검사',hint:'공정 품질검사 · 판정',icon:'checklist'},
   {name:'출하검사',hint:'출하성적서 · 출하 승인',icon:'truck'},
   {name:'LOT 추적',hint:'원료 · 중간배치 · 제품 · 출하 LOT',icon:'scan'},
-  {name:'재고관리',hint:'원료 · 제품 · 현장 재고',icon:'box'},
   {name:'설비관리',hint:'설비 현황 · 점검 · 이력',icon:'settings'},
   {name:'직원관리',hint:'직원등록 현황 · 부서 관리',icon:'users'}
  ];
@@ -422,7 +421,7 @@ svg{display:block}
   }
   const routes={'종합현황':'dashboard','작업지시':'work','생산관리':'work',
     '수입검사':'incoming','공정검사':'process','출하검사':'outgoing','품질관리':'quality',
-    'LOT 추적':'lotTrace','재고관리':'inventory','설비관리':'equipment','직원관리':'adminEmployees'};
+    'LOT 추적':'lotTrace','설비관리':'equipment','직원관리':'adminEmployees'};
   if(name==='공지사항'||name==='나의 업무 현황'){
     window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'notify'},location.origin);
     return;
