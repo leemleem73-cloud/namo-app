@@ -160,7 +160,7 @@ render=function(){originalRender();};
 /* NCR-only layout parity with work order register. */
 (function(){
 var css=document.createElement('style');
-css.textContent='#ncr .ncr-list-actions{display:flex;align-items:center;gap:7px}#ncr .ncr-list-actions .ncr-btn{padding:6px 10px;font-size:12px}#ncr .ncr-list-actions #ncr-toggle{min-width:32px}#ncr{padding:0!important}#ncr .ncr-head{margin:0!important;padding:15px 20px!important;background:#fff;border-radius:7px 7px 0 0!important}#ncr .ncr-head h1{border-left:3px solid #1385d8;padding-left:11px;font-size:18px!important;color:#143b61}#ncr .ncr-head p{display:none}#ncr .ncr-tools{margin:0!important;padding:12px 15px!important;border-radius:0!important;background:#f2f7fc!important}#ncr .ncr-tools label{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12px;white-space:nowrap}#ncr .ncr-tools input,#ncr .ncr-tools select{height:33px!important;min-width:105px;max-width:160px}#ncr .ncr-tools input[type=date]{min-width:140px}#ncr .ncr-table-wrap{margin:0 14px}#ncr .ncr-table-wrap th{background:#e8f0f8!important}#ncr .ncr-table-wrap tr:nth-child(odd) td{background:#f4f8fc}#ncr .ncr-list-head{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:10px 15px;font-size:13px;font-weight:700;color:#173b61}#ncr .ncr-tools[hidden]{display:none!important}#ncr .ncr-row-actions button:first-child{background:#e9f3ff;border-color:#bad5f4;color:#135b9a}#ncr .ncr-row-actions button:last-child{background:#fff7f5;border-color:#f0c5b9;color:#b42318}#ncr .ncr-pagination{padding:18px!important}#ncr .ncr-bulk{padding:8px 15px;margin:0!important;background:#fff}#ncr .ncr-head-actions{display:flex;gap:7px}#ncr .ncr-form{margin:12px 14px}';
+css.textContent='#ncr .ncr-period-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:210px;height:33px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;padding:0 9px;color:#203b58;font-size:12px;font-weight:600;cursor:pointer}#ncr .ncr-period-trigger span:last-child{font-size:17px;color:#526e89}#ncr .ncr-tools input[type=hidden]{display:none}#ncr .ncr-list-actions{display:flex;align-items:center;gap:7px}#ncr .ncr-list-actions .ncr-btn{padding:6px 10px;font-size:12px}#ncr .ncr-list-actions #ncr-toggle{min-width:32px}#ncr{padding:0!important}#ncr .ncr-head{margin:0!important;padding:15px 20px!important;background:#fff;border-radius:7px 7px 0 0!important}#ncr .ncr-head h1{border-left:3px solid #1385d8;padding-left:11px;font-size:18px!important;color:#143b61}#ncr .ncr-head p{display:none}#ncr .ncr-tools{margin:0!important;padding:12px 15px!important;border-radius:0!important;background:#f2f7fc!important}#ncr .ncr-tools label{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12px;white-space:nowrap}#ncr .ncr-tools input,#ncr .ncr-tools select{height:33px!important;min-width:105px;max-width:160px}#ncr .ncr-tools input[type=date]{min-width:140px}#ncr .ncr-table-wrap{margin:0 14px}#ncr .ncr-table-wrap th{background:#e8f0f8!important}#ncr .ncr-table-wrap tr:nth-child(odd) td{background:#f4f8fc}#ncr .ncr-list-head{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:10px 15px;font-size:13px;font-weight:700;color:#173b61}#ncr .ncr-tools[hidden]{display:none!important}#ncr .ncr-row-actions button:first-child{background:#e9f3ff;border-color:#bad5f4;color:#135b9a}#ncr .ncr-row-actions button:last-child{background:#fff7f5;border-color:#f0c5b9;color:#b42318}#ncr .ncr-pagination{padding:18px!important}#ncr .ncr-bulk{padding:8px 15px;margin:0!important;background:#fff}#ncr .ncr-head-actions{display:flex;gap:7px}#ncr .ncr-form{margin:12px 14px}';
 document.head.appendChild(css);
 var baseList=renderList,baseDraw=draw,expanded=true,filters={customer:'',product:'',lot:'',status:'',start:'',end:'',number:''};
 function filtered(){return rows.filter(function(r){
@@ -185,7 +185,7 @@ renderList=function(){
  '<label>제품명 <input data-ncr-filter="product" placeholder="전체"></label>'+
  '<label>생산 LOT <input data-ncr-filter="lot" placeholder="전체"></label>'+
  '<label>진행상태 <select data-ncr-filter="status"><option value="">전체</option><option value="OPEN">발행</option><option value="IN_PROGRESS">조치중</option><option value="CLOSED">완료</option></select></label>'+
- '<label>발생기간 <input type="date" data-ncr-filter="start" aria-label="시작일자"> ~ <input type="date" data-ncr-filter="end" aria-label="종료일자"></label>'+
+ '<label>발생기간 <button type="button" class="ncr-period-trigger" aria-haspopup="dialog" aria-expanded="false"><span class="ncr-period-value">기간 선택</span><span aria-hidden="true">▦</span></button><input type="hidden" data-ncr-filter="start"><input type="hidden" data-ncr-filter="end"></label>'+
  '<label>NCR 번호 <input data-ncr-filter="number" placeholder="전체"></label>'+
  '<input id="ncr-search" type="hidden" value=""><select id="ncr-filter" hidden><option value="">전체</option></select><span id="ncr-count" hidden></span>';
  tools.hidden=false;
@@ -200,7 +200,8 @@ renderList=function(){
  toggle.onclick=function(){expanded=!expanded;syncCollapse();};
  syncCollapse();
  Object.keys(filters).forEach(function(k){var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value=filters[k];});
- root.querySelector('#ncr-clear').onclick=function(){Object.keys(filters).forEach(function(k){filters[k]='';var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value='';});page=1;draw();};
+ var periodValue=root.querySelector('.ncr-period-value');if(periodValue)periodValue.textContent=filters.start&&filters.end?filters.start+' ~ '+filters.end:'기간 선택';
+ root.querySelector('#ncr-clear').onclick=function(){Object.keys(filters).forEach(function(k){filters[k]='';var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value='';});var pv=root.querySelector('.ncr-period-value');if(pv)pv.textContent='기간 선택';page=1;draw();};
  root.querySelector('#ncr-refresh').onclick=function(){page=1;draw();load();};
  tools.querySelectorAll('[data-ncr-filter]').forEach(function(el){el.onchange=function(){filters[el.dataset.ncrFilter]=el.value;page=1;draw();};});
  draw();
@@ -215,3 +216,41 @@ draw=function(){
 
 render();if(root.classList.contains('active'))load();nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
 })();
+/* Work inquiry date popup only. Preserve native date filters, row data and query handlers. */
+(()=>{'use strict';let popup=null,trigger=null,start='',end='',picking=false,month=null;
+const root=()=>document.querySelector('#ncr');
+const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+function close(focus=false){popup?.remove();popup=null;trigger?.setAttribute('aria-expanded','false');if(focus)trigger?.focus();}
+function position(){if(!popup||!trigger)return;const r=trigger.getBoundingClientRect();popup.style.width=r.width+'px';const box=popup.getBoundingClientRect();popup.style.left=Math.max(6,Math.min(r.left,innerWidth-box.width-6))+'px';popup.style.top=(r.bottom+box.height+5<innerHeight?r.bottom+4:Math.max(6,r.top-box.height-4))+'px';}
+function draw(){const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<span aria-hidden="true"></span>';for(let n=1;n<=days;n++){const value=fmt(new Date(y,m,n)),weekday=(first+n-1)%7;cells+='<button type="button" data-day="'+value+'" class="'+(weekday===0||weekday===6?'weekend ':'')+(value===start||value===end?'chosen ':start&&end&&value>start&&value<end?'between ':'')+'" aria-label="'+value+'" aria-pressed="'+(value===start||value===end)+'"'+(value===today()?' aria-current="date"':'')+'>'+n+'</button>';}
+popup.innerHTML='<div class="nwm-head"><button type="button" data-month="-12" aria-label="이전 해">«</button><button type="button" data-month="-1" aria-label="이전 달">‹</button><strong>'+y+'.'+String(m+1).padStart(2,'0')+'</strong><button type="button" data-month="1" aria-label="다음 달">›</button><button type="button" data-month="12" aria-label="다음 해">»</button></div><div class="nwm-days">'+['일','월','화','수','목','금','토'].map(v=>'<span class="nwm-week">'+v+'</span>').join('')+cells+'</div><div class="nwm-hint" aria-live="polite">'+(picking?start+' ~ 종료일 선택':'시작일 → 종료일 순서로 선택')+'</div><div class="nwm-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button><button type="button" data-close>닫기</button></div>';position();}
+function apply(a,b){const panel=root();if(!panel)return;const from=panel.querySelector('[data-ncr-filter="start"]'),to=panel.querySelector('[data-ncr-filter="end"]'),value=panel.querySelector('.ncr-period-value');if(!from||!to||!value)return;from.value=a;to.value=b;value.textContent=a&&b?a+' ~ '+b:'기간 선택';from.dispatchEvent(new Event('change',{bubbles:true}));to.dispatchEvent(new Event('change',{bubbles:true}));close(true);}
+function open(button){if(popup){close(true);return;}const panel=root();if(!panel)return;trigger=button;start=panel.querySelector('[data-ncr-filter="start"]')?.value||'';end=panel.querySelector('[data-ncr-filter="end"]')?.value||'';picking=false;month=new Date((start||today())+'T12:00:00');month=new Date(month.getFullYear(),month.getMonth(),1);popup=document.createElement('div');popup.className='namo-ncr-mini-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','발생기간 선택');document.body.append(popup);trigger.setAttribute('aria-expanded','true');draw();popup.querySelector('[data-day="'+(start||today())+'"]')?.focus();}
+window.addEventListener('click',event=>{const button=event.target.closest?.('#ncr .ncr-period-trigger');if(button){event.preventDefault();event.stopImmediatePropagation();open(button);return;}const action=event.target.closest?.('.namo-ncr-mini-calendar button');if(!action||!popup)return;event.preventDefault();event.stopImmediatePropagation();if(action.hasAttribute('data-month')){month=new Date(month.getFullYear(),month.getMonth()+Number(action.dataset.month),1);draw();}else if(action.dataset.day){if(!picking){start=action.dataset.day;end='';picking=true;draw();}else{end=action.dataset.day;if(end<start)[start,end]=[end,start];apply(start,end);}}else if(action.hasAttribute('data-today'))apply(today(),today());else if(action.hasAttribute('data-clear'))apply('','');else close(true);},true);
+document.addEventListener('pointerdown',event=>{if(popup&&!event.target.closest('.namo-ncr-mini-calendar,#ncr .ncr-period-trigger'))close();},true);
+window.addEventListener('keydown',event=>{if(popup&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close(true);}},true);
+window.addEventListener('resize',position);window.addEventListener('scroll',()=>{if(popup)close();},true);
+const style=document.createElement('style');style.textContent=`
+.namo-ncr-mini-calendar{position:fixed;z-index:2147483000;box-sizing:border-box;width:220px;max-width:calc(100vw - 12px);padding:8px;background:#fff;border:1px solid #b8c4d0;border-radius:3px;box-shadow:0 4px 14px #0002;color:#344254;font:12px Arial,"Malgun Gothic",sans-serif}
+.namo-ncr-mini-calendar *{box-sizing:border-box}
+.namo-ncr-mini-calendar button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:2px;padding:0;min-width:0;box-shadow:none}
+.namo-ncr-mini-calendar button:focus-visible{outline:2px solid #499cef;outline-offset:-2px}
+.namo-ncr-mini-calendar .nwm-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}
+.namo-ncr-mini-calendar .nwm-head strong{font-size:13px;color:#172b40}
+.namo-ncr-mini-calendar .nwm-head button{width:24px;height:25px;font-size:18px;color:#83909c}
+.namo-ncr-mini-calendar .nwm-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}
+.namo-ncr-mini-calendar .nwm-days>*{height:25px;line-height:25px;text-align:center;font-size:11px}
+.namo-ncr-mini-calendar .nwm-week{color:#89939e;font-weight:400}
+.namo-ncr-mini-calendar .weekend{color:#e14d4d}
+.namo-ncr-mini-calendar .nwm-days button:hover{background:#e4f0ff}
+.namo-ncr-mini-calendar .nwm-days .between{background:#edf5ff}
+.namo-ncr-mini-calendar .nwm-days .chosen{background:#2689ef;color:#fff}
+.namo-ncr-mini-calendar .nwm-days [aria-current="date"]:not(.chosen){font-weight:700;box-shadow:inset 0 0 0 1px #8cbcf0}
+.namo-ncr-mini-calendar .nwm-hint{font-size:10px;min-height:24px;padding-top:7px;color:#61768b;text-align:center}
+.namo-ncr-mini-calendar .nwm-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}
+.namo-ncr-mini-calendar .nwm-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}
+.namo-ncr-mini-calendar .nwm-foot [data-close]{margin-left:auto}
+`;document.head.append(style);
+})();
+
