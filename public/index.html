@@ -4382,7 +4382,7 @@ function qmesIncomingSelectionDock(section,buttons,count){
   const summary=document.createElement('div');summary.className='iqc-dock-summary';summary.setAttribute('aria-live','polite');
   const number=document.createElement('strong');number.className='iqc-dock-count';const text=document.createElement('span');text.textContent='건 선택됨';summary.append(number,text);
   const actions=document.createElement('div');actions.className='iqc-dock-actions';dock.append(summary,actions);section.append(dock);
-  const align=()=>{const table=section.querySelector('.ip-table-wrap'),bounds=(table||section).getBoundingClientRect();if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,window.innerWidth-bounds.right)+'px';}};
+  const align=()=>{const card=section.querySelector('.iqc-work-frame,.inspection-premium,.module-shell'),bounds=(card||section).getBoundingClientRect();if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,window.innerWidth-bounds.right)+'px';}};
   section._iqcDockAlign=align;
   window.addEventListener('resize',align);
   const observer=new ResizeObserver(align);observer.observe(section);
