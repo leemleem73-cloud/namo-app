@@ -2539,6 +2539,9 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
 </style>
 
+<style id="qmes-process-list-hide-process-name-20261020">
+html body #process .ip-table>thead>tr>th:nth-child(6),html body #process .ip-table>tbody>tr.data-row>td:nth-child(6),html body #process .ip-table>colgroup>col:nth-child(6){display:none!important}
+</style>
 <style id="qmes-incoming-bottom-selection-dock-20261020">
 html body :is(#incoming,#process,#outgoing,#work) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
 html body :is(#incoming,#process,#outgoing,#work) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
@@ -3299,9 +3302,9 @@ function wireProcessColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,120,180,180,180,120,180,120,120,120,120];
-  const minimums=[86,100,110,110,110,100,110,100,100,100,100];
-  const storageKey='namo-process-column-widths-v3-process-name';
+  const defaults=[86,120,180,180,180,0,180,120,120,120,120];
+  const minimums=[86,100,110,110,110,0,110,100,100,100,100];
+  const storageKey='namo-process-column-widths-v4-list-no-process-name';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3332,8 +3335,8 @@ function wireProcessColumnResize(section){
     widths[0]=86; // Keep NO narrow in every inspection list.
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
-    const effective=widths.slice();
-    for(const indexes of [[1,5,7,8,9,10],[2,3,4,6]]){
+    const effective=widths.slice();effective[5]=0;
+    for(const indexes of [[1,7,8,9,10],[2,3,4,6]]){
       const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
       indexes.forEach(i=>effective[i]=equal);
     }
