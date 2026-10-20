@@ -2750,7 +2750,7 @@ html body :is(#incoming,#process,#outgoing,#work) .iqc-selection-dock .btn:disab
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261020-bottom-actions"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261020-page-selection"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -3690,7 +3690,7 @@ function incomingWorkOrderFrame(cols,id='incoming'){
       <div class="iqc-query-actions"><span class="iqc-query-count" aria-live="polite">조회 0건</span><div class="ip-actions"><button class="btn iqc-bulk-delete" type="button" disabled hidden>선택 삭제 (0)</button><button class="btn iqc-query-clear" type="button">조건 지우기</button><button class="btn primary iqc-query-search" type="button">조회</button></div></div>
     </div>
     <div class="iqc-list-head"><span>▸ ${name} 현황</span><span class="iqc-list-total">총 0건</span></div>
-    <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th><label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="조회된 검사 전체 선택"><span>No.</span></label></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
+    <div class="ip-table-wrap"><table class="ip-table"><thead><tr><th><label class="iqc-select-head"><input type="checkbox" class="iqc-select-all" aria-label="현재 페이지 전체 선택"><span>No.</span></label></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
     <div class="ip-footnote"><div class="ip-pagination" aria-label="${name} 페이지"></div><span class="ip-count"></span></div>
   </div></div>`;
 }
@@ -4452,7 +4452,7 @@ function renderIncomingPage(section,page=1){
     if(mailBtn){mailBtn.hidden=!countSelected;mailBtn.disabled=!countSelected;mailBtn.textContent='선택 메일 전송 ('+countSelected+')';}
     [bulkBtn,printBtn,mailBtn].filter(Boolean).forEach(btn=>{btn.style.setProperty('display',countSelected?'inline-flex':'none','important');btn.style.setProperty('visibility',countSelected?'visible':'hidden','important');});
     qmesIncomingSelectionDock(section,[printBtn,mailBtn,bulkBtn],countSelected);
-    if(selectAll){const checked=filtered.filter(row=>selected.has(String(row.id))).length;selectAll.checked=!!filtered.length&&checked===filtered.length;selectAll.indeterminate=checked>0&&checked<filtered.length;}
+    if(selectAll){const checked=pageRows.filter(row=>selected.has(String(row.id))).length;selectAll.checked=!!pageRows.length&&checked===pageRows.length;selectAll.indeterminate=checked>0&&checked<pageRows.length;}
   }
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
     const id=box.closest('tr')?.dataset.iqcId;if(!id){refreshSelection();return;}
@@ -4460,7 +4460,7 @@ function renderIncomingPage(section,page=1){
     refreshSelection();
   }));
   if(selectAll)selectAll.onchange=()=>{
-    filtered.forEach(row=>{const id=String(row.id);if(selectAll.checked)selected.add(id);else selected.delete(id);});
+    pageRows.forEach(row=>{const id=String(row.id);if(selectAll.checked)selected.add(id);else selected.delete(id);});
     refreshSelection();
   };
   if(bulkBtn)bulkBtn.onclick=async()=>{
@@ -5391,7 +5391,7 @@ function wireProcessInquiry(section,id='process'){
     });
   }
   function update(){
-    const selected=chosen(),matches=matching().filter(row=>!row.querySelector('.iqc-select-row')?.disabled),checked=matches.filter(row=>row.querySelector('.iqc-select-row:checked')).length;
+    const selected=chosen(),matches=[...tbody.querySelectorAll('tr.data-row')].filter(row=>!row.querySelector('.iqc-select-row')?.disabled),checked=matches.filter(row=>row.querySelector('.iqc-select-row:checked')).length;
     for(const [button,title] of [[print,'선택 인쇄'],[mail,'선택 메일 전송'],[remove,'선택 삭제']]){button.hidden=!selected.length;button.disabled=!selected.length||Boolean(section._inspectionDeleting);button.textContent=title+' ('+selected.length+')';button.style.setProperty('display',selected.length?'inline-flex':'none','important');}
     qmesIncomingSelectionDock(section,[print,mail,remove],selected.length);
     head.checked=!!matches.length&&checked===matches.length;head.indeterminate=checked>0&&checked<matches.length;
@@ -5412,7 +5412,7 @@ function wireProcessInquiry(section,id='process'){
   const observer=new MutationObserver(()=>{if(rendering)return;const fresh=[...tbody.querySelectorAll('tr.data-row')];if(fresh.some(row=>!rows.includes(row))){rows=fresh;render();}});
   section._inspectionBulkRefresh=()=>{rows=[...tbody.querySelectorAll('tr.data-row')];render();};
   tbody.addEventListener('change',event=>{if(event.target.matches('.iqc-select-row'))update()});
-  head.onchange=()=>{matching().forEach(row=>{const box=row.querySelector('.iqc-select-row');if(box&&!box.disabled)box.checked=head.checked});update();};
+  head.onchange=()=>{[...tbody.querySelectorAll('tr.data-row')].forEach(row=>{const box=row.querySelector('.iqc-select-row');if(box&&!box.disabled)box.checked=head.checked});update();};
   const search=()=>{page=1;render()};section.querySelectorAll('[data-iqc-filter],.search-input').forEach(input=>input.addEventListener('input',search));section.querySelectorAll('.ip-start-date,.ip-end-date,.ip-status-filter').forEach(input=>input.addEventListener('change',search));section.querySelector('.iqc-query-search').onclick=search;
   section.querySelector('.iqc-query-clear').onclick=()=>{section.querySelectorAll('[data-iqc-filter],.search-input,.ip-start-date,.ip-end-date').forEach(input=>input.value='');section.querySelector('.ip-status-filter').value='전체';search();};
   mail.onclick=()=>{const selected=chosen();if(!selected.length)return;const lines=selected.map((row,index)=>(index+1)+'. '+text(row,1)+' / '+text(row,2)+' / '+text(row,3)+' / LOT '+text(row,4)+' / '+text(row,judgeIndex));location.href='mailto:?subject='+encodeURIComponent('[나모케미칼 QMES] '+name+' '+selected.length+'건 전달')+'&body='+encodeURIComponent('안녕하세요.\n\n'+name+' 선택 내역을 전달드립니다.\n\n'+lines.join('\n')+'\n\n감사합니다.');};
