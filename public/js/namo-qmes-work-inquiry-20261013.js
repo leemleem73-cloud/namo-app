@@ -336,12 +336,12 @@ function update(){
  for(const id of selected)if(!live.has(id))selected.delete(id);
  rows().forEach(r=>{const x=r.querySelector('.wo-bulk-check');if(x)x.checked=selected.has(r.dataset.workSaved)});
  const all=section()?.querySelector('.wo-bulk-all');if(all){all.checked=rows().length>0&&rows().every(r=>selected.has(r.dataset.workSaved));all.indeterminate=selected.size>0&&!all.checked}
- const bar=section()?.querySelector('.wo-bulk-controls');if(bar){bar.hidden=!selected.size;bar.querySelector('.wo-bulk-print').textContent='선택 인쇄 ('+selected.size+')';bar.querySelector('.wo-bulk-delete').textContent='선택 삭제 ('+selected.size+')';bar.querySelectorAll('button').forEach(x=>x.disabled=busy)}
+ const bar=section()?.querySelector('.wo-bulk-controls');if(bar){bar.hidden=!selected.size;bar.querySelector('.wo-bulk-print').textContent='선택 인쇄 ('+selected.size+')';bar.querySelector('.wo-bulk-delete').textContent='선택 삭제 ('+selected.size+')';bar.querySelectorAll('button').forEach(x=>x.disabled=busy);const root=section();if(typeof window.qmesIncomingSelectionDock==='function'&&(root._workDockCount!==selected.size||!bar.closest('.iqc-selection-dock'))){window.qmesIncomingSelectionDock(root,[bar],selected.size);root._workDockCount=selected.size}}
 }
 function scan(){
  const root=section(),table=root?.querySelector('.work-list-table');if(!table)return;
  const tools=root.querySelector('#namo-work-inquiry .nwi-actions');
- if(tools&&!tools.querySelector('.wo-bulk-controls')){
+ if(tools&&!root.querySelector('.wo-bulk-controls')){
   const bar=document.createElement('span');bar.className='wo-bulk-controls';bar.hidden=true;
   bar.innerHTML='<button type="button" class="btn wo-bulk-print">선택 인쇄</button><button type="button" class="btn wo-bulk-delete">선택 삭제</button>';
   const clear=tools.querySelector('#nwi-clear');if(clear)tools.insertBefore(bar,clear);else tools.appendChild(bar);bar.querySelector('.wo-bulk-print').onclick=print;bar.querySelector('.wo-bulk-delete').onclick=remove;
