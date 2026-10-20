@@ -2532,6 +2532,12 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="outgoing"
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="outgoing"] .std-summary-grid>.std-summary-card>.value{position:static!important;inset:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:auto!important;min-height:32px!important;margin:0!important;padding:0!important;font-size:12px!important;font-weight:700!important;line-height:1.4!important;text-align:center!important}
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="outgoing"] .std-summary-grid>.std-summary-card>.value>span{position:static!important;display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;line-height:1.4!important;margin:0!important;padding:0!important}
 </style>
+<style id="qmes-process-inspection-state-center-20261020">
+html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2){position:relative!important;min-height:84px!important;padding:0!important}
+html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.label{display:none!important}
+html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5825,7 +5831,7 @@ function qmesIqcBarcodeSvg(value){
   if(id==='outgoing')window.qmesCoaAttach?.(row);
 }
 // The print document draws its PQC grid once, after fonts and images settle.
-function drawPqcPrintGrid(doc){
+function drawPqcPrintGrid(doc,pixelRatio=1){
   const measured=[];
   const ns='http://www.w3.org/2000/svg';
   for(const sheet of doc.querySelectorAll('.report-sheet:is(.report-process,.report-pqc-print,.report-outgoing)')){
@@ -5833,13 +5839,14 @@ function drawPqcPrintGrid(doc){
     const bounds=sheet.getBoundingClientRect();
     if(!bounds.width||!bounds.height)continue;
     const width=bounds.width,height=bounds.height;
-    const snap=(v,max)=>Math.max(.5,Math.min(Math.round(v-.5)+.5,max-.5));
+    const ratio=Math.max(1,Number(pixelRatio)||1),half=.5/ratio;
+    const snap=(v,max)=>Math.max(half,Math.min((Math.round(v*ratio-.5)+.5)/ratio,(Math.floor(max*ratio)-.5)/ratio));
     const x=v=>snap(v-bounds.left,width),y=v=>snap(v-bounds.top,height);
     const segments=[];
-    const horizontal=(y1,x1=.5,x2=width-.5)=>segments.push(['h',y1,x1,x2]);
+    const horizontal=(y1,x1=half,x2=snap(width,width))=>segments.push(['h',y1,x1,x2]);
     const vertical=(x1,y1,y2)=>segments.push(['v',x1,y1,y2]);
-    horizontal(.5);horizontal(height-.5);
-    vertical(.5,.5,height-.5);vertical(width-.5,.5,height-.5);
+    horizontal(half);horizontal(snap(height,height));
+    vertical(half,half,snap(height,height));vertical(snap(width,width),half,snap(height,height));
     const rect=el=>el.getBoundingClientRect();
     const divider=el=>{const r=rect(el);vertical(x(r.right),y(r.top),y(r.bottom));};
     const bottom=el=>horizontal(y(rect(el).bottom));
@@ -5892,7 +5899,7 @@ function drawPqcPrintGrid(doc){
     svg.setAttribute('viewBox','0 0 '+width+' '+height);
     const path=doc.createElementNS(ns,'path');
     path.setAttribute('d',commands.join(' '));path.setAttribute('fill','none');
-    path.setAttribute('stroke','#c5d0dc');path.setAttribute('stroke-width','1');
+    path.setAttribute('stroke','#c5d0dc');path.setAttribute('stroke-width',String(1/ratio));
     path.setAttribute('shape-rendering','crispEdges');
     svg.appendChild(path);sheet.appendChild(svg);
     measured.push({width,height,lineSegments:commands.length});
@@ -5932,7 +5939,7 @@ function printInspectionReport(title,batchSheets,previewOnly=false){
         setTimeout(resolve,1500);
       })));
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      const gridGeometry=drawPqcPrintGrid(doc);
+      const gridGeometry=drawPqcPrintGrid(doc,previewOnly?(win.devicePixelRatio||1):1);
       if(gridGeometry.length)document.body.dataset.qmesPqcPrintGrid=JSON.stringify(gridGeometry);
       if(!previewOnly){win.focus();win.print();}
     }catch(err){
