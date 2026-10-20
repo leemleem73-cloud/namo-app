@@ -20,6 +20,10 @@ function schema(){
  ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS details JSONB NOT NULL DEFAULT '{}'::jsonb;
  CREATE TABLE IF NOT EXISTS qmes_ncr_attachments (id BIGSERIAL PRIMARY KEY,report_id BIGINT NOT NULL REFERENCES qmes_ncr_reports(id) ON DELETE CASCADE,file_name TEXT NOT NULL,mime_type TEXT NOT NULL,file_size INTEGER NOT NULL,content BYTEA NOT NULL,uploaded_by TEXT NOT NULL DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
  CREATE INDEX IF NOT EXISTS qmes_ncr_attach_report_idx ON qmes_ncr_attachments(report_id,id DESC);
+ ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS reviewed_by TEXT NOT NULL DEFAULT '';
+ ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
+ ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS approved_by TEXT NOT NULL DEFAULT '';
+ ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
  CREATE INDEX IF NOT EXISTS qmes_ncr_created_idx ON qmes_ncr_reports(id DESC);
  `).catch(e=>{schemaPromise=null;throw e;});
  return schemaPromise;
@@ -108,6 +112,23 @@ function install(app){
    if(!isAdmin&&String(q.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 관리자만 삭제할 수 있습니다.');
    await pool.query('DELETE FROM qmes_ncr_attachments WHERE id=$1',[id]);res.json({success:true,data:{id}});
   }catch(e){console.error('[NCR attachment delete]',e);bad(res,500,'첨부파일 삭제 실패');}
+ });
+
+ app.post('/api/qmes-ncr/reports/:id/sign',auth,async(req,res)=>{
+  const id=Number(req.params.id),action=str(req.body?.action,20),u=req.session.user||{};
+  if(!Number.isSafeInteger(id)||id<1||!['review','approve'].includes(action))return bad(res,400,'잘못된 결재 요청입니다.');
+  const role=String(u.role||'').toLowerCase(),title=String(u.title||u.position||'');
+  const allowed=role==='admin'||role==='관리자'||['이사','상무','전무','부사장','대표이사','대표','사장','회장'].some(v=>title.includes(v));
+  if(!allowed)return bad(res,403,'검토 및 승인 권한은 이사 이상 또는 관리자에게 있습니다.');
+  try{
+   await schema();
+   const name=str(u.name||u.email||'담당자',120);
+   const q=action==='review'
+    ?await pool.query("UPDATE qmes_ncr_reports SET reviewed_by=$1,reviewed_at=NOW(),approved_by='',approved_at=NULL,updated_at=NOW() WHERE id=$2 AND approved_at IS NULL RETURNING *",[name,id])
+    :await pool.query("UPDATE qmes_ncr_reports SET approved_by=$1,approved_at=NOW(),updated_at=NOW() WHERE id=$2 AND reviewed_at IS NOT NULL AND approved_at IS NULL RETURNING *",[name,id]);
+   if(!q.rowCount)return bad(res,409,action==='review'?'이미 승인된 문서이거나 존재하지 않습니다.':'검토 완료 후 승인할 수 있습니다.');
+   res.json({success:true,data:q.rows[0]});
+  }catch(e){console.error('[NCR signature]',e);bad(res,500,'전자결재 처리 실패');}
  });
  app.delete('/api/qmes-ncr/reports/:id',auth,async(req,res)=>{
   const id=Number(req.params.id);
