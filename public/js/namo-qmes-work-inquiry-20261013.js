@@ -279,29 +279,38 @@ function init(){
  controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();hasSearched=true;workPage=1;filter()}}));
  function draw(row,order){
   const cells=[...row.cells].map(c=>c.textContent.trim()),fields=order?.fields||{};
-  const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[1]],['고객사',fields['고객사']||cells[2]],['제품명',fields['제품명']||cells[3]],['생산 LOT',fields['생산 LOT NO']||cells[4]],['설비명',fields['설비명']||cells[5]],['작업자',fields['작업자']||cells[6]],['계획수량',fields['계획수량']||cells[7]],['작업기간',fields['작업기간']||cells[8]],['진행상태',fields['진행상태']||cells[9]],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
+  const value=(name,index)=>fields[name]??cells[index]??'-';
+  const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[3]||'-'],['고객사',value('고객사',2)],['제품명',value('제품명',4)],['생산 LOT',value('생산 LOT NO',5)],['설비명',value('설비명',6)],['작업자',value('작업자',7)],['계획수량',value('계획수량',8)],['작업기간',value('작업기간',9)],['진행상태',value('진행상태',10)],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
   const materials=Array.isArray(order?.materials)?order.materials:[];
   const tabs=[['materials','원재료 투입내역'],['progress','생산진행 현황'],['trace','LOT 추적정보']];
   const mats=order?'<div style="overflow-x:auto"><table><thead><tr><th>NO</th><th>원재료명</th><th>원재료 LOT</th><th>계획 투입량 (kg)</th><th>실투입량 (kg)</th></tr></thead><tbody>'+(materials.length?materials.map((m,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.plan)+'</td><td>'+esc(m.actual)+'</td></tr>').join(''):'<tr><td colspan="5">등록된 원료가 없습니다.</td></tr>')+'</tbody></table></div>':'<p>원료 정보 조회 중입니다.</p>';
-  const content=activeTab==='materials'?mats:activeTab==='progress'?'<p>진행상태: '+esc(fields['진행상태']||cells[9])+' · 세부 실적은 생산진행 현황에서 확인하세요.</p>':'<p>생산 LOT: '+esc(fields['생산 LOT NO']||cells[4])+' · 검사/출하 연결정보는 LOT 추적관리에서 확인하세요.</p>';
-  detail.querySelector('.nwd-head').textContent='작업지시 상세내역  '+(fields['작업지시번호']||order?.id||cells[1]);
+  const content=activeTab==='materials'?mats:activeTab==='progress'?'<p>진행상태: '+esc(value('진행상태',10))+' · 세부 실적은 생산진행 현황에서 확인하세요.</p>':'<p>생산 LOT: '+esc(value('생산 LOT NO',5))+' · 검사/출하 연결정보는 LOT 추적관리에서 확인하세요.</p>';
+  detail.querySelector('.nwd-head').textContent='작업지시 상세내역  '+(fields['작업지시번호']||order?.id||cells[3]);
   detail.querySelector('.nwd-content').innerHTML='<div class="nwd-grid">'+vals.map(v=>'<div class="nwd-cell"><b>'+esc(v[0])+'</b><span>'+esc(v[1])+'</span></div>').join('')+'</div><div class="nwd-tabs">'+tabs.map(([key,title])=>'<button type="button" data-nwd-tab="'+key+'" class="nwd-tab '+(activeTab===key?'active':'')+'">'+title+'</button>').join('')+'</div>'+content;
  }
- tbody.addEventListener('click',async e=>{
-  const row=e.target.closest('tr[data-work-saved]');
-  if(!row||row.cells[1]?.contains(e.target)||e.target.closest('button,input,select')||(e.target.closest('a')&&!row.cells[2]?.contains(e.target)))return;
-  e.stopImmediatePropagation();e.preventDefault();
-  activeId=row.dataset.workSaved;activeTab='materials';activeRecord=null;
+ async function openWorkDetail(row){
+  if(!row?.dataset.workSaved)return;
+  activeId=String(row.dataset.workSaved);activeTab='materials';
+  const cached=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
+  activeRecord=cached.find(x=>String(x.id)===activeId)||null;
   getRows().forEach(r=>r.classList.toggle('nwi-selected',r===row));
-  draw(row,null);
+  draw(row,activeRecord);
   const requestedId=activeId;
   try{
+   await window.qmesAuthDataReady?.wait();
    const res=await fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});
    if(!res.ok)throw new Error('조회 실패');
    const body=await res.json();if(!body.success)throw new Error('조회 실패');
-   const order=(Array.isArray(body.data)?body.data:[]).find(x=>x.id===requestedId);
+   const order=(Array.isArray(body.data)?body.data:[]).find(x=>String(x.id)===requestedId);
    if(order&&row.isConnected&&activeId===requestedId){activeRecord=order;draw(row,order);}
-  }catch(err){console.warn('[work inquiry] detail fetch:',err);}
+   else if(!order&&activeId===requestedId&&!activeRecord){detail.querySelector('.nwd-content').textContent='작업지시서 원본을 찾을 수 없습니다. 목록을 새로 조회해 주세요.';}
+  }catch(err){console.warn('[work inquiry] detail fetch:',err);if(activeId===requestedId&&!activeRecord)detail.querySelector('.nwd-content').textContent='상세내역을 불러오지 못했습니다. 다시 선택해 주세요.';}
+ }
+ window.namoOpenWorkInquiryDetail=openWorkDetail;
+ tbody.addEventListener('click',e=>{
+  const row=e.target.closest('tr[data-work-saved]');
+  if(!row||row.cells[1]?.contains(e.target)||e.target.closest('button,input,select')||(e.target.closest('a')&&!row.cells[3]?.contains(e.target)))return;
+  e.stopImmediatePropagation();e.preventDefault();openWorkDetail(row);
  },true);
  detail.addEventListener('click',e=>{const tab=e.target.closest('[data-nwd-tab]');if(!tab||!activeId)return;activeTab=tab.dataset.nwdTab;const row=getRows().find(x=>x.dataset.workSaved===activeId);if(row)draw(row,activeRecord);});
  let queued=false;
