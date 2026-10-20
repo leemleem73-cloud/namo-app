@@ -9,9 +9,10 @@ const controls=document.createElement('div');controls.className='stock-wo-tools'
 controls.querySelector('#stock-wo-search').innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>';
 controls.querySelector('#stock-wo-fold').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 14 6-6 6 6"></path></svg>';
 controls.querySelector('strong').innerHTML='▸ 재고현황 <span id="stockCount"></span>';h3.replaceWith(controls);
+for(const [id,tip] of [['stock-wo-clear','조건 지우기'],['stock-wo-search','조회'],['stock-wo-fold','접기']]){const b=controls.querySelector('#'+id);b.setAttribute('aria-label',tip);b.dataset.workTooltip=tip;}
 controls.querySelector('#stock-wo-clear').onclick=()=>root.querySelector('#stockClear')?.click();
 controls.querySelector('#stock-wo-search').onclick=()=>{list.hidden=false;pager.hidden=false;root.querySelector('#stockReload')?.click();};
-controls.querySelector('#stock-wo-fold').onclick=e=>{list.hidden=!list.hidden;pager.hidden=list.hidden;e.currentTarget.innerHTML=list.hidden?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 10 6 6 6-6"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 14 6-6 6 6"/></svg>';e.currentTarget.title=list.hidden?'펼침':'접기';};
+controls.querySelector('#stock-wo-fold').onclick=e=>{list.hidden=!list.hidden;pager.hidden=list.hidden;e.currentTarget.innerHTML=list.hidden?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 10 6 6 6-6"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 14 6-6 6 6"/></svg>';e.currentTarget.title=list.hidden?'펼침':'접기';e.currentTarget.dataset.workTooltip=e.currentTarget.title;};
 const th=list.querySelector('thead tr');if(th&&!th.querySelector('.stock-select-all')){const cell=document.createElement('th');cell.innerHTML='<input class="stock-select-all" type="checkbox">';th.prepend(cell);}
 const body=list.querySelector('tbody');
 if(body){const sync=()=>{for(const tr of body.rows){if(!tr.querySelector('.stock-row-check')){const td=document.createElement('td');td.innerHTML='<input class="stock-row-check" type="checkbox">';tr.prepend(td);}}};new MutationObserver(sync).observe(body,{childList:true});sync();th.querySelector('.stock-select-all').onchange=e=>{body.querySelectorAll('.stock-row-check').forEach(c=>c.checked=e.target.checked);};}
@@ -67,7 +68,15 @@ const style=document.createElement('style');style.textContent=[
 '#inventory .stock-wo-tools>div{align-items:center!important;gap:6px!important}',
 '#inventory #stock-wo-search,#inventory #stock-wo-fold{display:inline-flex!important;align-items:center!important;justify-content:center!important;color:#365472!important}',
 '#inventory #stock-wo-search svg,#inventory #stock-wo-fold svg{display:block!important}',
-'#inventory .stockFilters{min-height:60px!important;box-sizing:border-box!important}'
+'#inventory .stockFilters{min-height:60px!important;box-sizing:border-box!important}',
+'#inventory .stock-wo-tools{position:relative!important;margin:0!important;min-height:55px!important;background:#fff!important}',
+'#inventory .stock-wo-tools>div{position:absolute!important;right:16px!important;top:10px!important;display:flex!important;gap:6px!important}',
+'#inventory .stock-wo-tools #stock-wo-clear{height:31px!important;border:1px solid #cbd8e5!important;background:#fff!important;padding:5px 11px!important}',
+'#inventory .stock-wo-tools #stock-wo-search,#inventory .stock-wo-tools #stock-wo-fold{width:31px!important;height:31px!important;border:1px solid #cbd8e5!important;background:#fff!important}',
+'#inventory .stock-wo-tools [data-work-tooltip]{position:relative!important;overflow:visible!important}',
+'#inventory .stock-wo-tools [data-work-tooltip]::after{content:attr(data-work-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);padding:5px 9px;background:#fff;color:#25384a;border:1px solid #aebdca;border-radius:3px;box-shadow:0 2px 6px #2342;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;z-index:20}',
+'#inventory .stock-wo-tools [data-work-tooltip]:hover::after{opacity:1;visibility:visible}',
+'#inventory .namo-stock-tabs{flex-shrink:0!important}'
 ].join('\n');document.head.append(style);
 }
 let n=0;const timer=setInterval(()=>{install();if(document.querySelector('#inventory .namo-new-stock')?.dataset.woTheme||++n>60)clearInterval(timer);},250);
