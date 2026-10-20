@@ -105,30 +105,28 @@ function decorateNcrForm(edit,record){
   document.head.appendChild(premium);
  }
 
- // NCR occurrence date: use the same compact single-date calendar design as process inspection.
+ // Occurrence date: mirror the process inspection period calendar appearance, single date selection.
  var occurrence=form.querySelector('[name="occurred_on"]');
  if(occurrence&&!occurrence.disabled){
-  occurrence.type='text';occurrence.readOnly=true;occurrence.style.cursor='pointer';
-  occurrence.setAttribute('aria-label','발생일자 달력 열기');
-  var occPop=null,occMonth=null;
-  var occFmt=function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-  var occClose=function(){if(occPop){occPop.remove();occPop=null;}};
-  var occDraw=function(){
-   if(!occPop)return;
-   var y=occMonth.getFullYear(),m=occMonth.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),cells='';
-   ['일','월','화','수','목','금','토'].forEach(function(t){cells+='<span class="iqc-mini-week">'+t+'</span>';});
-   for(var i=0;i<first;i++)cells+='<span></span>';
-   for(var day=1;day<=days;day++){var val=occFmt(new Date(y,m,day));cells+='<button type="button" data-date="'+val+'" data-current-day="'+(val===occFmt(new Date()))+'" aria-selected="'+(occurrence.value===val)+'">'+day+'</button>';}
-   occPop.innerHTML='<div class="iqc-mini-head"><button type="button" class="iqc-mini-nav" data-shift="-1" aria-label="이전 달">‹</button><span>'+y+'년 '+(m+1)+'월</span><button type="button" class="iqc-mini-nav" data-shift="1" aria-label="다음 달">›</button></div><div class="iqc-mini-grid">'+cells+'</div><div class="iqc-mini-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button></div>';
-   var box=occurrence.getBoundingClientRect(),width=175;
-   occPop.style.left=Math.max(5,Math.min(box.left,innerWidth-width-5))+'px';
-   occPop.style.top=(box.bottom+215>innerHeight?Math.max(5,box.top-215):box.bottom+4)+'px';
-  };
-  var occChoose=function(value){occurrence.value=value;occurrence.dispatchEvent(new Event('input',{bubbles:true}));occurrence.dispatchEvent(new Event('change',{bubbles:true}));occClose();};
-  occurrence.addEventListener('click',function(){if(occPop){occClose();return;}occMonth=new Date((occurrence.value||today())+'T12:00:00');occPop=document.createElement('div');occPop.className='iqc-mini-calendar ncr-iqc-calendar';document.body.appendChild(occPop);occDraw();});
-  document.addEventListener('click',function(e){if(!occPop)return;var b=e.target.closest&&e.target.closest('.ncr-iqc-calendar button');if(b){if(b.hasAttribute('data-shift')){occMonth=new Date(occMonth.getFullYear(),occMonth.getMonth()+Number(b.getAttribute('data-shift')),1);occDraw();}else if(b.hasAttribute('data-date'))occChoose(b.getAttribute('data-date'));else if(b.hasAttribute('data-today'))occChoose(occFmt(new Date()));else if(b.hasAttribute('data-clear'))occChoose('');return;}if(e.target!==occurrence&&!occPop.contains(e.target))occClose();});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')occClose();});
-  if(!document.getElementById('ncr-iqc-calendar-css')){var cs=document.createElement('style');cs.id='ncr-iqc-calendar-css';cs.textContent='.ncr-iqc-calendar{position:fixed!important;z-index:2147483645!important;width:175px!important;min-width:0!important;max-width:175px!important;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 6px 18px #0002;padding:7px;color:#334155;font:11px Arial,sans-serif}.ncr-iqc-calendar *{box-sizing:border-box;min-width:0}.ncr-iqc-calendar button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:4px}.ncr-iqc-calendar .iqc-mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}.ncr-iqc-calendar .iqc-mini-nav{padding:4px 7px}.ncr-iqc-calendar .iqc-mini-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}.ncr-iqc-calendar .iqc-mini-grid>*{min-width:0;height:23px;text-align:center;padding:0}.ncr-iqc-calendar .iqc-mini-week{height:19px;color:#64748b;line-height:19px}.ncr-iqc-calendar .iqc-mini-grid button:hover,.ncr-iqc-calendar .iqc-mini-grid button[aria-selected=true]{background:#dbeafe;color:#1d4ed8}.ncr-iqc-calendar .iqc-mini-grid button[data-current-day=true]{background:#f0e9ff;color:#65429c;font-weight:800}.ncr-iqc-calendar .iqc-mini-foot{display:flex;justify-content:space-between;margin-top:5px;border-top:1px solid #e2e8f0;padding-top:5px}';document.head.appendChild(cs);}
+  occurrence.type='text';occurrence.readOnly=true;occurrence.style.cursor='pointer';occurrence.setAttribute('aria-label','발생일자 선택');
+  var pop=null,month=null;
+  var dateText=function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  function closePop(){if(pop){pop.remove();pop=null;}}
+  function chooseDate(v){occurrence.value=v;occurrence.dispatchEvent(new Event('input',{bubbles:true}));occurrence.dispatchEvent(new Event('change',{bubbles:true}));closePop();}
+  function drawPop(){
+   if(!pop)return;
+   var y=month.getFullYear(),m=month.getMonth(),off=new Date(y,m,1).getDay(),cnt=new Date(y,m+1,0).getDate(),html='';
+   ['일','월','화','수','목','금','토'].forEach(function(t,i){html+='<span class="ncr-pc-week '+(i===0||i===6?'weekend':'')+'">'+t+'</span>';});
+   for(var i=0;i<off;i++)html+='<span></span>';
+   for(var d=1;d<=cnt;d++){var val=dateText(new Date(y,m,d)),day=(off+d-1)%7;html+='<button type="button" data-day="'+val+'" class="'+(day===0||day===6?'weekend ':'')+(occurrence.value===val?'chosen':'')+'">'+d+'</button>';}
+   pop.innerHTML='<div class="ncr-pc-head"><button type="button" data-shift="-12">«</button><button type="button" data-shift="-1">‹</button><strong>'+y+'.'+String(m+1).padStart(2,'0')+'</strong><button type="button" data-shift="1">›</button><button type="button" data-shift="12">»</button></div><div class="ncr-pc-days">'+html+'</div><div class="ncr-pc-hint">날짜를 선택하세요</div><div class="ncr-pc-foot"><button type="button" data-action="today">오늘</button><button type="button" data-action="clear">초기화</button><button type="button" data-action="close">닫기</button></div>';
+   var rect=occurrence.getBoundingClientRect(),height=pop.getBoundingClientRect().height;
+   pop.style.left=Math.max(5,Math.min(rect.left,window.innerWidth-190))+'px';pop.style.top=(rect.bottom+height+6<window.innerHeight?rect.bottom+4:Math.max(5,rect.top-height-4))+'px';
+  }
+  occurrence.addEventListener('click',function(){if(pop){closePop();return;}month=new Date((occurrence.value||today())+'T12:00:00');pop=document.createElement('div');pop.className='ncr-process-cal';document.body.appendChild(pop);drawPop();});
+  document.addEventListener('click',function(e){if(!pop)return;var btn=e.target.closest&&e.target.closest('.ncr-process-cal button');if(btn){var shift=btn.getAttribute('data-shift'),day=btn.getAttribute('data-day'),action=btn.getAttribute('data-action');if(shift!==null){month=new Date(month.getFullYear(),month.getMonth()+Number(shift),1);drawPop();}else if(day)chooseDate(day);else if(action==='today')chooseDate(dateText(new Date()));else if(action==='clear')chooseDate('');else if(action==='close')closePop();return;}if(e.target!==occurrence&&!pop.contains(e.target))closePop();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closePop();});
+  if(!document.getElementById('ncr-process-cal-css')){var sheet=document.createElement('style');sheet.id='ncr-process-cal-css';sheet.textContent='.ncr-process-cal{position:fixed;z-index:2147483645;width:181px;box-sizing:border-box;padding:6px;background:#fff;border:1px solid #bdcbdc;border-radius:3px;box-shadow:0 8px 18px #0002;font:10px Arial,sans-serif;color:#34445b}.ncr-process-cal *{box-sizing:border-box}.ncr-process-cal button{border:0;background:transparent;cursor:pointer;font:inherit;color:inherit}.ncr-pc-head{display:grid;grid-template-columns:21px 21px 1fr 21px 21px;align-items:center;border-bottom:1px solid #e0e7ef;padding:4px 0 8px}.ncr-pc-head strong{font-size:11px;text-align:center}.ncr-pc-head button{font-size:15px;color:#8498ad}.ncr-pc-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;padding-top:6px}.ncr-pc-days>*{height:21px;display:flex;align-items:center;justify-content:center}.ncr-pc-week{color:#8190a1}.ncr-pc-days .weekend{color:#e74c4c}.ncr-pc-days button.chosen{background:#e9f3fd;border:1px solid #75aae2;color:#204d7e;font-weight:700;border-radius:2px}.ncr-pc-days button:hover{background:#edf5ff}.ncr-pc-hint{text-align:center;color:#8491a2;border-bottom:1px solid #e4eaf0;padding:6px 0;font-size:9px;white-space:nowrap}.ncr-pc-foot{display:flex;gap:3px;padding-top:5px}.ncr-pc-foot button{border:1px solid #e0e5ec;background:#fff;border-radius:2px;padding:4px;font-size:10px}.ncr-pc-foot button:last-child{margin-left:auto}';document.head.appendChild(sheet);}
  }
  var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
  function refreshSide(){
