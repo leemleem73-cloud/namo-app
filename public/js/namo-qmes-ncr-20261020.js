@@ -190,12 +190,17 @@ renderList=function(){
  '<button class="ncr-btn" id="ncr-clear" type="button">조건 지우기</button>'+
  '<button class="ncr-btn" id="ncr-refresh" type="button" title="조회">⌕</button>'+
  '<input id="ncr-search" type="hidden" value=""><select id="ncr-filter" hidden><option value="">전체</option></select><span id="ncr-count" hidden></span>';
- tools.hidden=!expanded;
+ tools.hidden=false;
  var bar=document.createElement('div');bar.className='ncr-list-head';
  bar.innerHTML='<span>▸ 부적합보고서 현황</span><span><span id="ncr-total"></span> <button class="ncr-btn" id="ncr-toggle" type="button" title="조회 펼침 / 접기">⌃</button></span>';
  tools.insertAdjacentElement('afterend',bar);
- var toggle=root.querySelector('#ncr-toggle');toggle.textContent=expanded?'⌃':'⌄';
- toggle.onclick=function(){expanded=!expanded;tools.hidden=!expanded;toggle.textContent=expanded?'⌃':'⌄';};
+ var toggle=root.querySelector('#ncr-toggle');
+ function syncCollapse(){
+  toggle.textContent=expanded?'⌃':'⌄';toggle.title=expanded?'부적합보고서 현황 접기':'부적합보고서 현황 펼치기';
+  ['.ncr-table-wrap','#ncr-pages','#ncr-bulk'].forEach(function(q){var el=root.querySelector(q);if(el)el.style.display=expanded?'':'none';});
+ }
+ toggle.onclick=function(){expanded=!expanded;syncCollapse();};
+ syncCollapse();
  Object.keys(filters).forEach(function(k){var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value=filters[k];});
  root.querySelector('#ncr-clear').onclick=function(){Object.keys(filters).forEach(function(k){filters[k]='';var el=root.querySelector('[data-ncr-filter="'+k+'"]');if(el)el.value='';});page=1;draw();};
  root.querySelector('#ncr-refresh').onclick=function(){page=1;draw();load();};
