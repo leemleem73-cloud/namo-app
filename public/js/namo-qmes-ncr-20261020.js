@@ -238,7 +238,10 @@ draw=function(){
  };});
  root.querySelectorAll('.ncr-row-select').forEach(function(el){el.onchange=function(){if(el.checked)selectedIds.add(el.value);else selectedIds.delete(el.value);updateBulk();};});
  var pager=root.querySelector('#ncr-pages');if(pager){
-  pager.innerHTML=Array.from({length:pages},function(_,i){return '<button type="button" data-ncr-page="'+(i+1)+'" class="'+(i+1===page?'active':'')+'">'+(i+1)+'</button>';}).join('');
+  pager.setAttribute('aria-label','부적합보고서 페이지');
+  pager.innerHTML='<button type="button" aria-label="이전 페이지" data-ncr-page="'+(page-1)+'" '+(page===1?'disabled':'')+'>‹</button>'+
+   Array.from({length:pages},function(_,i){return '<button type="button" data-ncr-page="'+(i+1)+'" class="'+(i+1===page?'active':'')+'">'+(i+1)+'</button>';}).join('')+
+   '<button type="button" aria-label="다음 페이지" data-ncr-page="'+(page+1)+'" '+(page===pages?'disabled':'')+'>›</button>';
   pager.querySelectorAll('button').forEach(function(b){b.onclick=function(){page=Number(b.dataset.ncrPage);draw();};});
  }
  var all=root.querySelector('#ncr-select-all');if(all)all.checked=pageRows.length>0&&pageRows.every(function(r){return selectedIds.has(String(r.id));});
@@ -346,6 +349,12 @@ draw=function(){
  html body #ncr .ncr-equipment-card .ncr-row-actions .ncr-btn{height:26px;min-width:0;padding:0 7px;font-size:11px;border-radius:4px;background:#f5f9ff;color:#17446f;border:1px solid #cbd8e5}
  html body #ncr .ncr-equipment-card>.ncr-message:empty{display:none}
  html body #ncr .ncr-equipment-card>.ncr-pagination{padding:14px 16px 0!important}
+ html body #ncr .ncr-equipment-card>.ncr-pagination{display:flex;align-items:center;justify-content:center;gap:4px!important}
+ html body #ncr .ncr-equipment-card>.ncr-pagination button{box-sizing:border-box;min-width:24px!important;height:24px!important;padding:0 6px!important;border:1px solid #dbe3ec!important;border-radius:4px!important;background:#fff!important;color:#536177!important;font-size:12px!important;font-weight:700!important;cursor:pointer}
+ html body #ncr .ncr-equipment-card>.ncr-pagination button:hover{background:#f2f7fd!important;border-color:#b8cbe2!important}
+ html body #ncr .ncr-equipment-card>.ncr-pagination button.active{background:#2f73d9!important;border-color:#2f73d9!important;color:#fff!important}
+ html body #ncr .ncr-equipment-card>.ncr-pagination button:disabled{opacity:.35;cursor:default}
+
  html body #ncr .ncr-equipment-card{border:1px solid #d2dfed!important;box-shadow:0 8px 24px rgba(24,51,83,.075)!important}
  html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn,html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn.primary{background:#fff!important;color:#16446c!important;border:1px solid #cfdfef!important;box-shadow:none!important;font-size:12px!important;font-weight:700!important;font-family:Arial,'Malgun Gothic',sans-serif!important;height:36px!important;padding:0 15px!important;border-radius:5px!important}
  html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
