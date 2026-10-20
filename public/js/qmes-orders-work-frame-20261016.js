@@ -82,8 +82,8 @@ const style=document.createElement("style");style.textContent=`
 #orders.orders-work-frame .qpf-grid{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 20px}
 #orders.orders-work-frame .qpf-field{flex:0 0 auto;gap:8px;margin:0}
 #orders.orders-work-frame .qpf-field>span{flex:0 0 auto;text-align:left;font-size:11.5px;line-height:30px;white-space:nowrap}
-#orders.orders-work-frame .qpf-field input,#orders.orders-work-frame .qpf-field select{width:144px!important;flex:0 0 144px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
-#orders.orders-work-frame .qof-range{width:208px!important;flex:0 0 208px}
+#orders.orders-work-frame .qpf-field input,#orders.orders-work-frame .qpf-field select{width:215px!important;flex:0 0 215px;height:30px!important;border-radius:4px!important;font-size:12px!important;box-sizing:border-box}
+#orders.orders-work-frame .qof-range{width:215px!important;flex:0 0 215px}
 #orders.orders-work-frame .qof-range>input{display:none!important}
 #orders.orders-work-frame .qof-period-trigger{display:flex;align-items:center;justify-content:space-between;width:208px;height:30px;padding:0 8px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#243e5d;font:600 12px Arial,sans-serif;cursor:pointer}
 #orders.orders-work-frame .qof-period-value{white-space:nowrap}
