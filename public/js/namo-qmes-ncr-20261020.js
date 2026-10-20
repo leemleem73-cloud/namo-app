@@ -85,7 +85,7 @@ function render(){
  '</div><div class="ncr-message" role="status"></div><div class="ncr-actions">'+(edit?'<button type="button" class="ncr-btn" id="ncr-print">인쇄</button>':'')+'<button type="button" class="ncr-btn" id="ncr-cancel">취소</button><button type="submit" class="ncr-btn primary" id="ncr-save">'+(edit?'조치사항 저장':'NCR 발행 및 저장')+'</button></div></form>';
  decorateNcrForm(edit,r);
  if(edit){['occurred_on','source','product','lot','customer','description'].forEach(function(k){var el=root.querySelector('[name="'+k+'"]');if(el)el.disabled=true;});}
- root.querySelector('#ncr-back').onclick=root.querySelector('#ncr-cancel').onclick=function(){view='list';render();};
+ root.querySelector('#ncr-cancel').onclick=function(){view='list';render();};
  if(edit)root.querySelector('#ncr-print').onclick=function(){printReport(r);};
  root.querySelector('#ncr-form').onsubmit=save;
 }
