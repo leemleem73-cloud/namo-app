@@ -114,11 +114,19 @@ function install(app){
     const originalDept=user.dept;
     user.department='영업부';
     user.dept='영업부';
-    try{return next();}
-    finally{
+    // Express route handlers run asynchronously. Restoring in a synchronous
+    // finally block happens before requireCommercialErp executes.
+    // Keep the temporary compatibility department until this response ends.
+    let restored=false;
+    function restorePurchaseDepartment(){
+      if(restored)return;
+      restored=true;
       user.department=originalDepartment;
       user.dept=originalDept;
     }
+    res.once('finish',restorePurchaseDepartment);
+    res.once('close',restorePurchaseDepartment);
+    return next();
   });
 
   app.get('/api/access/me',requireLogin,async(req,res)=>{
