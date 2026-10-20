@@ -12,7 +12,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
  async function ensure(){if(!schema)schema=pool.query(`CREATE TABLE IF NOT EXISTS qmes_oqc_coa_issues (
  id BIGSERIAL PRIMARY KEY, group_key TEXT NOT NULL, fingerprint TEXT NOT NULL,
  issue_number TEXT NOT NULL UNIQUE, issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
- issued_by TEXT NOT NULL, snapshot JSONB NOT NULL)`).then(()=>pool.query("ALTER TABLE qmes_oqc_coa_issues ADD COLUMN IF NOT EXISTS canceled_at TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS canceled_by TEXT")).catch(e=>{schema=null;throw e;});return schema;}
+ issued_by TEXT NOT NULL, snapshot JSONB NOT NULL)`).then(()=>pool.query("ALTER TABLE qmes_oqc_coa_issues ADD COLUMN IF NOT EXISTS canceled_at TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS canceled_by TEXT")).then(()=>pool.query("CREATE TABLE IF NOT EXISTS qmes_oqc_coa_state(group_key TEXT PRIMARY KEY,current_issue_id BIGINT)")).then(()=>pool.query("INSERT INTO qmes_oqc_coa_state(group_key,current_issue_id) SELECT DISTINCT ON (group_key) group_key,CASE WHEN canceled_at IS NULL THEN id ELSE NULL END FROM qmes_oqc_coa_issues ORDER BY group_key,id DESC ON CONFLICT(group_key) DO NOTHING")).catch(e=>{schema=null;throw e;});return schema;}
  function targetsOf(req){
   const targets=req.body?.targets;
   if(!Array.isArray(targets)||targets.length!==8||targets.some(t=>!t||typeof t.recordKey!=='string'||!t.recordKey||t.recordKey.length>500||typeof t.rowId!=='string'||!t.rowId||t.rowId.length>500))throw error('8개 검사 항목의 원본 기록을 확인해 주세요.');
@@ -51,7 +51,8 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
  app.post('/api/qmes/oqc/coa/status',requireLogin,async(req,res)=>{
   try{const targets=targetsOf(req);await ensure();const current=await read(pool,targets);
    const history=await pool.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC',[current.groupKey]);
-   const latest=history.rows[0];return ok(res,{status:!latest||latest.canceled_at?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.map(publicIssue)});
+   const active=await pool.query('SELECT current_issue_id FROM qmes_oqc_coa_state WHERE group_key=$1',[current.groupKey]);
+   const latest=history.rows.find(row=>String(row.id)===String(active.rows[0]?.current_issue_id));return ok(res,{status:!latest||latest.canceled_at?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.map(publicIssue)});
   }catch(e){return fail(res,e.status||500,e.status?e.message:'CoA 발행 상태를 조회하지 못했습니다.');}
  });
  app.post('/api/qmes/oqc/coa/issue',requireLogin,async(req,res)=>{
@@ -64,7 +65,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
    if(!snapshot.fields.inspector||!snapshot.fields.product||!snapshot.fields.customer)throw error('검사자·제품명·고객사를 저장한 뒤 발행해 주세요.');
    const issuer=String(req.session.user?.name||'').trim();if(!issuer)throw error('발행자 정보를 확인해 주세요.',401);
    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[current.groupKey]);
-   const existing=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC LIMIT 1',[current.groupKey]);
+   const existing=await client.query('SELECT i.* FROM qmes_oqc_coa_issues i JOIN qmes_oqc_coa_state s ON s.current_issue_id=i.id WHERE s.group_key=$1',[current.groupKey]);
    let issued=existing.rows[0]&&!existing.rows[0].canceled_at&&existing.rows[0].fingerprint===current.fingerprint?existing.rows[0]:null;
    const reused=Boolean(issued);
    if(!issued){
@@ -73,6 +74,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
     const result=await client.query('INSERT INTO qmes_oqc_coa_issues(id,group_key,fingerprint,issue_number,issued_by,snapshot) VALUES($1,$2,$3,$4,$5,$6::jsonb) RETURNING *',[seq.rows[0].id,current.groupKey,current.fingerprint,number,issuer,JSON.stringify(snapshot)]);
     issued=result.rows[0];
    }
+   await client.query('INSERT INTO qmes_oqc_coa_state(group_key,current_issue_id) VALUES($1,$2) ON CONFLICT(group_key) DO UPDATE SET current_issue_id=EXCLUDED.current_issue_id',[current.groupKey,issued.id]);
    await client.query('COMMIT');committed=true;
    if(!reused)await auditLog(req,'CREATE','qmes_oqc_coa_issues',String(issued.id),null,{number:issued.issue_number,groupKey:current.groupKey}).catch(e=>console.warn('CoA audit',e.message));
    return ok(res,publicIssue(issued),'CoA 발행 완료');
@@ -96,14 +98,12 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
    const found=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE id=$1',[id]);
    if(!found.rows.length)throw error('발행본이 없습니다.',404);
    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[found.rows[0].group_key]);
-   const latest=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC LIMIT 1 FOR UPDATE',[found.rows[0].group_key]);
-   const current=latest.rows[0];
-   if(String(current.id)!==id)throw error('더 최근의 발행본이 있습니다. 최신 발행본을 확인해 주세요.',409);
-   let result=current;
-   if(!current.canceled_at){const updated=await client.query('UPDATE qmes_oqc_coa_issues SET canceled_at=NOW(),canceled_by=$2 WHERE id=$1 RETURNING *',[id,name]);result=updated.rows[0];}
+   const state=await client.query('SELECT current_issue_id FROM qmes_oqc_coa_state WHERE group_key=$1 FOR UPDATE',[found.rows[0].group_key]);
+   if(String(state.rows[0]?.current_issue_id)!==id)throw error('현재 발행본만 취소할 수 있습니다. 현재 검사기록에서 확인해 주세요.',409);
+   await client.query('DELETE FROM qmes_oqc_coa_issues WHERE id=$1',[id]);
+   await client.query('UPDATE qmes_oqc_coa_state SET current_issue_id=NULL WHERE group_key=$1',[found.rows[0].group_key]);
    await client.query('COMMIT');committed=true;
-   if(!current.canceled_at)await auditLog(req,'UPDATE','qmes_oqc_coa_issues',id,{number:current.issue_number},{status:'발행취소',canceledBy:name}).catch(e=>console.warn('CoA cancellation audit',e.message));
-   return ok(res,publicIssue(result),'CoA 발행을 취소했습니다.');
+   return ok(res,{id,status:'미발행'},'발행본을 제거하고 미발행으로 되돌렸습니다.');
   }catch(e){if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});return fail(res,e.status||500,e.status?e.message:'발행 취소에 실패했습니다.');}
   finally{client?.release();}
  });
