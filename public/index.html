@@ -951,7 +951,8 @@ body{background:linear-gradient(180deg,#f4f7fa 0,#edf2f7 100%)}
 .topbar{background:rgba(255,255,255,.96);border-bottom-color:#dbe3ec;box-shadow:0 2px 12px rgba(22,32,51,.04)}
 .brand-logo{background:linear-gradient(145deg,#173e70,#2d6cdf);box-shadow:0 6px 15px rgba(45,108,223,.22)}
 /* QMES left navigation: brighter steel-blue palette; behavior and structure unchanged. */
-.sidebar{background:linear-gradient(180deg,#2d5778 0%,#3c6988 100%);color:#f3f8fd}
+:root{--qmes-nav-background:linear-gradient(180deg,#2d5778 0%,#3c6988 100%)}
+.sidebar{background:var(--qmes-nav-background);color:#f3f8fd}
 .sidebar .menu-title{color:#d8e9f3}
 .menu:hover{background:#4a7999}.menu.active{background:linear-gradient(90deg,#1e78be,#2f8dde);box-shadow:inset 3px 0 0 #9addff}
 .nav-toggle{background:#295776;border-color:#77a0ba;color:#fff}
@@ -2566,6 +2567,14 @@ html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-dock-actions{d
 html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
 html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock .btn:hover{background:#dceafb!important}
 html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
+
+/* Selection toolbar colors shared with the left navigation. */
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#ncr) :is(.iqc-selection-dock,#ncr-bulk){background:var(--qmes-nav-background)!important;border-color:#3c6988!important;color:#fff!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#ncr) :is(.iqc-dock-summary,.iqc-dock-count,.ncr-bulk-count){color:#fff!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock :is(.iqc-bulk-delete,.wo-bulk-delete,[data-bulk-delete],[data-selected-delete]),
+html body #ncr #ncr-bulk #ncr-bulk-delete{color:#dc2626!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock .iqc-bulk-mail,
+html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
 @media(prefers-reduced-motion:reduce){html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock{transition:none!important}}
 @media(max-width:700px){html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock{padding:10px;gap:10px}html body :is(#incoming,#process,#outgoing,#work,#equipment) .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
