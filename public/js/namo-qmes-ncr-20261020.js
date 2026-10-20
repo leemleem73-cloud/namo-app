@@ -65,6 +65,11 @@ function decorateNcrForm(edit,record){
  attachmentSection.innerHTML='<div class="ncr-section-title">증빙자료 및 첨부파일</div><div style="padding:14px"><input type="file" id="ncr-attach-input" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.xlsx,.docx,.xls,.doc,.csv,.txt" style="max-width:100%"><p style="font-size:12px;color:#64748b">사진·검사성적서·원인분석 자료 첨부 (파일당 10MB, 최대 10개). 신규 등록 시 저장 버튼을 누르면 보고서와 함께 등록됩니다.</p><div id="ncr-attachment-list"></div></div>';
  form.insertBefore(attachmentSection,form.querySelector('.ncr-message'));
  if(edit&&record&&record.id)loadNcrAttachments(record.id);
+
+ var sign=document.createElement('section');sign.className='ncr-section';
+ sign.innerHTML='<div class="ncr-section-title">전자결재 · 작성 / 검토 / 승인</div><div class="ncr-section-grid"><label>작성자<input readonly value="'+esc((record&&record.created_by)||'로그인 사용자 자동 지정')+'"></label><label>검토자<input readonly value="'+esc((record&&record.reviewed_by)||'검토 대기')+'"></label><label>승인자<input readonly value="'+esc((record&&record.approved_by)||'승인 대기')+'"></label></div><div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center"><button type="button" class="ncr-btn" id="ncr-review" '+(!edit||record&&record.approved_at?'disabled':'')+'>검토 완료</button><button type="button" class="ncr-btn primary" id="ncr-approve" '+(!edit||!record||!record.reviewed_at||record.approved_at?'disabled':'')+'>최종 승인</button><span style="font-size:12px;color:#64748b">이사 이상 또는 관리자만 검토·승인 가능. 신규 문서 저장 후 진행합니다.</span></div>';
+ form.insertBefore(sign,form.querySelector('.ncr-message'));
+ ['review','approve'].forEach(function(action){var btn=sign.querySelector('#ncr-'+action);btn.onclick=async function(){if(!record||!record.id)return;btn.disabled=true;try{var updated=await request('/api/qmes-ncr/reports/'+record.id+'/sign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});selected=updated;var idx=rows.findIndex(function(x){return String(x.id)===String(updated.id);});if(idx>=0)rows[idx]=updated;view='edit';render();}catch(e){notice(e.message);btn.disabled=false;}};});
  var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
  function refreshSide(){
   var q=search.value.toLowerCase(),source=filter.value;
