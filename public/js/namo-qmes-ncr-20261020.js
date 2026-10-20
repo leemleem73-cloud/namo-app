@@ -105,46 +105,30 @@ function decorateNcrForm(edit,record){
   document.head.appendChild(premium);
  }
 
- // NCR occurrence date: calendar UI matched to work inquiry; ISO value and save remain unchanged.
+ // NCR occurrence date: use the same compact single-date calendar design as process inspection.
  var occurrence=form.querySelector('[name="occurred_on"]');
  if(occurrence&&!occurrence.disabled){
-  occurrence.type='text';occurrence.readOnly=true;occurrence.style.cursor='pointer';occurrence.setAttribute('aria-label','발생일자 달력 열기');
-  var calendar=null,displayMonth=new Date((occurrence.value||today())+'T12:00:00');
-  var padDate=function(n){return String(n).padStart(2,'0');};
-  var ymd=function(y,m,d){return y+'-'+padDate(m+1)+'-'+padDate(d);};
-  var closeCalendar=function(){if(calendar){calendar.remove();calendar=null;}};
-  var redrawCalendar=function(){
-   if(!calendar)return;
-   var y=displayMonth.getFullYear(),m=displayMonth.getMonth(),offset=new Date(y,m,1).getDay(),count=new Date(y,m+1,0).getDate();
-   var cells=['일','월','화','수','목','금','토'].map(function(x,i){return '<span class="ncr-cal-week '+(i===0||i===6?'weekend':'')+'">'+x+'</span>';}).join('');
-   for(var j=0;j<offset;j++)cells+='<span></span>';
-   for(var d=1;d<=count;d++){var value=ymd(y,m,d),week=(offset+d-1)%7;cells+='<button type="button" class="ncr-cal-day '+(week===0||week===6?'weekend ':'')+(value===occurrence.value?'chosen':'')+'" data-date="'+value+'">'+d+'</button>';}
-   calendar.innerHTML='<div class="ncr-cal-head"><button type="button" data-move="-12">«</button><button type="button" data-move="-1">‹</button><strong>'+y+'.'+padDate(m+1)+'</strong><button type="button" data-move="1">›</button><button type="button" data-move="12">»</button></div><div class="ncr-cal-grid">'+cells+'</div><div class="ncr-cal-foot"><button type="button" data-action="today">오늘</button><button type="button" data-action="clear">초기화</button><button type="button" data-action="close">닫기</button></div>';
-   var box=occurrence.getBoundingClientRect();calendar.style.left=Math.max(6,Math.min(box.left,window.innerWidth-292))+'px';calendar.style.top=(box.bottom+312<window.innerHeight?box.bottom+4:Math.max(6,box.top-312))+'px';
+  occurrence.type='text';occurrence.readOnly=true;occurrence.style.cursor='pointer';
+  occurrence.setAttribute('aria-label','발생일자 달력 열기');
+  var occPop=null,occMonth=null;
+  var occFmt=function(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  var occClose=function(){if(occPop){occPop.remove();occPop=null;}};
+  var occDraw=function(){
+   if(!occPop)return;
+   var y=occMonth.getFullYear(),m=occMonth.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),cells='';
+   ['일','월','화','수','목','금','토'].forEach(function(t){cells+='<span class="iqc-mini-week">'+t+'</span>';});
+   for(var i=0;i<first;i++)cells+='<span></span>';
+   for(var day=1;day<=days;day++){var val=occFmt(new Date(y,m,day));cells+='<button type="button" data-date="'+val+'" data-current-day="'+(val===occFmt(new Date()))+'" aria-selected="'+(occurrence.value===val)+'">'+day+'</button>';}
+   occPop.innerHTML='<div class="iqc-mini-head"><button type="button" class="iqc-mini-nav" data-shift="-1" aria-label="이전 달">‹</button><span>'+y+'년 '+(m+1)+'월</span><button type="button" class="iqc-mini-nav" data-shift="1" aria-label="다음 달">›</button></div><div class="iqc-mini-grid">'+cells+'</div><div class="iqc-mini-foot"><button type="button" data-today>오늘</button><button type="button" data-clear>초기화</button></div>';
+   var box=occurrence.getBoundingClientRect(),width=175;
+   occPop.style.left=Math.max(5,Math.min(box.left,innerWidth-width-5))+'px';
+   occPop.style.top=(box.bottom+215>innerHeight?Math.max(5,box.top-215):box.bottom+4)+'px';
   };
-  occurrence.addEventListener('click',function(){
-   if(calendar){closeCalendar();return;}
-   displayMonth=new Date((occurrence.value||today())+'T12:00:00');
-   calendar=document.createElement('div');calendar.className='ncr-date-calendar';document.body.appendChild(calendar);redrawCalendar();
-  });
-  document.addEventListener('click',function(e){if(calendar&&!calendar.contains(e.target)&&e.target!==occurrence)closeCalendar();});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeCalendar();});
-  document.addEventListener('scroll',closeCalendar,true);
-  document.addEventListener('click',function(e){
-   if(!calendar||!calendar.contains(e.target))return;
-   var b=e.target.closest('button');if(!b)return;
-   if(b.hasAttribute('data-move')){displayMonth=new Date(displayMonth.getFullYear(),displayMonth.getMonth()+Number(b.getAttribute('data-move')),1);redrawCalendar();return;}
-   var value=b.getAttribute('data-date');var action=b.getAttribute('data-action');
-   if(action==='close'){closeCalendar();return;}
-   if(action==='today')value=today();
-   if(action==='clear')value='';
-   if(value!==null){occurrence.value=value;occurrence.dispatchEvent(new Event('input',{bubbles:true}));occurrence.dispatchEvent(new Event('change',{bubbles:true}));closeCalendar();}
-  });
-  if(!document.getElementById('ncr-date-calendar-css')){
-   var cstyle=document.createElement('style');cstyle.id='ncr-date-calendar-css';
-   cstyle.textContent='.ncr-date-calendar{position:fixed;z-index:2147483645;width:281px;padding:11px;border:1px solid #bccbdd;border-radius:5px;background:white;box-shadow:0 10px 25px #18334a30;font:13px Arial,sans-serif;color:#23354a;box-sizing:border-box}.ncr-date-calendar *{box-sizing:border-box}.ncr-cal-head{display:grid;grid-template-columns:32px 32px 1fr 32px 32px;align-items:center;border-bottom:1px solid #dae2ea;padding:5px 0 10px}.ncr-cal-head strong{text-align:center;font-size:16px}.ncr-date-calendar button{border:0;background:#fff;color:#627b97;cursor:pointer}.ncr-cal-head button{font-size:22px}.ncr-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px}.ncr-cal-grid>*{height:32px;text-align:center;display:flex;align-items:center;justify-content:center}.ncr-cal-week{font-size:12px;color:#73849a}.ncr-cal-grid .weekend:first-child,.ncr-cal-grid .ncr-cal-week:first-child{color:#e34646}.ncr-cal-day{font-size:13px;color:#34455c!important;border-radius:3px}.ncr-cal-day:hover{background:#eaf3fc}.ncr-cal-day.chosen{border:1px solid #69a7e7!important;background:#eaf3ff!important;font-weight:700}.ncr-cal-day.weekend{color:#e34646!important}.ncr-cal-foot{display:flex;justify-content:space-between;border-top:1px solid #dde5ec;margin-top:8px;padding-top:9px}.ncr-cal-foot button{border:1px solid #d1dbe5;border-radius:3px;padding:6px 9px;font-size:12px}';
-   document.head.appendChild(cstyle);
-  }
+  var occChoose=function(value){occurrence.value=value;occurrence.dispatchEvent(new Event('input',{bubbles:true}));occurrence.dispatchEvent(new Event('change',{bubbles:true}));occClose();};
+  occurrence.addEventListener('click',function(){if(occPop){occClose();return;}occMonth=new Date((occurrence.value||today())+'T12:00:00');occPop=document.createElement('div');occPop.className='iqc-mini-calendar ncr-iqc-calendar';document.body.appendChild(occPop);occDraw();});
+  document.addEventListener('click',function(e){if(!occPop)return;var b=e.target.closest&&e.target.closest('.ncr-iqc-calendar button');if(b){if(b.hasAttribute('data-shift')){occMonth=new Date(occMonth.getFullYear(),occMonth.getMonth()+Number(b.getAttribute('data-shift')),1);occDraw();}else if(b.hasAttribute('data-date'))occChoose(b.getAttribute('data-date'));else if(b.hasAttribute('data-today'))occChoose(occFmt(new Date()));else if(b.hasAttribute('data-clear'))occChoose('');return;}if(e.target!==occurrence&&!occPop.contains(e.target))occClose();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')occClose();});
+  if(!document.getElementById('ncr-iqc-calendar-css')){var cs=document.createElement('style');cs.id='ncr-iqc-calendar-css';cs.textContent='.ncr-iqc-calendar{position:fixed!important;z-index:2147483645!important;width:175px!important;min-width:0!important;max-width:175px!important;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 6px 18px #0002;padding:7px;color:#334155;font:11px Arial,sans-serif}.ncr-iqc-calendar *{box-sizing:border-box;min-width:0}.ncr-iqc-calendar button{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;border-radius:4px}.ncr-iqc-calendar .iqc-mini-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700}.ncr-iqc-calendar .iqc-mini-nav{padding:4px 7px}.ncr-iqc-calendar .iqc-mini-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}.ncr-iqc-calendar .iqc-mini-grid>*{min-width:0;height:23px;text-align:center;padding:0}.ncr-iqc-calendar .iqc-mini-week{height:19px;color:#64748b;line-height:19px}.ncr-iqc-calendar .iqc-mini-grid button:hover,.ncr-iqc-calendar .iqc-mini-grid button[aria-selected=true]{background:#dbeafe;color:#1d4ed8}.ncr-iqc-calendar .iqc-mini-grid button[data-current-day=true]{background:#f0e9ff;color:#65429c;font-weight:800}.ncr-iqc-calendar .iqc-mini-foot{display:flex;justify-content:space-between;margin-top:5px;border-top:1px solid #e2e8f0;padding-top:5px}';document.head.appendChild(cs);}
  }
  var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
  function refreshSide(){
