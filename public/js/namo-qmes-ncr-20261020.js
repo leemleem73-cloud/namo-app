@@ -205,13 +205,22 @@ renderList=function(){
  th.insertAdjacentHTML('afterbegin','<th><input type="checkbox" id="ncr-select-all" aria-label="전체 선택"></th>');
  var wrap=root.querySelector('.ncr-table-wrap');
  wrap.insertAdjacentHTML('afterend','<div class="ncr-pagination" id="ncr-pages"></div>');
- wrap.insertAdjacentHTML('afterend','<div class="ncr-bulk" id="ncr-bulk" hidden><button class="ncr-btn" id="ncr-bulk-print">선택 인쇄</button><button class="ncr-btn" id="ncr-bulk-mail">선택 메일 전송</button><button class="ncr-btn" id="ncr-bulk-delete">선택 삭제</button></div>');
+ wrap.insertAdjacentHTML('afterend','<div class="ncr-bulk" id="ncr-bulk" hidden><span class="ncr-bulk-count">0건 선택됨</span><button class="ncr-btn" id="ncr-bulk-print">선택 인쇄</button><button class="ncr-btn" id="ncr-bulk-mail">선택 메일 전송</button><button class="ncr-btn" id="ncr-bulk-delete">선택 삭제</button></div>');
  root.querySelector('#ncr-select-all').onchange=function(e){
   var checked=e.target.checked;
   root.querySelectorAll('.ncr-row-select').forEach(function(el){el.checked=checked;if(checked)selectedIds.add(el.value);else selectedIds.delete(el.value);});
   updateBulk();
  };
- root.querySelector('#ncr-bulk-print').onclick=function(){rows.filter(function(r){return selectedIds.has(String(r.id));}).forEach(printReport);};
+ root.querySelector('#ncr-bulk-print').onclick=function(){
+  var chosen=rows.filter(function(r){return selectedIds.has(String(r.id));});
+  if(!chosen.length)return;
+  var overlay=document.createElement('div');overlay.className='ncr-print-confirm-overlay';
+  overlay.innerHTML='<div class="ncr-print-confirm" role="dialog" aria-modal="true" aria-labelledby="ncr-print-title"><strong id="ncr-print-title">성적서 선택 인쇄</strong><p>선택한 '+chosen.length+'개의 성적서를 인쇄하시겠습니까?</p><div><button type="button" class="ncr-btn" data-cancel>취소</button><button type="button" class="ncr-btn primary" data-print>인쇄</button></div></div>';
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-cancel]').onclick=function(){overlay.remove();};
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  overlay.querySelector('[data-print]').onclick=function(){overlay.remove();chosen.forEach(printReport);};
+ };
  root.querySelector('#ncr-bulk-mail').onclick=function(){
   var chosen=rows.filter(function(r){return selectedIds.has(String(r.id));});
   if(!chosen.length)return;
@@ -232,6 +241,8 @@ renderList=function(){
 function updateBulk(){
  var bar=root.querySelector('#ncr-bulk');if(!bar)return;
  bar.hidden=!selectedIds.size;
+ bar.setAttribute('aria-live','polite');
+ var count=bar.querySelector('.ncr-bulk-count');if(count)count.textContent=selectedIds.size+'건 선택됨';
  bar.querySelector('#ncr-bulk-print').textContent='선택 인쇄 ('+selectedIds.size+')';
  bar.querySelector('#ncr-bulk-delete').textContent='선택 삭제 ('+selectedIds.size+')';
  bar.querySelector('#ncr-bulk-mail').textContent='선택 메일 전송 ('+selectedIds.size+')';
@@ -430,3 +441,6 @@ const style=document.createElement('style');style.textContent=`
 `;document.head.append(style);
 })();
 
+
+/* Match PQC fixed selection toolbar and confirmation dialog, NCR only. */
+(function(){var style=document.createElement('style');style.id='ncr-pqc-selection-parity';style.textContent='#ncr .ncr-bulk{position:fixed!important;left:52px!important;right:0!important;bottom:0!important;z-index:900!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;min-height:44px!important;margin:0!important;padding:8px 16px!important;background:#a9cee8!important;border:1px solid #8eb9d7!important;box-shadow:0 -2px 8px #2342!important}#ncr .ncr-bulk[hidden]{display:none!important}#ncr .ncr-bulk-count{margin-right:auto!important;color:#19517a!important;font-size:12px!important;font-weight:700!important}#ncr .ncr-bulk .ncr-btn{background:#fff!important;border:1px solid #b8d2e5!important;border-radius:4px!important;padding:5px 10px!important;font-size:11px!important;font-weight:700!important;color:#1d4c75!important}.ncr-print-confirm-overlay{position:fixed;inset:0;z-index:2147482000;background:rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center}.ncr-print-confirm{width:260px;max-width:calc(100vw - 32px);background:#fff;border-radius:8px;padding:20px 16px 14px;box-shadow:0 15px 35px #0003;font:12px Arial,"Malgun Gothic",sans-serif;color:#203951}.ncr-print-confirm strong{font-size:13px}.ncr-print-confirm p{margin:12px 0 16px;color:#52667b}.ncr-print-confirm>div{display:flex;justify-content:flex-end;gap:7px}.ncr-print-confirm .ncr-btn{padding:7px 13px;border:1px solid #cbd5e1;background:#fff;border-radius:4px;cursor:pointer}.ncr-print-confirm .ncr-btn.primary{background:#e8f2fc;border-color:#c7daeb}';document.head.appendChild(style);})();
