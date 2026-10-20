@@ -290,6 +290,52 @@ draw=function(){
 };
 })();
 
+
+/* Equipment-style inquiry card, scoped to the NCR list only. */
+(function(){
+ var listRender=renderList;
+ renderList=function(){
+  listRender();
+  var card=document.createElement('div');card.className='ncr-equipment-card';
+  while(root.firstChild)card.appendChild(root.firstChild);
+  root.appendChild(card);
+  var table=card.querySelector('.ncr-table-wrap table');
+  if(table){
+   var group=document.createElement('colgroup');
+   [null,null,16,10,7,12,12,20,8,8,7].forEach(function(weight,index){
+    var col=document.createElement('col');
+    col.style.width=index===0?'34px':index===1?'50px':'calc('+weight+'% - '+(84*weight/100)+'px)';
+    group.appendChild(col);
+   });
+   table.prepend(group);
+  }
+ };
+ var css=document.createElement('style');css.id='qmes-ncr-equipment-list-parity-20261020';
+ css.textContent=`
+ html body #ncr .ncr-equipment-card{background:#fff;border:1px solid #d2dfed;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(24,51,83,.075);padding-bottom:16px}
+ html body #ncr .ncr-equipment-card>.ncr-head{border:0!important;border-bottom:1px solid #d7e1eb!important;border-radius:0!important;padding:14px 20px!important;min-height:68px;gap:14px}
+ html body #ncr .ncr-equipment-card .ncr-head h1{margin:0!important;font-size:18px!important;font-weight:800!important;color:#193950!important;border-left:4px solid #2081d5!important;padding-left:10px!important;line-height:1.4}
+ html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn{height:36px;padding:0 15px;font-size:12px;font-weight:700;border-radius:5px}
+ html body #ncr .ncr-equipment-card>.ncr-tools{border:0!important;border-bottom:1px solid #dbe5ed!important;background:#f1f6fb!important;padding:12px 16px!important;display:flex;flex-wrap:wrap;gap:12px 16px}
+ html body #ncr .ncr-equipment-card>.ncr-tools label{color:#344d67;font-size:12px;font-weight:700;gap:7px}
+ html body #ncr .ncr-equipment-card>.ncr-tools input:not([type=hidden]),html body #ncr .ncr-equipment-card>.ncr-tools select:not([hidden]){width:142px;min-width:0!important;max-width:142px;height:32px!important;border:1px solid #ccdaea;border-radius:4px;padding:0 8px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
+ html body #ncr .ncr-equipment-card .ncr-period-trigger{min-width:0;width:176px;height:32px;border:1px solid #ccdaea;border-radius:4px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
+ html body #ncr .ncr-equipment-card>.ncr-list-head{padding:12px 16px 9px!important;color:#183b5a;font-size:13px}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap{margin:0 16px!important;border:1px solid #cbd8e5!important;border-radius:0!important;overflow:visible!important;min-width:0}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap table{table-layout:fixed;width:100%!important;min-width:0!important;max-width:100%!important;border-collapse:collapse;border-spacing:0}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap th{height:34px;padding:4px 6px!important;background:#e8f0f8!important;color:#244260!important;font-size:12px;font-weight:600;text-align:center;vertical-align:middle;border-color:#cbd8e5!important;white-space:normal;overflow-wrap:anywhere}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap td{height:44px;padding:5px 6px!important;background:#fff!important;color:#263347;font-size:12px;text-align:center!important;vertical-align:middle;border-color:#d5dce5!important;white-space:normal;overflow-wrap:anywhere}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap td *{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+ html body #ncr .ncr-equipment-card .ncr-table-wrap input[type=checkbox]{width:14px;height:14px;margin:0;vertical-align:middle;accent-color:#188ad1}
+ html body #ncr .ncr-equipment-card .ncr-empty{height:54px;padding:18px 10px!important;color:#64748b!important;font-size:12px;font-weight:400}
+ html body #ncr .ncr-equipment-card .ncr-row-actions{flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
+ html body #ncr .ncr-equipment-card .ncr-row-actions .ncr-btn{height:26px;min-width:0;padding:0 7px;font-size:11px;border-radius:4px;background:#f5f9ff;color:#17446f;border:1px solid #cbd8e5}
+ html body #ncr .ncr-equipment-card>.ncr-message:empty{display:none}
+ html body #ncr .ncr-equipment-card>.ncr-pagination{padding:14px 16px 0!important}
+ `;
+ document.head.appendChild(css);
+})();
+
 render();if(root.classList.contains('active'))load();nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
 })();
 /* Work inquiry date popup only. Preserve native date filters, row data and query handlers. */
