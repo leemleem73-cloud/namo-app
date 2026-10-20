@@ -54,6 +54,17 @@ function decorateNcrForm(edit,record){
   group[1].forEach(function(name){var el=oldGrid.querySelector('[name="'+name+'"]');if(el){var label=el.closest('label');if(label)grid.appendChild(label);}});
   section.append(title,grid);form.insertBefore(section,form.querySelector('.ncr-message'));
  });
+
+ var extra=[
+ ['검사 및 발생정보',[['발견자','reporter'],['발생부서','department'],['발생공정','process'],['작업지시번호','work_order'],['검사수량(kg)','inspected_qty'],['부적합수량(kg)','affected_qty'],['중요도','severity','select',['경미','중대','치명']],['규격 / 판정기준','specification','textarea'],['실측값 / 이탈내용','actual_result','textarea']]],
+ ['격리 및 처리판정',[['격리장소','isolation_location'],['처리판정','disposition','select',['미결정','재작업','선별','특채','반품','폐기']],['판정 승인자','disposition_approved_by'],['관련 LOT','related_lots'],['고객사 통보 여부','customer_notified','select',['미통보','통보완료','해당없음']]]],
+ ['시정조치 및 검증',[['원인분석 방법','cause_method','select',['5 Why','특성요인도','8D','기타']],['조치 담당자','action_owner'],['조치 완료일','action_completed_on','date'],['효과 검증방법','verification_method'],['효과 검증일','verification_date','date'],['검증 결과','verification_result','textarea'],['검증자','verified_by'],['종결 승인자','closure_approved_by'],['종결일','closed_on','date'],['재발 여부','repeat_issue','select',['미확인','재발 없음','재발']]]]
+ ];
+ extra.forEach(function(g){var sec=document.createElement('section');sec.className='ncr-section';sec.innerHTML='<div class="ncr-section-title">'+g[0]+'</div>';var grid=document.createElement('div');grid.className='ncr-section-grid';g[1].forEach(function(f){var label=document.createElement('label');label.textContent=f[0];var el;if(f[2]==='textarea'){el=document.createElement('textarea');}else if(f[2]==='select'){el=document.createElement('select');f[3].forEach(function(v){var opt=document.createElement('option');opt.value=v;opt.textContent=v;el.appendChild(opt);});}else{el=document.createElement('input');el.type=f[2]==='date'?'date':'text';}el.name='ncr_detail_'+f[1];el.value=(record&&record.details&&record.details[f[1]])||'';label.appendChild(el);grid.appendChild(label);});sec.appendChild(grid);form.insertBefore(sec,form.querySelector('.ncr-message'));});
+ var attachmentSection=document.createElement('section');attachmentSection.className='ncr-section';
+ attachmentSection.innerHTML='<div class="ncr-section-title">증빙자료 및 첨부파일</div><div style="padding:14px"><input type="file" id="ncr-attach-input" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.xlsx,.docx,.xls,.doc,.csv,.txt" style="max-width:100%"><p style="font-size:12px;color:#64748b">사진·검사성적서·원인분석 자료 첨부 (파일당 10MB, 최대 10개). 신규 등록 시 저장 버튼을 누르면 보고서와 함께 등록됩니다.</p><div id="ncr-attachment-list"></div></div>';
+ form.insertBefore(attachmentSection,form.querySelector('.ncr-message'));
+ if(edit&&record&&record.id)loadNcrAttachments(record.id);
  var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
  function refreshSide(){
   var q=search.value.toLowerCase(),source=filter.value;
@@ -120,16 +131,17 @@ async function load(){
  try{rows=await request('/api/qmes-ncr/reports');draw();notice('');}
  catch(e){notice(e.message);var tbody=root.querySelector('#ncr-rows');if(tbody)tbody.innerHTML='<tr><td colspan="10" class="ncr-empty">조회 실패: '+esc(e.message)+'</td></tr>';}
 }
+async function loadNcrAttachments(id){var target=root.querySelector('#ncr-attachment-list');if(!target)return;try{var files=await request('/api/qmes-ncr/reports/'+id+'/attachments');target.replaceChildren();files.forEach(function(f){var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e2e8f0';var link=document.createElement('a');link.textContent=f.file_name+' ('+Math.ceil(f.file_size/1024)+'KB)';link.href='/api/qmes-ncr/attachments/'+f.id+'/download';link.style.color='#1768ad';row.appendChild(link);var del=document.createElement('button');del.type='button';del.className='ncr-btn';del.textContent='삭제';del.onclick=async function(){if(!confirm('첨부파일을 삭제하시겠습니까?'))return;try{await request('/api/qmes-ncr/attachments/'+f.id,{method:'DELETE'});loadNcrAttachments(id);}catch(e){notice(e.message);}};row.appendChild(del);target.appendChild(row);});}catch(e){target.textContent=e.message;}}
 async function save(event){
  event.preventDefault();
  var form=event.currentTarget,button=form.querySelector('#ncr-save');
- var data={};new FormData(form).forEach(function(v,k){data[k]=String(v);});
+ var data={},details={};new FormData(form).forEach(function(v,k){if(k.indexOf('ncr_detail_')===0)details[k.slice(11)]=String(v);else if(k!=='file')data[k]=String(v);});data.details=details;var files=Array.from((form.querySelector('#ncr-attach-input')||{}).files||[]);
  if(!data.description&&!selected){notice('부적합 내용을 입력하세요.');return;}
  button.disabled=true;
  try{
   var edit=view==='edit',url='/api/qmes-ncr/reports'+(edit?'/'+selected.id:'');
   var result=await request(url,{method:edit?'PATCH':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  selected=result;view='list';render();await load();
+  if(files.length){if(files.length>10)throw Error('첨부파일은 최대 10개까지 등록할 수 있습니다.');for(var file of files){var upload=new FormData();upload.append('file',file);await request('/api/qmes-ncr/reports/'+result.id+'/attachments',{method:'POST',body:upload});}}selected=result;view='list';render();await load();
  }catch(e){notice(e.message);}finally{button.disabled=false;}
 }
 function printReport(r){
