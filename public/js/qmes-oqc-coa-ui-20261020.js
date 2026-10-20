@@ -28,6 +28,7 @@ window.qmesCoaAttach=async function(row){
  const panel=document.createElement('div');panel.className='oqc-coa-panel';panel.setAttribute('aria-live','polite');root.before(panel);
  const print=document.getElementById('printReportBtn');if(print)print.textContent=row._coaIssue?'발행본 인쇄':'미리보기 인쇄';
  const statusCell=[...root.querySelectorAll('.std-info>.k')].find(el=>el.textContent.trim()==='CoA 상태')?.nextElementSibling;
+ if(statusCell)statusCell.dataset.coaStatus='1';
  const docCells=root.querySelectorAll('.std-inspection-doc .v');
  if(row._coaIssue){
   const issue=row._coaIssue;
@@ -43,9 +44,9 @@ window.qmesCoaAttach=async function(row){
    const cancel=document.createElement('button');cancel.type='button';cancel.className='btn';cancel.textContent='발행 취소';cancel.dataset.coaCancel='1';panel.querySelector('.coa-actions').append(cancel);
    cancel.onclick=()=>{
     const dialog=document.createElement('div');dialog.className='iqc-delete-backdrop';
-    dialog.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>CoA 발행 취소</h3><p>'+esc(issue.number)+' 발행을 취소하고 미발행 상태로 돌아갑니다. 취소 이력은 보존됩니다.</p><div class="iqc-delete-buttons"><button type="button" data-cancel>닫기</button><button type="button" data-confirm>발행 취소</button></div></div>';
+    dialog.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>CoA 발행 취소</h3><p>'+esc(issue.number)+' 발행을 취소하고 미발행 상태로 돌아갑니다. 이 발행본과 발행이력은 삭제되며 복구할 수 없습니다.</p><div class="iqc-delete-buttons"><button type="button" data-cancel>닫기</button><button type="button" data-confirm>발행 취소</button></div></div>';
     document.body.append(dialog);dialog.querySelector('[data-cancel]').onclick=()=>dialog.remove();
-    dialog.querySelector('[data-confirm]').onclick=async()=>{dialog.remove();cancel.disabled=true;try{const changed=await api('cancel',{issueId:issue.id});viewIssued(changed,row);toast('CoA 발행 취소 완료 · 미발행 상태로 변경되었습니다.');}catch(e){toast(e.message);cancel.disabled=false;}};
+    dialog.querySelector('[data-confirm]').onclick=async()=>{dialog.remove();cancel.disabled=true;try{await api('cancel',{issueId:issue.id});panel.querySelector('[data-coa-back]').click();toast('발행 취소 완료 · 미발행 상태로 돌아갔습니다.');}catch(e){toast(e.message);cancel.disabled=false;}};
    };
    // Recheck revocation before every official print, including stale open tabs.
    let permitted=false;
