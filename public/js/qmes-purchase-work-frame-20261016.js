@@ -14,8 +14,10 @@ function init(){
  const number=document.createElement('input');number.className='input qpf-number';number.placeholder='전체';
  supplier.dataset.iqcFilter='supplier';supplier.placeholder='전체';supplier.onclick=null;
  // Move original controls so their native handlers (including the range calendar) remain connected.
- const grid=document.createElement('div');grid.className='qpf-grid';grid.append(field('공급업체',supplier),field('품목명',material),field('발주번호',number),field('발주상태',status),field('발주기간',calendar),field('통합검색',search));
- filters.append(grid);filters.querySelector('.qpu-more').hidden=true;
+ const grid=document.createElement('div');grid.className='qpf-grid';grid.append(field('공급업체',supplier),field('품목명',material),field('발주번호',number),field('발주상태',status),field('발주기간',calendar));
+ // Preserve the original search input for legacy event handlers, but remove it from the visible search bar.
+ search.value='';search.hidden=true;search.style.setProperty('display','none','important');
+ filters.append(grid,search);filters.querySelector('.qpu-more').hidden=true;
  const actions=document.createElement('div');actions.className='qpf-actions';const count=document.createElement('span');count.className='qpf-count';const buttons=document.createElement('div');buttons.className='qpf-buttons';
  const print=document.createElement('button'),mail=document.createElement('button'),remove=document.createElement('button');
  for(const [button,cls,text] of [[print,'qpf-print','선택 인쇄'],[mail,'qpf-mail','선택 메일 전송'],[remove,'qpf-delete','선택 삭제']]){button.type='button';button.className='btn '+cls;button.textContent=text;button.hidden=true;buttons.append(button);}
