@@ -24,7 +24,7 @@ function init(){
  let sortKey='index',sortAsc=true;
  function allRecords(){return [...(typeof NAMO_EQUIPMENT_CP!=='undefined'?NAMO_EQUIPMENT_CP:[]),...read()]}
  function render(){
-  const items=allRecords();const sorted=items.map((e,i)=>({...e,_sourceIndex:i})).sort((a,b)=>{let n=sortKey==='index'?a._sourceIndex-b._sourceIndex:String(a[sortKey]||'').localeCompare(String(b[sortKey]||''),'ko',{numeric:true});return sortAsc?n:-n});tbody.innerHTML=sorted.map((e,_display)=>{const i=e._sourceIndex;return '<tr class="eq-row" data-eq-i="'+i+'" data-group="'+esc(e.group)+'"><td class="eq-wo-check"><input type="checkbox" class="eq-wo-select"></td><td>'+String(i+1)+'</td><td class="left"><strong>'+esc(e.name)+'</strong></td><td>'+esc(e.group)+'</td><td class="left">'+esc(e.use)+'</td><td class="left">'+esc(e.standard)+'</td><td class="left">'+esc(e.method)+'</td><td>'+esc(e.cycle)+'</td><td>'+esc(e.last)+'</td><td>'+esc(e.next)+'</td><td>'+esc(e.status)+'</td><td class="eq-wo-action"><button data-eq-print>인쇄</button><button data-eq-edit>수정</button><button data-eq-delete>삭제</button></td></tr>'}).join('');
+  const items=allRecords();const sorted=items.map((e,i)=>({...e,_sourceIndex:i})).sort((a,b)=>{let n=sortKey==='index'?a._sourceIndex-b._sourceIndex:String(a[sortKey]||'').localeCompare(String(b[sortKey]||''),'ko',{numeric:true});return sortAsc?n:-n});tbody.innerHTML=sorted.map((e,_display)=>{const i=e._sourceIndex;return '<tr class="eq-row" data-eq-i="'+i+'" data-group="'+esc(e.group)+'"><td class="eq-wo-check"><input type="checkbox" class="eq-wo-select"></td><td>'+String(i+1)+'</td><td class="left"><strong>'+esc(e.name)+'</strong></td><td>'+esc(e.group)+'</td><td class="left">'+esc(e.use)+'</td><td class="left">'+esc(e.standard)+'</td><td class="left">'+esc(e.method)+'</td><td>'+esc(e.cycle)+'</td><td>'+esc(e.last)+'</td><td>'+esc(e.next)+'</td><td>'+esc(e.status)+'</td><td class="eq-wo-action"><button data-eq-edit>수정</button></td></tr>'}).join('');
   root.querySelector('#eqWoAll').checked=false;bulk.hidden=true;
   const selected=()=>[...tbody.querySelectorAll('.eq-wo-select:checked')].map(b=>Number(b.closest('tr').dataset.eqI));
   const update=()=>{bulk.hidden=!selected().length;};
@@ -33,9 +33,7 @@ function init(){
   bulk.querySelector('[data-bulk-print]').onclick=()=>printRows(selected().map(i=>items[i]));
   bulk.querySelector('[data-bulk-delete]').onclick=()=>{const ids=selected();if(ids.some(i=>i<7)){alert('기존 관리계획서 설비 7종은 보호되어 삭제할 수 없습니다.');return}if(!confirm(ids.length+'건을 삭제하시겠습니까?'))return;save(read().filter((_,j)=>!ids.includes(j+7)));render()};
   tbody.querySelectorAll('tr').forEach(tr=>{const i=Number(tr.dataset.eqI),item=items[i];tr.onclick=e=>{if(e.target.closest('button,input'))return;if(i<7&&typeof renderEquipmentDetail==='function')renderEquipmentDetail(i);else showExtra(item)};tr.querySelector('.eq-wo-action').insertAdjacentHTML('afterbegin','');tr.querySelector('.left strong').innerHTML='<button type="button" class="eq-wo-name">'+esc(item.name)+'</button>';tr.querySelector('.eq-wo-name').onclick=e=>{e.stopPropagation();if(i<7&&typeof renderEquipmentDetail==='function')renderEquipmentDetail(i);else showExtra(item)};
-   tr.querySelector('[data-eq-print]').onclick=()=>printRows([item]);
    tr.querySelector('[data-eq-edit]').onclick=()=>{if(i<7){alert('기본 설비는 관리계획서 기준 원본으로 보호됩니다.');return}editForm(item,v=>{const arr=read();arr[i-7]=v;save(arr);render()})};
-   tr.querySelector('[data-eq-delete]').onclick=()=>{if(i<7){alert('기본 설비 7종은 삭제할 수 없습니다.');return}if(confirm('선택한 설비를 삭제하시겠습니까?')){save(read().filter((_,j)=>j!==i-7));render()}};
   });
   filterNow();
  }
