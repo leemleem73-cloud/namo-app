@@ -91,5 +91,70 @@ function printReport(r){
  w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+esc(r.report_no)+'</title><style>body{font:14px Arial,sans-serif;margin:35px;color:#172b44}h1{text-align:center}table{width:100%;border-collapse:collapse}th,td{border:1px solid #94a3b8;padding:12px;text-align:left;white-space:pre-wrap}th{width:170px;background:#f1f5f9}@page{size:A4;margin:15mm}</style></head><body><h1>부적합보고서 (NCR)</h1><table>'+fields.map(function(p){return '<tr><th>'+esc(p[0])+'</th><td>'+esc(p[1]||'-')+'</td></tr>';}).join('')+'</table><script>window.onload=function(){window.print()};<\/script></body></html>');
  w.document.close();
 }
+
+/* Work-order parity enhancements, scoped only to NCR. */
+(function(){
+var parityStyle=document.createElement('style');
+parityStyle.textContent='#ncr .ncr-head{background:#fff;border:1px solid #dce5ee;border-radius:8px;padding:17px 20px;margin-bottom:12px}#ncr .ncr-head h1{font-size:18px;color:#173b61;font-weight:800}#ncr .ncr-tools{background:#fff;border:1px solid #dce5ee;border-radius:7px;padding:12px}#ncr .ncr-table-wrap{border-radius:0}#ncr .ncr-table-wrap th{background:#eef7ff;border-color:#d8e8f5;color:#183b59}#ncr .ncr-table-wrap td{background:#fff}#ncr .ncr-pagination{display:flex;justify-content:center;gap:6px;padding:12px;background:#fff}#ncr .ncr-pagination button{padding:5px 11px;border:1px solid #d4dce5;border-radius:5px;background:#fff}#ncr .ncr-pagination button.active{background:#1d6eb2;color:#fff}#ncr .ncr-bulk{display:flex;gap:8px;margin:10px 0;align-items:center}#ncr .ncr-bulk[hidden]{display:none}#ncr .ncr-row-actions{display:flex;gap:5px;justify-content:center}#ncr .ncr-row-actions .ncr-btn{padding:5px 8px;font-size:12px}#ncr .ncr-select{width:16px;height:16px}';
+document.head.appendChild(parityStyle);
+var originalRenderList=renderList,originalDraw=draw,originalRender=render;
+var page=1,selectedIds=new Set(),pageSize=10;
+renderList=function(){
+ originalRenderList();
+ var th=root.querySelector('#ncr-rows')?.closest('table')?.querySelector('thead tr');
+ if(!th)return;
+ th.insertAdjacentHTML('afterbegin','<th><input type="checkbox" id="ncr-select-all" aria-label="전체 선택"></th>');
+ var wrap=root.querySelector('.ncr-table-wrap');
+ wrap.insertAdjacentHTML('afterend','<div class="ncr-pagination" id="ncr-pages"></div>');
+ wrap.insertAdjacentHTML('beforebegin','<div class="ncr-bulk" id="ncr-bulk" hidden><button class="ncr-btn" id="ncr-bulk-print">선택 인쇄</button><button class="ncr-btn" id="ncr-bulk-delete">선택 삭제</button></div>');
+ root.querySelector('#ncr-select-all').onchange=function(e){
+  var checked=e.target.checked;
+  root.querySelectorAll('.ncr-row-select').forEach(function(el){el.checked=checked;if(checked)selectedIds.add(el.value);else selectedIds.delete(el.value);});
+  updateBulk();
+ };
+ root.querySelector('#ncr-bulk-print').onclick=function(){rows.filter(function(r){return selectedIds.has(String(r.id));}).forEach(printReport);};
+ root.querySelector('#ncr-bulk-delete').onclick=async function(){
+  if(!selectedIds.size||!window.confirm('선택한 부적합보고서 '+selectedIds.size+'건을 삭제하시겠습니까?'))return;
+  var ids=Array.from(selectedIds),errors=[];
+  for(var id of ids){try{await request('/api/qmes-ncr/reports/'+encodeURIComponent(id),{method:'DELETE'});selectedIds.delete(id);}catch(e){errors.push(id+': '+e.message);}}
+  await load();if(errors.length)notice('일부 삭제 실패: '+errors.join(', '));
+ };
+ root.querySelector('#ncr-search').oninput=function(){page=1;draw();};
+ root.querySelector('#ncr-filter').onchange=function(){page=1;draw();};
+ draw();
+};
+function updateBulk(){
+ var bar=root.querySelector('#ncr-bulk');if(!bar)return;
+ bar.hidden=!selectedIds.size;
+ bar.querySelector('#ncr-bulk-print').textContent='선택 인쇄 ('+selectedIds.size+')';
+ bar.querySelector('#ncr-bulk-delete').textContent='선택 삭제 ('+selectedIds.size+')';
+}
+draw=function(){
+ if(view!=='list')return;
+ var q=(root.querySelector('#ncr-search')?.value||'').toLowerCase(),status=root.querySelector('#ncr-filter')?.value||'';
+ var matched=rows.filter(function(r){return (!status||r.status===status)&&[r.report_no,r.product,r.lot,r.description,r.customer].join(' ').toLowerCase().includes(q);});
+ var pages=Math.max(1,Math.ceil(matched.length/pageSize));page=Math.min(page,pages);
+ var pageRows=matched.slice((page-1)*pageSize,page*pageSize);
+ root.querySelector('#ncr-count').textContent='총 '+matched.length+'건';
+ root.querySelector('#ncr-rows').innerHTML=pageRows.length?pageRows.map(function(r,i){
+  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String(matched.length-((page-1)*pageSize+i))+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-print="'+r.id+'">인쇄</button><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button><button class="ncr-btn" data-ncr-delete="'+r.id+'">삭제</button></div></td></tr>';
+ }).join(''):'<tr><td colspan="11" class="ncr-empty">등록된 부적합보고서가 없습니다.</td></tr>';
+ root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
+ root.querySelectorAll('[data-ncr-print]').forEach(function(btn){btn.onclick=function(){var row=rows.find(function(r){return String(r.id)===btn.dataset.ncrPrint;});if(row)printReport(row);};});
+ root.querySelectorAll('[data-ncr-delete]').forEach(function(btn){btn.onclick=async function(){
+  if(!window.confirm('해당 NCR 보고서를 삭제하시겠습니까?'))return;
+  try{await request('/api/qmes-ncr/reports/'+encodeURIComponent(btn.dataset.ncrDelete),{method:'DELETE'});selectedIds.delete(btn.dataset.ncrDelete);await load();}
+  catch(e){notice(e.message);}
+ };});
+ root.querySelectorAll('.ncr-row-select').forEach(function(el){el.onchange=function(){if(el.checked)selectedIds.add(el.value);else selectedIds.delete(el.value);updateBulk();};});
+ var pager=root.querySelector('#ncr-pages');if(pager){
+  pager.innerHTML=Array.from({length:pages},function(_,i){return '<button type="button" data-ncr-page="'+(i+1)+'" class="'+(i+1===page?'active':'')+'">'+(i+1)+'</button>';}).join('');
+  pager.querySelectorAll('button').forEach(function(b){b.onclick=function(){page=Number(b.dataset.ncrPage);draw();};});
+ }
+ var all=root.querySelector('#ncr-select-all');if(all)all.checked=pageRows.length>0&&pageRows.every(function(r){return selectedIds.has(String(r.id));});
+ updateBulk();
+};
+render=function(){originalRender();};
+})();
 render();if(root.classList.contains('active'))load();nav.addEventListener('click',function(){if(view!=='list'){view='list';render();}load();});
 })();
