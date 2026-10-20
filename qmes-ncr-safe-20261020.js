@@ -33,7 +33,7 @@ const str=(v,n=3000)=>String(v==null?'':v).trim().slice(0,n);
 const validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v);
 const ncrUpload=multer({storage:multer.memoryStorage(),limits:{fileSize:10*1024*1024,files:1}});
 const allowedMime=new Set(['application/pdf','image/jpeg','image/png','image/webp','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','text/csv','application/vnd.ms-excel','application/msword']);
-const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified'];
+const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified','improvement_completed','before_condition','after_condition','improvement_comparison'];
 function cleanDetails(input){const out={};if(input&&typeof input==='object'&&!Array.isArray(input))for(const k of detailKeys)if(Object.prototype.hasOwnProperty.call(input,k))out[k]=str(input[k],1500);return out;}
 function install(app){
  if(app.__qmesNcrInstalled)return;
