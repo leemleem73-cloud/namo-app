@@ -330,6 +330,32 @@ function installInventoryRoutes(app){
     }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('Inventory reset failed:',e);return fail(res,500,'전체 재고 초기화 실패: 변경사항이 적용되지 않았습니다.');}
     finally{client.release();}
   });
+  // Reset finished-goods (FG) balances only; keep all historical records.
+  app.post('/api/inventory/admin/clear-finished-goods',requireAdmin,async(req,res)=>{
+    if(req.body?.confirmation!=='완제품 재고 전체 삭제')return fail(res,400,'확인 문구가 일치하지 않습니다.');
+    try{await ensureInventorySchema();}catch(e){return fail(res,500,'재고 데이터베이스 확인 실패');}
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      await client.query('SELECT pg_advisory_xact_lock(20261020,1)');
+      const rows=await client.query(`SELECT b.item_code,b.lot_no,b.location_code,b.quality_status,b.quantity
+        FROM inventory_balances b JOIN inventory_items i ON i.item_code=b.item_code
+        WHERE i.category='FG' AND b.quantity<>0 FOR UPDATE OF b`);
+      const tag='FG-OPENING-RESET-'+Date.now();
+      for(const row of rows.rows){
+        await client.query(`INSERT INTO inventory_counts(item_code,lot_no,location_code,quality_status,book_qty,actual_qty,difference_qty,reason,counted_by)
+          VALUES($1,$2,$3,$4,$5,0,$6,$7,$8)`,[row.item_code,row.lot_no,row.location_code,row.quality_status,row.quantity,-Number(row.quantity),'완제품 재고 신규 작성 초기화 '+tag,txt(req.session.user?.name)]);
+        await client.query(`INSERT INTO inventory_transactions(transaction_type,item_code,lot_no,quantity,unit,from_location,to_location,from_status,to_status,reference_no,reason,operator_id,operator_name)
+          VALUES('ADJUSTMENT',$1,$2,$3,'kg',$4,'',$5,'',$6,$7,$8,$9)`,
+          [row.item_code,row.lot_no,Math.abs(Number(row.quantity)),row.location_code,row.quality_status,tag,'완제품 재고 0 초기화 / 기존 거래이력 보존',txt(req.session.user?.uid||req.session.user?.id),txt(req.session.user?.name)]);
+      }
+      await client.query(`UPDATE inventory_balances b SET quantity=0,updated_at=NOW()
+        FROM inventory_items i WHERE i.item_code=b.item_code AND i.category='FG' AND b.quantity<>0`);
+      await client.query('COMMIT');
+      return ok(res,{resetLots:rows.rowCount,referenceNo:tag},'완제품 재고현황 초기화 완료');
+    }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('FG clear error',e);return fail(res,500,'완제품 재고 초기화 실패');}
+    finally{client.release();}
+  });
   app.get('/api/inventory/health',requireLogin,async(_req,res)=>{try{await ensureInventorySchema();ok(res,{database:'ok',module:'inventory'});}catch(e){fail(res,500,e.message);}});
   app.get('/api/inventory/items',requireLogin,async(_req,res)=>{try{await ensureInventorySchema();const r=await pool.query(`SELECT * FROM inventory_items WHERE active=TRUE ORDER BY category,item_name`);ok(res,r.rows);}catch(e){fail(res,500,e.message);}});
   app.post('/api/inventory/items',requireLogin,async(req,res)=>{try{await ensureInventorySchema();const b=req.body||{},code=txt(b.itemCode).toUpperCase(),name=txt(b.itemName),category=txt(b.category).toUpperCase(),safety=qty(b.safetyStock)??0;if(!code||!name||!VALID_CATEGORIES.has(category))return fail(res,400,'품목코드, 품목명, 재고구분이 필요합니다.');const r=await pool.query(`INSERT INTO inventory_items (item_code,item_name,category,unit,safety_stock,expiry_days) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (item_code) DO UPDATE SET item_name=$2,category=$3,unit=$4,safety_stock=$5,expiry_days=$6,updated_at=NOW() RETURNING *`,[code,name,category,txt(b.unit)||'kg',safety,Number.isInteger(Number(b.expiryDays))?Number(b.expiryDays):null]);ok(res,r.rows[0],'품목이 저장되었습니다.');}catch(e){fail(res,500,e.message);}});
