@@ -20,6 +20,7 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-summary .eq-parity-toggle{min-width:29px}
 #equipment .eq-table-card{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:white!important;padding:0 16px 16px!important}
 #equipment .eq-table-title{display:none!important}
+#equipment .eq-table tbody td,#equipment .eq-table tbody td *{text-align:center!important;vertical-align:middle!important}
 #equipment .eq-table thead th{background:#e7eff8!important;color:#254563!important}
 #equipment .eq-parity-hidden{display:none!important}
 #equipment .eq-parity-actionline{display:flex;gap:7px;align-items:center;margin-left:auto}
@@ -93,7 +94,7 @@ function init(){
  summary.querySelector('[data-toggle]').onclick=()=>{collapsed=!collapsed;tableCard.classList.toggle('eq-parity-hidden',collapsed);summary.querySelector('[data-toggle]').innerHTML=collapsed?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 14 5-5 5 5"/></svg>';toggleButton.dataset.eqTip=collapsed?'펼치기':'접기'};
  const bulkPrint=actions.querySelector('[data-bulk-print]'),bulkDelete=actions.querySelector('[data-bulk-delete]'),printBtn=summary.querySelector('[data-selected-print]'),deleteBtn=summary.querySelector('[data-selected-delete]');
  printBtn.onclick=()=>bulkPrint.click();deleteBtn.onclick=()=>bulkDelete.click();
- const sync=()=>{const selected=page.querySelectorAll('.eq-table tbody input.eq-wo-select:checked').length;printBtn.hidden=!selected;deleteBtn.hidden=!selected};
+ const sync=()=>{const selected=page.querySelectorAll('.eq-table tbody input.eq-wo-select:checked').length;printBtn.hidden=!selected;deleteBtn.hidden=!selected;printBtn.disabled=!selected;deleteBtn.disabled=!selected;printBtn.classList.add('btn');deleteBtn.classList.add('btn');printBtn.textContent='선택 인쇄 ('+selected+')';deleteBtn.textContent='선택 삭제 ('+selected+')';if(typeof window.qmesIncomingSelectionDock==='function')window.qmesIncomingSelectionDock(document.getElementById('equipment'),[printBtn,deleteBtn],selected)};
  page.querySelector('.eq-table').addEventListener('change',()=>setTimeout(sync,0));
  new MutationObserver(sync).observe(actions.querySelector('.eq-wo-actions'),{attributes:true,attributeFilter:['hidden']});
  sync();
