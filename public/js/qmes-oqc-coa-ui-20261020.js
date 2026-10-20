@@ -5,14 +5,15 @@
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=v=>new Date(v).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'});
 const style=document.createElement('style');style.textContent='.oqc-coa-panel{margin:10px 0;padding:12px;border:1px solid #cbd8e7;border-radius:6px;background:#f5f9ff;color:#244260;font:12px Pretendard,"Malgun Gothic",sans-serif}.oqc-coa-panel .coa-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.oqc-coa-panel button{cursor:pointer}.oqc-coa-panel .coa-error{color:#b42318;margin-top:8px}.oqc-coa-panel .coa-history{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.oqc-coa-panel small{display:block;color:#596d85;margin-top:6px}';document.head.append(style);
-const api=async(path,targets)=>{const res=await fetch('/api/qmes/oqc/coa/'+path,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({targets})});const json=await res.json().catch(()=>({}));if(!res.ok||!json.success)throw Error(json.message||'CoA 요청에 실패했습니다.');return json.data;};
+const api=async(path,targets)=>{const res=await fetch('/api/qmes/oqc/coa/'+path,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(Array.isArray(targets)?{targets}:targets)});const json=await res.json().catch(()=>({}));if(!res.ok||!json.success)throw Error(json.message||'CoA 요청에 실패했습니다.');return json.data;};
 const strip=row=>Object.fromEntries(Object.entries(row).filter(([k])=>!k.startsWith('__')));
 function targetsFor(row){
  const record=document.getElementById('outgoing')?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
  if(!record)throw Error('목록을 다시 조회해 주세요.');
  return (record.__groupChecks||[record]).map(source=>({recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId,expected:strip(source)}));
 }
-function viewIssued(issue,original){
+async function viewIssued(issue,original){
+ try{issue=await api('record',{issueId:issue.id});}catch(e){toast(e.message);return;}
  const snap=issue.snapshot,section=document.getElementById('outgoing'),tr=original.cloneNode(true);
  const group=snap.items.map((item,index)=>({...snap.fields,id:'coa-'+issue.id+'-'+index,check:item.name,measurements:item.values,judge:item.judge,__sourceRecordKey:'coa-issued',__sourceRowId:issue.id}));
  const record={...group[0],__groupChecks:group};
@@ -30,10 +31,30 @@ window.qmesCoaAttach=async function(row){
  const docCells=root.querySelectorAll('.std-inspection-doc .v');
  if(row._coaIssue){
   const issue=row._coaIssue;
-  if(statusCell)statusCell.textContent='발행완료 (보존본)';
+  if(statusCell)statusCell.textContent=issue.canceledAt?'발행취소':'발행완료 (보존본)';
   if(docCells[0])docCells[0].textContent=issue.number;
-  if(docCells[3])docCells[3].textContent='발행 당시 확정본';
+  if(docCells[3])docCells[3].textContent=issue.canceledAt?'발행취소 · 이력 보존':'발행 당시 확정본';
   panel.innerHTML='<b>'+esc(issue.number)+'</b><div>발행일시 '+esc(fmt(issue.issuedAt))+' · 발행자 '+esc(issue.issuedBy)+'</div><small>발행 당시 기록입니다. 현재 검사값과 다를 수 있습니다.</small><div class="coa-actions"><button class="btn" data-coa-back type="button">현재 검사기록으로</button></div>';
+
+  if(issue.canceledAt){
+   panel.insertAdjacentHTML('beforeend','<div class="coa-error"><b>발행취소</b> · '+esc(fmt(issue.canceledAt))+' · '+esc(issue.canceledBy)+'</div>');
+   if(print){print.disabled=true;print.textContent='취소된 발행본';}
+  }else{
+   const cancel=document.createElement('button');cancel.type='button';cancel.className='btn';cancel.textContent='발행 취소';cancel.dataset.coaCancel='1';panel.querySelector('.coa-actions').append(cancel);
+   cancel.onclick=()=>{
+    const dialog=document.createElement('div');dialog.className='iqc-delete-backdrop';
+    dialog.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>CoA 발행 취소</h3><p>'+esc(issue.number)+' 발행을 취소하고 미발행 상태로 돌아갑니다. 취소 이력은 보존됩니다.</p><div class="iqc-delete-buttons"><button type="button" data-cancel>닫기</button><button type="button" data-confirm>발행 취소</button></div></div>';
+    document.body.append(dialog);dialog.querySelector('[data-cancel]').onclick=()=>dialog.remove();
+    dialog.querySelector('[data-confirm]').onclick=async()=>{dialog.remove();cancel.disabled=true;try{const changed=await api('cancel',{issueId:issue.id});viewIssued(changed,row);toast('CoA 발행 취소 완료 · 미발행 상태로 변경되었습니다.');}catch(e){toast(e.message);cancel.disabled=false;}};
+   };
+   // Recheck revocation before every official print, including stale open tabs.
+   let permitted=false;
+   print?.addEventListener('click',async event=>{
+    if(permitted)return;event.preventDefault();event.stopImmediatePropagation();
+    try{const fresh=await api('record',{issueId:issue.id});if(fresh.canceledAt){viewIssued(fresh,row);toast('취소된 발행본은 인쇄할 수 없습니다.');return;}permitted=true;print.click();permitted=false;}
+    catch(e){permitted=false;toast(e.message);}
+   },true);
+  }
   panel.querySelector('[data-coa-back]').onclick=()=>{const current=(document.getElementById('outgoing')._inspectionAllRows||[]).find(tr=>{const rec=document.getElementById('outgoing')._oqcRecords?.get(tr.dataset.sourceKey+'|'+tr.dataset.sourceId);return rec&&(rec.__groupChecks||[rec]).some(check=>snapSources(issue).some(src=>src.recordKey===check.__sourceRecordKey&&src.rowId===check.__sourceRowId));});if(current)issueInspectionReport('outgoing',current);else closeModal();};
   return;
  }
@@ -49,8 +70,8 @@ window.qmesCoaAttach=async function(row){
   button.disabled=!data.canIssue||data.status==='발행완료';
   if(!data.canIssue)button.title='모든 측정값이 합격이고 검사자가 저장되어야 합니다.';
   if(data.history.length){
-   const latest=data.history[0];const info=document.createElement('div');info.textContent='최근 발행 '+latest.number+' · '+fmt(latest.issuedAt)+' · '+latest.issuedBy;panel.querySelector('.coa-actions').after(info);
-   for(const issue of data.history){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=issue.number+' 발행본';b.onclick=()=>viewIssued(issue,row);panel.querySelector('.coa-history').append(b);}
+   const latest=data.history[0];const info=document.createElement('div');info.textContent=(latest.canceledAt?'최근 발행취소 ':'최근 발행 ')+latest.number+' · '+fmt(latest.canceledAt||latest.issuedAt)+' · '+(latest.canceledBy||latest.issuedBy);panel.querySelector('.coa-actions').after(info);
+   for(const issue of data.history){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=issue.number+(issue.canceledAt?' (발행취소)':' 발행본');b.onclick=()=>viewIssued(issue,row);panel.querySelector('.coa-history').append(b);}
   }
   button.onclick=()=>{
    const dialog=document.createElement('div');dialog.className='iqc-delete-backdrop';
