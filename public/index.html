@@ -4363,7 +4363,28 @@ function editIncomingRecord(section,row){
     <div class="form-item full"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
   </div></div>`;
-  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">취소</button><button class="btn primary" id="iqcEditSave" type="button">수정 저장</button>');
+  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">목록</button><button class="btn primary" id="iqcEditSave" type="button">저장</button>');
+  const topActions=workspaceBody.querySelector('.am-split[data-am-screen="incoming"] .am-detail-actions');
+  if(topActions){
+    const print=document.createElement('button');
+    print.type='button';print.className='am-top-btn';print.textContent='인쇄';
+    print.addEventListener('click',()=>{
+      // Build a detached certificate from the current form without closing or saving the editor.
+      const source=[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id));
+      if(!source){toast('수입검사 기록을 다시 조회해 주세요.');return;}
+      const printable=source.cloneNode(true),cols=['NO',...pageInfo.incoming[2]];
+      [['입고일자','iqcEditDate'],['공급업체','iqcEditSupplier'],['품목명','iqcEditItem'],['원료 LOT','iqcEditLot'],['검사자','iqcEditInspector'],['비고','iqcEditRemark']].forEach(([label,field])=>{
+        const cell=printable.children[cols.indexOf(label)],input=document.getElementById(field);
+        if(cell&&input)cell.textContent=input.value;
+      });
+      const markup=issueInspectionReport('incoming',printable,true);
+      if(!markup)return;
+      const holder=document.createElement('div');holder.innerHTML=markup;
+      const sheet=holder.querySelector('#reportSheet');
+      if(sheet)printInspectionReport('수입검사 성적서',[sheet]);
+    });
+    topActions.replaceChildren(print);
+  }
   document.getElementById('iqcEditSave')?.addEventListener('click',async()=>{
     const body={
       date:document.getElementById('iqcEditDate')?.value||date,
