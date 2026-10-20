@@ -2499,6 +2499,16 @@ html body .std-inspection.premium:is([data-inspection-type="process"],[data-insp
 html body .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-approval-row .pqc-approval-heading{width:100%!important;min-width:0!important;box-sizing:border-box!important;justify-self:stretch!important;margin:0!important;border-bottom:1px solid #d4dce5!important}
 html body .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-approval-row .pqc-approval-person{width:100%!important;box-sizing:border-box!important}
 </style>
+<style id="qmes-coa-status-summary-text-20261020">
+html body .std-inspection:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-summary-card .value{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+html body .std-inspection:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-summary-card .value>span{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;width:100%!important;align-self:stretch!important}
+html body .std-inspection[data-inspection-type="outgoing"] .std-info>.v[data-coa-status]{font-weight:700!important;font-size:10.5px!important;font-family:inherit!important}
+</style>
+
+<style id="qmes-certificate-approval-name-center-20261020">
+html body .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-approval-row .std-approval-item{grid-template-rows:30px minmax(42px,1fr)!important;align-content:stretch!important}
+html body .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-approval-row .pqc-approval-person{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;align-self:stretch!important;justify-self:stretch!important;width:100%!important;height:100%!important;min-height:42px!important;margin:0!important;padding:0!important;box-sizing:border-box!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5713,7 +5723,7 @@ function qmesIqcBarcodeSvg(value){
       ${id==='incoming'?qmesIqcBarcodeSvg(reportNo):''}
       <div class="report-footer"><span>${row._coaIssue?'CoA 발행일자 '+issueDate:'미리보기 · '+issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>${row._coaIssue?'발행자 '+String(row._coaIssue.issuedBy||'').replace(/[&<>"\']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"\'":'&#39;'}[ch])):'QMES ELECTRONIC RECORD'}</span></div>
     </div>`;
-  const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto"> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
+  const labelControls='';
   if(bulkRenderOnly){const tmp=document.createElement('div');tmp.innerHTML=body;return tmp.querySelector('#reportSheet')?.outerHTML||null;}
   openModal(title,id==='outgoing'?amaranthScreen('outgoing',standardInspectionForm('outgoing'),'detail',title,row):body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
   if(id==='outgoing')hydrateOqcStandardCertificate(body);
@@ -7767,7 +7777,7 @@ document.addEventListener('transitionend',follow,true);
 #inventory .namo-new-stock #stockPrint,
 #inventory .namo-new-stock #stockMessage { display:none !important; }
 </style>
-<script defer src="./js/qmes-oqc-coa-ui-20261020.js?v=2-cancel"></script>
+<script defer src="./js/qmes-oqc-coa-ui-20261020.js?v=3-reset"></script>
 
 <!-- Inventory design intentionally removed; database and other modules untouched. -->
 <style id="qmes-inventory-design-removed-20261020">
