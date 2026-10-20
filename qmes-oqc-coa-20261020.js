@@ -52,7 +52,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
   try{const targets=targetsOf(req);await ensure();const current=await read(pool,targets);
    const history=await pool.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC',[current.groupKey]);
    const active=await pool.query('SELECT current_issue_id FROM qmes_oqc_coa_state WHERE group_key=$1',[current.groupKey]);
-   const latest=history.rows.find(row=>String(row.id)===String(active.rows[0]?.current_issue_id));return ok(res,{status:!latest||latest.canceled_at?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.map(publicIssue)});
+   const latest=history.rows.find(row=>String(row.id)===String(active.rows[0]?.current_issue_id));return ok(res,{status:!latest||latest.canceled_at?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.filter(row=>!row.canceled_at).map(publicIssue)});
   }catch(e){return fail(res,e.status||500,e.status?e.message:'CoA 발행 상태를 조회하지 못했습니다.');}
  });
  app.post('/api/qmes/oqc/coa/issue',requireLogin,async(req,res)=>{
@@ -85,7 +85,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
  app.post('/api/qmes/oqc/coa/record',requireLogin,async(req,res)=>{
   try{const id=String(req.body?.issueId||'');if(!/^\d{1,20}$/.test(id))throw error('발행번호를 확인해 주세요.');
    await ensure();const result=await pool.query('SELECT * FROM qmes_oqc_coa_issues WHERE id=$1',[id]);
-   if(!result.rows.length)throw error('발행본이 없습니다.',404);return ok(res,publicIssue(result.rows[0]));
+   if(!result.rows.length||result.rows[0].canceled_at)throw error('발행본이 없습니다.',404);return ok(res,publicIssue(result.rows[0]));
   }catch(e){return fail(res,e.status||500,e.status?e.message:'발행본을 조회하지 못했습니다.');}
  });
  app.post('/api/qmes/oqc/coa/cancel',requireLogin,async(req,res)=>{
