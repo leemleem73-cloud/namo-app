@@ -2538,6 +2538,20 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
 </style>
+
+<style id="qmes-incoming-bottom-selection-dock-20261020">
+html body #incoming .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#4d596c;color:#fff;border:1px solid #647186;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
+html body #incoming .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+html body #incoming .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
+html body #incoming .iqc-dock-count{color:#43d2e3;font-size:15px;font-weight:800}
+html body #incoming .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+html body #incoming .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #a5b0c0!important;border-radius:4px!important;background:transparent!important;color:#fff!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
+html body #incoming .iqc-selection-dock .btn:hover{background:rgba(255,255,255,.12)!important}
+html body #incoming .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
+html body #incoming.iqc-has-selection{padding-bottom:84px}
+@media(prefers-reduced-motion:reduce){html body #incoming .iqc-selection-dock{transition:none!important}}
+@media(max-width:700px){html body #incoming .iqc-selection-dock{padding:10px;gap:10px}html body #incoming .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -4358,6 +4372,28 @@ function wireIncomingPageRows(section){
     if(row)deleteIncomingRecord(section,row);
   }));
 }
+
+function qmesIncomingSelectionDock(section,buttons,count){
+ let dock=section.querySelector('.iqc-selection-dock');
+ if(!dock){
+  dock=document.createElement('div');dock.className='iqc-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','수입검사 선택 항목 작업');
+  const summary=document.createElement('div');summary.className='iqc-dock-summary';summary.setAttribute('aria-live','polite');
+  const number=document.createElement('strong');number.className='iqc-dock-count';const text=document.createElement('span');text.textContent='건 선택됨';summary.append(number,text);
+  const actions=document.createElement('div');actions.className='iqc-dock-actions';dock.append(summary,actions);section.append(dock);
+  const align=()=>{const table=section.querySelector('.ip-table-wrap'),bounds=(table||section).getBoundingClientRect();if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,window.innerWidth-bounds.right)+'px';}};
+  section._iqcDockAlign=align;
+  window.addEventListener('resize',align);
+  const observer=new ResizeObserver(align);observer.observe(section);
+  section._iqcDockObserver=observer;
+ }
+ const actions=dock.querySelector('.iqc-dock-actions');
+ for(const button of buttons.filter(Boolean))if(button.parentElement!==actions)actions.append(button);
+ dock.querySelector('.iqc-dock-count').textContent=String(count);
+ dock.setAttribute('aria-hidden',count?'false':'true');dock.inert=!count;
+ dock.classList.toggle('is-visible',count>0);section.classList.toggle('iqc-has-selection',count>0);
+ section._iqcDockAlign?.();
+}
+
 function renderIncomingPage(section,page=1){
   if(!section||section.id!=='incoming')return;
   const tbody=section.querySelector('tbody');
@@ -4403,7 +4439,7 @@ function renderIncomingPage(section,page=1){
   const bulkBtn=section.querySelector('.iqc-bulk-delete');
   const printBtn=qmesBulkPrintButton(section,'incoming');
   const actions=section.querySelector('.ip-actions');
-  let mailBtn=actions?.querySelector('.iqc-bulk-mail');
+  let mailBtn=section.querySelector('.iqc-bulk-mail');
   if(actions&&!mailBtn){mailBtn=document.createElement('button');mailBtn.type='button';mailBtn.className='btn iqc-bulk-mail';mailBtn.hidden=true;mailBtn.disabled=true;mailBtn.style.cssText='height:27px;padding:0 10px;border:1px solid #b6d8cc;border-radius:5px;background:#edf9f3;color:#206747;font-size:10px;font-weight:800';mailBtn.textContent='선택 메일 전송 (0)';if(bulkBtn)bulkBtn.before(mailBtn);else actions.prepend(mailBtn)}
   if(mailBtn)mailBtn.onclick=()=>{const ids=new Set(selected);const rows=(section._iqcRows||[]).filter(r=>ids.has(String(r.id)));if(!rows.length){alert('선택한 검사 내역을 확인해 주세요.');return}const lines=rows.map((r,i)=>(i+1)+'. '+(r.item||'-')+' / LOT '+(r.lot||'-')+' / '+(r.supplier||'-')+' / '+(r.date||'-'));location.href='mailto:?subject='+encodeURIComponent('[나모케미칼] 수입검사 선택 내역 '+rows.length+'건')+'&body='+encodeURIComponent('선택한 수입검사 내역을 전달드립니다.\n\n'+lines.join('\n')+'\n\n※ 성적서 PDF는 별도로 첨부해 주세요.');};
   function refreshSelection(){
@@ -4413,6 +4449,7 @@ function renderIncomingPage(section,page=1){
     if(printBtn){printBtn.hidden=!countSelected;printBtn.disabled=!countSelected;printBtn.textContent='선택 인쇄 ('+countSelected+')';}
     if(mailBtn){mailBtn.hidden=!countSelected;mailBtn.disabled=!countSelected;mailBtn.textContent='선택 메일 전송 ('+countSelected+')';}
     [bulkBtn,printBtn,mailBtn].filter(Boolean).forEach(btn=>{btn.style.setProperty('display',countSelected?'inline-flex':'none','important');btn.style.setProperty('visibility',countSelected?'visible':'hidden','important');});
+    qmesIncomingSelectionDock(section,[printBtn,mailBtn,bulkBtn],countSelected);
     if(selectAll){const checked=filtered.filter(row=>selected.has(String(row.id))).length;selectAll.checked=!!filtered.length&&checked===filtered.length;selectAll.indeterminate=checked>0&&checked<filtered.length;}
   }
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
@@ -5283,7 +5320,7 @@ async function loadHistoricalInspectionRows(section,id){
 /* Selected certificate batch print: one browser print job, one sheet per record. */
 function qmesBulkPrintButton(section,id){
  const actions=section.querySelector('.ip-actions');if(!actions)return;
- let btn=actions.querySelector('.qmes-bulk-print');
+ let btn=section.querySelector('.qmes-bulk-print');
  if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn qmes-bulk-print';btn.hidden=true;btn.disabled=true;btn.style.cssText='height:27px;padding:0 10px;border:1px solid #cbd8e5;border-radius:5px;background:#e8f0f8;color:#244260;font-size:10px;font-weight:800';btn.textContent='선택 인쇄 (0)';const del=actions.querySelector('.iqc-bulk-delete');if(del)del.before(btn);else actions.prepend(btn);}
  btn.onclick=async()=>{
   const rows=id==='incoming'?(section._iqcRows||[]).flatMap((record,index)=>{
