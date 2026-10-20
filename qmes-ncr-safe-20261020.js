@@ -65,6 +65,22 @@ function install(app){
    res.json({success:true,data:q.rows[0]});
   }catch(e){console.error('[NCR update]',e);bad(res,500,'NCR 수정 실패');}
  });
+
+ app.delete('/api/qmes-ncr/reports/:id',auth,async(req,res)=>{
+  const id=Number(req.params.id);
+  if(!Number.isSafeInteger(id)||id<1)return bad(res,400,'문서번호가 올바르지 않습니다.');
+  try{
+   await schema();
+   const u=req.session.user||{};
+   const isAdmin=String(u.role||'').toLowerCase()==='admin'||String(u.role||'')==='관리자';
+   const result=await pool.query('SELECT id,created_by_id FROM qmes_ncr_reports WHERE id=$1',[id]);
+   if(!result.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
+   if(!isAdmin&&String(result.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 관리자만 삭제할 수 있습니다.');
+   await pool.query('DELETE FROM qmes_ncr_reports WHERE id=$1',[id]);
+   res.json({success:true,data:{id}});
+  }catch(e){console.error('[NCR delete]',e);bad(res,500,'NCR 삭제 실패');}
+ });
+
 }
 const originalUse=express.application.use;
 express.application.use=function ncrUse(...args){
