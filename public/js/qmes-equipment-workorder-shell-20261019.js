@@ -20,7 +20,7 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-summary .eq-parity-toggle{min-width:29px}
 #equipment .eq-table-card{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:white!important;padding:0 16px 16px!important}
 #equipment .eq-table-title{display:none!important}
-#equipment .eq-table tbody td,#equipment .eq-table tbody td *{text-align:center!important;vertical-align:middle!important}
+html body #equipment .eq-page .eq-table>tbody>tr>td,html body #equipment .eq-page .eq-table>tbody>tr>td.left,html body #equipment .eq-page .eq-table>tbody>tr>td *{text-align:center!important;vertical-align:middle!important}
 #equipment .eq-table thead th{background:#e7eff8!important;color:#254563!important}
 #equipment .eq-parity-hidden{display:none!important}
 #equipment .eq-parity-actionline{display:flex;gap:7px;align-items:center;margin-left:auto}
