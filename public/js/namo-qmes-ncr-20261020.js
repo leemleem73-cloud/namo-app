@@ -249,7 +249,7 @@ renderList=function(){
  baseList();
  var head=root.querySelector('.ncr-head'),newBtn=root.querySelector('#ncr-new'),actions=document.createElement('div');
  actions.className='ncr-head-actions';newBtn.parentNode.insertBefore(actions,newBtn);
- var csv=document.createElement('button');csv.type='button';csv.className='ncr-btn';csv.textContent='CSV 내보내기';actions.append(csv,newBtn);
+ var csv=document.createElement('button');csv.type='button';csv.className='ncr-btn';csv.textContent='엑셀 내보내기';actions.append(csv,newBtn);
  csv.onclick=function(){
   var data=[['NCR 번호','발생일자','구분','고객사','제품명','LOT 번호','부적합 내용','담당자','상태']].concat(filtered().map(function(r){return [r.report_no,dateOnly(r.occurred_on),r.source,r.customer,r.product,r.lot,r.description,r.owner,stateName(r.status)];}));
   var csvText='\uFEFF'+data.map(function(row){return row.map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
