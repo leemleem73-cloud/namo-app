@@ -2598,7 +2598,6 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="outgoing"
       <div class="menu" data-page="orders"><div class="ico">📅</div><div class="label">수주납기 관리</div></div>
       <div class="menu" data-page="purchase"><div class="ico">🧾</div><div class="label">구매발주 관리</div></div>
       <div class="menu" data-page="work"><div class="ico">🛠</div><div class="label">작업지시서</div></div>
-      <div class="menu" data-page="inventory"><div class="ico">📦</div><div class="label">재고현황</div></div>
       <div class="menu" data-page="incoming"><div class="ico">🔬</div><div class="label">수입검사</div></div>
       <div class="menu" data-page="process"><div class="ico">🧪</div><div class="label">공정검사</div></div>
       <div class="menu" data-page="outgoing"><div class="ico">📋</div><div class="label">출하검사</div></div>
@@ -7735,8 +7734,6 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <!-- Removed redundant inventory control script: qmes-inventory-excel-import-20261020.js?v=1 -->
 
 <!-- Finished goods reset control intentionally disabled -->
-<script defer src="./js/qmes-inventory-rebuild-20261020.js?v=20261020-v2"></script>
-<script defer src="./js/qmes-inventory-import-20261020.js?v=1"></script>
 <script defer src="./js/qmes-incoming-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-process-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261019-calendar-fit"></script>
@@ -7827,6 +7824,30 @@ document.addEventListener('transitionend',follow,true);
 
 
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
+
+<!-- Inventory management navigation and dashboard shortcut retired; inventory records stay intact. -->
+<style>#sidebar .menu[data-page="inventory"],#inventory{display:none!important}</style>
+<script>
+(()=>{
+  const hideInventoryShortcut=()=>{
+    document.querySelectorAll('#dashboard button,#dashboard a,#dashboard [data-page],#dashboard .quick-link,#dashboard .menu-tile,#dashboard .shortcut').forEach(el=>{
+      if((el.textContent||'').trim()==='재고관리'||el.dataset.page==='inventory')el.style.setProperty('display','none','important');
+    });
+    document.querySelectorAll('#dashboard *').forEach(el=>{
+      if(el.children.length===0&&(el.textContent||'').trim()==='재고관리'){
+        const tile=el.closest('button,a,[role="button"],[data-page],.quick-link,.menu-tile,.shortcut')||el.parentElement;
+        if(tile)tile.style.setProperty('display','none','important');
+      }
+    });
+  };
+  document.addEventListener('DOMContentLoaded',()=>{
+    hideInventoryShortcut();
+    const dashboard=document.getElementById('dashboard');
+    if(dashboard)new MutationObserver(hideInventoryShortcut).observe(dashboard,{subtree:true,childList:true});
+  });
+})();
+</script>
+
 </body>
 </html>
 
