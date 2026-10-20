@@ -4867,9 +4867,9 @@ function wireWorkColumnResize(section){
   if(!table||table.dataset.workResizeWired)return;
   table.dataset.workResizeWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[34,44,85,145,110,105,60,155,75,170,70,110];
-  const mins=[30,38,70,124,92,86,50,120,60,148,60,100];
-  const key='namo-work-column-widths-v4',labels=headers.map(x=>x.textContent.trim());
+  const defaults=[34,44,100,155,120,120,100,170,100,180,100,100];
+  const mins=[30,38,84,124,100,100,84,120,84,148,84,84];
+  const key='namo-work-column-widths-v5',labels=headers.map(x=>x.textContent.trim());
   let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
   const valid=saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length;
   let custom=!!valid, widths=[],baseline=null,containerWidth=0;
@@ -4878,14 +4878,7 @@ function wireWorkColumnResize(section){
   table.insertBefore(group,table.firstChild);
   const handles=[];
   // Balance every work-order column while reserving enough width for Print / Edit.
-  function fitRemarks(w){
-    const last=w.length-1, cap=120;
-    if(last<1||w[last]<=cap)return w;
-    let free=w[last]-cap;w[last]=cap;
-    const selected=[1,2,3,4,6,8].filter(i=>i<last);
-    selected.forEach((i,k)=>{const d=k===selected.length-1?free:Math.floor(free/(selected.length-k));w[i]+=d;free-=d;});
-    return w;
-  }
+  function fitRemarks(w){return w;}
   function fit(){
     const available=wrap.clientWidth;if(!available)return;
     if(containerWidth&&Math.abs(available-containerWidth)<4)return;
@@ -4905,7 +4898,7 @@ function wireWorkColumnResize(section){
     // wide scrollbar on standard desktop screens. Only scroll on truly narrow screens.
     const minimumTotal=mins.reduce((a,b)=>a+b,0);
     const target=Math.max(minimumTotal,available);
-    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,100):n);
+    const minimums=mins.slice();
     const minimumWidth=minimums.reduce((a,b)=>a+b,0);
     const usable=Math.max(target,minimumWidth);
     const elastic=source.map((n,i)=>Math.max(0,n-minimums[i]));
@@ -4915,8 +4908,12 @@ function wireWorkColumnResize(section){
       const add=elasticTotal?Math.floor(spare*elastic[i]/elasticTotal):Math.floor(spare/minimums.length);
       return n+add;
     });
+    for(const indexes of [[4,5],[2,6,8,10,11]]){
+      const equal=Math.floor(indexes.reduce((sum,i)=>sum+actual[i],0)/indexes.length);
+      indexes.forEach(i=>actual[i]=equal);
+    }
     const delta=usable-actual.reduce((a,b)=>a+b,0);
-    actual[actual.length-2]+=delta;
+    actual[9]+=delta;
     cols.forEach((col,i)=>col.style.width=actual[i]+'px');
     table.style.setProperty('width',usable+'px','important');
   }
