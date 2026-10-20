@@ -12,7 +12,7 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
  async function ensure(){if(!schema)schema=pool.query(`CREATE TABLE IF NOT EXISTS qmes_oqc_coa_issues (
  id BIGSERIAL PRIMARY KEY, group_key TEXT NOT NULL, fingerprint TEXT NOT NULL,
  issue_number TEXT NOT NULL UNIQUE, issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
- issued_by TEXT NOT NULL, snapshot JSONB NOT NULL)`).catch(e=>{schema=null;throw e;});return schema;}
+ issued_by TEXT NOT NULL, snapshot JSONB NOT NULL)`).then(()=>pool.query("ALTER TABLE qmes_oqc_coa_issues ADD COLUMN IF NOT EXISTS canceled_at TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS canceled_by TEXT")).catch(e=>{schema=null;throw e;});return schema;}
  function targetsOf(req){
   const targets=req.body?.targets;
   if(!Array.isArray(targets)||targets.length!==8||targets.some(t=>!t||typeof t.recordKey!=='string'||!t.recordKey||t.recordKey.length>500||typeof t.rowId!=='string'||!t.rowId||t.rowId.length>500))throw error('8개 검사 항목의 원본 기록을 확인해 주세요.');
@@ -47,11 +47,11 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
   const snapshot={version:1,fields,items,overall,sources};
   return{snapshot,fingerprint:hash(snapshot),groupKey:hash(sources)};
  }
- const publicIssue=row=>({id:String(row.id),number:row.issue_number,issuedAt:row.issued_at,issuedBy:row.issued_by,fingerprint:row.fingerprint,snapshot:payload(row.snapshot)});
+ const publicIssue=row=>({id:String(row.id),number:row.issue_number,issuedAt:row.issued_at,issuedBy:row.issued_by,canceledAt:row.canceled_at||null,canceledBy:row.canceled_by||null,fingerprint:row.fingerprint,snapshot:payload(row.snapshot)});
  app.post('/api/qmes/oqc/coa/status',requireLogin,async(req,res)=>{
   try{const targets=targetsOf(req);await ensure();const current=await read(pool,targets);
    const history=await pool.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC',[current.groupKey]);
-   const latest=history.rows[0];return ok(res,{status:!latest?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.map(publicIssue)});
+   const latest=history.rows[0];return ok(res,{status:!latest||latest.canceled_at?'미발행':latest.fingerprint===current.fingerprint?'발행완료':'재발행 필요',canIssue:current.snapshot.overall==='합격'&&['inspector','product','customer'].every(name=>Boolean(current.snapshot.fields[name])),history:history.rows.map(publicIssue)});
   }catch(e){return fail(res,e.status||500,e.status?e.message:'CoA 발행 상태를 조회하지 못했습니다.');}
  });
  app.post('/api/qmes/oqc/coa/issue',requireLogin,async(req,res)=>{
@@ -63,8 +63,9 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
    if(snapshot.overall!=='합격')throw error('모든 측정값이 합격인 경우에만 CoA를 발행할 수 있습니다.');
    if(!snapshot.fields.inspector||!snapshot.fields.product||!snapshot.fields.customer)throw error('검사자·제품명·고객사를 저장한 뒤 발행해 주세요.');
    const issuer=String(req.session.user?.name||'').trim();if(!issuer)throw error('발행자 정보를 확인해 주세요.',401);
+   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[current.groupKey]);
    const existing=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC LIMIT 1',[current.groupKey]);
-   let issued=existing.rows[0]?.fingerprint===current.fingerprint?existing.rows[0]:null;
+   let issued=existing.rows[0]&&!existing.rows[0].canceled_at&&existing.rows[0].fingerprint===current.fingerprint?existing.rows[0]:null;
    const reused=Boolean(issued);
    if(!issued){
     const seq=await client.query("SELECT nextval(pg_get_serial_sequence('qmes_oqc_coa_issues','id')) AS id");
@@ -78,4 +79,33 @@ module.exports=function({app,pool,requireLogin,ok,fail,auditLog}){
   }catch(e){if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});return fail(res,e.status||500,e.status?e.message:'CoA 발행에 실패했습니다. 다시 확인해 주세요.');}
   finally{client?.release();}
  });
+
+ app.post('/api/qmes/oqc/coa/record',requireLogin,async(req,res)=>{
+  try{const id=String(req.body?.issueId||'');if(!/^\d{1,20}$/.test(id))throw error('발행번호를 확인해 주세요.');
+   await ensure();const result=await pool.query('SELECT * FROM qmes_oqc_coa_issues WHERE id=$1',[id]);
+   if(!result.rows.length)throw error('발행본이 없습니다.',404);return ok(res,publicIssue(result.rows[0]));
+  }catch(e){return fail(res,e.status||500,e.status?e.message:'발행본을 조회하지 못했습니다.');}
+ });
+ app.post('/api/qmes/oqc/coa/cancel',requireLogin,async(req,res)=>{
+  let client,committed=false;
+  try{
+   const id=String(req.body?.issueId||'');if(!/^\d{1,20}$/.test(id))throw error('취소할 발행번호를 확인해 주세요.');
+   const name=String(req.session.user?.name||'').trim();if(!name)throw error('로그인 정보를 확인해 주세요.',401);
+   await ensure();client=await pool.connect();await client.query('BEGIN');
+   await client.query("SET LOCAL lock_timeout = '5s'");
+   const found=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE id=$1',[id]);
+   if(!found.rows.length)throw error('발행본이 없습니다.',404);
+   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[found.rows[0].group_key]);
+   const latest=await client.query('SELECT * FROM qmes_oqc_coa_issues WHERE group_key=$1 ORDER BY id DESC LIMIT 1 FOR UPDATE',[found.rows[0].group_key]);
+   const current=latest.rows[0];
+   if(String(current.id)!==id)throw error('더 최근의 발행본이 있습니다. 최신 발행본을 확인해 주세요.',409);
+   let result=current;
+   if(!current.canceled_at){const updated=await client.query('UPDATE qmes_oqc_coa_issues SET canceled_at=NOW(),canceled_by=$2 WHERE id=$1 RETURNING *',[id,name]);result=updated.rows[0];}
+   await client.query('COMMIT');committed=true;
+   if(!current.canceled_at)await auditLog(req,'UPDATE','qmes_oqc_coa_issues',id,{number:current.issue_number},{status:'발행취소',canceledBy:name}).catch(e=>console.warn('CoA cancellation audit',e.message));
+   return ok(res,publicIssue(result),'CoA 발행을 취소했습니다.');
+  }catch(e){if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});return fail(res,e.status||500,e.status?e.message:'발행 취소에 실패했습니다.');}
+  finally{client?.release();}
+ });
+
 };
