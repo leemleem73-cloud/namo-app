@@ -6,10 +6,12 @@ const header=root.querySelector('header'),list=root.querySelector('.stockTable')
 if(!header||!list||!h3)return;
 header.querySelector('h1').textContent='재고현황 등록 및 조회';header.querySelector('p')?.remove();
 const controls=document.createElement('div');controls.className='stock-wo-tools';controls.innerHTML='<strong>▸ 재고현황</strong><div><button id="stock-wo-clear" type="button">조건 지우기</button><button id="stock-wo-search" type="button" title="조회">&#128269;</button><button id="stock-wo-fold" type="button" title="접기">⌃</button></div>';
+controls.querySelector('#stock-wo-search').innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>';
+controls.querySelector('#stock-wo-fold').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 14 6-6 6 6"></path></svg>';
 controls.querySelector('strong').innerHTML='▸ 재고현황 <span id="stockCount"></span>';h3.replaceWith(controls);
 controls.querySelector('#stock-wo-clear').onclick=()=>root.querySelector('#stockClear')?.click();
 controls.querySelector('#stock-wo-search').onclick=()=>{list.hidden=false;pager.hidden=false;root.querySelector('#stockReload')?.click();};
-controls.querySelector('#stock-wo-fold').onclick=e=>{list.hidden=!list.hidden;pager.hidden=list.hidden;e.currentTarget.textContent=list.hidden?'⌄':'⌃';};
+controls.querySelector('#stock-wo-fold').onclick=e=>{list.hidden=!list.hidden;pager.hidden=list.hidden;e.currentTarget.innerHTML=list.hidden?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 10 6 6 6-6"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 14 6-6 6 6"/></svg>';e.currentTarget.title=list.hidden?'펼침':'접기';};
 const th=list.querySelector('thead tr');if(th&&!th.querySelector('.stock-select-all')){const cell=document.createElement('th');cell.innerHTML='<input class="stock-select-all" type="checkbox">';th.prepend(cell);}
 const body=list.querySelector('tbody');
 if(body){const sync=()=>{for(const tr of body.rows){if(!tr.querySelector('.stock-row-check')){const td=document.createElement('td');td.innerHTML='<input class="stock-row-check" type="checkbox">';tr.prepend(td);}}};new MutationObserver(sync).observe(body,{childList:true});sync();th.querySelector('.stock-select-all').onchange=e=>{body.querySelectorAll('.stock-row-check').forEach(c=>c.checked=e.target.checked);};}
@@ -60,7 +62,12 @@ const style=document.createElement('style');style.textContent=[
 '#inventory .stock-selection-actions [data-action=mail]{background:#ecf9f0!important;color:#24754c!important}',
 '#inventory .stock-selection-actions [data-action=delete]{background:#fff3f2!important;color:#b23630!important}',
 '#inventory #stock-wo-search,#inventory #stock-wo-fold{width:30px;height:30px;padding:3px!important;background:white!important}',
-'#inventory .stock-wo-tools>div button{height:30px!important}'
+'#inventory .stock-wo-tools>div button{height:30px!important}',
+'#inventory .stock-wo-tools{min-height:55px!important;box-sizing:border-box!important;padding:10px 15px!important;align-items:center!important}',
+'#inventory .stock-wo-tools>div{align-items:center!important;gap:6px!important}',
+'#inventory #stock-wo-search,#inventory #stock-wo-fold{display:inline-flex!important;align-items:center!important;justify-content:center!important;color:#365472!important}',
+'#inventory #stock-wo-search svg,#inventory #stock-wo-fold svg{display:block!important}',
+'#inventory .stockFilters{min-height:60px!important;box-sizing:border-box!important}'
 ].join('\n');document.head.append(style);
 }
 let n=0;const timer=setInterval(()=>{install();if(document.querySelector('#inventory .namo-new-stock')?.dataset.woTheme||++n>60)clearInterval(timer);},250);
