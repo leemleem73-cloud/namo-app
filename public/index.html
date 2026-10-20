@@ -2542,6 +2542,9 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 <style id="qmes-process-list-hide-process-name-20261020">
 html body #process .ip-table>thead>tr>th:nth-child(6),html body #process .ip-table>tbody>tr.data-row>td:nth-child(6),html body #process .ip-table>colgroup>col:nth-child(6){display:none!important}
 </style>
+<style id="qmes-outgoing-list-all-check-items-20261020">
+html body #outgoing .ip-table>tbody>tr.data-row>td:nth-child(6){white-space:normal!important;text-overflow:clip!important;overflow:visible!important;word-break:keep-all!important;overflow-wrap:anywhere;line-height:1.35!important;padding:4px 6px!important}
+</style>
 <style id="qmes-incoming-bottom-selection-dock-20261020">
 html body :is(#incoming,#process,#outgoing,#work) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
 html body :is(#incoming,#process,#outgoing,#work) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
@@ -3449,9 +3452,9 @@ function wireOutgoingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,135,160,170,175,155,110,115,110,125,110];
-  const minimums=[86,90,100,100,100,90,76,76,90,80,80];
-  const storageKey='namo-outgoing-column-widths-v1';
+  const defaults=[86,120,120,200,200,200,120,120,120,120,120];
+  const minimums=[86,100,100,110,110,110,100,100,100,100,100];
+  const storageKey='namo-outgoing-column-widths-v2-equal';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3483,14 +3486,14 @@ function wireOutgoingColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
+    for(const indexes of [[1,2,6,7,8,9,10],[3,4,5]]){
+      const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
+      indexes.forEach(i=>effective[i]=equal);
+    }
     const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
-    if(free>0&&effective.length>1){
+    if(free>0){
       const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
-      let assigned=0;
-      for(let j=1;j<effective.length;j++){
-        const extra=j===effective.length-1?free-assigned:Math.floor(free*effective[j]/total);
-        effective[j]+=extra;assigned+=extra;
-      }
+      for(let j=1;j<effective.length;j++)effective[j]+=free*effective[j]/total;
     }
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
@@ -5202,7 +5205,7 @@ async function loadHistoricalInspectionRows(section,id){
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','',''];
+        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
