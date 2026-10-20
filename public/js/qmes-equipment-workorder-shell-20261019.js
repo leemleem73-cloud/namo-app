@@ -12,8 +12,8 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-parity-header .eq-parity-buttons button{font-size:12px!important;font-weight:700!important;font-family:Arial,'Malgun Gothic',sans-serif!important;line-height:1.2!important;letter-spacing:0!important}
 #equipment .eq-parity-filters{background:#f1f6fb;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;border-bottom:1px solid #dbe5ed}
 #equipment .eq-parity-filters label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#344d67;white-space:nowrap}
-#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{width:142px;height:32px;border:1px solid #ccdaea;border-radius:4px;padding:0 8px;background:white;color:#294763;font-size:12px}
-#equipment .eq-parity-filters select{width:145px}
+#equipment .eq-parity-filters input,#equipment .eq-parity-filters select{width:215px;height:32px;border:1px solid #ccdaea;border-radius:4px;padding:0 8px;background:white;color:#294763;font-size:12px}
+#equipment .eq-parity-filters select{width:215px}
 #equipment .eq-parity-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;background:white;padding:12px 16px 9px}
 #equipment .eq-parity-summary b{font-size:13px;color:#183b5a}
 #equipment .eq-parity-summary button{height:29px;background:white;border:1px solid #d5e0ec;border-radius:4px;padding:0 10px;color:#375b7b;cursor:pointer}
