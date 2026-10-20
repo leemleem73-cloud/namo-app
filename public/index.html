@@ -2200,8 +2200,16 @@ html[data-namo-operation-loading] body > :not(#namo-operation-overlay),html[data
     var nativeFetch=window.fetch;
     window.fetch=function(){
       var args=arguments,options=args[1]||{},input=args[0],method=String(options.method||(input&&input.method)||'GET').toUpperCase();
+      // CoA reads use POST to send record identities, but must not hide the certificate.
+      var coaRead=false;
+      if(method==='POST'){
+        try{
+          var url=new URL(typeof input==='string'?input:input.url,window.location.href);
+          coaRead=url.origin===window.location.origin&&/^\/api\/qmes\/oqc\/coa\/(status|record)$/.test(url.pathname);
+        }catch(e){}
+      }
       // Background reads should not block the UI; show only for user-initiated writes.
-      if(method==='GET'||method==='HEAD')return nativeFetch.apply(this,args);
+      if(method==='GET'||method==='HEAD'||coaRead)return nativeFetch.apply(this,args);
       start();
       try{return Promise.resolve(nativeFetch.apply(this,args)).then(function(response){stop();return response;},function(error){stop();throw error;});}
       catch(error){stop();throw error;}
