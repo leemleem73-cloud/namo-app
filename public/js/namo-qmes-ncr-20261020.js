@@ -42,7 +42,7 @@ function decorateNcrForm(edit,record){
  root.querySelector('#ncr-editor-list').onclick=back;
  root.querySelector('#ncr-editor-save').onclick=function(){if(form.requestSubmit)form.requestSubmit();else form.querySelector('#ncr-save').click();};
  var groups=[
- ['01 · 발생 기본정보',['occurred_on','source','customer','product','lot','owner']],
+ ['01 · 발생 기본정보',['occurred_on','source','customer','owner','product','lot']],
  ['02 · 부적합 내용 및 긴급조치',['description','containment']],
  ['03 · 원인분석 및 재발방지대책',['root_cause','corrective_action']],
  ['04 · 개선 효과 확인',['effectiveness']]
@@ -63,7 +63,9 @@ function decorateNcrForm(edit,record){
  extra.forEach(function(g){var sec=document.createElement('section');sec.className='ncr-section';sec.innerHTML='<div class="ncr-section-title">'+g[0]+'</div>';var grid=document.createElement('div');grid.className='ncr-section-grid';g[1].forEach(function(f){var label=document.createElement('label');label.textContent=f[0];var el;if(f[2]==='textarea'){el=document.createElement('textarea');}else if(f[2]==='select'){el=document.createElement('select');f[3].forEach(function(v){var opt=document.createElement('option');opt.value=v;opt.textContent=v;el.appendChild(opt);});}else{el=document.createElement('input');el.type=f[2]==='date'?'date':'text';}el.name='ncr_detail_'+f[1];el.value=(record&&record.details&&record.details[f[1]])||'';label.appendChild(el);grid.appendChild(label);});sec.appendChild(grid);form.insertBefore(sec,form.querySelector('.ncr-message'));});
  var detailsSections=Array.from(form.querySelectorAll('.ncr-section')).filter(function(sec){return ['검사 및 발생정보','격리 및 처리판정','시정조치 및 검증'].some(function(t){return sec.querySelector('.ncr-section-title')&&sec.querySelector('.ncr-section-title').textContent===t;});});
  var primaryDetails=document.createElement('section');primaryDetails.className='ncr-section';primaryDetails.innerHTML='<div class="ncr-section-title">검사 기준 및 부적합 수량</div>';var primaryGrid=document.createElement('div');primaryGrid.className='ncr-section-grid';
- ['specification','actual_result','affected_qty'].forEach(function(k){var input=form.querySelector('[name="ncr_detail_'+k+'"]');if(input){var label=input.closest('label');if(label)primaryGrid.appendChild(label);}});primaryDetails.appendChild(primaryGrid);
+ ['specification','actual_result'].forEach(function(k){var input=form.querySelector('[name="ncr_detail_'+k+'"]');if(input){var label=input.closest('label');if(label)primaryGrid.appendChild(label);}});primaryDetails.appendChild(primaryGrid);
+ var affected=form.querySelector('[name="ncr_detail_affected_qty"]');var basicGrid=form.querySelector('.ncr-core-1 .ncr-section-grid');if(affected&&basicGrid){basicGrid.appendChild(affected.closest('label'));}
+
  var firstAction=Array.from(form.querySelectorAll('.ncr-section')).find(function(sec){return sec.querySelector('.ncr-section-title')&&sec.querySelector('.ncr-section-title').textContent==='03 · 원인분석 및 재발방지대책';});
  if(firstAction)form.insertBefore(primaryDetails,firstAction);
  var optional=document.createElement('details');optional.className='ncr-optional';optional.innerHTML='<summary>상세 품질관리 항목 펼치기 <span>발생공정 · 처리판정 · 검증기록 등</span></summary>';
@@ -83,6 +85,25 @@ function decorateNcrForm(edit,record){
  sign.innerHTML='<div class="ncr-section-title">전자결재 · 작성 / 검토 / 승인</div><div class="ncr-section-grid"><label>작성자<input readonly value="'+esc((record&&record.created_by)||'로그인 사용자 자동 지정')+'"></label><label>검토자<input readonly value="'+esc((record&&record.reviewed_by)||'검토 대기')+'"></label><label>승인자<input readonly value="'+esc((record&&record.approved_by)||'승인 대기')+'"></label></div><div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center"><button type="button" class="ncr-btn" id="ncr-review" '+(!edit||record&&record.approved_at?'disabled':'')+'>검토 완료</button><button type="button" class="ncr-btn primary" id="ncr-approve" '+(!edit||!record||!record.reviewed_at||record.approved_at?'disabled':'')+'>최종 승인</button><span style="font-size:12px;color:#64748b">부장 이상 또는 관리자만 검토·승인 가능. 신규 문서 저장 후 진행합니다.</span></div>';
  form.insertBefore(sign,form.querySelector('.ncr-message'));
  ['review','approve'].forEach(function(action){var btn=sign.querySelector('#ncr-'+action);btn.onclick=async function(){if(!record||!record.id)return;btn.disabled=true;try{var updated=await request('/api/qmes-ncr/reports/'+record.id+'/sign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});selected=updated;var idx=rows.findIndex(function(x){return String(x.id)===String(updated.id);});if(idx>=0)rows[idx]=updated;view='edit';render();}catch(e){notice(e.message);btn.disabled=false;}};});
+ // Premium compact three-stage editor; keeps all original form fields and handlers.
+ var stages=document.createElement('nav');stages.className='ncr-premium-stages';stages.setAttribute('aria-label','작성 단계');
+ var tabs=['01  부적합 등록','02  개선조치','03  검토·승인'].map(function(label,i){var btn=document.createElement('button');btn.type='button';btn.className='ncr-premium-tab';btn.textContent=label;stages.appendChild(btn);return btn;});
+ var first=form.querySelector('.ncr-core-1');if(first)form.insertBefore(stages,first);
+ function setStage(n){
+  tabs.forEach(function(b,i){b.classList.toggle('active',i===n);b.setAttribute('aria-current',i===n?'step':'false');});
+  [form.querySelector('.ncr-core-1'),form.querySelector('.ncr-core-2'),primaryDetails].forEach(function(e){if(e)e.hidden=n!==0;});
+  [form.querySelector('.ncr-core-3'),form.querySelector('.ncr-core-4'),improvement,completionBox].forEach(function(e){if(e)e.hidden=n!==1;});
+  [sign].forEach(function(e){if(e)e.hidden=n!==2;});
+  optional.hidden=n===2;
+  attachmentSection.hidden=n===2;
+ }
+ tabs.forEach(function(b,i){b.onclick=function(){setStage(i);};});
+ setStage(0);
+ if(!document.getElementById('ncr-premium-20261021')){
+  var premium=document.createElement('style');premium.id='ncr-premium-20261021';
+  premium.textContent='#ncr .ncr-premium-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:2px 0 18px}#ncr .ncr-premium-tab{background:#f7f9fc;color:#62758c;border:1px solid #d9e4ed;border-radius:9px;padding:13px 8px;font-size:13px;font-weight:750}#ncr .ncr-premium-tab.active{background:#e9f3fd;color:#145783;border-color:#93b9dd}#ncr .ncr-editor-main .ncr-form{border-radius:12px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label{font-size:12px}#ncr .ncr-editor-main .ncr-section-title{background:#eaf2f9;color:#174567;font-weight:750}#ncr .ncr-section[hidden],#ncr .ncr-optional[hidden],#ncr .ncr-completion-control[hidden]{display:none!important}@media(max-width:650px){#ncr .ncr-premium-stages{gap:5px}#ncr .ncr-premium-tab{padding:11px 4px;font-size:11px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:1fr}}';
+  document.head.appendChild(premium);
+ }
  var list=side.querySelector('.ncr-editor-side-items'),search=side.querySelector('#ncr-editor-search'),filter=side.querySelector('#ncr-editor-filter');
  function refreshSide(){
   var q=search.value.toLowerCase(),source=filter.value;
