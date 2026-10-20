@@ -4798,30 +4798,7 @@ function renderSavedWorkOrders(){
     const actions=document.createElement('td');actions.style.whiteSpace='nowrap';
     const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='수정';
     edit.addEventListener('click',e=>{e.stopPropagation();openNewForm('work',order);});
-    const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='삭제';del.style.marginLeft='5px';
-    del.addEventListener('click',async e=>{
-      e.stopPropagation();
-      const id=String(order.id);
-      if(workDeletingIds.has(id)||!confirm('이 작업지시서를 삭제하시겠습니까?'))return;
-      workDeletingIds.add(id);
-      del.disabled=true;
-      renderSavedWorkOrders(); // Remove row immediately after confirmation.
-      try{
-        await workApi('DELETE','/'+encodeURIComponent(id));
-        workSharedRows=(workSharedRows||[]).filter(row=>String(row?.id)!==id);
-        try{localStorage.setItem(WORK_LOCAL_KEY,JSON.stringify(workSharedRows));}catch(_){}
-        toast('삭제되었습니다.');
-      }catch(error){
-        toast('서버 삭제 실패: '+error.message);
-        alert('작업지시서를 삭제하지 못했습니다.\n'+error.message);
-      }finally{
-        workDeletingIds.delete(id);
-        if(workSyncBusy)await workSyncBusy;
-        await refreshSharedWorkOrders();
-        renderSavedWorkOrders();
-      }
-    });
-    actions.append(edit,del);tr.appendChild(actions);
+    actions.append(edit);tr.appendChild(actions);
     tbody.appendChild(tr);
   });
   prior.forEach((row,id)=>{if(!seen.has(id))row.remove();});
@@ -4890,9 +4867,9 @@ function wireWorkColumnResize(section){
   if(!table||table.dataset.workResizeWired)return;
   table.dataset.workResizeWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[34,52,205,115,142,176,96,134,112,140,106,240];
-  const mins=[32,44,138,86,102,130,75,88,85,92,82,236];
-  const key='namo-work-column-widths-v3',labels=headers.map(x=>x.textContent.trim());
+  const defaults=[34,44,85,145,110,105,60,155,75,170,70,110];
+  const mins=[30,38,70,124,92,86,50,120,60,148,60,100];
+  const key='namo-work-column-widths-v4',labels=headers.map(x=>x.textContent.trim());
   let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null');}catch(_){}
   const valid=saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length;
   let custom=!!valid, widths=[],baseline=null,containerWidth=0;
@@ -4900,9 +4877,9 @@ function wireWorkColumnResize(section){
   const cols=headers.map(()=>{const col=document.createElement('col');group.appendChild(col);return col;});
   table.insertBefore(group,table.firstChild);
   const handles=[];
-  // Balance every work-order column while reserving enough width for Print / Edit / Delete.
+  // Balance every work-order column while reserving enough width for Print / Edit.
   function fitRemarks(w){
-    const last=w.length-1, cap=240;
+    const last=w.length-1, cap=120;
     if(last<1||w[last]<=cap)return w;
     let free=w[last]-cap;w[last]=cap;
     const selected=[1,2,3,4,6,8].filter(i=>i<last);
@@ -4928,7 +4905,7 @@ function wireWorkColumnResize(section){
     // wide scrollbar on standard desktop screens. Only scroll on truly narrow screens.
     const minimumTotal=mins.reduce((a,b)=>a+b,0);
     const target=Math.max(minimumTotal,available);
-    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,236):n);
+    const minimums=mins.map((n,i)=>i===mins.length-1?Math.max(n,100):n);
     const minimumWidth=minimums.reduce((a,b)=>a+b,0);
     const usable=Math.max(target,minimumWidth);
     const elastic=source.map((n,i)=>Math.max(0,n-minimums[i]));
