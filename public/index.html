@@ -2515,6 +2515,15 @@ html body #mainWorkspace .std-inspection.premium:is([data-inspection-type="proce
 html body #mainWorkspace .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-summary-card:first-child>.value{position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;text-align:center!important}
 html body #mainWorkspace .std-inspection.premium:is([data-inspection-type="process"],[data-inspection-type="outgoing"]) .std-summary-card:first-child>.value>span{display:block!important;flex:0 1 auto!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;line-height:1.4!important;text-align:center!important}
 </style>
+<style id="qmes-outgoing-shipping-status-visible-20261020">
+html body #outgoing [data-shipping-state]{font-weight:700;color:#245b9e}
+html body #outgoing [data-shipping-state="출하완료"]{color:#15803d}
+html body #outgoing [data-shipping-state="출하보류"]{color:#b42318}
+html body #outgoing [data-shipping-state="미지정"]{color:#7b8795}
+html body .std-inspection[data-inspection-type="outgoing"] .std-summary-card:nth-child(2){position:relative!important;flex-direction:column!important;gap:6px!important;padding:10px!important;min-height:84px!important}
+html body .std-inspection[data-inspection-type="outgoing"] .std-summary-card:nth-child(2)>.value{position:static!important;width:100%!important;height:auto!important;min-height:0!important;flex:0 0 auto!important}
+html body .std-inspection[data-inspection-type="outgoing"] .oqc-shipping-caption{display:block;font-size:10px;font-weight:600;color:#63758b}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -2870,7 +2879,7 @@ const pageInfo = {
   inventory:['재고현황','원료 및 완제품의 현재 재고현황을 확인합니다.', ['구분','품목코드','품목명','LOT NO','현재고','단위','상태']],
   incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','검사항목','검사합부','검사자','성적서','비고']],
   process:['공정검사','생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.', ['검사일자','작업지시번호','제품명','생산 LOT NO','공정명','검사항목','검사합부','검사자','성적서','비고']],
-  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','성적서','비고']],
+  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','성적서','비고']],
   lotTrace:['LOT 추적','원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향 추적합니다.', ['원료 LOT','작업지시번호','생산 LOT NO','완제품 LOT','고객사','출하일','추적상태']],
   equipment:['설비관리','관리계획서 기준으로 생산설비·검사설비의 조건, 점검, 교정 및 이력을 관리합니다.', ['설비번호','설비명','구분','최근점검일','차기점검일','상태','담당자']],
   quality:['품질관리','IQC, 공정검사, 완제품 검사 및 CoA 관리 화면입니다.', ['검사구분','LOT NO','검사일','검사항목','판정','검사자','성적서']],
@@ -3408,8 +3417,8 @@ function wireOutgoingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,135,160,170,175,155,110,115,125,110];
-  const minimums=[86,90,100,100,100,90,76,76,80,80];
+  const defaults=[86,135,160,170,175,155,110,115,110,125,110];
+  const minimums=[86,90,100,100,100,90,76,76,90,80,80];
   const storageKey='namo-outgoing-column-widths-v1';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -5164,13 +5173,14 @@ async function loadHistoricalInspectionRows(section,id){
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',oqcListJudge(row),row.inspector||'-','',''];
+        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 외 6항목',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
         if(id==='outgoing'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
+        if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='비고')return '<td><button type="button" class="btn mini-report oqc-remarks-edit">수정</button> <button type="button" class="btn mini-report oqc-coa-view">CoA</button></td>';
         if(id==='process'&&cols[index]==='성적서'){
@@ -5535,7 +5545,12 @@ function hydrateOqcStandardCertificate(body){
  const overall=text('.report-summary .final');
  const cards=root.querySelectorAll('.std-summary-card .value');
  if(cards[0]){const span=document.createElement('span');span.className='oqc-report-readonly-value';span.textContent=overall;span.dataset.oqcJudge=overall;cards[0].replaceChildren(span);}
- if(cards[1]){cards[1].textContent=source.querySelector('[data-report-shipping-status]')?.textContent|| (overall==='대기'?'검사중':'검사완료');}
+ if(cards[1]){
+ cards[1].textContent=source.querySelector('[data-report-shipping-status]')?.textContent?.trim()||'미지정';
+ const label=cards[1].closest('.std-summary-card')?.querySelector('.label');if(label)label.textContent='출하상태';
+ cards[1].dataset.shippingState=cards[1].textContent;
+ const caption=document.createElement('small');caption.className='oqc-shipping-caption';caption.textContent='출하상태';cards[1].before(caption);
+ }
  const notes=source.querySelectorAll('.report-support-row');
  const remarks=root.querySelector('.std-premium-remarks textarea');
  if(remarks){remarks.value=notes[2]?.querySelector('.value')?.childNodes[0]?.textContent?.trim()||'-';remarks.readOnly=true;}
@@ -5721,7 +5736,7 @@ function qmesIqcBarcodeSvg(value){
       </div>
       <div class="report-section-title">검사 관리정보</div>
       <div class="report-support">
-        <div class="report-support-row"><div class="label">검사조건</div><div class="value"><div class="support-text"><b>샘플링:</b> ${info.sampling} &nbsp;&nbsp; <b>검사장소:</b> 품질검사실 &nbsp;&nbsp; <b>적용기준:</b> ${info.standard}</div></div></div>
+        <div class="report-support-row"><div class="label">검사조건</div><div class="value"><div class="support-text">${id==='outgoing'?'<b>출하상태:</b> '+(oqcShippingStatus||'미지정')+' &nbsp;&nbsp; ':''}<b>샘플링:</b> ${info.sampling} &nbsp;&nbsp; <b>검사장소:</b> 품질검사실 &nbsp;&nbsp; <b>적용기준:</b> ${info.standard}</div></div></div>
         <div class="report-support-row"><div class="label">추적성</div><div class="value">${info.trace}<br><span class="muted">원자재/작업지시/생산 LOT/완제품 LOT 간 추적 가능 여부 확인</span></div></div>
         <div class="report-support-row"><div class="label">특이사항</div><div class="value">${id==='outgoing'?oqcReportRemarks:'특이사항 없음'}<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
       </div>
