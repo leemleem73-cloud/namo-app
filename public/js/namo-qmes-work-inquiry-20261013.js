@@ -331,11 +331,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const selected=new Set();let busy=false,queued=false;
 const section=()=>document.getElementById('work');
 const rows=()=>Array.from(section()?.querySelectorAll('tr[data-work-saved]')||[]);
+const pageRows=()=>rows().filter(r=>!r.hidden&&r.dataset.nwiVisible!=='false'&&r.style.display!=='none');
 function update(){
  const live=new Set(rows().map(r=>r.dataset.workSaved));
  for(const id of selected)if(!live.has(id))selected.delete(id);
  rows().forEach(r=>{const x=r.querySelector('.wo-bulk-check');if(x)x.checked=selected.has(r.dataset.workSaved)});
- const all=section()?.querySelector('.wo-bulk-all');if(all){all.checked=rows().length>0&&rows().every(r=>selected.has(r.dataset.workSaved));all.indeterminate=selected.size>0&&!all.checked}
+ const all=section()?.querySelector('.wo-bulk-all');if(all){const visible=pageRows(),checked=visible.filter(r=>selected.has(r.dataset.workSaved)).length;all.checked=visible.length>0&&checked===visible.length;all.indeterminate=checked>0&&checked<visible.length}
  const bar=section()?.querySelector('.wo-bulk-controls');if(bar){bar.hidden=!selected.size;bar.querySelector('.wo-bulk-print').textContent='선택 인쇄 ('+selected.size+')';bar.querySelector('.wo-bulk-delete').textContent='선택 삭제 ('+selected.size+')';bar.querySelectorAll('button').forEach(x=>x.disabled=busy);const root=section();if(typeof window.qmesIncomingSelectionDock==='function'&&(root._workDockCount!==selected.size||!bar.closest('.iqc-selection-dock'))){window.qmesIncomingSelectionDock(root,[bar],selected.size);root._workDockCount=selected.size}}
 }
 function scan(){
@@ -347,7 +348,7 @@ function scan(){
   const clear=tools.querySelector('#nwi-clear');if(clear)tools.insertBefore(bar,clear);else tools.appendChild(bar);bar.querySelector('.wo-bulk-print').onclick=print;bar.querySelector('.wo-bulk-delete').onclick=remove;
  }
  const th=table.querySelector('thead th.wo-select-col');if(th&&!th.querySelector('.wo-bulk-all')){
-  const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-all';c.setAttribute('aria-label','전체 선택');c.onclick=e=>e.stopPropagation();c.onchange=()=>{rows().forEach(r=>c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved));update()};th.prepend(c)
+  const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-all';c.setAttribute('aria-label','현재 페이지 전체 선택');c.onclick=e=>e.stopPropagation();c.onchange=()=>{pageRows().forEach(r=>c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved));update()};th.prepend(c)
  }
  rows().forEach(r=>{const td=r.cells[0];if(!td||td.querySelector('.wo-bulk-check'))return;
   const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-check';c.setAttribute('aria-label','작업지시서 '+r.dataset.workSaved+' 선택');c.onclick=e=>e.stopPropagation();c.onchange=e=>{e.stopPropagation();c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved);update()};td.prepend(c)
