@@ -4540,6 +4540,8 @@ function renderIncomingPage(section,page=1){
     qmesIncomingSelectionDock(section,[printBtn,mailBtn,bulkBtn],countSelected);
     if(selectAll){const checked=pageRows.filter(row=>selected.has(String(row.id))).length;selectAll.checked=!!pageRows.length&&checked===pageRows.length;selectAll.indeterminate=checked>0&&checked<pageRows.length;}
   }
+  // Clear this page's selection through the same UI refresh used by its checkboxes.
+  section._resetIncomingSelection=()=>{selected.clear();refreshSelection();};
   rowBoxes.forEach(box=>box.addEventListener('change',()=>{
     const id=box.closest('tr')?.dataset.iqcId;if(!id){refreshSelection();return;}
     if(box.checked)selected.add(String(id));else selected.delete(String(id));
@@ -7511,6 +7513,7 @@ document.documentElement.removeAttribute('data-qmes-pending-page');
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
+  if(m.dataset.page!=='incoming')document.getElementById('incoming')?._resetIncomingSelection?.();
   document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   m.classList.add('active');
