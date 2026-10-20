@@ -21,8 +21,9 @@ const css=document.createElement('style');css.textContent=`
 #equipment .eq-table-card{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:white!important;padding:0 16px 16px!important}
 #equipment .eq-table-title{display:none!important}
 html body #equipment .eq-page .eq-table>tbody>tr>td,html body #equipment .eq-page .eq-table>tbody>tr>td.left,html body #equipment .eq-page .eq-table>tbody>tr>td *{text-align:center!important;vertical-align:middle!important}
-html body #equipment .eq-page table.eq-table{table-layout:fixed!important;width:100%!important;min-width:1100px!important}
+html body #equipment .eq-page table.eq-table{table-layout:fixed!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
 html body #equipment .eq-page .eq-table>thead>tr>th{width:auto!important;min-width:0!important;max-width:none!important}
+html body #equipment .eq-page .eq-table>tbody>tr>td{min-width:0!important;box-sizing:border-box!important}
 html body #equipment .eq-page .eq-table .eq-col-check{width:34px!important}
 html body #equipment .eq-page .eq-table .eq-col-number{width:48px!important}
 html body #equipment .eq-page .eq-table .eq-col-short{width:calc(8% - 6.56px)!important}
@@ -57,7 +58,7 @@ function init(){
  for(let index=0;index<12;index++){const col=document.createElement('col');col.className=index===0?'eq-col-check':index===1?'eq-col-number':[3,7,8,9,10,11].includes(index)?'eq-col-short':'eq-col-wide';equipmentColumns.append(col)}
  equipmentTable.querySelector('colgroup')?.remove();equipmentTable.prepend(equipmentColumns);
  const fitEquipmentColumns=()=>{
-   const total=Math.max(1100,equipmentTable.parentElement.clientWidth),space=total-82;
+   const total=Math.max(0,Math.floor(equipmentTable.parentElement.clientWidth)-2),space=Math.max(0,total-82);
    equipmentTable.style.setProperty('width',total+'px','important');
    equipmentColumns.querySelectorAll('col').forEach(col=>col.style.setProperty('width',(col.classList.contains('eq-col-check')?34:col.classList.contains('eq-col-number')?48:space*(col.classList.contains('eq-col-short')?.08:.13))+'px','important'));
  };
