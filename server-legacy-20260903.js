@@ -2615,6 +2615,8 @@ rows[index]={...old,...clean,...patch};
   }finally{if(client)client.release();}
 });
 
+require('./qmes-oqc-coa-20261020.js')({app,pool,requireLogin,ok,fail,auditLog});
+
 // One atomic request for selected IQC/PQC/OQC records.
 app.get('/api/qmes/inspections/:kind/delete-selected',requireLogin,(req,res)=>{
   if(!['iqc','pqc','oqc'].includes(req.params.kind))return fail(res,400,'지원하지 않는 검사 유형입니다.');
