@@ -2540,15 +2540,15 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 </style>
 
 <style id="qmes-incoming-bottom-selection-dock-20261020">
-html body #incoming .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#196fba;color:#fff;border:1px solid #3184ca;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
+html body #incoming .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#e8f0f8;color:#244260;border:1px solid #cbd8e5;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
 html body #incoming .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
 html body #incoming .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
-html body #incoming .iqc-dock-count{color:#c2f1ff;font-size:15px;font-weight:800}
+html body #incoming .iqc-dock-count{color:#176fba;font-size:15px;font-weight:800}
 html body #incoming .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-html body #incoming .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #a4d2f5!important;border-radius:4px!important;background:transparent!important;color:#fff!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
-html body #incoming .iqc-selection-dock .btn:hover{background:rgba(255,255,255,.12)!important}
+html body #incoming .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
+html body #incoming .iqc-selection-dock .btn:hover{background:#dceafb!important}
 html body #incoming .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
-html body #incoming.iqc-has-selection{padding-bottom:84px}
+
 @media(prefers-reduced-motion:reduce){html body #incoming .iqc-selection-dock{transition:none!important}}
 @media(max-width:700px){html body #incoming .iqc-selection-dock{padding:10px;gap:10px}html body #incoming .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
 </style>
@@ -4392,7 +4392,7 @@ function qmesIncomingSelectionDock(section,buttons,count){
  for(const button of buttons.filter(Boolean))if(button.parentElement!==actions)actions.append(button);
  dock.querySelector('.iqc-dock-count').textContent=String(count);
  dock.setAttribute('aria-hidden',count?'false':'true');dock.inert=!count;
- dock.classList.toggle('is-visible',count>0);section.classList.toggle('iqc-has-selection',count>0);
+ dock.classList.toggle('is-visible',count>0);
  section._iqcDockAlign?.();
 }
 
