@@ -5563,7 +5563,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   const inspector=val('검사자');
   const reportNoPrefix=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
   const dateDigits=(inspectionDate||'').replace(/\D/g,'') || new Date().toISOString().slice(0,10).replace(/-/g,'');
-  const reportNo=`${reportNoPrefix}-${dateDigits}-${String(val('NO')).padStart(3,'0')}`;
+  const reportNo=row._coaIssue?.number||`${reportNoPrefix}-${dateDigits}-${String(val('NO')).padStart(3,'0')}`;
   const title=id==='incoming'?'수입검사 성적서':id==='process'?'공정검사 성적서':'출하검사 성적서';
   const info=id==='incoming' ? {
     row1:['검사일자',inspectionDate,'공급업체',val('공급업체')],
@@ -5578,7 +5578,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   } : {
     row1:['검사일자',inspectionDate,'고객사',val('고객사')],
     row2:['제품명',val('제품명'),'완제품 LOT',val('완제품 LOT')],
-    row3:['검사자',inspector,'CoA 상태',val('CoA')],
+    row3:['검사자',inspector,'CoA 상태',row._coaIssue?'발행완료':val('CoA')],
     sampling:'출하 전 최종검사 / n=3', trace:`완제품 LOT ${val('완제품 LOT')} 기준 출하 추적`, standard:'출하검사 기준서 / 고객 요구사항'
   };
   const itemSets={
@@ -5632,6 +5632,8 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     const records=record.__groupChecks?.length?record.__groupChecks:[record];
     const measurements={};
     itemSets.outgoing.forEach(item=>{
+      const frozen=row._coaIssue?.snapshot?.items?.find(saved=>saved.name===item[0]);
+      if(frozen){item[1]=String(frozen.spec||item[1]).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');item[2]=String(frozen.method||item[2]).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
       const source=records.find(check=>rules.canonical(check.check)===item[0]);
       const values=Array.isArray(source?.measurements)&&source.measurements.length?source.measurements:source?.value?String(source.value).split(/\s*\/\s*/):[];
       measurements[item[0]]=[0,1,2].map(index=>String(values[index]??'').trim());
@@ -5645,7 +5647,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   }
   const items=itemSets[id]||[];
   const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
-  const issueDate=new Date().toLocaleDateString('ko-KR');
+  const issueDate=new Date(row._coaIssue?.issuedAt||Date.now()).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'});
   const docType=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
 function qmesIqcBarcodeSvg(value){
   const alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%*';
@@ -5709,9 +5711,9 @@ function qmesIqcBarcodeSvg(value){
       </div>
       
       ${id==='incoming'?qmesIqcBarcodeSvg(reportNo):''}
-      <div class="report-footer"><span>발행일자 ${issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>QMES ELECTRONIC RECORD</span></div>
+      <div class="report-footer"><span>${row._coaIssue?'CoA 발행일자 '+issueDate:'미리보기 · '+issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>${row._coaIssue?'발행자 '+String(row._coaIssue.issuedBy||'').replace(/[&<>"\']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"\'":'&#39;'}[ch])):'QMES ELECTRONIC RECORD'}</span></div>
     </div>`;
-  const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto" checked> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
+  const labelControls=id==='outgoing' ? '<label>가로(mm) <input id="shipLabelWidth" type="number" min="40" max="210" value="100" style="width:56px"></label><label>세로(mm) <input id="shipLabelHeight" type="number" min="40" max="297" value="75" style="width:56px"></label><label>수량 <input id="shipLabelQty" type="text" placeholder="수량 필수" style="width:90px"></label><label>제조일 <input id="shipLabelMfgDate" type="date"></label><label><input type="checkbox" id="shipLabelAuto"> 라벨 자동 출력</label><button class="btn" id="shipLabelPrint" type="button">출하라벨 출력</button>' : '';
   if(bulkRenderOnly){const tmp=document.createElement('div');tmp.innerHTML=body;return tmp.querySelector('#reportSheet')?.outerHTML||null;}
   openModal(title,id==='outgoing'?amaranthScreen('outgoing',standardInspectionForm('outgoing'),'detail',title,row):body,'<button class="btn" id="modalCancel" type="button">닫기</button>'+labelControls+'<button class="btn primary" id="printReportBtn" type="button">성적서 발행</button>');
   if(id==='outgoing')hydrateOqcStandardCertificate(body);
@@ -5776,6 +5778,7 @@ function qmesIqcBarcodeSvg(value){
       document.body.append(holder);try{printInspectionReport(title);}finally{holder.remove();}
     }else printInspectionReport(title);
   });
+  if(id==='outgoing')window.qmesCoaAttach?.(row);
 }
 // The print document draws its PQC grid once, after fonts and images settle.
 function drawPqcPrintGrid(doc){
@@ -7764,6 +7767,7 @@ document.addEventListener('transitionend',follow,true);
 #inventory .namo-new-stock #stockPrint,
 #inventory .namo-new-stock #stockMessage { display:none !important; }
 </style>
+<script defer src="./js/qmes-oqc-coa-ui-20261020.js?v=1"></script>
 </body>
 </html>
 
