@@ -5424,9 +5424,15 @@ async function openPqcLinkedWorkOrder(number){
   if(!menu)return;
   menu.click();
   await refreshSharedWorkOrders();
+  const section=document.getElementById('work');
+  if(!section?.classList.contains('active'))return;
   const order=readWorkOrders().find(order=>pqcWorkOrderNumber(order)===number);
   if(!order){toast('해당 작업지시서를 찾을 수 없습니다. 작업지시서 목록을 확인해 주세요.');return;}
-  openNewForm('work',order);
+  window.namoWorkInquiryInit?.();
+  const row=[...section.querySelectorAll('tr[data-work-saved]')].find(row=>String(row.dataset.workSaved)===String(order.id));
+  if(!row||typeof window.namoOpenWorkInquiryDetail!=='function'){toast('작업지시 상세내역을 열 수 없습니다. 목록을 새로 조회해 주세요.');return;}
+  await window.namoOpenWorkInquiryDetail(row);
+  if(section.classList.contains('active'))section.querySelector('#namo-work-detail')?.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 
 // Process list controller: keep source rows, measurements and linked-document handlers intact.
