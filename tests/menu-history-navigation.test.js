@@ -132,3 +132,12 @@ test('equipment panel observer restores detail nodes and hides them on list navi
  a.history.forward();await a.flushPanels();
  assert.equal(panel.childNodes[0],child);assert.equal(panel.className,'show');assert.equal(a.entries.length,3);
 });
+
+test('menu reset render cannot overwrite the workspace snapshot after its DOM is cleared',()=>{
+ const a=app();let form={value:'keep me'},restored;
+ const h=a.window.qmesMenuHistory;
+ a.window.qmesWorkspaceHistory={capture:()=>({form}),restore:s=>{restored=s.form;return !!s.form;}};
+ h.register('ncr',{page:'ncr',reset:()=>{form=null;h.capture();}});
+ h.openWorkspace('incoming');a.navigate('ncr');a.history.back();
+ assert.equal(restored.value,'keep me');
+});
