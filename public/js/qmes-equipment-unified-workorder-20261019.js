@@ -30,7 +30,7 @@ function init(){
   const update=()=>{bulk.hidden=!selected().length;};
   tbody.querySelectorAll('.eq-wo-select').forEach(b=>b.onchange=update);
   root.querySelector('#eqWoAll').onchange=e=>{tbody.querySelectorAll('.eq-wo-select').forEach(b=>{if(b.closest('tr').style.display!=='none')b.checked=e.target.checked});update()};
-  bulk.querySelector('[data-bulk-print]').onclick=()=>printRows(selected().map(i=>items[i]));
+  bulk.querySelector('[data-bulk-print]').onclick=async()=>{const chosen=selected().map(i=>items[i]);if(!chosen.length||!await window.qmesConfirmPrint('설비',chosen.length))return;printRows(chosen);};
   bulk.querySelector('[data-bulk-delete]').onclick=async()=>{const ids=selected();if(ids.some(i=>i<7)){alert('기존 관리계획서 설비 7종은 보호되어 삭제할 수 없습니다.');return}if(!await window.qmesConfirm(ids.length+'건을 삭제하시겠습니까?'))return;save(read().filter((_,j)=>!ids.includes(j+7)));render()};
   tbody.querySelectorAll('tr').forEach(tr=>{const i=Number(tr.dataset.eqI),item=items[i];tr.onclick=e=>{if(e.target.closest('button,input'))return;if(i<7&&typeof renderEquipmentDetail==='function')renderEquipmentDetail(i);else showExtra(item)};tr.querySelector('.eq-wo-action').insertAdjacentHTML('afterbegin','');tr.querySelector('.left strong').innerHTML='<button type="button" class="eq-wo-name">'+esc(item.name)+'</button>';tr.querySelector('.eq-wo-name').onclick=e=>{e.stopPropagation();if(i<7&&typeof renderEquipmentDetail==='function')renderEquipmentDetail(i);else showExtra(item)};
    tr.querySelector('[data-eq-edit]').onclick=()=>{if(i<7){alert('기본 설비는 관리계획서 기준 원본으로 보호됩니다.');return}editForm(item,v=>{const arr=read();arr[i-7]=v;save(arr);render()})};
