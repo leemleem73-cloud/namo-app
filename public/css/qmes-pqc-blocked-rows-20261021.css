@@ -1,0 +1,23 @@
+/* Match OQC: color every cell in rows blocked by an earlier failed item. */
+html body #mainWorkspace .am-split[data-am-screen="process"] .pqc-detail-measure-table tr.pqc-sequential-locked > :is(th, td) {
+  background: #fff1f2 !important;
+}
+
+/* Keep the disabled measurement controls visible against the red row. */
+html body #mainWorkspace .am-split[data-am-screen="process"] .pqc-detail-measure-table tr.pqc-sequential-locked [data-pqc-measure]:disabled {
+  background: #f1f2f4 !important;
+  color: #737c89 !important;
+  border-color: #e3b7bb !important;
+  cursor: not-allowed !important;
+}
+
+html body #mainWorkspace .am-split[data-am-screen="process"] .pqc-detail-measure-table tr.pqc-sequential-locked [data-pqc-measure]:disabled::placeholder {
+  color: #737c89 !important;
+  opacity: 1;
+}
+
+/* A previously passing value must not turn the blocked label green. */
+html body #app #mainWorkspace #workspaceBody .am-split[data-am-screen="process"] .pqc-detail-measure-table tr.pqc-sequential-locked > td[data-pqc-item-judge] {
+  color: #dc2626 !important;
+  font-weight: 900 !important;
+}
