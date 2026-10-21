@@ -4179,8 +4179,7 @@ function employeeEditorMarkup(emp={},idx=null){
         <div class="employee-edit-cell"><label>권한</label><select data-field="role"><option ${sel(role,'일반사용자')}>일반사용자</option><option ${sel(role,'관리자')}>관리자</option></select></div>
         <div class="employee-edit-cell"><label>계정상태</label><select data-field="status"><option ${sel(status,'사용')}>사용</option><option ${sel(status,'승인대기')}>승인대기</option><option ${sel(status,'사용중지')}>사용중지</option></select></div>
         <div class="employee-edit-cell"><label>초기 비밀번호</label><input data-field="password" type="password" placeholder="신규/초기화 시 입력"></div>
-        <div class="employee-edit-cell span2"><label>접근 권한 범위</label><select data-field="scope"><option>부서 기본권한</option><option>품질/생산 전체조회</option><option>전체 QMES 조회</option><option>전체 QMES 관리</option></select></div>
-        <div class="employee-edit-cell span2"><label>최종접속</label><input value="${emp.last||'-'}" readonly></div>
+        <div class="employee-edit-cell span4"><label>최종접속</label><input value="${emp.last||'-'}" readonly></div>
         <div class="employee-edit-cell span4"><label>비고</label><textarea data-field="note" placeholder="직원 계정 또는 권한 관련 특이사항을 입력하세요">${emp.note||''}</textarea></div>
       </div>
     </div>
