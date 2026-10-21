@@ -2815,7 +2815,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261020-single-detail"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-history-detail"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -2892,6 +2892,7 @@ function toast(msg){
   clearTimeout(window.__toastTimer); window.__toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1800);
 }
 function openModal(title,html,actions=''){
+  window.qmesMenuHistory?.capture();
   const active=document.querySelector('.module-page.active:not(#mainWorkspace)');
   if(active) workspacePreviousPage=active.id;
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
@@ -2904,8 +2905,21 @@ function openModal(title,html,actions=''){
   document.getElementById('modalCancel')?.addEventListener('click',close);
   document.getElementById('modalSave')?.addEventListener('click',()=>{close();toast('저장되었습니다. (시안 데이터)')});
   wireAmaranthScreen();
+  window.qmesMenuHistory?.openWorkspace(workspacePreviousPage);
 }
+window.qmesWorkspaceHistory={
+  capture:()=>({body:[...workspaceBody.childNodes],foot:[...workspaceFoot.childNodes],title:workspaceTitle.textContent,page:workspacePreviousPage,scroll:content.scrollTop}),
+  restore:snapshot=>{
+    if(!snapshot)return false;
+    document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
+    workspacePreviousPage=snapshot.page;workspaceTitle.textContent=snapshot.title;
+    workspaceBody.replaceChildren(...snapshot.body);workspaceFoot.replaceChildren(...snapshot.foot);
+    mainWorkspace.classList.add('active');content.scrollTop=snapshot.scroll;
+    return true;
+  }
+};
 function closeModal(){
+  window.qmesMenuHistory?.capture();
   mainWorkspace.classList.remove('active');
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
@@ -2913,6 +2927,7 @@ function closeModal(){
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   target?.classList.add('active');
   target?._fitIncomingColumns?.();
+  window.qmesMenuHistory?.record(workspacePreviousPage);
   content.scrollTop=0;
 }
 workspaceBack.addEventListener('click',closeModal);
@@ -7518,6 +7533,7 @@ document.documentElement.removeAttribute('data-qmes-pending-page');
 
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
+  window.qmesMenuHistory?.beforeMenu();
   if(m.dataset.page!=='incoming')document.getElementById('incoming')?._resetIncomingSelection?.();
   document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
@@ -7655,7 +7671,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 </script>
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261012-1"></script>
-<script src="./js/qmes-menu-history-20261021.js?v=1"></script>
+<script src="./js/qmes-menu-history-20261021.js?v=2-details"></script>
 <script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261020-auth-ready1"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
@@ -7967,7 +7983,7 @@ document.addEventListener('transitionend',follow,true);
 })();
 </script>
 
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-prefetch-selection-07"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-history-details"></script>
 </body>
 </html>
 
