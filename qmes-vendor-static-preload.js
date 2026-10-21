@@ -1,5 +1,7 @@
 'use strict';
 
+require('./qmes-quality-gate-20261021.js');
+
 const fs = require('fs');
 const path = require('path');
 const express = require('express');

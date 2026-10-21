@@ -314,7 +314,7 @@ function install(app) {
       return res.json({ success:true, message:'OK', data:result.rows[0] });
     } catch (error) {
       console.error('qmes extra sync POST failed:', error);
-      return res.status(500).json({ success:false, message:'공용 DB 저장에 실패했습니다.', data:null });
+      return res.status(error.message?.includes('[QUALITY_GATE]')?409:500).json({ success:false, message:error.message?.includes('[QUALITY_GATE]')?error.message:'공용 DB 저장에 실패했습니다.', data:null });
     }
   });
 }
