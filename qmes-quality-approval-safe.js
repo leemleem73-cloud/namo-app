@@ -260,11 +260,10 @@ function install(app) {
       const admin = isAdmin(req);
       const q = await pool.query(
         admin
-          ? `SELECT * FROM qmes_quality_approvals WHERE status <> 'DELETED' ORDER BY created_at DESC LIMIT 200`
-          : `SELECT * FROM qmes_quality_approvals
-             WHERE status <> 'DELETED'
-               AND (writer_user_id=$1 OR reviewer_user_id=$1 OR approver_user_id=$1)
-             ORDER BY created_at DESC LIMIT 200`,
+          ? `SELECT a.*, i.date AS inspection_date FROM qmes_quality_approvals a LEFT JOIN iqc i ON a.doc_type='IQC' AND a.record_id=i.id::text WHERE a.status <> 'DELETED' ORDER BY a.created_at DESC LIMIT 200`
+          : `SELECT a.*, i.date AS inspection_date FROM qmes_quality_approvals a LEFT JOIN iqc i ON a.doc_type='IQC' AND a.record_id=i.id::text
+             WHERE a.status <> 'DELETED' AND (a.writer_user_id=$1 OR a.reviewer_user_id=$1 OR a.approver_user_id=$1)
+             ORDER BY a.created_at DESC LIMIT 200`,
         admin ? [] : [u.id]
       );
       return ok(res, q.rows);
