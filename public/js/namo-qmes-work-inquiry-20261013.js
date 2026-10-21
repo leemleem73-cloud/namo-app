@@ -166,7 +166,7 @@ function init(){
  const listHead=document.createElement('div');listHead.className='nwi-list-head';
  listHead.innerHTML='<span>▸ 작업지시 현황</span><span id="nwi-list-total">총 0건</span>';
  const tableWrap=shell.querySelector('.module-body');if(tableWrap)shell.insertBefore(listHead,tableWrap);
- const detail=document.createElement('div');detail.id='namo-work-detail';
+ const detail=document.createElement('div');detail.id='namo-work-detail';detail.style.scrollMarginTop='96px';
  detail.innerHTML='<div class="nwd-head">작업지시 상세내역</div><div class="nwd-content">상단 작업지시 목록에서 항목을 선택하세요.</div>';
  shell.insertAdjacentElement('afterend',detail);
  // Hide only the equipment-name search control; retain its internal empty filter for index compatibility.
@@ -298,6 +298,12 @@ function init(){
   activeRecord=cached.find(x=>String(x.id)===activeId)||null;
   getRows().forEach(r=>r.classList.toggle('nwi-selected',r===row));
   draw(row,activeRecord);
+  const scrollTarget=activeId;
+  requestAnimationFrame(()=>{
+   if(!detail.isConnected||activeId!==scrollTarget)return;
+   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   detail.scrollIntoView({behavior:reduceMotion?'instant':'smooth',block:'start',inline:'nearest'});
+  });
   window.qmesMenuHistory?.recordView('work','detail:'+activeId,'work');
   const requestedId=activeId;
   try{
