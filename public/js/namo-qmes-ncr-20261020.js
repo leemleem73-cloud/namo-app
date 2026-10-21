@@ -420,8 +420,8 @@ draw=function(){
  html body #ncr .ncr-equipment-card .ncr-head-actions .ncr-btn{height:36px;padding:0 15px;font-size:12px;font-weight:700;border-radius:5px}
  html body #ncr .ncr-equipment-card>.ncr-tools{border:0!important;border-bottom:1px solid #dbe5ed!important;background:#f1f6fb!important;padding:12px 16px!important;display:flex;flex-wrap:wrap;gap:12px 16px}
  html body #ncr .ncr-equipment-card>.ncr-tools label{color:#344d67;font-size:12px;font-weight:700;gap:7px}
- html body #ncr .ncr-equipment-card>.ncr-tools input:not([type=hidden]),html body #ncr .ncr-equipment-card>.ncr-tools select:not([hidden]){width:142px;min-width:0!important;max-width:142px;height:32px!important;border:1px solid #ccdaea;border-radius:4px;padding:0 8px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
- html body #ncr .ncr-equipment-card .ncr-period-trigger{min-width:0;width:176px;height:32px;border:1px solid #ccdaea;border-radius:4px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
+ html body #ncr .ncr-equipment-card>.ncr-tools input:not([type=hidden]),html body #ncr .ncr-equipment-card>.ncr-tools select:not([hidden]){width:195px;min-width:195px!important;max-width:195px;height:30px!important;border:1px solid #ccdaea;border-radius:4px;padding:0 8px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
+ html body #ncr .ncr-equipment-card .ncr-period-trigger{min-width:215px;width:215px;height:30px;border:1px solid #ccdaea;border-radius:4px;color:#294763;font-family:inherit;font-size:12px;font-weight:600}
  html body #ncr .ncr-equipment-card>.ncr-list-head{padding:12px 16px 9px!important;color:#183b5a;font-size:13px}
  html body #ncr .ncr-equipment-card .ncr-table-wrap{margin:0 16px!important;border:1px solid #cbd8e5!important;border-radius:0!important;overflow:visible!important;min-width:0}
  html body #ncr .ncr-equipment-card .ncr-table-wrap table{table-layout:fixed;width:100%!important;min-width:0!important;max-width:100%!important;border-collapse:collapse;border-spacing:0}
