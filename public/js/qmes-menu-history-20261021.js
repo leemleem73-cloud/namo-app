@@ -122,6 +122,67 @@ if(typeof MutationObserver!=='undefined'&&document.body){
  }).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
 }
 
+
+// List pagination uses the live pager's handlers, so Back/Forward restores
+// the actual data page and keeps filters, permissions and event handlers intact.
+var pagerSelectors=['.ip-pagination','.nwi-pagination','.qpu-pager','.qof-pager','.qpo-pagination','.eq-pagination','.ncr-pagination'];
+function pagerNumber(pager){
+ var buttons=Array.from(pager?.querySelectorAll('button')||[]);
+ var active=buttons.find(function(button){
+  return /^\d+$/.test(button.textContent.trim())&&(button.classList.contains('active')||button.getAttribute('aria-current')==='page');
+ });
+ return active?Number(active.textContent.trim()):null;
+}
+function paginationAdapter(page,selector){
+ var name='pagination:'+page+':'+selector;
+ if(adapters.has(name))return name;
+ register(name,{
+  page:page,
+  capture:function(){
+   var pager=document.querySelector('#'+page+' '+selector);
+   return {pageNumber:pagerNumber(pager)};
+  },
+  restore:function(snapshot){
+   var pager=document.querySelector('#'+page+' '+selector);
+   if(!pager||!snapshot.pageNumber)return false;
+   if(pagerNumber(pager)===snapshot.pageNumber)return true;
+   var button=Array.from(pager.querySelectorAll('button')).find(function(button){
+    return !button.disabled&&button.textContent.trim()===String(snapshot.pageNumber);
+   });
+   if(!button)return false;
+   button.click();
+   return pagerNumber(document.querySelector('#'+page+' '+selector))===snapshot.pageNumber;
+  }
+ });
+ return name;
+}
+document.addEventListener('click',function(event){
+ if(replaying)return;
+ var button=event.target?.closest?.('button');
+ if(!button||button.disabled)return;
+ var selector=pagerSelectors.find(function(selector){return button.closest(selector);});
+ if(!selector)return;
+ var section=button.closest('.module-page'),page=section?.id;
+ if(!page||currentPage()!==page||!menuFor(page))return;
+ var pager=button.closest(selector),before=pagerNumber(pager);
+ if(!before)return;
+ var name=paginationAdapter(page,selector),entry=current?.qmesEntryId;
+ // The first page has no adapter until pagination is used. Give that existing
+ // history entry a snapshot rather than inserting an extra duplicate visit.
+ capture();
+ if(current&&!current.qmesAdapter){
+  current=Object.assign({},current,{qmesAdapter:name,qmesViewKey:'list-page:'+selector+':'+before});
+  snapshots.set(current.qmesEntryId,{pageNumber:before});
+  history.replaceState(current,'');
+ }
+ queueMicrotask(function(){
+  if(replaying||currentPage()!==page||current?.qmesEntryId!==entry)return;
+  var after=pagerNumber(document.querySelector('#'+page+' '+selector));
+  if(!after||after===before)return;
+  recordView(page,'list-page:'+selector+':'+after,name);
+ });
+},true);
+
 document.addEventListener('keydown',function(event){
  if(event.defaultPrevented||event.isComposing||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
  if(event.target?.closest?.('input,textarea,select,[contenteditable],[role="textbox"]'))return;
