@@ -1269,6 +1269,10 @@ thead{background:#f4f7fa}
 #incoming .inspection-premium .ip-table .iqc-remark{min-width:0;max-width:none}
 #incoming .inspection-premium .iqc-remark-text{text-align:center}
 #incoming .inspection-premium .iqc-remark-actions{justify-content:center;margin-top:2px}
+#incoming .iqc-work-frame .ip-table td.iqc-remark{overflow:visible;white-space:normal}
+#incoming .iqc-work-frame .iqc-remark-text{display:block;max-width:100%;overflow-wrap:anywhere}
+#incoming .iqc-work-frame .iqc-remark-actions{display:flex;justify-content:center;margin:4px 0 0}
+#incoming .iqc-work-frame .iqc-remark-actions [data-iqc-edit]{display:inline-flex;align-items:center;justify-content:center;visibility:visible}
 #incoming .iqc-column-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 #incoming .iqc-column-resize{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;touch-action:none;z-index:1;outline:none}
 #incoming .iqc-column-resize:after{content:'';position:absolute;top:8px;bottom:8px;right:2px;width:2px;border-radius:2px;background:transparent}
@@ -2986,7 +2990,7 @@ const pageInfo = {
   purchase:['구매발주 관리','원부자재 발주와 요청입고, 발주상태를 관리합니다.', ['발주일자','공급업체','품목명','수량','요청입고','발주상태','IQC']],
   work:['작업지시서','나모케미칼 절연 슬러리 생산 LOT 중심으로 작업지시와 생산 진행현황을 관리합니다.', ['고객사','작업지시번호','제품명','생산 LOT NO','설비명','작업자','계획수량(kg)','작업기간','진행상태']],
   inventory:['재고현황','원료 및 완제품의 현재 재고현황을 확인합니다.', ['구분','품목코드','품목명','LOT NO','현재고','단위','상태']],
-  incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','검사항목','검사합부','결재상태','검사자','성적서','비고']],
+  incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','입고 중량 (kg)','검사항목','검사합부','결재상태','검사자','성적서','비고']],
   process:['공정검사','생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.', ['검사일자','작업지시번호','제품명','생산 LOT NO','공정명','검사항목','검사합부','검사자','성적서','비고']],
   outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','성적서','비고']],
   lotTrace:['LOT 추적','원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향 추적합니다.', ['원료 LOT','작업지시번호','생산 LOT NO','완제품 LOT','고객사','출하일','추적상태']],
@@ -3231,9 +3235,9 @@ function wireIncomingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,120,180,180,180,180,120,120,120,120];
-  const minimums=[86,100,110,110,110,110,100,100,100,100];
-  const storageKey='namo-iqc-column-widths-v2-equal';
+  const defaults=[86,120,180,180,180,120,180,120,120,120,120,120];
+  const minimums=[86,100,110,110,110,110,110,100,100,100,100,100];
+  const storageKey='namo-iqc-column-widths-v3-weight';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3265,7 +3269,7 @@ function wireIncomingColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
-    const equalGroups=[[1,6,7,8,9],[2,3,4,5]];
+    const equalGroups=[[1,5,7,8,9,10,11],[2,3,4,6]];
     for(const indexes of equalGroups){
       const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
       indexes.forEach(i=>effective[i]=equal);
@@ -4360,6 +4364,17 @@ function confirmIqcBulkDelete(count,kind='수입검사'){
     backdrop.querySelector('[data-cancel]').focus();
   });
 }
+// incoming_qty is received mass; qty is inspection sample quantity, not kg.
+function iqcIncomingWeight(value){
+  const raw=String(value??'').trim().replace(/,/g,'').replace(/\s*kg$/i,'').trim();
+  if(!/^\d+(?:\.\d+)?$/.test(raw))return null;
+  const weight=Number(raw);
+  return Number.isFinite(weight)&&weight>0?weight:null;
+}
+function iqcWeightText(value,withUnit=false){
+  const weight=iqcIncomingWeight(value);
+  return weight===null?'-':weight.toLocaleString('ko-KR',{maximumFractionDigits:20})+(withUnit?' kg':'');
+}
 function iqcRowHtml(row,index){
   const judge=iqcJudge(row);
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
@@ -4367,7 +4382,7 @@ function iqcRowHtml(row,index){
   const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
   const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':'검토대기';
   const approvalBadge='<span class="badge '+(state==='승인완료'?'b-green':'b-yellow')+'">'+state+'</span>';
-  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcWeightText(row.incoming_qty)}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
@@ -4386,10 +4401,11 @@ function editIncomingRecord(section,row){
     <div class="form-item"><label>공급업체</label><input id="iqcEditSupplier" type="text" value="${String(row.supplier||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>품목명</label><input id="iqcEditItem" type="text" value="${String(row.item||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
-    <div class="form-item full"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label>입고 중량 (kg)</label><input id="iqcEditIncomingQty" type="number" min="0" step="any" inputmode="decimal" value="${iqcIncomingWeight(row.incoming_qty)??''}" placeholder="입고 중량 입력"></div>
+    <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
   </div></div>`;
-  openModal('수입검사 수정',amaranthScreen('incoming',html,'edit','수입검사 수정',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">목록</button><button class="btn primary" id="iqcEditSave" type="button">저장</button>');
+  openModal('수입검사 상세',amaranthScreen('incoming',html,'edit','수입검사 상세',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">목록</button><button class="btn primary" id="iqcEditSave" type="button">저장</button>');
   const topActions=workspaceBody.querySelector('.am-split[data-am-screen="incoming"] .am-detail-actions');
   if(topActions){
     const print=document.createElement('button');
@@ -4399,7 +4415,7 @@ function editIncomingRecord(section,row){
       const source=[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id));
       if(!source){toast('수입검사 기록을 다시 조회해 주세요.');return;}
       const printable=source.cloneNode(true),cols=['NO',...pageInfo.incoming[2]];
-      [['입고일자','iqcEditDate'],['공급업체','iqcEditSupplier'],['품목명','iqcEditItem'],['원료 LOT','iqcEditLot'],['검사자','iqcEditInspector'],['비고','iqcEditRemark']].forEach(([label,field])=>{
+      [['입고일자','iqcEditDate'],['공급업체','iqcEditSupplier'],['품목명','iqcEditItem'],['원료 LOT','iqcEditLot'],['입고 중량 (kg)','iqcEditIncomingQty'],['검사자','iqcEditInspector'],['비고','iqcEditRemark']].forEach(([label,field])=>{
         const cell=printable.children[cols.indexOf(label)],input=document.getElementById(field);
         if(cell&&input)cell.textContent=input.value;
       });
@@ -4418,7 +4434,7 @@ function editIncomingRecord(section,row){
       supplier:document.getElementById('iqcEditSupplier')?.value.trim()||'',
       item:document.getElementById('iqcEditItem')?.value.trim()||'',
       inspector:document.getElementById('iqcEditInspector')?.value.trim()||'',
-      incomingQty:row.incoming_qty,
+      incomingQty:iqcIncomingWeight(document.getElementById('iqcEditIncomingQty')?.value),
       qty:row.qty,
       failQty:row.fail,
       packagingType:row.packaging_type||'',
@@ -4433,6 +4449,7 @@ function editIncomingRecord(section,row){
       signApprover:row.sign_approver||{}
     };
     if(!body.date||!body.lot||!body.supplier||!body.item||!body.inspector){toast('입고일자, 공급업체, 품목명, LOT, 검사자를 입력해 주세요.');return;}
+    if(body.incomingQty===null){toast('입고 중량(kg)을 0보다 큰 숫자로 입력해 주세요.');return;}
     try{
       const r=await fetch('/api/iqc/'+encodeURIComponent(row.id),{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const p=await r.json().catch(()=>({success:false}));
@@ -4641,7 +4658,7 @@ async function loadIncomingFromDb(section){
     renderIncomingPage(section,section._iqcPage||1);
     /* background sync error: console only, no bottom popup */
   }else{
-    tbody.innerHTML='<tr><td colspan="10" style="padding:28px;text-align:center;color:#94a3b8">수입검사 조회 실패: 서버 연결을 확인해 주세요.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="12" style="padding:28px;text-align:center;color:#94a3b8">수입검사 조회 실패: 서버 연결을 확인해 주세요.</td></tr>';
   }
 }
 function qualityApprovalShell(){
@@ -5773,7 +5790,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   const info=id==='incoming' ? {
     row1:['검사일자',inspectionDate,'공급업체',val('공급업체')],
     row2:['품목명',val('품목명'),'원료 LOT',val('원료 LOT')],
-    row3:['검사자',inspector,'검사구분','수입검사 (IQC)'],
+    row3:['검사자',inspector,'입고 중량',iqcWeightText(val('입고 중량 (kg)'),true)],
     sampling:'LOT당 1회 / n=3', trace:`원료 LOT ${val('원료 LOT')} 기준 입고검사 추적`, standard:'수입검사 기준서 / 공급사 COA'
   } : id==='process' ? {
     row1:['검사일자',inspectionDate,'작업지시번호',val('작업지시번호')],
@@ -6791,6 +6808,11 @@ function arrangePqcWorkspaceActions(){
 function showRowDetail(id,row){
   if(id==='work'&&typeof window.namoOpenWorkInquiryDetail==='function')return window.namoOpenWorkInquiryDetail(row);
   if(id==='outgoing')return window.qmesOpenOutgoingDetail(row);
+  if(id==='incoming'){
+    const section=document.getElementById('incoming');
+    const record=section?._iqcRows?.find(record=>String(record.id)===String(row.dataset.iqcId));
+    if(record)return editIncomingRecord(section,record);
+  }
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>td.innerText.trim());
   if(id==='work'){
@@ -7121,7 +7143,8 @@ function standardInspectionForm(type){
     <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
     <div class="k">공급업체</div><div class="v"><input id="incomingSupplier" type="text" placeholder="공급업체 입력"></div>
     <div class="k">원료명</div><div class="v"><select id="incomingMaterialName"><option value="">원료명 선택</option>${NAMO_RAW_MATERIALS.map(x=>`<option>${x}</option>`).join('')}</select></div>
-    <div class="k">원료 LOT</div><div class="v"><input id="incomingMaterialLot" type="text" placeholder="원료 LOT 입력"></div>`;
+    <div class="k">원료 LOT</div><div class="v"><input id="incomingMaterialLot" type="text" placeholder="원료 LOT 입력"></div>
+    <div class="k">입고 중량 (kg)</div><div class="v"><input id="incomingWeightKg" type="number" min="0" step="any" inputmode="decimal" placeholder="입고 중량 입력"></div>`;
   if(type==='process') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
     <div class="k">검사자</div><div class="v"><select class="pqc-inspector-select"><option value="">검사자 선택</option><option>박현아</option><option>문지훈</option><option value="__manual__">직접선택</option></select><input class="pqc-inspector-manual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:5px"></div>
@@ -7285,10 +7308,12 @@ function initStandardInspectionForm(type){
           judge:tr.querySelector('.std-row-judge')?.value||'대기'
         }));
         if(!name||!lot||!supplier||!date||!inspector){toast('검사일자, 검사자, 공급업체, 원료명, LOT를 입력해 주세요.');return;}
+        const incomingQty=iqcIncomingWeight(document.getElementById('incomingWeightKg')?.value);
+        if(incomingQty===null){toast('입고 중량(kg)을 0보다 큰 숫자로 입력해 주세요.');return;}
         replacement.disabled=true;
         try{
           const r=await fetch('/api/iqc',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-            date,lot,supplier,item:name,inspector,incomingQty:null,qty:null,failQty:0,items
+            date,lot,supplier,item:name,inspector,incomingQty,qty:null,failQty:0,items
           })});
           const p=await r.json().catch(()=>({success:false}));
           if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
