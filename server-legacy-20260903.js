@@ -984,13 +984,14 @@ function isRestrictedCommercialSync(type, key) {
 }
 
 function buildSessionUser(user) {
+  const isAdmin = String(user.role || '').toLowerCase() === 'admin' || user.role === '관리자' || user.name === '관리자';
   return {
     id: user.id,
     uid: user.uid || '',
     name: user.name === '임임흥배' ? '임흥배' : user.name,
     email: user.email,
     role: user.role,
-    department: user.department,
+    department: isAdmin ? '관리부' : user.department,
     title: user.title || '',
     status: user.status,
     mustChangePassword: Boolean(user.must_change_password),
@@ -1534,6 +1535,10 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/auth/me', (req, res) => {
   if (!req.session.user) return fail(res, 401, '로그인이 필요합니다.');
+  const role = String(req.session.user.role || '').toLowerCase();
+  if (role === 'admin' || req.session.user.role === '관리자' || req.session.user.name === '관리자') {
+    req.session.user.department = '관리부';
+  }
   ok(res, req.session.user);
 });
 
