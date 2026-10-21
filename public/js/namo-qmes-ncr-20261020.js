@@ -209,7 +209,7 @@ function load(){
 function warmNcrList(){
  if(!hasLoaded&&window.__QMES_CURRENT_USER__&&document.getElementById('currentUser')?.dataset.qauthReady==='1')load();
 }
-async function loadNcrAttachments(id){var target=root.querySelector('#ncr-attachment-list');if(!target)return;try{var files=await request('/api/qmes-ncr/reports/'+id+'/attachments');target.replaceChildren();files.forEach(function(f){var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e2e8f0';var link=document.createElement('a');link.textContent=f.file_name+' ('+Math.ceil(f.file_size/1024)+'KB)';link.href='/api/qmes-ncr/attachments/'+f.id+'/download';link.style.color='#1768ad';row.appendChild(link);var del=document.createElement('button');del.type='button';del.className='ncr-btn';del.textContent='삭제';del.onclick=async function(){if(!confirm('첨부파일을 삭제하시겠습니까?'))return;try{await request('/api/qmes-ncr/attachments/'+f.id,{method:'DELETE'});loadNcrAttachments(id);}catch(e){notice(e.message);}};row.appendChild(del);target.appendChild(row);});}catch(e){target.textContent=e.message;}}
+async function loadNcrAttachments(id){var target=root.querySelector('#ncr-attachment-list');if(!target)return;try{var files=await request('/api/qmes-ncr/reports/'+id+'/attachments');target.replaceChildren();files.forEach(function(f){var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #e2e8f0';var link=document.createElement('a');link.textContent=f.file_name+' ('+Math.ceil(f.file_size/1024)+'KB)';link.href='/api/qmes-ncr/attachments/'+f.id+'/download';link.style.color='#1768ad';row.appendChild(link);var del=document.createElement('button');del.type='button';del.className='ncr-btn';del.textContent='삭제';del.onclick=async function(){if(!await window.qmesConfirm('첨부파일을 삭제하시겠습니까?'))return;try{await request('/api/qmes-ncr/attachments/'+f.id,{method:'DELETE'});loadNcrAttachments(id);}catch(e){notice(e.message);}};row.appendChild(del);target.appendChild(row);});}catch(e){target.textContent=e.message;}}
 async function save(event){
  event.preventDefault();
  var form=event.currentTarget,button=form.querySelector('#ncr-save');
@@ -292,7 +292,7 @@ renderList=function(){
   window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
  };
  root.querySelector('#ncr-bulk-delete').onclick=async function(){
-  if(!selectedIds.size||!window.confirm('선택한 부적합보고서 '+selectedIds.size+'건을 삭제하시겠습니까?'))return;
+  if(!selectedIds.size||!await window.qmesConfirm('선택한 부적합보고서 '+selectedIds.size+'건을 삭제하시겠습니까?'))return;
   var ids=Array.from(selectedIds),errors=[];
   for(var id of ids){try{await request('/api/qmes-ncr/reports/'+encodeURIComponent(id),{method:'DELETE'});selectedIds.delete(id);}catch(e){errors.push(id+': '+e.message);}}
   await load();if(errors.length)notice('일부 삭제 실패: '+errors.join(', '));
