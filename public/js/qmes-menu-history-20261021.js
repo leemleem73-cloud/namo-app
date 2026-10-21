@@ -33,7 +33,9 @@ function visit(page,key,adapter){
 }
 function record(page){
  if(replaying||!menuFor(page))return;
- resetPage(page);
+ // Reset hooks may render their own screen; do not recapture the screen being left after it was cleared.
+ replaying=true;
+ try{resetPage(page);}finally{replaying=false;}
  visit(page,'list','');
 }
 function recordView(page,key,adapter){
