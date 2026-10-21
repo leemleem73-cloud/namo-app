@@ -2617,6 +2617,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 @media(max-width:1100px){.erp-admin-page .erp-admin-filter{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:670px){.erp-admin-page .erp-admin-filter{grid-template-columns:1fr!important;padding:14px!important}.erp-admin-page .erp-admin-title{padding:0 14px!important}.erp-admin-page .erp-admin-tablewrap{padding:8px!important}.erp-admin-page .erp-admin-total{grid-template-columns:65px 1fr 245px!important}}
 </style>
+<script src="./js/qmes-common-dialogs-20261021.js?v=1"></script>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -2815,7 +2816,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-history-detail"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-common-dialogs"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -3721,19 +3722,19 @@ function wireIncomingSupplierPicker(section,options={}){
     search.oninput=()=>{searchValue=search.value;renderList()};search.disabled=busy;
     const action=(text,run)=>{const button=document.createElement('button');button.type='button';button.textContent=text;button.disabled=busy;button.onclick=run;buttons.append(button)};
     action('추가',async()=>{
-      const name=prompt('추가할 공급업체명')?.trim();if(!name)return;
+      const name=(await window.qmesPrompt('추가할 공급업체명'))?.trim();if(!name)return;
       if(names().includes(name))return alert('이미 등록된 공급업체입니다.');
       if(await save({names:clean([...master.names,name]),excluded:master.excluded.filter(value=>value!==name)}))draw();
     });
     action('수정',async()=>{
       if(draft.size!==1)return alert('수정할 공급업체 1개만 선택하세요.');
-      const old=[...draft][0],name=prompt('변경할 공급업체명',old)?.trim();if(!name||name===old)return;
+      const old=[...draft][0],name=(await window.qmesPrompt('변경할 공급업체명',old))?.trim();if(!name||name===old)return;
       if(names().includes(name))return alert('이미 등록된 공급업체입니다.');
       if(await save({names:clean([...master.names.filter(value=>value!==old),name]),excluded:clean([...master.excluded.filter(value=>value!==name),old])})){draft.delete(old);draft.add(name);draw();}
     });
     action('삭제',async()=>{
       if(draft.size!==1)return alert('삭제할 공급업체 1개만 선택하세요.');
-      const name=[...draft][0];if(!confirm(name+'을 선택 목록에서 삭제합니까? 기존 수입검사 기록은 유지됩니다.'))return;
+      const name=[...draft][0];if(!await window.qmesConfirm(name+'을 선택 목록에서 삭제합니까? 기존 수입검사 기록은 유지됩니다.'))return;
       if(await save({names:master.names.filter(value=>value!==name),excluded:clean([...master.excluded,name])})){draft.delete(name);draw();}
     });
     action('취소',close);
@@ -4257,13 +4258,13 @@ function wireAdminEmployees(section){
     }catch(error){window.alert('IP 접속 이력 조회 실패: '+error.message);}
   }));
   section.querySelectorAll('.admin-emp-lock').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();toast(btn.textContent.trim()==='중지'?'계정 사용중지 처리 화면입니다.':'계정 승인 처리 화면입니다.');}));
-  section.querySelectorAll('.admin-emp-delete').forEach(btn=>btn.addEventListener('click',e=>{
+  section.querySelectorAll('.admin-emp-delete').forEach(btn=>btn.addEventListener('click',async e=>{
     e.stopPropagation();
     const row=btn.closest('.admin-emp-row');
     const idx=Number(row?.dataset.index);
     const emp=ADMIN_EMPLOYEES[idx];
     if(!emp || emp.name==='관리자') return;
-    if(!window.confirm(emp.name+' 직원을 삭제하시겠습니까?')) return;
+    if(!await window.qmesConfirm(emp.name+' 직원을 삭제하시겠습니까?')) return;
     if(!emp.dbId){toast('DB 계정 식별자가 없어 삭제할 수 없습니다.');return;}
     fetch('/api/admin/users/'+encodeURIComponent(emp.dbId),{method:'DELETE',credentials:'same-origin',cache:'no-store'})
       .then(async response=>{const result=await response.json();if(!response.ok||!result.success)throw Error(result.message||'삭제 실패');return buildAdminEmployees();})
@@ -4442,7 +4443,7 @@ function editIncomingRecord(section,row){
   });
 }
 async function deleteIncomingRecord(section,row){
-  if(!confirm('해당 수입검사 기록을 삭제하시겠습니까?'))return;
+  if(!await window.qmesConfirm('해당 수입검사 기록을 삭제하시겠습니까?'))return;
   try{
     const r=await fetch('/api/iqc/'+encodeURIComponent(row.id),{method:'DELETE',credentials:'same-origin'});
     const p=await r.json().catch(()=>({success:false}));
@@ -4784,7 +4785,7 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
         }
         const deleteBtn=e.target.closest('.quality-delete-btn');
         if(deleteBtn){
-          if(!confirm('이 결재 문서를 삭제하시겠습니까?')) return;
+          if(!await window.qmesConfirm('이 결재 문서를 삭제하시겠습니까?')) return;
           deleteBtn.disabled=true;
           try{
             const rr=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(deleteBtn.dataset.approvalId),{method:'DELETE',credentials:'same-origin'});
@@ -7704,7 +7705,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-totals-cols3"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261020-auth-ready1"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-common-dialogs"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
@@ -7883,8 +7884,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 </script>
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
-<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261016-rightpane-only-3"></script>
-<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261019-calendar-fit"></script>
+<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261021-common-dialogs"></script>
+<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-common-dialogs"></script>
 <script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261016.js?v=2-simple"></script>
 <script defer src="./js/qmes-lot-work-frame-20261016.js?v=1"></script>
@@ -7900,7 +7901,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/qmes-process-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=2"></script>
-<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=3-bottom-actions"></script>
+<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261021-common-dialogs"></script>
 <script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261020-bottom-actions"></script>
 <script id="qmes-number-heading-labels-20261019">
 (()=>{
@@ -8019,7 +8020,7 @@ html body #ncr .ncr-editor-main .ncr-form :is(input,select,textarea){font-size:1
 html body #ncr :is(.ncr-section-title,.ncr-editor-toolbar>strong){font-size:13px!important;font-weight:700!important}
 html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!important;font-weight:700!important}
 </style>
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-history-details"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-common-dialogs"></script>
 </body>
 </html>
 

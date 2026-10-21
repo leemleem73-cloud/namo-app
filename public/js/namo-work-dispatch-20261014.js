@@ -139,7 +139,7 @@
      if(!addressed.length){status.textContent='이메일이 등록된 수신 담당자를 선택해 주세요.';return;}
      if(missing.length){status.textContent='이메일 미등록 담당자: '+missing.map(p=>p.name).join(', ')+' · 해당자를 제외한 후 발송해 주세요.';return;}
      if(!window.namoSaveWorkOrderForDispatch){status.textContent='작업지시서 저장 기능을 확인하지 못했습니다.';return;}
-     if(!window.confirm(addressed.map(p=>p.name).join(', ')+' · '+addressed.length+'명 이메일 발송 후 전체 부서에 QMES 알림을 보내시겠습니까?'))return;
+     if(!await window.qmesConfirm(addressed.map(p=>p.name).join(', ')+' · '+addressed.length+'명 이메일 발송 후 전체 부서에 QMES 알림을 보내시겠습니까?'))return;
      sending=true;update();status.textContent='작업지시서 저장 중...';
      try{
        const orderId=await window.namoSaveWorkOrderForDispatch(editId||form.dataset.workDispatchSavedId||'');
