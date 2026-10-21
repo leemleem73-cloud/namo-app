@@ -116,6 +116,11 @@ function init(){
  const bulkPrint=actions.querySelector('[data-bulk-print]'),bulkDelete=actions.querySelector('[data-bulk-delete]'),printBtn=summary.querySelector('[data-selected-print]'),deleteBtn=summary.querySelector('[data-selected-delete]');
  printBtn.onclick=()=>bulkPrint.click();deleteBtn.onclick=()=>bulkDelete.click();
  const sync=()=>{const selected=page.querySelectorAll('.eq-table tbody input.eq-wo-select:checked').length;printBtn.hidden=!selected;deleteBtn.hidden=!selected;printBtn.disabled=!selected;deleteBtn.disabled=!selected;printBtn.classList.add('btn');deleteBtn.classList.add('btn');printBtn.textContent='선택 인쇄 ('+selected+')';deleteBtn.textContent='선택 삭제 ('+selected+')';if(typeof window.qmesIncomingSelectionDock==='function')window.qmesIncomingSelectionDock(document.getElementById('equipment'),[printBtn,deleteBtn],selected)};
+ document.getElementById('equipment')._resetListSelection=()=>{
+  page.querySelectorAll('.eq-wo-select,#eqWoAll').forEach(box=>{box.checked=false;box.indeterminate=false;});
+  const bulk=actions.querySelector('.eq-wo-actions');if(bulk)bulk.hidden=true;
+  sync();
+ };
  page.querySelector('.eq-table').addEventListener('change',()=>setTimeout(sync,0));
  new MutationObserver(sync).observe(actions.querySelector('.eq-wo-actions'),{attributes:true,attributeFilter:['hidden']});
  sync();
