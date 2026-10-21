@@ -4850,9 +4850,11 @@ async function loadQualityNotifications(){
   await window.qmesAuthDataReady.wait();
   if(!notifyList) return;
   try{
-    const r=await fetch('/api/qmes-quality/notifications',{credentials:'same-origin'});
+    const notificationQuery=window.qmesNotificationDates?.query()||'';
+    const r=await fetch('/api/qmes-quality/notifications'+notificationQuery,{credentials:'same-origin'});
     const p=await r.json();
     if(!r.ok||!p.success) throw new Error(p.message||'알림 조회 실패');
+    if(notificationQuery!==(window.qmesNotificationDates?.query()||''))return;
     const rows=Array.isArray(p.data)?p.data:[];
     notifyList.querySelectorAll('.notify-item[data-source="quality"]').forEach(x=>x.remove());
     rows.forEach(n=>{
@@ -4874,12 +4876,14 @@ async function loadQualityNotifications(){
       el.dataset.kind=qualityKind;
       el.dataset.page=targetPage;
       el.dataset.source='quality';
+      el.dataset.createdAt=n.created_at||'';
       el.dataset.approvalId=n.approval_id||'';
       const pending=n.approval_status==='PENDING';
       el.innerHTML=`<div class="notify-dot">${pending?'결':'✓'}</div><div class="notify-copy"><b>${n.title||'품질문서 알림'}</b><span>${n.message||''}</span></div><div class="notify-time">${pending?'승인대기':'완료'}<br>${qualityApprovalDate(n.created_at)}</div>`;
       notifyList.appendChild(el);
     });
     if(notifyEmpty) notifyEmpty.style.display=rows.length?'none':'block';
+    window.qmesNotificationDates?.apply();
   }catch(e){
     console.error('[QMES quality notifications]',e);
   }
@@ -7662,6 +7666,7 @@ notifyTabs?.addEventListener('click',e=>{
   if(!btn)return;
   notifyTabs.querySelectorAll('.notify-tab').forEach(x=>x.classList.remove('active'));
   btn.classList.add('active');
+  if(window.qmesNotificationDates){window.qmesNotificationDates.apply();return;}
   const filter=btn.dataset.filter;
   let visible=0;
   notifyList?.querySelectorAll('.notify-item').forEach(item=>{
@@ -7747,7 +7752,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-totals-cols3"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-common-dialogs"></script>
+<script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
