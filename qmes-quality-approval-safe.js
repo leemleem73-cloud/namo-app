@@ -262,6 +262,9 @@ function install(app) {
   });
 
   app.get('/api/qmes-quality/approvals', requireLogin, async (req, res) => {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     try {
       await ensureSchema();
       await ensureMissingIqcApprovals();
@@ -282,6 +285,9 @@ function install(app) {
   });
 
   app.get('/api/qmes-quality/approvals/record', requireLogin, async (req, res) => {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     try {
       await ensureSchema();
       const docType = String(req.query.docType || '').trim().toUpperCase();
@@ -361,6 +367,9 @@ function install(app) {
   });
 
   app.get('/api/qmes-quality/notifications', requireLogin, async (req, res) => {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     try {
       await ensureSchema();
       await ensureMissingIqcApprovals();
