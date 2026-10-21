@@ -22,7 +22,13 @@ function init(){
  #work #namo-work-inquiry [data-work-tooltip]::after{content:attr(data-work-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);display:block;padding:6px 10px;min-width:max-content;background:#fff;color:#25384a;border:1px solid #aebdca;border-radius:3px;box-shadow:0 2px 6px rgba(25,45,65,.14);font:600 12px/18px Arial,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;z-index:20}
  #work #namo-work-inquiry [data-work-tooltip]:hover::after,#work #namo-work-inquiry [data-work-tooltip]:focus-visible::after{opacity:1;visibility:visible}
  #work .module-shell.nwi-list-folded>#nwi-work-list,#work .module-shell.nwi-list-folded>#nwi-work-list-pagination{display:none!important}
- #work .module-shell>.nwi-list-head{padding-right:228px!important}
+ /* Work-order inquiry row only: align field sizes with purchase-order search controls. */
+ #work #namo-work-inquiry .nwi-grid{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px 16px!important}
+ #work #namo-work-inquiry .nwi-grid>label:not([hidden]){display:flex!important;align-items:center!important;gap:7px!important;width:auto!important;max-width:none!important;min-width:0!important;flex:0 0 auto!important}
+ #work #namo-work-inquiry .nwi-grid>label:not([hidden])>span{flex:0 0 auto!important;white-space:nowrap!important}
+ #work #namo-work-inquiry .nwi-grid>label:not([hidden])>input,#work #namo-work-inquiry .nwi-grid>label:not([hidden])>select{width:195px!important;min-width:195px!important;max-width:195px!important;height:30px!important;box-sizing:border-box!important;flex:0 0 195px!important}
+ #work #namo-work-inquiry .nwi-period-label .nwi-period-trigger{width:215px!important;min-width:215px!important;max-width:215px!important;height:30px!important;box-sizing:border-box!important}
+  #work .module-shell>.nwi-list-head{padding-right:228px!important}
  @media(max-width:650px){#work #namo-work-inquiry .nwi-filter-toggle{top:calc(100% + 43px)!important}#work .module-shell>.nwi-list-head{padding-right:12px!important}}
  `;document.head.append(style);return true;
 }
