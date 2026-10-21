@@ -10,16 +10,21 @@ toggle.onclick=()=>{shell.classList.toggle('qpc-list-folded');state();};query.ad
 dates[0].dataset.processPeriod='start';dates[1].dataset.processPeriod='end';[...range.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE||n.nodeName==='SPAN').forEach(n=>n.remove());
 const period=document.createElement('button');period.type='button';period.className='qpc-period-trigger';period.setAttribute('aria-label','검사기간 선택');period.setAttribute('aria-expanded','false');period.setAttribute('aria-haspopup','dialog');period.innerHTML='<span class="qpc-period-value">기간 선택</span><span aria-hidden="true" style="font-size:18px">▦</span>';range.append(period);
 function periodValue(){period.querySelector('.qpc-period-value').textContent=dates[0].value&&dates[1].value?dates[0].value+' ~ '+dates[1].value:'기간 선택';}dates.forEach(d=>d.addEventListener('change',periodValue));clear.addEventListener('click',periodValue);periodValue();
+// Remove only inspector and integrated-search fields from the visible process inquiry.
+for(const name of ['검사자','통합검색']){
+ const field=[...shell.querySelectorAll('.ip-filter')].find(el=>el.querySelector('span')?.textContent.trim()===name);
+ if(field){const input=field.querySelector('input,select');if(input){if(input.tagName==='SELECT')input.selectedIndex=0;else input.value='';}field.style.setProperty('display','none','important');}
+}
 const style=document.createElement('style');style.textContent=`
 #process.process-current-work .iqc-work-frame .ip-panel{overflow:visible!important}
 #process.process-current-work .iqc-work-frame .ip-toolbar{padding:12px 16px!important}
 #process.process-current-work .iqc-work-frame .ip-filter-row{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 20px!important}
 #process.process-current-work .iqc-work-frame .ip-filter{flex:0 0 auto;gap:8px;margin:0;min-width:0}
 #process.process-current-work .iqc-work-frame .ip-filter>span{flex:0 0 auto;min-width:0;text-align:left;font-size:11.5px;line-height:30px;white-space:nowrap}
-#process.process-current-work .iqc-work-frame .ip-filter .input{box-sizing:border-box;width:144px!important;flex:0 0 144px;height:30px!important;border-radius:4px!important;font-size:12px!important}
-#process.process-current-work .iqc-date-range{width:208px!important;flex:0 0 208px;height:30px!important;border:0!important;background:transparent!important;border-radius:0!important}
+#process.process-current-work .iqc-work-frame .ip-filter .input{box-sizing:border-box;width:195px!important;flex:0 0 195px;height:30px!important;border-radius:4px!important;font-size:12px!important}
+#process.process-current-work .iqc-date-range{width:215px!important;flex:0 0 215px;height:30px!important;border:0!important;background:transparent!important;border-radius:0!important}
 #process.process-current-work .iqc-work-frame .iqc-date-range>input{display:none!important}
-#process.process-current-work .qpc-period-trigger{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:208px;height:30px;padding:0 8px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#243e5d;font:600 12px Arial,sans-serif;cursor:pointer}
+#process.process-current-work .qpc-period-trigger{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:215px;height:30px;padding:0 8px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#243e5d;font:600 12px Arial,sans-serif;cursor:pointer}
 #process.process-current-work .qpc-period-value{white-space:nowrap}
 #process.process-current-work .iqc-query-count,#process.process-current-work .iqc-list-total{display:none!important}
 #process.process-current-work .iqc-query-actions{justify-content:flex-end;margin-top:10px}
