@@ -10,6 +10,9 @@ toggle.onclick=()=>{shell.classList.toggle('qoc-list-folded');state();};query.ad
 dates[0].dataset.outgoingPeriod='start';dates[1].dataset.outgoingPeriod='end';[...range.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE||n.nodeName==='SPAN').forEach(n=>n.remove());
 const period=document.createElement('button');period.type='button';period.className='qoc-period-trigger';period.setAttribute('aria-label','검사기간 선택');period.setAttribute('aria-expanded','false');period.setAttribute('aria-haspopup','dialog');period.innerHTML='<span class="qoc-period-value">기간 선택</span><span aria-hidden="true" style="font-size:18px">▦</span>';range.append(period);
 function periodValue(){period.querySelector('.qoc-period-value').textContent=dates[0].value&&dates[1].value?dates[0].value+' ~ '+dates[1].value:'기간 선택';}dates.forEach(d=>d.addEventListener('change',periodValue));clear.addEventListener('click',periodValue);periodValue();
+// Hide the inspector inquiry filter only; retain inspection records and table columns.
+const inspector=[...shell.querySelectorAll('.ip-filter')].find(el=>el.querySelector('span')?.textContent.trim()==='검사자');
+if(inspector){const control=inspector.querySelector('input,select');if(control){if(control.tagName==='SELECT')control.selectedIndex=0;else control.value='';}inspector.style.setProperty('display','none','important');}
 const style=document.createElement('style');style.textContent=`
 #outgoing.outgoing-current-work .iqc-work-frame .ip-panel{overflow:visible!important}
 #outgoing.outgoing-current-work .iqc-work-frame .ip-toolbar{padding:12px 16px!important}
