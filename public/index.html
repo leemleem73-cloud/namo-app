@@ -8079,17 +8079,20 @@ html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!im
 <script id="qmes-pqc-approval-grid-20261021">
 window.qmesPqcApprovalGrid=function(row){
  const id=String(row?.dataset?.sourceId||'');
- const record=document.getElementById('process')?._pqcRecords?.get(String(row?.dataset?.sourceKey||'')+'|'+id);
- const writer=String(record?.detailFields?.['검사자']||record?.inspector||'').trim();
+ const sourceKey=String(row?.dataset?.sourceKey||'');
+ const isNew=!sourceKey&&!id;
+ const record=document.getElementById('process')?._pqcRecords?.get(sourceKey+'|'+id);
+ const savedWriter=String(record?.writerName||'').trim();
  const token='pqc-approval-'+Date.now()+'-'+Math.floor(Math.random()*10000);
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const stage=(name,value,date)=>'<div class="pqc-esign-person"><b>'+esc(value||name+'대기')+'</b>'+(date?'<small>'+esc(new Date(date).toLocaleString('ko-KR'))+'</small>':'')+'</div>';
  const draw=a=>{
   const el=document.getElementById(token);if(!el)return;
   const reviewed=!!a?.reviewed_at,approved=a?.status==='APPROVED'&&!!a?.approved_at;
-  el.innerHTML='<div class="pqc-esign-table"><div class="pqc-esign-side">전자결재</div><div class="pqc-esign-head">작성</div><div class="pqc-esign-head">검토</div><div class="pqc-esign-head">승인</div>'+stage('작성',a?.writer_name||writer||'작성자','')+stage('검토',reviewed?a.reviewer_name:'검토대기',reviewed?a.reviewed_at:null)+stage('승인',approved?a.approver_name:'승인대기',approved?a.approved_at:null)+'</div><div class="pqc-esign-note">검사기준 및 측정값 확인 후 저장하십시오. <span>※ 관리본 · 전자기록</span><span>(주)나모케미칼 품질부</span></div>';
+  const writer=String(a?.writer_name||'').trim()||savedWriter||(isNew?String(window.__QMES_CURRENT_USER__?.name||'').trim():'');
+  el.innerHTML='<div class="pqc-esign-table"><div class="pqc-esign-side">전자결재</div><div class="pqc-esign-head">작성</div><div class="pqc-esign-head">검토</div><div class="pqc-esign-head">승인</div>'+stage('작성',writer||'확인 필요','')+stage('검토',reviewed?a.reviewer_name:'검토대기',reviewed?a.reviewed_at:null)+stage('승인',approved?a.approver_name:'승인대기',approved?a.approved_at:null)+'</div><div class="pqc-esign-note">검사기준 및 측정값 확인 후 저장하십시오. <span>※ 관리본 · 전자기록</span><span>(주)나모케미칼 품질부</span></div>';
  };
- setTimeout(async()=>{draw(null);if(!id)return;try{const res=await fetch('/api/qmes-quality/approvals/record?docType=IPQC&recordId='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});if(res.ok){const json=await res.json();if(json.success)draw(json.data);}}catch(e){console.warn('[PQC approval]',e);}},0);
+ setTimeout(async()=>{if(isNew)await window.qmesAuthDataReady?.wait?.();draw(null);if(!id)return;try{await window.qmesAuthDataReady?.wait?.();const res=await fetch('/api/qmes-quality/approvals/record?docType=IPQC&recordId='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});if(res.ok){const json=await res.json();if(json.success)draw(json.data);}}catch(e){console.warn('[PQC approval]',e);}},0);
  return '<section id="'+token+'" class="pqc-esign-wrap" aria-label="공정검사 전자결재">전자결재 조회 중</section>';
 };
 </script><style id="qmes-pqc-esign-style-20261021">

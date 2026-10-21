@@ -2524,13 +2524,20 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
     const rows=Array.isArray(payload.rows)?payload.rows.slice():[];
     const result=evaluatePqcMeasurements(record.measurements);
     const saved={...record,judge:result.overall,detailFields:{...record.detailFields,'검사합부':result.overall}};
+    // The authenticated creator is immutable; never trust posted author fields.
+    delete saved.writerName;delete saved.writerUserId;
     if(source){
       const matches=rows.map((row,index)=>String(row.id??'')===txt(source.rowId)?index:-1).filter(index=>index>=0);
       if(matches.length!==1)throw Object.assign(Error('원본 검사 기록이 변경되었습니다. 목록에서 다시 열어 주세요.'),{status:409});
       const index=matches[0];saved.id=rows[index].id;
+      for(const field of ['writerName','writerUserId']){
+        if(Object.prototype.hasOwnProperty.call(rows[index],field))saved[field]=rows[index][field];
+      }
       rows[index]={...rows[index],...saved};
     }else{
       if(before.rows.length)throw Object.assign(Error('이미 저장된 기록입니다. 목록에서 수정해 주세요.'),{status:409});
+      saved.writerName=txt(req.session.user.name);
+      saved.writerUserId=txt(req.session.user.id);
       rows.push(saved);
     }
     await client.query(`INSERT INTO qmes_sync_records(record_type,record_key,payload,updated_by,updated_at)
