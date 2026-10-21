@@ -169,6 +169,8 @@ function init(){
  const detail=document.createElement('div');detail.id='namo-work-detail';
  detail.innerHTML='<div class="nwd-head">작업지시 상세내역</div><div class="nwd-content">상단 작업지시 목록에서 항목을 선택하세요.</div>';
  shell.insertAdjacentElement('afterend',detail);
+ // Hide only the equipment-name search control; retain its internal empty filter for index compatibility.
+ const equipmentSearch=panel.querySelector('[data-filter="7"]');if(equipmentSearch){equipmentSearch.value='';equipmentSearch.closest('label').hidden=true;equipmentSearch.closest('label').style.display='none';}
  const controls=[...panel.querySelectorAll('[data-filter]')];let activeId='',activeTab='materials',activeRecord=null;
  const getRows=()=>[...tbody.children].filter(tr=>tr.tagName==='TR'&&tr.cells.length>1);
  // Respect the native hidden state even when another stylesheet sets table-row display.
