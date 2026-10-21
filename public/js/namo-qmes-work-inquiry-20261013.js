@@ -366,6 +366,7 @@ function update(){
 }
 function scan(){
  const root=section(),table=root?.querySelector('.work-list-table');if(!table)return;
+ root._resetListSelection=()=>{selected.clear();update();};
  const tools=root.querySelector('#namo-work-inquiry .nwi-actions');
  if(tools&&!root.querySelector('.wo-bulk-controls')){
   const bar=document.createElement('span');bar.className='wo-bulk-controls';bar.hidden=true;
