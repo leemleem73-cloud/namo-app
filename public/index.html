@@ -2618,6 +2618,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 @media(max-width:670px){.erp-admin-page .erp-admin-filter{grid-template-columns:1fr!important;padding:14px!important}.erp-admin-page .erp-admin-title{padding:0 14px!important}.erp-admin-page .erp-admin-tablewrap{padding:8px!important}.erp-admin-page .erp-admin-total{grid-template-columns:65px 1fr 245px!important}}
 </style>
 <script src="./js/qmes-common-dialogs-20261021.js?v=20261021-print-confirm2"></script>
+<script src="./js/qmes-selection-lifecycle-20261021.js?v=1"></script>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -2816,7 +2817,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-print-confirm2"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-clear-menu-selection"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -7567,7 +7568,7 @@ document.documentElement.removeAttribute('data-qmes-pending-page');
 document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
   window.qmesMenuHistory?.beforeMenu();
-  if(m.dataset.page!=='incoming')document.getElementById('incoming')?._resetIncomingSelection?.();
+  window.qmesSelectionLifecycle?.clearInactive(m.dataset.page);
   document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
   m.classList.add('active');
@@ -7890,7 +7891,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
 <script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261021-common-dialogs"></script>
-<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-print-confirm2"></script>
+<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-clear-menu-selection"></script>
 <script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261016.js?v=2-simple"></script>
 <script defer src="./js/qmes-lot-work-frame-20261016.js?v=1"></script>
@@ -7907,7 +7908,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=2"></script>
 <script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261021-print-confirm2"></script>
-<script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261020-bottom-actions"></script>
+<script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261021-clear-menu-selection"></script>
 <script id="qmes-number-heading-labels-20261019">
 (()=>{
 const scope=':is(#orders,#purchase,#work,#inventory,#incoming,#process,#outgoing,#equipment,#quality,#approval,#standard)';
@@ -8025,7 +8026,7 @@ html body #ncr .ncr-editor-main .ncr-form :is(input,select,textarea){font-size:1
 html body #ncr :is(.ncr-section-title,.ncr-editor-toolbar>strong){font-size:13px!important;font-weight:700!important}
 html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!important;font-weight:700!important}
 </style>
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-print-confirm2"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-clear-menu-selection"></script>
 </body>
 </html>
 
