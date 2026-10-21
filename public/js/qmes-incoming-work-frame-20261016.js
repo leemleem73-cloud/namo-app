@@ -13,6 +13,8 @@ function periodValue(){period.querySelector('.qic-period-value').textContent=dat
 // Hide only inspector query control while retaining the native underlying filter element.
 const inspectorFilter=[...shell.querySelectorAll('.ip-filter')].find(el=>el.querySelector('span')?.textContent.trim()==='검사자');
 if(inspectorFilter){const control=inspectorFilter.querySelector('input,select');if(control){control.value='';if(control.tagName==='SELECT'&&![...control.options].some(o=>o.value===''))control.selectedIndex=0;}inspectorFilter.style.setProperty('display','none','important');}
+const integratedFilter=[...shell.querySelectorAll('.ip-filter')].find(el=>el.querySelector('span')?.textContent.trim()==='통합검색');
+if(integratedFilter){const input=integratedFilter.querySelector('input');if(input)input.value='';integratedFilter.style.setProperty('display','none','important');}
 const style=document.createElement('style');style.textContent=`
 #incoming.incoming-current-work .iqc-work-frame .ip-panel{overflow:visible!important}
 #incoming.incoming-current-work .iqc-work-frame .ip-toolbar{padding:12px 16px!important}
