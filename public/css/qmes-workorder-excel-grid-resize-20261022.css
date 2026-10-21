@@ -1,0 +1,65 @@
+/* NAMO QMES Work Order: Excel-like grid + header-only column resize affordance
+ * 2026-10-22 / ADD-ONLY / #work scoped
+ */
+#work .module-body{
+  overflow:auto!important;
+  background:#fff!important;
+  border-left:1px solid #cfd7df!important;
+  border-right:1px solid #cfd7df!important;
+  border-bottom:1px solid #cfd7df!important;
+}
+#work .work-list-table{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  table-layout:fixed!important;
+  background:#fff!important;
+}
+#work .work-list-table thead th{
+  position:relative!important;
+  height:36px!important;
+  padding:0 8px!important;
+  background:#f3f6f9!important;
+  color:#2d3c49!important;
+  font-weight:700!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  border-right:1px solid #cfd7df!important;
+  border-bottom:1px solid #c6d0da!important;
+  cursor:default!important;
+}
+#work .work-list-table tbody td{
+  height:36px!important;
+  padding:0 8px!important;
+  background:#fff!important;
+  border-right:1px solid #dde3e9!important;
+  border-bottom:1px solid #e1e6eb!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  vertical-align:middle!important;
+}
+#work .work-list-table tbody tr:nth-child(even) td{background:#fbfcfd!important;}
+#work .work-list-table tbody tr:hover td{background:#eef6fc!important;}
+#work .work-list-table thead th:last-child,
+#work .work-list-table tbody td:last-child{border-right:0!important;}
+
+/* Resize hit-area exists only on the header separator. Nothing is visibly drawn. */
+#work .work-list-table thead th>.iqc-column-resize{
+  position:absolute!important;
+  top:0!important;
+  right:-4px!important;
+  width:8px!important;
+  height:100%!important;
+  z-index:20!important;
+  display:block!important;
+  background:transparent!important;
+  border:0!important;
+  cursor:col-resize!important;
+  touch-action:none!important;
+  user-select:none!important;
+}
+#work .work-list-table thead th>.iqc-column-resize::before,
+#work .work-list-table thead th>.iqc-column-resize::after{
+  content:none!important;
+  display:none!important;
+}
