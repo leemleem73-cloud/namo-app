@@ -65,3 +65,37 @@ test('actual IQC delete handler sends no request until approval and none on canc
  const approved=vm.runInContext("deleteIncomingRecord({dataset:{}},{id:'fixture'})",a.context);
  assert.equal(writes,0);a.button('accept').click();await approved;assert.equal(writes,1);
 });
+
+test('all selection print kinds use the same title, count and print action',async()=>{
+ for(const kind of ['작업지시서','설비','부적합보고서','수입검사','구매발주']){
+  const a=app(),pending=a.window.qmesConfirmPrint(kind,2);
+  assert.equal(a.dialog().children[0].textContent,'선택 인쇄 확인');
+  assert.equal(a.dialog().children[1].textContent,'선택한 '+kind+' 2건을 인쇄하시겠습니까?');
+  assert.equal(a.button('accept').textContent,'인쇄');
+  a.button('cancel').click();assert.equal(await pending,false);
+ }
+});
+test('equipment selection printing waits for approval and cancels without printing',async()=>{
+ const code=fs.readFileSync(path.join(__dirname,'../public/js/qmes-equipment-unified-workorder-20261019.js'),'utf8');
+ const line=code.split('\n').find(l=>l.includes("bulk.querySelector('[data-bulk-print]').onclick="));
+ const button={},items=[{id:1},{id:2}];let decide,printed=0;
+ vm.runInNewContext(line,{bulk:{querySelector:()=>button},items,selected:()=>[0,1],printRows:rows=>{printed+=rows.length;},window:{qmesConfirmPrint:()=>new Promise(resolve=>{decide=resolve;})}});
+ const cancel=button.onclick();assert.equal(printed,0);decide(false);await cancel;assert.equal(printed,0);
+ const approve=button.onclick();assert.equal(printed,0);decide(true);await approve;assert.equal(printed,2);
+});
+test('NCR selection printing uses shared confirmation and respects cancellation',async()=>{
+ const code=fs.readFileSync(path.join(__dirname,'../public/js/namo-qmes-ncr-20261020.js'),'utf8');
+ const start=code.indexOf("root.querySelector('#ncr-bulk-print').onclick="),end=code.indexOf(" root.querySelector('#ncr-bulk-mail').onclick",start);
+ const button={},rows=[{id:1},{id:2}];let printed=0,decide;
+ vm.runInNewContext(code.slice(start,end),{root:{querySelector:()=>button},rows,selectedIds:new Set(['1','2']),printReport:()=>printed++,window:{qmesConfirmPrint:()=>new Promise(resolve=>{decide=resolve;})}});
+ const pending=button.onclick();assert.equal(printed,0);decide(false);await pending;assert.equal(printed,0);
+ const approved=button.onclick();decide(true);await approved;assert.equal(printed,2);
+});
+test('work-order print renderer is not invoked when selection confirmation is canceled',async()=>{
+ const code=fs.readFileSync(path.join(__dirname,'../public/js/namo-qmes-work-inquiry-20261013.js'),'utf8');
+ const start=code.indexOf('async function print(){'),end=code.indexOf('async function remove',start);
+ let rendered=0,confirmed=0;
+ const context=vm.createContext({selected:new Set(['1']),alert(){},console,window:{qmesGetWorkOrders:()=>[{id:'1'}],namoPrintWorkOrder:()=>rendered++,qmesConfirmPrint:async(kind,count)=>{assert.equal(kind,'작업지시서');assert.equal(count,1);confirmed++;return false;}}});
+ vm.runInContext(code.slice(start,end),context);await vm.runInContext('print()',context);
+ assert.equal(confirmed,1);assert.equal(rendered,0);
+});
