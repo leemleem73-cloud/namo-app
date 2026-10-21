@@ -403,6 +403,8 @@ function install(app) {
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
     try {
+      const dates=require('./public/js/qmes-notification-dates-20261021.js').validateRange(req.query);
+      if(!dates)return fail(res,400,'조회 날짜를 확인해 주세요.');
       await ensureSchema();
       await ensureMissingIqcApprovals();
       const q = await pool.query(
@@ -410,9 +412,11 @@ function install(app) {
          FROM qmes_quality_notifications n
          LEFT JOIN qmes_quality_approvals a ON a.id=n.approval_id
          WHERE n.user_id=$1
+           AND ($2::date IS NULL OR n.created_at>=($2::date::timestamp AT TIME ZONE 'Asia/Seoul'))
+           AND ($3::date IS NULL OR n.created_at<(($3::date + INTERVAL '1 day') AT TIME ZONE 'Asia/Seoul'))
          ORDER BY n.created_at DESC
          LIMIT 100`,
-        [req.session.user.id]
+        [req.session.user.id,dates.from,dates.to]
       );
       return ok(res, q.rows);
     } catch (e) {

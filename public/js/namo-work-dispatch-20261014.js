@@ -33,14 +33,17 @@
    const list=document.getElementById('notifyList');
    if(!list)return;
    inboxBusy=true;
+   const requestedQuery=window.qmesNotificationDates?.query()||'';
    try{
-     const rows=await api('/inbox');
+     const rows=await api('/inbox'+requestedQuery);
+     if(requestedQuery!==(window.qmesNotificationDates?.query()||''))return;
      list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(n=>n.remove());
      refreshDispatchBadge((rows||[]).filter(n=>!n.read_at).length);
      (rows||[]).forEach(n=>{
        const div=document.createElement('div');
        div.className='notify-item';
        div.dataset.source='work-dispatch';
+       div.dataset.createdAt=n.created_at||'';
        div.dataset.kind='work';
        div.dataset.page='work';
        div.dataset.dispatchId=String(n.id);
@@ -52,8 +55,9 @@
      list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(row=>row.classList.toggle('hidden',active!=='all'&&active!=='work'));
      const blank=document.getElementById('notifyEmpty');
      if(blank)blank.style.display=[...list.querySelectorAll('.notify-item')].some(el=>!el.classList.contains('hidden'))?'none':'block';
+     window.qmesNotificationDates?.apply();
    }catch(e){console.warn('[work dispatch] inbox',e);}
-   finally{inboxBusy=false;}
+   finally{inboxBusy=false;if(requestedQuery!==(window.qmesNotificationDates?.query()||'')&&document.getElementById('notifyPanel')?.classList.contains('open'))setTimeout(loadInbox,0);}
  }
  document.addEventListener('click',e=>{
    const row=e.target.closest?.('.notify-item[data-source="work-dispatch"]');
@@ -61,6 +65,7 @@
    const id=row.dataset.dispatchId;
    if(id)api('/inbox/'+encodeURIComponent(id)+'/read',{method:'POST'}).then(()=>{row.querySelector('.notify-time').textContent='확인';loadInbox();}).catch(console.warn);
  },true);
+ window.qmesReloadDispatchNotifications=loadInbox;
  document.getElementById('notifyBtn')?.addEventListener('click',()=>setTimeout(loadInbox,80));
  document.querySelector('#notifyTabs .notify-tab[data-filter="work"]')?.addEventListener('click',()=>setTimeout(loadInbox,20));
  window.addEventListener('focus',()=>{if(document.getElementById('notifyPanel')?.classList.contains('open'))loadInbox();});
