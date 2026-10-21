@@ -153,6 +153,8 @@ function installWorkDispatchRoutes(app){
 
   app.get('/api/qmes-work-dispatch/inbox',login,async(req,res)=>{
     try{
+      const dates=require('./public/js/qmes-notification-dates-20261021.js').validateRange(req.query);
+      if(!dates)return fail(res,400,'조회 날짜를 확인해 주세요.');
       await ensureSchema();
       const result=await pool.query(
         'SELECT d.id,d.work_order_id,d.department,d.sender_name,d.note,d.created_at,r.read_at,'+
@@ -161,8 +163,11 @@ function installWorkDispatchRoutes(app){
         'FROM qmes_work_order_dispatch_receipts r '+
         'JOIN qmes_work_order_dispatches d ON d.id=r.dispatch_id '+
         'LEFT JOIN qmes_work_order_documents w ON w.id=d.work_order_id '+
-        'WHERE r.user_id=$1 ORDER BY d.created_at DESC LIMIT 100',
-        [req.session.user.id]
+        'WHERE r.user_id=$1 '+
+        "AND ($2::date IS NULL OR d.created_at>=($2::date::timestamp AT TIME ZONE 'Asia/Seoul')) "+
+        "AND ($3::date IS NULL OR d.created_at<(($3::date + INTERVAL '1 day') AT TIME ZONE 'Asia/Seoul')) "+
+        'ORDER BY d.created_at DESC LIMIT 100',
+        [req.session.user.id,dates.from,dates.to]
       );
       ok(res,result.rows);
     }catch(e){
