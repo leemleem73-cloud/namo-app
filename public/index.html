@@ -7588,6 +7588,9 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   page._fitIncomingColumns?.();
   rememberQmesPage(m.dataset.page);
   window.qmesMenuHistory?.record(m.dataset.page);
+  // Refresh persisted approval state when reopening either tab; F5 is not required.
+  if(m.dataset.page==='approval') void loadQualityApprovals(page);
+  if(m.dataset.page==='incoming') void loadIncomingFromDb(page);
   content.scrollTop=0;
 }));
 
