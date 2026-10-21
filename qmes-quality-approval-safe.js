@@ -115,6 +115,15 @@ async function updateSourceSignatures(docType, recordId, writer, approver, appro
   }
 }
 
+async function signQualityStage(docType, recordId, field, actor, action) {
+  const table={IQC:'iqc',IPQC:'pqc',OQC:'oqc'}[String(docType||'').toUpperCase()];
+  if(!table||!recordId||!['sign_reviewer','sign_approver'].includes(field)) return;
+  await pool.query(`UPDATE ${table} SET ${field}=$1::jsonb WHERE id::text=$2`,
+    [signature(actor,action),String(recordId)]);
+}
+function hasSeniorApprovalRole(user) {
+  return ['부장','이사','상무','전무','대표이사','사장','부사장','회장'].includes(String(user?.title||'').trim());
+}
 async function notify(userId, title, message, page, approvalId) {
   if (!userId) return;
   await pool.query(
@@ -288,52 +297,40 @@ function install(app) {
     }
   });
 
-  app.post('/api/qmes-quality/approvals/:id/approve', requireLogin, async (req, res) => {
+  app.post('/api/qmes-quality/approvals/:id/review', requireLogin, async (req,res) => {
     try {
       await ensureSchema();
-      const current = await pool.query('SELECT * FROM qmes_quality_approvals WHERE id=$1 LIMIT 1', [req.params.id]);
-      if (!current.rowCount) return fail(res, 404, '결재 요청을 찾을 수 없습니다.');
-      const approval = current.rows[0];
-      const u = req.session.user || {};
-      const allowed = isAdmin(req) || String(u.id || '') === String(approval.reviewer_user_id || '') || String(u.id || '') === String(approval.approver_user_id || '');
-      if (!allowed) return fail(res, 403, '검토·승인 권한이 없습니다.');
+      const user=req.session.user||{};
+      const profile=await pool.query('SELECT id,name,department,title FROM users WHERE id=$1 LIMIT 1',[user.id]);
+      const actor=profile.rows[0];
+      if(!actor||!hasSeniorApprovalRole(actor)) return fail(res,403,'검토는 부장 이상만 가능합니다.');
+      const result=await pool.query(`UPDATE qmes_quality_approvals
+        SET status='REVIEWED',reviewer_user_id=$1,reviewer_name=$2,reviewed_at=NOW(),updated_at=NOW()
+        WHERE id=$3 AND status='PENDING' RETURNING *`,[actor.id,actor.name,req.params.id]);
+      if(!result.rowCount)return fail(res,409,'검토대기 상태의 문서만 검토할 수 있습니다.');
+      const approval=result.rows[0];
+      await signQualityStage(approval.doc_type,approval.record_id,'sign_reviewer',actor,'검토');
+      if(approval.approver_user_id)await notify(approval.approver_user_id,'최종 승인대기',approval.title+' 최종 승인을 요청합니다.',approval.page,approval.id);
+      return ok(res,approval,'검토가 완료되어 승인대기로 변경됐습니다.');
+    }catch(e){console.error('[QMES review]',e);return fail(res,500,'검토 처리에 실패했습니다.');}
+  });
 
-      const manager = {
-        id: u.id || approval.approver_user_id,
-        name: u.name || approval.approver_name,
-        department: u.department || '품질부',
-        title: u.title || '부장'
-      };
-      const writerQ = approval.writer_user_id
-        ? await pool.query('SELECT id,name,department,title FROM users WHERE id=$1 LIMIT 1', [approval.writer_user_id])
-        : { rows: [] };
-      const writer = writerQ.rows[0] || { id: approval.writer_user_id, name: approval.writer_name };
-
-      const q = await pool.query(
-        `UPDATE qmes_quality_approvals
-         SET status='APPROVED',reviewer_name=$1,approver_name=$1,
-             reviewed_at=NOW(),approved_at=NOW(),updated_at=NOW()
-         WHERE id=$2 RETURNING *`,
-        [manager.name || approval.approver_name, approval.id]
-      );
-
-      await updateSourceSignatures(approval.doc_type, approval.record_id, writer, manager, true);
-      await pool.query('UPDATE qmes_quality_notifications SET read_at=COALESCE(read_at,NOW()) WHERE approval_id=$1 AND user_id=$2', [approval.id, u.id]);
-
-      if (approval.writer_user_id) {
-        await notify(
-          approval.writer_user_id,
-          `${approval.doc_type} 검토·승인 완료`,
-          `${approval.title}이(가) ${manager.name || '품질부 부장'} 검토·승인 완료되었습니다.`,
-          approval.page || 'approval',
-          approval.id
-        );
-      }
-      return ok(res, q.rows[0], '검토·승인이 완료되었습니다.');
-    } catch (e) {
-      console.error('[QMES quality approve]', e);
-      return fail(res, 500, '검토·승인 처리에 실패했습니다.');
-    }
+  app.post('/api/qmes-quality/approvals/:id/approve',requireLogin,async(req,res)=>{
+    try {
+      await ensureSchema();
+      const user=req.session.user||{};
+      const profile=await pool.query('SELECT id,name,department,title FROM users WHERE id=$1 LIMIT 1',[user.id]);
+      const actor=profile.rows[0];
+      if(!actor||!hasSeniorApprovalRole(actor))return fail(res,403,'최종 승인은 부장 이상만 가능합니다.');
+      const result=await pool.query(`UPDATE qmes_quality_approvals
+        SET status='APPROVED',approver_user_id=$1,approver_name=$2,approved_at=NOW(),updated_at=NOW()
+        WHERE id=$3 AND status='REVIEWED' AND reviewed_at IS NOT NULL RETURNING *`,[actor.id,actor.name,req.params.id]);
+      if(!result.rowCount)return fail(res,409,'검토 완료 후에만 최종 승인할 수 있습니다.');
+      const approval=result.rows[0];
+      await signQualityStage(approval.doc_type,approval.record_id,'sign_approver',actor,'승인');
+      if(approval.writer_user_id)await notify(approval.writer_user_id,'최종 승인완료',approval.title+' 최종 승인이 완료됐습니다.',approval.page,approval.id);
+      return ok(res,approval,'최종 승인이 완료됐습니다.');
+    }catch(e){console.error('[QMES approve]',e);return fail(res,500,'최종 승인에 실패했습니다.');}
   });
 
   app.delete('/api/qmes-quality/approvals/:id', requireLogin, async (req, res) => {
