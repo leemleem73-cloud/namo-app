@@ -274,15 +274,10 @@ renderList=function(){
   root.querySelectorAll('.ncr-row-select').forEach(function(el){el.checked=checked;if(checked)selectedIds.add(el.value);else selectedIds.delete(el.value);});
   updateBulk();
  };
- root.querySelector('#ncr-bulk-print').onclick=function(){
+ root.querySelector('#ncr-bulk-print').onclick=async function(){
   var chosen=rows.filter(function(r){return selectedIds.has(String(r.id));});
-  if(!chosen.length)return;
-  var overlay=document.createElement('div');overlay.className='ncr-print-confirm-overlay';
-  overlay.innerHTML='<div class="ncr-print-confirm" role="dialog" aria-modal="true" aria-labelledby="ncr-print-title"><strong id="ncr-print-title">성적서 선택 인쇄</strong><p>선택한 '+chosen.length+'개의 성적서를 인쇄하시겠습니까?</p><div><button type="button" class="ncr-btn" data-cancel>취소</button><button type="button" class="ncr-btn primary" data-print>인쇄</button></div></div>';
-  document.body.appendChild(overlay);
-  overlay.querySelector('[data-cancel]').onclick=function(){overlay.remove();};
-  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
-  overlay.querySelector('[data-print]').onclick=function(){overlay.remove();chosen.forEach(printReport);};
+  if(!chosen.length||!await window.qmesConfirmPrint('부적합보고서',chosen.length))return;
+  chosen.forEach(printReport);
  };
  root.querySelector('#ncr-bulk-mail').onclick=function(){
   var chosen=rows.filter(function(r){return selectedIds.has(String(r.id));});

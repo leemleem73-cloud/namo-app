@@ -379,11 +379,12 @@ function scan(){
   const c=document.createElement('input');c.type='checkbox';c.className='wo-bulk-check';c.setAttribute('aria-label','작업지시서 '+r.dataset.workSaved+' 선택');c.onclick=e=>e.stopPropagation();c.onchange=e=>{e.stopPropagation();c.checked?selected.add(r.dataset.workSaved):selected.delete(r.dataset.workSaved);update()};td.prepend(c)
  });update()
 }
-function print(){
+async function print(){
  try{
  const saved=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length){alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
+ if(!await window.qmesConfirmPrint('작업지시서',docs.length))return;
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
  const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length){alert('선택 인쇄 문서를 준비하지 못했습니다.');return}

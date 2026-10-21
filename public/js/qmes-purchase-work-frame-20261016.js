@@ -81,8 +81,8 @@ function init(){
   busy=true;update();try{await request(recordUrl(record),{method:'DELETE'});selected.delete(key(record));await api.reload();}catch(error){alert(error.message);}finally{busy=false;update();}
  },true);
  wrap.addEventListener('click',event=>{if(event.target.closest('.qpf-select'))event.stopPropagation();},true);
- print.onclick=()=>{
-  const records=docs();if(!records.length)return;
+ print.onclick=async()=>{
+  const records=docs();if(!records.length||!await window.qmesConfirmPrint('구매발주',records.length))return;
   const win=window.open('','_blank');if(!win){alert('팝업을 허용한 후 다시 인쇄해 주세요.');return;}
   const columns=['발주번호','발주일자','공급업체','품목명','수량(kg)','요청입고','발주상태'];
   const rows=records.map(row=>[row.displayPurchaseNo||row.purchaseNo||row.no,row.orderDate,row.supplier,row.item||row.material,row.qty,row.requestedDueDate||row.due,row.status]);

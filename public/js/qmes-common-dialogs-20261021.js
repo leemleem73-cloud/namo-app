@@ -29,12 +29,12 @@ function pump(){
  const job=queue.shift(),dialog=document.createElement('dialog'),previousFocus=document.activeElement;
  dialog.id='qmes-common-dialog';dialog.setAttribute('role',job.type==='alert'?'alertdialog':'dialog');
  dialog.setAttribute('aria-labelledby','qmes-common-dialog-title');dialog.setAttribute('aria-describedby','qmes-common-dialog-message');
- const title=document.createElement('h3');title.id='qmes-common-dialog-title';title.textContent=job.type==='alert'?'안내':job.type==='prompt'?'입력':'확인';
+ const title=document.createElement('h3');title.id='qmes-common-dialog-title';title.textContent=job.options?.title||(job.type==='alert'?'안내':job.type==='prompt'?'입력':'확인');
  const message=document.createElement('p');message.id='qmes-common-dialog-message';message.textContent=String(job.message??'');
  dialog.append(title,message);
  let input=null;
  if(job.type==='prompt'){input=document.createElement('input');input.type='text';input.value=String(job.defaultValue??'');input.setAttribute('aria-label',String(job.message??'입력'));dialog.append(input);}
- const footer=document.createElement('footer'),accept=document.createElement('button');accept.type='button';accept.dataset.accept='';accept.textContent='확인';
+ const footer=document.createElement('footer'),accept=document.createElement('button');accept.type='button';accept.dataset.accept='';accept.textContent=job.options?.acceptText||'확인';
  const cancelValue=job.type==='confirm'?false:job.type==='prompt'?null:undefined;
  const current={dialog,done:false};active=current;
  function finish(value){
@@ -55,9 +55,10 @@ function pump(){
  (input||footer.firstElementChild).focus();
  if(input)input.select();
 }
-function show(type,message,defaultValue){return new Promise(resolve=>{queue.push({type,message,defaultValue,resolve});pump();});}
-window.qmesDialogs={confirm:message=>show('confirm',message),alert:message=>show('alert',message),prompt:(message,value)=>show('prompt',message,value)};
+function show(type,message,defaultValue,options){return new Promise(resolve=>{queue.push({type,message,defaultValue,options,resolve});pump();});}
+window.qmesDialogs={confirm:(message,options)=>show('confirm',message,undefined,options),alert:message=>show('alert',message),prompt:(message,value)=>show('prompt',message,value)};
 window.qmesConfirm=window.qmesDialogs.confirm;
+window.qmesConfirmPrint=(kind,count)=>window.qmesDialogs.confirm('선택한 '+kind+' '+count+'건을 인쇄하시겠습니까?',{title:'선택 인쇄 확인',acceptText:'인쇄'});
 window.qmesPrompt=window.qmesDialogs.prompt;
 window.qmesAlert=window.qmesDialogs.alert;
 // Alerts have no decision value. Confirm/prompt callers explicitly await their result.
