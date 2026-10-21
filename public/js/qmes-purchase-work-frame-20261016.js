@@ -77,7 +77,7 @@ function init(){
  wrap.addEventListener('click',async event=>{const button=event.target.closest('.qpp-row-action');if(!button)return;event.preventDefault();event.stopImmediatePropagation();if(busy)return;const record=api.rows().find(row=>key(row)===button.closest('tr').dataset.purchaseKey);if(!record){alert('발주 데이터를 찾을 수 없습니다. 다시 조회해 주세요.');return;}
   if(button.dataset.purchaseAction==='print'){await printRecord(record);return;}
   if(button.dataset.purchaseAction==='edit'){await editRecord(record);return;}
-  if(!confirm((record.displayPurchaseNo||record.purchaseNo||record.no||'선택한 발주')+' 발주를 삭제하시겠습니까?'))return;
+  if(!await window.qmesConfirm((record.displayPurchaseNo||record.purchaseNo||record.no||'선택한 발주')+' 발주를 삭제하시겠습니까?'))return;
   busy=true;update();try{await request(recordUrl(record),{method:'DELETE'});selected.delete(key(record));await api.reload();}catch(error){alert(error.message);}finally{busy=false;update();}
  },true);
  wrap.addEventListener('click',event=>{if(event.target.closest('.qpf-select'))event.stopPropagation();},true);
@@ -91,7 +91,7 @@ function init(){
  };
  mail.onclick=()=>{const records=docs();if(!records.length)return;const lines=records.map((row,index)=>(index+1)+'. '+(row.displayPurchaseNo||row.purchaseNo||row.no||'-')+' / '+(row.supplier||'-')+' / '+(row.item||row.material||'-')+' / '+(row.qty??'-')+' kg');location.href='mailto:?subject='+encodeURIComponent('[나모케미칼 QMES] 구매발주 '+records.length+'건 전달')+'&body='+encodeURIComponent('안녕하세요.\n\n구매발주 내역을 전달드립니다.\n\n'+lines.join('\n')+'\n\n감사합니다.');};
  remove.onclick=async()=>{
-  if(busy)return;const records=docs();if(!records.length||!confirm('선택한 구매발주 '+records.length+'건을 삭제하시겠습니까?'))return;
+  if(busy)return;const records=docs();if(!records.length||!await window.qmesConfirm('선택한 구매발주 '+records.length+'건을 삭제하시겠습니까?'))return;
   busy=true;update();let deleted=0;
   try{for(const row of records){const response=await fetch('/api/purchase-orders/'+encodeURIComponent(row.id||row.purchaseNo||row.no),{method:'DELETE',credentials:'same-origin'});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'발주 삭제 실패');selected.delete(key(row));deleted++;}}
   catch(error){alert(error.message+(deleted?' ('+deleted+'건 삭제 완료)':''));}
