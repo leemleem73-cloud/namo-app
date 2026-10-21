@@ -136,6 +136,7 @@ async function notify(userId, title, message, page, approvalId) {
 async function ensureMissingIqcApprovals() {
   await ensureSchema();
   const manager = await getQualityManager();
+  await require('./qmes-iqc-2025-recovery').recoverIqc2025Approvals(pool, manager);
   if (!manager) return 0;
 
   const missing = await pool.query(`
@@ -197,6 +198,16 @@ async function ensureMissingIqcApprovals() {
 function install(app) {
   if (app.__qmesQualityApprovalSafeInstalled) return;
   app.__qmesQualityApprovalSafeInstalled = true;
+
+  // Recover requested historical links at deploy time only for a configured DB.
+  // List requests share the transaction and retry if startup recovery fails.
+  if (process.env.DATABASE_URL) {
+    setImmediate(() => {
+      ensureSchema().then(getQualityManager)
+        .then(manager => require('./qmes-iqc-2025-recovery').recoverIqc2025Approvals(pool, manager))
+        .catch(error => console.error('[QMES IQC 2025 recovery startup]', error));
+    });
+  }
 
   app.get('/api/qmes-quality/health', (_req, res) => ok(res, { service: 'quality-approval', status: 'ready' }));
 
