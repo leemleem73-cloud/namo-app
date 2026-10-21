@@ -410,7 +410,7 @@ function print(){
 }
 async function remove(){
  if(busy)return;
- const ids=[...selected];if(!ids.length||!confirm('선택한 작업지시서 '+ids.length+'건을 삭제하시겠습니까?'))return;
+ const ids=[...selected];if(!ids.length||!await window.qmesConfirm('선택한 작업지시서 '+ids.length+'건을 삭제하시겠습니까?'))return;
  busy=true;update();let count=0;
  try{
   for(const id of ids){
