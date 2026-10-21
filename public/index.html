@@ -4717,12 +4717,12 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
       const list=filtered.slice(from,from+PAGE_SIZE);
 
       tbody.innerHTML=list.length?list.map((a,i)=>{
-        const pending=a.status!=='APPROVED';
-        const action=pending&&canCurrentUserApproveQuality(a)
-          ? `<button class="btn primary quality-approve-btn" type="button" data-approval-id="${a.id}">검토·승인</button>`
-          : '';
-        const status=pending?'<span class="badge b-yellow">승인대기</span>':'<span class="badge b-green">승인완료</span>';
-        const remark=a.status==='APPROVED'?'검토·승인 완료':'검토·승인 대기';
+        const step=a.status==='APPROVED'?'승인완료':a.status==='REVIEWED'?'승인대기':a.status==='DRAFT'?'작성중':'검토대기';
+        const canAct=canCurrentUserApproveQuality(a);
+        const action=canAct&&a.status==='PENDING'? `<button class="btn primary quality-review-btn" type="button" data-approval-id="${a.id}">검토 완료</button>`:
+          canAct&&a.status==='REVIEWED'? `<button class="btn primary quality-approve-btn" type="button" data-approval-id="${a.id}">최종 승인</button>`:'';
+        const status=a.status==='APPROVED'?'<span class="badge b-green">승인완료</span>':'<span class="badge b-yellow">'+step+'</span>';
+        const remark=a.status==='APPROVED'?'최종 승인완료':a.status==='REVIEWED'?'검토완료 · 최종 승인대기':step;
         return `<tr><td>${from+i+1}</td><td title="${qualityApprovalDocNo(a)}">${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left" title="${a.title||'-'}">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td><div style="font-size:10px;color:#64748b;margin-bottom:4px">${remark}</div><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
       }).join(''):'<tr><td colspan="9">현재 결재 요청이 없습니다.</td></tr>';
 
@@ -4756,6 +4756,19 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
     if(!tbody.dataset.qualityActionsWired){
       tbody.dataset.qualityActionsWired='1';
       tbody.addEventListener('click',async e=>{
+        const reviewBtn=e.target.closest('.quality-review-btn');
+        if(reviewBtn){
+          reviewBtn.disabled=true;
+          try{
+            const rr=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(reviewBtn.dataset.approvalId)+'/review',{method:'POST',credentials:'same-origin'});
+            const pp=await rr.json();
+            if(!rr.ok||!pp.success)throw new Error(pp.message||'검토 실패');
+            toast('검토가 완료되어 승인대기로 전환됐습니다.');
+            await loadQualityApprovals(section);
+            await loadQualityNotifications();
+          }catch(err){toast(err.message||'검토에 실패했습니다.');reviewBtn.disabled=false;}
+          return;
+        }
         const approveBtn=e.target.closest('.quality-approve-btn');
         if(approveBtn){
           approveBtn.disabled=true;
@@ -4763,7 +4776,7 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
             const rr=await fetch('/api/qmes-quality/approvals/'+encodeURIComponent(approveBtn.dataset.approvalId)+'/approve',{method:'POST',credentials:'same-origin'});
             const pp=await rr.json();
             if(!rr.ok||!pp.success) throw new Error(pp.message||'승인 실패');
-            toast('검토·승인이 완료되었습니다.');
+            toast('최종 승인이 완료되었습니다.');
             await loadQualityApprovals(section);
             await loadQualityNotifications();
           }catch(err){toast(err.message||'검토·승인에 실패했습니다.');approveBtn.disabled=false;}
