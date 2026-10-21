@@ -36,6 +36,7 @@ function init(){
   wrap.querySelectorAll('.qpp-row-action').forEach(button=>button.disabled=busy);
   count.textContent='조회 '+matches.length+'건';listHead.querySelector('.qpf-total').textContent='총 '+matches.length+'건';
  }
+ root._resetListSelection=()=>{selected.clear();update();};
  function decorate(){
   const th=wrap.querySelector('thead th:first-child');if(th&&!th.querySelector('.qpf-check-all')){th.replaceChildren();const label=document.createElement('label');label.className='qpf-select';label.innerHTML='<input class="qpf-check-all" type="checkbox" aria-label="조회된 발주 전체 선택"><span>No.</span>';th.append(label);label.querySelector('input').onchange=event=>{api.filtered().forEach(row=>event.target.checked?selected.add(key(row)):selected.delete(key(row)));update();};}
   wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const td=row.cells[0];if(td.querySelector('.qpf-check'))return;const value=td.textContent.trim(),label=document.createElement('label');label.className='qpf-select';const box=document.createElement('input');box.type='checkbox';box.className='qpf-check';box.setAttribute('aria-label',value+'번 발주 선택');const num=document.createElement('span');num.textContent=value;label.append(box,num);td.replaceChildren(label);box.onchange=()=>{box.checked?selected.add(row.dataset.purchaseKey):selected.delete(row.dataset.purchaseKey);update();};});
