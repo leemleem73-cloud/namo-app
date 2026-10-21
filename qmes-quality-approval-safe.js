@@ -284,6 +284,27 @@ function install(app) {
     }
   });
 
+  // IQC viewers share document status; the personal approval inbox remains scoped.
+  // Match /api/iqc's login requirement and never create requests while reading status.
+  app.get('/api/qmes-quality/iqc-statuses', requireLogin, async (_req, res) => {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    try {
+      await ensureSchema();
+      const q = await pool.query(`
+        SELECT i.id::text AS record_id, a.status, a.updated_at
+        FROM iqc i
+        LEFT JOIN qmes_quality_approvals a
+          ON a.doc_type='IQC' AND a.record_id=i.id::text AND a.status <> 'DELETED'
+        ORDER BY i.created_at DESC
+      `);
+      return ok(res, q.rows);
+    } catch (e) {
+      return fail(res, 500, '수입검사 결재 상태를 불러오지 못했습니다.');
+    }
+  });
+
   app.get('/api/qmes-quality/approvals/record', requireLogin, async (req, res) => {
     res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
     res.set('Pragma', 'no-cache');

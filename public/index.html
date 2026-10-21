@@ -4379,7 +4379,7 @@ function iqcRowHtml(row,index){
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
   const remark=iqcRemark(row);
   const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
-  const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':'검토대기';
+  const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'확인 필요';
   const approvalBadge='<span class="badge '+(state==='승인완료'?'b-green':'b-yellow')+'">'+state+'</span>';
   return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcWeightText(row.incoming_qty)}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
 }
@@ -4635,13 +4635,15 @@ async function loadIncomingFromDb(section){
       if(section._iqcRequestId!==requestId||!section.isConnected)return;
       const rows=p.data;
       section._iqcRows=rows;
+      let approvalStates={};
       try{
-        const ar=await fetch('/api/qmes-quality/approvals',{credentials:'same-origin',cache:'no-store'});
+        const ar=await fetch('/api/qmes-quality/iqc-statuses',{credentials:'same-origin',cache:'no-store'});
         const ap=await ar.json();
-        if(ar.ok&&ap.success&&Array.isArray(ap.data)){
-          window.__QMES_IQC_APPROVALS__=Object.fromEntries(ap.data.filter(a=>a.doc_type==='IQC'&&a.record_id).map(a=>[String(a.record_id),a]));
-        }
+        if(!ar.ok||!ap.success||!Array.isArray(ap.data))throw new Error(ap?.message||'결재 상태 조회 실패');
+        approvalStates=Object.fromEntries(ap.data.filter(a=>a.record_id).map(a=>[String(a.record_id),a]));
       }catch(err){console.warn('[IQC approval state]',err);}
+      if(section._iqcRequestId!==requestId||!section.isConnected)return;
+      window.__QMES_IQC_APPROVALS__=approvalStates;
       if(section._iqcSelectedIds instanceof Set){const validIds=new Set(rows.map(row=>String(row.id)));for(const id of section._iqcSelectedIds)if(!validIds.has(String(id)))section._iqcSelectedIds.delete(id);}
       updateIncomingMaterialsFromDb(rows);
       saveIncomingPageCache(rows);
