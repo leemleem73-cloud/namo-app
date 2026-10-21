@@ -5995,7 +5995,33 @@ function qmesIqcBarcodeSvg(value){
     const esc=v=>String(v).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
     const win=window.open('','_blank','width=800,height=700');
     if(!win){toast('팝업을 허용해주세요.');return false;}
-    const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>출하 제품 라벨</title><style>@page{size:'+width+'mm '+height+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#111}.label{width:'+width+'mm;height:'+height+'mm;padding:3mm;display:flex;flex-direction:column;justify-content:space-between}h3{font-size:12pt;margin:0 0 2mm}table{width:100%;border-collapse:collapse;font-size:9pt}td{border:1px solid #333;padding:2mm;text-align:center}td:first-child{width:48%;font-weight:700}.footer{font-size:8pt;text-align:center;margin-top:2mm}.note{font-size:7pt;text-align:center}</style></head><body><section class="label"><h3>NAMO Chemical · 출하 제품 라벨</h3><table><tr><td>제품명 (Grd.)</td><td>'+esc(grd)+'</td></tr><tr><td>제조번호 (Lot No.)</td><td>'+esc(lot)+'</td></tr><tr><td>수량 (Qty)</td><td>'+esc(qty)+'</td></tr><tr><td>제조일 (Mfg. Date)</td><td>'+esc(mfg)+'</td></tr></table><div class="note">GHS 표시: 승인된 제품 SDS 기준으로 별도 확인</div><div class="footer">NAMO Chemicals Co., Ltd.</div></section><script>window.onload=function(){window.focus();window.print()};<\\/script></body></html>';
+    const html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>출하 제품 라벨</title><style>@page{size:'+width+'mm '+height+'mm;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#111}.label{width:'+width+'mm;height:'+height+'mm;padding:3mm;display:flex;flex-direction:column;justify-content:space-between}h3{font-size:12pt;margin:0 0 2mm}table{width:100%;border-collapse:collapse;font-size:9pt}td{border:1px solid #333;padding:2mm;text-align:center}td:first-child{width:48%;font-weight:700}.footer{font-size:8pt;text-align:center;margin-top:2mm}.note{font-size:7pt;text-align:center}</style></head><body><section class="label"><h3>NAMO Chemical · 출하 제품 라벨</h3><table><tr><td>제품명 (Grd.)</td><td>'+esc(grd)+'</td></tr><tr><td>제조번호 (Lot No.)</td><td>'+esc(lot)+'</td></tr><tr><td>수량 (Qty)</td><td>'+esc(qty)+'</td></tr><tr><td>제조일 (Mfg. Date)</td><td>'+esc(mfg)+'</td></tr></table><div class="note">GHS 표시: 승인된 제품 SDS 기준으로 별도 확인</div><div class="footer">NAMO Chemicals Co., Ltd.</div></section><script>window.onload=function(){window.focus();window.print()};<\\/script><script id="qmes-pqc-approval-grid-20261021">
+window.qmesPqcApprovalGrid=function(row){
+ const id=String(row?.dataset?.sourceId||'');
+ const record=document.getElementById('process')?._pqcRecords?.get(String(row?.dataset?.sourceKey||'')+'|'+id);
+ const writer=String(record?.detailFields?.['검사자']||record?.inspector||'').trim();
+ const token='pqc-approval-'+Date.now()+'-'+Math.floor(Math.random()*10000);
+ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const stage=(name,value,date)=>'<div class="pqc-esign-person"><b>'+esc(value||name+'대기')+'</b>'+(date?'<small>'+esc(new Date(date).toLocaleString('ko-KR'))+'</small>':'')+'</div>';
+ const draw=a=>{
+  const el=document.getElementById(token);if(!el)return;
+  const reviewed=!!a?.reviewed_at,approved=a?.status==='APPROVED'&&!!a?.approved_at;
+  el.innerHTML='<div class="pqc-esign-table"><div class="pqc-esign-side">전자결재</div><div class="pqc-esign-head">작성</div><div class="pqc-esign-head">검토</div><div class="pqc-esign-head">승인</div>'+stage('작성',a?.writer_name||writer||'작성자','')+stage('검토',reviewed?a.reviewer_name:'검토대기',reviewed?a.reviewed_at:null)+stage('승인',approved?a.approver_name:'승인대기',approved?a.approved_at:null)+'</div><div class="pqc-esign-note">검사기준 및 측정값 확인 후 저장하십시오. <span>※ 관리본 · 전자기록</span><span>(주)나모케미칼 품질부</span></div>';
+ };
+ setTimeout(async()=>{draw(null);if(!id)return;try{const res=await fetch('/api/qmes-quality/approvals/record?docType=IPQC&recordId='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});if(res.ok){const json=await res.json();if(json.success)draw(json.data);}}catch(e){console.warn('[PQC approval]',e);}},0);
+ return '<section id="'+token+'" class="pqc-esign-wrap" aria-label="공정검사 전자결재">전자결재 조회 중</section>';
+};
+</script><style id="qmes-pqc-esign-style-20261021">
+.am-split[data-am-screen="process"] .pqc-esign-wrap{margin-top:12px;border:1px solid #cbd6e2;background:#fff;color:#2c3c50;font-size:12px}
+.am-split[data-am-screen="process"] .pqc-esign-table{display:grid;grid-template-columns:138px repeat(3,minmax(0,1fr))}
+.am-split[data-am-screen="process"] .pqc-esign-table>div{box-sizing:border-box;border-right:1px solid #d7e0e9;border-bottom:1px solid #d7e0e9;padding:10px;text-align:center}
+.am-split[data-am-screen="process"] .pqc-esign-table>div:nth-child(4n){border-right:0}
+.am-split[data-am-screen="process"] .pqc-esign-side{grid-row:span 2;display:flex;align-items:center;justify-content:center;background:#f2f5f9;font-weight:700}
+.am-split[data-am-screen="process"] .pqc-esign-head{font-weight:700;background:#f9fbfd}
+.am-split[data-am-screen="process"] .pqc-esign-person{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:42px;gap:5px}
+.am-split[data-am-screen="process"] .pqc-esign-person small{color:#718096;font-size:10px}
+.am-split[data-am-screen="process"] .pqc-esign-note{padding:9px 12px;display:flex;justify-content:space-between;gap:10px;color:#65768a;font-size:11px}
+</style></body></html>';
     win.document.open();win.document.write(html);win.document.close();return true;
   };
   if(id==='outgoing')document.getElementById('shipLabelPrint')?.addEventListener('click',printShipLabel);
@@ -6883,7 +6909,7 @@ function showRowDetail(id,row){
     '<div class="am-inline-cell full"><label>비고</label><textarea data-pqc-field="비고" placeholder="비고 입력"></textarea></div></div>'+
     '<div class="am-section pqc-detail-measure-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table class="pqc-detail-measure-table" style="width:100%;border-collapse:separate;border-spacing:0;text-align:center"><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>'+
     [['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','&lt;10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['고형분','20.0±1.0 wt%','Drying Oven']].map(([item,spec,method],idx)=>'<tr><td>'+(idx+1)+'</td><th>'+item+'</th><td>'+spec+'</td><td>'+method+'</td>'+Array.from({length:3},(_,i)=>'<td>'+(item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="측정값">')+'</td>').join('')+'<td data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
-    '</tbody></table></div></div>';
+    '</tbody></table></div></div>'+window.qmesPqcApprovalGrid(row);
     openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
     // PQC detail: relocate existing wired top actions to the footer; keep save behavior intact.
     {
