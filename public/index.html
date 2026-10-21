@@ -2617,7 +2617,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 @media(max-width:1100px){.erp-admin-page .erp-admin-filter{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:670px){.erp-admin-page .erp-admin-filter{grid-template-columns:1fr!important;padding:14px!important}.erp-admin-page .erp-admin-title{padding:0 14px!important}.erp-admin-page .erp-admin-tablewrap{padding:8px!important}.erp-admin-page .erp-admin-total{grid-template-columns:65px 1fr 245px!important}}
 </style>
-<script src="./js/qmes-common-dialogs-20261021.js?v=1"></script>
+<script src="./js/qmes-common-dialogs-20261021.js?v=20261021-print-confirm2"></script>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -2816,7 +2816,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-common-dialogs"></script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261021-print-confirm2"></script>
 <script>
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -5437,7 +5437,7 @@ function qmesBulkPrintButton(section,id){
    const body=document.createElement('tbody');body.innerHTML=iqcRowHtml(record,index);return [body.firstElementChild];
  }):(['process','outgoing'].includes(id)?(section._inspectionAllRows||[]):[...section.querySelectorAll('tbody tr.data-row')]).filter(r=>r.querySelector('.iqc-select-row:checked'));
   if(!rows.length)return;
-  const ok=await new Promise(resolve=>{const bg=document.createElement('div');bg.className='iqc-delete-backdrop qmes-print-confirm';bg.innerHTML='<div class="iqc-delete-dialog" role="dialog" aria-modal="true"><h3>성적서 선택 인쇄</h3><p>선택한 <b>'+rows.length+'개의 성적서</b>를 인쇄하시겠습니까?</p><div class="iqc-delete-buttons"><button data-no type="button">취소</button><button data-yes type="button">인쇄</button></div></div>';const done=v=>{bg.remove();resolve(v)};bg.querySelector('[data-no]').onclick=()=>done(false);bg.querySelector('[data-yes]').onclick=()=>done(true);bg.onclick=e=>{if(e.target===bg)done(false)};document.body.appendChild(bg);});
+  const ok=await window.qmesConfirmPrint(({incoming:'수입검사',process:'공정검사',outgoing:'출하검사'}[id]||'검사'),rows.length);
   if(!ok)return;
   const sheets=rows.map(r=>issueInspectionReport(id,r,true));if(sheets.some(x=>!x)){toast('성적서 생성에 실패했습니다.');return;}
   const nodes=sheets.map(markup=>{const box=document.createElement('div');box.innerHTML=markup;return box.querySelector('#reportSheet');});
@@ -7885,7 +7885,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
 <script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261021-common-dialogs"></script>
-<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-common-dialogs"></script>
+<script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-print-confirm2"></script>
 <script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261016.js?v=2-simple"></script>
 <script defer src="./js/qmes-lot-work-frame-20261016.js?v=1"></script>
@@ -7901,7 +7901,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/qmes-process-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=2"></script>
-<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261021-common-dialogs"></script>
+<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261021-print-confirm2"></script>
 <script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261020-bottom-actions"></script>
 <script id="qmes-number-heading-labels-20261019">
 (()=>{
@@ -8020,7 +8020,7 @@ html body #ncr .ncr-editor-main .ncr-form :is(input,select,textarea){font-size:1
 html body #ncr :is(.ncr-section-title,.ncr-editor-toolbar>strong){font-size:13px!important;font-weight:700!important}
 html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!important;font-weight:700!important}
 </style>
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-common-dialogs"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261021-print-confirm2"></script>
 </body>
 </html>
 
