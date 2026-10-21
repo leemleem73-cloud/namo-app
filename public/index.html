@@ -7094,7 +7094,7 @@ function qmesQualityApprovalPeople(){
   return {writer,reviewer:managerLabel,approver:managerLabel};
 }
 function standardInspectionForm(type){
-  const approval=qmesQualityApprovalPeople();
+  const approval=type==='incoming' ? {...qmesQualityApprovalPeople(),reviewer:'검토대기',approver:'승인대기'} : qmesQualityApprovalPeople();
   const conf={
     incoming:{title:'수입검사 성적서',sub:'INCOMING INSPECTION REPORT',doc:'IQC',docNo:'IQC-QA-001',section:'입고 / 검사 기본정보',summary:'LOT 단위 수입검사'},
     process:{title:'공정검사 성적서',sub:'IN-PROCESS INSPECTION REPORT',doc:'PQC',docNo:'PQC-QA-001',section:'생산 / 검사 기본정보',summary:'공정 품질 확인 / n=3'},
