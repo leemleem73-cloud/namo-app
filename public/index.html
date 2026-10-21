@@ -4674,7 +4674,8 @@ function qualityApprovalDate(value){
 function qualityApprovalDocNo(a){
   if(a?._displayDocNo) return a._displayDocNo;
   const type=String(a?.doc_type||'QMS').toUpperCase().replace(/[^A-Z0-9]/g,'')||'QMS';
-  const dt=a?.created_at?new Date(a.created_at):null;
+  const sourceDate=a?.doc_type==='IQC'&&a?.inspection_date?a.inspection_date:a?.created_at;
+  const dt=sourceDate?new Date(sourceDate):null;
   const stamp=dt&&!Number.isNaN(dt.getTime())?new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(dt).replace(/[^0-9]/g,''):'00000000';
   return type+'-'+stamp+'-001';
 }
