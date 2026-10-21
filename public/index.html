@@ -5863,6 +5863,7 @@ function qmesIqcBarcodeSvg(value){
   return '<div class="report-iqc-barcode"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(x+8)+' 46" preserveAspectRatio="none" role="img" aria-label="성적서 바코드">'+rects+'</svg><span>'+code+'</span></div>';
 }
   const approval=qmesQualityApprovalPeople();
+  if(id==='incoming'){approval.reviewer='검토대기';approval.approver='승인대기';}
   const body=`
     <div class="report-sheet report-${id}" id="reportSheet">${id==='outgoing'?'<span data-report-shipping-status hidden>'+oqcShippingStatus+'</span>':''}
       <div class="report-doc-head">
@@ -5946,7 +5947,11 @@ function qmesIqcBarcodeSvg(value){
         const a=p.data;
         const reviewer=document.querySelector('[data-report-sign="reviewer"]');
         const approver=document.querySelector('[data-report-sign="approver"]');
-        if(a.status==='APPROVED'){
+        if(docType==='IQC'){
+          const showSigned=(name,date)=>name+(date?' · '+new Date(date).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');
+          if(reviewer) reviewer.textContent=a.reviewed_at?showSigned(a.reviewer_name||'검토완료',a.reviewed_at):'검토대기';
+          if(approver) approver.textContent=a.status==='APPROVED'&&a.approved_at?showSigned(a.approver_name||'승인완료',a.approved_at):'승인대기';
+        }else if(a.status==='APPROVED'){
           if(reviewer) reviewer.textContent=a.reviewer_name||approval.reviewer;
           if(approver) approver.textContent=a.approver_name||approval.approver;
         }
