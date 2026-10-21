@@ -292,11 +292,13 @@ function init(){
  }
  async function openWorkDetail(row){
   if(!row?.dataset.workSaved)return;
+  window.qmesMenuHistory?.capture();
   activeId=String(row.dataset.workSaved);activeTab='materials';
   const cached=typeof window.qmesGetWorkOrders==='function'?window.qmesGetWorkOrders():[];
   activeRecord=cached.find(x=>String(x.id)===activeId)||null;
   getRows().forEach(r=>r.classList.toggle('nwi-selected',r===row));
   draw(row,activeRecord);
+  window.qmesMenuHistory?.recordView('work','detail:'+activeId,'work');
   const requestedId=activeId;
   try{
    await window.qmesAuthDataReady?.wait();
@@ -308,6 +310,16 @@ function init(){
    else if(!order&&activeId===requestedId&&!activeRecord){detail.querySelector('.nwd-content').textContent='작업지시서 원본을 찾을 수 없습니다. 목록을 새로 조회해 주세요.';}
   }catch(err){console.warn('[work inquiry] detail fetch:',err);if(activeId===requestedId&&!activeRecord)detail.querySelector('.nwd-content').textContent='상세내역을 불러오지 못했습니다. 다시 선택해 주세요.';}
  }
+ window.qmesMenuHistory?.register('work',{
+  page:'work',
+  capture:()=>({id:activeId,tab:activeTab}),
+  reset:()=>{activeId='';activeRecord=null;getRows().forEach(row=>row.classList.remove('nwi-selected'));detail.querySelector('.nwd-head').textContent='작업지시 상세내역';detail.querySelector('.nwd-content').textContent='상단 작업지시 목록에서 항목을 선택하세요.';},
+  restore:snapshot=>{
+   const row=getRows().find(row=>String(row.dataset.workSaved)===snapshot.id);
+   if(!row)return false;
+   openWorkDetail(row);activeTab=snapshot.tab;draw(row,activeRecord);return true;
+  }
+ });
  window.namoOpenWorkInquiryDetail=openWorkDetail;
  tbody.addEventListener('click',e=>{
   const row=e.target.closest('tr[data-work-saved]');

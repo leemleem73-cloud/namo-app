@@ -458,6 +458,22 @@ draw=function(){
  document.head.appendChild(css);
 })();
 
+// NCR owns its editor state; restore its live nodes and controller together.
+var renderedView='list',renderedSelected=null,historyRender=render;
+window.qmesMenuHistory?.register('ncr',{
+ page:'ncr',
+ capture:function(){return {nodes:Array.from(root.childNodes),view:renderedView,selected:renderedSelected};},
+ restore:function(snapshot){
+  view=renderedView=snapshot.view;selected=renderedSelected=snapshot.selected;
+  root.replaceChildren.apply(root,snapshot.nodes);return true;
+ },
+ reset:function(){view='list';selected=null;render();}
+});
+render=function(){
+ window.qmesMenuHistory?.capture();
+ historyRender();renderedView=view;renderedSelected=selected;
+ if(root.classList.contains('active'))window.qmesMenuHistory?.recordView('ncr',view==='list'?'list':view+':'+(selected?.id||'new'),view==='list'?'':'ncr');
+};
 render();if(root.classList.contains('active'))load();
 warmNcrList();
 var authBox=document.getElementById('currentUser');
