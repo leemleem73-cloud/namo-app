@@ -1,0 +1,34 @@
+/* Compact only the PQC detail basic fields; preserve the existing controls. */
+@media screen {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    width:100%;
+    max-width:900px;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell {
+    min-width:0;
+    grid-template-columns:90px minmax(0,1fr);
+  }
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell.full {
+    grid-column:1/-1;
+  }
+  .am-split[data-am-screen="process"] .am-inline-cell > :is(input,select,textarea) {
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .am-split[data-am-screen="process"] #pqcDetailInspectorManual {
+    grid-column:2;
+  }
+}
+@media screen and (max-width:1200px) {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    max-width:600px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media screen and (max-width:600px) {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    max-width:360px;
+    grid-template-columns:minmax(0,1fr);
+  }
+}
