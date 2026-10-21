@@ -1,0 +1,38 @@
+/* Align the compact PQC detail form with the inspection and approval tables.
+   Keep the previous compact stylesheet and apply this screen-only adjustment last. */
+@media screen {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell {
+    min-width: 0;
+    grid-template-columns: 90px minmax(0, 1fr);
+  }
+
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell:has(> #pqcDetailWorkOrder) {
+    grid-column: span 2;
+  }
+
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell.full {
+    grid-column: 1 / -1;
+  }
+}
+
+@media screen and (max-width: 1279px) {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .am-split[data-am-screen="process"] .am-section-body > .am-inline-edit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .am-split[data-am-screen="process"] .am-inline-edit-grid > .am-inline-cell:has(> #pqcDetailWorkOrder) {
+    grid-column: 1 / -1;
+  }
+}
