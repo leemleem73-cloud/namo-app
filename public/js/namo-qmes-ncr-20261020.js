@@ -261,6 +261,11 @@ parityStyle.textContent='#ncr .ncr-head{background:#fff;border:1px solid #dce5ee
 document.head.appendChild(parityStyle);
 var originalRenderList=renderList,originalDraw=draw,originalRender=render;
 var page=1,selectedIds=new Set(),pageSize=10;
+root._resetListSelection=function(){
+ selectedIds.clear();
+ root.querySelectorAll('.ncr-row-select,#ncr-select-all').forEach(function(box){box.checked=false;box.indeterminate=false;});
+ updateBulk();
+};
 renderList=function(){
  originalRenderList();
  var th=root.querySelector('#ncr-rows')?.closest('table')?.querySelector('thead tr');
