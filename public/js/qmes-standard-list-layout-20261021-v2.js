@@ -1,0 +1,78 @@
+/* Present the standard-document list without changing stored field indexes. */
+(function () {
+  'use strict';
+  const style = document.createElement('style');
+  style.textContent = `
+html body #standard .module-body{border:0!important}
+html body #standard .std-document-list{min-width:1050px!important;table-layout:fixed}
+html body #standard .std-document-list tr{display:grid;grid-template-columns:5% 30% 7% 12% 11% 13% 22%}
+html body #standard .std-document-list tr>:is(:nth-child(2),:nth-child(4),:nth-child(8)){display:none!important}
+html body #standard .std-document-list tr>:nth-child(1){order:1}
+html body #standard .std-document-list tr>:nth-child(3){order:2}
+html body #standard .std-document-list tr>:nth-child(4){order:3}
+html body #standard .std-document-list tr>:nth-child(5){order:4}
+html body #standard .std-document-list tr>:nth-child(6){order:5}
+html body #standard .std-document-list tr>:nth-child(7){order:6}
+html body #standard .std-document-list tr>:nth-child(9){order:7}
+html body #standard .std-document-list tr>:nth-child(8){order:8}
+html body #standard .std-document-list tr>:nth-child(10){order:9}
+html body #standard .std-document-list :is(th,td){display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left!important;border:0!important;min-width:0;padding:12px 14px!important}
+html body #standard .std-document-list thead th{height:40px!important;background:#edf4f9!important;color:#69839d!important;font-size:11px!important}
+html body #standard .std-document-list tbody td{height:68px!important;border-bottom:1px solid #edf2f7!important;color:#365574!important;font-size:12px!important}
+html body #standard .std-document-list .std-document-name{color:#1673c7!important;font-weight:600!important;text-decoration:underline;cursor:pointer}
+html body #standard .std-document-list .std-document-name::after{content:attr(data-document-number);display:block;color:#8193a7;font-size:11px;font-weight:400;margin-top:4px;text-decoration:none}
+html body #standard .std-document-list .std-approval-label{border:0;border-radius:20px;padding:4px 10px;font-size:11px;background:#f0f3f7;color:#61748a}
+html body #standard .std-document-list .std-approval-label[data-approved="true"]{background:#e9f7ef;color:#39946a}
+html body #standard .std-document-list .std-extra-cell{color:#8193a7!important}
+html body #standard .std-document-list tr.std-empty{display:block}
+html body #standard .std-document-list tr.std-empty td{display:flex!important;align-items:center;height:100px!important;color:#8193a7!important}
+`;
+  document.head.append(style);
+  function enhance() {
+    const section = document.getElementById('standard');
+    const table = section?.querySelector('.module-body > table');
+    if (!table) return;
+    table.classList.add('std-document-list');
+    const header = table.querySelector('thead tr');
+    if (!header || header.children.length < 8) return;
+    if (!header.dataset.stdLayout) {
+      header.dataset.stdLayout = '1';
+      header.children[0].textContent = 'No.';
+      header.children[2].textContent = '문서번호 / 문서명';
+      header.children[7].textContent = '결재상태';
+      for (const title of ['첨부파일', '비고']) {
+        const cell = document.createElement('th'); cell.textContent = title; header.append(cell);
+      }
+    }
+    table.querySelectorAll('tbody tr').forEach(row => {
+      if (row.children.length < 8) { row.classList.add('std-empty'); return; }
+      const cells = row.children;
+      cells[2].classList.add('std-document-name');
+      cells[2].dataset.documentNumber = cells[1].textContent.trim();
+      if (!row.dataset.stdLayout) {
+        row.dataset.stdLayout = '1';
+        const status = cells[7];
+        if (!status.querySelector('button,a,input,select')) {
+          const label = document.createElement('span'); label.className = 'std-approval-label';
+          label.textContent = status.textContent.trim() || '미지정';
+          label.dataset.approved = String(label.textContent === '승인완료');
+          status.replaceChildren(label);
+        }
+        for (const label of ['첨부 없음', row.dataset.remarks || '-']) {
+          const cell = document.createElement('td'); cell.className = 'std-extra-cell'; cell.textContent = label; row.append(cell);
+        }
+      }
+    });
+  }
+  function start() {
+    const section = document.getElementById('standard');
+    if (!section) return;
+    const observer = new MutationObserver(() => {
+      observer.disconnect(); enhance(); observe();
+    });
+    const observe = () => observer.observe(section, {childList:true,subtree:true,characterData:true});
+    enhance(); observe();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
+  else start();
+})();
