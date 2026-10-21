@@ -123,3 +123,56 @@ const style=document.createElement('style');style.textContent=`
 .namo-process-mini-calendar .nwm-foot [data-close]{margin-left:auto}
 `;document.head.append(style);
 })();
+
+
+/* IPQC approval status: read-only, no mutation to inspection data or source records. */
+(()=>{'use strict';
+  const root=document.getElementById('process');
+  if(!root||root.dataset.qmesIpqcApprovalStatusBridge==='1')return;
+  root.dataset.qmesIpqcApprovalStatusBridge='1';
+  let states=new Map(),loading=false;
+  const labels={APPROVED:'승인완료',REVIEWED:'승인대기',PENDING:'검토대기',DRAFT:'작성중'};
+  const css=document.createElement('style');
+  css.textContent='#process .qmes-ipqc-approval-state{display:inline-block;margin:0 6px 0 0;padding:2px 7px;border-radius:5px;background:#edf4fc;border:1px solid #c8d9ea;color:#244765;font-size:11px;font-weight:700;white-space:nowrap}#process .qmes-ipqc-approval-state[data-approved="1"]{background:#e8f6ef;border-color:#bce6cf;color:#16724b}';
+  document.head.append(css);
+  function render(){
+    const table=root.querySelector('.ip-table');
+    if(!table)return;
+    for(const tr of table.querySelectorAll('tbody tr[data-source-id]')){
+      const id=String(tr.dataset.sourceId||'');
+      const approval=states.get(id);
+      const existing=tr.querySelector('.qmes-ipqc-approval-state');
+      if(!approval){if(existing)existing.remove();continue;}
+      const last=tr.querySelector('td:last-child');
+      if(!last)continue;
+      const badge=existing||document.createElement('span');
+      badge.className='qmes-ipqc-approval-state';
+      badge.dataset.approved=approval.status==='APPROVED'?'1':'0';
+      badge.textContent=labels[approval.status]||'결재진행';
+      badge.title=[approval.reviewed_at?'검토: '+(approval.reviewer_name||''):'',approval.approved_at?'승인: '+(approval.approver_name||''):''].filter(Boolean).join(' / ');
+      if(!existing)last.insertBefore(badge,last.firstChild);
+    }
+  }
+  async function refresh(){
+    if(loading||document.hidden||!root.isConnected)return;
+    loading=true;
+    try{
+      const response=await fetch('/api/qmes-quality/approvals',{credentials:'same-origin',cache:'no-store'});
+      if(!response.ok)throw Error('HTTP '+response.status);
+      const json=await response.json();
+      if(json.success!==true||!Array.isArray(json.data))throw Error('Invalid approval response');
+      states=new Map(json.data.filter(x=>x.doc_type==='IPQC'&&x.record_id&&x.status!=='DELETED').map(x=>[String(x.record_id),x]));
+      render();
+    }catch(err){console.warn('[QMES IPQC approval status]',err);}
+    finally{loading=false;}
+  }
+  const body=root.querySelector('.ip-table tbody');
+  if(body){
+    const observer=new MutationObserver(()=>{observer.disconnect();render();observer.observe(body,{childList:true,subtree:true});});
+    observer.observe(body,{childList:true,subtree:true});
+  }
+  root.addEventListener('click',()=>setTimeout(refresh,450));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+  setInterval(refresh,15000);
+  refresh();
+})();
