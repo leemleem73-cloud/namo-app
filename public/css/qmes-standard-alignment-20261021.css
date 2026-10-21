@@ -1,0 +1,21 @@
+/* Keep the document header and body on the same seven-column grid. */
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list {
+  display:block!important;width:100%!important;min-width:960px!important;border:0!important;
+}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > :is(thead,tbody) {
+  display:block!important;width:100%!important;
+}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > :is(thead,tbody) > tr {
+  display:grid!important;width:100%!important;grid-template-columns:56px minmax(230px,2.4fr) minmax(70px,.65fr) minmax(110px,1fr) minmax(110px,1fr) minmax(120px,1.1fr) minmax(160px,1.5fr)!important;gap:0!important;
+}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > :is(thead,tbody) > tr > :is(th,td) {
+  box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;float:none!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:10px 12px!important;
+  border:0!important;border-right:1px solid #d5e0ec!important;border-bottom:1px solid #d5e0ec!important;
+}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > :is(thead,tbody) > tr > :is(:nth-child(2),:nth-child(4),:nth-child(8)) {display:none!important}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > :is(thead,tbody) > tr > :last-child {border-right:0!important}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > thead > tr > th {height:42px!important;line-height:20px!important;background:#e8f0f8!important;color:#244260!important;font-size:12px!important;font-weight:600!important;white-space:nowrap!important}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > tbody > tr > td {min-height:62px!important;height:auto!important;overflow-wrap:anywhere!important}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > tbody > tr.std-empty {display:block!important}
+html body #standard.module-page > .module-shell > .module-body > table.std-document-list > tbody > tr.std-empty > td {width:100%!important;min-height:100px!important;border-right:0!important}
