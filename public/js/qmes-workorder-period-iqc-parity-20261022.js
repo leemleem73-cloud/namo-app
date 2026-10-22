@@ -128,14 +128,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function alignWorkOrderFilterRow(){
   const panel=root()?.querySelector('#namo-work-inquiry');
   const grid=panel?.querySelector('.nwi-grid');
-  const period=panel?.querySelector('.nwi-period-label');
+  const customer=panel?.querySelector('[data-filter="0"]')?.closest('label');
+  const product=panel?.querySelector('[data-filter="1"]')?.closest('label');
   const lot=panel?.querySelector('[data-filter="2"]')?.closest('label');
-  const workNo=panel?.querySelector('[data-filter="6"]')?.closest('label');
-  if(!grid||!period||!lot||!workNo)return false;
-  // Visible order: 고객사 → 제품명 → 작업지시번호 → 진행상태 → 작업기간 → 생산 LOT.
   const status=panel?.querySelector('[data-filter="3"]')?.closest('label');
-  if(status&&workNo.nextElementSibling!==status)status.insertAdjacentElement('beforebegin',workNo);
-  if(period.nextElementSibling!==lot)period.insertAdjacentElement('afterend',lot);
+  const workNo=panel?.querySelector('[data-filter="6"]')?.closest('label');
+  const period=panel?.querySelector('.nwi-period-label');
+  if(!grid||!customer||!workNo||!product||!lot||!status||!period)return false;
+  const periodLabel=period.querySelector(':scope>span');
+  if(periodLabel)periodLabel.textContent='생산작업기간';
+  // Visible order: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 생산작업기간.
+  [customer,workNo,product,lot,status,period].forEach(el=>grid.appendChild(el));
   grid.classList.add('nwi-single-row-six');
   return true;
 }
