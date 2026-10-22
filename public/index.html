@@ -2699,12 +2699,18 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
       <div class="menu" data-page="process"><div class="ico">🧫</div><div class="label">공정검사 PQC</div></div>
       <div class="menu" data-page="outgoing"><div class="ico">📋</div><div class="label">출하검사 OQC</div></div>
       <div class="menu" data-page="ncr"><div class="ico">📑</div><div class="label">부적합 NCR</div></div>
+      <div class="menu" data-page="spcTrend"><div class="ico">📈</div><div class="label">SPC / Trend</div></div>
+
+      <div class="menu-title">변경관리</div>
+      <div class="menu" data-page="changeControl"><div class="ico">↻</div><div class="label">변경관리</div></div>
 
       <div class="menu-title">LOT 관리</div>
       <div class="menu" data-page="lotTrace"><div class="ico">🔎</div><div class="label">LOT 추적</div></div>
 
       <div class="menu-title">설비 / 계측기</div>
       <div class="menu" data-page="equipment"><div class="ico">⚙️</div><div class="label">설비관리</div></div>
+      <div class="menu" data-page="instrumentMgmt"><div class="ico">📏</div><div class="label">계측기관리</div></div>
+      <div class="menu" data-page="calibrationMgmt"><div class="ico">✓</div><div class="label">검교정관리</div></div>
 
       <div class="menu-title">문서관리</div>
       <div class="menu" data-page="standard" data-open-docs="1"><div class="ico">📚</div><div class="label">기준서 / 문서관리</div></div>
@@ -2786,6 +2792,10 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
     <section class="module-page" id="ncr"></section>
     <section class="module-page" id="approval"></section>
     <section class="module-page" id="standard"></section>
+    <section class="module-page" id="spcTrend"></section>
+    <section class="module-page" id="changeControl"></section>
+    <section class="module-page" id="instrumentMgmt"></section>
+    <section class="module-page" id="calibrationMgmt"></section>
     <section class="module-page" id="adminEmployees" data-admin-only></section>
     <section class="module-page main-workspace" id="mainWorkspace">
       <div class="workspace-shell">
@@ -8132,7 +8142,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-registration-layout-20261021.js?v=1"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
-<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=1"></script>\n<script src="./js/qmes-recipe-master-20261022.js?v=20261022-1"></script>
+<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=1"></script>\n<script src="./js/qmes-recipe-master-20261022.js?v=20261022-1"></script>\n<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261022-1"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261021-1"></script>
