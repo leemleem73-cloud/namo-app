@@ -164,6 +164,19 @@
     html body #standard table.std-document-list[class] .std-document-name::after{color:#667085!important;font-family:inherit!important;font-size:12px!important;font-weight:400!important}
     .qce-modal .qce-field label{font-size:12px!important;font-weight:600!important;color:#244260!important;background:#f3f7fb!important}
     .qce-modal .qce-field :is(input,select,textarea){font-size:12px!important;font-weight:400!important;color:#344054!important;border-color:#c7d6e5!important}
+
+    /* iqc-grid-fit-20261023: content-aware columns and a single grid line. */
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list){width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;border:1px solid #d5dce5!important;box-shadow:none!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) :is(th,td){box-sizing:border-box!important;min-width:0!important;padding-left:8px!important;padding-right:8px!important;box-shadow:none!important;outline:0!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) thead th{white-space:normal!important;overflow-wrap:anywhere!important;border:1px solid #d5dce5!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody td{border:1px solid #d5dce5!important;overflow:hidden!important;text-overflow:ellipsis!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .iqc-work-frame .ip-table-wrap{border:0!important}
+    html body #standard table.std-document-list[class]{border-collapse:separate!important}
+    html body #standard table.std-document-list[class] tr{grid-template-columns:minmax(36px,4fr) minmax(0,32fr) minmax(0,9fr) minmax(0,13fr) minmax(0,12fr) minmax(0,15fr) minmax(0,15fr)!important}
+    html body #standard table.std-document-list[class] :is(th,td){width:auto!important;border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important}
+    html body #standard table.std-document-list[class] tr>:last-child{border-right:0!important}
+    html body #standard table.std-document-list[class] tbody tr:last-child>td{border-bottom:0!important}
+    html body #standard table.std-document-list[class] .std-document-name{white-space:normal!important;overflow-wrap:anywhere!important}
   `;
   document.head.appendChild(style);
 
@@ -361,7 +374,7 @@
         ?'<div class="spc-trend-card"><div class="spc-premium-head"><div><div class="spc-premium-title">'+esc(trendProduct)+' · '+esc(selected)+' Trend</div><div class="spc-subline">출하검사일 기준 · 규격 '+esc(spcSpecText(selected))+'</div></div><div class="spc-latest"><span>최근 판정</span><strong class="spc-judge '+badgeClass+'">'+esc(latestJudge)+'</strong></div></div>'+
           '<div class="qce-kpis spc-kpis"><div class="qce-kpi"><b>검사일수</b><strong>'+daily.length+'</strong></div><div class="qce-kpi"><b>측정수</b><strong>'+st.n+'</strong></div><div class="qce-kpi"><b>평균</b><strong>'+fmt(st.avg)+'</strong><small>최소 '+fmt(st.min)+' / 최대 '+fmt(st.max)+'</small></div><div class="qce-kpi"><b>Cp / Cpk</b><strong>'+(st.cp==null?'-':st.cp.toFixed(2))+' / '+(st.cpk==null?'-':st.cpk.toFixed(2))+'</strong></div></div>'+
           '<div class="qce-chart"><div class="spc-chart-legend"><span><i class="ok"></i>합격</span><span><i class="bad"></i>불합격</span><span>점선: 규격한계</span></div><div class="qce-chart-wrap">'+trendSvg(daily,selected)+'</div></div>'+
-          '<div class="spc-detail-title">날짜별 상세</div><div class="ip-table-wrap spc-detail-wrap"><table class="ip-table"><thead><tr><th>No.</th><th>검사일자</th><th>완제품 LOT</th><th>측정수</th><th>평균값</th><th>규격</th><th>판정</th></tr></thead><tbody>'+daily.slice().reverse().map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.lot||'-')+'</td><td>'+r.count+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join('')+'</tbody></table></div></div>'
+          '<div class="spc-detail-title">날짜별 상세</div><div class="ip-table-wrap spc-detail-wrap"><table class="ip-table"><colgroup><col style="width:5%"><col style="width:15%"><col style="width:24%"><col style="width:10%"><col style="width:14%"><col style="width:20%"><col style="width:12%"></colgroup><thead><tr><th>No.</th><th>검사일자</th><th>완제품 LOT</th><th>측정수</th><th>평균값</th><th>규격</th><th>판정</th></tr></thead><tbody>'+daily.slice().reverse().map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.lot||'-')+'</td><td>'+r.count+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join('')+'</tbody></table></div></div>'
         :'';
 
       root.innerHTML='<div class="inspection-premium iqc-work-frame"><div class="ip-panel">'+
@@ -371,7 +384,7 @@
 
         '</div>'+
 
-        '<div class="ip-table-wrap"><table class="ip-table spc-overview-table"><thead><tr><th>No.</th><th>검사일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>'+esc(selected)+' 평균</th><th>규격</th><th>판정</th></tr></thead><tbody>'+overviewBody+'</tbody></table></div>'+
+        '<div class="ip-table-wrap"><table class="ip-table spc-overview-table"><colgroup><col style="width:4%"><col style="width:12%"><col style="width:15%"><col style="width:19%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>No.</th><th>검사일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>'+esc(selected)+' 평균</th><th>규격</th><th>판정</th></tr></thead><tbody>'+overviewBody+'</tbody></table></div>'+
         '<div class="ip-footnote"><div class="ip-pagination spc-pagination" aria-label="SPC 페이지">'+pager+'</div></div>'+
         trendPanel+
       '</div></div>';
@@ -408,7 +421,7 @@
       try{
         const q=root.querySelector('.qce-change-q')?.value||'';const rows=await api('/api/qmes-change?q='+encodeURIComponent(q));
         const body=root.querySelector('.qce-change-body');
-        body.innerHTML='<div style="overflow:auto"><table class="qce-table"><thead><tr><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
+        body.innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:16%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:7%"></colgroup><thead><tr><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
           rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.change_no||'-')+'</td><td>'+esc(r.change_type)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.target||'-')+'</td><td>'+esc(r.owner||'-')+'</td><td>'+esc(String(r.planned_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='적용완료'?'ok':r.status==='승인완료'?'ok':r.status==='작성중'?'warn':'')+'">'+esc(r.status)+'</span></td><td>'+(
             r.status==='작성중'?'<button class="qce-btn" data-action="review" data-id="'+r.id+'">검토완료</button>':r.status==='검토완료'?'<button class="qce-btn" data-action="approve" data-id="'+r.id+'">승인완료</button>':r.status==='승인완료'?'<button class="qce-btn" data-action="close" data-id="'+r.id+'">적용완료</button>':'-'
           )+'</td></tr>').join(''):'<tr><td colspan="9">등록된 변경이 없습니다.</td></tr>'
@@ -436,7 +449,7 @@
       try{
         const rows=await api('/api/qmes-instruments?q='+encodeURIComponent(root.querySelector('.qce-inst-q')?.value||''));
         root._instrumentRows=rows;
-        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
+        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:12%"><col style="width:17%"><col style="width:16%"><col style="width:12%"><col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
           rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button></td></tr>').join(''):'<tr><td colspan="10">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
         root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),load));
@@ -466,7 +479,7 @@
   async function renderCalibration(){
     const root=document.getElementById('calibrationMgmt');if(!root)return;
     root.innerHTML='<div class="qce-page">'+head('검교정관리','계측기별 검교정 이력과 차기 일정을 확인합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"></div><div class="right"><button class="qce-btn qce-cal-refresh">조회</button></div></div><div class="qce-cal-body"><div class="qce-empty">조회 중...</div></div></div></div>';
-    const load=async()=>{try{const rows=await api('/api/qmes-calibrations');root.querySelector('.qce-cal-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>검교정일</th><th>차기예정일</th><th>교정기관</th><th>성적서번호</th><th>결과</th><th>작성자</th></tr></thead><tbody>'+(rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc(String(r.calibration_on||'').slice(0,10))+'</td><td>'+esc(String(r.next_due_on||'').slice(0,10)||'-')+'</td><td>'+esc(r.agency||'-')+'</td><td>'+esc(r.certificate_no||'-')+'</td><td><span class="qce-badge '+(r.result==='적합'?'ok':'bad')+'">'+esc(r.result)+'</span></td><td>'+esc(r.created_by||'-')+'</td></tr>').join(''):'<tr><td colspan="9">등록된 검교정 이력이 없습니다.</td></tr>')+'</tbody></table></div>';}catch(e){root.querySelector('.qce-cal-body').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}};
+    const load=async()=>{try{const rows=await api('/api/qmes-calibrations');root.querySelector('.qce-cal-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:13%"><col style="width:21%"><col style="width:12%"><col style="width:12%"><col style="width:14%"><col style="width:14%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>검교정일</th><th>차기예정일</th><th>교정기관</th><th>성적서번호</th><th>결과</th><th>작성자</th></tr></thead><tbody>'+(rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc(String(r.calibration_on||'').slice(0,10))+'</td><td>'+esc(String(r.next_due_on||'').slice(0,10)||'-')+'</td><td>'+esc(r.agency||'-')+'</td><td>'+esc(r.certificate_no||'-')+'</td><td><span class="qce-badge '+(r.result==='적합'?'ok':'bad')+'">'+esc(r.result)+'</span></td><td>'+esc(r.created_by||'-')+'</td></tr>').join(''):'<tr><td colspan="9">등록된 검교정 이력이 없습니다.</td></tr>')+'</tbody></table></div>';}catch(e){root.querySelector('.qce-cal-body').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}};
     root.querySelector('.qce-cal-refresh').onclick=load;load();
   }
 
