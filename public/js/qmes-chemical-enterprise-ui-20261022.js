@@ -37,6 +37,42 @@
     .qce-kpi{border:1px solid #dbe4ed;background:#fff;padding:13px}.qce-kpi b{display:block;font-size:11px;color:#728398;margin-bottom:7px}.qce-kpi strong{font-size:22px;color:#244260}
     .qce-chart{padding:13px;border-top:1px solid #e2e8ef}.qce-chart h3{font-size:13px;margin:0 0 10px}.qce-chart-wrap{height:260px;border:1px solid #e1e7ee;background:#fbfdff;padding:12px;overflow:hidden}
     .qce-svg{width:100%;height:100%}.qce-svg text{font-size:9px;fill:#6b7e92}
+    #spcTrend .spc-toolbar{display:block;padding:15px 16px}
+    #spcTrend .spc-filter-grid{display:grid;grid-template-columns:1.55fr 1fr 1fr 1fr;gap:12px;align-items:end}
+    #spcTrend .spc-filter-grid label{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;font-weight:800;color:#415b75}
+    #spcTrend .spc-filter-grid label>span{white-space:nowrap}
+    #spcTrend .spc-filter-grid .qce-input,#spcTrend .spc-filter-grid .qce-select{height:36px;min-width:0;width:100%;font-size:12px;border-radius:6px}
+    #spcTrend .spc-date-range{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center;flex:1}
+    #spcTrend .spc-date-range b{font-weight:600;color:#8796a8}
+    #spcTrend .spc-toolbar-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:12px}
+    #spcTrend .spc-toolbar-actions .qce-btn{height:34px;border-radius:6px}
+    #spcTrend .spc-section-head{display:flex;align-items:center;justify-content:space-between;padding:15px 17px 11px;border-top:1px solid #e1e8ef;color:#738398;font-size:11px}
+    #spcTrend .spc-premium-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:#244260}
+    #spcTrend .spc-premium-title:before{content:'';width:4px;height:18px;border-radius:3px;background:#2878bd}
+    #spcTrend .spc-overview-table th{height:40px}
+    #spcTrend .spc-overview-table td{height:46px}
+    #spcTrend .spc-product-link{border:0;background:transparent;color:#126fc0;text-decoration:underline;text-underline-offset:2px;font:inherit;font-weight:850;cursor:pointer;padding:0}
+    #spcTrend .spc-product-link:hover{color:#0b5594}
+    #spcTrend .spc-row-selected td{background:#eef6ff!important}
+    #spcTrend .spc-judge{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:27px;padding:0 11px;border-radius:999px;font-size:10.5px;font-weight:900;border:1px solid transparent}
+    #spcTrend .spc-judge.ok{background:#e9f7ef;color:#1f8157;border-color:#c3e7d2}
+    #spcTrend .spc-judge.bad{background:#fff0ee;color:#bd3e34;border-color:#f0c8c3}
+    #spcTrend .spc-judge.wait{background:#f2f5f8;color:#718094;border-color:#dbe3ea}
+    #spcTrend .spc-trend-card{margin:15px;border:1px solid #d9e4ee;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 8px 22px rgba(33,62,91,.05)}
+    #spcTrend .spc-premium-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 17px 12px;border-bottom:1px solid #e6edf3}
+    #spcTrend .spc-subline{margin-top:5px;font-size:10.5px;color:#7d8ea1}
+    #spcTrend .spc-latest{display:flex;align-items:center;gap:9px;font-size:10.5px;color:#708296;font-weight:800}
+    #spcTrend .spc-kpis{grid-template-columns:repeat(4,minmax(150px,1fr));padding:14px 16px}
+    #spcTrend .spc-kpi small,#spcTrend .qce-kpi small{display:block;margin-top:5px;color:#8a98a8;font-size:9.5px;font-weight:600}
+    #spcTrend .spc-chart-legend{display:flex;justify-content:flex-end;gap:13px;margin-bottom:8px;color:#75869a;font-size:9.5px}
+    #spcTrend .spc-chart-legend span{display:inline-flex;align-items:center;gap:5px}
+    #spcTrend .spc-chart-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+    #spcTrend .spc-chart-legend i.ok{background:#2a9b69}#spcTrend .spc-chart-legend i.bad{background:#d84c43}
+    #spcTrend .spc-detail-title{padding:13px 16px 9px;border-top:1px solid #e6edf3;font-size:11px;font-weight:900;color:#405b77}
+    #spcTrend .spc-trend-placeholder{margin:15px;padding:54px 20px;border:1px dashed #cbd9e6;border-radius:8px;background:#fbfdff;text-align:center;color:#7b8da1}
+    #spcTrend .spc-placeholder-icon{font-size:28px;color:#3d80bd;margin-bottom:8px}#spcTrend .spc-trend-placeholder b{display:block;color:#365675;font-size:13px;margin-bottom:6px}#spcTrend .spc-trend-placeholder span{font-size:11px}
+    @media(max-width:1180px){#spcTrend .spc-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:720px){#spcTrend .spc-filter-grid{grid-template-columns:1fr}#spcTrend .spc-premium-head{align-items:flex-start;flex-direction:column}}
     .qce-empty{padding:55px 20px;text-align:center;color:#8a98a8;font-size:12px}
     .qce-modal-bg{position:fixed;inset:0;z-index:32000;background:rgba(17,34,52,.35);display:flex;align-items:center;justify-content:center;padding:28px}
     .qce-modal{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#fff;border:1px solid #cbd8e5;border-radius:6px;box-shadow:0 18px 55px rgba(15,31,48,.24)}
@@ -75,15 +111,25 @@
   function flattenMeasurements(rows,source){
     const out=[];
     for(const row of rows){
-      const date=String(row.date||row.inspectionDate||'').slice(0,10);
-      const lot=String(row.lot||row.finishedLot||row.productionLot||'');
+      const date=String(row.date||row.inspectionDate||row.detailFields?.['검사일자']||'').slice(0,10);
+      const lot=String(row.lot||row.finishedLot||row.productionLot||row.detailFields?.['완제품 LOT']||'');
       const product=String(row.product||row.productName||row.detailFields?.['제품명']||'');
-      const m=row.measurements||{};
-      for(const [item,values] of Object.entries(m)){
+      const customer=String(row.customer||row.customerName||row.detailFields?.['고객사']||'');
+      const raw=row.measurements;
+      let entries=[];
+      if(Array.isArray(raw)){
+        const item=String(row.check||row.item||row.inspectionItem||'').trim();
+        if(item)entries=[[item,raw]];
+      }else if(raw&&typeof raw==='object'){
+        entries=Object.entries(raw);
+      }else if(row.check&&row.value!=null){
+        entries=[[String(row.check),String(row.value).split(/\s*\/\s*/)]];
+      }
+      for(const [item,values] of entries){
         if(!Array.isArray(values))continue;
         values.forEach((v,idx)=>{
           const n=Number(v);
-          if(Number.isFinite(n))out.push({source,date,lot,product,item,value:n,seq:idx+1});
+          if(Number.isFinite(n))out.push({source,date,lot,product,customer,item,value:n,seq:idx+1});
         });
       }
     }
@@ -108,43 +154,147 @@
     if(sd>0&&lsl!=null&&usl!=null){cp=(usl-lsl)/(6*sd);cpk=Math.min((usl-avg)/(3*sd),(avg-lsl)/(3*sd));}
     return {n:nums.length,avg,min:Math.min(...nums),max:Math.max(...nums),cp,cpk};
   }
+  function spcValueJudge(value,item){
+    const n=Number(value);
+    if(!Number.isFinite(n))return '대기';
+    if(item==='입도(Dmax)'||item==='입도')return n<10?'합격':'불합격';
+    if(item==='점도')return n>=1200&&n<=1800?'합격':'불합격';
+    if(item==='고형분')return n>=19&&n<=21?'합격':'불합격';
+    if(item==='수분율'||item==='수분')return n<2000?'합격':'불합격';
+    if(item==='접착력')return n>=400?'합격':'불합격';
+    return '대기';
+  }
+  function spcSpecText(item){
+    if(item==='입도(Dmax)'||item==='입도')return '< 10 μm';
+    if(item==='점도')return '1,200 ~ 1,800 cP';
+    if(item==='고형분')return '19.0 ~ 21.0 wt%';
+    if(item==='수분율'||item==='수분')return '< 2,000 ppm';
+    if(item==='접착력')return '≥ 400 gf/12.7mm';
+    return '-';
+  }
+  function spcOverviewRows(values,item){
+    const map=new Map();
+    for(const row of values){
+      const key=[row.date||'',row.customer||'',row.product||''].join('|');
+      if(!map.has(key))map.set(key,{date:row.date||'',customer:row.customer||'',product:row.product||'',lots:new Set(),values:[]});
+      const g=map.get(key);
+      if(row.lot)g.lots.add(row.lot);
+      if(Number.isFinite(Number(row.value)))g.values.push(Number(row.value));
+    }
+    return [...map.values()].map(g=>{
+      const avg=g.values.length?g.values.reduce((a,b)=>a+b,0)/g.values.length:null;
+      const judges=g.values.map(v=>spcValueJudge(v,item));
+      const judge=judges.includes('불합격')?'불합격':judges.length&&judges.every(v=>v==='합격')?'합격':'대기';
+      return {...g,lot:[...g.lots].join(', '),value:avg,count:g.values.length,judge};
+    }).sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(a.product).localeCompare(String(b.product)));
+  }
+  function spcDailyTrend(values,item){
+    const map=new Map();
+    for(const row of values){
+      const key=String(row.date||'');
+      if(!key)continue;
+      if(!map.has(key))map.set(key,{date:key,lots:new Set(),values:[]});
+      const g=map.get(key);
+      if(row.lot)g.lots.add(row.lot);
+      if(Number.isFinite(Number(row.value)))g.values.push(Number(row.value));
+    }
+    return [...map.values()].map(g=>{
+      const avg=g.values.length?g.values.reduce((a,b)=>a+b,0)/g.values.length:null;
+      const judges=g.values.map(v=>spcValueJudge(v,item));
+      const judge=judges.includes('불합격')?'불합격':judges.length&&judges.every(v=>v==='합격')?'합격':'대기';
+      return {date:g.date,lot:[...g.lots].join(', '),value:avg,count:g.values.length,judge};
+    }).filter(x=>Number.isFinite(x.value)).sort((a,b)=>a.date.localeCompare(b.date));
+  }
   function trendSvg(values,item){
-    const data=values.slice(-60);if(!data.length)return '<div class="qce-empty">측정 데이터가 없습니다.</div>';
-    const w=1000,h=230,p=38,nums=data.map(x=>x.value),spec=specFor(item);
+    const data=values.slice(-60);if(!data.length)return '<div class="qce-empty">제품명을 클릭하면 날짜별 Trend가 표시됩니다.</div>';
+    const w=1000,h=250,p=46,nums=data.map(x=>x.value),spec=specFor(item);
     let min=Math.min(...nums),max=Math.max(...nums);
     if(spec.lsl!=null)min=Math.min(min,spec.lsl);if(spec.usl!=null)max=Math.max(max,spec.usl);
-    if(max===min){max+=1;min-=1;}
+    const span=Math.max(1,max-min);min-=span*.08;max+=span*.08;
     const x=i=>p+(i*(w-p*2)/Math.max(1,data.length-1));
     const y=v=>h-p-((v-min)/(max-min))*(h-p*2);
     const pts=data.map((d,i)=>x(i)+','+y(d.value)).join(' ');
     const lines=[];
-    if(spec.usl!=null)lines.push('<line x1="'+p+'" y1="'+y(spec.usl)+'" x2="'+(w-p)+'" y2="'+y(spec.usl)+'" stroke="currentColor" stroke-dasharray="6 5" opacity=".45"/><text x="'+(w-p-55)+'" y="'+(y(spec.usl)-5)+'">USL '+spec.usl+'</text>');
-    if(spec.lsl!=null)lines.push('<line x1="'+p+'" y1="'+y(spec.lsl)+'" x2="'+(w-p)+'" y2="'+y(spec.lsl)+'" stroke="currentColor" stroke-dasharray="6 5" opacity=".45"/><text x="'+(w-p-55)+'" y="'+(y(spec.lsl)-5)+'">LSL '+spec.lsl+'</text>');
-    const dots=data.map((d,i)=>'<circle cx="'+x(i)+'" cy="'+y(d.value)+'" r="3"><title>'+esc((d.date||'')+' '+(d.lot||'')+' '+d.value)+'</title></circle>').join('');
-    return '<svg class="qce-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="'+p+'" y1="'+p+'" x2="'+p+'" y2="'+(h-p)+'" stroke="#cfd8e3"/><line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-p)+'" y2="'+(h-p)+'" stroke="#cfd8e3"/>'+lines.join('')+'<polyline points="'+pts+'" fill="none" stroke="currentColor" stroke-width="2"/>'+dots+'</svg>';
+    if(spec.usl!=null)lines.push('<line x1="'+p+'" y1="'+y(spec.usl)+'" x2="'+(w-p)+'" y2="'+y(spec.usl)+'" stroke="#d6655a" stroke-dasharray="7 5" opacity=".82"/><text x="'+(w-p-70)+'" y="'+(y(spec.usl)-7)+'">USL '+spec.usl+'</text>');
+    if(spec.lsl!=null)lines.push('<line x1="'+p+'" y1="'+y(spec.lsl)+'" x2="'+(w-p)+'" y2="'+y(spec.lsl)+'" stroke="#d6655a" stroke-dasharray="7 5" opacity=".82"/><text x="'+(w-p-70)+'" y="'+(y(spec.lsl)-7)+'">LSL '+spec.lsl+'</text>');
+    const dots=data.map((d,i)=>'<circle cx="'+x(i)+'" cy="'+y(d.value)+'" r="5" fill="'+(d.judge==='불합격'?'#d84c43':'#2a9b69')+'" stroke="#fff" stroke-width="2"><title>'+esc((d.date||'')+' · '+fmt(d.value)+' · '+d.judge)+'</title></circle>').join('');
+    const every=Math.max(1,Math.ceil(data.length/8));
+    const labels=data.map((d,i)=>i%every===0||i===data.length-1?'<text x="'+x(i)+'" y="'+(h-12)+'" text-anchor="middle">'+esc(String(d.date||'').slice(5))+'</text>':'').join('');
+    return '<svg class="qce-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="'+p+'" y1="'+p+'" x2="'+p+'" y2="'+(h-p)+'" stroke="#cfd8e3"/><line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-p)+'" y2="'+(h-p)+'" stroke="#cfd8e3"/>'+lines.join('')+'<polyline points="'+pts+'" fill="none" stroke="#377cb9" stroke-width="2.4"/>'+dots+labels+'</svg>';
   }
 
   async function renderSpc(){
     const root=document.getElementById('spcTrend');if(!root)return;
-    root.innerHTML='<div class="qce-page">'+head('SPC / Trend','PQC·OQC 측정값을 기반으로 공정 추세와 공정능력을 확인합니다.')+'<div class="qce-shell"><div class="qce-empty">데이터를 불러오는 중입니다.</div></div></div>';
+    root.innerHTML='<div class="qce-page">'+head('SPC / Trend','출하검사(OQC) 결과를 날짜별·제품별로 분석합니다.')+'<div class="qce-shell"><div class="qce-empty">출하검사 데이터를 불러오는 중입니다.</div></div></div>';
     try{
-      const [pqc,oqc]=await Promise.all([syncRows('pqc'),syncRows('oqc')]);
-      const all=[...flattenMeasurements(pqc,'PQC'),...flattenMeasurements(oqc,'OQC')];
-      const items=[...new Set(all.map(x=>x.item))].filter(x=>['입도(Dmax)','입도','점도','고형분','수분율','수분','접착력'].includes(x));
+      const oqc=await syncRows('oqc');
+      const all=flattenMeasurements(oqc,'OQC');
+      const allowed=['입도(Dmax)','입도','점도','고형분','수분율','수분','접착력'];
+      const items=[...new Set(all.map(x=>x.item))].filter(x=>allowed.includes(x));
       const selected=items.includes(root.dataset.spcItem)?root.dataset.spcItem:(items.includes('점도')?'점도':items[0]||'점도');
       root.dataset.spcItem=selected;
-      const filtered=all.filter(x=>x.item===selected).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-      const st=stats(filtered,selected);
-      root.innerHTML='<div class="qce-page">'+head('SPC / Trend','PQC·OQC 측정값을 자동 집계합니다. MSA 기능은 포함하지 않습니다.')+
-        '<div class="qce-shell"><div class="qce-toolbar"><div class="left"><select class="qce-select qce-spc-item">'+(items.length?items:[selected]).map(x=>'<option '+(x===selected?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div><div class="right"><button class="qce-btn qce-spc-refresh">조회</button></div></div>'+
-        '<div class="qce-kpis"><div class="qce-kpi"><b>측정수</b><strong>'+st.n+'</strong></div><div class="qce-kpi"><b>평균</b><strong>'+fmt(st.avg)+'</strong></div><div class="qce-kpi"><b>최소 / 최대</b><strong>'+fmt(st.min)+' / '+fmt(st.max)+'</strong></div><div class="qce-kpi"><b>Cp / Cpk</b><strong>'+(st.cp==null?'-':st.cp.toFixed(2))+' / '+(st.cpk==null?'-':st.cpk.toFixed(2))+'</strong></div></div>'+
-        '<div class="qce-chart"><h3>'+esc(selected)+' Trend</h3><div class="qce-chart-wrap">'+trendSvg(filtered,selected)+'</div></div>'+
-        '<div style="overflow:auto"><table class="qce-table"><thead><tr><th>No.</th><th>구분</th><th>검사일</th><th>제품명</th><th>LOT</th><th>측정값</th></tr></thead><tbody>'+filtered.slice().reverse().slice(0,100).map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.date||'-')+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td>'+fmt(r.value)+'</td></tr>').join('')+'</tbody></table></div></div></div>';
-      root.querySelector('.qce-spc-item')?.addEventListener('change',e=>{root.dataset.spcItem=e.target.value;renderSpc();});
-      root.querySelector('.qce-spc-refresh')?.addEventListener('click',renderSpc);
-    }catch(e){root.querySelector('.qce-shell').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}
-  }
 
+      const startDate=root.dataset.spcStart||'';
+      const endDate=root.dataset.spcEnd||'';
+      const customerFilter=root.dataset.spcCustomer||'';
+      const productFilter=root.dataset.spcFilterProduct||'';
+      const base=all.filter(x=>x.item===selected)
+        .filter(x=>!startDate||x.date>=startDate)
+        .filter(x=>!endDate||x.date<=endDate)
+        .filter(x=>!customerFilter||String(x.customer||'').toLowerCase().includes(customerFilter.toLowerCase()))
+        .filter(x=>!productFilter||String(x.product||'').toLowerCase().includes(productFilter.toLowerCase()));
+
+      const overview=spcOverviewRows(base,selected);
+      const customers=[...new Set(all.map(x=>x.customer).filter(Boolean))].sort();
+      const trendProduct=root.dataset.spcTrendProduct||'';
+      const trendRaw=trendProduct?base.filter(x=>x.product===trendProduct):[];
+      const daily=trendProduct?spcDailyTrend(trendRaw,selected):[];
+      const st=stats(trendRaw,selected);
+      const latest=daily.length?daily[daily.length-1]:null;
+      const latestJudge=latest?.judge||'대기';
+      const badgeClass=latestJudge==='합격'?'ok':latestJudge==='불합격'?'bad':'wait';
+
+      const filterHtml='<div class="spc-filter-grid">'+
+        '<label><span>검사기간</span><div class="spc-date-range"><input class="qce-input spc-start" type="date" value="'+esc(startDate)+'"><b>~</b><input class="qce-input spc-end" type="date" value="'+esc(endDate)+'"></div></label>'+
+        '<label><span>고객사</span><select class="qce-select spc-customer"><option value="">전체</option>'+customers.map(x=>'<option value="'+esc(x)+'" '+(x===customerFilter?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
+        '<label><span>제품명</span><input class="qce-input spc-product-filter" value="'+esc(productFilter)+'" placeholder="전체"></label>'+
+        '<label><span>검사항목</span><select class="qce-select qce-spc-item">'+(items.length?items:[selected]).map(x=>'<option value="'+esc(x)+'" '+(x===selected?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
+        '</div>';
+
+      const overviewBody=overview.length?overview.map((r,i)=>'<tr class="'+(trendProduct===r.product?'spc-row-selected':'')+'"><td>'+(i+1)+'</td><td>'+esc(r.date||'-')+'</td><td>'+esc(r.customer||'-')+'</td><td><button type="button" class="spc-product-link" data-spc-product="'+encodeURIComponent(r.product||'')+'">'+esc(r.product||'-')+'</button></td><td>'+esc(r.lot||'-')+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join(''):'<tr><td colspan="8">조건에 해당하는 출하검사 측정 데이터가 없습니다.</td></tr>';
+
+      const trendPanel=trendProduct
+        ?'<div class="spc-trend-card"><div class="spc-premium-head"><div><div class="spc-premium-title">'+esc(trendProduct)+' · '+esc(selected)+' Trend</div><div class="spc-subline">출하검사일 기준 · 규격 '+esc(spcSpecText(selected))+'</div></div><div class="spc-latest"><span>최근 판정</span><strong class="spc-judge '+badgeClass+'">'+esc(latestJudge)+'</strong></div></div>'+
+          '<div class="qce-kpis spc-kpis"><div class="qce-kpi"><b>검사일수</b><strong>'+daily.length+'</strong></div><div class="qce-kpi"><b>측정수</b><strong>'+st.n+'</strong></div><div class="qce-kpi"><b>평균</b><strong>'+fmt(st.avg)+'</strong><small>최소 '+fmt(st.min)+' / 최대 '+fmt(st.max)+'</small></div><div class="qce-kpi"><b>Cp / Cpk</b><strong>'+(st.cp==null?'-':st.cp.toFixed(2))+' / '+(st.cpk==null?'-':st.cpk.toFixed(2))+'</strong></div></div>'+
+          '<div class="qce-chart"><div class="spc-chart-legend"><span><i class="ok"></i>합격</span><span><i class="bad"></i>불합격</span><span>점선: 규격한계</span></div><div class="qce-chart-wrap">'+trendSvg(daily,selected)+'</div></div>'+
+          '<div class="spc-detail-title">날짜별 상세</div><div style="overflow:auto"><table class="qce-table"><thead><tr><th>No.</th><th>검사일자</th><th>완제품 LOT</th><th>측정수</th><th>평균값</th><th>규격</th><th>판정</th></tr></thead><tbody>'+daily.slice().reverse().map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.lot||'-')+'</td><td>'+r.count+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join('')+'</tbody></table></div></div>'
+        :'<div class="spc-trend-placeholder"><div class="spc-placeholder-icon">↗</div><b>제품명을 클릭해 주세요.</b><span>해당 제품의 출하검사 날짜별 Trend와 합격/불합격 판정이 표시됩니다.</span></div>';
+
+      root.innerHTML='<div class="qce-page">'+head('SPC / Trend','출하검사(OQC) 날짜별 현황에서 제품을 선택하면 품질 Trend와 규격 판정을 확인할 수 있습니다.')+
+        '<div class="qce-shell"><div class="qce-toolbar spc-toolbar">'+filterHtml+'<div class="spc-toolbar-actions"><button class="qce-btn spc-clear">조건 지우기</button><button class="qce-btn primary qce-spc-refresh">조회</button></div></div>'+
+        '<div class="spc-section-head"><div class="spc-premium-title">출하검사 날짜별 현황</div><span>총 '+overview.length+'건</span></div>'+
+        '<div style="overflow:auto"><table class="qce-table spc-overview-table"><thead><tr><th>No.</th><th>검사일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>'+esc(selected)+' 평균</th><th>규격</th><th>판정</th></tr></thead><tbody>'+overviewBody+'</tbody></table></div>'+
+        trendPanel+'</div></div>';
+
+      const applyFilters=()=>{
+        root.dataset.spcStart=root.querySelector('.spc-start')?.value||'';
+        root.dataset.spcEnd=root.querySelector('.spc-end')?.value||'';
+        root.dataset.spcCustomer=root.querySelector('.spc-customer')?.value||'';
+        root.dataset.spcFilterProduct=root.querySelector('.spc-product-filter')?.value.trim()||'';
+        root.dataset.spcItem=root.querySelector('.qce-spc-item')?.value||selected;
+        if(root.dataset.spcTrendProduct && !overview.some(x=>x.product===root.dataset.spcTrendProduct))delete root.dataset.spcTrendProduct;
+        renderSpc();
+      };
+      root.querySelector('.qce-spc-refresh')?.addEventListener('click',applyFilters);
+      root.querySelector('.qce-spc-item')?.addEventListener('change',()=>{delete root.dataset.spcTrendProduct;applyFilters();});
+      root.querySelector('.spc-product-filter')?.addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters();});
+      root.querySelector('.spc-clear')?.addEventListener('click',()=>{delete root.dataset.spcStart;delete root.dataset.spcEnd;delete root.dataset.spcCustomer;delete root.dataset.spcFilterProduct;delete root.dataset.spcTrendProduct;renderSpc();});
+      root.querySelectorAll('.spc-product-link').forEach(b=>b.addEventListener('click',()=>{root.dataset.spcTrendProduct=decodeURIComponent(b.dataset.spcProduct||'');renderSpc();}));
+    }catch(e){
+      const shell=root.querySelector('.qce-shell');
+      if(shell)shell.innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';
+    }
+  }
   async function renderChange(){
     const root=document.getElementById('changeControl');if(!root)return;
     root.innerHTML='<div class="qce-page">'+head('변경관리','원료·공급사·Recipe·공정조건·설비·Spec 변경을 승인 이력으로 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-change-q" placeholder="변경번호 / 제목 / 대상 검색"></div><div class="right"><button class="qce-btn qce-change-search">조회</button><button class="qce-btn primary qce-change-new">+ 변경 등록</button></div></div><div class="qce-change-body"><div class="qce-empty">조회 중...</div></div></div></div>';
