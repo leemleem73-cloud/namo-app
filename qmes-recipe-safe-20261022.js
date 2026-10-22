@@ -90,6 +90,117 @@ function cleanMaterials(raw) {
   });
 }
 
+
+async function syncRecipesFromWorkOrders(actor = {}) {
+  await ensureSchema();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(20261022, 102)');
+    const refs = await client.query(
+      "SELECT to_regclass('public.qmes_work_order_documents') AS docs, to_regclass('public.qmes_work_order_deletions') AS deletions"
+    );
+    if (!refs.rows[0]?.docs) {
+      await client.query('COMMIT');
+      return { created: 0, skipped: 0 };
+    }
+    const hasDeletions = Boolean(refs.rows[0]?.deletions);
+    const rows = await client.query(`
+      SELECT d.id, d.document, d.created_at, d.updated_at
+      FROM qmes_work_order_documents d
+      ${hasDeletions ? "WHERE NOT EXISTS (SELECT 1 FROM qmes_work_order_deletions x WHERE x.id=d.id)" : ""}
+      ORDER BY COALESCE(d.updated_at,d.created_at) DESC, d.created_at DESC
+    `);
+
+    const latestByProduct = new Map();
+    for (const row of rows.rows) {
+      const doc = row.document && typeof row.document === 'object' ? row.document : {};
+      const fields = doc.fields && typeof doc.fields === 'object' ? doc.fields : {};
+      const productName = str(fields['제품명'] || doc.productName || doc.item, 160);
+      if (!productName || latestByProduct.has(productName)) continue;
+
+      const rawMaterials = Array.isArray(doc.materials) ? doc.materials : (Array.isArray(doc.inputs) ? doc.inputs : []);
+      const materials = rawMaterials.map((m, index) => {
+        const name = str(m?.name || m?.material_name || m?.material, 160);
+        const qty = num(m?.plan ?? m?.standard_qty ?? m?.std ?? m?.qty);
+        return {
+          seq: index + 1,
+          material_code: str(m?.code || m?.material_code, 80),
+          material_name: name,
+          standard_qty: qty,
+          unit: str(m?.unit || 'kg', 20) || 'kg'
+        };
+      }).filter(m => m.material_name && m.standard_qty > 0);
+
+      if (!materials.length) continue;
+      const materialTotal = materials.reduce((sum, m) => sum + Number(m.standard_qty || 0), 0);
+      const planQty = num(fields['계획수량'] ?? fields['계획수량(kg)'] ?? doc.planQty ?? doc.plan);
+      const basisQty = planQty > 0 ? planQty : materialTotal;
+      if (!(basisQty > 0)) continue;
+
+      const workDate = str(doc.workDate || fields['작업일자'] || fields['작업 시작일'], 10);
+      const workOrderNo = str(fields['작업지시번호'] || doc.id || row.id, 100);
+      latestByProduct.set(productName, {
+        productName,
+        productCode: str(doc.productCode || fields['제품코드'], 80),
+        basisQty,
+        unit: 'kg',
+        effectiveOn: /^\d{4}-\d{2}-\d{2}$/.test(workDate) ? workDate : null,
+        workOrderNo,
+        materials
+      });
+    }
+
+    const existing = await client.query('SELECT DISTINCT product_name FROM qmes_recipe_versions');
+    const existingProducts = new Set(existing.rows.map(r => str(r.product_name, 160)));
+    let created = 0, skipped = 0;
+
+    for (const recipe of latestByProduct.values()) {
+      if (existingProducts.has(recipe.productName)) {
+        skipped += 1;
+        continue;
+      }
+      const inserted = await client.query(`
+        INSERT INTO qmes_recipe_versions
+          (product_code, product_name, revision, basis_qty, unit, effective_on, status, note, created_by_id, created_by)
+        VALUES ($1,$2,'Rev.01',$3,$4,$5,'ACTIVE',$6,$7,$8)
+        ON CONFLICT (product_name, revision) DO NOTHING
+        RETURNING id
+      `, [
+        recipe.productCode, recipe.productName, recipe.basisQty, recipe.unit, recipe.effectiveOn,
+        '작업지시 ' + (recipe.workOrderNo || '-') + ' 기준 자동연동',
+        str(actor?.id, 100), '작업지시 자동연동'
+      ]);
+      if (!inserted.rowCount) {
+        skipped += 1;
+        existingProducts.add(recipe.productName);
+        continue;
+      }
+      const recipeId = inserted.rows[0].id;
+      for (const material of recipe.materials) {
+        await client.query(`
+          INSERT INTO qmes_recipe_materials
+            (recipe_id,seq,material_code,material_name,standard_qty,unit,mix_time_min,rpm,temperature_c,note)
+          VALUES ($1,$2,$3,$4,$5,$6,NULL,NULL,NULL,'작업지시 계획투입량 자동연동')
+        `, [
+          recipeId, material.seq, material.material_code, material.material_name,
+          material.standard_qty, material.unit
+        ]);
+      }
+      created += 1;
+      existingProducts.add(recipe.productName);
+    }
+
+    await client.query('COMMIT');
+    return { created, skipped };
+  } catch (error) {
+    try { await client.query('ROLLBACK'); } catch (_) {}
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 function install(app) {
   if (app.__qmesRecipeSafe20261022) return;
   app.__qmesRecipeSafe20261022 = true;
@@ -97,6 +208,7 @@ function install(app) {
   app.get('/api/qmes-recipes', auth, async (req, res) => {
     try {
       await ensureSchema();
+      await syncRecipesFromWorkOrders(req.session?.user || {});
       const q = str(req.query.q, 120);
       const result = await pool.query(`
         SELECT r.*,
