@@ -26,12 +26,13 @@
     #recipeMaster .nrecipe-title{display:flex;align-items:center;gap:10px;color:#173b61;font-size:18px;font-weight:800;letter-spacing:-.4px}
     #recipeMaster .nrecipe-title:before{content:'';width:4px;height:24px;border-radius:3px;background:#1974bd}
     #recipeMaster .nrecipe-head-actions{display:flex;gap:6px}
-    #recipeMaster .nrecipe-query{padding:20px 22px 18px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
-    #recipeMaster .nrecipe-grid-filter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px 20px}
-    #recipeMaster .nrecipe-filter{display:flex;align-items:center;gap:8px;min-width:0;color:#334e6b;font-size:12.5px;font-weight:700}
-    #recipeMaster .nrecipe-filter span{flex:0 0 72px;text-align:right}
-    #recipeMaster .nrecipe-filter input{height:38px;width:100%;min-width:0;padding:0 11px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#243e5d;font-size:13px}
-    #recipeMaster .nrecipe-query-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    #recipeMaster .nrecipe-query{padding:14px 18px 12px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
+    #recipeMaster .nrecipe-grid-filter{display:grid;grid-template-columns:1.15fr 1.15fr .85fr 1fr 1.35fr;gap:12px;align-items:center}
+    #recipeMaster .nrecipe-filter{display:flex;align-items:center;gap:7px;min-width:0;color:#334e6b;font-size:12px;font-weight:700}
+    #recipeMaster .nrecipe-filter span{flex:0 0 auto;text-align:left;white-space:nowrap}
+    #recipeMaster .nrecipe-filter input,#recipeMaster .nrecipe-filter select{height:34px;width:100%;min-width:0;padding:0 10px;border:1px solid #c7d6e5;border-radius:5px;background:#fff;color:#243e5d;font-size:12px}
+    #recipeMaster .nrecipe-date-range{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center}
+    #recipeMaster .nrecipe-query-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
     #recipeMaster .nrecipe-btn,.nrecipe-modal button{height:38px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#294763;font-weight:700;font-size:12.5px;padding:0 15px;cursor:pointer}
     #recipeMaster .nrecipe-btn.primary,.nrecipe-modal .primary{background:#166fbb;color:#fff;border-color:#166fbb}
     #recipeMaster .nrecipe-list-head{display:flex;align-items:center;justify-content:space-between;padding:17px 22px 14px;color:#1e3f64;font-size:13.5px;font-weight:800}
@@ -76,7 +77,7 @@
     .nrecipe-readonly{background:#f8fafc}
     #work .nrecipe-work-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-size:10px;font-weight:700;color:#526b84}
     #work .nrecipe-apply{height:36px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#294763;font-weight:700;font-size:12px;padding:0 12px;cursor:pointer}
-    @media(max-width:1100px){#recipeMaster .nrecipe-grid-filter{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:1250px){#recipeMaster .nrecipe-grid-filter{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:700px){#recipeMaster .nrecipe-grid-filter{grid-template-columns:1fr}.nrecipe-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   `;
   document.head.appendChild(css);
@@ -91,22 +92,24 @@
         <div class="nrecipe-header">
           <div class="nrecipe-title">배합기준 등록 및 조회</div>
           <div class="nrecipe-head-actions">
+            <button type="button" class="nrecipe-btn nrecipe-export">엑셀 내보내기</button>
             <button type="button" class="nrecipe-btn primary nrecipe-new">+ 신규 배합기준 등록</button>
           </div>
         </div>
         <div class="nrecipe-query">
           <div class="nrecipe-grid-filter">
-            <label class="nrecipe-filter"><span>고객사명</span><input data-filter="customer" placeholder="고객사명"></label>
-            <label class="nrecipe-filter"><span>제품명</span><input data-filter="product" placeholder="제품명"></label>
-            <label class="nrecipe-filter"><span>Rev.</span><input data-filter="revision" placeholder="Rev."></label>
-            <label class="nrecipe-filter"><span>적용일</span><input data-filter="applied" type="date"></label>
+            <label class="nrecipe-filter"><span>고객사명</span><input data-filter="customer" placeholder="전체"></label>
+            <label class="nrecipe-filter"><span>제품명</span><input data-filter="product" placeholder="전체"></label>
+            <label class="nrecipe-filter"><span>Rev.</span><input data-filter="revision" placeholder="전체"></label>
+            <label class="nrecipe-filter"><span>상태</span><select data-filter="status"><option value="">전체</option><option value="ACTIVE">사용중</option><option value="OBSOLETE">과거 Rev.</option></select></label>
+            <label class="nrecipe-filter"><span>적용기간</span><div class="nrecipe-date-range"><input data-filter="start" type="date"><span>~</span><input data-filter="end" type="date"></div></label>
           </div>
           <div class="nrecipe-query-actions">
             <button type="button" class="nrecipe-btn nrecipe-refresh">조회</button>
             <button type="button" class="nrecipe-btn nrecipe-clear">조건지우기</button>
           </div>
         </div>
-        <div class="nrecipe-list-head"><span>배합기준 현황</span><span class="nrecipe-count">총 0건</span></div>
+        <div class="nrecipe-list-head"><span>▸ 배합기준 현황</span><span class="nrecipe-count">총 0건</span></div>
         <div class="nrecipe-bulk">
           <button type="button" class="nrecipe-btn" data-bulk-print>선택 인쇄</button>
           <button type="button" class="nrecipe-btn" data-bulk-mail>선택 메일</button>
@@ -135,6 +138,7 @@
     section.querySelector('.nrecipe-refresh').onclick=()=>loadRecipes(1);
     section.querySelector('.nrecipe-clear').onclick=()=>{section.querySelectorAll('[data-filter]').forEach(x=>x.value='');loadRecipes(1);};
     section.querySelector('.nrecipe-new').onclick=()=>openEditor();
+    section.querySelector('.nrecipe-export').onclick=exportRecipeCsv;
     section.querySelectorAll('[data-filter]').forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter')loadRecipes(1);}));
     section.querySelector('.nrecipe-check-all').onchange=e=>{
       section.querySelectorAll('.nrecipe-row-check').forEach(x=>x.checked=e.target.checked);
@@ -166,13 +170,24 @@
     }
   }
 
+  function exportRecipeCsv(){
+    const section=document.getElementById('recipeMaster');
+    const rows=Array.isArray(section?._recipeRows)?section._recipeRows:[];
+    if(!rows.length){toast('내보낼 배합기준이 없습니다.');return;}
+    const csv=[['No.','고객사명','제품명','Rev.','기준 생산량(kg)','적용일','원료수','상태','작성자']];
+    rows.forEach((r,i)=>csv.push([i+1,r.customer_name||'',r.product_name||'',r.revision||'',r.basis_qty||'',String(r.effective_on||'').slice(0,10),r.material_count||0,r.status==='ACTIVE'?'사용중':'과거 Rev.',r.created_by||'']));
+    const text=csv.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='배합기준.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+  }
+
   async function loadRecipes(page=1){
     const section=document.getElementById('recipeMaster'), body=section?.querySelector('.nrecipe-table tbody');
     if(!body)return;
     body.innerHTML='<tr><td colspan="11">조회 중...</td></tr>';
     try{
       const params=new URLSearchParams();
-      ['customer','product','revision','applied'].forEach(k=>{const v=section.querySelector('[data-filter="'+k+'"]')?.value.trim();if(v)params.set(k,v);});
+      ['customer','product','revision','status','start','end'].forEach(k=>{const v=section.querySelector('[data-filter="'+k+'"]')?.value.trim();if(v)params.set(k,v);});
       const rows=await req('/api/qmes-recipes?'+params.toString());
       section._recipeRows=rows;
       const size=10,totalPages=Math.max(1,Math.ceil(rows.length/size));page=Math.min(Math.max(1,page),totalPages);
