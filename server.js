@@ -21,6 +21,7 @@ require('./access-permissions-safe-20260923-v2.js');
 require('./qmes-quality-approval-safe.js');
 require('./qmes-ncr-safe-20261020.js');
 require('./qmes-recipe-safe-20261022.js');
+require('./qmes-chemical-enterprise-safe-20261022.js');
 
 const publicIndex = path.resolve(__dirname, 'public', 'index.html');
 const publicRouter = path.resolve(__dirname, 'public', 'js', 'router.jsx');
