@@ -103,8 +103,8 @@ function fit(){
  const sum=weights.reduce((a,b)=>a+b,0);
  const widths=[86,...weights.map(weight=>(target-86)*weight/sum)];
  columns.forEach((col,index)=>{
-  const width=widths[index]+'px';
-  if(col.style.width!==width)col.style.width=width;
+  // CSS serializes fractional pixels; tolerate rounding to avoid observer loops.
+  if(!col.style.width.endsWith('px')||Math.abs(parseFloat(col.style.width)-widths[index])>.01)col.style.width=widths[index].toFixed(4)+'px';
  });
  const width=target+'px';
  if(table.style.width!==width||table.style.getPropertyPriority('width')!=='important')table.style.setProperty('width',width,'important');
