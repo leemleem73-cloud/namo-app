@@ -22,25 +22,25 @@
   css.textContent=`
     #recipeMaster .page-head{display:none!important}
     #recipeMaster .module-shell{background:#fff;border:1px solid #d2dfed;border-radius:10px;box-shadow:0 8px 24px rgba(24,51,83,.075);overflow:hidden}
-    #recipeMaster .nrecipe-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:14px 22px;background:#fff;border-bottom:1px solid #dbe5ef}
+    #recipeMaster .nrecipe-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;width:100%;min-height:64px;padding:14px 22px;background:#fff;border-bottom:1px solid #dbe5ef;box-sizing:border-box}
     #recipeMaster .nrecipe-title{display:flex;align-items:center;gap:10px;color:#173b61;font-size:18px;font-weight:800;letter-spacing:-.4px}
     #recipeMaster .nrecipe-title:before{content:'';width:4px;height:24px;border-radius:3px;background:#1974bd}
     #recipeMaster .nrecipe-head-actions{display:flex;gap:6px}
-    #recipeMaster .nrecipe-query{padding:14px 18px 12px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
+    #recipeMaster .nrecipe-query{padding:20px 22px 18px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
     #recipeMaster .nrecipe-grid-filter{display:grid;grid-template-columns:1.15fr 1.15fr .85fr 1fr 1.35fr;gap:12px;align-items:center}
     #recipeMaster .nrecipe-filter{display:flex;align-items:center;gap:7px;min-width:0;color:#334e6b;font-size:12px;font-weight:700}
     #recipeMaster .nrecipe-filter span{flex:0 0 auto;text-align:left;white-space:nowrap}
-    #recipeMaster .nrecipe-filter input,#recipeMaster .nrecipe-filter select{height:34px;width:100%;min-width:0;padding:0 10px;border:1px solid #c7d6e5;border-radius:5px;background:#fff;color:#243e5d;font-size:12px}
+    #recipeMaster .nrecipe-filter input,#recipeMaster .nrecipe-filter select{height:38px;width:100%;min-width:0;padding:0 11px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#243e5d;font-size:13px}
     #recipeMaster .nrecipe-date-range{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center}
-    #recipeMaster .nrecipe-query-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
-    #recipeMaster .nrecipe-btn,.nrecipe-modal button{height:38px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#294763;font-weight:700;font-size:12.5px;padding:0 15px;cursor:pointer}
-    #recipeMaster .nrecipe-btn.primary,.nrecipe-modal .primary{background:#166fbb;color:#fff;border-color:#166fbb}
-    #recipeMaster .nrecipe-list-head{display:flex;align-items:center;justify-content:space-between;padding:17px 22px 14px;color:#1e3f64;font-size:13.5px;font-weight:800}
+    #recipeMaster .nrecipe-query-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    #recipeMaster .nrecipe-btn,.nrecipe-modal button{height:38px;border:1px solid #c7d6e5;border-radius:7px;background:#fff;color:#294763;font-weight:700;font-size:12.5px;padding:8px 15px;cursor:pointer}
+    #recipeMaster .nrecipe-btn.primary,.nrecipe-modal .primary{background:#166fbb;color:#fff;border-color:#166fbb;box-shadow:0 2px 7px rgba(22,111,187,.16)}
+    #recipeMaster .nrecipe-list-head{display:flex;align-items:center;justify-content:space-between;margin:0 16px;padding:17px 12px 14px;color:#1e3f64;font-size:13.5px;font-weight:800}
     #recipeMaster .nrecipe-count{font-size:12px;color:#607790;font-weight:700}
     #recipeMaster .nrecipe-bulk{display:none;align-items:center;gap:7px;padding:0 22px 12px}
     #recipeMaster .nrecipe-bulk.visible{display:flex}
     #recipeMaster .nrecipe-bulk .nrecipe-btn{height:32px;padding:0 11px;font-size:11.5px}
-    #recipeMaster .nrecipe-table-wrap{margin:0 16px 12px;border:1px solid #d5dce5;overflow-x:auto}
+    #recipeMaster .nrecipe-table-wrap{margin:0 16px 16px;border:1px solid #d5dce5;overflow-x:auto;box-sizing:border-box;max-width:calc(100% - 32px)}
     #recipeMaster .nrecipe-table{width:100%;min-width:1250px;border-collapse:separate;border-spacing:0;table-layout:fixed;background:#fff}
     #recipeMaster .nrecipe-table th{height:34px;padding:6px 10px;background:#e8f0f8;color:#244260;font-size:12px;font-weight:600;text-align:center;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;white-space:nowrap}
     #recipeMaster .nrecipe-table td{height:46px;padding:8px 10px;background:#fff;color:#344054;font-size:12px;text-align:center;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -105,8 +105,8 @@
             <label class="nrecipe-filter"><span>적용기간</span><div class="nrecipe-date-range"><input data-filter="start" type="date"><span>~</span><input data-filter="end" type="date"></div></label>
           </div>
           <div class="nrecipe-query-actions">
+            <button type="button" class="nrecipe-btn nrecipe-clear">조건 지우기</button>
             <button type="button" class="nrecipe-btn nrecipe-refresh">조회</button>
-            <button type="button" class="nrecipe-btn nrecipe-clear">조건지우기</button>
           </div>
         </div>
         <div class="nrecipe-list-head"><span>▸ 배합기준 현황</span><span class="nrecipe-count">총 0건</span></div>
@@ -118,7 +118,7 @@
         <div class="nrecipe-table-wrap">
           <table class="nrecipe-table">
             <thead><tr>
-              <th style="width:42px"><input type="checkbox" class="nrecipe-check nrecipe-check-all" aria-label="전체 선택"></th>
+              <th style="width:42px"><input type="checkbox" class="nrecipe-check nrecipe-check-all" aria-label="현재 페이지 전체 선택"></th>
               <th style="width:48px">No.</th>
               <th style="width:170px">고객사명</th>
               <th style="width:210px">제품명</th>
