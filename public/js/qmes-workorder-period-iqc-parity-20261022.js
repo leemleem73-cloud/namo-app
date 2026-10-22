@@ -129,9 +129,13 @@ function alignWorkOrderFilterRow(){
   const panel=root()?.querySelector('#namo-work-inquiry');
   const grid=panel?.querySelector('.nwi-grid');
   const period=panel?.querySelector('.nwi-period-label');
+  const lot=panel?.querySelector('[data-filter="2"]')?.closest('label');
   const workNo=panel?.querySelector('[data-filter="6"]')?.closest('label');
-  if(!grid||!period||!workNo)return false;
-  if(period.nextElementSibling!==workNo)period.insertAdjacentElement('afterend',workNo);
+  if(!grid||!period||!lot||!workNo)return false;
+  // Visible order: 고객사 → 제품명 → 작업지시번호 → 진행상태 → 작업기간 → 생산 LOT.
+  const status=panel?.querySelector('[data-filter="3"]')?.closest('label');
+  if(status&&workNo.nextElementSibling!==status)status.insertAdjacentElement('beforebegin',workNo);
+  if(period.nextElementSibling!==lot)period.insertAdjacentElement('afterend',lot);
   grid.classList.add('nwi-single-row-six');
   return true;
 }
