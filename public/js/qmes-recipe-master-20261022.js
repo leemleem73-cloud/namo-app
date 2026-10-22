@@ -127,10 +127,9 @@
               <th style="width:105px">적용일</th>
               <th style="width:70px">원료수</th>
               <th style="width:85px">상태</th>
-              <th style="width:120px">작성자</th>
               <th style="width:200px">비고</th>
             </tr></thead>
-            <tbody><tr><td colspan="11">배합기준을 불러오는 중입니다.</td></tr></tbody>
+            <tbody><tr><td colspan="10">배합기준을 불러오는 중입니다.</td></tr></tbody>
           </table>
         </div>
         <div class="nrecipe-pager"></div>
@@ -174,8 +173,8 @@
     const section=document.getElementById('recipeMaster');
     const rows=Array.isArray(section?._recipeRows)?section._recipeRows:[];
     if(!rows.length){toast('내보낼 배합기준이 없습니다.');return;}
-    const csv=[['No.','고객사명','제품명','Rev.','기준 생산량(kg)','적용일','원료수','상태','작성자']];
-    rows.forEach((r,i)=>csv.push([i+1,r.customer_name||'',r.product_name||'',r.revision||'',r.basis_qty||'',String(r.effective_on||'').slice(0,10),r.material_count||0,r.status==='ACTIVE'?'사용중':'과거 Rev.',r.created_by||'']));
+    const csv=[['No.','고객사명','제품명','Rev.','기준 생산량(kg)','적용일','원료수','상태']];
+    rows.forEach((r,i)=>csv.push([i+1,r.customer_name||'',r.product_name||'',r.revision||'',r.basis_qty||'',String(r.effective_on||'').slice(0,10),r.material_count||0,r.status==='ACTIVE'?'사용중':'과거 Rev.']));
     const text=csv.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='배합기준.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
@@ -184,7 +183,7 @@
   async function loadRecipes(page=1){
     const section=document.getElementById('recipeMaster'), body=section?.querySelector('.nrecipe-table tbody');
     if(!body)return;
-    body.innerHTML='<tr><td colspan="11">조회 중...</td></tr>';
+    body.innerHTML='<tr><td colspan="10">조회 중...</td></tr>';
     try{
       const params=new URLSearchParams();
       ['customer','product','revision','status','start','end'].forEach(k=>{const v=section.querySelector('[data-filter="'+k+'"]')?.value.trim();if(v)params.set(k,v);});
@@ -194,7 +193,7 @@
       section._recipePage=page;
       const list=rows.slice((page-1)*size,page*size);
       section.querySelector('.nrecipe-count').textContent='총 '+rows.length+'건';
-      if(!list.length){body.innerHTML='<tr><td colspan="11">등록된 배합기준이 없습니다.</td></tr>';}
+      if(!list.length){body.innerHTML='<tr><td colspan="10">등록된 배합기준이 없습니다.</td></tr>';}
       else body.innerHTML=list.map((r,i)=>`<tr data-id="${r.id}">
         <td><input type="checkbox" class="nrecipe-check nrecipe-row-check" data-id="${r.id}"></td>
         <td>${(page-1)*size+i+1}</td>
@@ -205,7 +204,6 @@
         <td>${esc(String(r.effective_on||'').slice(0,10)||'-')}</td>
         <td>${r.material_count||0}</td>
         <td><span class="${r.status==='ACTIVE'?'nrecipe-active':'nrecipe-old'}">${r.status==='ACTIVE'?'사용중':'과거 Rev.'}</span></td>
-        <td>${esc(r.created_by||'-')}</td>
         <td><div class="nrecipe-row-actions"><button data-row-print="${r.id}">인쇄</button><button data-row-edit="${r.id}">수정</button><button data-row-delete="${r.id}">삭제</button></div></td>
       </tr>`).join('');
       body.querySelectorAll('.nrecipe-link').forEach(b=>b.onclick=()=>openDetail(b.dataset.id));
@@ -216,7 +214,7 @@
       const pager=section.querySelector('.nrecipe-pager');pager.innerHTML='';
       for(let p=1;p<=totalPages;p++){const b=document.createElement('button');b.className='nrecipe-page'+(p===page?' active':'');b.textContent=p;b.onclick=()=>loadRecipes(p);pager.appendChild(b);}
       section.querySelector('.nrecipe-check-all').checked=false;updateSelection(section);
-    }catch(e){body.innerHTML='<tr><td colspan="11">'+esc(e.message)+'</td></tr>';}
+    }catch(e){body.innerHTML='<tr><td colspan="10">'+esc(e.message)+'</td></tr>';}
   }
 
   const materialRow=(m={})=>`<tr>
