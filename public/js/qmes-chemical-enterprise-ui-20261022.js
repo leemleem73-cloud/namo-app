@@ -46,7 +46,7 @@
     #spcTrend .iqc-register-header .btn,#spcTrend .iqc-work-frame .iqc-query-actions .ip-actions .btn{height:38px!important;padding:8px 15px!important;border-radius:7px!important;font-size:12.5px!important;font-weight:700!important;line-height:20px!important}
     #spcTrend .iqc-work-frame .primary{background:#166fbb!important;color:#fff!important;border-color:#166fbb!important;box-shadow:0 2px 7px rgba(22,111,187,.16)!important}
     #spcTrend .iqc-work-frame .ip-toolbar{display:block!important;padding:20px 22px 18px!important;background:#f3f7fb!important;border-bottom:1px solid #dae5ef!important}
-    #spcTrend .iqc-work-frame .ip-filter-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px 20px!important;width:100%!important}
+    #spcTrend .iqc-work-frame .ip-filter-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:15px 20px!important;width:100%!important}
     #spcTrend .iqc-work-frame .ip-filter{display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;min-width:0!important}
     #spcTrend .iqc-work-frame .ip-filter>span{flex:0 0 78px!important;min-width:78px!important;text-align:right!important;color:#334e6b!important;font-size:12.5px!important;font-weight:700!important;white-space:nowrap!important}
     #spcTrend .iqc-work-frame .ip-filter .input{height:38px!important;min-width:0!important;width:100%!important;padding:0 11px!important;font-size:13px!important;color:#243e5d!important;border:1px solid #c7d6e5!important;border-radius:7px!important;background:#fff!important;font-weight:400!important;box-sizing:border-box!important}
@@ -63,7 +63,7 @@
     #spcTrend .iqc-work-frame .ip-footnote{display:flex!important;align-items:center!important;justify-content:center!important;padding:10px 16px 20px!important;background:#fff!important;border:0!important;position:relative!important}
     #spcTrend .iqc-work-frame .ip-count{position:absolute!important;right:16px!important;color:#8090a1!important;font-size:10px!important}
     #spcTrend .spc-toolbar{display:block;padding:15px 16px}
-    #spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:center!important}
+    #spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center!important}
     #spcTrend .spc-iqc-period{min-width:0!important}
     #spcTrend .spc-iqc-period .iqc-date-range{width:100%}
     #spcTrend .spc-iqc-period .iqc-date-range .input{min-width:0}
@@ -281,8 +281,6 @@
       const productFilter=root.dataset.spcFilterProduct||'';
       const collapsed=root.dataset.spcCollapsed==='1';
       const base=all.filter(x=>x.item===selected)
-        .filter(x=>!startDate||x.date>=startDate)
-        .filter(x=>!endDate||x.date<=endDate)
         .filter(x=>!customerFilter||String(x.customer||'').toLowerCase().includes(customerFilter.toLowerCase()))
         .filter(x=>!productFilter||String(x.product||'').toLowerCase().includes(productFilter.toLowerCase()));
 
@@ -303,7 +301,7 @@
       const badgeClass=latestJudge==='합격'?'ok':latestJudge==='불합격'?'bad':'wait';
 
       const filterHtml='<div class="ip-filter-row spc-iqc-filter-row">'+
-        '<div class="ip-filter spc-iqc-period"><span>검사기간</span><div class="iqc-date-range"><input class="input spc-start" type="date" value="'+esc(startDate)+'"><span>~</span><input class="input spc-end" type="date" value="'+esc(endDate)+'"></div></div>'+
+
         '<label class="ip-filter"><span>고객사</span><select class="input spc-customer"><option value="">전체</option>'+customers.map(x=>'<option value="'+esc(x)+'" '+(x===customerFilter?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
         '<label class="ip-filter"><span>제품명</span><input class="input spc-product-filter" value="'+esc(productFilter)+'" placeholder="전체"></label>'+
         '<label class="ip-filter"><span>검사항목</span><select class="input qce-spc-item">'+(items.length?items:[selected]).map(x=>'<option value="'+esc(x)+'" '+(x===selected?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
@@ -338,8 +336,6 @@
       '</div></div>';
 
       const applyFilters=()=>{
-        root.dataset.spcStart=root.querySelector('.spc-start')?.value||'';
-        root.dataset.spcEnd=root.querySelector('.spc-end')?.value||'';
         root.dataset.spcCustomer=root.querySelector('.spc-customer')?.value||'';
         root.dataset.spcFilterProduct=root.querySelector('.spc-product-filter')?.value.trim()||'';
         root.dataset.spcItem=root.querySelector('.qce-spc-item')?.value||selected;
@@ -349,8 +345,6 @@
       };
       root.querySelector('.qce-spc-item')?.addEventListener('change',()=>{delete root.dataset.spcTrendProduct;applyFilters();});
       root.querySelector('.spc-customer')?.addEventListener('change',applyFilters);
-      root.querySelector('.spc-start')?.addEventListener('change',applyFilters);
-      root.querySelector('.spc-end')?.addEventListener('change',applyFilters);
       root.querySelector('.spc-product-filter')?.addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters();});
       root.querySelectorAll('.spc-page-btn').forEach(b=>b.addEventListener('click',()=>{if(b.disabled)return;root.dataset.spcPage=b.dataset.spcPage||'1';renderSpc();}));
       root.querySelectorAll('.spc-product-link').forEach(b=>b.addEventListener('click',()=>{root.dataset.spcTrendProduct=decodeURIComponent(b.dataset.spcProduct||'');renderSpc();requestAnimationFrame(()=>root.querySelector('.spc-trend-card')?.scrollIntoView({block:'nearest'}));}));
