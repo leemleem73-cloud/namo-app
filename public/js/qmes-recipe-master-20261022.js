@@ -52,9 +52,11 @@
   `;
   document.head.appendChild(css);
 
-  function ensureRecipePage(){
+  function ensureRecipePage(force=false){
     const section=document.getElementById('recipeMaster');
-    if(!section||section.dataset.recipeBuilt==='1') return;
+    if(!section) return;
+    const contaminated=Boolean(section.querySelector('.module-toolbar,.module-body')) || /문서관리|문서 기준서/.test(section.querySelector('.page-head h1')?.textContent||'');
+    if(section.dataset.recipeBuilt==='1'&&!force&&!contaminated) return;
     section.dataset.recipeBuilt='1';
     section.innerHTML=`
       <div class="page-head"><div><h1>배합기준 (Recipe)</h1><p>제품별 표준 배합비, 투입순서, 공정조건 및 Rev. 이력을 관리합니다.</p></div><div class="date-badge">QMES</div></div>
@@ -222,10 +224,29 @@
     if(current)badge.textContent='Recipe '+current+' 적용';
   }
 
+  function forceRecipeOnly(){
+    const section=document.getElementById('recipeMaster');
+    const standard=document.getElementById('standard');
+    if(standard) standard.classList.remove('active');
+    ensureRecipePage(true);
+    if(section) section.classList.add('active');
+  }
+
+  document.addEventListener('click',e=>{
+    if(e.target.closest('.menu[data-page="recipeMaster"]')){
+      requestAnimationFrame(forceRecipeOnly);
+    }
+  },true);
+
   const observer=new MutationObserver(()=>{
     ensureRecipePage();
     ensureWorkRecipe();
+    const section=document.getElementById('recipeMaster');
+    if(section?.classList.contains('active')){
+      const bad=section.querySelector('.module-toolbar,.module-body') || /문서관리|문서 기준서/.test(section.querySelector('.page-head h1')?.textContent||'');
+      if(bad) ensureRecipePage(true);
+    }
   });
-  function start(){ensureRecipePage();ensureWorkRecipe();observer.observe(document.body,{childList:true,subtree:true});}
+  function start(){ensureRecipePage(true);ensureWorkRecipe();observer.observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
