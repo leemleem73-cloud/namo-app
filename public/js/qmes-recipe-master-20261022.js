@@ -20,22 +20,17 @@
   const css=document.createElement('style');
   css.id='namo-recipe-ui-20261022';
   css.textContent=`
-    #standard .nrecipe-tabs{display:flex;gap:6px;padding:10px 14px 0;background:#fff}
-    #standard .nrecipe-tab{height:30px;padding:0 13px;border:1px solid #cad7e4;background:#fff;color:#405a74;border-radius:4px;font:700 11px Pretendard,"Noto Sans KR",sans-serif;cursor:pointer}
-    #standard .nrecipe-tab.active{background:#e8f0f8;color:#244260;border-color:#b9ccdf}
-    #standard .nrecipe-shell{display:none;background:#fff}
-    #standard[data-recipe-mode="1"] .module-toolbar,#standard[data-recipe-mode="1"] .module-body{display:none!important}
-    #standard[data-recipe-mode="1"] .nrecipe-shell{display:block}
-    #standard .nrecipe-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
-    #standard .nrecipe-tools input{height:30px;min-width:280px;border:1px solid #c7d6e5;border-radius:4px;padding:0 9px;font-size:12px}
-    #standard .nrecipe-tools button,.nrecipe-modal button,#work .nrecipe-apply{height:30px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#294763;font-weight:700;font-size:11px;padding:0 11px;cursor:pointer}
-    #standard .nrecipe-tools .primary,.nrecipe-modal .primary,#work .nrecipe-apply{background:#2f73d9;color:#fff;border-color:#2f73d9}
-    #standard .nrecipe-table{width:100%;border-collapse:collapse;table-layout:fixed}
-    #standard .nrecipe-table th{height:38px;background:#e8f0f8;color:#244260;font-size:11px;border-bottom:1px solid #cbd8e5}
-    #standard .nrecipe-table td{height:44px;padding:6px 8px;text-align:center;font-size:11px;color:#365574;border-bottom:1px solid #edf2f7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #standard .nrecipe-link{border:0;background:none;color:#1673c7;text-decoration:underline;font-weight:700;cursor:pointer}
-    #standard .nrecipe-active{display:inline-block;padding:3px 8px;border-radius:12px;background:#e9f7ef;color:#25865e;font-weight:700}
-    #standard .nrecipe-old{display:inline-block;padding:3px 8px;border-radius:12px;background:#f0f3f7;color:#718094;font-weight:700}
+    #recipeMaster .nrecipe-shell{display:block;background:#fff}
+    #recipeMaster .nrecipe-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:#f3f7fb;border-bottom:1px solid #dae5ef}
+    #recipeMaster .nrecipe-tools input{height:30px;min-width:280px;border:1px solid #c7d6e5;border-radius:4px;padding:0 9px;font-size:12px}
+    #recipeMaster .nrecipe-tools button,.nrecipe-modal button,#work .nrecipe-apply{height:30px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#294763;font-weight:700;font-size:11px;padding:0 11px;cursor:pointer}
+    #recipeMaster .nrecipe-tools .primary,.nrecipe-modal .primary,#work .nrecipe-apply{background:#2f73d9;color:#fff;border-color:#2f73d9}
+    #recipeMaster .nrecipe-table{width:100%;border-collapse:collapse;table-layout:fixed}
+    #recipeMaster .nrecipe-table th{height:38px;background:#e8f0f8;color:#244260;font-size:11px;border-bottom:1px solid #cbd8e5}
+    #recipeMaster .nrecipe-table td{height:44px;padding:6px 8px;text-align:center;font-size:11px;color:#365574;border-bottom:1px solid #edf2f7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #recipeMaster .nrecipe-link{border:0;background:none;color:#1673c7;text-decoration:underline;font-weight:700;cursor:pointer}
+    #recipeMaster .nrecipe-active{display:inline-block;padding:3px 8px;border-radius:12px;background:#e9f7ef;color:#25865e;font-weight:700}
+    #recipeMaster .nrecipe-old{display:inline-block;padding:3px 8px;border-radius:12px;background:#f0f3f7;color:#718094;font-weight:700}
     .nrecipe-backdrop{position:fixed;inset:0;z-index:30000;background:rgba(16,33,52,.35);display:flex;align-items:center;justify-content:center;padding:30px}
     .nrecipe-modal{width:min(1080px,96vw);max-height:90vh;overflow:auto;background:#fff;border:1px solid #cbd8e5;box-shadow:0 18px 55px rgba(18,37,58,.25);border-radius:6px}
     .nrecipe-modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#e8f0f8;border-bottom:1px solid #cbd8e5;color:#244260}
@@ -57,32 +52,25 @@
   `;
   document.head.appendChild(css);
 
-  function ensureTabs(){
-    const section=document.getElementById('standard');
-    const shell=section?.querySelector('.module-shell');
-    if(!section||!shell||section.querySelector('.nrecipe-tabs')) return;
-    const tabs=document.createElement('div');
-    tabs.className='nrecipe-tabs';
-    tabs.innerHTML='<button type="button" class="nrecipe-tab active" data-mode="docs">문서 기준서</button><button type="button" class="nrecipe-tab" data-mode="recipe">배합기준 (Recipe)</button>';
-    shell.insertBefore(tabs,shell.firstChild);
-    const recipe=document.createElement('div');
-    recipe.className='nrecipe-shell';
-    recipe.innerHTML=`
-      <div class="nrecipe-tools">
-        <input type="search" class="nrecipe-search" placeholder="제품명 / 제품코드 / Rev. 검색">
-        <div><button type="button" class="nrecipe-refresh">조회</button> <button type="button" class="primary nrecipe-new">+ 배합기준 등록</button></div>
-      </div>
-      <div style="overflow:auto"><table class="nrecipe-table"><thead><tr><th style="width:52px">No.</th><th>제품코드</th><th>제품명</th><th style="width:90px">Rev.</th><th style="width:110px">기준 생산량</th><th style="width:100px">적용일</th><th style="width:90px">원료수</th><th style="width:90px">상태</th><th style="width:110px">작성자</th></tr></thead><tbody><tr><td colspan="9">배합기준을 불러오는 중입니다.</td></tr></tbody></table></div>`;
-    shell.appendChild(recipe);
-    tabs.addEventListener('click',e=>{
-      const b=e.target.closest('.nrecipe-tab'); if(!b)return;
-      tabs.querySelectorAll('.nrecipe-tab').forEach(x=>x.classList.toggle('active',x===b));
-      section.dataset.recipeMode=b.dataset.mode==='recipe'?'1':'0';
-      if(b.dataset.mode==='recipe') loadRecipes();
-    });
-    recipe.querySelector('.nrecipe-refresh').onclick=loadRecipes;
-    recipe.querySelector('.nrecipe-search').addEventListener('keydown',e=>{if(e.key==='Enter')loadRecipes();});
-    recipe.querySelector('.nrecipe-new').onclick=()=>openEditor();
+  function ensureRecipePage(){
+    const section=document.getElementById('recipeMaster');
+    if(!section||section.dataset.recipeBuilt==='1') return;
+    section.dataset.recipeBuilt='1';
+    section.innerHTML=`
+      <div class="page-head"><div><h1>배합기준 (Recipe)</h1><p>제품별 표준 배합비, 투입순서, 공정조건 및 Rev. 이력을 관리합니다.</p></div><div class="date-badge">QMES</div></div>
+      <div class="module-shell">
+        <div class="nrecipe-shell">
+          <div class="nrecipe-tools">
+            <input type="search" class="nrecipe-search" placeholder="제품명 / 제품코드 / Rev. 검색">
+            <div><button type="button" class="nrecipe-refresh">조회</button> <button type="button" class="primary nrecipe-new">+ 배합기준 등록</button></div>
+          </div>
+          <div style="overflow:auto"><table class="nrecipe-table"><thead><tr><th style="width:52px">No.</th><th>제품코드</th><th>제품명</th><th style="width:90px">Rev.</th><th style="width:110px">기준 생산량</th><th style="width:100px">적용일</th><th style="width:90px">원료수</th><th style="width:90px">상태</th><th style="width:110px">작성자</th></tr></thead><tbody><tr><td colspan="9">배합기준을 불러오는 중입니다.</td></tr></tbody></table></div>
+        </div>
+      </div>`;
+    section.querySelector('.nrecipe-refresh').onclick=loadRecipes;
+    section.querySelector('.nrecipe-search').addEventListener('keydown',e=>{if(e.key==='Enter')loadRecipes();});
+    section.querySelector('.nrecipe-new').onclick=()=>openEditor();
+    loadRecipes();
   }
 
   async function loadRecipes(){
@@ -235,9 +223,9 @@
   }
 
   const observer=new MutationObserver(()=>{
-    ensureTabs();
+    ensureRecipePage();
     ensureWorkRecipe();
   });
-  function start(){ensureTabs();ensureWorkRecipe();observer.observe(document.body,{childList:true,subtree:true});}
+  function start(){ensureRecipePage();ensureWorkRecipe();observer.observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
