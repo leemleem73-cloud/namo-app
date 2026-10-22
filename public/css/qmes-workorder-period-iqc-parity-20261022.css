@@ -160,3 +160,41 @@
   border-radius:4px!important;
   margin:0!important;
 }
+
+/* 2026-10-22 compact query widths: reduce each control and keep 진행상태 label inside its cell. */
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
+  display:grid!important;
+  grid-template-columns:
+    minmax(185px,220px)
+    minmax(225px,255px)
+    minmax(185px,220px)
+    minmax(185px,220px)
+    minmax(200px,225px)
+    minmax(215px,245px)!important;
+  justify-content:start!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  width:100%!important;
+  overflow:visible!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr)!important;
+  align-items:center!important;
+  column-gap:7px!important;
+  min-width:0!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5)>span{
+  min-width:48px!important;
+  text-align:left!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
+  width:100%!important;
+  min-width:0!important;
+}
