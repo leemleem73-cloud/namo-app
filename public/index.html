@@ -3303,6 +3303,15 @@ function wireIncomingColumnResize(section){
       const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
       for(let j=1;j<effective.length;j++)effective[j]+=free*effective[j]/total;
     }
+    // Fit the rendered columns to the live viewport after the sidebar changes.
+    // Keep the saved widths as preferences, rather than expanding the table.
+    const fitWidth=wrap.clientWidth?Math.max(86,wrap.clientWidth-1):0;
+    const totalWidth=effective.reduce((sum,width)=>sum+width,0);
+    if(fitWidth&&totalWidth>fitWidth){
+      const remaining=totalWidth-effective[0];
+      const scale=(fitWidth-effective[0])/remaining;
+      for(let j=1;j<effective.length;j++)effective[j]*=scale;
+    }
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -3310,7 +3319,7 @@ function wireIncomingColumnResize(section){
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
+    table.style.setProperty('width',(fitWidth||effective.reduce((sum,width)=>sum+width,0))+'px','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
   }
