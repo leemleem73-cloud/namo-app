@@ -74,7 +74,7 @@
   }
 
   async function loadRecipes(){
-    const section=document.getElementById('standard'), body=section?.querySelector('.nrecipe-table tbody');
+    const section=document.getElementById('recipeMaster'), body=section?.querySelector('.nrecipe-table tbody');
     if(!body)return;
     body.innerHTML='<tr><td colspan="9">조회 중...</td></tr>';
     try{
