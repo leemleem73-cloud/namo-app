@@ -124,4 +124,21 @@ function ensureInitial(){if(!syncTriggerValue())setTimeout(syncTriggerValue,120)
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureInitial,{once:true});else ensureInitial();
 [200,600,1200,2500].forEach(ms=>setTimeout(syncTriggerValue,ms));
 
+
+function alignWorkOrderFilterRow(){
+  const panel=root()?.querySelector('#namo-work-inquiry');
+  const grid=panel?.querySelector('.nwi-grid');
+  const period=panel?.querySelector('.nwi-period-label');
+  const workNo=panel?.querySelector('[data-filter="6"]')?.closest('label');
+  if(!grid||!period||!workNo)return false;
+  if(period.nextElementSibling!==workNo)period.insertAdjacentElement('afterend',workNo);
+  grid.classList.add('nwi-single-row-six');
+  return true;
+}
+function ensureWorkOrderFilterRow(){
+  if(!alignWorkOrderFilterRow())setTimeout(alignWorkOrderFilterRow,120);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureWorkOrderFilterRow,{once:true});else ensureWorkOrderFilterRow();
+[200,600,1200,2500].forEach(ms=>setTimeout(alignWorkOrderFilterRow,ms));
+
 })();
