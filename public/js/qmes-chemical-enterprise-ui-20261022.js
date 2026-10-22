@@ -323,17 +323,17 @@
           '<div class="qce-kpis spc-kpis"><div class="qce-kpi"><b>검사일수</b><strong>'+daily.length+'</strong></div><div class="qce-kpi"><b>측정수</b><strong>'+st.n+'</strong></div><div class="qce-kpi"><b>평균</b><strong>'+fmt(st.avg)+'</strong><small>최소 '+fmt(st.min)+' / 최대 '+fmt(st.max)+'</small></div><div class="qce-kpi"><b>Cp / Cpk</b><strong>'+(st.cp==null?'-':st.cp.toFixed(2))+' / '+(st.cpk==null?'-':st.cpk.toFixed(2))+'</strong></div></div>'+
           '<div class="qce-chart"><div class="spc-chart-legend"><span><i class="ok"></i>합격</span><span><i class="bad"></i>불합격</span><span>점선: 규격한계</span></div><div class="qce-chart-wrap">'+trendSvg(daily,selected)+'</div></div>'+
           '<div class="spc-detail-title">날짜별 상세</div><div class="ip-table-wrap spc-detail-wrap"><table class="ip-table"><thead><tr><th>No.</th><th>검사일자</th><th>완제품 LOT</th><th>측정수</th><th>평균값</th><th>규격</th><th>판정</th></tr></thead><tbody>'+daily.slice().reverse().map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.lot||'-')+'</td><td>'+r.count+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join('')+'</tbody></table></div></div>'
-        :'<div class="spc-trend-placeholder"><div class="spc-placeholder-icon">↗</div><b>제품명을 클릭해 주세요.</b><span>해당 제품의 출하검사 날짜별 Trend와 합격/불합격 판정이 표시됩니다.</span></div>';
+        :'';
 
       root.innerHTML='<div class="inspection-premium iqc-work-frame"><div class="ip-panel">'+
         '<div class="iqc-register-header"><strong>SPC / Trend 조회</strong><div class="iqc-header-tools"><button class="btn export-btn spc-export" type="button">엑셀 내보내기</button></div></div>'+
         '<div class="ip-toolbar '+(collapsed?'spc-collapsed':'')+'">'+
           '<div class="spc-filter-area" '+(collapsed?'hidden':'')+'>'+filterHtml+'</div>'+
-          '<div class="iqc-query-actions"><span class="iqc-query-count" aria-live="polite">조회 '+overview.length+'건</span><div class="ip-actions"><button class="btn spc-clear" type="button">조건 지우기</button><button class="btn primary qce-spc-refresh" type="button" aria-label="조회">조회</button><button class="btn spc-query-toggle" type="button" aria-label="'+(collapsed?'조회조건 펼치기':'조회조건 접기')+'">'+(collapsed?'⌄':'⌃')+'</button></div></div>'+
+
         '</div>'+
-        '<div class="iqc-list-head"><span>▸ 출하검사 날짜별 현황</span><span class="iqc-list-total">총 '+overview.length+'건</span></div>'+
+
         '<div class="ip-table-wrap"><table class="ip-table spc-overview-table"><thead><tr><th>No.</th><th>검사일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>'+esc(selected)+' 평균</th><th>규격</th><th>판정</th></tr></thead><tbody>'+overviewBody+'</tbody></table></div>'+
-        '<div class="ip-footnote"><div class="ip-pagination spc-pagination" aria-label="SPC 페이지">'+pager+'</div><span class="ip-count">총 '+overview.length+'건</span></div>'+
+        '<div class="ip-footnote"><div class="ip-pagination spc-pagination" aria-label="SPC 페이지">'+pager+'</div></div>'+
         trendPanel+
       '</div></div>';
 
@@ -347,11 +347,11 @@
         if(root.dataset.spcTrendProduct && !overview.some(x=>x.product===root.dataset.spcTrendProduct))delete root.dataset.spcTrendProduct;
         renderSpc();
       };
-      root.querySelector('.qce-spc-refresh')?.addEventListener('click',applyFilters);
       root.querySelector('.qce-spc-item')?.addEventListener('change',()=>{delete root.dataset.spcTrendProduct;applyFilters();});
+      root.querySelector('.spc-customer')?.addEventListener('change',applyFilters);
+      root.querySelector('.spc-start')?.addEventListener('change',applyFilters);
+      root.querySelector('.spc-end')?.addEventListener('change',applyFilters);
       root.querySelector('.spc-product-filter')?.addEventListener('keydown',e=>{if(e.key==='Enter')applyFilters();});
-      root.querySelector('.spc-clear')?.addEventListener('click',()=>{delete root.dataset.spcStart;delete root.dataset.spcEnd;delete root.dataset.spcCustomer;delete root.dataset.spcFilterProduct;delete root.dataset.spcTrendProduct;root.dataset.spcPage='1';renderSpc();});
-      root.querySelector('.spc-query-toggle')?.addEventListener('click',()=>{root.dataset.spcCollapsed=collapsed?'0':'1';renderSpc();});
       root.querySelectorAll('.spc-page-btn').forEach(b=>b.addEventListener('click',()=>{if(b.disabled)return;root.dataset.spcPage=b.dataset.spcPage||'1';renderSpc();}));
       root.querySelectorAll('.spc-product-link').forEach(b=>b.addEventListener('click',()=>{root.dataset.spcTrendProduct=decodeURIComponent(b.dataset.spcProduct||'');renderSpc();requestAnimationFrame(()=>root.querySelector('.spc-trend-card')?.scrollIntoView({block:'nearest'}));}));
       root.querySelector('.spc-export')?.addEventListener('click',()=>{
