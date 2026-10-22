@@ -148,6 +148,7 @@
     @media(max-width:900px){.qce-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.qce-form{grid-template-columns:1fr}}
 
     /* iqc-visual-parity-20261023: shared IQC typography and table palette. */
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-page{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard),html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) :is(button,input,select,textarea),.qce-modal,.qce-modal :is(button,input,select,textarea){font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list){border-collapse:separate!important;border-spacing:0!important;background:#fff!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) thead th{height:34px!important;box-sizing:border-box!important;padding:6px 12px!important;background:#e8f0f8!important;color:#244260!important;font-size:12px!important;font-weight:600!important;line-height:1.4!important;border:0!important;border-right:1px solid #cbd8e5!important;border-bottom:1px solid #cbd8e5!important}
