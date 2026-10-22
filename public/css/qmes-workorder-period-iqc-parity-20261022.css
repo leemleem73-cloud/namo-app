@@ -241,3 +241,16 @@
   width:92%!important;
   justify-self:start!important;
 }
+
+/* 2026-10-22 tighten only 진행상태 control width. */
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5){
+  grid-template-columns:max-content minmax(0,1fr)!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5)>span{
+  min-width:48px!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5) select{
+  width:78%!important;
+  max-width:150px!important;
+  justify-self:start!important;
+}
