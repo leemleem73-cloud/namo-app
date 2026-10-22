@@ -165,18 +165,19 @@
     .qce-modal .qce-field label{font-size:12px!important;font-weight:600!important;color:#244260!important;background:#f3f7fb!important}
     .qce-modal .qce-field :is(input,select,textarea){font-size:12px!important;font-weight:400!important;color:#344054!important;border-color:#c7d6e5!important}
 
-    /* iqc-grid-fit-20261023: content-aware columns and a single grid line. */
+    /* iqc-grid-fit-20261023-v2: content-aware columns and a single grid line. */
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list){width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;border:1px solid #d5dce5!important;box-shadow:none!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) :is(th,td){box-sizing:border-box!important;min-width:0!important;padding-left:8px!important;padding-right:8px!important;box-shadow:none!important;outline:0!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) thead th{white-space:normal!important;overflow-wrap:anywhere!important;border:1px solid #d5dce5!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody td{border:1px solid #d5dce5!important;overflow:hidden!important;text-overflow:ellipsis!important}
     html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .iqc-work-frame .ip-table-wrap{border:0!important}
-    html body #standard table.std-document-list[class]{border-collapse:separate!important}
-    html body #standard table.std-document-list[class] tr{grid-template-columns:minmax(36px,4fr) minmax(0,32fr) minmax(0,9fr) minmax(0,13fr) minmax(0,12fr) minmax(0,15fr) minmax(0,15fr)!important}
-    html body #standard table.std-document-list[class] :is(th,td){width:auto!important;border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important}
-    html body #standard table.std-document-list[class] tr>:last-child{border-right:0!important}
-    html body #standard table.std-document-list[class] tbody tr:last-child>td{border-bottom:0!important}
-    html body #standard table.std-document-list[class] .std-document-name{white-space:normal!important;overflow-wrap:anywhere!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class]{border-collapse:separate!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class] tr{grid-template-columns:minmax(36px,4fr) minmax(0,32fr) minmax(0,9fr) minmax(0,13fr) minmax(0,12fr) minmax(0,15fr) minmax(0,15fr)!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class] :is(th,td){width:auto!important;border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class] tr>:last-child{border-right:0!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class] tbody tr:last-child>td{border-bottom:0!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class] .std-document-name{white-space:normal!important;overflow-wrap:anywhere!important}
+    html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class]{min-width:0!important;border:1px solid #d5dce5!important}
   `;
   document.head.appendChild(style);
 
