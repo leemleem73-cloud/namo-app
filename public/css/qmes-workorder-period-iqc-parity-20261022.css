@@ -22,3 +22,30 @@
 .namo-work-iqc-calendar .qww-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}
 .namo-work-iqc-calendar .qww-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}
 .namo-work-iqc-calendar .qww-foot [data-close]{margin-left:auto}
+
+/* Match the visible Work Order period field to IQC inspection-period field. */
+#work #namo-work-inquiry .nwi-period-label{min-width:0!important}
+#work #namo-work-inquiry .nwi-period-trigger{
+  box-sizing:border-box!important;
+  width:215px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding:0 8px!important;
+  border:1px solid #c7d6e5!important;
+  border-radius:4px!important;
+  background:#fff!important;
+  color:#243e5d!important;
+  font:600 12px Arial,"Malgun Gothic",sans-serif!important;
+}
+#work #namo-work-inquiry .nwi-period-trigger>.nwi-period-value{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#work #namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  width:auto!important;
+  font-size:18px!important;
+  color:#40566d!important;
+}
