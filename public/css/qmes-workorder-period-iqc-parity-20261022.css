@@ -83,3 +83,39 @@
   min-width:0!important;
   width:100%!important;
 }
+
+/* 2026-10-22 final single-row fit: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 작업기간 */
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  overflow:visible!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
+  display:flex!important;
+  align-items:center!important;
+  flex:1 1 0!important;
+  min-width:0!important;
+  gap:6px!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(1){flex-basis:15%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(2){flex-basis:19%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(3){flex-basis:15%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(4){flex-basis:15%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5){flex-basis:17%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(6){flex-basis:19%!important}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+  font-size:12px!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  width:auto!important;
+}
