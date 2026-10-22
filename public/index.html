@@ -2692,7 +2692,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
       <div class="menu-title">생산관리</div>
       <div class="menu" data-page="work"><div class="ico">🛠</div><div class="label">작업지시서</div></div>
-      <div class="menu" data-page="standard" data-open-recipe="1"><div class="ico">🧪</div><div class="label">배합기준 (Recipe)</div></div>
+      <div class="menu" data-page="recipeMaster"><div class="ico">🧪</div><div class="label">배합기준 (Recipe)</div></div>
 
       <div class="menu-title">품질관리</div>
       <div class="menu" data-page="incoming"><div class="ico">🔬</div><div class="label">수입검사 IQC</div></div>
@@ -2713,7 +2713,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
       <div class="menu" data-page="calibrationMgmt"><div class="ico">✓</div><div class="label">검교정관리</div></div>
 
       <div class="menu-title">문서관리</div>
-      <div class="menu" data-page="standard" data-open-docs="1"><div class="ico">📚</div><div class="label">기준서 / 문서관리</div></div>
+      <div class="menu" data-page="standard"><div class="ico">📚</div><div class="label">기준서 / 문서관리</div></div>
       <div class="menu" data-page="approval"><div class="ico">✍</div><div class="label">전자결재</div></div>
 
       <div class="menu-title" data-admin-only>ADMIN</div>
@@ -2792,6 +2792,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
     <section class="module-page" id="ncr"></section>
     <section class="module-page" id="approval"></section>
     <section class="module-page" id="standard"></section>
+    <section class="module-page" id="recipeMaster"></section>
     <section class="module-page" id="spcTrend"></section>
     <section class="module-page" id="changeControl"></section>
     <section class="module-page" id="instrumentMgmt"></section>
@@ -7646,11 +7647,6 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   // Refresh persisted approval state when reopening either tab; F5 is not required.
   if(m.dataset.page==='approval') void loadQualityApprovals(page);
   if(m.dataset.page==='incoming') void loadIncomingFromDb(page);
-  if(m.dataset.openRecipe==='1'){
-    requestAnimationFrame(()=>page.querySelector('.nrecipe-tab[data-mode="recipe"]')?.click());
-  }else if(m.dataset.openDocs==='1'){
-    requestAnimationFrame(()=>page.querySelector('.nrecipe-tab[data-mode="docs"]')?.click());
-  }
   content.scrollTop=0;
 }));
 
