@@ -152,15 +152,31 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function normalizeWorkInquiry(){
   const panel=root()?.querySelector('#namo-work-inquiry');
   if(!panel)return false;
-  const hiddenIndexes=['4','5','7'];
-  hiddenIndexes.forEach(i=>{
+
+  // Remove legacy visible query fields completely.
+  // Keep only the start/end input elements in a hidden state holder because the existing
+  // search logic reads data-filter 4/5 values. Equipment filter (7) is removed entirely.
+  let state=panel.querySelector('.nwi-hidden-filter-state');
+  if(!state){
+    state=document.createElement('div');
+    state.className='nwi-hidden-filter-state';
+    state.hidden=true;
+    state.setAttribute('aria-hidden','true');
+    panel.appendChild(state);
+  }
+
+  ['4','5'].forEach(i=>{
     const control=panel.querySelector('[data-filter="'+i+'"]');
     const label=control?.closest('label');
-    if(label){
-      label.hidden=true;
-      label.style.setProperty('display','none','important');
-    }
+    if(control&&control.parentElement!==state)state.appendChild(control);
+    if(label&&label!==state)label.remove();
   });
+
+  const equipment=panel.querySelector('[data-filter="7"]');
+  const equipmentLabel=equipment?.closest('label');
+  if(equipmentLabel)equipmentLabel.remove();
+  else equipment?.remove();
+
   syncTriggerValue();
   return alignWorkOrderFilterRow();
 }
