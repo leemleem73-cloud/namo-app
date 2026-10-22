@@ -10,6 +10,16 @@ const root=()=>document.querySelector('#work');
 const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
 
+function syncTriggerValue(){
+  const panel=root()?.querySelector('#namo-work-inquiry');
+  const from=panel?.querySelector('[data-filter="4"]');
+  const to=panel?.querySelector('[data-filter="5"]');
+  const value=panel?.querySelector('.nwi-period-value');
+  if(!from||!to||!value)return false;
+  value.textContent=from.value&&to.value?from.value+' ~ '+to.value:'기간 선택';
+  return true;
+}
+
 function close(focus=false){
   popup?.remove(); popup=null;
   trigger?.setAttribute('aria-expanded','false');
@@ -110,4 +120,8 @@ window.addEventListener('keydown',event=>{
 },true);
 window.addEventListener('resize',position);
 window.addEventListener('scroll',()=>{if(popup)close();},true);
+function ensureInitial(){if(!syncTriggerValue())setTimeout(syncTriggerValue,120);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureInitial,{once:true});else ensureInitial();
+[200,600,1200,2500].forEach(ms=>setTimeout(syncTriggerValue,ms));
+
 })();
