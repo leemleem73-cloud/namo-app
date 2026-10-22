@@ -49,3 +49,21 @@
   font-size:18px!important;
   color:#40566d!important;
 }
+
+/* Work-order inquiry: keep all six visible filters on one row. */
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  column-gap:14px!important;
+  row-gap:0!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six label>span{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
+  width:100%!important;
+}
+@media(max-width:1280px){
+  #work #namo-work-inquiry .nwi-grid.nwi-single-row-six{grid-template-columns:repeat(3,minmax(0,1fr))!important;row-gap:10px!important}
+}
