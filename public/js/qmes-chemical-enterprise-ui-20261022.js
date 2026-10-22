@@ -63,6 +63,14 @@
     #spcTrend .iqc-work-frame .ip-footnote{display:flex!important;align-items:center!important;justify-content:center!important;padding:10px 16px 20px!important;background:#fff!important;border:0!important;position:relative!important}
     #spcTrend .iqc-work-frame .ip-count{position:absolute!important;right:16px!important;color:#8090a1!important;font-size:10px!important}
 
+
+    /* Final SPC spacing override: keep the overview table visibly separated from filters. */
+    #spcTrend .iqc-work-frame .ip-toolbar + .ip-table-wrap{
+      margin-top:22px!important;
+    }
+    #spcTrend .iqc-work-frame .spc-overview-table{
+      margin-top:0!important;
+    }
     /* 2026-10-22: SPC visual alignment with PQC inquiry screen. */
     #spcTrend .iqc-register-header{min-height:58px!important;padding:11px 18px!important}
     #spcTrend .iqc-register-header strong{font-size:17px!important}
