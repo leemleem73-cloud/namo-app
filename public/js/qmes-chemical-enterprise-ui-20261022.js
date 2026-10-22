@@ -37,9 +37,34 @@
     .qce-kpi{border:1px solid #dbe4ed;background:#fff;padding:13px}.qce-kpi b{display:block;font-size:11px;color:#728398;margin-bottom:7px}.qce-kpi strong{font-size:22px;color:#244260}
     .qce-chart{padding:13px;border-top:1px solid #e2e8ef}.qce-chart h3{font-size:13px;margin:0 0 10px}.qce-chart-wrap{height:260px;border:1px solid #e1e7ee;background:#fbfdff;padding:12px;overflow:hidden}
     .qce-svg{width:100%;height:100%}.qce-svg text{font-size:9px;fill:#6b7e92}
+    #spcTrend .iqc-work-frame{padding:0!important}
+    #spcTrend .iqc-work-frame .ip-panel{border:1px solid #d2dfed!important;border-radius:10px!important;box-shadow:0 8px 24px rgba(24,51,83,.075)!important;overflow:hidden!important;background:#fff!important}
+    #spcTrend .iqc-register-header{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:12px!important;min-height:64px!important;padding:14px 22px!important;border-bottom:1px solid #dbe5ef!important;background:#fff!important}
+    #spcTrend .iqc-register-header strong{display:flex!important;align-items:center!important;gap:10px!important;color:#173b61!important;font-size:18px!important;font-weight:800!important;letter-spacing:-.4px!important}
+    #spcTrend .iqc-register-header strong:before{content:'';width:3px;height:24px;background:#166fbb;border-radius:2px}
+    #spcTrend .iqc-header-tools{display:flex!important;gap:6px!important;margin-left:auto!important}
+    #spcTrend .iqc-register-header .btn,#spcTrend .iqc-work-frame .iqc-query-actions .ip-actions .btn{height:38px!important;padding:8px 15px!important;border-radius:7px!important;font-size:12.5px!important;font-weight:700!important;line-height:20px!important}
+    #spcTrend .iqc-work-frame .primary{background:#166fbb!important;color:#fff!important;border-color:#166fbb!important;box-shadow:0 2px 7px rgba(22,111,187,.16)!important}
+    #spcTrend .iqc-work-frame .ip-toolbar{display:block!important;padding:20px 22px 18px!important;background:#f3f7fb!important;border-bottom:1px solid #dae5ef!important}
+    #spcTrend .iqc-work-frame .ip-filter-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px 20px!important;width:100%!important}
+    #spcTrend .iqc-work-frame .ip-filter{display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;min-width:0!important}
+    #spcTrend .iqc-work-frame .ip-filter>span{flex:0 0 78px!important;min-width:78px!important;text-align:right!important;color:#334e6b!important;font-size:12.5px!important;font-weight:700!important;white-space:nowrap!important}
+    #spcTrend .iqc-work-frame .ip-filter .input{height:38px!important;min-width:0!important;width:100%!important;padding:0 11px!important;font-size:13px!important;color:#243e5d!important;border:1px solid #c7d6e5!important;border-radius:7px!important;background:#fff!important;font-weight:400!important;box-sizing:border-box!important}
+    #spcTrend .iqc-date-range{display:flex!important;align-items:center!important;gap:5px!important;min-width:0!important;flex:1!important;height:38px!important;border:1px solid #c7d6e5!important;border-radius:7px!important;background:#fff!important}
+    #spcTrend .iqc-work-frame .iqc-date-range .input{flex:1!important;border:0!important;height:36px!important;background:transparent!important;padding:0 6px!important;min-width:0!important}
+    #spcTrend .iqc-query-actions{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-top:14px!important;width:100%!important}
+    #spcTrend .iqc-query-count{color:#526a83!important;font-size:12.5px!important;font-weight:700!important}
+    #spcTrend .iqc-work-frame .ip-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:wrap!important;margin-left:auto!important}
+    #spcTrend .iqc-list-head{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:17px 22px 14px!important;color:#1e3f64!important;font-size:13.5px!important;font-weight:800!important}
+    #spcTrend .iqc-work-frame .ip-table-wrap{margin:0 16px 16px!important;border:1px solid #d5dce5!important;overflow:auto!important}
+    #spcTrend .iqc-work-frame .ip-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}
+    #spcTrend .iqc-work-frame .ip-table th{height:38px!important;background:#e8f0f8!important;color:#244260!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;font-size:10.5px!important;text-align:center!important}
+    #spcTrend .iqc-work-frame .ip-table td{height:36px!important;padding:6px 8px!important;line-height:1.2!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;text-align:center!important;font-size:11px!important}
+    #spcTrend .iqc-work-frame .ip-footnote{display:flex!important;align-items:center!important;justify-content:center!important;padding:10px 16px 20px!important;background:#fff!important;border:0!important;position:relative!important}
+    #spcTrend .iqc-work-frame .ip-count{position:absolute!important;right:16px!important;color:#8090a1!important;font-size:10px!important}
     #spcTrend .spc-toolbar{display:block;padding:15px 16px}
-    #spcTrend .spc-iqc-filter-row{grid-template-columns:1.4fr 1fr 1fr 1fr!important;align-items:end}
-    #spcTrend .spc-iqc-period{min-width:310px}
+    #spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:center!important}
+    #spcTrend .spc-iqc-period{min-width:0!important}
     #spcTrend .spc-iqc-period .iqc-date-range{width:100%}
     #spcTrend .spc-iqc-period .iqc-date-range .input{min-width:0}
     #spcTrend .iqc-register-header{min-height:64px}
@@ -52,7 +77,7 @@
     #spcTrend .spc-query-toggle{min-width:36px;padding:0;font-size:14px}
     #spcTrend .spc-collapsed{padding-bottom:10px}
     #spcTrend .spc-detail-wrap{margin:0 15px 15px}
-    @media(max-width:1180px){#spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+    @media(max-width:1100px){#spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
     @media(max-width:720px){#spcTrend .spc-iqc-filter-row{grid-template-columns:1fr!important}#spcTrend .spc-iqc-period{min-width:0}}
     #spcTrend .spc-filter-grid{display:grid;grid-template-columns:1.55fr 1fr 1fr 1fr;gap:12px;align-items:end}
     #spcTrend .spc-filter-grid label{display:flex;align-items:center;gap:7px;min-width:0;font-size:11px;font-weight:800;color:#415b75}
