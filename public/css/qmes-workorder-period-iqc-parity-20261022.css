@@ -1,0 +1,24 @@
+/* Work order period calendar styled like current IQC calendar */
+.namo-work-iqc-calendar{
+  position:fixed;z-index:2147483000;box-sizing:border-box;width:220px;max-width:calc(100vw - 12px);
+  padding:8px;background:#fff;border:1px solid #b8c4d0;border-radius:3px;
+  box-shadow:0 4px 14px #0002;color:#344254;font:12px Arial,"Malgun Gothic",sans-serif
+}
+.namo-work-iqc-calendar *{box-sizing:border-box}
+.namo-work-iqc-calendar button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:2px;padding:0;min-width:0;box-shadow:none}
+.namo-work-iqc-calendar button:focus-visible{outline:2px solid #499cef;outline-offset:-2px}
+.namo-work-iqc-calendar .qww-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}
+.namo-work-iqc-calendar .qww-head strong{font-size:13px;color:#172b40}
+.namo-work-iqc-calendar .qww-head button{width:24px;height:25px;font-size:18px;color:#83909c}
+.namo-work-iqc-calendar .qww-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}
+.namo-work-iqc-calendar .qww-days>*{height:25px;line-height:25px;text-align:center;font-size:11px}
+.namo-work-iqc-calendar .qww-week{color:#89939e;font-weight:400}
+.namo-work-iqc-calendar .weekend{color:#e14d4d}
+.namo-work-iqc-calendar .qww-days button:hover{background:#e4f0ff}
+.namo-work-iqc-calendar .qww-days .between{background:#edf5ff}
+.namo-work-iqc-calendar .qww-days .chosen{background:#2689ef;color:#fff}
+.namo-work-iqc-calendar .qww-days [aria-current="date"]:not(.chosen){font-weight:700;box-shadow:inset 0 0 0 1px #8cbcf0}
+.namo-work-iqc-calendar .qww-hint{font-size:10px;min-height:24px;padding-top:7px;color:#61768b;text-align:center}
+.namo-work-iqc-calendar .qww-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}
+.namo-work-iqc-calendar .qww-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}
+.namo-work-iqc-calendar .qww-foot [data-close]{margin-left:auto}
