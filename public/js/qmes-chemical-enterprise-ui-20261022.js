@@ -146,6 +146,24 @@
     .qce-field input,.qce-field select,.qce-field textarea{margin:5px 7px;border:1px solid #cfd7df;border-radius:2px;padding:5px 7px;font-size:11px;min-width:0}.qce-field textarea{min-height:70px}
     .qce-modal-foot{display:flex;justify-content:flex-end;gap:6px;padding:11px 14px;border-top:1px solid #dde5ec}
     @media(max-width:900px){.qce-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.qce-form{grid-template-columns:1fr}}
+
+    /* iqc-visual-parity-20261023: shared IQC typography and table palette. */
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-page{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard),html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) :is(button,input,select,textarea),.qce-modal,.qce-modal :is(button,input,select,textarea){font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list){border-collapse:separate!important;border-spacing:0!important;background:#fff!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) thead th{height:34px!important;box-sizing:border-box!important;padding:6px 12px!important;background:#e8f0f8!important;color:#244260!important;font-size:12px!important;font-weight:600!important;line-height:1.4!important;border:0!important;border-right:1px solid #cbd8e5!important;border-bottom:1px solid #cbd8e5!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody td{height:36px!important;box-sizing:border-box!important;padding:4px 12px!important;background:#fff!important;color:#344054!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;border:0!important;border-right:1px solid #eef1f4!important;border-bottom:1px solid #e8edf2!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody tr:nth-child(even)>td{background:#fcfdff!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody tr:hover>td,html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) table[class]:is(.qce-table,.ip-table,.std-document-list) tbody tr.spc-row-selected>td{background:#eef6ff!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) :is(.qce-input,.qce-select){font-size:12px!important;font-weight:400!important;color:#243e5d!important;border-color:#c7d6e5!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-btn{font-size:12px!important;font-weight:600!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-head h1{font-size:18px!important;font-weight:800!important;color:#173b61!important}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-head h1:before{content:'';display:inline-block;width:3px;height:22px;margin-right:10px;vertical-align:middle;background:#166fbb;border-radius:2px}
+    html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt,#standard) .qce-toolbar{background:#f3f7fb!important;border-color:#dae5ef!important}
+    html body #standard table.std-document-list[class] tbody td{height:68px!important}
+    html body #standard table.std-document-list[class] .std-document-name::after{color:#667085!important;font-family:inherit!important;font-size:12px!important;font-weight:400!important}
+    .qce-modal .qce-field label{font-size:12px!important;font-weight:600!important;color:#244260!important;background:#f3f7fb!important}
+    .qce-modal .qce-field :is(input,select,textarea){font-size:12px!important;font-weight:400!important;color:#344054!important;border-color:#c7d6e5!important}
   `;
   document.head.appendChild(style);
 
