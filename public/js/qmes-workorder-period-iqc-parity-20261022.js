@@ -148,4 +148,39 @@ function ensureWorkOrderFilterRow(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureWorkOrderFilterRow,{once:true});else ensureWorkOrderFilterRow();
 [200,600,1200,2500].forEach(ms=>setTimeout(alignWorkOrderFilterRow,ms));
 
+
+function normalizeWorkInquiry(){
+  const panel=root()?.querySelector('#namo-work-inquiry');
+  if(!panel)return false;
+  const hiddenIndexes=['4','5','7'];
+  hiddenIndexes.forEach(i=>{
+    const control=panel.querySelector('[data-filter="'+i+'"]');
+    const label=control?.closest('label');
+    if(label){
+      label.hidden=true;
+      label.style.setProperty('display','none','important');
+    }
+  });
+  syncTriggerValue();
+  return alignWorkOrderFilterRow();
+}
+let normalizeQueued=false;
+function queueNormalizeWorkInquiry(){
+  if(normalizeQueued)return;
+  normalizeQueued=true;
+  requestAnimationFrame(()=>{
+    normalizeQueued=false;
+    normalizeWorkInquiry();
+  });
+}
+const workRootObserver=new MutationObserver(ms=>{
+  if(ms.some(m=>m.target.closest?.('#work')||[...m.addedNodes].some(n=>n.nodeType===1&&(n.id==='work'||n.querySelector?.('#work'))))){
+    queueNormalizeWorkInquiry();
+  }
+});
+const observedWork=root();
+if(observedWork)workRootObserver.observe(observedWork,{childList:true,subtree:true});
+document.addEventListener('qmes:data-updated',queueNormalizeWorkInquiry);
+
+normalizeWorkInquiry();
 })();
