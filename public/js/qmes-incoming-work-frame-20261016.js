@@ -80,3 +80,39 @@ const style=document.createElement('style');style.textContent=`
 .namo-incoming-mini-calendar .nwm-foot [data-close]{margin-left:auto}
 `;document.head.append(style);
 })();
+
+/* IQC sidebar fit 20261023: also supports the older desktop entry template. */
+(()=>{
+'use strict';
+const root=document.getElementById('incoming');
+if(!root||root.dataset.iqcViewportFit)return;
+root.dataset.iqcViewportFit='20261023';
+const style=document.createElement('style');
+style.id='iqc-viewport-fit-20261023';
+style.textContent='#incoming.incoming-current-work .iqc-work-frame .ip-table{min-width:0!important;max-width:100%!important;table-layout:fixed!important;box-sizing:border-box!important}#incoming.incoming-current-work .iqc-work-frame .ip-table-wrap{min-width:0!important;max-width:100%!important}';
+document.head.appendChild(style);
+let scheduled=false;
+function fit(){
+ scheduled=false;
+ const wrap=root.querySelector('.ip-table-wrap'),table=wrap?.querySelector('.ip-table');
+ if(!wrap||!table||!wrap.clientWidth)return;
+ const target=Math.max(86,wrap.clientWidth-1);
+ const columns=Array.from(table.querySelectorAll('colgroup col'));
+ if(!columns.length)return;
+ const weights=columns.slice(1).map(col=>Math.max(1,parseFloat(col.style.width)||1));
+ const sum=weights.reduce((a,b)=>a+b,0);
+ const widths=[86,...weights.map(weight=>(target-86)*weight/sum)];
+ columns.forEach((col,index)=>{
+  const width=widths[index]+'px';
+  if(col.style.width!==width)col.style.width=width;
+ });
+ const width=target+'px';
+ if(table.style.width!==width||table.style.getPropertyPriority('width')!=='important')table.style.setProperty('width',width,'important');
+}
+function schedule(){if(scheduled)return;scheduled=true;queueMicrotask(fit);}
+new MutationObserver(schedule).observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['style']});
+const wrap=root.querySelector('.ip-table-wrap');
+if(wrap&&typeof ResizeObserver!=='undefined')new ResizeObserver(schedule).observe(wrap);
+window.addEventListener('resize',schedule);
+schedule();
+})();
