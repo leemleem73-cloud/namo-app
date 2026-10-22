@@ -1,0 +1,70 @@
+/* NAMO QMES work-order Excel grid visual V2 - ADD ONLY */
+#work .module-body:has(.work-list-table){
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  border:1px solid #c4ccd5!important;
+  border-top:0!important;
+  background:#fff!important;
+}
+#work .work-list-table{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  table-layout:fixed!important;
+  margin:0!important;
+}
+#work .work-list-table thead th{
+  position:relative!important;
+  height:34px!important;
+  padding:0 7px!important;
+  background:#e9eef3!important;
+  border-right:1px solid #bfc9d3!important;
+  border-bottom:1px solid #b8c3ce!important;
+  color:#263747!important;
+  font-weight:700!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  cursor:default!important;
+}
+#work .work-list-table tbody td{
+  height:35px!important;
+  padding:0 7px!important;
+  border-right:1px solid #d4dbe2!important;
+  border-bottom:1px solid #d7dee5!important;
+  background:#fff!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#work .work-list-table tbody tr:nth-child(even)>td{background:#fafbfc!important}
+#work .work-list-table tbody tr:hover>td{background:#edf5fc!important}
+#work .work-list-table thead th>.namo-work-grid-resizer-20261022{
+  position:absolute!important;
+  top:0!important;
+  right:-5px!important;
+  width:10px!important;
+  height:100%!important;
+  z-index:50!important;
+  background:transparent!important;
+  border:0!important;
+  cursor:col-resize!important;
+  touch-action:none!important;
+  user-select:none!important;
+}
+#work .work-list-table thead th>.namo-work-grid-resizer-20261022::after{
+  content:""!important;
+  position:absolute!important;
+  top:15%!important;
+  bottom:15%!important;
+  left:4px!important;
+  width:1px!important;
+  background:transparent!important;
+}
+#work .work-list-table thead th>.namo-work-grid-resizer-20261022:hover::after,
+#work .work-list-table thead th>.namo-work-grid-resizer-20261022.active::after{
+  background:#5f7488!important;
+}
+body.namo-work-grid-resizing-20261022,
+body.namo-work-grid-resizing-20261022 *{
+  cursor:col-resize!important;
+  user-select:none!important;
+}
