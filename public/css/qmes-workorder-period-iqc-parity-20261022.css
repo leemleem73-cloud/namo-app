@@ -119,3 +119,44 @@
   min-width:0!important;
   width:auto!important;
 }
+
+/* 2026-10-22 final alignment: six filters share one baseline and consistent label/control sizing. */
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
+  display:grid!important;
+  grid-template-columns:
+    minmax(0,1.05fr)
+    minmax(0,1.20fr)
+    minmax(0,1.00fr)
+    minmax(0,1.00fr)
+    minmax(0,1.02fr)
+    minmax(0,1.18fr)!important;
+  align-items:center!important;
+  gap:0 18px!important;
+  width:100%!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr)!important;
+  align-items:center!important;
+  column-gap:8px!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
+  min-width:0!important;
+  white-space:nowrap!important;
+  text-align:left!important;
+  line-height:30px!important;
+  font-size:12px!important;
+}
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
+#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  height:30px!important;
+  min-height:30px!important;
+  border-radius:4px!important;
+  margin:0!important;
+}
