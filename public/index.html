@@ -2685,18 +2685,31 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
     <div class="nav-wrap">
       
       <div class="menu" data-page="dashboard"><div class="ico">▦</div><div class="label">종합 대시보드</div></div>
+
+      <div class="menu-title">영업 / 구매</div>
       <div class="menu" data-page="orders"><div class="ico">📅</div><div class="label">수주납기 관리</div></div>
       <div class="menu" data-page="purchase"><div class="ico">🧾</div><div class="label">구매발주 관리</div></div>
+
+      <div class="menu-title">생산관리</div>
       <div class="menu" data-page="work"><div class="ico">🛠</div><div class="label">작업지시서</div></div>
-      <div class="menu" data-page="incoming"><div class="ico">🔬</div><div class="label">수입검사</div></div>
-      <div class="menu" data-page="process"><div class="ico">🧪</div><div class="label">공정검사</div></div>
-      <div class="menu" data-page="outgoing"><div class="ico">📋</div><div class="label">출하검사</div></div>
+      <div class="menu" data-page="standard" data-open-recipe="1"><div class="ico">🧪</div><div class="label">배합기준 (Recipe)</div></div>
+
+      <div class="menu-title">품질관리</div>
+      <div class="menu" data-page="incoming"><div class="ico">🔬</div><div class="label">수입검사 IQC</div></div>
+      <div class="menu" data-page="process"><div class="ico">🧫</div><div class="label">공정검사 PQC</div></div>
+      <div class="menu" data-page="outgoing"><div class="ico">📋</div><div class="label">출하검사 OQC</div></div>
+      <div class="menu" data-page="ncr"><div class="ico">📑</div><div class="label">부적합 NCR</div></div>
+
+      <div class="menu-title">LOT 관리</div>
       <div class="menu" data-page="lotTrace"><div class="ico">🔎</div><div class="label">LOT 추적</div></div>
+
+      <div class="menu-title">설비 / 계측기</div>
       <div class="menu" data-page="equipment"><div class="ico">⚙️</div><div class="label">설비관리</div></div>
-      
-      <div class="menu" data-page="ncr"><div class="ico">📑</div><div class="label">부적합관리</div></div>
+
+      <div class="menu-title">문서관리</div>
+      <div class="menu" data-page="standard" data-open-docs="1"><div class="ico">📚</div><div class="label">기준서 / 문서관리</div></div>
       <div class="menu" data-page="approval"><div class="ico">✍</div><div class="label">전자결재</div></div>
-      <div class="menu" data-page="standard"><div class="ico">📚</div><div class="label">기준서 관리</div></div>
+
       <div class="menu-title" data-admin-only>ADMIN</div>
       <div class="menu" data-page="adminEmployees" data-admin-only><div class="ico">👥</div><div class="label">직원등록현황</div></div>
       <button class="nav-toggle" id="navToggle" type="button" aria-label="메뉴 펼치기" title="메뉴 펼치기"><svg class="nav-toggle-icon" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h10c4 0 6 2 6 5s-2 5-6 5h-3"/><path d="m9 4-4 4 4 4"/></svg></button>
@@ -3000,7 +3013,7 @@ const pageInfo = {
   equipment:['설비관리','관리계획서 기준으로 생산설비·검사설비의 조건, 점검, 교정 및 이력을 관리합니다.', ['설비번호','설비명','구분','최근점검일','차기점검일','상태','담당자']],
   quality:['품질관리','IQC, 공정검사, 완제품 검사 및 CoA 관리 화면입니다.', ['검사구분','LOT NO','검사일','검사항목','판정','검사자','성적서']],
   approval:['전자결재','품질·생산·휴가·출퇴근 관련 결재문서를 관리합니다.', ['문서번호','문서구분','제목','작성자','작성일','결재상태','승인자']],
-  standard:['기준서 관리','관리계획서, 공정흐름도, PFMEA, 작업표준서 등의 기준서를 관리합니다.', ['문서번호','문서명','구분','Rev.','개정일','담당부서','상태']]
+  standard:['문서관리','SOP, 작업표준, 검사기준서, Specification 및 Revision 기준문서를 관리합니다.', ['문서번호','문서명','구분','Rev.','개정일','담당부서','상태']]
 };
 
 function incomingInspectionPanel(){
@@ -7623,6 +7636,11 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   // Refresh persisted approval state when reopening either tab; F5 is not required.
   if(m.dataset.page==='approval') void loadQualityApprovals(page);
   if(m.dataset.page==='incoming') void loadIncomingFromDb(page);
+  if(m.dataset.openRecipe==='1'){
+    requestAnimationFrame(()=>page.querySelector('.nrecipe-tab[data-mode="recipe"]')?.click());
+  }else if(m.dataset.openDocs==='1'){
+    requestAnimationFrame(()=>page.querySelector('.nrecipe-tab[data-mode="docs"]')?.click());
+  }
   content.scrollTop=0;
 }));
 
