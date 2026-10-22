@@ -62,6 +62,21 @@
     #spcTrend .iqc-work-frame .ip-table td{height:36px!important;padding:6px 8px!important;line-height:1.2!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;text-align:center!important;font-size:11px!important}
     #spcTrend .iqc-work-frame .ip-footnote{display:flex!important;align-items:center!important;justify-content:center!important;padding:10px 16px 20px!important;background:#fff!important;border:0!important;position:relative!important}
     #spcTrend .iqc-work-frame .ip-count{position:absolute!important;right:16px!important;color:#8090a1!important;font-size:10px!important}
+
+    /* 2026-10-22: SPC visual alignment with PQC inquiry screen. */
+    #spcTrend .iqc-register-header{min-height:58px!important;padding:11px 18px!important}
+    #spcTrend .iqc-register-header strong{font-size:17px!important}
+    #spcTrend .iqc-register-header .btn{height:36px!important;padding:7px 14px!important;font-size:12px!important}
+    #spcTrend .iqc-work-frame .ip-toolbar{padding:14px 18px!important;background:#f3f7fb!important}
+    #spcTrend .iqc-work-frame .ip-filter-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px 18px!important}
+    #spcTrend .iqc-work-frame .ip-filter{gap:7px!important}
+    #spcTrend .iqc-work-frame .ip-filter>span{flex:0 0 62px!important;min-width:62px!important;font-size:12px!important}
+    #spcTrend .iqc-work-frame .ip-filter .input{height:34px!important;border-radius:6px!important;font-size:12.5px!important;padding:0 10px!important}
+    #spcTrend .iqc-work-frame>.ip-panel>.ip-table-wrap{margin:14px 12px 10px!important;border:1px solid #d5dce5!important}
+    #spcTrend .spc-overview-table th{height:36px!important;background:#e8f0f8!important;font-size:10.5px!important;font-weight:800!important}
+    #spcTrend .spc-overview-table td{height:38px!important;padding:5px 7px!important;font-size:10.8px!important}
+    #spcTrend .iqc-work-frame .ip-footnote{padding:8px 12px 14px!important}
+    #spcTrend .spc-page-btn{min-width:29px!important;height:29px!important;border-radius:5px!important}
     #spcTrend .spc-toolbar{display:block;padding:15px 16px}
     #spcTrend .spc-iqc-filter-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center!important}
     #spcTrend .spc-iqc-period{min-width:0!important}
