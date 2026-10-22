@@ -226,7 +226,9 @@ function install(app) {
       const customer = str(req.query.customer, 160);
       const product = str(req.query.product, 160);
       const revision = str(req.query.revision, 40);
-      const applied = str(req.query.applied, 10);
+      const status = str(req.query.status, 20);
+      const start = str(req.query.start, 10);
+      const end = str(req.query.end, 10);
       const result = await pool.query(`
         SELECT r.*,
           (SELECT COUNT(*)::int FROM qmes_recipe_materials m WHERE m.recipe_id=r.id) AS material_count
@@ -235,10 +237,12 @@ function install(app) {
           AND ($2='' OR r.customer_name ILIKE '%'||$2||'%')
           AND ($3='' OR r.product_name ILIKE '%'||$3||'%')
           AND ($4='' OR r.revision ILIKE '%'||$4||'%')
-          AND ($5='' OR r.effective_on=$5::date)
+          AND ($5='' OR r.status=$5)
+          AND ($6='' OR r.effective_on >= $6::date)
+          AND ($7='' OR r.effective_on <= $7::date)
         ORDER BY r.product_name, r.id DESC
         LIMIT 500
-      `, [q,customer,product,revision,applied]);
+      `, [q,customer,product,revision,status,start,end]);
       res.json({ success: true, data: result.rows });
     } catch (error) {
       console.error('[QMES recipe list]', error);
