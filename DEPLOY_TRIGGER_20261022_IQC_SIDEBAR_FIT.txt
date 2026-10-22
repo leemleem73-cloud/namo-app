@@ -1,0 +1,4 @@
+2026-10-22 KST — production redeploy for incoming inspection responsive table.
+Deploy merged PR #394 (afbed118c0b089ded81f25bf9b15f814f45c075d).
+Verification marker: const fitWidth=wrap.clientWidth?Math.max(86,wrap.clientWidth-1):0;
+The IQC table fits the available width when the left sidebar expands.
