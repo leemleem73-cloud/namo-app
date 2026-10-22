@@ -136,8 +136,8 @@ function alignWorkOrderFilterRow(){
   const period=panel?.querySelector('.nwi-period-label');
   if(!grid||!customer||!workNo||!product||!lot||!status||!period)return false;
   const periodLabel=period.querySelector(':scope>span');
-  if(periodLabel)periodLabel.textContent='생산작업기간';
-  // Visible order: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 생산작업기간.
+  if(periodLabel)periodLabel.textContent='작업기간';
+  // Visible order: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 작업기간.
   [customer,workNo,product,lot,status,period].forEach(el=>grid.appendChild(el));
   grid.classList.add('nwi-single-row-six');
   return true;
