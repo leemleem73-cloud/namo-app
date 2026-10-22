@@ -5004,7 +5004,7 @@ async function saveWorkOrderForm(editId='',options={}){
   const workDay=input('작업일자')||input('작업 시작일');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(workDay)){toast('작업일자를 입력해 주세요.');return;}
   fields['작업지시번호']=persistId?(orders.find(o=>o.id===persistId)?.fields?.['작업지시번호']||persistId):nextWorkOrderDisplayNumber(workDay,orders);
-  const record={id:savedId,fields,materials:rows,workDate:workDay,productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||''};
+  const record={id:savedId,fields,materials:rows,workDate:workDay,productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||'',recipeId:form.dataset.recipeId||'',recipeRevision:form.dataset.recipeRevision||'',recipeProduct:form.dataset.recipeProduct||''};
   if(record.productionType==='중간배치')record.intermediateBatch={kind:form.querySelector('#namoMidWorkKind')?.value||'',actualQty:form.querySelector('#namoMidProduced')?.value||''};
   if(typeof window.namoValidateIntermediateWorkorder==='function'){
     const validation=await window.namoValidateIntermediateWorkorder({editId:persistId,rows,record});
@@ -7394,7 +7394,7 @@ function openNewForm(id,editOrder=null){
         row.querySelector('.material-lot-manual').value=m.lot||'';
         row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
       });
-      document.querySelector('#namoWorkInstructions').value=editOrder.note||'';
+      document.querySelector('#namoWorkInstructions').value=editOrder.note||'';const wf=document.querySelector('.work-form');if(wf){wf.dataset.recipeId=editOrder.recipeId||'';wf.dataset.recipeRevision=editOrder.recipeRevision||'';wf.dataset.recipeProduct=editOrder.recipeProduct||'';}
     }
     const workSave=document.getElementById('modalSave');
     if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
@@ -8114,7 +8114,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-registration-layout-20261021.js?v=1"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
-<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=1"></script>
+<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=1"></script>\n<script src="./js/qmes-recipe-master-20261022.js?v=20261022-1"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261021-1"></script>
