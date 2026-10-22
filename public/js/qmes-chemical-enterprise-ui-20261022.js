@@ -56,7 +56,7 @@
     #spcTrend .iqc-query-count{color:#526a83!important;font-size:12.5px!important;font-weight:700!important}
     #spcTrend .iqc-work-frame .ip-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:wrap!important;margin-left:auto!important}
     #spcTrend .iqc-list-head{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:17px 22px 14px!important;color:#1e3f64!important;font-size:13.5px!important;font-weight:800!important}
-    #spcTrend .iqc-work-frame .ip-table-wrap{margin:0 16px 16px!important;border:1px solid #d5dce5!important;overflow:auto!important}
+    #spcTrend .iqc-work-frame .ip-table-wrap{margin:20px 16px 16px!important;border:1px solid #d5dce5!important;overflow:auto!important}
     #spcTrend .iqc-work-frame .ip-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important}
     #spcTrend .iqc-work-frame .ip-table th{height:38px!important;background:#e8f0f8!important;color:#244260!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;font-size:10.5px!important;text-align:center!important}
     #spcTrend .iqc-work-frame .ip-table td{height:36px!important;padding:6px 8px!important;line-height:1.2!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;text-align:center!important;font-size:11px!important}
