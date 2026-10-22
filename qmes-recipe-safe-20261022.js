@@ -18,6 +18,7 @@ function ensureSchema() {
       CREATE TABLE IF NOT EXISTS qmes_recipe_versions (
         id BIGSERIAL PRIMARY KEY,
         product_code TEXT NOT NULL DEFAULT '',
+        customer_name TEXT NOT NULL DEFAULT '',
         product_name TEXT NOT NULL,
         revision TEXT NOT NULL,
         basis_qty NUMERIC(18,6) NOT NULL CHECK (basis_qty > 0),
@@ -31,8 +32,11 @@ function ensureSchema() {
         UNIQUE(product_name, revision),
         CHECK (status IN ('ACTIVE','OBSOLETE'))
       );
+      ALTER TABLE qmes_recipe_versions ADD COLUMN IF NOT EXISTS customer_name TEXT NOT NULL DEFAULT '';
       CREATE INDEX IF NOT EXISTS qmes_recipe_product_idx
         ON qmes_recipe_versions(product_name, status, id DESC);
+      CREATE INDEX IF NOT EXISTS qmes_recipe_customer_idx
+        ON qmes_recipe_versions(customer_name, product_name, id DESC);
 
       CREATE TABLE IF NOT EXISTS qmes_recipe_materials (
         id BIGSERIAL PRIMARY KEY,
@@ -117,6 +121,7 @@ async function syncRecipesFromWorkOrders(actor = {}) {
       const doc = row.document && typeof row.document === 'object' ? row.document : {};
       const fields = doc.fields && typeof doc.fields === 'object' ? doc.fields : {};
       const productName = str(fields['제품명'] || doc.productName || doc.item, 160);
+      const customerName = str(fields['고객사'] || fields['고객사명'] || doc.customer || doc.customerName, 160);
       if (!productName || latestByProduct.has(productName)) continue;
 
       const rawMaterials = Array.isArray(doc.materials) ? doc.materials : (Array.isArray(doc.inputs) ? doc.inputs : []);
@@ -142,6 +147,7 @@ async function syncRecipesFromWorkOrders(actor = {}) {
       const workOrderNo = str(fields['작업지시번호'] || doc.id || row.id, 100);
       latestByProduct.set(productName, {
         productName,
+        customerName,
         productCode: str(doc.productCode || fields['제품코드'], 80),
         basisQty,
         unit: 'kg',
@@ -151,8 +157,15 @@ async function syncRecipesFromWorkOrders(actor = {}) {
       });
     }
 
-    const existing = await client.query('SELECT DISTINCT product_name FROM qmes_recipe_versions');
+    const existing = await client.query('SELECT id,product_name,customer_name FROM qmes_recipe_versions');
     const existingProducts = new Set(existing.rows.map(r => str(r.product_name, 160)));
+    for (const recipe of latestByProduct.values()) {
+      if (!recipe.customerName) continue;
+      await client.query(
+        "UPDATE qmes_recipe_versions SET customer_name=$1 WHERE product_name=$2 AND COALESCE(customer_name,'')=''",
+        [recipe.customerName, recipe.productName]
+      );
+    }
     let created = 0, skipped = 0;
 
     for (const recipe of latestByProduct.values()) {
@@ -162,12 +175,12 @@ async function syncRecipesFromWorkOrders(actor = {}) {
       }
       const inserted = await client.query(`
         INSERT INTO qmes_recipe_versions
-          (product_code, product_name, revision, basis_qty, unit, effective_on, status, note, created_by_id, created_by)
-        VALUES ($1,$2,'Rev.01',$3,$4,$5,'ACTIVE',$6,$7,$8)
+          (product_code, customer_name, product_name, revision, basis_qty, unit, effective_on, status, note, created_by_id, created_by)
+        VALUES ($1,$2,$3,'Rev.01',$4,$5,$6,'ACTIVE',$7,$8,$9)
         ON CONFLICT (product_name, revision) DO NOTHING
         RETURNING id
       `, [
-        recipe.productCode, recipe.productName, recipe.basisQty, recipe.unit, recipe.effectiveOn,
+        recipe.productCode, recipe.customerName, recipe.productName, recipe.basisQty, recipe.unit, recipe.effectiveOn,
         '작업지시 ' + (recipe.workOrderNo || '-') + ' 기준 자동연동',
         str(actor?.id, 100), '작업지시 자동연동'
       ]);
@@ -210,14 +223,22 @@ function install(app) {
       await ensureSchema();
       await syncRecipesFromWorkOrders(req.session?.user || {});
       const q = str(req.query.q, 120);
+      const customer = str(req.query.customer, 160);
+      const product = str(req.query.product, 160);
+      const revision = str(req.query.revision, 40);
+      const applied = str(req.query.applied, 10);
       const result = await pool.query(`
         SELECT r.*,
           (SELECT COUNT(*)::int FROM qmes_recipe_materials m WHERE m.recipe_id=r.id) AS material_count
         FROM qmes_recipe_versions r
-        WHERE ($1='' OR r.product_name ILIKE '%'||$1||'%' OR r.product_code ILIKE '%'||$1||'%' OR r.revision ILIKE '%'||$1||'%')
+        WHERE ($1='' OR r.customer_name ILIKE '%'||$1||'%' OR r.product_name ILIKE '%'||$1||'%' OR r.revision ILIKE '%'||$1||'%')
+          AND ($2='' OR r.customer_name ILIKE '%'||$2||'%')
+          AND ($3='' OR r.product_name ILIKE '%'||$3||'%')
+          AND ($4='' OR r.revision ILIKE '%'||$4||'%')
+          AND ($5='' OR r.effective_on=$5::date)
         ORDER BY r.product_name, r.id DESC
         LIMIT 500
-      `, [q]);
+      `, [q,customer,product,revision,applied]);
       res.json({ success: true, data: result.rows });
     } catch (error) {
       console.error('[QMES recipe list]', error);
@@ -245,6 +266,7 @@ function install(app) {
         data: {
           id: recipe.id,
           product_code: recipe.product_code,
+          customer_name: recipe.customer_name,
           product_name: recipe.product_name,
           revision: recipe.revision,
           basis_qty: Number(recipe.basis_qty),
@@ -282,6 +304,7 @@ function install(app) {
   app.post('/api/qmes-recipes', auth, async (req, res) => {
     const body = req.body || {};
     const productName = str(body.product_name, 160);
+    const customerName = str(body.customer_name, 160);
     const productCode = str(body.product_code, 80);
     const revision = str(body.revision, 40);
     const basisQty = num(body.basis_qty);
@@ -308,11 +331,11 @@ function install(app) {
       const user = req.session.user || {};
       const inserted = await client.query(`
         INSERT INTO qmes_recipe_versions
-          (product_code, product_name, revision, basis_qty, unit, effective_on, status, note, created_by_id, created_by)
-        VALUES ($1,$2,$3,$4,$5,$6,'ACTIVE',$7,$8,$9)
+          (product_code, customer_name, product_name, revision, basis_qty, unit, effective_on, status, note, created_by_id, created_by)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,'ACTIVE',$8,$9,$10)
         RETURNING *
       `, [
-        productCode, productName, revision, basisQty, unit, effectiveOn || null, note,
+        productCode, customerName, productName, revision, basisQty, unit, effectiveOn || null, note,
         str(user.id, 100), str(user.name || user.email || '작성자', 120)
       ]);
       const recipe = inserted.rows[0];
@@ -332,6 +355,31 @@ function install(app) {
       try { await client.query('ROLLBACK'); } catch (_) {}
       console.error('[QMES recipe create]', error);
       fail(res, 500, '배합기준 저장 실패');
+    } finally {
+      client.release();
+    }
+  });
+
+  app.delete('/api/qmes-recipes/:id', auth, async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return fail(res, 400, '배합기준 번호를 확인하세요.');
+    const client = await pool.connect();
+    try {
+      await ensureSchema();
+      await client.query('BEGIN');
+      const found = await client.query('SELECT * FROM qmes_recipe_versions WHERE id=$1 FOR UPDATE', [id]);
+      if (!found.rowCount) {
+        await client.query('ROLLBACK');
+        return fail(res, 404, '배합기준을 찾을 수 없습니다.');
+      }
+      await client.query('DELETE FROM qmes_recipe_materials WHERE recipe_id=$1', [id]);
+      await client.query('DELETE FROM qmes_recipe_versions WHERE id=$1', [id]);
+      await client.query('COMMIT');
+      res.json({ success: true, data: found.rows[0], message: '배합기준이 삭제되었습니다.' });
+    } catch (error) {
+      try { await client.query('ROLLBACK'); } catch (_) {}
+      console.error('[QMES recipe delete]', error);
+      fail(res, 500, '배합기준 삭제 실패');
     } finally {
       client.release();
     }
