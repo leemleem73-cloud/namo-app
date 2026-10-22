@@ -185,6 +185,25 @@ svg{display:block}
 .notice-card .head .mini-pill{color:#52758a!important;border-color:#d7e6ee!important;background:#f4f9fc!important}
 .notice-card p,.notice-card p span{color:#617789!important}
 .notice-card button,.notice-card button svg{color:#267899!important}
+
+/* QMES Amarans-style dock collapse/expand, 2026-10-23 */
+#namo-portal-root .dock-wrap{transition:transform .28s ease,bottom .28s ease}
+#namo-portal-root .dock{transition:opacity .22s ease,transform .28s ease,max-height .28s ease,padding .28s ease,border-width .28s ease;margin .28s ease;overflow:hidden;transform-origin:bottom center}
+#namo-portal-root .dock-toggle{
+  width:54px;height:22px;margin-top:-2px;border:1px solid rgba(255,255,255,.45);border-top:0;border-radius:0 0 12px 12px;
+  background:rgba(64,74,84,.78);color:#fff;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 8px 18px rgba(5,23,38,.22);backdrop-filter:blur(10px);transition:background .18s,transform .18s
+}
+#namo-portal-root .dock-toggle:hover{background:rgba(38,48,58,.9)}
+#namo-portal-root .dock-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .28s ease}
+#namo-portal-root .dock-wrap.dock-collapsed{bottom:18px}
+#namo-portal-root .dock-wrap.dock-collapsed .dock{opacity:0;transform:translateY(22px) scale(.97);max-height:0;padding-top:0;padding-bottom:0;border-width:0;margin:0;pointer-events:none}
+#namo-portal-root .dock-wrap.dock-collapsed .dock-toggle{border:1px solid rgba(255,255,255,.45);border-radius:12px 12px 0 0;margin-top:0}
+#namo-portal-root .dock-wrap.dock-collapsed .dock-toggle svg{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){
+ #namo-portal-root .dock-wrap,#namo-portal-root .dock,#namo-portal-root .dock-toggle svg{transition:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -352,6 +371,9 @@ svg{display:block}
        <button class="app" type="button" data-action="설비관리"><span class="tile t9"><span class="qmes-sidebar-glyph" aria-hidden="true">⚙️</span></span><span class="title">설비관리</span></button>
        <button class="app" type="button" data-action="직원관리"><span class="tile t10"><span class="qmes-sidebar-glyph" aria-hidden="true">👥</span></span><span class="title">직원관리</span></button>
      </div>
+     <button class="dock-toggle" id="qmes-dock-toggle" type="button" aria-label="하단 바로가기 접기" aria-expanded="true" title="하단 바로가기 접기">
+       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+     </button>
    </section>
    
    
@@ -506,5 +528,28 @@ svg{display:block}
   if(window.parent!==window)window.parent.postMessage({channel:channel,type:'ready'},location.origin);
 })();
 </script>
+
+<script>
+(function(){
+  const wrap=document.querySelector('#namo-portal-root .dock-wrap');
+  const toggle=document.getElementById('qmes-dock-toggle');
+  if(!wrap||!toggle) return;
+  let collapsed=false;
+  try{ collapsed=sessionStorage.getItem('qmesDockCollapsed')==='1'; }catch(e){}
+  const apply=()=>{
+    wrap.classList.toggle('dock-collapsed',collapsed);
+    toggle.setAttribute('aria-expanded',collapsed?'false':'true');
+    toggle.setAttribute('aria-label',collapsed?'하단 바로가기 펼치기':'하단 바로가기 접기');
+    toggle.title=collapsed?'하단 바로가기 펼치기':'하단 바로가기 접기';
+  };
+  toggle.addEventListener('click',()=>{
+    collapsed=!collapsed;
+    apply();
+    try{ sessionStorage.setItem('qmesDockCollapsed',collapsed?'1':'0'); }catch(e){}
+  });
+  apply();
+})();
+</script>
+
 </body>
 </html>
