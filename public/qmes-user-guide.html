@@ -139,7 +139,7 @@ const titles={
 '작업지시서':['작업지시서 실무 사용법','생산관리 > 작업지시서 > 조회 · 신규등록','작업지시서 조회부터 신규등록, 원료 투입계획, 저장·발송·인쇄까지 실제 업무 순서대로 안내합니다.'],
 '수입검사 IQC':['수입검사 IQC 실무 사용법','품질관리 > 수입검사 IQC > 조회 · 신규등록','수입검사 조회부터 신규 성적서 등록, 검사결과 판정, 부적합 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
 '공정검사 PQC':['공정검사 PQC 실무 사용법','품질관리 > 공정검사 PQC > 조회 · 신규등록','공정검사 조회부터 신규 검사 등록, 측정값 입력, 불합격 후속 공정 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
-'출하검사 OQC':['출하검사 등록','품질관리 > 출하검사 OQC > 검사 등록','완제품 최종 검사 결과와 출하 가능 여부를 확인합니다.'],
+'출하검사 OQC':['출하검사 OQC 실무 사용법','품질관리 > 출하검사 OQC > 조회 · 신규등록','출하검사 조회부터 신규 검사 등록, 측정값 입력, 출하상태·CoA 확인, 불합격 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
 'LOT 추적':['LOT 추적','LOT 관리 > LOT 추적','원재료 LOT에서 생산·검사·완제품 LOT·출하까지 이력을 조회합니다.'],
 '부적합 NCR':['부적합 NCR','품질관리 > 부적합 NCR','부적합 원인·조치·개선 이력을 관리합니다.'],
 '설비관리':['설비관리','설비관리 > 설비관리','생산 및 검사설비의 상태와 점검 이력을 관리합니다.'],
@@ -264,6 +264,51 @@ function pqcRegGuideHtml(){return '<div class="workActual"><div class="regShell"
 '<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:74px">6</span><span class="call" style="left:205px;top:282px">7</span><span class="call" style="left:205px;bottom:188px">8</span><span class="call" style="right:21px;bottom:17px">9</span>'+
 '</div>'}
 
+function oqcListGuideHtml(){return '<div class="workActual">'+
+'<div class="waHead"><strong>출하검사 등록 및 조회</strong><div class="waActions"><button>엑셀 내보내기</button><button class="primary">+ 신규 출하검사 등록</button></div></div>'+
+'<div class="waFilters" style="grid-template-columns:repeat(5,minmax(0,1fr))">'+
+'<div class="waField"><span>고객사</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>제품명</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>완제품 LOT</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>검사상태</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>검사기간</span><div class="waInput">기간 선택</div></div>'+
+'</div>'+
+'<div class="waToolbar"><strong>▸ 출하검사 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button>⌕</button><button>⌃</button></div></div>'+
+'<table><thead><tr><th style="width:52px">□ No.</th><th>검사일자</th><th>고객사</th><th>제품명</th><th>완제품 LOT</th><th>검사항목</th><th>검사합부</th><th>검사자</th><th>출하상태</th><th>성적서</th><th>비고</th></tr></thead><tbody><tr><td colspan="11" class="empty">조회된 출하검사 내역이 없습니다.</td></tr></tbody></table>'+
+'<span class="call" style="right:24px;top:15px">1</span><span class="call" style="left:22px;top:73px">2</span><span class="call" style="right:94px;top:134px">3</span><span class="call" style="left:16px;bottom:28px">4</span>'+
+'</div>'}
+
+function oqcRegGuideHtml(){return '<div class="workActual"><div class="regShell">'+
+'<aside class="regList"><div class="regListTitle">출하검사 목록</div><div class="regListTools"><div>전체</div><div>출하검사 검색</div></div><div class="regListEmpty">등록된 검사 이력이 표시됩니다.</div><div class="regAdd">⊕ 추가</div></aside>'+
+'<section class="regMain"><div class="regTop"><div><b>출하검사 성적서 등록</b><small>완제품 LOT 기준으로 최종 출하검사를 수행합니다.</small></div><div class="waActions"><button>목록</button><button class="primary">저장</button></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">01 출하 / 검사 기본정보</div><div class="regGrid">'+
+'<span>검사일자</span><b>연도-월-일</b><span>검사자</span><b>검사자 입력</b>'+
+'<span>고객사</span><b>고객사 입력</b><span>제품명</span><b>제품명 입력</b>'+
+'<span>완제품 LOT</span><b>완제품 LOT 입력</b><span>CoA 상태</span><b>대기 / 확인완료 / 발행완료 / 미확인</b>'+
+'<span>출하상태</span><b>출하보류 / 출하대기 / 출하완료</b><span>문서번호</span><b>OQC-QA-001</b>'+
+'</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">02 검사 결과</div><div class="matWrap"><table><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>'+
+'<tr><td>1</td><td>외관</td><td>이물질 혼입 없을 것</td><td>육안</td><td>선택</td><td>선택</td><td>선택</td><td>대기</td></tr>'+
+'<tr><td>2</td><td>입도(Dmax)</td><td>&lt;10 μm</td><td>입도분석기</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>3</td><td>점도</td><td>1,500±300 cP</td><td>점도계</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>4</td><td>수분율</td><td>&lt;2,000 ppm</td><td>수분측정기</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>5</td><td>고형분</td><td>20.0±1.0 wt%</td><td>Drying Oven</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>6</td><td>접착력</td><td>≥400 gf/12.7mm</td><td>인장시험기</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>7</td><td>절연저항</td><td>≥200 MΩ (Overflow)</td><td>절연저항계</td><td>측정값</td><td>측정값</td><td>측정값</td><td>대기</td></tr>'+
+'<tr><td>8</td><td>전해액 안정성</td><td>미탈리</td><td>육안</td><td>선택</td><td>선택</td><td>선택</td><td>대기</td></tr>'+
+'</tbody></table></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">03 종합 판정</div><div class="regGrid">'+
+'<span>검사합부</span><b>자동판정</b><span>출하상태</span><b>합격 시 출하완료 가능</b>'+
+'<span>CoA 상태</span><b>확인 및 발행상태 관리</b><span>기록 유형</span><b>QMES Electronic Record</b>'+
+'</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">04 특이사항 / 조치사항</div><div class="dispatch">검사 이상, 출하보류 사유, NCR 번호, 재검사 또는 조치내용을 비고에 기록합니다.</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">전자결재</div><div class="regGrid"><span>작성</span><b>로그인 사용자</b><span>검토</span><b>검토대기</b><span>승인</span><b>승인대기</b><span>결재상태</span><b>저장 후 결재 진행</b></div></div>'+
+'<div class="regSection"><div class="regSectionTitle" style="color:#d4231f">불합격 발생 시</div><div class="dispatch" style="color:#d4231f;font-weight:900;font-size:14px;text-align:center">출하완료 저장 불가 · 출하보류 / 후속조치</div></div>'+
+'<div class="regBottom"><button>목록으로</button><button class="primary">저장</button></div>'+
+'</section></div>'+
+'<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:74px">6</span><span class="call" style="left:205px;top:282px">7</span><span class="call" style="left:205px;bottom:188px">8</span><span class="call" style="right:21px;bottom:17px">9</span>'+
+'</div>'}
+
 function renderGuide(name){
  if(name==='작업지시서'){
    guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 작업지시서 등록 및 조회</div>'+workListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 신규 작업지시서 등록</div>'+workRegGuideHtml()+'</div></div>';
@@ -298,6 +343,17 @@ function renderGuide(name){
    '<div class="step"><b>7</b><b>검사 결과</b>에서 외관, 입도(Dmax), 점도, 고형분을 검사합니다. 입도·점도·고형분은 1차·2차·3차 측정값을 입력하고 판정을 확인합니다.</div>'+
    '<div class="step"><b>8</b>최종판정, 검사상태, 특이사항·조치사항, 전자결재 상태를 확인합니다.</div>'+
    '<div class="step"><b>9</b>항목이 <b style="color:#d4231f">불합격</b>이면 후속 공정이 차단됩니다. 원인 조치 및 재검사 후 다음 공정을 진행합니다.</div>';
+ }else if(name==='출하검사 OQC'){
+   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 출하검사 등록 및 조회</div>'+oqcListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 출하검사 성적서 신규등록</div>'+oqcRegGuideHtml()+'</div></div>';
+   steps.innerHTML='<div class="step"><b>1</b><b>+ 신규 출하검사 등록</b>을 클릭하면 출하검사 성적서 등록 화면으로 이동합니다.</div>'+
+   '<div class="step"><b>2</b>고객사, 제품명, 완제품 LOT, 검사상태, 검사기간으로 원하는 출하검사를 조회합니다.</div>'+
+   '<div class="step"><b>3</b><b>조회</b> 아이콘으로 검색하고, <b>조건 지우기</b>로 조회조건을 초기화합니다. 접기/펼침 버튼으로 현황 영역을 조절합니다.</div>'+
+   '<div class="step"><b>4</b>목록에서 검사일자, 고객사, 제품명, 완제품 LOT, 검사항목, 검사합부, 검사자, 출하상태, 성적서를 확인합니다.</div>'+
+   '<div class="step"><b>5</b>신규등록 화면에서 입력과 검사를 마친 후 <b>저장</b>을 실행합니다.</div>'+
+   '<div class="step"><b>6</b><b>출하 / 검사 기본정보</b>에서 검사일자, 검사자, 고객사, 제품명, 완제품 LOT, CoA 상태와 출하상태를 확인합니다.</div>'+
+   '<div class="step"><b>7</b><b>검사 결과</b>에서 외관, 입도(Dmax), 점도, 수분율, 고형분, 접착력, 절연저항, 전해액 안정성을 확인하고 1차·2차·3차 측정값을 입력합니다.</div>'+
+   '<div class="step"><b>8</b>검사합부는 측정결과에 따라 자동판정됩니다. CoA 상태, 출하상태, 특이사항·조치사항 및 전자결재 내용을 확인합니다.</div>'+
+   '<div class="step"><b>9</b><b style="color:#d4231f">불합격 기록은 출하완료로 저장할 수 없습니다.</b> 출하보류 상태로 관리하고 원인조치 및 재검사 후 출하를 진행합니다.</div>';
  }else{
    guideShot.innerHTML=iqcGuideHtml();
    steps.innerHTML='<div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div>';
