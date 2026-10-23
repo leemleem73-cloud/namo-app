@@ -131,7 +131,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 const home=document.getElementById('home'),manual=document.getElementById('manual'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab');
 const titles={
 '수주납기 관리':['수주납기 관리 실무 사용법','영업 / 구매 > 수주납기 관리 > 조회 · 신규등록','수주납기 조회부터 신규 수주 등록, 납기일정과 진행상태 관리, 저장까지 실제 업무 순서대로 안내합니다.'],
-'구매발주 관리':['구매발주 관리','영업 / 구매 > 구매발주 관리','원부자재 구매발주와 요청입고 일정을 관리합니다.'],
+'구매발주 관리':['구매발주 관리 실무 사용법','영업 / 구매 > 구매발주 관리 > 조회 · 신규등록','구매발주 조회부터 신규 발주 등록, 다품목 입력, 금액 계산, 발주서·품의서 인쇄 및 저장까지 실제 업무 순서대로 안내합니다.'],
 '변경관리':['변경관리','품질관리 > 변경관리','공정·제품·기준·설비 변경사항과 승인 이력을 관리합니다.'],
 'SPC / Trend':['SPC / Trend','품질관리 > SPC / Trend','품질검사 측정값의 추세와 변동을 확인합니다.'],
 '계측기관리':['계측기관리','설비관리 > 계측기관리','검사에 사용하는 계측기의 상태와 관리정보를 확인합니다.'],
@@ -337,6 +337,38 @@ function ordersRegGuideHtml(){return '<div class="workActual"><div class="regShe
 '<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:74px">6</span><span class="call" style="left:205px;top:160px">7</span><span class="call" style="right:21px;bottom:17px">8</span>'+
 '</div>'}
 
+function purchaseListGuideHtml(){return '<div class="workActual">'+
+'<div class="waHead"><strong>구매발주 등록 및 조회</strong><div class="waActions"><button>엑셀 내보내기</button><button class="primary">+ 신규등록</button></div></div>'+
+'<div class="waFilters" style="grid-template-columns:repeat(5,minmax(0,1fr))">'+
+'<div class="waField"><span>공급업체</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>품목명</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>발주번호</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>발주상태</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>발주기간</span><div class="waInput">기간 선택</div></div>'+
+'</div>'+
+'<div class="waToolbar"><strong>▸ 구매발주 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button>⌕</button><button>⌃</button></div></div>'+
+'<table><thead><tr><th style="width:52px">□ No.</th><th>발주일자</th><th>공급업체</th><th>품목명</th><th>수량</th><th>요청입고</th><th>발주상태</th><th>IQC</th><th>관리</th></tr></thead><tbody><tr><td colspan="9" class="empty">조회된 구매발주 내역이 없습니다.</td></tr></tbody></table>'+
+'<div class="waDetail"><div class="waDetailHead">구매발주 상세정보</div><div class="waDetailBody">목록에서 발주내역을 선택하면 상세정보를 확인할 수 있습니다.</div></div>'+
+'<span class="call" style="right:24px;top:15px">1</span><span class="call" style="left:22px;top:73px">2</span><span class="call" style="right:94px;top:134px">3</span><span class="call" style="left:16px;bottom:70px">4</span>'+
+'</div>'}
+
+function purchaseRegGuideHtml(){return '<div class="workActual"><div class="regShell">'+
+'<aside class="regList"><div class="regListTitle">구매발주 관리 목록</div><div class="regListTools"><div>전체</div><div>구매발주 검색</div></div><div class="regListEmpty">등록된 구매발주가 표시됩니다.</div><div class="regAdd">⊕ 추가</div></aside>'+
+'<section class="regMain"><div class="regTop"><div><b>구매발주 관리 · 신규등록</b><small>구매발주 등록 및 품의서 작성</small></div><div class="waActions"><button>← 목록으로</button></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">기본정보</div><div class="regGrid">'+
+'<span>발주번호</span><b>PO-날짜-순번 자동생성</b><span>품의번호</span><b>PR-날짜-순번 자동생성</b>'+
+'<span>발주일자</span><b>연도-월-일</b><span>요청입고일자</span><b>연도-월-일</b>'+
+'<span>공급업체</span><b>공급업체 검색 / 입력</b><span>발주상태</span><b>대기 / 진행 / 완료</b>'+
+'<span>구매사유</span><b>구매사유 입력</b><span>비고</span><b>내용 입력</b>'+
+'</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">발주 품목정보</div><div class="matWrap"><div class="matTools"><button>+ 품목 추가</button></div><table><thead><tr><th>No.</th><th>품목명</th><th>규격</th><th>단위</th><th>수량</th><th>단가(원)</th><th>공급가(원)</th><th>부가세(원)</th><th>합계(원)</th><th>삭제</th></tr></thead><tbody><tr><td>1</td><td>품목명 입력</td><td>규격 입력</td><td>kg</td><td>0</td><td>0</td><td>자동계산</td><td>자동계산</td><td>자동계산</td><td>삭제</td></tr></tbody><tfoot><tr><th colspan="4">합계</th><th>총수량</th><th></th><th>공급가 합계</th><th>부가세 합계</th><th>총합계</th><th></th></tr></tfoot></table></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">첨부자료</div><div class="dispatch">PDF / XLS / XLSX / PNG / JPG / DOCX 파일을 선택할 수 있습니다. 현재 첨부파일 서버 저장은 미연동 상태입니다.</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">IQC 연계</div><div class="dispatch">구매발주 목록의 IQC 상태를 통해 입고 후 수입검사 진행상태를 확인합니다.</div></div>'+
+'<div class="regBottom"><button>초기화</button><button class="primary">저장</button><button>구매품의서 인쇄</button><button>발주서 인쇄</button><button>이메일 작성</button></div>'+
+'</section></div>'+
+'<span class="call" style="left:205px;top:74px">5</span><span class="call" style="left:205px;top:280px">6</span><span class="call" style="left:205px;bottom:145px">7</span><span class="call" style="right:21px;bottom:17px">8</span>'+
+'</div>'}
+
 function renderGuide(name){
  if(name==='작업지시서'){
    guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 작업지시서 등록 및 조회</div>'+workListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 신규 작업지시서 등록</div>'+workRegGuideHtml()+'</div></div>';
@@ -392,6 +424,16 @@ function renderGuide(name){
    '<div class="step"><b>6</b><b>기본설정</b>에서 수주일자, 고객사, 제품명, 수량을 입력합니다.</div>'+
    '<div class="step"><b>7</b>요청납기와 확정일자를 입력하고 진행상태를 대기·진행·생산진행·완료·취소 중 업무상태에 맞게 지정합니다.</div>'+
    '<div class="step"><b>8</b>비고까지 확인한 뒤 저장합니다. 등록된 수주정보는 수주납기 현황에서 다시 조회할 수 있습니다.</div>';
+ }else if(name==='구매발주 관리'){
+   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 구매발주 등록 및 조회</div>'+purchaseListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 구매발주 관리 신규등록</div>'+purchaseRegGuideHtml()+'</div></div>';
+   steps.innerHTML='<div class="step"><b>1</b><b>+ 신규등록</b>을 클릭하면 구매발주 신규등록 화면으로 이동합니다.</div>'+
+   '<div class="step"><b>2</b>공급업체, 품목명, 발주번호, 발주상태, 발주기간으로 구매발주 내역을 조회합니다.</div>'+
+   '<div class="step"><b>3</b><b>조회</b> 아이콘으로 검색하고, <b>조건 지우기</b>로 조회조건을 초기화합니다. 접기/펼침 버튼으로 현황 영역을 조절합니다.</div>'+
+   '<div class="step"><b>4</b>목록에서 발주일자, 공급업체, 품목명, 수량, 요청입고일, 발주상태, IQC 상태를 확인합니다. 행별 인쇄·수정·삭제도 사용할 수 있습니다.</div>'+
+   '<div class="step"><b>5</b><b>기본정보</b>에서 발주일자, 요청입고일자, 공급업체, 발주상태, 구매사유와 비고를 입력합니다. 발주번호와 품의번호는 자동 생성됩니다.</div>'+
+   '<div class="step"><b>6</b><b>발주 품목정보</b>에서 품목명, 규격, 단위, 수량, 단가를 입력합니다. 공급가·부가세·합계는 자동 계산되며 여러 품목을 추가할 수 있습니다.</div>'+
+   '<div class="step"><b>7</b>필요한 첨부자료를 선택하고, 등록 후 목록의 <b>IQC</b> 상태를 통해 입고 수입검사 진행상태를 확인합니다.</div>'+
+   '<div class="step"><b>8</b>하단에서 <b>저장</b>, <b>구매품의서 인쇄</b>, <b>발주서 인쇄</b>, <b>이메일 작성</b>을 업무 목적에 맞게 사용합니다.</div>';
  }else{
    guideShot.innerHTML=iqcGuideHtml();
    steps.innerHTML='<div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div>';
