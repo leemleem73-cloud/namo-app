@@ -1,4 +1,4 @@
-/* NAMO QMES mobile shell controller - 2026-10-23 */
+/* NAMO QMES mobile shell controller - legacy PC page bridge - 2026-10-23 */
 (function(){
 "use strict";
 if(window.__NAMO_QMES_MOBILE_SHELL_20261023__)return;
@@ -6,66 +6,37 @@ window.__NAMO_QMES_MOBILE_SHELL_20261023__=true;
 const mq=window.matchMedia("(max-width:768px)");
 const params=()=>new URLSearchParams(location.search);
 const mobile=()=>mq.matches||params().get("mobile")==="1";
-const workTab=()=>params().get("mobileTab")||"";
-const titles={woIssue:"작업지시서",iqc:"수입검사",prod:"생산 진행",pqc:"공정검사",oqc:"출하검사",trace:"LOT 추적",pop:"현장 입력",eq:"설비관리",standards:"기준서",members:"회원관리"};
-function close(){document.body.classList.remove("qmes-mobile-menu-open");}
-function forceSelectedTab(){
- const tab=workTab();
- if(!tab)return;
- const openMenu=tab==="woIssue"||tab==="prod"?"productionMenu":(tab==="iqc"||tab==="pqc"||tab==="oqc"||tab==="standards"?"qualityMenu":"");
- try{
-   sessionStorage.setItem("qmes_current_tab",tab);
-   if(openMenu)sessionStorage.setItem("qmes_open_menu",openMenu);else sessionStorage.removeItem("qmes_open_menu");
- }catch(_){}
- window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab,openMenu:openMenu||null}}));
+const workPage=()=>params().get("mobilePage")||"";
+const titles={dashboard:"종합 대시보드",orders:"수주납기 관리",purchase:"구매발주 관리",work:"작업지시서",incoming:"수입검사 IQC",process:"공정검사 PQC",outgoing:"출하검사 OQC",ncr:"부적합 NCR",spcTrend:"SPC / Trend",changeControl:"변경관리",lotTrace:"LOT 추적",equipment:"설비관리",instrumentMgmt:"계측기관리",calibrationMgmt:"검교정관리",standard:"기준서 / 문서관리",approval:"전자결재",adminEmployees:"직원등록현황"};
+function openSelectedPage(){
+ const page=workPage();if(!page)return false;
+ const menu=document.querySelector('.sidebar .menu[data-page="'+CSS.escape(page)+'"]');
+ if(!menu)return false;
+ if(!menu.classList.contains("active"))menu.click();
+ return true;
 }
 function ensureWorkBar(){
- const tab=workTab();
- if(!tab)return;
+ const page=workPage();if(!page)return;
  document.body.classList.add("qmes-mobile-work-view");
- document.getElementById("qmes-mobile-attendance")?.remove();
- document.getElementById("qmes-mobile-menu-toggle")?.remove();
- document.getElementById("qmes-mobile-menu-backdrop")?.remove();
+ ["qmes-mobile-attendance","qmes-mobile-menu-toggle","qmes-mobile-menu-backdrop"].forEach(id=>document.getElementById(id)?.remove());
  if(!document.getElementById("qmes-mobile-workbar")){
-   const bar=document.createElement("div");
-   bar.id="qmes-mobile-workbar";
+   const bar=document.createElement("div");bar.id="qmes-mobile-workbar";
    bar.innerHTML='<button type="button" class="qmw-back" aria-label="모바일 메인으로">‹</button><strong class="qmw-title"></strong><button type="button" class="qmw-home">메인</button>';
    bar.querySelector(".qmw-back").onclick=()=>location.assign("/mobile.html");
    bar.querySelector(".qmw-home").onclick=()=>location.assign("/mobile.html");
    document.body.appendChild(bar);
  }
- const title=document.querySelector("#qmes-mobile-workbar .qmw-title");
- if(title)title.textContent=titles[tab]||"QMES";
- if(!window.__QMES_MOBILE_FORCE_TAB_TIMERS__){
-   window.__QMES_MOBILE_FORCE_TAB_TIMERS__=true;
-   forceSelectedTab();
-   [180,600].forEach(ms=>setTimeout(forceSelectedTab,ms));
+ const title=document.querySelector("#qmes-mobile-workbar .qmw-title");if(title)title.textContent=titles[page]||"QMES";
+ if(!window.__QMES_MOBILE_PAGE_OPENED__){
+   window.__QMES_MOBILE_PAGE_OPENED__=true;
+   [0,120,350,700,1200].forEach(ms=>setTimeout(()=>{if(openSelectedPage())window.__QMES_MOBILE_PAGE_READY__=true;},ms));
  }
 }
 function ensure(){
- if(!mobile()){close();return;}
- if(workTab()){ensureWorkBar();return;}
- document.body.classList.remove("qmes-mobile-work-view");
- document.getElementById("qmes-mobile-workbar")?.remove();
- if(!document.getElementById("qmes-mobile-menu-toggle")){
-   const b=document.createElement("button");b.id="qmes-mobile-menu-toggle";b.type="button";b.textContent="☰";b.setAttribute("aria-label","업무 메뉴 열기");
-   b.onclick=()=>document.body.classList.toggle("qmes-mobile-menu-open");document.body.appendChild(b);
- }
- if(!document.getElementById("qmes-mobile-attendance")){
-   const a=document.createElement("button");
-   a.id="qmes-mobile-attendance";a.type="button";
-   a.innerHTML='<span class="qma-icon">◷</span><span class="qma-text"><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span><span class="qma-go">›</span>';
-   a.onclick=()=>location.assign("/attendance.html?mobile=1&source=qmes");
-   document.body.appendChild(a);
- }
- if(!document.getElementById("qmes-mobile-menu-backdrop")){
-   const d=document.createElement("div");d.id="qmes-mobile-menu-backdrop";d.onclick=close;document.body.appendChild(d);
- }
- const side=document.getElementById("qmes-erp-sidebar");
- if(side&&!side.dataset.mobileBound){side.dataset.mobileBound="1";side.addEventListener("click",e=>{if(e.target.closest(".qside-item"))setTimeout(close,30);});}
+ if(!mobile())return;
+ if(workPage()){ensureWorkBar();return;}
 }
 new MutationObserver(ensure).observe(document.documentElement,{childList:true,subtree:true});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ensure,{once:true});else ensure();
-window.addEventListener("resize",ensure);
-mq.addEventListener&&mq.addEventListener("change",ensure);
+window.addEventListener("pageshow",ensure);
 })();
