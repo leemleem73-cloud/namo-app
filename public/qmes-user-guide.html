@@ -937,9 +937,9 @@ function startWorkorderVideoSim(){
     badge.textContent=(index+1)+' / '+steps.length;
   };
   draw();
-  let elapsed=0,total=steps.length*3200;
+  let elapsed=0,total=steps.length*4200;
   workVideoProgressTimer=setInterval(()=>{elapsed+=100;if(bar)bar.style.width=Math.min(100,elapsed/total*100)+'%';},100);
-  workVideoTimer=setInterval(()=>{index=(index+1)%steps.length;if(index===0){elapsed=0;if(bar)bar.style.width='0%'}draw();},3200);
+  workVideoTimer=setInterval(()=>{index=(index+1)%steps.length;if(index===0){elapsed=0;if(bar)bar.style.width='0%'}draw();},4200);
 }
 document.querySelectorAll('.videoCard').forEach(card=>card.addEventListener('click',()=>{
   const title=card.dataset.videoTitle||'동영상 사용가이드',src=card.dataset.videoSrc||'',sim=card.dataset.videoSim||'';
