@@ -262,6 +262,12 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
 html body #spcTrend .iqc-work-frame .ip-table-wrap[class]{border:0!important;outline:0!important;box-shadow:none!important;padding:0!important}
 html body #spcTrend .iqc-work-frame table.ip-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
 html body #spcTrend .iqc-work-frame table.ip-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
+
+/* change-instant-thin-grid-20261023 */
+html body #changeControl .qce-change-body>div{border:0!important;outline:0!important;box-shadow:none!important}
+html body #changeControl .qce-change-body table.qce-table[class]{border:0!important;border-collapse:collapse!important;border-spacing:0!important;outline:0!important;box-shadow:none!important}
+html body #changeControl .qce-change-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
+html body #changeControl .change-load-status{padding:10px 12px;font-size:12px;color:#64748b}
   `;
   document.head.appendChild(style);
 
@@ -514,30 +520,52 @@ html body #spcTrend .iqc-work-frame table.ip-table[class]>:is(thead,tbody)>tr>:i
       root.innerHTML='<div class="inspection-premium iqc-work-frame"><div class="ip-panel"><div class="qce-empty">'+esc(e.message)+'</div></div></div>';
     }
   }
-  async function renderChange(){
+  const changeQueries=new Map();
+  function renderChange(){
     const root=document.getElementById('changeControl');if(!root)return;
+    if(root._changeLoad&&root.querySelector('.qce-change-body')){root._changeLoad();return;}
     root.innerHTML='<div class="qce-page">'+head('변경관리','원료·공급사·Recipe·공정조건·설비·Spec 변경을 승인 이력으로 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-change-q" placeholder="변경번호 / 제목 / 대상 검색"></div><div class="right"><button class="qce-btn qce-change-search">조회</button><button class="qce-btn primary qce-change-new">+ 변경 등록</button></div></div><div class="qce-change-body"><div class="qce-empty">조회 중...</div></div></div></div>';
-    const load=async()=>{
-      try{
-        const q=root.querySelector('.qce-change-q')?.value||'';const rows=await api('/api/qmes-change?q='+encodeURIComponent(q));
+    const paint=rows=>{
         const body=root.querySelector('.qce-change-body');
         body.innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:16%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:7%"></colgroup><thead><tr><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
           rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.change_no||'-')+'</td><td>'+esc(r.change_type)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.target||'-')+'</td><td>'+esc(r.owner||'-')+'</td><td>'+esc(String(r.planned_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='적용완료'?'ok':r.status==='승인완료'?'ok':r.status==='작성중'?'warn':'')+'">'+esc(r.status)+'</span></td><td>'+(
             r.status==='작성중'?'<button class="qce-btn" data-action="review" data-id="'+r.id+'">검토완료</button>':r.status==='검토완료'?'<button class="qce-btn" data-action="approve" data-id="'+r.id+'">승인완료</button>':r.status==='승인완료'?'<button class="qce-btn" data-action="close" data-id="'+r.id+'">적용완료</button>':'-'
           )+'</td></tr>').join(''):'<tr><td colspan="9">등록된 변경이 없습니다.</td></tr>'
         )+'</tbody></table></div>';
-        body.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/qmes-change/'+b.dataset.id+'/action',{method:'POST',body:JSON.stringify({action:b.dataset.action})});toast('변경 상태가 처리되었습니다.');load();}catch(e){toast(e.message);}});
-      }catch(e){root.querySelector('.qce-change-body').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}
+        body.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/qmes-change/'+b.dataset.id+'/action',{method:'POST',body:JSON.stringify({action:b.dataset.action})});toast('변경 상태가 처리되었습니다.');changeQueries.clear();load(true);}catch(e){toast(e.message);}});
+
     };
-    root.querySelector('.qce-change-search').onclick=load;
-    root.querySelector('.qce-change-q').addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+    const load=async(force=false)=>{
+      const q=root.querySelector('.qce-change-q')?.value||'';
+      let entry=changeQueries.get(q);
+      if(!entry){entry={rows:null,at:0,promise:null};changeQueries.set(q,entry);}
+      if(entry.rows!==null)paint(entry.rows);
+      else if(!root.querySelector('.qce-change-body table'))paint([]);
+      if(force!==true&&entry.rows!==null&&Date.now()-entry.at<30000)return;
+      try{
+        if(!entry.promise)entry.promise=api('/api/qmes-change?q='+encodeURIComponent(q))
+          .then(rows=>{entry.rows=rows;entry.at=Date.now();return rows;})
+          .finally(()=>{entry.promise=null;});
+        const rows=await entry.promise;
+        if((root.querySelector('.qce-change-q')?.value||'')===q)paint(rows);
+      }catch(e){
+        if((root.querySelector('.qce-change-q')?.value||'')!==q)return;
+        const body=root.querySelector('.qce-change-body');
+        let status=body.querySelector('.change-load-status');
+        if(!status){status=document.createElement('div');status.className='change-load-status';status.setAttribute('role','status');body.appendChild(status);}
+        status.textContent=e.message;
+      }
+    };
+    root._changeLoad=load;
+    root.querySelector('.qce-change-search').onclick=()=>load(true);
+    root.querySelector('.qce-change-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
     root.querySelector('.qce-change-new').onclick=()=>modal('변경 등록','<div class="qce-form">'+
       '<div class="qce-field"><label>변경구분</label><select data-k="change_type"><option>원료 변경</option><option>공급사 변경</option><option>Recipe 변경</option><option>공정조건 변경</option><option>설비 변경</option><option>Spec 변경</option></select></div>'+
       '<div class="qce-field"><label>변경제목</label><input data-k="title"></div>'+
       '<div class="qce-field"><label>변경대상</label><input data-k="target"></div><div class="qce-field"><label>담당자</label><input data-k="owner"></div>'+
       '<div class="qce-field"><label>적용예정일</label><input data-k="planned_on" type="date"></div><div class="qce-field"><label>현재 기준</label><input data-k="current_value"></div>'+
       '<div class="qce-field full"><label>변경 후 기준</label><textarea data-k="proposed_value"></textarea></div><div class="qce-field full"><label>변경사유</label><textarea data-k="reason"></textarea></div><div class="qce-field full"><label>영향평가</label><textarea data-k="impact"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-change',{method:'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast('변경건이 등록되었습니다.');load();}
+      async bg=>{await api('/api/qmes-change',{method:'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast('변경건이 등록되었습니다.');changeQueries.clear();load(true);}
     );
     load();
   }
@@ -592,9 +620,13 @@ html body #spcTrend .iqc-work-frame table.ip-table[class]>:is(thead,tbody)>tr>:i
     });
     const authUser=document.getElementById('currentUser');
     if(authUser)new MutationObserver(()=>{
-      if(authUser.dataset.qauthReady==='1')refreshSpc();
+      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);}
     }).observe(authUser,{attributes:true,attributeFilter:['data-qauth-ready']});
-    document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderChange,0)));
+    document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>{
+      m.addEventListener('click',renderChange);
+      m.addEventListener('pointerenter',()=>document.getElementById('changeControl')?._changeLoad?.());
+      m.addEventListener('focusin',()=>document.getElementById('changeControl')?._changeLoad?.());
+    });
     document.querySelectorAll('.menu[data-page="instrumentMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderInstrument,0)));
     document.querySelectorAll('.menu[data-page="calibrationMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderCalibration,0)));
   }
