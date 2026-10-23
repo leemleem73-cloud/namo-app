@@ -284,6 +284,14 @@ html body #instrumentMgmt .qce-inst-body,html body #instrumentMgmt .qce-inst-bod
 html body #instrumentMgmt .qce-inst-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
 html body #instrumentMgmt .qce-inst-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
 html body #instrumentMgmt .qce-inst-body .instrument-load-status{padding:10px 12px!important;font-size:12px;color:#64748b}
+
+/* calibration-instant-single-edge-20261023 */
+html body #calibrationMgmt .qce-page>.qce-shell{border:0!important;outline:0!important;box-shadow:none!important}
+html body #calibrationMgmt .qce-page>.qce-shell>.qce-toolbar{box-sizing:border-box!important;border:1px solid #d8e2ec!important;border-bottom:0!important}
+html body #calibrationMgmt .qce-cal-body,html body #calibrationMgmt .qce-cal-body>div{border:0!important;outline:0!important;box-shadow:none!important;margin:0!important;padding:0!important;background:#fff!important}
+html body #calibrationMgmt .qce-cal-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
+html body #calibrationMgmt .qce-cal-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
+html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 12px!important;font-size:12px;color:#64748b}
   `;
   document.head.appendChild(style);
 
@@ -638,15 +646,33 @@ html body #instrumentMgmt .qce-inst-body .instrument-load-status{padding:10px 12
   function openCalibration(row,reload){
     if(!row)return;
     modal('검교정 등록 · '+row.instrument_name,'<div class="qce-form"><div class="qce-field"><label>검교정일</label><input data-k="calibration_on" type="date"></div><div class="qce-field"><label>차기예정일</label><input data-k="next_due_on" type="date"></div><div class="qce-field"><label>교정기관</label><input data-k="agency"></div><div class="qce-field"><label>성적서번호</label><input data-k="certificate_no"></div><div class="qce-field"><label>결과</label><select data-k="result"><option>적합</option><option>부적합</option></select></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-calibrations',{method:'POST',body:JSON.stringify({instrument_id:row.id,calibration_on:val(bg,'calibration_on'),next_due_on:val(bg,'next_due_on'),agency:val(bg,'agency'),certificate_no:val(bg,'certificate_no'),result:val(bg,'result'),note:val(bg,'note')})});toast('검교정 이력이 등록되었습니다.');reload();}
+      async bg=>{await api('/api/qmes-calibrations',{method:'POST',body:JSON.stringify({instrument_id:row.id,calibration_on:val(bg,'calibration_on'),next_due_on:val(bg,'next_due_on'),agency:val(bg,'agency'),certificate_no:val(bg,'certificate_no'),result:val(bg,'result'),note:val(bg,'note')})});toast('검교정 이력이 등록되었습니다.');calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);reload();}
     );
   }
 
-  async function renderCalibration(){
+  let calibrationRows=null,calibrationAt=0,calibrationPromise=null;
+  function renderCalibration(){
     const root=document.getElementById('calibrationMgmt');if(!root)return;
+    if(root._calibrationLoad&&root.querySelector('.qce-cal-body')){root._calibrationLoad();return;}
     root.innerHTML='<div class="qce-page">'+head('검교정관리','계측기별 검교정 이력과 차기 일정을 확인합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"></div><div class="right"><button class="qce-btn qce-cal-refresh">조회</button></div></div><div class="qce-cal-body"><div class="qce-empty">조회 중...</div></div></div></div>';
-    const load=async()=>{try{const rows=await api('/api/qmes-calibrations');root.querySelector('.qce-cal-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:13%"><col style="width:21%"><col style="width:12%"><col style="width:12%"><col style="width:14%"><col style="width:14%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>검교정일</th><th>차기예정일</th><th>교정기관</th><th>성적서번호</th><th>결과</th><th>작성자</th></tr></thead><tbody>'+(rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc(String(r.calibration_on||'').slice(0,10))+'</td><td>'+esc(String(r.next_due_on||'').slice(0,10)||'-')+'</td><td>'+esc(r.agency||'-')+'</td><td>'+esc(r.certificate_no||'-')+'</td><td><span class="qce-badge '+(r.result==='적합'?'ok':'bad')+'">'+esc(r.result)+'</span></td><td>'+esc(r.created_by||'-')+'</td></tr>').join(''):'<tr><td colspan="9">등록된 검교정 이력이 없습니다.</td></tr>')+'</tbody></table></div>';}catch(e){root.querySelector('.qce-cal-body').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}};
-    root.querySelector('.qce-cal-refresh').onclick=load;load();
+    const paint=rows=>{root.querySelector('.qce-cal-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:13%"><col style="width:21%"><col style="width:12%"><col style="width:12%"><col style="width:14%"><col style="width:14%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>검교정일</th><th>차기예정일</th><th>교정기관</th><th>성적서번호</th><th>결과</th><th>작성자</th></tr></thead><tbody>'+(rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc(String(r.calibration_on||'').slice(0,10))+'</td><td>'+esc(String(r.next_due_on||'').slice(0,10)||'-')+'</td><td>'+esc(r.agency||'-')+'</td><td>'+esc(r.certificate_no||'-')+'</td><td><span class="qce-badge '+(r.result==='적합'?'ok':'bad')+'">'+esc(r.result)+'</span></td><td>'+esc(r.created_by||'-')+'</td></tr>').join(''):'<tr><td colspan="9">등록된 검교정 이력이 없습니다.</td></tr>')+'</tbody></table></div>';};
+    const load=async(force=false)=>{
+      paint(calibrationRows||[]);
+      if(force!==true&&calibrationRows!==null&&Date.now()-calibrationAt<30000)return;
+      try{
+        if(!calibrationPromise)calibrationPromise=api('/api/qmes-calibrations')
+          .then(rows=>{calibrationRows=rows;calibrationAt=Date.now();return rows;})
+          .finally(()=>{calibrationPromise=null;});
+        paint(await calibrationPromise);
+      }catch(e){
+        const body=root.querySelector('.qce-cal-body');
+        let status=body.querySelector('.calibration-load-status');
+        if(!status){status=document.createElement('div');status.className='calibration-load-status';status.setAttribute('role','status');body.appendChild(status);}
+        status.textContent=e.message;
+      }
+    };
+    root._calibrationLoad=load;
+    root.querySelector('.qce-cal-refresh').onclick=()=>load(true);load();
   }
 
   function init(){
@@ -658,7 +684,7 @@ html body #instrumentMgmt .qce-inst-body .instrument-load-status{padding:10px 12
     });
     const authUser=document.getElementById('currentUser');
     if(authUser)new MutationObserver(()=>{
-      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);instrumentQueries.clear();document.getElementById('instrumentMgmt')?._instrumentLoad?.(true);}
+      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);instrumentQueries.clear();document.getElementById('instrumentMgmt')?._instrumentLoad?.(true);calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);}
     }).observe(authUser,{attributes:true,attributeFilter:['data-qauth-ready']});
     document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>{
       m.addEventListener('click',renderChange);
@@ -670,7 +696,11 @@ html body #instrumentMgmt .qce-inst-body .instrument-load-status{padding:10px 12
       m.addEventListener('pointerenter',()=>document.getElementById('instrumentMgmt')?._instrumentLoad?.());
       m.addEventListener('focusin',()=>document.getElementById('instrumentMgmt')?._instrumentLoad?.());
     });
-    document.querySelectorAll('.menu[data-page="calibrationMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderCalibration,0)));
+    document.querySelectorAll('.menu[data-page="calibrationMgmt"]').forEach(m=>{
+      m.addEventListener('click',renderCalibration);
+      m.addEventListener('pointerenter',()=>document.getElementById('calibrationMgmt')?._calibrationLoad?.());
+      m.addEventListener('focusin',()=>document.getElementById('calibrationMgmt')?._calibrationLoad?.());
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
