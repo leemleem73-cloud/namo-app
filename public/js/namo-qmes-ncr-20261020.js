@@ -551,3 +551,10 @@ const style=document.createElement('style');style.textContent=`
  style.textContent='html body #ncr #ncr-bulk{display:flex!important;justify-content:space-between!important;gap:7px!important;z-index:120!important;animation:none!important;transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}html body #ncr #ncr-bulk.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}html body #ncr #ncr-bulk .ncr-btn{background:#f5f9ff!important;border-color:#b8cde2!important}html body #ncr #ncr-bulk .ncr-btn:hover{background:#dceafb!important}@media(prefers-reduced-motion:reduce){html body #ncr #ncr-bulk{transition:none!important}}@media(max-width:700px){html body #ncr #ncr-bulk{padding:10px!important;gap:10px!important}html body #ncr #ncr-bulk .ncr-btn{padding:0 8px!important;font-size:10px!important}}';
  document.head.appendChild(style);
 })();
+
+/* ncr-checkbox-cell-center-20261023 */
+(function(){
+ var style=document.createElement('style');style.id='ncr-checkbox-cell-center-20261023';
+ style.textContent='html body #ncr .ncr-equipment-card .ncr-table-wrap table :is(thead,tbody)>tr>:first-child{position:relative!important;box-sizing:border-box!important;padding:0!important;text-align:center!important;vertical-align:middle!important}html body #ncr .ncr-equipment-card .ncr-table-wrap table :is(thead,tbody)>tr>:first-child>input[type=checkbox]{position:absolute!important;top:50%!important;left:50%!important;display:block!important;margin:0!important;transform:translate(-50%,-50%)!important}';
+ document.head.appendChild(style);
+})();
