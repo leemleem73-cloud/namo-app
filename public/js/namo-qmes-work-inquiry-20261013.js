@@ -437,3 +437,10 @@ const observer=new MutationObserver(ms=>{if(queued||!ms.some(m=>m.target.closest
 })();
 
 ;(function(){if(document.querySelector('script[data-qmes-wo-mail]'))return;const script=document.createElement('script');script.dataset.qmesWoMail='1';script.src='./js/qmes-workorder-mail-composer-20261015.js?v=1';document.head.appendChild(script)})();
+
+/* work-iqc-selection-column-parity-20261023 */
+(function(){
+ const style=document.createElement('style');style.id='work-iqc-selection-column-parity-20261023';
+ style.textContent='html body #work table.work-list-table colgroup>col:first-child{width:34px!important}html body #work table.work-list-table colgroup>col:nth-child(2){width:52px!important}html body #work table.work-list-table :is(thead,tbody)>tr>:first-child{box-sizing:border-box!important;width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;text-align:center!important;vertical-align:middle!important}html body #work table.work-list-table :is(thead,tbody)>tr>:nth-child(2){box-sizing:border-box!important;width:52px!important;min-width:52px!important;max-width:52px!important;padding:4px!important;text-align:center!important;vertical-align:middle!important}html body #work table.work-list-table :is(.wo-bulk-all,.wo-bulk-check){width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;max-width:13px!important;max-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle!important}';
+ document.head.appendChild(style);
+})();
