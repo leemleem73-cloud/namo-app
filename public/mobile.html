@@ -57,18 +57,11 @@ function render(){
    if(item.adminOnly&&!admin)return;
    if(q&&!item.label.toLowerCase().includes(q))return;
    count++;
-   html+='<button class="menu" type="button" data-tab="'+esc(item.tab)+'"><span class="icon">'+esc(item.icon)+'</span><span class="label">'+esc(item.label)+'</span><span class="chev">›</span></button>';
+   const openMenu=item.tab==="woIssue"||item.tab==="prod"?"productionMenu":(item.tab==="iqc"||item.tab==="pqc"||item.tab==="oqc"||item.tab==="standards"?"qualityMenu":"");
+   const href="/?desktop=1&mobile=1&mobileTab="+encodeURIComponent(item.tab)+(openMenu?"&mobileMenu="+encodeURIComponent(openMenu):"");
+   html+='<a class="menu" href="'+href+'" data-tab="'+esc(item.tab)+'"><span class="icon">'+esc(item.icon)+'</span><span class="label">'+esc(item.label)+'</span><span class="chev">›</span></a>';
  });
  root.innerHTML=html;empty.style.display=count?"none":"block";
- root.querySelectorAll(".menu").forEach(btn=>btn.onclick=()=>{
-   const tab=btn.dataset.tab;
-   const openMenu=tab==="woIssue"||tab==="prod"?"productionMenu":(tab==="iqc"||tab==="pqc"||tab==="oqc"||tab==="standards"?"qualityMenu":"");
-   try{
-     sessionStorage.setItem("qmes_current_tab",tab);
-     if(openMenu)sessionStorage.setItem("qmes_open_menu",openMenu);else sessionStorage.removeItem("qmes_open_menu");
-   }catch(_){}
-   location.assign("/?desktop=1&mobile=1&mobileTab="+encodeURIComponent(tab)+(openMenu?"&mobileMenu="+encodeURIComponent(openMenu):""));
- });
 }
 async function auth(){
  try{
