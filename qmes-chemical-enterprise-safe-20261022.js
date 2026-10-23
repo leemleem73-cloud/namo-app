@@ -58,6 +58,7 @@ function ensureSchema() {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       ALTER TABLE qmes_instruments ADD COLUMN IF NOT EXISTS use_range TEXT NOT NULL DEFAULT '';
+      ALTER TABLE qmes_instruments ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
       CREATE INDEX IF NOT EXISTS qmes_instrument_due_idx ON qmes_instruments(next_calibration_on, status);
 
       CREATE TABLE IF NOT EXISTS qmes_calibrations (
@@ -184,7 +185,7 @@ function install(app) {
           (SELECT updated_at FROM qmes_instrument_photos p WHERE p.instrument_id=i.id) AS photo_updated_at,
           (SELECT COUNT(*)::int FROM qmes_calibrations c WHERE c.instrument_id=i.id) AS calibration_count
         FROM qmes_instruments i
-        WHERE ($1='' OR instrument_no ILIKE '%'||$1||'%' OR instrument_name ILIKE '%'||$1||'%' OR model ILIKE '%'||$1||'%' OR serial_no ILIKE '%'||$1||'%')
+        WHERE i.deleted_at IS NULL AND ($1='' OR instrument_no ILIKE '%'||$1||'%' OR instrument_name ILIKE '%'||$1||'%' OR model ILIKE '%'||$1||'%' OR serial_no ILIKE '%'||$1||'%')
         ORDER BY id DESC LIMIT 500
       `, [q]);
       res.json({ success: true, data: rows.rows });
@@ -225,6 +226,18 @@ function install(app) {
   });
 
 
+
+  app.post('/api/qmes-instruments/bulk-delete',auth,async(req,res)=>{
+    const input=req.body?.ids;
+    if(!Array.isArray(input)||!input.length||input.length>500||input.some(id=>!Number.isSafeInteger(Number(id))||Number(id)<1))return fail(res,400,'삭제할 계측기를 선택하세요.');
+    const ids=[...new Set(input.map(Number))];
+    try{
+      await ensureSchema();
+      const result=await pool.query('UPDATE qmes_instruments SET deleted_at=NOW(),updated_at=NOW() WHERE id=ANY($1::bigint[]) AND deleted_at IS NULL RETURNING id',[ids]);
+      res.json({success:true,data:{deleted_ids:result.rows.map(row=>String(row.id)),deleted_count:result.rowCount}});
+    }catch(error){console.error('[QMES instrument delete]',error);fail(res,500,'계측기 삭제 실패');}
+  });
+
   app.patch('/api/qmes-instruments/:id', auth, async(req,res)=>{
     const id=Number(req.params.id),b=req.body||{};
     if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'계측기 번호를 확인하세요.');
@@ -240,7 +253,7 @@ function install(app) {
         UPDATE qmes_instruments SET instrument_name=$1,maker=$2,model=$3,serial_no=$4,
           department=$5,location=$6,calibration_cycle_months=$7,last_calibration_on=$8,
           next_calibration_on=$9,status=$10,note=$11,use_range=$13,updated_at=NOW()
-        WHERE id=$12 RETURNING *
+        WHERE id=$12 AND deleted_at IS NULL RETURNING *
       `,[name,str(b.maker,120),str(b.model,120),str(b.serial_no,120),str(b.department,120),
         str(b.location,160),cycle,last||null,next||null,status,str(b.note,1000),id,str(b.use_range,240)]);
       if(!result.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
@@ -264,7 +277,7 @@ function install(app) {
       (type==='image/jpeg'&&data[0]===255&&data[1]===216&&data[2]===255)||
       (type==='image/webp'&&data.toString('ascii',0,4)==='RIFF'&&data.toString('ascii',8,12)==='WEBP'));
     if(!valid)return fail(res,400,'5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');
-    try{await ensureSchema();const exists=await pool.query('SELECT id FROM qmes_instruments WHERE id=$1',[id]);if(!exists.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
+    try{await ensureSchema();const exists=await pool.query('SELECT id FROM qmes_instruments WHERE id=$1 AND deleted_at IS NULL',[id]);if(!exists.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
       const result=await pool.query('INSERT INTO qmes_instrument_photos(instrument_id,content_type,image_data) VALUES($1,$2,$3) ON CONFLICT(instrument_id) DO UPDATE SET content_type=EXCLUDED.content_type,image_data=EXCLUDED.image_data,updated_at=NOW() RETURNING updated_at',[id,type,data]);
       res.json({success:true,data:{updated_at:result.rows[0].updated_at}});
     }catch(error){console.error('[QMES instrument photo save]',error);fail(res,500,'사진 저장 실패');}
@@ -292,7 +305,7 @@ function install(app) {
     const client=await pool.connect();
     try{
       await ensureSchema();await client.query('BEGIN');
-      const exists=await client.query('SELECT id FROM qmes_instruments WHERE id=$1 FOR UPDATE',[instrumentId]);
+      const exists=await client.query('SELECT id FROM qmes_instruments WHERE id=$1 AND deleted_at IS NULL FOR UPDATE',[instrumentId]);
       if(!exists.rowCount){await client.query('ROLLBACK');return fail(res,404,'계측기를 찾을 수 없습니다.');}
       const inserted=await client.query(`
         INSERT INTO qmes_calibrations(instrument_id,calibration_on,next_due_on,agency,certificate_no,result,note,created_by)
