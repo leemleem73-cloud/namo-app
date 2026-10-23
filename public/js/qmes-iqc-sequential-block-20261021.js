@@ -30,6 +30,19 @@
   `;
   document.head.appendChild(style);
 
+  const failStyle=document.createElement('style');
+  failStyle.id='iqc-auto-fail-red-20261023';
+  failStyle.textContent=`
+    .std-inspection[data-inspection-type="incoming"] #stdOverallJudge[data-iqc-fail="1"],
+    .std-inspection[data-inspection-type="incoming"] .std-row-judge[data-iqc-fail="1"]{
+      color:#dc2626!important;
+      font-weight:900!important;
+      border-color:#fca5a5!important;
+      background:#fff5f5!important;
+    }
+  `;
+  document.head.appendChild(failStyle);
+
   function setLocked(input, locked) {
     if (locked) {
       if (!lockedControls.has(input)) {
@@ -61,6 +74,10 @@
       });
       const firstFail = rowFailed.findIndex(Boolean);
       table.classList.toggle('iqc-sequential-active', firstFail >= 0);
+      rows.forEach((row,index)=>{
+        const judge=row.querySelector('.std-row-judge');
+        if(judge) judge.dataset.iqcFail=(judgments[index]==='불합격' || rowFailed[index])?'1':'0';
+      });
       rows.forEach((row, index) => {
         const locked = firstFail >= 0 && index > firstFail;
         row.classList.toggle('iqc-sequential-locked', locked);
@@ -79,6 +96,7 @@
       if (overall) {
         const value = firstFail >= 0 ? '불합격' : judgments.every(value => value === '합격') ? '합격' : '대기';
         if (overall.value !== value) overall.value = value;
+        overall.dataset.iqcFail = value === '불합격' ? '1' : '0';
       }
       let warning = table.parentElement.querySelector('.iqc-sequential-warning');
       if (firstFail >= 0) {
