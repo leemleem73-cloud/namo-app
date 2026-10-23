@@ -133,7 +133,7 @@ const titles={
 '수주납기 관리':['수주납기 관리 실무 사용법','영업 / 구매 > 수주납기 관리 > 조회 · 신규등록','수주납기 조회부터 신규 수주 등록, 납기일정과 진행상태 관리, 저장까지 실제 업무 순서대로 안내합니다.'],
 '구매발주 관리':['구매발주 관리 실무 사용법','영업 / 구매 > 구매발주 관리 > 조회 · 신규등록','구매발주 조회부터 신규 발주 등록, 다품목 입력, 금액 계산, 발주서·품의서 인쇄 및 저장까지 실제 업무 순서대로 안내합니다.'],
 '변경관리':['변경관리','품질관리 > 변경관리','공정·제품·기준·설비 변경사항과 승인 이력을 관리합니다.'],
-'SPC / Trend':['SPC / Trend 실무 사용법','품질관리 > SPC / Trend','검사항목별 측정값 추세, 평균·표준편차, Cp·Cpk 및 공정능력 판정을 확인하는 방법을 안내합니다.'],
+'SPC / Trend':['SPC / Trend 조회 방법','품질관리 > SPC / Trend','검사항목을 선택하고 SPC / Trend 결과를 조회하는 방법만 간단하게 안내합니다.'],
 '계측기관리':['계측기관리','설비관리 > 계측기관리','검사에 사용하는 계측기의 상태와 관리정보를 확인합니다.'],
 '검교정관리':['검교정관리','설비관리 > 검교정관리','계측기 검교정 일정과 결과를 관리합니다.'],
 '작업지시서':['작업지시서 실무 사용법','생산관리 > 작업지시서 > 조회 · 신규등록','작업지시서 조회부터 신규등록, 원료 투입계획, 저장·발송·인쇄까지 실제 업무 순서대로 안내합니다.'],
@@ -403,20 +403,32 @@ function ncrRegGuideHtml(){return '<div class="workActual"><div class="regShell"
 '</div>'}
 
 function spcGuideHtml(){return '<div class="workActual">'+
-'<div class="waHead"><div><strong>SPC / Trend</strong><div style="margin-top:4px;color:#738397">검사항목별 공정능력 및 추세 분석</div></div></div>'+
+'<div class="waHead"><div><strong>SPC / Trend 조회</strong><div style="margin-top:4px;color:#738397">검사항목을 선택하여 품질 추세를 조회합니다.</div></div></div>'+
+'<div class="waFilters" style="grid-template-columns:1.2fr 1.2fr 1fr auto">'+
+'<div class="waField"><span>검사항목</span><div class="waInput">입도</div></div>'+
+'<div class="waField"><span>제품명</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>LOT</span><div class="waInput">전체</div></div>'+
+'<div class="waField"><span>&nbsp;</span><button style="width:72px">조회</button></div>'+
+'</div>'+
 '<div style="padding:12px 14px;border-bottom:1px solid #e2e8ef"><div style="display:flex;flex-wrap:wrap;gap:7px">'+
-'['+'["입도","Dmax ≤ 10 µm"],["점도","관리규격 적용"],["고형분","관리규격 적용"],["접착력","≥ 0.4 kgf"],["수분율","< 2,000 ppm"],["절연저항","≥ 200 MΩ"],["전해액 팽윤성","< 120%"]'+'].map(function(x,i){return \'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px;\'+(i===0?\'border-color:#499cef;background:#eef6ff;\':\'\')+\'"><b style="display:block;color:#263b52">\'+x[0]+\'</b><small>\'+x[1]+\'</small></div>\'}).join("")'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px;border-color:#499cef;background:#eef6ff"><b style="display:block;color:#263b52">입도</b><small>Dmax ≤ 10 µm</small></div>'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px"><b style="display:block;color:#263b52">점도</b><small>관리규격 적용</small></div>'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px"><b style="display:block;color:#263b52">고형분</b><small>관리규격 적용</small></div>'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px"><b style="display:block;color:#263b52">접착력</b><small>≥ 0.4 kgf</small></div>'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px"><b style="display:block;color:#263b52">수분율</b><small>&lt; 2,000 ppm</small></div>'+
+'<div class="waInput" style="width:auto;min-width:118px;height:auto;padding:8px 10px"><b style="display:block;color:#263b52">절연저항</b><small>≥ 200 MΩ</small></div>'+
 '</div></div>'+
 '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 14px;border-bottom:1px solid #e2e8ef">'+
-'<div class="waDetail"><div class="waDetailHead">평균 (x̄)</div><div class="waDetailBody">—</div></div>'+
-'<div class="waDetail"><div class="waDetailHead">표준편차 (σ)</div><div class="waDetailBody">—</div></div>'+
-'<div class="waDetail"><div class="waDetailHead">Cp</div><div class="waDetailBody">—</div></div>'+
-'<div class="waDetail"><div class="waDetailHead">Cpk</div><div class="waDetailBody">—</div></div>'+
-'<div class="waDetail"><div class="waDetailHead">공정능력 판정</div><div class="waDetailBody">데이터 없음</div></div>'+
+'<div class="waDetail"><div class="waDetailHead">평균 (x̄)</div><div class="waDetailBody">조회 결과</div></div>'+
+'<div class="waDetail"><div class="waDetailHead">표준편차 (σ)</div><div class="waDetailBody">조회 결과</div></div>'+
+'<div class="waDetail"><div class="waDetailHead">Cp</div><div class="waDetailBody">조회 결과</div></div>'+
+'<div class="waDetail"><div class="waDetailHead">Cpk</div><div class="waDetailBody">조회 결과</div></div>'+
+'<div class="waDetail"><div class="waDetailHead">공정능력 판정</div><div class="waDetailBody">조회 결과</div></div>'+
 '</div>'+
-'<div style="padding:14px"><div class="waDetail" style="min-height:260px"><div class="waDetailHead">검사값 Trend Chart</div><div style="position:relative;height:220px;padding:18px 22px 24px 46px;background:linear-gradient(#fff,#fbfcfd)"><div style="position:absolute;left:46px;right:22px;top:58px;border-top:1px dashed #2684c7"></div><div style="position:absolute;left:46px;right:22px;top:120px;border-top:1px dashed #d97706"></div><div style="position:absolute;left:46px;right:22px;bottom:34px;border-top:1px solid #dfe6ed"></div><div style="position:absolute;left:48px;bottom:10px;color:#8795a4">LOT / Batch 순서</div><div style="position:absolute;left:5px;top:88px;transform:rotate(-90deg);color:#8795a4">측정값</div></div></div></div>'+
-'<span class="call" style="left:22px;top:70px">1</span><span class="call" style="left:20px;top:155px">2</span><span class="call" style="right:22px;top:155px">3</span><span class="call" style="left:20px;bottom:130px">4</span>'+
+'<div style="padding:14px"><div class="waDetail" style="min-height:210px"><div class="waDetailHead">검사값 Trend Chart</div><div style="height:165px;display:flex;align-items:center;justify-content:center;color:#8291a3">조회한 검사항목의 추세 그래프가 표시됩니다.</div></div></div>'+
+'<span class="call" style="left:20px;top:75px">1</span><span class="call" style="right:20px;top:75px">2</span><span class="call" style="left:20px;top:185px">3</span><span class="call" style="left:20px;bottom:95px">4</span>'+
 '</div>'}
+
 
 function renderGuide(name){
  if(name==='작업지시서'){
@@ -495,12 +507,11 @@ function renderGuide(name){
    '<div class="step"><b>8</b>개선이 완료되면 <b>개선 완료</b>를 체크하고 효과 확인 및 개선 전후 비교를 작성합니다. 사진·검사성적서·원인분석 자료도 첨부할 수 있습니다.</div>'+
    '<div class="step"><b>9</b>신규 문서를 <b>NCR 발행 및 저장</b>한 뒤 검토·승인을 진행합니다. 부장 이상 또는 관리자만 검토·승인이 가능하며, 기존 문서는 인쇄 및 조치사항 저장이 가능합니다.</div>';
  }else if(name==='SPC / Trend'){
-   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">SPC / Trend 화면</div>'+spcGuideHtml()+'</div></div>';
-   steps.innerHTML='<div class="step"><b>1</b>상단에서 분석할 검사항목을 선택합니다. 현재 항목은 <b>입도, 점도, 고형분, 접착력, 수분율, 절연저항, 전해액 팽윤성</b>입니다.</div>'+
-   '<div class="step"><b>2</b>선택한 항목의 검사데이터가 충분하면 <b>평균(x̄), 표준편차(σ), Cp, Cpk</b>가 자동 계산됩니다. 데이터가 2건 미만이면 값이 표시되지 않습니다.</div>'+
-   '<div class="step"><b>3</b><b>공정능력 판정</b>은 Cpk 기준으로 확인합니다. Cpk ≥ 1.67은 우수, ≥ 1.33은 적합, 1.00~1.33 미만은 개선 필요, 1.00 미만은 부적합으로 표시됩니다.</div>'+
-   '<div class="step"><b>4</b>하단 Trend Chart에서 검사값 변화를 확인합니다. 규격상한(USL)·규격하한(LSL)이 있는 항목은 규격선이 표시되고, 데이터가 있으면 평균선도 함께 표시됩니다.</div>'+
-   '<div class="step"><b>5</b>SPC 값은 공정검사·출하검사 등 실제 검사 측정데이터가 누적되어야 의미가 있습니다. 값이 비어 있으면 먼저 해당 검사항목의 측정데이터 등록 여부를 확인합니다.</div>';
+   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">SPC / Trend 조회 방법</div>'+spcGuideHtml()+'</div></div>';
+   steps.innerHTML='<div class="step"><b>1</b><b>검사항목</b>에서 확인할 항목을 선택합니다. 입도, 점도, 고형분, 접착력, 수분율, 절연저항 등을 선택할 수 있습니다.</div>'+
+   '<div class="step"><b>2</b>필요하면 제품명과 LOT를 선택한 뒤 <b>조회</b> 버튼을 클릭합니다.</div>'+
+   '<div class="step"><b>3</b>조회 결과에서 평균, 표준편차, Cp, Cpk 및 공정능력 판정을 확인합니다.</div>'+
+   '<div class="step"><b>4</b>하단 <b>검사값 Trend Chart</b>에서 LOT별 측정값의 변화 추세를 확인합니다.</div>';
  }else{
    guideShot.innerHTML=iqcGuideHtml();
    steps.innerHTML='<div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div>';
