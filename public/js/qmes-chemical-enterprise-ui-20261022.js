@@ -320,6 +320,11 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
 .qce-modal .qce-instrument-form>.qce-field>label{justify-content:center!important;text-align:center!important}
 .qce-instrument-photo-dialog>img{max-width:min(360px,86vw)!important;max-height:calc(80dvh - 60px)!important}
 .qce-modal .qce-instrument-form .qce-instrument-photo-file{width:calc(100% - 14px)!important;font-size:11px!important}
+
+/* instrument-photo-row-height-20261023 */
+.qce-modal .qce-instrument-form .qce-field:has(>.qce-instrument-photo-file),.qce-modal .qce-instrument-form .qce-field:has(.qce-instrument-photo-file){min-height:42px!important}
+.qce-modal .qce-instrument-form .qce-field>.qce-instrument-photo-file,.qce-modal .qce-instrument-form .qce-field>div:has(>.qce-instrument-photo-file){min-width:0;display:flex;align-items:center}
+.qce-modal .qce-instrument-form .qce-instrument-photo-file{box-sizing:border-box!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:5px 7px!important;padding:3px 6px!important}
   `;
   document.head.appendChild(style);
 
