@@ -343,3 +343,125 @@ html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot .btn{
  width:100%!important;min-width:0!important;height:42px!important;margin:0!important;padding:0 6px!important;border-radius:8px!important;font-size:12px!important;
 }
 }
+
+
+/* Final mobile work-order LIST layout */
+@media (max-width:768px){
+html body.qmes-mobile-work-view #work{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;overflow:visible!important;
+}
+html body.qmes-mobile-work-view #work .module-shell{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 8px!important;padding:12px!important;
+ display:block!important;border:1px solid #dbe4ec!important;border-radius:12px!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .nwi-title{
+ display:block!important;width:100%!important;margin:0 0 10px!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .nwi-title>strong{
+ display:block!important;width:100%!important;font-size:18px!important;line-height:1.4!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .module-toolbar{
+ display:block!important;width:100%!important;margin:0!important;padding:0!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools .btn{
+ width:100%!important;min-width:0!important;height:44px!important;margin:0!important;padding:0 10px!important;
+ border-radius:8px!important;font-size:13px!important;white-space:normal!important;line-height:1.25!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 8px!important;padding:12px!important;
+ border:1px solid #dbe4ec!important;border-radius:12px!important;background:#fff!important;overflow:visible!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;min-width:0!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid>label{
+ display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid>label>span{
+ display:block!important;margin:0 0 4px!important;font-size:11px!important;font-weight:800!important;color:#607487!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry :is(input,select,.nwi-period-trigger){
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:42px!important;
+ margin:0!important;padding:0 10px!important;border:1px solid #cbd8e3!important;border-radius:8px!important;
+ box-sizing:border-box!important;font-size:14px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-actions{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;margin-top:10px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-count{
+ grid-column:1/-1!important;display:block!important;width:100%!important;text-align:left!important;font-size:12px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-actions .btn{
+ width:100%!important;min-width:0!important;height:42px!important;margin:0!important;border-radius:8px!important;
+}
+html body.qmes-mobile-work-view #work .nwi-period-popup{
+ position:fixed!important;left:8px!important;right:8px!important;top:70px!important;z-index:22000!important;
+ width:auto!important;max-width:none!important;max-height:calc(100vh - 90px)!important;overflow:auto!important;
+}
+html body.qmes-mobile-work-view #work .nwi-list-head{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0 0 8px!important;padding:10px 12px!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ border:1px solid #dbe4ec!important;border-radius:10px!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #work .module-body{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+ overflow:visible!important;border:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ table-layout:auto!important;border:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table colgroup,
+html body.qmes-mobile-work-view #work .work-list-table thead{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody{
+ display:block!important;width:100%!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody tr{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ margin:0 0 10px!important;padding:10px 12px!important;border:1px solid #d8e2eb!important;border-radius:12px!important;
+ background:#fff!important;box-shadow:0 3px 12px rgba(22,53,78,.05)!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody tr[hidden]{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td{
+ display:grid!important;grid-template-columns:108px minmax(0,1fr)!important;align-items:start!important;gap:10px!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;min-height:34px!important;
+ padding:7px 0!important;border:0!important;border-bottom:1px solid #edf2f6!important;
+ background:#fff!important;text-align:left!important;white-space:normal!important;overflow:visible!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td:last-child{
+ border-bottom:0!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td::before{
+ content:attr(data-mobile-label)!important;display:block!important;min-width:0!important;
+ color:#718398!important;font-size:11px!important;font-weight:800!important;line-height:1.45!important;text-align:left!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td>*{
+ min-width:0!important;max-width:100%!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td>a{
+ display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table .work-row-actions{
+ display:flex!important;justify-content:flex-end!important;gap:6px!important;flex-wrap:wrap!important;width:100%!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table .work-row-actions>.btn{
+ height:34px!important;min-height:34px!important;padding:0 10px!important;font-size:11px!important;border-radius:7px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-detail{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:8px 0 0!important;border-radius:12px!important;
+}
+}
+@media (max-width:390px){
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{grid-template-columns:1fr!important}
+html body.qmes-mobile-work-view #work .work-list-table tbody td{grid-template-columns:96px minmax(0,1fr)!important}
+}
