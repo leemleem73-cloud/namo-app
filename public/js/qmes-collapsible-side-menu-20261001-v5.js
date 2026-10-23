@@ -4,7 +4,6 @@
 const STYLE_ID="qmes-shell-capture-20261002";
 const HEADER_ID="qmes-erp-header";
 const SIDEBAR_ID="qmes-erp-sidebar";
-const MOBILE_URL="/mobile.html?v=20260903-mobile-dedicated1";
 
 const clean=v=>String(v||"").replace(/\s+/g," ").trim();
 const currentUser=()=>window.__QMES_CURRENT_USER__||(()=>{try{return JSON.parse(sessionStorage.getItem("qmes-current-user-v1")||"null");}catch(_){return null;}})()||{};
@@ -45,7 +44,6 @@ function ensureStyle(){
     html body #${HEADER_ID} .qh-btn:hover,html body #${HEADER_ID} .qh-account-btn:hover{background:rgba(255,255,255,.11)!important;border-color:rgba(255,255,255,.2)!important}
     html body #${HEADER_ID} :is(.qh-btn,.qh-account-btn,.qh-menu button):focus-visible{outline:2px solid #fff!important;outline-offset:3px!important}
     html body #${HEADER_ID} .qh-btn svg,html body #${HEADER_ID} .qh-avatar svg,html body #${HEADER_ID} .qh-caret svg{width:22px!important;height:22px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.65!important;stroke-linecap:round!important;stroke-linejoin:round!important;flex:none!important}
-    html body #${HEADER_ID} .qh-mobile{min-width:86px!important}
     html body #${HEADER_ID} .qh-notice{position:relative!important;width:40px!important;padding:0!important}
     html body #${HEADER_ID} .qh-notice-dot{position:absolute!important;top:5px!important;right:6px!important;width:6px!important;height:6px!important;border:1.5px solid #fff!important;border-radius:999px!important;background:#ef5966!important;box-sizing:content-box!important}
     html body #${HEADER_ID} .qh-account{position:relative!important;min-width:170px!important;max-width:360px!important;height:48px!important;flex:0 0 auto!important;margin:0!important}
@@ -143,9 +141,6 @@ function build(){
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8.5a6 6 0 0 0-12 0c0 7-2.25 7-2.25 8.5h16.5c0-1.5-2.25-1.5-2.25-8.5"></path><path d="M9.5 20a2.75 2.75 0 0 0 5 0"></path></svg>
         <span class="qh-notice-dot" aria-hidden="true"></span>
       </button>
-      <button type="button" class="qh-btn qh-mobile" aria-label="모바일" title="모바일">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6.5" y="2.5" width="11" height="19" rx="2.75"></rect><path d="M10 5h4M11 18.5h2"></path></svg><span>모바일</span>
-      </button>
     </div>
   `;
   syncIdentity(header);
@@ -170,7 +165,6 @@ function build(){
   });
 
   header.querySelector(".qh-brand").onclick=()=>navigate("dash");
-  header.querySelector(".qh-mobile").onclick=()=>window.location.assign(MOBILE_URL);
   header.querySelector(".qh-notice").onclick=()=>{
     const btn=nativeButtons().find(b=>String(b.getAttribute("aria-label")||"").includes("알림"));
     if(btn)btn.click();
