@@ -60,7 +60,15 @@ function render(){
    html+='<button class="menu" type="button" data-tab="'+esc(item.tab)+'"><span class="icon">'+esc(item.icon)+'</span><span class="label">'+esc(item.label)+'</span><span class="chev">›</span></button>';
  });
  root.innerHTML=html;empty.style.display=count?"none":"block";
- root.querySelectorAll(".menu").forEach(btn=>btn.onclick=()=>location.assign("/?desktop=1&mobileWork="+encodeURIComponent(btn.dataset.tab)));
+ root.querySelectorAll(".menu").forEach(btn=>btn.onclick=()=>{
+   const tab=btn.dataset.tab;
+   const openMenu=tab==="woIssue"||tab==="prod"?"productionMenu":(tab==="iqc"||tab==="pqc"||tab==="oqc"||tab==="standards"?"qualityMenu":"");
+   try{
+     sessionStorage.setItem("qmes_current_tab",tab);
+     if(openMenu)sessionStorage.setItem("qmes_open_menu",openMenu);else sessionStorage.removeItem("qmes_open_menu");
+   }catch(_){}
+   location.assign("/?desktop=1&mobile=1");
+ });
 }
 async function auth(){
  try{
