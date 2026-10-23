@@ -225,6 +225,17 @@ html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[c
 html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class]{border:0!important;border-collapse:separate!important;border-spacing:0!important}
 html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class]>tbody>tr>td.std-document-name{padding-top:4px!important;padding-bottom:4px!important;line-height:16px!important}
 html body #standard.module-page > .module-shell > .module-body > table.std-document-list[class]>tbody>tr>td.std-document-name::after{margin-top:0!important;line-height:16px!important;font-size:11px!important}
+
+/* quality-single-light-grid-20261023: remove dark nested outlines; one light cell edge. */
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) .iqc-work-frame .ip-table-wrap,html body #standard.module-page>.module-shell>.module-body{border:0!important;outline:0!important;box-shadow:none!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table){border-collapse:collapse!important;border-spacing:0!important;border:0!important;outline:0!important;box-shadow:none!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>:is(thead,tbody),html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>:is(thead,tbody)>tr{border:0!important;outline:0!important;box-shadow:none!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>:is(thead,tbody)>tr>:is(th,td){border:1px solid #e6eaf0!important;outline:0!important;box-shadow:none!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]{border:0!important;outline:0!important;box-shadow:none!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody),html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr{border:0!important;outline:0!important;box-shadow:none!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:is(th,td){border:0!important;border-right:1px solid #e6eaf0!important;border-bottom:1px solid #e6eaf0!important;outline:0!important;box-shadow:none!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>th{border-top:1px solid #e6eaf0!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:first-child{border-left:1px solid #e6eaf0!important}
   `;
   document.head.appendChild(style);
 
