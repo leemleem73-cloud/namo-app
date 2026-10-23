@@ -200,7 +200,7 @@ svg{display:block}
 #namo-portal-root .dock-toggle:hover{background:rgba(38,48,58,.9)}
 #namo-portal-root .dock-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .28s ease}
 #namo-portal-root .dock-more{
-  width:760px;max-width:min(92vw,760px);max-height:0;opacity:0;overflow:hidden;pointer-events:none;
+  box-sizing:border-box;width:747px;max-width:min(92vw,747px);max-height:0;opacity:0;overflow:hidden;pointer-events:none;
   margin-bottom:-9px;padding:0 18px;border:0 solid rgba(255,255,255,.35);border-radius:22px 22px 0 0;
   background:rgba(58,62,65,.82);backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(5,23,38,.32);
   transform:translateY(16px);transition:max-height .32s ease,opacity .22s ease,transform .32s ease,padding .32s ease,border-width .2s ease
@@ -214,7 +214,7 @@ svg{display:block}
 #namo-portal-root .dock-wrap.dock-expanded .dock{border-radius:0 0 23px 23px}
 #namo-portal-root .dock-wrap.dock-expanded .dock-toggle svg{transform:rotate(180deg)}
 @media(max-width:900px){
- #namo-portal-root .dock-more{width:min(94vw,620px)}
+ #namo-portal-root .dock-more{width:min(94vw,620px);box-sizing:border-box}
  #namo-portal-root .dock-more-grid{grid-template-columns:repeat(4,minmax(68px,1fr))}
  #namo-portal-root .dock-wrap.dock-expanded .dock-more{max-height:560px}
 }
