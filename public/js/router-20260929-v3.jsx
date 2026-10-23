@@ -91,6 +91,13 @@ function qmesIsCommercialRestrictedTab(tab){return tab==="erpSales"||tab==="erpP
 
 function QMESChemical({user,onLogout}){
   const [tab,setTab]=useState(()=>{
+    let mobileTab="";
+    try{mobileTab=new URLSearchParams(window.location.search).get("mobileTab")||"";}catch(error){}
+    const requested=qmesProcessCleanNavigation(mobileTab);
+    if(requested&&TABS.some(item=>item.id===requested)){
+      safeStorageSet("qmes_current_tab",requested);
+      return requested;
+    }
     const saved=safeStorageGet("qmes_current_tab","dash");
     if(!TABS.some(item=>item.id===saved))return "dash";
     if(qmesIsCommercialRestrictedTab(saved)&&!qmesCanAccessCommercialErp(user))return "dash";
