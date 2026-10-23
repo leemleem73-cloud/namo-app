@@ -128,6 +128,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 @keyframes workPulse{0%{opacity:1;transform:scale(.45)}100%{opacity:0;transform:scale(1.55)}}
 .workVideoProgress{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.35);z-index:12}
 .workVideoProgress>span{display:block;height:100%;width:0;background:#2f8cf0}
+.workVideoSim .call{z-index:11;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+.workVideoSim .call.activeStep{transform:scale(1.2);box-shadow:0 0 0 7px rgba(239,68,68,.18),0 6px 18px rgba(239,68,68,.32);background:#ef2f2f}
 .workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #d6e1ec;color:#3e6185;font-size:11px;font-weight:900}
 </style>
 </head>
@@ -895,30 +897,44 @@ function startWorkorderVideoSim(){
   videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">1 / 9</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
   const canvas=document.getElementById('workVideoCanvas'),cursor=document.getElementById('workVideoCursor'),pulse=document.getElementById('workVideoPulse'),caption=document.getElementById('workVideoCaption'),badge=document.getElementById('workVideoStepBadge'),bar=document.getElementById('workVideoProgressBar');
   const steps=[
-    {view:'list',cap:'1. 신규 작업지시서 등록',sub:'우측 상단 + 신규 작업지시서 등록 버튼을 클릭합니다.',x:86,y:11,click:true},
-    {view:'list',cap:'2. 조회조건 설정',sub:'고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간을 입력합니다.',x:49,y:22},
-    {view:'list',cap:'3. 작업지시 현황 조회',sub:'조회 버튼을 클릭하고 필요하면 조건 지우기로 검색조건을 초기화합니다.',x:93,y:24,click:true},
-    {view:'list',cap:'4. 작업지시 상세내역 확인',sub:'목록에서 작업지시를 선택하고 하단 상세내역에서 세부내용을 확인합니다.',x:52,y:58},
-    {view:'reg',cap:'5. 작업지시서 저장',sub:'신규등록 화면에서 입력을 마친 후 상단 저장 버튼으로 작업지시서를 저장합니다.',x:90,y:8,click:true},
-    {view:'reg',cap:'6. 작업 기본정보 입력',sub:'작업일자 · 고객사명 · 제품명 · 생산 LOT NO · 설비명 · 작업자 · 계획수량 · 작업기간 · 진행상태 · 생산구분을 입력합니다.',x:61,y:28},
-    {view:'reg',cap:'7. 원료 투입계획 입력',sub:'원료명 · 원료 LOT NO · 계획투입량을 등록하고 자동 계산된 투입비율을 확인합니다.',x:61,y:57},
-    {view:'reg',cap:'8. 작업지시사항 및 발송대상 확인',sub:'작업지시사항을 확인하고 필요한 수신부서와 담당자를 선택합니다.',x:61,y:74},
-    {view:'reg',cap:'9. 목록으로 · 저장 후 인쇄 · 저장',sub:'업무 목적에 맞게 목록으로, 저장 후 인쇄, 저장 버튼을 사용합니다.',x:86,y:91,click:true}
+    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'마우스가 1번으로 이동한 뒤 + 신규 작업지시서 등록 버튼을 안내합니다.',click:true},
+    {view:'list',no:'2',cap:'2. 조회조건 설정',sub:'마우스가 2번으로 이동해 고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간을 안내합니다.'},
+    {view:'list',no:'3',cap:'3. 작업지시 현황 조회',sub:'마우스가 3번으로 이동해 조건 지우기 · 조회 · 접기 버튼을 안내합니다.',click:true},
+    {view:'list',no:'4',cap:'4. 작업지시 상세내역 확인',sub:'마우스가 4번으로 이동해 작업지시 상세내역 확인 영역을 안내합니다.'},
+    {view:'reg',no:'5',cap:'5. 저장 / 목록',sub:'마우스가 5번으로 이동해 신규등록 화면의 목록 · 저장 버튼을 안내합니다.',click:true},
+    {view:'reg',no:'6',cap:'6. 작업 기본정보',sub:'마우스가 6번으로 이동해 작업지시번호 · 작업일자 · 고객사 · 제품명 등 기본정보를 안내합니다.'},
+    {view:'reg',no:'7',cap:'7. 원료 투입계획',sub:'마우스가 7번으로 이동해 원료명 · 원료 LOT · 계획투입량 · 투입비율 영역을 안내합니다.'},
+    {view:'reg',no:'8',cap:'8. 작업지시사항 / 발송대상',sub:'마우스가 8번으로 이동해 작업지시사항과 수신부서 · 담당자 선택 영역을 안내합니다.'},
+    {view:'reg',no:'9',cap:'9. 목록으로 · 저장 후 인쇄 · 저장',sub:'마우스가 9번으로 이동해 최종 업무 버튼을 안내합니다.',click:true}
   ];
   let index=0;
+  const moveCursorToCall=(no,click)=>{
+    const target=[...canvas.querySelectorAll('.call')].find(el=>el.textContent.trim()===String(no));
+    if(!target)return;
+    canvas.querySelectorAll('.call').forEach(el=>el.classList.remove('activeStep'));
+    target.classList.add('activeStep');
+    const sim=videoStage.querySelector('.workVideoSim');
+    const sr=sim.getBoundingClientRect(),tr=target.getBoundingClientRect();
+    const x=tr.left-sr.left+tr.width/2;
+    const y=tr.top-sr.top+tr.height/2;
+    cursor.style.left=Math.max(4,x-7)+'px';
+    cursor.style.top=Math.max(4,y-8)+'px';
+    cursor.style.transform=click?'scale(.82)':'scale(1)';
+    if(click){
+      pulse.style.left=(x-24)+'px';pulse.style.top=(y-24)+'px';
+      pulse.classList.remove('on');void pulse.offsetWidth;pulse.classList.add('on');
+    }
+  };
   const draw=()=>{
     const s=steps[index];
     canvas.style.opacity='0';
     setTimeout(()=>{
       canvas.innerHTML=s.view==='list'?workListGuideHtml():workRegGuideHtml();
-      canvas.querySelectorAll('.call').forEach(x=>x.remove());
       canvas.style.opacity='1';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>moveCursorToCall(s.no,s.click)));
     },120);
     caption.innerHTML=s.cap+'<small>'+s.sub+'</small>';
     badge.textContent=(index+1)+' / '+steps.length;
-    cursor.style.left=s.x+'%';cursor.style.top=s.y+'%';
-    cursor.style.transform=s.click?'scale(.82)':'scale(1)';
-    if(s.click){pulse.style.left='calc('+s.x+'% - 14px)';pulse.style.top='calc('+s.y+'% - 10px)';pulse.classList.remove('on');void pulse.offsetWidth;pulse.classList.add('on');}
   };
   draw();
   let elapsed=0,total=steps.length*3200;
