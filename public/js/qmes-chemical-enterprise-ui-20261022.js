@@ -325,6 +325,11 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
 .qce-modal .qce-instrument-form .qce-field:has(>.qce-instrument-photo-file),.qce-modal .qce-instrument-form .qce-field:has(.qce-instrument-photo-file){min-height:42px!important}
 .qce-modal .qce-instrument-form .qce-field>.qce-instrument-photo-file,.qce-modal .qce-instrument-form .qce-field>div:has(>.qce-instrument-photo-file){min-width:0;display:flex;align-items:center}
 .qce-modal .qce-instrument-form .qce-instrument-photo-file{box-sizing:border-box!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:5px 7px!important;padding:3px 6px!important}
+
+/* instrument-list-checkboxes-20261023 */
+html body #instrumentMgmt .qce-table :is(th,td):first-child:has(>input[type=checkbox]){padding:0!important;text-align:center!important;vertical-align:middle!important}
+html body #instrumentMgmt .qce-table input[type=checkbox]{appearance:auto;width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle;accent-color:#188ad1}
+html body #instrumentMgmt .qce-table tbody tr.qce-inst-selected>td{background:#eef6ff!important}
   `;
   document.head.appendChild(style);
 
@@ -631,13 +636,26 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
   function renderInstrument(){
     const root=document.getElementById('instrumentMgmt');if(!root)return;
     if(root._instrumentLoad&&root.querySelector('.qce-inst-body')){root._instrumentLoad();return;}
+    const selectedIds=new Set();
+    const syncSelection=()=>{
+      const boxes=Array.from(root.querySelectorAll('.qce-inst-row-select')),all=root.querySelector('.qce-inst-select-all');
+      boxes.forEach(box=>{box.checked=selectedIds.has(box.value);box.closest('tr').classList.toggle('qce-inst-selected',box.checked);});
+      if(all){all.checked=boxes.length>0&&boxes.every(box=>box.checked);all.indeterminate=boxes.some(box=>box.checked)&&!all.checked;}
+    };
+    root._resetListSelection=()=>{selectedIds.clear();syncSelection();};
+    new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const paint=rows=>{
         root._instrumentRows=rows;
         rows.filter(row=>String(row.id)==='1'||row.photo_updated_at).forEach(row=>prepareInstrumentPhoto(row).catch(()=>{}));
-        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:52px"><col><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+((String(r.id)==='1'||r.photo_updated_at)?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="11">등록된 계측기가 없습니다.</td></tr>'
+        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:34px"><col style="width:52px"><col><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th><input type="checkbox" class="qce-inst-select-all" aria-label="계측기 전체 선택"></th><th>No.</th><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
+          rows.length?rows.map((r,i)=>'<tr><td><input type="checkbox" class="qce-inst-row-select" value="'+esc(r.id)+'" aria-label="'+esc(r.instrument_no||r.instrument_name)+' 선택"></td><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+((String(r.id)==='1'||r.photo_updated_at)?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="12">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
+        root.querySelector('.qce-inst-select-all').onchange=event=>{
+          root.querySelectorAll('.qce-inst-row-select').forEach(box=>{if(event.target.checked)selectedIds.add(box.value);else selectedIds.delete(box.value);});syncSelection();
+        };
+        root.querySelectorAll('.qce-inst-row-select').forEach(box=>box.onchange=()=>{if(box.checked)selectedIds.add(box.value);else selectedIds.delete(box.value);syncSelection();});
+        syncSelection();
         root.querySelectorAll('[data-inst-photo]').forEach(button=>button.onclick=()=>openInstrumentPhoto(rows.find(row=>String(row.id)===button.dataset.instPhoto)));
         root.querySelectorAll('[data-inst-edit]').forEach(button=>button.onclick=()=>root._openInstrument(rows.find(row=>String(row.id)===button.dataset.instEdit)));
         root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),()=>{instrumentQueries.clear();load(true);}));
@@ -665,8 +683,8 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
       }
     };
     root._instrumentLoad=load;
-    root.querySelector('.qce-inst-search').onclick=()=>load(true);
-    root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
+    root.querySelector('.qce-inst-search').onclick=()=>{root._resetListSelection();load(true);};
+    root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter'){root._resetListSelection();load(true);}});
     const openInstrument=(record=null)=>{
       modal(record?'계측기 수정':'계측기 등록','<div class="qce-form qce-instrument-form">'+
       '<div class="qce-field"><label>계측기명</label><input data-k="instrument_name"></div><div class="qce-field"><label>사용 범위</label><input data-k="use_range" placeholder="예: 0~250 ℃"></div><div class="qce-field"><label>제조사</label><input data-k="maker"></div>'+
