@@ -358,6 +358,16 @@ svg{display:block}
 #namo-portal-root .dock-wrap.dock-expanded>.dock{display:none!important}
 #namo-portal-root .dock-wrap.dock-expanded .dock-more{border-radius:22px!important;padding-bottom:22px!important}
 </style>
+
+<style id="portal-one-menu-list-20261023">
+/* One set of tiles in both states: reveal only the additional row. */
+#namo-portal-root .dock-wrap .dock-more,#namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{display:block!important;grid-template-rows:none!important;max-height:none!important;height:var(--portal-first-menu-height,106px)!important;padding:22px 18px!important;opacity:1!important;transform:none!important;pointer-events:auto!important;overflow:hidden!important;transition:height .32s ease!important;border-radius:22px!important}
+#namo-portal-root .dock-wrap.dock-expanded .dock-more{height:var(--portal-full-menu-height,232px)!important}
+#namo-portal-root .dock-wrap .dock-more-grid{overflow:visible!important;grid-template-columns:repeat(8,minmax(0,1fr))!important}
+#namo-portal-root .dock-wrap .dock-more .app{height:auto}
+@media(max-width:900px){#namo-portal-root .dock-wrap .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(prefers-reduced-motion:reduce){#namo-portal-root .dock-wrap .dock-more{transition:none!important}}
+</style>
 </head>
 <body>
 <!-- QMES operational portal: existing navigation and business data are owned by the parent application. -->
@@ -533,18 +543,6 @@ svg{display:block}
          <button class="app portal-admin-item" type="button" data-portal-page="adminEmployees"><span class="tile t10"><span class="qmes-sidebar-glyph">👥</span></span><span class="title">직원등록현황</span></button>
        </div>
      </div>
-     <div class="dock">
-       <button class="app" type="button" data-action="종합현황"><span class="tile t1"><span class="qmes-sidebar-glyph" aria-hidden="true">▦</span></span><span class="title">종합현황</span></button>
-       <button class="app" type="button" data-action="작업지시"><span class="tile t2"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">작업지시</span></button>
-       <button class="app" type="button" data-action="생산관리"><span class="tile t3"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">생산관리</span></button>
-       <button class="app" type="button" data-action="수입검사"><span class="tile t4"><span class="qmes-sidebar-glyph" aria-hidden="true">🔬</span></span><span class="title">수입검사</span></button>
-       <button class="app" type="button" data-action="공정검사"><span class="tile t5"><span class="qmes-sidebar-glyph" aria-hidden="true">🧪</span></span><span class="title">공정검사</span></button>
-       <button class="app" type="button" data-action="출하검사"><span class="tile t6"><span class="qmes-sidebar-glyph" aria-hidden="true">📋</span></span><span class="title">출하검사</span></button>
-       <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><span class="qmes-sidebar-glyph" aria-hidden="true">🔎</span></span><span class="title">LOT 추적</span></button>
-
-       <button class="app" type="button" data-action="설비관리"><span class="tile t9"><span class="qmes-sidebar-glyph" aria-hidden="true">⚙️</span></span><span class="title">설비관리</span></button>
-       <button class="app" type="button" data-action="직원관리"><span class="tile t10"><span class="qmes-sidebar-glyph" aria-hidden="true">👥</span></span><span class="title">직원관리</span></button>
-     </div>
      <button class="dock-toggle" id="qmes-dock-toggle" type="button" aria-label="전체 메뉴 펼치기" aria-expanded="false" title="전체 메뉴 펼치기">
        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
      </button>
@@ -715,7 +713,8 @@ svg{display:block}
     toggle.setAttribute('aria-expanded',expanded?'true':'false');
     toggle.setAttribute('aria-label',expanded?'전체 메뉴 접기':'전체 메뉴 펼치기');
     toggle.title=expanded?'전체 메뉴 접기':'전체 메뉴 펼치기';
-    more.setAttribute('aria-hidden',expanded?'false':'true');
+    more.setAttribute('aria-hidden','false');
+    wrap.dispatchEvent(new Event('portal-menu-state'));
   };
   toggle.addEventListener('click',()=>{expanded=!expanded;apply();});
   more.querySelectorAll('[data-portal-page]').forEach(btn=>{
@@ -744,6 +743,24 @@ svg{display:block}
  }
  new ResizeObserver(align).observe(search);
  window.addEventListener('resize',align);align();
+})();
+</script>
+
+<script id="portal-one-menu-sizing-20261023">
+(function(){
+ const wrap=document.querySelector('.dock-wrap'),more=document.querySelector('.dock-more'),grid=document.querySelector('.dock-more-grid');
+ if(!wrap||!more||!grid)return;
+ function measure(){
+  const items=Array.from(grid.children).filter(e=>getComputedStyle(e).display!=='none');
+  if(!items.length)return;
+  const y=items[0].offsetTop,first=items.filter(e=>e.offsetTop===y);
+  const h=Math.max(...first.map(e=>e.offsetHeight));
+  wrap.style.setProperty('--portal-first-menu-height',(h+44)+'px');
+  wrap.style.setProperty('--portal-full-menu-height',(grid.getBoundingClientRect().height+44)+'px');
+  const expanded=wrap.classList.contains('dock-expanded');
+  items.forEach(e=>{const hidden=!expanded&&e.offsetTop!==y;e.inert=hidden;e.setAttribute('aria-hidden',hidden?'true':'false');});
+ }
+ new ResizeObserver(measure).observe(grid);window.addEventListener('resize',measure);wrap.addEventListener('portal-menu-state',measure);measure();
 })();
 </script>
 </body>
