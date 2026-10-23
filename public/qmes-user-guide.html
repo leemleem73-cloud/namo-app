@@ -34,23 +34,6 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .guide-dock-wrap.expanded{gap:0}
 @media(max-width:900px){.guide-dock-wrap,.guide-dock,.guide-dock-more{width:min(94vw,620px)}.guide-dock-more-grid,.guide-dock{grid-template-columns:repeat(4,minmax(68px,1fr))}.guide-dock-wrap.expanded .guide-dock-more{max-height:560px}}
 
-
-/* Live QMES screen guide */
-.live-guide-shell{position:relative;border:1px solid #d8e1ea;background:#eef3f7;border-radius:3px;overflow:hidden;min-height:640px}
-.live-guide-toolbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f7f9fb;border-bottom:1px solid #d8e1ea;color:#52677c;font-size:12px}
-.live-guide-toolbar strong{color:#23435f}
-.live-guide-frame-wrap{position:relative;height:610px;background:#fff;overflow:hidden}
-.live-guide-frame{width:100%;height:610px;border:0;background:#fff}
-.live-pin{position:absolute;z-index:8;width:30px;height:30px;border-radius:50%;background:#ef2b20;color:#fff;display:grid;place-items:center;font-weight:900;font-size:14px;box-shadow:0 0 0 4px rgba(255,255,255,.94),0 2px 8px rgba(0,0,0,.18);pointer-events:none}
-.live-pin.p1{left:7%;top:15%}.live-pin.p2{left:49%;top:15%}.live-pin.p3{right:5%;top:15%}
-.live-guide-note{margin-top:18px;border:1px solid #d7e2ed;background:#fff}
-.live-guide-note h3{margin:0;padding:11px 14px;background:#586cff;color:#fff;font-size:14px}
-.live-guide-note p{margin:0;padding:13px 15px;line-height:1.7;color:#52667a;font-size:13px}
-.guide-warning{margin:14px 0 0;border:1px solid #dfe6ee;background:#fafcff}
-.guide-warning .gw-title{padding:10px 13px;background:#7564f5;color:#fff;text-align:center;font-weight:800}
-.guide-warning .gw-body{padding:12px 14px;color:#3d5267;line-height:1.65}
-@media(max-width:900px){.live-guide-frame-wrap,.live-guide-frame{height:520px}}
-
 </style>
 </head>
 <body>
@@ -96,80 +79,32 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 </section>
 <section id="manual" class="manual">
 <aside class="side"><input class="menuSearch" placeholder="메뉴 검색">
-<div class="section"><div class="head">⌄ 홈</div><div class="item" data-page="종합 대시보드">종합 대시보드</div></div>
-<div class="section"><div class="head">⌄ 영업 / 구매</div><div class="item" data-page="수주납기 관리">수주납기 관리</div><div class="item" data-page="구매발주 관리">구매발주 관리</div></div>
 <div class="section"><div class="head">⌄ 생산관리</div><div class="item" data-page="작업지시서">작업지시서</div></div>
-<div class="section"><div class="head">⌄ 품질관리</div><div class="item" data-page="수입검사 IQC">수입검사 IQC</div><div class="item" data-page="공정검사 PQC">공정검사 PQC</div><div class="item" data-page="출하검사 OQC">출하검사 OQC</div><div class="item" data-page="부적합 NCR">부적합 NCR</div><div class="item" data-page="SPC / Trend">SPC / Trend</div><div class="item" data-page="변경관리">변경관리</div></div>
+<div class="section"><div class="head">⌄ 품질관리</div><div class="item" data-page="수입검사 IQC">수입검사 IQC</div><div class="item" data-page="공정검사 PQC">공정검사 PQC</div><div class="item" data-page="출하검사 OQC">출하검사 OQC</div><div class="item" data-page="부적합 NCR">부적합 NCR</div><div class="item" data-page="SPC / Trend">SPC / Trend</div></div>
 <div class="section"><div class="head">⌄ LOT 관리</div><div class="item" data-page="LOT 추적">LOT 추적</div></div>
 <div class="section"><div class="head">⌄ 설비관리</div><div class="item" data-page="설비관리">설비관리</div><div class="item" data-page="계측기관리">계측기관리</div><div class="item" data-page="검교정관리">검교정관리</div></div>
 <div class="section"><div class="head">⌄ 문서 / 결재</div><div class="item" data-page="기준서 / 문서관리">기준서 / 문서관리</div><div class="item" data-page="전자결재">전자결재</div></div>
+
 </aside>
 <main class="article">
-<div class="articleSearch"><input id="guideSearch" placeholder="궁금한 내용을 검색해보세요."><button id="guideSearchBtn">검색</button></div>
-<h2 id="articleTitle">작업지시서</h2><div id="crumb" class="crumb">생산관리 &gt; 작업지시서</div><p id="lead" class="lead">현재 QMES의 실제 작업지시서 화면을 기준으로 사용방법을 안내합니다.</p>
-<div class="guideShot" id="guideShot"></div>
-<div class="steps" id="steps"></div>
-<div class="guide-warning"><div class="gw-title">참고</div><div class="gw-body" id="guideReference">가이드 화면은 현재 QMES 운영 화면을 그대로 불러옵니다. 실제 입력·수정은 QMES 본 화면에서 진행하세요.</div></div>
-</main></main></section>
+<div class="articleSearch"><input placeholder="궁금한 내용을 검색해보세요."><button>검색</button></div>
+<h2 id="articleTitle">수입검사 성적서 등록</h2><div id="crumb" class="crumb">품질관리 &gt; 수입검사 IQC &gt; 성적서 등록</div><p id="lead" class="lead">수입 원재료의 LOT별 검사 결과를 등록하고 부적합 발생 시 후속 공정을 차단합니다.</p>
+<div class="guideShot"><div class="qmesMock"><div class="qhead">NAMO QMES · 수입검사 성적서 등록</div><div class="qbody"><div class="qlist"><div><b>수입검사 목록</b></div><div>2026-06-27 · 원료 A</div><div>2026-06-09 · 원료 B</div><div>2026-06-08 · 원료 C</div><div>2026-05-14 · 원료 D</div></div><div class="qform"><div class="row"><span>검사일자</span><b>2026-10-23</b><span>입고일자</span><b>2026-10-23</b></div><div class="row"><span>검사자</span><b>로그인 사용자</b><span>공급업체</span><b>공급업체 선택</b></div><div class="row"><span>원료명</span><b>원료명 선택</b><span>원료 LOT</span><b>LOT 입력</b></div><div class="row"><span>검사상태</span><b style="color:#dc2626">불합격</b><span>비고</span><b>조치사항 입력</b></div><div class="block">후속 공정 차단</div></div></div><span class="call c1">1</span><span class="call c2">2</span><span class="call c3">3</span></div></div>
+<div class="steps"><div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div></div>
+</main></section>
 <script>
 const home=document.getElementById('home'),manual=document.getElementById('manual'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab');
-const guidePages={
-'종합 대시보드':{id:'dashboard',title:'종합 대시보드',crumb:'홈 > 종합 대시보드',lead:'생산·품질·LOT 주요 현황을 한 화면에서 확인합니다.',steps:['상단 통합검색 또는 하단 바로가기에서 원하는 업무를 선택합니다.','우측 업무 현황에서 작업지시·품질검사·LOT 관련 현황을 확인합니다.','하단 화살표를 누르면 전체 QMES 업무 메뉴가 펼쳐집니다.'],ref:'대시보드는 QMES 전체 업무의 시작 화면입니다.'},
-'수주납기 관리':{id:'orders',title:'수주납기 관리',crumb:'영업 / 구매 > 수주납기 관리',lead:'수주일자·요청납기·확정일자 기준으로 수주 진행현황을 관리합니다.',steps:['조회조건에서 고객사·제품·기간 등을 입력합니다.','조회 결과에서 수주일자, 요청납기, 확정일자와 진행상태를 확인합니다.','필요 시 신규 수주 등록 또는 상세내역을 확인합니다.']},
-'구매발주 관리':{id:'purchase',title:'구매발주 관리',crumb:'영업 / 구매 > 구매발주 관리',lead:'원부자재 발주와 요청입고 및 발주상태를 관리합니다.',steps:['공급업체·품목·기간으로 구매발주 내역을 조회합니다.','발주수량과 요청입고일, 발주상태를 확인합니다.','입고 후 IQC 연계 상태를 확인합니다.']},
-'작업지시서':{id:'work',title:'작업지시서',crumb:'생산관리 > 작업지시서',lead:'현재 QMES 실제 작업지시서 등록 및 조회 화면을 기준으로 안내합니다.',steps:['조회조건에서 고객사, 제품명, 생산 LOT, 진행상태, 작업기간, 작업지시번호를 입력한 뒤 조회합니다.','「+ 신규 작업지시서 등록」을 눌러 고객사·제품명·생산 LOT·계획수량·작업기간·설비·작업자와 원료 투입계획을 등록합니다.','작업지시 현황에서 작업지시번호를 선택해 상세내역을 확인하고 인쇄·수정·삭제 기능을 사용합니다.'],ref:'작업지시서는 생산 LOT, 공정검사, 출하검사 및 LOT 추적의 기준 데이터입니다.'},
-'수입검사 IQC':{id:'incoming',title:'수입검사 IQC',crumb:'품질관리 > 수입검사 IQC',lead:'입고 원료 및 부자재의 LOT별 수입검사 결과를 관리합니다.',steps:['입고일자·공급업체·품목명·원료 LOT 등의 정보를 확인합니다.','외관·라벨·중량·COA 확인 등 수입검사 결과를 입력합니다.','부적합 발생 시 후속 검사항목 차단 상태를 확인하고 원인 조치 후 재검사합니다.'],ref:'불합격 판정 시 후속 공정 차단 기능이 적용됩니다.'},
-'공정검사 PQC':{id:'process',title:'공정검사 PQC',crumb:'품질관리 > 공정검사 PQC',lead:'생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.',steps:['작업지시번호와 생산 LOT을 확인합니다.','외관·입도(Dmax)·점도·고형분을 순서대로 검사합니다.','불합격 발생 시 이후 검사항목이 차단되는지 확인하고 부적합 조치를 진행합니다.'],ref:'공정검사 불합격 시 후속 공정 차단이 적용됩니다.'},
-'출하검사 OQC':{id:'outgoing',title:'출하검사 OQC',crumb:'품질관리 > 출하검사 OQC',lead:'출하 전 완제품 LOT별 최종검사 및 출하상태를 관리합니다.',steps:['고객사·제품명·완제품 LOT을 확인합니다.','외관, 입도, 점도, 수분율, 고형분, 접착력, 절연저항, 전해액 안정성 등을 검사합니다.','최종 판정과 결재상태를 확인한 뒤 출하 관련 업무를 진행합니다.'],ref:'출하 전 최종 품질 Gate 역할을 하는 화면입니다.'},
-'부적합 NCR':{id:'ncr',title:'부적합 NCR',crumb:'품질관리 > 부적합 NCR',lead:'부적합 발생내용, 원인, 조치 및 개선 이력을 관리합니다.',steps:['발생일자·발생구분·제품명·LOT 번호를 확인합니다.','부적합 내용과 원인을 기록하고 담당자 및 개선일정을 지정합니다.','조치결과와 완료상태를 확인해 이력을 유지합니다.']},
-'SPC / Trend':{id:'spcTrend',title:'SPC / Trend',crumb:'품질관리 > SPC / Trend',lead:'품질검사 측정값의 추세와 변동을 분석합니다.',steps:['제품·기간·검사항목을 선택합니다.','측정값 추세와 관리범위 이탈 여부를 확인합니다.','이상 추세 발생 시 관련 LOT 및 검사성적서를 추적합니다.']},
-'변경관리':{id:'changeControl',title:'변경관리',crumb:'품질관리 > 변경관리',lead:'공정·제품·기준·설비 변경사항과 승인 이력을 관리합니다.',steps:['변경대상과 변경사유를 등록합니다.','변경 전후 내용과 품질영향을 검토합니다.','검토·승인 이력을 남기고 적용상태를 관리합니다.']},
-'LOT 추적':{id:'lotTrace',title:'LOT 추적',crumb:'LOT 관리 > LOT 추적',lead:'원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 양방향 추적합니다.',steps:['원재료 LOT·중간배치·완제품 LOT 중 조회구분을 선택합니다.','조회 결과에서 작업지시와 IQC/PQC/OQC 연계 이력을 확인합니다.','원재료→완제품 또는 완제품→원재료 방향으로 추적합니다.'],ref:'LOT 정보는 고객 대응 및 추적성 확보의 핵심 정보이므로 정확히 입력합니다.'},
-'설비관리':{id:'equipment',title:'설비관리',crumb:'설비관리 > 설비관리',lead:'생산설비·검사설비의 조건, 점검 및 이력을 관리합니다.',steps:['설비 목록에서 대상 설비를 선택합니다.','점검일·상태·담당자·점검결과를 기록합니다.','차기점검일과 이력을 확인합니다.']},
-'계측기관리':{id:'instrumentMgmt',title:'계측기관리',crumb:'설비관리 > 계측기관리',lead:'검사에 사용하는 계측기의 상태와 관리정보를 확인합니다.',steps:['관리번호 또는 계측기명으로 장비를 조회합니다.','사용상태·위치·담당부서 등 관리정보를 확인합니다.','검사 전 사용 가능한 계측기인지 확인합니다.']},
-'검교정관리':{id:'calibrationMgmt',title:'검교정관리',crumb:'설비관리 > 검교정관리',lead:'계측기 검교정 일정과 결과를 관리합니다.',steps:['검교정 대상 계측기를 조회합니다.','검교정일·기관·결과·성적서를 등록합니다.','차기 예정일을 확인하여 교정 유효기간을 관리합니다.']},
-'기준서 / 문서관리':{id:'standard',title:'기준서 / 문서관리',crumb:'문서 / 결재 > 기준서 / 문서관리',lead:'SOP·작업표준·검사기준서·Specification 및 Revision 기준문서를 관리합니다.',steps:['문서번호 또는 문서명으로 기준서를 조회합니다.','Rev., 개정일, 담당부서 및 첨부파일을 확인합니다.','현장에서는 항상 최신 Rev. 문서를 사용합니다.'],ref:'구버전 문서 사용을 방지하기 위해 최신 Rev. 여부를 반드시 확인합니다.'},
-'전자결재':{id:'approval',title:'전자결재',crumb:'문서 / 결재 > 전자결재',lead:'작성·검토·승인 단계의 결재문서를 관리합니다.',steps:['내 결재함에서 검토·승인 대기 문서를 확인합니다.','문서 내용을 확인한 뒤 승인 또는 반려 처리합니다.','승인 완료 후 검토자·승인자·결재일자 기록을 확인합니다.']}
-};
-
-function liveScreenMarkup(name,page){
- return '<div class="live-guide-shell">'+
- '<div class="live-guide-toolbar"><strong>현재 NAMO QMES 실제 화면</strong><span>'+page.crumb+'</span></div>'+
- '<div class="live-guide-frame-wrap">'+
- '<iframe id="liveGuideFrame" class="live-guide-frame" src="/?guide=1#'+page.id+'" title="'+page.title+' 실제 QMES 화면"></iframe>'+
- '<span class="live-pin p1">1</span><span class="live-pin p2">2</span><span class="live-pin p3">3</span>'+
- '</div></div>';
-}
-
-function activateIframePage(pageId){
- const frame=document.getElementById('liveGuideFrame'); if(!frame)return;
- let tries=0;
- const attempt=()=>{
-  tries++;
-  try{
-   const doc=frame.contentDocument;
-   const menu=doc?.querySelector('.sidebar .menu[data-page="'+pageId+'"]');
-   if(menu){menu.click();return;}
-  }catch(e){}
-  if(tries<30)setTimeout(attempt,250);
- };
- frame.addEventListener('load',()=>setTimeout(attempt,250),{once:true});
- setTimeout(attempt,350);
-}
-
-function renderGuide(name){
- const page=guidePages[name]||guidePages['작업지시서'];
- articleTitle.textContent=page.title; crumb.textContent=page.crumb; lead.textContent=page.lead;
- guideShot.innerHTML=liveScreenMarkup(name,page);
- steps.innerHTML=page.steps.map((s,i)=>'<div class="step"><b>'+(i+1)+'</b>'+s+'</div>').join('');
- guideReference.textContent=page.ref||'가이드 화면은 현재 QMES 운영 화면을 기준으로 안내합니다.';
- activateIframePage(page.id);
-}
-function openPage(name){
- home.style.display='none'; manual.classList.add('active'); homeTab.classList.remove('active'); manualTab.classList.add('active');
- document.querySelectorAll('.item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));
- renderGuide(name); window.scrollTo(0,0);
-}
+const titles={
+'작업지시서':['작업지시서','생산관리 > 작업지시서','생산 LOT 및 작업내용을 등록하고 진행상태를 관리합니다.'],
+'수입검사 IQC':['수입검사 성적서 등록','품질관리 > 수입검사 IQC > 성적서 등록','수입 원재료의 LOT별 검사 결과를 등록하고 부적합 발생 시 후속 공정을 차단합니다.'],
+'공정검사 PQC':['공정검사 등록','품질관리 > 공정검사 PQC > 검사 등록','생산 LOT별 공정검사 값을 입력하고 불합격 시 후속 공정을 차단합니다.'],
+'출하검사 OQC':['출하검사 등록','품질관리 > 출하검사 OQC > 검사 등록','완제품 최종 검사 결과와 출하 가능 여부를 확인합니다.'],
+'LOT 추적':['LOT 추적','LOT 관리 > LOT 추적','원재료 LOT에서 생산·검사·완제품 LOT·출하까지 이력을 조회합니다.'],
+'부적합 NCR':['부적합 NCR','품질관리 > 부적합 NCR','부적합 원인·조치·개선 이력을 관리합니다.'],
+'설비관리':['설비관리','설비관리 > 설비관리','생산 및 검사설비의 상태와 점검 이력을 관리합니다.'],
+'전자결재':['전자결재','문서 / 결재 > 전자결재','작성·검토·승인의 결재 상태와 이력을 관리합니다.'],
+'기준서 / 문서관리':['기준서 / 문서관리','문서 / 결재 > 기준서 / 문서관리','SOP, 검사기준서, Specification 등 최신 문서를 관리합니다.']};
+function openPage(name){home.style.display='none';manual.classList.add('active');homeTab.classList.remove('active');manualTab.classList.add('active');document.querySelectorAll('.item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));const t=titles[name]||[name,name,'해당 QMES 기능의 사용방법을 확인합니다.'];articleTitle.textContent=t[0];crumb.textContent=t[1];lead.textContent=t[2];window.scrollTo(0,0)}
 const guideQuickWrap=document.getElementById('guideQuickWrap');
 const guideQuickToggle=document.getElementById('guideQuickToggle');
 guideQuickToggle?.addEventListener('click',()=>{
