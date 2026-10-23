@@ -14,6 +14,23 @@
 })();
 </script>
 
+<script id="qmes-mobile-tab-bootstrap-20261023">
+(function(){
+  try{
+    var p=new URLSearchParams(location.search);
+    var tab=p.get("mobileTab");
+    var menu=p.get("mobileMenu");
+    var allowed=["woIssue","iqc","prod","pqc","oqc","trace","pop","eq","standards","members"];
+    if(tab&&allowed.indexOf(tab)>=0){
+      sessionStorage.setItem("qmes_current_tab",tab);
+      if(menu)sessionStorage.setItem("qmes_open_menu",menu);
+      else sessionStorage.removeItem("qmes_open_menu");
+      window.__QMES_MOBILE_BOOT_TAB__=tab;
+    }
+  }catch(e){}
+})();
+</script>
+
 <script id="qmes-auth-data-ready-20261020">
 (function(){
   let ready=false,resolveReady,pending;
