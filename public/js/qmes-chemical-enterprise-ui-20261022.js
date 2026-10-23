@@ -398,11 +398,26 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
     return '<svg class="qce-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="'+p+'" y1="'+p+'" x2="'+p+'" y2="'+(h-p)+'" stroke="#cfd8e3"/><line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-p)+'" y2="'+(h-p)+'" stroke="#cfd8e3"/>'+lines.join('')+'<polyline points="'+pts+'" fill="none" stroke="#377cb9" stroke-width="2.4"/>'+dots+labels+'</svg>';
   }
 
-  async function renderSpc(){
+  // spc-instant-menu-20261023: paint first and share one background refresh.
+  let spcRows=null,spcLoadPromise=null,spcLoadedAt=0,spcLoadError='';
+  function refreshSpc(){
+    if(spcLoadPromise)return spcLoadPromise;
+    spcLoadPromise=syncRows('oqc').then(rows=>{
+      spcRows=rows;spcLoadedAt=Date.now();spcLoadError='';
+      paintSpc(spcRows);
+    }).catch(error=>{
+      spcLoadError=error.message||'출하검사 데이터를 불러오지 못했습니다.';
+      paintSpc(spcRows||[]);
+    }).finally(()=>{spcLoadPromise=null;});
+    return spcLoadPromise;
+  }
+  function renderSpc(){
+    paintSpc(spcRows||[]);
+    if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();
+  }
+  function paintSpc(oqc){
     const root=document.getElementById('spcTrend');if(!root)return;
-    root.innerHTML='<div class="inspection-premium iqc-work-frame"><div class="ip-panel"><div class="qce-empty">출하검사 데이터를 불러오는 중입니다.</div></div></div>';
     try{
-      const oqc=await syncRows('oqc');
       const all=flattenMeasurements(oqc,'OQC');
       const allowed=['입도(Dmax)','입도','점도','고형분','수분율','수분','접착력'];
       const items=[...new Set(all.map(x=>x.item))].filter(x=>allowed.includes(x));
@@ -441,7 +456,7 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
         '<label class="ip-filter"><span>검사항목</span><select class="input qce-spc-item">'+(items.length?items:[selected]).map(x=>'<option value="'+esc(x)+'" '+(x===selected?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
         '</div>';
 
-      const overviewBody=pageRows.length?pageRows.map((r,i)=>'<tr class="'+(trendProduct===r.product?'spc-row-selected':'')+'"><td>'+((page-1)*pageSize+i+1)+'</td><td>'+esc(r.date||'-')+'</td><td>'+esc(r.customer||'-')+'</td><td><button type="button" class="spc-product-link" data-spc-product="'+encodeURIComponent(r.product||'')+'">'+esc(r.product||'-')+'</button></td><td>'+esc(r.lot||'-')+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join(''):'<tr><td colspan="8" style="height:72px;color:#94a3b8">조건에 해당하는 출하검사 측정 데이터가 없습니다.</td></tr>';
+      const overviewBody=pageRows.length?pageRows.map((r,i)=>'<tr class="'+(trendProduct===r.product?'spc-row-selected':'')+'"><td>'+((page-1)*pageSize+i+1)+'</td><td>'+esc(r.date||'-')+'</td><td>'+esc(r.customer||'-')+'</td><td><button type="button" class="spc-product-link" data-spc-product="'+encodeURIComponent(r.product||'')+'">'+esc(r.product||'-')+'</button></td><td>'+esc(r.lot||'-')+'</td><td>'+fmt(r.value)+'</td><td>'+esc(spcSpecText(selected))+'</td><td><span class="spc-judge '+(r.judge==='합격'?'ok':r.judge==='불합격'?'bad':'wait')+'">'+esc(r.judge)+'</span></td></tr>').join(''):'<tr><td colspan="8" style="height:44px;color:#64748b" role="status">'+esc(spcLoadError||(spcRows===null?'출하검사 데이터를 불러오는 중입니다.':'조건에 해당하는 출하검사 측정 데이터가 없습니다.'))+'</td></tr>';
 
       let pager='';
       if(totalPages>1){
@@ -565,7 +580,15 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
 
   function init(){
     renderSpc();renderChange();renderInstrument();renderCalibration();
-    document.querySelectorAll('.menu[data-page="spcTrend"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderSpc,0)));
+    document.querySelectorAll('.menu[data-page="spcTrend"]').forEach(m=>{
+      m.addEventListener('click',renderSpc);
+      m.addEventListener('pointerenter',()=>{if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();});
+      m.addEventListener('focusin',()=>{if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();});
+    });
+    const authUser=document.getElementById('currentUser');
+    if(authUser)new MutationObserver(()=>{
+      if(authUser.dataset.qauthReady==='1')refreshSpc();
+    }).observe(authUser,{attributes:true,attributeFilter:['data-qauth-ready']});
     document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderChange,0)));
     document.querySelectorAll('.menu[data-page="instrumentMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderInstrument,0)));
     document.querySelectorAll('.menu[data-page="calibrationMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderCalibration,0)));
