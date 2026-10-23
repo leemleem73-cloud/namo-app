@@ -29,3 +29,9 @@ window.qmesPurchaseList={rows:()=>all.slice(),filtered:matchingRows,render:apply
 document.addEventListener('input',e=>{if(e.target.closest?.('#purchase .module-toolbar'))applyFilters()},true);document.addEventListener('change',e=>{if(e.target.closest?.('#purchase .module-toolbar')&&(e.target.tagName==='SELECT'||e.target.type==='date'))applyFilters()},true);
 new MutationObserver(()=>{const p=document.querySelector('#purchase');if(p?.querySelector('.module-shell>.module-body tbody')&&!p.querySelector('.qpu-db-message'))load()}).observe(document.body,{childList:true,subtree:true});load();
 })();
+/* Match PQC work-order link color for purchase-order numbers. */
+(function(){
+ const style=document.createElement('style');style.id='purchase-pqc-link-color-20261023';
+ style.textContent='html body #purchase .module-shell>.module-body table tbody tr>td:nth-child(2),html body #purchase .module-shell>.module-body table tbody tr>td:nth-child(2) :is(a,button,span),html body #purchase .module-body tbody td.qpu-po-link-style{color:#0070c0!important;-webkit-text-fill-color:#0070c0!important}';
+ document.head.appendChild(style);
+})();
