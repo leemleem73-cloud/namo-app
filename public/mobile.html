@@ -67,7 +67,7 @@ function render(){
      sessionStorage.setItem("qmes_current_tab",tab);
      if(openMenu)sessionStorage.setItem("qmes_open_menu",openMenu);else sessionStorage.removeItem("qmes_open_menu");
    }catch(_){}
-   location.assign("/?desktop=1&mobile=1");
+   location.assign("/?desktop=1&mobile=1&mobileTab="+encodeURIComponent(tab)+(openMenu?"&mobileMenu="+encodeURIComponent(openMenu):""));
  });
 }
 async function auth(){
