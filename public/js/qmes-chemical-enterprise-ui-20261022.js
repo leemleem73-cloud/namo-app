@@ -338,6 +338,8 @@ html body #instrumentMgmt .qce-instrument-selection-count{font-size:13px;font-we
 html body #instrumentMgmt .qce-instrument-selection-dock>div{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 html body #instrumentMgmt .qce-instrument-selection-dock button{height:30px;padding:0 12px;border:1px solid #b8cde2;border-radius:4px;background:#f5f9ff;color:#244260;font:700 11px Pretendard,"Noto Sans KR",Arial,sans-serif;cursor:pointer}
 @media(prefers-reduced-motion:reduce){html body #instrumentMgmt .qce-instrument-selection-dock{transition:none}}
+
+html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-delete]{color:#dc2626!important}
   `;
   document.head.appendChild(style);
 
@@ -654,6 +656,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock button{height:30px;padd
         const count=selectedIds.size;dock.classList.toggle('is-visible',count>0);dock.inert=!count;dock.setAttribute('aria-hidden',count?'false':'true');
         dock.querySelector('.qce-instrument-selection-count').textContent=count+'건 선택됨';
         dock.querySelector('[data-inst-selected-print]').textContent='선택 인쇄 ('+count+')';
+        dock.querySelector('[data-inst-selected-delete]').textContent='선택 삭제 ('+count+')';
         const bounds=(root.querySelector('.qce-page')||root).getBoundingClientRect();
         if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,innerWidth-bounds.right)+'px';}
       }
@@ -662,9 +665,22 @@ html body #instrumentMgmt .qce-instrument-selection-dock button{height:30px;padd
     new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const dock=document.createElement('div');dock.className='qce-instrument-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','계측기 선택 항목 작업');dock.setAttribute('aria-hidden','true');dock.inert=true;
-    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selection-clear>선택 해제</button></div>';
+    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selected-delete>선택 삭제</button><button type="button" data-inst-selection-clear>선택 해제</button></div>';
     root.appendChild(dock);
     dock.querySelector('[data-inst-selection-clear]').onclick=()=>root._resetListSelection();
+    dock.querySelector('[data-inst-selected-delete]').onclick=async function(){
+      const ids=(root._instrumentRows||[]).filter(row=>selectedIds.has(String(row.id))).map(row=>row.id);
+      if(!ids.length)return;
+      const message='선택한 계측기 '+ids.length+'건을 삭제하시겠습니까?';
+      const confirmed=typeof window.qmesConfirm==='function'?await window.qmesConfirm(message):window.confirm(message);
+      if(!confirmed)return;
+      this.disabled=true;
+      try{
+        const result=await api('/api/qmes-instruments/bulk-delete',{method:'POST',body:JSON.stringify({ids})});
+        instrumentQueries.clear();root._resetListSelection();await load(true);
+        toast('계측기 '+result.deleted_count+'건이 삭제되었습니다.');
+      }catch(error){toast(error.message);}finally{this.disabled=false;}
+    };
     dock.querySelector('[data-inst-selected-print]').onclick=async()=>{
       const records=(root._instrumentRows||[]).filter(row=>selectedIds.has(String(row.id)));
       if(!records.length)return;
