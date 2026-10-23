@@ -52,9 +52,14 @@
         row.querySelector('.std-measure') && row.querySelector('.std-row-judge'));
       if (!rows.length) return; // Issued/read-only certificates are not entry forms.
 
-      // IQC has material-specific/manual judgments. Do not import OQC numeric limits.
+      // IQC has material-specific/manual judgments. A qualitative "부적합" or
+      // COA "미확인" must block immediately, just like PQC stops on the first failed item.
       const judgments = rows.map(row => row.querySelector('.std-row-judge').value);
-      const firstFail = judgments.indexOf('불합격');
+      const rowFailed = rows.map((row,index) => {
+        const measureValues=[...row.querySelectorAll('.std-measure')].map(input=>String(input.value||'').trim());
+        return judgments[index] === '불합격' || measureValues.includes('부적합') || measureValues.includes('미확인');
+      });
+      const firstFail = rowFailed.findIndex(Boolean);
       table.classList.toggle('iqc-sequential-active', firstFail >= 0);
       rows.forEach((row, index) => {
         const locked = firstFail >= 0 && index > firstFail;
