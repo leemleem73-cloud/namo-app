@@ -63,8 +63,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <header class="top"><div class="brand">NAMO QMES 이용가이드</div><nav class="nav"><button id="homeTab" class="active">홈</button><button id="manualTab">온라인 매뉴얼</button><button>Q&A</button><button>공지사항</button></nav></header>
 <section id="home">
 <div class="hero"><h1>NAMO QMES 업무별 사용방법을 확인하세요.</h1>
-<div class="guide-dock-wrap" id="guideQuickWrap">
-<div class="guide-dock-more" aria-hidden="true"><div class="guide-dock-more-grid">
+<div class="guide-dock-wrap expanded" id="guideQuickWrap">
+<div class="guide-dock-more" aria-hidden="false"><div class="guide-dock-more-grid">
 <button class="guide-app" data-page="종합 대시보드"><span class="guide-tile gt1">▦</span><span>종합 대시보드</span></button>
 <button class="guide-app" data-page="수주납기 관리"><span class="guide-tile gt4">📅</span><span>수주납기 관리</span></button>
 <button class="guide-app" data-page="구매발주 관리"><span class="guide-tile gt6">🧾</span><span>구매발주 관리</span></button>
@@ -82,7 +82,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <button class="guide-app" data-page="기준서 / 문서관리"><span class="guide-tile gt2">📚</span><span>기준서 / 문서관리</span></button>
 <button class="guide-app" data-page="전자결재"><span class="guide-tile gt5">✍</span><span>전자결재</span></button>
 </div></div>
-<button class="guide-dock-toggle" id="guideQuickToggle" type="button" aria-expanded="false" aria-label="전체 메뉴 펼치기" title="전체 메뉴 펼치기"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+
 </div>
 <div class="homeBody"><div class="popular"><div class="leadBox"><h2>많이 본 매뉴얼</h2><p>현장에서 자주 찾는 QMES 사용방법입니다.</p></div><div class="cards">
 <div class="card" data-page="수입검사 IQC"><span class="badge">01</span><h3>수입검사 성적서 등록</h3><p>원재료 입고 후 IQC 검사, 판정 및 후속 공정 차단 확인</p></div>
@@ -630,14 +630,8 @@ function renderGuide(name){
 }
 function openPage(name){home.style.display='none';manual.classList.add('active');homeTab.classList.remove('active');manualTab.classList.add('active');document.querySelectorAll('.item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));const t=titles[name]||[name,name,'해당 QMES 기능의 사용방법을 확인합니다.'];articleTitle.textContent=t[0];crumb.textContent=t[1];lead.textContent=t[2];renderGuide(name);window.scrollTo(0,0)}
 const guideQuickWrap=document.getElementById('guideQuickWrap');
-const guideQuickToggle=document.getElementById('guideQuickToggle');
-guideQuickToggle?.addEventListener('click',()=>{
- const expanded=guideQuickWrap.classList.toggle('expanded');
- guideQuickWrap.querySelector('.guide-dock-more')?.setAttribute('aria-hidden',expanded?'false':'true');
- guideQuickToggle.setAttribute('aria-expanded',expanded?'true':'false');
- guideQuickToggle.setAttribute('aria-label',expanded?'전체 항목 접기':'전체 항목 펼치기');
- guideQuickToggle.title=expanded?'전체 항목 접기':'전체 항목 펼치기';
-});
+guideQuickWrap?.classList.add('expanded');
+guideQuickWrap?.querySelector('.guide-dock-more')?.setAttribute('aria-hidden','false');
 document.querySelectorAll('[data-page]').forEach(x=>x.addEventListener('click',()=>openPage(x.dataset.page)));
 manualTab.addEventListener('click',()=>openPage('수입검사 IQC'));
 homeTab.addEventListener('click',()=>{manual.classList.remove('active');home.style.display='block';homeTab.classList.add('active');manualTab.classList.remove('active');window.scrollTo(0,0)});
