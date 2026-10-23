@@ -72,6 +72,10 @@ function ensureSchema() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       CREATE INDEX IF NOT EXISTS qmes_calibration_instrument_idx ON qmes_calibrations(instrument_id, calibration_on DESC);
+      UPDATE qmes_instruments
+      SET instrument_no='NM측정-' || LPAD(id::text,GREATEST(2,LENGTH(id::text)),'0')
+      WHERE instrument_no ~ '^MI-[0-9]+$';
+
     `).catch(error => {
       schemaPromise = null;
       throw error;
@@ -203,7 +207,7 @@ function install(app) {
         cycle,last||null,next||null,str(b.status||'사용',40),str(b.note,1000),actorName(req)
       ]);
       const row=inserted.rows[0];
-      const no='MI-'+String(row.id).padStart(4,'0');
+      const no='NM측정-'+String(row.id).padStart(2,'0');
       const updated=await client.query('UPDATE qmes_instruments SET instrument_no=$1 WHERE id=$2 RETURNING *',[no,row.id]);
       await client.query('COMMIT');
       res.status(201).json({success:true,data:updated.rows[0]});
