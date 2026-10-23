@@ -93,6 +93,9 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .qaRegisterActions{display:flex;justify-content:flex-end;gap:7px;margin-top:12px}
 .qaRegisterActions button{height:34px;padding:0 15px;border:1px solid #c9d3dd;background:#fff;cursor:pointer}
 .qaRegisterActions .primary{background:#2f8cf0;color:#fff;border-color:#2f8cf0;font-weight:800}
+.qaAdminDelete{display:none;margin-left:8px;height:30px;padding:0 12px;border:1px solid #e0a6a6;background:#fff;color:#c62828;font-weight:800;cursor:pointer}
+.qaAdminDelete.show{display:inline-flex;align-items:center}
+
 
 @media(max-width:800px){.qaSearch{flex-wrap:wrap}.qaSearch input{max-width:none;min-width:180px}.qaTable th:nth-child(3),.qaTable td:nth-child(3),.qaTable th:nth-child(5),.qaTable td:nth-child(5){display:none}.qaBoard{padding:12px}.qaPage{padding:28px 10px 60px}}
 
@@ -211,7 +214,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
       <div class="qaPager"><span>«</span><span>‹</span><span class="page">1</span><span>›</span><span>»</span></div>
       <article class="qaDetail" id="qaDetail">
         <h3 id="qaDetailTitle"></h3>
-        <div class="qaDetailMeta"><span id="qaDetailDate"></span><span>◉ <span id="qaDetailViews"></span></span><span id="qaDetailVideo" class="qaVideo"></span></div>
+        <div class="qaDetailMeta"><span id="qaDetailDate"></span><span>◉ <span id="qaDetailViews"></span></span><span id="qaDetailVideo" class="qaVideo"></span><button id="qaAdminDelete" class="qaAdminDelete" type="button">질문 삭제</button></div>
         <div class="qaDetailBody" id="qaDetailBody"></div>
       </article>
     </div>
@@ -765,6 +768,33 @@ function saveQaUserData(){
 }
 let qaData=[...loadQaUserData(),...qaDefaultData].map(x=>({...x,views:0}));
 let qaFiltered=[...qaData],qaSelected=qaData[0]||null;
+
+function qaIsAdmin(){
+ try{
+  if(window.parent && window.parent!==window){
+   const root=window.parent.document?.getElementById('namo-portal-root');
+   if(root?.getAttribute('data-portal-admin')==='1') return true;
+  }
+ }catch(e){}
+ try{
+  const candidates=[
+   localStorage.getItem('username'),
+   localStorage.getItem('userName'),
+   localStorage.getItem('loginUser'),
+   localStorage.getItem('currentUser'),
+   localStorage.getItem('role'),
+   localStorage.getItem('userRole')
+  ].filter(Boolean).join(' ').toLowerCase();
+  if(/(^|[^a-z])admin([^a-z]|$)|관리자/.test(candidates)) return true;
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i)||'';
+   const value=localStorage.getItem(key)||'';
+   if(/admin|role|user/i.test(key) && /admin|관리자/i.test(value)) return true;
+  }
+ }catch(e){}
+ return false;
+}
+const qaAdmin=qaIsAdmin();
 const qaEscape=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function renderQaRows(){
  const body=document.getElementById('qaRows'); if(!body)return;
@@ -785,6 +815,8 @@ function renderQaDetail(){
  document.getElementById('qaDetailDate').textContent='▣ '+qaSelected.date;
  document.getElementById('qaDetailViews').textContent='0';
  document.getElementById('qaDetailVideo').textContent=qaSelected.video?('▶ '+qaSelected.video):'';
+ const deleteBtn=document.getElementById('qaAdminDelete');
+ if(deleteBtn) deleteBtn.classList.toggle('show',qaAdmin && !!qaSelected.userCreated);
  document.getElementById('qaDetailBody').innerHTML=qaSelected.userCreated
    ? '<strong>등록된 질문</strong>'+qaEscape(qaSelected.body).replace(/\n/g,'<br>')+'<div class="path">◎ 답변 준비 중</div>'
    : '<strong>QMES 이용가이드</strong>'+qaSelected.body+'<div class="path">◎ '+qaSelected.path+'</div>';
@@ -822,6 +854,17 @@ document.getElementById('qaRegisterSave')?.addEventListener('click',()=>{
  document.getElementById('qaNewTitle').value='';document.getElementById('qaNewBody').value='';qaRegisterBox?.classList.remove('open');
  renderQaRows();renderQaDetail();
 });
+document.getElementById('qaAdminDelete')?.addEventListener('click',()=>{
+ if(!qaAdmin){alert('관리자만 질문을 삭제할 수 있습니다.');return;}
+ if(!qaSelected?.userCreated){alert('기본 Q&A는 삭제할 수 없습니다.');return;}
+ if(!confirm('선택한 질문을 삭제하시겠습니까?')) return;
+ qaData=qaData.filter(x=>String(x.no)!==String(qaSelected.no));
+ qaFiltered=qaFiltered.filter(x=>String(x.no)!==String(qaSelected.no));
+ saveQaUserData();
+ qaSelected=qaFiltered[0]||qaData[0]||null;
+ renderQaRows();renderQaDetail();
+});
+
 renderQaRows();renderQaDetail();
 
 
