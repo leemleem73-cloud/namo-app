@@ -465,3 +465,128 @@ html body.qmes-mobile-work-view #work #namo-work-detail{
 html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{grid-template-columns:1fr!important}
 html body.qmes-mobile-work-view #work .work-list-table tbody td{grid-template-columns:96px minmax(0,1fr)!important}
 }
+
+
+/* Enterprise mobile standard - work order */
+@media (max-width:768px){
+html body.qmes-mobile-work-view{
+ --m-bg:#f4f7fa;--m-card:#fff;--m-line:#dbe4ec;--m-ink:#173b61;--m-muted:#6f8192;--m-primary:#146fb8;
+ background:var(--m-bg)!important;color:#1f2937!important;
+}
+html body.qmes-mobile-work-view #qmes-mobile-workbar{
+ height:56px!important;grid-template-columns:48px minmax(0,1fr) 58px!important;
+ border-bottom:1px solid var(--m-line)!important;box-shadow:none!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #qmes-mobile-workbar .qmw-title{
+ font-size:17px!important;font-weight:900!important;letter-spacing:-.02em!important;color:var(--m-ink)!important;
+}
+html body.qmes-mobile-work-view #qmes-mobile-workbar button{
+ min-height:44px!important;min-width:44px!important;font-size:13px!important;
+}
+html body.qmes-mobile-work-view #root>div>main,
+html body.qmes-mobile-work-view .content{
+ padding:8px!important;background:var(--m-bg)!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header,
+html body.qmes-mobile-work-view #work #namo-work-inquiry,
+html body.qmes-mobile-work-view #work .nwi-list-head{
+ border:1px solid var(--m-line)!important;border-radius:14px!important;box-shadow:none!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header{
+ padding:14px!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .nwi-title>strong{
+ font-size:19px!important;font-weight:900!important;color:var(--m-ink)!important;letter-spacing:-.03em!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools{
+ grid-template-columns:1fr 1fr!important;gap:8px!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools .btn{
+ height:46px!important;border-radius:10px!important;font-size:13px!important;font-weight:850!important;
+}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools .primary{
+ background:var(--m-primary)!important;border-color:var(--m-primary)!important;color:#fff!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry{
+ padding:12px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{
+ grid-template-columns:1fr 1fr!important;gap:10px!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid>label>span{
+ font-size:11px!important;color:var(--m-muted)!important;font-weight:850!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry :is(input,select,.nwi-period-trigger){
+ height:44px!important;border-radius:10px!important;border:1px solid #cfdbe5!important;background:#fff!important;
+ font-size:15px!important;color:#1f2937!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-actions{
+ grid-template-columns:1fr 1fr!important;
+}
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-actions .btn{
+ height:44px!important;border-radius:10px!important;font-size:13px!important;font-weight:850!important;
+}
+html body.qmes-mobile-work-view #work .nwi-list-head{
+ padding:11px 13px!important;
+}
+html body.qmes-mobile-work-view #work .nwi-list-head span:first-child{
+ font-size:14px!important;font-weight:900!important;color:var(--m-ink)!important;
+}
+html body.qmes-mobile-work-view #work .nwi-list-head span:last-child{
+ font-size:12px!important;font-weight:800!important;color:var(--m-muted)!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody tr{
+ margin-bottom:10px!important;padding:12px 13px!important;border:1px solid var(--m-line)!important;border-radius:14px!important;
+ box-shadow:0 2px 8px rgba(23,59,97,.04)!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td{
+ grid-template-columns:104px minmax(0,1fr)!important;min-height:36px!important;padding:8px 0!important;
+ border-bottom:1px solid #eef2f6!important;font-size:14px!important;line-height:1.45!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td::before{
+ font-size:11px!important;font-weight:850!important;color:#7a8b9c!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td:nth-child(4),
+html body.qmes-mobile-work-view #work .work-list-table tbody td:nth-child(5){
+ font-weight:800!important;color:#153b5b!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table tbody td a{
+ color:#146fb8!important;font-weight:850!important;text-decoration:none!important;
+}
+html body.qmes-mobile-work-view #work .work-list-table .work-row-actions>.btn{
+ min-width:72px!important;height:38px!important;border-radius:9px!important;font-size:12px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top{
+ border-radius:14px!important;padding:12px 13px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top .title-wrap b{
+ font-size:17px!important;font-weight:900!important;color:var(--m-ink)!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-section{
+ border-radius:14px!important;border:1px solid var(--m-line)!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-section-title{
+ min-height:44px!important;padding:11px 13px!important;background:#f2f6f9!important;color:var(--m-ink)!important;font-size:13px!important;font-weight:900!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid .form-item label{
+ font-size:11px!important;color:var(--m-muted)!important;font-weight:850!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid .form-item :is(input,select){
+ height:46px!important;border-radius:10px!important;font-size:16px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody tr{
+ border-radius:12px!important;border:1px solid var(--m-line)!important;background:#fbfcfd!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot{
+ grid-template-columns:1fr 1fr 1fr!important;padding:8px!important;box-shadow:0 -4px 14px rgba(23,59,97,.08)!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot .btn{
+ height:44px!important;border-radius:10px!important;font-size:12px!important;font-weight:850!important;
+}
+}
+@media (max-width:390px){
+html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{grid-template-columns:1fr!important}
+html body.qmes-mobile-work-view #work .nwi-header .table-tools{grid-template-columns:1fr!important}
+html body.qmes-mobile-work-view #work .work-list-table tbody td{grid-template-columns:92px minmax(0,1fr)!important}
+html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot{grid-template-columns:1fr!important}
+}
