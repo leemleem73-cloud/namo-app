@@ -3,23 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#f4f7fa">
 <title>NAMO QMES Mobile</title>
 <style>
-:root{--ink:#15324b;--muted:#738498;--line:#dce5ec;--bg:#f3f6f9}
+:root{--ink:#17334a;--muted:#74879a;--line:#dce5ec;--bg:#f4f7fa;--blue:#0b73d1;--card:#fff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;color:var(--ink)}
-body{padding-bottom:max(18px,env(safe-area-inset-bottom))}
-.header{position:sticky;top:0;z-index:30;height:68px;padding:8px 14px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand img{width:50px;height:36px;object-fit:contain}.brand strong{display:block;font-size:18px;font-weight:950;letter-spacing:-.04em}.brand small{display:block;margin-top:2px;font-size:9px;color:#8795a4;font-weight:800;letter-spacing:.08em}
-.user{height:38px;max-width:110px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#41596f;font-size:12px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.main{padding:16px 12px 22px}.intro h1{margin:0;font-size:25px;font-weight:950;letter-spacing:-.045em}.intro p{margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:700}
-.att{width:100%;min-height:72px;margin-top:15px;padding:12px 15px;border:0;border-radius:17px;background:linear-gradient(135deg,#0b73d1,#12a8c1);color:#fff;display:flex;align-items:center;gap:12px;text-align:left;box-shadow:0 10px 24px rgba(20,111,164,.20)}
-.att .ico{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:13px;background:rgba(255,255,255,.16);font-size:20px}.att strong{display:block;font-size:17px;font-weight:950}.att small{display:block;margin-top:4px;color:#e5f7ff;font-size:11px;font-weight:750}.att .go{margin-left:auto;font-size:28px}
-.search{margin:13px 0}.search input{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 14px;outline:0;color:#203b52;font-size:14px}
-.group{border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden}.group-title{padding:10px 14px;background:#eaf2f7;border-bottom:1px solid var(--line);color:#2a6488;font-size:12px;font-weight:950;letter-spacing:.03em}
-.menu{width:100%;min-height:60px;padding:10px 14px;border:0;border-bottom:1px solid #edf1f4;background:#fff;display:flex;align-items:center;gap:12px;text-align:left;color:#213b51}.menu:last-child{border-bottom:0}.menu:active{background:#f4f8fb}
-.icon{width:39px;height:39px;flex:0 0 39px;border:1px solid #d6e2ea;border-radius:10px;background:#edf4f8;display:grid;place-items:center;color:#2b6d94;font-size:15px;font-weight:950}.label{flex:1;font-size:14px;font-weight:900}.chev{font-size:23px;color:#9aa7b2}.empty{display:none;padding:26px;text-align:center;color:#7d8c9a;font-size:12px}
+body{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.header{position:sticky;top:0;z-index:30;height:64px;padding:8px 14px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand img{width:48px;height:34px;object-fit:contain}.brand strong{display:block;font-size:18px;font-weight:950;letter-spacing:-.04em}.brand small{display:block;margin-top:1px;font-size:9px;color:#8b98a6;font-weight:850;letter-spacing:.12em}
+.user{height:38px;max-width:112px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#425a70;font-size:12px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{padding:15px 12px 24px}.intro{padding:1px 2px 12px}.intro h1{margin:0;font-size:24px;font-weight:950;letter-spacing:-.045em}.intro p{margin:5px 0 0;font-size:12px;line-height:1.5;color:var(--muted);font-weight:700}
+.att{width:100%;min-height:74px;padding:12px 15px;border:0;border-radius:17px;background:linear-gradient(135deg,#0a73d2,#11a4bd);color:#fff;display:flex;align-items:center;gap:12px;text-align:left;box-shadow:0 10px 24px rgba(19,107,163,.18)}
+.att .ico{width:46px;height:46px;flex:0 0 46px;border-radius:13px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:20px}.att strong{display:block;font-size:17px;font-weight:950}.att small{display:block;margin-top:4px;color:#e9f8ff;font-size:11px;font-weight:750}.att .go{margin-left:auto;font-size:28px}
+.search{margin:13px 0 14px}.search input{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 14px;outline:0;color:#203a50;font-size:14px}
+.section{margin-top:14px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}.section-head h2{margin:0;font-size:13px;font-weight:950;color:#2a526e}.section-head span{font-size:10px;color:#9aa7b4;font-weight:750}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.card{min-height:94px;padding:13px;border:1px solid var(--line);border-radius:15px;background:var(--card);display:flex;flex-direction:column;justify-content:space-between;color:var(--ink);text-decoration:none;box-shadow:0 3px 10px rgba(27,58,82,.035)}
+.card:active{transform:scale(.985);background:#f8fbfd}
+.card .top{display:flex;align-items:center;justify-content:space-between}.card .icon{width:38px;height:38px;border-radius:11px;background:#edf4f8;display:grid;place-items:center;color:#286a92;font-size:15px;font-weight:950;border:1px solid #d7e2ea}.card .arrow{font-size:21px;color:#a0acb8}.card .label{font-size:14px;font-weight:900;letter-spacing:-.02em}.card .desc{margin-top:3px;font-size:10px;color:#8b98a5;font-weight:700;line-height:1.35}
+.admin-card{display:none}
+body.is-admin .admin-card{display:flex}
+.empty{display:none;padding:26px 10px;text-align:center;color:#81909f;font-size:12px}
+@media(max-width:370px){.grid{grid-template-columns:1fr}.card{min-height:78px}}
 </style>
 </head>
 <body>
@@ -28,55 +34,74 @@ body{padding-bottom:max(18px,env(safe-area-inset-bottom))}
   <button class="user" id="userBtn" type="button">로그인 확인</button>
 </header>
 <main class="main">
-  <section class="intro"><h1>업무 메뉴</h1><p>PC QMES와 동일한 메뉴 명칭과 순서입니다.</p></section>
-  <button class="att" id="attendanceBtn" type="button"><span class="ico">◷</span><span><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span><span class="go">›</span></button>
+  <section class="intro"><h1>업무 메뉴</h1><p>PC와 동일한 데이터와 기능을 사용하며, 모바일에 맞게 화면을 구성합니다.</p></section>
+
+  <button class="att" id="attendanceBtn" type="button">
+    <span class="ico">◷</span>
+    <span><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span>
+    <span class="go">›</span>
+  </button>
+
   <label class="search"><input id="menuSearch" type="search" placeholder="업무 메뉴 검색" autocomplete="off"></label>
-  <section class="group"><div class="group-title">QMES</div><div id="menuRoot"></div><div class="empty" id="empty">검색 결과가 없습니다.</div></section>
+
+  <section class="section" data-group="production">
+    <div class="section-head"><h2>생산관리</h2><span>PRODUCTION</span></div>
+    <div class="grid">
+      <a class="card" data-label="작업지시서" href="/?desktop=1&mobile=1&mobileTab=woIssue&mobileMenu=productionMenu"><div class="top"><span class="icon">▤</span><span class="arrow">›</span></div><div><div class="label">작업지시서</div><div class="desc">지시 · 조회 · 진행 확인</div></div></a>
+      <a class="card" data-label="생산 진행" href="/?desktop=1&mobile=1&mobileTab=prod&mobileMenu=productionMenu"><div class="top"><span class="icon">▥</span><span class="arrow">›</span></div><div><div class="label">생산 진행</div><div class="desc">생산 현황 · 배치 진행</div></div></a>
+      <a class="card" data-label="현장 입력" href="/?desktop=1&mobile=1&mobileTab=pop"><div class="top"><span class="icon">▶</span><span class="arrow">›</span></div><div><div class="label">현장 입력</div><div class="desc">현장 검사 · 실적 입력</div></div></a>
+    </div>
+  </section>
+
+  <section class="section" data-group="quality">
+    <div class="section-head"><h2>품질관리</h2><span>QUALITY</span></div>
+    <div class="grid">
+      <a class="card" data-label="수입검사" href="/?desktop=1&mobile=1&mobileTab=iqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">✓</span><span class="arrow">›</span></div><div><div class="label">수입검사</div><div class="desc">IQC 등록 · 조회 · 판정</div></div></a>
+      <a class="card" data-label="공정검사" href="/?desktop=1&mobile=1&mobileTab=pqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">△</span><span class="arrow">›</span></div><div><div class="label">공정검사</div><div class="desc">PQC 등록 · 조회 · 판정</div></div></a>
+      <a class="card" data-label="출하검사" href="/?desktop=1&mobile=1&mobileTab=oqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">▣</span><span class="arrow">›</span></div><div><div class="label">출하검사</div><div class="desc">OQC 등록 · 조회 · 승인</div></div></a>
+      <a class="card" data-label="기준서" href="/?desktop=1&mobile=1&mobileTab=standards&mobileMenu=qualityMenu"><div class="top"><span class="icon">⚙</span><span class="arrow">›</span></div><div><div class="label">기준서</div><div class="desc">기준서 · 매뉴얼 조회</div></div></a>
+    </div>
+  </section>
+
+  <section class="section" data-group="trace">
+    <div class="section-head"><h2>추적 · 설비</h2><span>TRACE / EQUIPMENT</span></div>
+    <div class="grid">
+      <a class="card" data-label="LOT 추적" href="/?desktop=1&mobile=1&mobileTab=trace"><div class="top"><span class="icon">◇</span><span class="arrow">›</span></div><div><div class="label">LOT 추적</div><div class="desc">원재료 · 완제품 LOT 추적</div></div></a>
+      <a class="card" data-label="설비관리" href="/?desktop=1&mobile=1&mobileTab=eq"><div class="top"><span class="icon">▧</span><span class="arrow">›</span></div><div><div class="label">설비관리</div><div class="desc">설비 · 점검 · 이력 관리</div></div></a>
+      <a class="card admin-card" data-label="회원관리" href="/?desktop=1&mobile=1&mobileTab=members"><div class="top"><span class="icon">●</span><span class="arrow">›</span></div><div><div class="label">회원관리</div><div class="desc">관리자 전용</div></div></a>
+    </div>
+  </section>
+  <div class="empty" id="empty">검색 결과가 없습니다.</div>
 </main>
 <script>
 (function(){
 "use strict";
-const items=[
- {label:"작업지시서",icon:"▤",tab:"woIssue"},
- {label:"수입검사",icon:"✓",tab:"iqc"},
- {label:"생산 진행",icon:"▥",tab:"prod"},
- {label:"공정검사",icon:"△",tab:"pqc"},
- {label:"출하검사",icon:"▣",tab:"oqc"},
- {label:"LOT 추적",icon:"◇",tab:"trace"},
- {label:"현장 입력",icon:"▶",tab:"pop"},
- {label:"설비관리",icon:"▧",tab:"eq"},
- {label:"기준서",icon:"⚙",tab:"standards"},
- {label:"회원관리",icon:"●",tab:"members",adminOnly:true}
-];
-let admin=false;
-const root=document.getElementById("menuRoot"),empty=document.getElementById("empty"),search=document.getElementById("menuSearch");
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
-function render(){
- const q=String(search.value||"").trim().toLowerCase();let html="",count=0;
- items.forEach(item=>{
-   if(item.adminOnly&&!admin)return;
-   if(q&&!item.label.toLowerCase().includes(q))return;
-   count++;
-   const openMenu=item.tab==="woIssue"||item.tab==="prod"?"productionMenu":(item.tab==="iqc"||item.tab==="pqc"||item.tab==="oqc"||item.tab==="standards"?"qualityMenu":"");
-   const href="/?desktop=1&mobile=1&mobileTab="+encodeURIComponent(item.tab)+(openMenu?"&mobileMenu="+encodeURIComponent(openMenu):"");
-   html+='<a class="menu" href="'+href+'" data-tab="'+esc(item.tab)+'"><span class="icon">'+esc(item.icon)+'</span><span class="label">'+esc(item.label)+'</span><span class="chev">›</span></a>';
+const search=document.getElementById("menuSearch"),empty=document.getElementById("empty");
+function filter(){
+ const q=String(search.value||"").trim().toLowerCase();let shown=0;
+ document.querySelectorAll(".card").forEach(card=>{
+   const visible=!q||String(card.dataset.label||"").toLowerCase().includes(q);
+   card.style.display=visible?"flex":"none"; if(visible)shown++;
  });
- root.innerHTML=html;empty.style.display=count?"none":"block";
+ document.querySelectorAll(".section").forEach(section=>{
+   section.style.display=Array.from(section.querySelectorAll(".card")).some(c=>c.style.display!=="none")?"block":"none";
+ });
+ empty.style.display=shown?"none":"block";
 }
 async function auth(){
  try{
    const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
-   if(r.status===401){document.getElementById("userBtn").textContent="로그인";document.getElementById("userBtn").onclick=()=>location.assign("/?desktop=1&mobileLogin=1");render();return;}
+   if(r.status===401){document.getElementById("userBtn").textContent="로그인";document.getElementById("userBtn").onclick=()=>location.assign("/?desktop=1&mobileLogin=1");return;}
    const j=await r.json();const u=(j&&j.data&&j.data.user)||(j&&j.data)||(j&&j.user)||j||{};
    const name=String(u.name||u.loginId||u.email||"").trim();
-   const ub=document.getElementById("userBtn");ub.textContent=name?name+"님":"사용자";ub.onclick=null;
-   admin=String(u.role||"").toLowerCase()==="admin";
+   document.getElementById("userBtn").textContent=name?name+"님":"사용자";
+   if(String(u.role||"").toLowerCase()==="admin")document.body.classList.add("is-admin");
  }catch(_){}
- render();
+ filter();
 }
 document.getElementById("attendanceBtn").onclick=()=>location.assign("/attendance.html?mobile=1&source=qmes");
-search.oninput=render;
-render();auth();
+search.oninput=filter;
+filter();auth();
 })();
 </script>
 </body>
