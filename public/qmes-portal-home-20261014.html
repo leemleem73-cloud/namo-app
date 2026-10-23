@@ -524,7 +524,7 @@ svg{display:block}
        <button class="task-row" type="button" data-action="수입검사"><div class="task-icon"><svg class="icon small"><use href="#ico-checklist"/></svg></div><div class="detail"><b>품질검사 및 판정 현황</b><small id="portal-quality-summary">검사 현황 확인 중</small></div><span class="placeholder">업무 열기 ↗</span></button>
        <button class="task-row" type="button" data-action="LOT 추적"><div class="task-icon"><svg class="icon small"><use href="#ico-shield"/></svg></div><div class="detail"><b>LOT 추적 및 재고 현황</b><small id="portal-lot-summary">LOT 및 재고 업무 바로가기</small></div><span class="placeholder">업무 열기 ↗</span></button>
       </div>
-      <div class="notice-card"><div class="head">QMES 업무 공지 <span class="mini-pill">NOTICE</span></div><p><span id="portal-notice-summary">작업지시 발송·수신 및 품질검사 알림을 확인 중입니다.</span></p><button type="button" data-action="공지사항">전체 공지 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
+      <div class="notice-card"><div class="head">QMES 이용가이드 <span class="mini-pill">GUIDE</span></div><p><span id="portal-notice-summary">업무별 사용방법과 동영상 가이드를 이용가이드에서 확인하세요.</span></p><button type="button" data-action="이용가이드">사용법 및 동영상 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
    </aside>
    
    <section class="dock-wrap" aria-label="주요 업무 바로가기">
@@ -609,11 +609,7 @@ svg{display:block}
        setSummary('portal-quality-summary','수입 '+inspections[0].length+' · 공정 '+inspections[1].length+' · 출하 '+inspections[2].length+'건');
      else setSummary('portal-quality-summary','수입 · 공정 · 출하검사 현황 확인');
      setSummary('portal-lot-summary','원료 · 중간배치 · 제품 LOT 및 재고 확인');
-     const alerts=get(4);
-     if(alerts){
-       const pending=alerts.filter(x=>String(x.approval_status||'').toUpperCase()==='PENDING').length;
-       setSummary('portal-notice-summary',pending?'품질검사 승인대기 '+pending+'건 · QMES 알림센터에서 세부사항을 확인하세요.':'품질검사 알림 '+alerts.length+'건 · 작업지시 발송·수신 알림은 QMES 알림센터에서 확인하세요.');
-     }else setSummary('portal-notice-summary','작업지시 발송·수신 및 품질검사 알림은 QMES 알림센터에서 확인하세요.');
+     setSummary('portal-notice-summary','업무별 사용방법과 동영상 가이드를 이용가이드에서 확인하세요.');
    }catch(e){console.warn('[QMES portal refresh]',e);}
    finally{refreshInFlight=false;}
  }
@@ -635,6 +631,10 @@ svg{display:block}
   const routes={'종합현황':'dashboard','작업지시':'work','생산관리':'work',
     '수입검사':'incoming','공정검사':'process','출하검사':'outgoing','품질관리':'quality',
     'LOT 추적':'lotTrace','설비관리':'equipment','직원관리':'adminEmployees'};
+  if(name==='이용가이드'){
+    window.parent.location.href='/qmes-user-guide.html';
+    return;
+  }
   if(name==='공지사항'||name==='나의 업무 현황'){
     window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'notify'},location.origin);
     return;
