@@ -329,6 +329,15 @@ svg{display:block}
 #namo-portal-root .dock-wrap.dock-expanded .dock-toggle{position:relative;z-index:2;margin-top:0!important}
 @media(max-width:900px){#namo-portal-root .dock-wrap.dock-expanded .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
+
+<style id="portal-stable-dock-anchor-20261023">
+/* Keep the same search-aligned footprint and bottom anchor in both states. */
+#namo-portal-root .dock-wrap,#namo-portal-root .dock-wrap.dock-expanded{box-sizing:border-box!important;width:var(--portal-search-width,690px)!important;max-width:calc(100% - 24px)!important;left:var(--portal-search-center,50%)!important;bottom:18px!important;gap:0!important;transition:none!important}
+#namo-portal-root .dock-wrap>.dock{box-sizing:border-box!important;width:100%!important;max-width:100%!important;display:flex!important;justify-content:center!important;gap:10px!important;padding:16px 18px 12px!important}
+#namo-portal-root .dock-wrap>.dock .app{flex:1;min-width:0!important;width:auto!important}
+#namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{margin:0!important;padding-top:0!important;padding-bottom:0!important;border-width:0!important;max-height:0!important}
+#namo-portal-root .dock-wrap>.dock-toggle{box-sizing:border-box!important;flex:0 0 22px!important;height:22px!important;min-height:22px!important;margin:0!important}
+</style>
 </head>
 <body>
 <!-- QMES operational portal: existing navigation and business data are owned by the parent application. -->
