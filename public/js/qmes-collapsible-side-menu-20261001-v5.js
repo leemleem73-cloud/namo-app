@@ -20,7 +20,7 @@ const menu=[
   {label:"현장 입력",icon:"▶",tab:"pop"},
   {label:"설비관리",icon:"▧",tab:"eq"},
   {label:"기준서",icon:"⚙",tab:"standards",openMenu:"qualityMenu"},
-  {label:"회원관리",icon:"●",tab:"members"}
+  {label:"회원관리",icon:"●",tab:"members",adminOnly:true}
 ];
 
 function ensureStyle(){
@@ -151,7 +151,7 @@ function build(){
   side.innerHTML='<nav class="qside-nav"></nav>';
   document.body.appendChild(side);
   const nav=side.querySelector(".qside-nav");
-  menu.forEach((item,index)=>{
+  menu.filter(item=>!item.adminOnly||String(currentUser().role||"").toLowerCase()==="admin").forEach((item,index)=>{
     const b=document.createElement("button");
     b.type="button";
     b.className="qside-item"+(index===0?" active":"");
