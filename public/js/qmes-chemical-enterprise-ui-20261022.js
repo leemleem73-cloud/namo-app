@@ -301,6 +301,14 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
 .qce-modal .qce-department-options{position:absolute;top:100%;left:0;right:0;z-index:10;padding:5px;background:#fff;border:1px solid #c7d6e5;box-shadow:0 4px 12px #0002}
 .qce-modal .qce-department-options label{display:flex!important;align-items:center;justify-content:flex-start!important;gap:7px!important;padding:7px!important;border:0!important;background:#fff!important;font-size:12px!important;font-weight:400!important;cursor:pointer}
 .qce-modal .qce-department-options input[type=checkbox]{width:13px!important;height:13px!important;min-height:0!important;margin:0!important;padding:0!important}
+
+/* instrument-photo-preview-20261023 */
+html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;padding:0;color:#0070c0;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.qce-instrument-photo-dialog{box-sizing:border-box;width:min(760px,94vw);max-height:92dvh;padding:0;border:1px solid #cbd8e5;border-radius:8px;background:#fff;color:#173b61;overflow:auto;box-shadow:0 16px 50px #0004}
+.qce-instrument-photo-dialog::backdrop{background:rgba(15,23,42,.5)}
+.qce-instrument-photo-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #dbe5ef;background:#fff;font:14px Pretendard,"Noto Sans KR",Arial,sans-serif}
+.qce-instrument-photo-head button{padding:6px 12px;border:1px solid #cbd8e5;border-radius:4px;background:#fff;color:#173b61;cursor:pointer}
+.qce-instrument-photo-dialog>img{display:block;width:100%;height:auto;max-height:calc(92dvh - 60px);object-fit:contain}
   `;
   document.head.appendChild(style);
 
@@ -611,8 +619,9 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
     const paint=rows=>{
         root._instrumentRows=rows;
         root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:52px"><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="10">등록된 계측기가 없습니다.</td></tr>'
+          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+(String(r.id)==='1'?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="10">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
+        root.querySelectorAll('[data-inst-photo]').forEach(button=>button.onclick=()=>openInstrumentPhoto(rows.find(row=>String(row.id)===button.dataset.instPhoto)));
         root.querySelectorAll('[data-inst-edit]').forEach(button=>button.onclick=()=>root._openInstrument(rows.find(row=>String(row.id)===button.dataset.instEdit)));
         root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),()=>{instrumentQueries.clear();load(true);}));
 
@@ -679,6 +688,17 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
     root._openInstrument=openInstrument;
     root.querySelector('.qce-inst-new').onclick=()=>openInstrument();
     load();
+  }
+
+
+  function openInstrumentPhoto(record){
+    if(!record||String(record.id)!=='1')return;
+    const dialog=document.createElement('dialog');dialog.className='qce-instrument-photo-dialog';
+    dialog.innerHTML='<div class="qce-instrument-photo-head"><strong>'+esc(record.instrument_name)+' · '+esc(record.instrument_no||'')+'</strong><button type="button" aria-label="사진 닫기">닫기</button></div><img src="/assets/instruments/nm-measure-01.svg" alt="'+esc(record.instrument_name)+' 계측기 사진">';
+    document.body.appendChild(dialog);
+    dialog.querySelector('button').onclick=()=>dialog.close();
+    dialog.addEventListener('click',event=>{if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close();}});
+    dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
   }
 
   function openCalibration(row,reload){
