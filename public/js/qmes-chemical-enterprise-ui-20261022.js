@@ -292,6 +292,15 @@ html body #calibrationMgmt .qce-cal-body,html body #calibrationMgmt .qce-cal-bod
 html body #calibrationMgmt .qce-cal-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
 html body #calibrationMgmt .qce-cal-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
 html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 12px!important;font-size:12px;color:#64748b}
+
+/* instrument-department-select-20261023 */
+.qce-modal .qce-department-picker{position:relative;min-width:0;margin:5px 7px;font-size:12px}
+.qce-modal .qce-department-picker>input[type=hidden]{display:none}
+.qce-modal .qce-department-picker details{position:relative}
+.qce-modal .qce-department-picker summary{box-sizing:border-box;min-height:30px;border:1px solid #c7d6e5;border-radius:2px;background:#fff;color:#344054;padding:6px 9px;cursor:pointer;overflow-wrap:anywhere}
+.qce-modal .qce-department-options{position:absolute;top:100%;left:0;right:0;z-index:10;padding:5px;background:#fff;border:1px solid #c7d6e5;box-shadow:0 4px 12px #0002}
+.qce-modal .qce-department-options label{display:flex!important;align-items:center;justify-content:flex-start!important;gap:7px!important;padding:7px!important;border:0!important;background:#fff!important;font-size:12px!important;font-weight:400!important;cursor:pointer}
+.qce-modal .qce-department-options input[type=checkbox]{width:13px!important;height:13px!important;min-height:0!important;margin:0!important;padding:0!important}
   `;
   document.head.appendChild(style);
 
@@ -636,7 +645,7 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
       modal(record?'계측기 수정':'계측기 등록','<div class="qce-form">'+
       '<div class="qce-field"><label>계측기명</label><input data-k="instrument_name"></div><div class="qce-field"><label>제조사</label><input data-k="maker"></div>'+
       '<div class="qce-field"><label>모델</label><input data-k="model"></div><div class="qce-field"><label>Serial No.</label><input data-k="serial_no"></div>'+
-      '<div class="qce-field"><label>사용부서</label><input data-k="department"></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
+      '<div class="qce-field"><label>사용부서</label><div class="qce-department-picker"><input type="hidden" data-k="department"><details><summary>부서 선택</summary><div class="qce-department-options"><label><input type="checkbox" value="연구소"><span>연구소</span></label><label><input type="checkbox" value="품질부"><span>품질부</span></label><label><input type="checkbox" value="생산부"><span>생산부</span></label></div></details></div></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
       '<div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div><div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div>'+
       '<div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
@@ -648,6 +657,23 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
           const value=record[input.dataset.k];
           input.value=value==null?'':input.type==='date'?String(value).slice(0,10):String(value);
         });
+      }
+      const picker=document.querySelector('.qce-modal-bg:last-of-type .qce-department-picker');
+      if(picker){
+        const input=picker.querySelector('[data-k="department"]'),options=picker.querySelector('.qce-department-options');
+        const saved=String(input.value||'').split(/[,，/·]+/).map(v=>v.trim()).filter(Boolean);
+        saved.forEach(name=>{
+          if(!Array.from(options.querySelectorAll('input')).some(box=>box.value===name)){
+            const label=document.createElement('label'),box=document.createElement('input'),text=document.createElement('span');
+            box.type='checkbox';box.value=name;text.textContent=name;label.append(box,text);options.appendChild(label);
+          }
+        });
+        options.querySelectorAll('input').forEach(box=>{box.checked=saved.includes(box.value);});
+        const sync=()=>{
+          const selected=Array.from(options.querySelectorAll('input:checked')).map(box=>box.value);
+          input.value=selected.join(', ');picker.querySelector('summary').textContent=selected.join(', ')||'부서 선택';
+        };
+        options.addEventListener('change',sync);sync();
       }
     };
     root._openInstrument=openInstrument;
