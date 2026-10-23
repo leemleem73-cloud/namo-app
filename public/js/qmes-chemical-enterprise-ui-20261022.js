@@ -257,6 +257,11 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>tbody>tr>td{border-right-color:#d5dce5!important;border-bottom-color:#d5dce5!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>:last-child{border-right-color:#cbd8e5!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>tbody>tr>:last-child{border-right-color:#d5dce5!important}
+
+/* spc-thin-perimeter-20261023: cells alone draw the table perimeter. */
+html body #spcTrend .iqc-work-frame .ip-table-wrap[class]{border:0!important;outline:0!important;box-shadow:none!important;padding:0!important}
+html body #spcTrend .iqc-work-frame table.ip-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
+html body #spcTrend .iqc-work-frame table.ip-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
   `;
   document.head.appendChild(style);
 
