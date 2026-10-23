@@ -73,6 +73,11 @@ function ensureSchema() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       CREATE INDEX IF NOT EXISTS qmes_calibration_instrument_idx ON qmes_calibrations(instrument_id, calibration_on DESC);
+      CREATE TABLE IF NOT EXISTS qmes_instrument_photos(
+        instrument_id BIGINT PRIMARY KEY REFERENCES qmes_instruments(id) ON DELETE CASCADE,
+        content_type TEXT NOT NULL, image_data BYTEA NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
       UPDATE qmes_instruments
       SET instrument_no='NM측정-' || LPAD(id::text,GREATEST(2,LENGTH(id::text)),'0')
       WHERE instrument_no ~ '^MI-[0-9]+$';
@@ -176,6 +181,7 @@ function install(app) {
       const q = str(req.query.q, 120);
       const rows = await pool.query(`
         SELECT i.*,
+          (SELECT updated_at FROM qmes_instrument_photos p WHERE p.instrument_id=i.id) AS photo_updated_at,
           (SELECT COUNT(*)::int FROM qmes_calibrations c WHERE c.instrument_id=i.id) AS calibration_count
         FROM qmes_instruments i
         WHERE ($1='' OR instrument_no ILIKE '%'||$1||'%' OR instrument_name ILIKE '%'||$1||'%' OR model ILIKE '%'||$1||'%' OR serial_no ILIKE '%'||$1||'%')
@@ -240,6 +246,28 @@ function install(app) {
       if(!result.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
       res.json({success:true,data:result.rows[0]});
     }catch(error){console.error('[QMES instrument update]',error);fail(res,500,'계측기 수정 실패');}
+  });
+
+
+  app.get('/api/qmes-instruments/:id/photo',auth,async(req,res)=>{
+    const id=Number(req.params.id);if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'계측기 번호를 확인하세요.');
+    try{await ensureSchema();const result=await pool.query('SELECT content_type,image_data FROM qmes_instrument_photos WHERE instrument_id=$1',[id]);
+      if(!result.rowCount)return fail(res,404,'등록된 사진이 없습니다.');
+      res.set('Content-Type',result.rows[0].content_type);res.set('Cache-Control','private, max-age=86400');res.set('X-Content-Type-Options','nosniff');res.send(result.rows[0].image_data);
+    }catch(error){console.error('[QMES instrument photo]',error);fail(res,500,'사진 조회 실패');}
+  });
+  app.post('/api/qmes-instruments/:id/photo',auth,express.raw({type:['image/png','image/jpeg','image/webp'],limit:'5mb'}),async(req,res)=>{
+    const id=Number(req.params.id),data=req.body,type=req.get('Content-Type')?.split(';')[0];
+    if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'계측기 번호를 확인하세요.');
+    const valid=Buffer.isBuffer(data)&&data.length>12&&data.length<=5*1024*1024&&(
+      (type==='image/png'&&data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))||
+      (type==='image/jpeg'&&data[0]===255&&data[1]===216&&data[2]===255)||
+      (type==='image/webp'&&data.toString('ascii',0,4)==='RIFF'&&data.toString('ascii',8,12)==='WEBP'));
+    if(!valid)return fail(res,400,'5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');
+    try{await ensureSchema();const exists=await pool.query('SELECT id FROM qmes_instruments WHERE id=$1',[id]);if(!exists.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
+      const result=await pool.query('INSERT INTO qmes_instrument_photos(instrument_id,content_type,image_data) VALUES($1,$2,$3) ON CONFLICT(instrument_id) DO UPDATE SET content_type=EXCLUDED.content_type,image_data=EXCLUDED.image_data,updated_at=NOW() RETURNING updated_at',[id,type,data]);
+      res.json({success:true,data:{updated_at:result.rows[0].updated_at}});
+    }catch(error){console.error('[QMES instrument photo save]',error);fail(res,500,'사진 저장 실패');}
   });
 
   app.get('/api/qmes-calibrations', auth, async (req,res)=>{
