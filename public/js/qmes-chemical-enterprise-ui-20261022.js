@@ -665,9 +665,9 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const dock=document.createElement('div');dock.className='qce-instrument-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','계측기 선택 항목 작업');dock.setAttribute('aria-hidden','true');dock.inert=true;
-    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selected-delete>선택 삭제</button><button type="button" data-inst-selection-clear>선택 해제</button></div>';
+    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selected-delete>선택 삭제</button></div>';
     root.appendChild(dock);
-    dock.querySelector('[data-inst-selection-clear]').onclick=()=>root._resetListSelection();
+
     dock.querySelector('[data-inst-selected-delete]').onclick=async function(){
       const ids=(root._instrumentRows||[]).filter(row=>selectedIds.has(String(row.id))).map(row=>row.id);
       if(!ids.length)return;
