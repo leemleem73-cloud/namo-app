@@ -276,6 +276,14 @@ html body #changeControl .qce-change-body{border:0!important;outline:0!important
 html body #changeControl .qce-change-body>div{border:0!important;outline:0!important;box-shadow:none!important;margin:0!important;padding:0!important}
 html body #changeControl .qce-change-body .change-load-status{padding:10px 12px!important}
 html body #changeControl .qce-change-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important}
+
+/* instrument-instant-single-edge-20261023 */
+html body #instrumentMgmt .qce-page>.qce-shell{border:0!important;outline:0!important;box-shadow:none!important}
+html body #instrumentMgmt .qce-page>.qce-shell>.qce-toolbar{box-sizing:border-box!important;border:1px solid #d8e2ec!important;border-bottom:0!important}
+html body #instrumentMgmt .qce-inst-body,html body #instrumentMgmt .qce-inst-body>div{border:0!important;outline:0!important;box-shadow:none!important;margin:0!important;padding:0!important;background:#fff!important}
+html body #instrumentMgmt .qce-inst-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important;border-spacing:0!important}
+html body #instrumentMgmt .qce-inst-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
+html body #instrumentMgmt .qce-inst-body .instrument-load-status{padding:10px 12px!important;font-size:12px;color:#64748b}
   `;
   document.head.appendChild(style);
 
@@ -578,21 +586,43 @@ html body #changeControl .qce-change-body table.qce-table[class]{border:0!import
     load();
   }
 
-  async function renderInstrument(){
+  const instrumentQueries=new Map();
+  function renderInstrument(){
     const root=document.getElementById('instrumentMgmt');if(!root)return;
+    if(root._instrumentLoad&&root.querySelector('.qce-inst-body')){root._instrumentLoad();return;}
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
-    const load=async()=>{
-      try{
-        const rows=await api('/api/qmes-instruments?q='+encodeURIComponent(root.querySelector('.qce-inst-q')?.value||''));
+    const paint=rows=>{
         root._instrumentRows=rows;
         root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:12%"><col style="width:17%"><col style="width:16%"><col style="width:12%"><col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
           rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button></td></tr>').join(''):'<tr><td colspan="10">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
-        root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),load));
-      }catch(e){root.querySelector('.qce-inst-body').innerHTML='<div class="qce-empty">'+esc(e.message)+'</div>';}
+        root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),()=>{instrumentQueries.clear();load(true);}));
+
     };
-    root.querySelector('.qce-inst-search').onclick=load;
-    root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+    const load=async(force=false)=>{
+      const q=root.querySelector('.qce-inst-q')?.value||'';
+      let entry=instrumentQueries.get(q);
+      if(!entry){entry={rows:null,at:0,promise:null};instrumentQueries.set(q,entry);}
+      if(entry.rows!==null)paint(entry.rows);
+      else if(!root.querySelector('.qce-inst-body table'))paint([]);
+      if(force!==true&&entry.rows!==null&&Date.now()-entry.at<30000)return;
+      try{
+        if(!entry.promise)entry.promise=api('/api/qmes-instruments?q='+encodeURIComponent(q))
+          .then(rows=>{entry.rows=rows;entry.at=Date.now();return rows;})
+          .finally(()=>{entry.promise=null;});
+        const rows=await entry.promise;
+        if((root.querySelector('.qce-inst-q')?.value||'')===q)paint(rows);
+      }catch(e){
+        if((root.querySelector('.qce-inst-q')?.value||'')!==q)return;
+        const body=root.querySelector('.qce-inst-body');
+        let status=body.querySelector('.instrument-load-status');
+        if(!status){status=document.createElement('div');status.className='instrument-load-status';status.setAttribute('role','status');body.appendChild(status);}
+        status.textContent=e.message;
+      }
+    };
+    root._instrumentLoad=load;
+    root.querySelector('.qce-inst-search').onclick=()=>load(true);
+    root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
     root.querySelector('.qce-inst-new').onclick=()=>modal('계측기 등록','<div class="qce-form">'+
       '<div class="qce-field"><label>계측기명</label><input data-k="instrument_name"></div><div class="qce-field"><label>제조사</label><input data-k="maker"></div>'+
       '<div class="qce-field"><label>모델</label><input data-k="model"></div><div class="qce-field"><label>Serial No.</label><input data-k="serial_no"></div>'+
@@ -600,7 +630,7 @@ html body #changeControl .qce-change-body table.qce-table[class]{border:0!import
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
       '<div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div><div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div>'+
       '<div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-instruments',{method:'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});toast('계측기가 등록되었습니다.');load();}
+      async bg=>{await api('/api/qmes-instruments',{method:'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});toast('계측기가 등록되었습니다.');instrumentQueries.clear();load(true);}
     );
     load();
   }
@@ -628,14 +658,18 @@ html body #changeControl .qce-change-body table.qce-table[class]{border:0!import
     });
     const authUser=document.getElementById('currentUser');
     if(authUser)new MutationObserver(()=>{
-      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);}
+      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);instrumentQueries.clear();document.getElementById('instrumentMgmt')?._instrumentLoad?.(true);}
     }).observe(authUser,{attributes:true,attributeFilter:['data-qauth-ready']});
     document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>{
       m.addEventListener('click',renderChange);
       m.addEventListener('pointerenter',()=>document.getElementById('changeControl')?._changeLoad?.());
       m.addEventListener('focusin',()=>document.getElementById('changeControl')?._changeLoad?.());
     });
-    document.querySelectorAll('.menu[data-page="instrumentMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderInstrument,0)));
+    document.querySelectorAll('.menu[data-page="instrumentMgmt"]').forEach(m=>{
+      m.addEventListener('click',renderInstrument);
+      m.addEventListener('pointerenter',()=>document.getElementById('instrumentMgmt')?._instrumentLoad?.());
+      m.addEventListener('focusin',()=>document.getElementById('instrumentMgmt')?._instrumentLoad?.());
+    });
     document.querySelectorAll('.menu[data-page="calibrationMgmt"]').forEach(m=>m.addEventListener('click',()=>setTimeout(renderCalibration,0)));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
