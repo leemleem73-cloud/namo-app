@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script id="qmes-mobile-root-redirect-20261023">
+(function(){
+  try{
+    var p=new URLSearchParams(location.search);
+    var forceDesktop=p.get('desktop')==='1'||p.has('mobileWork')||p.get('pc')==='1';
+    var mobile=p.get('mobile')==='1'||Math.min(screen.width||9999,window.innerWidth||9999)<=768;
+    if(mobile&&!forceDesktop&&location.pathname!='/mobile.html'){
+      location.replace('/mobile.html');
+    }
+  }catch(e){}
+})();
+</script>
+
 <script id="qmes-auth-data-ready-20261020">
 (function(){
   let ready=false,resolveReady,pending;
