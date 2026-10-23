@@ -17,23 +17,21 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .manual{display:none;grid-template-columns:280px 1fr;min-height:calc(100vh - 70px)}.manual.active{display:grid}.side{background:#fafbfc;border-right:1px solid #dfe5ec;padding:16px 12px}.menuSearch{width:100%;height:38px;border:1px solid #d5dbe2;border-radius:4px;padding:0 11px;margin-bottom:10px}.section{border-top:1px solid #e5e9ee}.head{padding:13px 8px;font-weight:800;color:#4d5c70}.item{padding:9px 12px;margin-left:14px;border-radius:6px;color:#6c7887;cursor:pointer}.item.active{background:#edf5ff;color:#2475d5;font-weight:800}.article{padding:22px 44px 70px}.articleSearch{max-width:940px;border:1px solid #dfe4ea;padding:12px;display:flex;gap:8px}.articleSearch input{flex:1;height:38px;border:1px solid #d5dbe2;padding:0 10px}.articleSearch button{height:38px;border:0;background:#3993ed;color:#fff;padding:0 18px;font-weight:800}.article h2{margin:32px 0 6px;font-size:24px}.crumb{font-size:13px;color:#a1a9b4}.lead{margin:24px 0 18px;font-weight:800}.guideShot{max-width:1040px;border:1px solid #dce2e9;background:#f7f9fb;padding:16px}.qmesMock{border:1px solid #d6dde5;background:#fff;position:relative;min-height:470px}.qhead{height:42px;background:#328de8;color:#fff;font-weight:800;padding:11px 14px}.qbody{padding:16px;display:grid;grid-template-columns:185px 1fr;gap:14px}.qlist{border:1px solid #dbe1e8;background:#fbfcfd}.qlist div{padding:12px;border-bottom:1px solid #e7ebef;font-size:12px}.qform{border:1px solid #dbe1e8;padding:14px}.row{display:grid;grid-template-columns:115px 1fr 115px 1fr;border:1px solid #e0e5eb;border-bottom:0}.row:last-child{border-bottom:1px solid #e0e5eb}.row span{padding:10px;background:#f6f8fa;border-right:1px solid #e0e5eb;font-size:12px}.row b{padding:10px;font-size:12px}.block{margin-top:18px;padding:17px;text-align:center;font-size:24px;font-weight:900;color:#dc2626;background:#fff1f2;border:1px solid #f5b8bd}.call{position:absolute;width:28px;height:28px;border-radius:50%;background:#f02b1f;color:#fff;display:grid;place-items:center;font-weight:900;box-shadow:0 0 0 3px #fff}.c1{left:20px;top:86px}.c2{left:210px;top:86px}.c3{right:22px;top:86px}.steps{max-width:1040px;margin-top:18px}.step{margin-bottom:9px;padding:14px 16px;border-left:4px solid #3b91ec;background:#f7fbff}.step b{color:#2478d4;margin-right:8px}
 @media(max-width:1000px){.quick{grid-template-columns:repeat(3,1fr)}.popular{grid-template-columns:1fr}.leadBox{border-radius:10px;margin-bottom:14px}.cards{grid-template-columns:1fr}.manual.active{grid-template-columns:220px 1fr}.nav{gap:16px}.article{padding:20px}}
 
-/* Guide launcher mirrors the live QMES dashboard dock */
-.guide-dock-wrap{width:747px;max-width:92vw;margin:34px auto 0;position:relative;display:flex;flex-direction:column;align-items:center}
-.guide-dock-more{box-sizing:border-box;width:747px;max-width:min(92vw,747px);max-height:0;opacity:0;overflow:hidden;pointer-events:none;padding:0 18px;border:0 solid rgba(255,255,255,.14);border-radius:22px 22px 0 0;background:rgba(82,82,82,.58);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 28px rgba(0,0,0,.20);transform:translateY(12px);transition:max-height .3s ease,opacity .2s ease,transform .3s ease,padding .3s ease,border-width .2s ease}
-.guide-dock-more-grid{display:grid;grid-template-columns:repeat(8,minmax(72px,1fr));gap:18px 10px}
-.guide-dock{box-sizing:border-box;width:747px;max-width:min(92vw,747px);display:grid;grid-template-columns:repeat(8,minmax(72px,1fr));gap:10px;padding:14px 14px 16px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(82,82,82,.58);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 28px rgba(0,0,0,.20)}
+/* Guide launcher mirrors the live QMES dashboard expand-all menu */
+.guide-dock-wrap{width:747px;max-width:92vw;margin:34px auto 0;position:relative;display:flex;flex-direction:column;align-items:center;gap:0;isolation:isolate}
+.guide-dock-wrap::before{content:"";position:absolute;inset:0 0 22px;z-index:0;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(82,82,82,.58);box-shadow:0 12px 28px rgba(0,0,0,.20);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);pointer-events:none}
+.guide-dock-more{box-sizing:border-box;position:relative;z-index:1;width:100%;display:grid;grid-template-rows:0fr;max-height:none;opacity:0;overflow:hidden;pointer-events:none;padding:0 18px;background:transparent;border:0;box-shadow:none;transition:grid-template-rows .32s ease,padding-top .32s ease,padding-bottom .32s ease,opacity .32s ease}
+.guide-dock-more-grid{min-height:0;overflow:hidden;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:18px 10px}
 .guide-app{border:0;background:transparent;color:rgba(255,255,255,.84);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-width:0;font-size:10.5px;font-weight:700;padding:4px 2px}
 .guide-app:hover{background:rgba(255,255,255,.08);border-radius:12px}
 .guide-tile{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:18px;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .gt1{background:#169bc1}.gt2{background:#5d70df}.gt3{background:#20aaa4}.gt4{background:#f0a44c}.gt5{background:#9c74d8}.gt6{background:#4ca4d0}.gt7{background:#278ac0}.gt8{background:#ca789d}.gt9{background:#7d91a3}
-.guide-dock-toggle{width:54px;height:22px;margin-top:-1px;border:1px solid rgba(255,255,255,.35);border-top:0;border-radius:0 0 12px 12px;background:rgba(64,74,84,.78);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 18px rgba(5,23,38,.20)}
+.guide-dock-toggle{position:relative;z-index:2;width:54px;height:22px;margin:0;border:1px solid rgba(255,255,255,.35);border-top:0;border-radius:0 0 12px 12px;background:rgba(64,74,84,.78);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 18px rgba(5,23,38,.20)}
 .guide-dock-toggle svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;transition:transform .28s ease}
-.guide-dock-wrap.expanded .guide-dock-more{max-height:300px;opacity:1;pointer-events:auto;padding:22px 18px 25px;border-width:1px;transform:translateY(0);margin-bottom:0;border-bottom:0}
-.guide-dock-wrap.expanded .guide-dock{border-top:0;border-radius:0 0 22px 22px;box-shadow:none}
+.guide-dock-wrap.expanded .guide-dock-more{grid-template-rows:1fr;opacity:1;pointer-events:auto;padding:22px 18px 25px}
 .guide-dock-wrap.expanded .guide-dock-toggle svg{transform:rotate(180deg)}
-.guide-dock-wrap.expanded{gap:0}
-@media(max-width:900px){.guide-dock-wrap,.guide-dock,.guide-dock-more{width:min(94vw,620px)}.guide-dock-more-grid,.guide-dock{grid-template-columns:repeat(4,minmax(68px,1fr))}.guide-dock-wrap.expanded .guide-dock-more{max-height:560px}}
-
+@media(max-width:900px){.guide-dock-wrap{width:min(94vw,620px)}.guide-dock-more-grid{grid-template-columns:repeat(4,minmax(68px,1fr))}}
+@media(prefers-reduced-motion:reduce){.guide-dock-more,.guide-dock-toggle svg{transition:none!important}}
 
 /* workorder actual-screen guide */
 .workGuideStack{display:flex;flex-direction:column;gap:24px}
@@ -67,7 +65,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <div class="hero"><h1>NAMO QMES 업무별 사용방법을 확인하세요.</h1>
 <div class="guide-dock-wrap" id="guideQuickWrap">
 <div class="guide-dock-more" aria-hidden="true"><div class="guide-dock-more-grid">
-
+<button class="guide-app" data-page="종합 대시보드"><span class="guide-tile gt1">▦</span><span>종합 대시보드</span></button>
 <button class="guide-app" data-page="수주납기 관리"><span class="guide-tile gt4">📅</span><span>수주납기 관리</span></button>
 <button class="guide-app" data-page="구매발주 관리"><span class="guide-tile gt6">🧾</span><span>구매발주 관리</span></button>
 <button class="guide-app" data-page="작업지시서"><span class="guide-tile gt2">🛠</span><span>작업지시서</span></button>
@@ -84,18 +82,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <button class="guide-app" data-page="기준서 / 문서관리"><span class="guide-tile gt2">📚</span><span>기준서 / 문서관리</span></button>
 <button class="guide-app" data-page="전자결재"><span class="guide-tile gt5">✍</span><span>전자결재</span></button>
 </div></div>
-<div class="guide-dock">
-
-<button class="guide-app" data-page="작업지시서"><span class="guide-tile gt2">🛠</span><span>작업지시</span></button>
-<button class="guide-app" data-page="생산관리"><span class="guide-tile gt3">🛠</span><span>생산관리</span></button>
-<button class="guide-app" data-page="수입검사 IQC"><span class="guide-tile gt4">🔬</span><span>수입검사</span></button>
-<button class="guide-app" data-page="공정검사 PQC"><span class="guide-tile gt5">🧪</span><span>공정검사</span></button>
-<button class="guide-app" data-page="출하검사 OQC"><span class="guide-tile gt6">📋</span><span>출하검사</span></button>
-<button class="guide-app" data-page="LOT 추적"><span class="guide-tile gt7">🔎</span><span>LOT 추적</span></button>
-<button class="guide-app" data-page="설비관리"><span class="guide-tile gt8">⚙️</span><span>설비관리</span></button>
+<button class="guide-dock-toggle" id="guideQuickToggle" type="button" aria-expanded="false" aria-label="전체 메뉴 펼치기" title="전체 메뉴 펼치기"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
 </div>
-<button class="guide-dock-toggle" id="guideQuickToggle" type="button" aria-expanded="false" aria-label="전체 항목 펼치기" title="전체 항목 펼치기"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
-</div></div>
 <div class="homeBody"><div class="popular"><div class="leadBox"><h2>많이 본 매뉴얼</h2><p>현장에서 자주 찾는 QMES 사용방법입니다.</p></div><div class="cards">
 <div class="card" data-page="수입검사 IQC"><span class="badge">01</span><h3>수입검사 성적서 등록</h3><p>원재료 입고 후 IQC 검사, 판정 및 후속 공정 차단 확인</p></div>
 <div class="card" data-page="공정검사 PQC"><span class="badge">02</span><h3>공정검사 등록</h3><p>생산 LOT별 측정값 입력과 불합격 차단 기능</p></div>
