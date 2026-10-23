@@ -320,6 +320,11 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
 .qce-modal .qce-instrument-form>.qce-field>label{justify-content:center!important;text-align:center!important}
 .qce-instrument-photo-dialog>img{max-width:min(360px,86vw)!important;max-height:calc(80dvh - 60px)!important}
 .qce-modal .qce-instrument-form .qce-instrument-photo-file{width:calc(100% - 14px)!important;font-size:11px!important}
+
+/* instrument-photo-row-height-20261023 */
+.qce-modal .qce-instrument-form .qce-field:has(>.qce-instrument-photo-file),.qce-modal .qce-instrument-form .qce-field:has(.qce-instrument-photo-file){min-height:42px!important}
+.qce-modal .qce-instrument-form .qce-field>.qce-instrument-photo-file,.qce-modal .qce-instrument-form .qce-field>div:has(>.qce-instrument-photo-file){min-width:0;display:flex;align-items:center}
+.qce-modal .qce-instrument-form .qce-instrument-photo-file{box-sizing:border-box!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:5px 7px!important;padding:3px 6px!important}
   `;
   document.head.appendChild(style);
 
@@ -669,7 +674,7 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
       '<div class="qce-field"><label>사용부서</label><div class="qce-department-picker"><input type="hidden" data-k="department"><details><summary>부서 선택</summary><div class="qce-department-options"><label><input type="checkbox" value="연구소"><span>연구소</span></label><label><input type="checkbox" value="품질부"><span>품질부</span></label><label><input type="checkbox" value="생산부"><span>생산부</span></label></div></details></div></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div>'+
       '<div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
-      '<div class="qce-field"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"><small>PNG · JPG · WebP, 최대 5MB</small></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
+      '<div class="qce-field"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
       async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
         if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
         toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}
