@@ -57,6 +57,7 @@ function ensureSchema() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+      ALTER TABLE qmes_instruments ADD COLUMN IF NOT EXISTS use_range TEXT NOT NULL DEFAULT '';
       CREATE INDEX IF NOT EXISTS qmes_instrument_due_idx ON qmes_instruments(next_calibration_on, status);
 
       CREATE TABLE IF NOT EXISTS qmes_calibrations (
@@ -200,11 +201,11 @@ function install(app) {
       await client.query('BEGIN');
       const inserted=await client.query(`
         INSERT INTO qmes_instruments
-          (instrument_name,maker,model,serial_no,department,location,calibration_cycle_months,last_calibration_on,next_calibration_on,status,note,created_by)
-        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *
+          (instrument_name,maker,model,serial_no,department,location,calibration_cycle_months,last_calibration_on,next_calibration_on,status,note,created_by,use_range)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *
       `,[
         name,str(b.maker,120),str(b.model,120),str(b.serial_no,120),str(b.department,120),str(b.location,160),
-        cycle,last||null,next||null,str(b.status||'사용',40),str(b.note,1000),actorName(req)
+        cycle,last||null,next||null,str(b.status||'사용',40),str(b.note,1000),actorName(req),str(b.use_range,240)
       ]);
       const row=inserted.rows[0];
       const no='NM측정-'+String(row.id).padStart(2,'0');
@@ -232,10 +233,10 @@ function install(app) {
       const result=await pool.query(`
         UPDATE qmes_instruments SET instrument_name=$1,maker=$2,model=$3,serial_no=$4,
           department=$5,location=$6,calibration_cycle_months=$7,last_calibration_on=$8,
-          next_calibration_on=$9,status=$10,note=$11,updated_at=NOW()
+          next_calibration_on=$9,status=$10,note=$11,use_range=$13,updated_at=NOW()
         WHERE id=$12 RETURNING *
       `,[name,str(b.maker,120),str(b.model,120),str(b.serial_no,120),str(b.department,120),
-        str(b.location,160),cycle,last||null,next||null,status,str(b.note,1000),id]);
+        str(b.location,160),cycle,last||null,next||null,status,str(b.note,1000),id,str(b.use_range,240)]);
       if(!result.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
       res.json({success:true,data:result.rows[0]});
     }catch(error){console.error('[QMES instrument update]',error);fail(res,500,'계측기 수정 실패');}
