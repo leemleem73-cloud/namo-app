@@ -34,6 +34,21 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .guide-dock-wrap.expanded{gap:0}
 @media(max-width:900px){.guide-dock-wrap,.guide-dock,.guide-dock-more{width:min(94vw,620px)}.guide-dock-more-grid,.guide-dock{grid-template-columns:repeat(4,minmax(68px,1fr))}.guide-dock-wrap.expanded .guide-dock-more{max-height:560px}}
 
+
+/* workorder registration guide */
+.workRegGuide{border:1px solid #d8e2ec;background:#fff;color:#263b52;font-size:11px}
+.workRegGuide .wrTop{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #dce4ec}
+.workRegGuide .wrTop strong{font-size:15px}.workRegGuide .wrBtns{display:flex;gap:6px}
+.workRegGuide button{height:26px;padding:0 9px;border:1px solid #cbd7e3;border-radius:3px;background:#fff;color:#39536d;font-weight:700}
+.workRegGuide button.primary{background:#278bdc;color:#fff;border-color:#278bdc}
+.workRegGuide .wrSection{border-top:1px solid #dce4ec}.workRegGuide .wrSectionTitle{padding:8px 12px;background:#f4f7fa;font-weight:800;color:#314f6d}
+.workRegGuide .wrGrid{display:grid;grid-template-columns:120px 1fr 120px 1fr}
+.workRegGuide .wrGrid span,.workRegGuide .wrGrid b{padding:8px;border-right:1px solid #dce4ec;border-bottom:1px solid #dce4ec}
+.workRegGuide .wrGrid span{background:#f8fafc}.workRegGuide .wrGrid b{font-weight:600;background:#fff}
+.workRegGuide .wrFull{grid-column:2/5}.workRegGuide .wrTable{padding:10px 12px}
+.workRegGuide table{width:100%;border-collapse:collapse;table-layout:fixed}
+.workRegGuide th,.workRegGuide td{border:1px solid #dce4ec;padding:7px;text-align:center}
+.workRegGuide th{background:#f3f6f9}.workRegGuide .wrBottom{display:flex;justify-content:flex-end;gap:6px;padding:12px}
 </style>
 </head>
 <body>
@@ -100,8 +115,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <main class="article">
 <div class="articleSearch"><input placeholder="궁금한 내용을 검색해보세요."><button>검색</button></div>
 <h2 id="articleTitle">수입검사 성적서 등록</h2><div id="crumb" class="crumb">품질관리 &gt; 수입검사 IQC &gt; 성적서 등록</div><p id="lead" class="lead">수입 원재료의 LOT별 검사 결과를 등록하고 부적합 발생 시 후속 공정을 차단합니다.</p>
-<div class="guideShot"><div class="qmesMock"><div class="qhead">NAMO QMES · 수입검사 성적서 등록</div><div class="qbody"><div class="qlist"><div><b>수입검사 목록</b></div><div>2026-06-27 · 원료 A</div><div>2026-06-09 · 원료 B</div><div>2026-06-08 · 원료 C</div><div>2026-05-14 · 원료 D</div></div><div class="qform"><div class="row"><span>검사일자</span><b>2026-10-23</b><span>입고일자</span><b>2026-10-23</b></div><div class="row"><span>검사자</span><b>로그인 사용자</b><span>공급업체</span><b>공급업체 선택</b></div><div class="row"><span>원료명</span><b>원료명 선택</b><span>원료 LOT</span><b>LOT 입력</b></div><div class="row"><span>검사상태</span><b style="color:#dc2626">불합격</b><span>비고</span><b>조치사항 입력</b></div><div class="block">후속 공정 차단</div></div></div><span class="call c1">1</span><span class="call c2">2</span><span class="call c3">3</span></div></div>
-<div class="steps"><div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div></div>
+<div class="guideShot" id="guideShot"></div>
+<div class="steps" id="steps"></div>
 </main></section>
 <script>
 const home=document.getElementById('home'),manual=document.getElementById('manual'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab');
@@ -121,7 +136,44 @@ const titles={
 '설비관리':['설비관리','설비관리 > 설비관리','생산 및 검사설비의 상태와 점검 이력을 관리합니다.'],
 '전자결재':['전자결재','문서 / 결재 > 전자결재','작성·검토·승인의 결재 상태와 이력을 관리합니다.'],
 '기준서 / 문서관리':['기준서 / 문서관리','문서 / 결재 > 기준서 / 문서관리','SOP, 검사기준서, Specification 등 최신 문서를 관리합니다.']};
-function openPage(name){home.style.display='none';manual.classList.add('active');homeTab.classList.remove('active');manualTab.classList.add('active');document.querySelectorAll('.item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));const t=titles[name]||[name,name,'해당 QMES 기능의 사용방법을 확인합니다.'];articleTitle.textContent=t[0];crumb.textContent=t[1];lead.textContent=t[2];window.scrollTo(0,0)}
+function iqcGuideHtml(){return '<div class="qmesMock"><div class="qhead">NAMO QMES · 수입검사 성적서 등록</div><div class="qbody"><div class="qlist"><div><b>수입검사 목록</b></div><div>2026-06-27 · 원료 A</div><div>2026-06-09 · 원료 B</div><div>2026-06-08 · 원료 C</div><div>2026-05-14 · 원료 D</div></div><div class="qform"><div class="row"><span>검사일자</span><b>2026-10-23</b><span>입고일자</span><b>2026-10-23</b></div><div class="row"><span>검사자</span><b>로그인 사용자</b><span>공급업체</span><b>공급업체 선택</b></div><div class="row"><span>원료명</span><b>원료명 선택</b><span>원료 LOT</span><b>LOT 입력</b></div><div class="row"><span>검사상태</span><b style="color:#dc2626">불합격</b><span>비고</span><b>조치사항 입력</b></div><div class="block">후속 공정 차단</div></div></div><span class="call c1">1</span><span class="call c2">2</span><span class="call c3">3</span></div>'}
+
+function workRegGuideHtml(){return '<div class="workRegGuide">'+
+'<div class="wrTop"><strong>작업지시서 등록</strong><div class="wrBtns"><button>목록</button><button class="primary">저장</button></div></div>'+
+'<div class="wrSection"><div class="wrSectionTitle">기본설정</div><div class="wrGrid">'+
+'<span>생산 LOT</span><b>LOT 자동생성</b><span>배치 구분</span><b>중간 / 완제품 선택</b>'+
+'<span>작업일자</span><b>연도-월-일</b><span>품목명</span><b>품목명 선택</b>'+
+'<span>작업지시번호</span><b>자동 / 직접입력</b><span>설비</span><b>설비 선택</b>'+
+'<span>고객사</span><b>고객사 선택</b><span>수주번호</span><b>수주번호 선택</b>'+
+'<span>생산예정일</span><b>연도-월-일</b><span>작업자</span><b>작업자 선택</b>'+
+'<span>계획수량(kg)</span><b>계획수량 입력</b><span>진행상태</span><b>대기</b>'+
+'</div></div>'+
+'<div class="wrSection"><div class="wrSectionTitle">작업상세</div><div class="wrGrid">'+
+'<span>수율(%)</span><b>자동계산</b><span>진척률(%)</span><b>0</b>'+
+'<span>투입량(kg)</span><b>0</b><span>정미투입량(kg)</span><b>0</b>'+
+'<span>석션 잔량(kg)</span><b>0</b><span>PCS 번호</span><b>-</b>'+
+'<span>총 연결중량(kg)</span><b>0</b><span>공정 단계</span><b>준비 / 생산 / 완료</b>'+
+'<span>최종 특이사항</span><b class="wrFull">특이사항 입력</b>'+
+'</div></div>'+
+'<div class="wrSection"><div class="wrSectionTitle">투입원료</div><div class="wrTable"><table><thead><tr><th>No</th><th>원료명 / 규격</th><th>LOT</th><th>투입량(kg)</th><th>투입량(g)</th><th>비고</th></tr></thead><tbody><tr><td>1</td><td>원료 선택</td><td>원료 LOT 선택</td><td>0</td><td>0</td><td>-</td></tr></tbody></table><div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px"><button>LOT 자동생성</button><button>원료 불러오기</button></div></div></div>'+
+'<div class="wrSection"><div class="wrSectionTitle">비고</div><div class="wrGrid"><span>비고</span><b class="wrFull">내용을 입력하세요.</b></div></div>'+
+'<div class="wrSection"><div class="wrSectionTitle">전자결재</div><div class="wrGrid"><span>작성</span><b>로그인 사용자</b><span>검토</span><b>검토대기</b><span>승인</span><b>승인대기</b><span>결재상태</span><b>작성중</b></div></div>'+
+'<div class="wrBottom"><button>목록으로</button><button class="primary">저장</button></div>'+
+'</div>'}
+
+function renderGuide(name){
+ if(name==='작업지시서'){
+   guideShot.innerHTML=workRegGuideHtml();
+   steps.innerHTML='<div class="step"><b>1</b>기본설정에서 생산 LOT, 작업일자, 품목명, 작업지시번호, 설비, 고객사, 수주번호, 생산예정일, 작업자와 계획수량을 입력합니다.</div>'+
+   '<div class="step"><b>2</b>작업상세에서 수율, 진척률, 투입량, 정미투입량, 석션 잔량, PCS 번호, 총 연결중량, 공정단계와 특이사항을 확인합니다.</div>'+
+   '<div class="step"><b>3</b>투입원료에서 원료명/규격, LOT, 투입량(kg/g), 비고를 등록하고 필요 시 LOT 자동생성 또는 원료 불러오기를 사용합니다.</div>'+
+   '<div class="step"><b>4</b>비고와 전자결재 상태를 확인한 뒤 저장합니다.</div>';
+ }else{
+   guideShot.innerHTML=iqcGuideHtml();
+   steps.innerHTML='<div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div>';
+ }
+}
+function openPage(name){home.style.display='none';manual.classList.add('active');homeTab.classList.remove('active');manualTab.classList.add('active');document.querySelectorAll('.item').forEach(x=>x.classList.toggle('active',x.dataset.page===name));const t=titles[name]||[name,name,'해당 QMES 기능의 사용방법을 확인합니다.'];articleTitle.textContent=t[0];crumb.textContent=t[1];lead.textContent=t[2];renderGuide(name);window.scrollTo(0,0)}
 const guideQuickWrap=document.getElementById('guideQuickWrap');
 const guideQuickToggle=document.getElementById('guideQuickToggle');
 guideQuickToggle?.addEventListener('click',()=>{
