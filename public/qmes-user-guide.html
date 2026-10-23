@@ -115,6 +115,20 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .videoStage video{width:100%;height:100%;background:#000}.videoPreparing{text-align:center;color:#fff}.videoPreparing strong{display:block;font-size:22px;margin-bottom:9px}.videoPreparing span{font-size:13px;color:#cbd5e1}
 @media(max-width:900px){.videoGuideGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.videoGuideGrid{grid-template-columns:1fr}}
+
+.workVideoSim{width:100%;height:100%;background:#eef3f8;position:relative;overflow:hidden;color:#233b55}
+.workVideoCanvas{position:absolute;inset:0;padding:18px;transform-origin:center;transition:opacity .35s ease,transform .35s ease}
+.workVideoCanvas .workActual{height:100%;overflow:hidden;box-shadow:none;border-color:#cfd9e4}
+.workVideoCaption{position:absolute;left:28px;bottom:26px;z-index:8;max-width:760px;padding:13px 18px;border-radius:8px;background:rgba(17,34,55,.92);color:#fff;font-size:15px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.workVideoCaption small{display:block;margin-top:4px;font-size:11px;font-weight:600;color:#cbd8e5}
+.workVideoCursor{position:absolute;z-index:10;width:24px;height:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transition:left .7s ease,top .7s ease,transform .18s ease}
+.workVideoCursor:before{content:"";position:absolute;left:2px;top:1px;width:0;height:0;border-left:9px solid #111;border-top:15px solid transparent;border-bottom:4px solid transparent;transform:rotate(-35deg)}
+.workVideoPulse{position:absolute;z-index:9;width:48px;height:48px;border:3px solid #ef4444;border-radius:50%;opacity:0;transform:scale(.5)}
+.workVideoPulse.on{animation:workPulse .7s ease}
+@keyframes workPulse{0%{opacity:1;transform:scale(.45)}100%{opacity:0;transform:scale(1.55)}}
+.workVideoProgress{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.35);z-index:12}
+.workVideoProgress>span{display:block;height:100%;width:0;background:#2f8cf0}
+.workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #d6e1ec;color:#3e6185;font-size:11px;font-weight:900}
 </style>
 </head>
 <body>
@@ -171,7 +185,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 <div class="videoGuide" id="videoGuide">
   <div class="videoGuideHead"><h3>▶ 동영상 사용가이드</h3><span>메뉴별 핵심 기능을 짧은 영상으로 확인하세요.</span></div>
   <div class="videoGuideGrid">
-    <button class="videoCard" type="button" data-video-title="작업지시서 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>작업지시서</b><small>등록 · 원료투입 · 저장 · 인쇄</small></div></button>
+    <button class="videoCard" type="button" data-video-title="작업지시서 사용방법" data-video-src="" data-video-sim="workorder"><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>작업지시서</b><small>등록 · 원료투입 · 저장 · 인쇄</small></div></button>
     <button class="videoCard" type="button" data-video-title="수입검사 IQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>수입검사 IQC</b><small>검사등록 · 판정 · 전자결재</small></div></button>
     <button class="videoCard" type="button" data-video-title="공정검사 PQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>공정검사 PQC</b><small>측정값 · 판정 · 후속공정 차단</small></div></button>
     <button class="videoCard" type="button" data-video-title="출하검사 OQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>출하검사 OQC</b><small>출하검사 · CoA · 출하상태</small></div></button>
@@ -869,15 +883,49 @@ renderQaRows();renderQaDetail();
 
 const videoModal=document.getElementById('videoModal'),videoStage=document.getElementById('videoStage'),videoModalTitle=document.getElementById('videoModalTitle');
 function closeVideoGuide(){
+  stopWorkVideoSim?.();
   videoModal?.classList.remove('open');videoModal?.setAttribute('aria-hidden','true');
   if(videoStage) videoStage.innerHTML='<div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>영상 파일 연결 후 이 화면에서 바로 재생됩니다.</span></div>';
 }
+let workVideoTimer=null,workVideoProgressTimer=null;
+function stopWorkVideoSim(){if(workVideoTimer){clearInterval(workVideoTimer);workVideoTimer=null}if(workVideoProgressTimer){clearInterval(workVideoProgressTimer);workVideoProgressTimer=null}}
+function startWorkorderVideoSim(){
+  stopWorkVideoSim();
+  if(!videoStage)return;
+  videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">1 / 5</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
+  const canvas=document.getElementById('workVideoCanvas'),cursor=document.getElementById('workVideoCursor'),pulse=document.getElementById('workVideoPulse'),caption=document.getElementById('workVideoCaption'),badge=document.getElementById('workVideoStepBadge'),bar=document.getElementById('workVideoProgressBar');
+  const steps=[
+    {view:'list',cap:'작업지시서 등록 및 조회 화면을 확인합니다.',sub:'고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간 조회',x:82,y:25},
+    {view:'list',cap:'+ 신규 작업지시서 등록을 클릭합니다.',sub:'우측 상단 신규등록 버튼에서 작업지시서를 작성합니다.',x:86,y:11,click:true},
+    {view:'reg',cap:'작업 기본정보를 입력합니다.',sub:'작업일자 · 고객사 · 제품명 · 생산 LOT · 설비 · 작업자 · 계획수량 · 작업기간',x:63,y:30},
+    {view:'reg',cap:'원료 투입계획을 입력합니다.',sub:'원료명 · 원료 LOT NO · 계획투입량을 입력하고 투입비율을 확인합니다.',x:63,y:57},
+    {view:'reg',cap:'입력내용을 확인한 뒤 저장합니다.',sub:'필요하면 저장 후 인쇄를 사용하고 목록에서 상세내역을 다시 확인합니다.',x:89,y:91,click:true}
+  ];
+  let index=0;
+  const draw=()=>{
+    const s=steps[index];
+    canvas.style.opacity='0';
+    setTimeout(()=>{
+      canvas.innerHTML=s.view==='list'?workListGuideHtml():workRegGuideHtml();
+      canvas.querySelectorAll('.call').forEach(x=>x.remove());
+      canvas.style.opacity='1';
+    },120);
+    caption.innerHTML=s.cap+'<small>'+s.sub+'</small>';
+    badge.textContent=(index+1)+' / '+steps.length;
+    cursor.style.left=s.x+'%';cursor.style.top=s.y+'%';
+    cursor.style.transform=s.click?'scale(.82)':'scale(1)';
+    if(s.click){pulse.style.left='calc('+s.x+'% - 14px)';pulse.style.top='calc('+s.y+'% - 10px)';pulse.classList.remove('on');void pulse.offsetWidth;pulse.classList.add('on');}
+  };
+  draw();
+  let elapsed=0,total=steps.length*3200;
+  workVideoProgressTimer=setInterval(()=>{elapsed+=100;if(bar)bar.style.width=Math.min(100,elapsed/total*100)+'%';},100);
+  workVideoTimer=setInterval(()=>{index=(index+1)%steps.length;if(index===0){elapsed=0;if(bar)bar.style.width='0%'}draw();},3200);
+}
 document.querySelectorAll('.videoCard').forEach(card=>card.addEventListener('click',()=>{
-  const title=card.dataset.videoTitle||'동영상 사용가이드',src=card.dataset.videoSrc||'';
+  const title=card.dataset.videoTitle||'동영상 사용가이드',src=card.dataset.videoSrc||'',sim=card.dataset.videoSim||'';
   if(videoModalTitle)videoModalTitle.textContent=title;
-  if(videoStage){
-    videoStage.innerHTML=src?'<video controls autoplay playsinline src="'+src.replace(/"/g,'&quot;')+'"></video>':'<div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>'+title+' 영상 파일을 준비하고 있습니다.</span></div>';
-  }
+  if(sim==='workorder')startWorkorderVideoSim();
+  else if(videoStage)videoStage.innerHTML=src?'<video controls autoplay muted playsinline src="'+src.replace(/"/g,'&quot;')+'"></video>':'<div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>'+title+' 영상 파일을 준비하고 있습니다.</span></div>';
   videoModal?.classList.add('open');videoModal?.setAttribute('aria-hidden','false');
 }));
 document.getElementById('videoModalClose')?.addEventListener('click',closeVideoGuide);
