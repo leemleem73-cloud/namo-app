@@ -303,7 +303,18 @@ renderList=function(){
 };
 function updateBulk(){
  var bar=root.querySelector('#ncr-bulk');if(!bar)return;
- bar.hidden=!selectedIds.size;
+ bar.hidden=false;
+ bar.setAttribute('role','toolbar');
+ bar.setAttribute('aria-label','부적합보고서 선택 항목 작업');
+ bar.setAttribute('aria-hidden',selectedIds.size?'false':'true');
+ bar.inert=!selectedIds.size;
+ bar.classList.toggle('is-visible',selectedIds.size>0);
+ var align=function(){
+  var card=root.querySelector('.ncr-equipment-card'),bounds=(card||root).getBoundingClientRect();
+  if(bounds.width){bar.style.setProperty('left',Math.max(12,bounds.left)+'px','important');bar.style.setProperty('right',Math.max(12,window.innerWidth-bounds.right)+'px','important');}
+ };
+ align();
+ if(!bar._dockObserver){bar._dockObserver=new ResizeObserver(align);bar._dockObserver.observe(root);}
  bar.setAttribute('aria-live','polite');
  var count=bar.querySelector('.ncr-bulk-count');if(count)count.textContent=selectedIds.size+'건 선택됨';
  bar.querySelector('#ncr-bulk-print').textContent='선택 인쇄 ('+selectedIds.size+')';
@@ -532,9 +543,11 @@ const style=document.createElement('style');style.textContent=`
  document.head.appendChild(style);
 })();
 
-/* ncr-selection-slide-up-20261023 */
+
+
+/* ncr-common-dock-transition-20261023 */
 (function(){
- var style=document.createElement('style');style.id='ncr-selection-slide-up-20261023';
- style.textContent='@keyframes ncrSelectionSlideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}html body #ncr #ncr-bulk:not([hidden]){animation:ncrSelectionSlideUp .24s ease-out both}@media(prefers-reduced-motion:reduce){html body #ncr #ncr-bulk:not([hidden]){animation:none}}';
+ var style=document.createElement('style');style.id='ncr-common-dock-transition-20261023';
+ style.textContent='html body #ncr #ncr-bulk{display:flex!important;justify-content:space-between!important;gap:7px!important;z-index:120!important;animation:none!important;transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}html body #ncr #ncr-bulk.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}html body #ncr #ncr-bulk .ncr-btn{background:#f5f9ff!important;border-color:#b8cde2!important}html body #ncr #ncr-bulk .ncr-btn:hover{background:#dceafb!important}@media(prefers-reduced-motion:reduce){html body #ncr #ncr-bulk{transition:none!important}}@media(max-width:700px){html body #ncr #ncr-bulk{padding:10px!important;gap:10px!important}html body #ncr #ncr-bulk .ncr-btn{padding:0 8px!important;font-size:10px!important}}';
  document.head.appendChild(style);
 })();
