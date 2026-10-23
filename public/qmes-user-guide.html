@@ -460,6 +460,27 @@ function equipmentRegGuideHtml(){return '<div class="workActual"><div class="reg
 '<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:75px">6</span><span class="call" style="left:205px;top:310px">7</span><span class="call" style="left:205px;bottom:115px">8</span>'+
 '</div>'}
 
+function equipmentDailyGuideHtml(){return '<div class="workActual">'+
+'<div class="waHead"><div><strong>일일점검 등록</strong><div style="margin-top:4px;color:#738397">설비별 관리항목을 확인하고 실제 측정값과 이상 유무를 기록합니다.</div></div><div class="waActions"><button>인쇄</button><button class="primary">저장</button></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">점검 기본정보</div><div class="regGrid">'+
+'<span>점검일자</span><b>오늘 날짜</b><span>점검자</span><b>로그인 사용자</b>'+
+'<span>설비</span><b>TK 501 / TK 501A / TK 501B / 필터 유닛 / 드라이룸 항온제습</b><span>점검상태</span><b>점검중 / 완료</b>'+
+'</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">설비별 점검항목</div><div class="matWrap"><table><thead><tr><th>설비</th><th>점검항목</th><th>관리기준</th><th>확인방법 / 주기</th><th>측정값 / 결과</th><th>판정</th></tr></thead><tbody>'+
+'<tr><td>TK 501</td><td>온도</td><td>80±5 ℃</td><td>PLC 패널 · 1회/Lot</td><td>측정값 입력</td><td>자동/확인</td></tr>'+
+'<tr><td>TK 501</td><td>RPM</td><td>&lt; 70 rpm</td><td>PLC 패널 · 1회/Lot</td><td>측정값 입력</td><td>자동/확인</td></tr>'+
+'<tr><td>TK 501</td><td>시간</td><td>≤ 300 min</td><td>육안 · 1회/Lot</td><td>측정값 입력</td><td>자동/확인</td></tr>'+
+'<tr><td>TK 501</td><td>외관</td><td>색상 변형 및 이물 없음</td><td>육안 · 1회/Lot</td><td>이상 없음 / 이상 발견</td><td>확인</td></tr>'+
+'<tr><td>TK 501A</td><td>최대압력</td><td>≤ 6 bar</td><td>PLC 패널 · 매일</td><td>측정값 입력</td><td>자동/확인</td></tr>'+
+'<tr><td>TK 501A</td><td>O-ring</td><td>균열·마모·경화·부식 없을 것</td><td>육안 · 설비점검표</td><td>이상 없음 / 이상 발견</td><td>확인</td></tr>'+
+'<tr><td>필터 유닛</td><td>2단 필터</td><td>50 μm, 10 μm 장착상태</td><td>육안 · 주1회</td><td>장착 정상 / 이상 발견</td><td>확인</td></tr>'+
+'<tr><td>드라이룸</td><td>RH / 이슬점</td><td>RH ≤ 0.54% / 이슬점 ≤ -40℃</td><td>온습도계 · 매일</td><td>측정값 입력</td><td>자동/확인</td></tr>'+
+'</tbody></table></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">이상 발생 시</div><div class="dispatch" style="color:#d4231f;font-weight:800">관리기준을 벗어나거나 이상이 발견되면 설비 상태를 점검중 또는 사용중지로 관리하고, 고장·수리 이력에 이상내용과 조치내용을 등록합니다.</div></div>'+
+'<div class="regBottom"><button>목록으로</button><button>인쇄</button><button class="primary">저장</button></div>'+
+'<span class="call" style="right:22px;top:15px">9</span><span class="call" style="left:20px;top:88px">10</span><span class="call" style="left:20px;top:245px">11</span><span class="call" style="right:20px;bottom:88px">12</span>'+
+'</div>'}
+
 function renderGuide(name){
  if(name==='작업지시서'){
    guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 작업지시서 등록 및 조회</div>'+workListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 신규 작업지시서 등록</div>'+workRegGuideHtml()+'</div></div>';
@@ -543,7 +564,7 @@ function renderGuide(name){
    '<div class="step"><b>3</b>조회 결과에서 평균, 표준편차, Cp, Cpk 및 공정능력 판정을 확인합니다.</div>'+
    '<div class="step"><b>4</b>하단 <b>검사값 Trend Chart</b>에서 LOT별 측정값의 변화 추세를 확인합니다.</div>';
  }else if(name==='설비관리'){
-   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 설비 등록 및 조회</div>'+equipmentListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 설비관리 상세 사용법</div>'+equipmentRegGuideHtml()+'</div></div>';
+   guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 설비 등록 및 조회</div>'+equipmentListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 설비관리 상세 사용법</div>'+equipmentRegGuideHtml()+'</div><div><div class="guideScreenTitle">3. 일일점검 등록</div>'+equipmentDailyGuideHtml()+'</div></div>';
    steps.innerHTML='<div class="step"><b>1</b><b>+ 신규 설비 등록</b>을 클릭하면 신규 설비 등록 화면이 열립니다.</div>'+
    '<div class="step"><b>2</b>구분과 검색어를 이용해 필요한 설비를 찾습니다. 설비명, 관리기준, 담당자 등 목록 정보로 확인할 수 있습니다.</div>'+
    '<div class="step"><b>3</b>필요한 설비를 체크한 뒤 <b>선택 인쇄</b>를 사용하면 설비 관리대장을 출력할 수 있습니다.</div>'+
@@ -551,7 +572,11 @@ function renderGuide(name){
    '<div class="step"><b>5</b>신규등록에서 설비번호, 설비명, 구분, 용도, 관리기준, 확인방법, 관리주기, 최근점검, 차기점검, 담당자와 상태를 입력한 뒤 저장합니다.</div>'+
    '<div class="step"><b>6</b><b>설비대장</b>에서는 관리번호, 설치위치, 담당부서, 제조사, 모델, 설치일, 상태, 비고를 관리하고 전체 저장합니다.</div>'+
    '<div class="step"><b>7</b><b>정기점검·교정</b>에서는 설비, 점검구분, 주기, 마지막 실시일, 다음 예정일과 담당자를 등록합니다. 완료 처리하면 다음 예정일이 자동 계산됩니다.</div>'+
-   '<div class="step"><b>8</b><b>고장·수리 이력</b>에서는 이상내용과 조치내용, 담당, 상태를 기록합니다. 조치중 또는 사용중지 설비는 수리 완료 처리 후 상태를 정상화합니다.</div>';
+   '<div class="step"><b>8</b><b>고장·수리 이력</b>에서는 이상내용과 조치내용, 담당, 상태를 기록합니다. 조치중 또는 사용중지 설비는 수리 완료 처리 후 상태를 정상화합니다.</div>'+
+   '<div class="step"><b>9</b><b>일일점검</b> 메뉴에서 점검등록 화면으로 들어가 점검일자와 점검자를 확인합니다.</div>'+
+   '<div class="step"><b>10</b>점검할 설비를 선택합니다. 현재 관리 설비는 TK 501, TK 501A, TK 501B, 필터 유닛, 드라이룸 항온제습입니다.</div>'+
+   '<div class="step"><b>11</b>설비별 관리기준에 따라 온도, RPM, 시간, 압력, 유량, O-ring, 필터상태, RH, 이슬점 등의 측정값 또는 육안 결과를 입력하고 판정을 확인합니다.</div>'+
+   '<div class="step"><b>12</b>이상이 있으면 설비를 점검중 또는 사용중지로 관리하고 고장·수리 이력에 조치내용을 등록합니다. 점검 완료 후 <b>저장</b>하고 필요하면 <b>인쇄</b>합니다.</div>';
  }else{
    guideShot.innerHTML=iqcGuideHtml();
    steps.innerHTML='<div class="step"><b>1</b>왼쪽 목록에서 기존 검사 이력을 확인하거나 신규 성적서를 등록합니다.</div><div class="step"><b>2</b>검사일자, 공급업체, 원료명, 원료 LOT 및 입고정보를 입력합니다.</div><div class="step"><b>3</b>부적합 발생 시 후속 검사항목이 자동 차단되며 원인 조치 후 재검사합니다.</div>';
