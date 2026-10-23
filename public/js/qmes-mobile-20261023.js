@@ -36,10 +36,10 @@ function ensureWorkBar(){
  }
  const title=document.querySelector("#qmes-mobile-workbar .qmw-title");
  if(title)title.textContent=titles[tab]||"QMES";
- forceSelectedTab();
  if(!window.__QMES_MOBILE_FORCE_TAB_TIMERS__){
    window.__QMES_MOBILE_FORCE_TAB_TIMERS__=true;
-   [120,450,1000,1800].forEach(ms=>setTimeout(forceSelectedTab,ms));
+   forceSelectedTab();
+   [180,600].forEach(ms=>setTimeout(forceSelectedTab,ms));
  }
 }
 function ensure(){
