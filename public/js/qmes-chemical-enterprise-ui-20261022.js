@@ -268,6 +268,14 @@ html body #changeControl .qce-change-body>div{border:0!important;outline:0!impor
 html body #changeControl .qce-change-body table.qce-table[class]{border:0!important;border-collapse:collapse!important;border-spacing:0!important;outline:0!important;box-shadow:none!important}
 html body #changeControl .qce-change-body table.qce-table[class]>:is(thead,tbody)>tr>:is(th,td){border-width:1px!important;border-style:solid!important;outline:0!important;box-shadow:none!important}
 html body #changeControl .change-load-status{padding:10px 12px;font-size:12px;color:#64748b}
+
+/* change-one-perimeter-20261023: shell and cells must not both draw the same edge. */
+html body #changeControl .qce-page>.qce-shell{border:0!important;outline:0!important;box-shadow:none!important}
+html body #changeControl .qce-page>.qce-shell>.qce-toolbar{box-sizing:border-box!important;border:1px solid #d8e2ec!important;border-bottom:0!important}
+html body #changeControl .qce-change-body{border:0!important;outline:0!important;box-shadow:none!important;background:#fff!important}
+html body #changeControl .qce-change-body>div{border:0!important;outline:0!important;box-shadow:none!important;margin:0!important;padding:0!important}
+html body #changeControl .qce-change-body .change-load-status{padding:10px 12px!important}
+html body #changeControl .qce-change-body table.qce-table[class]{border:0!important;outline:0!important;box-shadow:none!important;border-collapse:collapse!important}
   `;
   document.head.appendChild(style);
 
