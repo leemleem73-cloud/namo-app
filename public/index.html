@@ -7797,7 +7797,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   const frame=document.getElementById('namoPortal20261014');
   const dash=document.getElementById('dashboard');
   if(!frame||!dash)return;
-  const allowed=new Set(['dashboard','work','incoming','process','outgoing','lotTrace','inventory','equipment','quality','adminEmployees']);
+  const allowed=new Set(['dashboard','orders','purchase','work','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval','inventory','quality','adminEmployees']);
   function sendProfile(){
     if(!frame.isConnected||!frame.contentWindow)return;
     const user=document.querySelector('#currentUser .user-meta b');
