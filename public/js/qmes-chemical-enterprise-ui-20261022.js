@@ -309,6 +309,12 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
 .qce-instrument-photo-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #dbe5ef;background:#fff;font:14px Pretendard,"Noto Sans KR",Arial,sans-serif}
 .qce-instrument-photo-head button{padding:6px 12px;border:1px solid #cbd8e5;border-radius:4px;background:#fff;color:#173b61;cursor:pointer}
 .qce-instrument-photo-dialog>img{display:block;width:100%;height:auto;max-height:calc(92dvh - 60px);object-fit:contain}
+
+/* instrument-photo-upload-natural-size-20261023 */
+.qce-instrument-photo-dialog{width:fit-content!important;max-width:94vw!important}
+.qce-instrument-photo-dialog>img{width:auto!important;height:auto!important;max-width:min(502px,90vw)!important;max-height:calc(86dvh - 60px)!important;object-fit:contain}
+.qce-modal .qce-instrument-photo-file{max-width:100%;box-sizing:border-box}
+.qce-modal .qce-instrument-photo-file+small{display:block;padding:0 8px 6px;color:#667085;font-size:11px}
   `;
   document.head.appendChild(style);
 
@@ -618,8 +624,9 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const paint=rows=>{
         root._instrumentRows=rows;
+        rows.filter(row=>String(row.id)==='1'||row.photo_updated_at).forEach(row=>prepareInstrumentPhoto(row).catch(()=>{}));
         root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:52px"><col><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+(String(r.id)==='1'?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="11">등록된 계측기가 없습니다.</td></tr>'
+          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+((String(r.id)==='1'||r.photo_updated_at)?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="11">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
         root.querySelectorAll('[data-inst-photo]').forEach(button=>button.onclick=()=>openInstrumentPhoto(rows.find(row=>String(row.id)===button.dataset.instPhoto)));
         root.querySelectorAll('[data-inst-edit]').forEach(button=>button.onclick=()=>root._openInstrument(rows.find(row=>String(row.id)===button.dataset.instEdit)));
@@ -657,8 +664,10 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
       '<div class="qce-field"><label>사용부서</label><div class="qce-department-picker"><input type="hidden" data-k="department"><details><summary>부서 선택</summary><div class="qce-department-options"><label><input type="checkbox" value="연구소"><span>연구소</span></label><label><input type="checkbox" value="품질부"><span>품질부</span></label><label><input type="checkbox" value="생산부"><span>생산부</span></label></div></details></div></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
       '<div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div><div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div>'+
-      '<div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});toast(record?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}
+      '<div class="qce-field full"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"><small>PNG · JPG · WebP, 최대 5MB</small></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
+      async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
+        if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
+        toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}
     );
       if(record){
         const dialog=document.querySelector('.qce-modal-bg:last-of-type');
@@ -691,11 +700,28 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
   }
 
 
-  function openInstrumentPhoto(record){
-    if(!record||String(record.id)!=='1')return;
+
+  const instrumentPhotoCache=new Map();
+  function prepareInstrumentPhoto(record){
+    const src=record.photo_updated_at?'/api/qmes-instruments/'+record.id+'/photo?v='+encodeURIComponent(record.photo_updated_at):String(record.id)==='1'?'/assets/instruments/nm-measure-01.svg':'';
+    if(!src)return Promise.reject(Error('등록된 사진이 없습니다.'));
+    if(!instrumentPhotoCache.has(src)){
+      const image=new Image();image.alt=record.instrument_name+' 계측기 사진';image.width=502;image.height=563;
+      const ready=new Promise((resolve,reject)=>{image.onload=()=>{(image.decode?image.decode():Promise.resolve()).catch(()=>{}).then(()=>resolve(image));};image.onerror=()=>{instrumentPhotoCache.delete(src);reject(Error('사진을 불러오지 못했습니다.'));};});
+      image.src=src;instrumentPhotoCache.set(src,ready);
+    }
+    return instrumentPhotoCache.get(src);
+  }
+  let instrumentPhotoOpenToken=0;
+  async function openInstrumentPhoto(record){
+    if(!record)return;
+    const token=++instrumentPhotoOpenToken;
+    let image;try{image=await prepareInstrumentPhoto(record);}catch(error){toast(error.message);return;}
+    if(token!==instrumentPhotoOpenToken)return;
+    document.querySelector('.qce-instrument-photo-dialog')?.close();
     const dialog=document.createElement('dialog');dialog.className='qce-instrument-photo-dialog';
-    dialog.innerHTML='<div class="qce-instrument-photo-head"><strong>'+esc(record.instrument_name)+' · '+esc(record.instrument_no||'')+'</strong><button type="button" aria-label="사진 닫기">닫기</button></div><img src="/assets/instruments/nm-measure-01.svg" alt="'+esc(record.instrument_name)+' 계측기 사진">';
-    document.body.appendChild(dialog);
+    dialog.innerHTML='<div class="qce-instrument-photo-head"><strong>'+esc(record.instrument_name)+' · '+esc(record.instrument_no||'')+'</strong><button type="button" aria-label="사진 닫기">닫기</button></div>';
+    dialog.appendChild(image);document.body.appendChild(dialog);
     dialog.querySelector('button').onclick=()=>dialog.close();
     dialog.addEventListener('click',event=>{if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close();}});
     dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
