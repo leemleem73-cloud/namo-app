@@ -159,6 +159,7 @@ function QMESChemical({user,onLogout}){
   useEffect(()=>{if(!visibleTabs.some(tabItem=>tabItem.id===tab))setTab("dash");},[tab,visibleTabs.length]);
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});const main=document.querySelector("#root>div>main");if(main)main.scrollTop=0;},[tab]);
 
+  const qmesMobileDetailMode=(()=>{try{const p=new URLSearchParams(window.location.search);return p.get("mobile")==="1"&&!!p.get("mobileTab");}catch(error){return false;}})();
   const currentTab=TABS.find(tabItem=>tabItem.id===tab)||TABS[0];
   const commercialDenied=qmesIsCommercialRestrictedTab(tab)&&!qmesCanAccessCommercialErp(user);
   const Active=currentTab.comp;
@@ -208,7 +209,7 @@ function QMESChemical({user,onLogout}){
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col" style={{fontFamily:"'Pretendard','Noto Sans KR',system-ui,sans-serif"}}>
-      <header className="qmes-erp-topbar sticky top-0 z-50" style={{background:"linear-gradient(180deg,#f8fbfd 0%,#e8f1f7 100%)",borderBottom:"1px solid #bfd0dc",boxShadow:"0 2px 5px rgba(47,91,124,.09)"}}>
+      {!qmesMobileDetailMode&&<header className="qmes-erp-topbar sticky top-0 z-50" style={{background:"linear-gradient(180deg,#f8fbfd 0%,#e8f1f7 100%)",borderBottom:"1px solid #bfd0dc",boxShadow:"0 2px 5px rgba(47,91,124,.09)"}}>
         <div className="w-full px-4 lg:px-6 flex items-center gap-3" style={{height:58}}>
           <button type="button" className="flex items-center shrink-0 rounded" onClick={()=>{setTab("dash");setOpenMenu(null);}} style={{width:236,height:58,marginLeft:-16,paddingLeft:14,borderRight:"1px solid #cbd8e2",background:"#f8fafb"}}>
             <img src="/assets/namo-header-logo.svg?v=20260903-color1" alt="NAMO Chemical" className="w-auto object-contain" style={{width:190,maxWidth:190,maxHeight:42,filter:"none"}} />
@@ -239,7 +240,7 @@ function QMESChemical({user,onLogout}){
           </nav>
           {openMenu&&(()=>{const selected=TOP_MENUS.find(menu=>menu.id===openMenu);const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);if(!items.length)return null;return <div className={"qmes-submenu-row qmes-submenu-"+selected.id} role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const ItemIcon=item.icon;return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={"qmes-submenu-button "+(tab===item.id?"is-active":"")}><ItemIcon size={14}/><span>{item.label}</span></button>;})}</div>;})()}
         </div>
-      </header>
+      </header>}
       <main className="w-full px-4 lg:px-6 py-5 flex-1">{commercialDenied?<PermissionDenied/>:<Active/>}</main>
 
       {passwordOpen&&<div className="qauth-modal-backdrop" role="dialog" aria-modal="true" aria-label="비밀번호 변경 창" onMouseDown={event=>{if(event.target===event.currentTarget)closePasswordModal();}}>
