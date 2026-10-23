@@ -9,6 +9,16 @@ const mobile=()=>mq.matches||params().get("mobile")==="1";
 const workTab=()=>params().get("mobileTab")||"";
 const titles={woIssue:"작업지시서",iqc:"수입검사",prod:"생산 진행",pqc:"공정검사",oqc:"출하검사",trace:"LOT 추적",pop:"현장 입력",eq:"설비관리",standards:"기준서",members:"회원관리"};
 function close(){document.body.classList.remove("qmes-mobile-menu-open");}
+function forceSelectedTab(){
+ const tab=workTab();
+ if(!tab)return;
+ const openMenu=tab==="woIssue"||tab==="prod"?"productionMenu":(tab==="iqc"||tab==="pqc"||tab==="oqc"||tab==="standards"?"qualityMenu":"");
+ try{
+   sessionStorage.setItem("qmes_current_tab",tab);
+   if(openMenu)sessionStorage.setItem("qmes_open_menu",openMenu);else sessionStorage.removeItem("qmes_open_menu");
+ }catch(_){}
+ window.dispatchEvent(new CustomEvent("qmes:navigate-tab",{detail:{tab,openMenu:openMenu||null}}));
+}
 function ensureWorkBar(){
  const tab=workTab();
  if(!tab)return;
@@ -26,6 +36,11 @@ function ensureWorkBar(){
  }
  const title=document.querySelector("#qmes-mobile-workbar .qmw-title");
  if(title)title.textContent=titles[tab]||"QMES";
+ forceSelectedTab();
+ if(!window.__QMES_MOBILE_FORCE_TAB_TIMERS__){
+   window.__QMES_MOBILE_FORCE_TAB_TIMERS__=true;
+   [120,450,1000,1800].forEach(ms=>setTimeout(forceSelectedTab,ms));
+ }
 }
 function ensure(){
  if(!mobile()){close();return;}
