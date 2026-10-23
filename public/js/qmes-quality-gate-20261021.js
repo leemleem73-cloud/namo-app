@@ -5,6 +5,8 @@ window.__qmesLotGate20261021 = true;
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const style = document.createElement('style');
 style.textContent = '.qgate-open{border:1px solid #b9c9da;border-radius:6px;padding:8px 13px;background:#fff;color:#174d7b;font:600 13px inherit;cursor:pointer;margin:0 0 10px 8px}.qgate-dialog{width:min(1100px,95vw);max-height:90vh;border:1px solid #cbd5e1;border-radius:10px;padding:24px;color:#172b44;box-shadow:0 20px 70px #0003}.qgate-dialog::backdrop{background:#15273988}.qgate-dialog h2{margin:0 0 8px}.qgate-dialog button,.qgate-dialog input,.qgate-dialog select,.qgate-dialog textarea{font:inherit;padding:8px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#172b44}.qgate-dialog button{cursor:pointer}.qgate-dialog button:disabled{opacity:.5;cursor:wait}.qgate-tools{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.qgate-scroll{overflow:auto;max-height:42vh}.qgate-dialog table{border-collapse:collapse;width:100%;font-size:13px;min-width:700px}.qgate-dialog th,.qgate-dialog td{padding:10px;border-bottom:1px solid #dce4ee;text-align:left}.qgate-dialog th{background:#f1f5f9}.qgate-note{font-size:13px;color:#52657b;line-height:1.6}.qgate-error{color:#b42318;white-space:pre-wrap;margin:10px 0}.qgate-dialog textarea{width:100%;min-height:75px;box-sizing:border-box}.qgate-release{background:#edf6ff;padding:14px;margin:14px 0}.qgate-close{float:right}.qgate-block{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:2147483647;max-width:90vw;padding:16px 20px;border:1px solid #fda29b;background:#fff1f0;color:#912018;border-radius:8px;box-shadow:0 5px 30px #0002}.qgate-block button{margin-left:10px;background:white;border:1px solid #eaa;padding:5px}';
+/* ncr-quality-header-fit-20261023 */
+style.textContent += '#ncr .qgate-open{margin:0!important;position:static!important;float:none!important;flex:0 0 auto;align-self:center;height:36px;padding:0 15px;border:1px solid #cfdfef;border-radius:5px;background:#fff;color:#16446c;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;font-size:12px;font-weight:700;line-height:normal}#ncr .ncr-head-actions{flex-wrap:wrap;align-items:center;justify-content:flex-end}#ncr .ncr-equipment-card{width:100%;min-width:0}';
 document.head.appendChild(style);
 let dialog, state, selected, lastMessage = '';
 async function request(url, body) {
@@ -69,8 +71,12 @@ function showForm(title, release){
 }
 function attach(){
  for(const id of ['ncr','lotTrace','iqc','pqc','oqc']){
-  const root=document.getElementById(id);if(!root||root.querySelector('.qgate-open'))continue;
-  const button=document.createElement('button');button.type='button';button.className='qgate-open';button.textContent='품질 보류 / 해제';button.onclick=open;root.prepend(button);
+  const root=document.getElementById(id);if(!root)continue;
+  const target=id==='ncr'?root.querySelector('.ncr-head-actions, .ncr-editor-toolbar > span, .ncr-editor-top'):root;
+  if(!target)continue;
+  let button=root.querySelector('.qgate-open');
+  if(!button){button=document.createElement('button');button.type='button';button.className='qgate-open';button.textContent='품질 보류 / 해제';button.onclick=open;}
+  if(button.parentElement!==target){if(id==='ncr')target.appendChild(button);else target.prepend(button);}
  }
 }
 const originalFetch=window.fetch;

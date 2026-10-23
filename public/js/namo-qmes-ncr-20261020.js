@@ -404,7 +404,7 @@ draw=function(){
   var table=card.querySelector('.ncr-table-wrap table');
   if(table){
    var group=document.createElement('colgroup');
-   [null,null,16,10,7,12,12,20,8,8,7].forEach(function(weight,index){
+   [null,null,14,10,7,14,13,22,7,7,6].forEach(function(weight,index){
     var col=document.createElement('col');
     col.style.width=index===0?'34px':index===1?'50px':'calc('+weight+'% - '+(84*weight/100)+'px)';
     group.appendChild(col);
@@ -455,6 +455,7 @@ draw=function(){
  html body #ncr .ncr-equipment-card .ncr-table-wrap th,html body #ncr .ncr-equipment-card .ncr-table-wrap td{border:1px solid #d5dce5!important;outline:0!important;box-shadow:none!important}
 
  `;
+ css.textContent += '\n/* ncr-table-header-fit-20261023 */\nhtml body #ncr .ncr-equipment-card .ncr-table-wrap table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}\nhtml body #ncr .ncr-equipment-card .ncr-table-wrap :is(th,td){box-sizing:border-box!important;width:auto!important;min-width:0!important;max-width:none!important;border:1px solid #d5dce5!important}\nhtml body #ncr .ncr-equipment-card .ncr-table-wrap th{height:34px!important;padding:6px 8px!important;line-height:20px!important;background:#e8f0f8!important;vertical-align:middle!important}\nhtml body #ncr .ncr-equipment-card .ncr-table-wrap td{height:36px!important;padding:4px 8px!important;line-height:20px!important}\n';
  document.head.appendChild(css);
 })();
 
