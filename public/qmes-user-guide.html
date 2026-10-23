@@ -82,6 +82,18 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .qaDetailBody strong{display:block;margin-bottom:22px;color:#111}
 .qaDetailBody .path{margin-top:24px;font-weight:800;color:#111}
 .qaVideo{margin-left:auto;color:#5b6570;font-size:12px}
+.qaMetaActions{display:flex;align-items:center;gap:8px}
+.qaRegisterBtn{height:34px;border:1px solid #2f8cf0;background:#2f8cf0;color:#fff;padding:0 15px;font-weight:800;cursor:pointer}
+.qaRegisterBox{display:none;margin:12px 0 18px;border:1px solid #d9e2eb;background:#f8fbfe;padding:16px}
+.qaRegisterBox.open{display:block}
+.qaRegisterGrid{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:start}
+.qaRegisterGrid label{font-weight:800;color:#33485e;padding-top:9px}
+.qaRegisterGrid input,.qaRegisterGrid textarea{width:100%;border:1px solid #cfd8e2;background:#fff;padding:9px 10px;font:inherit}
+.qaRegisterGrid input{height:38px}.qaRegisterGrid textarea{min-height:130px;resize:vertical}
+.qaRegisterActions{display:flex;justify-content:flex-end;gap:7px;margin-top:12px}
+.qaRegisterActions button{height:34px;padding:0 15px;border:1px solid #c9d3dd;background:#fff;cursor:pointer}
+.qaRegisterActions .primary{background:#2f8cf0;color:#fff;border-color:#2f8cf0;font-weight:800}
+
 @media(max-width:800px){.qaSearch{flex-wrap:wrap}.qaSearch input{max-width:none;min-width:180px}.qaTable th:nth-child(3),.qaTable td:nth-child(3),.qaTable th:nth-child(5),.qaTable td:nth-child(5){display:none}.qaBoard{padding:12px}.qaPage{padding:28px 10px 60px}}
 </style>
 </head>
@@ -154,7 +166,14 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
       <div class="qaTitleRow">
         <div><h2>QMES Q&A <span class="crumbMini">이용가이드 &gt; Q&A</span></h2></div>
       </div>
-      <div class="qaMetaTop"><span>총 <b id="qaCount">4건</b></span><select id="qaSort" class="qaSort"><option value="desc">등록순</option><option value="views">조회순</option></select></div>
+      <div class="qaMetaTop"><span>총 <b id="qaCount">4건</b></span><div class="qaMetaActions"><button id="qaRegisterOpen" class="qaRegisterBtn" type="button">질문 등록</button><select id="qaSort" class="qaSort"><option value="desc">등록순</option><option value="views">조회순</option></select></div></div>
+      <div id="qaRegisterBox" class="qaRegisterBox">
+        <div class="qaRegisterGrid">
+          <label for="qaNewTitle">제목</label><input id="qaNewTitle" type="text" maxlength="120" placeholder="질문 제목을 입력하세요.">
+          <label for="qaNewBody">질문내용</label><textarea id="qaNewBody" maxlength="3000" placeholder="궁금한 내용을 입력하세요."></textarea>
+        </div>
+        <div class="qaRegisterActions"><button id="qaRegisterCancel" type="button">취소</button><button id="qaRegisterSave" class="primary" type="button">등록</button></div>
+      </div>
       <table class="qaTable" aria-label="QMES Q&A 목록">
         <thead><tr><th style="width:70px">No</th><th>제목</th><th style="width:90px">동영상</th><th style="width:120px">등록일</th><th style="width:100px">조회수</th></tr></thead>
         <tbody id="qaRows"></tbody>
@@ -687,39 +706,81 @@ guideQuickWrap?.classList.add('expanded');
 guideQuickWrap?.querySelector('.guide-dock-more')?.setAttribute('aria-hidden','false');
 document.querySelectorAll('[data-page]').forEach(x=>x.addEventListener('click',()=>openPage(x.dataset.page)));
 
-const qaData=[
- {no:4,title:'수입검사 등록 후 검사결과를 수정하려면 어떻게 하나요?',date:'2026-10-23',views:439,video:'',body:'수입검사 목록에서 해당 성적서를 선택한 뒤 수정 버튼으로 검사 결과를 변경할 수 있습니다.<br><br>전자결재가 이미 진행된 문서는 권한에 따라 수정이 제한될 수 있으므로 결재 상태를 먼저 확인하세요.',path:'메뉴경로 : 품질관리 > 수입검사 IQC'},
- {no:3,title:'사용자의 결재문서를 다른 사용자에게 공유할 수 있나요?',date:'2026-10-23',views:84,video:'',body:'전자결재 문서는 사용자 권한과 결재선에 따라 조회 범위가 결정됩니다.<br><br>공유가 필요한 경우 관리자 권한 또는 문서 권한 설정을 확인하세요.',path:'메뉴경로 : 전자결재 > 결재함'},
- {no:2,title:'LOT 추적에서 원재료부터 출하까지 어떻게 확인하나요?',date:'2026-10-23',views:53,video:'',body:'원재료 LOT 또는 완제품 LOT를 입력하면 작업지시, 공정검사, 출하검사, 출하 이력을 순서대로 연결해 확인할 수 있습니다.',path:'메뉴경로 : LOT 추적'},
- {no:1,title:'결재 완료 후 상태가 바로 반영되지 않을 때는 어떻게 하나요?',date:'2026-10-23',views:60,video:'',body:'목록을 다시 조회하면 최신 결재상태가 반영됩니다.<br><br>계속 동일하면 전자결재 동기화 상태와 네트워크 연결을 확인하세요.',path:'메뉴경로 : 전자결재'}
+const qaDefaultData=[
+ {no:4,title:'수입검사 등록 후 검사결과를 수정하려면 어떻게 하나요?',date:'2026-10-23',views:0,video:'',body:'수입검사 목록에서 해당 성적서를 선택한 뒤 수정 버튼으로 검사 결과를 변경할 수 있습니다.<br><br>전자결재가 이미 진행된 문서는 권한에 따라 수정이 제한될 수 있으므로 결재 상태를 먼저 확인하세요.',path:'메뉴경로 : 품질관리 > 수입검사 IQC'},
+ {no:3,title:'사용자의 결재문서를 다른 사용자에게 공유할 수 있나요?',date:'2026-10-23',views:0,video:'',body:'전자결재 문서는 사용자 권한과 결재선에 따라 조회 범위가 결정됩니다.<br><br>공유가 필요한 경우 관리자 권한 또는 문서 권한 설정을 확인하세요.',path:'메뉴경로 : 전자결재 > 결재함'},
+ {no:2,title:'LOT 추적에서 원재료부터 출하까지 어떻게 확인하나요?',date:'2026-10-23',views:0,video:'',body:'원재료 LOT 또는 완제품 LOT를 입력하면 작업지시, 공정검사, 출하검사, 출하 이력을 순서대로 연결해 확인할 수 있습니다.',path:'메뉴경로 : LOT 추적'},
+ {no:1,title:'결재 완료 후 상태가 바로 반영되지 않을 때는 어떻게 하나요?',date:'2026-10-23',views:0,video:'',body:'목록을 다시 조회하면 최신 결재상태가 반영됩니다.<br><br>계속 동일하면 전자결재 동기화 상태와 네트워크 연결을 확인하세요.',path:'메뉴경로 : 전자결재'}
 ];
-let qaFiltered=[...qaData],qaSelected=qaData[0];
+const qaStorageKey='namo-qmes-guide-qa-v1';
+function loadQaUserData(){
+ try{
+  const rows=JSON.parse(localStorage.getItem(qaStorageKey)||'[]');
+  return Array.isArray(rows)?rows.map(x=>({...x,views:0})):[];
+ }catch(e){return []}
+}
+function saveQaUserData(){
+ try{localStorage.setItem(qaStorageKey,JSON.stringify(qaData.filter(x=>x.userCreated).map(x=>({...x,views:0}))))}catch(e){}
+}
+let qaData=[...loadQaUserData(),...qaDefaultData].map(x=>({...x,views:0}));
+let qaFiltered=[...qaData],qaSelected=qaData[0]||null;
+const qaEscape=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function renderQaRows(){
  const body=document.getElementById('qaRows'); if(!body)return;
- body.innerHTML=qaFiltered.map(x=>'<tr data-no="'+x.no+'" class="'+(qaSelected&&qaSelected.no===x.no?'active':'')+'"><td>'+x.no+'</td><td class="title">'+x.title+'</td><td>'+(x.video?'▶':'')+'</td><td>'+x.date+'</td><td>'+x.views.toLocaleString()+'</td></tr>').join('');
+ body.innerHTML=qaFiltered.map(x=>'<tr data-no="'+x.no+'" class="'+(qaSelected&&qaSelected.no===x.no?'active':'')+'"><td>'+x.no+'</td><td class="title">'+qaEscape(x.title)+'</td><td>'+(x.video?'▶':'')+'</td><td>'+qaEscape(x.date)+'</td><td>0</td></tr>').join('');
  document.getElementById('qaCount').textContent=qaFiltered.length+'건';
- body.querySelectorAll('tr').forEach(tr=>tr.addEventListener('click',()=>{qaSelected=qaData.find(x=>x.no===Number(tr.dataset.no));renderQaRows();renderQaDetail();}));
+ body.querySelectorAll('tr').forEach(tr=>tr.addEventListener('click',()=>{qaSelected=qaData.find(x=>String(x.no)===String(tr.dataset.no));renderQaRows();renderQaDetail();}));
 }
 function renderQaDetail(){
- if(!qaSelected)return;
+ if(!qaSelected){
+  document.getElementById('qaDetailTitle').textContent='등록된 질문이 없습니다.';
+  document.getElementById('qaDetailDate').textContent='';
+  document.getElementById('qaDetailViews').textContent='0';
+  document.getElementById('qaDetailVideo').textContent='';
+  document.getElementById('qaDetailBody').innerHTML='';
+  return;
+ }
  document.getElementById('qaDetailTitle').textContent=qaSelected.title;
  document.getElementById('qaDetailDate').textContent='▣ '+qaSelected.date;
- document.getElementById('qaDetailViews').textContent=qaSelected.views.toLocaleString();
+ document.getElementById('qaDetailViews').textContent='0';
  document.getElementById('qaDetailVideo').textContent=qaSelected.video?('▶ '+qaSelected.video):'';
- document.getElementById('qaDetailBody').innerHTML='<strong>QMES 이용가이드</strong>'+qaSelected.body+'<div class="path">◎ '+qaSelected.path+'</div>';
+ document.getElementById('qaDetailBody').innerHTML=qaSelected.userCreated
+   ? '<strong>등록된 질문</strong>'+qaEscape(qaSelected.body).replace(/\n/g,'<br>')+'<div class="path">◎ 답변 준비 중</div>'
+   : '<strong>QMES 이용가이드</strong>'+qaSelected.body+'<div class="path">◎ '+qaSelected.path+'</div>';
 }
 function applyQaSearch(){
  const q=(document.getElementById('qaSearchInput')?.value||'').trim().toLowerCase();
- qaFiltered=qaData.filter(x=>(x.title+' '+x.body+' '+x.path).toLowerCase().includes(q));
+ const type=document.getElementById('qaSearchType')?.value||'제목+내용';
+ qaFiltered=qaData.filter(x=>{
+  const title=String(x.title||'').toLowerCase(), body=String(x.body||'').replace(/<[^>]*>/g,' ').toLowerCase();
+  if(!q)return true;
+  if(type==='제목')return title.includes(q);
+  if(type==='내용')return body.includes(q);
+  return (title+' '+body).includes(q);
+ });
  const sort=document.getElementById('qaSort')?.value||'desc';
- qaFiltered.sort((a,b)=>sort==='views'?b.views-a.views:b.no-a.no);
- if(!qaFiltered.some(x=>x.no===qaSelected?.no)) qaSelected=qaFiltered[0]||null;
- renderQaRows(); if(qaSelected) renderQaDetail();
+ qaFiltered.sort((a,b)=>sort==='views'?0:Number(b.no)-Number(a.no));
+ if(!qaFiltered.some(x=>String(x.no)===String(qaSelected?.no))) qaSelected=qaFiltered[0]||null;
+ renderQaRows(); renderQaDetail();
 }
 document.getElementById('qaSearchBtn')?.addEventListener('click',applyQaSearch);
-document.getElementById('qaResetBtn')?.addEventListener('click',()=>{document.getElementById('qaSearchInput').value='';qaFiltered=[...qaData];qaSelected=qaData[0];renderQaRows();renderQaDetail();});
+document.getElementById('qaResetBtn')?.addEventListener('click',()=>{document.getElementById('qaSearchInput').value='';qaFiltered=[...qaData];qaSelected=qaData[0]||null;renderQaRows();renderQaDetail();});
 document.getElementById('qaSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')applyQaSearch()});
 document.getElementById('qaSort')?.addEventListener('change',applyQaSearch);
+const qaRegisterBox=document.getElementById('qaRegisterBox');
+document.getElementById('qaRegisterOpen')?.addEventListener('click',()=>{qaRegisterBox?.classList.add('open');document.getElementById('qaNewTitle')?.focus();});
+document.getElementById('qaRegisterCancel')?.addEventListener('click',()=>{qaRegisterBox?.classList.remove('open');});
+document.getElementById('qaRegisterSave')?.addEventListener('click',()=>{
+ const title=(document.getElementById('qaNewTitle')?.value||'').trim();
+ const body=(document.getElementById('qaNewBody')?.value||'').trim();
+ if(!title||!body){alert('제목과 질문내용을 입력하세요.');return;}
+ const maxNo=qaData.reduce((m,x)=>Math.max(m,Number(x.no)||0),0);
+ const now=new Date(), date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+ const row={no:maxNo+1,title,date,views:0,video:'',body,path:'',userCreated:true};
+ qaData.unshift(row);qaSelected=row;qaFiltered=[...qaData];saveQaUserData();
+ document.getElementById('qaNewTitle').value='';document.getElementById('qaNewBody').value='';qaRegisterBox?.classList.remove('open');
+ renderQaRows();renderQaDetail();
+});
 renderQaRows();renderQaDetail();
 
 function setTopPage(page){
