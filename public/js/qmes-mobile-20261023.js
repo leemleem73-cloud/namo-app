@@ -34,7 +34,6 @@ function openSelectedTab(){
 }
 
 function nativeWriteButton(){
-  const tab=mobileTab();
   const words=["등록","작성","신규","추가","새로 만들기","검사등록","성적서 등록"];
   const main=document.querySelector("#root>div>main");
   if(!main)return null;
