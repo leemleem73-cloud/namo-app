@@ -21,6 +21,22 @@ const titles={
   adminEmployees:"회원관리"
 };
 
+
+function prepareMobileWorkCards(){
+  if(page!=="work")return;
+  const table=document.querySelector("#work .work-list-table");
+  if(!table)return;
+  const headers=Array.from(table.querySelectorAll("thead th")).map(th=>String(th.textContent||"").replace(/\s+/g," ").trim());
+  table.classList.add("qmes-mobile-card-table");
+  table.querySelectorAll("tbody tr").forEach(row=>{
+    if(row.dataset.qmesMobilePrepared==="1")return;
+    row.dataset.qmesMobilePrepared="1";
+    Array.from(row.children).forEach((cell,index)=>{
+      cell.setAttribute("data-mobile-label",headers[index]||("항목 "+(index+1)));
+    });
+  });
+}
+
 function openSelectedPage(){
   const menu=document.querySelector('.sidebar .menu[data-page="'+CSS.escape(page)+'"]');
   if(menu){ menu.click(); return true; }
@@ -46,7 +62,11 @@ function addMobileShell(){
 
 function boot(){
   addMobileShell();
-  [0,120,350,700].forEach(ms=>setTimeout(openSelectedPage,ms));
+  [0,120,350,700].forEach(ms=>setTimeout(()=>{openSelectedPage();prepareMobileWorkCards();},ms));
+  const root=document.getElementById("work");
+  if(root&&page==="work"){
+    new MutationObserver(()=>prepareMobileWorkCards()).observe(root,{childList:true,subtree:true});
+  }
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 })();
