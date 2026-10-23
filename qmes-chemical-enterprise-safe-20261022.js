@@ -213,6 +213,30 @@ function install(app) {
     }finally{client.release();}
   });
 
+
+  app.patch('/api/qmes-instruments/:id', auth, async(req,res)=>{
+    const id=Number(req.params.id),b=req.body||{};
+    if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'계측기 번호를 확인하세요.');
+    const name=str(b.instrument_name,160),cycle=Number(b.calibration_cycle_months);
+    const last=str(b.last_calibration_on,10),next=str(b.next_calibration_on,10),status=str(b.status,40);
+    if(!name)return fail(res,400,'계측기명은 필수입니다.');
+    if(!Number.isInteger(cycle)||cycle<1||cycle>120)return fail(res,400,'검교정주기는 1~120개월로 입력하세요.');
+    if(!validDate(last)||!validDate(next))return fail(res,400,'검교정 일자를 확인하세요.');
+    if(!['사용','사용중지'].includes(status))return fail(res,400,'사용 상태를 확인하세요.');
+    try{
+      await ensureSchema();
+      const result=await pool.query(`
+        UPDATE qmes_instruments SET instrument_name=$1,maker=$2,model=$3,serial_no=$4,
+          department=$5,location=$6,calibration_cycle_months=$7,last_calibration_on=$8,
+          next_calibration_on=$9,status=$10,note=$11,updated_at=NOW()
+        WHERE id=$12 RETURNING *
+      `,[name,str(b.maker,120),str(b.model,120),str(b.serial_no,120),str(b.department,120),
+        str(b.location,160),cycle,last||null,next||null,status,str(b.note,1000),id]);
+      if(!result.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
+      res.json({success:true,data:result.rows[0]});
+    }catch(error){console.error('[QMES instrument update]',error);fail(res,500,'계측기 수정 실패');}
+  });
+
   app.get('/api/qmes-calibrations', auth, async (req,res)=>{
     try{
       await ensureSchema();
