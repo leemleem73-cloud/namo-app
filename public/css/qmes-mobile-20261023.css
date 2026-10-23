@@ -67,3 +67,18 @@ html body.qmes-mobile-work-view :is(.content,.workspace-body,.module-body,.modul
 }
 html body.qmes-mobile-work-view :is(.table-wrap,.table-scroll,.workspace-body,.module-body){overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
 }
+
+/* Current legacy PC QMES -> mobile detail bridge */
+@media (max-width:768px){
+html body.qmes-mobile-work-view #sidebar,
+html body.qmes-mobile-work-view header.topbar,
+html body.qmes-mobile-work-view .topbar,
+html body.qmes-mobile-work-view #qmes-erp-header,
+html body.qmes-mobile-work-view #qmes-erp-sidebar{display:none!important}
+html body.qmes-mobile-work-view .app.nav-open>.content,
+html body.qmes-mobile-work-view .app>.content,
+html body.qmes-mobile-work-view .content{padding-left:0!important;margin-left:0!important;width:100%!important;max-width:100%!important}
+html body.qmes-mobile-work-view .content{padding-top:0!important}
+html body.qmes-mobile-work-view .module-page{max-width:100%!important;min-width:0!important}
+html body.qmes-mobile-work-view{padding-top:58px!important;background:#f4f7fa!important}
+}
