@@ -215,7 +215,7 @@
   function passwordModal(required){
     $("#qauth-pass")?.remove();
     const b=document.createElement("div");b.id="qauth-pass";b.className="qauth-modal-bg";
-    b.innerHTML=`<div class="qauth-modal"><h3>${required?"초기 비밀번호 변경":"비밀번호 변경"}</h3><label>현재 비밀번호</label><input id="qa-cur" type="password"><label>새 비밀번호</label><input id="qa-new" type="password"><label>새 비밀번호 확인</label><input id="qa-conf" type="password"><div id="qa-perr" class="qauth-error"></div><div class="qauth-actions">${required?"":'<button class="qauth-cancel" type="button">취소</button>'}<button class="qauth-save" type="button">변경</button></div></div>`;
+    b.innerHTML=`<div class="qauth-modal"><h3>${required?"초기 비밀번호 변경":"비밀번호 변경"}</h3><label>현재 비밀번호</label><input id="qa-cur" type="password"><label>새 비밀번호</label><input id="qa-new" type="password"><label>새 비밀번호 확인</label><input id="qa-conf" type="password"><div id="qa-perr" class="qauth-error"></div><div class="qauth-actions"><button class="qauth-cancel" type="button">취소</button><button class="qauth-save" type="button">변경</button></div></div>`;
     document.body.appendChild(b);
     $(".qauth-cancel",b)?.addEventListener("click",()=>b.remove());
     $(".qauth-save",b)?.addEventListener("click",async()=>{
