@@ -37,8 +37,6 @@
     .std-inspection[data-inspection-type="incoming"] .std-row-judge[data-iqc-fail="1"]{
       color:#dc2626!important;
       font-weight:900!important;
-      border-color:#fca5a5!important;
-      background:#fff5f5!important;
     }
   `;
   document.head.appendChild(failStyle);
