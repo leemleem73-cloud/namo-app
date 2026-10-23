@@ -169,3 +169,177 @@ html body.qmes-mobile-work-view #work #namo-work-detail{margin:10px 0 0!importan
 @media (max-width:390px){
 html body.qmes-mobile-work-view #work #namo-work-inquiry .nwi-grid{grid-template-columns:1fr!important}
 }
+
+
+/* Mobile work-order editor: true single-column form */
+@media (max-width:768px){
+html body.qmes-mobile-work-view #mainWorkspace.active{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ margin:0!important;padding:0!important;background:#f4f7fa!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .workspace-shell{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#f4f7fa!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .workspace-head{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .workspace-body{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ min-height:0!important;margin:0!important;padding:8px!important;overflow:visible!important;background:#f4f7fa!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"]{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ min-height:0!important;margin:0!important;padding:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-list-pane{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-pane{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ margin:0!important;padding:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top{
+ position:static!important;height:auto!important;min-height:54px!important;margin:0 0 8px!important;padding:10px 12px!important;
+ display:flex!important;align-items:center!important;gap:8px!important;border:1px solid #dbe4ec!important;border-radius:12px!important;background:#fff!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top .title-wrap{
+ min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:2px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top .title-wrap b{
+ font-size:16px!important;line-height:1.3!important;color:#173b61!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-top .title-wrap small{
+ font-size:11px!important;line-height:1.35!important;color:#7b8b9c!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-actions{
+ margin-left:auto!important;display:flex!important;gap:6px!important;flex:0 0 auto!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-actions .am-top-btn{
+ min-width:54px!important;height:38px!important;padding:0 10px!important;border-radius:8px!important;font-size:12px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-section{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;border:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-section-head{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-section-body{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-form{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;gap:10px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-section{
+ width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;
+ border:1px solid #dbe4ec!important;border-radius:12px!important;background:#fff!important;overflow:hidden!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-section-title{
+ height:auto!important;min-height:42px!important;padding:10px 12px!important;font-size:13px!important;background:#eef4f8!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-section-body{
+ width:100%!important;max-width:100%!important;min-width:0!important;padding:12px!important;overflow:visible!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid{
+ display:grid!important;grid-template-columns:1fr!important;gap:10px!important;width:100%!important;min-width:0!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid .form-item{
+ display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid .form-item label{
+ display:block!important;width:100%!important;height:auto!important;margin:0 0 5px!important;padding:0!important;
+ background:transparent!important;border:0!important;text-align:left!important;justify-content:flex-start!important;
+ color:#4d6073!important;font-size:12px!important;font-weight:800!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-basic-grid .form-item :is(input,select){
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:44px!important;
+ margin:0!important;padding:0 12px!important;border:1px solid #cbd8e3!important;border-radius:9px!important;
+ background:#fff!important;font-size:16px!important;text-align:left!important;box-sizing:border-box!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-material-tools{
+ display:flex!important;justify-content:flex-end!important;margin:0 0 8px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] #workRowAdd{
+ min-height:40px!important;border-radius:8px!important;padding:0 14px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;border:0!important;background:transparent!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table thead{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody{
+ display:block!important;width:100%!important;
+ counter-reset:qmesMaterial;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody tr{
+ counter-increment:qmesMaterial;
+ display:grid!important;grid-template-columns:1fr!important;gap:8px!important;width:100%!important;
+ margin:0 0 10px!important;padding:12px!important;border:1px solid #dbe4ec!important;border-radius:10px!important;background:#f9fbfd!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody tr::before{
+ content:"원료 " counter(qmesMaterial);
+ display:block!important;margin-bottom:2px!important;color:#1e5e8a!important;font-size:12px!important;font-weight:900!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td{
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;
+ padding:0!important;border:0!important;background:transparent!important;text-align:left!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:first-child{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(2)::before{content:"원료명";}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(3)::before{content:"원료 LOT NO";}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(4)::before{content:"계획투입량 (kg)";}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(5)::before{content:"실투입량 (kg)";}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(6)::before{content:"투입비율 (%)";}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:nth-child(n+2):nth-child(-n+6)::before{
+ display:block!important;margin:0 0 4px!important;color:#65798b!important;font-size:11px!important;font-weight:800!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td :is(input,select){
+ display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:42px!important;
+ margin:0!important;padding:0 10px!important;border-radius:8px!important;font-size:15px!important;text-align:left!important;box-sizing:border-box!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:last-child{
+ display:flex!important;justify-content:flex-end!important;padding-top:2px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] table.work-material-table tbody td:last-child .btn{
+ min-height:36px!important;padding:0 14px!important;border-radius:8px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .work-note{
+ margin-top:8px!important;font-size:11px!important;line-height:1.55!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] #namoWorkInstructions{
+ display:block!important;width:100%!important;max-width:100%!important;min-height:110px!important;margin:0!important;padding:10px!important;
+ border:1px solid #cbd8e3!important;border-radius:9px!important;font-size:15px!important;box-sizing:border-box!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .namo-dispatch-simple{
+ display:block!important;width:100%!important;min-width:0!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .namo-dispatch-line{
+ display:block!important;width:100%!important;min-width:0!important;padding:8px 0!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .namo-dispatch-label{
+ width:100%!important;margin:0 0 6px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] :is(.namo-work-dept-list,.namo-dispatch-employees){
+ width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .namo-work-send-actions{
+ display:flex!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .namo-work-send-actions .btn{
+ flex:1 1 120px!important;min-height:40px!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace .am-split[data-am-screen="work"] .am-detail-note{
+ display:none!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot{
+ position:sticky!important;bottom:0!important;left:0!important;right:0!important;z-index:100!important;
+ display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:7px!important;width:100%!important;height:auto!important;min-height:58px!important;
+ padding:8px!important;background:rgba(255,255,255,.97)!important;backdrop-filter:blur(8px)!important;border-top:1px solid #d6e0e8!important;
+}
+html body.qmes-mobile-work-view #mainWorkspace #workspaceFoot .btn{
+ width:100%!important;min-width:0!important;height:42px!important;margin:0!important;padding:0 6px!important;border-radius:8px!important;font-size:12px!important;
+}
+}
