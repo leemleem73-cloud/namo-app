@@ -29,9 +29,17 @@ window.qmesPurchaseList={rows:()=>all.slice(),filtered:matchingRows,render:apply
 document.addEventListener('input',e=>{if(e.target.closest?.('#purchase .module-toolbar'))applyFilters()},true);document.addEventListener('change',e=>{if(e.target.closest?.('#purchase .module-toolbar')&&(e.target.tagName==='SELECT'||e.target.type==='date'))applyFilters()},true);
 new MutationObserver(()=>{const p=document.querySelector('#purchase');if(p?.querySelector('.module-shell>.module-body tbody')&&!p.querySelector('.qpu-db-message'))load()}).observe(document.body,{childList:true,subtree:true});load();
 })();
-/* Match PQC work-order link color for purchase-order numbers. */
+/* Purchase number links and neutral order dates - 20261023. */
 (function(){
  const style=document.createElement('style');style.id='purchase-pqc-link-color-20261023';
- style.textContent='html body #purchase .module-shell>.module-body table tbody tr>td:nth-child(2),html body #purchase .module-shell>.module-body table tbody tr>td:nth-child(2) :is(a,button,span),html body #purchase .module-body tbody td.qpu-po-link-style{color:#0070c0!important;-webkit-text-fill-color:#0070c0!important}';
+ style.textContent='html body #purchase .module-body tbody td.qpu-po-link-style,html body #purchase .module-body tbody td.qpu-po-link-style :is(a,button,span){color:#0070c0!important;-webkit-text-fill-color:#0070c0!important}html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral,html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral *{color:#000!important;-webkit-text-fill-color:#000!important}';
  document.head.appendChild(style);
+ const root=document.getElementById('purchase');if(!root)return;
+ function alignDates(){root.querySelectorAll('.module-body table').forEach(table=>{
+   const headers=Array.from(table.querySelectorAll('thead tr:first-child>th'));
+   const index=headers.findIndex(h=>h.textContent.replace(/\\s/g,'').includes('발주일자'));
+   if(index<0)return;
+   table.querySelectorAll('tbody tr').forEach(row=>{const cell=row.children[index];if(cell&&cell.colSpan===1)cell.classList.add('qpu-date-neutral');});
+ });}
+ new MutationObserver(alignDates).observe(root,{childList:true,subtree:true});alignDates();
 })();

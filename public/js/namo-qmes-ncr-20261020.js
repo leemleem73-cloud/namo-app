@@ -531,3 +531,10 @@ const style=document.createElement('style');style.textContent=`
  style.textContent='html body #ncr .ncr-equipment-card .ncr-table-wrap tbody tr,html body #ncr .ncr-equipment-card .ncr-table-wrap tbody tr>td{box-sizing:border-box!important;height:44px!important;min-height:44px!important;padding:8px 12px!important;line-height:18px!important;vertical-align:middle!important}html body #ncr .ncr-equipment-card .ncr-table-wrap input[type=checkbox]{appearance:auto!important;box-sizing:border-box!important;display:inline-block!important;position:static!important;width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;max-width:13px!important;max-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle!important;transform:none!important}';
  document.head.appendChild(style);
 })();
+
+/* ncr-selection-slide-up-20261023 */
+(function(){
+ var style=document.createElement('style');style.id='ncr-selection-slide-up-20261023';
+ style.textContent='@keyframes ncrSelectionSlideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}html body #ncr #ncr-bulk:not([hidden]){animation:ncrSelectionSlideUp .24s ease-out both}@media(prefers-reduced-motion:reduce){html body #ncr #ncr-bulk:not([hidden]){animation:none}}';
+ document.head.appendChild(style);
+})();
