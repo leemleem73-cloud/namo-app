@@ -601,9 +601,10 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const paint=rows=>{
         root._instrumentRows=rows;
-        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:12%"><col style="width:17%"><col style="width:16%"><col style="width:12%"><col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:5%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button></td></tr>').join(''):'<tr><td colspan="10">등록된 계측기가 없습니다.</td></tr>'
+        root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:11%"><col style="width:15%"><col style="width:14%"><col style="width:11%"><col style="width:8%"><col style="width:10%"><col style="width:10%"><col style="width:5%"><col style="width:6%"><col style="width:6%"></colgroup><thead><tr><th>No.</th><th>관리번호</th><th>계측기명</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th><th>수정</th></tr></thead><tbody>'+(
+          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+esc(r.instrument_name)+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button></td><td><button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="11">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
+        root.querySelectorAll('[data-inst-edit]').forEach(button=>button.onclick=()=>root._openInstrument(rows.find(row=>String(row.id)===button.dataset.instEdit)));
         root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),()=>{instrumentQueries.clear();load(true);}));
 
     };
@@ -631,15 +632,26 @@ html body #calibrationMgmt .qce-cal-body .calibration-load-status{padding:10px 1
     root._instrumentLoad=load;
     root.querySelector('.qce-inst-search').onclick=()=>load(true);
     root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
-    root.querySelector('.qce-inst-new').onclick=()=>modal('계측기 등록','<div class="qce-form">'+
+    const openInstrument=(record=null)=>{
+      modal(record?'계측기 수정':'계측기 등록','<div class="qce-form">'+
       '<div class="qce-field"><label>계측기명</label><input data-k="instrument_name"></div><div class="qce-field"><label>제조사</label><input data-k="maker"></div>'+
       '<div class="qce-field"><label>모델</label><input data-k="model"></div><div class="qce-field"><label>Serial No.</label><input data-k="serial_no"></div>'+
       '<div class="qce-field"><label>사용부서</label><input data-k="department"></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
       '<div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div><div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div>'+
       '<div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-instruments',{method:'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});toast('계측기가 등록되었습니다.');instrumentQueries.clear();load(true);}
+      async bg=>{await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});toast(record?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}
     );
+      if(record){
+        const dialog=document.querySelector('.qce-modal-bg:last-of-type');
+        if(dialog)dialog.querySelectorAll('[data-k]').forEach(input=>{
+          const value=record[input.dataset.k];
+          input.value=value==null?'':input.type==='date'?String(value).slice(0,10):String(value);
+        });
+      }
+    };
+    root._openInstrument=openInstrument;
+    root.querySelector('.qce-inst-new').onclick=()=>openInstrument();
     load();
   }
 
