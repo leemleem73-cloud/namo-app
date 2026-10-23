@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#f4f7fa">
 <title>NAMO QMES Mobile</title>
 <style>
-:root{--ink:#17334a;--muted:#74879a;--line:#dce5ec;--bg:#f4f7fa;--blue:#0b73d1;--card:#fff}
+:root{--ink:#17334a;--muted:#74879a;--line:#dce5ec;--bg:#f4f7fa;--card:#fff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg);font-family:Pretendard,"Noto Sans KR","Malgun Gothic",Arial,sans-serif;color:var(--ink)}
 body{padding-bottom:max(20px,env(safe-area-inset-bottom))}
@@ -17,15 +17,13 @@ body{padding-bottom:max(20px,env(safe-area-inset-bottom))}
 .att{width:100%;min-height:74px;padding:12px 15px;border:0;border-radius:17px;background:linear-gradient(135deg,#0a73d2,#11a4bd);color:#fff;display:flex;align-items:center;gap:12px;text-align:left;box-shadow:0 10px 24px rgba(19,107,163,.18)}
 .att .ico{width:46px;height:46px;flex:0 0 46px;border-radius:13px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:20px}.att strong{display:block;font-size:17px;font-weight:950}.att small{display:block;margin-top:4px;color:#e9f8ff;font-size:11px;font-weight:750}.att .go{margin-left:auto;font-size:28px}
 .search{margin:13px 0 14px}.search input{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 14px;outline:0;color:#203a50;font-size:14px}
-.section{margin-top:14px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}.section-head h2{margin:0;font-size:13px;font-weight:950;color:#2a526e}.section-head span{font-size:10px;color:#9aa7b4;font-weight:750}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.card{min-height:94px;padding:13px;border:1px solid var(--line);border-radius:15px;background:var(--card);display:flex;flex-direction:column;justify-content:space-between;color:var(--ink);text-decoration:none;box-shadow:0 3px 10px rgba(27,58,82,.035)}
-.card:active{transform:scale(.985);background:#f8fbfd}
-.card .top{display:flex;align-items:center;justify-content:space-between}.card .icon{width:38px;height:38px;border-radius:11px;background:#edf4f8;display:grid;place-items:center;color:#286a92;font-size:15px;font-weight:950;border:1px solid #d7e2ea}.card .arrow{font-size:21px;color:#a0acb8}.card .label{font-size:14px;font-weight:900;letter-spacing:-.02em}.card .desc{margin-top:3px;font-size:10px;color:#8b98a5;font-weight:700;line-height:1.35}
-.admin-card{display:none}
-body.is-admin .admin-card{display:flex}
-.empty{display:none;padding:26px 10px;text-align:center;color:#81909f;font-size:12px}
-@media(max-width:370px){.grid{grid-template-columns:1fr}.card{min-height:78px}}
+.group{border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden}
+.group-title{padding:10px 14px;background:#eaf2f7;border-bottom:1px solid var(--line);color:#2a6488;font-size:12px;font-weight:950}
+.menu{width:100%;min-height:58px;padding:9px 13px;border:0;border-bottom:1px solid #edf1f4;background:#fff;display:flex;align-items:center;gap:11px;text-align:left;color:#213b51;text-decoration:none}
+.menu:last-child{border-bottom:0}.menu:active{background:#f4f8fb}
+.icon{width:38px;height:38px;flex:0 0 38px;border:1px solid #d6e2ea;border-radius:10px;background:#edf4f8;display:grid;place-items:center;color:#2b6d94;font-size:15px;font-weight:950}
+.label{flex:1;font-size:14px;font-weight:900}.chev{font-size:22px;color:#9aa7b2}
+.admin-only{display:none}body.is-admin .admin-only{display:flex}.empty{display:none;padding:25px;text-align:center;color:#81909f;font-size:12px}
 </style>
 </head>
 <body>
@@ -34,43 +32,32 @@ body.is-admin .admin-card{display:flex}
   <button class="user" id="userBtn" type="button">로그인 확인</button>
 </header>
 <main class="main">
-  <section class="intro"><h1>업무 메뉴</h1><p>PC와 동일한 데이터와 기능을 사용하며, 모바일에 맞게 화면을 구성합니다.</p></section>
-
-  <button class="att" id="attendanceBtn" type="button">
-    <span class="ico">◷</span>
-    <span><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span>
-    <span class="go">›</span>
-  </button>
-
+  <section class="intro"><h1>업무 메뉴</h1><p>현재 PC QMES와 동일한 메뉴명과 순서입니다.</p></section>
+  <button class="att" id="attendanceBtn" type="button"><span class="ico">◷</span><span><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span><span class="go">›</span></button>
   <label class="search"><input id="menuSearch" type="search" placeholder="업무 메뉴 검색" autocomplete="off"></label>
-
-  <section class="section" data-group="production">
-    <div class="section-head"><h2>생산관리</h2><span>PRODUCTION</span></div>
-    <div class="grid">
-      <a class="card" data-label="작업지시서" href="/?desktop=1&mobile=1&mobileTab=woIssue&mobileMenu=productionMenu"><div class="top"><span class="icon">▤</span><span class="arrow">›</span></div><div><div class="label">작업지시서</div><div class="desc">지시 · 조회 · 진행 확인</div></div></a>
-      <a class="card" data-label="현장 입력" href="/?desktop=1&mobile=1&mobileTab=pop"><div class="top"><span class="icon">▶</span><span class="arrow">›</span></div><div><div class="label">현장 입력</div><div class="desc">현장 검사 · 실적 입력</div></div></a>
+  <section class="group">
+    <div class="group-title">QMES</div>
+    <div id="menuRoot">
+      <a class="menu" data-label="종합 대시보드" href="/?desktop=1&mobile=1&mobilePage=dashboard"><span class="icon">▦</span><span class="label">종합 대시보드</span><span class="chev">›</span></a>
+      <a class="menu" data-label="수주납기 관리" href="/?desktop=1&mobile=1&mobilePage=orders"><span class="icon">📅</span><span class="label">수주납기 관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="구매발주 관리" href="/?desktop=1&mobile=1&mobilePage=purchase"><span class="icon">🧾</span><span class="label">구매발주 관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="작업지시서" href="/?desktop=1&mobile=1&mobilePage=work"><span class="icon">🛠</span><span class="label">작업지시서</span><span class="chev">›</span></a>
+      <a class="menu" data-label="수입검사 IQC" href="/?desktop=1&mobile=1&mobilePage=incoming"><span class="icon">🔬</span><span class="label">수입검사 IQC</span><span class="chev">›</span></a>
+      <a class="menu" data-label="공정검사 PQC" href="/?desktop=1&mobile=1&mobilePage=process"><span class="icon">🧫</span><span class="label">공정검사 PQC</span><span class="chev">›</span></a>
+      <a class="menu" data-label="출하검사 OQC" href="/?desktop=1&mobile=1&mobilePage=outgoing"><span class="icon">📋</span><span class="label">출하검사 OQC</span><span class="chev">›</span></a>
+      <a class="menu" data-label="부적합 NCR" href="/?desktop=1&mobile=1&mobilePage=ncr"><span class="icon">📑</span><span class="label">부적합 NCR</span><span class="chev">›</span></a>
+      <a class="menu" data-label="SPC / Trend" href="/?desktop=1&mobile=1&mobilePage=spcTrend"><span class="icon">📈</span><span class="label">SPC / Trend</span><span class="chev">›</span></a>
+      <a class="menu" data-label="변경관리" href="/?desktop=1&mobile=1&mobilePage=changeControl"><span class="icon">↻</span><span class="label">변경관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="LOT 추적" href="/?desktop=1&mobile=1&mobilePage=lotTrace"><span class="icon">🔎</span><span class="label">LOT 추적</span><span class="chev">›</span></a>
+      <a class="menu" data-label="설비관리" href="/?desktop=1&mobile=1&mobilePage=equipment"><span class="icon">⚙️</span><span class="label">설비관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="계측기관리" href="/?desktop=1&mobile=1&mobilePage=instrumentMgmt"><span class="icon">📏</span><span class="label">계측기관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="검교정관리" href="/?desktop=1&mobile=1&mobilePage=calibrationMgmt"><span class="icon">✓</span><span class="label">검교정관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="기준서 / 문서관리" href="/?desktop=1&mobile=1&mobilePage=standard"><span class="icon">📚</span><span class="label">기준서 / 문서관리</span><span class="chev">›</span></a>
+      <a class="menu" data-label="전자결재" href="/?desktop=1&mobile=1&mobilePage=approval"><span class="icon">✍</span><span class="label">전자결재</span><span class="chev">›</span></a>
+      <a class="menu admin-only" data-label="직원등록현황" href="/?desktop=1&mobile=1&mobilePage=adminEmployees"><span class="icon">👥</span><span class="label">직원등록현황</span><span class="chev">›</span></a>
     </div>
+    <div class="empty" id="empty">검색 결과가 없습니다.</div>
   </section>
-
-  <section class="section" data-group="quality">
-    <div class="section-head"><h2>품질관리</h2><span>QUALITY</span></div>
-    <div class="grid">
-      <a class="card" data-label="수입검사" href="/?desktop=1&mobile=1&mobileTab=iqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">✓</span><span class="arrow">›</span></div><div><div class="label">수입검사</div><div class="desc">IQC 등록 · 조회 · 판정</div></div></a>
-      <a class="card" data-label="공정검사" href="/?desktop=1&mobile=1&mobileTab=pqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">△</span><span class="arrow">›</span></div><div><div class="label">공정검사</div><div class="desc">PQC 등록 · 조회 · 판정</div></div></a>
-      <a class="card" data-label="출하검사" href="/?desktop=1&mobile=1&mobileTab=oqc&mobileMenu=qualityMenu"><div class="top"><span class="icon">▣</span><span class="arrow">›</span></div><div><div class="label">출하검사</div><div class="desc">OQC 등록 · 조회 · 승인</div></div></a>
-      <a class="card" data-label="기준서" href="/?desktop=1&mobile=1&mobileTab=standards&mobileMenu=qualityMenu"><div class="top"><span class="icon">⚙</span><span class="arrow">›</span></div><div><div class="label">기준서</div><div class="desc">기준서 · 매뉴얼 조회</div></div></a>
-    </div>
-  </section>
-
-  <section class="section" data-group="trace">
-    <div class="section-head"><h2>추적 · 설비</h2><span>TRACE / EQUIPMENT</span></div>
-    <div class="grid">
-      <a class="card" data-label="LOT 추적" href="/?desktop=1&mobile=1&mobileTab=trace"><div class="top"><span class="icon">◇</span><span class="arrow">›</span></div><div><div class="label">LOT 추적</div><div class="desc">원재료 · 완제품 LOT 추적</div></div></a>
-      <a class="card" data-label="설비관리" href="/?desktop=1&mobile=1&mobileTab=eq"><div class="top"><span class="icon">▧</span><span class="arrow">›</span></div><div><div class="label">설비관리</div><div class="desc">설비 · 점검 · 이력 관리</div></div></a>
-      <a class="card admin-card" data-label="회원관리" href="/?desktop=1&mobile=1&mobileTab=members"><div class="top"><span class="icon">●</span><span class="arrow">›</span></div><div><div class="label">회원관리</div><div class="desc">관리자 전용</div></div></a>
-    </div>
-  </section>
-  <div class="empty" id="empty">검색 결과가 없습니다.</div>
 </main>
 <script>
 (function(){
@@ -78,29 +65,25 @@ body.is-admin .admin-card{display:flex}
 const search=document.getElementById("menuSearch"),empty=document.getElementById("empty");
 function filter(){
  const q=String(search.value||"").trim().toLowerCase();let shown=0;
- document.querySelectorAll(".card").forEach(card=>{
-   const visible=!q||String(card.dataset.label||"").toLowerCase().includes(q);
-   card.style.display=visible?"flex":"none"; if(visible)shown++;
- });
- document.querySelectorAll(".section").forEach(section=>{
-   section.style.display=Array.from(section.querySelectorAll(".card")).some(c=>c.style.display!=="none")?"block":"none";
+ document.querySelectorAll("#menuRoot .menu").forEach(item=>{
+   if(item.classList.contains("admin-only")&&!document.body.classList.contains("is-admin")){item.style.display="none";return;}
+   const visible=!q||String(item.dataset.label||"").toLowerCase().includes(q);
+   item.style.display=visible?"flex":"none";if(visible)shown++;
  });
  empty.style.display=shown?"none":"block";
 }
 async function auth(){
  try{
    const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
-   if(r.status===401){document.getElementById("userBtn").textContent="로그인";document.getElementById("userBtn").onclick=()=>location.assign("/?desktop=1&mobileLogin=1");return;}
+   if(r.status===401){const b=document.getElementById("userBtn");b.textContent="로그인";b.onclick=()=>location.assign("/?desktop=1&mobileLogin=1");filter();return;}
    const j=await r.json();const u=(j&&j.data&&j.data.user)||(j&&j.data)||(j&&j.user)||j||{};
-   const name=String(u.name||u.loginId||u.email||"").trim();
-   document.getElementById("userBtn").textContent=name?name+"님":"사용자";
+   const name=String(u.name||u.loginId||u.email||"").trim();document.getElementById("userBtn").textContent=name?name+"님":"사용자";
    if(String(u.role||"").toLowerCase()==="admin")document.body.classList.add("is-admin");
  }catch(_){}
  filter();
 }
 document.getElementById("attendanceBtn").onclick=()=>location.assign("/attendance.html?mobile=1&source=qmes");
-search.oninput=filter;
-filter();auth();
+search.oninput=filter;filter();auth();
 })();
 </script>
 </body>
