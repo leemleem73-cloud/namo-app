@@ -58,8 +58,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .workActual .matWrap{padding:10px 12px}.workActual .matTools{display:flex;justify-content:flex-end;margin-bottom:7px}.workActual .note{padding:7px 0;color:#788899;line-height:1.5}.workActual .dispatch{padding:12px;line-height:1.7;color:#5f7285}.workActual .regBottom{display:flex;justify-content:flex-end;gap:6px;padding:10px 14px}
 @media(max-width:1000px){.workActual .waFilters{grid-template-columns:repeat(3,minmax(0,1fr))}.workActual .regShell{grid-template-columns:1fr}.workActual .regList{display:none}.workActual .regGrid{grid-template-columns:105px 1fr}.workActual .regGrid span,.workActual .regGrid b{grid-column:auto!important}}
 
-.qaPage,.noticePage{display:none;min-height:calc(100vh - 70px);background:#f6f8fb;padding:48px 24px 80px}
-.qaPage.active,.noticePage.active{display:block}
+.qaPage{display:none;min-height:calc(100vh - 70px);background:#f6f8fb;padding:48px 24px 80px}
+.qaPage.active{display:block}
 .infoPageWrap{max-width:1100px;margin:0 auto}
 .infoPageHead{margin-bottom:24px}
 .infoPageHead h2{margin:0 0 8px;font-size:28px;color:#1f3550}
@@ -68,14 +68,10 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .faqItem{background:#fff;border:1px solid #e0e7ef;border-radius:12px;padding:20px 22px;box-shadow:0 4px 14px rgba(20,35,60,.05)}
 .faqQ{font-weight:800;color:#223b57;margin-bottom:8px}
 .faqA{color:#66788a;line-height:1.7;font-size:14px}
-.noticeTable{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e0e7ef;box-shadow:0 4px 14px rgba(20,35,60,.05)}
-.noticeTable th,.noticeTable td{padding:14px 16px;border-bottom:1px solid #e7edf3;text-align:left}
-.noticeTable th{background:#f1f5f9;color:#41566d;font-size:13px}
-.noticeTable td{color:#5d6f82;font-size:14px}
 </style>
 </head>
 <body>
-<header class="top"><div class="brand">NAMO QMES 이용가이드</div><nav class="nav"><button id="homeTab" class="active">홈</button><button id="manualTab">온라인 매뉴얼</button><button id="qaTab">Q&A</button><button id="noticeTab">공지사항</button></nav></header>
+<header class="top"><div class="brand">NAMO QMES 이용가이드</div><nav class="nav"><button id="homeTab" class="active">홈</button><button id="manualTab">온라인 매뉴얼</button><button id="qaTab">Q&A</button></nav></header>
 <section id="home">
 <div class="hero"><h1>NAMO QMES 업무별 사용방법을 확인하세요.</h1>
 <div class="guide-dock-wrap expanded" id="guideQuickWrap">
@@ -145,23 +141,8 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
     </div>
   </div>
 </section>
-<section id="noticePage" class="noticePage">
-  <div class="infoPageWrap">
-    <div class="infoPageHead">
-      <h2>QMES 공지사항</h2>
-      <p>QMES 운영 및 업데이트 안내입니다.</p>
-    </div>
-    <table class="noticeTable">
-      <thead><tr><th style="width:90px">No.</th><th>공지내용</th><th style="width:160px">구분</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>QMES TEST 운영 중이며 12월 정식 오픈을 준비하고 있습니다.</td><td>운영안내</td></tr>
-        <tr><td>2</td><td>작업지시 · 품질검사 · LOT 추적 등 주요 기능을 테스트하고 있습니다.</td><td>테스트</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
 <script>
-const home=document.getElementById('home'),manual=document.getElementById('manual'),qaPage=document.getElementById('qaPage'),noticePage=document.getElementById('noticePage'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab'),qaTab=document.getElementById('qaTab'),noticeTab=document.getElementById('noticeTab');
+const home=document.getElementById('home'),manual=document.getElementById('manual'),qaPage=document.getElementById('qaPage'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab'),qaTab=document.getElementById('qaTab');
 const titles={
 '수주납기 관리':['수주납기 관리 실무 사용법','영업 / 구매 > 수주납기 관리 > 조회 · 신규등록','수주납기 조회부터 신규 수주 등록, 납기일정과 진행상태 관리, 저장까지 실제 업무 순서대로 안내합니다.'],
 '구매발주 관리':['구매발주 관리 실무 사용법','영업 / 구매 > 구매발주 관리 > 조회 · 신규등록','구매발주 조회부터 신규 발주 등록, 다품목 입력, 금액 계산, 발주서·품의서 인쇄 및 저장까지 실제 업무 순서대로 안내합니다.'],
@@ -682,14 +663,12 @@ function setTopPage(page){
   home.style.display=page==='home'?'block':'none';
   manual.classList.toggle('active',page==='manual');
   qaPage.classList.toggle('active',page==='qa');
-  noticePage.classList.toggle('active',page==='notice');
-  [homeTab,manualTab,qaTab,noticeTab].forEach(x=>x.classList.remove('active'));
-  ({home:homeTab,manual:manualTab,qa:qaTab,notice:noticeTab})[page]?.classList.add('active');
+  [homeTab,manualTab,qaTab].forEach(x=>x.classList.remove('active'));
+  ({home:homeTab,manual:manualTab,qa:qaTab})[page]?.classList.add('active');
   window.scrollTo(0,0);
 }
 manualTab.addEventListener('click',()=>{openPage('수입검사 IQC');setTopPage('manual')});
 homeTab.addEventListener('click',()=>setTopPage('home'));
 qaTab.addEventListener('click',()=>setTopPage('qa'));
-noticeTab.addEventListener('click',()=>setTopPage('notice'));
 </script>
 </body></html>
