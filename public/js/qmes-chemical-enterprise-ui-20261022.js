@@ -330,6 +330,14 @@ html body #instrumentMgmt .qce-instrument-photo-link{border:0;background:none;pa
 html body #instrumentMgmt .qce-table :is(th,td):first-child:has(>input[type=checkbox]){padding:0!important;text-align:center!important;vertical-align:middle!important}
 html body #instrumentMgmt .qce-table input[type=checkbox]{appearance:auto;width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle;accent-color:#188ad1}
 html body #instrumentMgmt .qce-table tbody tr.qce-inst-selected>td{background:#eef6ff!important}
+
+/* instrument-selection-dock-20261023 */
+html body #instrumentMgmt .qce-instrument-selection-dock{position:fixed;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--qmes-nav-background,#315d79);color:#fff;border:1px solid #3c6988;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
+html body #instrumentMgmt .qce-instrument-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+html body #instrumentMgmt .qce-instrument-selection-count{font-size:13px;font-weight:700;color:#fff}
+html body #instrumentMgmt .qce-instrument-selection-dock>div{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+html body #instrumentMgmt .qce-instrument-selection-dock button{height:30px;padding:0 12px;border:1px solid #b8cde2;border-radius:4px;background:#f5f9ff;color:#244260;font:700 11px Pretendard,"Noto Sans KR",Arial,sans-serif;cursor:pointer}
+@media(prefers-reduced-motion:reduce){html body #instrumentMgmt .qce-instrument-selection-dock{transition:none}}
   `;
   document.head.appendChild(style);
 
@@ -641,10 +649,33 @@ html body #instrumentMgmt .qce-table tbody tr.qce-inst-selected>td{background:#e
       const boxes=Array.from(root.querySelectorAll('.qce-inst-row-select')),all=root.querySelector('.qce-inst-select-all');
       boxes.forEach(box=>{box.checked=selectedIds.has(box.value);box.closest('tr').classList.toggle('qce-inst-selected',box.checked);});
       if(all){all.checked=boxes.length>0&&boxes.every(box=>box.checked);all.indeterminate=boxes.some(box=>box.checked)&&!all.checked;}
+      const dock=root.querySelector('.qce-instrument-selection-dock');
+      if(dock){
+        const count=selectedIds.size;dock.classList.toggle('is-visible',count>0);dock.inert=!count;dock.setAttribute('aria-hidden',count?'false':'true');
+        dock.querySelector('.qce-instrument-selection-count').textContent=count+'건 선택됨';
+        dock.querySelector('[data-inst-selected-print]').textContent='선택 인쇄 ('+count+')';
+        const bounds=(root.querySelector('.qce-page')||root).getBoundingClientRect();
+        if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,innerWidth-bounds.right)+'px';}
+      }
     };
     root._resetListSelection=()=>{selectedIds.clear();syncSelection();};
     new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('계측기관리','검사계측기와 차기 검교정 일정을 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-inst-q" placeholder="관리번호 / 계측기명 / 모델 검색"></div><div class="right"><button class="qce-btn qce-inst-search">조회</button><button class="qce-btn primary qce-inst-new">+ 계측기 등록</button></div></div><div class="qce-inst-body"><div class="qce-empty">조회 중...</div></div></div></div>';
+    const dock=document.createElement('div');dock.className='qce-instrument-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','계측기 선택 항목 작업');dock.setAttribute('aria-hidden','true');dock.inert=true;
+    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selection-clear>선택 해제</button></div>';
+    root.appendChild(dock);
+    dock.querySelector('[data-inst-selection-clear]').onclick=()=>root._resetListSelection();
+    dock.querySelector('[data-inst-selected-print]').onclick=async()=>{
+      const records=(root._instrumentRows||[]).filter(row=>selectedIds.has(String(row.id)));
+      if(!records.length)return;
+      if(typeof window.qmesConfirm==='function'&&!await window.qmesConfirm('선택한 계측기 '+records.length+'건을 인쇄하시겠습니까?'))return;
+      const frame=document.createElement('iframe');frame.style.cssText='position:fixed;left:-20000px;top:0;width:1000px;height:700px;border:0';frame.setAttribute('aria-hidden','true');
+      frame.onload=async()=>{if(!frame.contentDocument?.querySelector('table'))return;await frame.contentDocument.fonts.ready;frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
+      document.body.appendChild(frame);
+      frame.srcdoc='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>계측기관리</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px Arial,sans-serif;color:#172b44}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #d5dce5;padding:7px;text-align:center}th{background:#e8f0f8}</style></head><body><h1>계측기관리</h1><table><thead><tr><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th></tr></thead><tbody>'+records.map(row=>'<tr>'+[row.instrument_no,row.instrument_name,row.use_range,[row.maker,row.model].filter(Boolean).join(' / '),row.serial_no,row.department,String(row.last_calibration_on||'').slice(0,10),String(row.next_calibration_on||'').slice(0,10),row.status].map(value=>'<td>'+esc(value||'-')+'</td>').join('')+'</tr>').join('')+'</tbody></table></body></html>';
+      setTimeout(()=>frame.remove(),120000);
+    };
+    new ResizeObserver(syncSelection).observe(root);
     const paint=rows=>{
         root._instrumentRows=rows;
         rows.filter(row=>String(row.id)==='1'||row.photo_updated_at).forEach(row=>prepareInstrumentPhoto(row).catch(()=>{}));
