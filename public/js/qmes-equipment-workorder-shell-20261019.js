@@ -48,6 +48,11 @@ html body #equipment .eq-page .eq-table>tbody>tr>td.eq-wo-action button{display:
 
 /* Equipment date popup matching work-order mini-calendar */
 .eq-date-popup{position:fixed;z-index:2147483000;box-sizing:border-box;width:220px;padding:8px;background:#fff;border:1px solid #b8c4d0;border-radius:3px;box-shadow:0 4px 14px #0002;color:#344254;font:12px Arial,"Malgun Gothic",sans-serif}.eq-date-popup[hidden]{display:none!important}.eq-date-popup *{box-sizing:border-box}.eq-date-popup button{font:inherit;border:0;background:transparent;color:inherit;cursor:pointer;border-radius:2px;padding:0;min-width:0;box-shadow:none}.eq-date-popup .nwm-head{display:flex;align-items:center;justify-content:space-between;height:29px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}.eq-date-popup .nwm-head strong{font-size:13px;color:#172b40}.eq-date-popup .nwm-head button{width:24px;height:25px;font-size:18px;color:#83909c}.eq-date-popup .nwm-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px}.eq-date-popup .nwm-days>*{height:25px;line-height:25px;text-align:center;font-size:11px}.eq-date-popup .nwm-days>span{color:#89939e}.eq-date-popup .nwm-days button:hover{background:#e4f0ff}.eq-date-popup .nwm-days .between{background:#edf5ff}.eq-date-popup .nwm-days .chosen{background:#2689ef;color:#fff}.eq-date-popup .nwm-hint{font-size:10px;min-height:24px;padding-top:7px;color:#61768b;text-align:center}.eq-date-popup .nwm-foot{display:flex;gap:4px;margin-top:5px;padding-top:7px;border-top:1px solid #e1e6eb}.eq-date-popup .nwm-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}.eq-date-popup .nwm-foot [data-close-date]{margin-left:auto}
+
+/* equipment-iqc-selection-column-parity-20261023 */
+html body #equipment table.eq-table :is(thead,tbody)>tr>:first-child{box-sizing:border-box!important;width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;text-align:center!important;vertical-align:middle!important}
+html body #equipment table.eq-table :is(thead,tbody)>tr>:nth-child(2){box-sizing:border-box!important;width:52px!important;min-width:52px!important;max-width:52px!important;padding:4px!important;text-align:center!important;vertical-align:middle!important}
+html body #equipment table.eq-table input[type=checkbox]{width:13px!important;height:13px!important;min-width:13px!important;min-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle!important}
 `;document.head.append(css);
 function init(){
  const page=document.querySelector('#equipment .eq-page');
@@ -58,9 +63,9 @@ function init(){
  for(let index=0;index<12;index++){const col=document.createElement('col');col.className=index===0?'eq-col-check':index===1?'eq-col-number':[3,7,8,9,10,11].includes(index)?'eq-col-short':'eq-col-wide';equipmentColumns.append(col)}
  equipmentTable.querySelector('colgroup')?.remove();equipmentTable.prepend(equipmentColumns);
  const fitEquipmentColumns=()=>{
-   const total=Math.max(0,Math.floor(equipmentTable.parentElement.clientWidth)-2),space=Math.max(0,total-82);
+   const total=Math.max(0,Math.floor(equipmentTable.parentElement.clientWidth)-2),space=Math.max(0,total-86);
    equipmentTable.style.setProperty('width',total+'px','important');
-   equipmentColumns.querySelectorAll('col').forEach(col=>col.style.setProperty('width',(col.classList.contains('eq-col-check')?34:col.classList.contains('eq-col-number')?48:space*(col.classList.contains('eq-col-short')?.08:.13))+'px','important'));
+   equipmentColumns.querySelectorAll('col').forEach(col=>col.style.setProperty('width',(col.classList.contains('eq-col-check')?34:col.classList.contains('eq-col-number')?52:space*(col.classList.contains('eq-col-short')?.08:.13))+'px','important'));
  };
  fitEquipmentColumns();const equipmentResize=new ResizeObserver(()=>{if(!equipmentTable.isConnected){equipmentResize.disconnect();return}fitEquipmentColumns()});equipmentResize.observe(equipmentTable.parentElement);
 
