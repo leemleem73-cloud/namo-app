@@ -286,6 +286,36 @@ svg{display:block}
   text-shadow:0 1px 2px rgba(0,0,0,.26)!important;
 }
 
+
+/* QMES expanded dock seamless join, 2026-10-23 */
+#namo-portal-root .dock-wrap.dock-expanded{
+  gap:0!important;
+}
+#namo-portal-root .dock-wrap.dock-expanded .dock-more{
+  margin-bottom:0!important;
+  border-bottom:0!important;
+  border-radius:22px 22px 0 0!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.20)!important;
+}
+#namo-portal-root .dock-wrap.dock-expanded .dock{
+  box-sizing:border-box;
+  width:747px;
+  max-width:min(92vw,747px);
+  margin-top:0!important;
+  border-top:0!important;
+  border-radius:0 0 22px 22px!important;
+  box-shadow:none!important;
+}
+#namo-portal-root .dock-wrap.dock-expanded .dock-more,
+#namo-portal-root .dock-wrap.dock-expanded .dock{
+  background:rgba(82,82,82,.58)!important;
+}
+@media(max-width:900px){
+  #namo-portal-root .dock-wrap.dock-expanded .dock{
+    width:min(94vw,620px);
+  }
+}
+
 </style>
 </head>
 <body>
