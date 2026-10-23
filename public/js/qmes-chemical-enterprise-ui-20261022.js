@@ -247,6 +247,16 @@ html body #standard.module-page>.module-shell>.module-body{box-sizing:border-box
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>th{border-top:0!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:first-child{border-left:0!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:last-child{border-right:0!important}
+
+/* quality-two-tone-grid-20261023: blue header edges, neutral gray body edges. */
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>thead>tr>th{border-color:#cbd8e5!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>tbody>tr>td{border-color:#d5dce5!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>thead>tr>:last-child{border-right-color:#cbd8e5!important}
+html body :is(#spcTrend,#changeControl,#instrumentMgmt,#calibrationMgmt) table[class]:is(.qce-table,.ip-table)>tbody>tr>:last-child{border-right-color:#d5dce5!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>th{border-right-color:#cbd8e5!important;border-bottom-color:#cbd8e5!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>tbody>tr>td{border-right-color:#d5dce5!important;border-bottom-color:#d5dce5!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>:last-child{border-right-color:#cbd8e5!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>tbody>tr>:last-child{border-right-color:#d5dce5!important}
   `;
   document.head.appendChild(style);
 
