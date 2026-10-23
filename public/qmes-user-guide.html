@@ -64,10 +64,25 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .infoPageHead{margin-bottom:24px}
 .infoPageHead h2{margin:0 0 8px;font-size:28px;color:#1f3550}
 .infoPageHead p{margin:0;color:#6f8092}
-.faqList{display:grid;gap:12px}
-.faqItem{background:#fff;border:1px solid #e0e7ef;border-radius:12px;padding:20px 22px;box-shadow:0 4px 14px rgba(20,35,60,.05)}
-.faqQ{font-weight:800;color:#223b57;margin-bottom:8px}
-.faqA{color:#66788a;line-height:1.7;font-size:14px}
+
+.qaBoard{background:#fff;border:1px solid #dfe5eb;padding:18px 20px 26px}
+.qaSearch{border:1px solid #d8dde3;background:#fafbfc;padding:10px;display:flex;gap:6px;align-items:center;margin-bottom:28px}
+.qaSearch select,.qaSearch input,.qaSearch button,.qaSort{height:34px;border:1px solid #cfd6de;background:#fff;font:inherit}
+.qaSearch select{width:118px;padding:0 9px}.qaSearch input{flex:1;max-width:330px;padding:0 11px}.qaSearch button{padding:0 14px;cursor:pointer}.qaSearch .primary{background:#2f8cf0;color:#fff;border-color:#2f8cf0;font-weight:800}
+.qaTitleRow{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid #dce2e8;padding-bottom:10px;margin-bottom:14px}
+.qaTitleRow h2{font-size:20px;margin:0;color:#111}.qaTitleRow .crumbMini{font-size:12px;color:#9aa4ae;margin-left:10px;font-weight:500}
+.qaMetaTop{display:flex;justify-content:space-between;align-items:center;margin:10px 0 8px;font-size:13px;font-weight:800;color:#222}.qaMetaTop b{color:#2563eb}.qaSort{padding:0 30px 0 10px}
+.qaTable{width:100%;border-collapse:collapse;table-layout:fixed;border-top:2px solid #9da4ab}
+.qaTable th,.qaTable td{border-bottom:1px solid #dde3e8;padding:12px 10px;text-align:center;font-size:13px}
+.qaTable th{background:#f7f7f7;color:#111;font-weight:800}.qaTable td.title{text-align:left;font-weight:700;cursor:pointer;color:#1f2937}.qaTable tr.active{background:#eef6ff}.qaTable tr:hover{background:#f8fbff}
+.qaPager{display:flex;justify-content:center;gap:12px;align-items:center;padding:15px 0 24px;color:#555}.qaPager .page{background:#5f8ff5;color:#fff;border-radius:2px;min-width:24px;height:24px;display:grid;place-items:center}
+.qaDetail{border:1px solid #dfe3e7;background:#fff;padding:16px 18px 0;min-height:330px}
+.qaDetail h3{margin:0 0 12px;font-size:20px;color:#111}.qaDetailMeta{display:flex;gap:12px;color:#8a949e;font-size:12px;padding-bottom:12px;border-bottom:1px dotted #d7dde3}
+.qaDetailBody{padding:28px 0 40px;font-size:14px;line-height:2;color:#222;min-height:220px}
+.qaDetailBody strong{display:block;margin-bottom:22px;color:#111}
+.qaDetailBody .path{margin-top:24px;font-weight:800;color:#111}
+.qaVideo{margin-left:auto;color:#5b6570;font-size:12px}
+@media(max-width:800px){.qaSearch{flex-wrap:wrap}.qaSearch input{max-width:none;min-width:180px}.qaTable th:nth-child(3),.qaTable td:nth-child(3),.qaTable th:nth-child(5),.qaTable td:nth-child(5){display:none}.qaBoard{padding:12px}.qaPage{padding:28px 10px 60px}}
 </style>
 </head>
 <body>
@@ -129,15 +144,27 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 
 <section id="qaPage" class="qaPage">
   <div class="infoPageWrap">
-    <div class="infoPageHead">
-      <h2>QMES Q&A</h2>
-      <p>QMES 사용 중 자주 문의하는 내용을 확인하세요.</p>
-    </div>
-    <div class="faqList">
-      <div class="faqItem"><div class="faqQ">Q. 메뉴를 클릭했는데 화면이 열리지 않습니다.</div><div class="faqA">브라우저 새로고침 후 다시 시도하고, 동일하면 관리자에게 메뉴 권한과 배포 상태를 확인하세요.</div></div>
-      <div class="faqItem"><div class="faqQ">Q. 수입·공정·출하검사 성적서는 어디에서 작성하나요?</div><div class="faqA">온라인 매뉴얼에서 해당 검사 메뉴를 선택하면 등록·조회·결재 순서를 확인할 수 있습니다.</div></div>
-      <div class="faqItem"><div class="faqQ">Q. LOT 추적은 어떤 기준으로 조회하나요?</div><div class="faqA">원재료 LOT 또는 완제품 LOT를 기준으로 생산·검사·출하 이력을 연결해 조회합니다.</div></div>
-      <div class="faqItem"><div class="faqQ">Q. 결재 완료 후 상태가 바로 반영되지 않습니다.</div><div class="faqA">화면을 다시 조회해 상태를 확인하고, 지속되면 전자결재 동기화 상태를 관리자에게 문의하세요.</div></div>
+    <div class="qaBoard">
+      <div class="qaSearch">
+        <select id="qaSearchType"><option>제목+내용</option><option>제목</option><option>내용</option></select>
+        <input id="qaSearchInput" type="text" placeholder="궁금한 내용을 검색해보세요.">
+        <button id="qaSearchBtn" class="primary" type="button">검색</button>
+        <button id="qaResetBtn" type="button">초기화</button>
+      </div>
+      <div class="qaTitleRow">
+        <div><h2>QMES Q&A <span class="crumbMini">이용가이드 &gt; Q&A</span></h2></div>
+      </div>
+      <div class="qaMetaTop"><span>총 <b id="qaCount">4건</b></span><select id="qaSort" class="qaSort"><option value="desc">등록순</option><option value="views">조회순</option></select></div>
+      <table class="qaTable" aria-label="QMES Q&A 목록">
+        <thead><tr><th style="width:70px">No</th><th>제목</th><th style="width:90px">동영상</th><th style="width:120px">등록일</th><th style="width:100px">조회수</th></tr></thead>
+        <tbody id="qaRows"></tbody>
+      </table>
+      <div class="qaPager"><span>«</span><span>‹</span><span class="page">1</span><span>›</span><span>»</span></div>
+      <article class="qaDetail" id="qaDetail">
+        <h3 id="qaDetailTitle"></h3>
+        <div class="qaDetailMeta"><span id="qaDetailDate"></span><span>◉ <span id="qaDetailViews"></span></span><span id="qaDetailVideo" class="qaVideo"></span></div>
+        <div class="qaDetailBody" id="qaDetailBody"></div>
+      </article>
     </div>
   </div>
 </section>
@@ -659,6 +686,42 @@ const guideQuickWrap=document.getElementById('guideQuickWrap');
 guideQuickWrap?.classList.add('expanded');
 guideQuickWrap?.querySelector('.guide-dock-more')?.setAttribute('aria-hidden','false');
 document.querySelectorAll('[data-page]').forEach(x=>x.addEventListener('click',()=>openPage(x.dataset.page)));
+
+const qaData=[
+ {no:4,title:'수입검사 등록 후 검사결과를 수정하려면 어떻게 하나요?',date:'2026-10-23',views:439,video:'',body:'수입검사 목록에서 해당 성적서를 선택한 뒤 수정 버튼으로 검사 결과를 변경할 수 있습니다.<br><br>전자결재가 이미 진행된 문서는 권한에 따라 수정이 제한될 수 있으므로 결재 상태를 먼저 확인하세요.',path:'메뉴경로 : 품질관리 > 수입검사 IQC'},
+ {no:3,title:'사용자의 결재문서를 다른 사용자에게 공유할 수 있나요?',date:'2026-10-23',views:84,video:'',body:'전자결재 문서는 사용자 권한과 결재선에 따라 조회 범위가 결정됩니다.<br><br>공유가 필요한 경우 관리자 권한 또는 문서 권한 설정을 확인하세요.',path:'메뉴경로 : 전자결재 > 결재함'},
+ {no:2,title:'LOT 추적에서 원재료부터 출하까지 어떻게 확인하나요?',date:'2026-10-23',views:53,video:'',body:'원재료 LOT 또는 완제품 LOT를 입력하면 작업지시, 공정검사, 출하검사, 출하 이력을 순서대로 연결해 확인할 수 있습니다.',path:'메뉴경로 : LOT 추적'},
+ {no:1,title:'결재 완료 후 상태가 바로 반영되지 않을 때는 어떻게 하나요?',date:'2026-10-23',views:60,video:'',body:'목록을 다시 조회하면 최신 결재상태가 반영됩니다.<br><br>계속 동일하면 전자결재 동기화 상태와 네트워크 연결을 확인하세요.',path:'메뉴경로 : 전자결재'}
+];
+let qaFiltered=[...qaData],qaSelected=qaData[0];
+function renderQaRows(){
+ const body=document.getElementById('qaRows'); if(!body)return;
+ body.innerHTML=qaFiltered.map(x=>'<tr data-no="'+x.no+'" class="'+(qaSelected&&qaSelected.no===x.no?'active':'')+'"><td>'+x.no+'</td><td class="title">'+x.title+'</td><td>'+(x.video?'▶':'')+'</td><td>'+x.date+'</td><td>'+x.views.toLocaleString()+'</td></tr>').join('');
+ document.getElementById('qaCount').textContent=qaFiltered.length+'건';
+ body.querySelectorAll('tr').forEach(tr=>tr.addEventListener('click',()=>{qaSelected=qaData.find(x=>x.no===Number(tr.dataset.no));renderQaRows();renderQaDetail();}));
+}
+function renderQaDetail(){
+ if(!qaSelected)return;
+ document.getElementById('qaDetailTitle').textContent=qaSelected.title;
+ document.getElementById('qaDetailDate').textContent='▣ '+qaSelected.date;
+ document.getElementById('qaDetailViews').textContent=qaSelected.views.toLocaleString();
+ document.getElementById('qaDetailVideo').textContent=qaSelected.video?('▶ '+qaSelected.video):'';
+ document.getElementById('qaDetailBody').innerHTML='<strong>QMES 이용가이드</strong>'+qaSelected.body+'<div class="path">◎ '+qaSelected.path+'</div>';
+}
+function applyQaSearch(){
+ const q=(document.getElementById('qaSearchInput')?.value||'').trim().toLowerCase();
+ qaFiltered=qaData.filter(x=>(x.title+' '+x.body+' '+x.path).toLowerCase().includes(q));
+ const sort=document.getElementById('qaSort')?.value||'desc';
+ qaFiltered.sort((a,b)=>sort==='views'?b.views-a.views:b.no-a.no);
+ if(!qaFiltered.some(x=>x.no===qaSelected?.no)) qaSelected=qaFiltered[0]||null;
+ renderQaRows(); if(qaSelected) renderQaDetail();
+}
+document.getElementById('qaSearchBtn')?.addEventListener('click',applyQaSearch);
+document.getElementById('qaResetBtn')?.addEventListener('click',()=>{document.getElementById('qaSearchInput').value='';qaFiltered=[...qaData];qaSelected=qaData[0];renderQaRows();renderQaDetail();});
+document.getElementById('qaSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')applyQaSearch()});
+document.getElementById('qaSort')?.addEventListener('change',applyQaSearch);
+renderQaRows();renderQaDetail();
+
 function setTopPage(page){
   home.style.display=page==='home'?'block':'none';
   manual.classList.toggle('active',page==='manual');
