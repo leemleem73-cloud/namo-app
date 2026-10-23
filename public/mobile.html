@@ -73,10 +73,10 @@ function render(){
 async function auth(){
  try{
    const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
-   if(r.status===401){location.replace("/");return;}
+   if(r.status===401){document.getElementById("userBtn").textContent="로그인";document.getElementById("userBtn").onclick=()=>location.assign("/?desktop=1&mobileLogin=1");render();return;}
    const j=await r.json();const u=(j&&j.data&&j.data.user)||(j&&j.data)||(j&&j.user)||j||{};
    const name=String(u.name||u.loginId||u.email||"").trim();
-   document.getElementById("userBtn").textContent=name?name+"님":"사용자";
+   const ub=document.getElementById("userBtn");ub.textContent=name?name+"님":"사용자";ub.onclick=null;
    admin=String(u.role||"").toLowerCase()==="admin";
  }catch(_){}
  render();
