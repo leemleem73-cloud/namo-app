@@ -241,6 +241,12 @@ html body #standard.module-page>.module-shell>.module-body>table.std-document-li
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:first-child{border-left:1px solid #d5dce5!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:last-child{border-right:1px solid #d5dce5!important}
 html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>tbody>tr:last-child>td{border-bottom:1px solid #d5dce5!important}
+
+/* standard-empty-frame-20261023: wrapper owns the complete perimeter, including empty lists. */
+html body #standard.module-page>.module-shell>.module-body{box-sizing:border-box!important;border:1px solid #d5dce5!important;min-height:132px!important;outline:0!important;box-shadow:none!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>thead>tr>th{border-top:0!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:first-child{border-left:0!important}
+html body #standard.module-page>.module-shell>.module-body>table.std-document-list[class]>:is(thead,tbody)>tr>:last-child{border-right:0!important}
   `;
   document.head.appendChild(style);
 
