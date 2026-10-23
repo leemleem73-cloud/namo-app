@@ -29,17 +29,22 @@ window.qmesPurchaseList={rows:()=>all.slice(),filtered:matchingRows,render:apply
 document.addEventListener('input',e=>{if(e.target.closest?.('#purchase .module-toolbar'))applyFilters()},true);document.addEventListener('change',e=>{if(e.target.closest?.('#purchase .module-toolbar')&&(e.target.tagName==='SELECT'||e.target.type==='date'))applyFilters()},true);
 new MutationObserver(()=>{const p=document.querySelector('#purchase');if(p?.querySelector('.module-shell>.module-body tbody')&&!p.querySelector('.qpu-db-message'))load()}).observe(document.body,{childList:true,subtree:true});load();
 })();
-/* Purchase number links and neutral order dates - 20261023. */
+/* purchase-number-date-colors-v2-20261023 */
 (function(){
  const style=document.createElement('style');style.id='purchase-pqc-link-color-20261023';
- style.textContent='html body #purchase .module-body tbody td.qpu-po-link-style,html body #purchase .module-body tbody td.qpu-po-link-style :is(a,button,span){color:#0070c0!important;-webkit-text-fill-color:#0070c0!important}html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral,html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral *{color:#000!important;-webkit-text-fill-color:#000!important}';
+ style.textContent='html body #purchase .module-shell>.module-body table tbody tr>td.qpu-order-number-tone,html body #purchase .module-shell>.module-body table tbody tr>td.qpu-order-number-tone *{color:#0070c0!important;-webkit-text-fill-color:#0070c0!important}html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral,html body #purchase .module-shell>.module-body table tbody tr>td.qpu-date-neutral *{color:#000!important;-webkit-text-fill-color:#000!important}';
  document.head.appendChild(style);
  const root=document.getElementById('purchase');if(!root)return;
- function alignDates(){root.querySelectorAll('.module-body table').forEach(table=>{
+ function alignColors(){root.querySelectorAll('.module-body table').forEach(table=>{
    const headers=Array.from(table.querySelectorAll('thead tr:first-child>th'));
-   const index=headers.findIndex(h=>h.textContent.replace(/\\s/g,'').includes('발주일자'));
-   if(index<0)return;
-   table.querySelectorAll('tbody tr').forEach(row=>{const cell=row.children[index];if(cell&&cell.colSpan===1)cell.classList.add('qpu-date-neutral');});
+   const numberIndex=headers.findIndex(h=>h.textContent.split(' ').join('').includes('발주번호'));
+   const dateIndex=headers.findIndex(h=>h.textContent.split(' ').join('').includes('발주일자'));
+   table.querySelectorAll('tbody tr').forEach(row=>{
+     Array.from(row.children).forEach(cell=>cell.classList.remove('qpu-order-number-tone','qpu-date-neutral'));
+     const number=row.children[numberIndex],date=row.children[dateIndex];
+     if(number&&number.colSpan===1)number.classList.add('qpu-order-number-tone');
+     if(date&&date.colSpan===1)date.classList.add('qpu-date-neutral');
+   });
  });}
- new MutationObserver(alignDates).observe(root,{childList:true,subtree:true});alignDates();
+ new MutationObserver(alignColors).observe(root,{childList:true,subtree:true});alignColors();
 })();
