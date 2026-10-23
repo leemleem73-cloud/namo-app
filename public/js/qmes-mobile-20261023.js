@@ -12,6 +12,13 @@ function ensure(){
    const b=document.createElement("button");b.id="qmes-mobile-menu-toggle";b.type="button";b.textContent="☰";b.setAttribute("aria-label","업무 메뉴 열기");
    b.onclick=()=>document.body.classList.toggle("qmes-mobile-menu-open");document.body.appendChild(b);
  }
+ if(!document.getElementById("qmes-mobile-attendance")){
+   const a=document.createElement("button");
+   a.id="qmes-mobile-attendance";a.type="button";
+   a.innerHTML='<span class="qma-icon">◷</span><span class="qma-text"><strong>출퇴근</strong><small>출근 · 퇴근 · 연차 · 근태</small></span><span class="qma-go">›</span>';
+   a.onclick=()=>location.assign("/attendance.html?mobile=1&source=qmes");
+   document.body.appendChild(a);
+ }
  if(!document.getElementById("qmes-mobile-menu-backdrop")){
    const d=document.createElement("div");d.id="qmes-mobile-menu-backdrop";d.onclick=close;document.body.appendChild(d);
  }
