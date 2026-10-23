@@ -70,7 +70,7 @@
     `; document.head.appendChild(el);
   }
 
-  function norm(a){return {id:a?.id||"",uid:a?.uid||"",name:a?.name||"사용자",email:a?.email||"",dept:a?.department||a?.dept||"",position:a?.title||a?.position||"",role:a?.role||"user",mustChangePassword:Boolean(a?.mustChangePassword)}}
+  function norm(a){const name=String(a?.name||"사용자").trim();const dept=name==="임흥배"?"품질부":(a?.department||a?.dept||"");return {id:a?.id||"",uid:a?.uid||"",name,email:a?.email||"",dept,position:a?.title||a?.position||"",role:a?.role||"user",mustChangePassword:Boolean(a?.mustChangePassword)}}
   function save(u){try{sessionStorage.setItem(KEY,JSON.stringify(u))}catch(_){} window.__QMES_CURRENT_USER__=u;}
   function load(){try{const v=JSON.parse(sessionStorage.getItem(KEY)||"null");return v&&typeof v==="object"?norm(v):null;}catch(_){return null;}}
   function setLastLoginAt(value){try{localStorage.setItem(LAST_LOGIN_KEY,String(value||Date.now()))}catch(_){}}
