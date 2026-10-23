@@ -338,6 +338,20 @@ svg{display:block}
 #namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{margin:0!important;padding-top:0!important;padding-bottom:0!important;border-width:0!important;max-height:0!important}
 #namo-portal-root .dock-wrap>.dock-toggle{box-sizing:border-box!important;flex:0 0 22px!important;height:22px!important;min-height:22px!important;margin:0!important}
 </style>
+
+<style id="portal-symmetric-fold-20261023">
+/* Keep identical geometry and a single glass surface throughout both transitions. */
+#namo-portal-root .dock-wrap{isolation:isolate}
+#namo-portal-root .dock-wrap::before{content:"";position:absolute;inset:0 0 22px;z-index:0;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(82,82,82,.58);box-shadow:0 12px 28px rgba(0,0,0,.20);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);pointer-events:none}
+#namo-portal-root .dock-wrap :is(.dock-more,.dock){box-sizing:border-box!important;position:relative!important;z-index:1!important;width:100%!important;max-width:100%!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#namo-portal-root .dock-wrap .dock-more{display:grid!important;grid-template-rows:0fr;max-height:none!important;padding:0 18px!important;opacity:0;transform:none!important;transition:grid-template-rows .32s ease, padding-top .32s ease,padding-bottom .32s ease,opacity .32s ease!important}
+#namo-portal-root .dock-wrap .dock-more-grid{min-height:0;overflow:hidden;grid-template-columns:repeat(8,minmax(0,1fr))!important}
+#namo-portal-root .dock-wrap.dock-expanded .dock-more{grid-template-rows:1fr;max-height:none!important;padding:22px 18px 16px!important;opacity:1;transform:none!important}
+#namo-portal-root .dock-wrap .dock{padding:16px 18px 12px!important;gap:10px!important;border-radius:0!important;transition:none!important}
+#namo-portal-root .dock-wrap .dock-toggle{position:relative;z-index:2}
+@media(max-width:900px){#namo-portal-root .dock-wrap .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(prefers-reduced-motion:reduce){#namo-portal-root .dock-wrap .dock-more{transition:none!important}}
+</style>
 </head>
 <body>
 <!-- QMES operational portal: existing navigation and business data are owned by the parent application. -->
