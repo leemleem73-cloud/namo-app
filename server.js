@@ -14,8 +14,6 @@ require('./attendance-review-safe.js');
 require('./attendance-mail-direct-safe.js');
 require('./attendance-admin-overview-safe.js');
 require('./attendance-qmes-redesign-preload.js');
-require('./mobile-hard-entry-preload.js');
-require('./mobile-static-preload.js');
 require('./member-email-sync-preload.js');
 require('./access-permissions-safe-20260923-v2.js');
 require('./qmes-quality-approval-safe.js');
@@ -304,41 +302,6 @@ try {
 } catch (error) {
   console.error('[QMES] Failed to normalize shell asset URLs:', error);
   process.exit(1);
-}
-
-try {
-  const source = fs.readFileSync(publicRouter, 'utf8');
-  const oldMobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일용 화면 열기"><span aria-hidden="true">📱</span><span>모바일용</span></button>';
-  const mobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-dedicated1")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>';
-  const previousMobileButton = '<button type="button" onClick={()=>window.location.assign("/mobile.html?v=20260903-mobile-button2")} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:"#fff",borderColor:"#bfd0dc",color:"#29485f"}} aria-label="모바일 전용 화면 열기"><span aria-hidden="true">📱</span><span>모바일 전용</span></button>';
-  const talkButton = '<button type="button" onClick={()=>setTalkOpen(value=>!value)} className="relative flex items-center gap-2 px-3.5 py-2 rounded border text-sm font-bold" style={{background:talkOpen?"#e7f2fa":"#fff",borderColor:talkOpen?"#8cb8d4":"#bfd0dc",color:"#29485f"}} aria-label={talkOpen?"NAMO Talk 닫기":"NAMO Talk 열기"} aria-expanded={talkOpen}><span aria-hidden="true">💬</span><span>NAMO Talk</span></button>';
-  let patched = source.replace(oldMobileButton, mobileButton).replace(previousMobileButton, mobileButton);
-  if (!patched.includes(mobileButton)) patched = patched.replace(talkButton, `${mobileButton}\n          ${talkButton}`);
-  if (patched !== source) fs.writeFileSync(publicRouter, patched, 'utf8');
-} catch (error) {
-  console.error('[QMES] Failed to install mobile header shortcut:', error);
-  process.exit(1);
-}
-
-try {
-  const source = fs.readFileSync(publicShellMenu, 'utf8');
-  const oldLabel = 'aria-label="모바일 화면" title="모바일 화면">${mobileSvg}<span>모바일</span>';
-  const newLabel = 'aria-label="모바일 전용" title="모바일 전용">${mobileSvg}<span>모바일 전용</span>';
-  const oldHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{const mobileTarget=findTop('현장입력')||findTop('현장 입력');if(mobileTarget){mobileTarget.click();return;}window.dispatchEvent(new CustomEvent('qmes:navigate-tab',{detail:{tab:'fieldInput',openMenu:null}}));});";
-  const newHandler = "header.querySelector('.qmes-erp-header-mobile').addEventListener('click',()=>{window.location.assign('/mobile.html?v=20260903-mobile-dedicated1');});";
-  const oldSetAccountOpen = "const setAccountOpen=open=>{accountWrap.classList.toggle('is-open',Boolean(open));accountButton.setAttribute('aria-expanded',String(Boolean(open)));};";
-  const newSetAccountOpen = "const setAccountOpen=open=>{const visible=Boolean(open);accountWrap.classList.toggle('is-open',visible);accountButton.setAttribute('aria-expanded',String(visible));accountMenu.style.setProperty('display',visible?'block':'none','important');accountMenu.style.setProperty('visibility',visible?'visible':'hidden','important');accountMenu.style.setProperty('opacity',visible?'1':'0','important');accountMenu.style.setProperty('pointer-events',visible?'auto':'none','important');};";
-  const oldAccountEnter = "accountWrap.addEventListener('mouseenter',()=>setAccountOpen(true));";
-  const newAccountEnter = "let qmesAccountCloseTimer=null;const cancelAccountClose=()=>{if(qmesAccountCloseTimer){clearTimeout(qmesAccountCloseTimer);qmesAccountCloseTimer=null;}};const scheduleAccountClose=()=>{cancelAccountClose();qmesAccountCloseTimer=setTimeout(()=>setAccountOpen(false),420);};accountWrap.addEventListener('mouseenter',()=>{cancelAccountClose();setAccountOpen(true);});";
-  const oldAccountLeave = "accountWrap.addEventListener('mouseleave',()=>setAccountOpen(false));";
-  const newAccountLeave = "accountWrap.addEventListener('mouseleave',scheduleAccountClose);accountMenu.addEventListener('mouseenter',()=>{cancelAccountClose();setAccountOpen(true);});accountMenu.addEventListener('mouseleave',scheduleAccountClose);";
-  const oldAccountClick = "accountButton.addEventListener('click',event=>{event.stopPropagation();setAccountOpen(!accountWrap.classList.contains('is-open'));});";
-  const newAccountClick = "accountButton.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();cancelAccountClose();setAccountOpen(!accountWrap.classList.contains('is-open'));});";
-  let patched = source.replace(oldLabel, newLabel).replace(oldHandler, newHandler);
-  patched = patched.replace(oldSetAccountOpen, newSetAccountOpen).replace(oldAccountEnter, newAccountEnter).replace(oldAccountLeave, newAccountLeave).replace(oldAccountClick, newAccountClick);
-  if (patched !== source) fs.writeFileSync(publicShellMenu, patched, 'utf8');
-} catch (error) {
-  console.warn('[QMES] Sidebar UI normalization skipped:', error.message);
 }
 
 fs.readFile = function qmesEnterpriseDashboardReadFile(file, ...args) {
