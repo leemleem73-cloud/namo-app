@@ -329,7 +329,7 @@
    });
   });
  }
- document.addEventListener('pointerdown',e=>{if(popup&&!popup.contains(e.target)&&e.target!==anchor)close();},true);
+ document.addEventListener('pointerdown',e=>{if(popup&&!popup.contains(e.target)&&e.target!==anchor&&!e.target.closest('#navToggle'))close();},true);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Tab')close();});
  document.addEventListener('click',e=>{if(e.target.closest('.work-form .nwp-range-button'))follow();},true);
  function boot(){const root=document.getElementById('mainWorkspace');if(!root)return;let queued=false;const scan=()=>{queued=false;root.querySelectorAll('.work-form').forEach(install);};new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(scan);}}).observe(root,{childList:true,subtree:true});scan();}
