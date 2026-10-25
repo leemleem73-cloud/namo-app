@@ -4476,6 +4476,7 @@ function editIncomingRecord(section,row){
     <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>입고 중량 (kg)</label><input id="iqcEditIncomingQty" type="number" min="0" step="any" inputmode="decimal" value="${iqcIncomingWeight(row.incoming_qty)??''}" placeholder="입고 중량 입력"></div>
     <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label for="iqcEditResult">검사결과</label><input id="iqcEditResult" type="text" value="${String(iqcJudge(row)).replace(/"/g,'&quot;')}" readonly></div>
     <div class="form-item full"><label>비고</label><textarea id="iqcEditRemark" placeholder="비고 입력">${remark}</textarea></div>
   </div></div>`;
   openModal('수입검사 상세',amaranthScreen('incoming',html,'edit','수입검사 상세',[...section.querySelectorAll('.data-row')].find(r=>String(r.dataset.iqcId)===String(row.id))),'<button class="btn" id="modalCancel" type="button">목록</button><button class="btn primary" id="iqcEditSave" type="button">저장</button>');
