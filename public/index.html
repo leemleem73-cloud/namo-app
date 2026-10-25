@@ -4452,9 +4452,17 @@ function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
   try{localStorage.setItem(INCOMING_STORE_KEY,JSON.stringify(list));}catch(_){}
 }
-function updateIqcRemarkItems(row,remark){
+function iqcInspectionDate(row){
+  const metadata=iqcItems(row).find(x=>String(x?.name||'').trim()==='비고');
+  const value=metadata?.inspectionDate||row.inspection_date||row.inspectedAt||row.inspectDate||row.date;
+  const date=iqcDateText(value);
+  return date==='-'?'':date;
+}
+function updateIqcRemarkItems(row,remark,inspectionDate=iqcInspectionDate(row)){
+  const previous=iqcItems(row).find(x=>String(x?.name||'').trim()==='비고')||{};
   const items=iqcItems(row).filter(x=>String(x?.name||'').trim()!=='비고');
-  items.push({name:'비고',value:String(remark||''),judge:''});
+  // Persist the separate inspection date in existing JSON metadata without changing receipt date.
+  items.push({...previous,name:'비고',value:String(remark||''),judge:'',inspectionDate});
   return items;
 }
 function editIncomingRecord(section,row){
@@ -4462,6 +4470,7 @@ function editIncomingRecord(section,row){
   const remark=iqcRemark(row);
   const html=`<div class="form-grid iqc-edit-settings-frame"><div class="iqc-edit-settings-grid">
     <div class="form-item"><label>입고일자</label><input id="iqcEditDate" type="date" value="${date}"></div>
+    <div class="form-item"><label>검사일자</label><input id="iqcEditInspectionDate" type="date" value="${iqcInspectionDate(row)}" required></div>
     <div class="form-item"><label>공급업체</label><input id="iqcEditSupplier" type="text" value="${String(row.supplier||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>품목명</label><input id="iqcEditItem" type="text" value="${String(row.item||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
@@ -4507,12 +4516,13 @@ function editIncomingRecord(section,row){
       unitWeight:row.unit_weight,
       calculatedWeight:row.calculated_weight,
       barcodeQty:row.barcode_qty,
-      items:updateIqcRemarkItems(row,document.getElementById('iqcEditRemark')?.value||''),
+      items:updateIqcRemarkItems(row,document.getElementById('iqcEditRemark')?.value||'',document.getElementById('iqcEditInspectionDate')?.value||''),
       signWriter:row.sign_writer||{},
       signReviewer:row.sign_reviewer||{},
       signApprover:row.sign_approver||{}
     };
     if(!body.date||!body.lot||!body.supplier||!body.item||!body.inspector){toast('입고일자, 공급업체, 품목명, LOT, 검사자를 입력해 주세요.');return;}
+    if(!document.getElementById('iqcEditInspectionDate')?.value){toast('검사일자를 입력해 주세요.');return;}
     if(body.incomingQty===null){toast('입고 중량(kg)을 0보다 큰 숫자로 입력해 주세요.');return;}
     try{
       const r=await fetch('/api/iqc/'+encodeURIComponent(row.id),{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
