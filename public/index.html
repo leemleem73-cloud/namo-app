@@ -7799,7 +7799,7 @@ document.getElementById('orgBtn')?.addEventListener('click',()=>{
     window.addEventListener('resize',render,{passive:true});
   });
 });
-document.getElementById('guideBtn')?.addEventListener('click',()=>window.open('/qmes-user-guide.html','_blank','noopener'));
+document.getElementById('guideBtn')?.addEventListener('click',()=>{ const w=window.open('/qmes-user-guide.html','qmesUserGuide','popup=yes,width=1500,height=900,resizable=yes,scrollbars=yes'); if(w) w.opener=null; });
 
 loadQualityNotifications();
 document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
