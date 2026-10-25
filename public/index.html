@@ -7422,10 +7422,10 @@ function openNewForm(id,editOrder=null){
         <div class="form-item"><label>작업지시번호</label><input id="workOrderNo" type="text" value="자동생성" readonly></div>
         <div class="form-item"><label>작업일자</label><input type="date"></div>
         <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력"></div>
-        <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 직접 입력"></div>
+        <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 선택 또는 직접 입력" list="workProductChoices"><datalist id="workProductChoices"><option value="NBA20HM05"></datalist></div>
         <div class="form-item"><label>생산 LOT NO</label><input type="text" placeholder="생산 LOT NO 입력"></div>
         <div class="form-item"><label>설비명</label><select><option>HSM</option></select></div>
-        <div class="form-item"><label>작업자</label><input type="text" placeholder="작업자 입력"></div>
+        <div class="form-item"><label>작업자</label><input type="text" placeholder="작업자 선택 또는 직접 입력" list="workOperatorChoices"><datalist id="workOperatorChoices"><option value="박도훈"><option value="문지훈"></datalist></div>
         <div class="form-item"><label>계획수량</label><input id="workPlanQty" type="number" min="0" step="0.01" placeholder="숫자만 입력"></div>
         <div class="form-item"><label>작업 시작일</label><input type="date"></div>
         <div class="form-item"><label>작업 종료일</label><input type="date"></div>
@@ -7436,7 +7436,7 @@ function openNewForm(id,editOrder=null){
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
         <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
         <table class="work-material-table" id="workMaterialTable"><thead><tr><th class="no">NO</th><th class="name">원료명</th><th class="lot">원료 LOT NO</th><th class="plan">계획투입량(kg)</th><th class="actual">실투입량(kg)</th><th class="ratio">투입비율(%)(자동계산)</th><th class="act">관리</th></tr></thead><tbody></tbody></table>
-        <div class="work-note">※ 원료 LOT NO는 직접 입력하며 수입검사에 등록된 LOT와 일치하도록 입력해 주세요. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
+        <div class="work-note">※ 원료 LOT NO는 수입검사 내역에서 선택하거나 직접 입력할 수 있습니다. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
       </div></div>
 
       <div class="work-section"><div class="work-section-title">작업지시사항</div><div class="work-section-body"><div class="form-item"><textarea id="namoWorkInstructions" placeholder="작업 시 주의사항 및 특이사항 입력"></textarea></div></div></div>
@@ -7831,10 +7831,10 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261014-totals-cols3"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-iqc-lots1"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
-<script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261014-compact490"></script>
+<script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261026-fit-today1"></script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
   'use strict';

@@ -20,6 +20,10 @@
     '#mainWorkspace .nwp-range-button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;height:36px;padding:0 11px;border:1px solid #c6d5e5;border-radius:6px;background:#fff;color:#233e5b;cursor:pointer;text-align:left;font-size:12px;font-weight:600}',
     '#mainWorkspace .nwp-range-button:focus-visible{outline:2px solid #8abef1;outline-offset:1px}',
     '#mainWorkspace .nwp-range-button .nwp-range-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    '#mainWorkspace .work-form[data-nwp-period-unified="1"] .work-basic-grid .nwp-range-button{gap:4px!important;padding:4px 7px!important}',
+    '#mainWorkspace .nwp-range-button .nwp-range-value{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:11px!important;line-height:1.2!important;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}',
+    '#nwp-period-popup-20261014 .nwp-days button.nwp-today{background:#fff0cc;color:#875700;border-color:#e8ae39;font-weight:800}',
+    '#nwp-period-popup-20261014 .nwp-days button.nwp-today.nwp-selected{background:#1678c5;color:#fff;box-shadow:inset 0 0 0 2px #f4bd48}',
     '#mainWorkspace .nwp-range-button .nwp-range-icon{font-size:19px;font-weight:400;color:#7087a0;flex-shrink:0}',
     '#nwp-period-popup-20261014{position:fixed;z-index:2147483000;box-sizing:border-box;width:min(490px,calc(100vw - 20px));max-height:calc(100vh - 16px);overflow:auto;padding:11px;background:#fff;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 12px 28px rgba(24,47,77,.2);color:#263d55;font:12px "Malgun Gothic",Arial,sans-serif}',
     '#nwp-period-popup-20261014[hidden]{display:none!important}',
@@ -103,6 +107,8 @@
           (function(day){
             var selected=new Date(year,monthNo,day),key=fmt(selected);
             var button=mk('button','',day);button.type='button';
+            button.setAttribute('aria-label',key);
+            if(key===new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})){button.classList.add('nwp-today');button.setAttribute('aria-current','date');}
             if((a&&key===fmt(a))||(b&&key===fmt(b)))button.classList.add('nwp-selected');
             else if(a&&b&&selected>a&&selected<b)button.classList.add('nwp-between');
             button.onclick=function(){
