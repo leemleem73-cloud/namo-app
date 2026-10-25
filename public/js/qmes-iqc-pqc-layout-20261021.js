@@ -28,6 +28,11 @@
       fields[index].remove();
       info.append(cell);
     }
+    // Keep each date input with its label and existing save binding.
+    const dateCells = [...info.querySelectorAll('.am-inline-cell')];
+    const receiptDate = dateCells.find(cell => cell.querySelector('label')?.textContent.trim() === '입고일자');
+    const inspectionDate = dateCells.find(cell => cell.querySelector('label')?.textContent.trim() === '검사일자');
+    if (receiptDate && inspectionDate) info.prepend(receiptDate, inspectionDate);
     const summary = root.querySelector('.std-summary-grid');
     [...summary.querySelectorAll('.std-summary-card')].slice(0, 2).forEach((card, index) => {
       const cell = document.createElement('div');
