@@ -119,6 +119,10 @@
       totalRow.appendChild(el('td','nwm-summary-actions'));
       footer.appendChild(totalRow);
       table.appendChild(footer);
+      const bottom=el('div','nwm-bottom-actions');
+      wrap.after(bottom);
+      const add=form.querySelector('#workRowAdd');
+      if(add)bottom.append(add);
 
 
       // Event delegation survives additions/deletions and does not replace
@@ -246,4 +250,18 @@
     scan();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+
+/* One outer section border; a single table frame and bottom-right row action. */
+(function(){
+ const style=document.createElement('style');
+ style.textContent=`
+ #mainWorkspace .work-form .nwm-bottom-actions{display:flex;justify-content:flex-end;padding-top:10px}
+ #mainWorkspace .work-form .work-section{overflow:hidden}
+ #mainWorkspace .work-form .work-section>.work-section-body{border:0!important;border-radius:0!important;box-shadow:none!important}
+ #mainWorkspace .work-form .work-basic-grid{border:0!important;border-radius:0!important;box-shadow:none!important}
+ #mainWorkspace .work-form .nwm-material .nwm-table-wrap{border:1px solid #d6e1ed!important;border-radius:3px!important;box-shadow:none!important}
+ #mainWorkspace .work-form .nwm-material #workMaterialTable{border:0!important;border-radius:0!important;box-shadow:none!important}
+ #mainWorkspace .work-form .nwm-material .work-material-tools{border-radius:3px!important;box-shadow:none!important}
+ `;document.head.append(style);
 })();
