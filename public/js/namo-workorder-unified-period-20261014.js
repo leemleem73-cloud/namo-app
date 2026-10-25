@@ -236,6 +236,9 @@
  .nwo-field-popup *{box-sizing:border-box}
  .nwo-field-popup button{font:inherit;color:#263d55!important;background:#fff!important;border:0;border-radius:3px;cursor:pointer}
  .nwo-field-popup button:hover,.nwo-field-popup button:focus-visible{background:#eaf4ff!important;outline:1px solid #75afe3}
+ .nwo-multi-choice{display:flex;align-items:center;gap:8px;padding:8px;cursor:pointer;color:#263d55;background:white}
+ .nwo-multi-choice input{width:14px;height:14px;margin:0;accent-color:#1678c5}
+ .nwo-cal-head strong,#nwp-period-popup-20261014 .nwp-month-head strong{font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-size:12px!important;font-weight:700!important;letter-spacing:0!important}
  .nwo-choice{display:block;width:100%;text-align:left;padding:8px;overflow-wrap:anywhere;white-space:normal}
  .nwo-cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
  .nwo-cal-head button{width:25px;height:25px;font-size:18px}
@@ -278,6 +281,23 @@
  function drawChoices(){
   if(!popup||mode!=='choice')return;
   const options=JSON.parse(anchor.dataset.nwoChoices||'[]'),q=clean(anchor.value).toLowerCase();
+  if(anchor.dataset.nwoMulti==='1'){
+   const selected=anchor.value.split(',').map(clean).filter(Boolean);
+   popup.replaceChildren();
+   [...new Set([...options,...selected])].forEach(value=>{
+    const label=document.createElement('label');label.className='nwo-multi-choice';
+    const check=document.createElement('input');check.type='checkbox';check.checked=selected.includes(value);
+    check.addEventListener('change',()=>{
+     const values=new Set(anchor.value.split(',').map(clean).filter(Boolean));
+     if(check.checked)values.add(value);else values.delete(value);
+     anchor.value=[...values].join(', ');
+     anchor.dispatchEvent(new Event('input',{bubbles:true}));anchor.dispatchEvent(new Event('change',{bubbles:true}));
+    });
+    label.append(check,document.createTextNode(value));popup.append(label);
+   });
+   const done=document.createElement('button');done.type='button';done.className='nwo-choice';done.textContent='선택 완료';done.onclick=close;popup.append(done);
+   return;
+  }
   popup.replaceChildren();activeIndex=-1;
   options.filter(value=>!q||value.toLowerCase().includes(q)).forEach(value=>{
    const b=document.createElement('button');b.type='button';b.className='nwo-choice';b.setAttribute('role','option');b.textContent=value;b.onclick=()=>set(value);popup.append(b);
@@ -315,6 +335,7 @@
   }
   form.querySelectorAll('input[list="workProductChoices"],input[list="workOperatorChoices"]').forEach(el=>{
    const values=[...document.getElementById(el.getAttribute('list')).options].map(o=>o.value);
+   if(el.getAttribute('list')==='workOperatorChoices')el.dataset.nwoMulti='1';
    el.dataset.nwoChoices=JSON.stringify(values);el.removeAttribute('list');el.setAttribute('role','combobox');el.setAttribute('aria-haspopup','listbox');el.setAttribute('aria-expanded','false');el.setAttribute('aria-autocomplete','list');
    const open=()=>{ensure(el,'choice');drawChoices();};
    el.addEventListener('focus',open);el.addEventListener('click',()=>{if(anchor!==el||!popup)open();});
