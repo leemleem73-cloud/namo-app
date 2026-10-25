@@ -132,6 +132,85 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .workVideoSim .call.activeStep{transform:scale(1.2);box-shadow:0 0 0 7px rgba(239,68,68,.18),0 6px 18px rgba(239,68,68,.32);background:#ef2f2f}
 .workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #d6e1ec;color:#3e6185;font-size:11px;font-weight:900}
 </style>
+
+<style id="premium-guide-v1">
+:root{
+  --ink:#172033;--muted:#7d8aa2;--line:#e7edf5;--panel:#ffffff;
+  --blue:#2f73ff;--cyan:#25b8e6;--soft:#f6f9fd;--navy:#0f1c35;
+  --shadow:0 12px 34px rgba(35,64,112,.08);
+}
+body{background:#f7f9fc;color:var(--ink)}
+.top{
+  height:72px;padding:0 40px;
+  background:linear-gradient(105deg,#3f66f5 0%,#2f8ef2 52%,#27b7dd 100%);
+  box-shadow:0 8px 28px rgba(41,89,176,.16)
+}
+.brand{font-size:22px;letter-spacing:-.4px}
+.nav{gap:34px}.nav button{font-size:14px;opacity:.92}.nav button.active{opacity:1}
+.manual{grid-template-columns:276px minmax(0,1fr);background:#fff}
+.side{
+  background:linear-gradient(180deg,#fbfdff 0%,#f7f9fd 100%);
+  border-right:1px solid #e5ebf3;padding:18px 14px 26px;
+  box-shadow:6px 0 24px rgba(33,55,95,.025)
+}
+.menuSearch{
+  height:42px;border:1px solid #dfe6ef;border-radius:10px;background:#fff;
+  padding:0 14px;margin:0 4px 14px;width:calc(100% - 8px);
+  box-shadow:0 4px 14px rgba(32,53,87,.04);outline:none
+}
+.menuSearch:focus{border-color:#9fc3ff;box-shadow:0 0 0 4px rgba(47,115,255,.08)}
+.section{border-top:0;padding-top:2px}
+.item{
+  margin:3px 4px;padding:11px 14px;border-radius:10px;
+  color:#657187;font-size:14px;transition:.18s ease;border:1px solid transparent
+}
+.item:hover{background:#fff;color:#275ea8;border-color:#e5edf7;transform:translateX(2px)}
+.item.active{
+  background:linear-gradient(90deg,#edf4ff,#f4f9ff);
+  color:#2466cb;font-weight:800;border-color:#d9e8ff;
+  box-shadow:0 6px 16px rgba(52,103,184,.08);position:relative
+}
+.item.active:before{
+  content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;
+  background:linear-gradient(#2f73ff,#29b9e7)
+}
+.article{padding:28px 46px 80px;background:#fff;max-width:none}
+.videoGuide{
+  max-width:1180px;border:1px solid #e3eaf3;border-radius:16px;padding:18px;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+  box-shadow:var(--shadow)
+}
+.videoGuideHead{display:flex;align-items:center;justify-content:space-between;padding:0 2px 14px}
+.videoGuideHead h3{margin:0;color:#22334d;font-size:17px;letter-spacing:-.2px}
+.videoGuideHead span{color:#98a4b6;font-size:12px}
+.videoGuideGrid{gap:12px}
+.videoCard{
+  border:1px solid #e1e8f1!important;border-radius:12px!important;background:#fff!important;
+  overflow:hidden;box-shadow:0 6px 18px rgba(38,65,104,.05)!important;
+  transition:.2s ease!important
+}
+.videoCard:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(38,65,104,.11)!important;border-color:#cfe0f8!important}
+.videoThumb{
+  min-height:96px!important;background:linear-gradient(145deg,#eef5ff 0%,#eaf6ff 55%,#f4fbff 100%)!important;
+  display:grid!important;place-items:center!important
+}
+.videoPlay{
+  width:40px!important;height:40px!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;color:#fff!important;font-size:16px!important;
+  background:linear-gradient(135deg,#2f73ff,#24aee6)!important;
+  box-shadow:0 8px 18px rgba(47,115,255,.28)!important
+}
+.videoCardBody{padding:12px 12px 13px!important;text-align:left!important}
+.videoCardBody b{display:block;color:#24334a;font-size:13px;margin-bottom:4px}
+.videoCardBody small{color:#8e9aad;font-size:11px}
+.article h2{font-size:25px;color:#172033;letter-spacing:-.6px;margin-top:34px}
+.crumb{color:#9ba6b7}.lead{color:#2f3e55}
+.guideShot{border:1px solid #e4eaf2;border-radius:14px;background:#fbfcfe;padding:18px;box-shadow:0 8px 24px rgba(34,58,96,.05)}
+@media(max-width:900px){
+  .manual.active{grid-template-columns:220px minmax(0,1fr)}
+  .article{padding:24px}.videoGuideGrid{grid-template-columns:repeat(2,1fr)!important}
+}
+</style>
 </head>
 <body>
 <header class="top"><div class="brand">NAMO QMES 이용가이드</div><nav class="nav"><button id="homeTab" class="active">홈</button><button id="manualTab">온라인 매뉴얼</button><button id="qaTab">Q&A</button></nav></header>
