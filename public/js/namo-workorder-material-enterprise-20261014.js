@@ -158,3 +158,92 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+
+/* Work-order raw LOT choices from the shared IQC ledger. */
+(function(){
+  'use strict';
+  let serial=0;
+  const text=value=>String(value??'').trim();
+  function judge(row){
+    let items=row.items_json||[];
+    try{if(typeof items==='string')items=JSON.parse(items);}catch(_){items=[];}
+    const master=Array.isArray(items)?items.find(x=>text(x?.name).includes('판정')):null;
+    return text(master?.judge||master?.value||row.judge||'');
+  }
+  function candidates(rows,name){
+    const valid=rows.filter(row=>!row.deleted&&text(row.lot));
+    const matching=valid.filter(row=>text(row.item).toUpperCase().includes(text(name).toUpperCase()));
+    return name&&name!=='__manual__'&&matching.length?matching:valid;
+  }
+  function drawRow(row,state){
+    const input=row.querySelector('.material-lot-manual'),name=row.querySelector('.material-name-select');
+    if(!input||!name)return;
+    let select=row.querySelector('.nwm-iqc-lot-select');
+    if(!select){
+      select=document.createElement('select');select.className='nwm-iqc-lot-select';
+      select.setAttribute('aria-label','수입검사 원료 LOT 선택');
+      select.style.cssText='width:100%;min-width:0;margin-bottom:5px;font-size:11px';
+      input.parentNode.insertBefore(select,input);
+      select.addEventListener('change',()=>{
+        if(select.value){input.value=select.value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+      });
+    }
+    const middle=name.value==='중간배치';
+    select.hidden=middle;select.style.display=middle?'none':'block';
+    if(middle)return;
+    const key=state.version+'|'+name.value+'|'+input.value;
+    if(select.dataset.choiceKey===key)return;
+    select.dataset.choiceKey=key;
+    select.replaceChildren();
+    select.add(new Option(state.error?'수입검사 조회 실패 · 새로고침':state.loading?'수입검사 조회 중…':'수입검사 LOT 선택 / 직접 입력',''));
+    const seen=new Set();
+    candidates(state.rows,name.value).forEach(record=>{
+      const lot=text(record.lot);if(seen.has(lot))return;seen.add(lot);
+      const label=[lot,record.item,record.supplier,judge(record)].map(text).filter(Boolean).join(' · ');
+      select.add(new Option(label,lot));
+    });
+    if(input.value&&!seen.has(input.value))select.add(new Option(input.value+' (기존 / 직접 입력)',input.value));
+    select.value=input.value||'';
+  }
+  function draw(form,state){form.querySelectorAll('#workMaterialTable tbody tr').forEach(row=>drawRow(row,state));}
+  async function load(form,state){
+    if(state.loading)return;
+    state.loading=true;state.error=false;state.version++;draw(form,state);
+    try{
+      await window.qmesAuthDataReady?.wait();
+      const response=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store'});
+      const result=await response.json();
+      if(!response.ok||!result.success||!Array.isArray(result.data))throw Error(result.message||'조회 실패');
+      state.rows=result.data;
+    }catch(error){state.error=true;console.warn('[work IQC LOT]',error);}
+    finally{state.loading=false;state.version++;if(form.isConnected)draw(form,state);}
+  }
+  function install(form){
+    if(!form.querySelector('#workMaterialTable'))return;
+    let state=form._nwmIqcLot;
+    if(!state){
+      state=form._nwmIqcLot={rows:[],version:++serial,loading:false,error:false};
+      const tools=form.querySelector('.work-material-tools');
+      const refresh=document.createElement('button');
+      refresh.type='button';refresh.className='btn';refresh.textContent='수입검사 LOT 새로고침';
+      refresh.onclick=()=>load(form,state);tools?.append(refresh);
+      form.addEventListener('change',event=>{
+        const row=event.target.closest('#workMaterialTable tbody tr');
+        if(row)drawRow(row,state);
+      });
+      form.addEventListener('input',event=>{
+        if(event.target.matches('.material-lot-manual'))drawRow(event.target.closest('tr'),state);
+      });
+      load(form,state);
+    }
+    draw(form,state);
+  }
+  function boot(){
+    const root=document.getElementById('mainWorkspace');if(!root)return;
+    let queued=false;
+    const scan=()=>{queued=false;root.querySelectorAll('.work-form').forEach(install);};
+    new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(scan);}}).observe(root,{subtree:true,childList:true});
+    scan();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
