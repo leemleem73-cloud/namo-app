@@ -173,205 +173,10 @@ svg{display:block}
 #namo-portal-root[data-portal-admin="1"] .dock [data-action="직원관리"]{display:flex!important}
 
 
-#namo-portal-root .dock-more .portal-admin-item{display:none!important}
-#namo-portal-root[data-portal-admin="1"] .dock-more .portal-admin-item{display:flex!important}
-
 /* QMES dashboard background replacement, 2026-10-20. Only portal hero is affected. */
-.stage{background-color:transparent!important;background-image:linear-gradient(90deg,rgba(10,42,68,.46),rgba(10,41,64,.16) 56%,rgba(6,34,58,.28)),url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920")!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
+.stage{background-color:#123651!important;background-image:linear-gradient(90deg,rgba(10,42,68,.46),rgba(10,41,64,.16) 56%,rgba(6,34,58,.28)),url("https://www.carburos.com/-/media/images/1440x810/masthead/909216872-refinery-16x9.jpg?as=0&hash=96E09C80D89D32FDED27EF7959169D06&w=1439")!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
 .stage>.scene{display:none!important}
 .stage::before{background:linear-gradient(180deg,rgba(6,28,48,.10),rgba(5,33,54,.18) 42%,rgba(4,23,41,.32))!important}
-
-/* QMES notice panel: match white task overview card, 2026-10-20 */
-.notice-card{background:#fff!important;color:#243c50!important;border:1px solid #e0e8ef!important;box-shadow:0 12px 30px rgba(8,30,46,.13)!important;backdrop-filter:none!important}
-.notice-card .head{color:#243c50!important}
-.notice-card .head .mini-pill{color:#52758a!important;border-color:#d7e6ee!important;background:#f4f9fc!important}
-.notice-card p,.notice-card p span{color:#617789!important}
-.notice-card button,.notice-card button svg{color:#267899!important}
-
-/* QMES Amarans-style dock expand-all, 2026-10-23 */
-#namo-portal-root .dock-wrap{transition:bottom .28s ease}
-#namo-portal-root .dock{position:relative;z-index:2;transition:border-radius .22s ease}
-#namo-portal-root .dock-toggle{
-  width:54px;height:22px;margin-top:-2px;border:1px solid rgba(255,255,255,.45);border-top:0;border-radius:0 0 12px 12px;
-  background:rgba(64,74,84,.78);color:#fff;display:grid;place-items:center;cursor:pointer;
-  box-shadow:0 8px 18px rgba(5,23,38,.22);backdrop-filter:blur(10px);transition:background .18s
-}
-#namo-portal-root .dock-toggle:hover{background:rgba(38,48,58,.9)}
-#namo-portal-root .dock-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .28s ease}
-#namo-portal-root .dock-more{
-  box-sizing:border-box;width:747px;max-width:min(92vw,747px);max-height:0;opacity:0;overflow:hidden;pointer-events:none;
-  margin-bottom:-9px;padding:0 18px;border:0 solid rgba(255,255,255,.35);border-radius:22px 22px 0 0;
-  background:rgba(58,62,65,.82);backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(5,23,38,.32);
-  transform:translateY(16px);transition:max-height .32s ease,opacity .22s ease,transform .32s ease,padding .32s ease,border-width .2s ease
-}
-#namo-portal-root .dock-more-grid{display:grid;grid-template-columns:repeat(8,minmax(72px,1fr));gap:18px 10px}
-#namo-portal-root .dock-more .app{width:100%;min-width:0;color:#fff}
-#namo-portal-root .dock-more .app:hover{background:rgba(255,255,255,.10)}
-#namo-portal-root .dock-more .app .title{color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35)}
-#namo-portal-root .dock-wrap.dock-expanded{bottom:18px}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{max-height:360px;opacity:1;pointer-events:auto;padding:22px 18px 25px;border-width:1px;transform:translateY(0)}
-#namo-portal-root .dock-wrap.dock-expanded .dock{border-radius:0 0 23px 23px}
-#namo-portal-root .dock-wrap.dock-expanded .dock-toggle svg{transform:rotate(180deg)}
-@media(max-width:900px){
- #namo-portal-root .dock-more{width:min(94vw,620px);box-sizing:border-box}
- #namo-portal-root .dock-more-grid{grid-template-columns:repeat(4,minmax(68px,1fr))}
- #namo-portal-root .dock-wrap.dock-expanded .dock-more{max-height:560px}
-}
-@media(prefers-reduced-motion:reduce){
- #namo-portal-root .dock-wrap,#namo-portal-root .dock-more,#namo-portal-root .dock-toggle svg{transition:none!important}
-}
-
-
-/* QMES dock labels: crisp white like Amaranth10, 2026-10-23 */
-#namo-portal-root .dock .app,
-#namo-portal-root .dock-more .app,
-#namo-portal-root .dock .app .title,
-#namo-portal-root .dock-more .app .title{
-  color:#fff!important;
-  opacity:1!important;
-}
-#namo-portal-root .dock .app .title,
-#namo-portal-root .dock-more .app .title{
-  font-weight:800!important;
-  font-size:11.5px!important;
-  line-height:1.25!important;
-  letter-spacing:-.02em!important;
-  text-shadow:0 1px 3px rgba(0,0,0,.58)!important;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  text-rendering:optimizeLegibility;
-}
-#namo-portal-root .dock .app:hover .title,
-#namo-portal-root .dock-more .app:hover .title{
-  color:#fff!important;
-}
-
-
-/* QMES dock unified deep blue charcoal, 2026-10-23 */
-#namo-portal-root .dock,
-#namo-portal-root .dock-more{
-  background:rgba(42,52,64,.72)!important;
-  border-color:rgba(255,255,255,.16)!important;
-  box-shadow:0 12px 30px rgba(0,0,0,.22)!important;
-  backdrop-filter:blur(16px)!important;
-}
-#namo-portal-root .dock .app,
-#namo-portal-root .dock-more .app,
-#namo-portal-root .dock .app .title,
-#namo-portal-root .dock-more .app .title{
-  color:#fff!important;
-}
-
-
-/* QMES dock Amaranth-like neutral glass, 2026-10-23 */
-#namo-portal-root .dock,
-#namo-portal-root .dock-more{
-  background:rgba(82,82,82,.58)!important;
-  border-color:rgba(255,255,255,.14)!important;
-  box-shadow:0 12px 28px rgba(0,0,0,.20)!important;
-  backdrop-filter:blur(14px)!important;
-  -webkit-backdrop-filter:blur(14px)!important;
-}
-#namo-portal-root .dock .app,
-#namo-portal-root .dock-more .app,
-#namo-portal-root .dock .app .title,
-#namo-portal-root .dock-more .app .title{
-  color:rgba(255,255,255,.84)!important;
-  opacity:1!important;
-}
-#namo-portal-root .dock .app .title,
-#namo-portal-root .dock-more .app .title{
-  font-weight:700!important;
-  text-shadow:0 1px 2px rgba(0,0,0,.26)!important;
-}
-
-
-/* QMES expanded dock seamless join, 2026-10-23 */
-#namo-portal-root .dock-wrap.dock-expanded{
-  gap:0!important;
-}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{
-  margin-bottom:0!important;
-  border-bottom:0!important;
-  border-radius:22px 22px 0 0!important;
-  box-shadow:0 12px 28px rgba(0,0,0,.20)!important;
-}
-#namo-portal-root .dock-wrap.dock-expanded .dock{
-  box-sizing:border-box;
-  width:747px;
-  max-width:min(92vw,747px);
-  margin-top:0!important;
-  border-top:0!important;
-  border-radius:0 0 22px 22px!important;
-  box-shadow:none!important;
-}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more,
-#namo-portal-root .dock-wrap.dock-expanded .dock{
-  background:rgba(82,82,82,.58)!important;
-}
-@media(max-width:900px){
-  #namo-portal-root .dock-wrap.dock-expanded .dock{
-    width:min(94vw,620px);
-  }
-}
-
-</style>
-
-<style id="portal-aligned-seamless-menu-20261023">
-#namo-portal-root .dock-wrap.dock-expanded{width:var(--portal-search-width,690px)!important;max-width:calc(100% - 24px)!important;left:var(--portal-search-center,50%)!important;gap:0!important;isolation:isolate}
-#namo-portal-root .dock-wrap.dock-expanded::before{content:"";position:absolute;inset:0 0 22px;z-index:0;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(82,82,82,.58);box-shadow:0 12px 28px rgba(0,0,0,.20);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);pointer-events:none}
-#namo-portal-root .dock-wrap.dock-expanded :is(.dock-more,.dock){box-sizing:border-box!important;position:relative!important;z-index:1!important;width:100%!important;max-width:100%!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{padding:22px 18px 16px!important;border-radius:22px 22px 0 0!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock{padding:16px 18px 12px!important;border-radius:0 0 22px 22px!important;gap:10px!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock .app{flex:1;min-width:0;width:auto}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
-#namo-portal-root .dock-wrap.dock-expanded .dock-toggle{position:relative;z-index:2;margin-top:0!important}
-@media(max-width:900px){#namo-portal-root .dock-wrap.dock-expanded .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-</style>
-
-<style id="portal-stable-dock-anchor-20261023">
-/* Keep the same search-aligned footprint and bottom anchor in both states. */
-#namo-portal-root .dock-wrap,#namo-portal-root .dock-wrap.dock-expanded{box-sizing:border-box!important;width:var(--portal-search-width,690px)!important;max-width:calc(100% - 24px)!important;left:var(--portal-search-center,50%)!important;bottom:18px!important;gap:0!important;transition:none!important}
-#namo-portal-root .dock-wrap>.dock{box-sizing:border-box!important;width:100%!important;max-width:100%!important;display:flex!important;justify-content:center!important;gap:10px!important;padding:16px 18px 12px!important}
-#namo-portal-root .dock-wrap>.dock .app{flex:1;min-width:0!important;width:auto!important}
-#namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{margin:0!important;padding-top:0!important;padding-bottom:0!important;border-width:0!important;max-height:0!important}
-#namo-portal-root .dock-wrap>.dock-toggle{box-sizing:border-box!important;flex:0 0 22px!important;height:22px!important;min-height:22px!important;margin:0!important}
-</style>
-
-<style id="portal-symmetric-fold-20261023">
-/* Keep identical geometry and a single glass surface throughout both transitions. */
-#namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{max-height:none!important}
-#namo-portal-root .dock-wrap{isolation:isolate}
-#namo-portal-root .dock-wrap::before{content:"";position:absolute;inset:0 0 22px;z-index:0;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(82,82,82,.58);box-shadow:0 12px 28px rgba(0,0,0,.20);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);pointer-events:none}
-#namo-portal-root .dock-wrap :is(.dock-more,.dock){box-sizing:border-box!important;position:relative!important;z-index:1!important;width:100%!important;max-width:100%!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-#namo-portal-root .dock-wrap .dock-more{display:grid!important;grid-template-rows:0fr;max-height:none!important;padding:0 18px!important;opacity:0;transform:none!important;transition:grid-template-rows .32s ease, padding-top .32s ease,padding-bottom .32s ease,opacity .32s ease!important}
-#namo-portal-root .dock-wrap .dock-more-grid{min-height:0;overflow:hidden;grid-template-columns:repeat(8,minmax(0,1fr))!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{grid-template-rows:1fr;max-height:none!important;padding:22px 18px 16px!important;opacity:1;transform:none!important}
-#namo-portal-root .dock-wrap .dock{padding:16px 18px 12px!important;gap:10px!important;border-radius:0!important;transition:none!important}
-#namo-portal-root .dock-wrap .dock-toggle{position:relative;z-index:2}
-@media(max-width:900px){#namo-portal-root .dock-wrap .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
-@media(prefers-reduced-motion:reduce){#namo-portal-root .dock-wrap .dock-more{transition:none!important}}
-</style>
-
-<style id="portal-no-expanded-duplicate-row-20261023">
-#namo-portal-root .dock-wrap.dock-expanded>.dock{display:none!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{border-radius:22px!important;padding-bottom:22px!important}
-</style>
-
-<style id="portal-one-menu-list-20261023">
-/* One set of tiles in both states: reveal only the additional row. */
-#namo-portal-root .dock-wrap .dock-more,#namo-portal-root .dock-wrap:not(.dock-expanded)>.dock-more{display:block!important;grid-template-rows:none!important;max-height:none!important;height:var(--portal-first-menu-height,106px)!important;padding:22px 18px!important;opacity:1!important;transform:none!important;pointer-events:auto!important;overflow:hidden!important;transition:height .32s ease!important;border-radius:22px!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more{height:var(--portal-full-menu-height,232px)!important}
-#namo-portal-root .dock-wrap .dock-more-grid{overflow:visible!important;grid-template-columns:repeat(8,minmax(0,1fr))!important}
-#namo-portal-root .dock-wrap .dock-more .app{height:auto}
-@media(max-width:900px){#namo-portal-root .dock-wrap .dock-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
-@media(prefers-reduced-motion:reduce){#namo-portal-root .dock-wrap .dock-more{transition:none!important}}
-</style>
-
-<style id="portal-hide-clipped-menu-row-20261023">
-/* Hidden rows must not paint into the bottom padding of the collapsed viewport. */
-#namo-portal-root .dock-wrap:not(.dock-expanded):not(.dock-closing) .dock-more-grid>.app[aria-hidden="true"]{visibility:hidden!important;pointer-events:none!important}
-#namo-portal-root .dock-wrap.dock-expanded .dock-more-grid>.app{visibility:visible}
 </style>
 </head>
 <body>
@@ -407,8 +212,8 @@ svg{display:block}
  <div class="workspace">
   <div id="notice" class="notice" role="status">
    <span class="announce-icon"><svg class="icon"><use href="#ico-bell"/></svg></span>
-   <strong>QMES TEST 운영 중입니다. 12월 정식 오픈을 준비하고 있습니다.</strong><span class="tag">운영안내</span>
-   <span class="message">작업지시 · 품질검사 · LOT 추적 등 주요 기능을 테스트하고 있습니다.</span>
+   <strong>공지사항을 확인해주세요.</strong><span class="tag">운영안내</span>
+   <span class="message">작업지시 · 품질검사 · LOT 추적 등 주요 업무를 바로 이용할 수 있습니다.</span>
    <div class="spacer"></div>
    <button type="button" class="notice-close" title="공지 닫기" aria-label="공지 닫기" id="close-notice"><svg class="icon small"><use href="#ico-close"/></svg></button>
   </div>
@@ -523,34 +328,22 @@ svg{display:block}
        <button class="task-row" type="button" data-action="수입검사"><div class="task-icon"><svg class="icon small"><use href="#ico-checklist"/></svg></div><div class="detail"><b>품질검사 및 판정 현황</b><small id="portal-quality-summary">검사 현황 확인 중</small></div><span class="placeholder">업무 열기 ↗</span></button>
        <button class="task-row" type="button" data-action="LOT 추적"><div class="task-icon"><svg class="icon small"><use href="#ico-shield"/></svg></div><div class="detail"><b>LOT 추적 및 재고 현황</b><small id="portal-lot-summary">LOT 및 재고 업무 바로가기</small></div><span class="placeholder">업무 열기 ↗</span></button>
       </div>
-      <div class="notice-card"><div class="head">QMES 이용가이드 <span class="mini-pill">GUIDE</span></div><p><span id="portal-notice-summary">업무별 사용방법과 동영상 가이드를 이용가이드에서 확인하세요.</span></p><button type="button" data-action="이용가이드">사용법 및 동영상 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
+      <div class="notice-card"><div class="head">QMES 업무 공지 <span class="mini-pill">NOTICE</span></div><p><span id="portal-notice-summary">작업지시 발송·수신 및 품질검사 알림을 확인 중입니다.</span></p><button type="button" data-action="공지사항">전체 공지 보기 <svg class="icon small"><use href="#ico-arrow"/></svg></button></div>
    </aside>
    
    <section class="dock-wrap" aria-label="주요 업무 바로가기">
-     <div class="dock-more" id="qmes-dock-more" aria-hidden="true">
-       <div class="dock-more-grid">
-         <button class="app" type="button" data-portal-page="dashboard"><span class="tile t1"><span class="qmes-sidebar-glyph">▦</span></span><span class="title">종합 대시보드</span></button>
-         <button class="app" type="button" data-portal-page="orders"><span class="tile t4"><span class="qmes-sidebar-glyph">📅</span></span><span class="title">수주납기 관리</span></button>
-         <button class="app" type="button" data-portal-page="purchase"><span class="tile t6"><span class="qmes-sidebar-glyph">🧾</span></span><span class="title">구매발주 관리</span></button>
-         <button class="app" type="button" data-portal-page="work"><span class="tile t2"><span class="qmes-sidebar-glyph">🛠</span></span><span class="title">작업지시서</span></button>
-         <button class="app" type="button" data-portal-page="incoming"><span class="tile t4"><span class="qmes-sidebar-glyph">🔬</span></span><span class="title">수입검사 IQC</span></button>
-         <button class="app" type="button" data-portal-page="process"><span class="tile t3"><span class="qmes-sidebar-glyph">🧫</span></span><span class="title">공정검사 PQC</span></button>
-         <button class="app" type="button" data-portal-page="outgoing"><span class="tile t6"><span class="qmes-sidebar-glyph">📋</span></span><span class="title">출하검사 OQC</span></button>
-         <button class="app" type="button" data-portal-page="ncr"><span class="tile t5"><span class="qmes-sidebar-glyph">📑</span></span><span class="title">부적합 NCR</span></button>
-         <button class="app" type="button" data-portal-page="spcTrend"><span class="tile t7"><span class="qmes-sidebar-glyph">📈</span></span><span class="title">SPC / Trend</span></button>
-         <button class="app" type="button" data-portal-page="changeControl"><span class="tile t8"><span class="qmes-sidebar-glyph">↻</span></span><span class="title">변경관리</span></button>
-         <button class="app" type="button" data-portal-page="lotTrace"><span class="tile t7"><span class="qmes-sidebar-glyph">🔎</span></span><span class="title">LOT 추적</span></button>
-         <button class="app" type="button" data-portal-page="equipment"><span class="tile t9"><span class="qmes-sidebar-glyph">⚙️</span></span><span class="title">설비관리</span></button>
-         <button class="app" type="button" data-portal-page="instrumentMgmt"><span class="tile t6"><span class="qmes-sidebar-glyph">📏</span></span><span class="title">계측기관리</span></button>
-         <button class="app" type="button" data-portal-page="calibrationMgmt"><span class="tile t3"><span class="qmes-sidebar-glyph">✓</span></span><span class="title">검교정관리</span></button>
-         <button class="app" type="button" data-portal-page="standard"><span class="tile t2"><span class="qmes-sidebar-glyph">📚</span></span><span class="title">기준서 / 문서관리</span></button>
-         <button class="app" type="button" data-portal-page="approval"><span class="tile t5"><span class="qmes-sidebar-glyph">✍</span></span><span class="title">전자결재</span></button>
-         <button class="app portal-admin-item" type="button" data-portal-page="adminEmployees"><span class="tile t10"><span class="qmes-sidebar-glyph">👥</span></span><span class="title">직원등록현황</span></button>
-       </div>
+     <div class="dock">
+       <button class="app" type="button" data-action="종합현황"><span class="tile t1"><span class="qmes-sidebar-glyph" aria-hidden="true">▦</span></span><span class="title">종합현황</span></button>
+       <button class="app" type="button" data-action="작업지시"><span class="tile t2"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">작업지시</span></button>
+       <button class="app" type="button" data-action="생산관리"><span class="tile t3"><span class="qmes-sidebar-glyph" aria-hidden="true">🛠</span></span><span class="title">생산관리</span></button>
+       <button class="app" type="button" data-action="수입검사"><span class="tile t4"><span class="qmes-sidebar-glyph" aria-hidden="true">🔬</span></span><span class="title">수입검사</span></button>
+       <button class="app" type="button" data-action="공정검사"><span class="tile t5"><span class="qmes-sidebar-glyph" aria-hidden="true">🧪</span></span><span class="title">공정검사</span></button>
+       <button class="app" type="button" data-action="출하검사"><span class="tile t6"><span class="qmes-sidebar-glyph" aria-hidden="true">📋</span></span><span class="title">출하검사</span></button>
+       <button class="app" type="button" data-action="LOT 추적"><span class="tile t7"><span class="qmes-sidebar-glyph" aria-hidden="true">🔎</span></span><span class="title">LOT 추적</span></button>
+
+       <button class="app" type="button" data-action="설비관리"><span class="tile t9"><span class="qmes-sidebar-glyph" aria-hidden="true">⚙️</span></span><span class="title">설비관리</span></button>
+       <button class="app" type="button" data-action="직원관리"><span class="tile t10"><span class="qmes-sidebar-glyph" aria-hidden="true">👥</span></span><span class="title">직원관리</span></button>
      </div>
-     <button class="dock-toggle" id="qmes-dock-toggle" type="button" aria-label="전체 메뉴 펼치기" aria-expanded="false" title="전체 메뉴 펼치기">
-       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-     </button>
    </section>
    
    
@@ -608,7 +401,11 @@ svg{display:block}
        setSummary('portal-quality-summary','수입 '+inspections[0].length+' · 공정 '+inspections[1].length+' · 출하 '+inspections[2].length+'건');
      else setSummary('portal-quality-summary','수입 · 공정 · 출하검사 현황 확인');
      setSummary('portal-lot-summary','원료 · 중간배치 · 제품 LOT 및 재고 확인');
-     setSummary('portal-notice-summary','업무별 사용방법과 동영상 가이드를 이용가이드에서 확인하세요.');
+     const alerts=get(4);
+     if(alerts){
+       const pending=alerts.filter(x=>String(x.approval_status||'').toUpperCase()==='PENDING').length;
+       setSummary('portal-notice-summary',pending?'품질검사 승인대기 '+pending+'건 · QMES 알림센터에서 세부사항을 확인하세요.':'품질검사 알림 '+alerts.length+'건 · 작업지시 발송·수신 알림은 QMES 알림센터에서 확인하세요.');
+     }else setSummary('portal-notice-summary','작업지시 발송·수신 및 품질검사 알림은 QMES 알림센터에서 확인하세요.');
    }catch(e){console.warn('[QMES portal refresh]',e);}
    finally{refreshInFlight=false;}
  }
@@ -622,7 +419,7 @@ svg{display:block}
  date.textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
  let toastTimeout;
  const toast=(msg)=>{const el=byId('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2900)};
- function action(name,fromSearch=false){
+ function action(name){
   closeAll();
   if(name==='직원관리' && byId('namo-portal-root')?.dataset.portalAdmin!=='1'){
     toast('관리자 권한이 필요합니다.');return;
@@ -630,17 +427,13 @@ svg{display:block}
   const routes={'종합현황':'dashboard','작업지시':'work','생산관리':'work',
     '수입검사':'incoming','공정검사':'process','출하검사':'outgoing','품질관리':'quality',
     'LOT 추적':'lotTrace','설비관리':'equipment','직원관리':'adminEmployees'};
-  if(name==='이용가이드'){
-    window.parent.location.href='/qmes-user-guide.html';
-    return;
-  }
   if(name==='공지사항'||name==='나의 업무 현황'){
     window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'notify'},location.origin);
     return;
   }
   const page=routes[name];
   if(!page){toast('왼쪽 메뉴에서 업무를 선택해주세요.');return;}
-  window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page,fromSearch:fromSearch},location.origin);
+  window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page},location.origin);
 }
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>action(btn.dataset.action)));
  byId('close-notice').addEventListener('click',()=>{byId('notice').style.display='none'});
@@ -668,12 +461,12 @@ svg{display:block}
  function renderResults(q){dropdown.replaceChildren();const normalized=q.trim().toLocaleLowerCase();if(!normalized){dropdown.classList.remove('open');return}
    const results=visibleMenuData().filter(x=>(x.name+' '+x.hint).toLocaleLowerCase().includes(normalized)).slice(0,6);
    const label=document.createElement('div');label.className='search-dropdown-title';label.textContent=results.length?'메뉴 검색 결과':'검색 결과 없음';dropdown.append(label);
-   if(results.length){results.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='search-result';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span><small></small>';b.querySelector('span').textContent=item.name;b.querySelector('small').textContent=item.hint;b.addEventListener('click',()=>{input.value=item.name;action(item.name,true)});dropdown.append(b)})}
+   if(results.length){results.forEach(item=>{const b=document.createElement('button');b.type='button';b.className='search-result';b.innerHTML='<svg class="icon" aria-hidden="true"><use href="#ico-'+item.icon+'"></use></svg><span></span><small></small>';b.querySelector('span').textContent=item.name;b.querySelector('small').textContent=item.hint;b.addEventListener('click',()=>{input.value=item.name;action(item.name)});dropdown.append(b)})}
    else{const p=document.createElement('div');p.style.cssText='padding:10px 12px 17px;font-size:12px;color:#8298a5';p.textContent='현재 시안에서는 업무 메뉴명만 검색할 수 있습니다. 실제 LOT·작업지시 검색은 연동이 필요합니다.';dropdown.append(p)}
    dropdown.classList.add('open');
  }
  input.addEventListener('input',()=>renderResults(input.value));input.addEventListener('focus',()=>{if(input.value.trim())renderResults(input.value)});
- byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=visibleMenuData().find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name,true);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
+ byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=visibleMenuData().find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
  document.querySelectorAll('[data-query]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.query;input.focus();renderResults(input.value)}));
  document.addEventListener('namo-portal-auth-change',()=>{closeAll();if(input.value.trim()==='직원관리')input.value='';});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();input.blur()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();input.focus()}});
@@ -703,73 +496,6 @@ svg{display:block}
     }
   });
   if(window.parent!==window)window.parent.postMessage({channel:channel,type:'ready'},location.origin);
-})();
-</script>
-
-<script>
-(function(){
-  const wrap=document.querySelector('#namo-portal-root .dock-wrap');
-  const toggle=document.getElementById('qmes-dock-toggle');
-  const more=document.getElementById('qmes-dock-more');
-  if(!wrap||!toggle||!more) return;
-  let expanded=false,closeTimer=null;
-  const apply=()=>{
-    clearTimeout(closeTimer);
-    const closing=wrap.classList.contains('dock-expanded')&&!expanded;
-    wrap.classList.toggle('dock-closing',closing);
-    if(closing)closeTimer=setTimeout(()=>wrap.classList.remove('dock-closing'),340);
-    wrap.classList.toggle('dock-expanded',expanded);
-    toggle.setAttribute('aria-expanded',expanded?'true':'false');
-    toggle.setAttribute('aria-label',expanded?'전체 메뉴 접기':'전체 메뉴 펼치기');
-    toggle.title=expanded?'전체 메뉴 접기':'전체 메뉴 펼치기';
-    more.setAttribute('aria-hidden','false');
-    wrap.dispatchEvent(new Event('portal-menu-state'));
-  };
-  toggle.addEventListener('click',()=>{expanded=!expanded;apply();});
-  more.querySelectorAll('[data-portal-page]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const page=btn.dataset.portalPage;
-      if(page==='adminEmployees' && document.getElementById('namo-portal-root')?.dataset.portalAdmin!=='1') return;
-      window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page,fromSearch:false},location.origin);
-    });
-  });
-  apply();
-})();
-</script>
-
-
-<script id="portal-menu-search-alignment-20261023">
-(function(){
- const root=document.getElementById('namo-portal-root'),search=document.querySelector('.search-box'),wrap=document.querySelector('.dock-wrap');
- if(!root||!search||!wrap)return;
- function align(){
-  const box=search.getBoundingClientRect(),parent=wrap.offsetParent;
-  if(!box.width||!parent)return;
-  const bounds=parent.getBoundingClientRect();
-  const width=box.width+'px',center=(box.left+box.width/2-bounds.left+parent.scrollLeft)+'px';
-  if(wrap.style.getPropertyValue('--portal-search-width')!==width)wrap.style.setProperty('--portal-search-width',width);
-  if(wrap.style.getPropertyValue('--portal-search-center')!==center)wrap.style.setProperty('--portal-search-center',center);
- }
- new ResizeObserver(align).observe(search);
- window.addEventListener('resize',align);align();
-})();
-</script>
-
-<script id="portal-one-menu-sizing-20261023">
-(function(){
- const wrap=document.querySelector('.dock-wrap'),more=document.querySelector('.dock-more'),grid=document.querySelector('.dock-more-grid');
- if(!wrap||!more||!grid)return;
- function measure(){
-  const items=Array.from(grid.children).filter(e=>getComputedStyle(e).display!=='none');
-  if(!items.length)return;
-  const y=items[0].offsetTop,first=items.filter(e=>e.offsetTop===y);
-  const h=Math.max(...first.map(e=>e.offsetHeight));
-  wrap.style.setProperty('--portal-first-menu-height',(h+44)+'px');
-  wrap.style.setProperty('--portal-full-menu-height',(grid.getBoundingClientRect().height+44)+'px');
-  const expanded=wrap.classList.contains('dock-expanded');
-  items.forEach(e=>{const hidden=!expanded&&e.offsetTop!==y;e.inert=hidden;e.setAttribute('aria-hidden',hidden?'true':'false');});
- }
- new ResizeObserver(measure).observe(grid);window.addEventListener('resize',measure);wrap.addEventListener('portal-menu-state',measure);measure();
 })();
 </script>
 </body>
