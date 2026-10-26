@@ -7498,7 +7498,7 @@ function openNewForm(id,editOrder=null){
       const editMaterials=NAMO_WORK_RAW_MATERIALS.map(name=>{
         const index=remaining.findIndex(m=>m.name===name);
         return index<0?{name}:remaining.splice(index,1)[0];
-      }).concat(remaining.filter(m=>m.lot||m.plan||m.actual));
+      });
       editMaterials.forEach(m=>{
         add.click();const row=tbody.lastElementChild;
         row.dataset.sourceMaterialName=m.sourceName||'';
@@ -7863,7 +7863,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-same-cell-manual7"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-sbs-sbr-manual8"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261026-multi-operator3"></script>
