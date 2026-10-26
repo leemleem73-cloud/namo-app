@@ -180,4 +180,4 @@ html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter :is(input,sel
 `;document.head.append(style);})();
 
 /* Work list customer text follows ordinary body-cell weight. */
-(()=>{const s=document.createElement('style');s.id='work-customer-normal-weight-20261026';s.textContent='html body #work table.work-list-table tbody tr>td:nth-child(3),html body #work table.work-list-table tbody tr>td:nth-child(3) *{font-weight:400!important}';document.head.append(s);})();
+(()=>{const s=document.createElement('style');s.id='work-customer-normal-weight-20261026';s.textContent='html body #work#work table.work-list-table tbody tr>td:nth-child(3),html body #work#work table.work-list-table tbody tr>td:nth-child(3) *{font-weight:400!important}';document.head.append(s);})();
