@@ -58,7 +58,12 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
       if (row.children.length < 8) { row.classList.add('std-empty'); return; }
       const cells = row.children;
       cells[2].classList.add('std-document-name');
-      cells[2].dataset.documentNumber = cells[1].textContent.trim();
+      if(!cells[2].dataset.stdDocumentName)cells[2].dataset.stdDocumentName=cells[2].textContent.trim();
+      const documentNumber=cells[1].textContent.trim(),documentName=cells[2].dataset.stdDocumentName;
+      cells[2].dataset.documentNumber=documentNumber;
+      const documentLabel=[documentNumber,documentName].filter(value=>value&&value!=='-').join(' / ');
+      if(cells[2].textContent!==documentLabel)cells[2].textContent=documentLabel;
+      cells[2].title=documentLabel;
       if (!row.dataset.stdLayout) {
         row.dataset.stdLayout = '1';
         const status = cells[7];
@@ -264,3 +269,5 @@ html body #standard#standard .std-document-list thead th{border-bottom:1px solid
 html body #standard#standard .std-document-list tbody tr:last-child>td{border-bottom:0!important;box-shadow:none!important}
 html body #standard#standard .std-document-list tr.std-placeholder>td{height:44px!important;min-height:44px!important;background:#fff!important}
 `;document.head.append(style);})();
+
+(()=>{const style=document.createElement('style');style.textContent='html body #standard#standard .std-document-list .std-document-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:28px!important}html body #standard#standard .std-document-list .std-document-name::after{display:none!important;content:none!important}#mainWorkspace .am-split[data-am-screen="standard"] input[type="hidden"][data-standard-field]{display:none!important}';document.head.append(style);})();
