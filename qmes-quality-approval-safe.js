@@ -304,11 +304,11 @@ function install(app) {
     try {
       await ensureSchema();
       const q = await pool.query(`
-        SELECT i.id::text AS record_id, a.status, a.updated_at
+        SELECT DISTINCT ON (i.id) i.id::text AS record_id, a.status, a.updated_at
         FROM iqc i
         LEFT JOIN qmes_quality_approvals a
           ON a.doc_type='IQC' AND a.record_id=i.id::text AND a.status <> 'DELETED'
-        ORDER BY i.created_at DESC
+        ORDER BY i.id, a.updated_at DESC NULLS LAST, a.created_at DESC NULLS LAST
       `);
       return ok(res, q.rows);
     } catch (e) {
