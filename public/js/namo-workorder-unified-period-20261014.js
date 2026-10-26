@@ -282,13 +282,18 @@
   if(!popup||mode!=='choice')return;
   const options=JSON.parse(anchor.dataset.nwoChoices||'[]'),q=clean(anchor.value).toLowerCase();
   if(anchor.dataset.nwoMulti==='1'){
-   const selected=anchor.value.split(',').map(clean).filter(Boolean);
+   const normalizeWorker=value=>{
+    const name=clean(value);
+    return /^(대리\s*)?박도훈$/.test(name)?'박도훈':/^(주임\s*)?문지훈$/.test(name)?'문지훈':name;
+   };
+   const selected=[...new Set(anchor.value.split(',').map(normalizeWorker).filter(Boolean))];
+   anchor.value=selected.join(', ');
    popup.replaceChildren();
    [...new Set([...options,...selected])].forEach(value=>{
     const label=document.createElement('label');label.className='nwo-multi-choice';
     const check=document.createElement('input');check.type='checkbox';check.checked=selected.includes(value);
     check.addEventListener('change',()=>{
-     const values=new Set(anchor.value.split(',').map(clean).filter(Boolean));
+     const values=new Set(anchor.value.split(',').map(normalizeWorker).filter(Boolean));
      if(check.checked)values.add(value);else values.delete(value);
      anchor.value=[...values].join(', ');
      anchor.dispatchEvent(new Event('input',{bubbles:true}));anchor.dispatchEvent(new Event('change',{bubbles:true}));
