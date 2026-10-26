@@ -226,6 +226,18 @@
     });
   }
 
+
+  // Reauthenticate without navigating away or discarding the open editor.
+  let reauthPending=null;
+  window.qmesReauthenticate=function(){
+    if(reauthPending)return reauthPending;
+    window.qmesAuthDataReady?.reset();
+    clear();
+    loginScreen("로그인 시간이 만료되었습니다. 입력한 내용은 유지됩니다. 다시 로그인해 주세요.");
+    reauthPending=window.qmesAuthDataReady.wait().finally(()=>{reauthPending=null;});
+    return reauthPending;
+  };
+
   async function logout(){
     window.qmesAuthDataReady?.reset();
     try{await fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"})}catch(_){}
