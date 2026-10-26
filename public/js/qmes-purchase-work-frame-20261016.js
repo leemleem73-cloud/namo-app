@@ -34,13 +34,18 @@ function init(){
   wrap.querySelectorAll('.qpf-check').forEach(box=>{box.checked=selected.has(box.closest('tr').dataset.purchaseKey);box.disabled=busy;});
   for(const [button,title] of [[print,'선택 인쇄'],[mail,'선택 메일 전송'],[remove,'선택 삭제']]){button.hidden=!selected.size;button.disabled=busy;button.textContent=title+' ('+selected.size+')';}
   wrap.querySelectorAll('.qpp-row-action').forEach(button=>button.disabled=busy);
+  if(typeof window.qmesIncomingSelectionDock==='function'){
+   window.qmesIncomingSelectionDock(root,[print,mail,remove],selected.size);
+   root.querySelector('.iqc-selection-dock')?.setAttribute('aria-label','구매발주 선택 항목 작업');
+  }
   count.textContent='조회 '+matches.length+'건';listHead.querySelector('.qpf-total').textContent='총 '+matches.length+'건';
  }
  root._resetListSelection=()=>{selected.clear();update();};
  function decorate(){
+  wrap.querySelectorAll('.qpp-row-print,.qpp-row-delete').forEach(button=>button.remove());
   const th=wrap.querySelector('thead th:first-child');if(th&&!th.querySelector('.qpf-check-all')){th.replaceChildren();const label=document.createElement('label');label.className='qpf-select';label.innerHTML='<input class="qpf-check-all" type="checkbox" aria-label="조회된 발주 전체 선택"><span>No.</span>';th.append(label);label.querySelector('input').onchange=event=>{api.filtered().forEach(row=>event.target.checked?selected.add(key(row)):selected.delete(key(row)));update();};}
   wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const td=row.cells[0];if(td.querySelector('.qpf-check'))return;const value=td.textContent.trim(),label=document.createElement('label');label.className='qpf-select';const box=document.createElement('input');box.type='checkbox';box.className='qpf-check';box.setAttribute('aria-label',value+'번 발주 선택');const num=document.createElement('span');num.textContent=value;label.append(box,num);td.replaceChildren(label);box.onchange=()=>{box.checked?selected.add(row.dataset.purchaseKey):selected.delete(row.dataset.purchaseKey);update();};});
-  wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const cell=row.cells[row.cells.length-1];if(!cell||cell.querySelector('.qpp-row-actions'))return;const group=document.createElement('span');group.className='qpp-row-actions';for(const [action,title] of [['print','인쇄'],['edit','수정'],['delete','삭제']]){const button=document.createElement('button');button.type='button';button.className='qpp-row-action qpp-row-'+action;button.dataset.purchaseAction=action;button.textContent=title;group.append(button);}cell.append(group);});update();
+  wrap.querySelectorAll('tbody tr[data-purchase-key]').forEach(row=>{const cell=row.cells[row.cells.length-1];if(!cell||cell.querySelector('.qpp-row-actions'))return;const group=document.createElement('span');group.className='qpp-row-actions';for(const [action,title] of [['edit','수정']]){const button=document.createElement('button');button.type='button';button.className='qpp-row-action qpp-row-'+action;button.dataset.purchaseAction=action;button.textContent=title;group.append(button);}cell.append(group);});update();
  }
  const recordUrl=record=>'/api/purchase-orders/'+encodeURIComponent(key(record));
  async function request(url,options={}){const response=await fetch(url,{credentials:'same-origin',cache:'no-store',...options}),result=await response.json().catch(()=>({}));if(!response.ok||result.success===false)throw Error(result.message||'요청 실패 ('+response.status+')');return result.data??result;}
