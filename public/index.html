@@ -4448,8 +4448,8 @@ function iqcRowHtml(row,index){
   const badge=judge==='합격'?'<span class="badge b-green">합격</span>':(judge==='불합격'?'<span class="badge b-red">불합격</span>':'<span class="badge b-yellow">'+judge+'</span>');
   const remark=iqcRemark(row);
   const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
-  const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'확인 필요';
-  const approvalBadge='<span class="badge '+(state==='승인완료'?'b-green':'b-yellow')+'">'+state+'</span>';
+  const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'—';
+  const approvalBadge='<span class="badge '+(state==='승인완료'?'b-green':state==='—'?'':'b-yellow')+'">'+state+'</span>';
   return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcWeightText(row.incoming_qty)}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
@@ -6055,13 +6055,14 @@ function qmesIqcBarcodeSvg(value){
     }
   }
   const recordId=row?.dataset?.iqcId||row?.dataset?.recordId||row?.dataset?.id||'';
-  if(recordId){
+  const approvalSheet=document.getElementById('reportSheet');
+  if(recordId&&approvalSheet){
     fetch('/api/qmes-quality/approvals/record?docType='+encodeURIComponent(docType)+'&recordId='+encodeURIComponent(recordId),{credentials:'same-origin'})
       .then(r=>r.json()).then(p=>{
-        if(!p?.success||!p.data)return;
+        if(!p?.success||!p.data||!approvalSheet.isConnected)return;
         const a=p.data;
-        const reviewer=document.querySelector('[data-report-sign="reviewer"]');
-        const approver=document.querySelector('[data-report-sign="approver"]');
+        const reviewer=approvalSheet.querySelector('[data-report-sign="reviewer"]');
+        const approver=approvalSheet.querySelector('[data-report-sign="approver"]');
         if(docType==='IQC'){
           const showSigned=(name)=>String(name||'임흥배');
           if(reviewer) reviewer.textContent=a.reviewed_at?showSigned(a.reviewer_name||'검토완료',a.reviewed_at):'검토대기';
