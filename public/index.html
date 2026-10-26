@@ -7712,6 +7712,10 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
   const page=document.getElementById(m.dataset.page);
+  if(m.dataset.page==='dashboard'){
+    const portal=document.getElementById('namoPortal20261014');
+    if(portal) portal.src='./qmes-integrated-dashboard-20261026.html?v=20261026-1';
+  }
   page.classList.add('active');
   page._fitIncomingColumns?.();
   rememberQmesPage(m.dataset.page);
@@ -7723,10 +7727,13 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
 }));
 
 document.getElementById('brandHomeBtn')?.addEventListener('click',()=>{
-  const dashMenu=document.querySelector('.menu[data-page="dashboard"]');
-  if(dashMenu){dashMenu.click();return;}
+  document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
-  document.getElementById('dashboard')?.classList.add('active');
+  const dashboard=document.getElementById('dashboard');
+  const portal=document.getElementById('namoPortal20261014');
+  if(portal) portal.src='./qmes-portal-home-20261014.html?v=20261021-search-loading';
+  dashboard?.classList.add('active');
+  workspacePreviousPage='dashboard';
   content.scrollTop=0;
 });
 document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대시보드가 새로고침되었습니다.');});
