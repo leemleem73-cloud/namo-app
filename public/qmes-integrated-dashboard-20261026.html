@@ -293,7 +293,7 @@ async function loadDashboard(){
     ring('2026년 작업지시',total,'2026년 전체 작업',100,false)+
     ring('생산중',running,'2026년 진행 작업',pct(running),false)+
     ring('생산완료',done,'2026년 실적 '+fmt(actualSum)+' kg',pct(done),false)+
-    ring('IQC',hold,'2026년 수입검사',pct(hold),true)+
+    ring('IQC 불합격',hold,'2026년 수입검사',pct(hold),true)+
     ring('PQC 불합격',pqcNg,'2026년 공정검사',pct(pqcNg),true)+
     ring('OQC 불합격',oqcNg,'2026년 출하검사',pct(oqcNg),true);
 
