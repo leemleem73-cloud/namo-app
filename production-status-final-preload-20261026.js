@@ -19,7 +19,7 @@ if (!express.__NAMO_PRODUCTION_FINAL_PRELOAD_20261026__) {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
-        return res.sendFile(path.resolve(root, 'js', 'qmes-production-status-final-20261026.js'), function(err){
+        return res.sendFile(path.resolve(root, 'js', 'qmes-production-status-final-guarded-20261026.js'), function(err){
           if(err)return next(err);
         });
       }
