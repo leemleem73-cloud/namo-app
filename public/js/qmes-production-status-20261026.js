@@ -20,56 +20,49 @@ function init(){
   panel.className='module-page';
   panel.innerHTML=`
 <style>
-#namo-production-status-panel{padding:0!important;background:#f5f7fa!important;font-family:inherit;color:#33485f}
+#namo-production-status-panel{padding:0!important;background:#f5f7fa!important;font-family:Arial,"Malgun Gothic",sans-serif;color:#344054}
 #namo-production-status-panel *{box-sizing:border-box}
-#namo-production-status-panel .nps-head{height:64px;background:#fff;border-bottom:1px solid #dbe4ee;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
-#namo-production-status-panel .nps-head h2{margin:0;font-size:18px;color:#173f66;border-left:3px solid #1676c5;padding-left:10px}
-#namo-production-status-panel .nps-actions{display:flex;gap:7px}
 #namo-production-status-panel button{font:inherit;cursor:pointer}
-#namo-production-status-panel .nps-btn{height:34px;border:1px solid #ccd8e5;background:#fff;color:#315978;border-radius:5px;padding:0 12px;font-size:10px;font-weight:800}
-#namo-production-status-panel .nps-filter{background:#eef4fa;border-bottom:1px solid #dbe4ee;padding:11px 14px;display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px}
-#namo-production-status-panel .nps-field{display:flex;align-items:center;gap:8px}
-#namo-production-status-panel .nps-field label{font-size:10px;font-weight:800;color:#49637c;white-space:nowrap}
-#namo-production-status-panel .nps-field input,#namo-production-status-panel .nps-field select{height:32px;min-width:0;flex:1;border:1px solid #cbd8e6;background:#fff;border-radius:4px;padding:0 9px;color:#3d5368;font-size:10px}
-#namo-production-status-panel .nps-wrap{padding:12px}
-#namo-production-status-panel .nps-card{background:#fff;border:1px solid #dbe4ee;border-radius:7px;overflow:hidden}
-#namo-production-status-panel .nps-toolbar{height:44px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dbe4ee}
-#namo-production-status-panel .nps-toolbar strong{font-size:11px;color:#254b6c}
-#namo-production-status-panel .nps-tools{display:flex;gap:6px}
-#namo-production-status-panel .nps-tools button{height:30px;border:1px solid #d0dbe7;background:#fff;color:#506980;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}
-#namo-production-status-panel .nps-tools .icon{width:32px;padding:0;font-size:15px}
-#namo-production-status-panel .nps-table-wrap{overflow:auto}
-#namo-production-status-panel table{border-collapse:collapse;width:100%;min-width:1320px;font-size:10px}
-#namo-production-status-panel th{background:#e9f0f7;color:#284d6a;border:1px solid #cdd9e5;padding:10px 7px;text-align:center;white-space:nowrap}
-#namo-production-status-panel td{border:1px solid #d9e2eb;padding:10px 7px;text-align:center;color:#42576a;white-space:nowrap;background:#fff}
-#namo-production-status-panel tbody tr:nth-child(even) td{background:#fbfcfe}
-#namo-production-status-panel tbody tr:hover td{background:#f2f7fc}
-#namo-production-status-panel .link{border:0;background:none;color:#0874c7;text-decoration:underline;padding:0;font-weight:800}
-#namo-production-status-panel .badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:8px;font-weight:900}
+#namo-production-status-panel .nps-head{display:none!important}
+#namo-production-status-panel .nps-filter{display:none!important}
+#namo-production-status-panel .nps-wrap{padding:12px 16px 22px}
+#namo-production-status-panel .nps-card{width:100%;background:#fff;border:1px solid #d5dce5;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+#namo-production-status-panel .nps-toolbar{min-height:52px;padding:11px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #d5dce5;background:#fff}
+#namo-production-status-panel .nps-toolbar strong{font-size:13.5px;line-height:20px;font-weight:800;color:#1e3f64}
+#namo-production-status-panel .nps-toolbar #npsCount{display:none}
+#namo-production-status-panel .nps-tools{display:flex;align-items:center;gap:8px;margin-left:auto}
+#namo-production-status-panel .nps-tools button{display:inline-flex;align-items:center;justify-content:center;height:30px;min-height:30px;padding:4px 10px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#40566d;font-size:11.5px;font-weight:600;line-height:20px}
+#namo-production-status-panel .nps-tools button:hover{background:#edf5fc}
+#namo-production-status-panel .nps-tools .icon{width:30px;min-width:30px;padding:0}
+#namo-production-status-panel .nps-table-wrap{margin:0 12px;max-width:calc(100% - 24px);overflow:auto;border:1px solid #d5dce5;border-bottom:0}
+#namo-production-status-panel table{width:100%;min-width:1380px;table-layout:fixed;border-collapse:separate;border-spacing:0;border:0}
+#namo-production-status-panel th{height:34px;padding:6px 9px;background:#e8f0f8;color:#244260;border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;text-align:center;font-size:12px;font-weight:600;white-space:nowrap}
+#namo-production-status-panel td{height:36px;padding:4px 9px;background:#fff;color:#344054;border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;text-align:center;font-size:12px;line-height:1.2;font-weight:400;white-space:nowrap}
+#namo-production-status-panel tbody tr:nth-child(even)>td{background:#fcfdff}
+#namo-production-status-panel tbody tr:hover>td{background:#eef6ff}
+#namo-production-status-panel th:last-child,#namo-production-status-panel td:last-child{border-right:0}
+#namo-production-status-panel .link{border:0;background:none;color:#1689ed;text-decoration:underline;padding:0;font-weight:600}
+#namo-production-status-panel .badge{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:22px;padding:0 8px;border-radius:12px;font-size:10px;font-weight:700}
 #namo-production-status-panel .badge.ok{background:#eaf7ef;color:#33845a}
 #namo-production-status-panel .badge.wait{background:#fff4dc;color:#a87600}
 #namo-production-status-panel .badge.run{background:#e9f3ff;color:#2871b3}
 #namo-production-status-panel .badge.ng{background:#fdeaea;color:#bd4b4b}
-#namo-production-status-panel .nps-pages{display:flex;justify-content:center;gap:5px;padding:16px}
-#namo-production-status-panel .nps-pages button{width:30px;height:30px;border:1px solid #d0dbe7;background:#fff;border-radius:5px;color:#526b83;font-size:10px;font-weight:800}
-#namo-production-status-panel .nps-pages button.active{background:#2e7bd0;color:#fff;border-color:#2e7bd0}
+#namo-production-status-panel .nps-pages{display:flex;justify-content:center;align-items:center;gap:5px;padding:10px 16px 20px;background:#fff}
+#namo-production-status-panel .nps-pages button{min-width:25px;height:25px;padding:2px 8px;border:1px solid #c7d6e5;background:#fff;border-radius:4px;color:#40566d;font-size:11.5px;font-weight:600}
+#namo-production-status-panel .nps-pages button.active{background:#166fbb;color:#fff;border-color:#166fbb}
 #namo-production-status-panel .nps-pages button:disabled{opacity:.35;cursor:default}
 #namo-production-status-panel .nps-empty{padding:35px;text-align:center;color:#8a99aa}
-#namo-production-status-panel .nps-error{padding:10px 14px;color:#b42318;font-size:10px}
-@media(max-width:1200px){#namo-production-status-panel .nps-filter{grid-template-columns:repeat(2,1fr)}}
+#namo-production-status-panel .nps-error{padding:10px 14px;color:#b42318;font-size:11px}
+#namo-production-status-panel.nps-folded .nps-table-wrap,#namo-production-status-panel.nps-folded .nps-pages{display:none!important}
 </style>
 
 <div class="nps-head">
-  <h2>생산현황</h2>
-  <div class="nps-actions"><button class="nps-btn" id="npsExport">엑셀 내보내기</button></div>
+  <button id="npsExport" hidden>엑셀 내보내기</button>
 </div>
 
-<div class="nps-filter">
-  <div class="nps-field"><label>고객사</label><input id="npsCustomer" placeholder="전체"></div>
-  <div class="nps-field"><label>작업지시번호</label><input id="npsWork" placeholder="전체"></div>
-  <div class="nps-field"><label>제품명</label><input id="npsProduct" placeholder="전체"></div>
-  <div class="nps-field"><label>생산 LOT</label><input id="npsLot" placeholder="전체"></div>
-  <div class="nps-field"><label>진행상태</label><select id="npsStatus"><option value="">전체</option><option>대기</option><option>생산중</option><option>완료</option><option>품질보류</option></select></div>
+<div class="nps-filter" aria-hidden="true">
+  <input id="npsCustomer"><input id="npsWork"><input id="npsProduct"><input id="npsLot">
+  <select id="npsStatus"><option value="">전체</option><option>대기</option><option>생산중</option><option>완료</option><option>품질보류</option></select>
 </div>
 
 <div class="nps-wrap">
@@ -78,8 +71,8 @@ function init(){
       <strong>▸ 생산현황 <span id="npsCount"></span></strong>
       <div class="nps-tools">
         <button type="button" id="npsReset">조건 지우기</button>
-        <button type="button" id="npsSearch" class="icon" title="조회" aria-label="조회">⌕</button>
-        <button type="button" id="npsCollapse" class="icon" title="접기" aria-label="접기">⌃</button>
+        <button type="button" id="npsSearch" class="icon" title="조회" aria-label="조회"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75"/><path d="m13 13 4 4"/></svg></button>
+        <button type="button" id="npsCollapse" class="icon" title="접기" aria-label="접기" aria-expanded="true"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg></button>
       </div>
     </div>
     <div class="nps-table-wrap" id="npsTableWrap">
@@ -210,7 +203,7 @@ function init(){
   menu.addEventListener('click',function(e){e.stopPropagation();open();});
   document.getElementById('npsSearch').onclick=apply;
   document.getElementById('npsReset').onclick=function(){['npsCustomer','npsWork','npsProduct','npsLot','npsStatus'].forEach(function(id){document.getElementById(id).value='';});apply();};
-  document.getElementById('npsCollapse').onclick=function(){var w=document.getElementById('npsTableWrap'),p=document.getElementById('npsPages'),hide=!w.hidden;w.hidden=hide;p.hidden=hide;this.textContent=hide?'⌄':'⌃';this.title=hide?'펼치기':'접기';};
+  document.getElementById('npsCollapse').onclick=function(){var folded=panel.classList.toggle('nps-folded');this.setAttribute('aria-expanded',String(!folded));this.title=folded?'펼침':'접기';this.setAttribute('aria-label',folded?'생산현황 펼침':'생산현황 접기');};
   document.getElementById('npsPages').addEventListener('click',function(e){var b=e.target.closest('[data-page]');if(!b||b.disabled)return;state.page=Number(b.dataset.page)||1;draw();});
   panel.querySelectorAll('.nps-field input,.nps-field select').forEach(function(el){el.addEventListener('change',apply);});
   document.getElementById('npsRows').addEventListener('click',function(e){var b=e.target.closest('[data-work]');if(!b)return;close();document.querySelector('#sidebar .menu[data-page="work"]')?.click();});
