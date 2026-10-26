@@ -131,7 +131,7 @@
       btn.disabled=true;btn.textContent="로그인 확인 중...";
       wait.classList.add("is-active");
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);window.qmesAuthDataReady?.confirm();o.remove();if(u.mustChangePassword) passwordModal(true);}
+      try{const r=await fetch("/api/auth/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({loginId:id,password:pw})});const p=await r.json().catch(()=>({success:false}));if(!r.ok||!p.success||!p.data?.user)throw new Error(p.message||"로그인에 실패했습니다.");const u=norm(p.data.user),wasReauth=Boolean(window.__QMES_REAUTH_IN_PROGRESS__);setLastLoginAt(Date.now());try{if(saveId)localStorage.setItem("qmes-saved-login-id-v1",id);else localStorage.removeItem("qmes-saved-login-id-v1");}catch(_){}apply(u);window.qmesAuthDataReady?.confirm();o.remove();if(u.mustChangePassword) passwordModal(true);if(!wasReauth){requestAnimationFrame(()=>location.reload());}}
       catch(x){err.textContent=x.message||"로그인에 실패했습니다."}finally{wait.classList.remove("is-active");btn.disabled=false;btn.textContent="로그인";}
     });
   }
@@ -231,10 +231,11 @@
   let reauthPending=null;
   window.qmesReauthenticate=function(){
     if(reauthPending)return reauthPending;
+    window.__QMES_REAUTH_IN_PROGRESS__=true;
     window.qmesAuthDataReady?.reset();
     clear();
     loginScreen("로그인 시간이 만료되었습니다. 입력한 내용은 유지됩니다. 다시 로그인해 주세요.");
-    reauthPending=window.qmesAuthDataReady.wait().finally(()=>{reauthPending=null;});
+    reauthPending=window.qmesAuthDataReady.wait().finally(()=>{reauthPending=null;window.__QMES_REAUTH_IN_PROGRESS__=false;});
     return reauthPending;
   };
 
