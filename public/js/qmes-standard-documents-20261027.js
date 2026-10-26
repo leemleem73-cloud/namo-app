@@ -1,7 +1,9 @@
 (function(){
 'use strict';
 const endpoint='/api/qmes/standard-documents',statuses=['대기','진행','완료'];
-let records=[],loading=null;
+const departments=['대표','연구소','생산부','영업부','품질부','관리부'];
+let records=[],loading=null,activeChoice=null;
+function closeChoice(){if(!activeChoice)return;activeChoice.trigger.setAttribute('aria-expanded','false');activeChoice.popup.remove();activeChoice=null;}
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path='',options={}){
  await window.qmesAuthDataReady?.wait();
@@ -31,15 +33,55 @@ async function load(){
  return loading;
 }
 function open(record=null){
+ closeChoice();
  const fields=[['문서번호','documentNo'],['문서명','name'],['구분','category'],['Rev.','revision'],['개정일','revisionDate'],['담당부서','department'],['상태','status'],['비고','note']];
  const html='<div class="form-grid">'+fields.map(([label,key])=>{
   const value=record?.[key]||'';
-  const control=key==='status'?'<select data-standard-field="status" aria-label="문서 상태">'+statuses.map(status=>'<option value="'+status+'"'+((value||'대기')===status?' selected':'')+'>'+status+'</option>').join('')+'</select>':key==='note'?'<textarea data-standard-field="'+key+'" placeholder="비고 입력">'+esc(value)+'</textarea>':'<input data-standard-field="'+key+'" type="'+(key==='revisionDate'?'date':'text')+'" value="'+esc(value)+'" placeholder="'+esc(label)+' 입력">';
+  const control=['status','department'].includes(key)?'<input type="hidden" data-standard-field="'+key+'" value="'+esc(value||(key==='status'?'대기':''))+'"><button type="button" class="std-choice-trigger" data-standard-choice="'+key+'" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="'+label+' 선택"><span>'+esc(value||(key==='status'?'대기':'담당부서 선택'))+'</span><span aria-hidden="true">⌄</span></button>':key==='note'?'<textarea data-standard-field="'+key+'" placeholder="비고 입력">'+esc(value)+'</textarea>':'<input data-standard-field="'+key+'" type="'+(key==='revisionDate'?'date':'text')+'" value="'+esc(value)+'" placeholder="'+esc(label)+' 입력">';
   return '<div class="form-item '+(['status','note'].includes(key)?'full':'')+'"><label>'+label+'</label>'+control+'</div>';
  }).join('')+'</div>';
  const title='문서관리 '+(record?'상세 / 수정':'신규등록');
  openModal(title,amaranthScreen('standard',html,record?'edit':'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
+ root.querySelectorAll('[data-standard-choice]').forEach(trigger=>{
+  trigger.addEventListener('click',()=>{
+   if(activeChoice?.trigger===trigger){closeChoice();return;}
+   closeChoice();
+   const key=trigger.dataset.standardChoice,input=root.querySelector('[data-standard-field="'+key+'"]');
+   const options=[...new Set([...(key==='status'?statuses:departments),input.value].filter(Boolean))];
+   const popup=document.createElement('div');popup.className='std-choice-popup';popup.setAttribute('role','listbox');
+   popup.setAttribute('aria-label',key==='status'?'상태':'담당부서');
+   options.forEach((value,index)=>{
+    const button=document.createElement('button');button.type='button';button.className='std-choice-option';button.textContent=value;
+    button.setAttribute('role','option');button.setAttribute('aria-selected',String(input.value===value));
+    button.addEventListener('click',()=>{
+     input.value=value;trigger.firstElementChild.textContent=value;
+     input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
+     closeChoice();trigger.focus();
+    });
+    button.addEventListener('keydown',event=>{
+     if(event.key==='Escape'){event.preventDefault();closeChoice();trigger.focus();return;}
+     if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+      event.preventDefault();const buttons=[...popup.children];
+      buttons[(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length].focus();
+     }
+    });
+    popup.append(button);
+   });
+   document.body.append(popup);trigger.setAttribute('aria-expanded','true');activeChoice={trigger,popup};
+   function position(){
+    if(activeChoice?.popup!==popup)return;
+    if(!trigger.isConnected){closeChoice();return;}
+    const rect=trigger.getBoundingClientRect(),height=Math.min(popup.scrollHeight,240);
+    popup.style.left=rect.left+'px';popup.style.width=rect.width+'px';
+    popup.style.top=(rect.bottom+height+6>innerHeight?Math.max(8,rect.top-height-4):rect.bottom+4)+'px';
+    requestAnimationFrame(position);
+   }
+   position();(popup.querySelector('[aria-selected="true"]')||popup.firstElementChild)?.focus();
+  });
+  trigger.addEventListener('keydown',event=>{if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();trigger.click();}});
+ });
+
  const old=document.getElementById('modalSave'),save=old.cloneNode(true);old.replaceWith(save);
  let busy=false;
  save.addEventListener('click',async()=>{
@@ -56,6 +98,8 @@ function open(record=null){
   finally{busy=false;if(save.isConnected){save.disabled=false;save.textContent='저장';}}
  });
 }
+document.addEventListener('pointerdown',event=>{if(activeChoice&&!activeChoice.popup.contains(event.target)&&!activeChoice.trigger.contains(event.target))closeChoice();},true);
+document.addEventListener('keydown',event=>{if(activeChoice&&(event.key==='Escape'||event.key==='Tab'))closeChoice();},true);
 window.qmesStandardDocuments={open,load,openRow:row=>open(records.find(r=>String(r.id)===String(row?.dataset.standardId))||null)};
 const style=document.createElement('style');style.textContent='#mainWorkspace .am-split[data-am-screen="standard"] select,#mainWorkspace .am-split[data-am-screen="standard"] select option{color:#243e5d!important;-webkit-text-fill-color:#243e5d!important;background:#fff!important;font-family:inherit!important;font-size:12px!important;opacity:1!important;visibility:visible!important}';document.head.append(style);
 function install(){
@@ -69,3 +113,5 @@ let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotas
 document.querySelector('.sidebar .menu[data-page="standard"]')?.addEventListener('click',()=>{install();if(document.getElementById('standard')?.querySelector('[data-standard-db-wired]'))load();});
 install();
 })();
+
+(()=>{const style=document.createElement('style');style.textContent="\n#mainWorkspace .am-split[data-am-screen=\"standard\"] .std-choice-trigger{display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box!important;width:100%!important;height:30px!important;border:1px solid #cfd7df!important;border-radius:2px!important;background:#fff!important;color:#243e5d!important;font:600 12px Pretendard,\"Noto Sans KR\",Arial,sans-serif!important;text-align:left!important;padding:0 10px!important;cursor:pointer!important}\n.std-choice-popup{position:fixed!important;z-index:200000!important;box-sizing:border-box!important;max-height:240px!important;overflow:auto!important;border:1px solid #cfd7df!important;border-radius:3px!important;background:#fff!important;box-shadow:0 6px 18px #173b6126!important;padding:4px!important;color:#243e5d!important}\n.std-choice-popup .std-choice-option{display:block!important;width:100%!important;min-height:32px!important;border:0!important;border-radius:2px!important;background:#fff!important;color:#243e5d!important;-webkit-text-fill-color:#243e5d!important;font:12px Pretendard,\"Noto Sans KR\",Arial,sans-serif!important;text-align:left!important;padding:6px 10px!important;cursor:pointer!important}\n.std-choice-popup .std-choice-option:hover,.std-choice-popup .std-choice-option:focus,.std-choice-popup .std-choice-option[aria-selected=\"true\"]{background:#edf5ff!important;outline:0!important}\n";document.head.append(style);})();
