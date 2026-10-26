@@ -2655,6 +2655,10 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 <script src="./js/qmes-selection-lifecycle-20261021.js?v=1"></script>
 <link rel="stylesheet" href="./css/qmes-standard-alignment-20261021.css?v=1">
   <link rel="stylesheet" href="./css/qmes-mobile-20261023.css?v=20261023-3">
+<style id="iqc-report-approval-font-parity-20261026">
+#reportSheet.report-incoming .report-approval,
+#reportSheet.report-incoming .report-approval :is(.approval-label,.approval-head,.approval-cell){font-family:inherit!important;white-space:nowrap!important;text-align:center!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -6059,7 +6063,7 @@ function qmesIqcBarcodeSvg(value){
         const reviewer=document.querySelector('[data-report-sign="reviewer"]');
         const approver=document.querySelector('[data-report-sign="approver"]');
         if(docType==='IQC'){
-          const showSigned=(name,date)=>name+(date?' · '+new Date(date).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'}):'');
+          const showSigned=(name)=>String(name||'임흥배');
           if(reviewer) reviewer.textContent=a.reviewed_at?showSigned(a.reviewer_name||'검토완료',a.reviewed_at):'검토대기';
           if(approver) approver.textContent=a.status==='APPROVED'&&a.approved_at?showSigned(a.approver_name||'승인완료',a.approved_at):'승인대기';
         }else if(a.status==='APPROVED'){
