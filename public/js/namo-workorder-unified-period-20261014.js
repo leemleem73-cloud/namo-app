@@ -250,7 +250,7 @@
  .nwo-cal-days button[aria-current=date][aria-selected=true]{box-shadow:inset 0 0 0 2px #f4bd48}
  .nwo-cal-foot{display:flex;justify-content:space-between;border-top:1px solid #e2e9f1;margin-top:6px;padding-top:6px}
  .nwo-cal-foot button{padding:5px 7px}
- #mainWorkspace .work-form input[data-nwo-date]{cursor:pointer;color-scheme:light}
+ #mainWorkspace .work-form input[data-nwo-date]{cursor:text;color-scheme:light}
  `;document.head.append(css);
  function close(){popup?.remove();popup=null;if(anchor)anchor.setAttribute('aria-expanded','false');anchor=null;activeIndex=-1;last='';}
  function place(box,target,exact){
@@ -334,9 +334,9 @@
   const box=boxes.find(b=>clean(b.querySelector('label')?.textContent)==='작업일자');
   const date=box?.querySelector('input');
   if(date&&!date.dataset.nwoDate){
-   date.dataset.nwoDate='1';date.readOnly=true;date.setAttribute('aria-label','작업일자');date.setAttribute('aria-haspopup','dialog');
-   date.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openDate(date);},true);
-   date.addEventListener('keydown',e=>{if(['Enter',' ','ArrowDown'].includes(e.key)){e.preventDefault();openDate(date);}});
+   date.dataset.nwoDate='1';date.readOnly=false;date.setAttribute('aria-label','작업일자');date.setAttribute('aria-haspopup','dialog');
+   date.addEventListener('click',e=>{e.stopImmediatePropagation();const bounds=date.getBoundingClientRect();if(e.clientX>=bounds.right-32){e.preventDefault();openDate(date);}},true);
+   date.addEventListener('keydown',e=>{if(e.key==='Enter'||(e.altKey&&e.key==='ArrowDown')){e.preventDefault();openDate(date);}});
   }
   form.querySelectorAll('input[list="workProductChoices"],input[list="workOperatorChoices"]').forEach(el=>{
    const values=[...document.getElementById(el.getAttribute('list')).options].map(o=>o.value);
