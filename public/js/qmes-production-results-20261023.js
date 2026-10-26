@@ -93,8 +93,8 @@ function init(){
 #namo-production-result-panel .ps-action-top b{font-size:9.5px;color:#2c4d68}
 #namo-production-result-panel .ps-action-top strong{font-size:8px}
 #namo-production-result-panel .ps-action p{margin:6px 0 0;font-size:8px;line-height:1.5;color:#73879b}
-#namo-production-result-panel .ps-bottom{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:10px;margin-top:10px}
-#namo-production-result-panel .ps-table-wrap{overflow:auto}
+#namo-production-result-panel .ps-bottom{margin-top:10px}
+#namo-production-result-panel .ps-bottom-toolbar{height:42px;padding:0 10px;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;background:#fff}\n#namo-production-result-panel .ps-bottom-toolbar strong{font-size:11px;color:#274b6d}\n#namo-production-result-panel .ps-bottom-tools{display:flex;align-items:center;gap:6px}\n#namo-production-result-panel .ps-bottom-tools button{height:30px;border:1px solid #d3deea;background:#fff;color:#526b83;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}\n#namo-production-result-panel .ps-bottom-tools .ps-icon-btn{width:32px;padding:0;font-size:15px;display:grid;place-items:center}\n#namo-production-result-panel .ps-table-wrap{overflow:auto}
 #namo-production-result-panel table{width:100%;border-collapse:collapse;min-width:1050px;font-size:9px}
 #namo-production-result-panel th{background:#f3f7fb;color:#6c7b8b;border-bottom:1px solid #dfe7f0;padding:8px;text-align:center;white-space:nowrap}
 #namo-production-result-panel td{border-bottom:1px solid #edf2f6;padding:8px;text-align:center;color:#4d6175;white-space:nowrap}
@@ -105,7 +105,7 @@ function init(){
 #namo-production-result-panel .ps-sum span{font-size:8px;color:#91a0af}.ps-sum b{font-size:19px;color:#284d6d}
 #namo-production-result-panel .ps-sum.green{background:#edf8f1}.ps-sum.blue{background:#eaf4ff}.ps-sum.amber{background:#fff7e6}.ps-sum.red{background:#fff1f0}
 #namo-production-result-panel .ps-error{padding:10px;color:#b42318;font-size:11px}
-@media(max-width:1250px){#namo-production-result-panel .ps-filter{grid-template-columns:repeat(3,1fr)}#namo-production-result-panel .ps-layout{grid-template-columns:1fr}#namo-production-result-panel .ps-bottom{grid-template-columns:1fr}}
+@media(max-width:1250px){#namo-production-result-panel .ps-filter{grid-template-columns:repeat(3,1fr)}#namo-production-result-panel .ps-layout{grid-template-columns:1fr}}
 </style>
 <div class="ps-head">
   <div class="ps-title"><h2>생산현황</h2><p>작업지시 · 생산실적 · 품질 차단을 한 화면에서 확인합니다.</p></div>
@@ -139,23 +139,21 @@ function init(){
 
   <div class="ps-bottom">
     <section class="ps-panel">
-      <div class="ps-panel-head"><b>생산실적 상세</b><small id="psResultCount">0건</small></div>
-      <div class="ps-table-wrap">
+      <div class="ps-bottom-toolbar">
+        <strong>▸ 생산현황</strong>
+        <div class="ps-bottom-tools">
+          <button type="button" id="psBottomReset">조건 지우기</button>
+          <button type="button" id="psBottomSearch" class="ps-icon-btn" title="조회" aria-label="조회">⌕</button>
+          <button type="button" id="psBottomCollapse" class="ps-icon-btn" title="접기" aria-label="접기">⌃</button>
+        </div>
+      </div>
+      <div class="ps-table-wrap" id="psTableWrap">
         <table>
           <thead><tr><th>No.</th><th>작업일자</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>설비명</th><th>작업자</th><th>계획수량</th><th>실적수량</th><th>달성률</th><th>PQC</th><th>OQC</th><th>진행상태</th></tr></thead>
           <tbody id="psRows"></tbody>
         </table>
       </div>
-    </section>
-
-    <section class="ps-panel">
-      <div class="ps-panel-head"><b>오늘 요약</b><small>현재 조회 기준</small></div>
-      <div class="ps-summary">
-        <div class="ps-sum green"><span>생산완료</span><b id="psDone">0</b></div>
-        <div class="ps-sum blue"><span>생산중</span><b id="psRun">0</b></div>
-        <div class="ps-sum amber"><span>생산대기</span><b id="psWait">0</b></div>
-        <div class="ps-sum red"><span>품질차단</span><b id="psBlocked">0</b></div>
-      </div>
+      <div class="ps-pagination" id="psPages"></div>
     </section>
   </div>
   <div class="ps-error" id="psError"></div>
@@ -164,7 +162,7 @@ function init(){
   var host=document.querySelector('#work')?.parentElement||document.querySelector('main')||document.body;
   host.appendChild(panel);
 
-  var state={all:[],filtered:[],selected:null,iqc:[],pqc:[],oqc:[],holds:[]};
+  var state={all:[],filtered:[],selected:null,iqc:[],pqc:[],oqc:[],holds:[],page:1};
   var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
   var clean=function(v){return String(v==null?'':v).trim();};
   var num=function(v){if(v==null||v==='')return null;var n=Number(String(v).replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null;};
@@ -291,18 +289,18 @@ function init(){
   }
 
   function renderTable(){
-    var rows=document.getElementById('psRows');
-    document.getElementById('psResultCount').textContent=state.filtered.length+'건';
-    rows.innerHTML=state.filtered.map(function(r,i){
+    var body=document.getElementById('psRows');
+    var pages=document.getElementById('psPages');
+    var pageSize=10,totalPages=Math.max(1,Math.ceil(state.filtered.length/pageSize));
+    if(state.page>totalPages)state.page=totalPages;
+    var start=(state.page-1)*pageSize,shown=state.filtered.slice(start,start+pageSize);
+    body.innerHTML=shown.map(function(r,i){
       var rate=r.plan>0&&r.actual!=null?(r.actual/r.plan*100).toFixed(1)+'%':'-';
-      return '<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td><button class="ps-link" data-work="'+esc(r.work)+'">'+esc(r.work)+'</button></td><td>'+esc(r.customer)+'</td><td>'+esc(r.product)+'</td><td>'+esc(r.lot)+'</td><td>'+esc(r.equipment)+'</td><td>'+esc(r.worker)+'</td><td>'+esc(fmt(r.plan))+'</td><td>'+esc(fmt(r.actual))+'</td><td>'+esc(rate)+'</td><td>'+badge(r.pqc)+'</td><td>'+badge(r.oqc)+'</td><td>'+badge(r.status)+'</td></tr>';
+      return '<tr><td>'+(start+i+1)+'</td><td>'+esc(r.date)+'</td><td><button class="ps-link" data-work="'+esc(r.work)+'">'+esc(r.work)+'</button></td><td>'+esc(r.customer)+'</td><td>'+esc(r.product)+'</td><td>'+esc(r.lot)+'</td><td>'+esc(r.equipment)+'</td><td>'+esc(r.worker)+'</td><td>'+esc(fmt(r.plan))+'</td><td>'+esc(fmt(r.actual))+'</td><td>'+esc(rate)+'</td><td>'+badge(r.pqc)+'</td><td>'+badge(r.oqc)+'</td><td>'+badge(r.status)+'</td></tr>';
     }).join('')||'<tr><td colspan="14">조회 결과가 없습니다.</td></tr>';
-    var done=0,run=0,wait=0,blocked=0;
-    state.filtered.forEach(function(r){if(r.blocked)blocked++;else if(/완료/.test(r.status))done++;else if(/생산중|진행/.test(r.status))run++;else wait++;});
-    document.getElementById('psDone').textContent=done;
-    document.getElementById('psRun').textContent=run;
-    document.getElementById('psWait').textContent=wait;
-    document.getElementById('psBlocked').textContent=blocked;
+    pages.innerHTML='<button type="button" data-page="'+Math.max(1,state.page-1)+'" '+(state.page===1?'disabled':'')+'>‹</button>'+
+      Array.from({length:totalPages},function(_,i){var p=i+1;return '<button type="button" data-page="'+p+'" class="'+(p===state.page?'active':'')+'">'+p+'</button>';}).join('')+
+      '<button type="button" data-page="'+Math.min(totalPages,state.page+1)+'" '+(state.page===totalPages?'disabled':'')+'>›</button>';
   }
 
   function render(){renderJobs();renderDetail();renderQuality();renderTable();}
@@ -344,7 +342,7 @@ function init(){
   function close(){panel.classList.remove('active');menu.classList.remove('active');}
 
   menu.addEventListener('click',function(e){e.stopPropagation();open();});
-  document.getElementById('psRefresh').onclick=load;
+  document.getElementById('psRefresh').onclick=load;\n  document.getElementById('psBottomSearch').onclick=filter;\n  document.getElementById('psBottomReset').onclick=function(){['psCustomer','psWork','psProduct','psLot','psStatus'].forEach(function(id){document.getElementById(id).value='';});filter();};\n  document.getElementById('psBottomCollapse').onclick=function(){var wrap=document.getElementById('psTableWrap'),pages=document.getElementById('psPages'),hide=!wrap.hidden;wrap.hidden=hide;pages.hidden=hide;this.textContent=hide?'⌄':'⌃';this.title=hide?'펼치기':'접기';};\n  document.getElementById('psPages').addEventListener('click',function(e){var b=e.target.closest('[data-page]');if(!b||b.disabled)return;state.page=Number(b.dataset.page)||1;renderTable();});
   document.getElementById('psSearch').onclick=filter;
   document.getElementById('psReset').onclick=function(){['psCustomer','psWork','psProduct','psLot','psStatus'].forEach(function(id){document.getElementById(id).value='';});filter();};
   panel.querySelectorAll('.ps-field input,.ps-field select').forEach(function(el){el.addEventListener('change',filter);});
