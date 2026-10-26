@@ -193,15 +193,26 @@
       select.style.cssText='width:100%;min-width:0;margin-bottom:5px;font-size:11px';
       input.parentNode.insertBefore(select,input);
       select.addEventListener('change',()=>{
+        if(select.value==='__manual__'){
+          row.dataset.nwmLotManual='1';
+          input.dispatchEvent(new Event('change',{bubbles:true}));
+          input.focus();
+          return;
+        }
+        delete row.dataset.nwmLotManual;
         input.value=select.value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
       });
     }
     const middle=name.value==='중간배치';
+    const allowManual=name.value==='SBS'||name.value==='SBR';
+    if(!allowManual)delete row.dataset.nwmLotManual;
+    const manual=allowManual&&row.dataset.nwmLotManual==='1';
     select.hidden=middle;select.style.display=middle?'none':'block';
-    input.hidden=!middle;input.style.setProperty('display',middle?'':'none',middle?'':'important');
+    input.hidden=!(middle||manual);input.style.setProperty('display',(middle||manual)?'':'none',(middle||manual)?'':'important');
+    if(manual){input.style.width='100%';input.style.flex='1 1 100%';input.placeholder='LOT NO 직접 입력';}
     if(!middle){select.style.flex='1 1 100%';select.style.width='100%';select.style.marginBottom='0';}
     if(middle)return;
-    const key=state.version+'|'+name.value+'|'+input.value;
+    const key=state.version+'|'+name.value+'|'+(manual?'__manual__':input.value);
     if(select.dataset.choiceKey===key)return;
     select.dataset.choiceKey=key;
     select.replaceChildren();
@@ -213,7 +224,8 @@
       select.add(new Option(label,lot));
     });
     if(input.value&&!seen.has(input.value))select.add(new Option(input.value,input.value));
-    select.value=input.value||'';
+    if(allowManual)select.add(new Option('직접 입력','__manual__'));
+    select.value=manual?'__manual__':(input.value||'');
   }
   function draw(form,state){form.querySelectorAll('#workMaterialTable tbody tr').forEach(row=>drawRow(row,state));}
   async function load(form,state){
