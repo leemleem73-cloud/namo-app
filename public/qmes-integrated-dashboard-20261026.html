@@ -26,9 +26,10 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 .row4>.card{height:auto;min-height:475px}
 .row4>.card>.body{overflow:visible;padding:14px 18px 12px}
 .eqSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
-.eqStat{position:relative;border:none;border-radius:8px;background:#fbfdff;min-height:77px;padding:13px 14px 12px 19px;display:flex;flex-direction:column;gap:7px}
-.eqStat:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--eq-accent);border-radius:8px 0 0 8px}
-.eqStat span{font-size:11px;color:#46647f;font-weight:700}.eqStat strong{font-size:23px;color:#123a5d;line-height:1}.eqStat em{font-size:11px;color:#728ba4;font-style:normal;position:absolute;right:12px;bottom:13px}
+.eqStat{position:relative;border:1px solid #dde7f1;border-radius:8px;background:#fff;min-height:104px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) 58px;grid-template-rows:auto 1fr auto;align-items:center;column-gap:8px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
+.eqStat:before{display:none}
+.eqStat span{grid-column:1;grid-row:1;font-size:12px;color:#173b5e;font-weight:800}.eqStat strong{grid-column:1;grid-row:2;font-size:27px;color:#123a5d;line-height:1.25}.eqStat em{grid-column:1;grid-row:3;font-size:10px;color:#8395a8;font-style:normal;position:static}
+.eqStat .eqRing{grid-column:2;grid-row:1 / 4;width:55px;height:55px;border-radius:50%;background:conic-gradient(var(--eq-accent) var(--eq-p),#eaf0f6 0);display:grid;place-items:center;position:relative}.eqStat .eqRing:before{content:'';position:absolute;width:39px;height:39px;background:#fff;border-radius:50%}.eqStat .eqRing b{position:relative;z-index:1;font-size:10px;color:var(--eq-accent);font-weight:800}
 .eqChartTitle{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#41617e;padding:0 8px;margin-bottom:2px}
 .eqChart{width:100%;height:260px;overflow:hidden}.eqChart svg{width:100%;height:100%;display:block}
 .eqLegend{display:flex;justify-content:center;gap:26px;align-items:center;flex-wrap:wrap;margin:8px 0 9px;font-size:11px;font-weight:700;color:#44627e}.eqLegend span{display:flex;align-items:center;gap:6px}.eqLegend i{display:inline-block;width:12px;height:12px;border-radius:2px}.eqLegend .eqLineKey{width:24px;height:3px;background:#f47c20;border-radius:0;position:relative}.eqLegend .eqLineKey:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#f47c20;left:8px;top:-3px}
@@ -334,8 +335,8 @@ async function loadDashboard(){
   eqSvg+='<polyline points="'+eqLinePoints+'" fill="none" stroke="#f47c20" stroke-width="2.5" vector-effect="non-scaling-stroke"/>';
   eqMonthDays.forEach(function(n,i){var x=eqX(i),y=eqRateY(n);eqSvg+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#f47c20" stroke="#fff" stroke-width="1.5"/><rect x="'+(x-27)+'" y="'+(y-38)+'" width="54" height="24" rx="5" fill="#fff" stroke="#f5a045"/><text x="'+x+'" y="'+(y-21)+'" text-anchor="middle" font-size="13" font-weight="700" fill="#ed741b">'+(n?'62.5%':'0%')+'</text>';});
   eqSvg+='</svg>';
-  var eqStat=function(label,value,sub,color){return '<div class="eqStat" style="--eq-accent:'+color+'"><span>'+label+'</span><strong>'+value+'</strong>'+(sub?'<em>'+sub+'</em>':'')+'</div>';};
-  var eqBars='<div class="eqSummary">'+eqStat('총 운영시간(작업일 기준)',eqTotalHours.toLocaleString()+' h','','#308ef0')+eqStat('생산 가동시간',eqProductionHours.toLocaleString()+' h','62.5%','#308ef0')+eqStat('탱크 청소·준비시간',eqCleaningHours.toLocaleString()+' h','37.5%','#f3a23c')+eqStat('기준 가동률',eqTotalDays?'62.5%':'0%','','#18b977')+'</div>'+
+  var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" style="--eq-accent:'+color+';--eq-p:'+pct+'%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>'+pct+'%</b></div></div>';};
+  var eqBars='<div class="eqSummary">'+eqStat('총 운영시간(작업일 기준)',eqTotalHours.toLocaleString()+' h','','#308ef0',eqTotalDays?100:0)+eqStat('생산 가동시간',eqProductionHours.toLocaleString()+' h','작업시간 대비 생산 비율','#308ef0',eqTotalDays?62.5:0)+eqStat('탱크 청소·준비시간',eqCleaningHours.toLocaleString()+' h','작업시간 대비 준비 비율','#f3a23c',eqTotalDays?37.5:0)+eqStat('기준 가동률',eqTotalDays?'62.5%':'0%','샘플 생산 표준시간 기준','#18b977',eqTotalDays?62.5:0)+'</div>'+
     '<div class="eqChartTitle"><span>시간 (h)</span><span>가동률 (%)</span></div><div class="eqChart">'+eqSvg+'</div>'+
     '<div class="eqLegend"><span><i style="background:#398fee"></i>생산 가동시간</span><span><i style="background:#f5b157"></i>탱크 청소·준비시간</span><span><i class="eqLineKey"></i>기준 가동률 (%)</span></div>'+
     '<div class="eqFootnote">작업지시서 날짜별 작업일수 × 8시간 기준 추정 (생산 5시간 / 청소·준비 3시간) · 실제 설비 가동시간 측정값 아님 · 08:30~16:30</div>';
