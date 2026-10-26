@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <link id="qmes-initial-factory-preload-20261026" rel="preload" as="image" href="./assets/qmes-header-factory-20261002.webp" fetchpriority="high">
-<style id="qmes-initial-factory-fallback-20261026">html,body,#app,main.content,#dashboard.namo-portal-shell,#namoPortal20261014{background-color:#050b12!important}#dashboard.namo-portal-shell,#namoPortal20261014,main.content:has(> #dashboard.active.namo-portal-shell){background-image:url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920"),url("./assets/qmes-header-factory-20261002.webp")!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}</style>
+<style id="qmes-initial-factory-fallback-20261026">html,body,#app,main.content,#main.namo-portal-shell,#namoPortal20261014{background-color:#050b12!important}#main.namo-portal-shell,#namoPortal20261014,main.content:has(> #main.active.namo-portal-shell){background-image:url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920"),url("./assets/qmes-header-factory-20261002.webp")!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}</style>
 <script id="qmes-mobile-root-redirect-20261023">
 (function(){
   try{
@@ -2089,10 +2089,10 @@ thead{background:#f4f7fa}
 }
 </style><style id="namo-portal-parent-style-20261014">
 /* Portal home only: existing sidebar, header, other modules, and data remain untouched. */
-#dashboard.namo-portal-shell{min-height:calc(100dvh - 58px)!important;padding:0!important;margin:0!important;background:#050b12 url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920") center/cover no-repeat!important}
-#dashboard.namo-portal-shell > :not(#namoPortal20261014){display:none!important}
+#main.namo-portal-shell{min-height:calc(100dvh - 58px)!important;padding:0!important;margin:0!important;background:#050b12 url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920") center/cover no-repeat!important}
+#main.namo-portal-shell > :not(#namoPortal20261014){display:none!important}
 #namoPortal20261014{display:block;width:100%;height:calc(100dvh - 58px);min-height:620px;border:0;background:#061c30 url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920") center/cover no-repeat!important}
-main.content:has(> #dashboard.active.namo-portal-shell){padding:0!important;overflow:hidden!important;background:#061c30 url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920") center/cover no-repeat!important}
+main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:hidden!important;background:#061c30 url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920") center/cover no-repeat!important}
 @media(max-width:760px){#namoPortal20261014{min-width:650px}}
 </style>
 <style id="namo-portal-top-controls-20261014">
@@ -2662,12 +2662,17 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #reportSheet.report-incoming .report-approval,
 #reportSheet.report-incoming .report-approval :is(.approval-label,.approval-head,.approval-cell){font-family:inherit!important;white-space:nowrap!important;text-align:center!important}
 </style>
+<style id="qmes-main-dashboard-separate-20261026">
+#dashboard.namo-dashboard-shell{padding:0!important;margin:0!important;min-height:calc(100dvh - 58px)!important;background:#f4f8fc!important}
+#dashboard.namo-dashboard-shell>:not(#namoDashboard20261026){display:none!important}
+#namoDashboard20261026{display:block!important;width:100%!important;height:calc(100dvh - 58px)!important;min-height:620px;border:0!important;background:#f4f8fc!important}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
 <div class="app" id="app">
   <header class="topbar">
-    <button class="brand brand-home" id="brandHomeBtn" type="button" aria-label="메인 종합 대시보드로 이동">
+    <button class="brand brand-home" id="brandHomeBtn" type="button" aria-label="메인 화면으로 이동">
       <img class="brand-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-restore2" alt="NAMO Chemical">
     </button>
     <div class="top-actions">
@@ -2724,6 +2729,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   <aside class="sidebar" id="sidebar">
     <div class="nav-wrap">
       
+      <div class="menu" data-page="main"><div class="ico">⌂</div><div class="label">메인</div></div>
       <div class="menu" data-page="dashboard"><div class="ico">▦</div><div class="label">종합 대시보드</div></div>
 
       
@@ -2761,7 +2767,8 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   </aside>
 
   <main class="content">
-    <section class="module-page namo-portal-shell" id="dashboard">
+    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261026-original-home" loading="eager"></iframe></section>
+    <section class="module-page namo-dashboard-shell" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
         <div class="date-badge">2026.10.06 화요일</div>
@@ -2814,7 +2821,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
-    <iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261026-original-home" loading="eager"></iframe>
+    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261026-separated1" loading="lazy"></iframe>
     </section>
 
     <section class="module-page" id="orders"></section>
@@ -7706,8 +7713,8 @@ if (currentUserEl && typeof MutationObserver !== 'undefined') {
   });
 }
 if(!restoreQmesPage()){
-  document.querySelector('.menu[data-page="dashboard"]')?.classList.add('active');
-  document.getElementById('dashboard')?.classList.add('active');
+  document.querySelector('.menu[data-page="main"]')?.classList.add('active');
+  document.getElementById('main')?.classList.add('active');
 }
 // Reveal the selected menu only after the saved page has been restored.
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
@@ -7724,10 +7731,6 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
   const page=document.getElementById(m.dataset.page);
-  if(m.dataset.page==='dashboard'){
-    const portalFrame=document.getElementById('namoPortal20261014');
-    if(portalFrame) portalFrame.src='./qmes-integrated-dashboard-20261026.html?v=20261026-1';
-  }
   page.classList.add('active');
   page._fitIncomingColumns?.();
   rememberQmesPage(m.dataset.page);
@@ -7739,14 +7742,7 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
 }));
 
 document.getElementById('brandHomeBtn')?.addEventListener('click',()=>{
-  document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
-  const dashboard=document.getElementById('dashboard');
-  const portalFrame=document.getElementById('namoPortal20261014');
-  if(portalFrame) portalFrame.src='./qmes-portal-home-20261014.html?v=20261026-original-home';
-  dashboard?.classList.add('active');
-  workspacePreviousPage='dashboard';
-  content.scrollTop=0;
+  document.querySelector('.sidebar .menu[data-page="main"]')?.click();
 });
 document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대시보드가 새로고침되었습니다.');});
 document.getElementById('allViewBtn').addEventListener('click',()=>{
@@ -7863,7 +7859,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 });
 </script>
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
-<script src="./js/namo-qmes-work-tabs-20261012.js?v=20261012-1"></script>
+<script src="./js/namo-qmes-work-tabs-20261012.js?v=20261026-separated-main1"></script>
 <script src="./js/qmes-menu-history-20261021.js?v=3-pagination"></script>
 <script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261020-auth-ready1"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
@@ -7878,9 +7874,9 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   'use strict';
   const channel='NAMO_QMES_PORTAL_20261014';
   const frame=document.getElementById('namoPortal20261014');
-  const dash=document.getElementById('dashboard');
+  const dash=document.getElementById('main');
   if(!frame||!dash)return;
-  const allowed=new Set(['dashboard','orders','purchase','work','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval','inventory','quality','adminEmployees']);
+  const allowed=new Set(['main','dashboard','orders','purchase','work','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval','inventory','quality','adminEmployees']);
   function sendProfile(){
     if(!frame.isConnected||!frame.contentWindow)return;
     const user=document.querySelector('#currentUser .user-meta b');
