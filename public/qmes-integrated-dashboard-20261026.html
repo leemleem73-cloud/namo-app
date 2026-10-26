@@ -11,7 +11,7 @@ body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46p
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
 .ring{width:48px;height:48px;border-radius:50%;background:conic-gradient(#2e8bf4 var(--p),#eaf0f6 0);position:relative;display:grid;place-items:center}.ring:after{content:"";width:35px;height:35px;background:#fff;border-radius:50%;position:absolute}.ring b{z-index:1;font-size:9px;color:#2e8bf4}
-.row2{grid-template-columns:1.15fr .9fr .9fr;margin-top:10px}.row3{grid-template-columns:1.35fr .85fr;margin-top:10px}.row4{grid-template-columns:1.15fr 1fr;margin-top:10px}
+.row2{grid-template-columns:1.15fr .9fr .9fr;margin-top:10px}.row3{grid-template-columns:1fr;margin-top:10px}.row4{grid-template-columns:1.15fr 1fr;margin-top:10px}
 .head{height:39px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between;padding:0 11px}.head strong{font-size:12px;border-left:3px solid #2e8bf4;padding-left:8px}.head span{font-size:9px;color:#658099}.body{padding:10px}
 .chart{height:176px;position:relative}.plot{position:absolute;left:38px;right:116px;top:15px;bottom:28px;border-left:1px solid #dbe5ef;border-bottom:1px solid #dbe5ef}.plot svg{width:100%;height:100%;overflow:visible}.axis{position:absolute;left:37px;right:117px;bottom:4px;display:flex;justify-content:space-between;font-size:8px;color:#6f8398}
 .stats{position:absolute;right:4px;top:18px;width:100px;font-size:9px}.stats b{display:block;font-size:16px;margin:4px 0 10px}.goal{padding:8px;background:#2e8bf4;color:#fff;border-radius:4px;text-align:center;font-weight:800}
@@ -38,15 +38,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 </div>
 
 <div class="grid row3" id="dashRow3">
-<div class="card"><div class="head"><strong>2026년 작업지시 현황 (26건)</strong><span>전체보기 ›</span></div><div class="body"><table><thead><tr><th>No.</th><th>작업지시번호</th><th>제품명</th><th>LOT 번호</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th></tr></thead><tbody>
-<tr><td>1</td><td>WO-20261026-001</td><td>HSM</td><td>DBL1501</td><td>50,000</td><td>32,500</td><td>65%</td><td><span class="badge blue">생산중</span></td></tr>
-<tr><td>2</td><td>WO-20261026-002</td><td>DBL</td><td>DBL25G1</td><td>20,000</td><td>18,600</td><td>93%</td><td><span class="badge blue">생산중</span></td></tr>
-<tr><td>3</td><td>WO-20261026-003</td><td>HSM</td><td>HSM2610</td><td>15,000</td><td>15,000</td><td>100%</td><td><span class="badge green">완료</span></td></tr>
-<tr><td>4</td><td>WO-20261026-004</td><td>SBS</td><td>SBS2610</td><td>10,000</td><td>0</td><td>0%</td><td><span class="badge amber">대기</span></td></tr>
-<tr><td>5</td><td>WO-20261026-005</td><td>DBA</td><td>DBA2610</td><td>8,000</td><td>0</td><td>0%</td><td><span class="badge redb">품질보류</span></td></tr>
-</tbody></table></div></div>
-<div class="card"><div class="head"><strong>선택 작업 상세</strong><span>WO-20261026-001</span></div><div class="body detail"><div><span>제품명</span><b>HSM</b></div><div><span>작업구분</span><b>대체 원료, 동일 공정</b></div><div><span>LOT 번호</span><b>DBL1501</b></div><div><span>작업일자</span><b>2026-10-26</b></div><div><span>계획수량</span><b>50,000 kg</b></div><div><span>설비명</span><b>생산설비</b></div><div><span>실적수량</span><b>32,500 kg</b></div><div><span>현재상태</span><span class="badge blue">생산중</span></div><div><span>진행률</span><b>65%</b></div><div><span>예상종료</span><b>2026-10-26 15:00</b></div></div></div>
-<div class="card"><div class="head"><strong>작업지시 품질 Gate / LOT 흐름</strong><span>상세보기 ›</span></div><div class="body gate"><div style="border-color:#8ee0bd"><b style="color:#279566">수입검사</b><span>IQC 완료<br>10/26 08:10</span></div><div style="border-color:#8ee0bd"><b style="color:#279566">원료투입</b><span>완료<br>10/26 08:30</span></div><div style="border-color:#6eb3ff"><b style="color:#2e8bf4">생산</b><span>진행<br>65%</span></div><div style="border-color:#f2c36b"><b style="color:#bf861d">공정검사</b><span>PQC 대기<br>-</span></div><div><b>출하검사</b><span>OQC 대기<br>-</span></div><div><b>출하</b><span>대기<br>-</span></div></div></div>
+<div class="card"><div class="head"><strong>선택 작업 상세</strong><span>-</span></div><div class="body detail"><div><span>제품명</span><b>-</b></div><div><span>LOT 번호</span><b>-</b></div><div><span>계획수량</span><b>0 kg</b></div><div><span>실적수량</span><b>0 kg</b></div><div><span>현재상태</span><span class="badge amber">대기</span></div><div><span>진행률</span><b>0%</b></div></div></div>
 </div>
 
 <div class="grid row4" id="dashRow4">
@@ -187,7 +179,6 @@ async function loadDashboard(){
   var first=yearRows[0]||{work:'-',product:'-',lot:'-',plan:0,actual:0,status:'대기'};
   var fr=first.plan?Math.round(first.actual/first.plan*100):0;
   document.getElementById('dashRow3').innerHTML=
-    '<div class="card"><div class="head"><strong>2026년 작업지시 현황 ('+total+'건)</strong><span>연간 생산현황 기준</span></div><div class="body"><table><thead><tr><th>No.</th><th>작업지시번호</th><th>제품명</th><th>LOT 번호</th><th>계획수량</th><th>실적수량</th><th>진행률</th><th>상태</th></tr></thead><tbody>'+tbody+'</tbody></table></div></div>'+
     '<div class="card"><div class="head"><strong>선택 작업 상세</strong><span>'+first.work+'</span></div><div class="body detail"><div><span>제품명</span><b>'+first.product+'</b></div><div><span>LOT 번호</span><b>'+first.lot+'</b></div><div><span>계획수량</span><b>'+fmt(first.plan)+' kg</b></div><div><span>실적수량</span><b>'+fmt(first.actual)+' kg</b></div><div><span>현재상태</span>'+badge(first.status)+'</div><div><span>진행률</span><b>'+fr+'%</b></div></div></div>';
 
   var byMaterial={};
