@@ -18,6 +18,12 @@ const attributes=' data-oqc-value="'+index+'" aria-label="'+esc(name)+' '+(index
 if(name==='외관'||name==='전해액 안정성'){const options=[...new Set(['',...(name==='외관'?['이상없음','이상있음']:['미탈리','탈리']),...(value?[value]:[])])];return '<select'+attributes+'>'+options.map(v=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(v||'선택')+'</option>').join('')+'</select>';}
 return '<input type="text"'+attributes+' value="'+esc(value)+'">';
 }
+
+// Hide the generated import reminder while preserving handwritten remarks.
+function cleanOutgoingRemarks(value){
+ return String(value??'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();
+}
+
 window.qmesOpenOutgoingDetail=function(row){
 const section=document.getElementById('outgoing'),record=section?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
 if(!record){alert('출하검사 기록을 새로 조회한 뒤 다시 열어 주세요.');return;}
@@ -25,7 +31,7 @@ const records=record.__groupChecks?.length?record.__groupChecks:[record];
 const field=(label,key,type,value)=>'<div class="am-inline-cell"><label>'+label+'</label><input type="'+type+'" data-oqc-field="'+key+'" value="'+esc(value)+'"></div>';
 const choice=(label,key,options,current)=>'<div class="am-inline-cell"><label>'+label+'</label><select data-oqc-field="'+key+'">'+options.map(value=>'<option value="'+esc(value)+'"'+(value===current?' selected':'')+'>'+esc(value||'선택')+'</option>').join('')+'</select></div>';
 const inspector=records.map(r=>String(r.inspector||'').trim()).find(v=>v&&v!=='-')||'박현아';
-let html='<div class="am-inline-edit-grid">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+field('고객사','customer','text',record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+'<div class="am-inline-cell"><label>검사합부</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(record.remarks||'')+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
+let html='<div class="am-inline-edit-grid">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+field('고객사','customer','text',record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+'<div class="am-inline-cell"><label>검사합부</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(cleanOutgoingRemarks(record.remarks))+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
 items.forEach(([name,spec,method],index)=>{const source=records.find(r=>canonical(r.check)===name),measurements=values(source);
 html+='<tr data-oqc-item="'+index+'"><td>'+(index+1)+'</td><th>'+esc(name)+'</th><td>'+esc(spec)+'</td><td>'+esc(method)+'</td>'+[0,1,2].map(i=>'<td>'+measurementCell(name,i,String(measurements[i]??''),!source)+'</td>').join('')+'<td><span data-oqc-item-judge="'+index+'" data-result="대기" aria-live="polite">대기</span></td></tr>';});
 html+='</tbody></table></div></div><div class="oqc-save-error" role="alert" hidden></div>';
