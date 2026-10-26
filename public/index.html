@@ -2811,7 +2811,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
-    <iframe id="namoPortal20261014" title="나모케미칼 QMES 종합 대시보드" src="./qmes-integrated-dashboard-20261026.html?v=20261026-1" loading="eager"></iframe>
+    <iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261026-original-home" loading="eager"></iframe>
     </section>
 
     <section class="module-page" id="orders"></section>
@@ -7712,6 +7712,10 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   workspaceBody.innerHTML='';
   workspaceFoot.innerHTML='';
   const page=document.getElementById(m.dataset.page);
+  if(m.dataset.page==='dashboard'){
+    const portalFrame=document.getElementById('namoPortal20261014');
+    if(portalFrame) portalFrame.src='./qmes-integrated-dashboard-20261026.html?v=20261026-1';
+  }
   page.classList.add('active');
   page._fitIncomingColumns?.();
   rememberQmesPage(m.dataset.page);
@@ -7723,10 +7727,13 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
 }));
 
 document.getElementById('brandHomeBtn')?.addEventListener('click',()=>{
-  const dashMenu=document.querySelector('.menu[data-page="dashboard"]');
-  if(dashMenu){dashMenu.click();return;}
+  document.querySelectorAll('.menu').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.module-page').forEach(x=>x.classList.remove('active'));
-  document.getElementById('dashboard')?.classList.add('active');
+  const dashboard=document.getElementById('dashboard');
+  const portalFrame=document.getElementById('namoPortal20261014');
+  if(portalFrame) portalFrame.src='./qmes-portal-home-20261014.html?v=20261026-original-home';
+  dashboard?.classList.add('active');
+  workspacePreviousPage='dashboard';
   content.scrollTop=0;
 });
 document.getElementById('refreshBtn').addEventListener('click',()=>{toast('대시보드가 새로고침되었습니다.');});
@@ -7879,6 +7886,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   }
   frame.addEventListener('load',function(){
     try{
+      const src=frame.getAttribute('src')||'';
+      if(src.includes('qmes-integrated-dashboard-20261026.html')) return;
       if(!frame.contentDocument||!frame.contentDocument.getElementById('namo-portal-root'))return failOpen();
       sendProfile();
     }catch(_e){failOpen();}
