@@ -164,13 +164,10 @@ function annualCombo(months,max){
     if(!shown.length)return html+'<div class="tt-more">등록된 생산 작업이 없습니다.</div>';
     shown.forEach(function(d){
       html+='<div class="tt-row">'+
-        '<div class="tt-line"><span>생산일자</span><b>'+esc(d.date)+'</b></div>'+
-        '<div class="tt-line"><span>제품 / LOT</span><b>'+esc(d.product)+' / '+esc(d.lot)+'</b></div>'+
-        '<div class="tt-line"><span>작업지시</span><b>'+esc(d.work)+'</b></div>'+
-        '<div class="tt-line"><span>원료</span><b>'+esc(d.material)+'</b></div>'+
-        '<div class="tt-line"><span>원료 투입비율</span><b>'+esc(d.ratio)+'</b></div>'+
-        '<div class="tt-line"><span>계획 / 실적</span><b>'+fmt(d.plan)+' / '+fmt(d.actual)+' kg</b></div>'+
-        '<div class="tt-line"><span>상태</span><b>'+esc(d.status)+'</b></div>'+
+        '<div class="tt-line"><span>1. 생산일자</span><b>'+esc(d.date)+'</b></div>'+
+        '<div class="tt-line"><span>2. 생산 LOT</span><b>'+esc(d.lot)+'</b></div>'+
+        '<div class="tt-line"><span>3. 원료 투입비율</span><b>'+esc(d.ratio)+'</b></div>'+
+        '<div class="tt-line"><span>4. 제품명</span><b>'+esc(d.product)+'</b></div>'+
       '</div>';
     });
     if(details.length>shown.length)html+='<div class="tt-more">외 '+(details.length-shown.length)+'건</div>';
