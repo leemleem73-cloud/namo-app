@@ -233,3 +233,10 @@
 #work .work-list-table tbody tr td:nth-child(2),
 #work .work-list-table tbody tr td:nth-child(2) a,
 #work .work-list-table tbody tr td:nth-child(2) *{color:#1689ed!important;text-decoration-color:#1689ed!important;}
+
+/* Center only the blue label cells in the work-order detail grid. */
+#mainWorkspace #namo-work-detail .nwd-grid .nwd-cell>b,
+#work #namo-work-detail .nwd-grid .nwd-cell>b,
+#namo-work-detail .nwd-grid .nwd-cell>b{
+ display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;
+}
