@@ -372,6 +372,7 @@ try {
 // Approved May 2026 seven-row import: missing-only, no overwrite, same QMES work order table.
 require('./qmes-may2026-workorder-import-20261014.js');
 require('./qmes-aug-oct2026-workorder-import-20261019.js');
+require('./qmes-work-remarks-cleanup-20261026.js');
 // Missing-only, non-approved OQC drafts from measured LOTs with matching work orders.
 require('./qmes-oqc-draft-import-20261019.js');
 
