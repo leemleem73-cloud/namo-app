@@ -11,7 +11,7 @@ body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46p
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
 .ring{width:48px;height:48px;border-radius:50%;background:conic-gradient(#2e8bf4 var(--p),#eaf0f6 0);position:relative;display:grid;place-items:center}.ring:after{content:"";width:35px;height:35px;background:#fff;border-radius:50%;position:absolute}.ring b{z-index:1;font-size:9px;color:#2e8bf4}
-.row2{grid-template-columns:1fr;margin-top:10px}.row3,.row4{grid-template-columns:1fr 1fr;margin-top:10px;align-items:stretch}.row3>.card,.row4>.card{height:250px;display:flex;flex-direction:column}.row3>.card>.body,.row4>.card>.body{flex:1;min-height:0;padding:12px}.row4>.card>.body{overflow:auto}
+.row2{grid-template-columns:1fr;margin-top:10px}.row3{grid-template-columns:1fr 1fr;margin-top:10px;align-items:stretch}.row4{grid-template-columns:1fr;margin-top:10px;align-items:stretch}.row3>.card{height:250px;display:flex;flex-direction:column}.row4>.card{height:335px;display:flex;flex-direction:column}.row3>.card>.body,.row4>.card>.body{flex:1;min-height:0;padding:12px}.row4>.card>.body{overflow:auto}
 .head{height:39px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between;padding:0 11px}.head strong{font-size:12px;border-left:3px solid #2e8bf4;padding-left:8px}.head span{font-size:9px;color:#658099}.body{padding:10px}
 .chart{height:176px;position:relative}.plot{position:absolute;left:38px;right:116px;top:15px;bottom:28px;border-left:1px solid #dbe5ef;border-bottom:1px solid #dbe5ef}.plot svg{width:100%;height:100%;overflow:visible}.axis{position:absolute;left:37px;right:117px;bottom:4px;display:flex;justify-content:space-between;font-size:8px;color:#6f8398}
 .stats{position:absolute;right:4px;top:18px;width:100px;font-size:9px}.stats b{display:block;font-size:16px;margin:4px 0 10px}.goal{padding:8px;background:#2e8bf4;color:#fff;border-radius:4px;text-align:center;font-weight:800}
@@ -302,9 +302,9 @@ async function loadDashboard(){
   var eqMonthDays=eqDays.map(function(days){return Object.keys(days).length});
   var eqMax=Math.max.apply(null,[1].concat(eqMonthDays));
   var eqBars='<div style="display:flex;align-items:center;gap:14px;padding:6px 4px 0;font-size:11px;color:#45627d"><span><i style="display:inline-block;width:10px;height:10px;background:#3c8ee7;margin-right:4px;border-radius:2px"></i>생산 5시간 (62.5%)</span><span><i style="display:inline-block;width:10px;height:10px;background:#f2b45b;margin-right:4px;border-radius:2px"></i>탱크 청소·준비 3시간 (37.5%)</span></div>';
-  eqBars+='<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px;align-items:end;height:180px;padding:10px 4px 2px">';
+  eqBars+='<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px;align-items:end;height:245px;padding:10px 4px 2px">';
   eqMonthDays.forEach(function(n,i){
-    var height=n?Math.max(12,Math.round(n/eqMax*112)):2;
+    var height=n?Math.max(12,Math.round(n/eqMax*175)):2;
     eqBars+='<div title="'+(i+1)+'월 작업일 '+n+'일 / 생산 '+(n*5)+'시간 / 청소·준비 '+(n*3)+'시간" style="height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0">'+
       '<b style="font-size:10px;color:#254d76;white-space:nowrap">'+(n*8)+'h</b>'+
       '<div style="width:75%;max-width:25px;height:'+height+'px;display:flex;flex-direction:column;border-radius:4px 4px 0 0;overflow:hidden">'+
@@ -316,29 +316,18 @@ async function loadDashboard(){
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
 
-  document.getElementById('dashRow3').innerHTML=
-    '<div class="card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong><span>작업지시 건수 / 비중</span></div><div class="body">'+customerChart+'</div></div>'+
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 생산 / 탱크 청소·준비</span></div><div class="body">'+eqBars+'</div></div>';
-
-  var byMaterial={};
-  yearRows.forEach(function(r){
-    var names=clean(r.material).split(',').map(function(x){return clean(x)}).filter(Boolean);
-    names.forEach(function(k){if(!byMaterial[k])byMaterial[k]={plan:0,actual:0};byMaterial[k].plan+=r.plan;byMaterial[k].actual+=r.actual});
-  });
-  var materials=Object.keys(byMaterial).sort(function(a,b){return byMaterial[b].actual-byMaterial[a].actual}).slice(0,8);
-  var maxMaterial=Math.max.apply(null,[1].concat(materials.map(function(k){return byMaterial[k].plan})));
-  var materialBars=materials.map(function(k){return barBlock(k,byMaterial[k].plan,byMaterial[k].actual,maxMaterial)}).join('');
-  if(!materialBars)materialBars='<div style="width:100%;height:120px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 작업지시에 등록된 원료 실적 데이터가 없습니다.</div>';
-
   var ngRows=yearRows.filter(function(r){return r.pqc==='불합격'||r.oqc==='불합격'||/보류/.test(r.status)});
   var ngTable=ngRows.slice(0,7).map(function(r,i){
     var reason=r.pqc==='불합격'?'PQC 불합격':r.oqc==='불합격'?'OQC 불합격':'품질보류';
     return '<tr><td>'+(i+1)+'</td><td>'+r.work+'</td><td>'+reason+'</td><td>'+fmt(r.actual)+'</td><td>-</td></tr>';
   }).join('');
 
-  document.getElementById('dashRow4').innerHTML=
-    '<div class="card"><div class="head"><strong>원료별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="barChart">'+materialBars+'</div></div></div>'+
+  document.getElementById('dashRow3').innerHTML=
+    '<div class="card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong><span>작업지시 건수 / 비중</span></div><div class="body">'+customerChart+'</div></div>'++
     '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
+
+  document.getElementById('dashRow4').innerHTML=
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 생산 / 탱크 청소·준비</span></div><div class="body">'+eqBars+'</div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
