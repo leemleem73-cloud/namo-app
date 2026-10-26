@@ -292,7 +292,7 @@ async function loadDashboard(){
 
   document.getElementById('dashRow4').innerHTML=
     '<div class="card"><div class="head"><strong>원료별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="barChart">'+materialBars+'</div></div></div>'+
-    '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>품질보류 '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
+    '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
