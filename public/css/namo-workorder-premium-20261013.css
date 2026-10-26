@@ -240,3 +240,10 @@
 #namo-work-detail .nwd-grid .nwd-cell>b{
  display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;
 }
+
+/* Match the existing detail grid at each label/value boundary. */
+#mainWorkspace #namo-work-detail .nwd-grid .nwd-cell>b,
+#work #namo-work-detail .nwd-grid .nwd-cell>b,
+#namo-work-detail .nwd-grid .nwd-cell>b{
+ border-right:1px solid #dbe3ed!important;box-sizing:border-box!important;
+}
