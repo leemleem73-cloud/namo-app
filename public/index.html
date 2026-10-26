@@ -3004,6 +3004,7 @@ workspaceBack.addEventListener('click',closeModal);
 document.addEventListener('keydown',e=>{if(e.key==='Escape' && mainWorkspace.classList.contains('active'))closeModal()});
 
 const NAMO_RAW_MATERIALS=['NMP','분산제','세라믹','중간배치','바인더','SBR'];
+const NAMO_WORK_RAW_MATERIALS=['NMP','BYK180','AOH30','PVdF','SBS','SBR'];
 const INCOMING_STORE_KEY='namo_qmes_incoming_materials_v1';
 const IQC_PAGE_CACHE_KEY='qmes-iqc-page-cache-v1';
 function saveIncomingPageCache(rows){
@@ -7485,17 +7486,18 @@ function openNewForm(id,editOrder=null){
       const add=document.getElementById('workRowAdd');
       const materialCategory=value=>{
         const name=String(value||'').trim();
-        if(NAMO_RAW_MATERIALS.includes(name))return name;
-        if(/BYK[ -]?180|분산제/i.test(name))return '분산제';
-        if(/AOH[ -]?30|Boehmite|세라믹/i.test(name))return '세라믹';
+        if(NAMO_WORK_RAW_MATERIALS.includes(name))return name;
+        if(/BYK[ -]?180|분산제/i.test(name))return 'BYK180';
+        if(/AOH[ -]?30|Boehmite|세라믹/i.test(name))return 'AOH30';
+        if(/^PVDF$/i.test(name))return 'PVdF';
         if(/PAI|바인더/i.test(name))return '바인더';
         return name;
       };
       const remaining=(editOrder.materials||[]).map(m=>({...m,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
-      const editMaterials=NAMO_RAW_MATERIALS.map(name=>{
+      const editMaterials=NAMO_WORK_RAW_MATERIALS.map(name=>{
         const index=remaining.findIndex(m=>m.name===name);
         return index<0?{name}:remaining.splice(index,1)[0];
-      }).concat(remaining);
+      }).concat(remaining.filter(m=>m.lot||m.plan||m.actual));
       editMaterials.forEach(m=>{
         add.click();const row=tbody.lastElementChild;
         row.dataset.sourceMaterialName=m.sourceName||'';
@@ -7542,7 +7544,7 @@ function initNamochemicalWorkForm(){
   const addBtn=document.getElementById('workRowAdd');
   const planQty=document.getElementById('workPlanQty');
   if(!tbody || !addBtn) return;
-  const defaults=[...NAMO_RAW_MATERIALS];
+  const defaults=[...NAMO_WORK_RAW_MATERIALS];
   function renumber(){[...tbody.rows].forEach((r,i)=>r.cells[0].textContent=i+1);}
   function recalc(){
     const rows=[...tbody.querySelectorAll('tr')];
@@ -7554,7 +7556,7 @@ function initNamochemicalWorkForm(){
     });
   }
   function materialOptions(selected=''){
-    return '<option value="">원료명 선택</option>'+NAMO_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('')+'<option value="__manual__">직접 입력</option>';
+    return '<option value="">원료명 선택</option>'+NAMO_WORK_RAW_MATERIALS.map(x=>`<option ${x===selected?'selected':''}>${x}</option>`).join('')+'<option value="__manual__">직접 입력</option>';
   }
   function addRow(name=''){
     const tr=document.createElement('tr');
@@ -7860,7 +7862,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-six-materials4"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-raw-six-order5"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261026-multi-operator3"></script>
