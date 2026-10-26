@@ -237,3 +237,6 @@ html body :is(#orders#orders,#purchase#purchase,#work#work,#outgoing#outgoing) t
 html body #mainWorkspace .am-split[data-am-screen="incoming"] .form-grid.iqc-edit-settings-frame{box-sizing:border-box!important;width:100%!important;max-width:1100px!important;margin-left:auto!important;margin-right:auto!important}
 }
 `;document.head.append(style);})();
+
+/* Purchase document links match work-order number emphasis. */
+(()=>{const s=document.createElement('style');s.id='purchase-number-work-parity-20261026';s.textContent='html body #purchase#purchase table.qmes-iqc-list-parity tbody td.qpu-order-number,html body #purchase#purchase table.qmes-iqc-list-parity tbody td.qpu-order-number :is(a,span){color:#1565c0!important;font-weight:700!important;text-decoration:underline!important}';document.head.append(s);})();
