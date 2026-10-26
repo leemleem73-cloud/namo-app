@@ -7441,7 +7441,7 @@ function openNewForm(id,editOrder=null){
       <div class="work-section"><div class="work-section-title">작업 기본정보</div><div class="work-section-body"><div class="work-basic-grid">
         <div class="form-item"><label>작업지시번호</label><input id="workOrderNo" type="text" value="자동생성" readonly></div>
         <div class="form-item"><label>작업일자</label><input type="date"></div>
-        <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력" list="workCustomerChoices"><datalist id="workCustomerChoices"><option value="현대자동차"><option value="SK하이닉스"><option value="KGM"><option value="르노"><option value="삼성"><option value="LG화학"></datalist></div>
+        <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력" autocomplete="off"></div>
         <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 선택 또는 직접 입력" list="workProductChoices"><datalist id="workProductChoices"><option value="NBA20HM05"></datalist></div>
         <div class="form-item"><label>생산 LOT NO</label><input type="text" placeholder="생산 LOT NO 입력"></div>
         <div class="form-item"><label>설비명</label><select><option>HSM</option></select></div>
