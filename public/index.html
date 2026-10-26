@@ -3002,7 +3002,7 @@ const NAMO_RAW_MATERIALS=['NMP','분산제','세라믹','중간배치','바인�
 const INCOMING_STORE_KEY='namo_qmes_incoming_materials_v1';
 const IQC_PAGE_CACHE_KEY='qmes-iqc-page-cache-v1';
 function saveIncomingPageCache(rows){
-  try{sessionStorage.setItem(IQC_PAGE_CACHE_KEY,JSON.stringify({rows:Array.isArray(rows)?rows:[],savedAt:Date.now()}));}catch(e){}
+  try{sessionStorage.setItem(IQC_PAGE_CACHE_KEY,JSON.stringify({rows:Array.isArray(rows)?rows:[],approvals:window.__QMES_IQC_APPROVALS__||{},savedAt:Date.now()}));}catch(e){}
 }
 function applyIncomingMetrics(section,rows){
   rows=Array.isArray(rows)?rows:[];
@@ -3021,7 +3021,9 @@ function restoreIncomingPageCache(section){
   try{
     const cached=JSON.parse(sessionStorage.getItem(IQC_PAGE_CACHE_KEY)||'null');
     const rows=Array.isArray(cached?.rows)?cached.rows:null;
-    if(!rows)return false;
+    if(!rows||!cached.approvals)return false;
+    if(rows.some(row=>!Object.prototype.hasOwnProperty.call(cached.approvals,String(row.id))))return false;
+    window.__QMES_IQC_APPROVALS__=cached.approvals;
     section._iqcRows=rows;
     applyIncomingMetrics(section,rows);
     renderIncomingPage(section,section._iqcPage||1);
@@ -5978,7 +5980,13 @@ function qmesIqcBarcodeSvg(value){
   return '<div class="report-iqc-barcode"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(x+8)+' 46" preserveAspectRatio="none" role="img" aria-label="성적서 바코드">'+rects+'</svg><span>'+code+'</span></div>';
 }
   const approval=qmesQualityApprovalPeople();
-  if(id==='incoming'){approval.reviewer='';approval.approver='';}
+  if(id==='incoming'){
+    const stage=window.__QMES_IQC_APPROVALS__?.[String(row.dataset.iqcId||row.dataset.recordId||row.dataset.id||'')];
+    const source=document.getElementById('incoming')?._iqcRows?.find(record=>String(record.id)===String(row.dataset.iqcId||''));
+    approval.writer=stage?.writer_name||source?.inspector||approval.writer;
+    approval.reviewer=stage?.reviewed_at?String(stage.reviewer_name||'임흥배'):'';
+    approval.approver=stage?.status==='APPROVED'&&stage?.approved_at?String(stage.approver_name||'임흥배'):'';
+  }
   const body=`
     <div class="report-sheet report-${id}" id="reportSheet">${id==='outgoing'?'<span data-report-shipping-status hidden>'+oqcShippingStatus+'</span>':''}
       <div class="report-doc-head">
@@ -6056,7 +6064,7 @@ function qmesIqcBarcodeSvg(value){
   }
   const recordId=row?.dataset?.iqcId||row?.dataset?.recordId||row?.dataset?.id||'';
   const approvalSheet=document.getElementById('reportSheet');
-  if(recordId&&approvalSheet){
+  if(recordId&&approvalSheet&&docType!=='IQC'){
     fetch('/api/qmes-quality/approvals/record?docType='+encodeURIComponent(docType)+'&recordId='+encodeURIComponent(recordId),{credentials:'same-origin'})
       .then(r=>r.json()).then(p=>{
         if(!p?.success||!p.data||!approvalSheet.isConnected)return;
