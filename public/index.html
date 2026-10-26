@@ -8222,28 +8222,6 @@ window.qmesPqcApprovalGrid=function(row){
 <link rel="stylesheet" href="./css/qmes-pqc-basic-compact-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">
-<script src="./js/qmes-production-status-toponly-20261026-v7.js?v=20261026-toponly-v7"></script>
-<script id="qmes-dashboard-opens-production-status-20261026">
-(function(){
-  function wire(){
-    var dashboardMenu=document.querySelector('#sidebar .menu[data-page="dashboard"]');
-    var panel=document.getElementById('namo-production-final-panel');
-    if(!dashboardMenu||!panel||dashboardMenu.dataset.prodDashWired==='1')return;
-    dashboardMenu.dataset.prodDashWired='1';
-    dashboardMenu.addEventListener('click',function(e){
-      e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
-      document.querySelectorAll('.menu').forEach(function(x){x.classList.remove('active');});
-      document.querySelectorAll('.module-page').forEach(function(x){x.classList.remove('active');});
-      panel.classList.add('active');
-      dashboardMenu.classList.add('active');
-      var refresh=document.getElementById('psRefresh'); if(refresh) refresh.click();
-    },true);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){wire();setTimeout(wire,300);setTimeout(wire,1000);});
-  else{wire();setTimeout(wire,300);setTimeout(wire,1000);}
-  new MutationObserver(wire).observe(document.documentElement,{childList:true,subtree:true});
-})();
-</script>
   <script src="./js/qmes-mobile-20261023.js?v=20261023-3"></script>
 </body>
 </html>
