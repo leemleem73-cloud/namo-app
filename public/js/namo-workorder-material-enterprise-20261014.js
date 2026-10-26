@@ -203,7 +203,7 @@
     const seen=new Set();
     candidates(state.rows,name.value).forEach(record=>{
       const lot=text(record.lot);if(seen.has(lot))return;seen.add(lot);
-      const label=[lot,record.item,record.supplier,judge(record)].map(text).filter(Boolean).join(' · ');
+      const label=lot;
       select.add(new Option(label,lot));
     });
     if(input.value&&!seen.has(input.value))select.add(new Option(input.value+' (기존 / 직접 입력)',input.value));
