@@ -7879,10 +7879,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
     frame.contentWindow.postMessage({channel:channel,type:'profile',name:name,isAdmin:isAdmin},location.origin);
   }
   function failOpen(){
-    // Never leave a blank home screen if the portal resource is missing or invalid.
-    dash.classList.remove('namo-portal-shell');
-    frame.remove();
-    console.warn('[QMES] Portal unavailable; previous dashboard restored.');
+    // Keep the main portal mounted. A transient load delay must never reveal the legacy dashboard.
+    console.warn('[QMES] Portal load delayed; keeping main portal mounted.');
   }
   frame.addEventListener('load',function(){
     try{
