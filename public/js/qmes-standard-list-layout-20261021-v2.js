@@ -233,7 +233,7 @@ html body :is(#orders#orders,#purchase#purchase,#work#work,#outgoing#outgoing) t
 /* Keep IQC detail fields readable on wide desktop displays; print unchanged. */
 (()=>{const style=document.createElement('style');style.id='iqc-detail-readable-width-20261026';style.textContent=`
 @media screen{
-html body #mainWorkspace .workspace-body>#reportSheet.report-incoming{box-sizing:border-box!important;width:100%!important;max-width:1100px!important;margin-left:auto!important;margin-right:auto!important}
+
 html body #mainWorkspace .am-split[data-am-screen="incoming"] .form-grid.iqc-edit-settings-frame{box-sizing:border-box!important;width:100%!important;max-width:1100px!important;margin-left:auto!important;margin-right:auto!important}
 }
 `;document.head.append(style);})();
