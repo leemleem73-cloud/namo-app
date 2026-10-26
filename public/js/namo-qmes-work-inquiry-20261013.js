@@ -70,7 +70,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <tfoot><tr><td colspan="3">합계</td><td>${qty(planned)}</td><td>${qty(used)}</td><td>${planned>0?'100%':'-'}</td></tr></tfoot></table>
 <h2>03. 기본 공정순서</h2>
 <div class="steps">${steps.map(x=>'<div class="step"><b>STEP '+safe(x[0])+'</b><div><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div></div>').join('')}</div>
-<h2>04. 작업지시사항</h2><div class="note">${safe(record.note)}</div>
+<h2>04. 비고</h2><div class="note">${safe(record.note)}</div>
 <div class="footer"><span>작업지시번호: ${safe(record.fields?.['작업지시번호']||record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
 </main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print()},250)});</script></body></html>`;
  if(renderOnly)return html;
@@ -282,7 +282,7 @@ function init(){
  function draw(row,order){
   const cells=[...row.cells].map(c=>c.textContent.trim()),fields=order?.fields||{};
   const value=(name,index)=>fields[name]??cells[index]??'-';
-  const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[3]||'-'],['고객사',value('고객사',2)],['제품명',value('제품명',4)],['생산 LOT',value('생산 LOT NO',5)],['설비명',value('설비명',6)],['작업자',value('작업자',7)],['계획수량',value('계획수량',8)],['작업기간',value('작업기간',9)],['진행상태',value('진행상태',10)],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['작업지시사항',order?.note||'-']];
+  const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[3]||'-'],['고객사',value('고객사',2)],['제품명',value('제품명',4)],['생산 LOT',value('생산 LOT NO',5)],['설비명',value('설비명',6)],['작업자',value('작업자',7)],['계획수량',value('계획수량',8)],['작업기간',value('작업기간',9)],['진행상태',value('진행상태',10)],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['비고',order?.note||'-']];
   const materials=Array.isArray(order?.materials)?order.materials:[];
   const tabs=[['materials','원재료 투입내역'],['progress','생산진행 현황'],['trace','LOT 추적정보']];
   const mats=order?'<div style="overflow-x:auto"><table><thead><tr><th>NO</th><th>원재료명</th><th>원재료 LOT</th><th>계획 투입량 (kg)</th><th>실투입량 (kg)</th></tr></thead><tbody>'+(materials.length?materials.map((m,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.plan)+'</td><td>'+esc(m.actual)+'</td></tr>').join(''):'<tr><td colspan="5">등록된 원료가 없습니다.</td></tr>')+'</tbody></table></div>':'<p>원료 정보 조회 중입니다.</p>';
