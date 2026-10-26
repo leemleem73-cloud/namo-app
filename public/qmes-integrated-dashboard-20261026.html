@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NAMO Chemical 종합 대시보드</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;background:#f4f8fc;color:#173b63}
-body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46px;background:#fff;border:1px solid #e0e8f1;border-radius:7px;display:flex;align-items:center;justify-content:flex-start;padding:0 14px;margin-bottom:10px}
+*{box-sizing:border-box}html,body{margin:0;height:auto;min-height:0;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;background:#f4f8fc;color:#173b63}
+html,body{overflow:hidden}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46px;background:#fff;border:1px solid #e0e8f1;border-radius:7px;display:flex;align-items:center;justify-content:flex-start;padding:0 14px;margin-bottom:10px}
 .crumb{font-size:12px;font-weight:800;color:#173b63}
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
@@ -357,6 +357,22 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 생산 / 탱크 청소·준비 / 기준 가동률</span></div><div class="body">'+eqBars+'</div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
+})();
+</script>
+
+<script id="dashboard-content-height-20261026">
+(function(){
+ 'use strict';
+ const wrap=document.querySelector('.wrap');
+ if(!wrap||window.parent===window)return;
+ let last=0,queued=false;
+ function report(){
+  queued=false;const height=Math.ceil(wrap.getBoundingClientRect().height);
+  if(height>0&&height!==last){last=height;window.parent.postMessage({channel:'QMES_DASHBOARD_SIZE_20261026',height:height},location.origin);}
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(report);}}
+ new ResizeObserver(schedule).observe(wrap);
+ window.addEventListener('load',schedule);window.addEventListener('resize',schedule);schedule();
 })();
 </script>
 </body>
