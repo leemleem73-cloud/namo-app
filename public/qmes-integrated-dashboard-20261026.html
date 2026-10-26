@@ -11,7 +11,7 @@ body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46p
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
 .ring{width:48px;height:48px;border-radius:50%;background:conic-gradient(#2e8bf4 var(--p),#eaf0f6 0);position:relative;display:grid;place-items:center}.ring:after{content:"";width:35px;height:35px;background:#fff;border-radius:50%;position:absolute}.ring b{z-index:1;font-size:9px;color:#2e8bf4}
-.row2{grid-template-columns:1.15fr .9fr .9fr;margin-top:10px}.row3{grid-template-columns:1fr;margin-top:10px}.row4{grid-template-columns:1.15fr 1fr;margin-top:10px}
+.row2{grid-template-columns:1fr;margin-top:10px}.row3{grid-template-columns:1fr 1fr;margin-top:10px}.row4{grid-template-columns:1.15fr 1fr;margin-top:10px}
 .head{height:39px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between;padding:0 11px}.head strong{font-size:12px;border-left:3px solid #2e8bf4;padding-left:8px}.head span{font-size:9px;color:#658099}.body{padding:10px}
 .chart{height:176px;position:relative}.plot{position:absolute;left:38px;right:116px;top:15px;bottom:28px;border-left:1px solid #dbe5ef;border-bottom:1px solid #dbe5ef}.plot svg{width:100%;height:100%;overflow:visible}.axis{position:absolute;left:37px;right:117px;bottom:4px;display:flex;justify-content:space-between;font-size:8px;color:#6f8398}
 .stats{position:absolute;right:4px;top:18px;width:100px;font-size:9px}.stats b{display:block;font-size:16px;margin:4px 0 10px}.goal{padding:8px;background:#2e8bf4;color:#fff;border-radius:4px;text-align:center;font-weight:800}
@@ -38,7 +38,8 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 </div>
 
 <div class="grid row3" id="dashRow3">
-<div class="card"><div class="head"><strong>선택 작업 상세</strong><span>-</span></div><div class="body detail"><div><span>제품명</span><b>-</b></div><div><span>LOT 번호</span><b>-</b></div><div><span>계획수량</span><b>0 kg</b></div><div><span>실적수량</span><b>0 kg</b></div><div><span>현재상태</span><span class="badge amber">대기</span></div><div><span>진행률</span><b>0%</b></div></div></div>
+<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"></div></div>
+<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"></div></div>
 </div>
 
 <div class="grid row4" id="dashRow4">
@@ -168,18 +169,11 @@ async function loadDashboard(){
   if(!eqBars)eqBars='<div style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 설비 가동 실적 데이터가 없습니다.</div>';
 
   document.getElementById('dashRow2').innerHTML=
-    '<div class="card"><div class="head"><strong>생산실적 추이 (2026년 1월~12월)</strong><span>계획 / 실적</span></div>'+lineChart(months,maxMonth)+'</div>'+
+    '<div class="card"><div class="head"><strong>생산실적 추이 (2026년 1월~12월)</strong><span>계획 / 실적</span></div>'+lineChart(months,maxMonth)+'</div>';
+
+  document.getElementById('dashRow3').innerHTML=
     '<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+customerBars+'</div></div></div>'+
     '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+eqBars+'</div></div></div>';
-
-  var tbody=yearRows.slice(0,7).map(function(r,i){
-    var rate=r.plan?Math.round(r.actual/r.plan*100):0;
-    return '<tr><td>'+(i+1)+'</td><td>'+r.work+'</td><td>'+r.product+'</td><td>'+r.lot+'</td><td>'+fmt(r.plan)+'</td><td>'+fmt(r.actual)+'</td><td>'+rate+'%</td><td>'+badge(r.status)+'</td></tr>';
-  }).join('');
-  var first=yearRows[0]||{work:'-',product:'-',lot:'-',plan:0,actual:0,status:'대기'};
-  var fr=first.plan?Math.round(first.actual/first.plan*100):0;
-  document.getElementById('dashRow3').innerHTML=
-    '<div class="card"><div class="head"><strong>선택 작업 상세</strong><span>'+first.work+'</span></div><div class="body detail"><div><span>제품명</span><b>'+first.product+'</b></div><div><span>LOT 번호</span><b>'+first.lot+'</b></div><div><span>계획수량</span><b>'+fmt(first.plan)+' kg</b></div><div><span>실적수량</span><b>'+fmt(first.actual)+' kg</b></div><div><span>현재상태</span>'+badge(first.status)+'</div><div><span>진행률</span><b>'+fr+'%</b></div></div></div>';
 
   var byMaterial={};
   yearRows.forEach(function(r){
