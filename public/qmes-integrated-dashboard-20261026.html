@@ -131,7 +131,7 @@ function annualCombo(months,max){
   if(step<1)step=1;
   var axisMax=step*5;
   var ticks=[axisMax,axisMax-step,axisMax-step*2,axisMax-step*3,axisMax-step*4,0];
-  var bars=months.map(function(m){
+  var bars=months.map(function(m,i){
     var h=Math.max(0,Math.min(100,m.plan/axisMax*100));
     return '<div class="annualComboBar annualComboHover" data-month-index="'+i+'" style="--bar-h:'+h+'%"><span class="annualComboPlanVal">'+fmt(m.plan)+'</span><i style="height:'+h+'%"></i></div>';
   }).join('');
