@@ -48,7 +48,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NAMO QMES</title>
-<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261015-blue-reconcile-500">
+<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261026-detail-label-center">
 <link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261026-summary-thin4">
 <link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261015-buttons-equal2">
 <style id="qmes-initial-view-20261008">
@@ -7496,11 +7496,15 @@ function openNewForm(id,editOrder=null){
         if(/PAI|바인더/i.test(name))return name;
         return name;
       };
-      const remaining=(editOrder.materials||[]).map(m=>({...m,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
-      const editMaterials=NAMO_WORK_RAW_MATERIALS.map(name=>{
-        const index=remaining.findIndex(m=>m.name===name);
+      const remaining=(editOrder.materials||[]).map((m,index)=>({...m,_workSlot:index,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
+      const editMaterials=NAMO_WORK_RAW_MATERIALS.map((name,slot)=>{
+        let index=remaining.findIndex(m=>m.name===name);
+        // A manually named material still belongs to its original editor row.
+        if(index<0)index=remaining.findIndex(m=>!NAMO_WORK_RAW_MATERIALS.includes(m.name)&&(m._workSlot===slot||m.sourceName===name));
         return index<0?{name}:remaining.splice(index,1)[0];
       });
+      // Preserve additional manually entered materials when reopening saved orders.
+      editMaterials.push(...remaining.filter(m=>m.lot||m.plan||m.actual));
       editMaterials.forEach(m=>{
         add.click();const row=tbody.lastElementChild;
         row.dataset.sourceMaterialName=m.sourceName||'';
