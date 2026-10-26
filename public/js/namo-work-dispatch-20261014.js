@@ -5,8 +5,9 @@
  const base='/api/qmes-work-dispatch';
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const api=async(path,options={})=>{
-   if(!options.method||options.method==='GET')await window.qmesAuthDataReady?.wait();
-   const r=await fetch(base+path,{credentials:'same-origin',cache:'no-store',...options});
+   await window.qmesAuthDataReady?.wait();
+   let r=await fetch(base+path,{credentials:'same-origin',cache:'no-store',...options});
+   if(r.status===401&&window.qmesReauthenticate){await window.qmesReauthenticate();r=await fetch(base+path,{credentials:'same-origin',cache:'no-store',...options});}
    const value=await r.json().catch(()=>({}));
    if(!r.ok||!value.success)throw Error(value.message||'서버 연결 실패');
    return value.data;
@@ -129,13 +130,14 @@
      emailButton.disabled=sending||!mailTotal;
      emailButton.title=mailTotal+'명 QMES 이메일 직접 발송';
    }
+   reset?.addEventListener('click',()=>{selected.clear();status.textContent='';render();});
    try{
      departments=(await api('/departments')).filter(d=>!['GUEST','대표'].includes(String(d.name||'').trim().toUpperCase()));
      if(!form.isConnected)return;
      if(!departments.length){list.textContent='수신 가능한 승인 직원이 없습니다.';return;}
      render();
    }catch(err){list.textContent='부서 조회 실패: '+err.message;return;}
-   reset?.addEventListener('click',()=>{selected.clear();status.textContent='';render();});
+   
    emailButton.addEventListener('click',async()=>{
      if(sending)return;
      const chosen=groups().flatMap(d=>(d.staff||[]).filter(p=>selected.get(d.name).has(String(p.id))));
