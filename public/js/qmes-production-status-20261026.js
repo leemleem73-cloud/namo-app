@@ -1,116 +1,117 @@
 (function(){
 'use strict';
-if(window.__NAMO_PRODUCTION_STATUS_20261026__)return;
-window.__NAMO_PRODUCTION_STATUS_20261026__=true;
+if(window.__NAMO_PRODUCTION_STATUS_CLEAN_20261026__)return;
+window.__NAMO_PRODUCTION_STATUS_CLEAN_20261026__=true;
 
 function init(){
+  document.querySelectorAll('#namo-production-status-menu,#namo-production-status-panel,#namo-production-status-menu,#namo-production-status-panel').forEach(function(el){el.remove();});
   var work=document.querySelector('#sidebar .menu[data-page="work"]');
-  if(!work||document.getElementById('namo-production-result-menu'))return;
+  if(!work||document.getElementById('namo-production-status-menu'))return;
 
   var menu=document.createElement('div');
-  menu.id='namo-production-result-menu';
+  menu.id='namo-production-status-menu';
   menu.className='menu';
-  menu.dataset.page='namo-production-result-panel';
+  menu.dataset.page='namo-production-status-panel';
   menu.innerHTML='<div class="ico">📊</div><div class="label">생산현황</div>';
   work.insertAdjacentElement('beforebegin',menu);
 
   var panel=document.createElement('section');
-  panel.id='namo-production-result-panel';
+  panel.id='namo-production-status-panel';
   panel.className='module-page';
   panel.innerHTML=`
 <style>
-#namo-production-result-panel{padding:0!important;background:#f3f6fa!important;color:#33485f;font-family:inherit}
-#namo-production-result-panel *{box-sizing:border-box}
-#namo-production-result-panel .ps-head{height:58px;background:#fff;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
-#namo-production-result-panel .ps-title h2{margin:0;font-size:18px;color:#254567;border-left:3px solid #4b92dd;padding-left:10px}
-#namo-production-result-panel .ps-title p{margin:4px 0 0 13px;font-size:10px;color:#8a99aa}
-#namo-production-result-panel .ps-actions{display:flex;gap:7px}
-#namo-production-result-panel button{cursor:pointer;font:inherit}
-#namo-production-result-panel .ps-btn{height:34px;border:1px solid #cfdbe7;background:#fff;color:#365b7c;border-radius:6px;padding:0 12px;font-size:10px;font-weight:800}
-#namo-production-result-panel .ps-btn.primary{background:#4b92dd;color:#fff;border-color:#4b92dd}
-#namo-production-result-panel .ps-filter{background:#eef4fa;border-bottom:1px solid #dfe7f0;padding:10px 12px;display:grid;grid-template-columns:repeat(5,1fr) auto;gap:9px}
-#namo-production-result-panel .ps-field label{display:block;font-size:9px;color:#5b7188;font-weight:800;margin-bottom:4px}
-#namo-production-result-panel .ps-field input,#namo-production-result-panel .ps-field select{width:100%;height:32px;border:1px solid #ccd8e5;background:#fff;border-radius:4px;padding:0 9px;font-size:10px;color:#425870}
-#namo-production-result-panel .ps-filter-actions{display:flex;align-items:end;gap:6px}
-#namo-production-result-panel .ps-wrap{padding:12px}
-#namo-production-result-panel .ps-layout{display:grid;grid-template-columns:230px minmax(0,1fr) 270px;gap:10px;align-items:stretch}
-#namo-production-result-panel .ps-panel{background:#fff;border:1px solid #dfe7f0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(35,72,108,.04)}
-#namo-production-result-panel .ps-panel-head{height:38px;padding:0 12px;border-bottom:1px solid #edf2f7;display:flex;align-items:center;justify-content:space-between}
-#namo-production-result-panel .ps-panel-head b{font-size:11px;color:#274b6d}
-#namo-production-result-panel .ps-panel-head small{font-size:8px;color:#8a99aa}
-#namo-production-result-panel .ps-panel-body{padding:10px}
-#namo-production-result-panel .ps-jobs{display:grid;gap:8px;max-height:560px;overflow:auto}
-#namo-production-result-panel .ps-job{border:1px solid #dfe7f0;border-radius:8px;background:#fbfdff;padding:10px;cursor:pointer}
-#namo-production-result-panel .ps-job.active{border:2px solid #4b92dd;background:#eaf4ff}
-#namo-production-result-panel .ps-job-top{display:flex;justify-content:space-between;gap:8px}
-#namo-production-result-panel .ps-job-top b{font-size:10px;color:#244765}
-#namo-production-result-panel .ps-job-top span{font-size:8px;color:#93a0ae}
-#namo-production-result-panel .ps-job p{margin:6px 0;font-size:8.5px;color:#728396;line-height:1.5}
-#namo-production-result-panel .ps-job-foot{display:flex;justify-content:space-between;align-items:center;font-size:8px;color:#8a98a8}
-#namo-production-result-panel .ps-badge{display:inline-block;padding:4px 8px;border-radius:10px;font-size:7.5px;font-weight:900;white-space:nowrap}
-#namo-production-result-panel .ps-badge.run{background:#e8f2ff;color:#3475ba}
-#namo-production-result-panel .ps-badge.ok{background:#eaf7ef;color:#36855a}
-#namo-production-result-panel .ps-badge.wait{background:#fff5dd;color:#a57b13}
-#namo-production-result-panel .ps-badge.ng{background:#fdebea;color:#c25555}
-#namo-production-result-panel .ps-detail-title{display:flex;justify-content:space-between;align-items:flex-start}
-#namo-production-result-panel .ps-detail-title h3{margin:0;font-size:17px;color:#23486a}
-#namo-production-result-panel .ps-detail-title p{margin:4px 0 0;font-size:8.5px;color:#8e9bac}
-#namo-production-result-panel .ps-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-#namo-production-result-panel .ps-info{border:1px solid #dfe7f0;border-radius:7px;background:#fbfdff;padding:9px}
-#namo-production-result-panel .ps-info span{display:block;font-size:8px;color:#90a0af}
-#namo-production-result-panel .ps-info b{display:block;font-size:11px;color:#2d4d69;margin-top:4px}
-#namo-production-result-panel .ps-progress{margin-top:10px;border-top:1px solid #edf2f7;padding-top:10px}
-#namo-production-result-panel .ps-progress-top{display:flex;justify-content:space-between;font-size:8px;color:#8796a7;margin-bottom:5px}
-#namo-production-result-panel .ps-bar{height:10px;background:#e6edf5;border-radius:8px;overflow:hidden}
-#namo-production-result-panel .ps-bar i{display:block;height:100%;background:linear-gradient(90deg,#4b92dd,#7ab2ea)}
-#namo-production-result-panel .ps-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-#namo-production-result-panel .ps-metric{border:1px solid #dfe7f0;border-radius:7px;background:#fcfdff;padding:10px;text-align:center}
-#namo-production-result-panel .ps-metric span{display:block;font-size:8px;color:#8a99aa}
-#namo-production-result-panel .ps-metric b{display:block;font-size:16px;color:#264a6b;margin-top:5px}
-#namo-production-result-panel .ps-route-wrap{margin-top:12px;border-top:1px solid #edf2f7;padding-top:12px}
-#namo-production-result-panel .ps-route-title{font-size:9px;font-weight:900;color:#2d4d69;margin-bottom:8px}
-#namo-production-result-panel .ps-route{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-#namo-production-result-panel .ps-node{position:relative;border:1px solid #dfe7f0;border-radius:7px;background:#f7fafc;padding:11px 6px;text-align:center}
-#namo-production-result-panel .ps-node:not(:last-child):after{content:"";position:absolute;right:-9px;top:50%;width:10px;height:2px;background:#bfd0e0}
-#namo-production-result-panel .ps-node span{display:block;font-size:7px;color:#91a0af}
-#namo-production-result-panel .ps-node b{display:block;font-size:10px;margin-top:4px}
-#namo-production-result-panel .ps-node.good{background:#edf8f1;border-color:#d7ebdf}.ps-node.good b{color:#49a36f}
-#namo-production-result-panel .ps-node.active{background:#eaf4ff;border-color:#cfe2f7}.ps-node.active b{color:#4b92dd}
-#namo-production-result-panel .ps-node.wait{background:#fff7e6;border-color:#f0e1b1}.ps-node.wait b{color:#d4a33b}
-#namo-production-result-panel .ps-node.bad{background:#fff1f0;border-color:#efcecc}.ps-node.bad b{color:#e06b67}
-#namo-production-result-panel .ps-node.lock{background:#f2f4f7}.ps-node.lock b{color:#97a3af}
-#namo-production-result-panel .ps-log{margin-top:12px;border:1px solid #dfe7f0;border-radius:7px;overflow:hidden}
-#namo-production-result-panel .ps-log-head{padding:8px 10px;background:#f7fafc;font-size:9px;font-weight:900;color:#2c4d68}
-#namo-production-result-panel .ps-log-row{display:grid;grid-template-columns:70px 105px 1fr;gap:8px;padding:8px 10px;border-top:1px solid #edf2f7;font-size:8px}
-#namo-production-result-panel .ps-log-row span{color:#95a3b2}.ps-log-row b{color:#2c4d68}.ps-log-row p{margin:0;color:#6d8094}
-#namo-production-result-panel .ps-actions-list{display:grid;gap:8px}
-#namo-production-result-panel .ps-action{border:1px solid #dfe7f0;border-radius:8px;padding:10px;background:#fbfdff}
-#namo-production-result-panel .ps-action.green{border-left:4px solid #49a36f;background:#f6fbf8}
-#namo-production-result-panel .ps-action.red{border-left:4px solid #e06b67;background:#fff7f7}
-#namo-production-result-panel .ps-action.amber{border-left:4px solid #d4a33b;background:#fffaf0}
-#namo-production-result-panel .ps-action.blue{border:2px solid #4b92dd;background:#f2f8ff}
-#namo-production-result-panel .ps-action-top{display:flex;justify-content:space-between}
-#namo-production-result-panel .ps-action-top b{font-size:9.5px;color:#2c4d68}
-#namo-production-result-panel .ps-action-top strong{font-size:8px}
-#namo-production-result-panel .ps-action p{margin:6px 0 0;font-size:8px;line-height:1.5;color:#73879b}
-#namo-production-result-panel .ps-bottom{margin-top:10px}
-#namo-production-result-panel .ps-bottom-toolbar{height:42px;padding:0 10px;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;background:#fff}
-#namo-production-result-panel .ps-bottom-toolbar strong{font-size:11px;color:#274b6d}
-#namo-production-result-panel .ps-bottom-tools{display:flex;align-items:center;gap:6px}
-#namo-production-result-panel .ps-bottom-tools button{height:30px;border:1px solid #d3deea;background:#fff;color:#526b83;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}
-#namo-production-result-panel .ps-bottom-tools .ps-icon-btn{width:32px;padding:0;font-size:15px;display:grid;place-items:center}
-#namo-production-result-panel .ps-table-wrap{overflow:auto}
-#namo-production-result-panel table{width:100%;border-collapse:collapse;min-width:1050px;font-size:9px}
-#namo-production-result-panel th{background:#f3f7fb;color:#6c7b8b;border-bottom:1px solid #dfe7f0;padding:8px;text-align:center;white-space:nowrap}
-#namo-production-result-panel td{border-bottom:1px solid #edf2f6;padding:8px;text-align:center;color:#4d6175;white-space:nowrap}
-#namo-production-result-panel tbody tr:hover{background:#f8fbff}
-#namo-production-result-panel .ps-link{border:0;background:none;color:#1672c3;text-decoration:underline;font-weight:800;padding:0}
-#namo-production-result-panel .ps-summary{padding:10px;display:grid;gap:8px}
-#namo-production-result-panel .ps-sum{border:1px solid #dfe7f0;border-radius:7px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center}
-#namo-production-result-panel .ps-sum span{font-size:8px;color:#91a0af}.ps-sum b{font-size:19px;color:#284d6d}
-#namo-production-result-panel .ps-sum.green{background:#edf8f1}.ps-sum.blue{background:#eaf4ff}.ps-sum.amber{background:#fff7e6}.ps-sum.red{background:#fff1f0}
-#namo-production-result-panel .ps-error{padding:10px;color:#b42318;font-size:11px}
-@media(max-width:1250px){#namo-production-result-panel .ps-filter{grid-template-columns:repeat(3,1fr)}#namo-production-result-panel .ps-layout{grid-template-columns:1fr}}
+#namo-production-status-panel{padding:0!important;background:#f3f6fa!important;color:#33485f;font-family:inherit}
+#namo-production-status-panel *{box-sizing:border-box}
+#namo-production-status-panel .ps-head{height:58px;background:#fff;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+#namo-production-status-panel .ps-title h2{margin:0;font-size:18px;color:#254567;border-left:3px solid #4b92dd;padding-left:10px}
+#namo-production-status-panel .ps-title p{margin:4px 0 0 13px;font-size:10px;color:#8a99aa}
+#namo-production-status-panel .ps-actions{display:flex;gap:7px}
+#namo-production-status-panel button{cursor:pointer;font:inherit}
+#namo-production-status-panel .ps-btn{height:34px;border:1px solid #cfdbe7;background:#fff;color:#365b7c;border-radius:6px;padding:0 12px;font-size:10px;font-weight:800}
+#namo-production-status-panel .ps-btn.primary{background:#4b92dd;color:#fff;border-color:#4b92dd}
+#namo-production-status-panel .ps-filter{background:#eef4fa;border-bottom:1px solid #dfe7f0;padding:10px 12px;display:grid;grid-template-columns:repeat(5,1fr) auto;gap:9px}
+#namo-production-status-panel .ps-field label{display:block;font-size:9px;color:#5b7188;font-weight:800;margin-bottom:4px}
+#namo-production-status-panel .ps-field input,#namo-production-status-panel .ps-field select{width:100%;height:32px;border:1px solid #ccd8e5;background:#fff;border-radius:4px;padding:0 9px;font-size:10px;color:#425870}
+#namo-production-status-panel .ps-filter-actions{display:flex;align-items:end;gap:6px}
+#namo-production-status-panel .ps-wrap{padding:12px}
+#namo-production-status-panel .ps-layout{display:grid;grid-template-columns:230px minmax(0,1fr) 270px;gap:10px;align-items:stretch}
+#namo-production-status-panel .ps-panel{background:#fff;border:1px solid #dfe7f0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(35,72,108,.04)}
+#namo-production-status-panel .ps-panel-head{height:38px;padding:0 12px;border-bottom:1px solid #edf2f7;display:flex;align-items:center;justify-content:space-between}
+#namo-production-status-panel .ps-panel-head b{font-size:11px;color:#274b6d}
+#namo-production-status-panel .ps-panel-head small{font-size:8px;color:#8a99aa}
+#namo-production-status-panel .ps-panel-body{padding:10px}
+#namo-production-status-panel .ps-jobs{display:grid;gap:8px;max-height:560px;overflow:auto}
+#namo-production-status-panel .ps-job{border:1px solid #dfe7f0;border-radius:8px;background:#fbfdff;padding:10px;cursor:pointer}
+#namo-production-status-panel .ps-job.active{border:2px solid #4b92dd;background:#eaf4ff}
+#namo-production-status-panel .ps-job-top{display:flex;justify-content:space-between;gap:8px}
+#namo-production-status-panel .ps-job-top b{font-size:10px;color:#244765}
+#namo-production-status-panel .ps-job-top span{font-size:8px;color:#93a0ae}
+#namo-production-status-panel .ps-job p{margin:6px 0;font-size:8.5px;color:#728396;line-height:1.5}
+#namo-production-status-panel .ps-job-foot{display:flex;justify-content:space-between;align-items:center;font-size:8px;color:#8a98a8}
+#namo-production-status-panel .ps-badge{display:inline-block;padding:4px 8px;border-radius:10px;font-size:7.5px;font-weight:900;white-space:nowrap}
+#namo-production-status-panel .ps-badge.run{background:#e8f2ff;color:#3475ba}
+#namo-production-status-panel .ps-badge.ok{background:#eaf7ef;color:#36855a}
+#namo-production-status-panel .ps-badge.wait{background:#fff5dd;color:#a57b13}
+#namo-production-status-panel .ps-badge.ng{background:#fdebea;color:#c25555}
+#namo-production-status-panel .ps-detail-title{display:flex;justify-content:space-between;align-items:flex-start}
+#namo-production-status-panel .ps-detail-title h3{margin:0;font-size:17px;color:#23486a}
+#namo-production-status-panel .ps-detail-title p{margin:4px 0 0;font-size:8.5px;color:#8e9bac}
+#namo-production-status-panel .ps-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+#namo-production-status-panel .ps-info{border:1px solid #dfe7f0;border-radius:7px;background:#fbfdff;padding:9px}
+#namo-production-status-panel .ps-info span{display:block;font-size:8px;color:#90a0af}
+#namo-production-status-panel .ps-info b{display:block;font-size:11px;color:#2d4d69;margin-top:4px}
+#namo-production-status-panel .ps-progress{margin-top:10px;border-top:1px solid #edf2f7;padding-top:10px}
+#namo-production-status-panel .ps-progress-top{display:flex;justify-content:space-between;font-size:8px;color:#8796a7;margin-bottom:5px}
+#namo-production-status-panel .ps-bar{height:10px;background:#e6edf5;border-radius:8px;overflow:hidden}
+#namo-production-status-panel .ps-bar i{display:block;height:100%;background:linear-gradient(90deg,#4b92dd,#7ab2ea)}
+#namo-production-status-panel .ps-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+#namo-production-status-panel .ps-metric{border:1px solid #dfe7f0;border-radius:7px;background:#fcfdff;padding:10px;text-align:center}
+#namo-production-status-panel .ps-metric span{display:block;font-size:8px;color:#8a99aa}
+#namo-production-status-panel .ps-metric b{display:block;font-size:16px;color:#264a6b;margin-top:5px}
+#namo-production-status-panel .ps-route-wrap{margin-top:12px;border-top:1px solid #edf2f7;padding-top:12px}
+#namo-production-status-panel .ps-route-title{font-size:9px;font-weight:900;color:#2d4d69;margin-bottom:8px}
+#namo-production-status-panel .ps-route{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+#namo-production-status-panel .ps-node{position:relative;border:1px solid #dfe7f0;border-radius:7px;background:#f7fafc;padding:11px 6px;text-align:center}
+#namo-production-status-panel .ps-node:not(:last-child):after{content:"";position:absolute;right:-9px;top:50%;width:10px;height:2px;background:#bfd0e0}
+#namo-production-status-panel .ps-node span{display:block;font-size:7px;color:#91a0af}
+#namo-production-status-panel .ps-node b{display:block;font-size:10px;margin-top:4px}
+#namo-production-status-panel .ps-node.good{background:#edf8f1;border-color:#d7ebdf}.ps-node.good b{color:#49a36f}
+#namo-production-status-panel .ps-node.active{background:#eaf4ff;border-color:#cfe2f7}.ps-node.active b{color:#4b92dd}
+#namo-production-status-panel .ps-node.wait{background:#fff7e6;border-color:#f0e1b1}.ps-node.wait b{color:#d4a33b}
+#namo-production-status-panel .ps-node.bad{background:#fff1f0;border-color:#efcecc}.ps-node.bad b{color:#e06b67}
+#namo-production-status-panel .ps-node.lock{background:#f2f4f7}.ps-node.lock b{color:#97a3af}
+#namo-production-status-panel .ps-log{margin-top:12px;border:1px solid #dfe7f0;border-radius:7px;overflow:hidden}
+#namo-production-status-panel .ps-log-head{padding:8px 10px;background:#f7fafc;font-size:9px;font-weight:900;color:#2c4d68}
+#namo-production-status-panel .ps-log-row{display:grid;grid-template-columns:70px 105px 1fr;gap:8px;padding:8px 10px;border-top:1px solid #edf2f7;font-size:8px}
+#namo-production-status-panel .ps-log-row span{color:#95a3b2}.ps-log-row b{color:#2c4d68}.ps-log-row p{margin:0;color:#6d8094}
+#namo-production-status-panel .ps-actions-list{display:grid;gap:8px}
+#namo-production-status-panel .ps-action{border:1px solid #dfe7f0;border-radius:8px;padding:10px;background:#fbfdff}
+#namo-production-status-panel .ps-action.green{border-left:4px solid #49a36f;background:#f6fbf8}
+#namo-production-status-panel .ps-action.red{border-left:4px solid #e06b67;background:#fff7f7}
+#namo-production-status-panel .ps-action.amber{border-left:4px solid #d4a33b;background:#fffaf0}
+#namo-production-status-panel .ps-action.blue{border:2px solid #4b92dd;background:#f2f8ff}
+#namo-production-status-panel .ps-action-top{display:flex;justify-content:space-between}
+#namo-production-status-panel .ps-action-top b{font-size:9.5px;color:#2c4d68}
+#namo-production-status-panel .ps-action-top strong{font-size:8px}
+#namo-production-status-panel .ps-action p{margin:6px 0 0;font-size:8px;line-height:1.5;color:#73879b}
+#namo-production-status-panel .ps-bottom{margin-top:10px}
+#namo-production-status-panel .ps-bottom-toolbar{height:42px;padding:0 10px;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;background:#fff}
+#namo-production-status-panel .ps-bottom-toolbar strong{font-size:11px;color:#274b6d}
+#namo-production-status-panel .ps-bottom-tools{display:flex;align-items:center;gap:6px}
+#namo-production-status-panel .ps-bottom-tools button{height:30px;border:1px solid #d3deea;background:#fff;color:#526b83;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}
+#namo-production-status-panel .ps-bottom-tools .ps-icon-btn{width:32px;padding:0;font-size:15px;display:grid;place-items:center}
+#namo-production-status-panel .ps-table-wrap{overflow:auto}
+#namo-production-status-panel table{width:100%;border-collapse:collapse;min-width:1050px;font-size:9px}
+#namo-production-status-panel th{background:#f3f7fb;color:#6c7b8b;border-bottom:1px solid #dfe7f0;padding:8px;text-align:center;white-space:nowrap}
+#namo-production-status-panel td{border-bottom:1px solid #edf2f6;padding:8px;text-align:center;color:#4d6175;white-space:nowrap}
+#namo-production-status-panel tbody tr:hover{background:#f8fbff}
+#namo-production-status-panel .ps-link{border:0;background:none;color:#1672c3;text-decoration:underline;font-weight:800;padding:0}
+#namo-production-status-panel .ps-summary{padding:10px;display:grid;gap:8px}
+#namo-production-status-panel .ps-sum{border:1px solid #dfe7f0;border-radius:7px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center}
+#namo-production-status-panel .ps-sum span{font-size:8px;color:#91a0af}.ps-sum b{font-size:19px;color:#284d6d}
+#namo-production-status-panel .ps-sum.green{background:#edf8f1}.ps-sum.blue{background:#eaf4ff}.ps-sum.amber{background:#fff7e6}.ps-sum.red{background:#fff1f0}
+#namo-production-status-panel .ps-error{padding:10px;color:#b42318;font-size:11px}
+@media(max-width:1250px){#namo-production-status-panel .ps-filter{grid-template-columns:repeat(3,1fr)}#namo-production-status-panel .ps-layout{grid-template-columns:1fr}}
 </style>
 <div class="ps-head">
   <div class="ps-title"><h2>생산현황</h2><p>작업지시 · 생산실적 · 품질 차단을 한 화면에서 확인합니다.</p></div>
@@ -363,7 +364,7 @@ function init(){
     var csv='\uFEFF'+lines.map(function(row){return row.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
     var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='NAMO_QMES_생산현황.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
   };
-  document.addEventListener('click',function(e){if(panel.classList.contains('active')&&e.target.closest('.menu:not(#namo-production-result-menu)'))close();},true);
+  document.addEventListener('click',function(e){if(panel.classList.contains('active')&&e.target.closest('.menu:not(#namo-production-status-menu)'))close();},true);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
