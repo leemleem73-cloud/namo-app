@@ -76,3 +76,25 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
   else start();
 })();
+
+/* Match NCR/equipment summary headings to the work-order summary. */
+(function(){
+ const style=document.createElement('style');style.id='qmes-work-summary-heading-parity-20261026';
+ style.textContent=`
+ html body #ncr .ncr-equipment-card>.ncr-list-head,
+ html body #equipment .eq-parity-summary{
+  box-sizing:border-box!important;margin-left:16px!important;margin-right:16px!important;
+  padding:17px 12px 14px!important;min-height:52px!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  background:#fff!important;color:#1e3f64!important;
+  font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;
+  font-size:13.5px!important;font-weight:800!important;line-height:normal!important;
+ }
+ html body #ncr .ncr-list-head>span:first-child,
+ html body #equipment .eq-parity-summary>b{
+  margin:0!important;padding:0!important;color:#1e3f64!important;
+  font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;
+  font-size:13.5px!important;font-weight:800!important;line-height:normal!important;
+ }
+ `;document.head.append(style);
+})();
