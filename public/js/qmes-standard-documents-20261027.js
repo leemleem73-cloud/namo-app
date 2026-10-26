@@ -56,7 +56,7 @@ function open(record=null){
   finally{busy=false;if(save.isConnected){save.disabled=false;save.textContent='저장';}}
  });
 }
-window.qmesStandardDocuments={open,load};
+window.qmesStandardDocuments={open,load,openRow:row=>open(records.find(r=>String(r.id)===String(row?.dataset.standardId))||null)};
 const style=document.createElement('style');style.textContent='#mainWorkspace .am-split[data-am-screen="standard"] select,#mainWorkspace .am-split[data-am-screen="standard"] select option{color:#243e5d!important;-webkit-text-fill-color:#243e5d!important;background:#fff!important;font-family:inherit!important;font-size:12px!important;opacity:1!important;visibility:visible!important}';document.head.append(style);
 function install(){
  const section=document.getElementById('standard'),table=section?.querySelector('.module-body>table');
