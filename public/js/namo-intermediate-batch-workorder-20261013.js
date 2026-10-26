@@ -60,7 +60,7 @@
     candidates.forEach(r=>{
       const x=document.createElement("option");
       x.value=batchLabel(lot(r));
-      x.label=kind+" / 잔량 "+(qty(r)-consumed(docs,lot(r))).toFixed(2)+"kg";
+      x.label=(kind==="PVDF"?"PVdF":kind)+" / 잔량 "+(qty(r)-consumed(docs,lot(r))).toFixed(2)+"kg";
       values.appendChild(x);
     });
     const found=ready(docs).find(r=>lot(r)===batchKey(lotInput.value)&&r.intermediateBatch?.kind===kind);
@@ -78,7 +78,7 @@
     sel.className="namo-mid-kind";
     sel.setAttribute("aria-label","중간배치 종류");
     sel.style.cssText="display:none;margin-top:5px;width:100%;min-height:30px";
-    sel.innerHTML='<option value="">중간배치 종류 선택</option>'+TYPES.map(x=>'<option value="'+x+'">'+x+'</option>').join("");
+    sel.innerHTML='<option value="">중간배치 종류 선택</option>'+TYPES.map(x=>'<option value="'+x+'">'+(x==='PVDF'?'PVdF':x)+'</option>').join("");
     const help=document.createElement("small");
     help.className="namo-mid-hint";
     help.style.cssText="display:none;margin-top:5px;font-size:10px;color:#64748b;line-height:1.4;text-align:left";
@@ -110,7 +110,7 @@
     form.dataset.namoMidForm="1";
     // Keep intermediate batch in material inputs, not new production categories.
     const kind=document.createElement("div");kind.className="form-item namo-mid-info";
-    kind.innerHTML='<label>중간배치 종류</label><select id="namoMidWorkKind"><option value="">선택</option><option>SBR</option><option>PVDF</option><option>SBS</option></select>';
+    kind.innerHTML='<label>중간배치 종류</label><select id="namoMidWorkKind"><option value="">선택</option><option>SBR</option><option value="PVDF">PVdF</option><option>SBS</option></select>';
     const produced=document.createElement("div");produced.className="form-item namo-mid-info";
     produced.innerHTML='<label>실제 제조량(kg)</label><input id="namoMidProduced" type="number" min="0" step="0.01" placeholder="제조 완료 시 입력">';
     const info=document.createElement("div");info.className="namo-mid-info";
@@ -175,7 +175,7 @@
     const selected=items.filter(r=>r.name==="중간배치"&&(batchKey(r.lot)||num(r.plan)||num(r.actual)));
     for(const item of selected){
       if(!batchKey(item.lot))return {ok:false,message:"중간배치 LOT 번호를 입력하세요."};
-      if(!TYPES.includes(str(item.batchType)))return {ok:false,message:"SBR / PVDF / SBS 중간배치 종류를 선택하세요."};
+      if(!TYPES.includes(str(item.batchType)))return {ok:false,message:"SBR / PVdF / SBS 중간배치 종류를 선택하세요."};
       const source=data.find(r=>mid(r)&&lot(r)===batchKey(item.lot)&&r.intermediateBatch?.kind===item.batchType);
       if(status(record)==="완료"){
         if(!source||status(source)!=="완료"||!qty(source))
