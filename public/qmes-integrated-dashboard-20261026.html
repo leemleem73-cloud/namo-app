@@ -19,7 +19,7 @@ body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46p
 .eqrow{display:grid;grid-template-columns:1.2fr .8fr 1.2fr 1fr;align-items:center;gap:8px;padding:12px 0;font-size:10px}.badge{display:inline-block;padding:4px 8px;border-radius:11px;font-size:9px;font-weight:800}.green{background:#eaf8f1;color:#29935f}.blue{background:#eaf4ff;color:#267acb}.amber{background:#fff4dc;color:#ac780b}.redb{background:#ffe9ec;color:#d93448}.bar{height:8px;background:#e7edf4;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:#2e8bf4}
 table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;color:#49647f;padding:6px;border-bottom:1px solid #dce6ef}td{text-align:center;padding:6px;border-bottom:1px solid #edf2f7;color:#36516d}
 .detail{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;font-size:9px}.detail div{display:flex;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:6px 0}.gate{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.gate div{border:1px solid #d9e3ed;border-radius:6px;padding:8px 4px;text-align:center;min-height:84px}.gate b{display:block;font-size:10px;margin-bottom:11px}.gate span{font-size:9px}
-.barChart{height:150px;display:flex;align-items:flex-end;gap:10px;padding:10px 8px 0}.miniBarChart{height:176px;display:flex;align-items:flex-end;gap:8px;padding:12px 8px 8px}.miniBarItem{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.miniBarCols{height:125px;display:flex;gap:3px;align-items:flex-end}.miniBarCols i{display:block;flex:1;background:#cfd8e3;border-radius:3px 3px 0 0}.miniBarCols i.actual{background:#2e8bf4}.miniBarName{text-align:center;font-size:8px;font-weight:700;color:#36516d;padding-top:5px;white-space:nowrap}.miniBarVal{text-align:center;font-size:7px;color:#5f7387;margin-bottom:2px;white-space:nowrap}.barItem{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.barVals{display:flex;justify-content:space-around;font-size:8px;font-weight:700;color:#36516d;margin-bottom:3px}.barCols{height:105px;display:flex;gap:4px;align-items:flex-end}.barCols i{display:block;flex:1;background:#cfd8e3;border-radius:3px 3px 0 0}.barCols i.actual{background:#2e8bf4}.barName{text-align:center;font-size:9px;font-weight:700;color:#36516d;padding-top:5px;white-space:nowrap}.ncrtags{display:flex;gap:7px;margin-bottom:8px}.ncrtags span{background:#ffe9ec;color:#d93448;padding:4px 10px;border-radius:12px;font-size:8px;font-weight:800}
+.barChart{height:150px;display:flex;align-items:flex-end;gap:10px;padding:10px 8px 0}.miniBarChart{height:220px;display:flex;align-items:flex-end;gap:10px;padding:16px 10px 10px}.annualBarChart{height:230px;display:flex;align-items:flex-end;gap:12px;padding:18px 14px 10px}.annualBarItem{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.annualBarVals{display:flex;justify-content:space-around;font-size:8px;font-weight:700;color:#48627d;margin-bottom:4px}.annualBarCols{height:170px;display:flex;gap:5px;align-items:flex-end}.annualBarCols i{display:block;flex:1;background:#cfd8e3;border-radius:4px 4px 0 0}.annualBarCols i.actual{background:#2e8bf4}.annualBarName{text-align:center;font-size:9px;font-weight:800;color:#36516d;padding-top:6px;white-space:nowrap}.miniBarItem{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.miniBarCols{height:125px;display:flex;gap:3px;align-items:flex-end}.miniBarCols i{display:block;flex:1;background:#cfd8e3;border-radius:3px 3px 0 0}.miniBarCols i.actual{background:#2e8bf4}.miniBarName{text-align:center;font-size:8px;font-weight:700;color:#36516d;padding-top:5px;white-space:nowrap}.miniBarVal{text-align:center;font-size:7px;color:#5f7387;margin-bottom:2px;white-space:nowrap}.barItem{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.barVals{display:flex;justify-content:space-around;font-size:8px;font-weight:700;color:#36516d;margin-bottom:3px}.barCols{height:105px;display:flex;gap:4px;align-items:flex-end}.barCols i{display:block;flex:1;background:#cfd8e3;border-radius:3px 3px 0 0}.barCols i.actual{background:#2e8bf4}.barName{text-align:center;font-size:9px;font-weight:700;color:#36516d;padding-top:5px;white-space:nowrap}.ncrtags{display:flex;gap:7px;margin-bottom:8px}.ncrtags span{background:#ffe9ec;color:#d93448;padding:4px 10px;border-radius:12px;font-size:8px;font-weight:800}
 @media(max-width:1250px){.wrap{min-width:1000px}.kpis{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
@@ -108,16 +108,10 @@ function miniBar(name,plan,actual,max){
   var ah=max?Math.max(actual>0?4:0,Math.round(actual/max*100)):0;
   return '<div class="miniBarItem"><div class="miniBarVal">'+fmt(actual)+'</div><div class="miniBarCols"><i style="height:'+ph+'%"></i><i class="actual" style="height:'+ah+'%"></i></div><div class="miniBarName">'+name+'</div></div>';
 }
-function lineChart(months,max){
-  if(!max)max=1;
-  function points(key){
-    return months.map(function(m,i){
-      var x=8+i*(344/11);
-      var y=132-(m[key]/max*110);
-      return x.toFixed(1)+','+Math.max(8,y).toFixed(1);
-    }).join(' ');
-  }
-  return '<div class="body chart"><div class="plot" style="right:15px"><svg viewBox="0 0 360 140"><polyline points="'+points('plan')+'" fill="none" stroke="#7bb5f6" stroke-width="3"/><polyline points="'+points('actual')+'" fill="none" stroke="#115fae" stroke-width="3"/></svg></div><div class="axis" style="right:15px">'+months.map(function(m){return '<span>'+m.name+'</span>'}).join('')+'</div></div>';
+function annualBar(name,plan,actual,max){
+  var ph=max?Math.max(plan>0?4:0,Math.round(plan/max*100)):0;
+  var ah=max?Math.max(actual>0?4:0,Math.round(actual/max*100)):0;
+  return '<div class="annualBarItem"><div class="annualBarVals"><span>'+fmt(plan)+'</span><span>'+fmt(actual)+'</span></div><div class="annualBarCols"><i style="height:'+ph+'%"></i><i class="actual" style="height:'+ah+'%"></i></div><div class="annualBarName">'+name+'</div></div>';
 }
 async function loadDashboard(){
   var all=await Promise.all([read('/api/qmes/work-orders'),read('/api/iqc'),read('/api/pqc'),read('/api/oqc')]);
@@ -168,8 +162,9 @@ async function loadDashboard(){
   var eqBars=eqs.map(function(k){return miniBar(k,byEq[k].plan,byEq[k].actual,maxEq)}).join('');
   if(!eqBars)eqBars='<div style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 설비 가동 실적 데이터가 없습니다.</div>';
 
+  var monthBars=months.map(function(m){return annualBar(m.name,m.plan,m.actual,maxMonth)}).join('');
   document.getElementById('dashRow2').innerHTML=
-    '<div class="card"><div class="head"><strong>생산실적 추이 (2026년 1월~12월)</strong><span>계획 / 실적</span></div>'+lineChart(months,maxMonth)+'</div>';
+    '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>회색: 계획 / 파랑: 실적</span></div><div class="body"><div class="annualBarChart">'+monthBars+'</div></div></div>';
 
   document.getElementById('dashRow3').innerHTML=
     '<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+customerBars+'</div></div></div>'+
