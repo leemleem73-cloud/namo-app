@@ -6,8 +6,8 @@
 <title>NAMO Chemical 종합 대시보드</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;background:#f4f8fc;color:#173b63}
-body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46px;background:#fff;border:1px solid #e0e8f1;border-radius:7px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;margin-bottom:10px}
-.brand{font-weight:900;font-size:18px}.brand span{color:#176fb7}.crumb{font-size:11px;color:#6d8297}.date{font-size:10px;color:#57718b}
+body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46px;background:#fff;border:1px solid #e0e8f1;border-radius:7px;display:flex;align-items:center;justify-content:flex-start;padding:0 14px;margin-bottom:10px}
+.crumb{font-size:12px;font-weight:800;color:#173b63}
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
 .ring{width:48px;height:48px;border-radius:50%;background:conic-gradient(#2e8bf4 var(--p),#eaf0f6 0);position:relative;display:grid;place-items:center}.ring:after{content:"";width:35px;height:35px;background:#fff;border-radius:50%;position:absolute}.ring b{z-index:1;font-size:9px;color:#2e8bf4}
@@ -25,7 +25,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 </head>
 <body>
 <div class="wrap">
-<div class="top"><div class="brand"><span>N</span>AMO Chemical</div><div class="crumb">생산관리　›　<b>종합 대시보드</b></div><div class="date">2026년 10월 26일 (월)</div></div>
+<div class="top"><div class="crumb">종합 대시보드</div></div>
 
 <div class="grid kpis">
 <div class="card kpi"><div><div class="kt">오늘 작업지시</div><div class="kv ">26 <span style="font-size:10px">건</span></div><div class="ks">전체 38건</div></div><div class="ring" style="--p:68%"><b>68%</b></div></div><div class="card kpi"><div><div class="kt">생산량</div><div class="kv ">12 <span style="font-size:10px">건</span></div><div class="ks">계획 45,000 kg</div></div><div class="ring" style="--p:46%"><b>46%</b></div></div><div class="card kpi"><div><div class="kt">생산완료</div><div class="kv ">10 <span style="font-size:10px">건</span></div><div class="ks">실적 32,500 kg</div></div><div class="ring" style="--p:35%"><b>35%</b></div></div><div class="card kpi"><div><div class="kt">품질보류</div><div class="kv red">2 <span style="font-size:10px">건</span></div><div class="ks">23,400 kg</div></div><div class="ring" style="--p:8%"><b>8%</b></div></div><div class="card kpi"><div><div class="kt">PQC 불합격</div><div class="kv red">1 <span style="font-size:10px">건</span></div><div class="ks">1,200 kg</div></div><div class="ring" style="--p:4%"><b>4%</b></div></div><div class="card kpi"><div><div class="kt">OQC 불합격</div><div class="kv red">1 <span style="font-size:10px">건</span></div><div class="ks">800 kg</div></div><div class="ring" style="--p:4%"><b>4%</b></div></div>
