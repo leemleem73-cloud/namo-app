@@ -66,7 +66,7 @@
     const found=ready(docs).find(r=>lot(r)===batchKey(lotInput.value)&&r.intermediateBatch?.kind===kind);
     hint.textContent=found?
       "사용 가능 수량(완료 이력 기준): "+(qty(found)-consumed(docs,lot(found))).toFixed(2)+"kg":
-      candidates.length?"중간배치 LOT 선택 또는 입력 (완료 시 등록 여부 검증)":"선택한 종류의 완료된 중간배치 LOT가 없습니다.";
+      candidates.length?"중간배치 LOT 선택 또는 입력 (완료 시 등록 여부 검증)":"";
   }
   function prepRow(tr){
     if(tr.dataset.namoMidRow==="1")return;
