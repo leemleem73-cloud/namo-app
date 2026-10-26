@@ -125,7 +125,7 @@ if(typeof MutationObserver!=='undefined'&&document.body){
 
 // List pagination uses the live pager's handlers, so Back/Forward restores
 // the actual data page and keeps filters, permissions and event handlers intact.
-var pagerSelectors=['.ip-pagination','.nwi-pagination','.qpu-pager','.qof-pager','.qpo-pagination','.eq-pagination','.ncr-pagination'];
+var pagerSelectors=['.ip-pagination','.nwi-pagination','.qpu-pager','.qof-pager','.qpo-pagination','.eq-pagination','.ncr-pagination','.quality-approval-pager'];
 function pagerNumber(pager){
  var buttons=Array.from(pager?.querySelectorAll('button')||[]);
  var active=buttons.find(function(button){
@@ -182,6 +182,51 @@ document.addEventListener('click',function(event){
   recordView(page,'list-page:'+selector+':'+after,name);
  });
 },true);
+
+
+ // Keep list page choices across full reloads and asynchronous data rendering.
+ var pageStoreKey='qmes-list-pages-v1',savedPages={};
+ try{savedPages=JSON.parse(sessionStorage.getItem(pageStoreKey)||'{}')||{};}catch(_){}
+ function pageKey(page,selector){return page+'|'+selector;}
+ function rememberPage(key,value){
+  savedPages[key]=Math.max(1,Number(value)||1);
+  try{sessionStorage.setItem(pageStoreKey,JSON.stringify(savedPages));}catch(_){}
+ }
+ var restoringPages=false,restoreQueued=false;
+ function restoreListPages(){
+  restoreQueued=false;if(restoringPages)return;
+  restoringPages=true;
+  try{document.querySelectorAll('.module-page[id]').forEach(function(section){
+   pagerSelectors.forEach(function(selector){
+    var desired=Number(savedPages[pageKey(section.id,selector)]),pager=section.querySelector(selector);
+    if(!pager||!desired||pagerNumber(pager)===desired)return;
+    var button=Array.from(pager.querySelectorAll('button')).find(function(b){return !b.disabled&&b.textContent.trim()===String(desired);});
+    // Wait for data to populate its pager instead of clamping to initial page 1.
+    if(button)button.click();
+   });
+  });}finally{restoringPages=false;}
+ }
+ function queuePageRestore(){if(!restoreQueued){restoreQueued=true;queueMicrotask(restoreListPages);}}
+ document.addEventListener('click',function(event){
+  if(restoringPages)return;
+  var button=event.target?.closest?.('button'),section=button?.closest('.module-page[id]');
+  if(!button||button.disabled||!section)return;
+  var selector=pagerSelectors.find(function(sel){return button.closest(sel);});
+  if(selector){
+   var label=button.textContent.trim(),before=pagerNumber(button.closest(selector));
+   var desired=/^\d+$/.test(label)?Number(label):label==='‹'?before-1:label==='›'?before+1:null;
+   if(desired>0)rememberPage(pageKey(section.id,selector),desired);
+  }else if(button.matches('[id$="-search"],[id$="-clear"],.iqc-query-search,.iqc-query-clear')){
+   pagerSelectors.forEach(function(sel){rememberPage(pageKey(section.id,sel),1);});
+  }
+ },true);
+ document.addEventListener('input',function(event){
+  if(!event.target?.matches?.('.module-toolbar input,.module-toolbar select,#namo-work-inquiry input,.quality-approval-search'))return;
+  var section=event.target.closest('.module-page[id]');if(!section)return;
+  pagerSelectors.forEach(function(sel){rememberPage(pageKey(section.id,sel),1);});
+ },true);
+ new MutationObserver(queuePageRestore).observe(document.body,{subtree:true,childList:true});
+ queuePageRestore();
 
 document.addEventListener('keydown',function(event){
  if(event.defaultPrevented||event.isComposing||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
