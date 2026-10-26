@@ -168,3 +168,14 @@
 #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary .nwm-summary-field-label{font-size:10px;color:#60778c;font-weight:600;margin-right:6px}
 #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary strong{font-size:12px;color:#1d5d91;font-weight:800;font-variant-numeric:tabular-nums}
 #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary .nwm-summary-unit{font-size:10px;margin-left:4px;color:#74899c}
+
+/* Match the shared inspection form's thin neutral cell borders. */
+html body #mainWorkspace .work-form .work-section{border:1px solid #e0e5eb!important;border-radius:3px!important;box-shadow:none!important}
+html body #mainWorkspace .work-form .work-section-title{border-bottom:1px solid #e0e5eb!important}
+html body #mainWorkspace .work-form .nwm-material .nwm-table-wrap{border:1px solid #e0e5eb!important;border-radius:0!important;box-shadow:none!important}
+html body #mainWorkspace .work-form .nwm-material #workMaterialTable :is(thead th,tbody td,tfoot td){border-color:#e0e5eb!important}
+html body #mainWorkspace .work-form .nwm-material .work-material-tools{border-color:#e0e5eb!important;border-radius:2px!important;box-shadow:none!important}
+html body #mainWorkspace .work-form .work-basic-grid .form-item>input,
+html body #mainWorkspace .work-form .work-basic-grid .form-item>select,
+html body #mainWorkspace .work-form .work-basic-grid .nwp-range-button,
+html body #mainWorkspace .work-form .nwm-material #workMaterialTable :is(input,select){border:1px solid #cfd7df!important;border-radius:2px!important;box-shadow:none!important}
