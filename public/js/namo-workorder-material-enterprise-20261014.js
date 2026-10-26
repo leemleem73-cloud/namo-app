@@ -218,12 +218,13 @@
       });
     }
     const middle=name.value==='중간배치';
-    const allowManual=middle||name.value==='SBR';
+    const allowManual=name.value==='SBS'||name.value==='SBR';
     if(!allowManual)delete row.dataset.nwmLotManual;
     const manual=allowManual&&row.dataset.nwmLotManual==='1';
-    select.hidden=manual;select.style.display=manual?'none':'block';
-    input.hidden=!manual;input.style.setProperty('display',manual?'':'none',manual?'':'important');
+    select.hidden=middle||manual;select.style.display=(middle||manual)?'none':'block';
+    input.hidden=!(middle||manual);input.style.setProperty('display',(middle||manual)?'':'none',(middle||manual)?'':'important');
     if(manual){input.style.width='100%';input.style.flex='1 1 100%';input.placeholder='LOT NO 직접 입력';}
+    if(middle)return;
     const middleLots=middle?Array.from(row.querySelectorAll('.namo-mid-list option')).map(o=>({lot:o.value})):[];
     const choices=middle?middleLots:candidates(state.rows,name.value);
     const key=state.version+'|'+name.value+'|'+middleLots.map(o=>o.lot).join(',')+'|'+(manual?'__manual__':input.value);
