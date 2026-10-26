@@ -185,21 +185,23 @@
     let select=row.querySelector('.nwm-iqc-lot-select');
     if(!select){
       select=document.createElement('select');select.className='nwm-iqc-lot-select';
-      select.setAttribute('aria-label','수입검사 원료 LOT 선택');
+      select.setAttribute('aria-label','LOT 선택');
       select.style.cssText='width:100%;min-width:0;margin-bottom:5px;font-size:11px';
       input.parentNode.insertBefore(select,input);
       select.addEventListener('change',()=>{
-        if(select.value){input.value=select.value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
+        input.value=select.value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
       });
     }
     const middle=name.value==='중간배치';
     select.hidden=middle;select.style.display=middle?'none':'block';
+    input.hidden=!middle;input.style.setProperty('display',middle?'':'none',middle?'':'important');
+    if(!middle){select.style.flex='1 1 100%';select.style.width='100%';select.style.marginBottom='0';}
     if(middle)return;
     const key=state.version+'|'+name.value+'|'+input.value;
     if(select.dataset.choiceKey===key)return;
     select.dataset.choiceKey=key;
     select.replaceChildren();
-    select.add(new Option(state.error?'수입검사 조회 실패 · 새로고침':state.loading?'수입검사 조회 중…':'수입검사 LOT 선택 / 직접 입력',''));
+    select.add(new Option(state.error?'수입검사 조회 실패 · 새로고침':state.loading?'수입검사 조회 중…':'LOT 선택',''));
     const seen=new Set();
     candidates(state.rows,name.value).forEach(record=>{
       const lot=text(record.lot);if(seen.has(lot))return;seen.add(lot);
