@@ -304,7 +304,8 @@ function install(app) {
     try {
       await ensureSchema();
       const q = await pool.query(`
-        SELECT DISTINCT ON (i.id) i.id::text AS record_id, a.status, a.updated_at
+        SELECT DISTINCT ON (i.id) i.id::text AS record_id, a.status, a.updated_at,
+          a.writer_name, a.reviewer_name, a.approver_name, a.reviewed_at, a.approved_at
         FROM iqc i
         LEFT JOIN qmes_quality_approvals a
           ON a.doc_type='IQC' AND a.record_id=i.id::text AND a.status <> 'DELETED'
