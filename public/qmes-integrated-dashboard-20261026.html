@@ -343,18 +343,38 @@ async function loadDashboard(){
   var eqHourMax=Math.max.apply(null,[8].concat(eqMonthDays.map(function(n){return n*8})));
   eqHourMax=Math.ceil(eqHourMax/4/10)*40;
   function equipmentCombo(){
-    // Use the exact same chart generator as the production performance chart.
-    var eqMonths=eqMonthDays.map(function(n,i){
-      return {name:(i+1)+'월',plan:n*8,actual:n*5};
-    });
-    var eqChartMax=Math.max.apply(null,[1].concat(eqMonths.map(function(m){return Math.max(m.plan,m.actual)})));
-    var html=annualCombo(eqMonths,eqChartMax)
-      .replace(/annualComboHover/g,'')
-      .replace('<div class="annualComboUnit">kg</div>','<div class="annualComboUnit">h</div>')
-      .replace('생산계획','총 운영시간')
-      .replace('생산실적','생산 가동시간');
-    html=html.replace('<div class="annualComboPlot"></div>','<div class="annualComboPlot"></div><div class="eqRateAxisTitle">가동률 (%)</div><div class="eqRateAxis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>');
-    return html;
+    // Same visual frame as production performance: blue bars + orange line.
+    // Equipment chart meaning: blue = total operating hours, orange = utilization rate.
+    var totals=eqMonthDays.map(function(n){return n*8});
+    var max=Math.max.apply(null,[1].concat(totals));
+    var step=Math.ceil(max/5);if(step<1)step=1;
+    var axisMax=step*5;
+    var ticks=[axisMax,axisMax-step,axisMax-step*2,axisMax-step*3,axisMax-step*4,0];
+    var bars=eqMonthDays.map(function(n,i){
+      var hours=n*8,h=Math.max(0,Math.min(100,hours/axisMax*100));
+      return '<div class="annualComboBar" style="--bar-h:'+h+'%"><span class="annualComboPlanVal">'+(hours||0)+'</span><i style="height:'+h+'%"></i></div>';
+    }).join('');
+    var pts=eqMonthDays.map(function(n,i){
+      var rate=n?62.5:0;
+      var x=4.1667+i*(91.6666/11);
+      var y=96-(rate/100*88);
+      return x.toFixed(2)+','+Math.max(6,Math.min(96,y)).toFixed(2);
+    }).join(' ');
+    var labels=eqMonthDays.map(function(n){
+      var rate=n?62.5:0;
+      var y=96-(rate/100*88),top=Math.max(6,Math.min(96,y)).toFixed(2);
+      return '<div class="eqRateCell"><i class="eqRateDot" style="top:'+top+'%"></i><span class="eqRateVal" style="top:'+top+'%">'+rate+'%</span></div>';
+    }).join('');
+    return '<div class="annualCombo"><div class="annualComboBox">'+
+      '<div class="annualComboYAxis">'+ticks.map(function(t){return '<span>'+fmt(t)+'</span>'}).join('')+'</div>'+
+      '<div class="annualComboPlot"></div>'+
+      '<div class="eqRateAxisTitle">가동률 (%)</div><div class="eqRateAxis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>'+
+      '<div class="annualComboBars">'+bars+'</div>'+
+      '<svg class="annualComboLine" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="#f58b2a" stroke-width="1.2" vector-effect="non-scaling-stroke"></polyline></svg>'+
+      '<div class="eqRateLabels">'+labels+'</div>'+
+      '<div class="annualComboUnit">h</div>'+
+      '<div class="annualComboMonths">'+eqMonthDays.map(function(_,i){return '<span>'+(i+1)+'월</span>'}).join('')+'</div>'+
+      '</div><div class="annualComboLegend"><span><i class="legendBar"></i>총 운영시간</span><span><i class="legendLine"></i>가동률 (%)</span></div></div>';
   }
   var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" style="--eq-accent:'+color+';--eq-p:'+pct+'%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>'+pct+'%</b></div></div>';};
   var eqBars='<div class="eqSummary">'+eqStat('총 운영시간(작업일 기준)',eqTotalHours.toLocaleString()+' h','','#308ef0',eqTotalDays?100:0)+eqStat('생산 가동시간',eqProductionHours.toLocaleString()+' h','작업시간 대비 생산 비율','#308ef0',eqTotalDays?62.5:0)+eqStat('탱크 청소·준비시간',eqCleaningHours.toLocaleString()+' h','작업시간 대비 준비 비율','#f3a23c',eqTotalDays?37.5:0)+eqStat('기준 가동률',eqTotalDays?'62.5%':'0%','샘플 생산 표준시간 기준','#18b977',eqTotalDays?62.5:0)+'</div>'+
@@ -375,7 +395,7 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC 불합격 '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 
   document.getElementById('dashRow4').innerHTML=
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>총 운영시간 / 생산 가동시간</span></div><div class="body">'+eqBars+'</div></div>';
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>총 운영시간 / 가동률</span></div><div class="body">'+eqBars+'</div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
