@@ -201,14 +201,14 @@
     if(select.dataset.choiceKey===key)return;
     select.dataset.choiceKey=key;
     select.replaceChildren();
-    select.add(new Option(state.error?'수입검사 조회 실패 · 새로고침':state.loading?'수입검사 조회 중…':'LOT 선택',''));
+    select.add(new Option('LOT 선택',''));
     const seen=new Set();
     candidates(state.rows,name.value).forEach(record=>{
       const lot=text(record.lot);if(seen.has(lot))return;seen.add(lot);
       const label=lot;
       select.add(new Option(label,lot));
     });
-    if(input.value&&!seen.has(input.value))select.add(new Option(input.value+' (기존 / 직접 입력)',input.value));
+    if(input.value&&!seen.has(input.value))select.add(new Option(input.value,input.value));
     select.value=input.value||'';
   }
   function draw(form,state){form.querySelectorAll('#workMaterialTable tbody tr').forEach(row=>drawRow(row,state));}
@@ -231,7 +231,7 @@
       state=form._nwmIqcLot={rows:[],version:++serial,loading:false,error:false};
       const tools=form.querySelector('.work-material-tools');
       const refresh=document.createElement('button');
-      refresh.type='button';refresh.className='btn';refresh.textContent='수입검사 LOT 새로고침';
+      refresh.type='button';refresh.className='btn';refresh.textContent='LOT 새로고침';
       refresh.onclick=()=>load(form,state);tools?.append(refresh);
       form.addEventListener('change',event=>{
         const row=event.target.closest('#workMaterialTable tbody tr');
