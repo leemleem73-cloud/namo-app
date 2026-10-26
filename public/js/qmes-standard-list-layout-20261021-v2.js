@@ -160,3 +160,14 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
  html body #ncr .ncr-tools[hidden]{display:none!important}
  `;document.head.append(style);
 })();
+
+(()=>{const s=document.createElement('style');s.id='qmes-inquiry-specificity-fix-20261026';s.textContent=`
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>input[data-filter],
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>select[data-filter]{
+width:195px!important;min-width:195px!important;max-width:195px!important;flex:0 0 195px!important}
+html body #spcTrend .spc-iqc-shell .ip-toolbar,html body #spcTrend .ip-toolbar{padding:12px 16px!important}
+html body #spcTrend .ip-toolbar .ip-filter-row{display:flex!important;flex-wrap:wrap!important;gap:10px 20px!important;align-items:center!important}
+html body #spcTrend .ip-toolbar .ip-filter{display:flex!important;align-items:center!important;gap:8px!important;margin:0!important}
+html body #spcTrend .ip-toolbar .ip-filter>span{font-size:11.5px!important;font-weight:700!important;line-height:30px!important;text-align:left!important}
+html body #spcTrend .ip-toolbar .ip-filter :is(input,select){width:195px!important;min-width:195px!important;max-width:195px!important;height:30px!important;box-sizing:border-box!important;margin:0!important}
+`;document.head.append(s);})();
