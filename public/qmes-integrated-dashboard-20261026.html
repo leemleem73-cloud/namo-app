@@ -239,8 +239,19 @@ async function loadDashboard(){
   var maxMonth=Math.max.apply(null,[1].concat(months.map(function(m){return Math.max(m.plan,m.actual)})));
 
   var byCustomerCount={};
-  yearRows.forEach(function(r){var k=r.customer||'미지정';byCustomerCount[k]=(byCustomerCount[k]||0)+1});
-  var customerItems=Object.keys(byCustomerCount).map(function(k){return {name:k,count:byCustomerCount[k]}}).sort(function(a,b){return b.count-a.count});
+  function customerKey(v){
+    var s=clean(v||'미지정'),n=s.toLowerCase().replace(/\s+/g,'');
+    if(n.indexOf('현대')>=0)return '현대자동차';
+    if(n.indexOf('하이닉스')>=0||n.indexOf('hynix')>=0)return 'SK하이닉스';
+    if(n==='kgm'||n.indexOf('쌍용')>=0)return 'KGM';
+    if(n.indexOf('르노')>=0||n.indexOf('renault')>=0)return '르노';
+    return s||'미지정';
+  }
+  yearRows.forEach(function(r){var k=customerKey(r.customer);byCustomerCount[k]=(byCustomerCount[k]||0)+1});
+  ['현대자동차','SK하이닉스','KGM','르노'].forEach(function(k){if(byCustomerCount[k]==null)byCustomerCount[k]=0});
+  var preferred=['현대자동차','SK하이닉스','KGM','르노'];
+  var customerItems=preferred.map(function(k){return {name:k,count:byCustomerCount[k]||0}});
+  Object.keys(byCustomerCount).filter(function(k){return preferred.indexOf(k)<0}).sort(function(a,b){return byCustomerCount[b]-byCustomerCount[a]}).forEach(function(k){customerItems.push({name:k,count:byCustomerCount[k]})});
   if(customerItems.length>6){
     var rest=customerItems.slice(5).reduce(function(a,x){return a+x.count},0);
     customerItems=customerItems.slice(0,5).concat([{name:'기타',count:rest}]);
