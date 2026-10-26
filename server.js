@@ -50,6 +50,21 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
     const staticMiddleware = attendanceBaseStatic(root, options);
     return function namoAttendanceHumanArtworkMiddleware(req, res, next) {
       const pathname = String(req.path || '').toLowerCase();
+
+      // QMES production status cache hardening:
+      // retire the old production-status bundle and force fresh HTML/new bundle on reload.
+      if (pathname === '/js/qmes-production-results-20261023.js') {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return res.send('(function(){document.querySelectorAll("#namo-production-result-menu,#namo-production-result-panel").forEach(function(el){el.remove();});})();\\n');
+      }
+      if (pathname === '/' || pathname === '/index.html' || pathname === '/js/qmes-production-status-20261026.js') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
       // Retired inventory movement asset compatibility: old cached index pages may still
       // request this removed script. Return valid no-op JavaScript instead of allowing
       // the SPA fallback HTML to be parsed as JS ("Unexpected token '<'").
