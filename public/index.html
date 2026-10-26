@@ -4987,8 +4987,10 @@ let workSharedRows=null, workSyncBusy=null;
 const workDeletingIds=new Set();
 const WORK_API='/api/qmes/work-orders';
 async function workApi(method,path='',body){
-  if(String(method).toUpperCase()==='GET')await window.qmesAuthDataReady.wait();
-  const response=await fetch(WORK_API+path,{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
+  await window.qmesAuthDataReady.wait();
+  const options={method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined};
+  let response=await fetch(WORK_API+path,options);
+  if(response.status===401&&window.qmesReauthenticate){await window.qmesReauthenticate();response=await fetch(WORK_API+path,options);}
   const result=await response.json().catch(()=>({}));
   if(!response.ok||!result.success)throw new Error(result.message||'공용 서버 저장/조회 실패');
   return result;
@@ -7865,13 +7867,13 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261026-separated-main1"></script>
 <script src="./js/qmes-menu-history-20261021.js?v=3-pagination"></script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261020-auth-ready1"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261026-session-recover2"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-custom-material-lot9"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261026-reset-session2"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261026-work-period5"></script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
