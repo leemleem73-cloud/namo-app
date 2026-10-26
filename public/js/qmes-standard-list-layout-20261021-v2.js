@@ -100,3 +100,63 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
  }
  `;document.head.append(style);
 })();
+
+/* Shared inquiry spacing, measured from incoming inspection. */
+(function(){
+ const style=document.createElement('style');style.id='qmes-inquiry-spacing-parity-20261026';
+ style.textContent=`
+ html body :is(.module-page,.module-page.active) .ip-toolbar,
+ html body :is(#orders,#purchase,#quality,#standard,#approval) .module-toolbar,
+ html body #work #namo-work-inquiry,
+ html body #equipment .eq-parity-filters,
+ html body #ncr .ncr-equipment-card>.ncr-tools{
+  box-sizing:border-box!important;margin:0!important;padding:12px 16px!important;
+ }
+ html body .module-page .ip-filter-row,
+ html body :is(#orders,#purchase) .qpf-grid,
+ html body #work #namo-work-inquiry .nwi-grid,
+ html body #equipment .eq-parity-filters,
+ html body #ncr .ncr-equipment-card>.ncr-tools,
+ html body :is(#quality,#standard,#approval) .module-toolbar>.filters{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+  gap:10px 20px!important;min-width:0!important;
+ }
+ html body .module-page .ip-filter-row>.ip-filter,
+ html body :is(#orders,#purchase) .qpf-field,
+ html body #work #namo-work-inquiry .nwi-grid>label,
+ html body #equipment .eq-parity-filters>label,
+ html body #ncr .ncr-equipment-card>.ncr-tools>label{
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  flex:0 0 auto!important;gap:8px!important;margin:0!important;padding:0!important;
+  min-width:0!important;width:auto!important;font-size:11.5px!important;font-weight:700!important;
+  line-height:30px!important;color:#344d67!important;white-space:nowrap!important;
+ }
+ html body .module-page .ip-filter>span,
+ html body :is(#orders,#purchase) .qpf-field>span,
+ html body #work #namo-work-inquiry .nwi-grid>label>span{
+  flex:0 0 auto!important;min-width:0!important;width:auto!important;margin:0!important;padding:0!important;
+  text-align:left!important;font-size:11.5px!important;font-weight:700!important;line-height:30px!important;
+ }
+ html body .module-page .ip-filter :is(input:not([type=hidden]),select),
+ html body :is(#orders,#purchase) .qpf-field :is(input:not([type=hidden]),select),
+ html body #work #namo-work-inquiry .nwi-grid>label :is(input:not([type=hidden]),select),
+ html body #equipment .eq-parity-filters>label :is(input:not([type=hidden]),select),
+ html body #ncr .ncr-equipment-card>.ncr-tools>label :is(input:not([type=hidden]),select),
+ html body :is(#quality,#standard,#approval) .module-toolbar>.filters :is(input:not([type=hidden]),select){
+  box-sizing:border-box!important;width:195px!important;min-width:195px!important;max-width:195px!important;
+  flex:0 0 195px!important;height:30px!important;min-height:30px!important;margin:0!important;
+  padding:0 8px!important;border:1px solid #ccdaea!important;border-radius:4px!important;
+  background:#fff!important;color:#294763!important;font-family:inherit!important;font-size:12px!important;font-weight:600!important;
+ }
+ html body :is(#orders,#purchase) .qpf-field .pcal-root,
+ html body #work #namo-work-inquiry .nwi-period-trigger,
+ html body #equipment .eq-parity-filters>label input[data-filter-date],
+ html body #ncr .ncr-period-trigger,
+ html body .module-page :is(.qic-period-trigger,.qpc-period-trigger,.qoc-period-trigger){
+  box-sizing:border-box!important;width:215px!important;min-width:215px!important;max-width:215px!important;
+  flex:0 0 215px!important;height:30px!important;min-height:30px!important;margin:0!important;
+ }
+ html body #work #namo-work-inquiry .nwi-grid>[hidden],
+ html body #ncr .ncr-tools[hidden]{display:none!important}
+ `;document.head.append(style);
+})();
