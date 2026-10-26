@@ -5073,6 +5073,7 @@ async function saveWorkOrderForm(editId='',options={}){
     name:row.querySelector('.material-name-select')?.value==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():row.querySelector('.material-name-select')?.value,
     lot:(row.querySelector('.material-name-select')?.value==='중간배치' && /^MB-?$/i.test(row.querySelector('.material-lot-manual')?.value.trim()||''))?'':(row.querySelector('.material-lot-manual')?.value.trim()||''),
     plan:row.querySelector('.plan-input')?.value||'',actual:row.querySelector('.actual-input')?.value||'',
+    sourceName:row.dataset.sourceMaterialName||'',
     batchType:row.querySelector('.material-name-select')?.value==='중간배치'?(row.querySelector('.namo-mid-kind')?.value||''):''
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
@@ -7464,8 +7465,22 @@ function openNewForm(id,editOrder=null){
       set('작업지시번호',f['작업지시번호']||editOrder.id);set('작업일자',editOrder.workDate);set('고객사명',f['고객사']);set('제품명',f['제품명']);set('생산 LOT NO',f['생산 LOT NO']);set('설비명',f['설비명']);set('작업자',f['작업자']);set('계획수량',f['계획수량']);set('작업 시작일',period[0]);set('작업 종료일',period[1]);set('진행상태',f['진행상태']);const typeSelect=basic.find(x=>x.querySelector('label')?.textContent.trim()==='생산구분')?.querySelector('select');if(typeSelect&&editOrder.productionType&&!Array.from(typeSelect.options).some(x=>x.value===editOrder.productionType))typeSelect.add(new Option(editOrder.productionType+' (기존 이력)',editOrder.productionType));set('생산구분',editOrder.productionType);
       const tbody=document.querySelector('#workMaterialTable tbody');tbody.innerHTML='';
       const add=document.getElementById('workRowAdd');
-      (editOrder.materials||[]).forEach(m=>{
+      const materialCategory=value=>{
+        const name=String(value||'').trim();
+        if(NAMO_RAW_MATERIALS.includes(name))return name;
+        if(/BYK[ -]?180|분산제/i.test(name))return '분산제';
+        if(/AOH[ -]?30|Boehmite|세라믹/i.test(name))return '세라믹';
+        if(/PAI|바인더/i.test(name))return '바인더';
+        return name;
+      };
+      const remaining=(editOrder.materials||[]).map(m=>({...m,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
+      const editMaterials=NAMO_RAW_MATERIALS.map(name=>{
+        const index=remaining.findIndex(m=>m.name===name);
+        return index<0?{name}:remaining.splice(index,1)[0];
+      }).concat(remaining);
+      editMaterials.forEach(m=>{
         add.click();const row=tbody.lastElementChild;
+        row.dataset.sourceMaterialName=m.sourceName||'';
         const name=row.querySelector('.material-name-select');name.value=[...name.options].some(o=>o.value===m.name)?m.name:'__manual__';name.dispatchEvent(new Event('change'));
         if(name.value==='__manual__')row.querySelector('.material-name-manual').value=m.name||'';
         row.querySelector('.material-lot-manual').value=m.lot||'';
@@ -7831,7 +7846,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261013-mid1"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-single-lot3"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-six-materials4"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261021-date-search"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261026-multi-operator3"></script>
