@@ -243,3 +243,5 @@ html body #mainWorkspace .am-split[data-am-screen="incoming"] .form-grid.iqc-edi
 
 /* The process list wrapper owns the bottom border; avoid a doubled final row line. */
 (()=>{const s=document.createElement('style');s.id='process-list-single-bottom-border-20261026';s.textContent='html body #process#process table.ip-table.qmes-iqc-list-parity tbody tr:last-child>td{border-bottom:0!important;box-shadow:none!important}';document.head.append(s);})();
+
+(()=>{const style=document.createElement('style');style.id='approval-list-row-bottom-20261026';style.textContent='html body #approval#approval>.module-shell>.module-body>table tbody tr>td{border-bottom:1px solid #d5dce5!important}';document.head.append(style);})();
