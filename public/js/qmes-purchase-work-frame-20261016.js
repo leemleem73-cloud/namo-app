@@ -237,3 +237,6 @@ const style=document.createElement('style');style.textContent=`
 .namo-purchase-mini-calendar .nwm-foot [data-close]{margin-left:auto}
 `;document.head.append(style);
 })();
+
+/* Join the header and blue inquiry band without the inherited shell gap. */
+(()=>{const style=document.createElement('style');style.id='purchase-shell-gap-fix-20261026';style.textContent='html body #purchase.purchase-work-frame .module-shell{gap:0!important;row-gap:0!important}';document.head.append(style);})();
