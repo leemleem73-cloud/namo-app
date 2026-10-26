@@ -284,12 +284,12 @@
   if(anchor.dataset.nwoMulti==='1'){
    const normalizeWorker=value=>{
     const name=clean(value);
-    return /^(대리\s*)?박도훈$/.test(name)?'박도훈':/^(주임\s*)?문지훈$/.test(name)?'문지훈':name;
+    return /^(대리\s*)?박도훈$/.test(name)?'대리 박도훈':/^(주임\s*)?문지훈$/.test(name)?'주임 문지훈':name;
    };
    const selected=[...new Set(anchor.value.split(',').map(normalizeWorker).filter(Boolean))];
    anchor.value=selected.join(', ');
    popup.replaceChildren();
-   [...new Set([...options,...selected])].forEach(value=>{
+   [...new Set([...options.map(normalizeWorker),...selected])].forEach(value=>{
     const label=document.createElement('label');label.className='nwo-multi-choice';
     const check=document.createElement('input');check.type='checkbox';check.checked=selected.includes(value);
     check.addEventListener('change',()=>{
@@ -340,7 +340,10 @@
   }
   form.querySelectorAll('input[list="workProductChoices"],input[list="workOperatorChoices"]').forEach(el=>{
    const values=[...document.getElementById(el.getAttribute('list')).options].map(o=>o.value);
-   if(el.getAttribute('list')==='workOperatorChoices')el.dataset.nwoMulti='1';
+   if(el.getAttribute('list')==='workOperatorChoices'){
+    el.dataset.nwoMulti='1';
+    el.value=[...new Set(el.value.split(',').map(value=>{const name=clean(value);return /^(대리\s*)?박도훈$/.test(name)?'대리 박도훈':/^(주임\s*)?문지훈$/.test(name)?'주임 문지훈':name;}).filter(Boolean))].join(', ');
+   }
    el.dataset.nwoChoices=JSON.stringify(values);el.removeAttribute('list');el.setAttribute('role','combobox');el.setAttribute('aria-haspopup','listbox');el.setAttribute('aria-expanded','false');el.setAttribute('aria-autocomplete','list');
    const open=()=>{ensure(el,'choice');drawChoices();};
    el.addEventListener('focus',open);el.addEventListener('click',()=>{if(anchor!==el||!popup)open();});
