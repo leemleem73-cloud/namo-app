@@ -60,6 +60,8 @@ html[data-qmes-view-state="preparing"] .content,html:not([data-qmes-menu-ready="
 html:not([data-qmes-menu-ready="1"]) .sidebar .menu{transition:none!important}
 /* Prevent old work/dashboard content from flashing before saved work tab is restored. */
 html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #dashboard{visibility:hidden!important}
+html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #dashboard.namo-dashboard-shell>:not(#namoDashboard20261026){display:none!important}
+html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #namoDashboard20261026{display:block!important;visibility:visible!important;background:#f4f8fc!important}
 html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
@@ -295,7 +297,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   root.setAttribute('data-qmes-view-state','preparing');
   try{
     const saved=sessionStorage.getItem('qmes-last-page-v1');
-    if(saved && saved!=='dashboard')root.setAttribute('data-qmes-pending-page',saved);
+    if(saved)root.setAttribute('data-qmes-pending-page',saved);
   }catch(_){};
   document.addEventListener('DOMContentLoaded',()=>{
     requestAnimationFrame(()=>{
@@ -2816,7 +2818,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
-    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261026-separated1" loading="lazy"></iframe>
+    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261026-separated1" loading="eager"></iframe>
     </section>
 
     <section class="module-page" id="orders"></section>
