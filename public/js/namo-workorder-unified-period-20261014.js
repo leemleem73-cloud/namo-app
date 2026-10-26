@@ -197,9 +197,9 @@
     var start=startBox.querySelector('input[type="date"]'),end=endBox.querySelector('input[type="date"]');
     if(!start||!end)return;
     var holder=mk('div','form-item nwp-range-field');
-    var label=mk('label','','지시기간');
+    var label=mk('label','','작업기간');
     var trigger=mk('button','nwp-range-button');
-    trigger.type='button';trigger.setAttribute('aria-label','지시기간 달력 열기');
+    trigger.type='button';trigger.setAttribute('aria-label','작업기간 달력 열기');
     trigger.setAttribute('aria-expanded','false');
     var value=mk('span','nwp-range-value','기간 선택'),icon=mk('span','nwp-range-icon','▦');
     trigger.append(value,icon);holder.append(label,trigger);
