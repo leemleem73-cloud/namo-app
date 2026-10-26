@@ -6917,6 +6917,7 @@ function arrangePqcWorkspaceActions(){
   workspaceFoot.replaceChildren(back,save);
 }
 function showRowDetail(id,row){
+  if(id==='standard'&&window.qmesStandardDocuments)return window.qmesStandardDocuments.openRow(row);
   if(id==='work'&&typeof window.namoOpenWorkInquiryDetail==='function')return window.namoOpenWorkInquiryDetail(row);
   if(id==='outgoing')return window.qmesOpenOutgoingDetail(row);
   if(id==='incoming'){
@@ -7443,6 +7444,7 @@ function initStandardInspectionForm(type){
 }
 
 function openNewForm(id,editOrder=null){
+  if(id==='standard'&&window.qmesStandardDocuments)return window.qmesStandardDocuments.open();
   if(id==='work'){
     const html=`<div class="work-form">
       <div class="work-section"><div class="work-section-title">작업 기본정보</div><div class="work-section-body"><div class="work-basic-grid">
@@ -8235,6 +8237,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-white-row5"></script>
+<script src="./js/qmes-standard-documents-20261027.js?v=1"></script>
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261022-12"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
