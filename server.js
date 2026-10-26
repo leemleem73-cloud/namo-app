@@ -5,7 +5,6 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
-require('./production-status-final-preload-20261026.js');
 require('./qmes-vendor-static-preload.js');
 
 require('./attendance-core-safe.js');
