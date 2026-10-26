@@ -11,11 +11,11 @@ body{overflow:auto}.wrap{min-width:1180px;padding:10px 12px 18px}.top{height:46p
 .grid{display:grid;gap:10px}.kpis{grid-template-columns:repeat(6,1fr)}.card{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .kpi{min-height:86px;padding:11px 13px;display:grid;grid-template-columns:1fr 54px;align-items:center}.kt{font-size:11px;font-weight:800}.kv{font-size:24px;font-weight:900;margin-top:7px}.kv.red{color:#e42f43}.ks{font-size:9px;color:#8395a8;margin-top:2px}
 .ring{width:48px;height:48px;border-radius:50%;background:conic-gradient(#2e8bf4 var(--p),#eaf0f6 0);position:relative;display:grid;place-items:center}.ring:after{content:"";width:35px;height:35px;background:#fff;border-radius:50%;position:absolute}.ring b{z-index:1;font-size:9px;color:#2e8bf4}
-.row2{grid-template-columns:1fr;margin-top:10px}.row3{grid-template-columns:1fr 1fr;margin-top:10px}.row4{grid-template-columns:1.15fr 1fr;margin-top:10px}
+.row2{grid-template-columns:1fr;margin-top:10px}.row3,.row4{grid-template-columns:1fr 1fr;margin-top:10px;align-items:stretch}.row3>.card,.row4>.card{height:250px;display:flex;flex-direction:column}.row3>.card>.body,.row4>.card>.body{flex:1;min-height:0;padding:12px}.row4>.card>.body{overflow:auto}
 .head{height:39px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between;padding:0 11px}.head strong{font-size:12px;border-left:3px solid #2e8bf4;padding-left:8px}.head span{font-size:9px;color:#658099}.body{padding:10px}
 .chart{height:176px;position:relative}.plot{position:absolute;left:38px;right:116px;top:15px;bottom:28px;border-left:1px solid #dbe5ef;border-bottom:1px solid #dbe5ef}.plot svg{width:100%;height:100%;overflow:visible}.axis{position:absolute;left:37px;right:117px;bottom:4px;display:flex;justify-content:space-between;font-size:8px;color:#6f8398}
 .stats{position:absolute;right:4px;top:18px;width:100px;font-size:9px}.stats b{display:block;font-size:16px;margin:4px 0 10px}.goal{padding:8px;background:#2e8bf4;color:#fff;border-radius:4px;text-align:center;font-weight:800}
-.donutwrap{display:grid;grid-template-columns:165px 1fr;align-items:center;min-height:176px}.donut{width:145px;height:145px;border-radius:50%;background:conic-gradient(#2e8bf4 0 42%,#25bf83 42% 70%,#f4ae2a 70% 85%,#7958e7 85% 95%,#aab4c0 95%);position:relative;display:grid;place-items:center}.donut:after{content:"";width:87px;height:87px;border-radius:50%;background:white}.dt{position:absolute;text-align:center;font-size:9px;z-index:2}.dt b{display:block;font-size:15px}.legend{display:grid;gap:9px;font-size:10px}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.donutwrap{display:grid;grid-template-columns:165px 1fr;align-items:center;min-height:176px}.donut{width:145px;height:145px;border-radius:50%;background:conic-gradient(#2e8bf4 0 42%,#25bf83 42% 70%,#f4ae2a 70% 85%,#7958e7 85% 95%,#aab4c0 95%);position:relative;display:grid;place-items:center}.donut:after{content:"";width:87px;height:87px;border-radius:50%;background:white}.dt{position:absolute;text-align:center;font-size:9px;z-index:2}.dt b{display:block;font-size:15px}.legend{display:grid;gap:9px;font-size:10px}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.customerDonutWrap{height:100%;display:grid;grid-template-columns:180px 1fr;align-items:center;gap:14px}.customerDonut{width:150px;height:150px;border-radius:50%;position:relative;display:grid;place-items:center;margin:auto}.customerDonut:after{content:"";width:88px;height:88px;border-radius:50%;background:#fff;position:absolute}.customerDonutCenter{position:absolute;z-index:2;text-align:center;color:#53697f;font-size:10px}.customerDonutCenter b{display:block;font-size:19px;color:#173b5e;margin-top:2px}.customerDonutLegend{display:grid;gap:8px;font-size:10px;color:#36516d}.customerDonutLegend div{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:7px}.customerDonutLegend i{width:9px;height:9px;border-radius:50%}.customerDonutLegend b{font-size:10px;color:#173b5e}
 .eqrow{display:grid;grid-template-columns:1.2fr .8fr 1.2fr 1fr;align-items:center;gap:8px;padding:12px 0;font-size:10px}.badge{display:inline-block;padding:4px 8px;border-radius:11px;font-size:9px;font-weight:800}.green{background:#eaf8f1;color:#29935f}.blue{background:#eaf4ff;color:#267acb}.amber{background:#fff4dc;color:#ac780b}.redb{background:#ffe9ec;color:#d93448}.bar{height:8px;background:#e7edf4;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:#2e8bf4}
 table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;color:#49647f;padding:6px;border-bottom:1px solid #dce6ef}td{text-align:center;padding:6px;border-bottom:1px solid #edf2f7;color:#36516d}
 .detail{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;font-size:9px}.detail div{display:flex;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:6px 0}.gate{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.gate div{border:1px solid #d9e3ed;border-radius:6px;padding:8px 4px;text-align:center;min-height:84px}.gate b{display:block;font-size:10px;margin-bottom:11px}.gate span{font-size:9px}
@@ -114,6 +114,17 @@ function ring(title,value,sub,pct,red){
 function badge(s){
   var cls=/완료/.test(s)?'green':/보류|불합격/.test(s)?'redb':/생산중|진행/.test(s)?'blue':'amber';
   return '<span class="badge '+cls+'">'+s+'</span>';
+}
+function customerDonut(items,total){
+  if(!items.length||!total)return '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 고객사 작업 데이터가 없습니다.</div>';
+  var colors=['#2e8bf4','#25bf83','#f4ae2a','#7958e7','#e95a6f','#8aa0b5'];
+  var acc=0,stops=[],legend='';
+  items.forEach(function(it,i){
+    var start=acc/total*100;acc+=it.count;var end=acc/total*100;
+    stops.push(colors[i%colors.length]+' '+start.toFixed(2)+'% '+end.toFixed(2)+'%');
+    legend+='<div><i style="background:'+colors[i%colors.length]+'"></i><span>'+esc(it.name)+'</span><b>'+it.count+'건 · '+Math.round(it.count/total*100)+'%</b></div>';
+  });
+  return '<div class="customerDonutWrap"><div class="customerDonut" style="background:conic-gradient('+stops.join(',')+')"><div class="customerDonutCenter">총 작업<b>'+total+'건</b></div></div><div class="customerDonutLegend">'+legend+'</div></div>';
 }
 function barBlock(name,plan,actual,max){
   var ph=max?Math.max(5,Math.round(plan/max*100)):5;
@@ -228,12 +239,15 @@ async function loadDashboard(){
   window.__qmesAnnualMonthDetails=months;
   var maxMonth=Math.max.apply(null,[1].concat(months.map(function(m){return Math.max(m.plan,m.actual)})));
 
-  var byCustomer={};
-  yearRows.forEach(function(r){var k=r.customer||'미지정';if(!byCustomer[k])byCustomer[k]={plan:0,actual:0};byCustomer[k].plan+=r.plan;byCustomer[k].actual+=r.actual});
-  var customers=Object.keys(byCustomer).sort(function(a,b){return byCustomer[b].actual-byCustomer[a].actual}).slice(0,6);
-  var maxCust=Math.max.apply(null,[1].concat(customers.map(function(k){return byCustomer[k].plan})));
-  var customerBars=customers.map(function(k){return miniBar(k,byCustomer[k].plan,byCustomer[k].actual,maxCust)}).join('');
-  if(!customerBars)customerBars='<div style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 고객사 실적 데이터가 없습니다.</div>';
+  var byCustomerCount={};
+  yearRows.forEach(function(r){var k=r.customer||'미지정';byCustomerCount[k]=(byCustomerCount[k]||0)+1});
+  var customerItems=Object.keys(byCustomerCount).map(function(k){return {name:k,count:byCustomerCount[k]}}).sort(function(a,b){return b.count-a.count});
+  if(customerItems.length>6){
+    var rest=customerItems.slice(5).reduce(function(a,x){return a+x.count},0);
+    customerItems=customerItems.slice(0,5).concat([{name:'기타',count:rest}]);
+  }
+  var customerTotal=customerItems.reduce(function(a,x){return a+x.count},0);
+  var customerChart=customerDonut(customerItems,customerTotal);
 
   var byEq={};
   yearRows.forEach(function(r){var k=r.equipment||'생산설비';if(!byEq[k])byEq[k]={plan:0,actual:0};byEq[k].plan+=r.plan;byEq[k].actual+=r.actual});
@@ -246,7 +260,7 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
 
   document.getElementById('dashRow3').innerHTML=
-    '<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+customerBars+'</div></div></div>'+
+    '<div class="card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong><span>작업지시 건수 / 비중</span></div><div class="body">'+customerChart+'</div></div>'+
     '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+eqBars+'</div></div></div>';
 
   var byMaterial={};
