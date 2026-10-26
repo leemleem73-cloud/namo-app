@@ -38,7 +38,7 @@ function open(record=null){
  const html='<div class="form-grid">'+fields.map(([label,key])=>{
   const value=record?.[key]||'';
   const control=['status','department'].includes(key)?'<input type="hidden" data-standard-field="'+key+'" value="'+esc(value||(key==='status'?'대기':''))+'"><button type="button" class="std-choice-trigger" data-standard-choice="'+key+'" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="'+label+' 선택"><span>'+esc(value||(key==='status'?'대기':'담당부서 선택'))+'</span><span aria-hidden="true">⌄</span></button>':key==='note'?'<textarea data-standard-field="'+key+'" placeholder="비고 입력">'+esc(value)+'</textarea>':'<input data-standard-field="'+key+'" type="'+(key==='revisionDate'?'date':'text')+'" value="'+esc(value)+'" placeholder="'+esc(label)+' 입력">';
-  return '<div class="form-item '+(['status','note'].includes(key)?'full':'')+'"><label>'+label+'</label>'+control+'</div>';
+  return '<div class="form-item '+(key==='note'?'full':'')+'"><label>'+label+'</label>'+control+'</div>';
  }).join('')+'</div>';
  const title='문서관리 '+(record?'상세 / 수정':'신규등록');
  openModal(title,amaranthScreen('standard',html,record?'edit':'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
