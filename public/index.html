@@ -2666,7 +2666,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 <style id="qmes-main-dashboard-separate-20261026">
 #dashboard.namo-dashboard-shell{padding:0!important;margin:0!important;min-height:calc(100dvh - 58px)!important;background:#f4f8fc!important}
 #dashboard.namo-dashboard-shell>:not(#namoDashboard20261026){display:none!important}
-#namoDashboard20261026{display:block!important;width:100%!important;height:calc(100dvh - 58px)!important;min-height:620px;border:0!important;background:#f4f8fc!important}
+#namoDashboard20261026{display:block!important;width:100%!important;height:var(--qmes-dashboard-height,1200px)!important;min-height:0!important;border:0!important;background:#f4f8fc!important}
 </style>
 </head>
 <body>
@@ -2822,7 +2822,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
-    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261026-separated1" loading="eager"></iframe>
+    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261026-outer-scroll2" loading="eager"></iframe>
     </section>
 
     <section class="module-page" id="orders"></section>
@@ -8248,6 +8248,26 @@ window.qmesPqcApprovalGrid=function(row){
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">
   <script src="./js/qmes-mobile-20261023.js?v=20261023-3"></script>
+
+<script id="dashboard-outer-scroll-20261026">
+(function(){
+ const frame=document.getElementById('namoDashboard20261026');
+ if(!frame)return;
+ frame.setAttribute('scrolling','no');
+ function fit(height){
+  if(!Number.isFinite(height)||height<1)return;
+  const value=Math.ceil(height)+'px';
+  if(frame.style.getPropertyValue('--qmes-dashboard-height')!==value)frame.style.setProperty('--qmes-dashboard-height',value);
+ }
+ window.addEventListener('message',function(event){
+  if(event.origin!==location.origin||event.source!==frame.contentWindow||event.data?.channel!=='QMES_DASHBOARD_SIZE_20261026')return;
+  fit(Number(event.data.height));
+ });
+ frame.addEventListener('load',function(){
+  try{const wrap=frame.contentDocument?.querySelector('.wrap');if(wrap)fit(wrap.getBoundingClientRect().height);}catch(_){}
+ });
+})();
+</script>
 </body>
 </html>
 
