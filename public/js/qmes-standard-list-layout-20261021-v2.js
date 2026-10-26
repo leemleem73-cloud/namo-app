@@ -38,7 +38,8 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
     if (!header.dataset.stdLayout) {
       header.dataset.stdLayout = '1';
       header.children[0].textContent = 'No.';
-      header.children[2].textContent = '문서번호 / 문서명';
+      header.children[1].textContent = '문서번호';
+      header.children[2].textContent = '문서명';
       header.children[7].textContent = '결재상태';
       for (const title of ['첨부파일', '비고']) {
         const cell = document.createElement('th'); cell.textContent = title; header.append(cell);
@@ -61,7 +62,7 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
       if(!cells[2].dataset.stdDocumentName)cells[2].dataset.stdDocumentName=cells[2].textContent.trim();
       const documentNumber=cells[1].textContent.trim(),documentName=cells[2].dataset.stdDocumentName;
       cells[2].dataset.documentNumber=documentNumber;
-      const documentLabel=[documentNumber,documentName].filter(value=>value&&value!=='-').join(' / ');
+      const documentLabel=documentName;
       if(cells[2].textContent!==documentLabel)cells[2].textContent=documentLabel;
       cells[2].title=documentLabel;
       if (!row.dataset.stdLayout) {
@@ -271,3 +272,5 @@ html body #standard#standard .std-document-list tr.std-placeholder>td{height:44p
 `;document.head.append(style);})();
 
 (()=>{const style=document.createElement('style');style.textContent='html body #standard#standard .std-document-list .std-document-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:28px!important}html body #standard#standard .std-document-list .std-document-name::after{display:none!important;content:none!important}#mainWorkspace .am-split[data-am-screen="standard"] input[type="hidden"][data-standard-field]{display:none!important}';document.head.append(style);})();
+
+(()=>{const style=document.createElement('style');style.id='standard-separate-number-name-20261027';style.textContent="\nhtml body #standard#standard .std-document-list tr{grid-template-columns:52px minmax(140px,1fr) minmax(220px,2fr) minmax(70px,.5fr) minmax(110px,.8fr) minmax(100px,.8fr) minmax(120px,1fr) minmax(120px,1fr)!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(2){display:flex!important;order:2!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(3){order:3!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(5){order:4!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(6){order:5!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(7){order:6!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(9){order:7!important}\nhtml body #standard#standard .std-document-list tr>:nth-child(10){order:8!important}\n";document.head.append(style);})();
