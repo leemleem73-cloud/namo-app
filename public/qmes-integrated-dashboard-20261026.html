@@ -306,7 +306,7 @@ async function loadDashboard(){
   eqMonthDays.forEach(function(n,i){
     var height=n?Math.max(12,Math.round(n/eqMax*175)):2;
     eqBars+='<div title="'+(i+1)+'월 작업일 '+n+'일 / 생산 '+(n*5)+'시간 / 청소·준비 '+(n*3)+'시간" style="height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0">'+
-      '<b style="font-size:10px;color:#254d76;white-space:nowrap">'+(n*8)+'h</b>'+
+      '<b style="font-size:10px;color:#254d76;white-space:nowrap">'+(n*8)+'h</b><span style="font-size:10px;color:#2c78b7">62.5%</span>'+
       '<div style="width:75%;max-width:25px;height:'+height+'px;display:flex;flex-direction:column;border-radius:4px 4px 0 0;overflow:hidden">'+
       '<div style="height:37.5%;background:#f2b45b"></div><div style="height:62.5%;background:#3c8ee7"></div></div>'+
       '<span style="font-size:10px;color:#637a91">'+(i+1)+'월</span></div>';
@@ -327,7 +327,7 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 
   document.getElementById('dashRow4').innerHTML=
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 생산 / 탱크 청소·준비</span></div><div class="body">'+eqBars+'</div></div>';
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 생산 / 탱크 청소·준비 / 기준 가동률</span></div><div class="body">'+eqBars+'</div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
