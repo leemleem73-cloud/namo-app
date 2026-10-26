@@ -44,7 +44,17 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
         const cell = document.createElement('th'); cell.textContent = title; header.append(cell);
       }
     }
+    const body=table.tBodies[0]||table.createTBody();
+    const placeholder=body.querySelector('tr[data-std-placeholder]');
+    if(placeholder&&Array.from(body.rows).some(row=>row!==placeholder))placeholder.remove();
+    if(!body.rows.length){
+      const blank=document.createElement('tr');
+      blank.dataset.stdPlaceholder='1';blank.className='std-placeholder';blank.setAttribute('aria-hidden','true');
+      for(let i=0;i<header.children.length;i++)blank.appendChild(document.createElement('td'));
+      body.appendChild(blank);
+    }
     table.querySelectorAll('tbody tr').forEach(row => {
+      if(row.dataset.stdPlaceholder==='1')return;
       if (row.children.length < 8) { row.classList.add('std-empty'); return; }
       const cells = row.children;
       cells[2].classList.add('std-document-name');
@@ -247,3 +257,10 @@ html body #mainWorkspace .am-split[data-am-screen="incoming"] .form-grid.iqc-edi
 (()=>{const style=document.createElement('style');style.id='approval-list-row-bottom-20261026';style.textContent='html body #approval#approval>.module-shell>.module-body{min-height:0!important;height:auto!important;max-height:none!important;padding:0!important;border:1px solid #d5dce5!important}html body #approval#approval>.module-shell>.module-body>table{height:auto!important;min-height:0!important;margin:0!important}html body #approval#approval>.module-shell>.module-body>table tbody tr>td{border-bottom:1px solid #d5dce5!important}html body #approval#approval>.module-shell>.module-body>table tbody tr:last-child>td{border-bottom:0!important}';document.head.append(style);})();
 
 (()=>{const s=document.createElement('style');s.id='standard-list-grid-parity-20261027';s.textContent="\n/* Document list uses seven visible grid columns with no fixed-width No. cell gap. */\nhtml body #standard#standard>.module-shell>.module-body{height:auto!important;min-height:0!important;background:#fff!important;border:1px solid #d5dce5!important}\nhtml body #standard#standard .std-document-list{display:block!important;width:100%!important;min-width:1050px!important;border:0!important;border-spacing:0!important}\nhtml body #standard#standard .std-document-list>colgroup{display:none!important}\nhtml body #standard#standard .std-document-list :is(thead,tbody){display:block!important;width:100%!important}\nhtml body #standard#standard .std-document-list tr{display:grid!important;grid-template-columns:52px minmax(260px,2.6fr) minmax(80px,.7fr) minmax(110px,1fr) minmax(100px,1fr) minmax(130px,1.2fr) minmax(130px,1.2fr)!important;width:100%!important;background:#fff!important}\nhtml body #standard#standard .std-document-list :is(th,td){box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;align-items:center!important;justify-content:center!important;text-align:center!important;border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;padding:8px 12px!important}\nhtml body #standard#standard .std-document-list thead tr{background:#e8f0f8!important}\nhtml body #standard#standard .std-document-list thead th{height:34px!important;min-height:34px!important;background:#e8f0f8!important;color:#244260!important;font-size:12px!important;font-weight:600!important;line-height:18px!important}\nhtml body #standard#standard .std-document-list tbody td{height:44px!important;min-height:44px!important;background:#fff!important;font-size:12px!important;font-weight:400!important;line-height:18px!important}\nhtml body #standard#standard .std-document-list tr>:last-child{border-right:0!important}\nhtml body #standard#standard .std-document-list tbody tr:last-child td{border-bottom:0!important}\nhtml body #standard#standard .std-document-list tr.std-empty{display:block!important}\nhtml body #standard#standard .std-document-list tr.std-empty td{height:44px!important;min-height:44px!important}\n";document.head.append(s);})();
+
+(()=>{const style=document.createElement('style');style.id='standard-white-row-single-edge-20261027';style.textContent=`
+html body #standard#standard>.module-shell>.module-body{border:1px solid #d5dce5!important;box-shadow:none!important}
+html body #standard#standard .std-document-list thead th{border-bottom:1px solid #d5dce5!important}
+html body #standard#standard .std-document-list tbody tr:last-child>td{border-bottom:0!important;box-shadow:none!important}
+html body #standard#standard .std-document-list tr.std-placeholder>td{height:44px!important;min-height:44px!important;background:#fff!important}
+`;document.head.append(style);})();
