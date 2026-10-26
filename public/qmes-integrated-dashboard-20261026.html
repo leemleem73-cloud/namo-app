@@ -248,8 +248,8 @@ async function loadDashboard(){
     return s||'미지정';
   }
   yearRows.forEach(function(r){var k=customerKey(r.customer);byCustomerCount[k]=(byCustomerCount[k]||0)+1});
-  ['현대자동차','SK하이닉스','KGM','르노'].forEach(function(k){if(byCustomerCount[k]==null)byCustomerCount[k]=0});
-  var preferred=['현대자동차','SK하이닉스','KGM','르노'];
+  ['현대자동차','SK하이닉스','KGM','르노','삼성','LG화학'].forEach(function(k){if(byCustomerCount[k]==null)byCustomerCount[k]=0});
+  var preferred=['현대자동차','SK하이닉스','KGM','르노','삼성','LG화학'];
   var customerItems=preferred.map(function(k){return {name:k,count:byCustomerCount[k]||0}});
   Object.keys(byCustomerCount).filter(function(k){return preferred.indexOf(k)<0}).sort(function(a,b){return byCustomerCount[b]-byCustomerCount[a]}).forEach(function(k){customerItems.push({name:k,count:byCustomerCount[k]})});
   if(customerItems.length>6){
