@@ -245,3 +245,6 @@ const style=document.createElement('style');style.textContent=`
 
 /* Join the header and blue inquiry band without the inherited shell gap. */
 (()=>{const style=document.createElement('style');style.id='purchase-shell-gap-fix-20261026';style.textContent='html body #purchase.purchase-work-frame .module-shell{gap:0!important;row-gap:0!important}';document.head.append(style);})();
+
+/* Keep printing in the selected-items dock, not in purchase remark cells. */
+(()=>{const s=document.createElement('style');s.id='purchase-remark-no-print-20261026';s.textContent='#purchase .module-shell>.module-body tbody td:last-child :is(.qpp-row-print,[data-purchase-action="print"],.print-btn,[data-action="print"]){display:none!important}';document.head.append(s);const root=document.getElementById('purchase');if(!root)return;let queued=false;const clean=()=>{queued=false;root.querySelectorAll('.module-shell>.module-body tbody td:last-child button').forEach(b=>{if(b.textContent.trim()==='인쇄')b.remove();});};new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(clean);}}).observe(root,{childList:true,subtree:true});clean();})();
