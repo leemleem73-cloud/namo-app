@@ -179,3 +179,15 @@ html body #mainWorkspace .work-form .work-basic-grid .form-item>input,
 html body #mainWorkspace .work-form .work-basic-grid .form-item>select,
 html body #mainWorkspace .work-form .work-basic-grid .nwp-range-button,
 html body #mainWorkspace .work-form .nwm-material #workMaterialTable :is(input,select){border:1px solid #cfd7df!important;border-radius:2px!important;box-shadow:none!important}
+
+/* Footer uses the same single cell edges and row fill as the material body. */
+html body #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary{
+ border:0!important;border-radius:0!important;background:#fbfdff!important;box-shadow:none!important;
+}
+html body #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary td{
+ border:0!important;border-top:1px solid #e0e5eb!important;border-right:1px solid #e0e5eb!important;
+ background:#fbfdff!important;box-shadow:none!important;outline:0!important;
+}
+html body #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary td:last-child{
+ border-right:0!important;
+}
