@@ -292,19 +292,28 @@ async function loadDashboard(){
   var customerTotal=customerItems.reduce(function(a,x){return a+x.count},0);
   var customerChart=customerDonut(customerItems,customerTotal);
 
-  var byEq={};
-  yearRows.forEach(function(r){var k=r.equipment||'생산설비';if(!byEq[k])byEq[k]={plan:0,actual:0};byEq[k].plan+=r.plan;byEq[k].actual+=r.actual});
-  var eqs=Object.keys(byEq).sort(function(a,b){return byEq[b].actual-byEq[a].actual}).slice(0,6);
-  var maxEq=Math.max.apply(null,[1].concat(eqs.map(function(k){return byEq[k].plan})));
-  var eqBars=eqs.map(function(k){return miniBar(k,byEq[k].plan,byEq[k].actual,maxEq)}).join('');
-  if(!eqBars)eqBars='<div style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">2026년 설비 가동 실적 데이터가 없습니다.</div>';
+  // One HSM production line: show monthly work-order activity, not invented run hours.
+  var eqMonthCounts=Array.from({length:12},function(){return 0});
+  yearRows.forEach(function(r){
+    var m=parseInt((r.date||'').slice(5,7),10);
+    if(m>=1&&m<=12)eqMonthCounts[m-1]++;
+  });
+  var eqMax=Math.max.apply(null,[1].concat(eqMonthCounts));
+  var eqBars='<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px;align-items:end;height:185px;padding:12px 4px 2px">';
+  eqMonthCounts.forEach(function(n,i){
+    eqBars+='<div title="'+(i+1)+'월 HSM 작업지시 '+n+'건" style="height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0">'+
+      '<b style="font-size:11px;color:#254d76">'+n+'</b>'+
+      '<div style="width:75%;max-width:25px;height:'+Math.max(n?6:2,Math.round(n/eqMax*115))+'px;background:'+(n?'#408de0':'#dce6f0')+';border-radius:4px 4px 0 0"></div>'+
+      '<span style="font-size:10px;color:#637a91">'+(i+1)+'월</span></div>';
+  });
+  eqBars+='</div><div style="font-size:10px;color:#728398;padding:5px 4px">작업지시서 등록 건수 기준 · 가동시간/가동률은 별도 실적 기록 연동 전까지 표시하지 않음</div>';
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
 
   document.getElementById('dashRow3').innerHTML=
     '<div class="card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong><span>작업지시 건수 / 비중</span></div><div class="body">'+customerChart+'</div></div>'+
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"><div class="miniBarChart">'+eqBars+'</div></div></div>';
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>HSM 1대 · 월별 작업지시 건수</span></div><div class="body">'+eqBars+'</div></div>';
 
   var byMaterial={};
   yearRows.forEach(function(r){
