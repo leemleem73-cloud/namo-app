@@ -171,3 +171,10 @@ html body #spcTrend .ip-toolbar .ip-filter{display:flex!important;align-items:ce
 html body #spcTrend .ip-toolbar .ip-filter>span{font-size:11.5px!important;font-weight:700!important;line-height:30px!important;text-align:left!important}
 html body #spcTrend .ip-toolbar .ip-filter :is(input,select){width:195px!important;min-width:195px!important;max-width:195px!important;height:30px!important;box-sizing:border-box!important;margin:0!important}
 `;document.head.append(s);})();
+
+/* Remove SPC theme's fixed label columns and oversized inquiry controls. */
+(()=>{const style=document.createElement('style');style.id='spc-compact-inquiry-final-20261026';style.textContent=`
+html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter{gap:8px!important;margin:0!important;padding:0!important;min-height:30px!important;align-items:center!important}
+html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter>span{flex:0 0 auto!important;min-width:0!important;width:auto!important;max-width:none!important;font-size:11.5px!important;font-weight:700!important;line-height:30px!important;margin:0!important;padding:0!important}
+html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter :is(input,select){width:195px!important;min-width:195px!important;max-width:195px!important;flex:0 0 195px!important;height:30px!important;min-height:30px!important;max-height:30px!important;font-size:12px!important;font-weight:600!important;padding:0 8px!important;margin:0!important;border:1px solid #ccdaea!important;border-radius:4px!important;box-sizing:border-box!important}
+`;document.head.append(style);})();
