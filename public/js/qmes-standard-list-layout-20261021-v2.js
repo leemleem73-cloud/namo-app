@@ -181,3 +181,44 @@ html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter :is(input,sel
 
 /* Work list customer text follows ordinary body-cell weight. */
 (()=>{const s=document.createElement('style');s.id='work-customer-normal-weight-20261026';s.textContent='html body #work#work table.work-list-table tbody tr>td:nth-child(3),html body #work#work table.work-list-table tbody tr>td:nth-child(3) *{font-weight:400!important}';document.head.append(s);})();
+
+/* Shared list table metrics from incoming inspection; no detail/report tables. */
+(function(){
+ 'use strict';
+ const ids=['orders','purchase','work','process','outgoing','equipment','quality','ncr','approval','standard','spcTrend','changeControl','instrumentMgmt','calibrationMgmt','namo-production-final-panel'];
+ const roots=ids.map(id=>'#'+id+'#'+id).join(',');
+ const scope='html body :is('+roots+') table.qmes-iqc-list-parity';
+ const s=document.createElement('style');s.id='qmes-iqc-list-table-parity-20261026';
+ s.textContent=scope+'{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;border-spacing:0!important}'+
+ scope+' thead th{box-sizing:border-box!important;height:34px!important;min-height:34px!important;padding:4px 6px!important;font-size:12px!important;font-weight:600!important;line-height:1.25!important;color:#244260!important;background:#e8f0f8!important;border-color:#cbd8e5!important;text-align:center!important;vertical-align:middle!important}'+
+ scope+' tbody td{box-sizing:border-box!important;height:44px!important;min-height:44px!important;padding:5px 6px!important;font-size:12px!important;font-weight:400!important;line-height:1.4!important;border-color:#d5dce5!important;text-align:center!important;vertical-align:middle!important;white-space:normal!important;overflow-wrap:anywhere!important}'+
+ scope+' tbody td :is(span,strong,b,a){font-family:inherit!important;font-size:12px!important}'+
+ scope+' input[type=checkbox]{box-sizing:border-box!important;width:13px!important;height:13px!important;min-width:13px!important;max-width:13px!important;min-height:13px!important;max-height:13px!important;margin:0!important;padding:0!important;vertical-align:middle!important;accent-color:#2563eb}'+
+ scope+' tbody td button{box-sizing:border-box!important;height:24px!important;min-height:24px!important;padding:0 8px!important;font-family:inherit!important;font-size:11px!important;line-height:22px!important;border-radius:4px!important}'+
+ scope+' :is(th,td).qmes-iqc-check-col{width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important}'+
+ scope+' :is(th,td).qmes-iqc-no-col{width:52px!important;min-width:52px!important;max-width:52px!important;padding:4px!important}'+
+ scope+' :is(th,td).qmes-iqc-combined-col{width:86px!important;min-width:86px!important;max-width:86px!important;padding:0!important}'+
+ scope+' col.qmes-iqc-check-col{width:34px!important}'+scope+' col.qmes-iqc-no-col{width:52px!important}'+scope+' col.qmes-iqc-combined-col{width:86px!important}';
+ document.head.append(s);
+ function apply(table){
+  if(table.closest('.am-split,.work-form,.report-sheet,.ncr-form,.ncr-editor-shell,.eq-print'))return;
+  if(!table.tHead||!table.tBodies.length)return;
+  table.classList.add('qmes-iqc-list-parity');
+  const headers=[...table.tHead.rows[0].cells],first=headers[0];if(!first)return;
+  const checkbox=!!first.querySelector('input[type=checkbox]');
+  const title=first.textContent.trim().replace(/\s/g,'');
+  const combined=checkbox&&/No\.?|번호/i.test(title);
+  const noOnly=!checkbox&&/^(No\.?|NO\.?|번호)$/i.test(title);
+  const kinds=combined?['qmes-iqc-combined-col']:checkbox?['qmes-iqc-check-col','qmes-iqc-no-col']:noOnly?['qmes-iqc-no-col']:[];
+  const cols=[...table.querySelectorAll(':scope>colgroup>col')];
+  kinds.forEach((name,index)=>{
+   headers[index]?.classList.add(name);cols[index]?.classList.add(name);
+   for(const body of table.tBodies)for(const row of body.rows)if(row.cells.length===headers.length)row.cells[index]?.classList.add(name);
+  });
+ }
+ function scan(){for(const id of ids){const root=document.getElementById(id);root?.querySelectorAll('table').forEach(apply);}}
+ let queued=false;
+ function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;scan();});}
+ function boot(){new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});scan();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
