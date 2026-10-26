@@ -222,3 +222,10 @@ html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter :is(input,sel
  function boot(){new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});scan();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
+
+/* Center list checkboxes without overriding the shared 13px dimensions. */
+(()=>{const s=document.createElement('style');s.id='qmes-list-checkbox-center-20261026';s.textContent=`
+html body :is(#orders#orders,#purchase#purchase,#work#work,#outgoing#outgoing) table.qmes-iqc-list-parity input[type=checkbox]{margin:0 auto!important;display:block!important;float:none!important;position:static!important;align-self:center!important;justify-self:center!important}
+html body :is(#orders#orders,#purchase#purchase,#work#work,#outgoing#outgoing) table.qmes-iqc-list-parity :is(th,td).qmes-iqc-check-col{padding:0!important;text-align:center!important;vertical-align:middle!important}
+html body :is(#orders#orders,#purchase#purchase,#work#work,#outgoing#outgoing) table.qmes-iqc-list-parity :is(.qpf-select,.iqc-select-number){align-items:center!important;justify-items:center!important}
+`;document.head.append(s);})();
