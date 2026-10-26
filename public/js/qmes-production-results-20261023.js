@@ -94,7 +94,12 @@ function init(){
 #namo-production-result-panel .ps-action-top strong{font-size:8px}
 #namo-production-result-panel .ps-action p{margin:6px 0 0;font-size:8px;line-height:1.5;color:#73879b}
 #namo-production-result-panel .ps-bottom{margin-top:10px}
-#namo-production-result-panel .ps-bottom-toolbar{height:42px;padding:0 10px;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;background:#fff}\n#namo-production-result-panel .ps-bottom-toolbar strong{font-size:11px;color:#274b6d}\n#namo-production-result-panel .ps-bottom-tools{display:flex;align-items:center;gap:6px}\n#namo-production-result-panel .ps-bottom-tools button{height:30px;border:1px solid #d3deea;background:#fff;color:#526b83;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}\n#namo-production-result-panel .ps-bottom-tools .ps-icon-btn{width:32px;padding:0;font-size:15px;display:grid;place-items:center}\n#namo-production-result-panel .ps-table-wrap{overflow:auto}
+#namo-production-result-panel .ps-bottom-toolbar{height:42px;padding:0 10px;border-bottom:1px solid #dfe7f0;display:flex;align-items:center;justify-content:space-between;background:#fff}
+#namo-production-result-panel .ps-bottom-toolbar strong{font-size:11px;color:#274b6d}
+#namo-production-result-panel .ps-bottom-tools{display:flex;align-items:center;gap:6px}
+#namo-production-result-panel .ps-bottom-tools button{height:30px;border:1px solid #d3deea;background:#fff;color:#526b83;border-radius:5px;padding:0 10px;font-size:9px;font-weight:800}
+#namo-production-result-panel .ps-bottom-tools .ps-icon-btn{width:32px;padding:0;font-size:15px;display:grid;place-items:center}
+#namo-production-result-panel .ps-table-wrap{overflow:auto}
 #namo-production-result-panel table{width:100%;border-collapse:collapse;min-width:1050px;font-size:9px}
 #namo-production-result-panel th{background:#f3f7fb;color:#6c7b8b;border-bottom:1px solid #dfe7f0;padding:8px;text-align:center;white-space:nowrap}
 #namo-production-result-panel td{border-bottom:1px solid #edf2f6;padding:8px;text-align:center;color:#4d6175;white-space:nowrap}
@@ -342,7 +347,11 @@ function init(){
   function close(){panel.classList.remove('active');menu.classList.remove('active');}
 
   menu.addEventListener('click',function(e){e.stopPropagation();open();});
-  document.getElementById('psRefresh').onclick=load;\n  document.getElementById('psBottomSearch').onclick=filter;\n  document.getElementById('psBottomReset').onclick=function(){['psCustomer','psWork','psProduct','psLot','psStatus'].forEach(function(id){document.getElementById(id).value='';});filter();};\n  document.getElementById('psBottomCollapse').onclick=function(){var wrap=document.getElementById('psTableWrap'),pages=document.getElementById('psPages'),hide=!wrap.hidden;wrap.hidden=hide;pages.hidden=hide;this.textContent=hide?'⌄':'⌃';this.title=hide?'펼치기':'접기';};\n  document.getElementById('psPages').addEventListener('click',function(e){var b=e.target.closest('[data-page]');if(!b||b.disabled)return;state.page=Number(b.dataset.page)||1;renderTable();});
+  document.getElementById('psRefresh').onclick=load;
+  document.getElementById('psBottomSearch').onclick=filter;
+  document.getElementById('psBottomReset').onclick=function(){['psCustomer','psWork','psProduct','psLot','psStatus'].forEach(function(id){document.getElementById(id).value='';});filter();};
+  document.getElementById('psBottomCollapse').onclick=function(){var wrap=document.getElementById('psTableWrap'),pages=document.getElementById('psPages'),hide=!wrap.hidden;wrap.hidden=hide;pages.hidden=hide;this.textContent=hide?'⌄':'⌃';this.title=hide?'펼치기':'접기';};
+  document.getElementById('psPages').addEventListener('click',function(e){var b=e.target.closest('[data-page]');if(!b||b.disabled)return;state.page=Number(b.dataset.page)||1;renderTable();});
   document.getElementById('psSearch').onclick=filter;
   document.getElementById('psReset').onclick=function(){['psCustomer','psWork','psProduct','psLot','psStatus'].forEach(function(id){document.getElementById(id).value='';});filter();};
   panel.querySelectorAll('.ps-field input,.ps-field select').forEach(function(el){el.addEventListener('change',filter);});
