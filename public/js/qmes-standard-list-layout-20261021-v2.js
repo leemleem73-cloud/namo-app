@@ -178,3 +178,6 @@ html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter{gap:8px!impor
 html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter>span{flex:0 0 auto!important;min-width:0!important;width:auto!important;max-width:none!important;font-size:11.5px!important;font-weight:700!important;line-height:30px!important;margin:0!important;padding:0!important}
 html body #spcTrend#spcTrend .ip-toolbar .ip-filter-row>.ip-filter :is(input,select){width:195px!important;min-width:195px!important;max-width:195px!important;flex:0 0 195px!important;height:30px!important;min-height:30px!important;max-height:30px!important;font-size:12px!important;font-weight:600!important;padding:0 8px!important;margin:0!important;border:1px solid #ccdaea!important;border-radius:4px!important;box-sizing:border-box!important}
 `;document.head.append(style);})();
+
+/* Work list customer text follows ordinary body-cell weight. */
+(()=>{const s=document.createElement('style');s.id='work-customer-normal-weight-20261026';s.textContent='html body #work table.work-list-table tbody tr>td:nth-child(3),html body #work table.work-list-table tbody tr>td:nth-child(3) *{font-weight:400!important}';document.head.append(s);})();
