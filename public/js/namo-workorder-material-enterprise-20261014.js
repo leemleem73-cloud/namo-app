@@ -176,8 +176,12 @@
   }
   function candidates(rows,name){
     const valid=rows.filter(row=>!row.deleted&&text(row.lot));
-    const matching=valid.filter(row=>text(row.item).toUpperCase().includes(text(name).toUpperCase()));
-    return name&&name!=='__manual__'&&matching.length?matching:valid;
+    const normalize=value=>text(value).toUpperCase().replace(/[\\s()\\[\\]-]/g,'');
+    const wanted=normalize(name);
+    const aliases={'분산제':['분산제','BYK'],'세라믹':['세라믹','AOH','BOEHMITE'],'바인더':['바인더','PAI']};
+    const matches=row=>(aliases[name]||[wanted]).some(key=>normalize(row.item).includes(normalize(key)));
+    if(!wanted||name==='__manual__')return valid;
+    return valid.filter(matches).concat(valid.filter(row=>!matches(row)));
   }
   function drawRow(row,state){
     const input=row.querySelector('.material-lot-manual'),name=row.querySelector('.material-name-select');
