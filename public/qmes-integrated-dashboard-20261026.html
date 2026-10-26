@@ -39,9 +39,9 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 /* Keep the utilization chart in a rounded card with undistorted labels. */
 .eqChartCard{background:#fff;border:1px solid #dde7f1;border-radius:7px;box-shadow:0 2px 8px rgba(34,67,103,.04);padding:12px 14px 8px;overflow:hidden}
 .eqChartCard .eqChart{height:260px;width:100%;min-width:0;overflow:hidden}
-.eqChartCard .eqChart svg{display:block;width:100%;height:260px}
-.eqChartCard .eqChartTitle{font-size:10px;margin:0}
-.eqChartCard .eqLegend{font-size:10px;margin:5px 0 9px}
+.eqChartCard .eqChart svg{display:block;width:100%;height:225px}
+.eqChartCard .eqChartTitle{font-size:11px;font-weight:800;color:#40566d;margin:0 0 2px}
+.eqChartCard .eqLegend{font-size:11px;font-weight:700;color:#40566d;margin:8px 0 9px;gap:22px}
 .eqChartCard .eqFootnote{font-size:9px;line-height:1.4;padding:0 4px 3px}
 .row4>.card>.body{overflow:visible!important}
 </style>
@@ -330,22 +330,37 @@ async function loadDashboard(){
   eqHourMax=Math.ceil(eqHourMax/4/10)*40;
   function equipmentSvg(chartWidth){
     chartWidth=Math.max(650,Math.round(chartWidth));
-  var eqPlotTop=28,eqPlotBottom=210,eqPlotHeight=eqPlotBottom-eqPlotTop;
-  var eqPlotLeft=48,eqPlotWidth=chartWidth-96;
-  var eqX=function(i){return eqPlotLeft+(i+.5)*eqPlotWidth/12};
-  var eqY=function(hours){return eqPlotBottom-hours/eqHourMax*eqPlotHeight};
-  var eqRateY=function(n){return eqPlotBottom-(n?62.5:0)/100*eqPlotHeight};
-  var eqLinePoints=eqMonthDays.map(function(n,i){return eqX(i)+','+eqRateY(n)}).join(' ');
-  var eqSvg='<svg viewBox="0 0 '+chartWidth+' 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="월별 생산 가동시간, 청소 준비시간 및 기준 가동률 그래프">';
-  for(var et=0;et<=4;et++){var eh=eqHourMax*et/4,ey=eqY(eh);eqSvg+='<line x1="'+eqPlotLeft+'" x2="'+(eqPlotLeft+eqPlotWidth)+'" y1="'+ey+'" y2="'+ey+'" stroke="#e6eef7"/><text x="38" y="'+(ey+4)+'" text-anchor="end" font-size="12" fill="#55718c">'+eh+'</text><text x="'+(chartWidth-34)+'" y="'+(ey+4)+'" font-size="12" fill="#55718c">'+(et*25)+'</text>';}
-  eqMonthDays.forEach(function(n,i){
-    var x=eqX(i),barW=36,prod=n*5,clean=n*3,py=eqY(prod),totalY=eqY(prod+clean),rate=n?62.5:0;
-    if(n){eqSvg+='<rect x="'+(x-barW/2)+'" y="'+py+'" width="'+barW+'" height="'+(eqPlotBottom-py)+'" rx="2" fill="#398fee"/><rect x="'+(x-barW/2)+'" y="'+totalY+'" width="'+barW+'" height="'+(py-totalY)+'" rx="3" fill="#f5b157"/><text x="'+x+'" y="'+(totalY-8)+'" text-anchor="middle" font-size="12" font-weight="700" fill="#234d73">'+(n*8)+'h</text>';}
-    eqSvg+='<text x="'+x+'" y="235" text-anchor="middle" font-size="13" font-weight="700" fill="#355875">'+(i+1)+'월</text>';
-  });
-  eqSvg+='<polyline points="'+eqLinePoints+'" fill="none" stroke="#f47c20" stroke-width="2.5" vector-effect="non-scaling-stroke"/>';
-  eqMonthDays.forEach(function(n,i){var x=eqX(i),y=eqRateY(n);eqSvg+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#f47c20" stroke="#fff" stroke-width="1.5"/><rect x="'+(x-27)+'" y="'+(y-38)+'" width="54" height="24" rx="5" fill="#fff" stroke="#f5a045"/><text x="'+x+'" y="'+(y-21)+'" text-anchor="middle" font-size="13" font-weight="700" fill="#ed741b">'+(n?'62.5%':'0%')+'</text>';});
-  eqSvg+='</svg>';
+    // Match the production performance chart geometry and typography.
+    var eqPlotTop=8,eqPlotBottom=191,eqPlotHeight=eqPlotBottom-eqPlotTop;
+    var eqPlotLeft=42,eqPlotRight=10,eqPlotWidth=chartWidth-eqPlotLeft-eqPlotRight;
+    var eqX=function(i){return eqPlotLeft+(i+.5)*eqPlotWidth/12};
+    var eqY=function(hours){return eqPlotBottom-hours/eqHourMax*eqPlotHeight};
+    var eqRateY=function(n){return eqPlotBottom-(n?62.5:0)/100*eqPlotHeight};
+    var eqLinePoints=eqMonthDays.map(function(n,i){return eqX(i)+','+eqRateY(n)}).join(' ');
+    var eqSvg='<svg viewBox="0 0 '+chartWidth+' 225" preserveAspectRatio="xMidYMid meet" role="img" aria-label="월별 생산 가동시간, 청소 준비시간 및 기준 가동률 그래프">';
+    for(var et=0;et<=4;et++){
+      var eh=eqHourMax*et/4,ey=eqY(eh);
+      eqSvg+='<line x1="'+eqPlotLeft+'" x2="'+(eqPlotLeft+eqPlotWidth)+'" y1="'+ey+'" y2="'+ey+'" stroke="#e9eef3"/>'+
+        '<text x="36" y="'+(ey+4)+'" text-anchor="end" font-size="10" font-weight="700" fill="#415a72">'+eh+'</text>'+
+        '<text x="'+(chartWidth-4)+'" y="'+(ey+4)+'" text-anchor="end" font-size="10" font-weight="700" fill="#415a72">'+(et*25)+'</text>';
+    }
+    eqMonthDays.forEach(function(n,i){
+      var x=eqX(i),barW=Math.max(24,Math.min(42,eqPlotWidth/12*.58)),prod=n*5,clean=n*3,py=eqY(prod),totalY=eqY(prod+clean);
+      if(n){
+        eqSvg+='<rect x="'+(x-barW/2)+'" y="'+py+'" width="'+barW+'" height="'+(eqPlotBottom-py)+'" rx="3" fill="#7aaef7"/>'+
+          '<rect x="'+(x-barW/2)+'" y="'+totalY+'" width="'+barW+'" height="'+(py-totalY)+'" rx="3" fill="#f5b157"/>'+
+          '<text x="'+x+'" y="'+(totalY-5)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#274969">'+(n*8)+'h</text>';
+      }
+      eqSvg+='<text x="'+x+'" y="216" text-anchor="middle" font-size="11" font-weight="700" fill="#415a72">'+(i+1)+'월</text>';
+    });
+    eqSvg+='<polyline points="'+eqLinePoints+'" fill="none" stroke="#f58b2a" stroke-width="2" vector-effect="non-scaling-stroke"/>';
+    eqMonthDays.forEach(function(n,i){
+      var x=eqX(i),y=eqRateY(n),label=n?'62.5%':'0%';
+      eqSvg+='<circle cx="'+x+'" cy="'+y+'" r="3.5" fill="#f58b2a"/>'+
+        '<rect x="'+(x-22)+'" y="'+(y-25)+'" width="44" height="18" rx="4" fill="rgba(255,255,255,.96)" stroke="#f58b2a"/>'+
+        '<text x="'+x+'" y="'+(y-12)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#b95f10">'+label+'</text>';
+    });
+    eqSvg+='</svg>';
     return eqSvg;
   }
   var eqSvg=equipmentSvg(Math.max(650,(document.getElementById("dashRow4")?.clientWidth||1200)-64));
