@@ -218,7 +218,7 @@
       });
     }
     const middle=name.value==='중간배치';
-    const allowManual=name.value==='SBS'||name.value==='SBR';
+    const allowManual=name.value==='__manual__'||name.value==='SBS'||name.value==='SBR';
     if(!allowManual)delete row.dataset.nwmLotManual;
     const manual=allowManual&&row.dataset.nwmLotManual==='1';
     select.hidden=middle||manual;select.style.display=(middle||manual)?'none':'block';
