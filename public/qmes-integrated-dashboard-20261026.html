@@ -376,27 +376,49 @@ async function loadDashboard(){
 
   // HSM daily operating model: 08:30-16:30, production 5h, cleaning/preparation 3h.
   // Monthly bars count dated work-order days; figures are standard-time estimates, not measured runtime.
+  function parseWorkHours(raw){
+    if(!raw)return 0;
+    var direct=clean(val(raw,['actualWorkHours','workHours','runtimeHours','operatingHours','가동시간','실제가동시간','작업시간']));
+    var m=direct.match(/(\d+(?:\.\d+)?)\s*h/i);
+    if(m)return Number(m[1])||0;
+    if(/^\d+(?:\.\d+)?$/.test(direct))return Number(direct)||0;
+    var range=clean(val(raw,['timeRange','workTimeRange','작업시간 (시작/종료)','작업시간','시간']));
+    if(!range&&raw.note)range=clean(raw.note);
+    var rm=range.match(/(\d{1,2}):(\d{2})\s*[~\-–]\s*(\d{1,2}):(\d{2})/);
+    if(rm){
+      var a=Number(rm[1])*60+Number(rm[2]),b=Number(rm[3])*60+Number(rm[4]);
+      if(b>a)return (b-a)/60;
+    }
+    if(Array.isArray(raw.conditions)){
+      for(var ci=0;ci<raw.conditions.length;ci++){
+        var c=raw.conditions[ci];
+        var txt=Array.isArray(c)?c.join(' '):JSON.stringify(c||{});
+        var cm=txt.match(/(\d{1,2}):(\d{2})\s*[~\-–]\s*(\d{1,2}):(\d{2})/);
+        if(cm){
+          var ca=Number(cm[1])*60+Number(cm[2]),cb=Number(cm[3])*60+Number(cm[4]);
+          if(cb>ca)return (cb-ca)/60;
+        }
+      }
+    }
+    return 5;
+  }
   var eqDays=Array.from({length:12},function(){return {}});
+  var eqDayActual=Array.from({length:12},function(){return {}});
   yearRows.forEach(function(r){
     var date=r.date||'',m=parseInt(date.slice(5,7),10);
-    if(m>=1&&m<=12&&date.length>=10)eqDays[m-1][date]=true;
+    if(m>=1&&m<=12&&date.length>=10){
+      eqDays[m-1][date]=true;
+      eqDayActual[m-1][date]=(eqDayActual[m-1][date]||0)+parseWorkHours(r.raw);
+    }
   });
   var eqMonthDays=eqDays.map(function(days){return Object.keys(days).length});
-  function weekdaysInMonth(year,monthIndex){
-    var d=new Date(year,monthIndex,1),count=0;
-    while(d.getMonth()===monthIndex){
-      var day=d.getDay();
-      if(day!==0&&day!==6)count++;
-      d.setDate(d.getDate()+1);
-    }
-    return count;
-  }
-  var eqMonthAvailableHours=Array.from({length:12},function(_,i){return weekdaysInMonth(2026,i)*8});
-  var eqMonthProductionHours=eqMonthDays.map(function(n){return n*5});
+  var eqMonthPlannedHours=eqMonthDays.map(function(n){return n*8});
+  var eqMonthProductionHours=eqDayActual.map(function(days){
+    return Object.keys(days).reduce(function(sum,date){return sum+Math.min(8,days[date]||0)},0);
+  });
   var eqMonthRates=eqMonthDays.map(function(n,i){
-    var available=eqMonthAvailableHours[i]||0;
-    var production=eqMonthProductionHours[i]||0;
-    return available?Math.max(0,Math.min(100,production/available*100)):0;
+    var planned=eqMonthPlannedHours[i]||0,actual=eqMonthProductionHours[i]||0;
+    return planned?Math.max(0,Math.min(100,actual/planned*100)):0;
   });
   var eqMax=Math.max.apply(null,[1].concat(eqMonthDays));
   var eqTotalDays=eqMonthDays.reduce(function(sum,n){return sum+n},0);
@@ -406,13 +428,13 @@ async function loadDashboard(){
   function equipmentCombo(){
     // Same visual frame as production performance: blue bars + orange line.
     // Equipment chart meaning: blue = total operating hours, orange = utilization rate.
-    var totals=eqMonthAvailableHours.slice();
+    var totals=eqMonthPlannedHours.slice();
     var max=Math.max.apply(null,[1].concat(totals));
     var step=Math.ceil(max/5);if(step<1)step=1;
     var axisMax=step*5;
     var ticks=[axisMax,axisMax-step,axisMax-step*2,axisMax-step*3,axisMax-step*4,0];
     var bars=eqMonthDays.map(function(n,i){
-      var hours=eqMonthAvailableHours[i]||0,h=Math.max(0,Math.min(100,hours/axisMax*100));
+      var hours=eqMonthPlannedHours[i]||0,h=Math.max(0,Math.min(100,hours/axisMax*100));
       return '<div class="annualComboBar" style="--bar-h:'+h+'%"><span class="annualComboPlanVal">'+(hours||0)+'</span><i style="height:'+h+'%"></i></div>';
     }).join('');
     var pts=eqMonthDays.map(function(n,i){
@@ -435,17 +457,17 @@ async function loadDashboard(){
       '<div class="eqRateLabels">'+labels+'</div>'+
       '<div class="annualComboUnit">h</div>'+
       '<div class="annualComboMonths">'+eqMonthDays.map(function(_,i){return '<span>'+(i+1)+'월</span>'}).join('')+'</div>'+
-      '</div><div class="annualComboLegend"><span><i class="legendBar"></i>운영가능시간</span><span><i class="legendLine"></i>가동률 (%)</span></div></div>';
+      '</div><div class="annualComboLegend"><span><i class="legendBar"></i>계획 가동시간</span><span><i class="legendLine"></i>가동률 (%)</span></div></div>';
   }
   var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" style="--eq-accent:'+color+';--eq-p:'+pct+'%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>'+pct+'%</b></div></div>';};
-  var eqAvailableHoursTotal=eqMonthAvailableHours.reduce(function(a,b){return a+b},0);
+  var eqPlannedHoursTotal=eqMonthPlannedHours.reduce(function(a,b){return a+b},0);
   var eqProductionHoursEst=eqMonthProductionHours.reduce(function(a,b){return a+b},0);
-  var eqOverallRate=eqAvailableHoursTotal?Math.max(0,Math.min(100,eqProductionHoursEst/eqAvailableHoursTotal*100)):0;
-  var eqCleaningHoursEst=Math.max(0,eqAvailableHoursTotal-eqProductionHoursEst);
+  var eqOverallRate=eqPlannedHoursTotal?Math.max(0,Math.min(100,eqProductionHoursEst/eqPlannedHoursTotal*100)):0;
+  var eqIdleHoursEst=Math.max(0,eqPlannedHoursTotal-eqProductionHoursEst);
   var eqRateDisplay=(Math.round(eqOverallRate*10)/10);
-  var eqBars='<div class="eqSummary">'+eqStat('총 운영가능시간(평일 기준)',eqAvailableHoursTotal.toLocaleString()+' h','2026년 평일 × 8시간','#308ef0',eqAvailableHoursTotal?100:0)+eqStat('생산 가동시간',eqProductionHoursEst.toFixed(1).replace(/\.0$/,'')+' h','작업일수 × 5시간','#308ef0',eqRateDisplay)+eqStat('비가동·준비시간',eqCleaningHoursEst.toFixed(1).replace(/\.0$/,'')+' h','운영가능시간 대비 잔여시간','#f3a23c',Math.round((100-eqOverallRate)*10)/10)+eqStat('추정 가동률',eqRateDisplay+'%','평일 운영 가능시간 대비','#18b977',eqRateDisplay)+'</div>'+
+  var eqBars='<div class="eqSummary">'+eqStat('계획 가동시간(작업지시 기준)',eqPlannedHoursTotal.toFixed(1).replace(/\.0$/,'')+' h','작업지시일 × 8시간','#308ef0',eqPlannedHoursTotal?100:0)+eqStat('실제 생산 가동시간',eqProductionHoursEst.toFixed(1).replace(/\.0$/,'')+' h','실제시간 우선 · 미등록 5시간','#308ef0',eqRateDisplay)+eqStat('비가동·준비시간',eqIdleHoursEst.toFixed(1).replace(/\.0$/,'')+' h','계획 가동시간 대비 잔여시간','#f3a23c',Math.round((100-eqOverallRate)*10)/10)+eqStat('설비 가동률',eqRateDisplay+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',eqRateDisplay)+'</div>'+
     '<div class="eqChartCard">'+equipmentCombo()+
-    '<div class="eqFootnote">가동률 = 월 생산가동시간(작업일수×5h) ÷ 월 평일 운영가능시간(평일수×8h) × 100 · 실제 설비 계측값 아님</div></div>';
+    '<div class="eqFootnote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간 × 100 · 실제시간 미등록 과거 작업은 5시간 표준값 적용</div></div>';
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
@@ -461,7 +483,7 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC 불합격 '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 
   document.getElementById('dashRow4').innerHTML=
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>운영가능시간 / 가동률</span></div><div class="body">'+eqBars+'</div></div>';
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 가동시간 / 설비 가동률</span></div><div class="body">'+eqBars+'</div></div>';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
