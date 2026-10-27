@@ -183,3 +183,8 @@
   position:relative;
   z-index:5;
 }
+
+/* Keep routing geometry within lane bounds at compact sidebar widths. */
+#processMap .qpm-group,#processMap .qpm-body,#processMap .qpm-node,#processMap .qpm-trace-node{box-sizing:border-box!important;min-width:0!important}
+#processMap .qpm-diamond{max-width:100%!important;box-sizing:border-box!important}
+#processMap .qpm-node-icon{flex-shrink:0!important}
