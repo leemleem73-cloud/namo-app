@@ -92,7 +92,7 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 .eqStat .eqRing svg{width:55px;height:55px;display:block;transform:rotate(-90deg)}
 .eqStat .eqRing .eqTrack{fill:none;stroke:#eaf0f6;stroke-width:6}
 .eqStat .eqRing .eqProgress{fill:none;stroke:var(--eq-accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:138.23;stroke-dashoffset:138.23}
-.eqStat .eqRing b{position:absolute;inset:0;display:grid;place-items:center;font-size:10px;color:var(--eq-accent);font-weight:800;z-index:2}
+.eqStat .eqRing b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--eq-accent);font-weight:900;z-index:2;line-height:1.05;text-align:center}.eqStat .eqRing b small{font-size:6.2px;color:#5d7389;font-weight:800;margin-bottom:2px;white-space:nowrap}.eqStat .eqRing b span{font-size:9px;font-weight:900}
 .eqChartTitle{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#41617e;padding:0 8px;margin-bottom:2px}
 .eqChart{width:100%;height:260px;overflow:hidden}.eqChart svg{width:100%;height:100%;display:block}
 .eqLegend{display:flex;justify-content:center;gap:26px;align-items:center;flex-wrap:wrap;margin:8px 0 9px;font-size:11px;font-weight:700;color:#44627e}.eqLegend span{display:flex;align-items:center;gap:6px}.eqLegend i{display:inline-block;width:12px;height:12px;border-radius:2px}.eqLegend .eqLineKey{width:24px;height:3px;background:#f47c20;border-radius:0;position:relative}.eqLegend .eqLineKey:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#f47c20;left:8px;top:-3px}
@@ -473,7 +473,7 @@ async function loadDashboard(){
     var cards=document.querySelectorAll('#dashRow4 .eqStat');
     cards.forEach(function(card){
       var target=Math.max(0,Math.min(100,parseFloat(card.getAttribute('data-eq-pct'))||0));
-      var circle=card.querySelector('.eqProgress'),txt=card.querySelector('.eqRing b');
+      var circle=card.querySelector('.eqProgress'),txt=card.querySelector('.eqRing b span');
       if(!circle)return;
       circle.style.strokeDasharray=circumference;
       circle.style.strokeDashoffset=circumference;
@@ -504,10 +504,10 @@ async function loadDashboard(){
     }).join('');
     var html=
       '<div class="eqSummary">'+
-        eqStat('계획 가동시간',eqFmtHour(d.plan),'작업지시 기준','#308ef0',d.plan?100:0)+
-        eqStat('실제 생산 가동시간',eqFmtHour(d.run),'실제시간 우선 · 미등록 6.5시간','#20a46b',Math.round(rate*10)/10)+
-        eqStat('계획정지시간',eqFmtHour(d.planStop),'세척 · 준비 · 교체','#6a67c7',Math.round(planPct*10)/10)+
-        eqStat('설비 가동률',(Math.round(rate*10)/10)+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',Math.round(rate*10)/10)+
+        eqStat('계획 가동시간',eqFmtHour(d.plan),'작업지시 기준','#308ef0',d.plan?100:0,'기준')+
+        eqStat('실제 생산 가동시간',eqFmtHour(d.run),'실제시간 우선 · 미등록 6.5시간','#20a46b',Math.round(rate*10)/10,'가동율')+
+        eqStat('계획정지시간',eqFmtHour(d.planStop),'세척 · 준비 · 교체','#6a67c7',Math.round(planPct*10)/10,'계획정지 비율')+
+        eqStat('설비 가동률',(Math.round(rate*10)/10)+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',Math.round(rate*10)/10,'설비가동율')+
       '</div>'+
       '<div class="eqChartCard">'+
         '<div class="eqUtilControls">'+buttons+'</div>'+
@@ -533,7 +533,10 @@ async function loadDashboard(){
     requestAnimationFrame(animateEqRings);
   }
 
-  var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" data-eq-pct="'+pct+'" style="--eq-accent:'+color+'"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><svg viewBox="0 0 52 52" aria-hidden="true"><circle class="eqTrack" cx="26" cy="26" r="22"></circle><circle class="eqProgress" cx="26" cy="26" r="22"></circle></svg><b>0%</b></div></div>';};
+  var eqStat=function(label,value,sub,color,pct,ringLabel){
+    var rl=ringLabel||'';
+    return '<div class="eqStat" data-eq-pct="'+pct+'" style="--eq-accent:'+color+'"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><svg viewBox="0 0 52 52" aria-hidden="true"><circle class="eqTrack" cx="26" cy="26" r="22"></circle><circle class="eqProgress" cx="26" cy="26" r="22"></circle></svg><b><small>'+rl+'</small><span>0%</span></b></div></div>';
+  };
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
