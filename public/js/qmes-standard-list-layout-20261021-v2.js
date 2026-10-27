@@ -33,6 +33,7 @@ html body #standard .std-document-list tr.std-empty td{display:flex!important;al
     const table = section?.querySelector('.module-body > table');
     if (!table) return;
     table.classList.add('std-document-list');
+    if(table.dataset.standardColumns==='split')return;
     const header = table.querySelector('thead tr');
     if (!header || header.children.length < 8) return;
     if (!header.dataset.stdLayout) {
