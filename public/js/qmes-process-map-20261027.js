@@ -31,107 +31,16 @@
       '<span class="qpm-trace-icon">'+(ICONS[key]||'•')+'</span><span><b>'+title+'</b><small>'+sub+'</small></span></button>';
   }
 
-  function drawLinks(){
-    const canvas=root.querySelector('.qpm-canvas');
-    if(!canvas)return;
-    canvas.querySelector('.qpm-link-layer')?.remove();
 
-    const NS='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(NS,'svg');
-    svg.classList.add('qpm-link-layer');
-    svg.setAttribute('width',canvas.scrollWidth);
-    svg.setAttribute('height',canvas.scrollHeight);
-    svg.setAttribute('viewBox','0 0 '+canvas.scrollWidth+' '+canvas.scrollHeight);
-
-    const bounds=canvas.getBoundingClientRect();
-    const pos=(key,side)=>{
-      const el=canvas.querySelector('[data-key="'+key+'"]');
-      if(!el)return null;
-      const r=el.getBoundingClientRect();
-      const x=r.left-bounds.left, y=r.top-bounds.top, w=r.width, h=r.height;
-      if(side==='left')return {x,y:y+h/2};
-      if(side==='right')return {x:x+w,y:y+h/2};
-      if(side==='top')return {x:x+w/2,y};
-      return {x:x+w/2,y:y+h};
-    };
-    const path=(d,cls)=>{
-      const p=document.createElementNS(NS,'path');
-      p.setAttribute('d',d); p.setAttribute('class','qpm-link '+cls); svg.appendChild(p);
-    };
-    const arrow=(p,dir,cls)=>{
-      const e=document.createElementNS(NS,'path'),s=4.5;
-      let d='';
-      if(dir==='right') d='M '+(p.x-s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x-s)+' '+(p.y+s);
-      if(dir==='left') d='M '+(p.x+s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y+s);
-      if(dir==='down') d='M '+(p.x-s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y-s);
-      if(dir==='up') d='M '+(p.x-s)+' '+(p.y+s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y+s);
-      e.setAttribute('d',d); e.setAttribute('class','qpm-arrowhead '+cls); svg.appendChild(e);
-    };
-    const text=(x,y,val,cls)=>{
-      const t=document.createElementNS(NS,'text');
-      t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','qpm-link-label '+cls);t.textContent=val;svg.appendChild(t);
-    };
-    const h=(aKey,bKey,cls='main',label='')=>{
-      const a=pos(aKey,'right'),b=pos(bKey,'left'); if(!a||!b)return;
-      const mid=(a.x+b.x)/2;
-      path('M '+a.x+' '+a.y+' H '+mid+' V '+b.y+' H '+b.x,'qpm-'+cls);
-      arrow(b,'right','qpm-'+cls);
-      if(label)text(mid+4,Math.min(a.y,b.y)-6,label,'qpm-'+cls);
-    };
-    const v=(aKey,bKey,cls='main',label='')=>{
-      const a=pos(aKey,'bottom'),b=pos(bKey,'top'); if(!a||!b)return;
-      const mid=(a.y+b.y)/2;
-      path('M '+a.x+' '+a.y+' V '+mid+' H '+b.x+' V '+b.y,'qpm-'+cls);
-      arrow(b,'down','qpm-'+cls);
-      if(label)text(a.x+7,mid-5,label,'qpm-'+cls);
-    };
-    const trace=(aKey,bKey)=>{
-      const a=pos(aKey,'bottom'),b=pos(bKey,'top'); if(!a||!b)return;
-      const mid=a.y+Math.max(16,(b.y-a.y)/2);
-      path('M '+a.x+' '+a.y+' V '+mid+' H '+b.x+' V '+b.y,'qpm-trace');
-      arrow(b,'down','qpm-trace');
-    };
-
-    // Vertical flow inside each lane
-    [['sales','due'],['due','plan'],['purchase','incoming'],['incoming','incomingLot'],
-     ['iqc','iqcDecision'],['rawLot','rawStock'],['rawStock','workOrder'],
-     ['input','production'],['production','result'],['pqc','pqcDecision'],
-     ['complete','finishedLot'],['finishedLot','finishedStock'],['oqc','oqcDecision'],
-     ['ship','coa'],['coa','delivery'],['lotTrace','ncrHub'],['ncrHub','approval']]
-      .forEach(x=>v(x[0],x[1]));
-
-    // Main left-to-right flow
-    [['plan','purchase'],['incomingLot','iqc'],['rawStock','input'],['workOrder','input'],
-     ['result','pqc'],['finishedStock','oqc'],['delivery','lotTrace']]
-      .forEach(x=>h(x[0],x[1]));
-
-    // Decision branches
-    h('iqcDecision','rawLot','yes','YES');
-    v('iqcDecision','iqcNcr','no','NO');
-
-    h('pqcDecision','complete','yes','YES');
-    v('pqcDecision','pqcNcr','no','NO');
-
-    h('oqcDecision','ship','yes','YES');
-    v('oqcDecision','oqcNcr','no','NO');
-
-    // Bottom traceability row
-    [['traceIncoming','traceWork'],['traceWork','traceProd'],['traceProd','traceFinished'],
-     ['traceFinished','traceShip'],['traceShip','traceNcr']]
-      .forEach(x=>h(x[0],x[1],'trace'));
-
-    trace('incomingLot','traceIncoming');
-    trace('workOrder','traceWork');
-    trace('result','traceProd');
-    trace('finishedLot','traceFinished');
-    trace('delivery','traceShip');
-    trace('ncrHub','traceNcr');
-
-    trace('iqcNcr','traceNcr');
-    trace('pqcNcr','traceNcr');
-    trace('oqcNcr','traceNcr');
-
-    canvas.prepend(svg);
+  function downLink(cls='main',label=''){
+    return '<div class="qpm-inline-link qpm-inline-'+cls+'">'+
+      (label?'<span>'+label+'</span>':'')+
+      '<i></i></div>';
+  }
+  function stageLink(cls='main',label=''){
+    return '<div class="qpm-stage-link qpm-stage-'+cls+'">'+
+      (label?'<span>'+label+'</span>':'')+
+      '<i></i></div>';
   }
 
   function render(){
@@ -155,52 +64,84 @@
     const html=[
       group('수주 / 납기','▰',
         node('sales','수주등록','orders')+
+        downLink()+
         node('due','납기확인','orders')+
-        node('plan','생산계획','orders')
+        downLink()+
+        node('plan','생산계획','orders')+
+        stageLink()
       ),
       group('구매 / 입고','▰',
         node('purchase','구매발주','purchase')+
+        downLink()+
         node('incoming','원재료 입고','incoming')+
-        node('incomingLot','입고 LOT 등록','incoming')
+        downLink()+
+        node('incomingLot','입고 LOT 등록','incoming')+
+        stageLink()
       ),
       group('수입검사 IQC','⌕',
         node('iqc','IQC 검사등록','incoming')+
+        downLink()+
         diamond('iqcDecision','IQC 합격?')+
-        node('iqcNcr','NCR 자동등록','ncr','red')
+        '<div class="qpm-decision-branches"><div class="qpm-yes-branch">YES</div><div class="qpm-no-branch">NO</div></div>'+
+        downLink('no')+
+        node('iqcNcr','NCR 자동등록','ncr','red')+
+        stageLink('yes','YES')
       ),
       group('원료 / 작업지시','⚙',
         node('rawLot','합격 원료 LOT','incoming')+
+        downLink()+
         node('rawStock','원료재고','inventory')+
-        node('workOrder','작업지시 발행','work')
+        downLink()+
+        node('workOrder','작업지시 발행','work')+
+        stageLink()
       ),
       group('생산','⚙',
         node('input','원료투입','work')+
+        downLink()+
         node('production','생산진행','work')+
-        node('result','생산실적 등록','work')
+        downLink()+
+        node('result','생산실적 등록','work')+
+        stageLink()
       ),
       group('공정검사 PQC','⌕',
         node('pqc','PQC 검사등록','process')+
+        downLink()+
         diamond('pqcDecision','PQC 합격?')+
-        node('pqcNcr','NCR 자동등록','ncr','red')
+        '<div class="qpm-decision-branches"><div class="qpm-yes-branch">YES</div><div class="qpm-no-branch">NO</div></div>'+
+        downLink('no')+
+        node('pqcNcr','NCR 자동등록','ncr','red')+
+        stageLink('yes','YES')
       ),
       group('생산완료 / 완제품','⬡',
         node('complete','생산완료','work')+
+        downLink()+
         node('finishedLot','완제품 LOT 생성','work')+
-        node('finishedStock','완제품 재고','inventory')
+        downLink()+
+        node('finishedStock','완제품 재고','inventory')+
+        stageLink()
       ),
       group('출하검사 OQC','⌕',
         node('oqc','OQC 검사등록','outgoing')+
+        downLink()+
         diamond('oqcDecision','OQC 합격?')+
-        node('oqcNcr','NCR 자동등록','ncr','red')
+        '<div class="qpm-decision-branches"><div class="qpm-yes-branch">YES</div><div class="qpm-no-branch">NO</div></div>'+
+        downLink('no')+
+        node('oqcNcr','NCR 자동등록','ncr','red')+
+        stageLink('yes','YES')
       ),
       group('출하 / 납품','▰',
         node('ship','출하등록','orders')+
+        downLink()+
         node('coa','성적서 / COA','outgoing')+
-        node('delivery','고객사 납품완료','orders')
+        downLink()+
+        node('delivery','고객사 납품완료','orders')+
+        stageLink()
       ),
       group('LOT / 품질 추적','▥',
         node('lotTrace','LOT 추적','lotTrace')+
+        downLink()+
         node('ncrHub','부적합 NCR','ncr')+
+        downLink()+
         node('approval','전자결재 / 승인','approval')
       )
     ].join('');
@@ -224,12 +165,8 @@
 
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
     root.querySelector('.qpm-refresh')?.addEventListener('click',render);
-    requestAnimationFrame(()=>requestAnimationFrame(drawLinks));
+
   }
 
-  window.addEventListener('resize',()=>{
-    clearTimeout(window.__qpmResize);
-    window.__qpmResize=setTimeout(drawLinks,120);
-  });
   render();
 })();
