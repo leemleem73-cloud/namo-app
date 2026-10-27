@@ -221,7 +221,7 @@
       traceNode('traceShip','출하 정보','(출하 LOT)','orders')+
       traceNode('traceNcr','NCR 이력','(품질 이슈)','ncr');
 
-    root.insertAdjacentHTML('beforeend',
+    root.querySelector('.qpm-shell').insertAdjacentHTML('beforeend',
       '<div class="qpm-foot">'+
       '<span class="legend main">→ 주요 프로세스 흐름</span>'+
       '<span class="legend trace">⇢ LOT / 품질 데이터 연계</span>'+
