@@ -159,7 +159,7 @@ base+' section>div:first-child:has(>h3){height:34px!important;margin:0 0 8px!imp
 base+' section>div:first-child>h3{padding:0!important;margin:0!important;border:0!important;min-height:32px!important}'+
 base+' .fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:0!important;border-top:1px solid #d7e0e9!important;border-left:1px solid #d7e0e9!important}'+
 base+' .fields label{display:grid!important;grid-template-columns:128px minmax(0,1fr)!important;gap:0!important;min-height:42px!important;border-right:1px solid #d7e0e9!important;border-bottom:1px solid #d7e0e9!important;background:#fff!important}'+
-base+' .fields label>span{display:flex!important;align-items:center!important;justify-content:center!important;align-self:stretch!important;width:auto!important;padding:0 10px!important;background:#f6f8fa!important;border-right:1px solid #d7e0e9!important;font-size:10px!important;font-weight:700!important;color:#405267!important}'+
+base+' .fields label>span{display:flex!important;align-items:center!important;justify-content:center!important;align-self:stretch!important;width:auto!important;padding:0 10px!important;background:#f6f8fa!important;border-right:1px solid #d7e0e9!important;font-size:10px!important;font-weight:800!important;color:#405267!important}'+
 base+' .fields :is(input,select,textarea){font-family:inherit!important;font-size:11px!important;font-weight:400!important;height:30px!important;min-height:30px!important;max-width:calc(100% - 16px)!important;width:calc(100% - 16px)!important;margin:5px 8px!important;padding:5px 8px!important;border:1px solid #cfd7df!important;border-radius:2px!important;color:#35435b!important}'+
 base+' .scroll table{width:100%!important;border-collapse:collapse!important;font-family:inherit!important;font-size:12px!important;border:1px solid #d7e0e9!important}'+
 base+' .scroll :is(th,td){border:1px solid #d7e0e9!important;padding:7px 6px!important;font-family:inherit!important;font-size:12px!important;line-height:1.45!important}'+
@@ -173,3 +173,4 @@ base+' input[type=file]{font-family:inherit!important;font-size:11px!important;b
 '@media(max-width:900px){'+base+' .fields{grid-template-columns:1fr!important}}';
 document.head.append(parityStyle);
 })();
+(function(){const s=document.createElement('style');s.id='purchase-basic-font-weight-20261028';s.textContent='html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,select,textarea),html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,textarea)::placeholder{font-weight:400!important}';document.head.append(s);})();
