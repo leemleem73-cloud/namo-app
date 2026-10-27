@@ -147,6 +147,10 @@ async function restore(){
   const explicit=saved.route&&(saved.route.page==='purchase'||!(saved.trail||[]).length);
   if(saved.processOrigin===saved.page)window.qmesMenuHistory?.beginProcessNavigation(saved.page);
   if(explicit){
+   if(saved.route.page==='purchase'&&saved.route.kind==='detail'&&saved.route.record){
+    const loaded=await until(()=>window.qmesPurchaseList?.rows?.().some(record=>String(record.id||record.purchaseNo||record.no||'')===saved.route.record));
+    if(!loaded)throw Error('마지막 구매발주를 조회하지 못했습니다.');
+   }
    const open=await until(()=>typeof window.openNewForm==='function'&&window.openNewForm);
    if(!open)throw Error('등록 화면을 준비하지 못했습니다.');
    open(saved.route.page);
