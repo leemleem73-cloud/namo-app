@@ -47,50 +47,63 @@
     };
 
     const html=[
-      group('수주 / 납기',
+      group('① 수주 / 납기',
         node('수주등록','orders')+'<div class="qpm-arrow">↓</div>'+
-        node('납기확인 / 생산계획','orders')+'<div class="qpm-arrow">↓</div>'+
-        node('작업지시 발행','work')
+        node('납기확인','orders')+'<div class="qpm-arrow">↓</div>'+
+        node('생산계획','orders')
       ),
-      group('구매 / 입고 / IQC',
+      group('② 구매 / 입고',
         node('구매발주','purchase')+'<div class="qpm-arrow">↓</div>'+
         node('원재료 입고','incoming')+'<div class="qpm-arrow">↓</div>'+
+        node('입고 LOT 등록','incoming')
+      ),
+      group('③ 수입검사 IQC',
+        node('IQC 검사등록','incoming')+'<div class="qpm-arrow">↓</div>'+
         diamond('IQC 합격?')+
-        '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 작업지시 원료 LOT</span><span class="qpm-no-tag">NO ↓</span></div>'+
+        '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 원료재고</span><span class="qpm-no-tag">NO ↓</span></div>'+
         node('NCR 자동등록','ncr','','red')
       ),
-      group('생산',
-        node('합격 원료 LOT 선택','incoming')+'<div class="qpm-arrow">↓</div>'+
-        node('원료투입','work')+'<div class="qpm-arrow">↓</div>'+
-        node('생산진행','work')
+      group('④ 원료 / 작업지시',
+        node('합격 원료 LOT','incoming')+'<div class="qpm-arrow">↓</div>'+
+        node('원료재고','inventory')+'<div class="qpm-arrow">↓</div>'+
+        node('작업지시 발행','work')
       ),
-      group('공정검사 PQC',
-        node('공정검사 등록','process')+'<div class="qpm-arrow">↓</div>'+
+      group('⑤ 생산',
+        node('원료투입','work')+'<div class="qpm-arrow">↓</div>'+
+        node('생산진행','work')+'<div class="qpm-arrow">↓</div>'+
+        node('생산실적 등록','work')
+      ),
+      group('⑥ 공정검사 PQC',
+        node('PQC 검사등록','process')+'<div class="qpm-arrow">↓</div>'+
         diamond('PQC 합격?')+
         '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 생산완료</span><span class="qpm-no-tag">NO ↓</span></div>'+
         node('NCR 자동등록','ncr','','red')
       ),
-      group('생산완료 / 완제품',
+      group('⑦ 생산완료 / 완제품',
         node('생산완료','work')+'<div class="qpm-arrow">↓</div>'+
         node('완제품 LOT 생성','work')+'<div class="qpm-arrow">↓</div>'+
         node('완제품 재고','inventory')
       ),
-      group('출하검사 OQC',
-        node('출하검사 등록','outgoing')+'<div class="qpm-arrow">↓</div>'+
+      group('⑧ 출하검사 OQC',
+        node('OQC 검사등록','outgoing')+'<div class="qpm-arrow">↓</div>'+
         diamond('OQC 합격?')+
         '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 출하등록</span><span class="qpm-no-tag">NO ↓</span></div>'+
         node('NCR 자동등록','ncr','','red')
       ),
-      group('출하 / 추적',
-        node('출하등록 / 납품','orders')+'<div class="qpm-arrow">↓</div>'+
+      group('⑨ 출하 / 납품',
+        node('출하등록','orders')+'<div class="qpm-arrow">↓</div>'+
         node('성적서 / COA','outgoing')+'<div class="qpm-arrow">↓</div>'+
+        node('고객사 납품완료','orders')
+      ),
+      group('⑩ LOT / 품질 추적',
         node('LOT 추적','lotTrace')+'<div class="qpm-arrow">↓</div>'+
+        node('부적합 NCR','ncr')+'<div class="qpm-arrow">↓</div>'+
         node('전자결재 / 승인','approval')
       )
     ].join('');
 
-    root.querySelector('.qpm-board').innerHTML='<div class="qpm-flow-caption">나모케미칼 QMES 전체 업무 흐름</div><div class="qpm-grid">'+html+'</div>';
-    root.insertAdjacentHTML('beforeend','<div class="qpm-foot"><span>● IQC 합격 LOT만 작업지시 원료로 사용</span><span>● PQC 불합격 시 후속 공정 차단 + NCR 자동등록</span><span>● OQC 불합격 시 출하 차단 + NCR 자동등록</span><span>● 원료 LOT → 생산 LOT → 검사 → 출하까지 LOT 추적</span></div>');
+    root.querySelector('.qpm-board').innerHTML='<div class="qpm-flow-caption">나모케미칼 QMES 전체 Process MAP · 수주부터 원료 LOT, 생산 LOT, 검사, 출하까지 연동</div><div class="qpm-grid qpm-dense-grid">'+html+'</div>';
+    root.insertAdjacentHTML('beforeend','<div class="qpm-foot"><span>● 수주/납기 → 생산계획 → 작업지시 연동</span><span>● 구매발주 → 입고 LOT → IQC → 원료재고 연동</span><span>● 생산 → PQC → 생산완료 → 완제품 LOT 연동</span><span>● OQC 합격 LOT만 출하등록</span><span>● IQC/PQC/OQC 불합격 → NCR 자동등록</span><span>● 원료 LOT → 생산 LOT → 검사 → 출하까지 LOT 추적</span></div>');
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
     root.querySelector('.qpm-refresh')?.addEventListener('click',render);
   }
