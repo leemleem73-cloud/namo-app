@@ -111,7 +111,7 @@ closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast('ì¶œí•
 })();
 (function(){
  const style=document.createElement('style');style.id='oqc-measure-heading-gap-20261027';
- const base='html body #mainWorkspace .am-split[data-am-screen="outgoing"] ';
+ const base='html body #mainWorkspace .am-split[data-am-screen="outgoing"]:has(.oqc-detail-measure-section,.oqc-pqc-layout) .am-detail-pane ';
  style.textContent=base+'.oqc-detail-measure-section>.am-section-body{padding-top:8px!important}'+
  base+'.oqc-pqc-measure-section>.std-result-wrap{padding-top:8px!important}'+
  base+'.oqc-detail-measure-section>.am-section-head,'+base+'.oqc-pqc-measure-section>.am-section-head{border-bottom:1px solid #d7e0e9!important}';
