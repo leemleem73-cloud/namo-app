@@ -257,3 +257,85 @@
 }
 #processMap .qpm-trace-panel{position:relative!important}
 #processMap .qpm-trace-row{position:relative!important}
+
+/* 2026-10-27 rebuilt wire system */
+#processMap .qpm-link-layer,
+#processMap .qpm-inline-link,
+#processMap .qpm-stage-link,
+#processMap .qpm-decision-branches{display:none!important}
+
+#processMap .qpm-canvas{position:relative!important}
+#processMap .qpm-wire-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+}
+#processMap .qpm-group,
+#processMap .qpm-trace-panel{position:relative;z-index:1}
+
+#processMap .qpm-wire{
+  position:absolute;
+  background:#8794a2;
+}
+#processMap .qpm-wire.yes{background:#119249}
+#processMap .qpm-wire.no{background:#ff4d47}
+#processMap .qpm-wire.trace{
+  background:repeating-linear-gradient(
+    to right,
+    #7a63df 0 5px,
+    transparent 5px 9px
+  );
+}
+#processMap .qpm-wire.v.trace{
+  background:repeating-linear-gradient(
+    to bottom,
+    #7a63df 0 5px,
+    transparent 5px 9px
+  );
+}
+
+#processMap .qpm-wire-arrow{
+  position:absolute;
+  width:0;height:0;
+}
+#processMap .qpm-wire-arrow.right{
+  border-top:4px solid transparent;
+  border-bottom:4px solid transparent;
+  border-left:6px solid #8794a2;
+  transform:translateY(-4px);
+}
+#processMap .qpm-wire-arrow.down{
+  border-left:4px solid transparent;
+  border-right:4px solid transparent;
+  border-top:6px solid #8794a2;
+  transform:translateX(-4px);
+}
+#processMap .qpm-wire-arrow.yes.right{border-left-color:#119249}
+#processMap .qpm-wire-arrow.yes.down{border-top-color:#119249}
+#processMap .qpm-wire-arrow.no.right{border-left-color:#ff4d47}
+#processMap .qpm-wire-arrow.no.down{border-top-color:#ff4d47}
+#processMap .qpm-wire-arrow.trace.right{border-left-color:#7a63df}
+#processMap .qpm-wire-arrow.trace.down{border-top-color:#7a63df}
+
+#processMap .qpm-wire-label{
+  position:absolute;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+  color:#6b7a88;
+}
+#processMap .qpm-wire-label.yes{color:#119249}
+#processMap .qpm-wire-label.no{color:#ff4d47}
+
+#processMap .qpm-body{
+  gap:18px!important;
+}
+#processMap .qpm-node{
+  position:relative;
+  z-index:2;
+}
+#processMap .qpm-diamond{
+  position:relative;
+  z-index:2;
+}
