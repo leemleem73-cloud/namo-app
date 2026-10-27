@@ -236,7 +236,7 @@ function setup(root){
  }
  function clearAuto(){
   if(!autoValues)return;
-  for(const [name,input] of [['lot',lot],['product',product],['customer',customer]])if(input.value===autoValues[name])setValue(input,'');
+  for(const [name,input] of [['lot',lot],['product',product],['customer',customer]])if(input.value===autoValues[name])input.value='';
   autoValues=null;
  }
  function apply(choice){
