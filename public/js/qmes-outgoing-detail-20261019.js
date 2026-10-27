@@ -62,7 +62,7 @@ const overall=pane.querySelector('[data-oqc-overall]');overall.value=result.over
 return result;
 };
 pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('input',refreshOverall);el.addEventListener('change',refreshOverall);});refreshOverall();
-const note=pane.querySelector('.am-detail-note');if(note)note.textContent='저장 버튼을 누르면 변경 내용이 출하검사 목록에 반영됩니다.';
+pane.querySelector('.am-detail-note')?.remove();
 save.addEventListener('click',async()=>{
 const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
@@ -116,4 +116,20 @@ closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast('출�
  base+'.oqc-pqc-measure-section>.std-result-wrap{padding-top:8px!important}'+
  base+'.oqc-detail-measure-section>.am-section-head,'+base+'.oqc-pqc-measure-section>.am-section-head{border-bottom:1px solid #d7e0e9!important}';
  document.head.append(style);
+})();
+/* OQC detail approval footer: show the company alone and omit the save hint row. */
+(function(){
+ const selector='.am-split[data-am-screen="outgoing"]:has(.oqc-detail-measure-section)';
+ function clean(){
+  document.querySelectorAll(selector).forEach(pane=>{
+   pane.querySelector('.am-detail-note')?.remove();
+   const footer=pane.querySelector('.oqc-esign-parity>.pqc-esign-note');
+   if(footer&&footer.textContent!=='(주)나모케미칼')footer.textContent='(주)나모케미칼';
+  });
+ }
+ const style=document.createElement('style');style.id='oqc-detail-company-footer-20261027';
+ style.textContent='html body #mainWorkspace '+selector+' .oqc-esign-parity>.pqc-esign-note{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}'+selector+' .am-detail-note{display:none!important}';
+ document.head.append(style);
+ let pending=false;new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;clean();});}}).observe(document.body,{subtree:true,childList:true});
+ clean();
 })();
