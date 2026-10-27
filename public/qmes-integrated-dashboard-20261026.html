@@ -382,16 +382,21 @@ async function loadDashboard(){
     if(m>=1&&m<=12&&date.length>=10)eqDays[m-1][date]=true;
   });
   var eqMonthDays=eqDays.map(function(days){return Object.keys(days).length});
-  var eqMonthPlan=Array(12).fill(0),eqMonthActual=Array(12).fill(0);
-  yearRows.forEach(function(r){
-    var m=parseInt((r.date||'').slice(5,7),10);
-    if(m>=1&&m<=12){eqMonthPlan[m-1]+=Number(r.plan||0);eqMonthActual[m-1]+=Number(r.actual||0);}
-  });
+  function weekdaysInMonth(year,monthIndex){
+    var d=new Date(year,monthIndex,1),count=0;
+    while(d.getMonth()===monthIndex){
+      var day=d.getDay();
+      if(day!==0&&day!==6)count++;
+      d.setDate(d.getDate()+1);
+    }
+    return count;
+  }
+  var eqMonthAvailableHours=Array.from({length:12},function(_,i){return weekdaysInMonth(2026,i)*8});
+  var eqMonthProductionHours=eqMonthDays.map(function(n){return n*5});
   var eqMonthRates=eqMonthDays.map(function(n,i){
-    if(!n)return 0;
-    var plan=eqMonthPlan[i]||0,actual=eqMonthActual[i]||0;
-    if(!plan)return 62.5;
-    return Math.max(0,Math.min(100,62.5*(actual/plan)));
+    var available=eqMonthAvailableHours[i]||0;
+    var production=eqMonthProductionHours[i]||0;
+    return available?Math.max(0,Math.min(100,production/available*100)):0;
   });
   var eqMax=Math.max.apply(null,[1].concat(eqMonthDays));
   var eqTotalDays=eqMonthDays.reduce(function(sum,n){return sum+n},0);
@@ -433,14 +438,14 @@ async function loadDashboard(){
       '</div><div class="annualComboLegend"><span><i class="legendBar"></i>총 운영시간</span><span><i class="legendLine"></i>가동률 (%)</span></div></div>';
   }
   var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" style="--eq-accent:'+color+';--eq-p:'+pct+'%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>'+pct+'%</b></div></div>';};
-  var eqPlanTotal=eqMonthPlan.reduce(function(a,b){return a+b},0),eqActualTotal=eqMonthActual.reduce(function(a,b){return a+b},0);
-  var eqOverallRate=eqPlanTotal?Math.max(0,Math.min(100,62.5*(eqActualTotal/eqPlanTotal))):0;
-  var eqProductionHoursEst=eqTotalHours*(eqOverallRate/100);
+  var eqAvailableHoursTotal=eqMonthAvailableHours.reduce(function(a,b){return a+b},0);
+  var eqProductionHoursEst=eqMonthProductionHours.reduce(function(a,b){return a+b},0);
+  var eqOverallRate=eqAvailableHoursTotal?Math.max(0,Math.min(100,eqProductionHoursEst/eqAvailableHoursTotal*100)):0;
   var eqCleaningHoursEst=Math.max(0,eqTotalHours-eqProductionHoursEst);
   var eqRateDisplay=(Math.round(eqOverallRate*10)/10);
-  var eqBars='<div class="eqSummary">'+eqStat('총 운영시간(작업일 기준)',eqTotalHours.toLocaleString()+' h','','#308ef0',eqTotalDays?100:0)+eqStat('생산 가동시간',eqProductionHoursEst.toFixed(1).replace(/\.0$/,'')+' h','계획 대비 실적 기준 추정','#308ef0',eqRateDisplay)+eqStat('비가동·준비시간',eqCleaningHoursEst.toFixed(1).replace(/\.0$/,'')+' h','총 운영시간 대비 잔여시간','#f3a23c',Math.round((100-eqOverallRate)*10)/10)+eqStat('추정 가동률',eqRateDisplay+'%','계획 대비 실적 반영','#18b977',eqRateDisplay)+'</div>'+
+  var eqBars='<div class="eqSummary">'+eqStat('총 운영시간(작업일 기준)',eqTotalHours.toLocaleString()+' h','','#308ef0',eqTotalDays?100:0)+eqStat('생산 가동시간',eqProductionHoursEst.toFixed(1).replace(/\.0$/,'')+' h','작업일수 기준 생산시간','#308ef0',eqRateDisplay)+eqStat('비가동·준비시간',eqCleaningHoursEst.toFixed(1).replace(/\.0$/,'')+' h','총 운영시간 대비 잔여시간','#f3a23c',Math.round((100-eqOverallRate)*10)/10)+eqStat('추정 가동률',eqRateDisplay+'%','평일 운영 가능시간 대비','#18b977',eqRateDisplay)+'</div>'+
     '<div class="eqChartCard">'+equipmentCombo()+
-    '<div class="eqFootnote">작업지시서 작업일수 × 8시간 기준 · 가동률은 표준 62.5%에 월별 생산실적/계획 비율을 반영한 추정값 · 실제 설비 계측값 아님</div></div>';
+    '<div class="eqFootnote">가동률 = 월 생산가동시간(작업일수×5h) ÷ 월 평일 운영가능시간(평일수×8h) × 100 · 실제 설비 계측값 아님</div></div>';
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
