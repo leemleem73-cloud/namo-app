@@ -150,34 +150,26 @@
     trace('workOrder','traceWork');
     trace('result','traceProd');
     trace('finishedLot','traceFinished');
-    trace('delivery','traceShip');
-
-    // NCR uses a separate solid red merge lane, not the purple LOT history routes.
-    const target=pos('ncrHub','left');
-    const targetEl=canvas.querySelector('[data-key="ncrHub"]');
-    const targetLane=targetEl?.closest('.qpm-group');
-    const busY=gridRect.bottom-bounds.top+canvas.scrollTop+42;
-    if(target&&targetLane){
-      const laneRect=groups.get(targetLane);
-      const entryX=laneRect.left-bounds.left+canvas.scrollLeft-gap/2;
-      const sources=[['iqcNcr','IQC'],['pqcNcr','PQC'],['oqcNcr','OQC']].map(([key,label])=>{
-        const point=pos(key,'right'),el=canvas.querySelector('[data-key="'+key+'"]');
-        const lane=el?.closest('.qpm-group');
-        if(!point||!lane)return null;
-        const x=groups.get(lane).right-bounds.left+canvas.scrollLeft+gap/2;
-        return {point,x,label};
-      }).filter(Boolean);
-      sources.forEach(({point,x,label})=>{
-        path('M '+point.x+' '+point.y+' H '+x+' V '+busY,'qpm-ncr');
-        arrow({x,y:busY},'down','qpm-ncr');
-        text(x+20,busY-9,label,'qpm-ncr');
-      });
-      if(sources.length){
-        path('M '+Math.min(...sources.map(v=>v.x))+' '+busY+' H '+entryX+' V '+target.y+' H '+target.x,'qpm-ncr');
-        arrow(target,'right','qpm-ncr');
-        text(entryX-52,busY-9,'부적합 NCR','qpm-ncr');
-      }
+    const shipStart=pos('delivery','bottom'),shipEnd=pos('traceShip','top');
+    if(shipStart&&shipEnd){
+      const shipLane=gridRect.bottom-bounds.top+canvas.scrollTop+26;
+      path('M '+shipStart.x+' '+shipStart.y+' V '+shipLane+' H '+shipEnd.x+' V '+shipEnd.y,'qpm-trace');
+      arrow(shipEnd,'down','qpm-trace');
     }
+
+    // Follow the requested NCR sequence with a separate dashed route between each box.
+    const busY=gridRect.bottom-bounds.top+canvas.scrollTop+42;
+    [['iqcNcr','pqcNcr'],['pqcNcr','oqcNcr'],['oqcNcr','ncrHub']].forEach(([from,to])=>{
+      const start=pos(from,'right'),end=pos(to,'left');
+      const fromLane=canvas.querySelector('[data-key="'+from+'"]')?.closest('.qpm-group');
+      const toLane=canvas.querySelector('[data-key="'+to+'"]')?.closest('.qpm-group');
+      if(!start||!end||!fromLane||!toLane)return;
+      const exitX=groups.get(fromLane).right-bounds.left+canvas.scrollLeft+gap/2;
+      const entryX=groups.get(toLane).left-bounds.left+canvas.scrollLeft-gap/2;
+      path('M '+start.x+' '+start.y+' H '+exitX+' V '+busY+' H '+entryX+' V '+end.y+' H '+end.x,'qpm-ncr');
+      arrow(end,'right','qpm-ncr');
+    });
+    const targetLane=canvas.querySelector('[data-key="ncrHub"]')?.closest('.qpm-group');
     const ncrSource=pos('ncrHub','right'),ncrHistory=pos('traceNcr','top');
     if(ncrSource&&ncrHistory&&targetLane){
       const x=groups.get(targetLane).right-bounds.left+canvas.scrollLeft+gap/2;
