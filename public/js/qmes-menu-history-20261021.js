@@ -90,7 +90,7 @@ document.addEventListener('click',function(event){
  var text=button.textContent.trim();
  var known=button.matches('#workspaceBack,#modalCancel,[data-am-back],#ncr-back');
  var inEditor=button.closest('#mainWorkspace,.eq-wo-overlay,#namo-purchase-new-enterprise,#ncr .ncr-editor-shell');
- if(!known&&(!inEditor||! /^(?:←\\s*)?(?:목록(?:으로)?|뒤로(?:가기)?|닫기|취소)$/.test(text)))return;
+ if(!known&&(!inEditor||! /^(?:←\s*)?(?:목록(?:으로)?|뒤로(?:가기)?|닫기|취소)$/.test(text)))return;
  event.preventDefault();event.stopImmediatePropagation();capture();history.back();
 },true);
 
