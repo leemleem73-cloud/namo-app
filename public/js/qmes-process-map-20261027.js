@@ -19,9 +19,9 @@
   const salesRows=()=>{try{const v=JSON.parse(localStorage.getItem('qmes-erp-sales-v1')||'[]');return Array.isArray(v)?v:[]}catch(_){return []}};
 
   function node(label,page,sub,kind=''){
-    return '<button type="button" class="qpm-node '+kind+'" data-page="'+page+'">'+label+(sub?'<small>'+esc(sub)+'</small>':'')+'</button>';
+    return '<button type="button" class="qpm-node '+kind+'" data-page="'+page+'">'+label+'</button>';
   }
-  function diamond(label){return '<div class="qpm-diamond"><span>'+label+'</span></div>';}
+  function diamond(label){return '<div class="qpm-diamond" role="img" aria-label="'+esc(label)+'"><span>'+esc(label)+'</span></div>';}
   function group(title,body){return '<section class="qpm-group"><div class="qpm-group-title">'+title+'</div><div class="qpm-body">'+body+'</div></section>';}
 
   async function render(){
