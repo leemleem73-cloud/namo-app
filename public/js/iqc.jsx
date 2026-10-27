@@ -194,9 +194,21 @@ function IqcTab() {
   }, {}));
 
   const overall = (f) => {
-    const vals = [f.visual, f.label, f.weight, f.coa];
-    if (vals.includes("불합격") || vals.includes("불합격")) return "불합격";
-    return "합격";
+    const vals = [f.visual, f.label, f.weight, f.coa]
+      .map((value) => String(value || "").trim().toUpperCase());
+
+    // IQC 판정 통일:
+    // 어느 검사 항목이든 불합격/부적합/미확인/NG/FAIL이면
+    // 등록 후 수입검사 현황의 최종 판정도 반드시 "불합격"으로 저장한다.
+    const failed = vals.some((value) =>
+      value.includes("불합격") ||
+      value.includes("부적합") ||
+      value.includes("미확인") ||
+      value === "NG" ||
+      value === "FAIL"
+    );
+
+    return failed ? "불합격" : "합격";
   };
 
   const editingRecord = editingInNo ? rows.find((r) => r.inNo === editingInNo) : null;
