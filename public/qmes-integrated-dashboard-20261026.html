@@ -88,7 +88,11 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 .eqStat{position:relative;border:1px solid #dde7f1;border-radius:8px;background:#fff;min-height:104px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) 58px;grid-template-rows:auto 1fr auto;align-items:center;column-gap:8px;box-shadow:0 2px 8px rgba(34,67,103,.04)}
 .eqStat:before{display:none}
 .eqStat span{grid-column:1;grid-row:1;font-size:12px;color:#173b5e;font-weight:800}.eqStat strong{grid-column:1;grid-row:2;font-size:27px;color:#123a5d;line-height:1.25}.eqStat em{grid-column:1;grid-row:3;font-size:10px;color:#8395a8;font-style:normal;position:static}
-.eqStat .eqRing{grid-column:2;grid-row:1 / 4;width:55px;height:55px;border-radius:50%;background:conic-gradient(from -90deg,var(--eq-accent) 0 var(--eq-p),#eaf0f6 var(--eq-p) 100%);display:grid;place-items:center;position:relative;transition:background 1s ease-out}.eqStat .eqRing:before{content:'';position:absolute;width:39px;height:39px;background:#fff;border-radius:50%}.eqStat .eqRing b{position:relative;z-index:1;font-size:10px;color:var(--eq-accent);font-weight:800}
+.eqStat .eqRing{grid-column:2;grid-row:1 / 4;width:55px;height:55px;display:grid;place-items:center;position:relative}
+.eqStat .eqRing svg{width:55px;height:55px;display:block;transform:rotate(-90deg)}
+.eqStat .eqRing .eqTrack{fill:none;stroke:#eaf0f6;stroke-width:6}
+.eqStat .eqRing .eqProgress{fill:none;stroke:var(--eq-accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:138.23;stroke-dashoffset:138.23}
+.eqStat .eqRing b{position:absolute;inset:0;display:grid;place-items:center;font-size:10px;color:var(--eq-accent);font-weight:800;z-index:2}
 .eqChartTitle{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#41617e;padding:0 8px;margin-bottom:2px}
 .eqChart{width:100%;height:260px;overflow:hidden}.eqChart svg{width:100%;height:100%;display:block}
 .eqLegend{display:flex;justify-content:center;gap:26px;align-items:center;flex-wrap:wrap;margin:8px 0 9px;font-size:11px;font-weight:700;color:#44627e}.eqLegend span{display:flex;align-items:center;gap:6px}.eqLegend i{display:inline-block;width:12px;height:12px;border-radius:2px}.eqLegend .eqLineKey{width:24px;height:3px;background:#f47c20;border-radius:0;position:relative}.eqLegend .eqLineKey:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#f47c20;left:8px;top:-3px}
@@ -465,28 +469,31 @@ async function loadDashboard(){
   function eqPct(n,d){return d?Math.max(0,Math.min(100,n/d*100)):0}
   function eqFmtHour(v){var n=Math.round(Number(v||0)*10)/10;return String(n).replace(/\.0$/,'')+' h'}
   function animateEqRings(){
+    var circumference=2*Math.PI*22;
     var cards=document.querySelectorAll('#dashRow4 .eqStat');
     cards.forEach(function(card){
       var target=Math.max(0,Math.min(100,parseFloat(card.getAttribute('data-eq-pct'))||0));
-      var ring=card.querySelector('.eqRing'),txt=ring&&ring.querySelector('b');
-      if(!ring)return;
-      card.style.setProperty('--eq-p','0%');
-      ring.style.background='conic-gradient(from -90deg, var(--eq-accent) 0 0%, #eaf0f6 0% 100%)';
+      var circle=card.querySelector('.eqProgress'),txt=card.querySelector('.eqRing b');
+      if(!circle)return;
+      circle.style.strokeDasharray=circumference;
+      circle.style.strokeDashoffset=circumference;
       if(txt)txt.textContent='0%';
-      var start=null,duration=900;
-      requestAnimationFrame(function step(ts){
-        if(start===null)start=ts;
-        var p=Math.min(1,(ts-start)/duration);
-        var eased=1-Math.pow(1-p,3);
-        var cur=target*eased;
-        ring.style.background='conic-gradient(from -90deg, var(--eq-accent) 0 '+cur+'%, #eaf0f6 '+cur+'% 100%)';
-        if(txt)txt.textContent=(Math.round(cur*10)/10)+'%';
-        if(p<1)requestAnimationFrame(step);
-        else{
-          ring.style.background='conic-gradient(from -90deg, var(--eq-accent) 0 '+target+'%, #eaf0f6 '+target+'% 100%)';
-          if(txt)txt.textContent=(Math.round(target*10)/10)+'%';
-        }
-      });
+      var start=null,duration=1100;
+      setTimeout(function(){
+        requestAnimationFrame(function step(ts){
+          if(start===null)start=ts;
+          var p=Math.min(1,(ts-start)/duration);
+          var eased=1-Math.pow(1-p,3);
+          var cur=target*eased;
+          circle.style.strokeDashoffset=(circumference*(1-cur/100));
+          if(txt)txt.textContent=(Math.round(cur*10)/10)+'%';
+          if(p<1)requestAnimationFrame(step);
+          else{
+            circle.style.strokeDashoffset=(circumference*(1-target/100));
+            if(txt)txt.textContent=(Math.round(target*10)/10)+'%';
+          }
+        });
+      },120);
     });
   }
   function renderEquipmentUtil(index){
@@ -526,7 +533,7 @@ async function loadDashboard(){
     requestAnimationFrame(animateEqRings);
   }
 
-  var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" data-eq-pct="'+pct+'" style="--eq-accent:'+color+';--eq-p:0%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>0%</b></div></div>';};
+  var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" data-eq-pct="'+pct+'" style="--eq-accent:'+color+'"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><svg viewBox="0 0 52 52" aria-hidden="true"><circle class="eqTrack" cx="26" cy="26" r="22"></circle><circle class="eqProgress" cx="26" cy="26" r="22"></circle></svg><b>0%</b></div></div>';};
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
