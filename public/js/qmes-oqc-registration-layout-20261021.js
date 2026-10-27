@@ -65,6 +65,8 @@
     section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div>';
     table.before(section);
     section.append(table);
+    const companyFooter=root.querySelector('.pqc-esign-note');
+    if(companyFooter)companyFooter.textContent='나모케미칼';
     return root.outerHTML;
   };
   const style = document.createElement('style');
@@ -91,4 +93,22 @@
   @media(max-width:760px){.oqc-pqc-layout .std-info .am-inline-cell{grid-template-columns:104px minmax(0,1fr)!important}.oqc-pqc-layout .std-approval-row{grid-template-columns:90px repeat(3,minmax(0,1fr))!important}}
   `;
   document.head.append(style);
+})();
+
+/* Registration-only copy cleanup. Keep detail and issued certificates unchanged. */
+(function(){
+ const selector='.am-split[data-am-screen="outgoing"]:has(.oqc-pqc-layout)';
+ function clean(){
+  document.querySelectorAll(selector).forEach(pane=>{
+   pane.querySelector('.am-detail-top .title-wrap>small')?.remove();
+   pane.querySelector('.am-detail-note')?.remove();
+   const footer=pane.querySelector('.oqc-esign-parity>.pqc-esign-note');
+   if(footer&&footer.textContent!=='나모케미칼')footer.textContent='나모케미칼';
+  });
+ }
+ const style=document.createElement('style');style.id='oqc-registration-copy-clean-20261027';
+ style.textContent=selector+' .am-detail-top .title-wrap>small,'+selector+' .am-detail-note{display:none!important}html body #mainWorkspace '+selector+' .oqc-esign-parity>.pqc-esign-note{display:flex!important;justify-content:center!important;align-items:center!important;text-align:center!important}';
+ document.head.append(style);
+ let pending=false;new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;clean();});}}).observe(document.body,{childList:true,subtree:true});
+ clean();
 })();
