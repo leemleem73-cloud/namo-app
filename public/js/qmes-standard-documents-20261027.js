@@ -84,11 +84,12 @@ function render(){
   row.cells[3].title=record.name||'';
   if(record.attachments?.length){
    const cell=row.cells[9];cell.replaceChildren();
-   record.attachments.forEach(file=>{
+   record.attachments.slice(0,1).forEach(file=>{
     const link=document.createElement('a');link.className='std-attachment-link';link.textContent=file.name;link.title=file.name;
     link.href=endpoint+'/'+encodeURIComponent(record.id)+'/attachments/'+encodeURIComponent(file.id);link.setAttribute('download',file.name);
     link.addEventListener('click',event=>event.stopPropagation());cell.append(link);
    });
+   if(record.attachments.length>1){const more=document.createElement('span');more.textContent='외 '+(record.attachments.length-1)+'개';more.title='수정 화면에서 전체 첨부파일 확인';more.style.fontSize='10px';cell.append(more);}
   }
 
   const box=document.createElement('input');box.type='checkbox';box.className='std-select-row';box.checked=selected.has(String(record.id));box.setAttribute('aria-label',(index+1)+'번 문서 선택');
