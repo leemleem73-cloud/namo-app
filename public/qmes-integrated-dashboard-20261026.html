@@ -223,6 +223,18 @@ async function read(url){
     return Array.isArray(j.data)?j.data:Array.isArray(j)?j:[];
   }catch(_){return []}
 }
+function flattenSyncRecords(records){
+  var rows=[];
+  (records||[]).forEach(function(record){
+    var payload=record&&record.payload;
+    if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch(_){payload={}}}
+    if(!payload||payload.deleted)return;
+    (Array.isArray(payload.rows)?payload.rows:[]).forEach(function(row){
+      rows.push(row||{});
+    });
+  });
+  return rows;
+}
 function ring(title,value,sub,pct,red){
   return '<div class="card kpi"><div><div class="kt">'+title+'</div><div class="kv '+(red?'red':'')+'">'+value+' <span style="font-size:10px">건</span></div><div class="ks">'+sub+'</div></div><div class="ring" style="--p:'+pct+'%"><b>'+pct+'%</b></div></div>';
 }
@@ -348,8 +360,13 @@ function annualCombo(months,max){
 
 })();
 async function loadDashboard(){
-  var all=await Promise.all([read('/api/qmes/work-orders'),read('/api/iqc'),read('/api/pqc'),read('/api/oqc')]);
-  var wo=all[0],iqc=all[1],pqc=all[2],oqc=all[3];
+  var all=await Promise.all([
+    read('/api/qmes/work-orders'),
+    read('/api/iqc'),
+    read('/api/qmes-sync/pqc'),
+    read('/api/qmes-sync/oqc')
+  ]);
+  var wo=all[0],iqc=all[1],pqc=flattenSyncRecords(all[2]),oqc=flattenSyncRecords(all[3]);
   var year='2026';
   var rows=wo.map(function(o){
     var work=getWork(o),lot=getLot(o),status=getStatus(o);
