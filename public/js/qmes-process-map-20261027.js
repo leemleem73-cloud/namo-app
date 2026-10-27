@@ -113,7 +113,7 @@
       const gutter=r.right-bounds.left+canvas.scrollLeft+gap/2;
       const bottom=g.bottom-bounds.top+canvas.scrollTop;
       const traceTop=panelRect.top-bounds.top+canvas.scrollTop;
-      const corridor=bottom+Math.max(3,(traceTop-bottom)/2);
+      const corridor=bottom+Math.min(12,Math.max(3,(traceTop-bottom)/2));
       path('M '+a.x+' '+a.y+' H '+gutter+' V '+corridor+' H '+b.x+' V '+b.y,'qpm-trace');
       arrow(b,'down','qpm-trace');
     };
