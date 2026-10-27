@@ -203,3 +203,13 @@
 #processMap .qpm-foot{margin:0!important;padding:12px 18px!important;min-height:42px!important;box-sizing:border-box!important;border:0!important;border-top:1px solid #e5ecf3!important;border-radius:0!important;background:#fbfcfe!important;display:flex!important;align-items:center!important;gap:10px 20px!important}
 #processMap .qpm-foot .legend{display:inline-flex!important;align-items:center!important;font-size:10px!important;line-height:1.6!important;font-weight:600!important;white-space:nowrap!important}
 @media(max-width:900px){#processMap{padding:10px!important}#processMap .qpm-head{padding:13px 14px!important}#processMap .qpm-board{padding:12px 10px 14px!important}#processMap .qpm-foot{padding:10px 14px!important;gap:8px 14px!important}}
+
+/* NCR has its own labeled route below the purple LOT links. */
+#processMap .qpm-trace-panel{margin-top:82px!important}
+#processMap .qpm-link.qpm-ncr,#processMap .qpm-arrowhead.qpm-ncr{stroke:#dc493f!important;stroke-width:1.9!important;stroke-dasharray:none!important}
+#processMap .qpm-link.qpm-ncr-history,#processMap .qpm-arrowhead.qpm-ncr-history{stroke:#dc493f!important;stroke-width:1.7!important;stroke-dasharray:6 3!important}
+#processMap .qpm-link-label.qpm-ncr{fill:#c6362d!important;font-size:10px!important;font-weight:800!important;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+#processMap .qpm-link.qpm-ncr,#processMap .qpm-link.qpm-ncr-history{filter:drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+#processMap .qpm-trace-node[data-key="traceNcr"]{border-color:#efc4c0!important;background:#fff5f3!important;color:#b83830!important}
+#processMap .qpm-trace-node[data-key="traceNcr"] .qpm-trace-icon{background:#ffe1dd!important;color:#c84539!important}
+#processMap .qpm-foot .legend.ncr{color:#c84539!important}
