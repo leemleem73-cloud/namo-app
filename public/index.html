@@ -6818,9 +6818,9 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
     const index=list.findIndex(x=>String(x.recordId)===String(selectedRow.dataset.standardId));
     if(index>=0)selectedIndex=index;
   }
-  const pagedInspection=['incoming','process','outgoing','work','standard'].includes(id);
+  const pagedInspection=['incoming','process','outgoing','work','standard','purchase'].includes(id);
   const initialListPage=Math.max(1,Math.floor(Math.max(0,selectedIndex)/10)+1);
-  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}" data-am-record-id="${amEsc(x.recordId||'')}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
+  const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" ${pagedInspection&&(i<(initialListPage-1)*10||i>=initialListPage*10)?'hidden style="display:none"':''} data-am-id="${id}" data-am-index="${x.index}" data-am-record-id="${amEsc(x.recordId||'')}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
   return `<div class="am-split" data-am-screen="${id}">
     <aside class="am-list-pane">
@@ -8120,7 +8120,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 </script>
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
-<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261028-common-form2"></script>
+<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261028-initial-page3"></script>
 <script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-clear-menu-selection"></script>
 <script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261021.js?v=1"></script>
