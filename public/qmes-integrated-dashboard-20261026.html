@@ -494,7 +494,7 @@ async function loadDashboard(){
             '<div class="eqUtilStat"><small>비계획정지</small><b>'+eqFmtHour(d.unplan)+'</b></div>'+
             '<div class="eqUtilStat"><small>가동률</small><b>'+(Math.round(rate*10)/10)+'%</b></div>'+
           '</div>'+
-          '<div class="eqUtilNote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간(7.5h) × 100 · 계획정지: 세척·준비·교체 · 비계획정지: 고장·이상·긴급정지</div>'+
+          '<div class="eqUtilNote"><b>가동률 산정 기준</b> &nbsp;|&nbsp; 근무시간 8h · 계획 가동시간 7.5h · 실제시간 등록 시 실제값 적용 · 미등록 과거 작업 6.5h 추정 · 가동률 = 실제 생산 가동시간 ÷ 계획 가동시간 × 100</div>'+
         '</div>'+
       '</div>';
     document.querySelector('#dashRow4 .body').innerHTML=html;
