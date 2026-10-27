@@ -33,8 +33,40 @@ const str=(v,n=3000)=>String(v==null?'':v).trim().slice(0,n);
 const validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(v);
 const ncrUpload=multer({storage:multer.memoryStorage(),limits:{fileSize:10*1024*1024,files:1}});
 const allowedMime=new Set(['application/pdf','image/jpeg','image/png','image/webp','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','text/csv','application/vnd.ms-excel','application/msword']);
-const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified','improvement_completed','before_condition','after_condition','improvement_comparison'];
+const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified','improvement_completed','before_condition','after_condition','improvement_comparison','inspection_record_id','inspection_stage','auto_created'];
 function cleanDetails(input){const out={};if(input&&typeof input==='object'&&!Array.isArray(input))for(const k of detailKeys)if(Object.prototype.hasOwnProperty.call(input,k))out[k]=str(input[k],1500);return out;}
+
+async function autoCreateNcr(input={}){
+ await schema();
+ const source=str(input.source,30),date=str(input.occurred_on,10),recordId=str(input.inspection_record_id,240);
+ if(!['IQC','PQC','OQC'].includes(source)||!validDate(date)||!recordId)return null;
+ const existing=await pool.query(
+  "SELECT * FROM qmes_ncr_reports WHERE source=$1 AND details->>'inspection_record_id'=$2 ORDER BY id DESC LIMIT 1",
+  [source,recordId]
+ );
+ if(existing.rowCount)return existing.rows[0];
+
+ const details=cleanDetails({
+  ...(input.details||{}),
+  inspection_record_id:recordId,
+  inspection_stage:source,
+  auto_created:'Y'
+ });
+ const q=await pool.query(`INSERT INTO qmes_ncr_reports
+  (occurred_on,source,product,lot,customer,description,containment,root_cause,corrective_action,effectiveness,owner,due_on,created_by,created_by_id,details)
+  VALUES($1,$2,$3,$4,$5,$6,$7,'','','',$8,NULL,$9,$10,$11::jsonb) RETURNING *`,[
+  date,source,str(input.product,200),str(input.lot,120),str(input.customer,200),
+  str(input.description)||source+' 검사 불합격 자동 발생',
+  str(input.containment)||'해당 LOT 보류 및 후속 공정/출하 차단',
+  str(input.owner,120),
+  str(input.created_by||'QMES 자동생성',150),
+  str(input.created_by_id||'SYSTEM',100),
+  JSON.stringify(details)
+ ]);
+ const row=q.rows[0],no='NCR-'+date.replace(/-/g,'')+'-'+String(row.id).padStart(3,'0');
+ const saved=await pool.query('UPDATE qmes_ncr_reports SET report_no=$1 WHERE id=$2 RETURNING *',[no,row.id]);
+ return saved.rows[0];
+}
 function install(app){
  if(app.__qmesNcrInstalled)return;
  app.__qmesNcrInstalled=true;
@@ -155,4 +187,4 @@ express.application.use=function ncrUse(...args){
  }
  return out;
 };
-module.exports={install};
+module.exports={install,autoCreateNcr};
