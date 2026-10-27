@@ -6770,7 +6770,16 @@ function amListData(id){
   const rows=section?( ['process','outgoing'].includes(id)&&Array.isArray(section._inspectionAllRows)?section._inspectionAllRows:[...section.querySelectorAll('.data-row')]):[];
   const workOrders=id==='work'&&typeof readWorkOrders==='function'?readWorkOrders():[];
   return rows.map((row,i)=>{
-    const cells=[...row.children].map(td=>td.innerText.trim());
+    const cells=[...row.children].map(td=>td.textContent.trim());
+    if(id==='outgoing'){
+      const record=section?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
+      const columns=pageInfo.outgoing[2];
+      const value=name=>cells[columns.indexOf(name)+1]||'';
+      const date=String(record?.date||record?.shipDate||value('검사일자')).trim();
+      return {index:i,recordId:String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''),
+        primary:date||'검사일자 미등록',
+        secondary:[record?.customer||value('고객사'),record?.product||value('제품명'),record?.lot||value('완제품 LOT')].filter(Boolean).join(' · ')};
+    }
     if(id==='work'){
       const order=workOrders.find(o=>String(o.id)===String(row.dataset.workSaved));
       const date=String(order?.workDate||order?.fields?.['작업기간']||'').slice(0,10);
@@ -8185,7 +8194,7 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261019-1"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261020-one-judge2"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261027-customer-select3"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
