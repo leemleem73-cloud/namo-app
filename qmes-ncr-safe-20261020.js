@@ -299,13 +299,4 @@ function install(app,options={}){
  });
 
 }
-const originalUse=express.application.use;
-express.application.use=function ncrUse(...args){
- const out=originalUse.apply(this,args);
- if(!this.__qmesNcrInstalled){
-  const fns=args.flat().filter(x=>typeof x==='function');
-  if(fns.some(fn=>fn.name==='session'||/session/i.test(fn.name||'')))install(this);
- }
- return out;
-};
 module.exports={install,autoCreateNcr};
