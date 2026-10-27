@@ -478,7 +478,7 @@ async function loadDashboard(){
       if(!circle)return;
       circle.style.strokeDasharray=String(circumference);
       circle.style.strokeDashoffset=String(circumference);
-      if(txt)txt.textContent='0%';
+      if(txt)txt.textContent=(Math.round(target*10)/10)+'%';
       var duration=1400;
       var delay=180+idx*100;
       setTimeout(function(){
@@ -488,12 +488,8 @@ async function loadDashboard(){
           var eased=1-Math.pow(1-p,3);
           var cur=target*eased;
           circle.style.strokeDashoffset=String(circumference*(1-cur/100));
-          if(txt)txt.textContent=(Math.round(cur*10)/10)+'%';
           if(p<1)requestAnimationFrame(step);
-          else{
-            circle.style.strokeDashoffset=String(circumference*(1-target/100));
-            if(txt)txt.textContent=(Math.round(target*10)/10)+'%';
-          }
+          else circle.style.strokeDashoffset=String(circumference*(1-target/100));
         }
         requestAnimationFrame(step);
       },delay);
