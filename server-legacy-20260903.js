@@ -1002,8 +1002,15 @@ function buildSessionUser(user) {
 function calcJudgeFromItems(items = []) {
   const rows = arr(items);
   if (!rows.length) return '합격';
-  if (rows.some((x) => txt(x.judge) === '불합격')) return '불합격';
-  if (rows.some((x) => txt(x.judge) === '보류')) return '보류';
+  const values = rows.flatMap((x) => [
+    txt(x.judge),
+    txt(x.result),
+    txt(x.status),
+    ...(Array.isArray(x.values) ? x.values.map(txt) : []),
+    ...(Array.isArray(x.measurements) ? x.measurements.map(txt) : [])
+  ]).map((v) => String(v || '').trim().toUpperCase());
+  if (values.some((v) => v.includes('불합격') || v.includes('부적합') || v.includes('미확인') || v === 'NG' || v === 'FAIL')) return '불합격';
+  if (values.some((v) => v.includes('보류'))) return '보류';
   return '합격';
 }
 
@@ -1137,6 +1144,7 @@ async function ensureSchema() {
       unit_weight NUMERIC,
       calculated_weight NUMERIC,
       barcode_qty INTEGER,
+      judge TEXT DEFAULT '',
       items_json JSONB NOT NULL DEFAULT '[]'::jsonb,
       sign_writer JSONB DEFAULT '{}'::jsonb,
       sign_reviewer JSONB DEFAULT '{}'::jsonb,
@@ -1376,6 +1384,7 @@ async function ensureSchema() {
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS unit_weight NUMERIC;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS calculated_weight NUMERIC;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS barcode_qty INTEGER;
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS judge TEXT DEFAULT '';
 
     ALTER TABLE pqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE pqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
@@ -3285,26 +3294,30 @@ function bindCrud(table, mapper) {
   });
 }
 
-bindCrud('iqc', (b) => ({
-  date: txt(b.date),
-  lot: txt(b.lot),
-  supplier: txt(b.supplier),
-  item: txt(b.item),
-  inspector: txt(b.inspector),
-  incoming_qty: num(b.incomingQty),
-  qty: num(b.qty ?? b.checkQty),
-  fail: num(b.fail ?? b.failQty) ?? 0,
-  packaging_type: txt(b.packagingType),
-  packaging_type_other: txt(b.packagingTypeOther),
-  package_qty: num(b.packageQty),
-  unit_weight: num(b.unitWeight),
-  calculated_weight: num(b.calculatedWeight),
-  barcode_qty: num(b.barcodeQty),
-  items_json: JSON.stringify(arr(b.items)),
-  sign_writer: sign(b.signWriter),
-  sign_reviewer: sign(b.signReviewer),
-  sign_approver: sign(b.signApprover),
-}));
+bindCrud('iqc', (b) => {
+  const items = arr(b.items);
+  return {
+    date: txt(b.date),
+    lot: txt(b.lot),
+    supplier: txt(b.supplier),
+    item: txt(b.item),
+    inspector: txt(b.inspector),
+    incoming_qty: num(b.incomingQty),
+    qty: num(b.qty ?? b.checkQty),
+    fail: num(b.fail ?? b.failQty) ?? 0,
+    packaging_type: txt(b.packagingType),
+    packaging_type_other: txt(b.packagingTypeOther),
+    package_qty: num(b.packageQty),
+    unit_weight: num(b.unitWeight),
+    calculated_weight: num(b.calculatedWeight),
+    barcode_qty: num(b.barcodeQty),
+    judge: txt(b.judge) || calcJudgeFromItems(items),
+    items_json: JSON.stringify(items),
+    sign_writer: sign(b.signWriter),
+    sign_reviewer: sign(b.signReviewer),
+    sign_approver: sign(b.signApprover),
+  };
+});
 
 bindCrud('pqc', (b) => {
   const items = arr(b.items);
