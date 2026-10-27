@@ -109,6 +109,31 @@ function install(app){
   next();
  });
 
+ // Backfill any existing failed IQC records that predate the bridge.
+ // Safe to run repeatedly because autoCreateNcr de-duplicates by inspection_record_id.
+ (async()=>{
+  try{
+   await schema();
+   const failed=await pool.query("SELECT id,date,lot,item,supplier,incoming_qty,qty,inspector,judge FROM iqc WHERE judge='불합격' ORDER BY id DESC LIMIT 500");
+   for(const row of failed.rows){
+    await autoCreateNcr({
+     source:'IQC',
+     occurred_on:String(row.date||'').slice(0,10),
+     lot:row.lot,
+     product:row.item,
+     customer:row.supplier,
+     description:'IQC 수입검사 불합격 자동 발생',
+     containment:'해당 원료 LOT 보류 및 후속 공정 투입 차단',
+     owner:row.inspector||'',
+     created_by:row.inspector||'QMES 자동생성',
+     created_by_id:'SYSTEM',
+     inspection_record_id:'IQC:'+String(row.id),
+     details:{process:'수입검사',actual_result:'불합격',affected_qty:String(row.incoming_qty||row.qty||''),reporter:row.inspector||''}
+    });
+   }
+  }catch(e){console.error('[AUTO NCR IQC BACKFILL]',e);}
+ })();
+
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
   try{await schema();const q=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY id DESC LIMIT 500');res.json({success:true,data:q.rows});}
   catch(e){console.error('[NCR list]',e);bad(res,500,'NCR 목록 조회 실패');}
