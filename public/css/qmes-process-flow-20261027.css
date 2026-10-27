@@ -1,0 +1,32 @@
+/* NAMO QMES process map 2026-10-27 */
+#processFlow{padding:18px 20px 28px!important;background:#f5f7fa!important;min-height:calc(100vh - 58px)}
+#processFlow .pf-shell{max-width:1580px;margin:0 auto}
+#processFlow .pf-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:14px}
+#processFlow .pf-title{margin:0;font-size:20px;font-weight:900;color:#1f3550;letter-spacing:-.5px}
+#processFlow .pf-sub{margin:5px 0 0;font-size:11px;color:#728196}
+#processFlow .pf-refresh{height:34px;padding:0 13px;border:1px solid #d5dee8;border-radius:7px;background:#fff;color:#38516d;font-size:11px;font-weight:800;cursor:pointer}
+#processFlow .pf-board{background:#fff;border:1px solid #dce3eb;border-radius:10px;box-shadow:0 6px 18px rgba(28,47,70,.05);padding:16px;overflow:auto}
+#processFlow .pf-grid{min-width:1250px;display:grid;grid-template-columns:repeat(8,minmax(130px,1fr));gap:18px;align-items:start}
+#processFlow .pf-group{position:relative;border:1px solid #e0e5eb;border-radius:8px;background:#fff;min-height:185px;padding:42px 12px 14px}
+#processFlow .pf-group::before{content:attr(data-title);position:absolute;left:-1px;right:-1px;top:-1px;height:31px;display:flex;align-items:center;justify-content:center;border:1px solid #f1dfd5;border-radius:8px 8px 0 0;background:#fff4ee;color:#9a6549;font-size:11px;font-weight:850}
+#processFlow .pf-group.quality::before{background:#eef6ff;border-color:#d8e8fb;color:#376b9e}
+#processFlow .pf-node{position:relative;width:100%;min-height:54px;border:1px solid #b7d9ee;border-radius:6px;background:linear-gradient(180deg,#e9f7ff,#d8effc);color:#17618f;font:800 11px/1.35 inherit;padding:10px 10px;cursor:pointer;text-align:center;box-shadow:0 2px 5px rgba(35,91,126,.05);transition:.12s}
+#processFlow .pf-node:hover{transform:translateY(-1px);border-color:#6cb9e8;box-shadow:0 5px 13px rgba(35,91,126,.12)}
+#processFlow .pf-node + .pf-node{margin-top:34px}
+#processFlow .pf-node + .pf-node::before{content:"";position:absolute;left:50%;top:-35px;width:1px;height:34px;background:#98a6b6}
+#processFlow .pf-node + .pf-node::after{content:"";position:absolute;left:calc(50% - 4px);top:-7px;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid #98a6b6}
+#processFlow .pf-node.fail{background:#fff0f0;border-color:#efb0b0;color:#b43232}
+#processFlow .pf-node.trace{background:#f3f7fb;border-color:#ccd9e7;color:#385d7d}
+#processFlow .pf-node .pf-badge{display:block;margin-top:5px;font-size:9px;font-weight:800;color:#76879a}
+#processFlow .pf-node.fail .pf-badge{color:#c64c4c}
+#processFlow .pf-arrow{display:flex;align-items:center;justify-content:center;height:54px;margin-top:62px;color:#8a98a8;font-size:24px;font-weight:300}
+#processFlow .pf-arrow::after{content:"→"}
+#processFlow .pf-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+#processFlow .pf-kpi{background:#fff;border:1px solid #dde5ed;border-radius:8px;padding:11px 13px}
+#processFlow .pf-kpi span{display:block;font-size:10px;color:#78879a;font-weight:750}
+#processFlow .pf-kpi b{display:block;margin-top:4px;font-size:18px;color:#1f3550}
+#processFlow .pf-kpi.bad b{color:#d22f2f}
+#processFlow .pf-note{margin-top:12px;padding:10px 12px;border:1px dashed #d6dee8;border-radius:7px;background:#fafbfd;color:#65758a;font-size:10.5px}
+#processFlow .pf-branches{display:flex;gap:8px;margin-top:8px}
+#processFlow .pf-mini{flex:1;border:1px solid #efcaca;background:#fff6f6;color:#b53b3b;border-radius:6px;padding:8px;font-size:9.5px;font-weight:800;text-align:center;cursor:pointer}
+@media(max-width:1050px){#processFlow{padding:12px!important}#processFlow .pf-kpis{grid-template-columns:repeat(2,1fr)}}
