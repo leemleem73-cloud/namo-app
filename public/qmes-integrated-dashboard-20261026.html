@@ -235,6 +235,48 @@ function flattenSyncRecords(records){
   });
   return rows;
 }
+function evaluatePqcMeasurements(measurements){
+  var rules={
+    '외관':function(v){return v==='이상없음'},
+    '입도(Dmax)':function(v){return Number.isFinite(Number(v))&&Number(v)<10},
+    '점도':function(v){return Number.isFinite(Number(v))&&Number(v)>=1200&&Number(v)<=1800},
+    '고형분':function(v){return Number.isFinite(Number(v))&&Number(v)>=19&&Number(v)<=21}
+  };
+  var items={};
+  Object.keys(rules).forEach(function(item){
+    var valid=rules[item];
+    var values=Array.from({length:3},function(_,i){return String(measurements&&measurements[item]&&measurements[item][i]!=null?measurements[item][i]:'').trim()});
+    items[item]=values.some(function(v){return v!==''&&!valid(v)})?'불합격':values.every(function(v){return v!==''&&valid(v)})?'합격':'대기';
+  });
+  var all=Object.keys(items).map(function(k){return items[k]});
+  return {items:items,overall:all.indexOf('불합격')>=0?'불합격':all.every(function(v){return v==='합격'})?'합격':'대기'};
+}
+function normalizePqcRows(rows){
+  var grouped=new Map();
+  (rows||[]).forEach(function(row){
+    var normalized=Object.assign({},row);
+    if(normalized.measurements&&typeof normalized.measurements==='object'){
+      normalized.judge=evaluatePqcMeasurements(normalized.measurements).overall;
+    }
+    var date=clean(normalized.date).slice(0,10);
+    var work=norm(normalized.workOrderNo||normalized.workOrder||normalized.workNo||normalized.orderNo);
+    var lot=norm(normalized.lot||normalized.lotNo||normalized.productionLot);
+    var key=(date&&lot)?[date,work,lot].join('||'):'UNIQUE||'+clean(normalized.id||Math.random());
+    var current=grouped.get(key);
+    if(!current){grouped.set(key,normalized);return;}
+    var score=function(r){
+      var s=0;
+      if(clean(r.workOrderNo||r.workOrder||r.workNo||r.orderNo)&&clean(r.workOrderNo||r.workOrder||r.workNo||r.orderNo)!=='-')s++;
+      if(clean(r.product))s++;
+      if(clean(r.inspector))s++;
+      if(clean(r.judge)&&clean(r.judge)!=='대기'&&clean(r.judge)!=='검사대기')s+=2;
+      if(r.measurements&&typeof r.measurements==='object')s+=3;
+      return s;
+    };
+    if(score(normalized)>score(current))grouped.set(key,normalized);
+  });
+  return Array.from(grouped.values());
+}
 function ring(title,value,sub,pct,red){
   return '<div class="card kpi"><div><div class="kt">'+title+'</div><div class="kv '+(red?'red':'')+'">'+value+' <span style="font-size:10px">건</span></div><div class="ks">'+sub+'</div></div><div class="ring" style="--p:'+pct+'%"><b>'+pct+'%</b></div></div>';
 }
@@ -366,7 +408,7 @@ async function loadDashboard(){
     read('/api/qmes-sync/pqc'),
     read('/api/qmes-sync/oqc')
   ]);
-  var wo=all[0],iqc=all[1],pqc=flattenSyncRecords(all[2]),oqc=flattenSyncRecords(all[3]);
+  var wo=all[0],iqc=all[1],pqc=normalizePqcRows(flattenSyncRecords(all[2])),oqc=flattenSyncRecords(all[3]);
   var year='2026';
   var rows=wo.map(function(o){
     var work=getWork(o),lot=getLot(o),status=getStatus(o);
