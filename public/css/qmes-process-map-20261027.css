@@ -156,3 +156,104 @@
 }
 #processMap .qpm-foot{gap:16px!important;padding:10px 14px!important}
 #processMap .qpm-foot .legend{font-size:9px!important}
+
+/* 2026-10-27 stable inline connectors */
+#processMap .qpm-link-layer{display:none!important}
+#processMap .qpm-body{position:relative!important}
+#processMap .qpm-inline-link{
+  position:relative;
+  width:100%;
+  height:14px;
+  flex:0 0 14px;
+}
+#processMap .qpm-inline-link i{
+  position:absolute;
+  left:50%;
+  top:0;
+  width:1.5px;
+  height:14px;
+  background:#8a97a5;
+  transform:translateX(-50%);
+}
+#processMap .qpm-inline-link i::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-1px;
+  width:6px;
+  height:6px;
+  border-right:1.5px solid #8a97a5;
+  border-bottom:1.5px solid #8a97a5;
+  transform:translateX(-50%) rotate(45deg);
+  background:transparent;
+}
+#processMap .qpm-inline-no i{background:#ef4b43}
+#processMap .qpm-inline-no i::after{border-color:#ef4b43}
+#processMap .qpm-inline-link span{
+  position:absolute;
+  left:calc(50% + 8px);
+  top:1px;
+  font-size:8px;
+  font-weight:900;
+}
+#processMap .qpm-stage-link{
+  position:absolute;
+  right:-13px;
+  top:50%;
+  width:20px;
+  height:18px;
+  transform:translateY(-50%);
+  z-index:4;
+}
+#processMap .qpm-stage-link i{
+  position:absolute;
+  left:0;
+  top:8px;
+  width:20px;
+  height:1.5px;
+  background:#8a97a5;
+}
+#processMap .qpm-stage-link i::after{
+  content:"";
+  position:absolute;
+  right:-1px;
+  top:-3px;
+  width:6px;
+  height:6px;
+  border-top:1.5px solid #8a97a5;
+  border-right:1.5px solid #8a97a5;
+  transform:rotate(45deg);
+}
+#processMap .qpm-stage-link span{
+  position:absolute;
+  top:-8px;
+  right:0;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+}
+#processMap .qpm-stage-yes i{background:#13904a}
+#processMap .qpm-stage-yes i::after{border-color:#13904a}
+#processMap .qpm-stage-yes span{color:#13904a}
+#processMap .qpm-decision-branches{
+  width:100%;
+  height:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 10px;
+  margin-top:-8px;
+  margin-bottom:-8px;
+  font-size:8px;
+  font-weight:900;
+}
+#processMap .qpm-yes-branch{color:#13904a}
+#processMap .qpm-no-branch{color:#ef4b43}
+#processMap .qpm-group:not(:last-child){overflow:visible!important}
+#processMap .qpm-group:last-child .qpm-stage-link{display:none!important}
+#processMap .qpm-diamond{
+  width:118px!important;
+  height:78px!important;
+}
+#processMap .qpm-trace-panel{position:relative!important}
+#processMap .qpm-trace-row{position:relative!important}
