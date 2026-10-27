@@ -82,6 +82,15 @@ function render(){
   ['',String(index+1),record.documentNo,record.name,record.category,record.revision,record.revisionDate,record.department,record.status,'첨부 없음',record.note,''].forEach((value,i)=>{const td=document.createElement('td');td.dataset.standardCol=keys[i];td.textContent=value||'';row.append(td);});
   row.cells[3].className='std-document-name';
   row.cells[3].title=record.name||'';
+  if(record.attachments?.length){
+   const cell=row.cells[9];cell.replaceChildren();
+   record.attachments.forEach(file=>{
+    const link=document.createElement('a');link.className='std-attachment-link';link.textContent=file.name;link.title=file.name;
+    link.href=endpoint+'/'+encodeURIComponent(record.id)+'/attachments/'+encodeURIComponent(file.id);link.setAttribute('download',file.name);
+    link.addEventListener('click',event=>event.stopPropagation());cell.append(link);
+   });
+  }
+
   const box=document.createElement('input');box.type='checkbox';box.className='std-select-row';box.checked=selected.has(String(record.id));box.setAttribute('aria-label',(index+1)+'번 문서 선택');
   row.cells[0].replaceChildren(box);
   box.addEventListener('click',event=>event.stopPropagation());
@@ -92,7 +101,7 @@ function render(){
    const button=document.createElement('button');button.type='button';button.className='btn';button.textContent=title;button.addEventListener('click',event=>{event.stopPropagation();handler();});actions.append(button);
   }
   remarks.replaceChildren(note);row.cells[11].replaceChildren(actions);
-  row.addEventListener('click',event=>{if(!event.target.closest('button,input,label'))open(record);});body.append(row);
+  row.addEventListener('click',event=>{if(!event.target.closest('button,input,label,a'))open(record);});body.append(row);
  });
  if(!list.length){const row=document.createElement('tr');row.dataset.stdPlaceholder='1';row.className='std-placeholder';row.setAttribute('aria-hidden','true');for(const key of ['check','no','documentNo','name','category','revision','revisionDate','department','status','attachment','note','manage']){const td=document.createElement('td');td.dataset.standardCol=key;row.append(td);}body.append(row);}
  let pager=section.querySelector('.std-document-pagination');
@@ -112,18 +121,49 @@ async function load(){
  return loading;
 }
 function open(record=null){
+ let attachments=(record?.attachments||[]).map(file=>({...file})),attachmentReading=false;
  currentDocumentId=record?String(record.id):'';
  closeChoice();document.getElementById('standard')?.querySelector('.iqc-selection-dock')?.classList.remove('is-visible');
- const fields=[['문서번호','documentNo'],['문서명','name'],['구분','category'],['Rev.','revision'],['개정일','revisionDate'],['담당부서','department'],['상태','status'],['비고','note']];
+ const fields=[['문서번호','documentNo'],['문서명','name'],['구분','category'],['Rev.','revision'],['개정일','revisionDate'],['담당부서','department'],['상태','status'],['첨부파일','attachments'],['비고','note']];
  const html='<div class="form-grid">'+fields.map(([label,key])=>{
   const value=record?.[key]||'';
-  const control=['status','department'].includes(key)?'<input type="hidden" data-standard-field="'+key+'" value="'+esc(value)+'"><button type="button" class="std-choice-trigger" data-standard-choice="'+key+'" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="'+label+' 선택"><span>'+esc(value)+'</span><span aria-hidden="true">⌄</span></button>':key==='note'?'<textarea data-standard-field="'+key+'" placeholder="비고 입력">'+esc(value)+'</textarea>':'<input data-standard-field="'+key+'" type="'+(key==='revisionDate'?'date':'text')+'" value="'+esc(value)+'" placeholder="'+esc(label)+' 입력">';
+  const control=key==='attachments'?'<div class="std-attachment-field"><input type="file" id="stdDocumentFile" multiple aria-label="첨부파일 선택"><div class="std-attachment-list"></div></div>':['status','department'].includes(key)?'<input type="hidden" data-standard-field="'+key+'" value="'+esc(value)+'"><button type="button" class="std-choice-trigger" data-standard-choice="'+key+'" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="'+label+' 선택"><span>'+esc(value)+'</span><span aria-hidden="true">⌄</span></button>':key==='note'?'<textarea data-standard-field="'+key+'" placeholder="비고 입력">'+esc(value)+'</textarea>':'<input data-standard-field="'+key+'" type="'+(key==='revisionDate'?'date':'text')+'" value="'+esc(value)+'" placeholder="'+esc(label)+' 입력">';
   return '<div class="form-item '+(key==='note'?'full':'')+'"><label>'+label+'</label>'+control+'</div>';
  }).join('')+'</div>';
  const title='문서관리 '+(record?'상세 / 수정':'신규등록');
  const selectedRow=record?document.createElement('tr'):null;if(selectedRow)selectedRow.dataset.standardId=String(record.id);
  openModal(title,amaranthScreen('standard',html,record?'edit':'new',title,selectedRow),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
+ const attachmentRoot=root.querySelector('.std-attachment-list'),fileInput=root.querySelector('#stdDocumentFile');
+ function renderAttachments(){
+  attachmentRoot.replaceChildren();
+  attachments.forEach((file,index)=>{
+   const row=document.createElement('div');row.className='std-file-row';
+   const label=document.createElement(file.id?'a':'span');label.textContent=file.name;label.title=file.name;
+   if(file.id){label.href=endpoint+'/'+encodeURIComponent(record.id)+'/attachments/'+encodeURIComponent(file.id);label.setAttribute('download',file.name);}
+   const remove=document.createElement('button');remove.type='button';remove.textContent='제거';remove.setAttribute('aria-label',file.name+' 첨부 제거');
+   remove.onclick=()=>{attachments.splice(index,1);renderAttachments();};
+   row.append(label,remove);attachmentRoot.append(row);
+  });
+ }
+ renderAttachments();
+ fileInput.addEventListener('change',async()=>{
+  const files=[...fileInput.files];if(!files.length)return;
+  if(attachments.length+files.length>10||attachments.reduce((sum,file)=>sum+file.size,0)+files.reduce((sum,file)=>sum+file.size,0)>5*1024*1024){
+   toast('첨부파일은 최대 10개, 전체 5MB까지 등록할 수 있습니다.');fileInput.value='';return;
+  }
+  attachmentReading=true;
+  try{
+   const added=await Promise.all(files.map(file=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();reader.onerror=()=>reject(Error('파일을 읽지 못했습니다.'));
+    reader.onload=()=>resolve({name:file.name,type:file.type||'application/octet-stream',size:file.size,data:String(reader.result).split(',')[1]||''});
+    reader.readAsDataURL(file);
+   })));
+   attachments.push(...added);renderAttachments();
+  }catch(error){toast(error.message);}
+  finally{attachmentReading=false;fileInput.value='';}
+ });
+
  const revisionDate=root.querySelector('[data-standard-field="revisionDate"]');
  if(revisionDate){
   const updateDate=()=>{revisionDate.dataset.standardEmpty=String(!revisionDate.value);};
@@ -173,7 +213,8 @@ function open(record=null){
  let busy=false;
  save.addEventListener('click',async()=>{
   if(busy)return;
-  const body={};root.querySelectorAll('[data-standard-field]').forEach(el=>body[el.dataset.standardField]=el.value.trim());
+  if(attachmentReading){toast('첨부파일을 읽는 중입니다. 잠시 후 저장해 주세요.');return;}
+  const body={attachments};root.querySelectorAll('[data-standard-field]').forEach(el=>body[el.dataset.standardField]=el.value.trim());
   if(!body.documentNo||!body.name){toast('문서번호와 문서명을 입력해 주세요.');return;}
   if(!statuses.includes(body.status)){toast('문서 상태를 선택해 주세요.');return;}
   busy=true;save.disabled=true;save.textContent='저장 중...';
@@ -216,3 +257,5 @@ install();
 (()=>{const style=document.createElement('style');style.id='standard-separate-check-management-20261027';style.textContent="\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr{grid-template-columns:34px 52px repeat(7,minmax(0,1fr)) 120px!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>:nth-child(n){display:flex!important;order:0!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"category\"],\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"status\"]{display:none!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"check\"]{padding:0!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] input[type=\"checkbox\"]{width:13px!important;height:13px!important;min-height:0!important;margin:0!important;accent-color:#2f7de1;cursor:pointer}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"name\"],\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"note\"]{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:27px!important}\n";document.head.append(style);})();
 
 (()=>{const style=document.createElement('style');style.id='standard-pagination-selection-parity-20261027';style.textContent="\nhtml body #standard .std-document-pagination{display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;padding:10px 0 14px!important}\nhtml body #standard .std-document-pagination .ip-page-btn{min-width:28px!important;height:28px!important;border:1px solid #dbe3ec!important;border-radius:4px!important;background:#fff!important;color:#536177!important;font-size:12px!important}\nhtml body #standard .std-document-pagination .ip-page-btn.active{background:#2f7de1!important;border-color:#2f7de1!important;color:#fff!important}\nhtml body #standard#standard .std-document-list tbody tr.std-current>td{background:#eef6ff!important}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .am-list-item.active{background:#eef6ff!important;box-shadow:inset 3px 0 #2686e8!important}\n";document.head.append(style);})();
+
+(()=>{const style=document.createElement('style');style.id='standard-attachment-field-20261027';style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field{box-sizing:border-box;min-width:0;width:calc(100% - 16px);margin:5px 8px}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field>input[type=\"file\"]{box-sizing:border-box;width:100%;height:30px;min-height:30px;padding:3px 6px;margin:0;border:1px solid #cfd7df;border-radius:2px;font:12px inherit;background:#fff;color:#344054}\n.std-attachment-list{display:grid;gap:4px}.std-file-row{display:flex;align-items:center;gap:8px;min-width:0;padding-top:4px}\n.std-file-row>a,.std-file-row>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1673c7;font-size:11px}\n.std-file-row>button{flex-shrink:0;margin-left:auto;border:1px solid #edc4c4;border-radius:3px;background:#fff;color:#b42318;padding:2px 6px;font-size:10px}\nhtml body #standard#standard .std-document-list .std-attachment-link{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#1673c7;text-decoration:underline}\n";document.head.append(style);})();
