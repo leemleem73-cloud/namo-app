@@ -256,7 +256,7 @@ function setup(root){
   select.disabled=!choices.length;
   const current=choices.findIndex(c=>norm(c.lot)===norm(lot.value)&&norm(c.product)===norm(product.value)&&norm(c.customer)===norm(customer.value));
   if(current>=0)select.value=String(current);
-  if(allowAuto&&choices.length===1&&!lot.value&&!product.value&&!customer.value){select.value='0';apply(choices[0]);}
+  if(allowAuto&&choices.length===1&&!lot.value&&!product.value&&(!customer.value||norm(customer.value)===norm(choices[0].customer))){select.value='0';apply(choices[0]);}
   else message.textContent=!date.value?'검사일자를 선택해 주세요.':choices.length>1?'같은 날짜에 여러 건이 있습니다. 검사 대상을 선택해 주세요.':choices.length===1?'검사 대상을 선택하면 생산정보를 불러옵니다.':'해당 일자의 작업지시·공정검사가 없습니다. 직접 입력할 수 있습니다.';
  }
  async function load(){
