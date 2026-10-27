@@ -349,9 +349,10 @@ async function loadDashboard(){
   var total=yearRows.length;
   var running=yearRows.filter(function(r){return /생산중|진행/.test(r.status)}).length;
   var done=yearRows.filter(function(r){return /완료/.test(r.status)}).length;
+  var iqcNg=yearRows.filter(function(r){return r.iqc==='불합격'}).length;
   var pqcNg=yearRows.filter(function(r){return r.pqc==='불합격'}).length;
   var oqcNg=yearRows.filter(function(r){return r.oqc==='불합격'}).length;
-  var hold=yearRows.filter(function(r){return /보류/.test(r.status)||r.pqc==='불합격'||r.oqc==='불합격'}).length;
+  var hold=yearRows.filter(function(r){return /보류/.test(r.status)||r.iqc==='불합격'||r.pqc==='불합격'||r.oqc==='불합격'}).length;
   var actualSum=yearRows.reduce(function(a,r){return a+r.actual},0);
   var pct=function(n){return total?Math.round(n/total*100):0};
 
@@ -359,7 +360,7 @@ async function loadDashboard(){
     ring('2026년 작업지시',total,'2026년 전체 작업',100,false)+
     ring('생산중',running,'2026년 진행 작업',pct(running),false)+
     ring('생산완료',done,'2026년 실적 '+fmt(actualSum)+' kg',pct(done),false)+
-    ring('IQC 불합격',hold,'2026년 수입검사',pct(hold),true)+
+    ring('IQC 불합격',iqcNg,'2026년 수입검사',pct(iqcNg),true)+
     ring('PQC 불합격',pqcNg,'2026년 공정검사',pct(pqcNg),true)+
     ring('OQC 불합격',oqcNg,'2026년 출하검사',pct(oqcNg),true);
 
@@ -540,15 +541,15 @@ async function loadDashboard(){
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
 
-  var ngRows=yearRows.filter(function(r){return r.pqc==='불합격'||r.oqc==='불합격'||/보류/.test(r.status)});
+  var ngRows=yearRows.filter(function(r){return r.iqc==='불합격'||r.pqc==='불합격'||r.oqc==='불합격'||/보류/.test(r.status)});
   var ngTable=ngRows.slice(0,7).map(function(r,i){
-    var reason=r.pqc==='불합격'?'PQC 불합격':r.oqc==='불합격'?'OQC 불합격':'품질보류';
+    var reason=r.iqc==='불합격'?'IQC 불합격':r.pqc==='불합격'?'PQC 불합격':r.oqc==='불합격'?'OQC 불합격':'품질보류';
     return '<tr><td>'+(i+1)+'</td><td>'+r.work+'</td><td>'+reason+'</td><td>'+fmt(r.actual)+'</td><td>-</td></tr>';
   }).join('');
 
   document.getElementById('dashRow3').innerHTML=
     '<div class="card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong><span>작업지시 건수 / 비중</span></div><div class="body">'+customerChart+'</div></div>'+
-    '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC 불합격 '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
+    '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC 불합격 '+iqcNg+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 
   document.getElementById('dashRow4').innerHTML=
     '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>가동 / 계획정지 / 비계획정지</span></div><div class="body"></div></div>';
