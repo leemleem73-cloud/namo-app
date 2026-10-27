@@ -2563,6 +2563,21 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
       DO UPDATE SET payload=EXCLUDED.payload,updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
       [key,JSON.stringify({...payload,rows}),txt(req.session.user.name)]);
     await client.query('COMMIT');committed=true;
+    if(saved.judge==='불합격'){
+      await autoCreateNcr({
+        source:'PQC',
+        occurred_on:String(saved.date||'').slice(0,10),
+        lot:saved.lot,
+        product:saved.product,
+        description:'PQC 공정검사 불합격 자동 발생',
+        containment:'해당 생산 LOT 보류 및 후속 공정 차단',
+        owner:txt(req.session?.user?.name),
+        created_by:txt(req.session?.user?.name)||'QMES 자동생성',
+        created_by_id:txt(req.session?.user?.id)||'SYSTEM',
+        inspection_record_id:'PQC:'+key+':'+String(saved.id||saved.lot||''),
+        details:{process:'공정검사',work_order:saved.workOrderNo||'',actual_result:'불합격',reporter:txt(req.session?.user?.name)}
+      }).catch(error=>console.error('[AUTO NCR PQC]',error));
+    }
     return ok(res,saved,'공정검사 저장 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
@@ -2573,6 +2588,7 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
 
 // Update an existing OQC inspection group atomically; never create or replace unrelated rows.
 const oqcAutoRules=require('./public/js/qmes-oqc-rules-20261019.js');
+const {autoCreateNcr}=require('./qmes-ncr-safe-20261020.js');
 app.get('/api/qmes-sync/oqc/save-detail',requireLogin,(req,res)=>ok(res,{operation:'oqc-save-detail',version:'20261019-v1'}));
 app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
   const targets=req.body?.targets,fields=req.body?.fields;
@@ -2633,6 +2649,24 @@ rows[index]={...old,...clean,...patch};
     if(clean.shippingStatus==='출하완료'&&effective!=='합격')throw Object.assign(Error('검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.'),{status:400});
     await client.query('COMMIT');committed=true;
     await auditLog(req,'UPDATE','qmes_sync_records','oqc:detail',{rows:auditBefore},{rows:auditAfter}).catch(e=>console.warn('OQC edit audit:',e.message));
+    if(effective==='불합격'){
+      const sample=auditAfter[0]?.row||{};
+      const recordKey=targets[0]?.recordKey||sample.lot||'';
+      await autoCreateNcr({
+        source:'OQC',
+        occurred_on:String(clean.date||sample.date||'').slice(0,10),
+        lot:clean.lot||sample.lot,
+        product:clean.product||sample.product,
+        customer:clean.customer||sample.customer,
+        description:'OQC 출하검사 불합격 자동 발생',
+        containment:'해당 완제품 LOT 출하보류 및 출하 차단',
+        owner:txt(req.session?.user?.name),
+        created_by:txt(req.session?.user?.name)||'QMES 자동생성',
+        created_by_id:txt(req.session?.user?.id)||'SYSTEM',
+        inspection_record_id:'OQC:'+recordKey+':'+String(clean.lot||sample.lot||''),
+        details:{process:'출하검사',actual_result:'불합격',reporter:txt(req.session?.user?.name)}
+      }).catch(error=>console.error('[AUTO NCR OQC]',error));
+    }
     return ok(res,{updated:targets.length},'출하검사 수정 저장 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
@@ -3252,6 +3286,22 @@ function bindCrud(table, mapper) {
       );
 
       await auditLog(req, 'CREATE', table, r.rows[0]?.id, null, r.rows[0]);
+      if(table==='iqc'&&txt(r.rows[0]?.judge)==='불합격'){
+        await autoCreateNcr({
+          source:'IQC',
+          occurred_on:String(r.rows[0]?.date||'').slice(0,10),
+          lot:r.rows[0]?.lot,
+          product:r.rows[0]?.item,
+          customer:r.rows[0]?.supplier,
+          description:'IQC 수입검사 불합격 자동 발생',
+          containment:'해당 원료 LOT 보류 및 후속 공정 투입 차단',
+          owner:txt(req.session?.user?.name),
+          created_by:txt(req.session?.user?.name)||'QMES 자동생성',
+          created_by_id:txt(req.session?.user?.id)||'SYSTEM',
+          inspection_record_id:'IQC:'+String(r.rows[0]?.id||''),
+          details:{process:'수입검사',actual_result:'불합격',affected_qty:String(r.rows[0]?.incoming_qty||r.rows[0]?.qty||''),reporter:txt(req.session?.user?.name)}
+        }).catch(error=>console.error('[AUTO NCR IQC]',error));
+      }
       ok(res, r.rows[0], '저장되었습니다.');
     } catch (err) {
       fail(res, 500, err.message);
