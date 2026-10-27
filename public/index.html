@@ -6765,7 +6765,11 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
     const index=list.findIndex(x=>String(x.recordId)===String(selectedRow.dataset.iqcId));
     if(index>=0)selectedIndex=index;
   }
-  const pagedInspection=['incoming','process','outgoing','work'].includes(id);
+  if(id==='standard'&&selectedRow?.dataset.standardId){
+    const index=list.findIndex(x=>String(x.recordId)===String(selectedRow.dataset.standardId));
+    if(index>=0)selectedIndex=index;
+  }
+  const pagedInspection=['incoming','process','outgoing','work','standard'].includes(id);
   const initialListPage=Math.max(1,Math.floor(Math.max(0,selectedIndex)/10)+1);
   const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" data-am-id="${id}" data-am-index="${x.index}" data-am-record-id="${amEsc(x.recordId||'')}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
@@ -8239,7 +8243,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
-<script src="./js/qmes-standard-documents-20261027.js?v=20261027-management-column7"></script>
+<script src="./js/qmes-standard-documents-20261027.js?v=20261027-ten-row-pages8"></script>
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261022-12"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
