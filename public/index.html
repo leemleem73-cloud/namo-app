@@ -8357,6 +8357,7 @@ html body #mainWorkspace .am-split[data-am-screen="process"]:has(.pqc-detail-mea
 (function(){
 function clean(){document.querySelectorAll('.am-split[data-am-screen="process"]:has(.pqc-detail-measure-section)').forEach(function(pane){
 pane.querySelector('.am-detail-note')?.remove();
+pane.querySelector('.am-detail-top .title-wrap>small')?.remove();
 const footer=pane.querySelector('.pqc-esign-note');
 if(footer&&footer.textContent!=='(주)나모케미칼')footer.textContent='(주)나모케미칼';
 });}
