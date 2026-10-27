@@ -2,7 +2,8 @@
 'use strict';
 const endpoint='/api/qmes/standard-documents',statuses=['대기','진행','완료'];
 const departments=['대표','연구소','생산부','영업부','품질부','관리부'];
-let records=[],loading=null,activeChoice=null;
+let records=[],loading=null,activeChoice=null,listPage=1,currentDocumentId='';
+try{listPage=Math.max(1,Number(sessionStorage.getItem('qmes-standard-list-page'))||1);}catch(_){}
 const selected=new Set();let deleting=false;
 function closeChoice(){if(!activeChoice)return;activeChoice.trigger.setAttribute('aria-expanded','false');activeChoice.popup.remove();activeChoice=null;}
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -70,9 +71,13 @@ function render(){
  ensureSelectionHeader();
  const query=(section.querySelector('.module-toolbar .search-input')?.value||'').trim().toLowerCase();
  const list=records.filter(r=>!query||[r.documentNo,r.name,r.category,r.department].some(v=>String(v||'').toLowerCase().includes(query)));
+ const pages=Math.max(1,Math.ceil(list.length/10));listPage=Math.min(Math.max(1,listPage),pages);
+ try{sessionStorage.setItem('qmes-standard-list-page',String(listPage));}catch(_){}
+ const offset=(listPage-1)*10,visible=list.slice(offset,offset+10);
  body.replaceChildren();
- list.forEach((record,index)=>{
-  const row=document.createElement('tr');row.className='data-row';row.dataset.standardId=record.id;row.dataset.remarks=record.note||'';row.dataset.stdLayout='1';
+ visible.forEach((record,rowIndex)=>{
+  const index=offset+rowIndex;
+  const row=document.createElement('tr');row.className='data-row';row.dataset.standardId=record.id;row.dataset.remarks=record.note||'';row.dataset.stdLayout='1';row.classList.toggle('std-current',String(record.id)===currentDocumentId);
   const keys=['check','no','documentNo','name','category','revision','revisionDate','department','status','attachment','note','manage'];
   ['',String(index+1),record.documentNo,record.name,record.category,record.revision,record.revisionDate,record.department,record.status,'첨부 없음',record.note,''].forEach((value,i)=>{const td=document.createElement('td');td.dataset.standardCol=keys[i];td.textContent=value||'';row.append(td);});
   row.cells[3].className='std-document-name';
@@ -90,6 +95,15 @@ function render(){
   row.addEventListener('click',event=>{if(!event.target.closest('button,input,label'))open(record);});body.append(row);
  });
  if(!list.length){const row=document.createElement('tr');row.dataset.stdPlaceholder='1';row.className='std-placeholder';row.setAttribute('aria-hidden','true');for(const key of ['check','no','documentNo','name','category','revision','revisionDate','department','status','attachment','note','manage']){const td=document.createElement('td');td.dataset.standardCol=key;row.append(td);}body.append(row);}
+ let pager=section.querySelector('.std-document-pagination');
+ if(!pager){pager=document.createElement('div');pager.className='ip-pagination std-document-pagination';pager.setAttribute('aria-label','문서관리 목록 페이지');section.querySelector('.module-body').after(pager);}
+ pager.replaceChildren();
+ [[listPage-1,'‹'],...Array.from({length:pages},(_,i)=>[i+1,String(i+1)]),[listPage+1,'›']].forEach(([page,label])=>{
+  const button=document.createElement('button');button.type='button';button.className='ip-page-btn'+(page===listPage&&/^\d+$/.test(label)?' active':'');button.textContent=label;
+  button.disabled=page<1||page>pages;button.setAttribute('aria-label',label==='‹'?'이전 페이지':label==='›'?'다음 페이지':page+'페이지');
+  if(page===listPage&&/^\d+$/.test(label))button.setAttribute('aria-current','page');
+  button.onclick=()=>{listPage=page;render();};pager.append(button);
+ });
  updateSelection();
 }
 async function load(){
@@ -98,6 +112,7 @@ async function load(){
  return loading;
 }
 function open(record=null){
+ currentDocumentId=record?String(record.id):'';
  closeChoice();document.getElementById('standard')?.querySelector('.iqc-selection-dock')?.classList.remove('is-visible');
  const fields=[['문서번호','documentNo'],['문서명','name'],['구분','category'],['Rev.','revision'],['개정일','revisionDate'],['담당부서','department'],['상태','status'],['비고','note']];
  const html='<div class="form-grid">'+fields.map(([label,key])=>{
@@ -106,7 +121,8 @@ function open(record=null){
   return '<div class="form-item '+(key==='note'?'full':'')+'"><label>'+label+'</label>'+control+'</div>';
  }).join('')+'</div>';
  const title='문서관리 '+(record?'상세 / 수정':'신규등록');
- openModal(title,amaranthScreen('standard',html,record?'edit':'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
+ const selectedRow=record?document.createElement('tr'):null;if(selectedRow)selectedRow.dataset.standardId=String(record.id);
+ openModal(title,amaranthScreen('standard',html,record?'edit':'new',title,selectedRow),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
  const revisionDate=root.querySelector('[data-standard-field="revisionDate"]');
  if(revisionDate){
@@ -179,7 +195,7 @@ function install(){
  ensureSelectionHeader();
  if(table.dataset.standardDbWired)return;
  table.dataset.standardDbWired='1';
- const search=section.querySelector('.module-toolbar .search-input');search?.addEventListener('input',render);
+ const search=section.querySelector('.module-toolbar .search-input');search?.addEventListener('input',()=>{listPage=1;render();});
  load();
 }
 let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;install();});}}).observe(document.body,{childList:true,subtree:true});
@@ -198,3 +214,5 @@ install();
 (()=>{const style=document.createElement('style');style.textContent="html body #standard#standard .std-document-list tbody tr>td:nth-child(10){flex-direction:row!important;gap:6px!important}html body #standard#standard .std-document-list .std-row-note{flex:1;min-width:0}html body #standard#standard .std-document-list .std-row-actions{flex:0 0 auto}";document.head.append(style);})();
 
 (()=>{const style=document.createElement('style');style.id='standard-separate-check-management-20261027';style.textContent="\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr{grid-template-columns:34px 52px repeat(7,minmax(0,1fr)) 120px!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>:nth-child(n){display:flex!important;order:0!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"category\"],\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"status\"]{display:none!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"check\"]{padding:0!important}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] input[type=\"checkbox\"]{width:13px!important;height:13px!important;min-height:0!important;margin:0!important;accent-color:#2f7de1;cursor:pointer}\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"name\"],\nhtml body #standard#standard .std-document-list[data-standard-columns=\"split\"] tr>[data-standard-col=\"note\"]{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:27px!important}\n";document.head.append(style);})();
+
+(()=>{const style=document.createElement('style');style.id='standard-pagination-selection-parity-20261027';style.textContent="\nhtml body #standard .std-document-pagination{display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;padding:10px 0 14px!important}\nhtml body #standard .std-document-pagination .ip-page-btn{min-width:28px!important;height:28px!important;border:1px solid #dbe3ec!important;border-radius:4px!important;background:#fff!important;color:#536177!important;font-size:12px!important}\nhtml body #standard .std-document-pagination .ip-page-btn.active{background:#2f7de1!important;border-color:#2f7de1!important;color:#fff!important}\nhtml body #standard#standard .std-document-list tbody tr.std-current>td{background:#eef6ff!important}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .am-list-item.active{background:#eef6ff!important;box-shadow:inset 3px 0 #2686e8!important}\n";document.head.append(style);})();
