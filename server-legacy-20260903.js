@@ -82,6 +82,9 @@ app.use(
   })
 );
 
+// NCR must use the exact same QMES database pool as IQC/PQC/OQC.
+require('./qmes-ncr-safe-20261020.js').install(app,{pool});
+
 // Register work-order dispatch routes after session middleware.
 require('./qmes-work-dispatch-20261014.js').installWorkDispatchRoutes(app);
 
