@@ -471,6 +471,7 @@ async function loadDashboard(){
       var ring=card.querySelector('.eqRing'),txt=ring&&ring.querySelector('b');
       if(!ring)return;
       card.style.setProperty('--eq-p','0%');
+      ring.style.background='conic-gradient(var(--eq-accent) 0%, #eaf0f6 0)';
       if(txt)txt.textContent='0%';
       var start=null,duration=900;
       requestAnimationFrame(function step(ts){
@@ -478,11 +479,11 @@ async function loadDashboard(){
         var p=Math.min(1,(ts-start)/duration);
         var eased=1-Math.pow(1-p,3);
         var cur=target*eased;
-        card.style.setProperty('--eq-p',cur+'%');
+        ring.style.background='conic-gradient(var(--eq-accent) '+cur+'%, #eaf0f6 0)';
         if(txt)txt.textContent=(Math.round(cur*10)/10)+'%';
         if(p<1)requestAnimationFrame(step);
         else{
-          card.style.setProperty('--eq-p',target+'%');
+          ring.style.background='conic-gradient(var(--eq-accent) '+target+'%, #eaf0f6 0)';
           if(txt)txt.textContent=(Math.round(target*10)/10)+'%';
         }
       });
