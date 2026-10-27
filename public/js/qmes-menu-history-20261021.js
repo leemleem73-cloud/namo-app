@@ -3,6 +3,7 @@
 'use strict';
 if(window.qmesMenuHistory)return;
 var replaying=false,sequence=0,adapters=new Map(),snapshots=new Map(),current=null;
+var processOriginPage=history.state?.qmesProcessOrigin||null;
 var sessionKey=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
 function menuFor(page){
  if(!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(page||''))return null;
@@ -28,7 +29,13 @@ function visit(page,key,adapter){
  if(replaying||!menuFor(page)||currentPage()!==page)return;
  if(current?.qmesMenuPage===page&&current.qmesViewKey===key&&current.qmesAdapter===(adapter||''))return;
  var state=makeState(page,key,adapter);
- history.pushState(state,'');current=state;
+ var fromProcess=processOriginPage===page;
+ state.qmesProcessOrigin=fromProcess?page:'';
+ if(processOriginPage&&processOriginPage!==page)processOriginPage=null;
+ // Replace the intermediate list entry: Back from a process-launched form returns to the map.
+ if(fromProcess&&adapter&&current?.qmesMenuPage===page&&current.qmesProcessOrigin===page)history.replaceState(state,'');
+ else history.pushState(state,'');
+ current=state;
  if(adapter)capture();
 }
 function record(page){
@@ -54,10 +61,11 @@ register('workspace',{
  capture:function(){return window.qmesWorkspaceHistory?.capture();},
  restore:function(snapshot){return window.qmesWorkspaceHistory?.restore(snapshot);}
 });
-window.qmesMenuHistory={record:record,recordView:recordView,register:register,capture:capture,beforeMenu:beforeMenu,openWorkspace:openWorkspace};
+window.qmesMenuHistory={beginProcessNavigation:function(page){processOriginPage=page;},record:record,recordView:recordView,register:register,capture:capture,beforeMenu:beforeMenu,openWorkspace:openWorkspace};
 current=makeState(currentPage(),'list','');history.replaceState(current,'');
 window.addEventListener('popstate',function(event){
  var target=event.state,page=target?.qmesMenuPage,menu=menuFor(page);
+ processOriginPage=target?.qmesProcessOrigin||null;
  if(!menu)return;
  capture();hideCurrent();
  replaying=true;
@@ -74,6 +82,17 @@ window.addEventListener('popstate',function(event){
   }
  }finally{replaying=false;}
 });
+
+// Respect the originating process map for explicit form Back/List buttons.
+document.addEventListener('click',function(event){
+ if(replaying||!current?.qmesProcessOrigin||!current.qmesAdapter)return;
+ var button=event.target?.closest?.('button');if(!button||button.disabled)return;
+ var text=button.textContent.trim();
+ var known=button.matches('#workspaceBack,#modalCancel,[data-am-back],#ncr-back');
+ var inEditor=button.closest('#mainWorkspace,.eq-wo-overlay,#namo-purchase-new-enterprise,#ncr .ncr-editor-shell');
+ if(!known&&(!inEditor||! /^(?:←\\s*)?(?:목록(?:으로)?|뒤로(?:가기)?|닫기|취소)$/.test(text)))return;
+ event.preventDefault();event.stopImmediatePropagation();capture();history.back();
+},true);
 
 // Inline equipment details and standalone purchase/equipment editors also participate.
 var panelIds=new WeakMap(),panelSequence=0;
