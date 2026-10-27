@@ -53,3 +53,45 @@
 #processMap .qpm-link-label{font-size:9px;font-weight:900;fill:#687889}
 #processMap .qpm-link-label.qpm-yes{fill:#17835a}
 #processMap .qpm-link-label.qpm-no{fill:#c9423a}
+
+/* Approved NAMO QMES full process map */
+#processMap .qpm-shell{background:#fff;border:1px solid #dfe6ee;border-radius:12px;overflow:hidden}
+#processMap .qpm-board{padding:16px 18px 20px;overflow:auto}
+#processMap .qpm-flow-caption{margin:0 0 16px;padding:10px 14px;border:1px solid #d8e7f0;background:#eaf7fd;color:#245c83;font-size:13px;font-weight:900;text-align:center;border-radius:5px}
+#processMap .qpm-canvas{position:relative;min-width:2140px;padding-bottom:18px}
+#processMap .qpm-dense-grid{display:grid;grid-template-columns:repeat(10,minmax(190px,1fr));gap:10px;align-items:start;min-width:2140px;position:relative}
+#processMap .qpm-group{min-height:400px;border:1px solid #e3e8ee;border-radius:6px;background:#fff;overflow:visible;box-shadow:0 1px 4px rgba(15,23,42,.04);position:relative;z-index:1}
+#processMap .qpm-group-title{height:50px;display:flex;align-items:center;justify-content:center;gap:9px;background:linear-gradient(180deg,#fff8f0,#fff0e5);border-bottom:1px solid #eaded2;color:#213a55;font-size:12px;font-weight:900;border-radius:6px 6px 0 0}
+#processMap .qpm-group-icon{font-size:18px;color:#2584c6}
+#processMap .qpm-body{padding:20px 12px 18px;display:flex;flex-direction:column;align-items:center;gap:20px}
+#processMap .qpm-node{width:100%!important;height:62px!important;min-height:62px!important;padding:0 12px!important;border:1px solid #a6d6ec!important;border-radius:7px!important;background:linear-gradient(180deg,#eefaff,#e5f6fd)!important;color:#0877ad!important;box-shadow:0 2px 6px rgba(14,116,144,.08)!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;font-size:11px!important;font-weight:900!important;text-align:left!important;clip-path:none!important;transform:none!important}
+#processMap .qpm-node-icon{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:#d7effb;color:#2584c6;font-size:15px;flex:0 0 auto}
+#processMap .qpm-node.red{background:linear-gradient(180deg,#fff5f4,#ffeceb)!important;border-color:#efb2ae!important;color:#bf2b22!important;justify-content:center!important}
+#processMap .qpm-node.red .qpm-node-icon{background:#ffd9d6;color:#e44339}
+#processMap .qpm-diamond{width:154px;height:96px;margin:2px auto;background:#f7fafc;border:1.5px solid #9fc2dd;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);display:grid;place-items:center;box-shadow:0 2px 5px rgba(15,23,42,.03)}
+#processMap .qpm-diamond span{font-size:11px;font-weight:900;color:#42566b;text-align:center}
+#processMap .qpm-link-layer{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
+#processMap .qpm-link{fill:none;stroke:#8794a2;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:round}
+#processMap .qpm-link.qpm-yes{stroke:#119249;stroke-width:1.8}
+#processMap .qpm-link.qpm-no{stroke:#ff4d47;stroke-width:1.8}
+#processMap .qpm-link.qpm-trace{stroke:#7a63df;stroke-width:1.35;stroke-dasharray:5 4}
+#processMap .qpm-arrowhead{fill:none;stroke:#8794a2;stroke-width:1.55}
+#processMap .qpm-arrowhead.qpm-yes{stroke:#119249;stroke-width:1.8}
+#processMap .qpm-arrowhead.qpm-no{stroke:#ff4d47;stroke-width:1.8}
+#processMap .qpm-arrowhead.qpm-trace{stroke:#7a63df;stroke-width:1.35}
+#processMap .qpm-link-label{font-size:9px;font-weight:900;fill:#6b7a88}
+#processMap .qpm-link-label.qpm-yes{fill:#119249}
+#processMap .qpm-link-label.qpm-no{fill:#ff4d47}
+#processMap .qpm-trace-panel{margin-top:26px;border:1px solid #d9dfeb;border-radius:8px;background:#fafbff;padding:16px 18px 18px;position:relative;z-index:1}
+#processMap .qpm-trace-title{display:flex;align-items:center;gap:9px;color:#315d90;font-size:12px;font-weight:900;margin-bottom:18px}
+#processMap .qpm-trace-title span{width:30px;height:30px;border-radius:7px;background:#efeaff;color:#7057dd;display:inline-flex;align-items:center;justify-content:center}
+#processMap .qpm-trace-row{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:28px;align-items:center}
+#processMap .qpm-trace-node{min-height:64px;border:1px solid #cfc5ff;border-radius:8px;background:linear-gradient(180deg,#f8f6ff,#eeeaff);color:#5947b9;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;font-size:10px;font-weight:800;cursor:pointer}
+#processMap .qpm-trace-node b{display:block;font-size:10.5px}
+#processMap .qpm-trace-node small{display:block;margin-top:2px;font-size:9px;font-weight:700}
+#processMap .qpm-trace-icon{width:28px;height:28px;border-radius:7px;background:#ddd6ff;display:inline-flex;align-items:center;justify-content:center;color:#624bd2;font-size:15px}
+#processMap .qpm-foot{display:flex;gap:24px;flex-wrap:wrap;padding:14px 18px;border-top:1px solid #e6ebf0;background:#fff}
+#processMap .qpm-foot .legend{font-size:10px;font-weight:800;color:#66788a}
+#processMap .qpm-foot .legend.yes{color:#119249}
+#processMap .qpm-foot .legend.no{color:#ff4d47}
+#processMap .qpm-foot .legend.trace{color:#7057dd}
