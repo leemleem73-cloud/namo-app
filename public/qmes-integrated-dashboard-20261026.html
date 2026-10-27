@@ -429,9 +429,9 @@ async function loadDashboard(){
     }
   });
   var eqMonthDays=eqDays.map(function(days){return Object.keys(days).length});
-  var eqMonthPlannedHours=eqMonthDays.map(function(n){return n*8});
+  var eqMonthPlannedHours=eqMonthDays.map(function(n){return n*7.5});
   var eqMonthProductionHours=eqDayActual.map(function(days){
-    return Object.keys(days).reduce(function(sum,date){return sum+Math.min(8,days[date]||0)},0);
+    return Object.keys(days).reduce(function(sum,date){return sum+Math.min(7.5,days[date]||0)},0);
   });
   var eqMonthRates=eqMonthDays.map(function(n,i){
     var planned=eqMonthPlannedHours[i]||0,actual=eqMonthProductionHours[i]||0;
@@ -494,7 +494,7 @@ async function loadDashboard(){
             '<div class="eqUtilStat"><small>비계획정지</small><b>'+eqFmtHour(d.unplan)+'</b></div>'+
             '<div class="eqUtilStat"><small>가동률</small><b>'+(Math.round(rate*10)/10)+'%</b></div>'+
           '</div>'+
-          '<div class="eqUtilNote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간 × 100 · 계획정지: 세척·준비·교체 · 비계획정지: 고장·이상·긴급정지</div>'+
+          '<div class="eqUtilNote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간(7.5h) × 100 · 계획정지: 세척·준비·교체 · 비계획정지: 고장·이상·긴급정지</div>'+
         '</div>'+
       '</div>';
     document.querySelector('#dashRow4 .body').innerHTML=html;
