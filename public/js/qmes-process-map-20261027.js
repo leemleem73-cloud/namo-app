@@ -137,9 +137,7 @@
   function render(){
     root.innerHTML=
       '<div class="qpm-shell">'+
-        '<div class="qpm-head"><div><h1>나모케미칼 QMES 프로세스</h1>'+
-        '<p>수주 → 구매/입고 → 수입검사 → 원료/작업지시 → 생산 → 공정검사 → 생산완료 → 출하검사 → 출하 → LOT 추적 · NCR</p></div>'+
-        '<button type="button" class="qpm-refresh">연동상태 새로고침</button></div>'+
+        '<div class="qpm-head"><div><h1>나모케미칼 QMES 프로세스</h1></div></div>'+
         '<div class="qpm-board">'+
           '<div class="qpm-flow-caption">나모케미칼 QMES 전체 Process MAP</div>'+
           '<div class="qpm-canvas">'+
@@ -223,7 +221,6 @@
       '</div>');
 
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
-    root.querySelector('.qpm-refresh')?.addEventListener('click',render);
     requestAnimationFrame(()=>requestAnimationFrame(drawLinks));
   }
 
