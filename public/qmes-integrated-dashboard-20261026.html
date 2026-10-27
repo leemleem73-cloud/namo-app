@@ -186,10 +186,22 @@ function getStatus(o){return clean(val(o,['status','진행상태','작업상태'
 function getPlan(o){return num(val(o,['plannedQty','planQty','계획수량(kg)','계획수량','plan']))}
 function getActual(o){var v=val(o,['actualQty','producedQty','productionQty','실제생산수량','생산수량(kg)','생산수량','actual']);return (v===''||v==null)?getPlan(o):num(v)}
 function getDate(o){return clean(val(o,['workDate','작업일자','date'])).slice(0,10)}
+function inspectionItems(row){
+  var items=row&&row.items_json;
+  if(typeof items==='string'){try{items=JSON.parse(items)}catch(_){items=[]}}
+  return Array.isArray(items)?items:[];
+}
 function inspect(row){
   if(!row)return '대기';
-  var vs=[row.judge,row.overall,row.finalJudge,row.inspectionDecision,row.result,row.status].map(norm).join(' ');
-  if(/불합격|부적합|FAIL|NG/.test(vs))return '불합격';
+  var items=inspectionItems(row);
+  var itemValues=[];
+  items.forEach(function(x){
+    itemValues.push(x&&x.judge,x&&x.result,x&&x.status,x&&x.value);
+    if(Array.isArray(x&&x.values))itemValues=itemValues.concat(x.values);
+    if(Array.isArray(x&&x.measurements))itemValues=itemValues.concat(x.measurements);
+  });
+  var vs=[row.judge,row.overall,row.finalJudge,row.inspectionDecision,row.result,row.status].concat(itemValues).map(norm).join(' ');
+  if(/불합격|부적합|미확인|FAIL|NG/.test(vs))return '불합격';
   if(/합격|적합|PASS|OK|정상/.test(vs))return '합격';
   return '대기';
 }
@@ -349,10 +361,14 @@ async function loadDashboard(){
   var total=yearRows.length;
   var running=yearRows.filter(function(r){return /생산중|진행/.test(r.status)}).length;
   var done=yearRows.filter(function(r){return /완료/.test(r.status)}).length;
-  var iqcNg=yearRows.filter(function(r){return r.iqc==='불합격'}).length;
+  var iqcYearRows=iqc.filter(function(r){
+    var d=clean(r&&r.date).slice(0,4);
+    return (!d||d===year)&&inspect(r)==='불합격';
+  });
+  var iqcNg=iqcYearRows.length;
   var pqcNg=yearRows.filter(function(r){return r.pqc==='불합격'}).length;
   var oqcNg=yearRows.filter(function(r){return r.oqc==='불합격'}).length;
-  var hold=yearRows.filter(function(r){return /보류/.test(r.status)||r.iqc==='불합격'||r.pqc==='불합격'||r.oqc==='불합격'}).length;
+  var hold=yearRows.filter(function(r){return /보류/.test(r.status)||r.pqc==='불합격'||r.oqc==='불합격'}).length+iqcNg;
   var actualSum=yearRows.reduce(function(a,r){return a+r.actual},0);
   var pct=function(n){return total?Math.round(n/total*100):0};
 
@@ -541,10 +557,25 @@ async function loadDashboard(){
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
 
-  var ngRows=yearRows.filter(function(r){return r.iqc==='불합격'||r.pqc==='불합격'||r.oqc==='불합격'||/보류/.test(r.status)});
-  var ngTable=ngRows.slice(0,7).map(function(r,i){
-    var reason=r.iqc==='불합격'?'IQC 불합격':r.pqc==='불합격'?'PQC 불합격':r.oqc==='불합격'?'OQC 불합격':'품질보류';
-    return '<tr><td>'+(i+1)+'</td><td>'+r.work+'</td><td>'+reason+'</td><td>'+fmt(r.actual)+'</td><td>-</td></tr>';
+  var ngEvents=[];
+  iqcYearRows.forEach(function(r){
+    ngEvents.push({
+      date:clean(r.date).slice(0,10),
+      work:clean(r.workOrderNo||r.workOrder||r.workNo)||'-',
+      reason:'IQC 불합격',
+      qty:num(r.incoming_qty!=null?r.incoming_qty:(r.incomingQty!=null?r.incomingQty:r.qty)),
+      lot:clean(r.lot||r.lotNo||'')
+    });
+  });
+  yearRows.forEach(function(r){
+    if(r.pqc==='불합격')ngEvents.push({date:r.date,work:r.work,reason:'PQC 불합격',qty:r.actual,lot:r.lot});
+    if(r.oqc==='불합격')ngEvents.push({date:r.date,work:r.work,reason:'OQC 불합격',qty:r.actual,lot:r.lot});
+    if(/보류/.test(r.status)&&r.pqc!=='불합격'&&r.oqc!=='불합격')ngEvents.push({date:r.date,work:r.work,reason:'품질보류',qty:r.actual,lot:r.lot});
+  });
+  ngEvents.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
+  var ngTable=ngEvents.slice(0,7).map(function(r,i){
+    var detail=r.reason+(r.reason==='IQC 불합격'&&r.lot?' · LOT '+r.lot:'');
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(r.work)+'</td><td>'+esc(detail)+'</td><td>'+fmt(r.qty)+'</td><td>'+esc(r.date||'-')+'</td></tr>';
   }).join('');
 
   document.getElementById('dashRow3').innerHTML=
