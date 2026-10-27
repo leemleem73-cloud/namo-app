@@ -272,7 +272,7 @@
       '<span class="legend main">→ 주요 프로세스 흐름</span>'+
       '<span class="legend trace">⇢ LOT / 품질 데이터 연계</span>'+
       '<span class="legend yes">→ YES (다음 공정 진행)</span>'+
-      '<span class="legend no">→ NO (NCR 등록)</span><span class="legend ncr">━ 부적합 NCR 연결</span>'+
+      '<span class="legend no">→ NO (NCR 등록)</span><span class="legend ncr">⇢ 부적합 NCR 연결</span>'+
       '</div>');
 
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
