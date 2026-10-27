@@ -3,7 +3,7 @@ const express=require('express');
 const {Pool}=require('pg');
 const multer=require('multer');
 require('dotenv').config();
-const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_URL?{rejectUnauthorized:false}:false});
+let pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_URL?{rejectUnauthorized:false}:false});
 let schemaPromise;
 function schema(){
  if(!schemaPromise)schemaPromise=pool.query(`
@@ -67,7 +67,8 @@ async function autoCreateNcr(input={}){
  const saved=await pool.query('UPDATE qmes_ncr_reports SET report_no=$1 WHERE id=$2 RETURNING *',[no,row.id]);
  return saved.rows[0];
 }
-function install(app){
+function install(app,options={}){
+ if(options.pool)pool=options.pool;
  if(app.__qmesNcrInstalled)return;
  app.__qmesNcrInstalled=true;
  const auth=(req,res,next)=>req.session?.user?next():bad(res,401,'로그인이 필요합니다.');
