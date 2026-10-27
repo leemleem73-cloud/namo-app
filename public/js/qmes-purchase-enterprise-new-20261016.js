@@ -31,9 +31,11 @@ function purchaseDetailFromSelection(item){
  if(modal.parentElement===pane){modal.remove();document.body.appendChild(modal);}
  [...pane.children].forEach(el=>el.style.removeProperty('display'));
  const index=Number(item.dataset.amIndex);
- const source=document.querySelectorAll('#purchase .data-row')[index];
+ const records=window.qmesPurchaseList?.rows?.()||[];
+ const record=records.find(r=>String(r.id||r.purchaseNo||r.no||'')===item.dataset.amRecordId);
+ const source=record?[...document.querySelectorAll('#purchase [data-purchase-key]')].find(row=>String(row.dataset.purchaseKey)===String(record.id||record.purchaseNo||record.no||'')):document.querySelectorAll('#purchase .data-row')[index];
  const labels=['발주일자','공급업체','품목명','수량','요청입고','발주상태','IQC'];
- const values=source?[...source.cells].slice(1,8).map(c=>c.textContent.trim()):[];
+ const values=record?[record.orderDate,record.supplier,record.item||record.material,record.qty,record.requestedDueDate||record.due,record.status,'-']:source?[...source.cells].slice(1,8).map(c=>c.textContent.trim()):[];
  const title=item.querySelector('b')?.textContent?.trim()||'';
  const sub=item.querySelector('span')?.textContent?.trim()||'';
  const detail=document.createElement('section');
@@ -42,7 +44,7 @@ function purchaseDetailFromSelection(item){
  const heading=document.createElement('h3');heading.textContent='구매발주 상세정보';heading.style.cssText='font-size:15px;color:#193c63;margin:0 0 14px';
  detail.append(heading);
  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px';
- const pairs=source?labels.map((label,i)=>[label,values[i]||'-']):[['발주내역',title],['품목·공급업체',sub]];
+ const pairs=(record||source)?labels.map((label,i)=>[label,values[i]??'-']):[['발주내역',title],['품목·공급업체',sub]];
  pairs.forEach(([label,value])=>{
   const line=document.createElement('div');line.style.cssText='display:grid;grid-template-columns:105px minmax(0,1fr);align-items:center;gap:10px';
   const name=document.createElement('strong');name.textContent=label;name.style.cssText='font-size:12px;color:#415a76';
