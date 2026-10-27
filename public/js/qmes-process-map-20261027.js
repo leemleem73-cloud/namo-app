@@ -5,7 +5,28 @@
   if(!root||root.dataset.qpmReady==='1')return;
   root.dataset.qpmReady='1';
 
-  const go=page=>document.querySelector('.menu[data-page="'+page+'"]')?.click();
+
+  let navigationId=0;
+  const go=(page,key)=>{
+    const ticket=++navigationId;
+    const target=page==='inventory'?'lotTrace':page;
+    const menu=document.querySelector('.sidebar .menu[data-page="'+target+'"]');
+    if(!menu){window.toast?.('연결할 화면을 찾지 못했습니다.');return;}
+    menu.click();
+    const registration=new Set(['sales','purchase','iqc','pqc','oqc','workOrder']);
+    if(!registration.has(key))return;
+    const open=()=>{
+      if(ticket!==navigationId)return true;
+      if(!document.getElementById(target)?.classList.contains('active'))return false;
+      if(typeof window.openNewForm==='function')window.openNewForm(target);
+      return true;
+    };
+    if(open())return;
+    const observer=new MutationObserver(()=>{if(open()){observer.disconnect();clearTimeout(timer);}});
+    const timer=setTimeout(()=>observer.disconnect(),4000);
+    observer.observe(document.querySelector('main.content')||document.body,{attributes:true,subtree:true,attributeFilter:['class']});
+  };
+
 
   const ICONS={
     sales:'▤', due:'▦', plan:'▥', purchase:'▰', incoming:'▣', incomingLot:'⬡',
@@ -215,7 +236,7 @@
       ),
       group('원료 / 작업지시','⚙',
         node('rawLot','합격 원료 LOT','incoming')+
-        node('rawStock','원료재고','inventory')+
+        node('rawStock','원료 LOT 조회','lotTrace')+
         node('workOrder','작업지시 발행','work')
       ),
       group('생산','⚙',
@@ -231,7 +252,7 @@
       group('생산완료 / 완제품','⬡',
         node('complete','생산완료','work')+
         node('finishedLot','완제품 LOT 생성','work')+
-        node('finishedStock','완제품 재고','inventory')
+        node('finishedStock','완제품 LOT 조회','lotTrace')
       ),
       group('출하검사 OQC','⌕',
         node('oqc','OQC 검사등록','outgoing')+
@@ -255,7 +276,7 @@
       traceNode('traceIncoming','입고 LOT','(원재료 LOT)','incoming')+
       traceNode('traceWork','작업지시','(생산지시 LOT)','work')+
       traceNode('traceProd','생산실적','(생산 LOT)','work')+
-      traceNode('traceFinished','완제품 LOT','(완제품 LOT)','inventory')+
+      traceNode('traceFinished','완제품 LOT','(완제품 LOT)','lotTrace')+
       traceNode('traceShip','출하 정보','(출하 LOT)','orders')+
       traceNode('traceNcr','NCR 이력','(품질 이슈)','ncr');
 
@@ -267,7 +288,7 @@
       '<span class="legend no">→ NO (NCR 등록)</span><span class="legend ncr">⇢ 부적합 NCR 연결</span>'+
       '</div>');
 
-    root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
+    root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page,btn.dataset.key)));
     requestAnimationFrame(()=>requestAnimationFrame(drawLinks));
   }
 
