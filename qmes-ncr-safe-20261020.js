@@ -114,8 +114,22 @@ function install(app){
  (async()=>{
   try{
    await schema();
-   const failed=await pool.query("SELECT id,date,lot,item,supplier,incoming_qty,qty,inspector,judge FROM iqc WHERE judge='불합격' ORDER BY id DESC LIMIT 500");
-   for(const row of failed.rows){
+   const candidates=await pool.query("SELECT id,date,lot,item,supplier,incoming_qty,qty,inspector,judge,items_json FROM iqc ORDER BY id DESC LIMIT 500");
+   let created=0,failedCount=0;
+   for(const row of candidates.rows){
+    let items=row.items_json;
+    if(typeof items==='string'){try{items=JSON.parse(items)}catch(_){items=[]}}
+    if(!Array.isArray(items))items=[];
+    const values=[row.judge];
+    for(const item of items){
+      values.push(item?.judge,item?.result,item?.status,item?.value);
+      if(Array.isArray(item?.values))values.push(...item.values);
+      if(Array.isArray(item?.measurements))values.push(...item.measurements);
+    }
+    const failed=values.map(v=>String(v??'').trim().toUpperCase()).some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL');
+    if(!failed)continue;
+    failedCount++;
+    const before=await pool.query("SELECT id FROM qmes_ncr_reports WHERE source='IQC' AND details->>'inspection_record_id'=$1 LIMIT 1",['IQC:'+String(row.id)]);
     await autoCreateNcr({
      source:'IQC',
      occurred_on:String(row.date||'').slice(0,10),
@@ -130,7 +144,9 @@ function install(app){
      inspection_record_id:'IQC:'+String(row.id),
      details:{process:'수입검사',actual_result:'불합격',affected_qty:String(row.incoming_qty||row.qty||''),reporter:row.inspector||''}
     });
+    if(!before.rowCount)created++;
    }
+   console.log('[AUTO NCR IQC BACKFILL]',JSON.stringify({candidates:candidates.rows.length,failed:failedCount,created}));
   }catch(e){console.error('[AUTO NCR IQC BACKFILL]',e);}
  })();
 
