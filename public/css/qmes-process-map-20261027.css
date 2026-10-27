@@ -206,10 +206,13 @@
 
 /* NCR has its own labeled route below the purple LOT links. */
 #processMap .qpm-trace-panel{margin-top:82px!important}
-#processMap .qpm-link.qpm-ncr,#processMap .qpm-arrowhead.qpm-ncr{stroke:#dc493f!important;stroke-width:1.9!important;stroke-dasharray:none!important}
-#processMap .qpm-link.qpm-ncr-history,#processMap .qpm-arrowhead.qpm-ncr-history{stroke:#dc493f!important;stroke-width:1.7!important;stroke-dasharray:6 3!important}
+#processMap .qpm-link.qpm-ncr,#processMap .qpm-arrowhead.qpm-ncr{stroke:#dc493f!important;stroke-width:1.9!important;stroke-dasharray:5 4!important}
+#processMap .qpm-link.qpm-ncr-history,#processMap .qpm-arrowhead.qpm-ncr-history{stroke:#dc493f!important;stroke-width:1.7!important;stroke-dasharray:5 4!important}
 #processMap .qpm-link-label.qpm-ncr{fill:#c6362d!important;font-size:10px!important;font-weight:800!important;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
 #processMap .qpm-link.qpm-ncr,#processMap .qpm-link.qpm-ncr-history{filter:drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
 #processMap .qpm-trace-node[data-key="traceNcr"]{border-color:#efc4c0!important;background:#fff5f3!important;color:#b83830!important}
 #processMap .qpm-trace-node[data-key="traceNcr"] .qpm-trace-icon{background:#ffe1dd!important;color:#c84539!important}
 #processMap .qpm-foot .legend.ncr{color:#c84539!important}
+
+/* Match LOT trace dash rhythm while keeping arrowheads clear. */
+#processMap .qpm-arrowhead.qpm-ncr,#processMap .qpm-arrowhead.qpm-ncr-history{stroke-dasharray:none!important}
