@@ -141,8 +141,9 @@ async function restore(){
    if(!root)throw Error('마지막 화면을 열지 못했습니다.');
    const tbody=root.querySelector('#workMaterialTable tbody'),add=root.querySelector('#workRowAdd');
    if(tbody&&saved.materialRows){
-    while(tbody.rows.length<saved.materialRows&&add)add.click();
-    while(tbody.rows.length>saved.materialRows)tbody.lastElementChild.querySelector('.row-del')?.click();
+    const wanted=Math.max(1,Math.min(200,Number(saved.materialRows)||1));
+    for(let n=0;n<200&&tbody.rows.length<wanted&&add;n++){const before=tbody.rows.length;add.click();if(tbody.rows.length===before)break;}
+    for(let n=0;n<200&&tbody.rows.length>wanted;n++){const remove=tbody.lastElementChild.querySelector('.row-del');if(!remove)break;remove.click();}
    }
    restoreFields(root,saved.fields);
    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
