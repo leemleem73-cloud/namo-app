@@ -43,7 +43,7 @@ function pagerNumber(root){
  return Number(active?.textContent)||1;
 }
 function remember(){
- if(restoring||bootPending)return;
+ if(restoring||bootPending||!user())return;
  const root=viewRoot(),section=document.getElementById(page());
  const snapshot={version:1,user:user(),page:page(),trail:root?trail:[],baseFields:root?baseFields:[],basePage:root?basePage:pagerNumber(section),fields:root?captureFields(root):[],title:root===document.getElementById('mainWorkspace')?document.getElementById('workspaceTitle')?.textContent:'',sidebarPage:root?pagerNumber(root):1,scroll:window.scrollY,contentScroll:document.querySelector('main.content')?.scrollTop||0,materialRows:root?.querySelectorAll('#workMaterialTable tbody tr').length||0};
  if(root&&!trail.length)return;
@@ -77,7 +77,8 @@ document.addEventListener('click',event=>{
  const step=action(event.target);
  if(step){
   if(!viewRoot()){trail=[step];const section=document.getElementById(page());baseFields=captureFields(section);basePage=pagerNumber(section);}
-  else trail=[...trail,step].slice(0,12);
+  else if(step.kind==='item')trail=[trail[0],step].filter(Boolean);
+  else{trail=[...trail.filter(item=>!(step.kind==='inside'&&item.kind==='inside'&&item.attr===step.attr)),step];if(trail.length>12)trail=[trail[0],...trail.slice(-11)];}
  }
  schedule();
 },true);
@@ -86,7 +87,7 @@ document.addEventListener('scroll',schedule,true);
 window.addEventListener('pagehide',remember);window.addEventListener('beforeunload',remember);
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
 function findStep(step){
- if(!step||denied.test(step.control?.text||step.text||''))return null;
+ if(!step||denied.test(step.kind==='row'?(step.control?.text||''):step.kind==='button'?(step.text||''):''))return null;
  const section=document.getElementById(page()),root=viewRoot();
  if(step.kind==='item')return [...(root?.querySelectorAll('.am-list-item')||[])].find(node=>step.record?node.dataset.amRecordId===step.record:node.dataset.amIndex===step.index);
  if(step.kind==='inside')return [...(root?.querySelectorAll('button')||[])].find(node=>node.getAttribute(step.attr)===step.value);
