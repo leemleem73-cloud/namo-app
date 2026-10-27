@@ -4425,9 +4425,20 @@ function iqcItems(row){
   }catch(_){return [];}
 }
 function iqcJudge(row){
+  const explicit=String(row?.judge||'').trim();
+  if(explicit)return explicit;
   const items=iqcItems(row);
+  const values=items.flatMap(x=>[
+    x?.judge,x?.result,x?.status,x?.value,
+    ...(Array.isArray(x?.values)?x.values:[]),
+    ...(Array.isArray(x?.measurements)?x.measurements:[])
+  ]).map(v=>String(v??'').trim().toUpperCase());
+  if(values.some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL'))return '불합격';
   const master=items.find(x=>String(x?.name||'').includes('판정'));
-  return String(master?.judge||master?.value||'합격').trim()||'합격';
+  const masterValue=String(master?.judge||master?.value||'').trim();
+  if(masterValue)return masterValue;
+  if(items.length&&items.every(x=>String(x?.judge||'').trim()==='합격'))return '합격';
+  return '대기';
 }
 function iqcItemSummary(row){
   const items=iqcItems(row);
