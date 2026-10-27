@@ -4424,21 +4424,28 @@ function iqcItems(row){
     return Array.isArray(v)?v:[];
   }catch(_){return [];}
 }
-function iqcJudge(row){
-  const explicit=String(row?.judge||'').trim();
-  if(explicit)return explicit;
-  const items=iqcItems(row);
-  const values=items.flatMap(x=>[
+function evaluateIqcItems(items){
+  const rows=Array.isArray(items)?items:[];
+  if(!rows.length)return '대기';
+  const values=rows.flatMap(x=>[
     x?.judge,x?.result,x?.status,x?.value,
     ...(Array.isArray(x?.values)?x.values:[]),
     ...(Array.isArray(x?.measurements)?x.measurements:[])
   ]).map(v=>String(v??'').trim().toUpperCase());
   if(values.some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL'))return '불합격';
-  const master=items.find(x=>String(x?.name||'').includes('판정'));
-  const masterValue=String(master?.judge||master?.value||'').trim();
-  if(masterValue)return masterValue;
-  if(items.length&&items.every(x=>String(x?.judge||'').trim()==='합격'))return '합격';
+  const judges=rows.map(x=>String(x?.judge||'').trim());
+  if(judges.length&&judges.every(v=>v==='합격'))return '합격';
   return '대기';
+}
+function iqcJudge(row){
+  const items=iqcItems(row);
+  const computed=evaluateIqcItems(items);
+  if(computed==='불합격')return '불합격';
+  if(computed==='합격')return '합격';
+  const explicit=String(row?.judge||'').trim();
+  if(explicit)return explicit;
+  const master=items.find(x=>String(x?.name||'').includes('판정'));
+  return String(master?.judge||master?.value||'대기').trim()||'대기';
 }
 function iqcItemSummary(row){
   const items=iqcItems(row);
@@ -7468,8 +7475,10 @@ function initStandardInspectionForm(type){
         if(incomingQty===null){toast('입고 중량(kg)을 0보다 큰 숫자로 입력해 주세요.');return;}
         replacement.disabled=true;
         try{
+          const iqcFinalJudge=evaluateIqcItems(items);
+          if(overall)overall.value=iqcFinalJudge;
           const r=await fetch('/api/iqc',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-            date,lot,supplier,item:name,inspector,incomingQty,qty:null,failQty:0,items
+            date,lot,supplier,item:name,inspector,incomingQty,qty:null,failQty:0,judge:iqcFinalJudge,items
           })});
           const p=await r.json().catch(()=>({success:false}));
           if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
