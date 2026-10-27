@@ -103,6 +103,23 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 .eqChartCard .eqLegend{font-size:11px;font-weight:700;color:#40566d;margin:8px 0 9px;gap:22px}
 .eqChartCard .eqFootnote{font-size:9px;line-height:1.4;padding:0 4px 3px}
 .row4>.card>.body{overflow:visible!important}
+.eqUtilControls{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
+.eqUtilControls button{border:1px solid #cfdce8;background:#fff;color:#405b74;border-radius:6px;padding:6px 10px;font-size:10px;font-weight:800;cursor:pointer}
+.eqUtilControls button.active{background:#173b63;color:#fff;border-color:#173b63}
+.eqUtilLegend{display:flex;justify-content:flex-end;gap:16px;font-size:10px;font-weight:800;color:#40566d;margin-bottom:10px}
+.eqUtilLegend span{display:flex;align-items:center;gap:5px}.eqUtilLegend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.eqMachine{border:1px solid #dde7f1;border-radius:8px;background:#fbfdff;padding:16px}
+.eqMachineTop{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+.eqMachineName{font-size:16px;font-weight:900;color:#173b5e}.eqMachinePeriod{font-size:10px;color:#7b8fa3}
+.eqStack{height:42px;border:1px solid #cbd8e5;border-radius:7px;overflow:hidden;display:flex;background:#edf3f8}
+.eqStackSeg{height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden}
+.eqStackRun{background:#48c654}.eqStackPlan{background:#6a67c7}.eqStackUnplan{background:#d95a67}
+.eqScale{display:grid;grid-template-columns:repeat(11,1fr);font-size:9px;color:#6b8094;margin-top:4px}.eqScale span{text-align:center}.eqScale span:first-child{text-align:left}.eqScale span:last-child{text-align:right}
+.eqUtilStats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.eqUtilStat{background:#fff;border:1px solid #e0e8f1;border-radius:7px;padding:10px;text-align:center}
+.eqUtilStat small{display:block;color:#71869a;font-size:9px}.eqUtilStat b{display:block;color:#173b5e;font-size:16px;margin-top:3px}
+.eqUtilNote{margin-top:10px;padding:9px 10px;border:1px dashed #ccd9e5;border-radius:7px;background:#f7fafc;color:#6b8094;font-size:9px;line-height:1.45}
+
 </style>
 </head>
 <body>
@@ -425,49 +442,65 @@ async function loadDashboard(){
   var eqTotalHours=eqTotalDays*8,eqProductionHours=eqTotalDays*5,eqCleaningHours=eqTotalDays*3;
   var eqHourMax=Math.max.apply(null,[8].concat(eqMonthDays.map(function(n){return n*8})));
   eqHourMax=Math.ceil(eqHourMax/4/10)*40;
-  function equipmentCombo(){
-    // Same visual frame as production performance: blue bars + orange line.
-    // Equipment chart meaning: blue = total operating hours, orange = utilization rate.
-    var totals=eqMonthPlannedHours.slice();
-    var max=Math.max.apply(null,[1].concat(totals));
-    var step=Math.ceil(max/5);if(step<1)step=1;
-    var axisMax=step*5;
-    var ticks=[axisMax,axisMax-step,axisMax-step*2,axisMax-step*3,axisMax-step*4,0];
-    var bars=eqMonthDays.map(function(n,i){
-      var hours=eqMonthPlannedHours[i]||0,h=Math.max(0,Math.min(100,hours/axisMax*100));
-      return '<div class="annualComboBar" style="--bar-h:'+h+'%"><span class="annualComboPlanVal">'+(hours||0)+'</span><i style="height:'+h+'%"></i></div>';
-    }).join('');
-    var pts=eqMonthDays.map(function(n,i){
-      var rate=eqMonthRates[i]||0;
-      var x=4.1667+i*(91.6666/11);
-      var y=96-(rate/100*88);
-      return x.toFixed(2)+','+Math.max(6,Math.min(96,y)).toFixed(2);
-    }).join(' ');
-    var labels=eqMonthDays.map(function(n,i){
-      var rate=eqMonthRates[i]||0;
-      var y=96-(rate/100*88),top=Math.max(6,Math.min(96,y)).toFixed(2);
-      return '<div class="eqRateCell"><i class="eqRateDot" style="top:'+top+'%"></i><span class="eqRateVal" style="top:'+top+'%">'+(Math.round(rate*10)/10)+'%</span></div>';
-    }).join('');
-    return '<div class="annualCombo"><div class="annualComboBox">'+
-      '<div class="annualComboYAxis">'+ticks.map(function(t){return '<span>'+fmt(t)+'</span>'}).join('')+'</div>'+
-      '<div class="annualComboPlot"></div>'+
-      '<div class="eqRateAxisTitle">가동률 (%)</div><div class="eqRateAxis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>'+
-      '<div class="annualComboBars">'+bars+'</div>'+
-      '<svg class="annualComboLine" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="#20a46b" stroke-width="1.2" vector-effect="non-scaling-stroke"></polyline></svg>'+
-      '<div class="eqRateLabels">'+labels+'</div>'+
-      '<div class="annualComboUnit">h</div>'+
-      '<div class="annualComboMonths">'+eqMonthDays.map(function(_,i){return '<span>'+(i+1)+'월</span>'}).join('')+'</div>'+
-      '</div><div class="annualComboLegend"><span><i class="legendBar"></i>계획 가동시간</span><span><i class="legendLine"></i>가동률 (%)</span></div></div>';
+  var eqPlannedStopHours=eqMonthPlannedHours.map(function(h,i){return Math.max(0,h-(eqMonthProductionHours[i]||0))});
+  var eqUnplannedStopHours=Array(12).fill(0);
+
+  function eqMonthData(index){
+    if(index==='all'){
+      var plan=eqMonthPlannedHours.reduce(function(a,b){return a+b},0);
+      var run=eqMonthProductionHours.reduce(function(a,b){return a+b},0);
+      var planStop=eqPlannedStopHours.reduce(function(a,b){return a+b},0);
+      var unplan=eqUnplannedStopHours.reduce(function(a,b){return a+b},0);
+      return {label:'2026년 전체',plan:plan,run:run,planStop:planStop,unplan:unplan};
+    }
+    var i=Number(index)-1;
+    return {
+      label:'2026년 '+index+'월',
+      plan:eqMonthPlannedHours[i]||0,
+      run:eqMonthProductionHours[i]||0,
+      planStop:eqPlannedStopHours[i]||0,
+      unplan:eqUnplannedStopHours[i]||0
+    };
   }
+  function eqPct(n,d){return d?Math.max(0,Math.min(100,n/d*100)):0}
+  function eqFmtHour(v){var n=Math.round(Number(v||0)*10)/10;return String(n).replace(/\.0$/,'')+' h'}
+  function renderEquipmentUtil(index){
+    var d=eqMonthData(index),rate=eqPct(d.run,d.plan),planPct=eqPct(d.planStop,d.plan),unplanPct=eqPct(d.unplan,d.plan);
+    var buttons=['all',1,2,3,4,5,6,7,8,9,10,11,12].map(function(k){
+      var active=String(k)===String(index)?' active':'';
+      return '<button type="button" class="'+active+'" data-eq-month="'+k+'">'+(k==='all'?'전체':k+'월')+'</button>';
+    }).join('');
+    var html=
+      '<div class="eqSummary">'+
+        eqStat('계획 가동시간',eqFmtHour(d.plan),'작업지시 기준','#308ef0',d.plan?100:0)+
+        eqStat('실제 생산 가동시간',eqFmtHour(d.run),'실제시간 우선 · 미등록 5시간','#20a46b',Math.round(rate*10)/10)+
+        eqStat('계획정지시간',eqFmtHour(d.planStop),'세척 · 준비 · 교체','#6a67c7',Math.round(planPct*10)/10)+
+        eqStat('설비 가동률',(Math.round(rate*10)/10)+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',Math.round(rate*10)/10)+
+      '</div>'+
+      '<div class="eqChartCard">'+
+        '<div class="eqUtilControls">'+buttons+'</div>'+
+        '<div class="eqUtilLegend"><span><i style="background:#48c654"></i>가동</span><span><i style="background:#6a67c7"></i>계획정지</span><span><i style="background:#d95a67"></i>비계획정지</span></div>'+
+        '<div class="eqMachine">'+
+          '<div class="eqMachineTop"><div class="eqMachineName">HSM 1호기</div><div class="eqMachinePeriod">'+d.label+'</div></div>'+
+          '<div class="eqStack">'+
+            '<div class="eqStackSeg eqStackRun" style="width:'+rate+'%">'+(rate>=8?(Math.round(rate*10)/10)+'%':'')+'</div>'+
+            '<div class="eqStackSeg eqStackPlan" style="width:'+planPct+'%">'+(planPct>=8?(Math.round(planPct*10)/10)+'%':'')+'</div>'+
+            '<div class="eqStackSeg eqStackUnplan" style="width:'+unplanPct+'%">'+(unplanPct>=8?(Math.round(unplanPct*10)/10)+'%':'')+'</div>'+
+          '</div>'+
+          '<div class="eqScale"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>60%</span><span>70%</span><span>80%</span><span>90%</span><span>100%</span></div>'+
+          '<div class="eqUtilStats">'+
+            '<div class="eqUtilStat"><small>가동</small><b>'+eqFmtHour(d.run)+'</b></div>'+
+            '<div class="eqUtilStat"><small>계획정지</small><b>'+eqFmtHour(d.planStop)+'</b></div>'+
+            '<div class="eqUtilStat"><small>비계획정지</small><b>'+eqFmtHour(d.unplan)+'</b></div>'+
+            '<div class="eqUtilStat"><small>가동률</small><b>'+(Math.round(rate*10)/10)+'%</b></div>'+
+          '</div>'+
+          '<div class="eqUtilNote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간 × 100 · 계획정지: 세척·준비·교체 · 비계획정지: 고장·이상·긴급정지</div>'+
+        '</div>'+
+      '</div>';
+    document.querySelector('#dashRow4 .body').innerHTML=html;
+  }
+
   var eqStat=function(label,value,sub,color,pct){return '<div class="eqStat" style="--eq-accent:'+color+';--eq-p:'+pct+'%"><span>'+label+'</span><strong>'+value+'</strong><em>'+(sub||'2026년 작업지시서 기준')+'</em><div class="eqRing"><b>'+pct+'%</b></div></div>';};
-  var eqPlannedHoursTotal=eqMonthPlannedHours.reduce(function(a,b){return a+b},0);
-  var eqProductionHoursEst=eqMonthProductionHours.reduce(function(a,b){return a+b},0);
-  var eqOverallRate=eqPlannedHoursTotal?Math.max(0,Math.min(100,eqProductionHoursEst/eqPlannedHoursTotal*100)):0;
-  var eqIdleHoursEst=Math.max(0,eqPlannedHoursTotal-eqProductionHoursEst);
-  var eqRateDisplay=(Math.round(eqOverallRate*10)/10);
-  var eqBars='<div class="eqSummary">'+eqStat('계획 가동시간(작업지시 기준)',eqPlannedHoursTotal.toFixed(1).replace(/\.0$/,'')+' h','작업지시일 × 8시간','#308ef0',eqPlannedHoursTotal?100:0)+eqStat('실제 생산 가동시간',eqProductionHoursEst.toFixed(1).replace(/\.0$/,'')+' h','실제시간 우선 · 미등록 5시간','#308ef0',eqRateDisplay)+eqStat('비가동·준비시간',eqIdleHoursEst.toFixed(1).replace(/\.0$/,'')+' h','계획 가동시간 대비 잔여시간','#f3a23c',Math.round((100-eqOverallRate)*10)/10)+eqStat('설비 가동률',eqRateDisplay+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',eqRateDisplay)+'</div>'+
-    '<div class="eqChartCard">'+equipmentCombo()+
-    '<div class="eqFootnote">가동률 = 실제 생산 가동시간 ÷ 작업지시 기준 계획 가동시간 × 100 · 실제시간 미등록 과거 작업은 5시간 표준값 적용</div></div>';
 
   document.getElementById('dashRow2').innerHTML=
     '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
@@ -483,7 +516,13 @@ async function loadDashboard(){
     '<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>IQC 불합격 '+hold+'</span><span>PQC 불합격 '+pqcNg+'</span><span>OQC 불합격 '+oqcNg+'</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody>'+ngTable+'</tbody></table></div></div>';
 
   document.getElementById('dashRow4').innerHTML=
-    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 가동시간 / 설비 가동률</span></div><div class="body">'+eqBars+'</div></div>';
+    '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>가동 / 계획정지 / 비계획정지</span></div><div class="body"></div></div>';
+  renderEquipmentUtil('all');
+  document.getElementById('dashRow4').addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-eq-month]');
+    if(!b)return;
+    renderEquipmentUtil(b.getAttribute('data-eq-month'));
+  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
 })();
