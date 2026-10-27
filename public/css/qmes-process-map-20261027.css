@@ -95,3 +95,64 @@
 #processMap .qpm-foot .legend.yes{color:#119249}
 #processMap .qpm-foot .legend.no{color:#ff4d47}
 #processMap .qpm-foot .legend.trace{color:#7057dd}
+
+/* 2026-10-27 approved single-screen layout */
+#processMap .qpm-board{overflow:hidden!important;padding:14px 12px 18px!important}
+#processMap .qpm-canvas{min-width:0!important;width:100%!important;padding-bottom:12px!important}
+#processMap .qpm-dense-grid{
+  min-width:0!important;
+  width:100%!important;
+  grid-template-columns:repeat(10,minmax(0,1fr))!important;
+  gap:6px!important;
+}
+#processMap .qpm-group{min-height:370px!important}
+#processMap .qpm-group-title{
+  height:46px!important;
+  gap:6px!important;
+  padding:0 5px!important;
+  font-size:10px!important;
+  white-space:nowrap!important;
+}
+#processMap .qpm-group-icon{font-size:15px!important}
+#processMap .qpm-body{padding:14px 7px 14px!important;gap:14px!important}
+#processMap .qpm-node{
+  height:54px!important;
+  min-height:54px!important;
+  padding:0 7px!important;
+  gap:6px!important;
+  font-size:9.8px!important;
+  border-radius:6px!important;
+}
+#processMap .qpm-node-icon{
+  width:24px!important;
+  height:24px!important;
+  font-size:12px!important;
+  border-radius:5px!important;
+}
+#processMap .qpm-diamond{
+  width:118px!important;
+  height:78px!important;
+  margin:0 auto!important;
+}
+#processMap .qpm-diamond span{font-size:9.6px!important}
+#processMap .qpm-trace-panel{margin-top:18px!important;padding:12px 14px 14px!important}
+#processMap .qpm-trace-title{margin-bottom:12px!important;font-size:10.5px!important}
+#processMap .qpm-trace-row{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+#processMap .qpm-trace-node{
+  min-height:56px!important;
+  padding:7px 8px!important;
+  gap:7px!important;
+  font-size:9px!important;
+}
+#processMap .qpm-trace-node b{font-size:9.5px!important}
+#processMap .qpm-trace-node small{font-size:8px!important}
+#processMap .qpm-trace-icon{
+  width:24px!important;
+  height:24px!important;
+  font-size:12px!important;
+}
+#processMap .qpm-foot{gap:16px!important;padding:10px 14px!important}
+#processMap .qpm-foot .legend{font-size:9px!important}
