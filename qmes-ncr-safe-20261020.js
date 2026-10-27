@@ -151,8 +151,49 @@ function install(app){
  })();
 
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
-  try{await schema();const q=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY id DESC LIMIT 500');res.json({success:true,data:q.rows});}
-  catch(e){console.error('[NCR list]',e);bad(res,500,'NCR 목록 조회 실패');}
+  try{
+   await schema();
+
+   // Reconcile failed IQC records before returning the NCR list.
+   // This guarantees that a visible IQC failure cannot be missing from NCR.
+   const candidates=await pool.query("SELECT id,date,lot,item,supplier,incoming_qty,qty,inspector,judge,items_json FROM iqc ORDER BY id DESC LIMIT 500");
+   for(const row of candidates.rows){
+    let items=row.items_json;
+    if(typeof items==='string'){try{items=JSON.parse(items)}catch(_){items=[]}}
+    if(!Array.isArray(items))items=[];
+    const values=[row.judge];
+    for(const item of items){
+      values.push(item?.judge,item?.result,item?.status,item?.value);
+      if(Array.isArray(item?.values))values.push(...item.values);
+      if(Array.isArray(item?.measurements))values.push(...item.measurements);
+    }
+    const failed=values.map(v=>String(v??'').trim().toUpperCase()).some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL');
+    if(!failed)continue;
+    await autoCreateNcr({
+      source:'IQC',
+      occurred_on:String(row.date||'').slice(0,10),
+      lot:row.lot,
+      product:row.item,
+      customer:row.supplier,
+      description:'IQC 수입검사 불합격 자동 발생',
+      containment:'해당 원료 LOT 보류 및 후속 공정 투입 차단',
+      owner:row.inspector||'',
+      created_by:row.inspector||'QMES 자동생성',
+      created_by_id:'SYSTEM',
+      inspection_record_id:'IQC:'+String(row.id),
+      details:{process:'수입검사',actual_result:'불합격',affected_qty:String(row.incoming_qty||row.qty||''),reporter:row.inspector||''}
+    });
+   }
+
+   const q=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY id DESC LIMIT 500');
+   console.log('[NCR list]',JSON.stringify({count:q.rowCount}));
+   res.set('Cache-Control','no-store, no-cache, must-revalidate, max-age=0');
+   res.set('Pragma','no-cache');
+   res.json({success:true,data:q.rows});
+  }catch(e){
+   console.error('[NCR list]',e);
+   bad(res,500,'NCR 목록 조회 실패');
+  }
  });
  app.post('/api/qmes-ncr/reports',auth,async(req,res)=>{
   const b=req.body||{},date=str(b.occurred_on,10),source=str(b.source,30),description=str(b.description);
