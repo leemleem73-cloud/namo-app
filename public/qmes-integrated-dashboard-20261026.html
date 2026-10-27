@@ -365,10 +365,18 @@ async function loadDashboard(){
     var d=clean(r&&r.date).slice(0,4);
     return (!d||d===year)&&inspect(r)==='불합격';
   });
+  var pqcYearRows=pqc.filter(function(r){
+    var d=clean(r&&r.date).slice(0,4);
+    return (!d||d===year)&&inspect(r)==='불합격';
+  });
+  var oqcYearRows=oqc.filter(function(r){
+    var d=clean((r&&r.date)||(r&&r.shipDate)).slice(0,4);
+    return (!d||d===year)&&inspect(r)==='불합격';
+  });
   var iqcNg=iqcYearRows.length;
-  var pqcNg=yearRows.filter(function(r){return r.pqc==='불합격'}).length;
-  var oqcNg=yearRows.filter(function(r){return r.oqc==='불합격'}).length;
-  var hold=yearRows.filter(function(r){return /보류/.test(r.status)||r.pqc==='불합격'||r.oqc==='불합격'}).length+iqcNg;
+  var pqcNg=pqcYearRows.length;
+  var oqcNg=oqcYearRows.length;
+  var hold=yearRows.filter(function(r){return /보류/.test(r.status)}).length+iqcNg+pqcNg+oqcNg;
   var actualSum=yearRows.reduce(function(a,r){return a+r.actual},0);
   var pct=function(n){return total?Math.round(n/total*100):0};
 
@@ -567,10 +575,26 @@ async function loadDashboard(){
       lot:clean(r.lot||r.lotNo||'')
     });
   });
+  pqcYearRows.forEach(function(r){
+    ngEvents.push({
+      date:clean(r.date).slice(0,10),
+      work:clean(r.workOrderNo||r.workOrder||r.workNo)||'-',
+      reason:'PQC 불합격',
+      qty:num(r.qty!=null?r.qty:(r.actualQty!=null?r.actualQty:0)),
+      lot:clean(r.lot||r.lotNo||r.productionLot||'')
+    });
+  });
+  oqcYearRows.forEach(function(r){
+    ngEvents.push({
+      date:clean(r.date||r.shipDate).slice(0,10),
+      work:clean(r.workOrderNo||r.workOrder||r.workNo)||'-',
+      reason:'OQC 불합격',
+      qty:num(r.qty!=null?r.qty:(r.shipQty!=null?r.shipQty:0)),
+      lot:clean(r.lot||r.lotNo||r.productionLot||'')
+    });
+  });
   yearRows.forEach(function(r){
-    if(r.pqc==='불합격')ngEvents.push({date:r.date,work:r.work,reason:'PQC 불합격',qty:r.actual,lot:r.lot});
-    if(r.oqc==='불합격')ngEvents.push({date:r.date,work:r.work,reason:'OQC 불합격',qty:r.actual,lot:r.lot});
-    if(/보류/.test(r.status)&&r.pqc!=='불합격'&&r.oqc!=='불합격')ngEvents.push({date:r.date,work:r.work,reason:'품질보류',qty:r.actual,lot:r.lot});
+    if(/보류/.test(r.status))ngEvents.push({date:r.date,work:r.work,reason:'품질보류',qty:r.actual,lot:r.lot});
   });
   ngEvents.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
   var ngTable=ngEvents.slice(0,7).map(function(r,i){
