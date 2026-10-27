@@ -36,9 +36,28 @@ const allowedMime=new Set(['application/pdf','image/jpeg','image/png','image/web
 const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified','improvement_completed','before_condition','after_condition','improvement_comparison','inspection_record_id','inspection_stage','auto_created'];
 function cleanDetails(input){const out={};if(input&&typeof input==='object'&&!Array.isArray(input))for(const k of detailKeys)if(Object.prototype.hasOwnProperty.call(input,k))out[k]=str(input[k],1500);return out;}
 
+function normalizeDateOnly(value){
+ if(!value)return '';
+ if(value instanceof Date&&!Number.isNaN(value.getTime())){
+  const y=value.getFullYear(),m=String(value.getMonth()+1).padStart(2,'0'),d=String(value.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+d;
+ }
+ const raw=String(value).trim();
+ const iso=raw.match(/^(\d{4}-\d{2}-\d{2})/);
+ if(iso)return iso[1];
+ const parsed=new Date(raw);
+ if(!Number.isNaN(parsed.getTime())){
+  const y=parsed.getFullYear(),m=String(parsed.getMonth()+1).padStart(2,'0'),d=String(parsed.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+d;
+ }
+ return '';
+}
 async function autoCreateNcr(input={}){
- const source=str(input.source,30),date=str(input.occurred_on,10),recordId=str(input.inspection_record_id,240);
- if(!['IQC','PQC','OQC'].includes(source)||!validDate(date)||!recordId)return null;
+ const source=str(input.source,30),date=normalizeDateOnly(input.occurred_on),recordId=str(input.inspection_record_id,240);
+ if(!['IQC','PQC','OQC'].includes(source)||!validDate(date)||!recordId){
+  console.warn('[AUTO NCR SKIP]',JSON.stringify({source,date,recordId}));
+  return null;
+ }
 
  const safeId=recordId.replace(/[^A-Za-z0-9]/g,'').slice(-12)||String(Date.now());
  const ncNo='NCR-'+date.replace(/-/g,'')+'-'+source+'-'+safeId;
