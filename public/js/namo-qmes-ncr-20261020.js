@@ -179,7 +179,7 @@ function draw(){
  var filtered=rows.filter(function(r){return (!status||r.status===status)&&[r.report_no,r.product,r.lot,r.description,r.customer].join(' ').toLowerCase().includes(query);});
  root.querySelector('#ncr-count').textContent='총 '+filtered.length+'건';
  root.querySelector('#ncr-rows').innerHTML=filtered.length?filtered.map(function(r,i){
-  return '<tr><td>'+String(filtered.length-i)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left;max-width:240px">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><button class="ncr-btn" type="button" data-ncr-id="'+r.id+'">조회</button></td></tr>';
+  return '<tr><td>'+String(i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left;max-width:240px">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><button class="ncr-btn" type="button" data-ncr-id="'+r.id+'">조회</button></td></tr>';
  }).join(''):'<tr><td colspan="10" class="ncr-empty">등록된 부적합보고서가 없습니다.</td></tr>';
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
 }
@@ -327,7 +327,7 @@ draw=function(){
  var pageRows=matched.slice((page-1)*pageSize,page*pageSize);
  root.querySelector('#ncr-count').textContent='총 '+matched.length+'건';
  root.querySelector('#ncr-rows').innerHTML=pageRows.length?pageRows.map(function(r,i){
-  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String(matched.length-((page-1)*pageSize+i))+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button></div></td></tr>';
+  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String((page-1)*pageSize+i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button></div></td></tr>';
  }).join(''):'<tr><td colspan="11" class="ncr-empty">'+(loadError?'조회 실패: '+esc(loadError):!hasLoaded?'조회 중입니다.':'등록된 부적합보고서가 없습니다.')+'</td></tr>';
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
  root.querySelectorAll('.ncr-row-select').forEach(function(el){el.onchange=function(){if(el.checked)selectedIds.add(el.value);else selectedIds.delete(el.value);updateBulk();};});
@@ -415,7 +415,7 @@ draw=function(){
    var group=document.createElement('colgroup');
    [null,null,14,10,7,14,13,22,7,7,6].forEach(function(weight,index){
     var col=document.createElement('col');
-    col.style.width=index===0?'34px':index===1?'50px':'calc('+weight+'% - '+(84*weight/100)+'px)';
+    col.style.width=index===0?'34px':index===1?'50px':index===2?'260px':'calc((100% - 344px) * '+weight+' / 86)';
     group.appendChild(col);
    });
    table.prepend(group);
@@ -555,4 +555,13 @@ const style=document.createElement('style');style.textContent=`
  var style=document.createElement('style');style.id='ncr-checkbox-cell-center-20261023';
  style.textContent='html body #ncr .ncr-equipment-card .ncr-table-wrap table :is(thead,tbody)>tr>:first-child{position:relative!important;box-sizing:border-box!important;padding:0!important;text-align:center!important;vertical-align:middle!important}html body #ncr .ncr-equipment-card .ncr-table-wrap table :is(thead,tbody)>tr>:first-child>input[type=checkbox]{position:absolute!important;top:50%!important;left:50%!important;display:block!important;margin:0!important;transform:translate(-50%,-50%)!important}';
  document.head.appendChild(style);
+})();
+
+(function(){
+ var style=document.createElement('style');style.id='qmes-ncr-number-nowrap-20261028';
+ style.textContent='html body #ncr .ncr-equipment-card .ncr-table-wrap{overflow-x:auto!important;overflow-y:hidden!important}'+
+ 'html body #ncr .ncr-equipment-card .ncr-table-wrap table{min-width:1240px!important;max-width:none!important}'+
+ 'html body #ncr .ncr-equipment-card .ncr-table-wrap :is(th,td):nth-child(3){white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}'+
+ 'html body #ncr .ncr-equipment-card .ncr-table-wrap .ncr-link{display:inline-block!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;padding:0!important;line-height:18px!important}';
+ document.head.append(style);
 })();
