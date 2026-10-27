@@ -2596,25 +2596,25 @@ html body :is(#incoming,#process,#outgoing) .iqc-register-header .iqc-header-too
 html body :is(#incoming,#process,#outgoing) .iqc-register-header .iqc-header-tools>.btn:hover,html body #work .nwi-header .table-tools>.btn:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
 </style>
 <style id="qmes-incoming-bottom-selection-dock-20261020">
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#a8cce6;color:#244260;border:1px solid #83afd0;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-dock-count{color:#176fba;font-size:15px;font-weight:800}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock .btn:hover{background:#dceafb!important}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock{position:fixed;left:100px;right:24px;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex!important;align-items:center;justify-content:space-between;gap:16px;background:#a8cce6;color:#244260;border:1px solid #83afd0;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-dock-summary{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:13px;font-weight:700}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-dock-count{color:#176fba;font-size:15px;font-weight:800}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-dock-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock .btn{height:30px!important;padding:0 12px!important;border:1px solid #b8cde2!important;border-radius:4px!important;background:#f5f9ff!important;color:#244260!important;font-size:11px!important;font-weight:700!important;line-height:1!important;align-items:center;justify-content:center}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock .btn:hover{background:#dceafb!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock .btn:disabled{opacity:.5;cursor:default}
 
 /* Selection toolbar colors shared with the left navigation. */
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#ncr) :is(.iqc-selection-dock,#ncr-bulk){background:var(--qmes-nav-background)!important;border-color:#3c6988!important;color:#fff!important}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#ncr) :is(.iqc-dock-summary,.iqc-dock-count,.ncr-bulk-count){color:#fff!important}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock :is(.iqc-bulk-delete,.wo-bulk-delete,[data-bulk-delete],[data-selected-delete]),
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard,#ncr) :is(.iqc-selection-dock,#ncr-bulk){background:var(--qmes-nav-background)!important;border-color:#3c6988!important;color:#fff!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard,#ncr) :is(.iqc-dock-summary,.iqc-dock-count,.ncr-bulk-count){color:#fff!important}
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock :is(.iqc-bulk-delete,.wo-bulk-delete,[data-bulk-delete],[data-selected-delete]),
 html body #ncr #ncr-bulk #ncr-bulk-delete{color:#dc2626!important}
-html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock .iqc-bulk-mail,
+html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock .iqc-bulk-mail,
 html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
-@media(prefers-reduced-motion:reduce){html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock{transition:none!important}}
-@media(max-width:700px){html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock{padding:10px;gap:10px}html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase) .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
+@media(prefers-reduced-motion:reduce){html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock{transition:none!important}}
+@media(max-width:700px){html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock{padding:10px;gap:10px}html body :is(#incoming,#process,#outgoing,#work,#equipment,#purchase,#standard) .iqc-selection-dock .btn{padding:0 8px!important;font-size:10px!important}}
 </style>
 
 <style id="qmes-employee-premium-20261020">
@@ -4593,7 +4593,7 @@ function wireIncomingPageRows(section){
 function qmesIncomingSelectionDock(section,buttons,count){
  let dock=section.querySelector('.iqc-selection-dock');
  if(!dock){
-  dock=document.createElement('div');dock.className='iqc-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label',({incoming:'수입검사',process:'공정검사',outgoing:'출하검사',work:'작업지시서',equipment:'설비관리'}[section.id]||'검사')+' 선택 항목 작업');
+  dock=document.createElement('div');dock.className='iqc-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label',({incoming:'수입검사',process:'공정검사',outgoing:'출하검사',work:'작업지시서',equipment:'설비관리',standard:'문서관리'}[section.id]||'검사')+' 선택 항목 작업');
   const summary=document.createElement('div');summary.className='iqc-dock-summary';summary.setAttribute('aria-live','polite');
   const number=document.createElement('strong');number.className='iqc-dock-count';const text=document.createElement('span');text.textContent='건 선택됨';summary.append(number,text);
   const actions=document.createElement('div');actions.className='iqc-dock-actions';dock.append(summary,actions);section.append(dock);
@@ -8237,7 +8237,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-equal8"></script>
-<script src="./js/qmes-standard-documents-20261027.js?v=20261027-uniform-controls5"></script>
+<script src="./js/qmes-standard-documents-20261027.js?v=20261027-selection-actions6"></script>
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261022-12"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
