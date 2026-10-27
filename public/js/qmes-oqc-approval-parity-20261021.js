@@ -95,3 +95,19 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, {once:true});
   else install();
 })();
+
+/* The approval wrapper owns its outline; inner grid cells draw only shared dividers. */
+(function(){
+ const style=document.createElement('style');style.id='qmes-oqc-approval-single-border-20261027';
+ const base='html body #mainWorkspace .am-split[data-am-screen="outgoing"] ';
+ style.textContent=
+ base+'.std-inspection.premium.oqc-pqc-layout{border:0!important;outline:0!important;box-shadow:none!important}'+
+ base+'.oqc-esign-parity{border:1px solid #d7e0e9!important;outline:0!important;box-shadow:none!important;background:#fff!important}'+
+ base+'.oqc-esign-parity>.pqc-esign-table{border:0!important;outline:0!important;box-shadow:none!important}'+
+ base+'.oqc-esign-parity>.pqc-esign-table>div{border:0!important;border-right:1px solid #d7e0e9!important;outline:0!important;box-shadow:none!important}'+
+ base+'.oqc-esign-parity>.pqc-esign-table>.pqc-esign-head{border-bottom:1px solid #d7e0e9!important}'+
+ base+'.oqc-esign-parity>.pqc-esign-table>div:nth-child(4),'+
+ base+'.oqc-esign-parity>.pqc-esign-table>div:last-child{border-right:0!important}'+
+ base+'.oqc-esign-parity>.pqc-esign-note{border:0!important;border-top:1px solid #d7e0e9!important;outline:0!important;box-shadow:none!important}';
+ document.head.append(style);
+})();
