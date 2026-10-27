@@ -70,7 +70,7 @@ function showForm(title, release){
  dialog.querySelector('[data-submit]').textContent=release?'재검사 확인 및 해제 승인':'보류 등록';
 }
 function attach(){
- for(const id of ['ncr','lotTrace','iqc','pqc','oqc']){
+ for(const id of ['ncr','iqc','pqc','oqc']){
   const root=document.getElementById(id);if(!root)continue;
   const target=id==='ncr'?root.querySelector('.ncr-head-actions, .ncr-editor-toolbar > span, .ncr-editor-top'):root;
   if(!target)continue;
