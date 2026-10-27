@@ -1,9 +1,27 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script id="qmes-wallpaper-first-paint-20261027">
+(function(){
+var presets={
+    factory:'linear-gradient(90deg,rgba(10,42,68,.46),rgba(10,41,64,.16) 56%,rgba(6,34,58,.28)),url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920")',
+    sunrise:'linear-gradient(90deg,rgba(10,42,68,.42),rgba(10,41,64,.14) 56%,rgba(6,34,58,.25)),url("https://commons.wikimedia.org/wiki/Special:FilePath/Sunrise_Texas.jpg?width=1920")',
+    industrial:'linear-gradient(90deg,rgba(10,42,68,.42),rgba(10,41,64,.14) 56%,rgba(6,34,58,.25)),url("https://www.carburos.com/-/media/images/1440x810/masthead/909216872-refinery-16x9.jpg?as=0&hash=96E09C80D89D32FDED27EF7959169D06&w=1439")'
+  };
+window.qmesApplyWallpaper=function(name){
+ var value=presets[name]||presets.factory;
+ if(name==='original')value='none';
+ if(name==='custom'){try{var data=localStorage.getItem('qmes-portal-wallpaper-custom-v1')||'';if(/^data:image\//.test(data))value='linear-gradient(90deg,rgba(8,34,55,.38),rgba(8,34,55,.12)),url("'+data.replace(/"/g,'')+'")';}catch(e){}}
+ document.documentElement.style.setProperty('--qmes-initial-wallpaper',value);
+ document.documentElement.dataset.qmesWallpaper=name;
+};
+var saved='factory';try{saved=localStorage.getItem('qmes-portal-wallpaper-v1')||saved}catch(e){}
+window.qmesApplyWallpaper(saved);
+})();
+</script>
 <style id="qmes-initial-factory-fallback-20261026">
 html,body,#app,main.content{background-color:#edf3f9!important}
-#main.namo-portal-shell,#namoPortal20261014,main.content:has(> #main.active.namo-portal-shell){background-color:#edf3f9!important;background-image:url("https://commons.wikimedia.org/wiki/Special:FilePath/Wesseling_Refinery_at_Dusk%2C_March_2018.jpg?width=1920"),url("./assets/qmes-header-factory-20261002.webp")!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
+html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.content:has(> #main.active.namo-portal-shell){background-color:#edf3f9!important;background-image:var(--qmes-initial-wallpaper,none)!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
 </style>
 <script id="qmes-mobile-root-redirect-20261023">
 (function(){
@@ -2767,7 +2785,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   </aside>
 
   <main class="content">
-    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261026-first-paint2" loading="eager"></iframe></section>
+    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261027-saved-wallpaper3" loading="eager"></iframe></section>
     <section class="module-page namo-dashboard-shell" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
