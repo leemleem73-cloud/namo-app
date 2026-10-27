@@ -122,3 +122,17 @@ base+'.std-info.am-inline-edit-grid>.am-inline-cell>label{border-right:1px solid
 base+'table.std-result{border-collapse:collapse!important;border:1px solid #d7e0e9!important}'+
 base+'table.std-result :is(thead,tbody) tr>:is(th,td){border:1px solid #d7e0e9!important}';
 document.head.append(style);})();
+
+/* Align all registration blocks to the same content edges. */
+(function(){
+ const style=document.createElement('style');style.id='oqc-registration-aligned-edges-20261027';
+ const pane='html body #mainWorkspace .am-split[data-am-screen="outgoing"]:has(.oqc-pqc-layout)';
+ const root=pane+' .oqc-pqc-layout';
+ style.textContent=
+ pane+' .am-detail-pane>.am-section>.am-section-body{padding:8px 0 0!important;min-width:0!important;box-sizing:border-box!important}'+
+ root+'{width:100%!important;max-width:100%!important;min-width:0!important;padding:0!important;margin:0!important;box-sizing:border-box!important}'+
+ root+'>.std-info.am-inline-edit-grid,'+root+'>.oqc-pqc-measure-section,'+root+'>.oqc-esign-parity{width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}'+
+ root+' .oqc-pqc-measure-section>.std-result-wrap{width:100%!important;max-width:100%!important;min-width:0!important;padding:0!important;margin:0!important;box-sizing:border-box!important}'+
+ root+' table.std-result{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}';
+ document.head.append(style);
+})();
