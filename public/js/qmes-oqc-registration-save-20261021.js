@@ -224,7 +224,9 @@ function setup(root){
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
  const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent='다시 조회';retry.hidden=true;
  lot.after(suggestions,message,retry);
- let orders=[],checks=[],history=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
+ const productSuggestions=document.createElement('datalist');productSuggestions.id='oqc-product-options-'+crypto.randomUUID();
+ product.setAttribute('list',productSuggestions.id);product.after(productSuggestions);
+ let orders=[],checks=[],history=[],allChoices=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
  function ensureCustomer(value){if(value&&![...customer.options].some(o=>o.value===value))customer.add(new Option(value,value));}
  function customers(){
@@ -246,12 +248,27 @@ function setup(root){
   autoValues={lot:choice.lot,product:choice.product,customer:choice.customer};
   message.textContent='';
  }
- function render(allowAuto){
+ function resolve(source,anchor,value,selectedCustomer){
+  let matches=source.filter(c=>norm(c[anchor])===norm(value));
+  if(selectedCustomer){const same=matches.filter(c=>norm(c.customer)===norm(selectedCustomer));if(same.length)matches=same;}
+  const unique=new Map(matches.map(c=>[[c.lot,c.product,c.customer].map(norm).join('|'),c]));
+  return unique.size===1?[...unique.values()][0]:null;
+ }
+ function render(allowAuto,force=false){
   if(!root.isConnected)return;
   choices=productionCandidates(orders,checks,day(date.value));
-  suggestions.replaceChildren(...[...new Set(choices.map(c=>c.lot))].map(value=>new Option(value,value)));
-  if(allowAuto&&choices.length===1&&!lot.value&&!product.value&&(!customer.value||norm(customer.value)===norm(choices[0].customer)))apply(choices[0]);
-  else message.textContent=choices.length>1?'해당 날짜의 LOT를 선택하거나 입력해 주세요.':'';
+  const available=choices.length?choices:allChoices;
+  suggestions.replaceChildren(...[...new Set(available.map(c=>c.lot).filter(Boolean))].map(value=>new Option(value,value)));
+  productSuggestions.replaceChildren(...[...new Set(available.map(c=>c.product).filter(Boolean))].map(value=>new Option(value,value)));
+  const filtered=choices.filter(c=>!customer.value||norm(c.customer)===norm(customer.value));
+  if(allowAuto&&filtered.length===1&&(force||(!lot.value&&!product.value)))apply(filtered[0]);
+  else if(allowAuto&&lot.value){const match=resolve(available,'lot',lot.value,customer.value);if(match)apply(match);}
+  else message.textContent='';
+ }
+ function link(anchor,input){
+  if(!loaded||!clean(input.value))return;
+  const match=resolve(choices,anchor,input.value,customer.value)||resolve(allChoices,anchor,input.value,customer.value);
+  if(match)apply(match);
  }
  async function load(){
   if(loading)return;loading=true;retry.hidden=true;message.textContent='';
@@ -259,18 +276,21 @@ function setup(root){
    const result=await Promise.allSettled([get('/api/qmes/work-orders'),get('/api/qmes-sync/pqc'),get('/api/qmes-sync/oqc')]);
    if(result[0].status!=='fulfilled'||result[1].status!=='fulfilled')throw Error('작업지시·공정검사 정보를 불러오지 못했습니다.');
    orders=result[0].value;checks=unpack(result[1].value);history=result[2].status==='fulfilled'?unpack(result[2].value):[];
+   const dates=[...new Set([...orders.map(o=>orderInfo(o).start),...checks.map(r=>day(r.date||r.inspectionDate))].filter(Boolean))];
+   const combined=dates.flatMap(value=>productionCandidates(orders,checks,value));
+   allChoices=[...new Map(combined.map(c=>[[c.lot,c.product,c.customer].map(norm).join('|'),c])).values()];
    loaded=true;customers();render(true);
   }catch(e){loaded=false;message.textContent=e.message;retry.hidden=false;}
   finally{loading=false;}
  }
- lot.addEventListener('change',()=>{
-  const matches=choices.filter(c=>norm(c.lot)===norm(lot.value)&&(!customer.value||norm(c.customer)===norm(customer.value)));
-  if(matches.length===1)apply(matches[0]);
- });
+ for(const event of ['input','change']){
+  lot.addEventListener(event,()=>link('lot',lot));
+  product.addEventListener(event,()=>link('product',product));
+ }
  customer.addEventListener('change',()=>{if(loaded)render(true);});
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
-  if(loaded)render(true);else if(!loading)void load();
+  if(loaded)render(true,true);else if(!loading)void load();
  });
  retry.addEventListener('click',()=>void load());
  void load();
