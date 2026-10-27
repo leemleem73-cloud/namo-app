@@ -47,46 +47,50 @@
     };
 
     const html=[
-      group('수주 / 계획관리',
-        node('수주등록','orders',counts.sales+'건')+'<div class="qpm-arrow">↓</div>'+
-        node('생산계획','orders','수주납기 기준')+'<div class="qpm-arrow">↓</div>'+
-        node('작업지시 발행','work',counts.wo+'건')
+      group('수주 / 납기',
+        node('수주등록','orders')+'<div class="qpm-arrow">↓</div>'+
+        node('납기확인 / 생산계획','orders')+'<div class="qpm-arrow">↓</div>'+
+        node('작업지시 발행','work')
       ),
-      group('구매 / 입고관리',
-        node('구매발주','purchase','구매발주 관리')+'<div class="qpm-arrow">↓</div>'+
-        node('원재료 입고','incoming',counts.iqc+'건')+'<div class="qpm-arrow">↓</div>'+
+      group('구매 / 입고 / IQC',
+        node('구매발주','purchase')+'<div class="qpm-arrow">↓</div>'+
+        node('원재료 입고','incoming')+'<div class="qpm-arrow">↓</div>'+
         diamond('IQC 합격?')+
-        node('NCR 자동등록','ncr','IQC 불합격 '+counts.iqcNg+'건','red')
+        '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 작업지시 원료 LOT</span><span class="qpm-no-tag">NO ↓</span></div>'+
+        node('NCR 자동등록','ncr','','red')
       ),
-      group('생산관리',
-        node('합격 원료 LOT','incoming','작업지시 원료 연동')+'<div class="qpm-arrow">↓</div>'+
-        node('원료투입 / 생산','work','작업지시 기준')+'<div class="qpm-arrow">↓</div>'+
-        node('생산완료','work','실적 / LOT 생성')
+      group('생산',
+        node('합격 원료 LOT 선택','incoming')+'<div class="qpm-arrow">↓</div>'+
+        node('원료투입','work')+'<div class="qpm-arrow">↓</div>'+
+        node('생산진행','work')
       ),
-      group('공정 품질관리',
-        node('공정검사 PQC','process',counts.pqc+'건')+'<div class="qpm-arrow">↓</div>'+
+      group('공정검사 PQC',
+        node('공정검사 등록','process')+'<div class="qpm-arrow">↓</div>'+
         diamond('PQC 합격?')+
-        node('NCR 자동등록','ncr','PQC 불합격 '+counts.pqcNg+'건','red')
+        '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 생산완료</span><span class="qpm-no-tag">NO ↓</span></div>'+
+        node('NCR 자동등록','ncr','','red')
       ),
-      group('출하 품질관리',
-        node('출하검사 OQC','outgoing',counts.oqc+'건')+'<div class="qpm-arrow">↓</div>'+
+      group('생산완료 / 완제품',
+        node('생산완료','work')+'<div class="qpm-arrow">↓</div>'+
+        node('완제품 LOT 생성','work')+'<div class="qpm-arrow">↓</div>'+
+        node('완제품 재고','inventory')
+      ),
+      group('출하검사 OQC',
+        node('출하검사 등록','outgoing')+'<div class="qpm-arrow">↓</div>'+
         diamond('OQC 합격?')+
-        node('NCR 자동등록','ncr','OQC 불합격 '+counts.oqcNg+'건','red')
+        '<div class="qpm-branch-row"><span class="qpm-yes-tag">YES → 출하등록</span><span class="qpm-no-tag">NO ↓</span></div>'+
+        node('NCR 자동등록','ncr','','red')
       ),
-      group('출하 / 납품',
-        node('출하등록 / 납품','orders',counts.shipping+'건')+'<div class="qpm-arrow">↓</div>'+
-        node('고객사 납품완료','orders','수주번호 연동')+'<div class="qpm-arrow">↓</div>'+
-        node('성적서 / COA','outgoing','출하검사 연동')
-      ),
-      group('추적 / 품질관리',
-        node('LOT 추적','lotTrace','원료 → 생산 → 검사 → 출하')+'<div class="qpm-arrow">↓</div>'+
-        node('부적합 NCR','ncr',counts.ncr+'건')+'<div class="qpm-arrow">↓</div>'+
-        node('전자결재 / 승인','approval','검토 · 승인')
+      group('출하 / 추적',
+        node('출하등록 / 납품','orders')+'<div class="qpm-arrow">↓</div>'+
+        node('성적서 / COA','outgoing')+'<div class="qpm-arrow">↓</div>'+
+        node('LOT 추적','lotTrace')+'<div class="qpm-arrow">↓</div>'+
+        node('전자결재 / 승인','approval')
       )
     ].join('');
 
-    root.querySelector('.qpm-board').innerHTML='<div class="qpm-grid">'+html+'</div>';
-    root.insertAdjacentHTML('beforeend','<div class="qpm-foot"><span>● IQC/PQC/OQC 불합격 → NCR 자동등록</span><span>● IQC 합격 LOT → 작업지시 원료 선택</span><span>● 작업지시/검사/출하 → LOT 추적 연결</span><span>● 각 박스를 클릭하면 실제 QMES 메뉴로 이동</span></div>');
+    root.querySelector('.qpm-board').innerHTML='<div class="qpm-flow-caption">나모케미칼 QMES 전체 업무 흐름</div><div class="qpm-grid">'+html+'</div>';
+    root.insertAdjacentHTML('beforeend','<div class="qpm-foot"><span>● IQC 합격 LOT만 작업지시 원료로 사용</span><span>● PQC 불합격 시 후속 공정 차단 + NCR 자동등록</span><span>● OQC 불합격 시 출하 차단 + NCR 자동등록</span><span>● 원료 LOT → 생산 LOT → 검사 → 출하까지 LOT 추적</span></div>');
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
     root.querySelector('.qpm-refresh')?.addEventListener('click',render);
   }
