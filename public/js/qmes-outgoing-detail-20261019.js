@@ -87,3 +87,17 @@ closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast('ì¶œí•
 });
 };
 })();
+
+/* Detail/edit uses nested section bodies: avoid adding a second horizontal inset. */
+(function(){
+ const style=document.createElement('style');style.id='oqc-detail-aligned-edges-20261027';
+ const pane='html body #mainWorkspace .am-split[data-am-screen="outgoing"]:has(.oqc-detail-measure-section)';
+ const body=pane+' .am-detail-pane>.am-section>.am-section-body';
+ style.textContent=
+ body+'{padding:8px 0 0!important;min-width:0!important;box-sizing:border-box!important}'+
+ body+'>.am-inline-edit-grid,'+body+'>.oqc-detail-measure-section,'+body+'>.oqc-esign-parity{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}'+
+ pane+' .oqc-detail-measure-section>.am-section-head{box-sizing:border-box!important;width:100%!important;margin:0!important}'+
+ pane+' .oqc-detail-measure-section>.am-section-body{padding:0!important;margin:0!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}'+
+ pane+' table.oqc-detail-items{width:100%!important;margin:0!important;box-sizing:border-box!important}';
+ document.head.append(style);
+})();
