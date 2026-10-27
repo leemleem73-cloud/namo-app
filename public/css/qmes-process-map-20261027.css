@@ -156,3 +156,30 @@
 }
 #processMap .qpm-foot{gap:16px!important;padding:10px 14px!important}
 #processMap .qpm-foot .legend{font-size:9px!important}
+
+/* 2026-10-27 connector visibility fix */
+#processMap .qpm-canvas{position:relative!important}
+#processMap .qpm-link-layer{
+  position:absolute!important;
+  inset:0!important;
+  z-index:3!important;
+  pointer-events:none!important;
+  overflow:visible!important;
+}
+#processMap .qpm-group,
+#processMap .qpm-trace-panel{
+  position:relative!important;
+  z-index:1!important;
+}
+#processMap .qpm-group-title,
+#processMap .qpm-node,
+#processMap .qpm-diamond,
+#processMap .qpm-trace-title,
+#processMap .qpm-trace-node{
+  position:relative!important;
+  z-index:4!important;
+}
+#processMap .qpm-link-label{
+  position:relative;
+  z-index:5;
+}
