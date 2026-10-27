@@ -66,7 +66,7 @@
     table.before(section);
     section.append(table);
     const companyFooter=root.querySelector('.pqc-esign-note');
-    if(companyFooter)companyFooter.textContent='나모케미칼';
+    if(companyFooter)companyFooter.textContent='(주)나모케미칼';
     return root.outerHTML;
   };
   const style = document.createElement('style');
@@ -103,7 +103,7 @@
    pane.querySelector('.am-detail-top .title-wrap>small')?.remove();
    pane.querySelector('.am-detail-note')?.remove();
    const footer=pane.querySelector('.oqc-esign-parity>.pqc-esign-note');
-   if(footer&&footer.textContent!=='나모케미칼')footer.textContent='나모케미칼';
+   if(footer&&footer.textContent!=='(주)나모케미칼')footer.textContent='(주)나모케미칼';
   });
  }
  const style=document.createElement('style');style.id='oqc-registration-copy-clean-20261027';
@@ -112,3 +112,13 @@
  let pending=false;new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;clean();});}}).observe(document.body,{childList:true,subtree:true});
  clean();
 })();
+
+(function(){const style=document.createElement('style');style.id='oqc-registration-grid-borders-20261027';
+const base='html body #mainWorkspace .am-split[data-am-screen="outgoing"] .oqc-pqc-layout ';
+style.textContent=base+'.std-info.am-inline-edit-grid{border:1px solid #d7e0e9!important;border-bottom:0!important}'+
+base+'.std-info.am-inline-edit-grid>.am-inline-cell{border:0!important;border-bottom:1px solid #d7e0e9!important;border-right:1px solid #d7e0e9!important}'+
+base+'.std-info.am-inline-edit-grid>.am-inline-cell:nth-child(2n),'+base+'.std-info.am-inline-edit-grid>.am-inline-cell.full{border-right:0!important}'+
+base+'.std-info.am-inline-edit-grid>.am-inline-cell>label{border-right:1px solid #d7e0e9!important}'+
+base+'table.std-result{border-collapse:collapse!important;border:1px solid #d7e0e9!important}'+
+base+'table.std-result :is(thead,tbody) tr>:is(th,td){border:1px solid #d7e0e9!important}';
+document.head.append(style);})();
