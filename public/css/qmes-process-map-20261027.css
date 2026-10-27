@@ -24,3 +24,11 @@
 #processMap .qpm-foot{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;border-top:1px solid #e7edf3;background:#fbfcfe}
 #processMap .qpm-foot span{font-size:10px;color:#617286}
 @media(max-width:900px){#processMap{padding:10px!important}#processMap .qpm-head{align-items:flex-start;flex-direction:column}}
+
+#processMap .qpm-flow-caption{margin:0 0 12px;padding:8px 12px;border:1px solid #d9e5ef;background:#eef8fd;color:#567084;text-align:center;font-size:11px;font-weight:850}
+#processMap .qpm-branch-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-2px 0 2px}
+#processMap .qpm-yes-tag,#processMap .qpm-no-tag{font-size:9px;font-weight:900;white-space:nowrap}
+#processMap .qpm-yes-tag{color:#0f7a51}
+#processMap .qpm-no-tag{color:#c0392b}
+#processMap .qpm-group{position:relative}
+#processMap .qpm-group:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:49%;transform:translateY(-50%);color:#7f8d9b;font-size:22px;font-weight:700;z-index:2}
