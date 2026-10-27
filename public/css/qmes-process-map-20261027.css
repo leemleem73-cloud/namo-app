@@ -7,16 +7,16 @@
 #processMap .qpm-refresh{height:34px;padding:0 12px;border:1px solid #cfd9e4;border-radius:7px;background:#fff;color:#334155;font-weight:800;font-size:11px;cursor:pointer}
 #processMap .qpm-board{padding:18px;overflow:auto}
 #processMap .qpm-grid{min-width:1280px;display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:12px;align-items:start}
-#processMap .qpm-group{border:1px solid #dfe6ed;background:#fff;border-radius:6px;overflow:visible;min-height:252px;box-shadow:0 2px 8px rgba(15,23,42,.035)}
-#processMap .qpm-group-title{height:38px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff7f2,#fff2eb);border-bottom:1px solid #eadfd7;color:#715f56;font-size:11px;font-weight:900;letter-spacing:-.15px;border-radius:6px 6px 0 0}
+#processMap .qpm-group{border:1px solid #e3e8ef;background:#fff;border-radius:8px;overflow:hidden;min-height:252px}
+#processMap .qpm-group-title{height:34px;display:flex;align-items:center;justify-content:center;background:#fff4ef;border-bottom:1px solid #f1e2da;color:#7a655d;font-size:11px;font-weight:900}
 #processMap .qpm-body{padding:14px;display:flex;flex-direction:column;align-items:center;gap:11px}
-#processMap .qpm-node{position:relative;width:100%;min-height:58px;border:1px solid #9fd0e7;background:linear-gradient(180deg,#effaff,#e3f5fd);border-radius:6px;padding:11px 12px;display:flex;align-items:center;justify-content:center;text-align:center;color:#0875a8;font-size:11px;font-weight:900;line-height:1.4;cursor:pointer;box-shadow:0 2px 7px rgba(13,116,144,.08);transition:.15s}
-#processMap .qpm-node:hover{background:#d9f2fd;border-color:#72bddf;transform:translateY(-1px);box-shadow:0 5px 12px rgba(13,116,144,.12)}
+#processMap .qpm-node{position:relative;width:100%;min-height:54px;border:1px solid #b9dcef;background:#eaf7ff;border-radius:7px;padding:10px 11px;display:flex;align-items:center;justify-content:center;text-align:center;color:#0d6b9b;font-size:11px;font-weight:900;line-height:1.4;cursor:pointer;box-shadow:0 2px 5px rgba(14,116,144,.05)}
+#processMap .qpm-node:hover{background:#dff3ff;border-color:#8fc9e6}
 #processMap .qpm-node small{display:block;font-size:9px;color:#6a8192;font-weight:700;margin-top:3px}
-#processMap .qpm-node.red{background:linear-gradient(180deg,#fff5f4,#ffeceb);border-color:#efb1ad;color:#b42318}
+#processMap .qpm-node.red{background:#fff0f0;border-color:#f2b8b8;color:#b3261e}
 #processMap .qpm-node.gray{background:#f4f6f8;border-color:#d8dee5;color:#64748b}
-#processMap .qpm-diamond{width:138px;height:76px;background:linear-gradient(180deg,#f9fbfd,#eef3f7);border:1.5px solid #b7c2cd;margin:10px 0 16px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(15,23,42,.05);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
-#processMap .qpm-diamond span{display:block;width:100px;font-size:10.5px;font-weight:900;color:#4d5a68;text-align:center;line-height:1.2;white-space:nowrap}
+#processMap .qpm-diamond{width:72px;height:72px;transform:rotate(45deg);background:#f8fafc;border:1.5px solid #bcc7d3;margin:8px 0 14px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(15,23,42,.05)}
+#processMap .qpm-diamond span{transform:rotate(-45deg);display:block;width:92px;font-size:10.5px;font-weight:900;color:#4f5d6d;text-align:center;line-height:1.25;white-space:nowrap}
 #processMap .qpm-arrow{font-size:18px;color:#9aa7b5;line-height:1;height:16px}
 #processMap .qpm-status{display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:9px;color:#6d7e90}
 #processMap .qpm-dot{width:7px;height:7px;border-radius:50%;background:#22c55e}
@@ -31,23 +31,10 @@
 #processMap .qpm-yes-tag{color:#0f7a51}
 #processMap .qpm-no-tag{color:#c0392b}
 #processMap .qpm-group{position:relative}
-#processMap .qpm-group:not(:last-child)::after{content:none}
+#processMap .qpm-group:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:49%;transform:translateY(-50%);color:#7f8d9b;font-size:22px;font-weight:700;z-index:2}
 
-#processMap .qpm-dense-grid{min-width:2140px;grid-template-columns:repeat(10,minmax(185px,1fr));gap:22px}
-#processMap .qpm-dense-grid .qpm-group{min-height:340px}
+#processMap .qpm-dense-grid{min-width:1840px;grid-template-columns:repeat(10,minmax(155px,1fr));gap:14px}
+#processMap .qpm-dense-grid .qpm-group{min-height:310px}
 #processMap .qpm-dense-grid .qpm-group-title{font-size:10.5px}
-#processMap .qpm-dense-grid .qpm-node{min-height:58px;font-size:10.8px}
-#processMap .qpm-dense-grid .qpm-group:not(:last-child)::after{content:none}
-
-#processMap .qpm-grid{position:relative}
-#processMap .qpm-links{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
-#processMap .qpm-group{position:relative;z-index:1}
-#processMap .qpm-link{fill:none;stroke:#7f8b98;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:round}
-#processMap .qpm-link-yes{stroke:#17835a;stroke-width:1.8}
-#processMap .qpm-link-no{stroke:#c9423a;stroke-width:1.8}
-#processMap .qpm-link-trace{stroke:#a4afb9;stroke-width:1.25;stroke-dasharray:4 4}
-#processMap .qpm-link-label{font-size:9px;font-weight:900;fill:#687889}
-#processMap .qpm-link-label-yes{fill:#16845b}
-#processMap .qpm-link-label-no{fill:#cf3f36}
-#processMap .qpm-loading{grid-column:1/-1;text-align:center;padding:46px;color:#7b8a9b}
-#processMap .qpm-dense-grid .qpm-body{gap:20px;padding:20px 14px 22px}
+#processMap .qpm-dense-grid .qpm-node{min-height:52px;font-size:10.5px}
+#processMap .qpm-dense-grid .qpm-group:not(:last-child)::after{right:-20px}
