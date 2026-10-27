@@ -151,11 +151,40 @@
     trace('result','traceProd');
     trace('finishedLot','traceFinished');
     trace('delivery','traceShip');
-    trace('ncrHub','traceNcr');
 
-    trace('iqcNcr','traceNcr');
-    trace('pqcNcr','traceNcr');
-    trace('oqcNcr','traceNcr');
+    // NCR uses a separate solid red merge lane, not the purple LOT history routes.
+    const target=pos('ncrHub','left');
+    const targetEl=canvas.querySelector('[data-key="ncrHub"]');
+    const targetLane=targetEl?.closest('.qpm-group');
+    const busY=gridRect.bottom-bounds.top+canvas.scrollTop+42;
+    if(target&&targetLane){
+      const laneRect=groups.get(targetLane);
+      const entryX=laneRect.left-bounds.left+canvas.scrollLeft-gap/2;
+      const sources=[['iqcNcr','IQC'],['pqcNcr','PQC'],['oqcNcr','OQC']].map(([key,label])=>{
+        const point=pos(key,'right'),el=canvas.querySelector('[data-key="'+key+'"]');
+        const lane=el?.closest('.qpm-group');
+        if(!point||!lane)return null;
+        const x=groups.get(lane).right-bounds.left+canvas.scrollLeft+gap/2;
+        return {point,x,label};
+      }).filter(Boolean);
+      sources.forEach(({point,x,label})=>{
+        path('M '+point.x+' '+point.y+' H '+x+' V '+busY,'qpm-ncr');
+        arrow({x,y:busY},'down','qpm-ncr');
+        text(x+20,busY-9,label,'qpm-ncr');
+      });
+      if(sources.length){
+        path('M '+Math.min(...sources.map(v=>v.x))+' '+busY+' H '+entryX+' V '+target.y+' H '+target.x,'qpm-ncr');
+        arrow(target,'right','qpm-ncr');
+        text(entryX-52,busY-9,'부적합 NCR','qpm-ncr');
+      }
+    }
+    const ncrSource=pos('ncrHub','right'),ncrHistory=pos('traceNcr','top');
+    if(ncrSource&&ncrHistory&&targetLane){
+      const x=groups.get(targetLane).right-bounds.left+canvas.scrollLeft+gap/2;
+      const y=gridRect.bottom-bounds.top+canvas.scrollTop+64;
+      path('M '+ncrSource.x+' '+ncrSource.y+' H '+x+' V '+y+' H '+ncrHistory.x+' V '+ncrHistory.y,'qpm-ncr-history');
+      arrow(ncrHistory,'down','qpm-ncr-history');
+    }
 
     while(svg.children.length>used)svg.lastElementChild.remove();
   }
@@ -190,7 +219,7 @@
       group('수입검사 IQC','⌕',
         node('iqc','IQC 검사등록','incoming')+
         diamond('iqcDecision','IQC 합격?')+
-        node('iqcNcr','NCR 자동등록','ncr','red')
+        node('iqcNcr','IQC NCR 등록','ncr','red')
       ),
       group('원료 / 작업지시','⚙',
         node('rawLot','합격 원료 LOT','incoming')+
@@ -205,7 +234,7 @@
       group('공정검사 PQC','⌕',
         node('pqc','PQC 검사등록','process')+
         diamond('pqcDecision','PQC 합격?')+
-        node('pqcNcr','NCR 자동등록','ncr','red')
+        node('pqcNcr','PQC NCR 등록','ncr','red')
       ),
       group('생산완료 / 완제품','⬡',
         node('complete','생산완료','work')+
@@ -215,7 +244,7 @@
       group('출하검사 OQC','⌕',
         node('oqc','OQC 검사등록','outgoing')+
         diamond('oqcDecision','OQC 합격?')+
-        node('oqcNcr','NCR 자동등록','ncr','red')
+        node('oqcNcr','OQC NCR 등록','ncr','red')
       ),
       group('출하 / 납품','▰',
         node('ship','출하등록','orders')+
@@ -243,7 +272,7 @@
       '<span class="legend main">→ 주요 프로세스 흐름</span>'+
       '<span class="legend trace">⇢ LOT / 품질 데이터 연계</span>'+
       '<span class="legend yes">→ YES (다음 공정 진행)</span>'+
-      '<span class="legend no">→ NO (NCR 자동등록)</span>'+
+      '<span class="legend no">→ NO (NCR 등록)</span><span class="legend ncr">━ 부적합 NCR 연결</span>'+
       '</div>');
 
     root.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>go(btn.dataset.page)));
