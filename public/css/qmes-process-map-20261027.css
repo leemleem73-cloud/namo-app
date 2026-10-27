@@ -15,8 +15,8 @@
 #processMap .qpm-node small{display:block;font-size:9px;color:#6a8192;font-weight:700;margin-top:3px}
 #processMap .qpm-node.red{background:#fff0f0;border-color:#f2b8b8;color:#b3261e}
 #processMap .qpm-node.gray{background:#f4f6f8;border-color:#d8dee5;color:#64748b}
-#processMap .qpm-diamond{width:72px;height:72px;transform:rotate(45deg);background:#f8fafc;border:1.5px solid #bcc7d3;margin:8px 0 14px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(15,23,42,.05)}
-#processMap .qpm-diamond span{transform:rotate(-45deg);display:block;width:92px;font-size:10.5px;font-weight:900;color:#4f5d6d;text-align:center;line-height:1.25;white-space:nowrap}
+#processMap .qpm-diamond{width:138px;height:76px;background:linear-gradient(180deg,#f9fbfd,#eef3f7);border:1.5px solid #b7c2cd;margin:10px 0 16px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(15,23,42,.05);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+#processMap .qpm-diamond span{display:block;width:100px;font-size:10.5px;font-weight:900;color:#4d5a68;text-align:center;line-height:1.2;white-space:nowrap}
 #processMap .qpm-arrow{font-size:18px;color:#9aa7b5;line-height:1;height:16px}
 #processMap .qpm-status{display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:9px;color:#6d7e90}
 #processMap .qpm-dot{width:7px;height:7px;border-radius:50%;background:#22c55e}
@@ -31,10 +31,25 @@
 #processMap .qpm-yes-tag{color:#0f7a51}
 #processMap .qpm-no-tag{color:#c0392b}
 #processMap .qpm-group{position:relative}
-#processMap .qpm-group:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:49%;transform:translateY(-50%);color:#7f8d9b;font-size:22px;font-weight:700;z-index:2}
 
-#processMap .qpm-dense-grid{min-width:1840px;grid-template-columns:repeat(10,minmax(155px,1fr));gap:14px}
+
+#processMap .qpm-dense-grid{min-width:2140px;grid-template-columns:repeat(10,minmax(185px,1fr));gap:22px}
 #processMap .qpm-dense-grid .qpm-group{min-height:310px}
 #processMap .qpm-dense-grid .qpm-group-title{font-size:10.5px}
 #processMap .qpm-dense-grid .qpm-node{min-height:52px;font-size:10.5px}
-#processMap .qpm-dense-grid .qpm-group:not(:last-child)::after{right:-20px}
+
+
+#processMap .qpm-grid{position:relative}
+#processMap .qpm-link-layer{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
+#processMap .qpm-group{position:relative;z-index:1;overflow:visible}
+#processMap .qpm-link{fill:none;stroke:#7f8b98;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:round}
+#processMap .qpm-link.qpm-yes{stroke:#17835a;stroke-width:1.8}
+#processMap .qpm-link.qpm-no{stroke:#c9423a;stroke-width:1.8}
+#processMap .qpm-link.qpm-trace{stroke:#a4afb9;stroke-width:1.25;stroke-dasharray:4 4}
+#processMap .qpm-arrowhead{fill:none;stroke:#7f8b98;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:round}
+#processMap .qpm-arrowhead.qpm-yes{stroke:#17835a;stroke-width:1.8}
+#processMap .qpm-arrowhead.qpm-no{stroke:#c9423a;stroke-width:1.8}
+#processMap .qpm-arrowhead.qpm-trace{stroke:#a4afb9;stroke-width:1.25}
+#processMap .qpm-link-label{font-size:9px;font-weight:900;fill:#687889}
+#processMap .qpm-link-label.qpm-yes{fill:#17835a}
+#processMap .qpm-link-label.qpm-no{fill:#c9423a}
