@@ -71,6 +71,44 @@ function install(app){
  if(app.__qmesNcrInstalled)return;
  app.__qmesNcrInstalled=true;
  const auth=(req,res,next)=>req.session?.user?next():bad(res,401,'로그인이 필요합니다.');
+
+ // Fail-safe IQC -> NCR bridge.
+ // Runs before the legacy /api/iqc route and observes its successful JSON response,
+ // so automatic NCR creation works even if another IQC handler is registered first.
+ app.use((req,res,next)=>{
+  if(req.method!=='POST'||req.path!=='/api/iqc')return next();
+  const originalJson=res.json.bind(res);
+  res.json=function(payload){
+   try{
+    const row=payload?.data||payload;
+    if(res.statusCode<400&&String(row?.judge||'').trim()==='불합격'&&row?.id){
+     const user=req.session?.user||{};
+     autoCreateNcr({
+      source:'IQC',
+      occurred_on:String(row.date||req.body?.date||'').slice(0,10),
+      lot:row.lot||req.body?.lot||'',
+      product:row.item||req.body?.item||'',
+      customer:row.supplier||req.body?.supplier||'',
+      description:'IQC 수입검사 불합격 자동 발생',
+      containment:'해당 원료 LOT 보류 및 후속 공정 투입 차단',
+      owner:str(user.name||user.email||'',120),
+      created_by:str(user.name||user.email||'QMES 자동생성',150),
+      created_by_id:str(user.id||'SYSTEM',100),
+      inspection_record_id:'IQC:'+String(row.id),
+      details:{
+       process:'수입검사',
+       actual_result:'불합격',
+       affected_qty:String(row.incoming_qty||row.qty||req.body?.incomingQty||''),
+       reporter:str(user.name||user.email||'',120)
+      }
+     }).catch(e=>console.error('[AUTO NCR IQC BRIDGE]',e));
+    }
+   }catch(e){console.error('[AUTO NCR IQC BRIDGE]',e);}
+   return originalJson(payload);
+  };
+  next();
+ });
+
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
   try{await schema();const q=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY id DESC LIMIT 500');res.json({success:true,data:q.rows});}
   catch(e){console.error('[NCR list]',e);bad(res,500,'NCR 목록 조회 실패');}
