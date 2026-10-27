@@ -12,6 +12,7 @@
     const target=page==='inventory'?'lotTrace':page;
     const menu=document.querySelector('.sidebar .menu[data-page="'+target+'"]');
     if(!menu){window.toast?.('연결할 화면을 찾지 못했습니다.');return;}
+    window.qmesMenuHistory?.beginProcessNavigation(target);
     menu.click();
     const registration=new Set(['sales','purchase','iqc','pqc','oqc','workOrder']);
     if(!registration.has(key))return;
