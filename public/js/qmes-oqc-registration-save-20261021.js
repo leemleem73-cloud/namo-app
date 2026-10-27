@@ -219,13 +219,11 @@ function setup(root){
  customer.add(new Option('고객사 선택',''));
  if(existing)customer.add(new Option(existing,existing));
  customer.value=existing;customerInput.replaceWith(customer);
- const cell=document.createElement('div');cell.className='am-inline-cell full oqc-production-link';
- const label=document.createElement('label');label.textContent='검사 대상';
- const area=document.createElement('div');area.className='v';
- const select=document.createElement('select');select.setAttribute('aria-label','검사 대상 선택');select.dataset.oqcProductionTarget='1';
- const message=document.createElement('small');message.setAttribute('role','status');
+ const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
+ lot.setAttribute('list',suggestions.id);
+ const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
  const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent='다시 조회';retry.hidden=true;
- area.append(select,message,retry);cell.append(label,area);date.closest('.am-inline-cell').after(cell);
+ lot.after(suggestions,message,retry);
  let orders=[],checks=[],history=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
  function ensureCustomer(value){if(value&&![...customer.options].some(o=>o.value===value))customer.add(new Option(value,value));}
@@ -244,33 +242,32 @@ function setup(root){
  function apply(choice){
   if(!choice)return;
   ensureCustomer(choice.customer);
-  setValue(lot,choice.lot);setValue(product,choice.product);setValue(customer,choice.customer);
+  lot.value=choice.lot;product.value=choice.product;customer.value=choice.customer;
   autoValues={lot:choice.lot,product:choice.product,customer:choice.customer};
   message.textContent='LOT · 제품명 · 고객사를 연결했습니다.'+(!choice.customer?' 고객사를 선택해 주세요.':'');
  }
  function render(allowAuto){
   if(!root.isConnected)return;
   choices=productionCandidates(orders,checks,day(date.value));
-  select.replaceChildren(new Option(choices.length?'검사 대상 선택':'해당 일자 연동 내역 없음',''));
-  choices.forEach((c,i)=>select.add(new Option([c.lot,c.product||'제품 미등록',c.customer||'고객사 미등록',c.source+(c.no?' '+c.no:'')].join(' / '),String(i))));
-  select.disabled=!choices.length;
-  const current=choices.findIndex(c=>norm(c.lot)===norm(lot.value)&&norm(c.product)===norm(product.value)&&norm(c.customer)===norm(customer.value));
-  if(current>=0)select.value=String(current);
-  if(allowAuto&&choices.length===1&&!lot.value&&!product.value&&(!customer.value||norm(customer.value)===norm(choices[0].customer))){select.value='0';apply(choices[0]);}
-  else message.textContent=!date.value?'검사일자를 선택해 주세요.':choices.length>1?'같은 날짜에 여러 건이 있습니다. 검사 대상을 선택해 주세요.':choices.length===1?'검사 대상을 선택하면 생산정보를 불러옵니다.':'해당 일자의 작업지시·공정검사가 없습니다. 직접 입력할 수 있습니다.';
+  suggestions.replaceChildren(...[...new Set(choices.map(c=>c.lot))].map(value=>new Option(value,value)));
+  if(allowAuto&&choices.length===1&&!lot.value&&!product.value&&(!customer.value||norm(customer.value)===norm(choices[0].customer)))apply(choices[0]);
+  else message.textContent=choices.length>1?'해당 날짜의 LOT를 선택하거나 입력해 주세요.':'';
  }
  async function load(){
-  if(loading)return;loading=true;retry.hidden=true;select.disabled=true;
-  select.replaceChildren(new Option('생산정보 조회 중',''));message.textContent='';
+  if(loading)return;loading=true;retry.hidden=true;message.textContent='';
   try{
    const result=await Promise.allSettled([get('/api/qmes/work-orders'),get('/api/qmes-sync/pqc'),get('/api/qmes-sync/oqc')]);
    if(result[0].status!=='fulfilled'||result[1].status!=='fulfilled')throw Error('작업지시·공정검사 정보를 불러오지 못했습니다.');
    orders=result[0].value;checks=unpack(result[1].value);history=result[2].status==='fulfilled'?unpack(result[2].value):[];
    loaded=true;customers();render(true);
-  }catch(e){loaded=false;select.replaceChildren(new Option('생산정보 조회 실패',''));message.textContent=e.message;retry.hidden=false;}
+  }catch(e){loaded=false;message.textContent=e.message;retry.hidden=false;}
   finally{loading=false;}
  }
- select.addEventListener('change',()=>{if(select.value!=='')apply(choices[Number(select.value)]);});
+ lot.addEventListener('change',()=>{
+  const matches=choices.filter(c=>norm(c.lot)===norm(lot.value)&&(!customer.value||norm(c.customer)===norm(customer.value)));
+  if(matches.length===1)apply(matches[0]);
+ });
+ customer.addEventListener('change',()=>{if(loaded)render(true);});
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true);else if(!loading)void load();
@@ -281,6 +278,6 @@ function setup(root){
 let pending=false;
 function scan(){document.querySelectorAll(scope).forEach(setup);}
 new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;scan();});}}).observe(document.body,{childList:true,subtree:true});
-const style=document.createElement('style');style.textContent='.oqc-production-link .v{display:flex;flex-direction:column;gap:5px;padding:5px 8px!important}.oqc-production-link select{width:100%}.oqc-production-link small{color:#637b93;font-size:11px;line-height:1.5}.oqc-production-link .btn{align-self:flex-start}.oqc-pqc-layout select option{background:#fff;color:#35435b}';document.head.append(style);
+const style=document.createElement('style');style.textContent='.oqc-lot-link-status{display:block;color:#637b93;font-size:11px;line-height:1.5}.oqc-lot-link-status:empty{display:none}.oqc-pqc-layout select option{background:#fff;color:#35435b}';document.head.append(style);
 scan();
 })();
