@@ -31,23 +31,41 @@
       '<span class="qpm-trace-icon">'+(ICONS[key]||'•')+'</span><span><b>'+title+'</b></span></button>';
   }
 
+  let previousGeometry='';
   function drawLinks(){
     const canvas=root.querySelector('.qpm-canvas');
     if(!canvas||canvas.getBoundingClientRect().width===0)return;
-    canvas.querySelector('.qpm-link-layer')?.remove();
-
-    const NS='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(NS,'svg');
-    svg.classList.add('qpm-link-layer');
-    svg.setAttribute('width',canvas.scrollWidth);
-    svg.setAttribute('height',canvas.scrollHeight);
-    svg.setAttribute('viewBox','0 0 '+canvas.scrollWidth+' '+canvas.scrollHeight);
-
     const bounds=canvas.getBoundingClientRect();
+    const rects=new Map();
+    canvas.querySelectorAll('[data-key]').forEach(el=>rects.set(el.dataset.key,el.getBoundingClientRect()));
+    const groups=new Map();
+    canvas.querySelectorAll('.qpm-group').forEach(el=>groups.set(el,el.getBoundingClientRect()));
+    const grid=canvas.querySelector('.qpm-grid'),gridRect=grid.getBoundingClientRect();
+    const panelRect=canvas.querySelector('.qpm-trace-panel').getBoundingClientRect();
+    const gap=parseFloat(getComputedStyle(grid).columnGap)||6;
+    const width=canvas.clientWidth,height=canvas.clientHeight;
+    const signature=[width,height,...[...rects.values()].flatMap(r=>[r.left-bounds.left,r.top-bounds.top,r.width,r.height])].join(',');
+    if(signature===previousGeometry&&canvas.querySelector('.qpm-link-layer'))return;
+    previousGeometry=signature;
+    const NS='http://www.w3.org/2000/svg';
+    let svg=canvas.querySelector('.qpm-link-layer');
+    if(!svg){svg=document.createElementNS(NS,'svg');svg.classList.add('qpm-link-layer');canvas.prepend(svg);}
+    svg.setAttribute('width',width);svg.setAttribute('height',height);
+    svg.setAttribute('viewBox','0 0 '+width+' '+height);
+    const elements=[...svg.children];let used=0;
+    const reuse=tag=>{
+      let el=elements[used++];
+      if(!el||el.tagName.toLowerCase()!==tag){
+        const next=document.createElementNS(NS,tag);
+        if(el)svg.replaceChild(next,el);else svg.appendChild(next);
+        el=next;
+      }
+      return el;
+    };
     const pos=(key,side)=>{
       const el=canvas.querySelector('[data-key="'+key+'"]');
       if(!el)return null;
-      const r=el.getBoundingClientRect();
+      const r=rects.get(key);
       const x=r.left-bounds.left+canvas.scrollLeft, y=r.top-bounds.top+canvas.scrollTop, w=r.width, h=r.height;
       if(side==='left')return {x,y:y+h/2};
       if(side==='right')return {x:x+w,y:y+h/2};
@@ -55,21 +73,21 @@
       return {x:x+w/2,y:y+h};
     };
     const path=(d,cls)=>{
-      const p=document.createElementNS(NS,'path');
-      p.setAttribute('d',d); p.setAttribute('class','qpm-link '+cls); svg.appendChild(p);
+      const p=reuse('path');
+      p.setAttribute('d',d); p.setAttribute('class','qpm-link '+cls);
     };
     const arrow=(p,dir,cls)=>{
-      const e=document.createElementNS(NS,'path'),s=4.5;
+      const e=reuse('path'),s=4.5;
       let d='';
       if(dir==='right') d='M '+(p.x-s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x-s)+' '+(p.y+s);
       if(dir==='left') d='M '+(p.x+s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y+s);
       if(dir==='down') d='M '+(p.x-s)+' '+(p.y-s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y-s);
       if(dir==='up') d='M '+(p.x-s)+' '+(p.y+s)+' L '+p.x+' '+p.y+' L '+(p.x+s)+' '+(p.y+s);
-      e.setAttribute('d',d); e.setAttribute('class','qpm-arrowhead '+cls); svg.appendChild(e);
+      e.setAttribute('d',d); e.setAttribute('class','qpm-arrowhead '+cls);
     };
     const text=(x,y,val,cls)=>{
-      const t=document.createElementNS(NS,'text');
-      t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','qpm-link-label '+cls);t.textContent=val;svg.appendChild(t);
+      const t=reuse('text');
+      t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','qpm-link-label '+cls);if(t.textContent!==val)t.textContent=val;
     };
     const h=(aKey,bKey,cls='main',label='')=>{
       const a=pos(aKey,'right'),b=pos(bKey,'left'); if(!a||!b)return;
@@ -91,11 +109,10 @@
       const lane=source?.closest('.qpm-group');
       const grid=canvas.querySelector('.qpm-grid');
       if(!lane||!grid)return;
-      const r=lane.getBoundingClientRect(),g=grid.getBoundingClientRect();
-      const gap=parseFloat(getComputedStyle(grid).columnGap)||6;
+      const r=groups.get(lane),g=gridRect;
       const gutter=r.right-bounds.left+canvas.scrollLeft+gap/2;
       const bottom=g.bottom-bounds.top+canvas.scrollTop;
-      const traceTop=canvas.querySelector('.qpm-trace-panel').getBoundingClientRect().top-bounds.top+canvas.scrollTop;
+      const traceTop=panelRect.top-bounds.top+canvas.scrollTop;
       const corridor=bottom+Math.max(3,(traceTop-bottom)/2);
       path('M '+a.x+' '+a.y+' H '+gutter+' V '+corridor+' H '+b.x+' V '+b.y,'qpm-trace');
       arrow(b,'down','qpm-trace');
@@ -140,7 +157,7 @@
     trace('pqcNcr','traceNcr');
     trace('oqcNcr','traceNcr');
 
-    canvas.prepend(svg);
+    while(svg.children.length>used)svg.lastElementChild.remove();
   }
 
   function render(){
@@ -242,7 +259,7 @@
   render();
   const canvas=root.querySelector('.qpm-canvas');
   if(window.ResizeObserver){
-    const observer=new ResizeObserver(scheduleLinks);
+    const observer=new ResizeObserver(drawLinks);
     [canvas,root.querySelector('.qpm-grid'),...root.querySelectorAll('.qpm-group,.qpm-trace-panel')].filter(Boolean).forEach(el=>observer.observe(el));
   }
   new MutationObserver(scheduleLinks).observe(root,{attributes:true,attributeFilter:['class','style']});
