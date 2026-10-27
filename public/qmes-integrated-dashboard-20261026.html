@@ -417,7 +417,7 @@ async function loadDashboard(){
         }
       }
     }
-    return 5;
+    return 6.5;
   }
   var eqDays=Array.from({length:12},function(){return {}});
   var eqDayActual=Array.from({length:12},function(){return {}});
@@ -473,7 +473,7 @@ async function loadDashboard(){
     var html=
       '<div class="eqSummary">'+
         eqStat('계획 가동시간',eqFmtHour(d.plan),'작업지시 기준','#308ef0',d.plan?100:0)+
-        eqStat('실제 생산 가동시간',eqFmtHour(d.run),'실제시간 우선 · 미등록 5시간','#20a46b',Math.round(rate*10)/10)+
+        eqStat('실제 생산 가동시간',eqFmtHour(d.run),'실제시간 우선 · 미등록 6.5시간','#20a46b',Math.round(rate*10)/10)+
         eqStat('계획정지시간',eqFmtHour(d.planStop),'세척 · 준비 · 교체','#6a67c7',Math.round(planPct*10)/10)+
         eqStat('설비 가동률',(Math.round(rate*10)/10)+'%','실제 가동시간 ÷ 계획 가동시간','#18b977',Math.round(rate*10)/10)+
       '</div>'+
