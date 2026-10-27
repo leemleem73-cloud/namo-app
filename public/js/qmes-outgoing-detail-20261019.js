@@ -101,3 +101,11 @@ closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast('ì¶œí•
  pane+' table.oqc-detail-items{width:100%!important;margin:0!important;box-sizing:border-box!important}';
  document.head.append(style);
 })();
+
+(function(){
+ const style=document.createElement('style');style.id='oqc-measure-heading-single-line-20261027';
+ const scope='html body #mainWorkspace .am-split[data-am-screen="outgoing"] ';
+ style.textContent=scope+'.oqc-detail-measure-section>.am-section-head{border-bottom:0!important}'+
+ scope+'.oqc-pqc-measure-section>.am-section-head{border-bottom:0!important}';
+ document.head.append(style);
+})();
