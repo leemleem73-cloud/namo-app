@@ -188,7 +188,9 @@ function draw(){
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
 }
 async function request(path,options){
- var response=await fetch(path,Object.assign({credentials:'same-origin'},options||{}));
+ var opts=Object.assign({credentials:'same-origin'},options||{});
+ if(!opts.method||String(opts.method).toUpperCase()==='GET')opts.cache='no-store';
+ var response=await fetch(path,opts);
  var data=await response.json();
  if(!response.ok||!data.success)throw Error(data.message||'서버 요청에 실패했습니다.');
  return data.data;
@@ -197,7 +199,7 @@ function load(){
  // Prefetch and menu navigation share one request; keep existing rows visible on refresh.
  if(loadPromise)return loadPromise;
  loadError='';
- loadPromise=request('/api/qmes-ncr/reports').then(function(data){
+ loadPromise=request('/api/qmes-ncr/reports?_qmesFresh='+Date.now()).then(function(data){
   rows=data;hasLoaded=true;
   if(view==='list'){draw();notice('');}
  }).catch(function(e){
