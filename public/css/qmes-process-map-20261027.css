@@ -32,3 +32,9 @@
 #processMap .qpm-no-tag{color:#c0392b}
 #processMap .qpm-group{position:relative}
 #processMap .qpm-group:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:49%;transform:translateY(-50%);color:#7f8d9b;font-size:22px;font-weight:700;z-index:2}
+
+#processMap .qpm-dense-grid{min-width:1840px;grid-template-columns:repeat(10,minmax(155px,1fr));gap:14px}
+#processMap .qpm-dense-grid .qpm-group{min-height:310px}
+#processMap .qpm-dense-grid .qpm-group-title{font-size:10.5px}
+#processMap .qpm-dense-grid .qpm-node{min-height:52px;font-size:10.5px}
+#processMap .qpm-dense-grid .qpm-group:not(:last-child)::after{right:-20px}
