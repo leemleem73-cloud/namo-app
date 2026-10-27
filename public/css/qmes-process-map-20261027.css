@@ -1,0 +1,26 @@
+/* NAMO QMES process map - 2026-10-27 */
+#processMap{padding:18px 22px 28px!important;background:#f5f8fb!important}
+#processMap .qpm-shell{background:#fff;border:1px solid #dfe6ee;border-radius:10px;box-shadow:0 8px 22px rgba(15,23,42,.04);overflow:hidden}
+#processMap .qpm-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border-bottom:1px solid #e7edf3;background:#fbfdff}
+#processMap .qpm-head h1{margin:0;font-size:18px;color:#18314d;letter-spacing:-.4px}
+#processMap .qpm-head p{margin:4px 0 0;color:#6b7b8f;font-size:11px}
+#processMap .qpm-refresh{height:34px;padding:0 12px;border:1px solid #cfd9e4;border-radius:7px;background:#fff;color:#334155;font-weight:800;font-size:11px;cursor:pointer}
+#processMap .qpm-board{padding:18px;overflow:auto}
+#processMap .qpm-grid{min-width:1280px;display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:12px;align-items:start}
+#processMap .qpm-group{border:1px solid #e3e8ef;background:#fff;border-radius:8px;overflow:hidden;min-height:252px}
+#processMap .qpm-group-title{height:34px;display:flex;align-items:center;justify-content:center;background:#fff4ef;border-bottom:1px solid #f1e2da;color:#7a655d;font-size:11px;font-weight:900}
+#processMap .qpm-body{padding:14px;display:flex;flex-direction:column;align-items:center;gap:11px}
+#processMap .qpm-node{position:relative;width:100%;min-height:54px;border:1px solid #b9dcef;background:#eaf7ff;border-radius:7px;padding:10px 11px;display:flex;align-items:center;justify-content:center;text-align:center;color:#0d6b9b;font-size:11px;font-weight:900;line-height:1.4;cursor:pointer;box-shadow:0 2px 5px rgba(14,116,144,.05)}
+#processMap .qpm-node:hover{background:#dff3ff;border-color:#8fc9e6}
+#processMap .qpm-node small{display:block;font-size:9px;color:#6a8192;font-weight:700;margin-top:3px}
+#processMap .qpm-node.red{background:#fff0f0;border-color:#f2b8b8;color:#b3261e}
+#processMap .qpm-node.gray{background:#f4f6f8;border-color:#d8dee5;color:#64748b}
+#processMap .qpm-diamond{width:86px;height:54px;transform:rotate(45deg);background:#f7f8fa;border:1px solid #cfd6de;margin:4px 0 10px;display:grid;place-items:center}
+#processMap .qpm-diamond span{transform:rotate(-45deg);font-size:9.5px;font-weight:900;color:#596575;text-align:center;line-height:1.2}
+#processMap .qpm-arrow{font-size:18px;color:#9aa7b5;line-height:1;height:16px}
+#processMap .qpm-status{display:inline-flex;align-items:center;gap:5px;margin-top:2px;font-size:9px;color:#6d7e90}
+#processMap .qpm-dot{width:7px;height:7px;border-radius:50%;background:#22c55e}
+#processMap .qpm-dot.warn{background:#f59e0b}.qpm-dot.bad{background:#ef4444}
+#processMap .qpm-foot{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;border-top:1px solid #e7edf3;background:#fbfcfe}
+#processMap .qpm-foot span{font-size:10px;color:#617286}
+@media(max-width:900px){#processMap{padding:10px!important}#processMap .qpm-head{align-items:flex-start;flex-direction:column}}
