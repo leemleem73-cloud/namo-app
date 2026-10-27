@@ -28,7 +28,7 @@
   }
   function traceNode(key,title,sub,page){
     return '<button type="button" class="qpm-trace-node" data-key="'+key+'" data-page="'+page+'">'+
-      '<span class="qpm-trace-icon">'+(ICONS[key]||'•')+'</span><span><b>'+title+'</b><small>'+sub+'</small></span></button>';
+      '<span class="qpm-trace-icon">'+(ICONS[key]||'•')+'</span><span><b>'+title+'</b></span></button>';
   }
 
   function drawLinks(){
