@@ -244,7 +244,7 @@ function setup(root){
   ensureCustomer(choice.customer);
   lot.value=choice.lot;product.value=choice.product;customer.value=choice.customer;
   autoValues={lot:choice.lot,product:choice.product,customer:choice.customer};
-  message.textContent='LOT · 제품명 · 고객사를 연결했습니다.'+(!choice.customer?' 고객사를 선택해 주세요.':'');
+  message.textContent='';
  }
  function render(allowAuto){
   if(!root.isConnected)return;
