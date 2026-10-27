@@ -188,3 +188,18 @@
 #processMap .qpm-group,#processMap .qpm-body,#processMap .qpm-node,#processMap .qpm-trace-node{box-sizing:border-box!important;min-width:0!important}
 #processMap .qpm-diamond{max-width:100%!important;box-sizing:border-box!important}
 #processMap .qpm-node-icon{flex-shrink:0!important}
+
+/* Unified process card: restrained background, one outline and an integrated legend. */
+#processMap{background:#f3f7fb!important;padding:18px 20px 24px!important}
+#processMap .qpm-shell{border:1px solid #dce5ef!important;border-radius:12px!important;background:#fff!important;box-shadow:0 4px 16px rgba(32,60,92,.045)!important;overflow:hidden!important}
+#processMap .qpm-head{padding:16px 18px!important;background:#fff!important;border-bottom:1px solid #e5ecf3!important}
+#processMap .qpm-head h1{color:#24415f!important;font-size:16px!important;letter-spacing:-.3px!important}
+#processMap .qpm-board{padding:16px 14px 18px!important;background:#fff!important}
+#processMap .qpm-flow-caption{margin-bottom:16px!important;background:#f0f7fd!important;border:1px solid #deebf5!important;color:#326389!important;border-radius:6px!important;box-shadow:none!important}
+#processMap .qpm-group{border:1px solid #e0e7ef!important;background:#fff!important;border-radius:7px!important;box-shadow:0 1px 3px rgba(32,60,92,.025)!important}
+#processMap .qpm-group-title{background:#f5f8fc!important;border-bottom:1px solid #e0e7ef!important;border-radius:6px 6px 0 0!important;color:#3e5872!important}
+#processMap .qpm-trace-panel{border:1px solid #e2def1!important;background:#faf9fe!important;border-radius:8px!important;box-shadow:none!important;margin-top:22px!important}
+#processMap .qpm-trace-node{border-color:#dcd5f3!important;background:linear-gradient(180deg,#faf9ff,#f3f0fd)!important;box-shadow:none!important}
+#processMap .qpm-foot{margin:0!important;padding:12px 18px!important;min-height:42px!important;box-sizing:border-box!important;border:0!important;border-top:1px solid #e5ecf3!important;border-radius:0!important;background:#fbfcfe!important;display:flex!important;align-items:center!important;gap:10px 20px!important}
+#processMap .qpm-foot .legend{display:inline-flex!important;align-items:center!important;font-size:10px!important;line-height:1.6!important;font-weight:600!important;white-space:nowrap!important}
+@media(max-width:900px){#processMap{padding:10px!important}#processMap .qpm-head{padding:13px 14px!important}#processMap .qpm-board{padding:12px 10px 14px!important}#processMap .qpm-foot{padding:10px 14px!important;gap:8px 14px!important}}
