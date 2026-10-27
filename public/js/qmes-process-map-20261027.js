@@ -178,19 +178,24 @@
       arrow(shipEnd,'down','qpm-trace');
     }
 
-    // Follow the requested NCR sequence with a separate dashed route between each box.
+    // Reference drawing: three downward branches join one continuous dashed NCR bus.
     const busY=gridRect.bottom-bounds.top+canvas.scrollTop+42;
-    [['iqcNcr','pqcNcr'],['pqcNcr','oqcNcr'],['oqcNcr','ncrHub']].forEach(([from,to])=>{
-      const start=pos(from,'right'),end=pos(to,'left');
-      const fromLane=canvas.querySelector('[data-key="'+from+'"]')?.closest('.qpm-group');
-      const toLane=canvas.querySelector('[data-key="'+to+'"]')?.closest('.qpm-group');
-      if(!start||!end||!fromLane||!toLane)return;
-      const exitX=groups.get(fromLane).right-bounds.left+canvas.scrollLeft+gap/2;
-      const entryX=groups.get(toLane).left-bounds.left+canvas.scrollLeft-gap/2;
-      path('M '+start.x+' '+start.y+' H '+exitX+' V '+busY+' H '+entryX+' V '+end.y+' H '+end.x,'qpm-ncr');
-      arrow(end,'right','qpm-ncr');
-    });
     const targetLane=canvas.querySelector('[data-key="ncrHub"]')?.closest('.qpm-group');
+    const target=pos('ncrHub','left');
+    const branches=['iqcNcr','pqcNcr','oqcNcr'].map(key=>{
+      const start=pos(key,'right');
+      const lane=canvas.querySelector('[data-key="'+key+'"]')?.closest('.qpm-group');
+      if(!start||!lane)return null;
+      return {start,x:groups.get(lane).right-bounds.left+canvas.scrollLeft+gap/2};
+    }).filter(Boolean);
+    if(target&&targetLane&&branches.length){
+      branches.forEach(({start,x})=>{
+        path('M '+start.x+' '+start.y+' H '+x+' V '+busY,'qpm-ncr');
+      });
+      const entryX=groups.get(targetLane).left-bounds.left+canvas.scrollLeft-gap/2;
+      path('M '+Math.min(...branches.map(v=>v.x))+' '+busY+' H '+entryX+' V '+target.y+' H '+target.x,'qpm-ncr');
+      arrow(target,'right','qpm-ncr');
+    }
     const ncrSource=pos('ncrHub','right'),ncrHistory=pos('traceNcr','top');
     if(ncrSource&&ncrHistory&&targetLane){
       const x=groups.get(targetLane).right-bounds.left+canvas.scrollLeft+gap/2;
