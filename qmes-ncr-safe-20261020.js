@@ -37,35 +37,36 @@ const detailKeys=['reporter','department','process','work_order','specification'
 function cleanDetails(input){const out={};if(input&&typeof input==='object'&&!Array.isArray(input))for(const k of detailKeys)if(Object.prototype.hasOwnProperty.call(input,k))out[k]=str(input[k],1500);return out;}
 
 async function autoCreateNcr(input={}){
- await schema();
  const source=str(input.source,30),date=str(input.occurred_on,10),recordId=str(input.inspection_record_id,240);
  if(!['IQC','PQC','OQC'].includes(source)||!validDate(date)||!recordId)return null;
- const existing=await pool.query(
-  "SELECT * FROM qmes_ncr_reports WHERE source=$1 AND details->>'inspection_record_id'=$2 ORDER BY id DESC LIMIT 1",
-  [source,recordId]
- );
+
+ const safeId=recordId.replace(/[^A-Za-z0-9]/g,'').slice(-12)||String(Date.now());
+ const ncNo='NCR-'+date.replace(/-/g,'')+'-'+source+'-'+safeId;
+
+ const existing=await pool.query("SELECT * FROM nonconform WHERE nc_no=$1 ORDER BY created_at DESC LIMIT 1",[ncNo]);
  if(existing.rowCount)return existing.rows[0];
 
- const details=cleanDetails({
-  ...(input.details||{}),
-  inspection_record_id:recordId,
-  inspection_stage:source,
-  auto_created:'Y'
- });
- const q=await pool.query(`INSERT INTO qmes_ncr_reports
-  (occurred_on,source,product,lot,customer,description,containment,root_cause,corrective_action,effectiveness,owner,due_on,created_by,created_by_id,details)
-  VALUES($1,$2,$3,$4,$5,$6,$7,'','','',$8,NULL,$9,$10,$11::jsonb) RETURNING *`,[
-  date,source,str(input.product,200),str(input.lot,120),str(input.customer,200),
-  str(input.description)||source+' 검사 불합격 자동 발생',
-  str(input.containment)||'해당 LOT 보류 및 후속 공정/출하 차단',
-  str(input.owner,120),
-  str(input.created_by||'QMES 자동생성',150),
-  str(input.created_by_id||'SYSTEM',100),
-  JSON.stringify(details)
- ]);
- const row=q.rows[0],no='NCR-'+date.replace(/-/g,'')+'-'+String(row.id).padStart(3,'0');
- const saved=await pool.query('UPDATE qmes_ncr_reports SET report_no=$1 WHERE id=$2 RETURNING *',[no,row.id]);
- return saved.rows[0];
+ const details=input.details||{};
+ const q=await pool.query(`INSERT INTO nonconform
+  (date,type,lot,item,issue,cause,action,owner,status,nc_no,dept,qty,severity,priority,capa_status,containment,impact_scope,correction,preventive_action,verification_result,progress)
+  VALUES($1,$2,$3,$4,$5,'','',$6,'OPEN',$7,$8,$9,$10,$11,'OPEN',$12,$13,'','', '',0)
+  RETURNING *`,[
+   date,
+   source,
+   str(input.lot,120),
+   str(input.product,200),
+   str(input.description)||source+' 검사 불합격 자동 발생',
+   str(input.owner,120),
+   ncNo,
+   str(details.department||details.dept||'',120),
+   Number(details.affected_qty||0)||0,
+   str(details.severity||'중',40),
+   str(details.priority||'높음',40),
+   str(input.containment)||'해당 LOT 보류 및 후속 공정/출하 차단',
+   str(details.process||source,200)
+  ]);
+ console.log('[AUTO NCR NONCONFORM]',JSON.stringify({source,nc_no:ncNo,id:q.rows[0]?.id}));
+ return q.rows[0];
 }
 function install(app,options={}){
  if(options.pool)pool=options.pool;
@@ -153,46 +154,46 @@ function install(app,options={}){
 
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
   try{
-   await schema();
-
-   // Reconcile failed IQC records before returning the NCR list.
-   // This guarantees that a visible IQC failure cannot be missing from NCR.
-   const candidates=await pool.query("SELECT id,date,lot,item,supplier,incoming_qty,qty,inspector,judge,items_json FROM iqc ORDER BY id DESC LIMIT 500");
-   for(const row of candidates.rows){
-    let items=row.items_json;
-    if(typeof items==='string'){try{items=JSON.parse(items)}catch(_){items=[]}}
-    if(!Array.isArray(items))items=[];
-    const values=[row.judge];
-    for(const item of items){
-      values.push(item?.judge,item?.result,item?.status,item?.value);
-      if(Array.isArray(item?.values))values.push(...item.values);
-      if(Array.isArray(item?.measurements))values.push(...item.measurements);
+   const q=await pool.query(`SELECT * FROM nonconform ORDER BY created_at DESC LIMIT 500`);
+   const rows=q.rows.map(r=>({
+    id:r.id,
+    report_no:r.nc_no||'',
+    occurred_on:r.date,
+    source:r.type||'',
+    product:r.item||'',
+    lot:r.lot||'',
+    customer:'',
+    description:r.issue||'',
+    containment:r.containment||'',
+    root_cause:r.cause||'',
+    corrective_action:r.action||'',
+    effectiveness:r.verification_result||'',
+    owner:r.owner||'',
+    due_on:r.due_date||null,
+    status:r.capa_status||r.status||'OPEN',
+    created_by:'',
+    created_by_id:'',
+    created_at:r.created_at,
+    updated_at:r.created_at,
+    reviewed_by:'',
+    reviewed_at:null,
+    approved_by:'',
+    approved_at:null,
+    details:{
+      department:r.dept||'',
+      affected_qty:r.qty||0,
+      severity:r.severity||'',
+      process:r.type||'',
+      actual_result:'불합격',
+      auto_created:(r.nc_no||'').startsWith('NCR-')?'Y':''
     }
-    const failed=values.map(v=>String(v??'').trim().toUpperCase()).some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL');
-    if(!failed)continue;
-    await autoCreateNcr({
-      source:'IQC',
-      occurred_on:String(row.date||'').slice(0,10),
-      lot:row.lot,
-      product:row.item,
-      customer:row.supplier,
-      description:'IQC 수입검사 불합격 자동 발생',
-      containment:'해당 원료 LOT 보류 및 후속 공정 투입 차단',
-      owner:row.inspector||'',
-      created_by:row.inspector||'QMES 자동생성',
-      created_by_id:'SYSTEM',
-      inspection_record_id:'IQC:'+String(row.id),
-      details:{process:'수입검사',actual_result:'불합격',affected_qty:String(row.incoming_qty||row.qty||''),reporter:row.inspector||''}
-    });
-   }
-
-   const q=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY id DESC LIMIT 500');
-   console.log('[NCR list]',JSON.stringify({count:q.rowCount}));
+   }));
+   console.log('[NCR list/nonconform]',JSON.stringify({count:rows.length}));
    res.set('Cache-Control','no-store, no-cache, must-revalidate, max-age=0');
    res.set('Pragma','no-cache');
-   res.json({success:true,data:q.rows});
+   res.json({success:true,data:rows});
   }catch(e){
-   console.error('[NCR list]',e);
+   console.error('[NCR list/nonconform]',e);
    bad(res,500,'NCR 목록 조회 실패');
   }
  });
