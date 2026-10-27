@@ -85,23 +85,19 @@ function decorateNcrForm(edit,record){
  sign.innerHTML='<div class="ncr-section-title">전자결재 · 작성 / 검토 / 승인</div><div class="ncr-section-grid"><label>작성자<input readonly value="'+esc((record&&record.created_by)||'로그인 사용자 자동 지정')+'"></label><label>검토자<input readonly value="'+esc((record&&record.reviewed_by)||'검토 대기')+'"></label><label>승인자<input readonly value="'+esc((record&&record.approved_by)||'승인 대기')+'"></label></div><div style="padding:0 14px 14px;display:flex;gap:8px;align-items:center"><button type="button" class="ncr-btn" id="ncr-review" '+(!edit||record&&record.approved_at?'disabled':'')+'>검토 완료</button><button type="button" class="ncr-btn primary" id="ncr-approve" '+(!edit||!record||!record.reviewed_at||record.approved_at?'disabled':'')+'>최종 승인</button><span style="font-size:12px;color:#64748b">부장 이상 또는 관리자만 검토·승인 가능. 신규 문서 저장 후 진행합니다.</span></div>';
  form.insertBefore(sign,form.querySelector('.ncr-message'));
  ['review','approve'].forEach(function(action){var btn=sign.querySelector('#ncr-'+action);btn.onclick=async function(){if(!record||!record.id)return;btn.disabled=true;try{var updated=await request('/api/qmes-ncr/reports/'+record.id+'/sign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});selected=updated;var idx=rows.findIndex(function(x){return String(x.id)===String(updated.id);});if(idx>=0)rows[idx]=updated;view='edit';render();}catch(e){notice(e.message);btn.disabled=false;}};});
- // Premium compact three-stage editor; keeps all original form fields and handlers.
- var stages=document.createElement('nav');stages.className='ncr-premium-stages';stages.setAttribute('aria-label','작성 단계');
- var tabs=['01  부적합 등록','02  개선조치','03  검토·승인'].map(function(label,i){var btn=document.createElement('button');btn.type='button';btn.className='ncr-premium-tab';btn.textContent=label;stages.appendChild(btn);return btn;});
+ // NCR simplified mode: registration only.
+ // Keep the existing data fields/handlers intact, but show only the initial nonconformance registration section.
+ var stages=document.createElement('nav');stages.className='ncr-premium-stages ncr-registration-only';stages.setAttribute('aria-label','작성 단계');
+ var title=document.createElement('div');title.className='ncr-premium-tab active';title.textContent='부적합 등록';stages.appendChild(title);
  var first=form.querySelector('.ncr-core-1');if(first)form.insertBefore(stages,first);
- function setStage(n){
-  tabs.forEach(function(b,i){b.classList.toggle('active',i===n);b.setAttribute('aria-current',i===n?'step':'false');});
-  [form.querySelector('.ncr-core-1'),form.querySelector('.ncr-core-2'),primaryDetails].forEach(function(e){if(e)e.hidden=n!==0;});
-  [form.querySelector('.ncr-core-3'),form.querySelector('.ncr-core-4'),improvement,completionBox].forEach(function(e){if(e)e.hidden=n!==1;});
-  [sign].forEach(function(e){if(e)e.hidden=n!==2;});
-  optional.hidden=n===2;
-  attachmentSection.hidden=n===2;
- }
- tabs.forEach(function(b,i){b.onclick=function(){setStage(i);};});
- setStage(0);
+
+ [form.querySelector('.ncr-core-1'),form.querySelector('.ncr-core-2'),primaryDetails].forEach(function(e){if(e)e.hidden=false;});
+ [form.querySelector('.ncr-core-3'),form.querySelector('.ncr-core-4'),improvement,completionBox,sign].forEach(function(e){if(e)e.hidden=true;});
+ if(optional)optional.hidden=false;
+ if(attachmentSection)attachmentSection.hidden=false;
  if(!document.getElementById('ncr-premium-20261021')){
   var premium=document.createElement('style');premium.id='ncr-premium-20261021';
-  premium.textContent='#ncr .ncr-premium-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:2px 0 18px}#ncr .ncr-premium-tab{background:#f7f9fc;color:#62758c;border:1px solid #d9e4ed;border-radius:9px;padding:13px 8px;font-size:13px;font-weight:750}#ncr .ncr-premium-tab.active{background:#e9f3fd;color:#145783;border-color:#93b9dd}#ncr .ncr-editor-main .ncr-form{border-radius:12px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px 12px;max-width:100%;justify-content:start}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label{max-width:100%}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label input,#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label select{width:100%}@media(max-width:1250px){#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:repeat(3,minmax(0,190px))}}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label{font-size:12px}#ncr .ncr-editor-main .ncr-section-title{background:#eaf2f9;color:#174567;font-weight:750}#ncr .ncr-section[hidden],#ncr .ncr-optional[hidden],#ncr .ncr-completion-control[hidden]{display:none!important}@media(max-width:650px){#ncr .ncr-premium-stages{gap:5px}#ncr .ncr-premium-tab{padding:11px 4px;font-size:11px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:1fr}}';
+  premium.textContent='#ncr .ncr-premium-stages{display:grid;grid-template-columns:1fr;gap:10px;margin:2px 0 18px}#ncr .ncr-premium-stages.ncr-registration-only{max-width:420px}#ncr .ncr-premium-tab{background:#f7f9fc;color:#62758c;border:1px solid #d9e4ed;border-radius:9px;padding:13px 8px;font-size:13px;font-weight:750}#ncr .ncr-premium-tab.active{background:#e9f3fd;color:#145783;border-color:#93b9dd}#ncr .ncr-editor-main .ncr-form{border-radius:12px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:10px 12px;max-width:100%;justify-content:start}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label{max-width:100%}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label input,#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label select{width:100%}@media(max-width:1250px){#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:repeat(3,minmax(0,190px))}}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid>label{font-size:12px}#ncr .ncr-editor-main .ncr-section-title{background:#eaf2f9;color:#174567;font-weight:750}#ncr .ncr-section[hidden],#ncr .ncr-optional[hidden],#ncr .ncr-completion-control[hidden]{display:none!important}@media(max-width:650px){#ncr .ncr-premium-stages{gap:5px}#ncr .ncr-premium-tab{padding:11px 4px;font-size:11px}#ncr .ncr-editor-main .ncr-core-1 .ncr-section-grid{grid-template-columns:1fr}}';
   document.head.appendChild(premium);
  }
 
