@@ -6729,6 +6729,7 @@ function amModuleTitle(id){
   return pageInfo[id]?.[0] || '업무관리';
 }
 function amListData(id){
+  if(id==='standard'&&window.qmesStandardDocuments)return window.qmesStandardDocuments.listData();
   if(id==='adminEmployees' && typeof ADMIN_EMPLOYEES!=='undefined') return ADMIN_EMPLOYEES.map((e,i)=>({index:i,primary:e.name||e.no||`직원 ${i+1}`,secondary:`${e.dept||'-'} · ${e.position||'-'} · ${e.account||'-'}`}));
   const section=document.getElementById(id);
   if(id==='incoming'&&Array.isArray(section?._iqcRows)){
@@ -6833,6 +6834,7 @@ function wireAmaranthScreen(){
     listSearch?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();items.forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'':'none');});
   }
   items.forEach(btn=>btn.addEventListener('click',()=>{
+    if(id==='standard'&&window.qmesStandardDocuments){window.qmesStandardDocuments.openById(btn.dataset.amRecordId);return;}
     if(id==='incoming'){
       items.forEach(item=>item.classList.toggle('active',item===btn));
       const section=document.getElementById('incoming');
@@ -8236,8 +8238,8 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-registration-layout-20261021.js?v=1"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
-<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-equal8"></script>
-<script src="./js/qmes-standard-documents-20261027.js?v=20261027-selection-actions6"></script>
+<script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
+<script src="./js/qmes-standard-documents-20261027.js?v=20261027-management-column7"></script>
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261022-12"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261021-1"></script>
