@@ -4995,9 +4995,10 @@ async function loadQualityNotifications(){
     if(notificationQuery!==(window.qmesNotificationDates?.query()||''))return;
     const rows=Array.isArray(p.data)?p.data:[];
     notifyList.querySelectorAll('.notify-item[data-source="quality"]').forEach(x=>x.remove());
-    rows.forEach(n=>{
+    rows.filter(n=>!n.read_at).forEach(n=>{
       const el=document.createElement('div');
-      el.className='notify-item';
+      el.className='notify-item qmes-unread-item';
+      el.dataset.notificationId=String(n.id);el.setAttribute('role','button');el.tabIndex=0;
       const sourceText=[n.doc_type,n.document_type,n.title,n.message,n.page].filter(Boolean).join(' ').toUpperCase();
       let qualityKind='approval';
       let targetPage=n.page||'approval';
@@ -5017,7 +5018,7 @@ async function loadQualityNotifications(){
       el.dataset.createdAt=n.created_at||'';
       el.dataset.approvalId=n.approval_id||'';
       const pending=n.approval_status==='PENDING';
-      el.innerHTML=`<div class="notify-dot">${pending?'결':'✓'}</div><div class="notify-copy"><b>${n.title||'품질문서 알림'}</b><span>${n.message||''}</span></div><div class="notify-time">${pending?'승인대기':'완료'}<br>${qualityApprovalDate(n.created_at)}</div>`;
+      el.innerHTML=`<div class="notify-dot">${pending?'결':'✓'}</div><div class="notify-copy"><b>${amEsc(n.title||'품질문서 알림')}</b><span>${amEsc(n.message||'')}</span></div><div class="notify-time">${pending?'승인대기':'완료'}<br>${qualityApprovalDate(n.created_at)}</div>`;
       notifyList.appendChild(el);
     });
     if(notifyEmpty) notifyEmpty.style.display=rows.length?'none':'block';
@@ -8534,6 +8535,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
  roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
 })();
 </script>
+<script defer src="./js/qmes-module-notifications-20261029.js?v=1"></script>
 </body>
 </html>
 
