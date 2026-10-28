@@ -96,6 +96,6 @@ window.fetch=async function(...args){
  }
  return response;
 };
-let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;setTimeout(()=>{queued=false;attach();},100);}).observe(document.body,{childList:true,subtree:true});
+let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;attach();});}).observe(document.body,{childList:true,subtree:true});
 attach();window.qmesOpenQualityGate=open;
 })();
