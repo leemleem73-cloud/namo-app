@@ -196,11 +196,11 @@ function open(record=null){
      table.style.cssText='position:relative;transform:none;width:max-content;min-width:100%;';
      const width=Math.max(table.scrollWidth,scroll.clientWidth),height=table.offsetHeight;
      if(!fitWhole){scroll.style.overflow='auto';return;}
-     const scale=Math.min(1,(scroll.clientWidth-4)/width);
-     table.style.cssText='position:relative;top:0;left:'+Math.max(0,(scroll.clientWidth-width*scale)/2)+'px;width:'+width+'px;min-width:0;transform-origin:top left;transform:scale('+scale+');';
-     scroll.style.overflow='auto';
+     const sx=(scroll.clientWidth-2)/width,sy=(scroll.clientHeight-2)/height;
+     table.style.cssText='position:absolute;top:0;left:0;width:'+width+'px;min-width:0;transform-origin:top left;transform:scale('+sx+','+sy+');';
+     scroll.style.overflow='hidden';
     }
-    fitButton.onclick=()=>{fitWhole=!fitWhole;fitButton.textContent=fitWhole?'원래 크기':'너비 맞춤';fitSheet();};
+    fitButton.onclick=()=>{fitWhole=!fitWhole;fitButton.textContent=fitWhole?'원래 크기':'화면 맞춤';fitSheet();};
     previewResize=new ResizeObserver(()=>requestAnimationFrame(fitSheet));previewResize.observe(scroll);
 
     function drawSheet(){
