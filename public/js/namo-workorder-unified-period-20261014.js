@@ -77,7 +77,7 @@
     if(!pop||!active)return;
     var r=active.trigger.getBoundingClientRect();
     var w=pop.offsetWidth,h=pop.offsetHeight;
-    var left=Math.min(Math.max(8,r.left),Math.max(8,window.innerWidth-w-8));
+    var left=Math.min(Math.max(8,r.left+(r.width-w)/2),Math.max(8,window.innerWidth-w-8));
     var below=window.innerHeight-r.bottom;
     var top=below>=h+8?r.bottom+5:(r.top>=h+8?r.top-h-5:Math.max(8,Math.min(r.bottom+5,window.innerHeight-h-8)));
     pop.style.left=Math.round(left)+'px';
@@ -268,7 +268,7 @@
   const width=exact?Math.min(r.width,innerWidth-12):Math.min(490,innerWidth-20);
   box.style.width=width+'px';
   const h=box.getBoundingClientRect().height;
-  const x=Math.max(6,Math.min(r.left,innerWidth-width-6));
+  const x=Math.max(6,Math.min(r.left+(r.width-width)/2,innerWidth-width-6));
   const y=r.bottom+h+5<=innerHeight?r.bottom+4:Math.max(6,r.top-h-4);
   const key=[x,y,width].join('|');
   if(box.dataset.nwoPosition!==key){box.style.left=x+'px';box.style.top=y+'px';box.dataset.nwoPosition=key;}
