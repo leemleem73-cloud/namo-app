@@ -8487,7 +8487,7 @@ html body .module-page button.qmes-white-list-action:focus-visible{outline:2px s
   }));
  }
  let queued=false;const observer=new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;scan();});}});
- roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
+ roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));document.getElementById('incoming')&&observer.observe(document.getElementById('incoming'),{childList:true,subtree:true});document.addEventListener('click',e=>{if(e.target.closest('.menu'))requestAnimationFrame(scan);});window.addEventListener('resize',scan);scan();
 })();
 </script>
 
@@ -8512,13 +8512,22 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
 <script id="qmes-five-menu-header-button-size-script-20261028">
 (()=>{
  const roots=['ncr','changeControl','equipment','instrumentMgmt','standard'].map(id=>document.getElementById(id)).filter(Boolean);
- const properties={'box-sizing':'border-box','height':'36px','min-height':'36px','max-height':'36px','width':'auto','min-width':'0','padding':'0 15px','margin':'0','border-radius':'5px','font-family':'Arial,"Malgun Gothic",sans-serif','font-size':'12px','font-weight':'700','line-height':'normal','border':'1px solid #cfdfef','background':'#fff','color':'#16446c','box-shadow':'none'};
+ function referenceProperties(button){
+ const reference=document.querySelector('#incoming .iqc-header-tools '+(/엑셀|CSV|내보내기/.test(button.textContent)?'.export-btn':'.new-btn'));
+ if(!reference)return null;
+ const style=getComputedStyle(reference),properties={'box-sizing':'border-box','width':'auto','min-width':'0','margin':'0'};
+ const height=reference.getBoundingClientRect().height||parseFloat(style.height);
+ if(height){properties.height=height+'px';properties['min-height']=height+'px';properties['max-height']=height+'px';}
+ ['padding-top','padding-right','padding-bottom','padding-left','border-radius','font-family','font-size','font-weight','line-height','border-top','border-right','border-bottom','border-left','background-color','color','box-shadow'].forEach(name=>properties[name]=style.getPropertyValue(name));
+ return properties;
+}
  function scan(){roots.forEach(root=>root.querySelectorAll('button').forEach(button=>{
   if(button.closest('tbody,dialog,.am-split,.ncr-editor-shell,.ncr-editor-top,form'))return;
   const text=button.textContent.trim();
   const header=button.closest('.table-tools,.ncr-head-actions,.iqc-header-tools,.page-head,.ip-head,.ip-header,.module-head,.module-header');
   if(!(/엑셀|CSV|내보내기|신규|품질 보류/.test(text)||header&&/등록/.test(text)))return;
   button.classList.add('qmes-iqc-size-action');
+  const properties=referenceProperties(button);if(!properties)return;
   Object.entries(properties).forEach(([name,value])=>{if(button.style.getPropertyValue(name)!==value||button.style.getPropertyPriority(name)!=='important')button.style.setProperty(name,value,'important');});
  }));}
  let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;scan();});});
