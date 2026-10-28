@@ -6,3 +6,9 @@ const select=label.querySelector('select'),ids={raw:'lotRawMode',intermediate:'l
 const actions=document.createElement('div');actions.className='lot-work-actions';const buttons=document.createElement('div');buttons.className='lot-work-buttons';const clear=root.querySelector('#lotResetBtn'),query=root.querySelector('#lotSearchBtn');clear.textContent='조건 지우기';query.textContent='조회';buttons.append(clear,query);actions.append(summary,buttons);search.append(actions);
 root.querySelector('.lot-hero-copy h1').textContent='LOT 추적 조회';root.querySelector('#lotResultTitle').before(document.createTextNode('▸ '));
 })();
+
+(()=>{const root=document.querySelector('#lotTrace'),query=root?.querySelector('#lotSearchBtn');if(!query)return;
+query.classList.remove('primary');query.setAttribute('aria-label','조회');query.title='조회';
+query.innerHTML='<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75"/><path d="m13 13 4 4"/></svg>';
+const style=document.createElement('style');style.textContent='#lotTrace #lotResetBtn,#lotTrace #lotSearchBtn{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:30px!important;min-height:30px!important;padding:0 10px!important;border:1px solid #c7d6e5!important;border-radius:4px!important;background:#fff!important;color:#40566d!important;box-shadow:none!important;font:600 11.5px Arial,"Malgun Gothic",sans-serif!important}#lotTrace #lotSearchBtn{width:30px!important;min-width:30px!important;padding:0!important}#lotTrace .lot-work-buttons{display:flex;gap:8px;align-items:center}#lotTrace #lotResetBtn:hover,#lotTrace #lotSearchBtn:hover{background:#edf5fc!important}';document.head.append(style);
+})();
