@@ -193,11 +193,27 @@ function open(record=null){
     fitButton.textContent='원래 크기';
     function fitSheet(){
      const table=scroll.querySelector('table');if(!table)return;
+     const cells=[...table.querySelectorAll('td')];
      table.style.cssText='position:relative;transform:none;width:max-content;min-width:100%;';
-     const width=Math.max(table.scrollWidth,scroll.clientWidth),height=table.offsetHeight;
+     cells.forEach(cell=>{cell.style.removeProperty('font-size');cell.style.removeProperty('line-height');cell.style.removeProperty('padding');cell.style.removeProperty('min-width');cell.style.removeProperty('max-width');});
      if(!fitWhole){scroll.style.overflow='auto';return;}
-     const sx=(scroll.clientWidth-2)/width,sy=(scroll.clientHeight-2)/height;
-     table.style.cssText='position:absolute;top:0;left:0;width:'+width+'px;min-width:0;transform-origin:top left;transform:scale('+sx+','+sy+');';
+     table.querySelectorAll('tr').forEach(row=>row.style.height='');
+     table.style.cssText='position:relative;transform:none;width:100%;min-width:0;table-layout:fixed;height:auto;';
+     let size=12;
+     function applySize(){
+      table.style.fontSize=size+'px';
+      cells.forEach(cell=>{cell.style.fontSize=size+'px';cell.style.lineHeight='1.25';cell.style.padding=(size>=10?'4px 5px':'2px 3px');cell.style.minWidth='0';cell.style.maxWidth='none';});
+     }
+     applySize();
+     while(size>8&&table.offsetHeight>scroll.clientHeight-2){size-=0.5;applySize();}
+     if(table.offsetHeight<=scroll.clientHeight-2){
+      table.style.height=(scroll.clientHeight-2)+'px';
+     }else{
+      // Preserve glyph proportions for unusually long sheets.
+      const scale=Math.min(1,(scroll.clientHeight-2)/table.offsetHeight);
+      table.style.transformOrigin='top left';table.style.transform='scale('+scale+')';
+      table.style.width=(100/scale)+'%';
+     }
      scroll.style.overflow='hidden';
     }
     fitButton.onclick=()=>{fitWhole=!fitWhole;fitButton.textContent=fitWhole?'원래 크기':'화면 맞춤';fitSheet();};
