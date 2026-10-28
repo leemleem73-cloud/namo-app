@@ -149,18 +149,12 @@ function open(record=null){
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
  const attachmentRoot=root.querySelector('.std-attachment-list'),fileInput=root.querySelector('#stdDocumentFile');
  const metadataGrid=root.querySelector('.form-grid');
- metadataGrid.style.setProperty('border','1px solid #d3deea','important');
- // Draw the outer frame independently of grid border overrides from shared styles.
- metadataGrid.style.setProperty('position','relative','important');
- const outerFrame=document.createElement('span');
- outerFrame.setAttribute('aria-hidden','true');outerFrame.className='std-metadata-outer-frame';
- outerFrame.style.cssText='position:absolute!important;inset:0!important;display:block!important;border:1px solid #cbd8e6!important;box-sizing:border-box!important;pointer-events:none!important;z-index:2!important;border-radius:0!important;';
- metadataGrid.append(outerFrame);
-
+ metadataGrid.style.setProperty('border','0','important');
  metadataGrid.style.setProperty('border-radius','0','important');
  metadataGrid.querySelectorAll(':scope>.form-item').forEach((cell,index,all)=>{
   cell.style.setProperty('border','0','important');
-  cell.style.setProperty('border-bottom',index===all.length-1?'0':'1px solid #d3deea','important');
+  cell.style.setProperty('border','1px solid #cbd8e6','important');
+  if(index>0)cell.style.setProperty('border-top','0','important');
   const label=cell.querySelector(':scope>label');
   if(label){label.style.setProperty('border-right','1px solid #d3deea','important');label.style.setProperty('justify-content','center','important');label.style.setProperty('text-align','center','important');}
  });
