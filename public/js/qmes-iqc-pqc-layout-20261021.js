@@ -89,3 +89,33 @@
   `;
   document.head.append(style);
 })();
+
+/* Align IQC report blocks and give each shared edge exactly one stroke. */
+(function(){
+ const style=document.createElement('style');style.id='iqc-report-alignment-single-borders-20261028';
+ const pane='html body #mainWorkspace .am-split[data-am-screen="incoming"]:has(.iqc-pqc-layout)';
+ const base=pane+' .iqc-pqc-layout';
+ style.textContent=
+ pane+' .am-detail-pane>.am-section>.am-section-body{padding:8px 0 0!important;box-sizing:border-box!important;min-width:0!important}'+
+ base+'{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important}'+
+ base+'>:is(.std-info,.iqc-pqc-measure-section,.iqc-esign-parity){width:100%!important;max-width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}'+
+ base+' .std-info.am-inline-edit-grid{border:1px solid #d7e0e9!important}'+
+ base+' .std-info.am-inline-edit-grid>.am-inline-cell{border:0!important;border-right:1px solid #d7e0e9!important;border-bottom:1px solid #d7e0e9!important}'+
+ base+' .std-info.am-inline-edit-grid>.am-inline-cell:nth-child(2n),'+base+' .std-info.am-inline-edit-grid>.am-inline-cell.full{border-right:0!important}'+
+ base+' .std-info.am-inline-edit-grid>.am-inline-cell:last-child{border-bottom:0!important}'+
+ base+' .std-info.am-inline-edit-grid>.am-inline-cell>label{border-right:1px solid #d7e0e9!important}'+
+ base+' .iqc-pqc-measure-section{border:0!important;border-top:1px solid #65717e!important;margin-top:16px!important;padding:0!important;box-shadow:none!important}'+
+ base+' .iqc-pqc-measure-section>.am-section-head{border-bottom:1px solid #d7e0e9!important;box-sizing:border-box!important}'+
+ base+' .iqc-pqc-measure-section>.std-result-wrap{border:0!important;outline:0!important;box-shadow:none!important;margin:0!important;padding:8px 0 0!important;width:100%!important;box-sizing:border-box!important}'+
+ base+' table.std-result{width:100%!important;min-width:0!important;box-sizing:border-box!important;border:1px solid #d7e0e9!important;border-collapse:separate!important;border-spacing:0!important;margin:0!important}'+
+ base+' table.std-result :is(thead,tbody) tr>:is(th,td){border:0!important;border-right:1px solid #d7e0e9!important;border-bottom:1px solid #d7e0e9!important}'+
+ base+' table.std-result tr>:last-child{border-right:0!important}'+
+ base+' table.std-result tbody tr:last-child>*{border-bottom:0!important}'+
+ base+' .iqc-esign-parity{border:1px solid #d7e0e9!important;outline:0!important;box-shadow:none!important}'+
+ base+' .iqc-esign-parity>.pqc-esign-table{border:0!important}'+
+ base+' .iqc-esign-parity>.pqc-esign-table>div{border:0!important;border-right:1px solid #d7e0e9!important;box-sizing:border-box!important}'+
+ base+' .iqc-esign-parity>.pqc-esign-table>.pqc-esign-head{border-bottom:1px solid #d7e0e9!important}'+
+ base+' .iqc-esign-parity>.pqc-esign-table>div:nth-child(4),'+base+' .iqc-esign-parity>.pqc-esign-table>div:last-child{border-right:0!important}'+
+ base+' .iqc-esign-parity>.pqc-esign-note{border:0!important;border-top:1px solid #d7e0e9!important}';
+ document.head.append(style);
+})();
