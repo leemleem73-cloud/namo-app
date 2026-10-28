@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script id="qmes-purchase-native-sidebar-owner-20261028">window.__qpuSideList=true;</script>
 <script id="qmes-wallpaper-first-paint-20261027">
 (function(){
 var presets={
@@ -6916,6 +6917,8 @@ function wireAmaranthScreen(){
     if(id==='adminEmployees'){ if(typeof openEmployeeEditor==='function') openEmployeeEditor(null,null); return; }
     openNewForm(id);
   });
+  if(root.dataset.amActionsWired==='1')return;
+  root.dataset.amActionsWired='1';
   root.querySelector('[data-am-back]')?.addEventListener('click',closeModal);
   root.querySelector('[data-am-save]')?.addEventListener('click',()=>document.getElementById('modalSave')?.click());
 }
@@ -8120,7 +8123,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 </script>
 
 <script defer src="./js/qmes-purchase-db-list-20261015.js?v=20261016-frame-filter-1"></script>
-<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261028-initial-page3"></script>
+<script defer src="./js/qmes-purchase-enterprise-new-20261016.js?v=20261028-single-sidebar4"></script>
 <script defer src="./js/qmes-purchase-work-frame-20261016.js?v=20261021-clear-menu-selection"></script>
 <script defer src="./js/qmes-orders-work-frame-20261016.js?v=20261019-calendar-fit"></script>
 <script defer src="./js/qmes-lot-trace-linked-20261021.js?v=1"></script>
