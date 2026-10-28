@@ -17,10 +17,11 @@ module.exports={classify,install(app,{pool,requireLogin}){
  const schema=()=>ready||(ready=pool.query('CREATE TABLE IF NOT EXISTS qmes_module_update_events(id BIGSERIAL PRIMARY KEY,page TEXT NOT NULL,title TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());CREATE TABLE IF NOT EXISTS qmes_module_update_reads(user_id UUID NOT NULL,event_id BIGINT NOT NULL REFERENCES qmes_module_update_events(id) ON DELETE CASCADE,read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),PRIMARY KEY(user_id,event_id));CREATE INDEX IF NOT EXISTS qmes_module_update_events_created_idx ON qmes_module_update_events(created_at DESC)').catch(error=>{ready=null;throw error;}));
  app.use((req,res,next)=>{
   if(!['POST','PUT','PATCH'].includes(req.method))return next();
-  const page=classify(req.path,req.body);if(!page)return next();
+
   const original=res.json;let captured=false;
   res.json=function(body){
-   if(!captured&&req.session?.user?.id&&res.statusCode>=200&&res.statusCode<300&&body?.success===true){
+   const page=classify(req.path,req.body);
+   if(page&&!captured&&req.session?.user?.id&&res.statusCode>=200&&res.statusCode<300&&body?.success===true){
     captured=true;
     // Successful writes only; no document contents, identifiers or private fields in the shared feed.
     schema().then(()=>pool.query('INSERT INTO qmes_module_update_events(page,title) VALUES($1,$2)',[page,labels[page]+' 저장·수정 완료'])).catch(error=>console.warn('[QMES update notification]',error.message));
