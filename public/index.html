@@ -8499,6 +8499,32 @@ background:#fff!important;background-image:none!important;color:#16446c!importan
 }
 html body #ncr .ncr-equipment-card .ncr-head-actions>button:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
 </style>
+
+<style id="qmes-five-menu-header-button-size-20261028">
+html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iqc-size-action{
+ box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ height:36px!important;min-height:36px!important;max-height:36px!important;width:auto!important;min-width:0!important;
+ padding:0 15px!important;margin:0!important;border:1px solid #cfdfef!important;border-radius:5px!important;
+ font:700 12px/normal Arial,"Malgun Gothic",sans-serif!important;white-space:nowrap!important;
+ background:#fff!important;color:#16446c!important;box-shadow:none!important;
+}
+</style>
+<script id="qmes-five-menu-header-button-size-script-20261028">
+(()=>{
+ const roots=['ncr','changeControl','equipment','instrumentMgmt','standard'].map(id=>document.getElementById(id)).filter(Boolean);
+ const properties={'box-sizing':'border-box','height':'36px','min-height':'36px','max-height':'36px','width':'auto','min-width':'0','padding':'0 15px','margin':'0','border-radius':'5px','font-family':'Arial,"Malgun Gothic",sans-serif','font-size':'12px','font-weight':'700','line-height':'normal','border':'1px solid #cfdfef','background':'#fff','color':'#16446c','box-shadow':'none'};
+ function scan(){roots.forEach(root=>root.querySelectorAll('button').forEach(button=>{
+  if(button.closest('tbody,dialog,.am-split,.ncr-editor-shell,.ncr-editor-top,form'))return;
+  const text=button.textContent.trim();
+  const header=button.closest('.table-tools,.ncr-head-actions,.iqc-header-tools,.page-head,.ip-head,.ip-header,.module-head,.module-header');
+  if(!(/엑셀|CSV|내보내기|신규|품질 보류/.test(text)||header&&/등록/.test(text)))return;
+  button.classList.add('qmes-iqc-size-action');
+  Object.entries(properties).forEach(([name,value])=>{if(button.style.getPropertyValue(name)!==value||button.style.getPropertyPriority(name)!=='important')button.style.setProperty(name,value,'important');});
+ }));}
+ let queued=false;const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;scan();});});
+ roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
+})();
+</script>
 </body>
 </html>
 
