@@ -172,7 +172,12 @@ function open(record=null){
  function releasePreview(){previewResize?.disconnect();previewResize=null;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl='';}}
  async function showPreview(){
   const serial=++previewSerial;releasePreview();previewBody.replaceChildren();
-  const file=attachments[Number(previewSelect.value)||0];
+  let file=attachments[Number(previewSelect.value)||0];
+  if(file&&/\.(pptx?|docx?|xlsx?|xlsm|hwp|hwpx)$/i.test(file.name)){
+   const stem=name=>String(name||'').normalize('NFC').replace(/\.[^.]+$/,'').trim();
+   const pdf=attachments.find(candidate=>/\.pdf$/i.test(candidate.name)&&stem(candidate.name)===stem(file.name));
+   if(pdf)file=pdf;
+  }
   if(!file){previewBody.textContent='첨부파일을 선택하면 여기에 문서가 표시됩니다.';return;}
   const mime=/\.pdf$/i.test(file.name)?'application/pdf':/\.(png|jpe?g|gif|webp|bmp)$/i.test(file.name)?({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','gif':'image/gif','webp':'image/webp','bmp':'image/bmp'}[file.name.split('.').pop().toLowerCase()]):file.type;
   const supported=mime==='application/pdf'||/^image\/(png|jpeg|gif|webp|bmp)$/.test(mime||'');
@@ -249,7 +254,7 @@ function open(record=null){
    }else if(/\.(txt|md|log|json|xml)$/i.test(file.name)){
     const text=document.createElement('pre');text.className='std-text-document';text.textContent=await blob.text();if(serial!==previewSerial||!root.isConnected)return;previewBody.append(text);
    }else if(supported){
-    const viewer=document.createElement(mime==='application/pdf'?'iframe':'img');viewer.src=previewUrl;
+    const viewer=document.createElement(mime==='application/pdf'?'iframe':'img');viewer.src=previewUrl+(mime==='application/pdf'?'#view=FitH&toolbar=0&navpanes=0':'');
     if(viewer.tagName==='IMG')viewer.alt=file.name;else viewer.title=file.name+' PDF 미리보기';
     previewBody.append(viewer);
    }else{
