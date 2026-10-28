@@ -1,6 +1,6 @@
 (()=>{'use strict';
 let popup=null,anchor=null,month=null,pointerHandled=null;
-const scope='#mainWorkspace .am-split:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) input[type="date"],#mainWorkspace .std-inspection input[type="date"],#mainWorkspace #iqcEditReceiptDate,#mainWorkspace #iqcEditInspectionDate';
+const scope='#mainWorkspace input[data-pqc-field="검사일자"],#mainWorkspace input[data-qis-date],#mainWorkspace .am-split:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) input[type="date"],#mainWorkspace .std-inspection input[type="date"],#mainWorkspace #iqcEditReceiptDate,#mainWorkspace #iqcEditInspectionDate';
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
 function close(){popup?.remove();popup=null;anchor?.setAttribute('aria-expanded','false');anchor=null;}
 function place(){if(!popup||!anchor?.isConnected){close();return;}const r=anchor.getBoundingClientRect(),w=Math.min(r.width,360,innerWidth-12);popup.style.width=w+'px';const h=popup.getBoundingClientRect().height;popup.style.left=Math.max(6,Math.min(r.left+(r.width-w)/2,innerWidth-w-6))+'px';popup.style.top=Math.max(6,r.bottom+h+4<=innerHeight?r.bottom+4:r.top-h-4)+'px';}
@@ -12,7 +12,19 @@ window.addEventListener('pointerdown',e=>{const input=e.target.closest(scope);if
 window.addEventListener('click',e=>{const input=e.target.closest(scope);if(input&&!input.disabled&&!input.readOnly){e.preventDefault();e.stopImmediatePropagation();if(pointerHandled===input){pointerHandled=null;return;}open(input);}},true);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){close();return;}if(e.target.matches?.(scope)&&(e.key==='F4'||e.altKey&&e.key==='ArrowDown')){e.preventDefault();open(e.target);}},true);
 window.addEventListener('resize',place);window.addEventListener('scroll',()=>{if(popup)place();},true);
+
+function markProcessDates(){
+ document.querySelectorAll('#mainWorkspace .am-split[data-am-screen="process"] .am-inline-cell').forEach(cell=>{
+  if(cell.querySelector('label')?.textContent.trim()!=='검사일자')return;
+  const input=cell.querySelector('input');if(!input||input.dataset.qisDate)return;
+  input.dataset.qisDate='1';input.setAttribute('aria-haspopup','dialog');input.setAttribute('aria-label','검사일자 달력 열기');
+ });
+}
+const dateObserver=new MutationObserver(markProcessDates);
+const workRoot=document.getElementById('mainWorkspace');if(workRoot)dateObserver.observe(workRoot,{childList:true,subtree:true});
+markProcessDates();
+
 const style=document.createElement('style');style.textContent=
 '.qis-date-calendar{position:fixed;z-index:2147483200;box-sizing:border-box;padding:9px;background:#fff;color:#263d55;border:1px solid #b6c8dc;border-radius:5px;box-shadow:0 6px 18px #18304c26;font:12px Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}.qis-date-calendar *{box-sizing:border-box}.qis-date-calendar button{font:inherit;min-width:0;margin:0;padding:0;border:0;border-radius:3px;background:#fff;color:inherit;cursor:pointer}.qis-date-calendar button:focus-visible{outline:2px solid #499cef}.qis-cal-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:7px;margin-bottom:7px;border-bottom:1px solid #e1e6eb}.qis-cal-head button{width:25px;height:25px;font-size:18px}.qis-cal-head strong{font-size:12px;font-weight:700}.qis-cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}.qis-cal-days>*{height:28px;line-height:28px;font-size:11px}.qis-cal-days>span{color:#8290a0}.qis-cal-days button:hover{background:#eaf4ff}.qis-cal-days button[aria-current=date]{background:#2689ef;color:#fff;font-weight:700}.qis-cal-days button[aria-selected=true]{box-shadow:inset 0 0 0 1px #2689ef}.qis-cal-foot{display:flex;gap:6px;margin-top:8px;padding-top:7px;border-top:1px solid #e1e6eb}.qis-cal-foot button{height:25px;padding:0 8px;border:1px solid #cbd8e7;font-size:11px}.qis-cal-foot [data-close]{margin-left:auto}';
-document.head.append(style);
+style.textContent+='#mainWorkspace input[data-pqc-field="검사일자"],#mainWorkspace input[data-qis-date]{padding-right:32px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 20 20%27 fill=%27none%27 stroke=%27%2365798e%27 stroke-width=%271.3%27%3E%3Crect x=%273%27 y=%274%27 width=%2714%27 height=%2713%27 rx=%272%27/%3E%3Cpath d=%27M3 8h14M7 2v4m6-4v4M6 11h2m2 0h2m2 0h1M6 14h2m2 0h2%27/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 9px center!important;cursor:pointer}#mainWorkspace input[data-qis-date]::-webkit-calendar-picker-indicator{opacity:0}';document.head.append(style);
 })();
