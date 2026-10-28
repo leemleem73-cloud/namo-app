@@ -202,6 +202,16 @@
     trigger.type='button';trigger.setAttribute('aria-label','작업기간 달력 열기');
     trigger.setAttribute('aria-expanded','false');
     var value=mk('span','nwp-range-value','기간 선택'),icon=mk('span','nwp-range-icon','▦');
+    // Match the adjacent customer/product input typography, including numeric glyphs.
+    var peer=boxes.map(function(box){return box.querySelector('input:not([type="date"]):not([type="hidden"])');}).find(Boolean);
+    if(peer){
+      var typography=getComputedStyle(peer);
+      ['font-family','font-size','font-weight','font-style','letter-spacing'].forEach(function(property){
+        trigger.style.setProperty(property,typography.getPropertyValue(property),'important');
+        value.style.setProperty(property,typography.getPropertyValue(property),'important');
+      });
+      value.style.setProperty('font-variant-numeric',typography.getPropertyValue('font-variant-numeric'),'important');
+    }
     trigger.append(value,icon);holder.append(label,trigger);
     startBox.before(holder);
     startBox.classList.add('nwp-original-date');
