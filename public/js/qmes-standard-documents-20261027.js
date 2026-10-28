@@ -195,25 +195,15 @@ function open(record=null){
      const table=scroll.querySelector('table');if(!table)return;
      const cells=[...table.querySelectorAll('td')];
      table.style.cssText='position:relative;transform:none;width:max-content;min-width:100%;';
-     cells.forEach(cell=>{cell.style.removeProperty('font-size');cell.style.removeProperty('line-height');cell.style.removeProperty('padding');cell.style.removeProperty('min-width');cell.style.removeProperty('max-width');});
+     cells.forEach(cell=>{cell.style.fontSize='';cell.style.lineHeight='';cell.style.padding='';cell.style.minWidth='';cell.style.maxWidth='';});
      if(!fitWhole){scroll.style.overflow='auto';return;}
      table.querySelectorAll('tr').forEach(row=>row.style.height='');
-     table.style.cssText='position:relative;transform:none;width:100%;min-width:0;table-layout:fixed;height:auto;';
+     table.style.cssText='position:relative;transform:none!important;width:100%!important;min-width:100%!important;max-width:100%!important;table-layout:fixed;height:auto;';
      let size=12;
-     function applySize(){
-      table.style.fontSize=size+'px';
-      cells.forEach(cell=>{cell.style.fontSize=size+'px';cell.style.lineHeight='1.25';cell.style.padding=(size>=10?'4px 5px':'2px 3px');cell.style.minWidth='0';cell.style.maxWidth='none';});
-     }
+     function applySize(){table.style.fontSize=size+'px';cells.forEach(cell=>{cell.style.fontSize=size+'px';cell.style.lineHeight='1.15';cell.style.padding=size>=10?'3px 4px':'1px 2px';cell.style.minWidth='0';cell.style.maxWidth='none';});}
      applySize();
-     while(size>8&&table.offsetHeight>scroll.clientHeight-2){size-=0.5;applySize();}
-     if(table.offsetHeight<=scroll.clientHeight-2){
-      table.style.height=(scroll.clientHeight-2)+'px';
-     }else{
-      // Preserve glyph proportions for unusually long sheets.
-      const scale=Math.min(1,(scroll.clientHeight-2)/table.offsetHeight);
-      table.style.transformOrigin='top left';table.style.transform='scale('+scale+')';
-      table.style.width=(100/scale)+'%';
-     }
+     while(size>7&&table.offsetHeight>scroll.clientHeight-2){size-=0.5;applySize();}
+     table.style.height=(scroll.clientHeight-2)+'px';
      scroll.style.overflow='hidden';
     }
     fitButton.onclick=()=>{fitWhole=!fitWhole;fitButton.textContent=fitWhole?'원래 크기':'화면 맞춤';fitSheet();};
@@ -223,6 +213,15 @@ function open(record=null){
      const sheet=workbook.Sheets[sheetSelect.value];scroll.replaceChildren();if(!sheet?.['!ref']){scroll.textContent='비어 있는 시트입니다.';return;}
      const range=XLSX.utils.decode_range(sheet['!ref']),table=document.createElement('table'),merges=sheet['!merges']||[];
      const lastRow=Math.min(range.e.r,range.s.r+999),lastCol=Math.min(range.e.c,range.s.c+99);
+     const columns=document.createElement('colgroup');
+     for(let col=range.s.c;col<=lastCol;col++){
+      const column=document.createElement('col');let weight=sheet['!cols']?.[col]?.wch||0;
+      if(!weight){let longest=0;for(let row=range.s.r;row<=Math.min(lastRow,range.s.r+60);row++){if(merges.some(m=>m.e.c>m.s.c&&row>=m.s.r&&row<=m.e.r&&col>=m.s.c&&col<=m.e.c))continue;const cell=sheet[XLSX.utils.encode_cell({r:row,c:col})];longest=Math.max(longest,String(cell?.w??cell?.v??'').length);}weight=Math.max(4,Math.min(38,longest));}
+      column.dataset.weight=weight;columns.append(column);
+     }
+     const total=[...columns.children].reduce((sum,col)=>sum+Number(col.dataset.weight),0);
+     [...columns.children].forEach(col=>col.style.width=(Number(col.dataset.weight)/total*100)+'%');table.append(columns);
+
      for(let row=range.s.r;row<=lastRow;row++){
       const tr=document.createElement('tr');
       const height=sheet['!rows']?.[row]?.hpx;if(height)tr.style.height=height+'px';
