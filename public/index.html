@@ -8385,6 +8385,23 @@ function clean(){document.querySelectorAll('.am-split[data-am-screen="orders"]')
 let pending=false;new MutationObserver(function(){if(!pending){pending=true;queueMicrotask(function(){pending=false;clean();});}}).observe(document.body,{childList:true,subtree:true});clean();
 })();
 </script>
+
+<style id="qmes-six-module-continuous-corners-20261028">
+/* The outer card owns the border; its header/footer backgrounds follow the inset curve. */
+html body #app main.content :is(#orders,#purchase,#work) .module-shell,
+html body #app main.content :is(#incoming,#process,#outgoing) .ip-panel{
+border:1px solid #d2dfed!important;border-radius:10px!important;background:#fff!important;background-clip:padding-box!important;box-sizing:border-box!important}
+html body #app main.content :is(#orders,#purchase,#work) .module-shell>:first-child,
+html body #app main.content :is(#incoming,#process,#outgoing) .ip-panel>:first-child{
+border-top:0!important;border-left:0!important;border-right:0!important;border-radius:9px 9px 0 0!important;background-clip:padding-box!important;box-sizing:border-box!important;overflow:hidden!important}
+html body #app main.content :is(#orders,#purchase,#work) .module-shell>:last-child,
+html body #app main.content :is(#incoming,#process,#outgoing) .ip-panel>:last-child{
+border-left:0!important;border-right:0!important;border-bottom:0!important;border-radius:0 0 9px 9px!important;background-clip:padding-box!important;box-sizing:border-box!important}
+html body #app main.content :is(#orders,#purchase,#work) .module-shell>:is(.qof-pager,.qpu-pager,.nwi-pagination):last-child,
+html body #app main.content :is(#incoming,#process,#outgoing) .ip-panel>.ip-footnote:last-child{overflow:hidden!important}
+html body #mainWorkspace:has(.am-split:is([data-am-screen="orders"],[data-am-screen="purchase"],[data-am-screen="work"],[data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]))>.workspace-shell{
+border-radius:10px!important;background-clip:padding-box!important;overflow:hidden!important}
+</style>
 </body>
 </html>
 
