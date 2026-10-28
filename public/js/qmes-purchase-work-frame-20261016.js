@@ -258,7 +258,7 @@ const style=document.createElement('style');style.textContent=`
  function close(focus=false){popup?.remove();popup=null;if(input){input.setAttribute('aria-expanded','false');if(focus&&input.isConnected)input.focus({preventScroll:true});}input=null;}
  function position(){
   if(!popup||!input?.isConnected){close();return;}
-  const r=input.getBoundingClientRect(),width=input.closest('#namo-purchase-new-enterprise')?Math.min(r.width,360):r.width;popup.style.width=width+'px';popup.style.left=Math.max(6,Math.min(r.left,innerWidth-width-6))+'px';
+  const r=input.getBoundingClientRect(),width=input.closest('#namo-purchase-new-enterprise')?Math.min(r.width,360):r.width;popup.style.width=width+'px';popup.style.left=Math.max(6,Math.min(r.left+(r.width-width)/2,innerWidth-width-6))+'px';
   popup.style.top=Math.max(6,r.bottom+popup.offsetHeight+4>innerHeight?r.top-popup.offsetHeight-3:r.bottom+3)+'px';
  }
  function draw(){
