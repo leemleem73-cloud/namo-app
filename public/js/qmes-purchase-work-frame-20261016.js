@@ -194,14 +194,14 @@ const style=document.createElement('style');style.textContent=`
 #qpp-edit-dialog{width:min(720px,calc(100vw - 40px));max-height:90vh;padding:22px;border:1px solid #c8d7e6;border-radius:10px;color:#243e59;box-shadow:0 16px 50px #10283b44;font:13px Arial,"Malgun Gothic",sans-serif}
 #qpp-edit-dialog::backdrop{background:#152c4488}
 #qpp-edit-dialog header{display:flex;align-items:center;justify-content:space-between;font-size:18px}
-#qpp-edit-dialog .qpp-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
 #qpp-edit-dialog label{display:flex;flex-direction:column;gap:6px;font-weight:600;min-width:0}
 #qpp-edit-dialog input{box-sizing:border-box;width:100%;height:35px;border:1px solid #c7d6e5;border-radius:4px;padding:6px 9px;font:13px Arial,sans-serif}
 #qpp-edit-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 #qpp-edit-dialog button{padding:7px 14px;border:1px solid #c7d6e5;border-radius:5px;background:#fff;cursor:pointer}
-#qpp-edit-dialog .qpp-edit-save{background:#166fbb;color:white}
-#qpp-edit-dialog .qpp-edit-message{color:#b23535}
-@media(max-width:650px){#qpp-edit-dialog .qpp-edit-fields{grid-template-columns:1fr}}
+:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-save{background:#166fbb;color:white}
+:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-message{color:#b23535}
+@media(max-width:650px){:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-fields{grid-template-columns:1fr}}
 `;document.head.append(style);new MutationObserver(init).observe(document.body,{subtree:true,childList:true});init();
 })();
 
@@ -251,14 +251,14 @@ const style=document.createElement('style');style.textContent=`
 
 /* Purchase edit typography and a field-width calendar inside the dialog top layer. */
 (function(){
- const style=document.createElement('style');style.id='purchase-edit-calendar-parity-20261028';style.textContent="\nhtml body #qpp-edit-dialog{font-family:Pretendard,\"Noto Sans KR\",Arial,\"Malgun Gothic\",sans-serif!important;font-size:12px!important;color:#35435b!important}\nhtml body #qpp-edit-dialog header{font-family:inherit!important;font-size:13px!important;font-weight:700!important}\nhtml body #qpp-edit-dialog .qpp-edit-fields label{font-family:inherit!important;font-size:10px!important;font-weight:800!important;color:#405267!important}\nhtml body #qpp-edit-dialog .qpp-edit-fields input{font-family:inherit!important;font-size:11px!important;font-weight:700!important;color:#35435b!important;border-color:#cfd7df!important;border-radius:3px!important}\nhtml body #qpp-edit-dialog button{font-family:inherit!important;font-size:11px!important;font-weight:600!important}\n#qpp-edit-dialog .qpp-edit-calendar{position:fixed;z-index:2147483000;box-sizing:border-box;padding:9px;background:#fff;border:1px solid #bccbd9;border-radius:4px;box-shadow:0 5px 16px #173b6126;color:#35435b;font:12px Arial,\"Malgun Gothic\",sans-serif}\n#qpp-edit-dialog .qpp-edit-calendar button{border:0;background:#fff;color:#35435b;padding:0;border-radius:3px;min-width:0;cursor:pointer;box-shadow:none}\n#qpp-edit-dialog .qpp-cal-head{display:flex;align-items:center;justify-content:space-between;height:31px;border-bottom:1px solid #e1e8ef;margin-bottom:7px}\n#qpp-edit-dialog .qpp-cal-head button{width:27px;height:27px;font-size:17px!important}\n#qpp-edit-dialog .qpp-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}\n#qpp-edit-dialog .qpp-cal-grid>*{height:29px;display:flex;align-items:center;justify-content:center;font-size:11px}\n#qpp-edit-dialog .qpp-cal-week{color:#8492a2}\n#qpp-edit-dialog .qpp-cal-grid button:hover{background:#edf5ff}\n#qpp-edit-dialog .qpp-cal-grid button.today{background:#2689ef!important;color:#fff!important;font-weight:700!important}\n#qpp-edit-dialog .qpp-cal-grid button.chosen{box-shadow:inset 0 0 0 1px #2689ef}\n#qpp-edit-dialog .qpp-cal-grid button:focus-visible{outline:2px solid #5aa7f4;outline-offset:-2px}\n#qpp-edit-dialog .qpp-cal-foot{display:flex;gap:6px;padding-top:8px;margin-top:7px;border-top:1px solid #e1e8ef}\n#qpp-edit-dialog .qpp-cal-foot button{border:1px solid #d4dee8;padding:0 9px;height:25px}\n#qpp-edit-dialog .qpp-cal-foot button:last-child{margin-left:auto}";document.head.append(style);
+ const style=document.createElement('style');style.id='purchase-edit-calendar-parity-20261028';style.textContent="\nhtml body #qpp-edit-dialog{font-family:Pretendard,\"Noto Sans KR\",Arial,\"Malgun Gothic\",sans-serif!important;font-size:12px!important;color:#35435b!important}\nhtml body #qpp-edit-dialog header{font-family:inherit!important;font-size:13px!important;font-weight:700!important}\nhtml body :is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-fields label{font-family:inherit!important;font-size:10px!important;font-weight:800!important;color:#405267!important}\nhtml body :is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-fields input{font-family:inherit!important;font-size:11px!important;font-weight:700!important;color:#35435b!important;border-color:#cfd7df!important;border-radius:3px!important}\nhtml body #qpp-edit-dialog button{font-family:inherit!important;font-size:11px!important;font-weight:600!important}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-calendar{position:fixed;z-index:2147483000;box-sizing:border-box;padding:9px;background:#fff;border:1px solid #bccbd9;border-radius:4px;box-shadow:0 5px 16px #173b6126;color:#35435b;font:12px Arial,\"Malgun Gothic\",sans-serif}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-edit-calendar button{border:0;background:#fff;color:#35435b;padding:0;border-radius:3px;min-width:0;cursor:pointer;box-shadow:none}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-head{display:flex;align-items:center;justify-content:space-between;height:31px;border-bottom:1px solid #e1e8ef;margin-bottom:7px}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-head button{width:27px;height:27px;font-size:17px!important}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid>*{height:29px;display:flex;align-items:center;justify-content:center;font-size:11px}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-week{color:#8492a2}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid button:hover{background:#edf5ff}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid button.today{background:#2689ef!important;color:#fff!important;font-weight:700!important}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid button.chosen{box-shadow:inset 0 0 0 1px #2689ef}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-grid button:focus-visible{outline:2px solid #5aa7f4;outline-offset:-2px}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-foot{display:flex;gap:6px;padding-top:8px;margin-top:7px;border-top:1px solid #e1e8ef}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-foot button{border:1px solid #d4dee8;padding:0 9px;height:25px}\n:is(#qpp-edit-dialog,#namo-purchase-new-enterprise) .qpp-cal-foot button:last-child{margin-left:auto}";document.head.append(style);
  let popup=null,input=null,month=null;
  const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
  const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
  function close(focus=false){popup?.remove();popup=null;if(input){input.setAttribute('aria-expanded','false');if(focus&&input.isConnected)input.focus({preventScroll:true});}input=null;}
  function position(){
   if(!popup||!input?.isConnected){close();return;}
-  const r=input.getBoundingClientRect();popup.style.width=r.width+'px';popup.style.left=Math.max(6,Math.min(r.left,innerWidth-r.width-6))+'px';
+  const r=input.getBoundingClientRect(),width=input.closest('#namo-purchase-new-enterprise')?Math.min(r.width,360):r.width;popup.style.width=width+'px';popup.style.left=Math.max(6,Math.min(r.left,innerWidth-width-6))+'px';
   popup.style.top=Math.max(6,r.bottom+popup.offsetHeight+4>innerHeight?r.top-popup.offsetHeight-3:r.bottom+3)+'px';
  }
  function draw(){
@@ -276,19 +276,26 @@ const style=document.createElement('style');style.textContent=`
  function apply(value){const target=input;if(!target)return;target.value=value;target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));close(true);}
  function open(target){
   if(input===target&&popup){close(true);return;}close();input=target;month=new Date((target.value||today())+'T12:00:00');month=new Date(month.getFullYear(),month.getMonth(),1);
-  popup=document.createElement('div');popup.className='qpp-edit-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','날짜 선택');target.closest('dialog').append(popup);target.setAttribute('aria-haspopup','dialog');target.setAttribute('aria-expanded','true');draw();
+  popup=document.createElement('div');popup.className='qpp-edit-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','날짜 선택');(target.closest('dialog')||target.closest('#namo-purchase-new-enterprise')).append(popup);target.setAttribute('aria-haspopup','dialog');target.setAttribute('aria-expanded','true');draw();
  }
  document.addEventListener('pointerdown',event=>{
-  const target=event.target.closest?.('#qpp-edit-dialog input[type="date"]');
+  const target=event.target.closest?.(':is(#qpp-edit-dialog,#namo-purchase-new-enterprise) input[type="date"]');
   if(target&&!target.disabled&&!target.readOnly&&event.button===0){event.preventDefault();target.focus({preventScroll:true});open(target);return;}
   if(popup&&!popup.contains(event.target))close();
  },true);
- document.addEventListener('click',event=>{if(event.target.closest?.('#qpp-edit-dialog input[type="date"]'))event.preventDefault();},true);
+ document.addEventListener('click',event=>{if(event.target.closest?.(':is(#qpp-edit-dialog,#namo-purchase-new-enterprise) input[type="date"]'))event.preventDefault();},true);
  document.addEventListener('keydown',event=>{
-  const target=event.target.closest?.('#qpp-edit-dialog input[type="date"]');
+  const target=event.target.closest?.(':is(#qpp-edit-dialog,#namo-purchase-new-enterprise) input[type="date"]');
   if(target&&(event.key==='F4'||event.altKey&&event.key==='ArrowDown')){event.preventDefault();open(target);return;}
   if(popup&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close(true);}
  },true);
  document.addEventListener('scroll',()=>{if(popup)position();},true);window.addEventListener('resize',position);
  new MutationObserver(()=>{if(input&&!input.isConnected)close();}).observe(document.body,{childList:true,subtree:true});
 })();
+
+(function(){const style=document.createElement('style');style.id='purchase-shared-calendar-type-20261028';
+style.textContent='html body .qpp-edit-calendar{font-family:Pretendard,"Noto Sans KR",Arial,"Malgun Gothic",sans-serif!important;font-size:12px!important}'+
+'html body #mainWorkspace #namo-purchase-new-enterprise .qpp-edit-calendar button{padding:0!important;border:0!important;font-family:inherit!important;font-size:11px!important;min-height:0!important;height:29px!important;border-radius:3px!important}'+
+'html body #mainWorkspace #namo-purchase-new-enterprise .qpp-edit-calendar .qpp-cal-head button{width:27px!important;height:27px!important;font-size:17px!important}'+
+'html body #mainWorkspace #namo-purchase-new-enterprise .qpp-edit-calendar .qpp-cal-foot button{padding:0 9px!important;height:25px!important;border:1px solid #d4dee8!important}';
+document.head.append(style);})();
