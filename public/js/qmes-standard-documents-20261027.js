@@ -150,6 +150,13 @@ function open(record=null){
  const attachmentRoot=root.querySelector('.std-attachment-list'),fileInput=root.querySelector('#stdDocumentFile');
  const metadataGrid=root.querySelector('.form-grid');
  metadataGrid.style.setProperty('border','1px solid #d3deea','important');
+ // Draw the outer frame independently of grid border overrides from shared styles.
+ metadataGrid.style.setProperty('position','relative','important');
+ const outerFrame=document.createElement('span');
+ outerFrame.setAttribute('aria-hidden','true');outerFrame.className='std-metadata-outer-frame';
+ outerFrame.style.cssText='position:absolute!important;inset:0!important;display:block!important;border:1px solid #cbd8e6!important;box-sizing:border-box!important;pointer-events:none!important;z-index:2!important;border-radius:0!important;';
+ metadataGrid.append(outerFrame);
+
  metadataGrid.style.setProperty('border-radius','0','important');
  metadataGrid.querySelectorAll(':scope>.form-item').forEach((cell,index,all)=>{
   cell.style.setProperty('border','0','important');
