@@ -1674,7 +1674,14 @@ function normalizePurchaseProductionType(value) {
 }
 
 function purchaseDate(value, fallback = '') {
-  const raw = txt(value || fallback);
+  const source = value || fallback;
+  // PostgreSQL DATE values can arrive as local-midnight Date objects.
+  // Preserve their calendar date instead of stringifying them to "Wed ...".
+  if (source instanceof Date) {
+    if (!Number.isFinite(source.getTime())) return '';
+    return [source.getFullYear(), String(source.getMonth() + 1).padStart(2, '0'), String(source.getDate()).padStart(2, '0')].join('-');
+  }
+  const raw = txt(source);
   return /^\d{4}-\d{2}-\d{2}$/.test(raw.slice(0, 10)) ? raw.slice(0, 10) : '';
 }
 
