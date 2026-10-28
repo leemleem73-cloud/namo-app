@@ -29,10 +29,10 @@
     '#nwp-period-popup-20261014[hidden]{display:none!important}',
     '#nwp-period-popup-20261014 button{box-sizing:border-box;font:inherit;cursor:pointer}',
     '#nwp-period-popup-20261014 button:focus-visible{outline:2px solid #4093e9;outline-offset:1px}',
-    '#nwp-period-popup-20261014 .nwp-presets{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;margin-bottom:9px}',
+    '#nwp-period-popup-20261014 .nwp-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin-bottom:9px}',
     '#nwp-period-popup-20261014 .nwp-preset{min-height:27px;padding:3px 1px;border:1px solid #d5dce5;border-radius:2px;background:#fff;color:#33465d;white-space:nowrap}',
     '#nwp-period-popup-20261014 .nwp-preset:hover{background:#eaf4ff;border-color:#1688ea}',
-    '#nwp-period-popup-20261014 .nwp-months{display:grid;grid-template-columns:1fr 1fr;gap:9px}',
+    '#nwp-period-popup-20261014 .nwp-months{display:grid;grid-template-columns:1fr;gap:9px}',
     '#nwp-period-popup-20261014 .nwp-month+.nwp-month{border-left:1px solid #e0e7ef;padding-left:9px}',
     '#nwp-period-popup-20261014 .nwp-month-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px;font-size:12px}',
     '#nwp-period-popup-20261014 .nwp-month-head button{border:1px solid #d4e0ec;border-radius:4px;width:24px;height:24px;background:#fff;font-size:18px}',
@@ -76,6 +76,7 @@
   function position(){
     if(!pop||!active)return;
     var r=active.trigger.getBoundingClientRect();
+    pop.style.width=Math.min(r.width,window.innerWidth-16)+'px';
     var w=pop.offsetWidth,h=pop.offsetHeight;
     var left=Math.min(Math.max(8,r.left+(r.width-w)/2),Math.max(8,window.innerWidth-w-8));
     var below=window.innerHeight-r.bottom;
@@ -87,7 +88,7 @@
     if(!pop)return;
     var months=pop.querySelector('.nwp-months');
     months.replaceChildren();
-    for(var k=0;k<2;k++){
+    for(var k=0;k<1;k++){
       (function(monthOffset){
         var d=new Date(base.getFullYear(),base.getMonth()+monthOffset,1);
         var year=d.getFullYear(),monthNo=d.getMonth();
@@ -278,7 +279,7 @@
   if(popup){if(!anchor?.isConnected){close();}else place(popup,anchor,true);}
   const range=document.getElementById('nwp-period-popup-20261014');
   const button=document.querySelector('.work-form .nwp-range-button[aria-expanded="true"]');
-  if(range&&!range.hidden&&button)place(range,button,false);
+  if(range&&!range.hidden&&button)place(range,button,true);
   if(popup||(range&&!range.hidden&&button))frame=requestAnimationFrame(track);
  }
  function follow(){if(!frame)frame=requestAnimationFrame(track);}
