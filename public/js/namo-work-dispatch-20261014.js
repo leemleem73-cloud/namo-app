@@ -40,7 +40,7 @@
      if(requestedQuery!==(window.qmesNotificationDates?.query()||''))return;
      list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(n=>n.remove());
      refreshDispatchBadge((rows||[]).filter(n=>!n.read_at).length);
-     (rows||[]).forEach(n=>{
+     (rows||[]).filter(n=>!n.read_at).forEach(n=>{
        const div=document.createElement('div');
        div.className='notify-item';
        div.dataset.source='work-dispatch';
