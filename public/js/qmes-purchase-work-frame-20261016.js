@@ -248,3 +248,47 @@ const style=document.createElement('style');style.textContent=`
 
 /* Keep printing in the selected-items dock, not in purchase remark cells. */
 (()=>{const s=document.createElement('style');s.id='purchase-remark-no-print-20261026';s.textContent='#purchase .module-shell>.module-body tbody td:last-child :is(.qpp-row-print,[data-purchase-action="print"],.print-btn,[data-action="print"]){display:none!important}';document.head.append(s);const root=document.getElementById('purchase');if(!root)return;let queued=false;const clean=()=>{queued=false;root.querySelectorAll('.module-shell>.module-body tbody td:last-child button').forEach(b=>{if(b.textContent.trim()==='인쇄')b.remove();});};new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(clean);}}).observe(root,{childList:true,subtree:true});clean();})();
+
+/* Purchase edit typography and a field-width calendar inside the dialog top layer. */
+(function(){
+ const style=document.createElement('style');style.id='purchase-edit-calendar-parity-20261028';style.textContent="\nhtml body #qpp-edit-dialog{font-family:Pretendard,\"Noto Sans KR\",Arial,\"Malgun Gothic\",sans-serif!important;font-size:12px!important;color:#35435b!important}\nhtml body #qpp-edit-dialog header{font-family:inherit!important;font-size:13px!important;font-weight:700!important}\nhtml body #qpp-edit-dialog .qpp-edit-fields label{font-family:inherit!important;font-size:10px!important;font-weight:800!important;color:#405267!important}\nhtml body #qpp-edit-dialog .qpp-edit-fields input{font-family:inherit!important;font-size:11px!important;font-weight:700!important;color:#35435b!important;border-color:#cfd7df!important;border-radius:3px!important}\nhtml body #qpp-edit-dialog button{font-family:inherit!important;font-size:11px!important;font-weight:600!important}\n#qpp-edit-dialog .qpp-edit-calendar{position:fixed;z-index:2147483000;box-sizing:border-box;padding:9px;background:#fff;border:1px solid #bccbd9;border-radius:4px;box-shadow:0 5px 16px #173b6126;color:#35435b;font:12px Arial,\"Malgun Gothic\",sans-serif}\n#qpp-edit-dialog .qpp-edit-calendar button{border:0;background:#fff;color:#35435b;padding:0;border-radius:3px;min-width:0;cursor:pointer;box-shadow:none}\n#qpp-edit-dialog .qpp-cal-head{display:flex;align-items:center;justify-content:space-between;height:31px;border-bottom:1px solid #e1e8ef;margin-bottom:7px}\n#qpp-edit-dialog .qpp-cal-head button{width:27px;height:27px;font-size:17px!important}\n#qpp-edit-dialog .qpp-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}\n#qpp-edit-dialog .qpp-cal-grid>*{height:29px;display:flex;align-items:center;justify-content:center;font-size:11px}\n#qpp-edit-dialog .qpp-cal-week{color:#8492a2}\n#qpp-edit-dialog .qpp-cal-grid button:hover{background:#edf5ff}\n#qpp-edit-dialog .qpp-cal-grid button.today{background:#2689ef!important;color:#fff!important;font-weight:700!important}\n#qpp-edit-dialog .qpp-cal-grid button.chosen{box-shadow:inset 0 0 0 1px #2689ef}\n#qpp-edit-dialog .qpp-cal-grid button:focus-visible{outline:2px solid #5aa7f4;outline-offset:-2px}\n#qpp-edit-dialog .qpp-cal-foot{display:flex;gap:6px;padding-top:8px;margin-top:7px;border-top:1px solid #e1e8ef}\n#qpp-edit-dialog .qpp-cal-foot button{border:1px solid #d4dee8;padding:0 9px;height:25px}\n#qpp-edit-dialog .qpp-cal-foot button:last-child{margin-left:auto}";document.head.append(style);
+ let popup=null,input=null,month=null;
+ const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+ const fmt=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+ function close(focus=false){popup?.remove();popup=null;if(input){input.setAttribute('aria-expanded','false');if(focus&&input.isConnected)input.focus({preventScroll:true});}input=null;}
+ function position(){
+  if(!popup||!input?.isConnected){close();return;}
+  const r=input.getBoundingClientRect();popup.style.width=r.width+'px';popup.style.left=Math.max(6,Math.min(r.left,innerWidth-r.width-6))+'px';
+  popup.style.top=Math.max(6,r.bottom+popup.offsetHeight+4>innerHeight?r.top-popup.offsetHeight-3:r.bottom+3)+'px';
+ }
+ function draw(){
+  if(!popup)return;const y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();popup.replaceChildren();
+  const head=document.createElement('div');head.className='qpp-cal-head';
+  const nav=(label,delta,aria)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.setAttribute('aria-label',aria);button.onclick=()=>{month=new Date(y,m+delta,1);draw();};head.append(button);};
+  nav('«',-12,'이전 해');nav('‹',-1,'이전 달');const title=document.createElement('b');title.textContent=y+'.'+String(m+1).padStart(2,'0');head.append(title);nav('›',1,'다음 달');nav('»',12,'다음 해');popup.append(head);
+  const grid=document.createElement('div');grid.className='qpp-cal-grid';
+  ['일','월','화','수','목','금','토'].forEach(day=>{const span=document.createElement('span');span.className='qpp-cal-week';span.textContent=day;grid.append(span);});
+  for(let n=0;n<first;n++)grid.append(document.createElement('span'));
+  for(let n=1;n<=days;n++){const value=fmt(new Date(y,m,n)),button=document.createElement('button');button.type='button';button.textContent=n;button.setAttribute('aria-label',value);button.classList.toggle('today',value===today());button.classList.toggle('chosen',value===input.value);if(value===today())button.setAttribute('aria-current','date');button.onclick=()=>apply(value);grid.append(button);}popup.append(grid);
+  const foot=document.createElement('div');foot.className='qpp-cal-foot';
+  [['오늘',()=>apply(today())],['초기화',()=>apply('')],['닫기',()=>close(true)]].forEach(([text,run])=>{const button=document.createElement('button');button.type='button';button.textContent=text;button.onclick=run;foot.append(button);});popup.append(foot);position();
+ }
+ function apply(value){const target=input;if(!target)return;target.value=value;target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));close(true);}
+ function open(target){
+  if(input===target&&popup){close(true);return;}close();input=target;month=new Date((target.value||today())+'T12:00:00');month=new Date(month.getFullYear(),month.getMonth(),1);
+  popup=document.createElement('div');popup.className='qpp-edit-calendar';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','날짜 선택');target.closest('dialog').append(popup);target.setAttribute('aria-haspopup','dialog');target.setAttribute('aria-expanded','true');draw();
+ }
+ document.addEventListener('pointerdown',event=>{
+  const target=event.target.closest?.('#qpp-edit-dialog input[type="date"]');
+  if(target&&!target.disabled&&!target.readOnly&&event.button===0){event.preventDefault();target.focus({preventScroll:true});open(target);return;}
+  if(popup&&!popup.contains(event.target))close();
+ },true);
+ document.addEventListener('click',event=>{if(event.target.closest?.('#qpp-edit-dialog input[type="date"]'))event.preventDefault();},true);
+ document.addEventListener('keydown',event=>{
+  const target=event.target.closest?.('#qpp-edit-dialog input[type="date"]');
+  if(target&&(event.key==='F4'||event.altKey&&event.key==='ArrowDown')){event.preventDefault();open(target);return;}
+  if(popup&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close(true);}
+ },true);
+ document.addEventListener('scroll',()=>{if(popup)position();},true);window.addEventListener('resize',position);
+ new MutationObserver(()=>{if(input&&!input.isConnected)close();}).observe(document.body,{childList:true,subtree:true});
+})();
