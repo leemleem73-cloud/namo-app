@@ -198,6 +198,7 @@ async function ensureMissingIqcApprovals() {
 function install(app) {
   if (app.__qmesQualityApprovalSafeInstalled) return;
   app.__qmesQualityApprovalSafeInstalled = true;
+  require('./qmes-module-notifications-20261029.js').install(app,{pool,requireLogin});
 
   // Recover requested historical links at deploy time only for a configured DB.
   // List requests share the transaction and retry if startup recovery fails.
