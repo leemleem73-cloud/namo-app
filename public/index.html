@@ -8461,6 +8461,32 @@ html body #app main.content #purchase .module-shell>.module-body table tbody tr:
 html body #app main.content #purchase .module-shell>.module-body table tbody tr:last-child>:is(td,th){border-bottom:0!important;box-shadow:none!important}
 </style>
 <script defer src="./js/qmes-inspection-date-calendar-20261028.js?v=3"></script>
+
+<style id="qmes-list-actions-white-parity-20261028">
+html body .module-page button.qmes-white-list-action,
+html body .module-page .btn.primary.qmes-white-list-action{
+ background:#fff!important;color:#16446c!important;border:1px solid #cfdfef!important;box-shadow:none!important;
+ font-size:12px!important;font-weight:700!important;font-family:Arial,"Malgun Gothic",sans-serif!important;
+ height:36px!important;min-height:36px!important;padding:0 15px!important;border-radius:5px!important;
+}
+html body .module-page button.qmes-white-list-action:hover{background:#f5f9ff!important;border-color:#a9c8e6!important}
+html body .module-page button.qmes-white-list-action:focus-visible{outline:2px solid #499cef;outline-offset:2px}
+</style>
+<script id="qmes-list-actions-white-parity-script-20261028">
+(()=>{
+ const ids=['orders','purchase','work','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval'];
+ const roots=ids.map(id=>document.getElementById(id)).filter(Boolean);
+ function scan(){
+  roots.forEach(root=>root.querySelectorAll('button').forEach(button=>{
+   if(button.closest('dialog,.am-split,form,tbody,.qpp-selection-bar'))return;
+   const text=button.textContent.trim();
+   if(button.matches('.export-btn,.new-btn')||/엑셀|내보내기|신규/.test(text)||/^\+\s*.*등록$/.test(text))button.classList.add('qmes-white-list-action');
+  }));
+ }
+ let queued=false;const observer=new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;scan();});}});
+ roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
+})();
+</script>
 </body>
 </html>
 
