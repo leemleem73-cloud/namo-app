@@ -173,7 +173,7 @@ base+' input[type=file]{font-family:inherit!important;font-size:11px!important;b
 '@media(max-width:900px){'+base+' .fields{grid-template-columns:1fr!important}}';
 document.head.append(parityStyle);
 })();
-(function(){const s=document.createElement('style');s.id='purchase-basic-font-weight-20261028';s.textContent='html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,select,textarea),html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,textarea)::placeholder{font-weight:400!important}';document.head.append(s);})();
+(function(){const s=document.createElement('style');s.id='purchase-basic-font-weight-20261028';s.textContent='html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,select,textarea),html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,textarea)::placeholder{font-weight:700!important}';document.head.append(s);})();
 
 /* One sidebar owner: refresh only the list after authoritative data arrives. */
 (function(){
