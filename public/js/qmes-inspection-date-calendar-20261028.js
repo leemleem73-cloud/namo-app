@@ -1,6 +1,6 @@
 (()=>{'use strict';
 let popup=null,anchor=null,month=null,pointerHandled=null;
-const scope='#mainWorkspace input[data-pqc-field="검사일자"],#mainWorkspace input[data-qis-date],#mainWorkspace .am-split:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) input[type="date"],#mainWorkspace .std-inspection input[type="date"],#mainWorkspace #iqcEditReceiptDate,#mainWorkspace #iqcEditInspectionDate';
+const scope='#mainWorkspace .am-split[data-am-screen="standard"] input[data-standard-field="revisionDate"],#mainWorkspace input[data-pqc-field="검사일자"],#mainWorkspace input[data-qis-date],#mainWorkspace .am-split:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) input[type="date"],#mainWorkspace .std-inspection input[type="date"],#mainWorkspace #iqcEditReceiptDate,#mainWorkspace #iqcEditInspectionDate';
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
 function close(){popup?.remove();popup=null;anchor?.setAttribute('aria-expanded','false');anchor=null;}
 function place(){if(!popup||!anchor?.isConnected){close();return;}const r=anchor.getBoundingClientRect(),w=Math.min(r.width,360,innerWidth-12);popup.style.width=w+'px';const h=popup.getBoundingClientRect().height;popup.style.left=Math.max(6,Math.min(r.left+(r.width-w)/2,innerWidth-w-6))+'px';popup.style.top=Math.max(6,r.bottom+h+4<=innerHeight?r.bottom+4:r.top-h-4)+'px';}
