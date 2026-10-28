@@ -5,6 +5,10 @@ const KEY='qmes-last-view-v1',pagerSelector='.ip-pagination,.nwi-pagination,.qpu
 const denied=/삭제|저장|발송|승인|검토 완료|최종 승인|인쇄|출력|로그아웃/;
 let saved=null,restoring=false,bootPending=true,trail=[],baseFields=[],basePage=1,timer=null;
 try{saved=JSON.parse(sessionStorage.getItem(KEY)||'null');}catch(_){}
+ // Old snapshots could mistake the always-visible purchase detail table for a new editor.
+ if(saved?.page==='purchase'&&!saved.observedView&&saved.route?.kind==='new'&&!saved.purchaseRows&&!(saved.fields||[]).some(field=>field.name==='orderDate'||field.name==='supplier')){
+  saved={...saved,route:null,trail:[],fields:[],baseFields:[],observedView:'list'};
+ }
 const clean=value=>String(value||'').replace(/\s+/g,' ').trim();
 const user=()=>String(window.__QMES_CURRENT_USER__?.id||window.__QMES_CURRENT_USER__?.name||'');
 const page=()=>document.querySelector('.sidebar .menu.active[data-page]')?.dataset.page||'main';
@@ -13,7 +17,7 @@ function viewRoot(){
  const workspace=document.getElementById('mainWorkspace');
  if(workspace?.classList.contains('active'))return workspace;
  const section=document.getElementById(page());if(!section)return null;
- return [...section.querySelectorAll('#namo-work-detail,.qpu-detail,.qpu-detail-panel,#eqDetail.show,.eq-wo-overlay,#namo-purchase-new-enterprise,.ncr-editor-shell,.ncr-form,.ncr-detail,.ncr-detail-panel')].find(visible)||null;
+ return [...section.querySelectorAll('#namo-work-detail,.qpu-detail-panel,#eqDetail.show,.eq-wo-overlay,#namo-purchase-new-enterprise,.ncr-editor-shell,.ncr-form,.ncr-detail,.ncr-detail-panel')].find(visible)||null;
 }
 function currentRoute(root){
  if(!root)return null;
@@ -21,7 +25,7 @@ function currentRoute(root){
  const module=split?.dataset.amScreen||page();
  const purchase=root.matches?.('#namo-purchase-new-enterprise')?root:root.querySelector('#namo-purchase-new-enterprise');
  if(module==='purchase'&&visible(purchase))return {page:module,kind:'new'};
- const title=clean(root.querySelector('.am-detail-top .title-wrap>b')?.textContent||document.getElementById('workspaceTitle')?.textContent);
+ const title=clean(root.querySelector('.am-detail-top .title-wrap>b')?.textContent||(root===document.getElementById('mainWorkspace')?document.getElementById('workspaceTitle')?.textContent:''));
  if(/신규|새.*등록/.test(title))return {page:module,kind:'new'};
  const selected=split?.querySelector('.am-list-item.active');
  if(selected)return {page:module,kind:'detail',record:selected.dataset.amRecordId||'',index:selected.dataset.amIndex||'0'};
@@ -58,7 +62,7 @@ function pagerNumber(root){
 function remember(){
  if(restoring||bootPending||!user())return;
  const root=viewRoot(),section=document.getElementById(page());
- const snapshot={version:1,user:user(),page:page(),trail:root?trail:[],baseFields:root?baseFields:[],basePage:root?basePage:pagerNumber(section),fields:root?captureFields(root):[],route:currentRoute(root),processOrigin:history.state?.qmesProcessOrigin||'',purchaseRows:root?.querySelectorAll('#npo-tbody>tr').length||0,title:root===document.getElementById('mainWorkspace')?document.getElementById('workspaceTitle')?.textContent:'',sidebarPage:root?pagerNumber(root):1,scroll:window.scrollY,contentScroll:document.querySelector('main.content')?.scrollTop||0,materialRows:root?.querySelectorAll('#workMaterialTable tbody tr').length||0};
+ const snapshot={version:1,user:user(),page:page(),trail:root?trail:[],baseFields:root?baseFields:[],basePage:root?basePage:pagerNumber(section),fields:root?captureFields(root):[],route:currentRoute(root),observedView:root?'editor':'list',processOrigin:history.state?.qmesProcessOrigin||'',purchaseRows:root?.querySelectorAll('#npo-tbody>tr').length||0,title:root===document.getElementById('mainWorkspace')?document.getElementById('workspaceTitle')?.textContent:'',sidebarPage:root?pagerNumber(root):1,scroll:window.scrollY,contentScroll:document.querySelector('main.content')?.scrollTop||0,materialRows:root?.querySelectorAll('#workMaterialTable tbody tr').length||0};
  if(root&&!trail.length&&!snapshot.route)return;
  try{sessionStorage.setItem(KEY,JSON.stringify(snapshot));}catch(_){}
 }
