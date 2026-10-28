@@ -136,6 +136,48 @@ function open(record=null){
  openModal(title,amaranthScreen('standard',html,record?'edit':'new',title,selectedRow),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
  const attachmentRoot=root.querySelector('.std-attachment-list'),fileInput=root.querySelector('#stdDocumentFile');
+
+ const detail=root.querySelector('.am-detail-pane'),section=detail.querySelector('.am-section');
+ const split=document.createElement('div');split.className='std-document-editor-split';
+ const preview=document.createElement('section');preview.className='std-document-preview';
+ preview.innerHTML='<div class="std-preview-head"><strong>문서 미리보기</strong><select aria-label="미리볼 첨부파일"></select></div><div class="std-preview-body"></div>';
+ if(section){section.before(split);split.append(section,preview);}
+ const previewSelect=preview.querySelector('select'),previewBody=preview.querySelector('.std-preview-body');
+ let previewUrl='',previewSerial=0;
+ function releasePreview(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl='';}}
+ async function showPreview(){
+  const serial=++previewSerial;releasePreview();previewBody.replaceChildren();
+  const file=attachments[Number(previewSelect.value)||0];
+  if(!file){previewBody.textContent='첨부파일을 선택하면 여기에 문서가 표시됩니다.';return;}
+  const mime=/\.pdf$/i.test(file.name)?'application/pdf':/\.(png|jpe?g|gif|webp|bmp)$/i.test(file.name)?({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','gif':'image/gif','webp':'image/webp','bmp':'image/bmp'}[file.name.split('.').pop().toLowerCase()]):file.type;
+  const supported=mime==='application/pdf'||/^image\/(png|jpeg|gif|webp|bmp)$/.test(mime||'');
+  previewBody.textContent='파일을 불러오는 중입니다.';
+  try{
+   let blob;
+   if(file.data){const bytes=Uint8Array.from(atob(file.data),c=>c.charCodeAt(0));blob=new Blob([bytes],{type:mime||'application/octet-stream'});}
+   else{const response=await fetch(endpoint+'/'+encodeURIComponent(record.id)+'/attachments/'+encodeURIComponent(file.id),{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error('첨부파일을 불러오지 못했습니다.');blob=new Blob([await response.arrayBuffer()],{type:mime||'application/octet-stream'});}
+   if(serial!==previewSerial||!root.isConnected)return;
+   previewUrl=URL.createObjectURL(blob);previewBody.replaceChildren();
+   if(supported){
+    const viewer=document.createElement(mime==='application/pdf'?'iframe':'img');viewer.src=previewUrl;
+    if(viewer.tagName==='IMG')viewer.alt=file.name;else viewer.title=file.name+' PDF 미리보기';
+    previewBody.append(viewer);
+   }else{
+    const text=document.createElement('p');text.textContent='이 파일은 다운로드하여 확인해 주세요.';previewBody.append(text);
+   }
+   const download=document.createElement('a');download.href=previewUrl;download.download=file.name;download.textContent=file.name+' 다운로드';download.className='std-preview-download';previewBody.append(download);
+  }catch(error){if(serial===previewSerial)previewBody.textContent=error.message;}
+ }
+ function updatePreview(){
+  const previous=previewSelect.value;previewSelect.replaceChildren();
+  attachments.forEach((file,index)=>{const option=document.createElement('option');option.value=index;option.textContent=file.name;previewSelect.append(option);});
+  if(attachments[Number(previous)])previewSelect.value=previous;
+  previewSelect.hidden=!attachments.length;showPreview();
+ }
+ previewSelect.addEventListener('change',showPreview);
+ const cleanup=new MutationObserver(()=>{if(!root.isConnected){previewSerial++;releasePreview();cleanup.disconnect();}});
+ cleanup.observe(document.getElementById('mainWorkspace'),{childList:true,subtree:true});
+
  function renderAttachments(){
   attachmentRoot.replaceChildren();
   attachments.forEach((file,index)=>{
@@ -146,6 +188,7 @@ function open(record=null){
    remove.onclick=()=>{attachments.splice(index,1);renderAttachments();};
    row.append(label,remove);attachmentRoot.append(row);
   });
+  updatePreview();
  }
  renderAttachments();
  fileInput.addEventListener('change',async()=>{
@@ -262,3 +305,5 @@ install();
 (()=>{const style=document.createElement('style');style.id='standard-attachment-field-20261027';style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field{box-sizing:border-box;min-width:0;width:calc(100% - 16px);margin:5px 8px}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field>input[type=\"file\"]{box-sizing:border-box;width:100%;height:30px;min-height:30px;padding:3px 6px;margin:0;border:1px solid #cfd7df;border-radius:2px;font:12px inherit;background:#fff;color:#344054}\n.std-attachment-list{display:grid;gap:4px}.std-file-row{display:flex;align-items:center;gap:8px;min-width:0;padding-top:4px}\n.std-file-row>a,.std-file-row>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1673c7;font-size:11px}\n.std-file-row>button{flex-shrink:0;margin-left:auto;border:1px solid #edc4c4;border-radius:3px;background:#fff;color:#b42318;padding:2px 6px;font-size:10px}\nhtml body #standard#standard .std-document-list .std-attachment-link{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#1673c7;text-decoration:underline}\n";document.head.append(style);})();
 
 (()=>{const style=document.createElement('style');style.id='standard-attachment-fit-20261027';style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .am-section-body>.form-grid>.form-item>.std-attachment-field{\n display:block!important;box-sizing:border-box!important;min-width:0!important;width:calc(100% - 16px)!important;max-width:calc(100% - 16px)!important;margin:5px 8px!important;padding:0!important;overflow:hidden!important;align-self:center!important;\n}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field>input[type=\"file\"]{\n display:block!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;height:30px!important;min-height:30px!important;margin:0!important;padding:3px 6px!important;border:1px solid #cfd7df!important;border-radius:2px!important;background:#fff!important;color:#344054!important;font-family:inherit!important;font-size:11px!important;font-weight:400!important;line-height:22px!important;white-space:nowrap!important;overflow:hidden!important;\n}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-attachment-field>input[type=\"file\"]::file-selector-button{\n box-sizing:border-box!important;height:22px!important;max-height:22px!important;margin:0 6px 0 0!important;padding:0 7px!important;border:1px solid #b9c5d2!important;border-radius:2px!important;background:#f8fafc!important;color:#344054!important;font-family:inherit!important;font-size:11px!important;line-height:20px!important;vertical-align:top!important;cursor:pointer;\n}\n";document.head.append(style);})();
+
+(()=>{const style=document.createElement('style');style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-document-editor-split{display:grid;grid-template-columns:minmax(320px,0.8fr) minmax(0,1.2fr);gap:16px;align-items:start}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-document-editor-split>.am-section{min-width:0;width:100%;margin:0}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-document-editor-split .form-grid{grid-template-columns:minmax(0,1fr)!important}\nhtml body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-document-editor-split .form-item{grid-column:1/-1!important;min-width:0}\n.std-document-preview{border:1px solid #d6e1ee;border-radius:7px;background:#fff;overflow:hidden;min-width:0}\n.std-preview-head{display:flex;gap:12px;align-items:center;padding:10px 12px;background:#f6f9fc;border-bottom:1px solid #d6e1ee;color:#234765;font-size:12px}\n.std-preview-head select{min-width:0;flex:1;height:30px;border:1px solid #cbd8e6;background:#fff;color:#344054;font:inherit}\n.std-preview-body{min-height:560px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;color:#7b8b9c;font-size:12px;background:#f9fbfd}\n.std-preview-body img{display:block;max-width:100%;height:auto;max-height:75vh;object-fit:contain}\n.std-preview-body iframe{display:block;width:100%;height:70vh;min-height:520px;border:0;background:#fff}\n.std-preview-download{font-size:12px;color:#1673c7;overflow-wrap:anywhere}\n@media(max-width:1100px){html body #mainWorkspace .am-split[data-am-screen=\"standard\"] .std-document-editor-split{grid-template-columns:minmax(0,1fr)}}\n";document.head.append(style);})();
