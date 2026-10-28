@@ -121,6 +121,18 @@ async function load(){
  loading=(async()=>{records=await api();const existing=new Set(records.map(r=>String(r.id)));for(const id of selected)if(!existing.has(id))selected.delete(id);render();})().catch(error=>{if(typeof toast==='function')toast(error.message);}).finally(()=>{loading=null;});
  return loading;
 }
+
+let spreadsheetLoader=null;
+function loadSpreadsheetReader(){
+ if(window.XLSX)return Promise.resolve(window.XLSX);
+ if(!spreadsheetLoader)spreadsheetLoader=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+  script.onload=()=>window.XLSX?resolve(window.XLSX):reject(Error('엑셀 미리보기 도구를 불러오지 못했습니다.'));
+  script.onerror=()=>{spreadsheetLoader=null;reject(Error('엑셀 미리보기 도구 연결에 실패했습니다. 다시 선택해 주세요.'));};
+  document.head.append(script);
+ });return spreadsheetLoader;
+}
+
 function open(record=null){
  let attachments=(record?.attachments||[]).map(file=>({...file})),attachmentReading=false;
  currentDocumentId=record?String(record.id):'';
@@ -136,6 +148,16 @@ function open(record=null){
  openModal(title,amaranthScreen('standard',html,record?'edit':'new',title,selectedRow),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">저장</button>');
  const root=document.querySelector('.am-split[data-am-screen="standard"]');
  const attachmentRoot=root.querySelector('.std-attachment-list'),fileInput=root.querySelector('#stdDocumentFile');
+ const metadataGrid=root.querySelector('.form-grid');
+ metadataGrid.style.setProperty('border','1px solid #d3deea','important');
+ metadataGrid.style.setProperty('border-radius','0','important');
+ metadataGrid.querySelectorAll(':scope>.form-item').forEach((cell,index,all)=>{
+  cell.style.setProperty('border','0','important');
+  cell.style.setProperty('border-bottom',index===all.length-1?'0':'1px solid #d3deea','important');
+  const label=cell.querySelector(':scope>label');
+  if(label){label.style.setProperty('border-right','1px solid #d3deea','important');label.style.setProperty('justify-content','center','important');label.style.setProperty('text-align','center','important');}
+ });
+
 
  const detail=root.querySelector('.am-detail-pane'),section=detail.querySelector('.am-section');
  detail.querySelectorAll('*').forEach(el=>{if(!el.children.length&&el.textContent.includes('변경 내용은 저장 버튼을 눌러 반영합니다.'))el.remove();});
@@ -160,7 +182,31 @@ function open(record=null){
    else{const response=await fetch(endpoint+'/'+encodeURIComponent(record.id)+'/attachments/'+encodeURIComponent(file.id),{credentials:'same-origin',cache:'no-store'});if(!response.ok)throw Error('첨부파일을 불러오지 못했습니다.');blob=new Blob([await response.arrayBuffer()],{type:mime||'application/octet-stream'});}
    if(serial!==previewSerial||!root.isConnected)return;
    previewUrl=URL.createObjectURL(blob);previewBody.replaceChildren();
-   if(supported){
+   if(/\.(xlsx|xls|xlsm|xlsb|ods|csv)$/i.test(file.name)){
+    const XLSX=await loadSpreadsheetReader(),workbook=XLSX.read(await blob.arrayBuffer(),{type:'array',cellStyles:true});
+    if(serial!==previewSerial||!root.isConnected)return;
+    const sheetSelect=document.createElement('select');sheetSelect.className='std-sheet-select';sheetSelect.setAttribute('aria-label','엑셀 시트 선택');
+    workbook.SheetNames.forEach(name=>{const option=document.createElement('option');option.textContent=name;option.value=name;sheetSelect.append(option);});
+    const scroll=document.createElement('div');scroll.className='std-sheet-scroll';
+    function drawSheet(){
+     const sheet=workbook.Sheets[sheetSelect.value];scroll.replaceChildren();if(!sheet?.['!ref']){scroll.textContent='비어 있는 시트입니다.';return;}
+     const range=XLSX.utils.decode_range(sheet['!ref']),table=document.createElement('table'),merges=sheet['!merges']||[];
+     const lastRow=Math.min(range.e.r,range.s.r+999),lastCol=Math.min(range.e.c,range.s.c+99);
+     for(let row=range.s.r;row<=lastRow;row++){
+      const tr=document.createElement('tr');
+      const height=sheet['!rows']?.[row]?.hpx;if(height)tr.style.height=height+'px';
+      for(let col=range.s.c;col<=lastCol;col++){
+       const merged=merges.find(m=>row>=m.s.r&&row<=m.e.r&&col>=m.s.c&&col<=m.e.c);
+       if(merged&&(row!==merged.s.r||col!==merged.s.c))continue;
+       const td=document.createElement('td'),cell=sheet[XLSX.utils.encode_cell({r:row,c:col})];
+       td.textContent=cell?.w??(cell?.v==null?'':String(cell.v));
+       if(merged){td.rowSpan=Math.min(merged.e.r,lastRow)-row+1;td.colSpan=Math.min(merged.e.c,lastCol)-col+1;}
+       tr.append(td);
+      }table.append(tr);
+     }scroll.append(table);
+    }
+    sheetSelect.onchange=drawSheet;previewBody.append(sheetSelect,scroll);drawSheet();
+   }else if(supported){
     const viewer=document.createElement(mime==='application/pdf'?'iframe':'img');viewer.src=previewUrl;
     if(viewer.tagName==='IMG')viewer.alt=file.name;else viewer.title=file.name+' PDF 미리보기';
     previewBody.append(viewer);
@@ -314,3 +360,4 @@ install();
 (()=>{const style=document.createElement("style");style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .am-detail-top{border-bottom:0!important;box-shadow:none!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split{border-top:0!important;box-shadow:none!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.am-section{border-top:0!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.am-section>.am-section-head{border-top:1px solid #d6e1ee!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.std-document-preview{border-top:1px solid #d6e1ee!important}\n";document.head.append(style);})();
 (()=>{const style=document.createElement("style");style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split{height:max(680px,calc(100vh - 235px))!important;min-height:0!important;align-items:stretch!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.am-section,\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.std-document-preview{height:auto!important;min-height:0!important;margin:0!important;align-self:stretch!important;box-sizing:border-box!important;border:1px solid #d6e1ee!important;border-radius:7px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.am-section>.am-section-head{border-top:0!important;flex:0 0 36px!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-preview-head{flex:0 0 36px!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split>.am-section>.am-section-body{flex:1 1 0!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;box-sizing:border-box!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split .form-grid{min-height:0!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-preview-body{flex:1 1 0!important;min-height:0!important;overflow:auto!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-preview-body iframe{min-height:0!important;height:100%!important}\n@media(max-width:1100px){html body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split{height:auto!important;grid-auto-rows:minmax(680px,auto)}}\n";document.head.append(style);})();
 (()=>{const style=document.createElement("style");style.textContent="\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split .form-grid{border:1px solid #dce4ed!important;box-sizing:border-box!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split .form-grid>.form-item{border:0!important;border-bottom:1px solid #dce4ed!important;box-sizing:border-box!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split .form-grid>.form-item:last-child{border-bottom:0!important}\nhtml body #mainWorkspace .am-split[data-am-screen=standard] .std-document-editor-split .form-grid>.form-item>label{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;align-self:stretch!important;height:100%!important;margin:0!important;padding:0 8px!important;border-right:1px solid #dce4ed!important;box-sizing:border-box!important}\n";document.head.append(style);})();
+(()=>{const style=document.createElement('style');style.textContent=".std-sheet-select{width:100%;height:30px;flex-shrink:0;border:1px solid #cbd8e6;background:#fff;font:12px inherit}.std-sheet-scroll{width:100%;min-height:0;flex:1;overflow:auto;background:#fff;align-self:stretch}.std-sheet-scroll table{border-collapse:collapse;width:max-content;min-width:100%;font:11px Arial,\"Malgun Gothic\",sans-serif;color:#243b53}.std-sheet-scroll td{border:1px solid #d3dce7;min-width:65px;max-width:400px;padding:5px 7px;white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:middle}" ;document.head.append(style);})();
