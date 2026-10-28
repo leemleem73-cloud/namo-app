@@ -174,3 +174,32 @@ base+' input[type=file]{font-family:inherit!important;font-size:11px!important;b
 document.head.append(parityStyle);
 })();
 (function(){const s=document.createElement('style');s.id='purchase-basic-font-weight-20261028';s.textContent='html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,select,textarea),html body #mainWorkspace #namo-purchase-new-enterprise .fields :is(input,textarea)::placeholder{font-weight:400!important}';document.head.append(s);})();
+
+/* One sidebar owner: refresh only the list after authoritative data arrives. */
+(function(){
+ let previous='',queued=false;
+ function sync(){
+  queued=false;
+  const split=document.querySelector('.am-split[data-am-screen="purchase"]');
+  if(!split)return;
+  const records=window.qmesPurchaseList?.rows?.();if(!records)return;
+  const signature=JSON.stringify(records.map(r=>[r.id||r.purchaseNo||r.no,r.orderDate,r.supplier,r.item||r.material]));
+  if(signature===previous&&split.dataset.purchaseSidebarSynced==='1')return;
+  const old=split.querySelector('.am-list-pane');if(!old)return;
+  const query=old.querySelector('.am-list-search')?.value||'';
+  const currentPage=Number(old.querySelector('.am-list-pagination button.active')?.textContent)||1;
+  const selected=old.querySelector('.am-list-item.active')?.dataset.amRecordId||'';
+  const template=document.createElement('template');
+  template.innerHTML=window.amaranthScreen('purchase','','new');
+  const aside=template.content.querySelector('.am-list-pane');if(!aside)return;
+  aside.querySelector('.am-list-search').value=query;
+  if(aside.querySelector('.am-list-pagination'))aside.querySelector('.am-list-pagination').dataset.amPage=String(currentPage);
+  if(selected)[...aside.querySelectorAll('.am-list-item')].forEach(b=>b.classList.toggle('active',b.dataset.amRecordId===selected));
+  old.replaceWith(aside);previous=signature;split.dataset.purchaseSidebarSynced='1';
+  window.wireAmaranthScreen?.();
+ }
+ document.addEventListener('qmes-purchase-list-render',()=>{if(!queued){queued=true;queueMicrotask(sync);}});
+ const style=document.createElement('style');style.id='purchase-native-sidebar-only-20261028';
+ style.textContent='.am-split[data-am-screen="purchase"] .qpu-side-pagination{display:none!important}';
+ document.head.append(style);
+})();
