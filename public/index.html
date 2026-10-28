@@ -8260,7 +8260,7 @@ html body #ncr .ncr-editor-main .ncr-form :is(input,select,textarea){font-size:1
 html body #ncr :is(.ncr-section-title,.ncr-editor-toolbar>strong){font-size:13px!important;font-weight:700!important}
 html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!important;font-weight:700!important}
 </style>
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261028-order-nowrap2"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261028-white-current3"></script>
 <script id="qmes-pqc-approval-grid-20261021">
 window.qmesPqcApprovalGrid=function(row){
  const id=String(row?.dataset?.sourceId||'');
@@ -8480,7 +8480,10 @@ html body .module-page button.qmes-white-list-action:focus-visible{outline:2px s
   roots.forEach(root=>root.querySelectorAll('button').forEach(button=>{
    if(button.closest('dialog,.am-split,form,tbody,.qpp-selection-bar'))return;
    const text=button.textContent.trim();
-   if(button.matches('.export-btn,.new-btn')||/엑셀|내보내기|신규/.test(text)||/^\+\s*.*등록$/.test(text))button.classList.add('qmes-white-list-action');
+   if(button.matches('.export-btn,.new-btn')||/엑셀|CSV|내보내기|신규/.test(text)||/^\+\s*.*등록$/.test(text)){
+    button.classList.add('qmes-white-list-action');
+    Object.entries({'background':'#fff','color':'#16446c','border':'1px solid #cfdfef','box-shadow':'none','font-size':'12px','font-weight':'700','font-family':'Arial,"Malgun Gothic",sans-serif','height':'36px','padding':'0 15px','border-radius':'5px'}).forEach(([name,value])=>button.style.setProperty(name,value,'important'));
+   }
   }));
  }
  let queued=false;const observer=new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;scan();});}});
