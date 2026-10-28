@@ -7017,6 +7017,7 @@ function showRowDetail(id,row){
     return;
   }
   if(id==='process'){
+    const dateValue=value=>{const parts=String(value??'').match(/\d+/g)||[];if(parts.length<3)return '';const [y,m,d]=parts.map(Number),date=new Date(Date.UTC(y,m-1,d));return date.getUTCFullYear()===y&&date.getUTCMonth()===m-1&&date.getUTCDate()===d?[y,String(m).padStart(2,'0'),String(d).padStart(2,'0')].join('-'):'';};
     const get=name=>vals[cols.indexOf(name)]||'';
     const lot=get('생산 LOT NO');
     const safe=amEsc;
@@ -7046,7 +7047,7 @@ function showRowDetail(id,row){
       ['제품명',get('제품명')],
       ['생산 LOT NO',lot],
       ['공정명','PQC'],
-    ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="text" value="'+safe(value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
+    ].filter(Boolean).map(([label,value])=>'<div class="am-inline-cell"><label>'+safe(label)+'</label><input type="'+(label==='검사일자'?'date':'text')+'" value="'+safe(label==='검사일자'?dateValue(value):value)+'" data-pqc-field="'+safe(label)+'"></div>').join('')+
     '<div class="am-inline-cell"><label>검사합부</label><select data-pqc-field="검사합부"><option value="대기">대기</option><option value="합격">합격</option><option value="불합격">불합격</option></select></div>'+
     '<div class="am-inline-cell"><label>검사자</label><select id="pqcDetailInspector" data-pqc-field="검사자"><option value="">검사자 선택</option><option>문지훈</option><option>박현아</option><option value="__manual__">직접선택</option></select><input id="pqcDetailInspectorManual" type="text" placeholder="검사자 직접 입력" style="display:none;margin-top:6px"></div>'+
     '<div class="am-inline-cell"><label>작업지시번호</label><select id="pqcDetailWorkOrder" aria-label="작업지시번호">'+orderOptions+'</select></div>'+
@@ -7135,7 +7136,7 @@ function showRowDetail(id,row){
     if(existingDraft){
       Object.entries(existingDraft.fields||{}).forEach(([key,value])=>{
         const field=[...document.querySelectorAll('[data-pqc-field]')].find(el=>el.dataset.pqcField===key);
-        if(field)field.value=value;
+        if(field)field.value=key==='검사일자'?dateValue(value):value;
       });
       Object.entries(existingDraft.measurements||{}).forEach(([item,values])=>{
         [...document.querySelectorAll('[data-pqc-measure]')].filter(el=>el.dataset.pqcMeasure===item).forEach((el,i)=>{el.value=values[i]??'';});
@@ -8459,7 +8460,7 @@ html body #app main.content #purchase .module-shell>.module-body table{border-bo
 html body #app main.content #purchase .module-shell>.module-body table tbody tr:last-child,
 html body #app main.content #purchase .module-shell>.module-body table tbody tr:last-child>:is(td,th){border-bottom:0!important;box-shadow:none!important}
 </style>
-<script defer src="./js/qmes-inspection-date-calendar-20261028.js?v=1"></script>
+<script defer src="./js/qmes-inspection-date-calendar-20261028.js?v=2"></script>
 </body>
 </html>
 
