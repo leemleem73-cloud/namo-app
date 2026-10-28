@@ -14,7 +14,7 @@
     if(!menu){window.toast?.('연결할 화면을 찾지 못했습니다.');return;}
     window.qmesMenuHistory?.beginProcessNavigation(target);
     menu.click();
-    const registration=new Set(['sales','purchase','iqc','pqc','oqc','workOrder']);
+    const registration=new Set(['sales','purchase','incomingLot','iqc','pqc','oqc','workOrder']);
     if(!registration.has(key))return;
     const open=()=>{
       if(ticket!==navigationId)return true;
