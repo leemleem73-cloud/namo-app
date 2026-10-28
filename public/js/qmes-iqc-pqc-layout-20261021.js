@@ -119,3 +119,21 @@
  base+' .iqc-esign-parity>.pqc-esign-note{border:0!important;border-top:1px solid #d7e0e9!important}';
  document.head.append(style);
 })();
+
+/* Remove registration guidance without changing any inspection or approval fields. */
+(function(){
+ const selector='.am-split[data-am-screen="incoming"]:has(.iqc-pqc-layout)';
+ function clean(){
+  document.querySelectorAll(selector).forEach(pane=>{
+   pane.querySelector('.am-detail-top .title-wrap>small')?.remove();
+   pane.querySelector('.am-detail-note')?.remove();
+   const footer=pane.querySelector('.iqc-esign-parity>.pqc-esign-note');
+   if(footer&&footer.textContent!=='(주)나모케미칼')footer.textContent='(주)나모케미칼';
+  });
+ }
+ const style=document.createElement('style');style.id='iqc-registration-copy-clean-20261028';
+ style.textContent=selector+' .am-detail-top .title-wrap>small,'+selector+' .am-detail-note{display:none!important}html body #mainWorkspace '+selector+' .iqc-esign-parity>.pqc-esign-note{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}';
+ document.head.append(style);
+ let pending=false;new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;clean();});}}).observe(document.body,{childList:true,subtree:true});
+ clean();
+})();
