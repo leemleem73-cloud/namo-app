@@ -44,9 +44,9 @@ function render(){
   controls.append(view,remove);side.append(date,controls);row.append(dot,copy,side);list.append(row);
  });
  pager.replaceChildren();
- const previous=document.createElement('button');previous.type='button';previous.textContent='‹';previous.setAttribute('aria-label','이전 알림 페이지');previous.disabled=page<=1;previous.onclick=()=>refresh({page:page-1});
+ const previous=document.createElement('button');previous.type='button';previous.textContent='‹';previous.setAttribute('aria-label','이전 알림 페이지');previous.disabled=page<=1;previous.onclick=event=>{event.preventDefault();event.stopPropagation();refresh({page:page-1});};
  const current=document.createElement('span');current.textContent=page+' / '+pages+' · 총 '+total+'건';current.setAttribute('aria-live','polite');
- const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','다음 알림 페이지');next.disabled=page>=pages;next.onclick=()=>refresh({page:page+1});
+ const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','다음 알림 페이지');next.disabled=page>=pages;next.onclick=event=>{event.preventDefault();event.stopPropagation();refresh({page:page+1});};
  pager.append(previous,current,next);badgeState();
 }
 function filter(){return tabs.querySelector('.notify-tab.active')?.dataset.filter||'all';}
@@ -83,6 +83,8 @@ async function act(row,action){
  }catch(error){window.toast?.(error.message);}finally{actions.delete(key);}
 }
 window.addEventListener('click',async event=>{
+ const pageButton=event.target.closest('.qmes-notify-pager button');
+ if(pageButton&&pager.contains(pageButton)){event.preventDefault();event.stopImmediatePropagation();if(!pageButton.disabled)refresh({page:page+(pageButton.getAttribute('aria-label')==='이전 알림 페이지'?-1:1)});return;}
  const tab=event.target.closest('#notifyTabs .notify-tab');
  if(tab){event.preventDefault();event.stopImmediatePropagation();tabs.querySelectorAll('.notify-tab').forEach(el=>el.classList.toggle('active',el===tab));refresh({reset:true});return;}
  const all=event.target.closest('#notifyReadAll');
