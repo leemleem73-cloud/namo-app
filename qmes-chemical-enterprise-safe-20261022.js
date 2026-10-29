@@ -161,6 +161,21 @@ function install(app) {
     }
   });
 
+
+  app.patch('/api/qmes-change/:id',auth,async(req,res)=>{
+    const id=Number(req.params.id),b=req.body||{},type=str(b.change_type,80),title=str(b.title,240),planned=str(b.planned_on,10);
+    if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'변경번호를 확인하세요.');
+    if(!type||!title)return fail(res,400,'변경구분과 변경제목은 필수입니다.');
+    if(!validDate(planned))return fail(res,400,'적용예정일을 확인하세요.');
+    try{
+      await ensureSchema();
+      const result=await pool.query(`UPDATE qmes_change_requests SET change_type=$1,title=$2,target=$3,owner=$4,planned_on=$5,current_value=$6,proposed_value=$7,reason=$8,impact=$9,updated_at=NOW() WHERE id=$10 AND deleted_at IS NULL RETURNING *`,
+      [type,title,str(b.target,240),str(b.owner,120),planned||null,str(b.current_value,2000),str(b.proposed_value,2000),str(b.reason,2000),str(b.impact,3000),id]);
+      if(!result.rowCount)return fail(res,404,'변경건을 찾을 수 없습니다.');
+      res.json({success:true,data:result.rows[0]});
+    }catch(error){console.error('[QMES change update]',error);fail(res,500,'변경관리 수정 실패');}
+  });
+
   app.post('/api/qmes-change/:id/action', auth, async (req, res) => {
     const id = Number(req.params.id), action = str(req.body?.action, 30);
     if (!Number.isSafeInteger(id) || id < 1 || !['review','approve','close'].includes(action)) return fail(res, 400, '처리 요청을 확인하세요.');
