@@ -697,6 +697,7 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
   }
   const page=routes[name];
   if(!page){toast('왼쪽 메뉴에서 업무를 선택해주세요.');return;}
+  if(fromSearch)rememberQuickSearch(name);
   window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page,fromSearch:fromSearch},location.origin);
 }
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>action(btn.dataset.action)));
@@ -768,7 +769,23 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
  }
  input.addEventListener('input',()=>renderResults(input.value));input.addEventListener('focus',()=>{if(input.value.trim())renderResults(input.value)});
  byId('search-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();toast('검색할 업무명을 입력해주세요.');return}const found=visibleMenuData().find(x=>x.name.toLocaleLowerCase()===q.toLocaleLowerCase());if(found)action(found.name,true);else{renderResults(q);toast('현재 시안은 메뉴 검색만 제공합니다. 실제 조회는 QMES 연동 후 가능합니다.')}});
- document.querySelectorAll('[data-query]').forEach(btn=>btn.addEventListener('click',()=>{input.value=btn.dataset.query;input.focus();renderResults(input.value)}));
+
+ const quickRow=document.querySelector('.quick-search'),quickKey='qmes-portal-quick-search-v1';
+ let quickItems=['작업지시','수입검사','제품 LOT','출하검사'];
+ try{const saved=JSON.parse(sessionStorage.getItem(quickKey)||'null');if(Array.isArray(saved))quickItems=saved.filter(x=>typeof x==='string'&&x.length<=60).slice(0,8);}catch(_){}
+ function paintQuickSearch(){
+  quickRow.replaceChildren();quickRow.hidden=!quickItems.length;
+  const label=document.createElement('strong');label.textContent='빠른 검색';quickRow.append(label);
+  quickItems.forEach(name=>{const chip=document.createElement('span');chip.className='quick-search-chip';const search=document.createElement('button');search.type='button';search.dataset.query=name;search.textContent='# '+name;const remove=document.createElement('button');remove.type='button';remove.className='quick-search-remove';remove.textContent='×';remove.title='닫기';remove.setAttribute('aria-label',name+' 빠른검색 닫기');chip.append(search,remove);quickRow.append(chip);});
+ }
+ function saveQuickSearch(){try{sessionStorage.setItem(quickKey,JSON.stringify(quickItems));}catch(_){}paintQuickSearch();}
+ function rememberQuickSearch(name){quickItems=[name,...quickItems.filter(item=>item!==name)].slice(0,8);saveQuickSearch();}
+ quickRow.addEventListener('click',event=>{
+  const remove=event.target.closest('.quick-search-remove');
+  if(remove){event.preventDefault();event.stopPropagation();const name=remove.previousElementSibling.dataset.query;quickItems=quickItems.filter(item=>item!==name);saveQuickSearch();return;}
+  const button=event.target.closest('[data-query]');if(button){input.value=button.dataset.query;input.focus();renderResults(input.value);}
+ });paintQuickSearch();
+
  document.addEventListener('namo-portal-auth-change',()=>{closeAll();if(input.value.trim()==='직원관리')input.value='';});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();input.blur()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();input.focus()}});
  document.addEventListener('click',e=>{if(!e.target.closest('.search-box')&&!e.target.closest('.search-dropdown')&&!e.target.closest('.quick-search'))dropdown.classList.remove('open')});
@@ -874,7 +891,7 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
 .quick-search .quick-search-remove:hover{background:rgba(255,255,255,.2)}
 </style>
 <script>
-document.querySelectorAll('.quick-search-remove').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();const row=button.closest('.quick-search');button.closest('.quick-search-chip').remove();if(!row.querySelector('.quick-search-chip'))row.hidden=true;}));
+
 </script>
 </body>
 </html>
