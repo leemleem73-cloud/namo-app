@@ -30,6 +30,7 @@
    badge.style.display=count?'block':'none';
  }
  async function loadInbox(){
+   if(window.qmesNotificationHistory)return window.qmesNotificationHistory.refresh();
    if(inboxBusy)return;
    const list=document.getElementById('notifyList');
    if(!list)return;
@@ -37,6 +38,7 @@
    const requestedQuery=window.qmesNotificationDates?.query()||'';
    try{
      const rows=await api('/inbox'+requestedQuery);
+     if(window.qmesNotificationHistory)return window.qmesNotificationHistory.refresh();
      if(requestedQuery!==(window.qmesNotificationDates?.query()||''))return;
      list.querySelectorAll('.notify-item[data-source="work-dispatch"]').forEach(n=>n.remove());
      refreshDispatchBadge((rows||[]).filter(n=>!n.read_at).length);
