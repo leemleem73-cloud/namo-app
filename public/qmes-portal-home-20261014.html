@@ -893,5 +893,14 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
 <script>
 
 </script>
+<script>
+window.addEventListener('keydown',function(event){
+ if(event.defaultPrevented||event.isComposing||event.repeat)return;
+ const editable=event.target.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+ const back=event.key==='BrowserBack'||event.key==='GoBack'||event.altKey&&event.key==='ArrowLeft'||event.key==='Backspace'&&!editable&&!event.ctrlKey&&!event.metaKey&&!event.altKey;
+ const forward=event.key==='BrowserForward'||event.key==='GoForward'||event.altKey&&event.key==='ArrowRight';
+ if(!back&&!forward)return;event.preventDefault();event.stopImmediatePropagation();window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'keyboard-history',direction:forward?'forward':'back'},location.origin);
+},true);
+</script>
 </body>
 </html>
