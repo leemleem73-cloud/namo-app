@@ -63,10 +63,24 @@ window.addEventListener('click',async event=>{
   const url=source==='module-update'?'/api/qmes/module-notifications/'+id+'/read':source==='quality'?'/api/qmes-quality/notifications/'+id+'/read':'/api/qmes-work-dispatch/inbox/'+encodeURIComponent(id)+'/read';
   await json(url,{method:'POST'});
   if(source==='module-update')unread=Math.max(0,unread-1);else if(source==='quality')qualityUnread=Math.max(0,qualityUnread-1);else button.dataset.workDispatchUnread=Math.max(0,Number(button.dataset.workDispatchUnread||0)-1);
-  row.remove();apply();panel.classList.remove('open');button.classList.remove('notify-active');
-  document.querySelector('.menu[data-page="'+row.dataset.page+'"]')?.click();position();schedule();
+  const navigate=!!event.target.closest('[data-notify-view]');
+  row.remove();apply();
+  if(navigate){
+   panel.classList.remove('open');button.classList.remove('notify-active');
+   document.querySelector('.menu[data-page="'+row.dataset.page+'"]')?.click();position();
+  }
+  schedule();
  }catch(error){window.toast?.(error.message);}
 },true);
+function addViewButtons(){
+ list.querySelectorAll('.notify-item').forEach(row=>{
+  if(row.querySelector('[data-notify-view]'))return;
+  const view=document.createElement('button');view.type='button';view.dataset.notifyView='1';view.className='qmes-notify-view';view.textContent='화면 보기';view.setAttribute('aria-label',(modules[row.dataset.page]||'해당 메뉴')+' 화면으로 이동');
+  const time=row.querySelector('.notify-time');(time||row).append(view);
+  row.title='알림을 누르면 이동 없이 읽음 처리됩니다.';
+ });
+}
+new MutationObserver(addViewButtons).observe(list,{childList:true,subtree:true});addViewButtons();
 list.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)&&event.target.matches('.notify-item')){event.preventDefault();event.target.click();}});
 button.addEventListener('click',()=>{requestAnimationFrame(position);refresh();});
 new MutationObserver(position).observe(panel,{attributes:true,attributeFilter:['class']});
@@ -81,6 +95,6 @@ window.fetch=async function(input,options){
  return response;
 };
 const style=document.createElement('style');style.textContent=
-'#notifyPanel{z-index:2147480000!important;max-width:calc(100vw - 16px)!important;box-sizing:border-box!important;overflow:hidden!important;border-radius:8px!important}#notifyPanel:before{display:none!important}#notifyPanel .notify-head,#notifyPanel .notify-tools,#notifyPanel .notify-date,#notifyPanel .notify-footer{flex-shrink:0!important}#notifyPanel .notify-tabs{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:5px!important;white-space:normal!important}#notifyPanel .notify-tab{flex:0 0 auto!important;margin:0!important}#notifyPanel .notify-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important}#notifyPanel .notify-item{grid-template-columns:30px minmax(0,1fr) 98px!important;box-sizing:border-box!important;cursor:pointer}#notifyPanel .notify-copy{min-width:0!important;overflow-wrap:anywhere!important}#notifyPanel .notify-time{white-space:normal!important;font-size:10px!important}#notifyPanel .qmes-unread-item .notify-dot{background:#fff0f0;color:#d92d20}#notifyBtn{position:relative!important;overflow:visible!important}#notifyBtn:after,#notifyBtn:before,#notifyBtn .namo-work-dispatch-badge{display:none!important}#notifyBtn .qmes-unread-badge{position:absolute;right:-4px;top:-4px;min-width:17px;height:17px;box-sizing:border-box;padding:0 4px;border-radius:10px;background:#e53935;color:#fff;font:700 10px/17px Arial,sans-serif;text-align:center;border:1px solid #fff;pointer-events:none}#notifyBtn .qmes-unread-badge[hidden]{display:none!important}#notifyBtn.qmes-has-unread svg{stroke:#d92d20!important}';
-document.head.append(style);refresh();setInterval(refresh,20000);
+'#notifyPanel{z-index:2147480000!important;max-width:calc(100vw - 16px)!important;box-sizing:border-box!important;overflow:hidden!important;border-radius:8px!important}#notifyPanel:before{display:none!important}#notifyPanel .notify-head,#notifyPanel .notify-tools,#notifyPanel .notify-date,#notifyPanel .notify-footer{flex-shrink:0!important}#notifyPanel .notify-tabs{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:5px!important;white-space:normal!important}#notifyPanel .notify-tab{flex:0 0 auto!important;margin:0!important}#notifyPanel .notify-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important}#notifyPanel .notify-item{grid-template-columns:30px minmax(0,1fr) 98px!important;box-sizing:border-box!important;cursor:pointer}#notifyPanel .notify-copy{min-width:0!important;overflow-wrap:anywhere!important}#notifyPanel .notify-time{white-space:normal!important;font-size:10px!important}#notifyPanel .qmes-unread-item .notify-dot{background:#eaf1fb;color:#3a78bd}#notifyBtn{position:relative!important;overflow:visible!important}#notifyBtn:after,#notifyBtn:before,#notifyBtn .namo-work-dispatch-badge{display:none!important}#notifyBtn .qmes-unread-badge{position:absolute;right:-4px;top:-4px;min-width:17px;height:17px;box-sizing:border-box;padding:0 4px;border-radius:10px;background:#e53935;color:#fff;font:700 10px/17px Arial,sans-serif;text-align:center;border:1px solid #fff;pointer-events:none}#notifyBtn .qmes-unread-badge[hidden]{display:none!important}';
+style.textContent+='#notifyPanel .qmes-notify-view{display:block;margin:6px 0 0 auto;padding:3px 6px;border:1px solid #cbd8e6;border-radius:4px;background:#fff;color:#27618e;font:600 10px Arial,"Malgun Gothic",sans-serif;cursor:pointer}#notifyPanel .qmes-notify-view:hover{background:#eaf3fd}';document.head.append(style);refresh();setInterval(refresh,20000);
 })();
