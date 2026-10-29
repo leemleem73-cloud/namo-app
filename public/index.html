@@ -4985,6 +4985,7 @@ async function qmesRequestQualityApproval(docType,recordId,title,page='approval'
   }
 }
 async function loadQualityNotifications(){
+  if(window.qmesNotificationHistory)return window.qmesNotificationHistory.refresh();
   await window.qmesAuthDataReady.wait();
   if(!notifyList) return;
   try{
@@ -4993,6 +4994,7 @@ async function loadQualityNotifications(){
     const p=await r.json();
     if(!r.ok||!p.success) throw new Error(p.message||'알림 조회 실패');
     if(notificationQuery!==(window.qmesNotificationDates?.query()||''))return;
+    if(window.qmesNotificationHistory)return window.qmesNotificationHistory.refresh();
     const rows=Array.isArray(p.data)?p.data:[];
     notifyList.querySelectorAll('.notify-item[data-source="quality"]').forEach(x=>x.remove());
     rows.filter(n=>!n.read_at).forEach(n=>{
@@ -7939,8 +7941,8 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261026-custom-material-lot9"></script>
-<script defer src="./js/qmes-notification-dates-20261021.js?v=1"></script>
-<script defer src="./js/namo-work-dispatch-20261014.js?v=20261029-unread-only3"></script>
+<script defer src="./js/qmes-notification-dates-20261021.js?v=2"></script>
+<script defer src="./js/namo-work-dispatch-20261014.js?v=20261029-history4"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261028-single-month8"></script>
 <script id="namo-portal-parent-bridge-20261014">
 (function(){
@@ -8535,7 +8537,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
  roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
 })();
 </script>
-<script defer src="./js/qmes-module-notifications-20261029.js?v=2"></script>
+<script defer src="./js/qmes-module-notifications-20261029.js?v=3"></script>
 <script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=3"></script>
 </body>
 </html>
