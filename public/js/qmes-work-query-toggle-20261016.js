@@ -23,9 +23,9 @@ function init(){
  #work #namo-work-inquiry [data-work-tooltip]:hover::after,#work #namo-work-inquiry [data-work-tooltip]:focus-visible::after{opacity:1;visibility:visible}
  #work .module-shell.nwi-list-folded>#nwi-work-list,#work .module-shell.nwi-list-folded>#nwi-work-list-pagination{display:none!important}
  /* Work-order inquiry row only: align field sizes with purchase-order search controls. */
- #work #namo-work-inquiry .nwi-grid{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px 16px!important}
- #work #namo-work-inquiry .nwi-grid>label:not([hidden]){display:flex!important;align-items:center!important;gap:7px!important;width:auto!important;max-width:none!important;min-width:0!important;flex:0 0 auto!important}
- #work #namo-work-inquiry .nwi-grid>label:not([hidden])>span{flex:0 0 auto!important;white-space:nowrap!important}
+ #work #namo-work-inquiry .nwi-grid{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;justify-items:start!important;gap:10px 16px!important;width:100%!important;grid-template-columns:none!important}
+ #work #namo-work-inquiry .nwi-grid>label:not([hidden]){display:flex!important;align-items:center!important;gap:7px!important;justify-content:flex-start!important;width:auto!important;max-width:none!important;min-width:0!important;flex:0 0 auto!important;margin:0!important;padding:0!important;grid-template-columns:none!important}
+ #work #namo-work-inquiry .nwi-grid>label:not([hidden])>span{flex:0 0 auto!important;width:auto!important;min-width:0!important;margin:0!important;padding:0!important;white-space:nowrap!important;text-align:left!important;}
  #work #namo-work-inquiry .nwi-grid>label:not([hidden])>input,#work #namo-work-inquiry .nwi-grid>label:not([hidden])>select{width:195px!important;min-width:195px!important;max-width:195px!important;height:30px!important;box-sizing:border-box!important;flex:0 0 195px!important}
  #work #namo-work-inquiry .nwi-period-label .nwi-period-trigger{width:215px!important;min-width:215px!important;max-width:215px!important;height:30px!important;box-sizing:border-box!important}
   #work .module-shell>.nwi-list-head{padding-right:228px!important}
