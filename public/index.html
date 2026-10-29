@@ -4812,7 +4812,9 @@ function qualityApprovalShell(){
       #approval .quality-approval-table th:nth-child(6){width:170px}
       #approval .quality-approval-table th:nth-child(7){width:92px}
       #approval .quality-approval-table th:nth-child(8){width:150px}
-      #approval .quality-approval-table th:nth-child(9){width:130px}
+      #approval .quality-approval-table th:nth-child(9){width:150px}
+      #approval .quality-approval-table th:nth-child(10){width:76px}
+      #approval .quality-approval-table .quality-result-cell{font-size:10px;color:#64748b;text-align:center}
       #approval .quality-approval-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       #approval .quality-approval-table td:nth-child(4){text-align:left}
       #approval .quality-approve-btn,#approval .quality-delete-btn{height:24px!important;padding:0 7px!important;font-size:10px!important;margin-left:4px}
@@ -4828,7 +4830,7 @@ function qualityApprovalShell(){
         <div class="filters"><input class="input quality-approval-search" placeholder="문서번호 / 제목 / 작성자 검색"></div>
         <div class="table-tools"><button class="btn quality-approval-refresh" type="button">새로고침</button></div>
       </div>
-      <div class="module-body"><table class="quality-approval-table"><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th><th>비고</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="9">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
+      <div class="module-body"><table class="quality-approval-table"><thead><tr><th>NO</th><th>문서번호</th><th>문서구분</th><th>제목</th><th>작성자</th><th>작성일</th><th>결재상태</th><th>승인자</th><th>처리결과</th><th>비고</th></tr></thead><tbody class="quality-approval-body"><tr><td colspan="10">결재 내역을 불러오는 중입니다.</td></tr></tbody></table></div>
       <div class="quality-approval-pager"></div>
     </div>`;
 }
@@ -4888,8 +4890,8 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
           canAct&&a.status==='REVIEWED'? `<button class="btn primary quality-approve-btn" type="button" data-approval-id="${a.id}">최종 승인</button>`:'';
         const status=a.status==='APPROVED'?'<span class="badge b-green">승인완료</span>':'<span class="badge b-yellow">'+step+'</span>';
         const remark=a.status==='APPROVED'?'최종 승인완료':a.status==='REVIEWED'?'검토완료 · 최종 승인대기':step;
-        return `<tr><td>${from+i+1}</td><td title="${qualityApprovalDocNo(a)}">${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left" title="${a.title||'-'}">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td><div style="font-size:10px;color:#64748b;margin-bottom:4px">${remark}</div><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
-      }).join(''):'<tr><td colspan="9">현재 결재 요청이 없습니다.</td></tr>';
+        return `<tr><td>${from+i+1}</td><td title="${qualityApprovalDocNo(a)}">${qualityApprovalDocNo(a)}</td><td>${a.doc_type||'-'}</td><td class="left" title="${a.title||'-'}">${a.title||'-'}</td><td>${a.writer_name||'-'}</td><td>${qualityApprovalDate(a.created_at)}</td><td>${status}</td><td>${a.approver_name||'-'} ${action}</td><td class="quality-result-cell" title="${remark}">${remark}</td><td><button class="btn quality-delete-btn" type="button" data-approval-id="${a.id}" style="color:#c2413b;border-color:#f1c1bd">삭제</button></td></tr>`;
+      }).join(''):'<tr><td colspan="10">현재 결재 요청이 없습니다.</td></tr>';
 
       if(pager){
         if(filtered.length<=PAGE_SIZE){pager.innerHTML='';}
