@@ -341,6 +341,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock button{height:30px;padd
 
 html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-delete]{color:#dc2626!important}
   `;
+  style.textContent+="html body #changeControl .qce-instrument-selection-dock{position:fixed;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--qmes-nav-background,#315d79);color:#fff;border:1px solid #3c6988;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}\nhtml body #changeControl .qce-instrument-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}\nhtml body #changeControl .qce-instrument-selection-count{font-size:13px;font-weight:700;color:#fff}\nhtml body #changeControl .qce-instrument-selection-dock>div{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}\nhtml body #changeControl .qce-instrument-selection-dock button{height:30px;padding:0 12px;border:1px solid #b8cde2;border-radius:4px;background:#f5f9ff;color:#244260;font:700 11px Pretendard,\"Noto Sans KR\",Arial,sans-serif;cursor:pointer}\n@media(prefers-reduced-motion:reduce){html body #changeControl .qce-instrument-selection-dock{transition:none}}\n\nhtml body #changeControl .qce-instrument-selection-dock [data-inst-selected-delete]{color:#dc2626!important}\n\nhtml body #changeControl .qce-change-selected>td{background:#eaf4ff!important}\nhtml body #changeControl .qce-table th{text-align:center!important}\nhtml body .qce-modal-bg .qce-change-form .qce-field>label{justify-content:center!important;text-align:center!important;padding-left:8px!important;padding-right:8px!important}\nhtml body .qce-modal-bg .qce-change-form .qce-field :is(input,select,textarea){box-sizing:border-box!important;text-align:left!important;padding-left:10px!important;padding-right:10px!important;font-family:Pretendard,\"Noto Sans KR\",\"Malgun Gothic\",sans-serif!important;font-size:12px!important;letter-spacing:0!important}\n";
   document.head.appendChild(style);
 
   function head(title,desc){return '<div class="qce-head"><div><h1>'+esc(title)+'</h1><p>'+esc(desc)+'</p></div><div class="date-badge">QMES</div></div>';}
@@ -596,14 +597,35 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   function renderChange(){
     const root=document.getElementById('changeControl');if(!root)return;
     if(root._changeLoad&&root.querySelector('.qce-change-body')){root._changeLoad();return;}
+    const selectedIds=new Set();
+    const syncSelection=()=>{
+      const boxes=Array.from(root.querySelectorAll('.qce-change-row-select')),all=root.querySelector('.qce-change-select-all');
+      boxes.forEach(box=>{box.checked=selectedIds.has(box.value);box.closest('tr').classList.toggle('qce-change-selected',box.checked);});
+      if(all){all.checked=boxes.length>0&&boxes.every(box=>box.checked);all.indeterminate=boxes.some(box=>box.checked)&&!all.checked;}
+      const dock=root.querySelector('.qce-instrument-selection-dock');
+      if(dock){
+        const count=selectedIds.size;dock.classList.toggle('is-visible',count>0);dock.inert=!count;dock.setAttribute('aria-hidden',count?'false':'true');
+        dock.querySelector('.qce-instrument-selection-count').textContent=count+'건 선택됨';
+        dock.querySelector('[data-inst-selected-print]').textContent='선택 인쇄 ('+count+')';
+        dock.querySelector('[data-inst-selected-delete]').textContent='선택 삭제 ('+count+')';
+        const bounds=(root.querySelector('.qce-page')||root).getBoundingClientRect();
+        if(bounds.width){dock.style.left=Math.max(12,bounds.left)+'px';dock.style.right=Math.max(12,innerWidth-bounds.right)+'px';}
+      }
+    };
+    root._resetListSelection=()=>{selectedIds.clear();syncSelection();};
+    new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('변경관리','원료·공급사·Recipe·공정조건·설비·Spec 변경을 승인 이력으로 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-change-q" placeholder="변경번호 / 제목 / 대상 검색"></div><div class="right"><button class="qce-btn qce-change-search">조회</button><button class="qce-btn primary qce-change-new">+ 변경 등록</button></div></div><div class="qce-change-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const paint=rows=>{
+        root._changeRows=rows;
         const body=root.querySelector('.qce-change-body');
-        body.innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:4%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:16%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:7%"></colgroup><thead><tr><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(r.change_no||'-')+'</td><td>'+esc(r.change_type)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.target||'-')+'</td><td>'+esc(r.owner||'-')+'</td><td>'+esc(String(r.planned_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='적용완료'?'ok':r.status==='승인완료'?'ok':r.status==='작성중'?'warn':'')+'">'+esc(r.status)+'</span></td><td>'+(
+        body.innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:34px"><col style="width:4%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:16%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:7%"></colgroup><thead><tr><th><input type="checkbox" class="qce-change-select-all" aria-label="변경관리 전체 선택"></th><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
+          rows.length?rows.map((r,i)=>'<tr><td><input type="checkbox" class="qce-change-row-select" value="'+esc(r.id)+'" aria-label="'+esc(r.change_no||r.title)+' 선택"></td><td>'+(i+1)+'</td><td>'+esc(r.change_no||'-')+'</td><td>'+esc(r.change_type)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.target||'-')+'</td><td>'+esc(r.owner||'-')+'</td><td>'+esc(String(r.planned_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='적용완료'?'ok':r.status==='승인완료'?'ok':r.status==='작성중'?'warn':'')+'">'+esc(r.status)+'</span></td><td>'+(
             r.status==='작성중'?'<button class="qce-btn" data-action="review" data-id="'+r.id+'">검토완료</button>':r.status==='검토완료'?'<button class="qce-btn" data-action="approve" data-id="'+r.id+'">승인완료</button>':r.status==='승인완료'?'<button class="qce-btn" data-action="close" data-id="'+r.id+'">적용완료</button>':'-'
-          )+'</td></tr>').join(''):'<tr><td colspan="9">등록된 변경이 없습니다.</td></tr>'
+          )+'</td></tr>').join(''):'<tr><td colspan="10">등록된 변경이 없습니다.</td></tr>'
         )+'</tbody></table></div>';
+        body.querySelectorAll('.qce-change-row-select').forEach(box=>box.onchange=()=>{box.checked?selectedIds.add(box.value):selectedIds.delete(box.value);syncSelection();});
+        const all=body.querySelector('.qce-change-select-all');if(all)all.onchange=()=>{body.querySelectorAll('.qce-change-row-select').forEach(box=>all.checked?selectedIds.add(box.value):selectedIds.delete(box.value));syncSelection();};
+        syncSelection();
         body.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/qmes-change/'+b.dataset.id+'/action',{method:'POST',body:JSON.stringify({action:b.dataset.action})});toast('변경 상태가 처리되었습니다.');changeQueries.clear();load(true);}catch(e){toast(e.message);}});
 
     };
@@ -628,10 +650,28 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         status.textContent=e.message;
       }
     };
+
+    const dock=document.createElement('div');dock.className='qce-instrument-selection-dock';dock.setAttribute('role','toolbar');dock.setAttribute('aria-label','변경관리 선택 항목 작업');dock.setAttribute('aria-hidden','true');dock.inert=true;
+    dock.innerHTML='<span class="qce-instrument-selection-count" aria-live="polite">0건 선택됨</span><div><button type="button" data-inst-selected-print>선택 인쇄</button><button type="button" data-inst-selected-delete>선택 삭제</button></div>';root.append(dock);
+    dock.querySelector('[data-inst-selected-delete]').onclick=async function(){
+      const ids=(root._changeRows||[]).filter(row=>selectedIds.has(String(row.id))).map(row=>row.id);if(!ids.length)return;
+      if(!await window.qmesConfirm('선택한 변경건 '+ids.length+'건을 삭제하시겠습니까?',{title:'선택 삭제',acceptText:'삭제'}))return;
+      this.disabled=true;
+      try{const result=await api('/api/qmes-change/bulk-delete',{method:'POST',body:JSON.stringify({ids})});changeQueries.clear();root._resetListSelection();await load(true);toast('변경건 '+result.deleted_count+'건이 삭제되었습니다.');}catch(e){toast(e.message);}finally{this.disabled=false;}
+    };
+    dock.querySelector('[data-inst-selected-print]').onclick=async()=>{
+      const records=(root._changeRows||[]).filter(row=>selectedIds.has(String(row.id)));if(!records.length)return;
+      if(!await window.qmesConfirm('선택한 변경건 '+records.length+'건을 인쇄하시겠습니까?',{title:'선택 인쇄',acceptText:'인쇄'}))return;
+      const frame=document.createElement('iframe');frame.style.cssText='position:fixed;left:-20000px;top:0;width:1000px;height:700px;border:0';frame.setAttribute('aria-hidden','true');
+      frame.onload=async()=>{if(!frame.contentDocument?.querySelector('table'))return;await frame.contentDocument.fonts.ready;frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
+      frame.srcdoc='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>변경관리</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px "Malgun Gothic",sans-serif;color:#172b44}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccd8e4;padding:7px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}th{background:#e8f1f9;text-align:center}</style></head><body><h1>변경관리</h1><table><thead><tr>'+['No.','변경번호','구분','제목','대상','담당자','적용예정일','상태','현재 기준','변경 후 기준','변경사유','영향평가'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+records.map((r,i)=>'<tr>'+[i+1,r.change_no,r.change_type,r.title,r.target,r.owner,String(r.planned_on||'').slice(0,10),r.status,r.current_value,r.proposed_value,r.reason,r.impact].map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table></body></html>';document.body.append(frame);
+    };
+    window.addEventListener('resize',syncSelection);
+
     root._changeLoad=load;
     root.querySelector('.qce-change-search').onclick=()=>load(true);
     root.querySelector('.qce-change-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
-    root.querySelector('.qce-change-new').onclick=()=>modal('변경 등록','<div class="qce-form">'+
+    root.querySelector('.qce-change-new').onclick=()=>modal('변경 등록','<div class="qce-form qce-change-form">'+
       '<div class="qce-field"><label>변경구분</label><select data-k="change_type"><option>원료 변경</option><option>공급사 변경</option><option>Recipe 변경</option><option>공정조건 변경</option><option>설비 변경</option><option>Spec 변경</option></select></div>'+
       '<div class="qce-field"><label>변경제목</label><input data-k="title"></div>'+
       '<div class="qce-field"><label>변경대상</label><input data-k="target"></div><div class="qce-field"><label>담당자</label><input data-k="owner"></div>'+
