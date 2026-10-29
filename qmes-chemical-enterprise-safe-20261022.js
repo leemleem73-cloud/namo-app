@@ -39,6 +39,7 @@ function ensureSchema() {
       );
       CREATE INDEX IF NOT EXISTS qmes_change_status_idx ON qmes_change_requests(status, created_at DESC);
 
+      ALTER TABLE qmes_change_requests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
       CREATE TABLE IF NOT EXISTS qmes_instruments (
         id BIGSERIAL PRIMARY KEY,
         instrument_no TEXT UNIQUE,
@@ -107,7 +108,7 @@ function install(app) {
       const q = str(req.query.q, 120);
       const rows = await pool.query(`
         SELECT * FROM qmes_change_requests
-        WHERE ($1='' OR change_no ILIKE '%'||$1||'%' OR change_type ILIKE '%'||$1||'%' OR title ILIKE '%'||$1||'%' OR target ILIKE '%'||$1||'%')
+        WHERE deleted_at IS NULL AND ($1='' OR change_no ILIKE '%'||$1||'%' OR change_type ILIKE '%'||$1||'%' OR title ILIKE '%'||$1||'%' OR target ILIKE '%'||$1||'%')
         ORDER BY id DESC LIMIT 500
       `, [q]);
       res.json({ success: true, data: rows.rows });
@@ -115,6 +116,15 @@ function install(app) {
       console.error('[QMES change list]', error);
       fail(res, 500, '변경관리 조회 실패');
     }
+  });
+
+  app.post('/api/qmes-change/bulk-delete',auth,async(req,res)=>{
+    const input=req.body?.ids;
+    if(!Array.isArray(input)||!input.length||input.length>500||input.some(id=>!Number.isSafeInteger(Number(id))||Number(id)<1))return fail(res,400,'삭제할 변경건을 선택하세요.');
+    const ids=[...new Set(input.map(Number))];
+    try{await ensureSchema();const result=await pool.query('UPDATE qmes_change_requests SET deleted_at=NOW(),updated_at=NOW() WHERE id=ANY($1::bigint[]) AND deleted_at IS NULL RETURNING id',[ids]);
+      res.json({success:true,data:{deleted_ids:result.rows.map(row=>String(row.id)),deleted_count:result.rowCount}});
+    }catch(error){console.error('[QMES change delete]',error);fail(res,500,'변경관리 삭제 실패');}
   });
 
   app.post('/api/qmes-change', auth, async (req, res) => {
@@ -158,13 +168,13 @@ function install(app) {
       await ensureSchema();
       let sql='', params=[];
       if (action === 'review') {
-        sql = "UPDATE qmes_change_requests SET status='검토완료',reviewed_by=$1,reviewed_at=NOW(),updated_at=NOW() WHERE id=$2 AND status='작성중' RETURNING *";
+        sql = "UPDATE qmes_change_requests SET status='검토완료',reviewed_by=$1,reviewed_at=NOW(),updated_at=NOW() WHERE id=$2 AND status='작성중' AND deleted_at IS NULL RETURNING *";
         params = [actorName(req), id];
       } else if (action === 'approve') {
-        sql = "UPDATE qmes_change_requests SET status='승인완료',approved_by=$1,approved_at=NOW(),updated_at=NOW() WHERE id=$2 AND status='검토완료' RETURNING *";
+        sql = "UPDATE qmes_change_requests SET status='승인완료',approved_by=$1,approved_at=NOW(),updated_at=NOW() WHERE id=$2 AND status='검토완료' AND deleted_at IS NULL RETURNING *";
         params = [actorName(req), id];
       } else {
-        sql = "UPDATE qmes_change_requests SET status='적용완료',updated_at=NOW() WHERE id=$1 AND status='승인완료' RETURNING *";
+        sql = "UPDATE qmes_change_requests SET status='적용완료',updated_at=NOW() WHERE id=$1 AND status='승인완료' AND deleted_at IS NULL RETURNING *";
         params = [id];
       }
       const result = await pool.query(sql, params);
