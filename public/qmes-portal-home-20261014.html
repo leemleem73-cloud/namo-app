@@ -697,7 +697,7 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
   }
   const page=routes[name];
   if(!page){toast('왼쪽 메뉴에서 업무를 선택해주세요.');return;}
-  if(fromSearch)rememberQuickSearch(name);
+  if(fromSearch){rememberQuickSearch(name);input.value='';input.blur();dropdown.classList.remove('open');}
   window.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'navigate',page:page,fromSearch:fromSearch},location.origin);
 }
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>action(btn.dataset.action)));
