@@ -40,6 +40,7 @@ bar.innerHTML='<div class="notify-periods" role="group" aria-label="알림 조�
 var input=bar.querySelector('input');
 function query(){return '?from='+selected.from+'&to='+selected.to;}
 function apply(){
+ if(window.qmesNotificationHistory)return;
  var kind=document.querySelector('#notifyTabs .notify-tab.active')?.dataset.filter||'all',visible=0;
  list.querySelectorAll('.notify-item').forEach(function(item){
   var date=day(item.dataset.createdAt),kinds=String(item.dataset.kind||'').split(/\s+/);
@@ -50,6 +51,7 @@ function apply(){
  bar.title=selected.from+' ~ '+selected.to;
 }
 function reload(){
+ if(window.qmesNotificationHistory){window.qmesNotificationHistory.refresh({reset:true});return;}
  apply();
  if(panel.classList.contains('open')){
   window.loadQualityNotifications?.();window.qmesReloadDispatchNotifications?.();
