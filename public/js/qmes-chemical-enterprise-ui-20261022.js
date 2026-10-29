@@ -352,6 +352,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     bg.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>bg.remove());
     bg.onclick=e=>{if(e.target===bg)bg.remove();};
     bg.querySelector('[data-save]').onclick=async()=>{try{await onSave(bg);bg.remove();}catch(e){toast(e.message);}};
+    return bg;
   }
   const val=(root,key)=>root.querySelector('[data-k="'+key+'"]')?.value.trim()||'';
 
@@ -621,10 +622,11 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         body.innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:34px"><col style="width:4%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:16%"><col style="width:9%"><col style="width:11%"><col style="width:7%"><col style="width:7%"></colgroup><thead><tr><th><input type="checkbox" class="qce-change-select-all" aria-label="변경관리 전체 선택"></th><th>No.</th><th>변경번호</th><th>구분</th><th>제목</th><th>대상</th><th>담당자</th><th>적용예정일</th><th>상태</th><th>처리</th></tr></thead><tbody>'+(
           rows.length?rows.map((r,i)=>'<tr><td><input type="checkbox" class="qce-change-row-select" value="'+esc(r.id)+'" aria-label="'+esc(r.change_no||r.title)+' 선택"></td><td>'+(i+1)+'</td><td>'+esc(r.change_no||'-')+'</td><td>'+esc(r.change_type)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.target||'-')+'</td><td>'+esc(r.owner||'-')+'</td><td>'+esc(String(r.planned_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='적용완료'?'ok':r.status==='승인완료'?'ok':r.status==='작성중'?'warn':'')+'">'+esc(r.status)+'</span></td><td>'+(
             r.status==='작성중'?'<button class="qce-btn" data-action="review" data-id="'+r.id+'">검토완료</button>':r.status==='검토완료'?'<button class="qce-btn" data-action="approve" data-id="'+r.id+'">승인완료</button>':r.status==='승인완료'?'<button class="qce-btn" data-action="close" data-id="'+r.id+'">적용완료</button>':'-'
-          )+'</td></tr>').join(''):'<tr><td colspan="10">등록된 변경이 없습니다.</td></tr>'
+          )+' <button type="button" class="qce-btn" data-change-edit="'+esc(r.id)+'">수정</button></td></tr>').join(''):'<tr><td colspan="10">등록된 변경이 없습니다.</td></tr>'
         )+'</tbody></table></div>';
         body.querySelectorAll('.qce-change-row-select').forEach(box=>box.onchange=()=>{box.checked?selectedIds.add(box.value):selectedIds.delete(box.value);syncSelection();});
         const all=body.querySelector('.qce-change-select-all');if(all)all.onchange=()=>{body.querySelectorAll('.qce-change-row-select').forEach(box=>all.checked?selectedIds.add(box.value):selectedIds.delete(box.value));syncSelection();};
+        body.querySelectorAll('[data-change-edit]').forEach(button=>button.onclick=()=>{const record=rows.find(row=>String(row.id)===button.dataset.changeEdit);if(record)openChange(record);});
         syncSelection();
         body.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/qmes-change/'+b.dataset.id+'/action',{method:'POST',body:JSON.stringify({action:b.dataset.action})});toast('변경 상태가 처리되었습니다.');changeQueries.clear();load(true);}catch(e){toast(e.message);}});
 
@@ -671,14 +673,17 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     root._changeLoad=load;
     root.querySelector('.qce-change-search').onclick=()=>load(true);
     root.querySelector('.qce-change-q').addEventListener('keydown',e=>{if(e.key==='Enter')load(true);});
-    root.querySelector('.qce-change-new').onclick=()=>modal('변경 등록','<div class="qce-form qce-change-form">'+
+    function openChange(record=null){const bg=modal(record?'변경 수정':'변경 등록','<div class="qce-form qce-change-form">'+
       '<div class="qce-field"><label>변경구분</label><select data-k="change_type"><option>원료 변경</option><option>공급사 변경</option><option>Recipe 변경</option><option>공정조건 변경</option><option>설비 변경</option><option>Spec 변경</option></select></div>'+
       '<div class="qce-field"><label>변경제목</label><input data-k="title"></div>'+
       '<div class="qce-field"><label>변경대상</label><input data-k="target"></div><div class="qce-field"><label>담당자</label><input data-k="owner"></div>'+
       '<div class="qce-field"><label>적용예정일</label><input data-k="planned_on" type="date"></div><div class="qce-field"><label>현재 기준</label><input data-k="current_value"></div>'+
       '<div class="qce-field full"><label>변경 후 기준</label><textarea data-k="proposed_value"></textarea></div><div class="qce-field full"><label>변경사유</label><textarea data-k="reason"></textarea></div><div class="qce-field full"><label>영향평가</label><textarea data-k="impact"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-change',{method:'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast('변경건이 등록되었습니다.');changeQueries.clear();load(true);}
+      async bg=>{await api(record?'/api/qmes-change/'+record.id:'/api/qmes-change',{method:record?'PATCH':'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast(record?'변경건이 수정되었습니다.':'변경건이 등록되었습니다.');changeQueries.clear();load(true);}
     );
+      if(record)bg.querySelectorAll('[data-k]').forEach(input=>{const key=input.dataset.k,value=key==='planned_on'?String(record[key]||'').slice(0,10):String(record[key]??'');if(input.tagName==='SELECT'&&value&&![...input.options].some(option=>option.value===value))input.add(new Option(value,value));input.value=value;});
+    }
+    root.querySelector('.qce-change-new').onclick=()=>openChange();
     load();
   }
 
