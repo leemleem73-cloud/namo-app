@@ -54,9 +54,11 @@ module.exports={classify,install(app,{pool,requireLogin}){
  // Unified history keeps read notifications and applies deletion only to the current user's inbox.
  let historyReady;
  const historySchema=()=>historyReady||(historyReady=schema().then(()=>pool.query('CREATE TABLE IF NOT EXISTS qmes_notification_states(user_id UUID NOT NULL,source TEXT NOT NULL,source_id BIGINT NOT NULL,read_at TIMESTAMPTZ,deleted_at TIMESTAMPTZ,PRIMARY KEY(user_id,source,source_id))')).catch(error=>{historyReady=null;throw error;}));
+ let metadataCache=null,metadataAt=0;
  async function unionSql(){
   await historySchema();
-  const tables=await pool.query("SELECT to_regclass('qmes_quality_notifications') AS quality,to_regclass('qmes_work_order_dispatch_receipts') AS dispatch");
+  if(!metadataCache||Date.now()-metadataAt>60000){metadataCache=await pool.query("SELECT to_regclass('qmes_quality_notifications') AS quality,to_regclass('qmes_work_order_dispatch_receipts') AS dispatch");metadataAt=Date.now();}
+  const tables=metadataCache;
   let sql="SELECT 'module-update'::text AS source,e.id::text AS id,e.page,e.title,'저장된 변경 사항을 확인해 주세요.'::text AS message,e.created_at,r.read_at FROM qmes_module_update_events e LEFT JOIN qmes_module_update_reads r ON r.event_id=e.id AND r.user_id=$1 WHERE ($2 OR e.page NOT IN ('orders','purchase'))";
   if(tables.rows[0]?.quality)sql+=" UNION ALL SELECT 'quality',n.id::text,CASE WHEN UPPER(COALESCE(a.doc_type,''))='IQC' THEN 'incoming' WHEN UPPER(COALESCE(a.doc_type,'')) IN ('PQC','IPQC') THEN 'process' WHEN UPPER(COALESCE(a.doc_type,''))='OQC' THEN 'outgoing' ELSE n.page END,n.title,n.message,n.created_at,n.read_at FROM qmes_quality_notifications n LEFT JOIN qmes_quality_approvals a ON a.id=n.approval_id WHERE n.user_id=$1";
   if(tables.rows[0]?.dispatch)sql+=" UNION ALL SELECT 'work-dispatch',d.id::text,'work','작업지시 '||d.work_order_id,COALESCE(d.department,'')||' · 발송: '||COALESCE(d.sender_name,''),d.created_at,r.read_at FROM qmes_work_order_dispatch_receipts r JOIN qmes_work_order_dispatches d ON d.id=r.dispatch_id WHERE r.user_id=$1";
@@ -69,11 +71,12 @@ module.exports={classify,install(app,{pool,requireLogin}){
    if(!validDay(from)||!validDay(to)||from&&to&&from>to)return res.status(400).json({success:false,message:'조회 날짜를 확인해 주세요.'});
    const union=await unionSql(),args=[req.session.user.id,commercial(req.session.user),from||null,to||null,filter];
    const filtered="SELECT * FROM ("+union+") h WHERE ($3::date IS NULL OR created_at>=($3::date::timestamp AT TIME ZONE 'Asia/Seoul')) AND ($4::date IS NULL OR created_at<(($4::date+INTERVAL '1 day')::timestamp AT TIME ZONE 'Asia/Seoul')) AND ($5='all' OR page=$5 OR ($5='iqc' AND page='incoming') OR ($5='pqc' AND page='process') OR ($5='oqc' AND page='outgoing') OR ($5='delivery' AND page='orders') OR ($5='approval' AND source='quality'))";
-   const count=await pool.query("SELECT COUNT(*)::int AS total FROM ("+filtered+") f",args);
-   const total=count.rows[0].total,pages=Math.max(1,Math.ceil(total/10)),page=Math.min(pages,Math.max(1,Math.floor(Number(req.query.page)||1)));
+   const condition=filtered.slice(filtered.indexOf(' h WHERE ')+9);
+   const stats=await pool.query("WITH history AS MATERIALIZED ("+union+"), counts AS (SELECT page,COUNT(*)::int AS n FROM history WHERE effective_read_at IS NULL GROUP BY page UNION ALL SELECT 'approval',COUNT(*)::int FROM history WHERE effective_read_at IS NULL AND source='quality' AND page<>'approval') SELECT COUNT(*) FILTER(WHERE "+condition+")::int AS total,COUNT(*) FILTER(WHERE effective_read_at IS NULL)::int AS unread,COALESCE((SELECT jsonb_object_agg(page,n) FROM (SELECT page,SUM(n)::int AS n FROM counts GROUP BY page) c),'{}'::jsonb) AS unread_by_page FROM history",args);
+   const summary=stats.rows[0],total=summary.total,pages=Math.max(1,Math.ceil(total/10)),page=Math.min(pages,Math.max(1,Math.floor(Number(req.query.page)||1)));
    const rows=await pool.query(filtered+' ORDER BY created_at DESC,source,id DESC LIMIT 10 OFFSET $6',[...args,(page-1)*10]);
-   const unread=await pool.query("SELECT COUNT(*)::int AS unread FROM ("+union+") h WHERE effective_read_at IS NULL",args.slice(0,2));
-   res.set('Cache-Control','private, no-store');res.json({success:true,data:rows.rows.map(row=>({...row,read_at:row.effective_read_at})),page,pages,total,unread:unread.rows[0].unread});
+   res.set('Cache-Control','private, no-store');res.json({success:true,data:rows.rows.map(row=>({...row,read_at:row.effective_read_at})),page,pages,total,unread:summary.unread,unreadByPage:summary.unread_by_page});
+
   }catch(error){console.error('[QMES notification history]',error.message);res.status(500).json({success:false,message:'알림 기록을 불러오지 못했습니다.'});}
  });
  app.post('/api/qmes/notification-history/read-all',requireLogin,async(req,res)=>{
