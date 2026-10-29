@@ -571,7 +571,7 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
        <button class="search-submit" type="submit">통합검색 <svg class="icon small"><use href="#ico-arrow"/></svg></button>
      </form>
      <div class="suggest-wrap"><div class="search-dropdown" id="search-dropdown" role="listbox"></div></div>
-     <div class="quick-search"><strong>빠른 검색</strong><button type="button" data-query="작업지시"># 작업지시</button><button type="button" data-query="수입검사"># 수입검사</button><button type="button" data-query="제품 LOT"># 제품 LOT</button><button type="button" data-query="출하검사"># 출하검사</button></div>
+     <div class="quick-search"><strong>빠른 검색</strong><span class="quick-search-chip"><button type="button" data-query="작업지시"># 작업지시</button><button type="button" class="quick-search-remove" aria-label="작업지시 빠른검색 닫기" title="닫기">×</button></span><span class="quick-search-chip"><button type="button" data-query="수입검사"># 수입검사</button><button type="button" class="quick-search-remove" aria-label="수입검사 빠른검색 닫기" title="닫기">×</button></span><span class="quick-search-chip"><button type="button" data-query="제품 LOT"># 제품 LOT</button><button type="button" class="quick-search-remove" aria-label="제품 LOT 빠른검색 닫기" title="닫기">×</button></span><span class="quick-search-chip"><button type="button" data-query="출하검사"># 출하검사</button><button type="button" class="quick-search-remove" aria-label="출하검사 빠른검색 닫기" title="닫기">×</button></span></div>
    </section>
    <aside class="right-side" aria-label="업무 현황">
       <div class="side-card">
@@ -865,6 +865,16 @@ html[data-qmes-wallpaper="original"] .stage>.scene{display:block!important}
  }
  new ResizeObserver(measure).observe(grid);window.addEventListener('resize',measure);wrap.addEventListener('portal-menu-state',measure);measure();
 })();
+</script>
+<style>
+.quick-search .quick-search-chip{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.32);border-radius:20px;background:rgba(255,255,255,.12);overflow:hidden}
+.quick-search .quick-search-chip button{border:0;background:transparent;margin:0;border-radius:0;box-shadow:none}
+.quick-search .quick-search-chip [data-query]{padding-right:3px}
+.quick-search .quick-search-chip .quick-search-remove{display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;padding:0 5px 0 2px;height:28px;font-size:16px;line-height:1;color:inherit;cursor:pointer}
+.quick-search .quick-search-remove:hover{background:rgba(255,255,255,.2)}
+</style>
+<script>
+document.querySelectorAll('.quick-search-remove').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();const row=button.closest('.quick-search');button.closest('.quick-search-chip').remove();if(!row.querySelector('.quick-search-chip'))row.hidden=true;}));
 </script>
 </body>
 </html>
