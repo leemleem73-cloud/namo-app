@@ -131,6 +131,7 @@ function trackPanel(page,name,selector,isOpen,hide){
 }
 if(typeof MutationObserver!=='undefined'&&document.body){
  var checkPanels=[
+  ...['changeControl','instrumentMgmt','calibrationMgmt'].map(function(page){return trackPanel(page,'dialog:'+page,'.qce-modal-bg',function(node){return node.isConnected&&!node.hidden;},function(node){node.remove();});}),
   trackPanel('equipment','equipment-detail','#eqDetail',function(node){return node.classList.contains('show');},function(node){node.classList.remove('show');}),
   trackPanel('equipment','equipment-editor','.eq-wo-overlay',function(node){return node.isConnected&&!node.hidden;},function(node){node.remove();}),
   trackPanel('purchase','purchase-editor','#namo-purchase-new-enterprise',function(node){return !node.hidden;},function(node){node.hidden=true;})
@@ -247,13 +248,19 @@ document.addEventListener('click',function(event){
  new MutationObserver(queuePageRestore).observe(document.body,{subtree:true,childList:true});
  queuePageRestore();
 
-document.addEventListener('keydown',function(event){
- if(event.defaultPrevented||event.isComposing||event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;
- if(event.target?.closest?.('input,textarea,select,[contenteditable],[role="textbox"]'))return;
- if(event.key==='Backspace'||event.key==='BrowserBack'||event.key==='GoBack'){
-  event.preventDefault();history.back();
- }else if(event.key==='BrowserForward'||event.key==='GoForward'){
-  event.preventDefault();history.forward();
+function navigationKey(event){
+ if(event.defaultPrevented||event.isComposing||event.repeat)return;
+ const back=event.key==='BrowserBack'||event.key==='GoBack'||(event.altKey&&!event.ctrlKey&&!event.metaKey&&event.key==='ArrowLeft');
+ const forward=event.key==='BrowserForward'||event.key==='GoForward'||(event.altKey&&!event.ctrlKey&&!event.metaKey&&event.key==='ArrowRight');
+ const editable=event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+ if(back||forward||event.key==='Backspace'&&!editable&&!event.ctrlKey&&!event.metaKey&&!event.altKey){
+  event.preventDefault();event.stopImmediatePropagation();capture();forward?history.forward():history.back();
  }
+}
+window.addEventListener('keydown',navigationKey,true);
+window.addEventListener('message',function(event){
+ if(event.origin!==location.origin||event.source!==document.getElementById('namoPortal20261014')?.contentWindow||event.data?.channel!=='NAMO_QMES_PORTAL_20261014'||event.data?.type!=='keyboard-history')return;
+ capture();if(event.data.direction==='back')history.back();else if(event.data.direction==='forward')history.forward();
 });
+
 })();
