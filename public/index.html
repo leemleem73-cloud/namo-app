@@ -7313,9 +7313,9 @@ function standardInspectionForm(type){
     <div class="k">검사일자</div><div class="v"><input id="incomingDate" type="date"></div>
     <div class="k">입고일자</div><div class="v"><input type="date"></div>
     <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
-    <div class="k">공급업체</div><div class="v"><input id="incomingSupplier" type="text" placeholder="공급업체 입력"></div>
+    <div class="k">공급업체</div><div class="v"><select id="incomingSupplier"><option value="">공급업체 선택</option><option value="__manual__">직접입력</option></select></div>
     <div class="k">원료명</div><div class="v"><select id="incomingMaterialName"><option value="">원료명 선택</option>${NAMO_RAW_MATERIALS.map(x=>`<option>${x}</option>`).join('')}</select></div>
-    <div class="k">원료 LOT</div><div class="v"><input id="incomingMaterialLot" type="text" placeholder="원료 LOT 입력"></div>
+    <div class="k">원료 LOT</div><div class="v"><select id="incomingMaterialLot"><option value="">원료 LOT 선택</option><option value="__manual__">직접입력</option></select></div>
     <div class="k">입고 중량 (kg)</div><div class="v"><input id="incomingWeightKg" type="number" min="0" step="any" inputmode="decimal" placeholder="입고 중량 입력"></div>`;
   if(type==='process') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
@@ -8536,7 +8536,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
 })();
 </script>
 <script defer src="./js/qmes-module-notifications-20261029.js?v=2"></script>
-<script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=1"></script>
+<script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=2"></script>
 </body>
 </html>
 
