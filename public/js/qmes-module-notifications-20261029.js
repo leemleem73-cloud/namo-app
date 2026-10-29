@@ -19,9 +19,10 @@ function badgeState(){
  badge.textContent=unread>99?'99+':String(unread);badge.hidden=!unread;button.classList.toggle('qmes-has-unread',unread>0);
  button.setAttribute('aria-label','통합알림'+(unread?' · 읽지 않은 알림 '+unread+'건':''));button.setAttribute('aria-controls','notifyPanel');
 }
+let movedPosition=null;
 function position(){
  const open=panel.classList.contains('open');button.setAttribute('aria-expanded',String(open));if(!open)return;
- const r=button.getBoundingClientRect(),width=Math.min(520,innerWidth-16),top=Math.max(8,Math.min(r.bottom+8,innerHeight-120)),left=Math.max(8,Math.min(r.right-width,innerWidth-width-8));
+ const r=button.getBoundingClientRect(),width=Math.min(520,innerWidth-16),top=movedPosition?Math.max(8,Math.min(movedPosition.top,innerHeight-120)):Math.max(8,Math.min(r.bottom+8,innerHeight-120)),left=Math.max(8,Math.min(movedPosition?movedPosition.left:r.right-width,innerWidth-width-8));
  Object.entries({position:'fixed',width:width+'px',left:left+'px',right:'auto',top:top+'px',height:'min(700px, calc(100dvh - '+(top+10)+'px))'}).forEach(([key,value])=>{if(panel.style.getPropertyValue(key)!==value)panel.style.setProperty(key,value,'important');});
 }
 async function api(path='',options={}){
@@ -96,6 +97,22 @@ list.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)&&ev
 button.addEventListener('click',()=>{requestAnimationFrame(position);refresh();});
 new MutationObserver(position).observe(panel,{attributes:true,attributeFilter:['class']});window.addEventListener('resize',position);document.addEventListener('scroll',()=>{if(panel.classList.contains('open'))position();},true);
 window.addEventListener('focus',()=>refresh());document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+
+const handle=panel.querySelector('.notify-head');let dragging=null;
+handle?.setAttribute('title','마우스로 잡아 알림창 이동');
+handle?.addEventListener('pointerdown',event=>{
+ if(event.button!==0||event.target.closest('button,input,select,a'))return;
+ const bounds=panel.getBoundingClientRect();dragging={id:event.pointerId,x:event.clientX,y:event.clientY,left:bounds.left,top:bounds.top};
+ handle.setPointerCapture(event.pointerId);handle.classList.add('is-dragging');event.preventDefault();
+});
+handle?.addEventListener('pointermove',event=>{
+ if(!dragging||event.pointerId!==dragging.id)return;
+ const bounds=panel.getBoundingClientRect();movedPosition={left:Math.max(8,Math.min(dragging.left+event.clientX-dragging.x,innerWidth-bounds.width-8)),top:Math.max(8,Math.min(dragging.top+event.clientY-dragging.y,innerHeight-Math.min(bounds.height,120)-8))};
+ position();window.dispatchEvent(new Event('qmes-notification-moved'));
+});
+function finishDrag(event){if(!dragging||event.pointerId!==dragging.id)return;dragging=null;handle.classList.remove('is-dragging');if(handle.hasPointerCapture(event.pointerId))handle.releasePointerCapture(event.pointerId);}
+handle?.addEventListener('pointerup',finishDrag);handle?.addEventListener('pointercancel',finishDrag);handle?.addEventListener('lostpointercapture',()=>{dragging=null;handle.classList.remove('is-dragging');});
+
 const originalFetch=window.fetch;
 window.fetch=async function(input,options){
  const response=await originalFetch.apply(this,arguments),url=String(input?.url||input||''),method=String(options?.method||input?.method||'GET').toUpperCase();
@@ -104,5 +121,6 @@ window.fetch=async function(input,options){
 };
 const style=document.createElement('style');style.textContent=
 '#notifyPanel{z-index:2147480000!important;box-sizing:border-box!important;max-width:calc(100vw - 16px)!important;border-radius:8px!important;overflow:hidden!important}#notifyPanel:before{display:none!important}#notifyPanel .notify-head,#notifyPanel .notify-tools,#notifyPanel .notify-date,#notifyPanel .notify-footer{flex-shrink:0!important}#notifyPanel .notify-tabs{display:flex!important;flex-wrap:wrap!important;gap:5px!important;white-space:normal!important;overflow:visible!important}#notifyPanel .notify-tab{flex:0 0 auto!important;margin:0!important;display:inline-flex!important;align-items:center!important;gap:4px!important}#notifyPanel .qmes-notify-tab-dot{width:5px;height:5px;border-radius:50%;background:#e53935;flex:none}#notifyPanel .qmes-notify-tab-dot[hidden]{display:none!important}#notifyPanel .notify-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important}#notifyPanel .qmes-history-item{display:grid!important;grid-template-columns:8px minmax(0,1fr) 118px!important;gap:9px!important;align-items:start!important;padding:13px 14px!important;cursor:pointer;opacity:1!important}#notifyPanel .qmes-history-dot{display:block;width:6px;height:6px;background:#e53935;border-radius:50%;margin-top:7px;flex-shrink:0}#notifyPanel .is-read .qmes-history-dot{visibility:hidden}#notifyPanel .notify-copy{min-width:0!important;overflow-wrap:anywhere!important}#notifyPanel .qmes-history-side time{display:block;font-size:10px;line-height:1.45;color:#8898ad;white-space:normal}#notifyPanel .qmes-history-controls{display:flex;justify-content:flex-end;gap:4px;margin-top:7px}#notifyPanel .qmes-history-controls>button{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:25px!important;height:auto!important;width:auto!important;min-width:0!important;padding:3px 6px!important;border:1px solid #cbd8e6!important;border-radius:4px!important;background:#fff!important;color:#27618e!important;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-size:11px!important;font-weight:600!important;font-style:normal!important;line-height:1.4!important;letter-spacing:0!important;word-break:keep-all!important;white-space:nowrap!important;text-shadow:none!important;transform:none!important;text-indent:0!important;cursor:pointer}#notifyPanel .qmes-history-controls>[data-history-action=delete]{color:#c43a3a!important;border-color:#efd0d0!important}.qmes-notify-pager{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:12px;padding:9px;border-top:1px solid #e1e8f0;background:#fff;color:#64788e;font-size:11px}.qmes-notify-pager button{width:25px;height:25px;background:#fff;border:1px solid #d2deec;border-radius:4px;color:#345b80;cursor:pointer}.qmes-notify-pager button:disabled{opacity:.35;cursor:default}#notifyBtn{position:relative!important;overflow:visible!important}#notifyBtn:after,#notifyBtn:before,#notifyBtn .namo-work-dispatch-badge{display:none!important}#notifyBtn .qmes-unread-badge{position:absolute;right:-4px;top:-4px;min-width:17px;height:17px;box-sizing:border-box;padding:0 4px;border-radius:10px;background:#e53935;color:#fff;font:700 10px/17px Arial,sans-serif;text-align:center;border:1px solid #fff;pointer-events:none}#notifyBtn .qmes-unread-badge[hidden]{display:none!important}';
+style.textContent+='#notifyPanel .notify-head{cursor:grab;touch-action:none;user-select:none}#notifyPanel .notify-head.is-dragging{cursor:grabbing}';
 document.head.append(style);refresh();setInterval(()=>refresh(),20000);
 })();
