@@ -833,7 +833,13 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     }
     return instrumentPhotoCache.get(src);
   }
-  let instrumentPhotoOpenToken=0;
+  let instrumentPhotoOpenToken=0,currentPhotoSnapshot=null;
+  window.qmesMenuHistory?.register('instrument-photo',{
+    page:'instrumentMgmt',capture:()=>currentPhotoSnapshot,
+    hide:()=>{const dialog=document.querySelector('.qce-instrument-photo-dialog');if(dialog?.open)dialog.close();},
+    reset:()=>{const dialog=document.querySelector('.qce-instrument-photo-dialog');if(dialog?.open)dialog.close();},
+    restore:snapshot=>{if(!snapshot?.dialog)return false;const dialog=snapshot.dialog;if(!dialog.isConnected)document.body.append(dialog);if(!dialog.open)dialog.showModal();currentPhotoSnapshot=snapshot;return true;}
+  });
   async function openInstrumentPhoto(record){
     if(!record)return;
     const token=++instrumentPhotoOpenToken;
@@ -845,7 +851,8 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     dialog.appendChild(image);document.body.appendChild(dialog);
     dialog.querySelector('button').onclick=()=>dialog.close();
     dialog.addEventListener('click',event=>{if(event.target===dialog){const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close();}});
-    dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
+    dialog.addEventListener('close',()=>{dialog.remove();if(history.state?.qmesAdapter==='instrument-photo'&&currentPhotoSnapshot?.dialog===dialog)history.back();});dialog.showModal();
+    window.qmesMenuHistory?.capture();currentPhotoSnapshot={dialog};window.qmesMenuHistory?.recordView('instrumentMgmt','photo:'+record.id+':'+token,'instrument-photo');
   }
 
   function openCalibration(row,reload){
