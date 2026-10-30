@@ -69,10 +69,10 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 .portal-season-ground>svg{display:block;width:100%;height:100%;overflow:visible}
 .portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 12s ease-in-out var(--bloom-delay) infinite both}
 @keyframes portal-blossom-open{0%,8%,100%{transform:scale(0);opacity:0}30%,65%{transform:scale(var(--flower-size,1));opacity:1}84%{transform:scale(calc(var(--flower-size,1) * .85));opacity:.35}94%{transform:scale(.15);opacity:0}}
-.portal-growing-tree{transform-origin:0 0;animation:portal-tree-grow 3s cubic-bezier(.2,.7,.3,1) var(--tree-delay) both}
+.portal-growing-tree{transform-origin:0 0;animation:portal-tree-grow 5s cubic-bezier(.2,.7,.3,1) var(--tree-delay) both}
 @keyframes portal-tree-grow{from{transform:scale(.15,.05);opacity:0}to{transform:scale(1);opacity:1}}
-.portal-tree-crown{transform-box:fill-box;transform-origin:center bottom;animation:portal-crown-wind 4.8s ease-in-out infinite alternate}
-@keyframes portal-crown-wind{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}
+.portal-tree-crown{transform-box:fill-box;transform-origin:center bottom;animation:portal-crown-wind 7.5s ease-in-out infinite}
+@keyframes portal-crown-wind{0%,100%{transform:translate(0,0) rotate(-1deg)}20%{transform:translate(1.5px,-1px) rotate(1.5deg)}40%{transform:translate(-1px,.7px) rotate(-1.3deg)}60%{transform:translate(1px,-.8px) rotate(1.2deg)}80%{transform:translate(-1.2px,.5px) rotate(-1.5deg)}}
 .portal-season-particle{position:absolute;top:-22px;width:var(--particle-size);height:calc(var(--particle-size) * 1.2);opacity:0;animation:portal-season-float var(--fall-duration) linear var(--fall-delay) infinite}
 .portal-season-particle svg{width:100%;height:100%;animation:portal-petal-flutter 3s ease-in-out infinite alternate}
 .portal-season-particle.winter{height:var(--particle-size);border-radius:50%;background:#f5fbff;box-shadow:0 0 3px #fff8}
