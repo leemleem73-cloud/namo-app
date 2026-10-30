@@ -58,6 +58,8 @@ if(season!=='autumn'){
 const seasonalAnimationStyle=document.createElement('style');seasonalAnimationStyle.textContent=`
 .portal-season-scene.is-animated{height:170px;bottom:-6px;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 12%,#000)}
 .portal-season-ground{position:absolute;left:0;right:0;bottom:0;height:95px}
+.portal-season-scene.summer .portal-season-ground{height:52px}
+.portal-season-scene.spring .portal-season-ground,.portal-season-scene.winter .portal-season-ground{height:64px}
 .portal-season-ground>svg{width:100%;height:100%;overflow:visible}
 .portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 7s ease-in-out var(--bloom-delay) infinite}
 @keyframes portal-blossom-open{0%,100%{transform:scale(.45);opacity:.35}32%,75%{transform:scale(1);opacity:1}}
