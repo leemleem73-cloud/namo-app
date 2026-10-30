@@ -56,6 +56,11 @@ weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||'현재 날씨를 확인 중입니다.');dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
 });
+function fitSeasonToSearch(){
+ const bounds=form.getBoundingClientRect(),parent=wrap.getBoundingClientRect();
+ scene.style.left=(bounds.left-parent.left)+'px';scene.style.right='auto';scene.style.width=bounds.width+'px';scene.style.boxSizing='border-box';scene.style.overflow='hidden';
+}
+requestAnimationFrame(fitSeasonToSearch);window.addEventListener('resize',fitSeasonToSearch);if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitSeasonToSearch).observe(form);
 const key='qmes-chungju-weather-v1';
 function paint(data,cached=false){const c=data.current_condition?.[0],d=data.weather?.[0];if(!c||!Number.isFinite(Number(c.temp_C)))throw Error('날씨 정보 없음');
  const code=Number(c.weatherCode),snowing=[179,182,185,227,230,281,284,311,314,317,320,323,326,329,332,335,338,350,362,365,368,371,374,377,392,395].includes(code),rain=[176,263,266,293,296,299,302,305,308,353,356,359].includes(code);
