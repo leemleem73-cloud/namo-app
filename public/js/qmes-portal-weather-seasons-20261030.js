@@ -45,7 +45,7 @@ if(season!=='autumn'){
  const ground=document.createElement('div');ground.className='portal-season-ground';scene.append(ground);
  const blossom='<g fill="currentColor"><ellipse cy="-6" rx="4.5" ry="6"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(72)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(144)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(216)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(288)"/></g><circle r="2.5" fill="#ffe6a6"/>';
  if(season==='spring'){
-  ground.innerHTML='<svg viewBox="0 0 850 90" preserveAspectRatio="xMidYMax meet"><path d="M5 88Q100 56 196 77T393 73T600 70T845 76M75 75L48 39M180 75L210 37M370 75L345 34M570 72L600 36M750 74L779 36" fill="none" stroke="#8a6658" stroke-width="3" stroke-linecap="round"/>'+Array.from({length:24},(_,i)=>'<g class="portal-bloom" style="--bloom-delay:'+(i*.3)+'s;color:'+['#ffc4d9','#fff7fb','#f5a8c6','#ffe2ed'][i%4]+'" transform="translate('+(25+i*34)+' '+(i%3===0?44:65)+')"><g style="--flower-size:'+(0.55+(i%5)*.16)+'">'+blossom+'</g></g>').join('')+'</svg>';
+  ground.innerHTML='<svg viewBox="0 0 850 90" preserveAspectRatio="xMidYMax meet"><path d="M5 88Q100 56 196 77T393 73T600 70T845 76M75 75L48 39M180 75L210 37M370 75L345 34M570 72L600 36M750 74L779 36" fill="none" stroke="#8a6658" stroke-width="3" stroke-linecap="round"/>'+Array.from({length:24},(_,i)=>'<g class="portal-bloom" style="--bloom-delay:'+(i*.09)+'s;color:'+['#ffc4d9','#fff7fb','#f5a8c6','#ffe2ed'][i%4]+'" transform="translate('+(25+i*34)+' '+(i%3===0?44:65)+')"><g style="--flower-size:'+(0.55+(i%5)*.16)+'">'+blossom+'</g></g>').join('')+'</svg>';
  }else if(season==='summer'){
   ground.innerHTML='<svg viewBox="0 0 850 110" preserveAspectRatio="xMidYMax meet">'+Array.from({length:9},(_,i)=>'<g transform="translate('+(38+i*96)+' 110)"><g class="portal-growing-tree" style="--tree-delay:'+i*.16+'s"><path d="M0 0V-65M0-26L-18-44M0-40L18-57" fill="none" stroke="#806145" stroke-width="4" stroke-linecap="round"/><g class="portal-tree-crown" style="animation-delay:'+(-i*.5)+'s"><ellipse cx="-17" cy="-58" rx="22" ry="24" fill="#4f9a64"/><ellipse cx="17" cy="-63" rx="23" ry="25" fill="#69ad69"/><ellipse cy="-80" rx="24" ry="25" fill="#84be77"/><path d="M-18-67L-8-75M9-87L18-80" stroke="#b3d99a" stroke-width="3" stroke-linecap="round"/></g></g></g>').join('')+'</svg>';
  }else{
@@ -58,7 +58,7 @@ if(season!=='autumn'){
  const total=season==='winter'?30:season==='spring'?19:12;
  for(let i=0;i<total;i++){
   const particle=document.createElement('span');particle.className='portal-season-particle '+season;
-  particle.style.cssText='left:'+((i*47+9)%97)+'%;--fall-duration:'+(season==='winter'?9+i%6:season==='spring'?8+i%5:10+i%5)+'s;--fall-delay:'+(season==='spring'?2+i*.24:season==='winter'?1.5+i*.38:-i*1.37)+'s;--fall-drift:'+(i%2?28:-24)+'px;--particle-size:'+(season==='winter'?4+i%4:season==='spring'?7+i%7:12+i%4)+'px';
+  particle.style.cssText='left:'+((i*47+9)%97)+'%;--fall-duration:'+(season==='winter'?9+i%6:season==='spring'?8+i%5:10+i%5)+'s;--fall-delay:'+(season==='spring'?.8+i*.14:season==='winter'?1.5+i*.38:-i*1.37)+'s;--fall-drift:'+(i%2?28:-24)+'px;--particle-size:'+(season==='winter'?4+i%4:season==='spring'?7+i%7:12+i%4)+'px';
   particle.style.color=['#ffc4d9','#fff7fb','#f5a8c6','#ffe2ed'][i%4];
   particle.innerHTML=season==='winter'?'':season==='spring'?'<svg viewBox="0 0 20 24"><path d="M10 22C-3 13 1 1 8 2L10 5L13 1C24 1 21 14 10 22Z" fill="currentColor"/><path d="M10 19L10 7" stroke="#eda6bf" stroke-width=".7"/></svg>':'<svg viewBox="-25 -45 55 55" style="color:#94cb7e">'+leaf+'</svg>';scene.append(particle);
  }
@@ -71,8 +71,8 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 .portal-season-scene.summer .portal-season-ground{height:52px}
 .portal-season-scene.spring .portal-season-ground,.portal-season-scene.winter .portal-season-ground{height:64px}
 .portal-season-ground>svg{display:block;width:100%;height:100%;overflow:visible}
-.portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 12s ease-in-out var(--bloom-delay) infinite both}
-@keyframes portal-blossom-open{0%,8%,100%{transform:scale(0);opacity:0}30%,65%{transform:scale(var(--flower-size,1));opacity:1}84%{transform:scale(calc(var(--flower-size,1) * .85));opacity:.35}94%{transform:scale(.15);opacity:0}}
+.portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 9s ease-in-out var(--bloom-delay) infinite both}
+@keyframes portal-blossom-open{0%,2%,100%{transform:scale(0);opacity:0}18%,65%{transform:scale(var(--flower-size,1));opacity:1}84%{transform:scale(calc(var(--flower-size,1) * .85));opacity:.35}94%{transform:scale(.15);opacity:0}}
 .portal-growing-tree{transform-origin:0 0;animation:portal-tree-grow 5s cubic-bezier(.2,.7,.3,1) var(--tree-delay) both}
 @keyframes portal-tree-grow{from{transform:scale(.15,.05);opacity:0}to{transform:scale(1);opacity:1}}
 .portal-tree-crown{transform-box:fill-box;transform-origin:center bottom;animation:portal-crown-wind 7.5s ease-in-out infinite}
