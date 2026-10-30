@@ -51,6 +51,10 @@ if(season!=='autumn'){
  }else{
   ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M0 98C25 98 38 94 65 94S108 83 145 86S190 96 224 94S265 73 306 77S350 91 390 90S428 84 462 87S501 96 540 93S586 78 625 81S665 91 701 88S746 78 779 84S821 96 850 97V100H0Z" fill="#f4fbff"/><g class="portal-snowman" transform="translate(724 96)"><g class="portal-snow-body"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/></g><g class="portal-snow-head"><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/></g><g class="portal-snow-details"><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g><path class="portal-snow-scarf" d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><path class="portal-snow-hat" d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/></g></svg>';
  }
+ if(season==='winter'){
+  const small=ground.querySelector('.portal-snowman'),large=small.cloneNode(true);
+  large.classList.add('portal-snowman-large');large.setAttribute('transform','translate(646 96) scale(1.3)');small.before(large);
+ }
  const total=season==='winter'?30:season==='spring'?19:12;
  for(let i=0;i<total;i++){
   const particle=document.createElement('span');particle.className='portal-season-particle '+season;
@@ -81,6 +85,11 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 .portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 24s ease-out both}
 @keyframes portal-snow-build{0%,12%{transform:scaleY(0);opacity:0}30%{opacity:.5}100%{transform:scaleY(1);opacity:1}}
 .portal-snowman{opacity:1}
+.portal-snowman-large .portal-snow-body{animation-delay:5s}
+.portal-snowman-large .portal-snow-head{animation-delay:10s}
+.portal-snowman-large .portal-snow-details{animation-delay:15s}
+.portal-snowman-large .portal-snow-scarf{animation-delay:17s}
+.portal-snowman-large .portal-snow-hat{animation-delay:19s}
 .portal-snow-body,.portal-snow-head{transform-box:fill-box;transform-origin:center;opacity:0}
 .portal-snow-body{animation:portal-snow-roll 6s cubic-bezier(.25,.65,.3,1) 3s both}
 .portal-snow-head{animation:portal-snow-head-roll 5s cubic-bezier(.25,.65,.3,1) 8s both}
