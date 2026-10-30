@@ -13,6 +13,8 @@ var presets={
 window.qmesApplyWallpaper=function(name){
  var value=presets[name]||presets.factory;
  if(name==='original')value='none';
+ if(name==='gallery'){try{var gallery=localStorage.getItem('qmes-portal-wallpaper-gallery-v1')||'';if(/^https:\/\/images\.pexels\.com\/photos\/\d+\/pexels-photo-\d+\.jpeg\?auto=compress&cs=tinysrgb&w=1920$/.test(gallery))value='linear-gradient(90deg,rgba(8,34,55,.38),rgba(8,34,55,.12)),url("'+gallery+'")';}catch(e){}}
+
  if(name==='custom'){try{var data=localStorage.getItem('qmes-portal-wallpaper-custom-v1')||'';if(/^data:image\//.test(data))value='linear-gradient(90deg,rgba(8,34,55,.38),rgba(8,34,55,.12)),url("'+data.replace(/"/g,'')+'")';}catch(e){}}
  document.documentElement.style.setProperty('--qmes-initial-wallpaper',value);
  document.documentElement.dataset.qmesWallpaper=name;
@@ -2788,7 +2790,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   </aside>
 
   <main class="content">
-    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261030-chungju-season8" loading="eager"></iframe></section>
+    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261030-category-wallpapers9" loading="eager"></iframe></section>
     <section class="module-page namo-dashboard-shell" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
