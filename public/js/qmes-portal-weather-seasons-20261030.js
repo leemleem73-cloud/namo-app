@@ -54,6 +54,10 @@ if(season!=='autumn'){
  if(season==='winter'){
   const small=ground.querySelector('.portal-snowman'),large=small.cloneNode(true);
   large.classList.add('portal-snowman-large');large.setAttribute('transform','translate(646 96) scale(1.3)');small.before(large);
+  ground.querySelectorAll('.portal-snow-body ellipse').forEach(body=>body.setAttribute('stroke','none'));
+  const frontSnow=ground.querySelector('.portal-snow-bank').cloneNode(true);
+  frontSnow.classList.add('portal-snow-bank-front');ground.querySelector('svg').append(frontSnow);
+
  }
  const total=season==='winter'?30:season==='spring'?19:12;
  for(let i=0;i<total;i++){
