@@ -55,6 +55,13 @@ weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  (data.weather||[]).slice(0,3).forEach((day,i)=>{const row=document.createElement('div');row.className='portal-weather-day';const name=document.createElement('b'),range=document.createElement('span');name.textContent=(i===0?'오늘':new Intl.DateTimeFormat('ko-KR',{weekday:'short',timeZone:'Asia/Seoul'}).format(new Date(day.date+'T12:00:00+09:00')))+' · '+day.date;range.textContent=day.mintempC+'° / '+day.maxtempC+'°';row.append(name,range);dialog.append(row);});}
  const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||'현재 날씨를 확인 중입니다.');dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
+ function centerWeatherDialog(){
+  const bounds=form.getBoundingClientRect(),box=dialog.getBoundingClientRect();
+  dialog.style.position='fixed';dialog.style.margin='0';dialog.style.right='auto';dialog.style.bottom='auto';dialog.style.transform='none';
+  dialog.style.left=Math.max(12,Math.min(bounds.left+(bounds.width-box.width)/2,innerWidth-box.width-12))+'px';
+  dialog.style.top=Math.max(12,(innerHeight-box.height)/2)+'px';
+ }
+ centerWeatherDialog();window.addEventListener('resize',centerWeatherDialog);dialog.addEventListener('close',()=>window.removeEventListener('resize',centerWeatherDialog),{once:true});
 });
 function fitSeasonToSearch(){
  const bounds=form.getBoundingClientRect(),parent=wrap.getBoundingClientRect();
