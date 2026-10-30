@@ -92,26 +92,26 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 @keyframes portal-petal-flutter{from{transform:translateX(-6px) rotate(-25deg) rotateY(0)}to{transform:translateX(6px) rotate(30deg) rotateY(50deg)}}
 .portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 10s ease-out both}
 @keyframes portal-snow-build{0%,12%{transform:scaleY(0);opacity:0}30%{opacity:.5}100%{transform:scaleY(1);opacity:1}}
-.portal-christmas-scene{opacity:0;animation:portal-christmas-reveal 3s ease-in-out 7s both}
+.portal-christmas-scene{opacity:0;animation:portal-christmas-reveal 2s ease-in-out 5s both}
 @keyframes portal-christmas-reveal{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.portal-christmas-scene{animation:none;opacity:1}}
-.portal-christmas-tree{transform-box:fill-box;transform-origin:center bottom;animation:portal-tree-winter-sway 6.8s ease-in-out 7s infinite}
+.portal-christmas-tree{transform-box:fill-box;transform-origin:center bottom;animation:portal-tree-winter-sway 6.8s ease-in-out 5s infinite}
 @keyframes portal-tree-winter-sway{0%,100%{transform:rotate(-1.2deg)}45%{transform:rotate(1.8deg)}75%{transform:rotate(-.5deg)}}
-.portal-tree-snow{opacity:0;animation:portal-tree-snow-settle 14s ease-in 10s both}
+.portal-tree-snow{opacity:0;animation:portal-tree-snow-settle 10s ease-in 8s both}
 @keyframes portal-tree-snow-settle{0%{opacity:0}35%{opacity:.2}70%{opacity:.65}100%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.portal-christmas-tree,.portal-tree-snow{animation:none}.portal-tree-snow{opacity:1}}
 .portal-snowman{opacity:1}
-.portal-snowman-large .portal-snow-body{animation-delay:9.2s;animation-duration:11.5s}
-.portal-snowman-large .portal-snow-head{animation-delay:20.5s;animation-duration:7.5s}
-.portal-snowman-large .portal-snow-details{animation-delay:28.2s;animation-duration:3s}
-.portal-snowman-large .portal-snow-scarf{animation-delay:30.5s;animation-duration:3.5s}
-.portal-snowman-large .portal-snow-hat{animation-delay:33.7s;animation-duration:4s}
+.portal-snowman-large .portal-snow-body{animation-delay:6.3s;animation-duration:8s}
+.portal-snowman-large .portal-snow-head{animation-delay:14s;animation-duration:5.5s}
+.portal-snowman-large .portal-snow-details{animation-delay:19.5s;animation-duration:2s}
+.portal-snowman-large .portal-snow-scarf{animation-delay:21.3s;animation-duration:2.2s}
+.portal-snowman-large .portal-snow-hat{animation-delay:23s;animation-duration:2.5s}
 .portal-snow-body,.portal-snow-head{transform-box:fill-box;transform-origin:center;opacity:0}
-.portal-snow-body{animation:portal-snow-roll 10s cubic-bezier(.25,.65,.3,1) 7s both}
-.portal-snow-head{animation:portal-snow-head-roll 9s cubic-bezier(.25,.65,.3,1) 18s both}
-.portal-snow-details{animation:portal-snow-detail 4s ease 27s both}
-.portal-snow-scarf{animation:portal-snow-accessory 4s ease-out 31s both}
-.portal-snow-hat{animation:portal-snow-accessory 5s ease-out 35s both}
+.portal-snow-body{animation:portal-snow-roll 7s cubic-bezier(.25,.65,.3,1) 5s both}
+.portal-snow-head{animation:portal-snow-head-roll 6s cubic-bezier(.25,.65,.3,1) 12.5s both}
+.portal-snow-details{animation:portal-snow-detail 2s ease 18.5s both}
+.portal-snow-scarf{animation:portal-snow-accessory 2s ease-out 20s both}
+.portal-snow-hat{animation:portal-snow-accessory 2.5s ease-out 22s both}
 @keyframes portal-snow-roll{0%{opacity:0;transform:translateX(-95px) rotate(-240deg) scale(.25)}15%{opacity:1}80%{transform:translateX(-3px) rotate(-12deg) scale(.98)}100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
 @keyframes portal-snow-head-roll{0%{opacity:0;transform:translate(-75px,35px) rotate(-180deg) scale(.35)}15%{opacity:1}65%{transform:translate(-15px,28px) rotate(-35deg) scale(.9)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
 @keyframes portal-snow-detail{from{opacity:0}to{opacity:1}}
