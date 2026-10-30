@@ -46,7 +46,7 @@ if(season!=='autumn'){
  }else if(season==='summer'){
   ground.innerHTML='<svg viewBox="0 0 850 110" preserveAspectRatio="xMidYMax meet">'+Array.from({length:9},(_,i)=>'<g transform="translate('+(38+i*96)+' 110)"><g class="portal-growing-tree" style="--tree-delay:'+i*.16+'s"><path d="M0 0V-65M0-26L-18-44M0-40L18-57" fill="none" stroke="#806145" stroke-width="4" stroke-linecap="round"/><g class="portal-tree-crown" style="animation-delay:'+(-i*.5)+'s"><ellipse cx="-17" cy="-58" rx="22" ry="24" fill="#4f9a64"/><ellipse cx="17" cy="-63" rx="23" ry="25" fill="#69ad69"/><ellipse cy="-80" rx="24" ry="25" fill="#84be77"/><path d="M-18-67L-8-75M9-87L18-80" stroke="#b3d99a" stroke-width="3" stroke-linecap="round"/></g></g></g>').join('')+'</svg>';
  }else{
-  ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M0 96Q70 73 140 88T310 86T480 88T650 85T850 88V100H0Z" fill="#eff8ff"/><g class="portal-snowman" transform="translate(724 96)"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/><path d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/><path d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g></svg>';
+  ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M28 100Q70 85 112 100Z M168 100Q218 81 268 100Z M330 100Q368 89 406 100Z M474 100Q532 79 590 100Z M650 100Q690 88 730 100Z M770 100Q794 91 818 100Z" fill="#e0edf5" opacity=".7"/><g class="portal-snowman" transform="translate(724 96)"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/><path d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/><path d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g></svg>';
  }
  const total=season==='winter'?30:season==='spring'?19:12;
  for(let i=0;i<total;i++){
@@ -118,7 +118,10 @@ weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
 });
 function fitSeasonToSearch(){
  const bounds=form.getBoundingClientRect(),parent=wrap.getBoundingClientRect();
- scene.style.left=(bounds.left-parent.left)+'px';scene.style.right='auto';scene.style.width=bounds.width+'px';scene.style.boxSizing='border-box';scene.style.overflow='hidden';
+ const inset=season==='winter'?18:0;
+ scene.style.left=(bounds.left-parent.left+inset)+'px';scene.style.right='auto';scene.style.width=Math.max(0,bounds.width-inset*2)+'px';
+ if(season==='winter'){scene.style.setProperty('top','auto','important');scene.style.setProperty('bottom','auto','important');scene.style.setProperty('height','150px','important');scene.style.setProperty('top',(bounds.top-parent.top-151)+'px','important');}
+scene.style.boxSizing='border-box';scene.style.overflow='hidden';
 }
 requestAnimationFrame(fitSeasonToSearch);window.addEventListener('resize',fitSeasonToSearch);if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitSeasonToSearch).observe(form);
 const key='qmes-chungju-weather-v1';
