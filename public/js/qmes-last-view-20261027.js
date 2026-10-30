@@ -9,15 +9,19 @@ try{saved=JSON.parse(sessionStorage.getItem(KEY)||'null');}catch(_){}
  if(saved?.page==='purchase'&&!saved.observedView&&saved.route?.kind==='new'&&!saved.purchaseRows&&!(saved.fields||[]).some(field=>field.name==='orderDate'||field.name==='supplier')){
   saved={...saved,route:null,trail:[],fields:[],baseFields:[],observedView:'list'};
  }
+// Discard legacy work-list snapshots that retained an earlier New button click.
+ if(saved?.page==='work'&&!saved.title&&!saved.materialRows&&!saved.route&&(saved.trail||[]).some(step=>step.kind==='button')&&!(saved.trail||[]).some(step=>step.kind==='row')){
+  saved={...saved,route:null,trail:[],fields:[],baseFields:[],observedView:'list'};
+ }
 const clean=value=>String(value||'').replace(/\s+/g,' ').trim();
 const user=()=>String(window.__QMES_CURRENT_USER__?.id||window.__QMES_CURRENT_USER__?.name||'');
 const page=()=>document.querySelector('.sidebar .menu.active[data-page]')?.dataset.page||'main';
 function visible(node){return !!node&&node.isConnected&&!node.hidden&&getComputedStyle(node).display!=='none'&&node.getClientRects().length>0;}
 function viewRoot(){
  const workspace=document.getElementById('mainWorkspace');
- if(workspace?.classList.contains('active'))return workspace;
+ if(workspace?.classList.contains('active')&&visible(workspace))return workspace;
  const section=document.getElementById(page());if(!section)return null;
- return [...section.querySelectorAll('#namo-work-detail,.qpu-detail-panel,#eqDetail.show,.eq-wo-overlay,#namo-purchase-new-enterprise,.ncr-editor-shell,.ncr-form,.ncr-detail,.ncr-detail-panel')].find(visible)||null;
+ return [...section.querySelectorAll('#namo-work-detail,.qpu-detail-panel,#eqDetail.show,.eq-wo-overlay,#namo-purchase-new-enterprise,.ncr-editor-shell,.ncr-form,.ncr-detail,.ncr-detail-panel')].find(node=>visible(node)&&(node.id!=='namo-work-detail'||!!node.querySelector('.nwd-grid')))||null;
 }
 function currentRoute(root){
  if(!root)return null;
@@ -62,6 +66,8 @@ function pagerNumber(root){
 function remember(){
  if(restoring||bootPending||!user())return;
  const root=viewRoot(),section=document.getElementById(page());
+ if(!root){trail=[];baseFields=[];basePage=pagerNumber(section);}
+ else if(root.id==='namo-work-detail'){const selected=section?.querySelector('tr[data-work-saved].nwi-selected');if(selected)trail=[{kind:'row',...identity(selected),control:null},...trail.filter(step=>step.kind==='inside')];}
  const snapshot={version:1,user:user(),page:page(),trail:root?trail:[],baseFields:root?baseFields:[],basePage:root?basePage:pagerNumber(section),fields:root?captureFields(root):[],route:currentRoute(root),observedView:root?'editor':'list',processOrigin:history.state?.qmesProcessOrigin||'',purchaseRows:root?.querySelectorAll('#npo-tbody>tr').length||0,title:root===document.getElementById('mainWorkspace')?document.getElementById('workspaceTitle')?.textContent:'',sidebarPage:root?pagerNumber(root):1,scroll:window.scrollY,contentScroll:document.querySelector('main.content')?.scrollTop||0,materialRows:root?.querySelectorAll('#workMaterialTable tbody tr').length||0};
  if(root&&!trail.length&&!snapshot.route)return;
  try{sessionStorage.setItem(KEY,JSON.stringify(snapshot));}catch(_){}
