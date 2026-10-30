@@ -46,7 +46,7 @@ if(season!=='autumn'){
  }else if(season==='summer'){
   ground.innerHTML='<svg viewBox="0 0 850 110" preserveAspectRatio="xMidYMax meet">'+Array.from({length:9},(_,i)=>'<g transform="translate('+(38+i*96)+' 110)"><g class="portal-growing-tree" style="--tree-delay:'+i*.16+'s"><path d="M0 0V-65M0-26L-18-44M0-40L18-57" fill="none" stroke="#806145" stroke-width="4" stroke-linecap="round"/><g class="portal-tree-crown" style="animation-delay:'+(-i*.5)+'s"><ellipse cx="-17" cy="-58" rx="22" ry="24" fill="#4f9a64"/><ellipse cx="17" cy="-63" rx="23" ry="25" fill="#69ad69"/><ellipse cy="-80" rx="24" ry="25" fill="#84be77"/><path d="M-18-67L-8-75M9-87L18-80" stroke="#b3d99a" stroke-width="3" stroke-linecap="round"/></g></g></g>').join('')+'</svg>';
  }else{
-  ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M28 100Q70 85 112 100Z M168 100Q218 81 268 100Z M330 100Q368 89 406 100Z M474 100Q532 79 590 100Z M650 100Q690 88 730 100Z M770 100Q794 91 818 100Z" fill="#e0edf5" opacity=".7"/><g class="portal-snowman" transform="translate(724 96)"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/><path d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/><path d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g></svg>';
+  ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M28 100Q70 85 112 100Z M168 100Q218 81 268 100Z M330 100Q368 89 406 100Z M474 100Q532 79 590 100Z M650 100Q690 88 730 100Z M770 100Q794 91 818 100Z" fill="#e0edf5" opacity=".7"/><g class="portal-snowman" transform="translate(724 96)"><g class="portal-snow-body"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/></g><g class="portal-snow-head"><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/></g><g class="portal-snow-details"><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g><path class="portal-snow-scarf" d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><path class="portal-snow-hat" d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/></g></svg>';
  }
  const total=season==='winter'?30:season==='spring'?19:12;
  for(let i=0;i<total;i++){
@@ -76,8 +76,19 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 @keyframes portal-petal-flutter{from{transform:translateX(-6px) rotate(-25deg) rotateY(0)}to{transform:translateX(6px) rotate(30deg) rotateY(50deg)}}
 .portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 16s ease-out both}
 @keyframes portal-snow-build{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
-.portal-snowman{opacity:0;animation:portal-snowman-arrive 5s ease-out 6s forwards}
-@keyframes portal-snowman-arrive{from{opacity:0}to{opacity:1}}
+.portal-snowman{opacity:1}
+.portal-snow-body,.portal-snow-head{transform-box:fill-box;transform-origin:center;opacity:0}
+.portal-snow-body{animation:portal-snow-roll 6s cubic-bezier(.25,.65,.3,1) 3s both}
+.portal-snow-head{animation:portal-snow-head-roll 5s cubic-bezier(.25,.65,.3,1) 8s both}
+.portal-snow-details{animation:portal-snow-detail 2.5s ease 13s both}
+.portal-snow-scarf{animation:portal-snow-accessory 2.5s ease-out 15s both}
+.portal-snow-hat{animation:portal-snow-accessory 3s ease-out 17s both}
+@keyframes portal-snow-roll{0%{opacity:0;transform:translateX(-95px) rotate(-240deg) scale(.25)}15%{opacity:1}80%{transform:translateX(-3px) rotate(-12deg) scale(.98)}100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
+@keyframes portal-snow-head-roll{0%{opacity:0;transform:translate(-75px,35px) rotate(-180deg) scale(.35)}15%{opacity:1}65%{transform:translate(-15px,28px) rotate(-35deg) scale(.9)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes portal-snow-detail{from{opacity:0}to{opacity:1}}
+@keyframes portal-snow-accessory{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.portal-snow-body,.portal-snow-head,.portal-snow-details,.portal-snow-scarf,.portal-snow-hat{animation:none;opacity:1;transform:none}}
+
 @media(prefers-reduced-motion:reduce){.portal-bloom>g,.portal-growing-tree,.portal-tree-crown,.portal-season-particle,.portal-season-particle svg,.portal-snow-bank,.portal-snowman{animation:none}.portal-season-particle{display:none}.portal-snowman{opacity:1}}
 `;document.head.append(seasonalAnimationStyle);
 
