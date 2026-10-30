@@ -1,7 +1,8 @@
 (()=>{'use strict';
 const form=document.getElementById('search-form');if(!form)return;
 const month=Number(new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',month:'numeric'}).format(new Date()));
-const season=month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
+const previewSeason=new URLSearchParams(location.search).get('previewSeason');
+const season=['spring','summer','autumn','winter'].includes(previewSeason)?previewSeason:month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
 const scene=document.createElement('div');scene.className='portal-season-scene '+season;scene.setAttribute('aria-hidden','true');
 const leaf='<path d="M0 0C-19-24-6-37 9-40C20-22 18-6 0 0Z" fill="currentColor"/><path d="M0 0L8-33" stroke="#fff" stroke-opacity=".45" fill="none"/>';
 const flower='<g fill="currentColor">'+[0,72,144,216,288].map(a=>'<ellipse cy="-8" rx="5" ry="8" transform="rotate('+a+')"/>').join('')+'</g><circle r="4" fill="#ffe7a0"/>';
@@ -9,6 +10,11 @@ const snow='<path d="M0-13V13M-11-6L11 6M-11 6L11-6" stroke="currentColor" strok
 scene.innerHTML='<svg viewBox="0 0 850 50" preserveAspectRatio="none">'+(season==='winter'?'<path d="M0 46Q90 23 180 39T380 38T610 36T850 40V50H0Z" fill="#f4faff" opacity=".9"/>':'<path d="M0 48Q210 39 425 46T850 44" fill="none" stroke="currentColor" stroke-opacity=".3"/>')+Array.from({length:season==='autumn'?24:16},(_,i)=>{const x=14+(i*53)%825,y=season==='autumn'?46-(i%3)*3:season==='winter'?15+(i%3)*10:46;return '<g transform="translate('+x+' '+y+') rotate('+((i%5)*23-40)+') scale('+(season==='winter'?'.55':season==='spring'?'.65':'.6')+')" opacity="'+(.65+(i%3)*.1)+'">'+(season==='winter'?snow:season==='spring'?flower:leaf)+'</g>';}).join('')+'</svg>';
 const weather=document.createElement('div');weather.className='portal-chungju-weather';weather.setAttribute('aria-live','polite');weather.innerHTML='<span class="portal-weather-icon" aria-hidden="true">⛅</span><b>충주</b><span class="portal-weather-current">날씨 불러오는 중</span><span class="portal-weather-range"></span><button type="button" class="portal-weather-open" aria-haspopup="dialog">상세</button>';
 const wrap=document.createElement('div');wrap.className='portal-season-weather';wrap.append(scene,weather);form.before(wrap);
+if(['spring','summer','autumn','winter'].includes(previewSeason)){
+ const nav=document.createElement('nav');nav.setAttribute('aria-label','계절 미리보기');nav.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;gap:8px;padding:10px;border:1px solid #cbdce9;border-radius:10px;background:white;font:13px Malgun Gothic,sans-serif';
+ [['spring','봄'],['summer','여름'],['autumn','가을'],['winter','겨울']].forEach(([value,label])=>{const a=document.createElement('a');const url=new URL(location.href);url.searchParams.set('previewSeason',value);a.href=url.href;a.textContent=label;a.style.cssText='padding:6px 14px;border-radius:6px;text-decoration:none;color:'+(value===season?'white;background:#1686b3':'#28475e;background:#edf5fb');nav.append(a);});document.body.append(nav);
+}
+
 
 if(season==='autumn'){
  scene.innerHTML='';scene.classList.add('is-falling');
