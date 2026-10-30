@@ -55,6 +55,10 @@ if(season!=='autumn'){
   const small=ground.querySelector('.portal-snowman'),large=small.cloneNode(true);
   large.classList.add('portal-snowman-large');large.setAttribute('transform','translate(646 96) scale(1.3)');small.before(large);
   ground.querySelectorAll('.portal-snow-body ellipse').forEach(body=>body.setAttribute('stroke','none'));
+  const christmas=document.createElementNS('http://www.w3.org/2000/svg','g');
+  christmas.setAttribute('class','portal-christmas-scene');christmas.setAttribute('transform','translate(112 96)');
+  christmas.innerHTML='<rect x="-4" y="-17" width="8" height="17" rx="1" fill="#896449"/><path d="M0-74L-22-44H-13L-31-21H-19L-39-2H39L19-21H31L13-44H22Z" fill="#397653"/><path d="M0-74L-17-46H0L-23-24H0L-31-5H5V-74Z" fill="#4b9166"/><path d="M0-84L3-77L11-76L5-71L7-63L0-67L-7-63L-5-71L-11-76L-3-77Z" fill="#f3d478"/><path d="M-16-43Q1-32 17-43M-24-21Q0-7 25-21" fill="none" stroke="#e8cf8d" stroke-width="2" opacity=".85"/><circle cx="-9" cy="-43" r="3" fill="#d97979"/><circle cx="12" cy="-24" r="3" fill="#eed482"/><circle cx="-17" cy="-14" r="3" fill="#b6dce6"/><circle cx="6" cy="-10" r="3" fill="#d97979"/><g transform="translate(-53 0)"><rect x="-14" y="-19" width="28" height="19" rx="2" fill="#c4757c"/><path d="M0-19V0M-14-10H14" stroke="#f3d9ad" stroke-width="4"/><path d="M0-19C-15-19-11-30-4-25L0-19C15-19 11-30 4-25Z" fill="none" stroke="#f3d9ad" stroke-width="2"/></g><g transform="translate(48 0)"><rect x="-12" y="-26" width="24" height="26" rx="2" fill="#d7b774"/><path d="M0-26V0M-12-16H12" stroke="#eff4e6" stroke-width="4"/><path d="M0-26C-13-26-10-36-3-31L0-26C13-26 10-36 3-31Z" fill="none" stroke="#eff4e6" stroke-width="2"/></g>';
+  ground.querySelector('svg').append(christmas);
   const frontSnow=ground.querySelector('.portal-snow-bank').cloneNode(true);
   frontSnow.classList.add('portal-snow-bank-front');ground.querySelector('svg').append(frontSnow);
 
@@ -88,6 +92,9 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 @keyframes portal-petal-flutter{from{transform:translateX(-6px) rotate(-25deg) rotateY(0)}to{transform:translateX(6px) rotate(30deg) rotateY(50deg)}}
 .portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 10s ease-out both}
 @keyframes portal-snow-build{0%,12%{transform:scaleY(0);opacity:0}30%{opacity:.5}100%{transform:scaleY(1);opacity:1}}
+.portal-christmas-scene{opacity:0;animation:portal-christmas-reveal 3s ease-in-out both}
+@keyframes portal-christmas-reveal{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.portal-christmas-scene{animation:none;opacity:1}}
 .portal-snowman{opacity:1}
 .portal-snowman-large .portal-snow-body{animation-delay:10s}
 .portal-snowman-large .portal-snow-head{animation-delay:21s}
