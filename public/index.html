@@ -7945,7 +7945,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261030-modal-colors11"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261030-select-only12"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=3-larger"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261029-history4"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261028-single-month8"></script>
@@ -8544,12 +8544,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
 </script>
 <script defer src="./js/qmes-module-notifications-20261029.js?v=6-drag"></script>
 <script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=3"></script>
-<style id="qmes-material-modal-colors-20261030">html body #workMaterialTable tbody tr:nth-child(1)>td:nth-child(2){background:#fff4b8!important;border-left:3px solid #b58a00!important}html body #workMaterialTable tbody tr:nth-child(1)>td:nth-child(2) :is(select,input){background-color:#fff4b8!important;color:#24445f!important}
-html body #workMaterialTable tbody tr:nth-child(2)>td:nth-child(2){background:#ffe2c2!important;border-left:3px solid #c46b1e!important}html body #workMaterialTable tbody tr:nth-child(2)>td:nth-child(2) :is(select,input){background-color:#ffe2c2!important;color:#24445f!important}
-html body #workMaterialTable tbody tr:nth-child(3)>td:nth-child(2){background:#dcecff!important;border-left:3px solid #367bc3!important}html body #workMaterialTable tbody tr:nth-child(3)>td:nth-child(2) :is(select,input){background-color:#dcecff!important;color:#24445f!important}
-html body #workMaterialTable tbody tr:nth-child(4)>td:nth-child(2){background:#eadfff!important;border-left:3px solid #8359b5!important}html body #workMaterialTable tbody tr:nth-child(4)>td:nth-child(2) :is(select,input){background-color:#eadfff!important;color:#24445f!important}
-html body #workMaterialTable tbody tr:nth-child(5)>td:nth-child(2){background:#def0df!important;border-left:3px solid #4f8d57!important}html body #workMaterialTable tbody tr:nth-child(5)>td:nth-child(2) :is(select,input){background-color:#def0df!important;color:#24445f!important}
-html body #workMaterialTable tbody tr:nth-child(6)>td:nth-child(2){background:#fff!important;border-left:3px solid #b8c6d3!important}html body #workMaterialTable tbody tr:nth-child(6)>td:nth-child(2) :is(select,input){background-color:#fff!important;color:#24445f!important}</style>
+
 
 <script id="qmes-new-work-material-input-colors-20261030">
 (function(){
@@ -8560,7 +8555,11 @@ html body #workMaterialTable tbody tr:nth-child(6)>td:nth-child(2){background:#f
   document.querySelectorAll('table#workMaterialTable').forEach(table=>{
    Array.from(table.querySelectorAll('tbody tr')).slice(0,6).forEach((row,index)=>{
     const cell=row.querySelector('.material-name-select')?.closest('td')||row.cells[1];if(!cell)return;
-    [cell,...cell.querySelectorAll('select,input')].forEach(node=>{
+    cell.style.setProperty('background','#ffffff','important');
+    cell.style.setProperty('background-color','#ffffff','important');
+    cell.style.setProperty('border-left','1px solid #d6e1ed','important');
+    cell.querySelectorAll('input').forEach(input=>{input.style.setProperty('background','#ffffff','important');input.style.setProperty('background-color','#ffffff','important');});
+    [...cell.querySelectorAll('select')].forEach(node=>{
      node.style.setProperty('background',fills[index],'important');
      node.style.setProperty('background-color',fills[index],'important');
      node.style.setProperty('color','#24445f','important');
