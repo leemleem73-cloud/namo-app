@@ -8550,6 +8550,30 @@ html body #workMaterialTable tbody tr:nth-child(3)>td:nth-child(2){background:#d
 html body #workMaterialTable tbody tr:nth-child(4)>td:nth-child(2){background:#eadfff!important;border-left:3px solid #8359b5!important}html body #workMaterialTable tbody tr:nth-child(4)>td:nth-child(2) :is(select,input){background-color:#eadfff!important;color:#24445f!important}
 html body #workMaterialTable tbody tr:nth-child(5)>td:nth-child(2){background:#def0df!important;border-left:3px solid #4f8d57!important}html body #workMaterialTable tbody tr:nth-child(5)>td:nth-child(2) :is(select,input){background-color:#def0df!important;color:#24445f!important}
 html body #workMaterialTable tbody tr:nth-child(6)>td:nth-child(2){background:#fff!important;border-left:3px solid #b8c6d3!important}html body #workMaterialTable tbody tr:nth-child(6)>td:nth-child(2) :is(select,input){background-color:#fff!important;color:#24445f!important}</style>
+
+<script id="qmes-new-work-material-input-colors-20261030">
+(function(){
+ 'use strict';
+ const fills=['#fff0a6','#ffdab0','#cfe4ff','#e4d3ff','#d2edcf','#ffffff'];
+ const edges=['#c59b25','#cf813a','#568cc4','#9671c4','#6eaa6a','#cbd9e5'];
+ function paint(){
+  document.querySelectorAll('table#workMaterialTable').forEach(table=>{
+   Array.from(table.querySelectorAll('tbody tr')).slice(0,6).forEach((row,index)=>{
+    const cell=row.querySelector('.material-name-select')?.closest('td')||row.cells[1];if(!cell)return;
+    [cell,...cell.querySelectorAll('select,input')].forEach(node=>{
+     node.style.setProperty('background',fills[index],'important');
+     node.style.setProperty('background-color',fills[index],'important');
+     node.style.setProperty('color','#24445f','important');
+     if(node!==cell)node.style.setProperty('border-color',edges[index],'important');
+    });
+   });
+  });
+ }
+ let pending=false;const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;paint();});};
+ function boot(){paint();new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true});document.addEventListener('change',event=>{if(event.target.closest('#workMaterialTable'))schedule();});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
 </body>
 </html>
 
