@@ -56,12 +56,14 @@ weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||'현재 날씨를 확인 중입니다.');dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
  function centerWeatherDialog(){
-  const bounds=form.getBoundingClientRect(),box=dialog.getBoundingClientRect();
-  dialog.style.position='fixed';dialog.style.margin='0';dialog.style.right='auto';dialog.style.bottom='auto';dialog.style.transform='none';
-  dialog.style.left=Math.max(12,Math.min(bounds.left+(bounds.width-box.width)/2,innerWidth-box.width-12))+'px';
-  dialog.style.top=Math.max(12,(innerHeight-box.height)/2)+'px';
+  if(!dialog.open)return;
+  const bounds=form.getBoundingClientRect();
+  [['position','fixed'],['margin','0'],['right','auto'],['bottom','auto'],['transform','none'],['translate','none'],['animation','none'],['transition','none']].forEach(([key,value])=>dialog.style.setProperty(key,value,'important'));
+  const box=dialog.getBoundingClientRect(),left=Math.max(12,Math.min(bounds.left+bounds.width/2-box.width/2,innerWidth-box.width-12)),top=Math.max(12,(innerHeight-box.height)/2);
+  dialog.style.setProperty('left',left+'px','important');dialog.style.setProperty('top',top+'px','important');
  }
- centerWeatherDialog();window.addEventListener('resize',centerWeatherDialog);dialog.addEventListener('close',()=>window.removeEventListener('resize',centerWeatherDialog),{once:true});
+
+ centerWeatherDialog();requestAnimationFrame(centerWeatherDialog);window.addEventListener('resize',centerWeatherDialog);window.addEventListener('scroll',centerWeatherDialog,true);const centerObserver=typeof ResizeObserver!=='undefined'?new ResizeObserver(centerWeatherDialog):null;centerObserver?.observe(form);dialog.addEventListener('close',()=>{window.removeEventListener('resize',centerWeatherDialog);window.removeEventListener('scroll',centerWeatherDialog,true);centerObserver?.disconnect();},{once:true});
 });
 function fitSeasonToSearch(){
  const bounds=form.getBoundingClientRect(),parent=wrap.getBoundingClientRect();
