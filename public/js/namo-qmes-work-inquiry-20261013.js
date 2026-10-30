@@ -285,7 +285,17 @@ function init(){
   const vals=[['작업지시번호',fields['작업지시번호']||order?.id||cells[3]||'-'],['고객사',value('고객사',2)],['제품명',value('제품명',4)],['생산 LOT',value('생산 LOT NO',5)],['설비명',value('설비명',6)],['작업자',value('작업자',7)],['계획수량',value('계획수량',8)],['작업기간',value('작업기간',9)],['진행상태',value('진행상태',10)],['작업일자',order?.workDate||'-'],['생산구분',order?.productionType||'-'],['비고',order?.note||'-']];
   const materials=Array.isArray(order?.materials)?order.materials:[];
   const tabs=[['materials','원재료 투입내역'],['progress','생산진행 현황'],['trace','LOT 추적정보']];
-  const mats=order?'<div style="overflow-x:auto"><table><thead><tr><th>NO</th><th>원재료명</th><th>원재료 LOT</th><th>계획 투입량 (kg)</th><th>실투입량 (kg)</th></tr></thead><tbody>'+(materials.length?materials.map((m,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.plan)+'</td><td>'+esc(m.actual)+'</td></tr>').join(''):'<tr><td colspan="5">등록된 원료가 없습니다.</td></tr>')+'</tbody></table></div>':'<p>원료 정보 조회 중입니다.</p>';
+  const materialColor=(name,index)=>{
+   const key=String(name||'').replace(/\s/g,'').toUpperCase();
+   if(key.includes('NMP'))return '#fff0a6';
+   if(key.includes('BYK180')||key==='분산제')return '#ffdab0';
+   if(key.includes('AOH30')||key.includes('BOEHMITE')||key==='세라믹')return '#cfe4ff';
+   if(key.includes('PVDF')||key.includes('중간배치'))return '#e4d3ff';
+   if(key.includes('SBS')||key==='바인더')return '#d2edcf';
+   if(key.includes('SBR'))return '#ffffff';
+   return ['#fff0a6','#ffdab0','#cfe4ff','#e4d3ff','#d2edcf','#ffffff'][index]||'#ffffff';
+  };
+  const mats=order?'<div style="overflow-x:auto"><table><thead><tr><th>NO</th><th>원재료명</th><th>원재료 LOT</th><th>계획 투입량 (kg)</th><th>실투입량 (kg)</th></tr></thead><tbody>'+(materials.length?materials.map((m,i)=>'<tr><td>'+(i+1)+'</td><td style="background-color:'+materialColor(m.name,i)+'!important;color:#24445f!important">'+esc(m.name)+'</td><td>'+esc(m.lot)+'</td><td>'+esc(m.plan)+'</td><td>'+esc(m.actual)+'</td></tr>').join(''):'<tr><td colspan="5">등록된 원료가 없습니다.</td></tr>')+'</tbody></table></div>':'<p>원료 정보 조회 중입니다.</p>';
   const content=activeTab==='materials'?mats:activeTab==='progress'?'<p>진행상태: '+esc(value('진행상태',10))+' · 세부 실적은 생산진행 현황에서 확인하세요.</p>':'<p>생산 LOT: '+esc(value('생산 LOT NO',5))+' · 검사/출하 연결정보는 LOT 추적관리에서 확인하세요.</p>';
   detail.querySelector('.nwd-head').textContent='작업지시 상세내역  '+(fields['작업지시번호']||order?.id||cells[3]);
   detail.querySelector('.nwd-content').innerHTML='<div class="nwd-grid">'+vals.map(v=>'<div class="nwd-cell"><b>'+esc(v[0])+'</b><span>'+esc(v[1])+'</span></div>').join('')+'</div><div class="nwd-tabs">'+tabs.map(([key,title])=>'<button type="button" data-nwd-tab="'+key+'" class="nwd-tab '+(activeTab===key?'active':'')+'">'+title+'</button>').join('')+'</div>'+content;
