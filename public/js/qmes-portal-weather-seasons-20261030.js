@@ -36,6 +36,47 @@ if(season==='autumn'){
  scene.querySelectorAll('.portal-falling-leaf').forEach(falling=>falling.addEventListener('animationiteration',event=>{if(event.animationName==='portal-leaf-fall')settle(falling);}));
  if(reduced)[...scene.querySelectorAll('.portal-falling-leaf')].slice(0,6).forEach(settle);
 }
+
+if(season!=='autumn'){
+ scene.innerHTML='';scene.classList.add('is-animated');
+ const ground=document.createElement('div');ground.className='portal-season-ground';scene.append(ground);
+ const blossom='<g fill="#ffc4d9"><ellipse cy="-6" rx="4.5" ry="6"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(72)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(144)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(216)"/><ellipse cy="-6" rx="4.5" ry="6" transform="rotate(288)"/></g><circle r="2.5" fill="#ffe6a6"/>';
+ if(season==='spring'){
+  ground.innerHTML='<svg viewBox="0 0 850 90" preserveAspectRatio="xMidYMax meet"><path d="M5 88Q100 56 196 77T393 73T600 70T845 76M75 75L48 39M180 75L210 37M370 75L345 34M570 72L600 36M750 74L779 36" fill="none" stroke="#8a6658" stroke-width="3" stroke-linecap="round"/>'+Array.from({length:24},(_,i)=>'<g class="portal-bloom" style="--bloom-delay:'+(-i*.45)+'s" transform="translate('+(25+i*34)+' '+(i%3===0?44:65)+')"><g>'+blossom+'</g></g>').join('')+'</svg>';
+ }else if(season==='summer'){
+  ground.innerHTML='<svg viewBox="0 0 850 110" preserveAspectRatio="xMidYMax meet">'+Array.from({length:9},(_,i)=>'<g transform="translate('+(38+i*96)+' 110)"><g class="portal-growing-tree" style="--tree-delay:'+i*.16+'s"><path d="M0 0V-65M0-26L-18-44M0-40L18-57" fill="none" stroke="#806145" stroke-width="4" stroke-linecap="round"/><g class="portal-tree-crown" style="animation-delay:'+(-i*.5)+'s"><ellipse cx="-17" cy="-58" rx="22" ry="24" fill="#4f9a64"/><ellipse cx="17" cy="-63" rx="23" ry="25" fill="#69ad69"/><ellipse cy="-80" rx="24" ry="25" fill="#84be77"/><path d="M-18-67L-8-75M9-87L18-80" stroke="#b3d99a" stroke-width="3" stroke-linecap="round"/></g></g></g>').join('')+'</svg>';
+ }else{
+  ground.innerHTML='<svg viewBox="0 0 850 100" preserveAspectRatio="none"><path class="portal-snow-bank" d="M0 96Q70 73 140 88T310 86T480 88T650 85T850 88V100H0Z" fill="#eff8ff"/><g class="portal-snowman" transform="translate(724 96)"><ellipse cy="-15" rx="19" ry="18" fill="#f4fbff" stroke="#d2e4ef"/><circle cy="-40" r="13" fill="#fff" stroke="#d2e4ef"/><path d="M-14-49H14M-9-49V-62H9V-49" fill="#345267" stroke="#345267" stroke-width="3"/><path d="M-11-29Q0-24 12-29M7-28V-13" fill="none" stroke="#d35d62" stroke-width="5"/><circle cx="-4" cy="-43" r="1.5"/><circle cx="4" cy="-43" r="1.5"/><path d="M1-39L11-36L1-35Z" fill="#e8a34e"/><circle cy="-17" r="1.8" fill="#456176"/><circle cy="-9" r="1.8" fill="#456176"/><path d="M-17-18L-32-30M17-18L30-29" stroke="#8b7362" stroke-width="2" stroke-linecap="round"/></g></svg>';
+ }
+ const total=season==='winter'?30:season==='spring'?19:12;
+ for(let i=0;i<total;i++){
+  const particle=document.createElement('span');particle.className='portal-season-particle '+season;
+  particle.style.cssText='left:'+((i*47+9)%97)+'%;--fall-duration:'+(season==='winter'?9+i%6:season==='spring'?8+i%5:10+i%5)+'s;--fall-delay:'+(-i*1.37)+'s;--fall-drift:'+(i%2?28:-24)+'px;--particle-size:'+(season==='winter'?4+i%4:season==='spring'?9+i%4:12+i%4)+'px';
+  particle.innerHTML=season==='winter'?'':season==='spring'?'<svg viewBox="0 0 20 24"><path d="M10 22C-3 13 1 1 8 2L10 5L13 1C24 1 21 14 10 22Z" fill="#ffd0df"/><path d="M10 19L10 7" stroke="#eda6bf" stroke-width=".7"/></svg>':'<svg viewBox="-25 -45 55 55" style="color:#94cb7e">'+leaf+'</svg>';scene.append(particle);
+ }
+}
+const seasonalAnimationStyle=document.createElement('style');seasonalAnimationStyle.textContent=`
+.portal-season-scene.is-animated{height:170px;bottom:-6px;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 12%,#000)}
+.portal-season-ground{position:absolute;left:0;right:0;bottom:0;height:95px}
+.portal-season-ground>svg{width:100%;height:100%;overflow:visible}
+.portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 7s ease-in-out var(--bloom-delay) infinite}
+@keyframes portal-blossom-open{0%,100%{transform:scale(.45);opacity:.35}32%,75%{transform:scale(1);opacity:1}}
+.portal-growing-tree{transform-origin:0 0;animation:portal-tree-grow 3s cubic-bezier(.2,.7,.3,1) var(--tree-delay) both}
+@keyframes portal-tree-grow{from{transform:scale(.15,.05);opacity:0}to{transform:scale(1);opacity:1}}
+.portal-tree-crown{transform-box:fill-box;transform-origin:center bottom;animation:portal-crown-wind 4.8s ease-in-out infinite alternate}
+@keyframes portal-crown-wind{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}
+.portal-season-particle{position:absolute;top:-22px;width:var(--particle-size);height:calc(var(--particle-size) * 1.2);opacity:0;animation:portal-season-float var(--fall-duration) linear var(--fall-delay) infinite}
+.portal-season-particle svg{width:100%;height:100%;animation:portal-petal-flutter 3s ease-in-out infinite alternate}
+.portal-season-particle.winter{height:var(--particle-size);border-radius:50%;background:#f5fbff;box-shadow:0 0 3px #fff8}
+@keyframes portal-season-float{0%{transform:translate(0,-12px) rotate(0);opacity:0}12%{opacity:.9}86%{opacity:.85}100%{transform:translate(var(--fall-drift),190px) rotate(160deg);opacity:0}}
+@keyframes portal-petal-flutter{from{transform:translateX(-6px) rotate(-25deg) rotateY(0)}to{transform:translateX(6px) rotate(30deg) rotateY(50deg)}}
+.portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 16s ease-out both}
+@keyframes portal-snow-build{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
+.portal-snowman{opacity:0;animation:portal-snowman-arrive 5s ease-out 6s forwards}
+@keyframes portal-snowman-arrive{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.portal-bloom>g,.portal-growing-tree,.portal-tree-crown,.portal-season-particle,.portal-season-particle svg,.portal-snow-bank,.portal-snowman{animation:none}.portal-season-particle{display:none}.portal-snowman{opacity:1}}
+`;document.head.append(seasonalAnimationStyle);
+
 const uiStyle=document.createElement('style');uiStyle.textContent=`
 .portal-season-scene.is-falling{height:170px;bottom:-6px;overflow:hidden;left:4%;right:4%;mask-image:linear-gradient(transparent,#000 18%,#000 92%,transparent)}
 .portal-falling-leaf{position:absolute;top:-35px;width:20px;height:26px;animation:portal-leaf-fall var(--duration) linear var(--delay) infinite;opacity:0}
