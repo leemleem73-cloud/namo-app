@@ -14,12 +14,33 @@ if(season==='autumn'){
  scene.innerHTML='';scene.classList.add('is-falling');
  for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;--duration:'+(8+i%5*1.7)+'s;--delay:'+(-i*2.1)+'s;--drift:'+(i%2?40:-35)+'px;color:'+['#d99a40','#b96a33','#e0b75a','#b98a46'][i%4];item.innerHTML='<svg viewBox="-25 -45 55 55">'+leaf+'</svg>';scene.append(item);}
 }
+
+if(season==='autumn'){
+ const pile=document.createElement('div');pile.className='portal-leaf-pile';scene.append(pile);
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ let count=0;
+ function settle(falling){
+  if(document.hidden)return;
+  const item=document.createElement('span');item.className='portal-settled-leaf';
+  const n=count++,drift=falling.style.getPropertyValue('--drift')||'0px';
+  item.style.cssText='left:clamp(2%,calc('+falling.style.left+' + '+drift+'),96%);bottom:'+(n%4*2)+'px;--rest-angle:'+((n*47)%140-70)+'deg;color:'+falling.style.color+';width:'+(17+n%5)+'px';
+  item.innerHTML='<svg viewBox="-25 -45 55 55">'+leaf+'</svg>';pile.append(item);
+  if(pile.children.length>36)pile.firstElementChild.remove();
+ }
+ scene.querySelectorAll('.portal-falling-leaf').forEach(falling=>falling.addEventListener('animationiteration',event=>{if(event.animationName==='portal-leaf-fall')settle(falling);}));
+ if(reduced)[...scene.querySelectorAll('.portal-falling-leaf')].slice(0,6).forEach(settle);
+}
 const uiStyle=document.createElement('style');uiStyle.textContent=`
 .portal-season-scene.is-falling{height:170px;bottom:-6px;overflow:hidden;left:4%;right:4%;mask-image:linear-gradient(transparent,#000 18%,#000 92%,transparent)}
 .portal-falling-leaf{position:absolute;top:-35px;width:20px;height:26px;animation:portal-leaf-fall var(--duration) linear var(--delay) infinite;opacity:0}
 .portal-falling-leaf svg{width:100%;height:100%;animation:portal-leaf-sway 3.8s ease-in-out infinite alternate}
 @keyframes portal-leaf-fall{0%{transform:translate(0,-15px) rotate(0deg);opacity:0}12%{opacity:.85}85%{opacity:.8}100%{transform:translate(var(--drift),195px) rotate(145deg);opacity:0}}
 @keyframes portal-leaf-sway{from{transform:rotate(-25deg) rotateY(0)}to{transform:rotate(30deg) rotateY(45deg)}}
+.portal-leaf-pile{position:absolute;bottom:0;left:0;right:0;height:20px;pointer-events:none}
+.portal-settled-leaf{position:absolute;height:20px;opacity:.92;transform:rotate(var(--rest-angle));transform-origin:center 80%;animation:portal-leaf-settle .9s ease-out both}
+.portal-settled-leaf svg{width:100%;height:100%;filter:drop-shadow(0 1px 1px #4b2b2220)}
+@keyframes portal-leaf-settle{from{opacity:.2;transform:translateY(-10px) rotate(calc(var(--rest-angle) - 18deg))}to{opacity:.92;transform:translateY(0) rotate(var(--rest-angle))}}
+@media(prefers-reduced-motion:reduce){.portal-settled-leaf{animation:none}}
 .portal-weather-open{border:0;border-left:1px solid #ffffff40;padding:0 0 0 8px;background:transparent;color:#e0edf6;font:inherit;cursor:pointer}
 .portal-weather-dialog{width:min(410px,calc(100vw - 32px));box-sizing:border-box;padding:22px;border:1px solid #d7e4ee;border-radius:16px;background:#fff;color:#28475e;box-shadow:0 18px 60px #0c233f40;font:13px/1.6 "Malgun Gothic",sans-serif;text-align:left}
 .portal-weather-dialog::backdrop{background:#122b4655}.portal-weather-dialog header{display:flex;justify-content:space-between;align-items:center}.portal-weather-dialog h2{font-size:17px;margin:0}.portal-weather-dialog button{border:1px solid #cbdce9;border-radius:5px;padding:4px 10px;background:white;color:#375b76;cursor:pointer}.portal-weather-big{font-size:28px;font-weight:700;margin:18px 0 4px}.portal-weather-metrics{display:flex;gap:18px;padding:10px 0;color:#647c8f}.portal-weather-day{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #e2eaf1}.portal-weather-dialog footer{font-size:10px;color:#8093a2;margin-top:14px}
