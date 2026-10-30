@@ -21,7 +21,7 @@ if(['spring','summer','autumn','winter'].includes(previewSeason)){
 
 if(season==='autumn'){
  scene.innerHTML='';scene.classList.add('is-falling');
- for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;width:'+(15+i%6*3)+'px;height:'+(19+i%6*3)+'px;--duration:'+(8+i%5*1.7)+'s;--delay:'+(1.2+i*.65)+'s;--drift:'+(i%2?40:-35)+'px;color:'+autumnColors[i%autumnColors.length];item.dataset.leafKind=i%2?'ginkgo':'maple';item.innerHTML='<svg viewBox="-25 -45 55 55">'+(i%2?ginkgoLeaf:mapleLeaf)+'</svg>';scene.append(item);}
+ for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;width:'+(15+i%6*3)+'px;height:'+(19+i%6*3)+'px;--duration:'+(8+i%5*1.7)+'s;--delay:'+(.25+i*.35)+'s;--drift:'+(i%2?40:-35)+'px;color:'+autumnColors[i%autumnColors.length];item.dataset.leafKind=i%2?'ginkgo':'maple';item.innerHTML='<svg viewBox="-25 -45 55 55">'+(i%2?ginkgoLeaf:mapleLeaf)+'</svg>';scene.append(item);}
 }
 
 if(season==='autumn'){
@@ -72,7 +72,7 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 .portal-season-scene.spring .portal-season-ground,.portal-season-scene.winter .portal-season-ground{height:64px}
 .portal-season-ground>svg{display:block;width:100%;height:100%;overflow:visible}
 .portal-bloom>g{transform-box:fill-box;transform-origin:center;animation:portal-blossom-open 9s ease-in-out var(--bloom-delay) infinite both}
-@keyframes portal-blossom-open{0%,2%,100%{transform:scale(0);opacity:0}18%,65%{transform:scale(var(--flower-size,1));opacity:1}84%{transform:scale(calc(var(--flower-size,1) * .85));opacity:.35}94%{transform:scale(.15);opacity:0}}
+@keyframes portal-blossom-open{0%,2%,100%{transform:scale(0);opacity:0}18%,65%{transform:scale(var(--flower-size,1));opacity:1}84%{transform:scale(calc(var(--flower-size,1) * .85));opacity:.35}98%{transform:scale(.15);opacity:0}}
 .portal-growing-tree{transform-origin:0 0;animation:portal-tree-grow 5s cubic-bezier(.2,.7,.3,1) var(--tree-delay) both}
 @keyframes portal-tree-grow{from{transform:scale(.15,.05);opacity:0}to{transform:scale(1);opacity:1}}
 .portal-tree-crown{transform-box:fill-box;transform-origin:center bottom;animation:portal-crown-wind 7.5s ease-in-out infinite}
@@ -86,16 +86,16 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 @keyframes portal-snow-build{0%,12%{transform:scaleY(0);opacity:0}30%{opacity:.5}100%{transform:scaleY(1);opacity:1}}
 .portal-snowman{opacity:1}
 .portal-snowman-large .portal-snow-body{animation-delay:5s}
-.portal-snowman-large .portal-snow-head{animation-delay:10s}
-.portal-snowman-large .portal-snow-details{animation-delay:15s}
-.portal-snowman-large .portal-snow-scarf{animation-delay:17s}
-.portal-snowman-large .portal-snow-hat{animation-delay:19s}
+.portal-snowman-large .portal-snow-head{animation-delay:17s}
+.portal-snowman-large .portal-snow-details{animation-delay:26s}
+.portal-snowman-large .portal-snow-scarf{animation-delay:30s}
+.portal-snowman-large .portal-snow-hat{animation-delay:34s}
 .portal-snow-body,.portal-snow-head{transform-box:fill-box;transform-origin:center;opacity:0}
-.portal-snow-body{animation:portal-snow-roll 6s cubic-bezier(.25,.65,.3,1) 3s both}
-.portal-snow-head{animation:portal-snow-head-roll 5s cubic-bezier(.25,.65,.3,1) 8s both}
-.portal-snow-details{animation:portal-snow-detail 2.5s ease 13s both}
-.portal-snow-scarf{animation:portal-snow-accessory 2.5s ease-out 15s both}
-.portal-snow-hat{animation:portal-snow-accessory 3s ease-out 17s both}
+.portal-snow-body{animation:portal-snow-roll 10s cubic-bezier(.25,.65,.3,1) 3s both}
+.portal-snow-head{animation:portal-snow-head-roll 9s cubic-bezier(.25,.65,.3,1) 14s both}
+.portal-snow-details{animation:portal-snow-detail 4s ease 23s both}
+.portal-snow-scarf{animation:portal-snow-accessory 4s ease-out 27s both}
+.portal-snow-hat{animation:portal-snow-accessory 5s ease-out 31s both}
 @keyframes portal-snow-roll{0%{opacity:0;transform:translateX(-95px) rotate(-240deg) scale(.25)}15%{opacity:1}80%{transform:translateX(-3px) rotate(-12deg) scale(.98)}100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
 @keyframes portal-snow-head-roll{0%{opacity:0;transform:translate(-75px,35px) rotate(-180deg) scale(.35)}15%{opacity:1}65%{transform:translate(-15px,28px) rotate(-35deg) scale(.9)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
 @keyframes portal-snow-detail{from{opacity:0}to{opacity:1}}
