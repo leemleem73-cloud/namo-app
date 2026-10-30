@@ -21,7 +21,7 @@ if(['spring','summer','autumn','winter'].includes(previewSeason)){
 
 if(season==='autumn'){
  scene.innerHTML='';scene.classList.add('is-falling');
- for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;width:'+(15+i%6*3)+'px;height:'+(19+i%6*3)+'px;--duration:'+(8+i%5*1.7)+'s;--delay:'+(.25+i*.35)+'s;--drift:'+(i%2?40:-35)+'px;color:'+autumnColors[i%autumnColors.length];item.dataset.leafKind=i%2?'ginkgo':'maple';item.innerHTML='<svg viewBox="-25 -45 55 55">'+(i%2?ginkgoLeaf:mapleLeaf)+'</svg>';scene.append(item);}
+ for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;width:'+(15+i%6*3)+'px;height:'+(19+i%6*3)+'px;--duration:'+(8+i%5*1.7)+'s;--delay:'+(.05+i*.18)+'s;--drift:'+(i%2?40:-35)+'px;color:'+autumnColors[i%autumnColors.length];item.dataset.leafKind=i%2?'ginkgo':'maple';item.innerHTML='<svg viewBox="-25 -45 55 55">'+(i%2?ginkgoLeaf:mapleLeaf)+'</svg>';scene.append(item);}
 }
 
 if(season==='autumn'){
@@ -89,17 +89,17 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 .portal-snow-bank{transform-box:fill-box;transform-origin:center bottom;animation:portal-snow-build 24s ease-out both}
 @keyframes portal-snow-build{0%,12%{transform:scaleY(0);opacity:0}30%{opacity:.5}100%{transform:scaleY(1);opacity:1}}
 .portal-snowman{opacity:1}
-.portal-snowman-large .portal-snow-body{animation-delay:5s}
-.portal-snowman-large .portal-snow-head{animation-delay:17s}
-.portal-snowman-large .portal-snow-details{animation-delay:26s}
-.portal-snowman-large .portal-snow-scarf{animation-delay:30s}
-.portal-snowman-large .portal-snow-hat{animation-delay:34s}
+.portal-snowman-large .portal-snow-body{animation-delay:21s}
+.portal-snowman-large .portal-snow-head{animation-delay:32s}
+.portal-snowman-large .portal-snow-details{animation-delay:41s}
+.portal-snowman-large .portal-snow-scarf{animation-delay:45s}
+.portal-snowman-large .portal-snow-hat{animation-delay:49s}
 .portal-snow-body,.portal-snow-head{transform-box:fill-box;transform-origin:center;opacity:0}
-.portal-snow-body{animation:portal-snow-roll 10s cubic-bezier(.25,.65,.3,1) 3s both}
-.portal-snow-head{animation:portal-snow-head-roll 9s cubic-bezier(.25,.65,.3,1) 14s both}
-.portal-snow-details{animation:portal-snow-detail 4s ease 23s both}
-.portal-snow-scarf{animation:portal-snow-accessory 4s ease-out 27s both}
-.portal-snow-hat{animation:portal-snow-accessory 5s ease-out 31s both}
+.portal-snow-body{animation:portal-snow-roll 10s cubic-bezier(.25,.65,.3,1) 18s both}
+.portal-snow-head{animation:portal-snow-head-roll 9s cubic-bezier(.25,.65,.3,1) 29s both}
+.portal-snow-details{animation:portal-snow-detail 4s ease 38s both}
+.portal-snow-scarf{animation:portal-snow-accessory 4s ease-out 42s both}
+.portal-snow-hat{animation:portal-snow-accessory 5s ease-out 46s both}
 @keyframes portal-snow-roll{0%{opacity:0;transform:translateX(-95px) rotate(-240deg) scale(.25)}15%{opacity:1}80%{transform:translateX(-3px) rotate(-12deg) scale(.98)}100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
 @keyframes portal-snow-head-roll{0%{opacity:0;transform:translate(-75px,35px) rotate(-180deg) scale(.35)}15%{opacity:1}65%{transform:translate(-15px,28px) rotate(-35deg) scale(.9)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
 @keyframes portal-snow-detail{from{opacity:0}to{opacity:1}}
@@ -111,9 +111,9 @@ const seasonalAnimationStyle=document.createElement('style');seasonalAnimationSt
 
 const uiStyle=document.createElement('style');uiStyle.textContent=`
 .portal-season-scene.is-falling{height:170px;bottom:-6px;overflow:hidden;left:4%;right:4%;mask-image:linear-gradient(transparent,#000 18%,#000 92%,transparent)}
-.portal-falling-leaf{position:absolute;top:-35px;width:20px;height:26px;animation:portal-leaf-fall var(--duration) linear var(--delay) infinite;opacity:0}
+.portal-falling-leaf{position:absolute;top:0;width:20px;height:26px;animation:portal-leaf-fall var(--duration) linear var(--delay) infinite;opacity:0}
 .portal-falling-leaf svg{width:100%;height:100%;animation:portal-leaf-sway 3.8s ease-in-out infinite alternate}
-@keyframes portal-leaf-fall{0%{transform:translate(0,-15px) rotate(0deg);opacity:0}12%{opacity:.85}85%{opacity:.8}100%{transform:translate(var(--drift),195px) rotate(145deg);opacity:0}}
+@keyframes portal-leaf-fall{0%{transform:translate(0,22px) rotate(0deg);opacity:0}3%{opacity:.85}85%{opacity:.8}100%{transform:translate(var(--drift),170px) rotate(145deg);opacity:0}}
 @keyframes portal-leaf-sway{from{transform:rotate(-25deg) rotateY(0)}to{transform:rotate(30deg) rotateY(45deg)}}
 .portal-leaf-pile{position:absolute;bottom:0;left:0;right:0;height:20px;pointer-events:none}
 .portal-settled-leaf{position:absolute;height:20px;opacity:.92;transform:rotate(var(--rest-angle));transform-origin:center 80%;animation:portal-leaf-settle .9s ease-out both}
