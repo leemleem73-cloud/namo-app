@@ -5,6 +5,9 @@ const previewSeason=new URLSearchParams(location.search).get('previewSeason');
 const season=['spring','summer','autumn','winter'].includes(previewSeason)?previewSeason:month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
 const scene=document.createElement('div');scene.className='portal-season-scene '+season;scene.setAttribute('aria-hidden','true');
 const leaf='<path d="M0 0C-19-24-6-37 9-40C20-22 18-6 0 0Z" fill="currentColor"/><path d="M0 0L8-33" stroke="#fff" stroke-opacity=".45" fill="none"/>';
+const mapleLeaf='<path d="M0 3L-3-9L-15-7L-11-16L-23-22L-15-26L-18-36L-8-31L0-44L7-31L18-36L15-26L23-22L11-16L15-7L3-9Z" fill="currentColor"/><path d="M0 10V-34M0-10L-13-23M0-10L13-23" stroke="#78462a" stroke-opacity=".4" stroke-width="1.2" fill="none"/>';
+const ginkgoLeaf='<path d="M0 1C-5-8-23-12-23-27C-23-37-10-44-3-40L0-33L3-40C12-44 24-36 23-27C22-12 5-8 0 1Z" fill="currentColor"/><path d="M0 10V0M0 0L-16-28M0 0L-8-34M0 0L8-34M0 0L16-28" stroke="#9f702b" stroke-opacity=".35" fill="none" stroke-width="1"/>';
+const autumnColors=['#d95a38','#e99b37','#e4bd43','#bd4d32','#f0cf57','#c87b35','#a94736','#dbab42'];
 const flower='<g fill="currentColor">'+[0,72,144,216,288].map(a=>'<ellipse cy="-8" rx="5" ry="8" transform="rotate('+a+')"/>').join('')+'</g><circle r="4" fill="#ffe7a0"/>';
 const snow='<path d="M0-13V13M-11-6L11 6M-11 6L11-6" stroke="currentColor" stroke-width="2" fill="none"/>';
 scene.innerHTML='<svg viewBox="0 0 850 50" preserveAspectRatio="none">'+(season==='winter'?'<path d="M0 46Q90 23 180 39T380 38T610 36T850 40V50H0Z" fill="#f4faff" opacity=".9"/>':'<path d="M0 48Q210 39 425 46T850 44" fill="none" stroke="currentColor" stroke-opacity=".3"/>')+Array.from({length:season==='autumn'?24:16},(_,i)=>{const x=14+(i*53)%825,y=season==='autumn'?46-(i%3)*3:season==='winter'?15+(i%3)*10:46;return '<g transform="translate('+x+' '+y+') rotate('+((i%5)*23-40)+') scale('+(season==='winter'?'.55':season==='spring'?'.65':'.6')+')" opacity="'+(.65+(i%3)*.1)+'">'+(season==='winter'?snow:season==='spring'?flower:leaf)+'</g>';}).join('')+'</svg>';
@@ -18,7 +21,7 @@ if(['spring','summer','autumn','winter'].includes(previewSeason)){
 
 if(season==='autumn'){
  scene.innerHTML='';scene.classList.add('is-falling');
- for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;--duration:'+(8+i%5*1.7)+'s;--delay:'+(-i*2.1)+'s;--drift:'+(i%2?40:-35)+'px;color:'+['#d99a40','#b96a33','#e0b75a','#b98a46'][i%4];item.innerHTML='<svg viewBox="-25 -45 55 55">'+leaf+'</svg>';scene.append(item);}
+ for(let i=0;i<12;i++){const item=document.createElement('span');item.className='portal-falling-leaf';item.style.cssText='left:'+((i*83+17)%96)+'%;width:'+(15+i%6*3)+'px;height:'+(19+i%6*3)+'px;--duration:'+(8+i%5*1.7)+'s;--delay:'+(-i*2.1)+'s;--drift:'+(i%2?40:-35)+'px;color:'+autumnColors[i%autumnColors.length];item.dataset.leafKind=i%2?'ginkgo':'maple';item.innerHTML='<svg viewBox="-25 -45 55 55">'+(i%2?ginkgoLeaf:mapleLeaf)+'</svg>';scene.append(item);}
 }
 
 if(season==='autumn'){
@@ -30,7 +33,7 @@ if(season==='autumn'){
   const item=document.createElement('span');item.className='portal-settled-leaf';
   const n=count++,drift=falling.style.getPropertyValue('--drift')||'0px';
   item.style.cssText='left:clamp(2%,calc('+falling.style.left+' + '+drift+'),96%);bottom:'+(n%4*2)+'px;--rest-angle:'+((n*47)%140-70)+'deg;color:'+falling.style.color+';width:'+(17+n%5)+'px';
-  item.innerHTML='<svg viewBox="-25 -45 55 55">'+leaf+'</svg>';pile.append(item);
+  item.innerHTML='<svg viewBox="-25 -45 55 55">'+(falling.dataset.leafKind==='ginkgo'?ginkgoLeaf:mapleLeaf)+'</svg>';pile.append(item);
   if(pile.children.length>36)pile.firstElementChild.remove();
  }
  scene.querySelectorAll('.portal-falling-leaf').forEach(falling=>falling.addEventListener('animationiteration',event=>{if(event.animationName==='portal-leaf-fall')settle(falling);}));
