@@ -26,6 +26,15 @@ function check(){
   var sidebar=!!doc.querySelector('.sidebar');
   var menu=!!doc.getElementById('qmes-mobile-menu-toggle');
   var css=!!doc.getElementById('qmes-unified-mobile-css');
+  var style=doc.getElementById('qmes-unified-mobile-css');
+  var script=doc.getElementById('qmes-unified-mobile-js');
+  var sidebarNode=doc.querySelector('.sidebar');
+  var menuItems=sidebarNode?sidebarNode.querySelectorAll('a,button,.menu').length:0;
+  var activeMenus=sidebarNode?sidebarNode.querySelectorAll('.active,[aria-current="page"]').length:0;
+  var scrollWidth=doc.documentElement.scrollWidth;
+  var viewport=doc.documentElement.clientWidth;
+  var cssLoaded=!!(style&&style.sheet);
+  var jsLoaded=!!(script&&script.dataset.qmesLoaded==='1');
   lastCheck={status:'loaded',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,cssLoaded:cssLoaded,jsLoaded:jsLoaded,menuItems:menuItems,activeMenus:activeMenus,tables:tables,scrollContainers:wrapped,viewportWidth:viewport,documentScrollWidth:scrollWidth,horizontalOverflow:scrollWidth>viewport+2};
  }catch(e){lastCheck={status:'blocked',reason:String(e)};}
 }
