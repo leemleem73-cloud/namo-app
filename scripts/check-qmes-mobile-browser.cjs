@@ -75,7 +75,7 @@ const assert = require('node:assert/strict');
     approval:'<input class="quality-approval-search"><table class="quality-approval-table"><tbody><tr><td>DEMO</td></tr></tbody></table><div class="quality-approval-pager"></div>'
    };
    const nodes=[];
-   Object.entries(samples).forEach(([id,html])=>{const section=d.createElement('section');section.id=id;section.className='module-page';section.innerHTML=html;d.body.appendChild(section);nodes.push(section)});
+   Object.entries(samples).forEach(([id,html])=>{const section=d.createElement('section');section.id=id;section.className='module-page active';section.style.setProperty('display','block','important');section.style.setProperty('visibility','visible','important');section.innerHTML=html;d.body.appendChild(section);nodes.push(section)});
    const result=window.qmesMobileBusinessReadiness();
    nodes.forEach(node=>node.remove());
    return result;
