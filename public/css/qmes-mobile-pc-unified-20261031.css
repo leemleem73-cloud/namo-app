@@ -11,3 +11,17 @@
   .qmes-mobile-table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
   .qmes-mobile-table-scroll > table { width:max-content; min-width:100%; }
 }
+
+/* Second pass: keep existing PC layout intact and improve narrow-screen interaction. */
+@media (max-width: 768px) {
+  html { -webkit-text-size-adjust:100%; }
+  body { overscroll-behavior-x:none; }
+  .qmes-mobile-table-scroll { scrollbar-width:thin; border-radius:6px; }
+  .qmes-mobile-table-scroll:focus-visible { outline:2px solid #2675b7; outline-offset:2px; }
+  .qmes-mobile-table-scroll th,.qmes-mobile-table-scroll td { white-space:nowrap; }
+  [role="dialog"],dialog,.modal,.modal-content { max-width:calc(100vw - 16px); }
+  [role="dialog"] input,dialog input,.modal input { max-width:100%; }
+  .sidebar { max-height:100dvh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .content { overflow-wrap:anywhere; }
+  button,input,select,textarea { font-family:inherit; }
+}
