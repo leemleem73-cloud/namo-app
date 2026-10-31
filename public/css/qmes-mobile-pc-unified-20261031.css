@@ -76,3 +76,13 @@
   #qmes-mobile-menu-toggle,#qmes-mobile-backdrop{display:none!important}
   .qmes-mobile-table-scroll{overflow:visible!important}
 }
+
+/* The PC home page forces a 650px iframe at phone widths.
+   Correct only the injected mobile view; desktop remains unchanged. */
+@media(max-width:768px){
+ #main.namo-portal-shell{width:100%!important;min-width:0!important;max-width:100%!important;overflow:hidden!important}
+ #namoPortal20261014{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;height:calc(100dvh - 58px)!important}
+ .topbar{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+ .topbar .brand{min-width:0!important;max-width:38vw!important;overflow:hidden!important}
+ .topbar .brand-logo{max-width:100%!important;height:auto}
+}
