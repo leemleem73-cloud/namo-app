@@ -227,6 +227,28 @@ const assert = require('node:assert/strict');
    await page.locator('#backhome').click();
    await page.locator('#home').waitFor({state:'visible'});
   }
+  // LOT trace and approval read-only UI flows: search input and list navigation, no writes.
+  for(const [label,id,html,inputSelector] of [
+   ['LOT 추적','lotTrace','<div class="lot-search-grid"><input id="mock-lot-search" aria-label="LOT 검색"><button type="button">조회</button></div><div class="lot-flow"><div class="lot-step">원자재</div><div class="lot-step">생산</div><div class="lot-step">출하</div></div>','#mock-lot-search'],
+   ['전자결재','approval','<input id="mock-approval-search" class="quality-approval-search" aria-label="결재 검색"><div class="module-body"><table class="quality-approval-table"><tbody><tr><td>DEMO-APPROVAL</td></tr></tbody></table></div>','#mock-approval-search']
+  ]){
+   await page.locator('[data-open="1"]').first().click();
+   await page.locator('body.menu-open').waitFor();
+   await page.locator('#dynamic-menu button.nav').filter({hasText:label}).first().click();
+   await page.locator('body.in-work').waitFor();
+   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),id);
+   await page.frameLocator('#pc').locator('body').evaluate((body,arg)=>{
+    const section=document.createElement('section');section.id=arg.id;section.className='module-page active';
+    section.style.setProperty('display','block','important');section.innerHTML=arg.html;body.appendChild(section);
+   },{id,html});
+   await page.frameLocator('#pc').locator(inputSelector).fill('DEMO-LOT');
+   assert.equal(await page.frameLocator('#pc').locator(inputSelector).inputValue(),'DEMO-LOT');
+   if(id==='lotTrace')assert.equal(await page.frameLocator('#pc').locator('#lotTrace .lot-step').count(),3);
+   if(id==='approval')assert.match(await page.frameLocator('#pc').locator('#approval .quality-approval-table').innerText(),/DEMO-APPROVAL/);
+   await page.frameLocator('#pc').locator('#'+id).evaluate(el=>el.remove());
+   await page.locator('#backhome').click();
+   await page.locator('#home').waitFor({state:'visible'});
+  }
   // The navigation test already returned home; avoid clicking a hidden work-only button.
   await page.locator('#home').waitFor({state:'visible'});
   fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
