@@ -49,13 +49,13 @@ window.qmesMobileCheck=function(){
   result.details.menuCount=items().length;
   result.checks.menusReady=result.details.menuCount>0;
   result.details.missingQuickLinks=Object.keys(aliases).filter(function(key){return !findItem(key)});
-  result.checks.quickLinksResolved=result.details.missingQuickLinks.length===0;
+  result.checks.quickLinksResolved=result.details.missingQuickLinks.length===0;result.details.quickLinkStatus=Object.keys(aliases).map(function(key){var item=findItem(key);return {name:key,available:!!item,page:item?item.getAttribute('data-page'):null}});
   result.details.visibleBusinessTables=d.querySelectorAll('.workspace-body table,.module-shell table').length;
   result.details.scrollWrappedTables=d.querySelectorAll('.qmes-mobile-table-scroll table').length;
   result.details.pcDocumentWidth=d.documentElement.scrollWidth;
   result.details.pcViewportWidth=d.documentElement.clientWidth;
   result.checks.noDocumentOverflow=d.documentElement.scrollWidth<=d.documentElement.clientWidth+2;
-  result.checks.formStylesLoaded=!!d.getElementById('qmes-mobile-form-ergonomics');
+  result.checks.formStylesLoaded=!!d.getElementById('qmes-mobile-form-ergonomics');result.details.formControls=d.querySelectorAll('.workspace-body input,.workspace-body select,.workspace-body textarea,.module-shell input,.module-shell select,.module-shell textarea').length;result.details.touchButtons=d.querySelectorAll('.workspace-body button,.module-shell button').length;
   result.checks.portalResponsivePatch=!!(function(){try{var p=d.getElementById('namoPortal20261014');return p&&p.contentDocument&&p.contentDocument.getElementById('qmes-mobile-portal-fix')}catch(e){return false}})();
  }catch(err){result.error=String(err)}
  result.note='읽기 전용 UI 진단입니다. 등록·수정·저장·결재의 실제 동작은 검증하지 않습니다.';
