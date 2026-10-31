@@ -3,6 +3,8 @@
 (function(){
   'use strict';
   if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
+  if(window.__qmesMobileEnhancementStarted)return;
+  window.__qmesMobileEnhancementStarted=true;
   function setupMenu(){
     if(document.getElementById('qmes-mobile-menu-toggle'))return;
     var sidebar=document.querySelector('.sidebar');
@@ -35,6 +37,7 @@
       if(table.closest('[contenteditable="true"],.report-sheet,[data-print-root],.print-area,.report-doc-head,.report-basic,.report-inspection')) return;
       if(table.closest('dialog,[role="dialog"]')) return;
       if(!table.parentNode || table.parentNode.tagName==='TABLE')return;
+      if(table.closest('form') || table.hasAttribute('data-no-mobile-wrap'))return;
       var wrapper=document.createElement('div');
       wrapper.className='qmes-mobile-table-scroll';
       wrapper.setAttribute('role','region');
@@ -47,6 +50,16 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',enhance);
   else enhance();
   var timer;
-  new MutationObserver(function(){clearTimeout(timer);timer=setTimeout(enhance,150);})
-    .observe(document.documentElement,{subtree:true,childList:true});
+  var observer=new MutationObserver(function(records){
+    var relevant=records.some(function(record){
+      return Array.prototype.some.call(record.addedNodes,function(node){
+        return node.nodeType===1 && !node.closest?.('.qmes-mobile-table-scroll') &&
+          (node.matches?.('.sidebar,.workspace-body,.module-shell,.content,table') ||
+           node.querySelector?.('table,.sidebar'));
+      });
+    });
+    if(!relevant)return;
+    clearTimeout(timer);timer=setTimeout(enhance,200);
+  });
+  observer.observe(document.documentElement,{subtree:true,childList:true});
 })();
