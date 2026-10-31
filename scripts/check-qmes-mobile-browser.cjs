@@ -179,6 +179,30 @@ const assert = require('node:assert/strict');
   await page.frameLocator('#pc').locator('#incoming').evaluate(el=>el.remove());
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
+  // PQC/OQC list -> registration -> cancel navigation, isolated from live QMES.
+  for(const [label,id] of [['공정검사','process'],['출하검사','outgoing']]){
+   await page.locator('[data-find="'+label+'"]').first().click();
+   await page.locator('body.in-work').waitFor();
+   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),id,label+' menu must target correct PC module');
+   await page.frameLocator('#pc').locator('body').evaluate((body,moduleId)=>{
+    const section=document.createElement('section');section.id=moduleId;section.className='module-page active';section.style.setProperty('display','block','important');
+    section.innerHTML='<div class="iqc-register-header"><button id="mock-inspection-new" type="button">신규 검사 등록</button></div><div id="mock-inspection-list"><table><tbody><tr><td>DEMO-LOT</td></tr></tbody></table></div><div id="mock-inspection-form" hidden><label>제품 LOT<input id="mock-inspection-lot" type="text"></label><button id="mock-inspection-cancel" type="button">취소</button></div>';
+    body.appendChild(section);
+    const list=section.querySelector('#mock-inspection-list'),form=section.querySelector('#mock-inspection-form');
+    section.querySelector('#mock-inspection-new').onclick=()=>{list.hidden=true;form.hidden=false};
+    section.querySelector('#mock-inspection-cancel').onclick=()=>{form.hidden=true;list.hidden=false};
+   },id);
+   await page.frameLocator('#pc').locator('#mock-inspection-new').click();
+   await page.frameLocator('#pc').locator('#mock-inspection-form').waitFor({state:'visible'});
+   await page.frameLocator('#pc').locator('#mock-inspection-lot').fill('DEMO-'+id.toUpperCase()+'-LOT');
+   assert.equal(await page.frameLocator('#pc').locator('#mock-inspection-lot').inputValue(),'DEMO-'+id.toUpperCase()+'-LOT');
+   await page.frameLocator('#pc').locator('#mock-inspection-cancel').click();
+   await page.frameLocator('#pc').locator('#mock-inspection-list').waitFor({state:'visible'});
+   assert.equal(await page.frameLocator('#pc').locator('#mock-inspection-form').isVisible(),false,label+' form must close on cancel');
+   await page.frameLocator('#pc').locator('#'+id).evaluate(el=>el.remove());
+   await page.locator('#backhome').click();
+   await page.locator('#home').waitFor({state:'visible'});
+  }
   // Drawer navigation must use the currently mounted PC menu rather than stale references.
   await page.locator('[data-open="1"]').first().click();
   await page.locator('body.menu-open').waitFor();
