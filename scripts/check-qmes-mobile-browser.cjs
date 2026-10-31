@@ -48,8 +48,7 @@ const assert = require('node:assert/strict');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('in-work')),false);
-  // Save visual evidence from the isolated mobile shell; do not use production data.
-  await page.locator('#backhome').click();
+  // The navigation test already returned home; avoid clicking a hidden work-only button.
   await page.locator('#home').waitFor({state:'visible'});
   fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
   await page.screenshot({path:path.join('artifacts/qmes-mobile','home-390.png'),fullPage:true});
