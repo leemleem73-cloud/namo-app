@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
   const desktop=fs.readFileSync('public/index.html','utf8');
   const sidebar=desktop.match(/<aside class="sidebar"[^>]*>[\s\S]*?<\/aside>/);
   assert.ok(sidebar,'Real PC sidebar markup missing');
-  const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body"><table><tr><td>목록</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page)</'+'script></body></html>';
+  const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body" style="padding:16px;background:#fff"><h2 id="mock-work-title">작업지시서 목록 (모의 화면)</h2><table><tr><td>목록</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page)</'+'script></body></html>';
   for(const label of ['작업지시서','수입검사 IQC','공정검사 PQC','출하검사 OQC']){
    assert.ok(sidebar[0].includes(label),'Real PC menu missing: '+label);
   }
@@ -54,6 +54,14 @@ const assert = require('node:assert/strict');
   await page.screenshot({path:path.join('artifacts/qmes-mobile','home-390.png'),fullPage:true});
   await page.locator('[data-find="작업지시"]').first().click();
   await page.locator('body.in-work').waitFor();
+  // A menu click is not enough: the embedded business content must actually be visible.
+  const workContent=page.frameLocator('#pc').locator('#mock-work-title');
+  await workContent.waitFor({state:'visible'});
+  const visible=await workContent.evaluate(el=>{
+   const r=el.getBoundingClientRect(),css=getComputedStyle(el);
+   return r.width>0&&r.height>0&&css.visibility!=='hidden'&&css.display!=='none';
+  });
+  assert.equal(visible,true,'Embedded work content is not visible');
   await page.screenshot({path:path.join('artifacts/qmes-mobile','workorder-390.png'),fullPage:true});
   const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
   assert.ok(layout.documentWidth<=layout.viewport+2,'Mobile shell horizontal overflow: '+JSON.stringify(layout));
