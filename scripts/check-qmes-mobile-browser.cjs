@@ -198,6 +198,21 @@ const assert = require('node:assert/strict');
    assert.ok(inspectionMetrics.saveHeight>=44,id+' save button too short');
    assert.equal(inspectionMetrics.tableOverflow,'auto',id+' table wrapper not scrollable');
   }
+  // LOT trace: check search inputs, vertical flow, and horizontally scrollable detail tables.
+  const lotMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const host=document.createElement('section');host.id='lotTrace';host.className='module-page active';
+   host.innerHTML='<div class="lot-search-card"><div class="lot-search-grid"><div class="lot-field"><input aria-label="LOT 번호"></div><button>조회</button></div></div><div class="lot-flow"><div class="lot-step">원료</div><div class="lot-step">생산</div><div class="lot-step">출하</div></div><div class="lot-detail-grid"><div class="lot-detail-box"><table class="lot-detail-table"><tbody><tr><td>원료 LOT</td><td>생산 LOT</td></tr></tbody></table></div></div>';
+   body.appendChild(host);
+   const search=host.querySelector('.lot-search-grid'),input=host.querySelector('input'),button=host.querySelector('button'),flow=host.querySelector('.lot-flow'),details=host.querySelector('.lot-detail-grid'),box=host.querySelector('.lot-detail-box');
+   const result={viewport:innerWidth,searchColumns:getComputedStyle(search).gridTemplateColumns.split(' ').length,inputFont:parseFloat(getComputedStyle(input).fontSize),buttonHeight:button.getBoundingClientRect().height,flowDirection:getComputedStyle(flow).flexDirection,detailColumns:getComputedStyle(details).gridTemplateColumns.split(' ').length,detailOverflow:getComputedStyle(box).overflowX};
+   host.remove();return result;
+  });
+  assert.equal(lotMetrics.searchColumns,1,'LOT search should be single column: '+JSON.stringify(lotMetrics));
+  assert.ok(lotMetrics.inputFont>=16,'LOT search input too small');
+  assert.ok(lotMetrics.buttonHeight>=44,'LOT search button too short');
+  assert.equal(lotMetrics.flowDirection,'column','LOT trace flow should stack vertically');
+  assert.equal(lotMetrics.detailColumns,1,'LOT details should stack in one column');
+  assert.equal(lotMetrics.detailOverflow,'auto','LOT detail table should scroll horizontally');
   // Work-order detail modal must override the real PC 760px minimum width.
   const detailMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
    const modal=document.createElement('div');modal.className='modal work-mode';modal.style.cssText='min-width:760px;width:1120px;position:relative;display:block;';
