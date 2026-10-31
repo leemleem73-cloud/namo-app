@@ -278,6 +278,18 @@ const assert = require('node:assert/strict');
   await page.locator('body.in-work').waitFor();
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
+  // The drawer mirrors the desktop disabled state and recovers after permissions change.
+  await page.frameLocator('#pc').locator('.sidebar .menu[data-page="work"]').first().evaluate(el=>el.setAttribute('aria-disabled','true'));
+  await page.locator('[data-open="1"]').first().click();
+  await page.locator('body.menu-open').waitFor();
+  const disabledWork=page.locator('#dynamic-menu button.nav').filter({hasText:'작업지시서'}).first();
+  assert.equal(await disabledWork.isDisabled(),true,'Disabled desktop work menu must be disabled in mobile drawer');
+  await page.locator('#shade').click({force:true});
+  await page.frameLocator('#pc').locator('.sidebar .menu[data-page="work"]').first().evaluate(el=>el.removeAttribute('aria-disabled'));
+  await page.locator('[data-open="1"]').first().click();
+  await page.locator('body.menu-open').waitFor();
+  assert.equal(await page.locator('#dynamic-menu button.nav').filter({hasText:'작업지시서'}).first().isEnabled(),true,'Drawer must recover when desktop menu becomes enabled');
+  await page.locator('#shade').click({force:true});
   // The navigation test already returned home; avoid clicking a hidden work-only button.
   await page.locator('#home').waitFor({state:'visible'});
   fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
