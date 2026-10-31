@@ -136,6 +136,27 @@ const assert = require('node:assert/strict');
   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'work','Replaced PC menu item should still navigate to work');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
+  // Work-order list -> detail -> close -> mobile home, with synthetic read-only rows.
+  await page.locator('[data-find="작업지시"]').first().click();
+  await page.locator('body.in-work').waitFor();
+  await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const section=document.createElement('section');section.id='work';section.className='module-page active';
+   section.innerHTML='<div class="nwi-title">작업지시서 등록 및 조회</div><table class="work-list-table"><thead><tr><th>LOT</th><th>상세</th></tr></thead><tbody><tr><td>DEMO-LOT</td><td><button type="button" id="mock-work-detail-open">상세</button></td></tr></tbody></table>';
+   body.appendChild(section);
+   section.querySelector('#mock-work-detail-open').addEventListener('click',()=>{
+    const modal=document.createElement('div');modal.className='modal work-mode';modal.id='mock-work-detail-dialog';modal.style.cssText='position:relative;display:block;min-width:760px;width:1120px';
+    modal.innerHTML='<div class="work-detail-doc"><strong>DEMO-LOT</strong><button id="mock-work-detail-close" type="button">닫기</button></div>';
+    body.appendChild(modal);modal.querySelector('button').addEventListener('click',()=>modal.remove());
+   });
+  });
+  await page.frameLocator('#pc').locator('#mock-work-detail-open').click();
+  await page.frameLocator('#pc').locator('#mock-work-detail-dialog').waitFor({state:'visible'});
+  assert.match(await page.frameLocator('#pc').locator('#mock-work-detail-dialog').innerText(),/DEMO-LOT/);
+  await page.frameLocator('#pc').locator('#mock-work-detail-close').click();
+  assert.equal(await page.frameLocator('#pc').locator('#mock-work-detail-dialog').count(),0,'Work-order detail must close');
+  await page.frameLocator('#pc').locator('#work').evaluate(el=>el.remove());
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
   // Drawer navigation must use the currently mounted PC menu rather than stale references.
   await page.locator('[data-open="1"]').first().click();
   await page.locator('body.menu-open').waitFor();
