@@ -22,11 +22,15 @@ var frame=document.getElementById('workspace'),notice=document.getElementById('n
 var lastCheck={status:'loading',timestamp:new Date().toISOString()};
 window.qmesMobileDiagnostics=function(){check();return Object.assign({},lastCheck);};
 var qaPanel=document.getElementById('qa-panel'),qaResult=document.getElementById('qa-result');
-function showQA(){check();qaResult.textContent=JSON.stringify(lastCheck,null,2);qaPanel.style.display='block';}
+function showQA(){
+ check();
+ qaResult.textContent=JSON.stringify(lastCheck,null,2);
+ qaPanel.style.display='block';
+}
 if(new URLSearchParams(location.search).get('qa')==='1'){
  document.getElementById('qa-run').addEventListener('click',showQA);
  document.getElementById('qa-close').addEventListener('click',function(){qaPanel.style.display='none';});
- setTimeout(showQA,2300);
+ // Diagnostics refresh after iframe load, not on a fixed initial timer.
 }
 function check(){
  try{
@@ -76,6 +80,7 @@ frame.addEventListener('load',function(){
    if(lastCheck.status==='loaded'&&(!lastCheck.cssLoaded||!lastCheck.jsLoaded||!lastCheck.menu)){
     show('모바일 메뉴가 준비되지 않았습니다. 새로고침 후 다시 확인하세요.');
    }
+   if(new URLSearchParams(location.search).get('qa')==='1')showQA();
   },1600);
  } catch(e){show('통합 화면 스타일을 적용하지 못했습니다. 로그인 또는 접근 정책을 확인하세요.');}
 });
