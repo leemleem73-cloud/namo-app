@@ -50,3 +50,16 @@
   .qmes-mobile-table-scroll{position:relative}
   .qmes-mobile-table-scroll:focus-visible{outline:2px solid #2376aa;outline-offset:2px}
 }
+
+/* Phase 4: LOT trace, inventory, approval and admin lists */
+@media(max-width:768px){
+  [class*="trace"],[class*="inventory"],[class*="approval"]{max-width:100%;box-sizing:border-box}
+  [class*="trace"] table,[class*="inventory"] table,[class*="approval"] table{max-width:none}
+  .qmes-mobile-table-scroll{overscroll-behavior-x:contain}
+  .qmes-mobile-table-scroll>table{margin:0}
+  .qmes-mobile-table-scroll th,.qmes-mobile-table-scroll td{white-space:nowrap}
+  .qmes-mobile-table-scroll button,.qmes-mobile-table-scroll a{min-height:36px}
+  .workspace-body .pagination,.module-shell .pagination{display:flex;flex-wrap:wrap;gap:6px}
+  .workspace-body .actions,.module-shell .actions{display:flex;flex-wrap:wrap;gap:8px}
+  @media print{#qmes-mobile-menu-toggle,#qmes-mobile-backdrop{display:none!important}.qmes-mobile-table-scroll{overflow:visible!important}}
+}
