@@ -33,7 +33,11 @@
       var item=event.target.closest('a[href],button[data-tab],[role="menuitem"],.menu[data-tab],.menu[data-page],.menu[data-target],.menu');
       if(!item)return;
       // Parent groups must remain open for choosing a submenu.
-      if(item.matches('.menu') && (item.getAttribute('aria-expanded')!==null || item.querySelector('.submenu,[role="menu"]')))return;
+      // Keep expandable navigation groups visible while selecting a child.
+      if(item.getAttribute('aria-expanded')!==null ||
+         item.getAttribute('aria-haspopup')==='true' ||
+         item.querySelector('.submenu,[role="menu"],[aria-expanded]') ||
+         item.closest('[aria-expanded="false"]'))return;
       setTimeout(function(){setOpen(false);},80);
     });
     document.addEventListener('keydown',function(event){
