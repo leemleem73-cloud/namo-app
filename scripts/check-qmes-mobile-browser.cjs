@@ -7,7 +7,14 @@ const assert = require('node:assert/strict');
  try {
   const page = await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobile=fs.readFileSync('public/mobile-app-20261031.html','utf8');
-  const pc='<!doctype html><html><head></head><body><aside class="sidebar"><div class="menu" data-page="work"><span class="label">작업지시서</span></div><div class="menu" data-page="incoming"><span class="label">수입검사 IQC</span></div><div class="menu" data-page="process"><span class="label">공정검사 PQC</span></div><div class="menu" data-page="outgoing"><span class="label">출하검사 OQC</span></div></aside><main class="workspace-body"><table><tr><td>목록</td></tr></table></main><script>document.querySelectorAll(".menu").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page)</script></body></html>';
+  // Use the real PC sidebar markup from this branch, rather than invented menu names.
+  const desktop=fs.readFileSync('public/index.html','utf8');
+  const sidebar=desktop.match(/<aside class="sidebar"[^>]*>[\s\S]*?<\/aside>/);
+  assert.ok(sidebar,'Real PC sidebar markup missing');
+  const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body"><table><tr><td>목록</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page)</'+'script></body></html>';
+  for(const label of ['작업지시서','수입검사 IQC','공정검사 PQC','출하검사 OQC']){
+   assert.ok(sidebar[0].includes(label),'Real PC menu missing: '+label);
+  }
   await page.route('http://qmes-mobile.local/**',route=>{
    const url=new URL(route.request().url());
    if(url.pathname==='/mobile-app-20261031.html')return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:mobile});
