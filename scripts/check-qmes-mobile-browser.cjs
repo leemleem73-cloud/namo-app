@@ -176,6 +176,19 @@ const assert = require('node:assert/strict');
   const narrowHome=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
   assert.ok(narrowHome.documentWidth<=narrowHome.viewport+2,'320px mobile home horizontal overflow: '+JSON.stringify(narrowHome));
   await page.screenshot({path:path.join('artifacts/qmes-mobile','home-320.png'),fullPage:true});
+  // Cover a common Android phone width and landscape rotation as well.
+  for(const [width,height,label] of [[412,915,'412px portrait'],[844,390,'landscape']]){
+   await page.setViewportSize({width,height});
+   await page.locator('#home').waitFor({state:'visible'});
+   const dims=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
+   assert.ok(dims.documentWidth<=dims.viewport+2,label+' home horizontal overflow: '+JSON.stringify(dims));
+   await page.locator('[data-find="작업지시"]').first().click();
+   await page.locator('body.in-work').waitFor();
+   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'work',label+' work navigation failed');
+   await page.locator('#backhome').click();
+  }
+  await page.setViewportSize({width:390,height:844});
+
 
   console.log('PASS: 390px mobile shell, real PC sidebar work order/IQC/PQC/OQC navigation, menu and home (mock business data only)');
  } finally {await browser.close()}
