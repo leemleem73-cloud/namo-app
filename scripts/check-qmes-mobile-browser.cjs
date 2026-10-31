@@ -122,6 +122,20 @@ const assert = require('node:assert/strict');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('in-work')),false);
+  // Replacing a PC sidebar item after building the drawer must not trigger a stale click.
+  await page.locator('[data-open="1"]').first().click();
+  await page.locator('body.menu-open').waitFor();
+  await page.frameLocator('#pc').locator('.sidebar .menu[data-page="work"]').evaluate(el=>{
+   const replacement=el.cloneNode(true);
+   el.replaceWith(replacement);
+   replacement.addEventListener('click',()=>{document.body.dataset.active='work'});
+  });
+  const staleWork=page.locator('#dynamic-menu button.nav').filter({hasText:'작업지시서'}).first();
+  await staleWork.click();
+  await page.locator('body.in-work').waitFor();
+  assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'work','Replaced PC menu item should still navigate to work');
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
   // Drawer navigation must use the currently mounted PC menu rather than stale references.
   await page.locator('[data-open="1"]').first().click();
   await page.locator('body.menu-open').waitFor();
