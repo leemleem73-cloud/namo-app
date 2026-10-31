@@ -30,8 +30,11 @@
     toggle.addEventListener('click',function(){setOpen(!document.documentElement.classList.contains('qmes-mobile-menu-open'));});
     backdrop.addEventListener('click',function(){setOpen(false);toggle.focus();});
     sidebar.addEventListener('click',function(event){
-      var item=event.target.closest('a[href],button[data-tab],[role="menuitem"],.menu[data-tab],.menu[data-page],.menu[data-target]');
-      if(item)setTimeout(function(){setOpen(false);},80);
+      var item=event.target.closest('a[href],button[data-tab],[role="menuitem"],.menu[data-tab],.menu[data-page],.menu[data-target],.menu');
+      if(!item)return;
+      // Parent groups must remain open for choosing a submenu.
+      if(item.matches('.menu') && (item.getAttribute('aria-expanded')!==null || item.querySelector('.submenu,[role="menu"]')))return;
+      setTimeout(function(){setOpen(false);},80);
     });
     document.addEventListener('keydown',function(event){
       if(event.key==='Escape'&&document.documentElement.classList.contains('qmes-mobile-menu-open')){
@@ -48,6 +51,7 @@
       if(!table.parentNode || table.parentNode.tagName==='TABLE')return;
       if(table.closest('form') || table.hasAttribute('data-no-mobile-wrap'))return;
       if(table.closest('[onclick],[data-reactroot]'))return;
+      if(table.querySelector('input,select,textarea,[contenteditable],canvas,svg'))return;
       var wrapper=document.createElement('div');
       wrapper.className='qmes-mobile-table-scroll';
       wrapper.setAttribute('role','region');
