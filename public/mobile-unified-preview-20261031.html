@@ -8,7 +8,7 @@ header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#
 #workspace{display:block;width:100%;height:calc(100dvh - 52px);border:0;background:white}
 #notice{position:absolute;top:60px;left:8px;right:8px;background:#fff4d9;border:1px solid #e7cb8d;border-radius:8px;padding:10px;font-size:12px;display:none}
 </style></head><body>
-<header><strong>NAMO QMES · 모바일 통합 시험</strong><button id="reload">새로고침</button><button id="legacy">기존 모바일</button></header>
+<header><strong>NAMO QMES · 모바일 통합 시험</strong><button id="reload">새로고침</button></header>
 <div id="notice" role="status"></div>
 <iframe id="workspace" title="QMES PC 공통 업무 화면" src="/?desktop=1&pc=1" allow="clipboard-read; clipboard-write"></iframe>
 <script>
@@ -17,7 +17,7 @@ header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#
 var frame=document.getElementById('workspace'),notice=document.getElementById('notice');
 function show(msg){notice.textContent=msg;notice.style.display='block';}
 document.getElementById('reload').onclick=function(){frame.contentWindow.location.reload();};
-document.getElementById('legacy').onclick=function(){location.assign('/mobile.html');};
+
 frame.addEventListener('load',function(){
  try {
   var doc=frame.contentDocument;
