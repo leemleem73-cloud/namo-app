@@ -6,17 +6,28 @@
 header{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#123c5a;color:white}
 header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#fff;color:#17354d;border-radius:7px;padding:9px;font-size:13px}
 #workspace{display:block;width:100%;height:100dvh;border:0;background:white}
+#qa-panel{display:none;position:fixed;right:8px;bottom:8px;z-index:9999;max-width:calc(100vw - 16px);width:320px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 3px 18px #0004;color:#18354a;font-size:13px}
+#qa-panel pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:38vh;overflow:auto}
+#qa-panel button{margin-right:8px}
 #notice{position:absolute;top:8px;left:8px;right:8px;background:#fff4d9;border:1px solid #e7cb8d;border-radius:8px;padding:10px;font-size:12px;display:none}
 </style></head><body>
 
 <div id="notice" role="status"></div>
+<div id="qa-panel" role="region" aria-label="모바일 화면 진단"><strong>모바일 화면 진단 (읽기 전용)</strong><p>업무 데이터는 변경하지 않습니다.</p><button id="qa-run" type="button">다시 점검</button><button id="qa-close" type="button">닫기</button><pre id="qa-result" aria-live="polite"></pre></div>
 <iframe id="workspace" title="QMES PC 공통 업무 화면" src="/?desktop=1&pc=1" allow="clipboard-read; clipboard-write"></iframe>
 <script>
 (function(){
 'use strict';
 var frame=document.getElementById('workspace'),notice=document.getElementById('notice');
 var lastCheck={status:'loading',timestamp:new Date().toISOString()};
-window.qmesMobileDiagnostics=function(){return Object.assign({},lastCheck);};
+window.qmesMobileDiagnostics=function(){check();return Object.assign({},lastCheck);};
+var qaPanel=document.getElementById('qa-panel'),qaResult=document.getElementById('qa-result');
+function showQA(){check();qaResult.textContent=JSON.stringify(lastCheck,null,2);qaPanel.style.display='block';}
+if(new URLSearchParams(location.search).get('qa')==='1'){
+ document.getElementById('qa-run').addEventListener('click',showQA);
+ document.getElementById('qa-close').addEventListener('click',function(){qaPanel.style.display='none';});
+ setTimeout(showQA,2300);
+}
 function check(){
  try{
   var doc=frame.contentDocument;
