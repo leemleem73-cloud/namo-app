@@ -268,6 +268,16 @@ const assert = require('node:assert/strict');
   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'work','Work-order navigation must recover after PC reload');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
+  // Disabled PC menu entries must not be presented as successful mobile navigation.
+  await page.frameLocator('#pc').locator('.sidebar .menu[data-page="work"]').first().evaluate(el=>el.setAttribute('aria-disabled','true'));
+  await page.locator('[data-find="작업지시"]').first().click();
+  assert.equal(await page.locator('body.in-work').count(),0,'Disabled work menu must not enter mobile work view');
+  assert.match(await page.locator('#status').innerText(),/사용할 수 없는 메뉴/);
+  await page.frameLocator('#pc').locator('.sidebar .menu[data-page="work"]').first().evaluate(el=>el.removeAttribute('aria-disabled'));
+  await page.locator('[data-find="작업지시"]').first().click();
+  await page.locator('body.in-work').waitFor();
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
   // The navigation test already returned home; avoid clicking a hidden work-only button.
   await page.locator('#home').waitFor({state:'visible'});
   fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
