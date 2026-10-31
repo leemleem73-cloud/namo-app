@@ -106,6 +106,18 @@ window.qmesMobileBusinessReadiness=function(){
    var tables=section?Array.from(section.querySelectorAll('table')):[];
    report.modules.push({id:id,name:entry[1],menuFound:!!menu,containerFound:!!section,rendered:!!(section&&section.children.length),visible:!!(section&&section.getBoundingClientRect().width&&section.getBoundingClientRect().height),inputCount:inputs,tableCount:tables.length,visibleRowCount:section?Array.from(section.querySelectorAll('tbody tr')).filter(function(row){return !!row.getBoundingClientRect().height}).length:0,scrollableTables:tables.filter(function(t){return !!t.closest('.qmes-mobile-table-scroll,.ip-table-wrap,.lot-detail-box')}).length});
   });
+  var work=d.getElementById('work'),workTable=work&&work.querySelector('.work-list-table');
+  report.workOrder={
+   screenMounted:!!work,
+   titleFound:!!(work&&work.querySelector('.nwi-title')),
+   listFound:!!workTable,
+   columnHeaders:workTable?Array.from(workTable.querySelectorAll('thead th')).map(function(th){return (th.textContent||'').trim()}):[],
+   visibleRows:workTable?Array.from(workTable.querySelectorAll('tbody tr')).filter(function(tr){return tr.getBoundingClientRect().height>0}).length:0,
+   newButtonFound:!!(work&&work.querySelector('.new-btn')),
+   detailDialogFound:!!d.querySelector('.modal.work-mode'),
+   note:'목록 행 수는 화면에 표시된 행만 의미하며 서버 조회 성공 또는 전체 등록 건수를 보증하지 않습니다.'
+  };
+  if(work&&work.getBoundingClientRect().height>0&&!workTable)report.warnings.push('작업지시서 화면이 표시되지만 목록 표를 찾지 못했습니다.');
   report.modules.forEach(function(m){
    m.status=!m.menuFound?'menu-missing':!m.containerFound?'not-mounted':!m.rendered?'not-rendered':!m.visible?'hidden':'visible';
    if(m.status==='menu-missing')report.warnings.push(m.name+' 메뉴를 찾지 못했습니다.');
