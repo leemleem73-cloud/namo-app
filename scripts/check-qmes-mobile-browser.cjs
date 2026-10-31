@@ -90,6 +90,16 @@ const assert = require('node:assert/strict');
   assert.equal(mounted.approval.visibleRows,0,'Rows in inactive approval module must not be reported as visible');
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
+  // Shortcut diagnostics must only inspect links visible in the mobile UI.
+  const shortcuts=await page.evaluate(()=>({
+   shown:Array.from(new Set(Array.from(document.querySelectorAll('[data-find]')).map(el=>el.getAttribute('data-find')))),
+   reported:window.qmesMobileCheck().details.quickLinkStatus.map(entry=>entry.name),
+   missing:window.qmesMobileCheck().details.missingQuickLinks
+  }));
+  assert.deepEqual(shortcuts.reported,shortcuts.shown,'Mobile health check must inspect exactly the visible shortcuts');
+  assert.ok(!shortcuts.reported.includes('재고')&&!shortcuts.reported.includes('생산실적'),'Retired shortcuts must not be diagnosed');
+  assert.deepEqual(shortcuts.missing,[],'All currently shown mobile shortcuts must resolve in the PC mock');
+
   // Retired or unavailable PC menus must not be advertised on the mobile home.
   for(const missing of ['재고','생산실적']){
    assert.equal(await page.locator('[data-find="'+missing+'"]').count(),0,missing+' shortcut should be absent');
