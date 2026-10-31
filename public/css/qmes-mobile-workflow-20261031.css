@@ -13,3 +13,16 @@
  .modal-content,.dialog-content,[role=dialog]{max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 24px)!important;overflow:auto}
 }
 @media print{.qmes-mobile-table-scroll{overflow:visible!important}}
+
+/* Embedded mobile shell: remove the duplicate desktop chrome and stop left clipping.
+   Only loaded inside the new mobile-app iframe; desktop QMES remains untouched. */
+@media screen and (max-width:768px){
+ html,body,#app{width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;overflow-x:clip!important}
+ #app>header.topbar,#app>.topbar{display:none!important}
+ #app>.sidebar,aside.sidebar{display:none!important}
+ #app>main.content,main.content{position:relative!important;left:auto!important;right:auto!important;transform:none!important;margin:0!important;padding:8px!important;width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:clip!important}
+ main.content>.module-page,.module-page.active,.module-shell,.workspace-body,.page-content,.work-content{position:relative!important;left:auto!important;right:auto!important;transform:none!important;margin-left:0!important;margin-right:0!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+ .module-page.active{padding-left:0!important;padding-right:0!important}
+ .module-page.active .form-row,.module-page.active .form-grid,.module-page.active .field-row{max-width:100%!important;min-width:0!important}
+ .module-page.active input,.module-page.active select,.module-page.active textarea{max-width:100%!important;box-sizing:border-box!important}
+}
