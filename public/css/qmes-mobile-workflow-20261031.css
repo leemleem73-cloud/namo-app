@@ -1,0 +1,15 @@
+/* NAMO mobile workflow readability layer: scoped to the embedded work app only. */
+@media screen and (max-width:768px){
+ html,body{max-width:100%!important;overflow-x:hidden!important}
+ .content,.workspace-body,.module-shell,.module-page,.page-content,.work-content{box-sizing:border-box!important;min-width:0!important;max-width:100%!important}
+ .workspace-body,.page-content,.module-shell{padding-left:10px!important;padding-right:10px!important}
+ .toolbar,.filter-bar,.search-bar,.filter-row,.form-actions,.action-bar{flex-wrap:wrap!important;gap:8px!important;max-width:100%!important}
+ .toolbar>* ,.filter-bar>* ,.search-bar>* ,.filter-row>*{max-width:100%!important}
+ input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important;min-width:0;max-width:100%;box-sizing:border-box}
+ button,[role=button],input[type=submit]{min-height:40px;touch-action:manipulation}
+ .qmes-mobile-table-scroll{width:100%;max-width:100%;overflow-x:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+ .qmes-mobile-table-scroll table{width:max-content;min-width:100%;max-width:none}
+ .qmes-mobile-table-scroll th,.qmes-mobile-table-scroll td{white-space:nowrap}
+ .modal-content,.dialog-content,[role=dialog]{max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 24px)!important;overflow:auto}
+}
+@media print{.qmes-mobile-table-scroll{overflow:visible!important}}
