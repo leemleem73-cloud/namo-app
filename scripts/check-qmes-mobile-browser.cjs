@@ -14,6 +14,10 @@ const assert = require('node:assert/strict');
   for(const id of ['work','incoming','process','outgoing']){
    assert.match(desktop,new RegExp('<section class="module-page" id="'+id+'"'),id+' business module container missing');
   }
+  // Verify real desktop entrypoints remain present before running the isolated mobile mock.
+  assert.ok(desktop.includes('신규 작업지시서 등록'),'Work order create action missing');
+  assert.ok(desktop.includes('renderSavedWorkOrders()'),'Work order list rendering missing');
+  assert.ok(desktop.includes('premiumInspectionShell(id,title,desc,cols)'),'Inspection rendering missing');
   const sidebar=desktop.match(/<aside class="sidebar"[^>]*>[\s\S]*?<\/aside>/);
   assert.ok(sidebar,'Real PC sidebar markup missing');
   const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body" style="padding:16px;background:#fff"><h2 id="mock-work-title">작업지시서 목록 (모의 화면)</h2><form id="mock-business-form"><label for="mock-lot">LOT 번호</label><input id="mock-lot" name="lot" type="text"><button id="mock-save" type="submit">저장</button></form><table id="mock-business-table"><tr><td>목록</td><td>LOT</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page);document.getElementById("mock-business-form").addEventListener("submit",e=>{e.preventDefault();document.body.dataset.savedLot=document.getElementById("mock-lot").value})</'+'script></body></html>';
