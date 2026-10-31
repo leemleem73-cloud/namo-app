@@ -213,6 +213,21 @@ const assert = require('node:assert/strict');
   assert.equal(lotMetrics.flowDirection,'column','LOT trace flow should stack vertically');
   assert.equal(lotMetrics.detailColumns,1,'LOT details should stack in one column');
   assert.equal(lotMetrics.detailOverflow,'auto','LOT detail table should scroll horizontally');
+  // Approval inbox: inspect search, list scrolling and pager layout, without invoking approvals.
+  const approvalMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const host=document.createElement('section');host.id='approval';host.className='module-page active';
+   host.innerHTML='<div class="module-shell"><div class="module-toolbar"><div class="filters"><input class="quality-approval-search" aria-label="결재 검색"></div><div class="table-tools"><button class="quality-approval-refresh">새로고침</button></div></div><div class="module-body"><table class="quality-approval-table"><tbody><tr><td>작성자</td><td>검토</td><td>승인</td></tr></tbody></table></div><div class="quality-approval-pager"><button class="quality-page-btn">1</button></div></div>';
+   body.appendChild(host);
+   const search=host.querySelector('.quality-approval-search'),refresh=host.querySelector('.quality-approval-refresh'),table=host.querySelector('.quality-approval-table'),bodyWrap=host.querySelector('.module-body'),pager=host.querySelector('.quality-approval-pager'),pageBtn=host.querySelector('.quality-page-btn');
+   const result={viewport:innerWidth,searchFont:parseFloat(getComputedStyle(search).fontSize),searchWidth:search.getBoundingClientRect().width,refreshHeight:refresh.getBoundingClientRect().height,tableWidth:table.getBoundingClientRect().width,overflow:getComputedStyle(bodyWrap).overflowX,pagerWrap:getComputedStyle(pager).flexWrap,pageHeight:pageBtn.getBoundingClientRect().height};
+   host.remove();return result;
+  });
+  assert.ok(approvalMetrics.searchFont>=16&&approvalMetrics.searchWidth>0,'Approval search unusable: '+JSON.stringify(approvalMetrics));
+  assert.ok(approvalMetrics.refreshHeight>=44,'Approval refresh touch target too short');
+  assert.ok(approvalMetrics.tableWidth>approvalMetrics.viewport,'Approval table should retain readable columns');
+  assert.equal(approvalMetrics.overflow,'auto','Approval list should scroll horizontally');
+  assert.equal(approvalMetrics.pagerWrap,'wrap','Approval pager should wrap');
+  assert.ok(approvalMetrics.pageHeight>=40,'Approval page button too short');
   // Work-order detail modal must override the real PC 760px minimum width.
   const detailMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
    const modal=document.createElement('div');modal.className='modal work-mode';modal.style.cssText='min-width:760px;width:1120px;position:relative;display:block;';
