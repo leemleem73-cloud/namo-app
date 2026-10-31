@@ -13,6 +13,8 @@
     toggle.id='qmes-mobile-menu-toggle';toggle.type='button';
     toggle.textContent='☰';toggle.setAttribute('aria-label','전체 메뉴 열기');
     toggle.setAttribute('aria-expanded','false');
+    sidebar.id=sidebar.id||'qmes-mobile-navigation';
+    toggle.setAttribute('aria-controls',sidebar.id);
     var backdrop=document.createElement('div');
     backdrop.id='qmes-mobile-backdrop';backdrop.setAttribute('aria-hidden','true');
     document.body.appendChild(backdrop);document.body.appendChild(toggle);
@@ -21,14 +23,21 @@
       toggle.textContent=open?'×':'☰';
       toggle.setAttribute('aria-expanded',String(open));
       toggle.setAttribute('aria-label',open?'전체 메뉴 닫기':'전체 메뉴 열기');
+      sidebar.setAttribute('aria-hidden',String(!open));
+      if('inert' in sidebar)sidebar.inert=!open;
     }
+    setOpen(false);
     toggle.addEventListener('click',function(){setOpen(!document.documentElement.classList.contains('qmes-mobile-menu-open'));});
-    backdrop.addEventListener('click',function(){setOpen(false);});
+    backdrop.addEventListener('click',function(){setOpen(false);toggle.focus();});
     sidebar.addEventListener('click',function(event){
       var item=event.target.closest('a[href],button[data-tab],[role="menuitem"],.menu[data-tab],.menu[data-page],.menu[data-target]');
       if(item)setTimeout(function(){setOpen(false);},80);
     });
-    document.addEventListener('keydown',function(event){if(event.key==='Escape')setOpen(false);});
+    document.addEventListener('keydown',function(event){
+      if(event.key==='Escape'&&document.documentElement.classList.contains('qmes-mobile-menu-open')){
+        setOpen(false);toggle.focus();
+      }
+    });
   }
   function enhance(){
     setupMenu();
