@@ -38,6 +38,12 @@ const assert = require('node:assert/strict');
    await page.locator('body.in-work').waitFor();
    assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),expected,label+' did not activate');
    assert.match(await page.locator('#worktitle').innerText(),new RegExp(label));
+   const businessContent=page.frameLocator('#pc').locator('#mock-work-title');
+   await businessContent.waitFor({state:'visible'});
+   assert.equal(await businessContent.evaluate(el=>{
+    const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
+    return rect.width>0&&rect.height>0&&style.display!=='none'&&style.visibility!=='hidden';
+   }),true,label+' embedded business content not visible');
   }
   await page.locator('#backhome').click();
   await page.locator('[data-find="작업지시"]').first().click();
