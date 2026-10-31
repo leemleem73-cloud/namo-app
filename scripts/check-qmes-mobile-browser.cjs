@@ -50,6 +50,12 @@ const assert = require('node:assert/strict');
   });
   await page.goto('http://qmes-mobile.local/mobile-app-20261031.html');
   await page.waitForFunction(()=>window.qmesMobileCheck?.().checks.menusReady===true);
+  // The new read-only diagnostics must clearly flag missing real module containers in the mock.
+  const readiness=await page.evaluate(()=>window.qmesMobileBusinessReadiness());
+  assert.equal(readiness.source,'embedded PC QMES DOM (read-only)');
+  assert.deepEqual(readiness.modules.map(m=>m.id),['work','incoming','process','outgoing','lotTrace','approval']);
+  assert.ok(readiness.modules.every(m=>m.containerFound===false),'Mock PC must not be mistaken for real QMES modules');
+  assert.ok(readiness.warnings.some(w=>w.includes('읽기 전용 DOM 검사')),'Diagnostic must disclose that backend operations are unverified');
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
   // Retired or unavailable PC menus must not be advertised on the mobile home.
