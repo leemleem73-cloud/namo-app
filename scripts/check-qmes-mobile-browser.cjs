@@ -181,6 +181,23 @@ const assert = require('node:assert/strict');
   assert.ok(workForm.createHeight>=44,'Work order create button too short');
   assert.ok(workForm.saveHeight>=44,'Work order save button too short');
   assert.ok(workForm.materialWidth>0,'Work order material table hidden');
+  // IQC/PQC/OQC inspection registration: mobile-only CSS against representative PC selectors.
+  for(const id of ['incoming','process','outgoing']){
+   const inspectionMetrics=await page.frameLocator('#pc').locator('body').evaluate((body,id)=>{
+    const host=document.createElement('section');host.id=id;host.className='module-page active';
+    host.innerHTML='<div class="iqc-work-frame"><div class="iqc-register-header"><strong>검사 등록</strong><div class="iqc-header-tools"><button class="btn">신규 등록</button></div></div><div class="ip-filter-row"><div class="ip-filter"><input class="input" aria-label="LOT 조회"></div></div><div class="ip-table-wrap"><table class="ip-table"><tbody><tr><td>검사 목록</td></tr></tbody></table></div><div class="inspection-entry"><div class="ie-grid"><div class="ie-field"><input aria-label="검사 LOT"></div><div class="ie-field span2"><select aria-label="검사 판정"><option>합격</option></select></div></div><button class="btn">저장</button></div></div>';
+    body.appendChild(host);
+    const grid=host.querySelector('.ie-grid'),input=host.querySelector('.ie-field input'),save=host.querySelector('.inspection-entry button'),filters=host.querySelector('.ip-filter-row'),table=host.querySelector('.ip-table-wrap');
+    const result={viewport:innerWidth,hostWidth:host.getBoundingClientRect().width,columns:getComputedStyle(grid).gridTemplateColumns.split(' ').length,filterColumns:getComputedStyle(filters).gridTemplateColumns.split(' ').length,inputFont:parseFloat(getComputedStyle(input).fontSize),saveHeight:save.getBoundingClientRect().height,tableOverflow:getComputedStyle(table).overflowX};
+    host.remove();return result;
+   },id);
+   assert.ok(inspectionMetrics.hostWidth<=inspectionMetrics.viewport,id+' inspection exceeds viewport: '+JSON.stringify(inspectionMetrics));
+   assert.equal(inspectionMetrics.columns,1,id+' entry fields should stack');
+   assert.equal(inspectionMetrics.filterColumns,1,id+' search filters should stack');
+   assert.ok(inspectionMetrics.inputFont>=16,id+' input font too small');
+   assert.ok(inspectionMetrics.saveHeight>=44,id+' save button too short');
+   assert.equal(inspectionMetrics.tableOverflow,'auto',id+' table wrapper not scrollable');
+  }
   // Work-order detail modal must override the real PC 760px minimum width.
   const detailMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
    const modal=document.createElement('div');modal.className='modal work-mode';modal.style.cssText='min-width:760px;width:1120px;position:relative;display:block;';
