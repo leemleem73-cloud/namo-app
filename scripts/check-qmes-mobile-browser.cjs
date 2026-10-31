@@ -1,6 +1,7 @@
 // Isolated browser smoke test: intercepts the embedded PC app, never accesses production.
 const { chromium } = require('playwright');
 const fs = require('node:fs');
+const path = require('node:path');
 const assert = require('node:assert/strict');
 (async () => {
  const browser = await chromium.launch({headless:true});
@@ -47,6 +48,16 @@ const assert = require('node:assert/strict');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('in-work')),false);
+  // Save visual evidence from the isolated mobile shell; do not use production data.
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
+  fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
+  await page.screenshot({path:path.join('artifacts/qmes-mobile','home-390.png'),fullPage:true});
+  await page.locator('[data-find="작업지시"]').first().click();
+  await page.locator('body.in-work').waitFor();
+  await page.screenshot({path:path.join('artifacts/qmes-mobile','workorder-390.png'),fullPage:true});
+  const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
+  assert.ok(layout.documentWidth<=layout.viewport+2,'Mobile shell horizontal overflow: '+JSON.stringify(layout));
   console.log('PASS: 390px mobile shell, real PC sidebar work order/IQC/PQC/OQC navigation, menu and home (mock business data only)');
  } finally {await browser.close()}
 })().catch(err=>{console.error(err);process.exitCode=1});
