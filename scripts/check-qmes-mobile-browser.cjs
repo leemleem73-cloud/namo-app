@@ -109,6 +109,23 @@ const assert = require('node:assert/strict');
   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-saved-lot'),'MOBILE-TEST-LOT','Mock mobile save action did not receive entered LOT');
   await page.frameLocator('#pc').locator('.qmes-mobile-table-scroll').first().waitFor({state:'attached'});
   await page.screenshot({path:path.join('artifacts/qmes-mobile','workorder-390.png'),fullPage:true});
+  // Exercise mobile-only CSS against representative real PC module selectors.
+  // These are layout checks, NOT live database or QMES transaction tests.
+  const responsive=await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const host=document.createElement('section');host.id='incoming';host.className='module-page active';
+   host.innerHTML='<div class="iqc-work-frame"><div class="iqc-register-header"><strong>수입검사 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn new-btn">신규 등록</button></div></div><div class="ip-filter-row"><label class="ip-filter"><input class="input" value="LOT-001"></label></div><div class="inspection-entry"><div class="ie-grid"><div class="ie-field"><input value="sample"></div></div></div><div class="ip-table-wrap"><table class="ip-table"><tr><td>LOT-001</td></tr></table></div></div>';
+   body.appendChild(host);
+   const css=e=>getComputedStyle(e);
+   const grid=host.querySelector('.ip-filter-row');
+   const input=host.querySelector('.ie-field input');
+   const btn=host.querySelector('.new-btn');
+   const result={filterColumns:css(grid).gridTemplateColumns.split(' ').length,inputFont:parseFloat(css(input).fontSize),buttonHeight:btn.getBoundingClientRect().height,tableOverflow:css(host.querySelector('.ip-table-wrap')).overflowX};
+   host.remove();return result;
+  });
+  assert.equal(responsive.filterColumns,1,'Inspection filters must be single-column on mobile: '+JSON.stringify(responsive));
+  assert.ok(responsive.inputFont>=16,'Inspection form input too small: '+JSON.stringify(responsive));
+  assert.ok(responsive.buttonHeight>=44,'Inspection create button too short: '+JSON.stringify(responsive));
+  assert.equal(responsive.tableOverflow,'auto','Inspection table must scroll horizontally');
   const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
   assert.ok(layout.documentWidth<=layout.viewport+2,'Mobile shell horizontal overflow: '+JSON.stringify(layout));
   console.log('PASS: 390px mobile shell, real PC sidebar work order/IQC/PQC/OQC navigation, menu and home (mock business data only)');
