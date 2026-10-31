@@ -39,14 +39,23 @@ frame.addEventListener('load',function(){
   if(!doc||!doc.head)throw Error('no access');
   if(!doc.getElementById('qmes-unified-mobile-css')){
    var link=doc.createElement('link');link.id='qmes-unified-mobile-css';
-   link.rel='stylesheet';link.href='/css/qmes-mobile-pc-unified-20261031.css?v=2';doc.head.appendChild(link);
+   link.rel='stylesheet';link.href='/css/qmes-mobile-pc-unified-20261031.css?v=3';
+   link.onerror=function(){show('모바일 화면 스타일을 불러오지 못했습니다. 새로고침하세요.');};
+   doc.head.appendChild(link);
   }
   if(!doc.getElementById('qmes-unified-mobile-js')){
    var script=doc.createElement('script');script.id='qmes-unified-mobile-js';
-   script.src='/js/qmes-mobile-pc-unified-20261031.js';doc.head.appendChild(script);
+   script.src='/js/qmes-mobile-pc-unified-20261031.js?v=3';
+   script.onerror=function(){show('모바일 메뉴 스크립트를 불러오지 못했습니다. 새로고침하세요.');};
+   doc.head.appendChild(script);
   }
   notice.style.display='none';
-  setTimeout(check,900);
+  setTimeout(function(){
+   check();
+   if(lastCheck.status==='loaded'&&(!lastCheck.css||!lastCheck.menu)){
+    show('모바일 메뉴가 준비되지 않았습니다. 새로고침 후 다시 확인하세요.');
+   }
+  },1600);
  } catch(e){show('통합 화면 스타일을 적용하지 못했습니다. 로그인 또는 접근 정책을 확인하세요.');}
 });
 })();
