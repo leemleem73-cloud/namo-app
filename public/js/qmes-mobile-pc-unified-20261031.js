@@ -23,15 +23,18 @@
     toggle.addEventListener('click',function(){setOpen(!document.documentElement.classList.contains('qmes-mobile-menu-open'));});
     backdrop.addEventListener('click',function(){setOpen(false);});
     sidebar.addEventListener('click',function(event){
-      if(event.target.closest('a,[role="menuitem"],.menu'))setOpen(false);
+      var link=event.target.closest('a[href],button[data-tab],[role="menuitem"]');
+      if(link)setTimeout(function(){setOpen(false);},80);
     });
     document.addEventListener('keydown',function(event){if(event.key==='Escape')setOpen(false);});
   }
   function enhance(){
     setupMenu();
-    document.querySelectorAll('table').forEach(function(table){
+    document.querySelectorAll('.workspace-body table,.module-shell table,.content table').forEach(function(table){
       if(table.closest('.qmes-mobile-table-scroll')) return;
-      if(table.closest('[contenteditable="true"]')) return;
+      if(table.closest('[contenteditable="true"],.report-sheet,[data-print-root],.print-area,.report-doc-head,.report-basic,.report-inspection')) return;
+      if(table.closest('dialog,[role="dialog"]')) return;
+      if(!table.parentNode || table.parentNode.tagName==='TABLE')return;
       var wrapper=document.createElement('div');
       wrapper.className='qmes-mobile-table-scroll';
       wrapper.setAttribute('role','region');
