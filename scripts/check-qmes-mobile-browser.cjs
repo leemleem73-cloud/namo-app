@@ -63,6 +63,31 @@ const assert = require('node:assert/strict');
   assert.equal(readiness.lotTrace.screenMounted,false,'Mock must not report real LOT trace');
   assert.equal(readiness.approval.screenMounted,false,'Mock must not report real approval inbox');
   assert.ok(readiness.modules.every(m=>m.status==='not-mounted'),'Unopened modules must be diagnosed as not-mounted, not as errors');
+  // Positive-path diagnostic check with synthetic mounted screens; no backend requests.
+  const mounted=await page.evaluate(()=>{
+   const d=document.getElementById('pc').contentDocument;
+   const samples={
+    work:'<div class="nwi-title">작업지시서 등록 및 조회</div><button class="new-btn">신규</button><table class="work-list-table"><thead><tr><th>LOT</th></tr></thead><tbody><tr><td>DEMO</td></tr></tbody></table>',
+    incoming:'<div class="iqc-register-header">수입검사</div><div class="ip-filter-row"><input></div><table><tbody><tr><td>DEMO</td></tr></tbody></table>',
+    process:'<div class="iqc-register-header">공정검사</div><table><tbody><tr><td>DEMO</td></tr></tbody></table>',
+    outgoing:'<div class="iqc-register-header">출하검사</div><table><tbody><tr><td>DEMO</td></tr></tbody></table>',
+    lotTrace:'<div class="lot-search-grid"><input></div><div class="lot-flow"><div class="lot-step">원료</div></div><table class="lot-detail-table"></table>',
+    approval:'<input class="quality-approval-search"><table class="quality-approval-table"><tbody><tr><td>DEMO</td></tr></tbody></table><div class="quality-approval-pager"></div>'
+   };
+   const nodes=[];
+   Object.entries(samples).forEach(([id,html])=>{const section=d.createElement('section');section.id=id;section.className='module-page';section.innerHTML=html;d.body.appendChild(section);nodes.push(section)});
+   const result=window.qmesMobileBusinessReadiness();
+   nodes.forEach(node=>node.remove());
+   return result;
+  });
+  assert.equal(mounted.workOrder.listFound,true,'Mounted work-order table must be detected');
+  assert.equal(mounted.workOrder.columnHeaders[0],'LOT','Work-order header must be captured');
+  assert.equal(mounted.workOrder.visibleRows,1,'Work-order row must be counted');
+  assert.ok(mounted.inspections.every(m=>m.screenMounted&&m.tableCount===1),'Mounted inspection tables must be detected');
+  assert.equal(mounted.lotTrace.searchFound,true,'LOT search must be detected');
+  assert.equal(mounted.lotTrace.stepCount,1,'LOT flow steps must be counted');
+  assert.equal(mounted.approval.listFound,true,'Approval table must be detected');
+  assert.equal(mounted.approval.visibleRows,1,'Approval rows must be counted');
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
   // Retired or unavailable PC menus must not be advertised on the mobile home.
