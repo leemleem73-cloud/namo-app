@@ -157,6 +157,28 @@ const assert = require('node:assert/strict');
   await page.frameLocator('#pc').locator('#work').evaluate(el=>el.remove());
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
+  // IQC mobile list -> registration -> back to list (isolated fixture, no DB writes).
+  await page.locator('[data-find="수입검사"]').first().click();
+  await page.locator('body.in-work').waitFor();
+  assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'incoming');
+  await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const section=document.createElement('section');section.id='incoming';section.className='module-page active';section.style.setProperty('display','block','important');
+   section.innerHTML='<div class="iqc-register-header"><button id="mock-iqc-new" type="button">신규 검사 등록</button></div><div id="mock-iqc-list"><table><tbody><tr><td>DEMO-IQC</td></tr></tbody></table></div><div id="mock-iqc-form" hidden><label>원자재 LOT<input id="mock-iqc-lot" type="text"></label><button id="mock-iqc-cancel" type="button">취소</button></div>';
+   body.appendChild(section);
+   const list=section.querySelector('#mock-iqc-list'),form=section.querySelector('#mock-iqc-form');
+   section.querySelector('#mock-iqc-new').onclick=()=>{list.hidden=true;form.hidden=false};
+   section.querySelector('#mock-iqc-cancel').onclick=()=>{form.hidden=true;list.hidden=false};
+  });
+  await page.frameLocator('#pc').locator('#mock-iqc-new').click();
+  await page.frameLocator('#pc').locator('#mock-iqc-form').waitFor({state:'visible'});
+  await page.frameLocator('#pc').locator('#mock-iqc-lot').fill('DEMO-RAW-LOT');
+  assert.equal(await page.frameLocator('#pc').locator('#mock-iqc-lot').inputValue(),'DEMO-RAW-LOT');
+  await page.frameLocator('#pc').locator('#mock-iqc-cancel').click();
+  await page.frameLocator('#pc').locator('#mock-iqc-list').waitFor({state:'visible'});
+  assert.equal(await page.frameLocator('#pc').locator('#mock-iqc-form').isVisible(),false,'IQC registration form must close on cancel');
+  await page.frameLocator('#pc').locator('#incoming').evaluate(el=>el.remove());
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
   // Drawer navigation must use the currently mounted PC menu rather than stale references.
   await page.locator('[data-open="1"]').first().click();
   await page.locator('body.menu-open').waitFor();
