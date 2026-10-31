@@ -26,10 +26,9 @@ const assert = require('node:assert/strict');
   await page.waitForFunction(()=>window.qmesMobileCheck?.().checks.menusReady===true);
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
-  // Unsupported shortcuts must never open a blank work screen or invent a PC menu.
+  // Retired or unavailable PC menus must not be advertised on the mobile home.
   for(const missing of ['재고','생산실적']){
-   await page.locator('[data-find="'+missing+'"]').first().click();
-   assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('in-work')),false,missing+' unexpectedly opened work view');
+   assert.equal(await page.locator('[data-find="'+missing+'"]').count(),0,missing+' shortcut should be absent');
   }
   await page.locator('[data-find="작업지시"]').first().click();
   await page.locator('body.in-work').waitFor();
