@@ -56,6 +56,13 @@ const assert = require('node:assert/strict');
   assert.deepEqual(readiness.modules.map(m=>m.id),['work','incoming','process','outgoing','lotTrace','approval']);
   assert.ok(readiness.modules.every(m=>m.containerFound===false),'Mock PC must not be mistaken for real QMES modules');
   assert.ok(readiness.warnings.some(w=>w.includes('읽기 전용 DOM 검사')),'Diagnostic must disclose that backend operations are unverified');
+  assert.equal(readiness.workOrder.screenMounted,false,'Mock must not report a real work-order screen');
+  assert.equal(readiness.workOrder.listFound,false,'Mock must not report a real work-order list');
+  assert.deepEqual(readiness.inspections.map(m=>m.id),['incoming','process','outgoing']);
+  assert.ok(readiness.inspections.every(m=>m.screenMounted===false),'Mock must not report real inspection screens');
+  assert.equal(readiness.lotTrace.screenMounted,false,'Mock must not report real LOT trace');
+  assert.equal(readiness.approval.screenMounted,false,'Mock must not report real approval inbox');
+  assert.ok(readiness.modules.every(m=>m.status==='not-mounted'),'Unopened modules must be diagnosed as not-mounted, not as errors');
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
   // Retired or unavailable PC menus must not be advertised on the mobile home.
