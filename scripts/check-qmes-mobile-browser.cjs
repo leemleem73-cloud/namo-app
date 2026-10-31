@@ -29,12 +29,24 @@ const assert = require('node:assert/strict');
   await page.locator('body.in-work').waitFor();
   assert.match(await page.locator('#worktitle').innerText(),/작업지시서/);
   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),'work');
+  // Verify each core inspection menu against the actual PC sidebar's data-page.
+  for(const [label,expected] of [['수입검사','incoming'],['공정검사','process'],['출하검사','outgoing']]){
+   await page.locator('#backhome').click();
+   await page.locator('#home').waitFor({state:'visible'});
+   await page.locator('[data-find="'+label+'"]').first().click();
+   await page.locator('body.in-work').waitFor();
+   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),expected,label+' did not activate');
+   assert.match(await page.locator('#worktitle').innerText(),new RegExp(label));
+  }
+  await page.locator('#backhome').click();
+  await page.locator('[data-find="작업지시"]').first().click();
+  await page.locator('body.in-work').waitFor();
   await page.locator('#workmenu').click();
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('menu-open')),true);
   await page.locator('#shade').click({position:{x:370,y:200}});
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('in-work')),false);
-  console.log('PASS: 390px mobile shell, module navigation, menu and return home (mock PC data only)');
+  console.log('PASS: 390px mobile shell, real PC sidebar work order/IQC/PQC/OQC navigation, menu and home (mock business data only)');
  } finally {await browser.close()}
 })().catch(err=>{console.error(err);process.exitCode=1});
