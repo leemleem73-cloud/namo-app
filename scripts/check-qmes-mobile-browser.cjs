@@ -248,6 +248,16 @@ const assert = require('node:assert/strict');
   const narrow=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,workVisible:document.body.classList.contains('in-work')}));
   assert.equal(narrow.workVisible,true,'Work-order view lost after narrow viewport resize');
   assert.ok(narrow.documentWidth<=narrow.viewport+2,'320px phone horizontal overflow: '+JSON.stringify(narrow));
+  // Recheck the real PC work-detail modal's former 760px minimum at 320px.
+  const narrowDetail=await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const modal=document.createElement('div');modal.className='modal work-mode';modal.style.cssText='position:relative;display:block;min-width:760px;width:1120px;';
+   modal.innerHTML='<div class="work-detail-doc"><input aria-label="작업지시서 상세 LOT"><button type="button">닫기</button></div>';
+   body.appendChild(modal);
+   const result={viewport:innerWidth,width:modal.getBoundingClientRect().width,inputFont:parseFloat(getComputedStyle(modal.querySelector('input')).fontSize),buttonHeight:modal.querySelector('button').getBoundingClientRect().height};
+   modal.remove();return result;
+  });
+  assert.ok(narrowDetail.width<=narrowDetail.viewport,'320px work detail exceeds viewport: '+JSON.stringify(narrowDetail));
+  assert.ok(narrowDetail.inputFont>=16&&narrowDetail.buttonHeight>=44,'320px work detail controls too small: '+JSON.stringify(narrowDetail));
   const narrowInput=await page.frameLocator('#pc').locator('#mock-lot').evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),width:el.getBoundingClientRect().width}));
   assert.ok(narrowInput.font>=16&&narrowInput.width>0,'320px work input unusable: '+JSON.stringify(narrowInput));
   await page.locator('#backhome').click();
