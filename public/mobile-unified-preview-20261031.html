@@ -5,18 +5,65 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,"Malgun Gothic",sans-serif;background:#f4f7fa}
 header{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#123c5a;color:white}
 header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#fff;color:#17354d;border-radius:7px;padding:9px;font-size:13px}
-#workspace{display:block;width:1280px;height:100dvh;border:0;background:white;transform-origin:top left}
+#workspace{display:block;width:100%;height:100dvh;border:0;background:white}
+#qa-panel{display:none;position:fixed;right:8px;bottom:8px;z-index:9999;max-width:calc(100vw - 16px);width:320px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 3px 18px #0004;color:#18354a;font-size:13px}
+#qa-panel pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:38vh;overflow:auto}
+#qa-panel button{margin-right:8px}
 #notice{position:absolute;top:8px;left:8px;right:8px;background:#fff4d9;border:1px solid #e7cb8d;border-radius:8px;padding:10px;font-size:12px;display:none}
 </style></head><body>
 
 <div id="notice" role="status"></div>
+<div id="qa-panel" role="region" aria-label="모바일 화면 진단"><strong>모바일 화면 진단 (읽기 전용)</strong><p>업무 데이터는 변경하지 않습니다.</p><button id="qa-run" type="button">다시 점검</button><button id="qa-close" type="button">닫기</button><pre id="qa-result" aria-live="polite"></pre></div>
 <iframe id="workspace" title="QMES PC 공통 업무 화면" src="/?desktop=1&pc=1" allow="clipboard-read; clipboard-write"></iframe>
 <script>
 (function(){
 'use strict';
 var frame=document.getElementById('workspace'),notice=document.getElementById('notice');
-function fit(){var w=Math.max(1,document.documentElement.clientWidth);var scale=Math.min(1,w/1280);frame.style.transform='scale('+scale+')';frame.style.height=(window.innerHeight/scale)+'px';}
-fit();window.addEventListener('resize',fit);
+var lastCheck={status:'loading',timestamp:new Date().toISOString()};
+window.qmesMobileDiagnostics=function(){check();return Object.assign({},lastCheck);};
+var qaPanel=document.getElementById('qa-panel'),qaResult=document.getElementById('qa-result');
+function showQA(){
+ check();
+ qaResult.textContent=JSON.stringify(lastCheck,null,2);
+ qaPanel.style.display='block';
+}
+if(new URLSearchParams(location.search).get('qa')==='1'){
+ document.getElementById('qa-run').addEventListener('click',showQA);
+ document.getElementById('qa-close').addEventListener('click',function(){qaPanel.style.display='none';});
+ // Diagnostics refresh after iframe load, not on a fixed initial timer.
+}
+function check(){
+ try{
+  var doc=frame.contentDocument;
+  if(!doc||!doc.body){lastCheck={status:'not-ready'};return;}
+  var tables=doc.querySelectorAll('.workspace-body table,.module-shell table,.content table').length;
+  var wrapped=doc.querySelectorAll('.qmes-mobile-table-scroll').length;
+  var sidebar=!!doc.querySelector('.sidebar');
+  var menu=!!doc.getElementById('qmes-mobile-menu-toggle');
+  var css=!!doc.getElementById('qmes-unified-mobile-css');
+  var style=doc.getElementById('qmes-unified-mobile-css');
+  var script=doc.getElementById('qmes-unified-mobile-js');
+  var sidebarNode=doc.querySelector('.sidebar');
+  var menuItems=sidebarNode?sidebarNode.querySelectorAll('a,button,.menu').length:0;
+  var activeMenus=sidebarNode?sidebarNode.querySelectorAll('.active,[aria-current="page"]').length:0;
+  var scrollWidth=doc.documentElement.scrollWidth;
+  var viewport=doc.documentElement.clientWidth;
+  var cssLoaded=!!(style&&style.sheet);
+  var jsLoaded=!!(script&&script.dataset.qmesLoaded==='1');
+  var checks={
+   '메뉴 영역':sidebar,
+   '모바일 메뉴 버튼':menu,
+   '모바일 스타일 로딩':cssLoaded,
+   '모바일 스크립트 로딩':jsLoaded,
+   '메뉴 항목 존재':menuItems>0,
+   '모바일 화면 폭':viewport>0&&viewport<=768
+  };
+  var failures=Object.keys(checks).filter(function(key){return !checks[key];});
+  var qaStatus=failures.length?'needs-review':'ui-ready';
+  lastCheck={status:qaStatus,checks:checks,failures:failures,scope:'화면 로딩만 점검; 조회·저장·결재 기능은 미검증',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,cssLoaded:cssLoaded,jsLoaded:jsLoaded,menuItems:menuItems,activeMenus:activeMenus,tables:tables,scrollContainers:wrapped,viewportWidth:viewport,documentScrollWidth:scrollWidth,horizontalOverflow:scrollWidth>viewport+2};
+ }catch(e){lastCheck={status:'blocked',reason:String(e)};}
+}
+
 function show(msg){notice.textContent=msg;notice.style.display='block';}
 
 
@@ -24,8 +71,27 @@ frame.addEventListener('load',function(){
  try {
   var doc=frame.contentDocument;
   if(!doc||!doc.head)throw Error('no access');
-  // Preserve the full PC interface without injecting mobile layout overrides.
+  if(!doc.getElementById('qmes-unified-mobile-css')){
+   var link=doc.createElement('link');link.id='qmes-unified-mobile-css';
+   link.rel='stylesheet';link.href='/css/qmes-mobile-pc-unified-20261031.css?v=3';
+   link.onerror=function(){show('모바일 화면 스타일을 불러오지 못했습니다. 새로고침하세요.');};
+   doc.head.appendChild(link);
+  }
+  if(!doc.getElementById('qmes-unified-mobile-js')){
+   var script=doc.createElement('script');script.id='qmes-unified-mobile-js';
+   script.onload=function(){script.dataset.qmesLoaded='1';};
+   script.src='/js/qmes-mobile-pc-unified-20261031.js?v=4';
+   script.onerror=function(){show('모바일 메뉴 스크립트를 불러오지 못했습니다. 새로고침하세요.');};
+   doc.head.appendChild(script);
+  }
   notice.style.display='none';
+  setTimeout(function(){
+   check();
+   if(lastCheck.status==='needs-review'){
+    show('모바일 메뉴가 준비되지 않았습니다. 새로고침 후 다시 확인하세요.');
+   }
+   if(new URLSearchParams(location.search).get('qa')==='1')showQA();
+  },1600);
  } catch(e){show('통합 화면 스타일을 적용하지 못했습니다. 로그인 또는 접근 정책을 확인하세요.');}
 });
 })();
