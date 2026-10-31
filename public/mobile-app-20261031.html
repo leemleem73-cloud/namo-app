@@ -46,6 +46,8 @@ function activate(label){
 }
 function openBusinessItem(found,label){
  if(!found||!items().includes(found)){notice('QMES 메뉴가 갱신되었습니다. 다시 선택해 주세요.');return}
+ // A disabled PC menu must not appear as a successful mobile navigation.
+ if(found.matches(':disabled,[aria-disabled="true"]')||found.closest('[inert]')){notice('현재 계정에서 사용할 수 없는 메뉴입니다.');return}
  try{
   // Navigate using the exact current PC menu element; duplicate labels must not redirect.
   found.click();
