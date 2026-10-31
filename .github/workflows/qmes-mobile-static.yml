@@ -6,6 +6,7 @@ on:
       - 'public/mobile-app-20261031.html'
       - 'scripts/check-qmes-mobile-static.cjs'
       - '.github/workflows/qmes-mobile-static.yml'
+      - 'scripts/check-qmes-mobile-browser.cjs'
   workflow_dispatch:
 
 permissions:
@@ -24,3 +25,20 @@ jobs:
           node-version: '22'
       - name: Check mobile app syntax and required elements
         run: node scripts/check-qmes-mobile-static.cjs
+
+  mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright browser
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Smoke test mobile shell with mock PC menus
+        run: node scripts/check-qmes-mobile-browser.cjs
