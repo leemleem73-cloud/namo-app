@@ -82,12 +82,12 @@ const assert = require('node:assert/strict');
   });
   assert.equal(mounted.workOrder.listFound,true,'Mounted work-order table must be detected');
   assert.equal(mounted.workOrder.columnHeaders[0],'LOT','Work-order header must be captured');
-  assert.equal(mounted.workOrder.visibleRows,1,'Work-order row must be counted');
+  assert.equal(mounted.workOrder.visibleRows,0,'Rows in inactive PC modules must not be reported as visible');
   assert.ok(mounted.inspections.every(m=>m.screenMounted&&m.tableCount===1),'Mounted inspection tables must be detected');
   assert.equal(mounted.lotTrace.searchFound,true,'LOT search must be detected');
   assert.equal(mounted.lotTrace.stepCount,1,'LOT flow steps must be counted');
   assert.equal(mounted.approval.listFound,true,'Approval table must be detected');
-  assert.equal(mounted.approval.visibleRows,1,'Approval rows must be counted');
+  assert.equal(mounted.approval.visibleRows,0,'Rows in inactive approval module must not be reported as visible');
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
   // Retired or unavailable PC menus must not be advertised on the mobile home.
