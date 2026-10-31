@@ -1,0 +1,53 @@
+name: QMES mobile static validation
+
+on:
+  pull_request:
+    paths:
+      - 'public/mobile-app-20261031.html'
+      - 'public/index.html'
+      - 'scripts/check-qmes-mobile-static.cjs'
+      - '.github/workflows/qmes-mobile-static.yml'
+      - 'scripts/check-qmes-mobile-browser.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check mobile app syntax and required elements
+        run: node scripts/check-qmes-mobile-static.cjs
+
+  mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright browser
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Smoke test mobile shell and responsive layouts (mock PC, no backend)
+        run: node scripts/check-qmes-mobile-browser.cjs
+      - name: Upload isolated mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qmes-mobile-browser-screenshots
+          path: artifacts/qmes-mobile/*.png
+          if-no-files-found: ignore
+          retention-days: 7
