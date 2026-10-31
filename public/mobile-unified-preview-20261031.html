@@ -26,7 +26,7 @@ function check(){
   var sidebar=!!doc.querySelector('.sidebar');
   var menu=!!doc.getElementById('qmes-mobile-menu-toggle');
   var css=!!doc.getElementById('qmes-unified-mobile-css');
-  lastCheck={status:'loaded',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,tables:tables,scrollContainers:wrapped,viewportWidth:frame.clientWidth};
+  lastCheck={status:'loaded',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,cssLoaded:cssLoaded,jsLoaded:jsLoaded,menuItems:menuItems,activeMenus:activeMenus,tables:tables,scrollContainers:wrapped,viewportWidth:viewport,documentScrollWidth:scrollWidth,horizontalOverflow:scrollWidth>viewport+2};
  }catch(e){lastCheck={status:'blocked',reason:String(e)};}
 }
 
@@ -45,14 +45,15 @@ frame.addEventListener('load',function(){
   }
   if(!doc.getElementById('qmes-unified-mobile-js')){
    var script=doc.createElement('script');script.id='qmes-unified-mobile-js';
-   script.src='/js/qmes-mobile-pc-unified-20261031.js?v=3';
+   script.onload=function(){script.dataset.qmesLoaded='1';};
+   script.src='/js/qmes-mobile-pc-unified-20261031.js?v=4';
    script.onerror=function(){show('모바일 메뉴 스크립트를 불러오지 못했습니다. 새로고침하세요.');};
    doc.head.appendChild(script);
   }
   notice.style.display='none';
   setTimeout(function(){
    check();
-   if(lastCheck.status==='loaded'&&(!lastCheck.css||!lastCheck.menu)){
+   if(lastCheck.status==='loaded'&&(!lastCheck.cssLoaded||!lastCheck.jsLoaded||!lastCheck.menu)){
     show('모바일 메뉴가 준비되지 않았습니다. 새로고침 후 다시 확인하세요.');
    }
   },1600);
