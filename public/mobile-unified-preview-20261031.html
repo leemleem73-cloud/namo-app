@@ -5,7 +5,7 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,"Malgun Gothic",sans-serif;background:#f4f7fa}
 header{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#123c5a;color:white}
 header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#fff;color:#17354d;border-radius:7px;padding:9px;font-size:13px}
-#workspace{display:block;width:100%;height:100dvh;border:0;background:white}
+#workspace{display:block;width:1280px;height:100dvh;border:0;background:white;transform-origin:top left}
 #notice{position:absolute;top:8px;left:8px;right:8px;background:#fff4d9;border:1px solid #e7cb8d;border-radius:8px;padding:10px;font-size:12px;display:none}
 </style></head><body>
 
@@ -15,6 +15,8 @@ header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#
 (function(){
 'use strict';
 var frame=document.getElementById('workspace'),notice=document.getElementById('notice');
+function fit(){var w=Math.max(1,document.documentElement.clientWidth);var scale=Math.min(1,w/1280);frame.style.transform='scale('+scale+')';frame.style.height=(window.innerHeight/scale)+'px';}
+fit();window.addEventListener('resize',fit);
 function show(msg){notice.textContent=msg;notice.style.display='block';}
 
 
@@ -22,12 +24,7 @@ frame.addEventListener('load',function(){
  try {
   var doc=frame.contentDocument;
   if(!doc||!doc.head)throw Error('no access');
-  if(!doc.querySelector('#qmes-unified-mobile-css')){
-   var link=doc.createElement('link');link.id='qmes-unified-mobile-css';link.rel='stylesheet';link.href='/css/qmes-mobile-pc-unified-20261031.css';doc.head.appendChild(link);
-  }
-  if(!doc.querySelector('#qmes-unified-mobile-js')){
-   var script=doc.createElement('script');script.id='qmes-unified-mobile-js';script.src='/js/qmes-mobile-pc-unified-20261031.js';doc.head.appendChild(script);
-  }
+  // Preserve the full PC interface without injecting mobile layout overrides.
   notice.style.display='none';
  } catch(e){show('통합 화면 스타일을 적용하지 못했습니다. 로그인 또는 접근 정책을 확인하세요.');}
 });
