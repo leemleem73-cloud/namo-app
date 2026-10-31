@@ -42,3 +42,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Smoke test mobile shell with mock PC menus
         run: node scripts/check-qmes-mobile-browser.cjs
+      - name: Upload isolated mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qmes-mobile-browser-screenshots
+          path: artifacts/qmes-mobile/*.png
+          if-no-files-found: ignore
+          retention-days: 7
