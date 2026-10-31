@@ -1,0 +1,13 @@
+/* QMES mobile/PC shared-view enhancement. Opt-in; does not affect production until linked. */
+@media (max-width: 768px) {
+  html,body { max-width:100%; overflow-x:hidden; }
+  button,a,input,select,textarea { touch-action:manipulation; }
+  button,a,[role="button"] { min-height:40px; }
+  input,select,textarea { font-size:16px; max-width:100%; }
+  img,svg,canvas { max-width:100%; }
+  .content,main.content,#mainWorkspace,.workspace-body { min-width:0; max-width:100%; }
+  .report-sheet,.module-shell { max-width:100%; }
+  table { border-collapse:collapse; }
+  .qmes-mobile-table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+  .qmes-mobile-table-scroll > table { width:max-content; min-width:100%; }
+}
