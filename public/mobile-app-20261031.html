@@ -61,6 +61,20 @@ window.qmesMobileCheck=function(){
  result.note='읽기 전용 UI 진단입니다. 등록·수정·저장·결재의 실제 동작은 검증하지 않습니다.';
  return result;
 };
+// Mobile navigation smoke checks are read-only: no form submits or database writes.
+window.qmesMobileNavigationReport=function(){
+ var report={checkedAt:new Date().toISOString(),links:[],warnings:[]};
+ try{
+  var d=pc.contentDocument;if(!d||!d.body){report.warnings.push('PC 업무 화면이 아직 로딩되지 않았습니다.');return report}
+  Object.keys(aliases).forEach(function(key){var item=findItem(key);report.links.push({shortcut:key,found:!!item,pcPage:item?item.getAttribute('data-page'):null})});
+  var missing=report.links.filter(function(x){return !x.found});
+  if(missing.length)report.warnings.push('연결되지 않은 빠른 메뉴: '+missing.map(function(x){return x.shortcut}).join(', '));
+  var tables=Array.from(d.querySelectorAll('.workspace-body table,.module-shell table'));
+  report.tables={total:tables.length,scrollable:tables.filter(function(t){return !!t.closest('.qmes-mobile-table-scroll')}).length};
+  report.forms={inputs:d.querySelectorAll('.workspace-body input,.module-shell input').length,buttons:d.querySelectorAll('.workspace-body button,.module-shell button').length};
+ }catch(e){report.warnings.push(String(e))}
+ return report;
+};
 document.getElementById('search').onsubmit=function(e){e.preventDefault();var q=document.getElementById('query').value.trim();if(q)activate(q)};
 document.addEventListener('click',function(e){var b=e.target.closest('[data-find],[data-home],[data-open]');if(!b)return;if(b.dataset.find)activate(b.dataset.find);else if(b.dataset.home)home();else setMenu(true)});
 open.onclick=function(){setMenu(!document.body.classList.contains('menu-open'))};document.getElementById('shade').onclick=function(){setMenu(false)};document.getElementById('homebtn').onclick=home;document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});window.addEventListener('pageshow',function(){if(document.body.classList.contains('menu-open'))build()});
