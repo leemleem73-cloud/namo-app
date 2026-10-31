@@ -26,6 +26,11 @@ const assert = require('node:assert/strict');
   await page.waitForFunction(()=>window.qmesMobileCheck?.().checks.menusReady===true);
   const report=await page.evaluate(()=>window.qmesMobileCheck());
   assert.equal(report.checks.menusReady,true);
+  // Unsupported shortcuts must never open a blank work screen or invent a PC menu.
+  for(const missing of ['재고','생산실적']){
+   await page.locator('[data-find="'+missing+'"]').first().click();
+   assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('in-work')),false,missing+' unexpectedly opened work view');
+  }
   await page.locator('[data-find="작업지시"]').first().click();
   await page.locator('body.in-work').waitFor();
   assert.match(await page.locator('#worktitle').innerText(),/작업지시서/);
