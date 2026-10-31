@@ -50,7 +50,17 @@ function check(){
   var viewport=doc.documentElement.clientWidth;
   var cssLoaded=!!(style&&style.sheet);
   var jsLoaded=!!(script&&script.dataset.qmesLoaded==='1');
-  lastCheck={status:'loaded',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,cssLoaded:cssLoaded,jsLoaded:jsLoaded,menuItems:menuItems,activeMenus:activeMenus,tables:tables,scrollContainers:wrapped,viewportWidth:viewport,documentScrollWidth:scrollWidth,horizontalOverflow:scrollWidth>viewport+2};
+  var checks={
+   '메뉴 영역':sidebar,
+   '모바일 메뉴 버튼':menu,
+   '모바일 스타일 로딩':cssLoaded,
+   '모바일 스크립트 로딩':jsLoaded,
+   '메뉴 항목 존재':menuItems>0,
+   '모바일 화면 폭':viewport>0&&viewport<=768
+  };
+  var failures=Object.keys(checks).filter(function(key){return !checks[key];});
+  var qaStatus=failures.length?'needs-review':'ui-ready';
+  lastCheck={status:qaStatus,checks:checks,failures:failures,scope:'화면 로딩만 점검; 조회·저장·결재 기능은 미검증',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,cssLoaded:cssLoaded,jsLoaded:jsLoaded,menuItems:menuItems,activeMenus:activeMenus,tables:tables,scrollContainers:wrapped,viewportWidth:viewport,documentScrollWidth:scrollWidth,horizontalOverflow:scrollWidth>viewport+2};
  }catch(e){lastCheck={status:'blocked',reason:String(e)};}
 }
 
@@ -77,7 +87,7 @@ frame.addEventListener('load',function(){
   notice.style.display='none';
   setTimeout(function(){
    check();
-   if(lastCheck.status==='loaded'&&(!lastCheck.cssLoaded||!lastCheck.jsLoaded||!lastCheck.menu)){
+   if(lastCheck.status==='needs-review'){
     show('모바일 메뉴가 준비되지 않았습니다. 새로고침 후 다시 확인하세요.');
    }
    if(new URLSearchParams(location.search).get('qa')==='1')showQA();
