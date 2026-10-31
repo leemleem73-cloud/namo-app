@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'public/mobile-app-20261031.html'
+      - 'public/index.html'
       - 'scripts/check-qmes-mobile-static.cjs'
       - '.github/workflows/qmes-mobile-static.yml'
       - 'scripts/check-qmes-mobile-browser.cjs'
@@ -40,7 +41,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright
           npx playwright install --with-deps chromium
-      - name: Smoke test mobile shell with mock PC menus
+      - name: Smoke test mobile shell and responsive layouts (mock PC, no backend)
         run: node scripts/check-qmes-mobile-browser.cjs
       - name: Upload isolated mobile screenshots
         if: always()
