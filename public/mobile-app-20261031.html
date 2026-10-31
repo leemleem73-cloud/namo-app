@@ -106,7 +106,11 @@ window.qmesMobileBusinessReadiness=function(){
    var tables=section?Array.from(section.querySelectorAll('table')):[];
    report.modules.push({id:id,name:entry[1],menuFound:!!menu,containerFound:!!section,rendered:!!(section&&section.children.length),visible:!!(section&&section.getBoundingClientRect().width&&section.getBoundingClientRect().height),inputCount:inputs,tableCount:tables.length,visibleRowCount:section?Array.from(section.querySelectorAll('tbody tr')).filter(function(row){return !!row.getBoundingClientRect().height}).length:0,scrollableTables:tables.filter(function(t){return !!t.closest('.qmes-mobile-table-scroll,.ip-table-wrap,.lot-detail-box')}).length});
   });
-  report.modules.filter(function(m){return !m.menuFound||!m.containerFound}).forEach(function(m){report.warnings.push(m.name+' 메뉴 또는 화면 컨테이너를 찾지 못했습니다.')});
+  report.modules.forEach(function(m){
+   m.status=!m.menuFound?'menu-missing':!m.containerFound?'not-mounted':!m.rendered?'not-rendered':!m.visible?'hidden':'visible';
+   if(m.status==='menu-missing')report.warnings.push(m.name+' 메뉴를 찾지 못했습니다.');
+   if(m.status==='not-mounted')report.warnings.push(m.name+' 화면이 아직 생성되지 않았습니다. 해당 메뉴를 연 뒤 다시 검사하세요.');
+  });
   report.warnings.push('이 진단은 읽기 전용 DOM 검사이며 로그인 권한·실제 저장·조회·결재 성공을 증명하지 않습니다.');
  }catch(e){report.warnings.push(String(e))}
  return report;
