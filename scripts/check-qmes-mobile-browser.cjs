@@ -18,6 +18,24 @@ const assert = require('node:assert/strict');
   assert.ok(desktop.includes('신규 작업지시서 등록'),'Work order create action missing');
   assert.ok(desktop.includes('renderSavedWorkOrders()'),'Work order list rendering missing');
   assert.ok(desktop.includes('premiumInspectionShell(id,title,desc,cols)'),'Inspection rendering missing');
+  // Guard against false green results when PC modules are renamed or removed.
+  for(const [name,source,selector] of [
+   ['IQC/PQC/OQC','function incomingWorkOrderFrame','iqc-register-header'],
+   ['Inspection entry','inspection-entry','ie-grid'],
+   ['LOT trace','function lotTraceShell','lot-search-grid'],
+   ['Quality approval','function qualityApprovalShell','quality-approval-table']
+  ]){
+   assert.ok(desktop.includes(source),name+' PC business source missing: '+source);
+   assert.ok(desktop.includes(selector),name+' PC UI selector missing: '+selector);
+  }
+  for(const [name,selector] of [
+   ['Work-order material input','#workMaterialTable'],
+   ['Inspection filters','.ip-filter-row'],
+   ['Inspection entry','.ie-grid'],
+   ['LOT trace','.lot-search-grid'],
+   ['Quality approval','.quality-approval-table']
+  ])assert.ok(mobile.includes(selector),name+' mobile adaptation missing: '+selector);
+
   const sidebar=desktop.match(/<aside class="sidebar"[^>]*>[\s\S]*?<\/aside>/);
   assert.ok(sidebar,'Real PC sidebar markup missing');
   const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body" style="padding:16px;background:#fff"><h2 id="mock-work-title">작업지시서 목록 (모의 화면)</h2><form id="mock-business-form"><label for="mock-lot">LOT 번호</label><input id="mock-lot" name="lot" type="text"><button id="mock-save" type="submit">저장</button></form><table id="mock-business-table"><tr><td>목록</td><td>LOT</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page);document.getElementById("mock-business-form").addEventListener("submit",e=>{e.preventDefault();document.body.dataset.savedLot=document.getElementById("mock-lot").value})</'+'script></body></html>';
