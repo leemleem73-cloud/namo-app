@@ -15,6 +15,20 @@ header strong{flex:1;font-size:15px}button{border:1px solid #b8c9d7;background:#
 (function(){
 'use strict';
 var frame=document.getElementById('workspace'),notice=document.getElementById('notice');
+var lastCheck={status:'loading',timestamp:new Date().toISOString()};
+window.qmesMobileDiagnostics=function(){return Object.assign({},lastCheck);};
+function check(){
+ try{
+  var doc=frame.contentDocument;
+  if(!doc||!doc.body){lastCheck={status:'not-ready'};return;}
+  var tables=doc.querySelectorAll('.workspace-body table,.module-shell table,.content table').length;
+  var wrapped=doc.querySelectorAll('.qmes-mobile-table-scroll').length;
+  var sidebar=!!doc.querySelector('.sidebar');
+  var menu=!!doc.getElementById('qmes-mobile-menu-toggle');
+  var css=!!doc.getElementById('qmes-unified-mobile-css');
+  lastCheck={status:'loaded',timestamp:new Date().toISOString(),sidebar:sidebar,menu:menu,css:css,tables:tables,scrollContainers:wrapped,viewportWidth:frame.clientWidth};
+ }catch(e){lastCheck={status:'blocked',reason:String(e)};}
+}
 
 function show(msg){notice.textContent=msg;notice.style.display='block';}
 
@@ -32,6 +46,7 @@ frame.addEventListener('load',function(){
    script.src='/js/qmes-mobile-pc-unified-20261031.js';doc.head.appendChild(script);
   }
   notice.style.display='none';
+  setTimeout(check,900);
  } catch(e){show('통합 화면 스타일을 적용하지 못했습니다. 로그인 또는 접근 정책을 확인하세요.');}
 });
 })();
