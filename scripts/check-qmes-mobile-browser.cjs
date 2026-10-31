@@ -181,6 +181,19 @@ const assert = require('node:assert/strict');
   assert.ok(workForm.createHeight>=44,'Work order create button too short');
   assert.ok(workForm.saveHeight>=44,'Work order save button too short');
   assert.ok(workForm.materialWidth>0,'Work order material table hidden');
+  // Work-order detail modal must override the real PC 760px minimum width.
+  const detailMetrics=await page.frameLocator('#pc').locator('body').evaluate(body=>{
+   const modal=document.createElement('div');modal.className='modal work-mode';modal.style.cssText='min-width:760px;width:1120px;position:relative;display:block;';
+   modal.innerHTML='<div class="work-detail-doc"><input aria-label="상세 입력" value="LOT-TEST"><button type="button">확인</button><table><tbody><tr><td>원료 LOT</td><td>시험 LOT</td></tr></tbody></table></div>';
+   body.appendChild(modal);
+   const input=modal.querySelector('input'),button=modal.querySelector('button'),table=modal.querySelector('table');
+   const result={modalWidth:modal.getBoundingClientRect().width,viewport:innerWidth,minWidth:getComputedStyle(modal).minWidth,inputFont:parseFloat(getComputedStyle(input).fontSize),buttonHeight:button.getBoundingClientRect().height,tableScrollable:getComputedStyle(table).overflowX};
+   modal.remove();return result;
+  });
+  assert.ok(detailMetrics.modalWidth<=detailMetrics.viewport,'Work-order detail modal exceeds mobile viewport: '+JSON.stringify(detailMetrics));
+  assert.ok(detailMetrics.inputFont>=16,'Work-order detail input font too small: '+JSON.stringify(detailMetrics));
+  assert.ok(detailMetrics.buttonHeight>=44,'Work-order detail button too short: '+JSON.stringify(detailMetrics));
+  assert.equal(detailMetrics.tableScrollable,'auto','Work-order detail table cannot scroll horizontally');
   const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
   assert.ok(layout.documentWidth<=layout.viewport+2,'Mobile shell horizontal overflow: '+JSON.stringify(layout));
   // Verify a narrower phone without changing any production route or data.
