@@ -90,6 +90,19 @@ const assert = require('node:assert/strict');
   await page.locator('#backhome').click();
   await page.locator('#home').waitFor({state:'visible'});
   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('in-work')),false);
+  // Drawer navigation must preserve real PC data-page targets for LOT trace and approval.
+  for(const [label,expected] of [['LOT 추적','lotTrace'],['전자결재','approval']]){
+   await page.locator('[data-open="1"]').first().click();
+   await page.locator('body.menu-open').waitFor();
+   const entry=page.locator('#dynamic-menu button.nav').filter({hasText:label}).first();
+   await entry.waitFor({state:'visible'});
+   await entry.click();
+   await page.locator('body.in-work').waitFor();
+   assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-active'),expected,label+' drawer navigation failed');
+   assert.equal(await page.locator('body').evaluate(e=>e.classList.contains('menu-open')),false,label+' drawer remained open');
+   await page.locator('#backhome').click();
+   await page.locator('#home').waitFor({state:'visible'});
+  }
   // The navigation test already returned home; avoid clicking a hidden work-only button.
   await page.locator('#home').waitFor({state:'visible'});
   fs.mkdirSync('artifacts/qmes-mobile',{recursive:true});
