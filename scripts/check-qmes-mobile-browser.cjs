@@ -16,7 +16,7 @@ const assert = require('node:assert/strict');
   }
   const sidebar=desktop.match(/<aside class="sidebar"[^>]*>[\s\S]*?<\/aside>/);
   assert.ok(sidebar,'Real PC sidebar markup missing');
-  const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body" style="padding:16px;background:#fff"><h2 id="mock-work-title">작업지시서 목록 (모의 화면)</h2><form id="mock-business-form"><label for="mock-lot">LOT 번호</label><input id="mock-lot" name="lot" type="text"><button id="mock-save" type="submit">저장</button></form><table id="mock-business-table"><tr><td>목록</td><td>LOT</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page)</'+'script></body></html>';
+  const pc='<!doctype html><html><head></head><body>'+sidebar[0]+'<main class="workspace-body" style="padding:16px;background:#fff"><h2 id="mock-work-title">작업지시서 목록 (모의 화면)</h2><form id="mock-business-form"><label for="mock-lot">LOT 번호</label><input id="mock-lot" name="lot" type="text"><button id="mock-save" type="submit">저장</button></form><table id="mock-business-table"><tr><td>목록</td><td>LOT</td></tr></table></main><script>document.querySelectorAll(".sidebar .menu[data-page]").forEach(e=>e.onclick=()=>document.body.dataset.active=e.dataset.page);document.getElementById("mock-business-form").addEventListener("submit",e=>{e.preventDefault();document.body.dataset.savedLot=document.getElementById("mock-lot").value})</'+'script></body></html>';
   for(const label of ['작업지시서','수입검사 IQC','공정검사 PQC','출하검사 OQC']){
    assert.ok(sidebar[0].includes(label),'Real PC menu missing: '+label);
   }
@@ -83,6 +83,8 @@ const assert = require('node:assert/strict');
   const formMetrics=await lot.evaluate(el=>({fontSize:parseFloat(getComputedStyle(el).fontSize),width:el.getBoundingClientRect().width}));
   assert.ok(formMetrics.fontSize>=16,'Mobile input font is too small: '+JSON.stringify(formMetrics));
   assert.ok(formMetrics.width>0,'Mobile input is not laid out');
+  await page.frameLocator('#pc').locator('#mock-save').click();
+  assert.equal(await page.frameLocator('#pc').locator('body').getAttribute('data-saved-lot'),'MOBILE-TEST-LOT','Mock mobile save action did not receive entered LOT');
   await page.frameLocator('#pc').locator('.qmes-mobile-table-scroll').first().waitFor({state:'attached'});
   await page.screenshot({path:path.join('artifacts/qmes-mobile','workorder-390.png'),fullPage:true});
   const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
