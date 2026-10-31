@@ -164,6 +164,19 @@ const assert = require('node:assert/strict');
   assert.ok(workForm.materialWidth>0,'Work order material table hidden');
   const layout=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
   assert.ok(layout.documentWidth<=layout.viewport+2,'Mobile shell horizontal overflow: '+JSON.stringify(layout));
+  // Verify a narrower phone without changing any production route or data.
+  await page.setViewportSize({width:320,height:700});
+  const narrow=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,workVisible:document.body.classList.contains('in-work')}));
+  assert.equal(narrow.workVisible,true,'Work-order view lost after narrow viewport resize');
+  assert.ok(narrow.documentWidth<=narrow.viewport+2,'320px phone horizontal overflow: '+JSON.stringify(narrow));
+  const narrowInput=await page.frameLocator('#pc').locator('#mock-lot').evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),width:el.getBoundingClientRect().width}));
+  assert.ok(narrowInput.font>=16&&narrowInput.width>0,'320px work input unusable: '+JSON.stringify(narrowInput));
+  await page.locator('#backhome').click();
+  await page.locator('#home').waitFor({state:'visible'});
+  const narrowHome=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth}));
+  assert.ok(narrowHome.documentWidth<=narrowHome.viewport+2,'320px mobile home horizontal overflow: '+JSON.stringify(narrowHome));
+  await page.screenshot({path:path.join('artifacts/qmes-mobile','home-320.png'),fullPage:true});
+
   console.log('PASS: 390px mobile shell, real PC sidebar work order/IQC/PQC/OQC navigation, menu and home (mock business data only)');
  } finally {await browser.close()}
 })().catch(err=>{console.error(err);process.exitCode=1});
