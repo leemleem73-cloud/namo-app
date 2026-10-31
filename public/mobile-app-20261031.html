@@ -95,6 +95,22 @@ window.qmesMobileNavigationReport=function(){
  }catch(e){report.warnings.push(String(e))}
  return report;
 };
+// Read-only diagnostics for manual verification against the REAL embedded QMES page.
+window.qmesMobileBusinessReadiness=function(){
+ var report={checkedAt:new Date().toISOString(),source:'embedded PC QMES DOM (read-only)',modules:[],warnings:[]};
+ try{
+  var d=pc.contentDocument;if(!d||!d.body){report.warnings.push('PC QMES 화면에 접근할 수 없습니다. 로그인/로딩 상태를 확인해 주세요.');return report}
+  [['work','작업지시서'],['incoming','수입검사'],['process','공정검사'],['outgoing','출하검사'],['lotTrace','LOT 추적'],['approval','전자결재']].forEach(function(entry){
+   var id=entry[0],section=d.getElementById(id),menu=d.querySelector('.sidebar .menu[data-page="'+id+'"]');
+   var inputs=section?section.querySelectorAll('input,select,textarea').length:0;
+   var tables=section?Array.from(section.querySelectorAll('table')):[];
+   report.modules.push({id:id,name:entry[1],menuFound:!!menu,containerFound:!!section,rendered:!!(section&&section.children.length),inputCount:inputs,tableCount:tables.length,scrollableTables:tables.filter(function(t){return !!t.closest('.qmes-mobile-table-scroll,.ip-table-wrap,.lot-detail-box')}).length});
+  });
+  report.modules.filter(function(m){return !m.menuFound||!m.containerFound}).forEach(function(m){report.warnings.push(m.name+' 메뉴 또는 화면 컨테이너를 찾지 못했습니다.')});
+  report.warnings.push('이 진단은 읽기 전용 DOM 검사이며 로그인 권한·실제 저장·조회·결재 성공을 증명하지 않습니다.');
+ }catch(e){report.warnings.push(String(e))}
+ return report;
+};
 // The desktop document may already be ready before this script finishes.
 try{if(pc.contentDocument&&pc.contentDocument.readyState==='complete')document.getElementById('workloading').hidden=true}catch(ignore){}
 document.getElementById('search').onsubmit=function(e){e.preventDefault();var q=document.getElementById('query').value.trim();if(q)activate(q)};
