@@ -55,7 +55,7 @@ function openBusinessItem(found,label){
   document.body.classList.add('in-work');
   document.getElementById('workloading').hidden=true;
   setMenu(false);
-  document.getElementById('work').scrollTop=0;try{pc.contentWindow.scrollTo(0,0)}catch(ignore){}
+  document.getElementById('work').scrollTop=0;try{pc.contentWindow.scrollTo(0,0);var pd=pc.contentDocument;if(pd){pd.documentElement.scrollLeft=0;pd.body.scrollLeft=0;['#main','.content','.workspace-body','.module-shell','.module-page','.page-content'].forEach(function(sel){pd.querySelectorAll(sel).forEach(function(el){el.scrollLeft=0})})}}catch(ignore){}
  }catch(e){notice('업무 화면 연결을 확인해 주세요')}
 }
 function build(){var all=items(),seen=new Set();menu.replaceChildren();all.forEach(function(el){var label=clean(el);if(!label||seen.has(label)||label.length>34)return;seen.add(label);var btn=document.createElement('button');btn.className='nav';btn.textContent=label;btn.disabled=el.matches(':disabled,[aria-disabled="true"]')||!!el.closest('[inert]');btn.onclick=function(){var page=el.getAttribute('data-page')||el.getAttribute('data-tab');var current=page?items().find(function(item){return (item.getAttribute('data-page')||item.getAttribute('data-tab'))===page}):items().find(function(item){return item===el||(el.getAttribute('href')&&item.getAttribute('href')===el.getAttribute('href'))});if(!current){build();notice('메뉴가 갱신되었습니다. 다시 선택해 주세요.');return}openBusinessItem(current,clean(current))};menu.appendChild(btn)});if(!seen.size){var msg=document.createElement('p');msg.style.padding='14px';msg.textContent='업무 메뉴를 불러오는 중입니다.';menu.appendChild(msg)}}
