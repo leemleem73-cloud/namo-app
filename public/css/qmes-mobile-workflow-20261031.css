@@ -53,3 +53,33 @@
    min-width:44px!important
  }
 }
+
+/* Mobile iframe root correction: PC's 76px grid sidebar and 178px content
+   padding remained active even after hiding the sidebar. */
+@media screen and (max-width:768px){
+ html body #app.app,
+ html body #app.app.nav-open{
+   display:block!important;width:100%!important;min-width:0!important;
+   max-width:100%!important;height:auto!important;grid-template-columns:minmax(0,1fr)!important;
+   grid-template-rows:auto!important;overflow-x:clip!important
+ }
+ html body #app.app>header.topbar,
+ html body #app.app>aside.sidebar{display:none!important}
+ html body #app.app>main.content{
+   display:block!important;grid-column:1!important;grid-row:1!important;
+   position:relative!important;inset:auto!important;transform:none!important;
+   width:100%!important;max-width:100%!important;min-width:0!important;
+   margin:0!important;padding:0 10px 20px!important;
+   overflow-x:clip!important;box-sizing:border-box!important
+ }
+ html body #app.app>main.content>.module-page.active{
+   width:100%!important;max-width:100%!important;min-width:0!important;
+   margin:0!important;box-sizing:border-box!important
+ }
+ html body #app.app>main.content>#main.namo-portal-shell{
+   padding:0!important;margin:0!important;width:100%!important
+ }
+ html body #app.app>main.content>#main.namo-portal-shell iframe{
+   width:100%!important;max-width:100%!important;min-width:0!important
+ }
+}
