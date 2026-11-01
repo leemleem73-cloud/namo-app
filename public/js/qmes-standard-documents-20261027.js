@@ -81,6 +81,10 @@ function render(){
   const keys=['check','no','documentNo','name','category','revision','revisionDate','department','status','attachment','note','manage'];
   ['',String(index+1),record.documentNo,record.name,record.category,record.revision,record.revisionDate,record.department,record.status,'첨부 없음',record.note,''].forEach((value,i)=>{const td=document.createElement('td');td.dataset.standardCol=keys[i];td.textContent=value||'';row.append(td);});
   row.cells[3].className='std-document-name';
+  row.cells[3].style.setProperty('color','#0874d1','important');
+  row.cells[3].style.setProperty('font-weight','600','important');
+  row.cells[3].style.setProperty('text-decoration','underline','important');
+  row.cells[3].style.setProperty('text-underline-offset','2px','important');
   row.cells[3].title=record.name||'';
   if(record.attachments?.length){
    const cell=row.cells[9];cell.replaceChildren();
@@ -410,3 +414,5 @@ install();
 (()=>{const style=document.createElement('style');style.textContent=".std-sheet-select{width:100%;height:30px;flex-shrink:0;border:1px solid #cbd8e6;background:#fff;font:12px inherit}.std-sheet-scroll{width:100%;min-height:0;flex:1;overflow:auto;background:#fff;align-self:stretch}.std-sheet-scroll table{border-collapse:collapse;width:max-content;min-width:100%;font:11px Arial,\"Malgun Gothic\",sans-serif;color:#243b53}.std-sheet-scroll td{border:1px solid #d3dce7;min-width:65px;max-width:400px;padding:5px 7px;white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:middle}" ;document.head.append(style);})();
 (()=>{const style=document.createElement("style");style.textContent=".std-sheet-scroll{position:relative}.std-sheet-fit{align-self:flex-end;flex-shrink:0;height:25px;padding:0 9px;border:1px solid #cbd8e6;border-radius:4px;background:#fff;color:#24557f;font-size:11px;cursor:pointer}";document.head.append(style);})();
 (()=>{const style=document.createElement("style");style.textContent=".std-office-document-viewer{width:100%;flex:1;min-height:0;border:0;align-self:stretch;background:#edf2f7}.std-text-document{width:100%;height:100%;box-sizing:border-box;white-space:pre-wrap;overflow:auto;background:#fff;padding:16px;color:#243b53;font:12px/1.6 Arial,\"Malgun Gothic\",sans-serif}";document.head.append(style);})();
+/* Match the work-order number link's color and weight. */
+(function(){const style=document.createElement('style');style.textContent='html body #standard td.std-document-name,html body #standard td.std-document-name *{color:#0874d1!important;font-weight:600!important;text-decoration:underline!important;text-underline-offset:2px!important;cursor:pointer!important}';document.head.append(style);})();
