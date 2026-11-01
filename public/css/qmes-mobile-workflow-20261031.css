@@ -26,3 +26,30 @@
  .module-page.active .form-row,.module-page.active .form-grid,.module-page.active .field-row{max-width:100%!important;min-width:0!important}
  .module-page.active input,.module-page.active select,.module-page.active textarea{max-width:100%!important;box-sizing:border-box!important}
 }
+
+/* 2026-11-01: keep QMES inspection/work-order columns readable on phones.
+   The table scrolls inside its own panel instead of squeezing every column. */
+@media screen and (max-width:768px){
+ #work .iqc-work-frame,#incoming .iqc-work-frame,#process .iqc-work-frame,#outgoing .iqc-work-frame,
+ #work .iqc-query-frame,#incoming .iqc-query-frame,#process .iqc-query-frame,#outgoing .iqc-query-frame{
+   min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-filter-row,.ip-filter-row,.iqc-query-row,.iqc-query-fields){
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;min-width:0!important;max-width:100%!important
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-filter-row,.ip-filter-row,.iqc-query-row,.iqc-query-fields) > *{
+   min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-table-wrap,.iqc-table-scroll,.ip-table-wrap,.table-wrap,.table-responsive,.qmes-mobile-table-scroll){
+   display:block!important;max-width:100%!important;width:100%!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-table-wrap,.iqc-table-scroll,.ip-table-wrap,.table-wrap,.table-responsive,.qmes-mobile-table-scroll) table{
+   width:max-content!important;min-width:100%!important;max-width:none!important;table-layout:auto!important
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-table-wrap,.iqc-table-scroll,.ip-table-wrap,.table-wrap,.table-responsive,.qmes-mobile-table-scroll) :is(th,td){
+   min-width:78px!important;width:auto!important;white-space:nowrap!important;overflow:visible!important;word-break:normal!important
+ }
+ :is(#work,#incoming,#process,#outgoing) :is(.iqc-table-wrap,.iqc-table-scroll,.ip-table-wrap,.table-wrap,.table-responsive,.qmes-mobile-table-scroll) :is(th,td):first-child{
+   min-width:44px!important
+ }
+}
