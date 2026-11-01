@@ -216,12 +216,18 @@ function inspectionFor(rows,lot,work){
   return '대기';
 }
 async function read(url){
-  try{
-    var r=await fetch(url,{credentials:'same-origin',cache:'no-store'});
-    var j=await r.json();
-    if(!r.ok||j.success===false)return [];
-    return Array.isArray(j.data)?j.data:Array.isArray(j)?j:[];
-  }catch(_){return []}
+  for(var attempt=0;attempt<3;attempt++){
+    try{
+      var r=await fetch(url,{credentials:'same-origin',cache:'no-store'});
+      if(!r.ok){var error=new Error('대시보드 조회 실패');error.status=r.status;throw error;}
+      var j=await r.json();
+      if(j.success===false)throw new Error('대시보드 조회 실패');
+      return Array.isArray(j.data)?j.data:Array.isArray(j)?j:[];
+    }catch(error){
+      if(attempt===2||error.status&&![502,503,504].includes(error.status))throw error;
+      await new Promise(function(resolve){setTimeout(resolve,attempt?1200:500);});
+    }
+  }
 }
 function flattenSyncRecords(records){
   var rows=[];
@@ -668,13 +674,46 @@ async function loadDashboard(){
   document.getElementById('dashRow4').innerHTML=
     '<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>가동 / 계획정지 / 비계획정지</span></div><div class="body"></div></div>';
   renderEquipmentUtil('all');
-  document.getElementById('dashRow4').addEventListener('click',function(e){
+  document.getElementById('dashRow4').onclick=function(e){
     var b=e.target.closest&&e.target.closest('[data-eq-month]');
     if(!b)return;
     renderEquipmentUtil(b.getAttribute('data-eq-month'));
-  });
+  };
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadDashboard);else loadDashboard();
+var dashboardRefreshRunning=false,dashboardRefreshWanted=false;
+function dashboardStatus(message,failed){
+  var status=document.getElementById('dashboardLoadStatus');
+  if(!status){status=document.createElement('div');status.id='dashboardLoadStatus';status.setAttribute('role','status');status.style.cssText='padding:10px 14px;margin:0 0 12px;border:1px solid #d8e5ef;border-radius:8px;background:#fff;color:#476880;font:13px sans-serif';document.querySelector('.wrap').prepend(status);}
+  status.hidden=!message;status.textContent=message||'';
+  if(failed){var retry=document.createElement('button');retry.type='button';retry.textContent='다시 불러오기';retry.style.cssText='margin-left:12px;padding:4px 8px;border:1px solid #cbdce9;border-radius:4px;background:white;color:#315775;cursor:pointer';retry.onclick=refreshDashboard;status.append(retry);}
+}
+function dashboardAuthGate(){
+  try{return window.parent!==window?window.parent.qmesAuthDataReady:window.qmesAuthDataReady;}catch(_){return null;}
+}
+async function refreshDashboard(){
+  dashboardRefreshWanted=true;
+  if(dashboardRefreshRunning)return;
+  dashboardRefreshRunning=true;
+  try{
+    while(dashboardRefreshWanted){
+      dashboardRefreshWanted=false;
+      dashboardStatus('대시보드 데이터를 불러오는 중입니다.',false);
+      try{
+        var gate=dashboardAuthGate();
+        if(gate)await gate.wait();
+        // Login confirmation and the authenticated event describe the same refresh.
+        dashboardRefreshWanted=false;
+        await loadDashboard();
+        dashboardStatus('',false);
+      }catch(error){
+        console.warn('[QMES dashboard]',error);
+        dashboardStatus(error.status===401?'로그인 확인 후 대시보드를 다시 불러옵니다.':'대시보드 데이터를 불러오지 못했습니다.',true);
+      }
+    }
+  }finally{dashboardRefreshRunning=false;}
+}
+try{if(window.parent!==window)window.parent.addEventListener('qmes-authenticated',refreshDashboard);else window.addEventListener('qmes-authenticated',refreshDashboard);}catch(_){}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refreshDashboard,{once:true});else refreshDashboard();
 })();
 </script>
 
