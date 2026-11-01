@@ -130,3 +130,51 @@
    max-width:100%!important;overflow-x:auto!important;overscroll-behavior-x:contain!important
  }
 }
+
+/* Mobile-only shared structural rules. Keep desktop table cells readable and
+   move the horizontal scroll to the nearest generated list wrapper. */
+@media screen and (max-width:768px){
+ html body #app.app>main.content .qmes-mobile-table-scroll{
+   display:block!important;position:relative!important;width:100%!important;
+   max-width:100%!important;min-width:0!important;overflow-x:auto!important;
+   overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;
+   overscroll-behavior-x:contain!important
+ }
+ html body #app.app>main.content .qmes-mobile-table-scroll>table{
+   display:table!important;table-layout:auto!important;
+   width:max-content!important;min-width:100%!important;max-width:none!important;
+   margin:0!important
+ }
+ html body #app.app>main.content .qmes-mobile-table-scroll>table :is(th,td){
+   display:table-cell!important;position:relative!important;
+   width:auto!important;min-width:105px!important;max-width:none!important;
+   white-space:nowrap!important;word-break:normal!important;
+   overflow:visible!important;text-overflow:clip!important;
+   box-sizing:border-box!important
+ }
+ html body #app.app>main.content .qmes-mobile-table-scroll>table tr{
+   display:table-row!important
+ }
+ html body #app.app>main.content .qmes-mobile-table-scroll>table :is(th,td):first-child{
+   min-width:42px!important
+ }
+ html body #app.app>main.content .qmes-mobile-table-scroll>table :is(th,td):nth-child(2){
+   min-width:60px!important
+ }
+ html body #app.app>main.content .qmes-mobile-filter-stack{
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+   width:100%!important;max-width:100%!important;min-width:0!important;
+   gap:10px!important;align-items:stretch!important
+ }
+ html body #app.app>main.content .qmes-mobile-filter-stack>*{
+   position:relative!important;inset:auto!important;transform:none!important;
+   margin:0!important;width:100%!important;min-width:0!important;max-width:100%!important;
+   box-sizing:border-box!important
+ }
+ html body #app.app>main.content .qmes-mobile-filter-stack :is(input:not([type=checkbox]):not([type=radio]),select){
+   width:100%!important;max-width:100%!important;min-width:0!important
+ }
+ html body #app.app>main.content .qmes-mobile-filter-stack label{
+   white-space:normal!important
+ }
+}
