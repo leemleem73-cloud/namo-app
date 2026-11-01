@@ -83,3 +83,50 @@
    width:100%!important;max-width:100%!important;min-width:0!important
  }
 }
+
+/* 2026-11-01: real-device screenshots: dashboard cards, work-order filters,
+   inspection tables and process diagram must not inherit PC column widths. */
+@media screen and (max-width:768px){
+ #dashboard :is(.dashboard-grid,.dashboard-cards,.kpi-grid,.stats-grid,.summary-grid),
+ #main :is(.dashboard-grid,.dashboard-cards,.kpi-grid,.stats-grid,.summary-grid){
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+   width:100%!important;max-width:100%!important;min-width:0!important;gap:12px!important
+ }
+ #dashboard :is(.dashboard-grid,.dashboard-cards,.kpi-grid,.stats-grid,.summary-grid)>*,
+ #main :is(.dashboard-grid,.dashboard-cards,.kpi-grid,.stats-grid,.summary-grid)>*{
+   grid-column:auto!important;width:100%!important;min-width:0!important;max-width:100%!important
+ }
+ #work :is(.search-row,.search-grid,.filter-row,.filter-grid,.filters,.search-fields,.work-search-grid),
+ #work :is(.search-row,.search-grid,.filter-row,.filter-grid,.filters,.search-fields,.work-search-grid)>*{
+   min-width:0!important;max-width:100%!important
+ }
+ #work :is(.search-row,.search-grid,.filter-row,.filter-grid,.filters,.search-fields,.work-search-grid){
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+ }
+ #work :is(.search-row,.search-grid,.filter-row,.filter-grid,.filters,.search-fields,.work-search-grid) :is(input,select,textarea){
+   width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+ }
+ :is(#work,#incoming,#process,#outgoing,#purchase) .qmes-mobile-overflow{
+   width:100%!important;max-width:100%!important;min-width:0!important;
+   display:block!important;overflow-x:auto!important;overflow-y:hidden!important;
+   -webkit-overflow-scrolling:touch!important;overscroll-behavior-x:contain
+ }
+ :is(#work,#incoming,#process,#outgoing,#purchase) .qmes-mobile-overflow>table{
+   width:max-content!important;min-width:100%!important;max-width:none!important;
+   table-layout:auto!important;border-collapse:collapse!important
+ }
+ :is(#work,#incoming,#process,#outgoing,#purchase) .qmes-mobile-overflow>table :is(th,td){
+   box-sizing:border-box!important;min-width:110px!important;max-width:none!important;
+   width:auto!important;white-space:nowrap!important;word-break:normal!important;
+   overflow:visible!important;text-overflow:clip!important
+ }
+ :is(#work,#incoming,#process,#outgoing,#purchase) .qmes-mobile-overflow>table :is(th,td):first-child{
+   min-width:48px!important
+ }
+ :is(#work,#incoming,#process,#outgoing,#purchase) .qmes-mobile-overflow>table :is(th,td):nth-child(2){
+   min-width:65px!important
+ }
+ #process :is(.process-map,.process-flow,.process-diagram,.flowchart,.process-map-wrap){
+   max-width:100%!important;overflow-x:auto!important;overscroll-behavior-x:contain!important
+ }
+}
