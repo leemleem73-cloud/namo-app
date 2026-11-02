@@ -204,8 +204,8 @@ async function restore(){
   }
   window.scrollTo(0,saved.scroll||0);const content=document.querySelector('main.content');if(content)content.scrollTop=saved.contentScroll||0;
  }catch(error){console.warn('[QMES last view]',error);if(typeof toast==='function')toast('마지막 화면을 복원하지 못했습니다. 목록에서 문서를 다시 선택해 주세요.');}
- finally{restoring=false;bootPending=false;schedule();}
+ finally{restoring=false;bootPending=false;schedule();window.qmesFormDrafts?.rescan();}
 }
-window.qmesLastView={remember};
+window.qmesLastView={remember,isRestoring:()=>restoring||bootPending};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',restore,{once:true});else restore();
 })();
