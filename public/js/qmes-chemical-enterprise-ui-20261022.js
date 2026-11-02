@@ -122,8 +122,8 @@
     #spcTrend .spc-graph-mode[aria-pressed="true"]{background:#eef6ff;border-color:#87b9eb;color:#126fc0}
     #spcTrend .spc-source-values{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;padding:12px 16px;color:#536c86;font-size:12px}
     #spcTrend .spc-source-values strong{margin-left:8px;color:#244362}
-    #spcTrend .qce-chart-wrap{box-sizing:border-box;width:100%;max-width:1160px;height:auto;margin:0 auto;padding:12px;overflow-x:auto;overflow-y:hidden}
-    #spcTrend .qce-svg{display:block;width:100%;min-width:600px;height:auto;aspect-ratio:10 / 3;margin:0 auto}
+    #spcTrend .qce-chart-wrap{box-sizing:border-box;width:100%;max-width:none;height:326px;margin:0;padding:12px;overflow:hidden}
+    #spcTrend .qce-svg{display:block;width:100%;min-width:0;height:300px;aspect-ratio:auto;margin:0}
     #spcTrend .qce-svg text{font-family:inherit;font-size:11px}
     #spcTrend .spc-row-selected td{background:#eef6ff!important}
     #spcTrend .spc-judge{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:27px;padding:0 11px;border-radius:999px;font-size:10.5px;font-weight:900;border:1px solid transparent}
@@ -507,9 +507,9 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       return {date:g.date,lot:[...g.lots].join(', '),value:avg,count:g.values.length,judge};
     }).filter(x=>Number.isFinite(x.value)).sort((a,b)=>a.date.localeCompare(b.date));
   }
-  function trendSvg(values,item){
+  function trendSvg(values,item,width=1000){
     const data=values.slice(-60);if(!data.length)return '<div class="qce-empty">제품명을 클릭하면 날짜별 Trend가 표시됩니다.</div>';
-    const w=1000,h=300,p=46,nums=data.map(x=>x.value),spec=specFor(item);
+    const w=Math.max(320,Math.round(Number(width)||1000)),h=300,p=46,nums=data.map(x=>x.value),spec=specFor(item);
     let min=Math.min(...nums),max=Math.max(...nums);
     if(spec.lsl!=null)min=Math.min(min,spec.lsl);if(spec.usl!=null)max=Math.max(max,spec.usl);
     const span=Math.max(1,max-min);min-=span*.08;max+=span*.08;
@@ -544,6 +544,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   }
   function paintSpc(oqc){
     const root=document.getElementById('spcTrend');if(!root)return;
+    root._spcChartObserver?.disconnect();
     try{
       const all=flattenMeasurements(oqc,'OQC');
       const allowed=['입도(Dmax)','입도','점도','고형분','수분율','수분','접착력'];
@@ -612,6 +613,21 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         trendPanel+
       '</div></div>';
 
+      // Match SVG coordinates to the actual plot width rather than stretching its shapes.
+      const chartWrap=root.querySelector('.qce-chart-wrap');
+      if(chartWrap&&chosen){
+        let lastWidth=0;
+        const drawChart=()=>{
+          const width=Math.max(320,Math.round(chartWrap.clientWidth-24));
+          if(width===lastWidth)return;
+          lastWidth=width;chartWrap.innerHTML=trendSvg(daily,selected,width);
+        };
+        drawChart();
+        if(typeof ResizeObserver!=='undefined'){
+          root._spcChartObserver=new ResizeObserver(drawChart);
+          root._spcChartObserver.observe(chartWrap);
+        }
+      }
       const applyFilters=()=>{
         root.dataset.spcCustomer=root.querySelector('.spc-customer')?.value||'';
         root.dataset.spcFilterProduct=root.querySelector('.spc-product-filter')?.value.trim()||'';
