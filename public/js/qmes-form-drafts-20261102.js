@@ -30,7 +30,7 @@
   function isRecordWrite(module,path,method){return /^(POST|PUT|PATCH)$/.test(method)&&!/(?:delete|action|approval|photo|attachment|send)/i.test(path)&&!!paths[module]?.test(path);}
   function install(win){
     const doc=win.document,repo=repository(win.localStorage),contexts=new WeakMap();
-    let active=null,queued=false,authorized='',restoring=0,serial=0;
+    let active=null,queued=false,authorized='',restoring=0,serial=0,confirming=false;
     const sessionId=win.crypto?.randomUUID?.()||Date.now()+'-'+Math.random();
     const revision=()=>sessionId+':'+(++serial);
     const clean=value=>String(value||'').replace(/\s+/g,' ').trim();
@@ -74,21 +74,46 @@
       if(!node){node=doc.createElement('div');node.dataset.qmesDraftBar='1';node.className='qmes-draft-bar';node.setAttribute('role','status');const head=ctx.root.querySelector('.am-detail-top,h3,header');if(head)head.after(node);else ctx.root.prepend(node);}
       return node;
     }
+    async function confirmDraft(ctx,message){
+      ensure();
+      if(confirming||!allowed()||active!==ctx||restoring)return false;
+      confirming=true;
+      const currentRevision=ctx.revision,priorFocus=doc.activeElement;
+      try{
+        const accepted=await new Promise(resolve=>{
+          const dialog=doc.createElement('dialog');dialog.className='qmes-draft-confirm';
+          dialog.setAttribute('aria-labelledby','qmes-draft-confirm-title');
+          dialog.setAttribute('aria-describedby','qmes-draft-confirm-message');
+          const title=doc.createElement('h3');title.id='qmes-draft-confirm-title';title.textContent='확인';
+          const text=doc.createElement('p');text.id='qmes-draft-confirm-message';text.textContent=message;
+          const actions=doc.createElement('div');actions.className='qmes-draft-confirm-actions';
+          const cancel=doc.createElement('button');cancel.type='button';cancel.textContent='취소';
+          const accept=doc.createElement('button');accept.type='button';accept.className='primary';accept.textContent='확인';
+          let done=false;
+          const finish=value=>{if(done)return;done=true;dialog.close();dialog.remove();resolve(value);};
+          cancel.onclick=()=>finish(false);accept.onclick=()=>finish(true);
+          dialog.oncancel=event=>{event.preventDefault();finish(false);};
+          dialog.onclick=event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)finish(false);}};
+          actions.append(cancel,accept);dialog.append(title,text,actions);doc.body.append(dialog);dialog.showModal();cancel.focus();
+        });
+        return accepted&&allowed()&&active===ctx&&ctx.root.isConnected&&ctx.revision===currentRevision;
+      }finally{confirming=false;if(priorFocus?.isConnected)priorFocus.focus();}
+    }
     function show(ctx,message,recover){
       if(!allowed()||!ctx.root.isConnected)return;
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
       node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
-      const save=doc.createElement('button');save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();saveDraft(ctx);};node.append(save);
+      const save=doc.createElement('button');save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();return saveDraft(ctx);};node.append(save);
       if(recover){
-        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent='복구';restore.onclick=()=>restoreDraft(ctx);node.append(restore);
-        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent='버리기';discard.onclick=()=>{if(!win.confirm('임시저장한 내용을 버리시겠습니까? 현재 입력 중인 내용은 유지됩니다.'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
+        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent='복구';restore.onclick=async()=>{if(await confirmDraft(ctx,'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
+        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent='버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
       }
     }
-    function saveDraft(ctx){
+    async function saveDraft(ctx){
       ensure();
       if(!allowed()||active!==ctx||ctx.actor!==authorized||restoring)return;
-      if(ctx.pending&&!win.confirm('이전에 임시저장한 내용이 있습니다. 현재 입력 내용으로 덮어쓰시겠습니까?'))return;
+      if(!await confirmDraft(ctx,'임시저장 하시겠습니까?'))return;
       win.clearTimeout(ctx.timer);
       const data=snapshot(ctx),nextRevision=revision();
       const value={version:1,actor:ctx.actor,module:ctx.module,mode:ctx.mode,record:ctx.record,revision:nextRevision,at:Date.now(),...data};
@@ -184,7 +209,7 @@
       return promise;
     };
     function authorize(){const gate=win.qmesAuthDataReady;Promise.resolve(gate?.wait()).then(()=>{authorized=actor();schedule();});}
-    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}';doc.head.append(style);
+    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.qmes-draft-confirm{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;padding:20px;border:1px solid #cbd8e5;border-radius:12px;background:#fff;color:#244260;box-shadow:0 18px 50px rgba(24,49,75,.22);font-family:inherit}.qmes-draft-confirm::backdrop{background:rgba(24,49,75,.35)}.qmes-draft-confirm h3{margin:0 0 12px;font-size:15px;font-weight:800;color:#244260}.qmes-draft-confirm p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#244260}.qmes-draft-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.qmes-draft-confirm-actions button{height:32px;min-width:62px;padding:0 12px;border:1px solid #cbd8e5;border-radius:6px;background:#fff;color:#244260;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmes-draft-confirm-actions button.primary{background:#e8f0f8}.qmes-draft-confirm-actions button:hover{filter:brightness(.97)}.qmes-draft-confirm-actions button:focus-visible{outline:2px solid #173d6f;outline-offset:2px}';doc.head.append(style);
     function boot(){doc.addEventListener('input',changed,true);doc.addEventListener('change',changed,true);doc.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))flush();schedule();},true);new MutationObserver(schedule).observe(doc.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','data-am-record','data-am-mode']});authorize();}
     win.addEventListener('qmes-authenticated',authorize);win.addEventListener('pagehide',()=>flush());win.addEventListener('beforeunload',()=>flush());doc.addEventListener('visibilitychange',()=>{if(doc.hidden)flush();});
     win.qmesFormDrafts={flush:()=>flush(),rescan:schedule,beginSave,completeSave};
