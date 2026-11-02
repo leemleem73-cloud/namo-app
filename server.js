@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const portalWeatherRelay = require('./qmes-portal-weather-proxy-20261103.cjs');
 require('./qmes-vendor-static-preload.js');
 
 require('./attendance-core-safe.js');
@@ -50,6 +51,7 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
     const staticMiddleware = attendanceBaseStatic(root, options);
     return function namoAttendanceHumanArtworkMiddleware(req, res, next) {
       const pathname = String(req.path || '').toLowerCase();
+      if (pathname === '/api/qmes-portal-weather') return portalWeatherRelay(req, res, next);
 
       // QMES production status cache hardening:
       // retire the old production-status bundle and force fresh HTML/new bundle on reload.
