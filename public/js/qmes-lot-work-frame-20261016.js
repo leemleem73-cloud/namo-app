@@ -11,7 +11,7 @@ select.onchange=()=>root.querySelector('#'+ids[select.value])?.click();
 const range=root.querySelector('#lotRange');range?.closest('.lot-field')?.classList.add('lot-range-field');
 const buttons=document.createElement('div');buttons.className='lot-work-buttons';
 const clear=root.querySelector('#lotResetBtn'),query=root.querySelector('#lotSearchBtn');
-clear.textContent='조건 지우기';query.textContent='조회';query.setAttribute('aria-label','LOT 조회');query.title='입력한 LOT 조회';
+clear.textContent='조건 지우기';query.innerHTML='<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75"/><path d="m13 13 4 4"/></svg>';query.setAttribute('aria-label','LOT 조회');query.title='입력한 LOT 조회';
 buttons.append(clear,query);grid.append(buttons);
 const actions=document.createElement('div');actions.className='lot-work-actions';if(summary)actions.append(summary);search.append(actions);
 root.querySelector('.lot-hero-copy h1').textContent='LOT 추적 조회';root.querySelector('#lotResultTitle').before(document.createTextNode('▸ '));
