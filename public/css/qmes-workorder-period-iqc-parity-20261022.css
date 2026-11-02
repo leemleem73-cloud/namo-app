@@ -23,234 +23,32 @@
 .namo-work-iqc-calendar .qww-foot button{border:1px solid #d3d9df;background:#fff;height:23px;padding:0 7px;font-size:11px}
 .namo-work-iqc-calendar .qww-foot [data-close]{margin-left:auto}
 
-/* Match the visible Work Order period field to IQC inspection-period field. */
-#work #namo-work-inquiry .nwi-period-label{min-width:0!important}
-#work #namo-work-inquiry .nwi-period-trigger{
-  box-sizing:border-box!important;
-  width:215px!important;
-  height:30px!important;
-  min-height:30px!important;
-  padding:0 8px!important;
-  border:1px solid #c7d6e5!important;
-  border-radius:4px!important;
-  background:#fff!important;
-  color:#243e5d!important;
-  font:600 12px Arial,"Malgun Gothic",sans-serif!important;
-}
-#work #namo-work-inquiry .nwi-period-trigger>.nwi-period-value{
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-#work #namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{
-  flex:0 0 auto!important;
-  min-width:0!important;
-  width:auto!important;
-  font-size:18px!important;
-  color:#40566d!important;
-}
 
-/* Work-order inquiry: keep all six visible filters on one row. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  grid-template-columns:repeat(6,minmax(0,1fr))!important;
-  column-gap:14px!important;
-  row-gap:0!important;
+/* Match IQC's compact, left-aligned filter groups. Never distribute groups across the row. */
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;
+ flex:0 1 auto!important;width:auto!important;max-width:100%!important;min-width:0!important;
+ gap:10px 20px!important;grid-template-columns:none!important;grid-auto-flow:initial!important;overflow:visible!important;
 }
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six label>span{
-  flex:0 0 auto!important;
-  min-width:0!important;
-  white-space:nowrap!important;
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(n){
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ flex:0 0 auto!important;flex-basis:auto!important;flex-grow:0!important;flex-shrink:0!important;
+ width:max-content!important;min-width:0!important;max-width:none!important;gap:8px!important;margin:0!important;padding:0!important;
+ grid-template-columns:none!important;
 }
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
-  width:100%!important;
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(n)>span{
+ flex:0 0 auto!important;flex-basis:auto!important;width:auto!important;min-width:0!important;
+ white-space:nowrap!important;text-align:left!important;font-size:11.5px!important;line-height:30px!important;
 }
-
-/* Final: never wrap the six Work Order query fields. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  grid-template-columns:minmax(180px,1fr) minmax(210px,1.15fr) minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(210px,1.15fr)!important;
-  grid-auto-flow:column!important;
-  grid-auto-columns:minmax(0,1fr)!important;
-  width:100%!important;
-  overflow:visible!important;
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(n)>:is(input,select,.nwi-period-trigger){
+ box-sizing:border-box!important;flex:0 0 195px!important;flex-basis:195px!important;
+ width:195px!important;min-width:195px!important;max-width:195px!important;height:30px!important;min-height:30px!important;
+ margin:0!important;padding:0 8px!important;border:1px solid #c7d6e5!important;border-radius:4px!important;
+ background:#fff!important;color:#243e5d!important;font-size:12px!important;
 }
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
-  min-width:0!important;
-  margin:0!important;
+html body #work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;text-align:left!important;gap:6px!important;
 }
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
-  min-width:0!important;
-  width:100%!important;
-}
-
-/* 2026-10-22 final single-row fit: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 작업기간 */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  display:flex!important;
-  flex-wrap:nowrap!important;
-  align-items:center!important;
-  gap:12px!important;
-  width:100%!important;
-  overflow:visible!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
-  display:flex!important;
-  align-items:center!important;
-  flex:1 1 0!important;
-  min-width:0!important;
-  gap:6px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(1){flex-basis:15%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(2){flex-basis:19%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(3){flex-basis:15%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(4){flex-basis:15%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5){flex-basis:17%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(6){flex-basis:19%!important}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
-  flex:0 0 auto!important;
-  min-width:0!important;
-  white-space:nowrap!important;
-  font-size:12px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
-  flex:1 1 auto!important;
-  min-width:0!important;
-  width:auto!important;
-}
-
-/* 2026-10-22 final alignment: six filters share one baseline and consistent label/control sizing. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  display:grid!important;
-  grid-template-columns:
-    minmax(0,1.05fr)
-    minmax(0,1.20fr)
-    minmax(0,1.00fr)
-    minmax(0,1.00fr)
-    minmax(0,1.02fr)
-    minmax(0,1.18fr)!important;
-  align-items:center!important;
-  gap:0 18px!important;
-  width:100%!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
-  display:grid!important;
-  grid-template-columns:max-content minmax(0,1fr)!important;
-  align-items:center!important;
-  column-gap:8px!important;
-  min-width:0!important;
-  margin:0!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
-  min-width:0!important;
-  white-space:nowrap!important;
-  text-align:left!important;
-  line-height:30px!important;
-  font-size:12px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
-  box-sizing:border-box!important;
-  width:100%!important;
-  min-width:0!important;
-  height:30px!important;
-  min-height:30px!important;
-  border-radius:4px!important;
-  margin:0!important;
-}
-
-/* 2026-10-22 compact query widths: reduce each control and keep 진행상태 label inside its cell. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  display:grid!important;
-  grid-template-columns:
-    minmax(185px,220px)
-    minmax(225px,255px)
-    minmax(185px,220px)
-    minmax(185px,220px)
-    minmax(200px,225px)
-    minmax(215px,245px)!important;
-  justify-content:start!important;
-  align-items:center!important;
-  column-gap:12px!important;
-  width:100%!important;
-  overflow:visible!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
-  display:grid!important;
-  grid-template-columns:max-content minmax(0,1fr)!important;
-  align-items:center!important;
-  column-gap:7px!important;
-  min-width:0!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5)>span{
-  min-width:48px!important;
-  text-align:left!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
-  white-space:nowrap!important;
-  overflow:visible!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six select,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six .nwi-period-trigger{
-  width:100%!important;
-  min-width:0!important;
-}
-
-/* 2026-10-22 compact final widths: reduce each control and protect 진행상태 label. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six{
-  grid-template-columns:
-    minmax(0,1fr)
-    minmax(0,1.12fr)
-    minmax(0,.95fr)
-    minmax(0,.95fr)
-    minmax(0,1.02fr)
-    minmax(0,1.08fr)!important;
-  gap:0 14px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label{
-  grid-template-columns:max-content minmax(0,1fr)!important;
-  column-gap:7px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label>span{
-  flex:none!important;
-  min-width:max-content!important;
-  white-space:nowrap!important;
-  overflow:visible!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5)>span{
-  min-width:48px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(1) input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(3) input,
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(4) input{
-  width:92%!important;
-  justify-self:start!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(2) input{
-  width:90%!important;
-  justify-self:start!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5) select{
-  width:91%!important;
-  justify-self:start!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(6) .nwi-period-trigger{
-  width:92%!important;
-  justify-self:start!important;
-}
-
-/* 2026-10-22 tighten only 진행상태 control width. */
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5){
-  grid-template-columns:max-content minmax(0,1fr)!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5)>span{
-  min-width:48px!important;
-}
-#work #namo-work-inquiry .nwi-grid.nwi-single-row-six>label:nth-child(5) select{
-  width:78%!important;
-  max-width:150px!important;
-  justify-self:start!important;
-}
+html body #work #namo-work-inquiry .nwi-period-trigger>.nwi-period-value{flex:1 1 auto!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body #work #namo-work-inquiry .nwi-period-trigger>.nwi-period-icon{flex:0 0 18px!important;width:18px!important;min-width:18px!important;font-size:18px!important}
+html body #work #namo-work-inquiry .nwi-hidden-filter-state{display:none!important}
