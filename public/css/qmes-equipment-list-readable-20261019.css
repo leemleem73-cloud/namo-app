@@ -6,3 +6,14 @@
 #equipment .eq-table td:nth-child(12){overflow:visible!important}
 #equipment .eq-table .eq-wo-action button{min-height:25px!important}
 #equipment .eq-table-wrap{overflow-x:auto!important}
+
+/* Detail sheets: compact control-plan sheet and three parallel check points. */
+#equipment #eqDetail .eq-detail-grid{grid-template-columns:minmax(260px,.75fr) minmax(0,1.65fr)!important;align-items:stretch}
+#equipment #eqDetail .eq-detail-grid>.eq-box{min-width:0}
+#equipment #eqDetail .eq-spec-list{grid-template-columns:90px minmax(0,1fr)}
+#equipment #eqDetail .eq-spec-list .val{overflow-wrap:anywhere}
+#equipment #eqDetail .eq-checks{grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:stretch}
+#equipment #eqDetail .eq-check{min-width:0;box-sizing:border-box}
+#equipment #eqDetail .eq-check span{overflow-wrap:anywhere}
+@media(max-width:1000px){#equipment #eqDetail .eq-detail-grid{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:560px){#equipment #eqDetail .eq-checks{grid-template-columns:minmax(0,1fr)!important}}
