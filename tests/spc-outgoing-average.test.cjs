@@ -98,3 +98,14 @@ test('real product clicks highlight one row and show only its detail; modes pres
  assert.ok(!root.html.includes('선택한 출하검사 상세'));
  assert.equal((root.html.match(/class="spc-row-selected"/g)||[]).length,0);
 });
+
+test('SPC chart keeps circular markers and text proportions within a bounded chart',()=>{
+ const scope={esc:v=>String(v),fmt:v=>String(v),specFor:()=>({lsl:1200,usl:1800})};
+ vm.runInNewContext(source.slice(source.indexOf('function trendSvg'),source.indexOf('  // spc-instant-menu')),scope);
+ const svg=scope.trendSvg([{date:'2026-10-06',value:1500,judge:'합격'}],'점도');
+ assert.ok(svg.includes('preserveAspectRatio="xMidYMid meet"'));
+ assert.ok(svg.includes('viewBox="0 0 1000 300"'));
+ assert.ok(svg.includes('<circle'));
+ assert.ok(!svg.includes('preserveAspectRatio="none"'));
+ assert.match(source,/#spcTrend \.qce-chart-wrap\{[^}]*max-width:1160px;[^}]*height:auto/);
+});
