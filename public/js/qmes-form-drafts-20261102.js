@@ -99,15 +99,24 @@
         return accepted&&allowed()&&active===ctx&&ctx.root.isConnected&&ctx.revision===currentRevision;
       }finally{confirming=false;if(priorFocus?.isConnected)priorFocus.focus();}
     }
+    function placeSaveButton(ctx,button=ctx.saveButton){
+      if(!button)return;
+      if(ctx.module==='incoming'&&ctx.mode==='new'){
+        const actions=ctx.root.querySelector('.am-detail-actions');
+        const save=actions?.querySelector('[data-am-save]');
+        if(save){if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);return;}
+      }
+      const node=bar(ctx);if(button.parentElement!==node)node.append(button);
+    }
     function show(ctx,message,recover){
       if(!allowed()||!ctx.root.isConnected)return;
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
       node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
-      const save=doc.createElement('button');save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();return saveDraft(ctx);};node.append(save);
+      ctx.saveButton?.remove();const save=doc.createElement('button');ctx.saveButton=save;save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();return saveDraft(ctx);};placeSaveButton(ctx,save);
       if(recover){
-        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent='복구';restore.onclick=async()=>{if(await confirmDraft(ctx,'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
-        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent='버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
+        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent=ctx.module==='incoming'?'임시저장 불러오기':'복구';restore.onclick=async()=>{if(await confirmDraft(ctx,ctx.module==='incoming'?'임시저장한 내용을 불러오시겠습니까?':'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
+        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent=ctx.module==='incoming'?'취소':'버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,ctx.module==='incoming'?'임시저장을 취소하시겠습니까?':'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,ctx.module==='incoming'?'임시저장을 취소했습니다.':'임시저장을 버렸습니다.',false);};node.append(discard);
       }
     }
     async function saveDraft(ctx){
@@ -133,10 +142,10 @@
     }
     function ensure(){
       queued=false;if(win.qmesLastView?.isRestoring?.())return;
-      if(!allowed()){if(active?.root.isConnected)active.root.querySelector('[data-qmes-draft-bar]')?.remove();active=null;return;}
+      if(!allowed()){if(active?.root.isConnected)active.root.querySelector('[data-qmes-draft-bar]')?.remove();active?.saveButton?.remove();active=null;return;}
       const found=locate();if(!found){if(active)flush(active);active=null;return;}
       const key=keyOf(authorized,found.module,found.mode,found.record);
-      if(active&&active.root===found.root&&active.key===key)return;
+      if(active&&active.root===found.root&&active.key===key){placeSaveButton(active);return;}
       if(active)flush(active);
       let ctx=contexts.get(found.root);
       if(!ctx||ctx.key!==key){
@@ -176,7 +185,7 @@
         if(!allowed()||active!==ctx)return;
         // Material selections can replace dependent LOT controls on the next frame.
         applyFields(ctx,prior);ctx.pending=null;ctx.dirty=true;ctx.revision=revision();ctx.last='';
-        show(ctx,'임시저장을 복구했습니다.'+(prior.files?.length?' 첨부파일은 다시 선택해 주세요.':''),false);
+        show(ctx,(ctx.module==='incoming'?'임시저장한 내용을 불러왔습니다.':'임시저장을 복구했습니다.')+(prior.files?.length?' 첨부파일은 다시 선택해 주세요.':''),false);
       }finally{restoring--;}
       flush(ctx);
     }
