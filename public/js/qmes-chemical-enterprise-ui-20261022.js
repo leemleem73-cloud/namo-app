@@ -346,13 +346,14 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   document.head.appendChild(style);
 
   function head(title,desc){return '<div class="qce-head"><div><h1>'+esc(title)+'</h1><p>'+esc(desc)+'</p></div><div class="date-badge">QMES</div></div>';}
-  function modal(title,body,onSave){
+  function modal(title,body,onSave,draftContext){
     const bg=document.createElement('div');bg.className='qce-modal-bg';
     bg.innerHTML='<div class="qce-modal"><h3>'+esc(title)+'</h3><div>'+body+'</div><div class="qce-modal-foot"><button class="qce-btn" data-close>취소</button><button class="qce-btn primary" data-save>저장</button></div></div>';
+    if(draftContext){bg.dataset.qmesDraftModule=draftContext.module;bg.dataset.qmesDraftRecord=String(draftContext.record||'new');bg.dataset.qmesDraftMode=draftContext.mode||(draftContext.record&&draftContext.record!=='new'?'edit':'new');bg.dataset.qmesDraftManualCommit='1';}
     document.body.appendChild(bg);
     bg.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>bg.remove());
     bg.onclick=e=>{if(e.target===bg)bg.remove();};
-    bg.querySelector('[data-save]').onclick=async()=>{try{await onSave(bg);bg.remove();}catch(e){toast(e.message);}};
+    bg.querySelector('[data-save]').onclick=async()=>{try{const draftTicket=window.qmesFormDrafts?.beginSave(bg);await onSave(bg);window.qmesFormDrafts?.completeSave(draftTicket);bg.remove();}catch(e){toast(e.message);}};
     return bg;
   }
   const val=(root,key)=>root.querySelector('[data-k="'+key+'"]')?.value.trim()||'';
@@ -680,7 +681,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       '<div class="qce-field"><label>변경대상</label><input data-k="target"></div><div class="qce-field"><label>담당자</label><input data-k="owner"></div>'+
       '<div class="qce-field"><label>적용예정일</label><input data-k="planned_on" type="date"></div><div class="qce-field"><label>현재 기준</label><input data-k="current_value"></div>'+
       '<div class="qce-field full"><label>변경 후 기준</label><textarea data-k="proposed_value"></textarea></div><div class="qce-field full"><label>변경사유</label><textarea data-k="reason"></textarea></div><div class="qce-field full"><label>영향평가</label><textarea data-k="impact"></textarea></div></div>',
-      async bg=>{await api(record?'/api/qmes-change/'+record.id:'/api/qmes-change',{method:record?'PATCH':'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast(record?'변경건이 수정되었습니다.':'변경건이 등록되었습니다.');changeQueries.clear();load(true);}
+      async bg=>{await api(record?'/api/qmes-change/'+record.id:'/api/qmes-change',{method:record?'PATCH':'POST',body:JSON.stringify({change_type:val(bg,'change_type'),title:val(bg,'title'),target:val(bg,'target'),owner:val(bg,'owner'),planned_on:val(bg,'planned_on'),current_value:val(bg,'current_value'),proposed_value:val(bg,'proposed_value'),reason:val(bg,'reason'),impact:val(bg,'impact')})});toast(record?'변경건이 수정되었습니다.':'변경건이 등록되었습니다.');changeQueries.clear();load(true);}, {module:'changeControl',record:record?.id||'new'}
     );
       if(record)bg.querySelectorAll('[data-k]').forEach(input=>{const key=input.dataset.k,value=key==='planned_on'?String(record[key]||'').slice(0,10):String(record[key]??'');if(input.tagName==='SELECT'&&value&&![...input.options].some(option=>option.value===value))input.add(new Option(value,value));input.value=value;});
     }
@@ -788,7 +789,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       '<div class="qce-field"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
       async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
         if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
-        toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}
+        toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}, {module:'instrumentMgmt',record:record?.id||'new'}
     );
       if(record){
         const dialog=document.querySelector('.qce-modal-bg:last-of-type');
@@ -858,7 +859,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   function openCalibration(row,reload){
     if(!row)return;
     modal('검교정 등록 · '+row.instrument_name,'<div class="qce-form"><div class="qce-field"><label>검교정일</label><input data-k="calibration_on" type="date"></div><div class="qce-field"><label>차기예정일</label><input data-k="next_due_on" type="date"></div><div class="qce-field"><label>교정기관</label><input data-k="agency"></div><div class="qce-field"><label>성적서번호</label><input data-k="certificate_no"></div><div class="qce-field"><label>결과</label><select data-k="result"><option>적합</option><option>부적합</option></select></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{await api('/api/qmes-calibrations',{method:'POST',body:JSON.stringify({instrument_id:row.id,calibration_on:val(bg,'calibration_on'),next_due_on:val(bg,'next_due_on'),agency:val(bg,'agency'),certificate_no:val(bg,'certificate_no'),result:val(bg,'result'),note:val(bg,'note')})});toast('검교정 이력이 등록되었습니다.');calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);reload();}
+      async bg=>{await api('/api/qmes-calibrations',{method:'POST',body:JSON.stringify({instrument_id:row.id,calibration_on:val(bg,'calibration_on'),next_due_on:val(bg,'next_due_on'),agency:val(bg,'agency'),certificate_no:val(bg,'certificate_no'),result:val(bg,'result'),note:val(bg,'note')})});toast('검교정 이력이 등록되었습니다.');calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);reload();}, {module:'calibrationMgmt',mode:'new',record:'instrument:'+row.id}
     );
   }
 
