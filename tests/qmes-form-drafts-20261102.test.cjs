@@ -9,6 +9,7 @@ class Storage{
 class Node{
  constructor(tag='div'){this.tagName=tag.toUpperCase();this.dataset={};this.style={};this.children=[];this.isConnected=true;this.hidden=false;this.textContent='';}
  append(...nodes){for(const node of nodes){node.remove?.();node.parentElement=this;node.isConnected=true;this.children.push(node);}}
+ before(node){this.parentElement.insertBefore(node,this);}
  insertBefore(node,before){node.remove();node.parentElement=this;node.isConnected=true;this.children.splice(this.children.indexOf(before),0,node);}
  get nextElementSibling(){const list=this.parentElement?.children||[];return list[list.indexOf(this)+1]||null;}
  prepend(n){this.children.unshift(n);}
@@ -99,6 +100,41 @@ async function run(){
  reopened.editor.root.fields[0].value='새로운 미완성';await reopenedSave().onclick();
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'새로운 미완성');
  const discarded=environment(manualStorage);await tick();await discarded.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='취소').onclick();assert.equal(manualStorage.getItem(manualKey),null);assert.equal(discarded.fetches.length,0);
+ // Exercise distinct registration structures instead of reusing the AM layout for every menu.
+ for(const layout of ['purchase','equipment','changeControl','ncr']){
+   const sample=environment(new Storage(),layout),root=sample.editor.root,originalQuery=root.querySelector;
+   const save=new Node('button');save.textContent='저장';save.className='native-save primary';
+   const footer=new Node();footer.append(save);
+   const header=new Node(),title=new Node('h3'),container=new Node();container.append(title);root.append(container,header,footer);
+   const existingActions=new Node();if(layout==='ncr')header.append(existingActions);
+   const back=new Node('button');back.textContent='목록';if(layout==='purchase')header.append(back);
+   header.querySelector=selector=>selector==='#npo-close'?back:header.children.find(n=>String(n.className).includes('qmes-registration-actions'))||null;
+   root.querySelector=selector=>{
+     if(selector==='.am-detail-actions')return null;
+     if(selector==='[data-am-save],#npo-save,.qce-modal [data-save],#ncr-editor-save,.eq-wo-form button[type="submit"]')return save;
+     if(selector==='.panel>header')return layout==='purchase'?header:null;
+     if(selector==='.ncr-editor-toolbar>span')return layout==='ncr'?existingActions:null;
+     if(selector==='.qce-modal>h3,.eq-wo-form>h3')return ['equipment','changeControl'].includes(layout)&&title.parentElement===container?title:null;
+     if(selector==='.qmes-registration-header')return container.children.find(n=>n.className==='qmes-registration-header')||null;
+     if(selector==='.ncr-editor-main')return layout==='ncr'?root:null;
+     return originalQuery(selector);
+   };
+   const create=sample.doc.createElement;
+   sample.doc.createElement=tag=>{const node=create(tag);const query=node.querySelector;node.querySelector=selector=>selector==='.qmes-registration-actions'?node.children.find(n=>String(n.className).includes('qmes-registration-actions'))||null:query.call(node,selector);return node;};
+   if(layout==='purchase'){const get=sample.doc.getElementById;sample.doc.getElementById=id=>id==='namo-purchase-new-enterprise'?root:get(id);}
+   else{root.dataset.qmesDraftModule=layout;root.dataset.qmesDraftRecord='new';sample.doc.querySelectorAll=selector=>selector.includes('data-qmes-draft-module')?[root]:[];}
+   await tick();
+   const group=save.parentElement;
+   assert.match(group.className,/qmes-registration-actions/,layout);
+   assert.match(save.className,/qmes-registration-save/,layout);
+   assert.equal(save.nextElementSibling,null,layout);
+   const draft=group.children.find(n=>n.textContent==='임시저장');assert.ok(draft,layout);assert.equal(draft.nextElementSibling,save,layout);
+   assert.equal(root.dataset.qmesRegistration,'1',layout);
+   sample.win.qmesFormDrafts.rescan();await tick();assert.equal(group.children.filter(n=>n.textContent==='임시저장').length,1,layout);
+   let commits=0;save.click=()=>{commits++;};const event={target:{closest:()=>save},preventDefault(){},stopImmediatePropagation(){}};
+   global.draftDialogAnswer=false;await sample.windowEvents.click(event);assert.equal(commits,0,layout);
+   global.draftDialogAnswer=true;await sample.windowEvents.click(event);assert.equal(commits,1,layout);assert.equal(global.lastDraftDialog.children[1].textContent,'저장하시겠습니까?',layout);
+ }
  const saveConfirmEnv=environment(new Storage(),'incoming');await tick();
  let savesConfirmed=0,stoppedSaves=0;
  const realSaveButton={isConnected:true,disabled:false,click(){savesConfirmed++;}};
@@ -122,7 +158,7 @@ async function run(){
  await incomingCancel.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='취소').onclick();assert.equal(incomingStorage.getItem(core.keyOf('user-A','incoming','new','new')),null);
  for(const module of ['orders','purchase','work','incoming','process','outgoing','standard','equipment','changeControl','instrumentMgmt','calibrationMgmt','ncr','inventory','lotTrace','quality','approval','adminEmployees']){
    const eachStorage=new Storage(),each=environment(eachStorage,module);await tick();
-   let button=each.editor.root.actions.children.find(n=>n.textContent==='임시저장');assert.ok(button,module);assert.equal(button.nextElementSibling.textContent,'저장',module);
+   let button=each.editor.root.actions.children.find(n=>n.textContent==='임시저장');assert.ok(button,module);assert.equal(button.nextElementSibling.textContent,'저장',module);assert.match(button.className,/qmes-registration-draft/,module);assert.match(button.parentElement.className,/qmes-registration-actions/,module);
    each.editor.root.fields[0].value=module+' incomplete';await button.onclick();assert.equal(each.fetches.length,0,module);
    const reopenedEach=environment(eachStorage,module);await tick();const eachBar=reopenedEach.editor.root.querySelector('[data-qmes-draft-bar]');
    assert.ok(eachBar.children.some(n=>n.textContent==='취소'),module);await eachBar.children.find(n=>n.textContent==='임시저장 불러오기').onclick();assert.equal(reopenedEach.editor.root.fields[0].value,module+' incomplete',module);
@@ -143,6 +179,9 @@ async function run(){
  storage.fail=true;type(env,1,'quota input');assert.match(env.editor.root.querySelector('[data-qmes-draft-bar]').dataset.message,/공간이 부족/);storage.fail=false;
  type(env,1,'last input');env.emit('input',{target:env.editor.root.fields[0]});env.windowEvents.pagehide();assert.ok(JSON.parse(storage.getItem(core.keyOf('user-B','work','new','new'))).fields.some(f=>f.value==='last input'));
  env.editor.host.hasAttribute=name=>name==='data-qmes-draft-manual-commit';const ticket=env.win.qmesFormDrafts.beginSave(env.editor.host);await env.win.fetch('/api/qmes/work-orders',{method:'POST'});await tick();assert.ok(storage.getItem(core.keyOf('user-B','work','new','new')));env.win.qmesFormDrafts.completeSave(ticket);assert.equal(storage.getItem(core.keyOf('user-B','work','new','new')),null);
- console.log('PASS: account/document separation, expiry, field filtering, explicit recovery, dynamic material rows, no save during recovery, failed-save retention, in-flight edits retained, successful-save cleanup, quota warning, pagehide flush');
+ const source=require('node:fs').readFileSync(require.resolve('../public/js/qmes-form-drafts-20261102.js'),'utf8');
+ assert.ok(source.includes('[data-qmes-registration="1"] [data-qmes-draft-bar]{display:none!important}'));
+ assert.match(source,/background:#2f8de4!important/);
+ console.log('PASS: registration layouts, uniform button styles, hidden banners, shared save confirmation, account/document separation, expiry, field filtering, explicit recovery, dynamic material rows, no save during recovery, failed-save retention, in-flight edits retained, successful-save cleanup, quota warning, pagehide flush');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});
