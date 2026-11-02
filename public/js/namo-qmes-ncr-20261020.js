@@ -29,7 +29,7 @@ function decorateNcrForm(edit,record){
  var form=root.querySelector('#ncr-form'),oldHead=root.querySelector('.ncr-head'),oldGrid=form.querySelector('.ncr-grid');
  var top=document.createElement('div');top.className='ncr-editor-top';
  top.innerHTML='<button type="button" class="ncr-btn" id="ncr-editor-back">← 목록으로</button><strong>'+(edit?'부적합보고서 상세 / 조치관리':'신규 부적합보고서 등록')+'</strong>';
- var shell=document.createElement('div');shell.className='ncr-editor-shell';
+ var shell=document.createElement('div');shell.className='ncr-editor-shell';shell.dataset.qmesDraftModule='ncr';shell.dataset.qmesDraftRecord=edit?String(record.id):'new';shell.dataset.qmesDraftManualCommit='1';
  var side=document.createElement('aside');side.className='ncr-editor-side';
  side.innerHTML='<div class="ncr-editor-side-title">부적합보고서 목록 <span style="float:right;color:#8496aa">'+rows.length+'건</span></div><select id="ncr-editor-filter"><option value="">전체</option><option value="IQC">수입검사</option><option value="PQC">공정검사</option><option value="OQC">출하검사</option><option value="생산">생산</option><option value="고객">고객</option></select><input type="search" id="ncr-editor-search" placeholder="부적합보고서 검색"><div class="ncr-editor-side-items"></div>';
  var main=document.createElement('div');main.className='ncr-editor-main';
@@ -213,11 +213,12 @@ async function save(event){
  var form=event.currentTarget,button=form.querySelector('#ncr-save');
  var data={},details={};new FormData(form).forEach(function(v,k){if(k.indexOf('ncr_detail_')===0)details[k.slice(11)]=String(v);else if(k!=='file')data[k]=String(v);});details.improvement_completed=(form.querySelector('#ncr-improvement-completed')||{}).checked?'yes':'no';data.details=details;var files=Array.from((form.querySelector('#ncr-attach-input')||{}).files||[]);
  if(!data.description&&!selected){notice('부적합 내용을 입력하세요.');return;}
+ var draftTicket=window.qmesFormDrafts?.beginSave(form);
  button.disabled=true;
  try{
   var edit=view==='edit',url='/api/qmes-ncr/reports'+(edit?'/'+selected.id:'');
   var result=await request(url,{method:edit?'PATCH':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(files.length){if(files.length>10)throw Error('첨부파일은 최대 10개까지 등록할 수 있습니다.');for(var file of files){var upload=new FormData();upload.append('file',file);await request('/api/qmes-ncr/reports/'+result.id+'/attachments',{method:'POST',body:upload});}}selected=result;view='list';render();await load();
+  if(files.length){if(files.length>10)throw Error('첨부파일은 최대 10개까지 등록할 수 있습니다.');for(var file of files){var upload=new FormData();upload.append('file',file);await request('/api/qmes-ncr/reports/'+result.id+'/attachments',{method:'POST',body:upload});}}window.qmesFormDrafts?.completeSave(draftTicket);selected=result;view='list';render();await load();
  }catch(e){notice(e.message);}finally{button.disabled=false;}
 }
 function printReport(r){
