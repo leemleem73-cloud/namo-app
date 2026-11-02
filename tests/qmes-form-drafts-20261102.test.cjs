@@ -99,6 +99,15 @@ async function run(){
  reopened.editor.root.fields[0].value='새로운 미완성';await reopenedSave().onclick();
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'새로운 미완성');
  const discarded=environment(manualStorage);await tick();await discarded.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='취소').onclick();assert.equal(manualStorage.getItem(manualKey),null);assert.equal(discarded.fetches.length,0);
+ const saveConfirmEnv=environment(new Storage(),'incoming');await tick();
+ let savesConfirmed=0,stoppedSaves=0;
+ const realSaveButton={isConnected:true,disabled:false,click(){savesConfirmed++;}};
+ const saveClick={target:{closest:()=>realSaveButton},preventDefault(){},stopImmediatePropagation(){stoppedSaves++;}};
+ global.draftDialogAnswer=false;await saveConfirmEnv.windowEvents.click(saveClick);
+ assert.equal(savesConfirmed,0);assert.equal(stoppedSaves,1);assert.equal(global.lastDraftDialog.children[1].textContent,'저장하시겠습니까?');
+ global.draftDialogAnswer=true;await saveConfirmEnv.windowEvents.click(saveClick);assert.equal(savesConfirmed,1);
+ const previousSaveClick=realSaveButton.click;realSaveButton.click=()=>{saveConfirmEnv.windowEvents.click(saveClick);previousSaveClick();};
+ await saveConfirmEnv.windowEvents.click(saveClick);assert.equal(savesConfirmed,2);assert.equal(stoppedSaves,3);
  const incomingStorage=new Storage(),incoming=environment(incomingStorage,'incoming');await tick();
  const topDraft=()=>incoming.editor.root.actions.children.find(n=>n.textContent==='임시저장');
  assert.ok(topDraft());assert.equal(topDraft().nextElementSibling.textContent,'저장');
