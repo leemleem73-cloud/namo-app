@@ -16,7 +16,8 @@ function syncTriggerValue(){
   const to=panel?.querySelector('[data-filter="5"]');
   const value=panel?.querySelector('.nwi-period-value');
   if(!from||!to||!value)return false;
-  value.textContent=from.value&&to.value?from.value+' ~ '+to.value:'기간 선택';
+  const text=from.value&&to.value?from.value+' ~ '+to.value:'기간 선택';
+  if(value.textContent!==text)value.textContent=text;
   return true;
 }
 
@@ -28,7 +29,7 @@ function close(focus=false){
 function position(){
   if(!popup||!trigger)return;
   const r=trigger.getBoundingClientRect();
-  popup.style.width=Math.max(220,Math.min(r.width,260))+'px';
+  popup.style.width=r.width+'px';
   const box=popup.getBoundingClientRect();
   popup.style.left=Math.max(6,Math.min(r.left,innerWidth-box.width-6))+'px';
   popup.style.top=(r.bottom+box.height+5<innerHeight?r.bottom+4:Math.max(6,r.top-box.height-4))+'px';
@@ -136,9 +137,11 @@ function alignWorkOrderFilterRow(){
   const period=panel?.querySelector('.nwi-period-label');
   if(!grid||!customer||!workNo||!product||!lot||!status||!period)return false;
   const periodLabel=period.querySelector(':scope>span');
-  if(periodLabel)periodLabel.textContent='작업기간';
+  if(periodLabel&&periodLabel.textContent!=='작업기간')periodLabel.textContent='작업기간';
   // Visible order: 고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 작업기간.
-  [customer,workNo,product,lot,status,period].forEach(el=>grid.appendChild(el));
+  const desired=[customer,workNo,product,lot,status,period];
+  const actual=[...grid.children].filter(el=>desired.includes(el));
+  if(desired.some((el,index)=>actual[index]!==el))desired.forEach(el=>grid.appendChild(el));
   grid.classList.add('nwi-single-row-six');
   return true;
 }
