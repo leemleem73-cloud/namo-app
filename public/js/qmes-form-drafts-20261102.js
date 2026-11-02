@@ -79,10 +79,24 @@
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
       node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
+      const save=doc.createElement('button');save.type='button';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();saveDraft(ctx);};node.append(save);
       if(recover){
         const restore=doc.createElement('button');restore.type='button';restore.textContent='복구';restore.onclick=()=>restoreDraft(ctx);node.append(restore);
         const discard=doc.createElement('button');discard.type='button';discard.textContent='버리기';discard.onclick=()=>{if(!win.confirm('임시저장한 내용을 버리시겠습니까? 현재 입력 중인 내용은 유지됩니다.'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
       }
+    }
+    function saveDraft(ctx){
+      ensure();
+      if(!allowed()||active!==ctx||ctx.actor!==authorized||restoring)return;
+      if(ctx.pending&&!win.confirm('이전에 임시저장한 내용이 있습니다. 현재 입력 내용으로 덮어쓰시겠습니까?'))return;
+      win.clearTimeout(ctx.timer);
+      const data=snapshot(ctx),nextRevision=revision();
+      const value={version:1,actor:ctx.actor,module:ctx.module,mode:ctx.mode,record:ctx.record,revision:nextRevision,at:Date.now(),...data};
+      try{
+        repo.write(ctx.key,value);
+        ctx.pending=null;ctx.dirty=true;ctx.revision=nextRevision;ctx.last=signature(data.fields,data.rows);
+        show(ctx,'임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' · 같은 브라우저에서 30일간 보관됩니다.'+(data.files.length?' 첨부파일은 다시 선택해 주세요.':''),false);
+      }catch(_){show(ctx,'임시저장 실패 · 브라우저 저장 공간을 확인해 주세요. 현재 입력 내용은 유지됩니다.',!!ctx.pending);}
     }
     function flush(ctx=active){
       if(!ctx||!ctx.dirty||ctx.pending||restoring||!allowed()||ctx.actor!==authorized)return;
