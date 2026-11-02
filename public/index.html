@@ -6832,7 +6832,8 @@ function amaranthScreen(id,editorHtml,mode='new',label='',selectedRow=null){
   const initialListPage=Math.max(1,Math.floor(Math.max(0,selectedIndex)/10)+1);
   const listHtml=list.length?list.map((x,i)=>`<button class="am-list-item ${(mode==='detail'||mode==='edit')&&x.index===selectedIndex?'active':''}" type="button" ${pagedInspection&&(i<(initialListPage-1)*10||i>=initialListPage*10)?'hidden style="display:none"':''} data-am-id="${id}" data-am-index="${x.index}" data-am-record-id="${amEsc(x.recordId||'')}"><b>${amEsc(x.primary)}</b><span>${amEsc(x.secondary||'')}</span></button>`).join(''):`<div class="am-list-empty"><div class="ico">▧</div><span>등록된 데이터가 없습니다.</span></div>`;
   const modeText=mode==='new'?'신규등록':'상세 / 수정';
-  return `<div class="am-split" data-am-screen="${id}">
+  const draftRecord=mode==='new'?'new':String(selectedRow?.dataset.workSaved||selectedRow?.dataset.iqcId||selectedRow?.dataset.standardId||selectedRow?.dataset.sourceId||list.find(x=>x.index===selectedIndex)?.recordId||'');
+  return `<div class="am-split" data-am-screen="${id}" data-am-mode="${amEsc(mode)}" data-am-record="${amEsc(draftRecord)}">
     <aside class="am-list-pane">
       <div class="am-list-title"><b>${title} 목록</b><span>${count}건</span></div>
       <div class="am-list-controls"><select><option>전체</option></select><input class="am-list-search" type="text" placeholder="${title} 검색"></div>
@@ -7555,6 +7556,7 @@ function openNewForm(id,editOrder=null){
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
+    const draftScreen=document.querySelector('.am-split[data-am-screen="work"]');if(draftScreen){draftScreen.dataset.amRecord=String(editOrder?.id||'new');draftScreen.dataset.amMode=editOrder?'edit':'new';}
     window.namoWorkDispatchInit?.(editOrder?.id||'');
     if(editOrder){
       const basic=[...document.querySelectorAll('.work-form .work-basic-grid .form-item')];
@@ -8150,7 +8152,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/qmes-process-work-frame-20261016.js?v=20261028-centered-calendar2"></script>
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261028-centered-calendar2"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=2"></script>
-<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261021-print-confirm2"></script>
+<script defer src="./js/qmes-equipment-unified-workorder-20261019.js?v=20261102-drafts3"></script>
 <script defer src="./js/qmes-equipment-workorder-shell-20261019.js?v=20261021-clear-menu-selection"></script>
 <script id="qmes-number-heading-labels-20261019">
 (()=>{
@@ -8269,7 +8271,7 @@ html body #ncr .ncr-editor-main .ncr-form :is(input,select,textarea){font-size:1
 html body #ncr :is(.ncr-section-title,.ncr-editor-toolbar>strong){font-size:13px!important;font-weight:700!important}
 html body #ncr :is(.ncr-editor-top,.ncr-editor-shell) .ncr-btn{font-size:12px!important;font-weight:700!important}
 </style>
-<script src="./js/namo-qmes-ncr-20261020.js?v=20261028-white-current3"></script>
+<script src="./js/namo-qmes-ncr-20261020.js?v=20261102-drafts4"></script>
 <script id="qmes-pqc-approval-grid-20261021">
 window.qmesPqcApprovalGrid=function(row){
  const id=String(row?.dataset?.sourceId||'');
@@ -8308,7 +8310,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
 <script src="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34"></script>
-<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261029-photo-back16"></script>
+<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261102-drafts17"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261028-header-before-paint2"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261021-1"></script>
@@ -8342,7 +8344,7 @@ window.qmesPqcApprovalGrid=function(row){
 </script>
 <link rel="stylesheet" href="./css/qmes-process-map-20261027.css?v=20261028-diamond-thin8">
 <script src="./js/qmes-process-map-20261027.js?v=20261028-incoming-lot11"></script>
-<script src="./js/qmes-last-view-20261027.js?v=20261030-work-list-refresh4"></script>
+<script src="./js/qmes-last-view-20261027.js?v=20261102-draft-coordination5"></script>
 
 <style id="qmes-inspection-detail-layout-parity-20261027">
 html body #mainWorkspace .am-split:is([data-am-screen="process"]:has(.pqc-detail-measure-section),[data-am-screen="incoming"]:has(.iqc-edit-settings-frame)) .am-detail-pane>.am-section>.am-section-body{padding:8px 0 0!important;min-width:0!important;box-sizing:border-box!important}
@@ -8574,6 +8576,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
+<script defer src="./js/qmes-form-drafts-20261102.js?v=1"></script>
 </body>
 </html>
 
