@@ -11,7 +11,7 @@ const autumnColors=['#d95a38','#e99b37','#e4bd43','#bd4d32','#f0cf57','#c87b35',
 const flower='<g fill="currentColor">'+[0,72,144,216,288].map(a=>'<ellipse cy="-8" rx="5" ry="8" transform="rotate('+a+')"/>').join('')+'</g><circle r="4" fill="#ffe7a0"/>';
 const snow='<path d="M0-13V13M-11-6L11 6M-11 6L11-6" stroke="currentColor" stroke-width="2" fill="none"/>';
 scene.innerHTML='<svg viewBox="0 0 850 50" preserveAspectRatio="none">'+(season==='winter'?'<path d="M0 46Q90 23 180 39T380 38T610 36T850 40V50H0Z" fill="#f4faff" opacity=".9"/>':'<path d="M0 48Q210 39 425 46T850 44" fill="none" stroke="currentColor" stroke-opacity=".3"/>')+Array.from({length:season==='autumn'?24:16},(_,i)=>{const x=14+(i*53)%825,y=season==='autumn'?46-(i%3)*3:season==='winter'?15+(i%3)*10:46;return '<g transform="translate('+x+' '+y+') rotate('+((i%5)*23-40)+') scale('+(season==='winter'?'.55':season==='spring'?'.65':'.6')+')" opacity="'+(.65+(i%3)*.1)+'">'+(season==='winter'?snow:season==='spring'?flower:leaf)+'</g>';}).join('')+'</svg>';
-const weather=document.createElement('div');weather.className='portal-chungju-weather';weather.setAttribute('aria-live','polite');weather.innerHTML='<span class="portal-weather-icon" aria-hidden="true">⛅</span><b>충주</b><span class="portal-weather-current">날씨 불러오는 중</span><span class="portal-weather-range"></span><button type="button" class="portal-weather-open" aria-haspopup="dialog">상세</button>';
+const weather=document.createElement('div');weather.className='portal-chungju-weather';weather.setAttribute('aria-live','polite');weather.innerHTML='<span class="portal-weather-icon" aria-hidden="true">⛅</span><b>위치 확인 중</b><span class="portal-weather-current">날씨 불러오는 중</span><span class="portal-weather-range"></span><button type="button" class="portal-weather-open" aria-haspopup="dialog">상세</button>';
 const wrap=document.createElement('div');wrap.className='portal-season-weather';wrap.append(scene,weather);form.before(wrap);
 if(['spring','summer','autumn','winter'].includes(previewSeason)){
  const nav=document.createElement('nav');nav.setAttribute('aria-label','계절 미리보기');nav.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;gap:8px;padding:10px;border:1px solid #cbdce9;border-radius:10px;background:white;font:13px Malgun Gothic,sans-serif';
@@ -134,16 +134,16 @@ const uiStyle=document.createElement('style');uiStyle.textContent=`
 @media(prefers-reduced-motion:reduce){.portal-settled-leaf{animation:none}}
 .portal-weather-open{border:0;border-left:1px solid #ffffff40;padding:0 0 0 8px;background:transparent;color:#e0edf6;font:inherit;cursor:pointer}
 .portal-weather-dialog{width:min(410px,calc(100vw - 32px));box-sizing:border-box;padding:22px;border:1px solid #d7e4ee;border-radius:16px;background:#fff;color:#28475e;box-shadow:0 18px 60px #0c233f40;font:13px/1.6 "Malgun Gothic",sans-serif;text-align:left}
-.portal-weather-dialog::backdrop{background:#122b4655}.portal-weather-dialog header{display:flex;justify-content:space-between;align-items:center}.portal-weather-dialog h2{font-size:17px;margin:0}.portal-weather-dialog button{border:1px solid #cbdce9;border-radius:5px;padding:4px 10px;background:white;color:#375b76;cursor:pointer}.portal-weather-big{font-size:28px;font-weight:700;margin:18px 0 4px}.portal-weather-metrics{display:flex;gap:18px;padding:10px 0;color:#647c8f}.portal-weather-day{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #e2eaf1}.portal-weather-dialog footer{font-size:10px;color:#8093a2;margin-top:14px}
+.portal-weather-dialog::backdrop{background:#122b4655}.portal-weather-dialog header{display:flex;justify-content:space-between;align-items:center}.portal-weather-dialog h2{font-size:17px;margin:0}.portal-weather-dialog button{border:1px solid #cbdce9;border-radius:5px;padding:4px 10px;background:white;color:#375b76;cursor:pointer}.portal-weather-big{font-size:28px;font-weight:700;margin:18px 0 4px}.portal-weather-metrics{display:flex;gap:18px;padding:10px 0;color:#647c8f}.portal-weather-day{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #e2eaf1}.portal-weather-day-right{display:inline-flex;align-items:center;gap:12px}.portal-weather-forecast-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;font-size:21px;line-height:1}.portal-weather-dialog footer{font-size:10px;color:#8093a2;margin-top:14px}
 @media(prefers-reduced-motion:reduce){.portal-falling-leaf,.portal-falling-leaf svg{animation:none}.portal-falling-leaf{top:auto;bottom:4px;opacity:.7}}
 `;document.head.append(uiStyle);
 weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  const existing=document.querySelector('.portal-weather-dialog');if(existing){existing.close();return;}
- const dialog=document.createElement('dialog');dialog.className='portal-weather-dialog';dialog.setAttribute('aria-label','충주 날씨 상세');
- const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');title.textContent='충주 날씨';close.type='button';close.textContent='닫기';header.append(title,close);dialog.append(header);close.onclick=()=>dialog.close();
+ const dialog=document.createElement('dialog');dialog.className='portal-weather-dialog';dialog.setAttribute('aria-label',areaLabel+' 날씨 상세');
+ const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');title.textContent=areaLabel+' 날씨';close.type='button';close.textContent='닫기';header.append(title,close);dialog.append(header);close.onclick=()=>dialog.close();
  const data=saved?.data,c=data?.current_condition?.[0];const big=document.createElement('div');big.className='portal-weather-big';big.textContent=c?weather.querySelector('.portal-weather-icon').textContent+' '+weather.querySelector('.portal-weather-current').textContent:'날씨 연결 대기';dialog.append(big);
  if(c){const metrics=document.createElement('div');metrics.className='portal-weather-metrics';metrics.textContent='습도 '+c.humidity+'% · 바람 '+c.windspeedKmph+' km/h';dialog.append(metrics);
- (data.weather||[]).slice(0,3).forEach((day,i)=>{const row=document.createElement('div');row.className='portal-weather-day';const name=document.createElement('b'),range=document.createElement('span');name.textContent=(i===0?'오늘':new Intl.DateTimeFormat('ko-KR',{weekday:'short',timeZone:'Asia/Seoul'}).format(new Date(day.date+'T12:00:00+09:00')))+' · '+day.date;range.textContent=day.mintempC+'° / '+day.maxtempC+'°';row.append(name,range);dialog.append(row);});}
+ (data.weather||[]).slice(0,3).forEach((day,i)=>dialog.append(forecastDayRow(day,i)));}
  const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||'현재 날씨를 확인 중입니다.');dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
  function centerWeatherDialog(){
@@ -164,20 +164,87 @@ function fitSeasonToSearch(){
 scene.style.boxSizing='border-box';scene.style.overflow='hidden';
 }
 requestAnimationFrame(fitSeasonToSearch);window.addEventListener('resize',fitSeasonToSearch);if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitSeasonToSearch).observe(form);
-const key='qmes-chungju-weather-v1';
-function paint(data,cached=false){const c=data.current_condition?.[0],d=data.weather?.[0];if(!c||!Number.isFinite(Number(c.temp_C)))throw Error('날씨 정보 없음');
- const code=Number(c.weatherCode),snowing=[179,182,185,227,230,281,284,311,314,317,320,323,326,329,332,335,338,350,362,365,368,371,374,377,392,395].includes(code),rain=[176,263,266,293,296,299,302,305,308,353,356,359].includes(code);
- const label=code===113?'맑음':code===116?'구름 조금':[119,122].includes(code)?'흐림':[143,248,260].includes(code)?'안개':snowing?'눈':rain?'비':[200,386,389].includes(code)?'뇌우':'구름';
- weather.querySelector('.portal-weather-icon').textContent=snowing?'❄️':rain?'🌧️':code===113?'☀️':'⛅';
- weather.querySelector('.portal-weather-current').textContent=Math.round(Number(c.temp_C))+'° · '+label;
- weather.querySelector('.portal-weather-range').textContent=d?'최저 '+d.mintempC+'° / 최고 '+d.maxtempC+'°':'';
- weather.title='충주 · '+(cached?'최근 조회 정보':'최근 제공 날씨')+' · '+String(c.localObsDateTime||c.observation_time||'');
+// Weather location and forecast helpers.
+function weatherCondition(value){
+ const code=Number(value);
+ if(!Number.isFinite(code)||value==null||String(value).trim()==='')return {icon:'❔',label:'예보 없음'};
+ if(code===113)return {icon:'☀️',label:'맑음'};
+ if(code===116)return {icon:'⛅',label:'구름 조금'};
+ if([119,122].includes(code))return {icon:'☁️',label:'흐림'};
+ if([143,248,260].includes(code))return {icon:'🌫️',label:'안개'};
+ if([200,386,389,392,395].includes(code))return {icon:'⛈️',label:'뇌우'};
+ if([179,182,185,227,230,281,284,311,314,317,320,323,326,329,332,335,338,350,362,365,368,371,374,377].includes(code))return {icon:'❄️',label:'눈'};
+ if([176,263,266,293,296,299,302,305,308,353,356,359].includes(code))return {icon:'🌧️',label:'비'};
+ return {icon:'❔',label:'예보 없음'};
 }
-let saved;try{saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&Date.now()-saved.at<3600000)paint(saved.data,true);}catch(_){}
-async function refresh(){if(document.hidden)return;if(saved&&Date.now()-saved.at<1200000)return;const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
- try{const r=await fetch('https://wttr.in/36.991,127.926?format=j1',{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});if(!r.ok)throw Error('날씨 조회 실패');const data=await r.json();paint(data);saved={at:Date.now(),data};try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}}
- catch(_){if(!saved||Date.now()-saved.at>=3600000){weather.querySelector('.portal-weather-current').textContent='날씨 연결 대기';weather.querySelector('.portal-weather-range').textContent='';}}
- finally{clearTimeout(timer);}
+function forecastCondition(day){
+ const hours=(day.hourly||[]).filter(h=>h.weatherCode!=null&&String(h.weatherCode).trim()!=='');
+ const noon=hours.find(h=>Number(h.time)===1200);
+ return weatherCondition(noon?.weatherCode??hours[Math.floor(hours.length/2)]?.weatherCode??day.weatherCode);
+}
+function forecastDayRow(day,index){
+ const row=document.createElement('div');row.className='portal-weather-day';
+ const name=document.createElement('b'),range=document.createElement('span'),right=document.createElement('span'),icon=document.createElement('span');
+ name.textContent=(index===0?'오늘':new Intl.DateTimeFormat('ko-KR',{weekday:'short',timeZone:'Asia/Seoul'}).format(new Date(day.date+'T12:00:00+09:00')))+' · '+day.date;
+ range.textContent=day.mintempC+'° / '+day.maxtempC+'°';
+ const forecast=forecastCondition(day);right.className='portal-weather-day-right';icon.className='portal-weather-forecast-icon';
+ icon.textContent=forecast.icon;icon.title='예상 · '+forecast.label;icon.setAttribute('role','img');icon.setAttribute('aria-label','예상 날씨: '+forecast.label);
+ right.append(range,icon);row.append(name,right);return row;
+}
+function resolveAreaName(data,fallback){
+ if(fallback)return '충주';
+ const area=data.nearest_area?.[0],name=String(area?.areaName?.[0]?.value||area?.region?.[0]?.value||'').trim();
+ const cities={seoul:'서울',busan:'부산',pusan:'부산',incheon:'인천',inchon:'인천',daegu:'대구',taegu:'대구',daejeon:'대전',gwangju:'광주',ulsan:'울산',sejong:'세종',suwon:'수원',chungju:'충주',cheongju:'청주',chongju:'청주',wonju:'원주',chuncheon:'춘천',jeju:'제주',jeonju:'전주',cheonan:'천안',pohang:'포항',changwon:'창원',gimhae:'김해',seongnam:'성남',goyang:'고양',yongin:'용인',anyang:'안양',ansan:'안산',gimpo:'김포',pyeongtaek:'평택',hwaseong:'화성'};
+ return cities[name.toLowerCase().replace(/[- ]si$/,'')]||name||'현재 위치';
+}
+function getWeatherLocation(){
+ return new Promise(resolve=>{
+  const fallback=()=>resolve({lat:36.991,lon:127.926,fallback:true,key:'chungju-default'});
+  if(!navigator.geolocation){fallback();return;}
+  try{navigator.geolocation.getCurrentPosition(position=>{
+   const lat=Number(position.coords.latitude),lon=Number(position.coords.longitude);
+   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){fallback();return;}
+   // City weather needs only approximate coordinates, never device-level precision.
+   const roundedLat=Number(lat.toFixed(2)),roundedLon=Number(lon.toFixed(2));
+   resolve({lat:roundedLat,lon:roundedLon,fallback:false,key:roundedLat+','+roundedLon});
+  },fallback,{enableHighAccuracy:false,maximumAge:60000,timeout:6000});}catch(_){fallback();}
+ });
+}
+// Location-specific weather state.
+let areaLabel='현재 위치',saved,activeLocationKey='',refreshing=false;
+function paint(data,cached=false,fallback=false){
+ const c=data.current_condition?.[0],d=data.weather?.[0];
+ if(!c||!Number.isFinite(Number(c.temp_C)))throw Error('날씨 정보 없음');
+ const condition=weatherCondition(c.weatherCode);areaLabel=resolveAreaName(data,fallback);
+ weather.querySelector('b').textContent=areaLabel;
+ weather.querySelector('.portal-weather-icon').textContent=condition.icon;
+ weather.querySelector('.portal-weather-current').textContent=Math.round(Number(c.temp_C))+'° · '+condition.label;
+ weather.querySelector('.portal-weather-range').textContent=d?'최저 '+d.mintempC+'° / 최고 '+d.maxtempC+'°':'';
+ weather.title=areaLabel+' · '+(fallback?'기본 지역 · ':'')+(cached?'최근 조회 정보':'최근 제공 날씨')+' · '+String(c.localObsDateTime||c.observation_time||'');
+}
+async function refresh(){
+ if(document.hidden||refreshing)return;refreshing=true;
+ let controller,timer;
+ try{
+  const place=await getWeatherLocation(),key='qmes-local-weather-v2:'+place.key;
+  if(activeLocationKey!==place.key){
+   activeLocationKey=place.key;saved=null;areaLabel=place.fallback?'충주':'현재 위치';
+   weather.querySelector('b').textContent=areaLabel;
+   weather.querySelector('.portal-weather-icon').textContent='⛅';
+   weather.querySelector('.portal-weather-current').textContent='날씨 불러오는 중';
+   weather.querySelector('.portal-weather-range').textContent='';
+   weather.title=place.fallback?'위치를 확인할 수 없어 기본 지역인 충주 날씨를 표시합니다.':'현재 위치의 날씨를 확인합니다.';
+   try{const cache=JSON.parse(localStorage.getItem(key)||'null');if(cache&&cache.locationKey===place.key&&Date.now()-cache.at<3600000){paint(cache.data,true,place.fallback);saved=cache;}}catch(_){}
+  }
+  if(saved&&Date.now()-saved.at<1200000)return;
+  controller=new AbortController();timer=setTimeout(()=>controller.abort(),10000);
+  const r=await fetch('https://wttr.in/'+place.lat+','+place.lon+'?format=j1&lang=ko',{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
+  if(!r.ok)throw Error('날씨 조회 실패');
+  const data=await r.json();paint(data,false,place.fallback);
+  saved={at:Date.now(),locationKey:place.key,data};try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}
+ }catch(_){
+  if(!saved||Date.now()-saved.at>=3600000){saved=null;weather.querySelector('.portal-weather-current').textContent='날씨 연결 대기';weather.querySelector('.portal-weather-range').textContent='';}
+ }finally{clearTimeout(timer);refreshing=false;}
 }
 refresh();setInterval(refresh,1200000);document.addEventListener('visibilitychange',refresh);
 })();
