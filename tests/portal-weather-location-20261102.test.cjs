@@ -8,7 +8,7 @@ function env(mode='success'){
  const weather={querySelector(selector){if(!nodes.has(selector))nodes.set(selector,new Node());return nodes.get(selector);}};
  const context={navigator:mode==='unsupported'?{}:{geolocation:{getCurrentPosition(ok,fail,options){assert.equal(options.enableHighAccuracy,false);if(denied)fail({code:1});else ok({coords});}}},
  weather,document:{hidden:false,createElement(){return new Node();}},localStorage:{getItem:k=>cache.get(k)||null,setItem:(k,v)=>cache.set(k,v)},AbortController,setTimeout,clearTimeout,console,
- fetch:async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({nearest_area:[{areaName:[{value:area}]}],current_condition:[{temp_C:'17',weatherCode:'113'}],weather:[{mintempC:'7',maxtempC:'21'}]})};}};
+ fetch:async(url,options)=>{if(url.includes('bigdatacloud.net'))return {ok:true,json:async()=>({city:area==='Seoul'?'서울특별시':area==='Busan'?'부산광역시':'충주시'})};calls.push({url,options});return {ok:true,json:async()=>({nearest_area:[{areaName:[{value:area}]}],current_condition:[{temp_C:'17',weatherCode:'113'}],weather:[{mintempC:'7',maxtempC:'21'}]})};}};
  vm.runInNewContext(logic+';this.api={weatherCondition,forecastCondition,forecastDayRow,resolveAreaName,getWeatherLocation,refresh};',context);
  return {context,api:context.api,calls,nodes,cache,move(lat,lon,name){coords={latitude:lat,longitude:lon};area=name;},deny(){denied=true;}};
 }
@@ -19,7 +19,8 @@ async function run(){
  assert.equal(e.cache.has('qmes-local-weather-v2:37.57,126.98'),true);assert.equal(e.cache.has('qmes-local-weather-v2:36.991,127.926'),false);
  await e.api.refresh();assert.equal(e.calls.length,1,'fresh same-location cache skips weather request');
  e.move(35.179554,129.075642,'Busan');await e.api.refresh();assert.ok(e.calls[1].url.includes('/35.18,129.08?'));assert.equal(e.nodes.get('b').textContent,'부산');
- e.deny();await e.api.refresh();assert.ok(e.calls[2].url.includes('/36.991,127.926?'));assert.equal(e.nodes.get('b').textContent,'충주');
+ e.move(37.01,127.73,'Sinisil');await e.api.refresh();assert.equal(e.nodes.get('b').textContent,'충주');
+ e.deny();await e.api.refresh();assert.ok(e.calls[3].url.includes('/36.991,127.926?'));assert.equal(e.nodes.get('b').textContent,'충주');
  const denied=env('denied');await denied.api.refresh();assert.equal(denied.nodes.get('b').textContent,'충주');
  const unsupported=env('unsupported');await unsupported.api.refresh();assert.equal(unsupported.nodes.get('b').textContent,'충주');
  assert.equal(e.api.weatherCondition(119).label,'흐림');assert.equal(e.api.weatherCondition(296).label,'비');assert.equal(e.api.weatherCondition(332).label,'눈');
