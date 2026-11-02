@@ -7611,6 +7611,9 @@ function openNewForm(id,editOrder=null){
     const tr=document.createElement('tr');
     tr.innerHTML='<td>신규</td>'+cols.map(name=>'<td>'+amEsc(defaults[name]||'-')+'</td>').join('');
     showRowDetail('process',tr);
+    const draftScreen=workspaceBody.querySelector('.am-split[data-am-screen="process"]');
+    if(draftScreen){draftScreen.dataset.amMode='new';draftScreen.dataset.amRecord='new';}
+    window.qmesFormDrafts?.rescan();
     return;
   }
   if(id==='incoming' || id==='process' || id==='outgoing'){
@@ -8576,7 +8579,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
-<script defer src="./js/qmes-form-drafts-20261102.js?v=5-incoming-actions"></script>
+<script defer src="./js/qmes-form-drafts-20261102.js?v=6-all-registration-actions"></script>
 <style id="qmes-work-customer-picker-width-20261102">html body #work #namo-work-inquiry input[data-filter="0"]{cursor:pointer!important}.qc-holder>.qc-popup{width:195px!important;max-width:calc(100vw - 12px)!important}</style>
 </body>
 </html>
