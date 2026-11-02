@@ -24,3 +24,27 @@
 #lotTrace .lot-compact-table th,#lotTrace .lot-compact-table td{height:36px!important;padding:4px 12px!important;line-height:1.2!important;border-color:#d5dce5!important}
 @media(max-width:1200px){#lotTrace .lot-search-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:650px){#lotTrace .lot-search-grid{grid-template-columns:minmax(0,1fr)!important}#lotTrace .lot-work-actions{align-items:flex-start;flex-direction:column}#lotTrace .lot-work-buttons{align-self:flex-end}}
+
+/* Keep the live controls on one compact row; wrap whole field groups on smaller screens. */
+html body #lotTrace .lot-search-grid{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:12px 16px!important;padding:16px 18px!important}
+html body #lotTrace .lot-search-grid>.lot-field{flex:none!important;min-width:0!important;max-width:100%!important;gap:8px!important;margin:0!important}
+html body #lotTrace .lot-search-grid>.lot-work-mode{width:218px!important}
+html body #lotTrace .lot-search-grid>.lot-query-field{width:340px!important}
+html body #lotTrace .lot-search-grid>.lot-range-field{width:288px!important}
+html body #lotTrace .lot-field>label,html body #lotTrace .lot-work-mode>span{flex:0 0 auto!important;width:auto!important;min-width:0!important;white-space:nowrap!important;text-align:left!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;color:#52677e!important}
+html body #lotTrace .lot-work-mode>span{width:52px!important}
+html body #lotTrace .lot-query-field>label{width:92px!important}
+html body #lotTrace .lot-range-field>label{width:52px!important}
+html body #lotTrace .lot-search-grid .lot-field input,html body #lotTrace .lot-search-grid .lot-field select{flex:1 1 0!important;width:0!important;min-width:0!important;height:32px!important;min-height:32px!important;padding:0 9px!important;border:1px solid #cfd9e5!important;border-radius:4px!important;background:#fff!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;color:#244260!important;box-shadow:none!important}
+html body #lotTrace .lot-range-controls{display:flex!important;align-items:center!important;gap:6px!important;flex:1 1 0!important;min-width:0!important}
+html body #lotTrace .lot-range-controls>select{flex:1 1 0!important;min-width:85px!important}
+html body #lotTrace .lot-search-grid .lot-date-toggle{height:32px!important;min-height:32px!important;flex:none!important;width:auto!important;margin:0!important;padding:0 10px!important;border:1px solid #cfd9e5!important;border-radius:4px!important;background:#fff!important;color:#244260!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:600!important;white-space:nowrap!important;box-shadow:none!important}
+html body #lotTrace .lot-search-grid .lot-date-toggle[aria-expanded=true]{background:#edf5ff!important;border-color:#2f8de4!important;color:#1768ad!important}
+html body #lotTrace .lot-search-grid>.lot-work-buttons{display:flex!important;align-items:center!important;flex:none!important;gap:6px!important;margin-left:auto!important}
+html body #lotTrace .lot-work-buttons #lotResetBtn,html body #lotTrace .lot-work-buttons #lotSearchBtn{position:static!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:32px!important;min-height:32px!important;width:auto!important;min-width:0!important;padding:0 12px!important;margin:0!important;border:1px solid #cfd9e5!important;border-radius:4px!important;background:#fff!important;color:#415267!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:700!important;line-height:normal!important;box-shadow:none!important;white-space:nowrap!important}
+html body #lotTrace .lot-work-buttons #lotSearchBtn{background:#2f8de4!important;border-color:#2f8de4!important;color:#fff!important}
+html body #lotTrace .lot-work-actions{padding:0 18px 12px!important}
+html body #lotTrace .lot-work-actions:has(>.lot-summary:empty){display:none!important}
+html body #lotTrace .lot-search-grid :is(button,input,select):focus-visible{outline:2px solid #2f8de4!important;outline-offset:2px!important}
+@media(max-width:1150px){html body #lotTrace .lot-search-grid{gap:12px!important}html body #lotTrace .lot-search-grid>.lot-query-field{width:320px!important}}
+@media(max-width:700px){html body #lotTrace .lot-search-grid>.lot-field{flex:1 1 100%!important;width:100%!important}html body #lotTrace .lot-field>label,html body #lotTrace .lot-work-mode>span{width:92px!important}html body #lotTrace .lot-search-grid>.lot-work-buttons{margin-left:auto!important}html body #lotTrace .lot-work-actions{flex-direction:row!important}}
