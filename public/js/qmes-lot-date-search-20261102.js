@@ -27,7 +27,7 @@
  function install(win){
   if(win.qmesLotDateSearch)return;const doc=win.document,root=doc.getElementById('lotTrace'),anchor=root?.querySelector('.lot-search-card');if(!anchor)return;
   const panel=doc.createElement('section');panel.className='lot-date-search';panel.setAttribute('aria-label','생산일자로 LOT 찾기');
-  panel.innerHTML='<div class="lot-date-heading"><b>생산일자로 LOT 찾기</b><small>LOT 번호를 모를 때 날짜로 찾아 선택하세요.</small></div><div class="lot-date-filters"><label>조회 대상<select data-date-kind aria-label="조회 대상" disabled><option value="work">생산실적 · 작업지시서</option></select></label><label>시작일<input type="date" data-date-start></label><span class="lot-date-separator">~</span><label>종료일<input type="date" data-date-end></label><div class="lot-date-shortcuts"><button type="button" data-date-period="today">오늘</button><button type="button" data-date-period="week">이번 주</button><button type="button" data-date-period="month">이번 달</button></div><div class="lot-date-actions"><button type="button" data-date-reset>초기화</button><button type="button" class="primary" data-date-search>날짜 조회</button></div></div><p class="lot-date-help">작업지시서의 작업일·생산 LOT 기준으로 조회합니다. 수량은 작업지시서에 저장된 계획수량입니다. LOT를 누르면 아래에서 추적합니다.</p><div class="lot-date-message" role="status" aria-live="polite">기간을 선택하고 날짜 조회를 눌러주세요.</div><div class="lot-date-results"></div><div class="lot-date-pages"></div>';
+  panel.innerHTML='<div class="lot-date-heading"><b>생산일자로 LOT 찾기</b><small>LOT 번호를 모를 때 날짜로 찾아 선택하세요.</small></div><div class="lot-date-filters"><label>조회 대상<select data-date-kind aria-label="조회 대상" disabled><option value="work">생산실적 · 작업지시서</option></select></label><label>시작일<input type="date" data-date-start></label><span class="lot-date-separator">~</span><label>종료일<input type="date" data-date-end></label><div class="lot-date-shortcuts"><button type="button" data-date-period="today">오늘</button><button type="button" data-date-period="week">이번 주</button><button type="button" data-date-period="month">이번 달</button></div><div class="lot-date-actions"><button type="button" data-date-reset>초기화</button><button type="button" class="primary" data-date-search>날짜 조회</button></div></div><p class="lot-date-help">작업지시서의 작업일·생산 LOT 기준으로 조회합니다. 수량은 작업지시서에 저장된 계획수량입니다. LOT를 누르면 아래에서 추적합니다.</p><div class="lot-date-message" role="status" aria-live="polite">기간을 선택하고 날짜 조회를 눌러주세요.</div><div class="lot-date-daily"></div><div class="lot-date-results"></div><div class="lot-date-pages"></div>';
   panel.id='lot-date-search-panel';panel.hidden=true;anchor.after(panel);
   const toggle=doc.createElement('button');toggle.type='button';toggle.className='lot-reset-btn lot-date-toggle';toggle.textContent='날짜로 찾기';toggle.setAttribute('aria-controls',panel.id);toggle.setAttribute('aria-expanded','false');
   const range=doc.getElementById('lotRange');
@@ -80,10 +80,11 @@
    });
    drawCalendar();void loadCalendarDays();
   }
-  function invalidate(){closeCalendar();sequence++;controller?.abort();controller=null;rows=[];page=1;warning='';$('[data-date-search]').disabled=false;$('.lot-date-results').replaceChildren();$('.lot-date-pages').replaceChildren();$('.lot-date-message').textContent='조건이 변경되었습니다. 날짜 조회를 눌러주세요.';}
+  function invalidate(){doc.dispatchEvent(new win.CustomEvent('qmes-lot-date-invalidated'));closeCalendar();sequence++;controller?.abort();controller=null;rows=[];page=1;warning='';$('[data-date-search]').disabled=false;$('.lot-date-results').replaceChildren();$('.lot-date-daily').replaceChildren();$('.lot-date-pages').replaceChildren();$('.lot-date-message').textContent='조건이 변경되었습니다. 날짜 조회를 눌러주세요.';}
   function setPeriod(value){const dates=period(value,today());start.value=dates.start;end.value=dates.end;invalidate();}
   function draw(){
    $('.lot-date-message').textContent=warning+start.value+' ~ '+end.value+' · 조회 '+rows.length+'건';
+   const days=[...new Set(rows.map(row=>row.date))];$('.lot-date-daily').innerHTML=days.length?'<label>통합 이력 일자 <select data-sheet-date>'+days.map(date=>'<option value="'+date+'">'+date+'</option>').join('')+'</select></label><button type="button" class="primary" data-date-sheet>일자 통합시트 보기</button>':'';
    const shown=rows.slice((page-1)*size,page*size);
    $('.lot-date-results').innerHTML=shown.length?'<div class="lot-date-scroll"><table><thead><tr><th>번호</th><th>'+ '작업일'+'</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT</th><th>'+'계획수량'+' (kg)</th><th>작업자</th><th>상태</th><th>추적</th></tr></thead><tbody>'+shown.map((row,i)=>'<tr><td>'+((page-1)*size+i+1)+'</td><td>'+esc(row.date)+'</td><td>'+esc(row.number||'-')+'</td><td>'+esc(row.product||'-')+'</td><td><button type="button" class="lot-date-link" data-date-open="'+((page-1)*size+i)+'">'+esc(row.lot)+'</button></td><td>'+esc(row.quantity===undefined||row.quantity===null||row.quantity===''?'-':row.quantity)+'</td><td>'+esc(row.worker||'-')+'</td><td>'+esc(row.status)+'</td><td><button type="button" data-date-open="'+((page-1)*size+i)+'">LOT 추적</button></td></tr>').join('')+'</tbody></table></div>':'<p class="lot-date-empty">선택한 기간에 '+'생산기록'+'이 없습니다.</p>';
    const pages=Math.max(1,Math.ceil(rows.length/size));$('.lot-date-pages').innerHTML=pages>1?'<button type="button" data-date-page="-1" '+(page===1?'disabled':'')+'>이전</button><span>'+page+' / '+pages+'</span><button type="button" data-date-page="1" '+(page===pages?'disabled':'')+'>다음</button>':'';
@@ -104,7 +105,8 @@
   panel.addEventListener('click',event=>{
    if(event.target===start||event.target===end){openCalendar(event.target);return;}
    const button=event.target.closest('button');if(!button||button.disabled)return;
-   if(button.hasAttribute('data-date-search'))search();
+   if(button.hasAttribute('data-date-sheet')){const date=$('[data-sheet-date]').value;if(win.qmesLotDaily)win.qmesLotDaily.open(date);else $('.lot-date-message').textContent='통합시트를 준비 중입니다. 새로고침 후 다시 시도해 주세요.';}
+   else if(button.hasAttribute('data-date-search'))search();
    else if(button.hasAttribute('data-date-reset')){setPeriod('month');$('.lot-date-message').textContent='기간을 선택하고 날짜 조회를 눌러주세요.';}
    else if(button.dataset.datePeriod)setPeriod(button.dataset.datePeriod);
    else if(button.dataset.datePage){page+=Number(button.dataset.datePage);draw();}
@@ -153,6 +155,7 @@
   html body #lotTrace .lot-date-search .lot-date-message{border:0!important;border-top:1px solid #e1e7ee!important;background:#fff!important}
   html body #lotTrace .lot-date-search .lot-date-pages:not(:empty){border-top:1px solid #d5dce5!important}
   html body #lotTrace .lot-date-filters [data-date-kind]:disabled{opacity:1!important;-webkit-text-fill-color:#52677e!important;color:#52677e!important;background:#f8fafc!important;cursor:default}
+  .lot-date-daily{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px}.lot-date-daily:empty{display:none}.lot-date-daily label{display:flex;align-items:center;gap:8px;font-size:12px;color:#52677e}.lot-date-daily select{height:30px;padding:0 8px;border:1px solid #cfd9e5;border-radius:4px;background:#fff;color:#244260;font:inherit}
   `;doc.head.append(style);setPeriod('month');$('.lot-date-message').textContent='기간을 선택하고 날짜 조회를 눌러주세요.';win.qmesLotDateSearch={clear:clearPrivate};
  }
  return {dayOf,rangeError,period,rowsFor,recordDates,calendarCells,install};
