@@ -95,7 +95,7 @@ function init(){
  }
  section.querySelector('.page-head')?.remove();
  const panel=document.createElement('div');panel.id='namo-work-inquiry';
- panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+([0,1,2,3,6].includes(i)?'<select data-filter="'+i+'" aria-label="'+esc(l)+' 선택"><option value="">전체</option>'+(i===3?'<option>대기</option><option>진행</option><option>완료</option>':'')+'</select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
+ panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+([1,2,3,6].includes(i)?'<select data-filter="'+i+'" aria-label="'+esc(l)+' 선택"><option value="">전체</option>'+(i===3?'<option>대기</option><option>진행</option><option>완료</option>':'')+'</select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
  head.insertAdjacentElement('afterend',panel);
  // Date-range UI only: keep original start/end filters and their search behavior.
  (function installInstructionPeriod(){
@@ -216,7 +216,7 @@ function init(){
  function syncFilterChoices(){
   const rows=getRows();
   [0,1,2,3,6].forEach(index=>{
-   const select=panel.querySelector('[data-filter="'+index+'"]');if(!select)return;
+   const select=panel.querySelector('[data-filter="'+index+'"]');if(!select||select.tagName!=='SELECT')return;
    const values=new Set(index===3?['대기','진행','완료']:[]);
    rows.forEach(row=>{const value=row.cells[indices[index]]?.textContent.trim();if(value&&value!=='-')values.add(value);});
    const current=select.value;if(current)values.add(current);
@@ -243,7 +243,7 @@ function init(){
   const hasActiveFilters=q.some(v=>v!=='');
   const matching=!hasSearched?[]:!hasActiveFilters?rows:rows.filter(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
-   return q.every((v,i)=>!v||(i===4?((vals[9]||'').split('~')[0].trim()>=v):i===5?((vals[9]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
+   return q.every((v,i)=>!v||(i===0?v.split(/[,，]/).map(name=>name.trim()).filter(Boolean).some(name=>(vals[indices[0]]||'')===name):i===4?((vals[9]||'').split('~')[0].trim()>=v):i===5?((vals[9]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
   });
   // Count the rows actually present, without changing how records are loaded.
   // Some legacy work-order rows do not carry data-work-saved/data-row.
