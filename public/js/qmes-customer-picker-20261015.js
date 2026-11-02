@@ -13,7 +13,7 @@ function init(){
  const panel=document.querySelector('#work #namo-work-inquiry');
  const input=panel?.querySelector('[data-filter="0"]');
  if(!input||input.dataset.multiCustomer)return;
- input.dataset.multiCustomer='yes';input.readOnly=true;
+ input.dataset.multiCustomer='yes';input.readOnly=true;input.setAttribute('aria-haspopup','dialog');input.setAttribute('aria-expanded','false');
  const holder=document.createElement('div');holder.className='qc-holder';
  const popup=document.createElement('div');popup.className='qc-popup';popup.hidden=true;holder.append(popup);document.body.append(holder);
  let snapshot=[];
@@ -37,8 +37,9 @@ function init(){
   action('확인',()=>{close();filter()});
   render();
  }
- function close(){popup.hidden=true;input.value=[...checked].join(', ')}
+ function close(){popup.hidden=true;input.value=[...checked].join(', ');input.setAttribute('aria-expanded','false');}
  function filter(){
+  if(typeof window.namoWorkInquiryRefresh==='function'){window.namoWorkInquiryRefresh();return;}
   const rows=document.querySelectorAll('#work tr[data-work-saved]');let count=0;
   rows.forEach(row=>{
    const name=row.cells[2]?.textContent.trim()||'';
@@ -49,8 +50,9 @@ function init(){
   const counter=panel.querySelector('.nwi-count'),total=document.querySelector('#work #nwi-list-total');
   if(counter)counter.textContent='조회 '+count+'건';if(total)total.textContent='총 '+count+'건';
  }
- function place(){const rect=input.getBoundingClientRect();popup.style.left=Math.round(rect.left)+'px';popup.style.top=Math.round(rect.bottom+2)+'px';popup.style.width='190px'}
- input.onclick=()=>{if(!popup.hidden){close();return}snapshot=[...checked];draw();place();popup.hidden=false};
+ function place(){const rect=input.getBoundingClientRect(),width=Math.min(rect.width,innerWidth-12);popup.style.width=width+'px';popup.style.maxWidth='calc(100vw - 12px)';popup.style.left=Math.max(6,Math.min(rect.left,innerWidth-width-6))+'px';popup.style.top=Math.max(6,rect.bottom+popup.offsetHeight+2>innerHeight?rect.top-popup.offsetHeight-2:rect.bottom+2)+'px';}
+ input.onclick=()=>{if(!popup.hidden){close();return}snapshot=[...checked];draw();popup.hidden=false;input.setAttribute('aria-expanded','true');place()};
+ input.addEventListener('keydown',event=>{if(['Enter',' ','ArrowDown'].includes(event.key)){event.preventDefault();input.onclick();}else if(event.key==='Escape')close();});
  window.addEventListener('scroll',()=>{if(!popup.hidden)place()},true);
  window.addEventListener('resize',()=>{if(!popup.hidden)place()});
  panel.querySelector('#nwi-search')?.addEventListener('click',()=>setTimeout(filter,10));
