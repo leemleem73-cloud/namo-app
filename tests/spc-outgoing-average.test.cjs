@@ -99,7 +99,7 @@ test('real product clicks highlight one row and show only its detail; modes pres
  assert.equal((root.html.match(/class="spc-row-selected"/g)||[]).length,0);
 });
 
-test('SPC chart keeps circular markers and text proportions within a bounded chart',()=>{
+test('SPC chart fills its container with native width coordinates and undistorted markers',()=>{
  const scope={esc:v=>String(v),fmt:v=>String(v),specFor:()=>({lsl:1200,usl:1800})};
  vm.runInNewContext(source.slice(source.indexOf('function trendSvg'),source.indexOf('  // spc-instant-menu')),scope);
  const svg=scope.trendSvg([{date:'2026-10-06',value:1500,judge:'합격'}],'점도');
@@ -107,5 +107,12 @@ test('SPC chart keeps circular markers and text proportions within a bounded cha
  assert.ok(svg.includes('viewBox="0 0 1000 300"'));
  assert.ok(svg.includes('<circle'));
  assert.ok(!svg.includes('preserveAspectRatio="none"'));
- assert.match(source,/#spcTrend \.qce-chart-wrap\{[^}]*max-width:1160px;[^}]*height:auto/);
+ assert.match(source,/#spcTrend \.qce-chart-wrap\{[^}]*max-width:none;[^}]*height:326px/);
+ for(const width of [360,1000,2200]){
+   const responsive=scope.trendSvg([{date:'2026-10-06',value:1500,judge:'합격'}],'점도',width);
+   assert.ok(responsive.includes('viewBox="0 0 '+width+' 300"'));
+   assert.ok(responsive.includes('r="5"'));
+ }
+ assert.ok(source.includes('new ResizeObserver(drawChart)'));
+ assert.ok(source.includes('root._spcChartObserver?.disconnect()'));
 });
