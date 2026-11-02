@@ -122,6 +122,9 @@
     #spcTrend .spc-graph-mode[aria-pressed="true"]{background:#eef6ff;border-color:#87b9eb;color:#126fc0}
     #spcTrend .spc-source-values{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;padding:12px 16px;color:#536c86;font-size:12px}
     #spcTrend .spc-source-values strong{margin-left:8px;color:#244362}
+    #spcTrend .qce-chart-wrap{box-sizing:border-box;width:100%;max-width:1160px;height:auto;margin:0 auto;padding:12px;overflow-x:auto;overflow-y:hidden}
+    #spcTrend .qce-svg{display:block;width:100%;min-width:600px;height:auto;aspect-ratio:10 / 3;margin:0 auto}
+    #spcTrend .qce-svg text{font-family:inherit;font-size:11px}
     #spcTrend .spc-row-selected td{background:#eef6ff!important}
     #spcTrend .spc-judge{display:inline-flex;align-items:center;justify-content:center;min-width:66px;height:27px;padding:0 11px;border-radius:999px;font-size:10.5px;font-weight:900;border:1px solid transparent}
     #spcTrend .spc-judge.ok{background:#e9f7ef;color:#1f8157;border-color:#c3e7d2}
@@ -506,7 +509,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   }
   function trendSvg(values,item){
     const data=values.slice(-60);if(!data.length)return '<div class="qce-empty">제품명을 클릭하면 날짜별 Trend가 표시됩니다.</div>';
-    const w=1000,h=250,p=46,nums=data.map(x=>x.value),spec=specFor(item);
+    const w=1000,h=300,p=46,nums=data.map(x=>x.value),spec=specFor(item);
     let min=Math.min(...nums),max=Math.max(...nums);
     if(spec.lsl!=null)min=Math.min(min,spec.lsl);if(spec.usl!=null)max=Math.max(max,spec.usl);
     const span=Math.max(1,max-min);min-=span*.08;max+=span*.08;
@@ -519,7 +522,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     const dots=data.map((d,i)=>'<circle cx="'+x(i)+'" cy="'+y(d.value)+'" r="5" fill="'+(d.judge==='불합격'?'#d84c43':'#2a9b69')+'" stroke="#fff" stroke-width="2"><title>'+esc((d.date||'')+' · '+fmt(d.value)+' · '+d.judge)+'</title></circle>').join('');
     const every=Math.max(1,Math.ceil(data.length/8));
     const labels=data.map((d,i)=>i%every===0||i===data.length-1?'<text x="'+x(i)+'" y="'+(h-12)+'" text-anchor="middle">'+esc(d.label||String(d.date||'').slice(5))+'</text>':'').join('');
-    return '<svg class="qce-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="'+p+'" y1="'+p+'" x2="'+p+'" y2="'+(h-p)+'" stroke="#cfd8e3"/><line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-p)+'" y2="'+(h-p)+'" stroke="#cfd8e3"/>'+lines.join('')+'<polyline points="'+pts+'" fill="none" stroke="#377cb9" stroke-width="2.4"/>'+dots+labels+'</svg>';
+    return '<svg class="qce-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet"><line x1="'+p+'" y1="'+p+'" x2="'+p+'" y2="'+(h-p)+'" stroke="#cfd8e3"/><line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-p)+'" y2="'+(h-p)+'" stroke="#cfd8e3"/>'+lines.join('')+'<polyline points="'+pts+'" fill="none" stroke="#377cb9" stroke-width="2.4"/>'+dots+labels+'</svg>';
   }
 
   // spc-instant-menu-20261023: paint first and share one background refresh.
