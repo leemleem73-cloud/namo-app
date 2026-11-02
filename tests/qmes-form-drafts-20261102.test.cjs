@@ -8,7 +8,9 @@ class Storage{
 }
 class Node{
  constructor(tag='div'){this.tagName=tag.toUpperCase();this.dataset={};this.style={};this.children=[];this.isConnected=true;this.hidden=false;this.textContent='';}
- append(...nodes){this.children.push(...nodes);}
+ append(...nodes){for(const node of nodes){node.remove?.();node.parentElement=this;node.isConnected=true;this.children.push(node);}}
+ insertBefore(node,before){node.remove();node.parentElement=this;node.isConnected=true;this.children.splice(this.children.indexOf(before),0,node);}
+ get nextElementSibling(){const list=this.parentElement?.children||[];return list[list.indexOf(this)+1]||null;}
  prepend(n){this.children.unshift(n);}
  after(){}
  replaceChildren(...nodes){this.children=nodes;}
@@ -23,7 +25,7 @@ class Node{
  close(){}
  focus(){}
  showModal(){global.lastDraftDialog=this;const actions=this.children[2];Promise.resolve().then(()=>actions.children[global.draftDialogAnswer===false?0:1].onclick());}
- remove(){this.isConnected=false;}
+ remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(n=>n!==this);this.parentElement=null;this.isConnected=false;}
 }
 function input(root,id,value='',type='text',className=''){
  const node=new Node(type==='select-one'?'select':'input');Object.assign(node,{root,id,value,type,name:'',className,disabled:false,readOnly:false,checked:false,options:[]});
@@ -32,7 +34,7 @@ function input(root,id,value='',type='text',className=''){
  node.add=option=>node.options.push(option);return node;
 }
 function makeEditor(env,record='new',count=6){
- const root=new Node(),host=new Node();root.env=env;host.dataset={amScreen:'work',amMode:record==='new'?'new':'edit',amRecord:record};
+ const root=new Node(),host=new Node();root.env=env;host.dataset={amScreen:env.module||'work',amMode:record==='new'?'new':'edit',amRecord:record};
  root.fields=[input(root,'customer'),input(root,'product'),input(root,'date','','date')];
  const password=input(root,'password','never-store','password');root.fields.push(password);
  const readonly=input(root,'workOrderNo','auto');readonly.readOnly=true;root.fields.push(readonly);
@@ -40,13 +42,14 @@ function makeEditor(env,record='new',count=6){
  function addRow(){const row={fields:[input(root,'','NMP','select-one','material-name-select'),input(root,'','','text','material-lot-manual'),input(root,'','','number','plan-input')],querySelector:()=>({click:()=>{const last=body.children.pop();root.fields=root.fields.filter(n=>!last.fields.includes(n));}})};row.fields[0].options=[{value:'NMP'},{value:'SBR'}];body.children.push(row);root.fields.push(...row.fields);}
  for(let i=0;i<count;i++)addRow();
  root.querySelectorAll=selector=>selector==='input,select,textarea'?root.fields:selector==='#workMaterialTable tbody tr'?body.children:[];
- root.querySelector=selector=>selector==='[data-qmes-draft-bar]'?root.children.find(n=>n.dataset.qmesDraftBar):selector==='#workMaterialTable tbody'?body:selector==='#workRowAdd'?{click:addRow}:null;
+ const actions=new Node(),saveAction=new Node('button');saveAction.textContent='저장';actions.append(saveAction);actions.querySelector=selector=>selector==='[data-am-save]'?saveAction:null;root.actions=actions;
+ root.querySelector=selector=>selector==='.am-detail-actions'?actions:selector==='[data-qmes-draft-bar]'?root.children.find(n=>n.dataset.qmesDraftBar):selector==='#workMaterialTable tbody'?body:selector==='#workRowAdd'?{click:addRow}:null;
  host.querySelector=selector=>selector==='.am-detail-pane'?root:null;
  const workspace=new Node();workspace.classList={contains:()=>env.open};workspace.querySelector=()=>host;
  return {root,host,workspace,body,addRow};
 }
-function environment(storage){
- const listeners={},windowEvents={},env={storage,open:true,fetches:[],response:null,emit:(name,event)=>{for(const fn of listeners[name]||[])fn(event);}};
+function environment(storage,module='work'){
+ const listeners={},windowEvents={},env={storage,module,open:true,fetches:[],response:null,emit:(name,event)=>{for(const fn of listeners[name]||[])fn(event);}};
  env.editor=makeEditor(env);
  const doc={readyState:'complete',head:new Node(),body:new Node(),hidden:false,addEventListener(name,fn){(listeners[name]||=[]).push(fn);},querySelectorAll:()=>[],querySelector:()=>null,getElementById:id=>id==='mainWorkspace'?env.editor.workspace:null,createElement:tag=>new Node(tag)};
  const win={document:doc,localStorage:storage,__QMES_CURRENT_USER__:{id:'user-A'},crypto:{randomUUID:()=>Math.random().toString()},qmesAuthDataReady:{wait:()=>Promise.resolve()},qmesLastView:{isRestoring:()=>false},location:{href:'https://qmes.example/',origin:'https://qmes.example'},getComputedStyle:()=>({display:'block'}),requestAnimationFrame:fn=>setTimeout(fn,0),setTimeout,clearTimeout,confirm:()=>true,addEventListener(name,fn){windowEvents[name]=fn;},fetch(input,options){env.fetches.push({input,options});return env.response?env.response():Promise.resolve({ok:true,clone:()=>({json:async()=>({success:true})})});}};
@@ -96,6 +99,18 @@ async function run(){
  reopened.editor.root.fields[0].value='새로운 미완성';await reopenedSave().onclick();
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'새로운 미완성');
  const discarded=environment(manualStorage);await tick();await discarded.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='버리기').onclick();assert.equal(manualStorage.getItem(manualKey),null);assert.equal(discarded.fetches.length,0);
+ const incomingStorage=new Storage(),incoming=environment(incomingStorage,'incoming');await tick();
+ const topDraft=()=>incoming.editor.root.actions.children.find(n=>n.textContent==='임시저장');
+ assert.ok(topDraft());assert.equal(topDraft().nextElementSibling.textContent,'저장');
+ assert.equal(incoming.editor.root.querySelector('[data-qmes-draft-bar]').children.some(n=>n.textContent==='임시저장'),false);
+ incoming.editor.root.fields[0].value='미완성 수입검사';await topDraft().onclick();
+ incoming.win.qmesFormDrafts.rescan();await tick();assert.equal(incoming.editor.root.actions.children.filter(n=>n.textContent==='임시저장').length,1);
+ const incomingAgain=environment(incomingStorage,'incoming');await tick();
+ const incomingBar=()=>incomingAgain.editor.root.querySelector('[data-qmes-draft-bar]');
+ assert.ok(incomingBar().children.find(n=>n.textContent==='취소'));
+ await incomingBar().children.find(n=>n.textContent==='임시저장 불러오기').onclick();assert.equal(incomingAgain.editor.root.fields[0].value,'미완성 수입검사');
+ const incomingCancel=environment(incomingStorage,'incoming');await tick();
+ await incomingCancel.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='취소').onclick();assert.equal(incomingStorage.getItem(core.keyOf('user-A','incoming','new','new')),null);
  const env=environment(storage);await tick();type(env,0,'현대자동차');type(env,1,'NBA20HM05');
  const draftKey=core.keyOf('user-A','work','new','new');let saved=JSON.parse(storage.getItem(draftKey));assert.ok(saved);assert.equal(saved.fields.some(f=>f.value==='never-store'||f.value==='auto'),false);assert.equal(env.fetches.length,0);
  env.editor.addRow();type(env,env.editor.root.fields.length-2,'LOT-7');assert.equal(JSON.parse(storage.getItem(draftKey)).rows.work,7);
