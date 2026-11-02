@@ -23,7 +23,7 @@ function environment(){
  context.window=context;vm.runInNewContext(source,context);
  return {context,doc,requests,timers,get dialog(){return dialog;}};
 }
-const data=lot=>({holds:[{id:1,lot,reason:'품질 확인',created_at:'2026-11-02T00:00:00Z'}],events:[],canRelease:true});
+const data=lot=>({holds:[{id:83,lot,reason:'품질 확인',created_at:'2026-11-02T00:00:00Z'}],events:[],canRelease:true});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 async function run(){
  const e=environment();assert.ok(e.dialog,'dialog should be prepared before first click');assert.equal(e.dialog.open,false);assert.equal(e.requests.length,0);
@@ -34,7 +34,9 @@ async function run(){
  const first=e.requests[0];assert.ok(first.url.endsWith('/holds?lot='));
  e.dialog.querySelector('[name="lot"]').value='LOT-B';const next=e.dialog.querySelector('[data-load]').onclick();
  assert.equal(first.options.signal.aborted,true,'previous request is cancelled');
- e.requests[1].resolve(data('LOT-B'));await next;assert.match(e.dialog.querySelector('tbody').innerHTML,/LOT-B/);assert.equal(e.dialog.querySelector('.qgate-count').textContent,'조회 1건');
+ const ordered=data('LOT-B');ordered.holds.push({...ordered.holds[0],id:901,lot:'LOT-C'});e.requests[1].resolve(ordered);await next;assert.match(e.dialog.querySelector('tbody').innerHTML,/LOT-B/);assert.equal(e.dialog.querySelector('.qgate-count').textContent,'조회 2건');
+ assert.match(e.dialog.querySelector('tbody').innerHTML,/<tr><td>1<\/td>/);assert.doesNotMatch(e.dialog.querySelector('tbody').innerHTML,/<tr><td>83<\/td>/);
+ assert.match(e.dialog.querySelector('tbody').innerHTML,/<tr><td>2<\/td>/);assert.match(e.dialog.querySelector('tbody').innerHTML,/data-release="901"/);
  first.resolve(data('STALE-LOT'));await tick();assert.doesNotMatch(e.dialog.querySelector('tbody').innerHTML,/STALE-LOT/);
  assert.equal(e.dialog.querySelector('.qgate-scroll').attrs['aria-busy'],'false');
  const failure=e.dialog.querySelector('[data-load]').onclick();e.requests[2].fail('조회 오류');await failure;
@@ -53,6 +55,6 @@ async function run(){
  assert.ok(e.requests[6].url.endsWith('/hold'));assert.equal(e.requests[6].options.method,'POST');assert.equal(JSON.parse(e.requests[6].options.body).lot,'LOT-M');
  e.requests[6].resolve({id:9});await tick();e.requests[7].resolve({holds:[],events:[],canRelease:false});await post;
  assert.equal(e.dialog.querySelector('[data-submit]').disabled,false);
- console.log('PASS: prepared dialog, immediate loading, stale response isolation, close cancellation, timeout/retry, unchanged explicit hold submission');
+ console.log('PASS: sequential row numbering, centered cells, dialog-level scrolling, prepared dialog, immediate loading, stale response isolation, close cancellation, timeout/retry, unchanged explicit hold submission');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});
