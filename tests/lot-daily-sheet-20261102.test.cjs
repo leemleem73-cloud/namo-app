@@ -7,6 +7,12 @@ sources[2].rows=[{id:1,date:'2026-10-05',lot:'RM-1',items:[{name:'외관',value:
 sources[3].rows=[{id:2,date:'2026-10-06',lot:'LOT-1',check:'점도',value:'12',judge:'합격'},{id:3,date:'2026-10-07',lot:'LOT-10'}];
 sources[7].rows=[{record_key:'erp:shipping',payload:{rows:[{id:8,lot:'LOT-1',shipDate:'2026-10-08',customer:'고객사',qty:100,status:'출하'}]}}];
 sources[8].rows=[{id:4,report_no:'NCR-4',lot:'LOT-2',occurred_on:'2026-10-06',description:'<script>unsafe()</script>',status:'OPEN'}];
+
+assert.equal(daily.formatValue('1498'),'1,498');assert.equal(daily.formatValue('20.126'),'20.126');assert.equal(daily.formatValue('0'),'0');assert.equal(daily.formatValue(['1498','1498','1493']),'1,498 / 1,498 / 1,493');assert.equal(daily.formatValue('Overflow'),'Overflow');
+const facts=daily.inspectionFacts({measurements:{viscosity:[1498,1498,1493],solid:[20.126,20.224,20.202]},judge:'합격'});
+assert.equal(facts.length,2);assert.equal(facts[0].label,'점도');assert.equal(facts[0].value,'1,498 / 1,498 / 1,493');assert.equal(facts[1].value,'20.126 / 20.224 / 20.202');assert.equal(facts[1].judge,'합격');
+assert.equal(daily.inspectionFacts({items:[{name:'원본시트',value:'26년'},{name:'외관',value:'이상없음',judge:'합격'}]}).length,1);
+
 const model=daily.buildDay(sources,'2026-10-06',context.graph);assert.equal(model.orders.length,2);assert.equal(model.lotCount,2);assert.equal(model.inspectionCount,2,'shared raw inspection counted once');assert.equal(model.ncrCount,1);assert.equal(model.shippingCount,1);
 assert.equal(model.entries.some(row=>row.lot==='LOT-10'),false);assert.ok(model.entries.some(row=>row.date==='2026-10-05'&&row.type==='수입검사'));assert.ok(model.entries.some(row=>row.date==='2026-10-08'&&row.type==='출하'));assert.ok(model.entries.some(row=>row.type==='원료 투입'&&row.detail.includes('99')));
 const html=daily.markup(model);assert.match(html,/WO-1/);assert.match(html,/WO-2/);assert.doesNotMatch(html,/WO-3/);assert.doesNotMatch(html,/<script>|<details/);assert.match(html,/&lt;script&gt;/);assert.match(html,/실제 이력 날짜/);
