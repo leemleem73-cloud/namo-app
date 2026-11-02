@@ -100,17 +100,49 @@
       }finally{confirming=false;if(priorFocus?.isConnected)priorFocus.focus();}
     }
     function registrationLabels(ctx){return ctx.mode==='new'||ctx.module==='incoming';}
+    function addClass(node,name){
+      const classes=new Set(String(node.className||'').split(/\s+/).filter(Boolean));classes.add(name);node.className=[...classes].join(' ');
+    }
+    function registrationActions(ctx,save){
+      let actions=ctx.root.querySelector('.am-detail-actions');
+      if(!actions&&ctx.module==='purchase'){
+        const header=ctx.root.querySelector('.panel>header');
+        if(header){
+          actions=header.querySelector('.qmes-registration-actions');
+          if(!actions){actions=doc.createElement('div');header.append(actions);const back=header.querySelector('#npo-close');if(back){addClass(back,'qmes-registration-back');actions.append(back);}}
+        }
+      }
+      if(!actions&&ctx.module==='ncr')actions=ctx.root.querySelector('.ncr-editor-toolbar>span');
+      if(!actions){
+        const title=ctx.root.querySelector('.qce-modal>h3,.eq-wo-form>h3');
+        const header=ctx.root.querySelector('.qmes-registration-header');
+        if(header)actions=header.querySelector('.qmes-registration-actions');
+        else if(title){
+          const row=doc.createElement('div');row.className='qmes-registration-header';
+          title.before(row);row.append(title);actions=doc.createElement('div');row.append(actions);
+        }
+      }
+      actions=actions||save.parentElement;
+      if(!actions)return null;
+      addClass(actions,'qmes-registration-actions');
+      if(save.parentElement!==actions)actions.append(save);
+      addClass(save,'qmes-registration-save');save.textContent='저장';
+      return actions;
+    }
     function placeSaveButton(ctx,button=ctx.saveButton){
       if(!button)return;
       if(ctx.mode==='new'){
-        const save=ctx.root.querySelector('[data-am-save],#npo-save,.qce-modal-foot [data-save],#ncr-editor-save,.eq-wo-form footer button[type="submit"]')
+        ctx.root.dataset.qmesRegistration='1';
+        const save=ctx.root.querySelector('[data-am-save],#npo-save,.qce-modal [data-save],#ncr-editor-save,.eq-wo-form button[type="submit"]')
           ||ctx.root.querySelector('.am-detail-actions')?.querySelector('[data-am-save]')
           ||doc.getElementById('workspaceFoot')?.querySelector('[data-am-save]');
-        const actions=save?.parentElement;
-        if(actions){
-          button.className=save.className||'am-top-btn primary';
-          if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);
-          return;
+        if(save){
+          const actions=registrationActions(ctx,save);
+          if(actions){
+            button.className='am-top-btn primary qmes-registration-draft';
+            if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);
+            return;
+          }
         }
       }
       button.className='am-top-btn primary';
@@ -226,20 +258,20 @@
       return promise;
     };
     function authorize(){const gate=win.qmesAuthDataReady;Promise.resolve(gate?.wait()).then(()=>{authorized=actor();schedule();});}
-    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.qmes-draft-confirm{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;padding:20px;border:1px solid #cbd8e5;border-radius:12px;background:#fff;color:#244260;box-shadow:0 18px 50px rgba(24,49,75,.22);font-family:inherit}.qmes-draft-confirm::backdrop{background:rgba(24,49,75,.35)}.qmes-draft-confirm h3{margin:0 0 12px;font-size:15px;font-weight:800;color:#244260}.qmes-draft-confirm p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#244260}.qmes-draft-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.qmes-draft-confirm-actions button{height:32px;min-width:62px;padding:0 12px;border:1px solid #cbd8e5;border-radius:6px;background:#fff;color:#244260;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmes-draft-confirm-actions button.primary{background:#e8f0f8}.qmes-draft-confirm-actions button:hover{filter:brightness(.97)}.qmes-draft-confirm-actions button:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.am-split[data-am-screen="incoming"] [data-qmes-draft-bar]{display:none!important}';doc.head.append(style);
+    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.qmes-draft-confirm{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;padding:20px;border:1px solid #cbd8e5;border-radius:12px;background:#fff;color:#244260;box-shadow:0 18px 50px rgba(24,49,75,.22);font-family:inherit}.qmes-draft-confirm::backdrop{background:rgba(24,49,75,.35)}.qmes-draft-confirm h3{margin:0 0 12px;font-size:15px;font-weight:800;color:#244260}.qmes-draft-confirm p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#244260}.qmes-draft-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.qmes-draft-confirm-actions button{height:32px;min-width:62px;padding:0 12px;border:1px solid #cbd8e5;border-radius:6px;background:#fff;color:#244260;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmes-draft-confirm-actions button.primary{background:#e8f0f8}.qmes-draft-confirm-actions button:hover{filter:brightness(.97)}.qmes-draft-confirm-actions button:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.am-split[data-am-screen="incoming"] [data-qmes-draft-bar]{display:none!important}[data-qmes-registration="1"] [data-qmes-draft-bar]{display:none!important}.qmes-registration-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}.qmes-registration-header>h3{margin:0!important}.qmes-registration-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;margin-left:auto!important;flex-wrap:wrap!important}.qmes-registration-actions>.qmes-registration-draft,.qmes-registration-actions>.qmes-registration-save{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;flex:none!important;width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 11px!important;border:1px solid #2f8de4!important;border-radius:3px!important;background:#2f8de4!important;background-image:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important;line-height:normal!important;letter-spacing:normal!important;box-shadow:none!important;text-shadow:none!important;cursor:pointer!important}.qmes-registration-actions>.qmes-registration-back{height:28px!important;padding:0 11px!important;margin:0!important;border:1px solid #cfd7e1!important;border-radius:3px!important;background:#fff!important;color:#415267!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important}.qmes-registration-actions>button:focus-visible{outline:2px solid #173d6f!important;outline-offset:2px!important}';doc.head.append(style);
     let replayingSave=false;
-    async function confirmIncomingSave(event){
-      const button=event.target.closest?.('[data-am-save],#modalSave,#iqcEditSave');
+    async function confirmRegistrationSave(event){
+      const button=event.target.closest?.('.qmes-registration-save,[data-am-save],#modalSave,#iqcEditSave,#npo-save,.qce-modal [data-save],#ncr-editor-save,.eq-wo-form button[type="submit"]');
       if(!button||button.disabled||replayingSave)return;
       ensure();
       const ctx=active;
-      if(!ctx||ctx.module!=='incoming'||!allowed())return;
+      if(!ctx||(ctx.mode!=='new'&&ctx.module!=='incoming')||!allowed())return;
       event.preventDefault();event.stopImmediatePropagation();
       if(!await confirmDraft(ctx,'저장하시겠습니까?')||!button.isConnected||button.disabled)return;
       replayingSave=true;
       try{button.click();}finally{replayingSave=false;}
     }
-    win.addEventListener('click',confirmIncomingSave,true);
+    win.addEventListener('click',confirmRegistrationSave,true);
     function boot(){doc.addEventListener('input',changed,true);doc.addEventListener('change',changed,true);doc.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))flush();schedule();},true);new MutationObserver(schedule).observe(doc.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','data-am-record','data-am-mode']});authorize();}
     win.addEventListener('qmes-authenticated',authorize);win.addEventListener('pagehide',()=>flush());win.addEventListener('beforeunload',()=>flush());doc.addEventListener('visibilitychange',()=>{if(doc.hidden)flush();});
     win.qmesFormDrafts={flush:()=>flush(),rescan:schedule,beginSave,completeSave};
