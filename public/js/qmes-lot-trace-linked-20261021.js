@@ -87,5 +87,10 @@ window.addEventListener('click',event=>{const button=event.target.closest?.('#lo
 window.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.id==='lotQueryInput'){event.preventDefault();event.stopImmediatePropagation();search();}},true);
 $('#lotRange').addEventListener('change',()=>{if(last)render(last);});$('#lotQueryInput').addEventListener('input',()=>{invalidate();status('재조회 필요','LOT 번호가 변경되었습니다.');});
 const style=document.createElement('style');style.textContent='#lotTrace .lot-detail-grid{grid-template-columns:minmax(0,1fr)!important}#lotTrace .lot-detail-box{min-width:0}#lotTrace .lot-trace-warning{margin:14px;padding:12px;background:#fff7e8;color:#8a5511;border-radius:6px}#lotTrace .lot-trace-note{padding:12px;color:#63758a;font-size:12px}';document.head.append(style);
+window.qmesLotTrace={openLot(value,requested='finished'){
+ const query=norm(value);if(!query)return;
+ const next=['raw','intermediate','finished'].includes(requested)?requested:'finished';
+ reset(next);$('#lotQueryInput').value=query;return search();
+}};
 reset();
 })();
