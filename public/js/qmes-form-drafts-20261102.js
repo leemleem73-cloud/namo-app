@@ -9,7 +9,7 @@
 })(function(){
   'use strict';
   const PREFIX='qmes-form-draft-v1:',TTL=30*24*60*60*1000;
-  const labels={orders:'수주납기',purchase:'구매발주',work:'작업지시서',incoming:'수입검사',process:'공정검사',outgoing:'출하검사',standard:'문서관리',equipment:'설비관리',changeControl:'변경관리',instrumentMgmt:'계측기관리',calibrationMgmt:'검교정관리',ncr:'부적합'};
+  const labels={inventory:'재고현황',lotTrace:'LOT 추적',quality:'품질관리',approval:'전자결재',adminEmployees:'직원등록',orders:'수주납기',purchase:'구매발주',work:'작업지시서',incoming:'수입검사',process:'공정검사',outgoing:'출하검사',standard:'문서관리',equipment:'설비관리',changeControl:'변경관리',instrumentMgmt:'계측기관리',calibrationMgmt:'검교정관리',ncr:'부적합'};
   const paths={orders:/^\/api\/(?:qmes\/orders|qmes-sync\/orders?|orders)(?:\/[^/]+)?$/,purchase:/^\/api\/purchase-orders(?:\/[^/]+)?$/,work:/^\/api\/qmes\/work-orders(?:\/[^/]+)?$/,incoming:/^\/api\/iqc(?:\/[^/]+)?$/,process:/^\/api\/(?:qmes-sync\/pqc\/(?:save-row|register)|qmes\/inspections\/process(?:\/[^/]+)?)$/,outgoing:/^\/api\/(?:qmes-sync\/oqc\/(?:save-row|register)|qmes\/inspections\/outgoing(?:\/[^/]+)?)$/,standard:/^\/api\/qmes\/standard-documents(?:\/[^/]+)?$/,changeControl:/^\/api\/qmes-change(?:\/[^/]+)?$/,instrumentMgmt:/^\/api\/qmes-instruments(?:\/[^/]+)?$/,calibrationMgmt:/^\/api\/qmes-calibrations(?:\/[^/]+)?$/,equipment:/^\/api\/(?:qmes\/equipment|qmes-sync\/equipment)(?:\/[^/]+)?$/,ncr:/^\/api\/(?:qmes\/ncr|qmes-ncr)(?:\/[^/]+)?$/};
   function keyOf(actor,module,mode,record){return PREFIX+[actor,module,mode,record||'new'].map(encodeURIComponent).join(':');}
   function signature(fields,rows){return JSON.stringify({fields,rows});}
@@ -99,13 +99,21 @@
         return accepted&&allowed()&&active===ctx&&ctx.root.isConnected&&ctx.revision===currentRevision;
       }finally{confirming=false;if(priorFocus?.isConnected)priorFocus.focus();}
     }
+    function registrationLabels(ctx){return ctx.mode==='new'||ctx.module==='incoming';}
     function placeSaveButton(ctx,button=ctx.saveButton){
       if(!button)return;
-      if(ctx.module==='incoming'&&ctx.mode==='new'){
-        const actions=ctx.root.querySelector('.am-detail-actions');
-        const save=actions?.querySelector('[data-am-save]');
-        if(save){if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);return;}
+      if(ctx.mode==='new'){
+        const save=ctx.root.querySelector('[data-am-save],#npo-save,.qce-modal-foot [data-save],#ncr-editor-save,.eq-wo-form footer button[type="submit"]')
+          ||ctx.root.querySelector('.am-detail-actions')?.querySelector('[data-am-save]')
+          ||doc.getElementById('workspaceFoot')?.querySelector('[data-am-save]');
+        const actions=save?.parentElement;
+        if(actions){
+          button.className=save.className||'am-top-btn primary';
+          if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);
+          return;
+        }
       }
+      button.className='am-top-btn primary';
       const node=bar(ctx);if(button.parentElement!==node)node.append(button);
     }
     function show(ctx,message,recover){
@@ -115,8 +123,8 @@
       const text=doc.createElement('span');text.textContent=message;node.append(text);
       ctx.saveButton?.remove();const save=doc.createElement('button');ctx.saveButton=save;save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();return saveDraft(ctx);};placeSaveButton(ctx,save);
       if(recover){
-        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent=ctx.module==='incoming'?'임시저장 불러오기':'복구';restore.onclick=async()=>{if(await confirmDraft(ctx,ctx.module==='incoming'?'임시저장한 내용을 불러오시겠습니까?':'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
-        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent=ctx.module==='incoming'?'취소':'버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,ctx.module==='incoming'?'임시저장을 취소하시겠습니까?':'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,ctx.module==='incoming'?'임시저장을 취소했습니다.':'임시저장을 버렸습니다.',false);};node.append(discard);
+        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent=registrationLabels(ctx)?'임시저장 불러오기':'복구';restore.onclick=async()=>{if(await confirmDraft(ctx,registrationLabels(ctx)?'임시저장한 내용을 불러오시겠습니까?':'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
+        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent=registrationLabels(ctx)?'취소':'버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,registrationLabels(ctx)?'임시저장을 취소하시겠습니까?':'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,registrationLabels(ctx)?'임시저장을 취소했습니다.':'임시저장을 버렸습니다.',false);};node.append(discard);
       }
     }
     async function saveDraft(ctx){
@@ -146,7 +154,7 @@
       const found=locate();if(!found){if(active)flush(active);active=null;return;}
       const key=keyOf(authorized,found.module,found.mode,found.record);
       if(active&&active.root===found.root&&active.key===key){placeSaveButton(active);return;}
-      if(active)flush(active);
+      if(active){flush(active);active.saveButton?.remove();}
       let ctx=contexts.get(found.root);
       if(!ctx||ctx.key!==key){
         ctx={...found,key,actor:authorized,dirty:false,pending:null,revision:revision(),timer:null};const data=snapshot(ctx);ctx.baseline=ctx.last=signature(data.fields,data.rows);contexts.set(found.root,ctx);
@@ -154,7 +162,7 @@
         if(prior){ctx.pending=prior;show(ctx,'작성 중 임시저장 · '+new Date(prior.at).toLocaleString('ko-KR')+(prior.files?.length?' · 첨부파일은 다시 선택해 주세요.':''),true);}
         else show(ctx,'입력 변경 시 자동으로 임시저장됩니다.',false);
       }
-      active=ctx;
+      active=ctx;placeSaveButton(ctx);
     }
     function schedule(){if(!queued){queued=true;win.requestAnimationFrame(ensure);}}
     function setRows(ctx,prior){
@@ -185,7 +193,7 @@
         if(!allowed()||active!==ctx)return;
         // Material selections can replace dependent LOT controls on the next frame.
         applyFields(ctx,prior);ctx.pending=null;ctx.dirty=true;ctx.revision=revision();ctx.last='';
-        show(ctx,(ctx.module==='incoming'?'임시저장한 내용을 불러왔습니다.':'임시저장을 복구했습니다.')+(prior.files?.length?' 첨부파일은 다시 선택해 주세요.':''),false);
+        show(ctx,(registrationLabels(ctx)?'임시저장한 내용을 불러왔습니다.':'임시저장을 복구했습니다.')+(prior.files?.length?' 첨부파일은 다시 선택해 주세요.':''),false);
       }finally{restoring--;}
       flush(ctx);
     }
