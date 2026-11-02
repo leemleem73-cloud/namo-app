@@ -25,15 +25,16 @@ class Node{
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 
 async function run(){
- const root=new Node(),anchor=root.querySelector('.lot-search-card'),range=new Node('select'),rangeField=new Node(),docEvents={},requests=[],traceCalls=[];
+ const root=new Node(),anchor=root.querySelector('.lot-search-card'),range=new Node('select'),rangeField=new Node(),docEvents={},requests=[],traceCalls=[],sheetCalls=[];
  rangeField.append(range);
- const document={body:new Node(),head:new Node(),getElementById:id=>id==='lotRange'?range:id==='lotTrace'?root:id==='lotResultTitle'?new Node():null,createElement:tag=>new Node(tag),addEventListener(type,fn){(docEvents[type]||=[]).push(fn);}};
- const win={document,innerWidth:1280,innerHeight:720,Event:class{constructor(type){this.type=type;}},setTimeout,clearTimeout,addEventListener(){},qmesLotTrace:{openLot(...args){traceCalls.push(args);}},fetch(url,options){return new Promise((resolve,reject)=>requests.push({url,options,resolve(rows){resolve({ok:true,json:async()=>({success:true,data:rows})});},reject}));}};
+ const document={dispatchEvent(event){for(const fn of docEvents[event.type]||[])fn(event);},body:new Node(),head:new Node(),getElementById:id=>id==='lotRange'?range:id==='lotTrace'?root:id==='lotResultTitle'?new Node():null,createElement:tag=>new Node(tag),addEventListener(type,fn){(docEvents[type]||=[]).push(fn);}};
+ const win={CustomEvent:class{constructor(type){this.type=type;}},qmesLotDaily:{open(date){sheetCalls.push(date);}},document,innerWidth:1280,innerHeight:720,Event:class{constructor(type){this.type=type;}},setTimeout,clearTimeout,addEventListener(){},qmesLotTrace:{openLot(...args){traceCalls.push(args);}},fetch(url,options){return new Promise((resolve,reject)=>requests.push({url,options,resolve(rows){resolve({ok:true,json:async()=>({success:true,data:rows})});},reject}));}};
  core.install(win);const panel=anchor.inserted,$=s=>panel.querySelector(s),start=$('[data-date-start]'),end=$('[data-date-end]'),kind=$('[data-date-kind]');assert.equal(kind.value,'work');
  const toggle=range.beforeNode.children.find(node=>node.className?.includes('lot-date-toggle'));for(const fn of toggle.listeners.click)fn();
  const click=(key,value)=>{const button=new Node('button');button.hasAttribute=name=>name===key;button.dataset=value||{};for(const fn of panel.listeners.click)fn({target:{closest:()=>button}});};
  start.value='2026-11-03';end.value='2026-11-02';click('data-date-search');assert.equal(requests.length,0);
  start.value='2026-11-01';end.value='2026-11-02';click('data-date-search');assert.equal(requests.length,1);assert.equal(requests[0].url,'/api/qmes/work-orders');requests[0].resolve(orders);await tick();
+ $('[data-sheet-date]').value='2026-11-01';click('data-date-sheet');assert.deepEqual(sheetCalls,['2026-11-01']);
  assert.match($('.lot-date-results').innerHTML,/FIN-1/);assert.doesNotMatch($('.lot-date-results').innerHTML,/FUTURE/);assert.match($('.lot-date-message').textContent,/조회 2건/);assert.match($('.lot-date-results').innerHTML,/계획수량/);
  for(const fn of panel.listeners.click)fn({target:start});const calendar=document.body.children.find(node=>node.className==='lot-date-calendar');assert.ok(calendar);assert.equal(calendar.style.width,'220px');assert.match(calendar.innerHTML,/has-record/);
  const dayButton=new Node('button');dayButton.dataset.calDay='2026-11-01';dayButton.hasAttribute=()=>false;for(const fn of calendar.listeners.click)fn({preventDefault(){},target:{closest:()=>dayButton}});
