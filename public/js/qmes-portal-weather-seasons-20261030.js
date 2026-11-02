@@ -146,7 +146,8 @@ weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  const data=saved?.data,c=data?.current_condition?.[0];const big=document.createElement('div');big.className='portal-weather-big';big.textContent=c?weather.querySelector('.portal-weather-icon').textContent+' '+weather.querySelector('.portal-weather-current').textContent:lastWeatherError||'날씨 불러오는 중';dialog.append(big);
  if(c){const metrics=document.createElement('div');metrics.className='portal-weather-metrics';metrics.textContent='습도 '+c.humidity+'% · 바람 '+c.windspeedKmph+' km/h';dialog.append(metrics);
  (data.weather||[]).slice(0,3).forEach((day,i)=>dialog.append(forecastDayRow(day,i)));}
- const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||lastWeatherError||'현재 날씨를 확인 중입니다.');dialog.append(foot);
+ const foot=document.createElement('footer');foot.textContent='제공 '+(data?.provider||'wttr.in')+' · '+(c?.localObsDateTime||lastWeatherError||'현재 날씨를 확인 중입니다.');
+ if(data?.source==='metno'){const credit=document.createElement('a');credit.href='https://www.met.no/en/free-meteorological-data/Licensing-and-crediting';credit.target='_blank';credit.rel='noopener noreferrer';credit.textContent=' · CC BY 4.0';foot.append(credit);const note=document.createElement('div');note.textContent=data.forecastNote||'';foot.append(note);}dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
  function centerWeatherDialog(){
   if(!dialog.open)return;
@@ -244,7 +245,7 @@ function paint(data,cached=false,fallback=false,city=''){
  weather.querySelector('.portal-weather-icon').textContent=condition.icon;
  weather.querySelector('.portal-weather-current').textContent=Math.round(Number(c.temp_C))+'° · '+condition.label;
  weather.querySelector('.portal-weather-range').textContent=d?'최저 '+d.mintempC+'° / 최고 '+d.maxtempC+'°':'';
- weather.title=areaLabel+' · '+(fallback?'기본 지역 · ':'')+(cached?'최근 조회 정보':'최근 제공 날씨')+' · '+String(c.localObsDateTime||c.observation_time||'');
+ weather.title=areaLabel+' · '+(fallback?'기본 지역 · ':'')+(cached?'최근 조회 정보':data.source==='metno'?'현재 시간대 예보':'최근 제공 날씨')+' · '+String(c.localObsDateTime||c.observation_time||'');
 }
 async function fetchWeatherJson(url,timeout=7000){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
@@ -254,7 +255,7 @@ async function fetchWeatherJson(url,timeout=7000){
 }
 async function loadWeather(place){
  try{
-  const result=await fetchWeatherJson('/api/qmes-portal-weather?lat='+place.lat+'&lon='+place.lon,7500);
+  const result=await fetchWeatherJson('/api/qmes-portal-weather?lat='+place.lat+'&lon='+place.lon,14500);
   if(!result.success||!result.data?.current_condition?.length)throw Error('날씨 응답 없음');
   return {data:result.data,at:result.at||Date.now(),cached:!!result.cached};
  }catch(_){
