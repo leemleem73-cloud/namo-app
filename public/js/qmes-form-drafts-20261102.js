@@ -79,10 +79,10 @@
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
       node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
-      const save=doc.createElement('button');save.type='button';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();saveDraft(ctx);};node.append(save);
+      const save=doc.createElement('button');save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();saveDraft(ctx);};node.append(save);
       if(recover){
-        const restore=doc.createElement('button');restore.type='button';restore.textContent='복구';restore.onclick=()=>restoreDraft(ctx);node.append(restore);
-        const discard=doc.createElement('button');discard.type='button';discard.textContent='버리기';discard.onclick=()=>{if(!win.confirm('임시저장한 내용을 버리시겠습니까? 현재 입력 중인 내용은 유지됩니다.'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
+        const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent='복구';restore.onclick=()=>restoreDraft(ctx);node.append(restore);
+        const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent='버리기';discard.onclick=()=>{if(!win.confirm('임시저장한 내용을 버리시겠습니까? 현재 입력 중인 내용은 유지됩니다.'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,'임시저장을 버렸습니다.',false);};node.append(discard);
       }
     }
     function saveDraft(ctx){
@@ -184,7 +184,7 @@
       return promise;
     };
     function authorize(){const gate=win.qmesAuthDataReady;Promise.resolve(gate?.wait()).then(()=>{authorized=actor();schedule();});}
-    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d9e6f0;border-radius:5px;background:#f5faff;color:#57738b;font:12px/1.5 "Malgun Gothic",sans-serif}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button{flex:none;border:1px solid #c9dcea;border-radius:4px;background:#fff;color:#27628e;padding:3px 9px;cursor:pointer;font:inherit}';doc.head.append(style);
+    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}';doc.head.append(style);
     function boot(){doc.addEventListener('input',changed,true);doc.addEventListener('change',changed,true);doc.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))flush();schedule();},true);new MutationObserver(schedule).observe(doc.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','data-am-record','data-am-mode']});authorize();}
     win.addEventListener('qmes-authenticated',authorize);win.addEventListener('pagehide',()=>flush());win.addEventListener('beforeunload',()=>flush());doc.addEventListener('visibilitychange',()=>{if(doc.hidden)flush();});
     win.qmesFormDrafts={flush:()=>flush(),rescan:schedule,beginSave,completeSave};
