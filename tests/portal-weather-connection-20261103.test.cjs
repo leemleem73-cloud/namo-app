@@ -6,8 +6,8 @@ test('weather relay validates coordinates, rounds them and shares a cached reque
  let count=0,url;const handler=createHandler({fetchJson:async value=>{count++;url=value;return data;}});
  const req={path:'/api/qmes-portal-weather',method:'GET',query:{lat:'36.991',lon:'127.926'}};
  const a=response(),b=response();await Promise.all([handler(req,a,()=>{}),handler(req,b,()=>{})]);
- assert.equal(count,1);assert.equal(a.body.data,data);assert.ok(url.includes('36.99,127.93'));
- await handler(req,response(),()=>{});assert.equal(count,1);
+ assert.equal(count,2);assert.equal(a.body.data,data);assert.ok(url.includes('36.99,127.93'));
+ await handler(req,response(),()=>{});assert.equal(count,2);
  const bad=response();await handler({...req,query:{lat:'',lon:'127'}},bad,()=>{});assert.equal(bad.code,400);
  const invalid=response();await handler({...req,query:{lat:'91',lon:'127'}},invalid,()=>{});assert.equal(invalid.code,400);
  let next=false;await handler({...req,path:'/other'},response(),()=>next=true);assert.ok(next);
@@ -47,3 +47,19 @@ test('failed refresh exposes reconnect and retries in one minute',async()=>{
  await ctx.refresh();assert.equal(node('.portal-weather-current').textContent,'날씨 연결 실패');assert.equal(node('.portal-weather-retry').hidden,false);assert.equal(node('.portal-weather-retry').disabled,false);assert.equal(timers.at(-1).ms,60000);
 });
 test('complete weather script compiles',()=>new vm.Script(source));
+test('independent MET forecast handles Korean dates, units, daily conditions and rejects stale data',()=>{
+ const {normalizeMetForecast,metCode}=require('../qmes-portal-weather-proxy-20261103.cjs');
+ const now=Date.parse('2026-11-03T00:00:00Z');
+ const rows=Array.from({length:72},(_,i)=>({time:new Date(now+i*3600000).toISOString(),data:{instant:{details:{air_temperature:10+i%12,relative_humidity:60,wind_speed:5}},next_1_hours:{summary:{symbol_code:i===0?'clearsky_day':'rain'}}}}));
+ const normalized=normalizeMetForecast({properties:{timeseries:rows}},now);
+ assert.equal(normalized.source,'metno');assert.equal(normalized.current_condition[0].windspeedKmph,'18');assert.equal(normalized.current_condition[0].temp_C,'10');assert.equal(normalized.weather[0].date,'2026-11-03');assert.equal(normalized.weather.length,3);
+ assert.equal(metCode('rainandthunder'),200);assert.equal(metCode('snow'),338);assert.equal(metCode('partlycloudy_day'),116);assert.equal(metCode('unknown'),null);
+ assert.throws(()=>normalizeMetForecast({properties:{timeseries:rows}},now+10*86400000));
+});
+test('relay can succeed from independent provider even when wttr is unreachable',async()=>{
+ const time=Date.parse('2026-11-03T00:00:00Z'),urls=[];
+ const payload={properties:{timeseries:[{time:new Date(time).toISOString(),data:{instant:{details:{air_temperature:14,relative_humidity:50,wind_speed:2}},next_1_hours:{summary:{symbol_code:'cloudy'}}}}]}};
+ const handler=createHandler({now:()=>time,fetchJson:async url=>{urls.push(url);if(url.includes('wttr'))throw Error('unreachable');return payload;}});
+ const res=response();await handler({path:'/api/qmes-portal-weather',method:'GET',query:{lat:'36.99',lon:'127.93'}},res,()=>{});
+ assert.equal(res.code,200);assert.equal(res.body.data.source,'metno');assert.equal(urls.length,1);
+});
