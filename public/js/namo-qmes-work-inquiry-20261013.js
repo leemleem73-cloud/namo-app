@@ -78,7 +78,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
  catch(error){console.error('[QMES work print]',error);window.alert('인쇄 화면을 열지 못했습니다. 다시 시도해주세요.');return false;}
 }
 const labels=['고객사','제품명','생산 LOT','진행상태','시작일자','종료일자','작업지시번호','설비명'];
-const indices=[2,3,4,9,8,8,1,5];
+const indices=[2,4,5,10,9,9,3,6];
 function init(){
  const section=document.getElementById('work');
  if(!section)return;
@@ -95,7 +95,7 @@ function init(){
  }
  section.querySelector('.page-head')?.remove();
  const panel=document.createElement('div');panel.id='namo-work-inquiry';
- panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+(i===3?'<select data-filter="'+i+'"><option value="">전체</option><option>대기</option><option>진행</option><option>완료</option></select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
+ panel.innerHTML='<div class="nwi-grid">'+labels.map((l,i)=>'<label><span>'+esc(l)+'</span>'+([0,1,2,3,6].includes(i)?'<select data-filter="'+i+'" aria-label="'+esc(l)+' 선택"><option value="">전체</option>'+(i===3?'<option>대기</option><option>진행</option><option>완료</option>':'')+'</select>':'<input data-filter="'+i+'" type="'+(i===4||i===5?'date':'text')+'" placeholder="전체">')+'</label>').join('')+'</div><div class="nwi-actions"><span class="nwi-count" aria-live="polite"></span><button type="button" class="btn" id="nwi-clear">조건 지우기</button><button type="button" class="btn primary" id="nwi-search">조회</button></div>';
  head.insertAdjacentElement('afterend',panel);
  // Date-range UI only: keep original start/end filters and their search behavior.
  (function installInstructionPeriod(){
@@ -213,7 +213,21 @@ function init(){
  let workPage=1,lastWorkQuery='',hasSearched=true;
  try{workPage=Math.max(1,Number(sessionStorage.getItem('namo-work-list-page'))||1);}catch(_){}
  const pager=document.createElement('div');pager.className='nwi-pagination';pager.setAttribute('aria-label','작업지시서 페이지');pager.style.cssText='display:flex;justify-content:center;gap:6px;padding:12px';tableWrap.insertAdjacentElement('afterend',pager);
+ function syncFilterChoices(){
+  const rows=getRows();
+  [0,1,2,3,6].forEach(index=>{
+   const select=panel.querySelector('[data-filter="'+index+'"]');if(!select)return;
+   const values=new Set(index===3?['대기','진행','완료']:[]);
+   rows.forEach(row=>{const value=row.cells[indices[index]]?.textContent.trim();if(value&&value!=='-')values.add(value);});
+   const current=select.value;if(current)values.add(current);
+   const items=[...values].sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+   const signature=JSON.stringify(items);if(select.dataset.nwiChoices===signature)return;
+   select.dataset.nwiChoices=signature;
+   select.replaceChildren(new Option('전체',''),...items.map(value=>new Option(value,value)));select.value=current;
+  });
+ }
  function filter(){
+  syncFilterChoices();
   ensureRowPrintButtons();
   const q=controls.map(x=>x.value.trim().toLowerCase());
   const range=panel.querySelector('.nwi-period-value')?.textContent||'';
@@ -229,7 +243,7 @@ function init(){
   const hasActiveFilters=q.some(v=>v!=='');
   const matching=!hasSearched?[]:!hasActiveFilters?rows:rows.filter(tr=>{
    const vals=[...tr.cells].map(td=>td.textContent.trim().toLowerCase());
-   return q.every((v,i)=>!v||(i===4?((vals[8]||'').split('~')[0].trim()>=v):i===5?((vals[8]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
+   return q.every((v,i)=>!v||(i===4?((vals[9]||'').split('~')[0].trim()>=v):i===5?((vals[9]||'').split('~').pop().trim()<=v):(vals[indices[i]]||'').includes(v)));
   });
   // Count the rows actually present, without changing how records are loaded.
   // Some legacy work-order rows do not carry data-work-saved/data-row.
@@ -279,6 +293,7 @@ function init(){
  });
  panel.querySelector('#nwi-clear').addEventListener('click',()=>{controls.forEach(x=>x.value='');hasSearched=false;workPage=1;filter()});
  controls.forEach(x=>x.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();hasSearched=true;workPage=1;filter()}}));
+ controls.filter(x=>x.tagName==='SELECT').forEach(select=>select.addEventListener('change',()=>{hasSearched=true;workPage=1;filter();}));
  function draw(row,order){
   const cells=[...row.cells].map(c=>c.textContent.trim()),fields=order?.fields||{};
   const value=(name,index)=>fields[name]??cells[index]??'-';
