@@ -1,0 +1,23 @@
+/* Shared cell typography: work-order list baseline is 12px for headers and values.
+   Screen only: no row dimensions, colors, borders, print layouts or calculations change. */
+@media screen{
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.module-body>table,.ip-table,.work-list-table,.work-material-table,.work-detail-table,.eq-table,.qce-table,.lot-detail-table,.quality-approval-table,.std-document-list,.std-result,.report-basic,.report-inspection,.pqc-detail-measure-table) :is(th,td){
+ font-size:12px!important;
+}
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.module-body>table,.ip-table,.work-list-table,.work-material-table,.work-detail-table,.eq-table,.qce-table,.lot-detail-table,.quality-approval-table,.std-document-list,.std-result,.report-basic,.report-inspection,.pqc-detail-measure-table) :is(th,td) :is(input,select,textarea,a,.spc-product-link,.eq-wo-name){
+ font-size:12px!important;
+}
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.form-item,.eq-reg-field,.qce-field) label,
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.std-info>.k,.std-info>.v,.detail-grid>.key,.detail-grid>div,.eq-spec-list>.key,.eq-spec-list>.val,.nwd-cell>b,.nwd-cell>span){
+ font-size:12px!important;
+}
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.form-item,.eq-reg-field,.std-info,.work-form,.qce-field,.detail-grid) :is(input,select,textarea),
+html body :is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace):is(#orders,#purchase,#work,#incoming,#process,#outgoing,#ncr,#spcTrend,#changeControl,#lotTrace,#equipment,#instrumentMgmt,#calibrationMgmt,#standard,#approval,#mainWorkspace) :is(.oqc-report-readonly-value,.pqc-report-readonly-value){
+ font-size:12px!important;
+}
+html body .qce-modal-bg[data-qmes-draft-module] .qce-form .qce-field :is(label,input,select,textarea),
+html body .eq-wo-overlay .eq-wo-form label,
+html body .eq-wo-overlay .eq-wo-form :is(input,select,textarea){
+ font-size:12px!important;
+}
+}
