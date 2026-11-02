@@ -20,6 +20,9 @@ class Node{
  closest(){return null;}
  querySelector(){return null;}
  querySelectorAll(){return [];}
+ close(){}
+ focus(){}
+ showModal(){global.lastDraftDialog=this;const actions=this.children[2];Promise.resolve().then(()=>actions.children[global.draftDialogAnswer===false?0:1].onclick());}
  remove(){this.isConnected=false;}
 }
 function input(root,id,value='',type='text',className=''){
@@ -70,22 +73,29 @@ async function run(){
  const saveButton=()=>manual.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='임시저장');
  assert.equal(saveButton().type,'button');
  manual.editor.root.fields[0].value='미완성 고객사';
- let prevented=0,stopped=0;saveButton().onclick({preventDefault(){prevented++;},stopPropagation(){stopped++;}});
+ let prevented=0,stopped=0;await saveButton().onclick({preventDefault(){prevented++;},stopPropagation(){stopped++;}});
  assert.equal(prevented,1);assert.equal(stopped,1);assert.equal(manual.fetches.length,0);
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');
  assert.equal(manual.editor.root.fields[1].value,'');assert.equal(manual.editor.root.fields[2].value,'');
  assert.match(manual.editor.root.querySelector('[data-qmes-draft-bar]').dataset.message,/임시저장 완료/);
- manual.win.qmesFormDrafts.flush();assert.ok(manualStorage.getItem(manualKey));
+ assert.equal(global.lastDraftDialog.children[1].textContent,'임시저장 하시겠습니까?');
+ global.draftDialogAnswer=false;manual.editor.root.fields[0].value='취소한 내용';await saveButton().onclick();
+ assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');global.draftDialogAnswer=true;
+ manual.editor.root.fields[0].value='미완성 고객사';manual.win.qmesFormDrafts.flush();assert.ok(manualStorage.getItem(manualKey));
  const reopened=environment(manualStorage);await tick();
  const reopenedBar=()=>reopened.editor.root.querySelector('[data-qmes-draft-bar]');
  const reopenedSave=()=>reopenedBar().children.find(n=>n.textContent==='임시저장');
- reopened.win.confirm=()=>false;reopenedSave().onclick();assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');
- reopened.win.confirm=()=>true;manualStorage.fail=true;reopenedSave().onclick();
+ global.draftDialogAnswer=false;
+ await reopenedBar().children.find(n=>n.textContent==='복구').onclick();assert.equal(global.lastDraftDialog.children[1].textContent,'복구하시겠습니까?');assert.equal(reopened.editor.root.fields[0].value,'');
+ await reopenedBar().children.find(n=>n.textContent==='버리기').onclick();assert.equal(global.lastDraftDialog.children[1].textContent,'버리시겠습니까?');assert.ok(manualStorage.getItem(manualKey));
+ await reopenedSave().onclick();assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');
+ global.draftDialogAnswer=true;manualStorage.fail=true;await reopenedSave().onclick();
  assert.match(reopenedBar().dataset.message,/임시저장 실패/);assert.ok(reopenedBar().children.some(n=>n.textContent==='복구'));
  manualStorage.fail=false;await reopenedBar().children.find(n=>n.textContent==='복구').onclick();
  assert.equal(reopened.editor.root.fields[0].value,'미완성 고객사');assert.equal(reopened.fetches.length,0);
- reopened.editor.root.fields[0].value='새로운 미완성';reopenedSave().onclick();
+ reopened.editor.root.fields[0].value='새로운 미완성';await reopenedSave().onclick();
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'새로운 미완성');
+ const discarded=environment(manualStorage);await tick();await discarded.editor.root.querySelector('[data-qmes-draft-bar]').children.find(n=>n.textContent==='버리기').onclick();assert.equal(manualStorage.getItem(manualKey),null);assert.equal(discarded.fetches.length,0);
  const env=environment(storage);await tick();type(env,0,'현대자동차');type(env,1,'NBA20HM05');
  const draftKey=core.keyOf('user-A','work','new','new');let saved=JSON.parse(storage.getItem(draftKey));assert.ok(saved);assert.equal(saved.fields.some(f=>f.value==='never-store'||f.value==='auto'),false);assert.equal(env.fetches.length,0);
  env.editor.addRow();type(env,env.editor.root.fields.length-2,'LOT-7');assert.equal(JSON.parse(storage.getItem(draftKey)).rows.work,7);
