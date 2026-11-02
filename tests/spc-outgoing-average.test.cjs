@@ -100,7 +100,7 @@ test('real product clicks highlight one row and show only its detail; modes pres
 });
 
 test('SPC chart fills its container with native width coordinates and undistorted markers',()=>{
- const scope={esc:v=>String(v),fmt:v=>String(v),specFor:()=>({lsl:1200,usl:1800})};
+ const scope={esc:v=>String(v),fmt:v=>String(v),spcFmt:ctx.spcFmt,specFor:()=>({lsl:1200,usl:1800})};
  vm.runInNewContext(source.slice(source.indexOf('function trendSvg'),source.indexOf('  // spc-instant-menu')),scope);
  const svg=scope.trendSvg([{date:'2026-10-06',value:1500,judge:'합격'}],'점도');
  assert.ok(svg.includes('preserveAspectRatio="xMidYMid meet"'));
@@ -115,4 +115,19 @@ test('SPC chart fills its container with native width coordinates and undistorte
  }
  assert.ok(source.includes('new ResizeObserver(drawChart)'));
  assert.ok(source.includes('root._spcChartObserver?.disconnect()'));
+});
+
+test('SPC average precision follows inspection item and keeps trailing zeros',()=>{
+ assert.equal(ctx.spcFmt(7.49,'입도(Dmax)'),'7.490');
+ assert.equal(ctx.spcFmt(7.4906,'입도'),'7.491');
+ assert.equal(ctx.spcFmt(1496.3333,'점도'),'1,496');
+ assert.equal(ctx.spcFmt(1496.6667,'점도'),'1,497');
+ assert.equal(ctx.spcFmt(20.2,'고형분'),'20.200');
+ assert.equal(ctx.spcFmt(20.1846,'고형분'),'20.185');
+ assert.equal(ctx.spcFmt(1400.7,'접착력'),'1,401');
+ assert.equal(ctx.spcFmt(435.5,'수분율'),'435.50');
+ assert.equal(ctx.spcFmt(435.567,'수분'),'435.57');
+ assert.equal(ctx.spcFmt(null,'고형분'),'-');
+ const raw=ctx.flattenMeasurements([{date:'2026-10-06',lot:'A',check:'점도',measurements:['1496.3333']}],'OQC');
+ assert.equal(raw[0].value,1496.3333);
 });
