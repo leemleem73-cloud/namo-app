@@ -48,3 +48,23 @@ html body #lotTrace .lot-work-actions:has(>.lot-summary:empty){display:none!impo
 html body #lotTrace .lot-search-grid :is(button,input,select):focus-visible{outline:2px solid #2f8de4!important;outline-offset:2px!important}
 @media(max-width:1150px){html body #lotTrace .lot-search-grid{gap:12px!important}html body #lotTrace .lot-search-grid>.lot-query-field{width:320px!important}}
 @media(max-width:700px){html body #lotTrace .lot-search-grid>.lot-field{flex:1 1 100%!important;width:100%!important}html body #lotTrace .lot-field>label,html body #lotTrace .lot-work-mode>span{width:92px!important}html body #lotTrace .lot-search-grid>.lot-work-buttons{margin-left:auto!important}html body #lotTrace .lot-work-actions{flex-direction:row!important}}
+
+/* One visible stroke per edge for all LOT result tables. */
+html body #lotTrace.module-page .lot-shell{--lot-result-line:#d5dce5;--lot-result-head:#edf3f9;--lot-result-text:#244260}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap){border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:#fff!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table{border-collapse:collapse!important;border-spacing:0!important;border:0!important;outline:0!important;box-shadow:none!important;background:#fff!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table :is(th,td){box-sizing:border-box!important;height:auto!important;padding:9px 10px!important;border:0!important;border-right:1px solid var(--lot-result-line)!important;border-bottom:1px solid var(--lot-result-line)!important;outline:0!important;box-shadow:none!important;text-align:center!important;vertical-align:middle!important;color:var(--lot-result-text)!important;font-family:inherit!important;font-size:12px!important;font-weight:500!important;line-height:1.5!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table th{background:var(--lot-result-head)!important;font-weight:600!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table td{background:#fff!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table tr>:last-child{border-right:0!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-date-scroll,.lot-compact-table,.ltd-table-wrap)>table tbody tr:last-child>td{border-bottom:0!important}
+html body #lotTrace.module-page .lot-shell .lot-date-search .lot-date-scroll{border-top:1px solid var(--lot-result-line)!important}
+html body #lotTrace.module-page .lot-shell .lot-date-search{margin:0!important;border:0!important;border-bottom:1px solid var(--lot-result-line)!important;border-radius:0!important;box-shadow:none!important}
+html body #lotTrace.module-page .lot-shell .lot-date-search :is(.lot-date-results,.lot-date-pages){outline:0!important;box-shadow:none!important}
+html body #lotTrace.module-page .lot-shell .lot-compact-section{border:1px solid var(--lot-result-line)!important;border-radius:4px!important;background:#fff!important;box-shadow:none!important;outline:0!important}
+html body #lotTrace.module-page .lot-shell .lot-compact-section>summary{border:0!important;background:#f8fafc!important;color:var(--lot-result-text)!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:12px!important;font-weight:700!important;box-shadow:none!important}
+html body #lotTrace.module-page .lot-shell .lot-compact-section[open]>summary{border-bottom:1px solid var(--lot-result-line)!important}
+html body #lotTrace.module-page .lot-shell .ltd-panel{border:1px solid var(--lot-result-line)!important;border-radius:4px!important;background:#fff!important;box-shadow:none!important}
+html body #lotTrace.module-page .lot-shell .ltd-panel .ltd-heading{border:0!important;border-bottom:1px solid var(--lot-result-line)!important;background:#f8fafc!important}
+html body #lotTrace.module-page .lot-shell .lot-detail-grid{gap:10px!important}
+html body #lotTrace.module-page .lot-shell :is(.lot-record-link,.ltd-link,.lot-date-link){font-family:inherit!important;font-size:12px!important;font-weight:600!important;color:#1768ad!important}
