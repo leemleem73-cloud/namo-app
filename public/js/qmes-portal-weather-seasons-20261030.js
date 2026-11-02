@@ -11,7 +11,7 @@ const autumnColors=['#d95a38','#e99b37','#e4bd43','#bd4d32','#f0cf57','#c87b35',
 const flower='<g fill="currentColor">'+[0,72,144,216,288].map(a=>'<ellipse cy="-8" rx="5" ry="8" transform="rotate('+a+')"/>').join('')+'</g><circle r="4" fill="#ffe7a0"/>';
 const snow='<path d="M0-13V13M-11-6L11 6M-11 6L11-6" stroke="currentColor" stroke-width="2" fill="none"/>';
 scene.innerHTML='<svg viewBox="0 0 850 50" preserveAspectRatio="none">'+(season==='winter'?'<path d="M0 46Q90 23 180 39T380 38T610 36T850 40V50H0Z" fill="#f4faff" opacity=".9"/>':'<path d="M0 48Q210 39 425 46T850 44" fill="none" stroke="currentColor" stroke-opacity=".3"/>')+Array.from({length:season==='autumn'?24:16},(_,i)=>{const x=14+(i*53)%825,y=season==='autumn'?46-(i%3)*3:season==='winter'?15+(i%3)*10:46;return '<g transform="translate('+x+' '+y+') rotate('+((i%5)*23-40)+') scale('+(season==='winter'?'.55':season==='spring'?'.65':'.6')+')" opacity="'+(.65+(i%3)*.1)+'">'+(season==='winter'?snow:season==='spring'?flower:leaf)+'</g>';}).join('')+'</svg>';
-const weather=document.createElement('div');weather.className='portal-chungju-weather';weather.setAttribute('aria-live','polite');weather.innerHTML='<span class="portal-weather-icon" aria-hidden="true">⛅</span><b>위치 확인 중</b><span class="portal-weather-current">날씨 불러오는 중</span><span class="portal-weather-range"></span><button type="button" class="portal-weather-open" aria-haspopup="dialog">상세</button>';
+const weather=document.createElement('div');weather.className='portal-chungju-weather';weather.setAttribute('aria-live','polite');weather.innerHTML='<span class="portal-weather-icon" aria-hidden="true">⛅</span><b>위치 확인 중</b><span class="portal-weather-current">날씨 불러오는 중</span><span class="portal-weather-range"></span><button type="button" class="portal-weather-retry" hidden>다시 연결</button><button type="button" class="portal-weather-open" aria-haspopup="dialog">상세</button>';
 const wrap=document.createElement('div');wrap.className='portal-season-weather';wrap.append(scene,weather);form.before(wrap);
 if(['spring','summer','autumn','winter'].includes(previewSeason)){
  const nav=document.createElement('nav');nav.setAttribute('aria-label','계절 미리보기');nav.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;gap:8px;padding:10px;border:1px solid #cbdce9;border-radius:10px;background:white;font:13px Malgun Gothic,sans-serif';
@@ -132,19 +132,21 @@ const uiStyle=document.createElement('style');uiStyle.textContent=`
 .portal-settled-leaf svg{width:100%;height:100%;filter:drop-shadow(0 1px 1px #4b2b2220)}
 @keyframes portal-leaf-settle{from{opacity:.2;transform:translateY(-10px) rotate(calc(var(--rest-angle) - 18deg))}to{opacity:.92;transform:translateY(0) rotate(var(--rest-angle))}}
 @media(prefers-reduced-motion:reduce){.portal-settled-leaf{animation:none}}
+.portal-weather-retry{border:1px solid #ffffff65;border-radius:4px;padding:1px 5px;background:transparent;color:#fff;font:inherit;cursor:pointer}.portal-weather-retry[hidden]{display:none}
 .portal-weather-open{border:0;border-left:1px solid #ffffff40;padding:0 0 0 8px;background:transparent;color:#e0edf6;font:inherit;cursor:pointer}
 .portal-weather-dialog{width:min(410px,calc(100vw - 32px));box-sizing:border-box;padding:22px;border:1px solid #d7e4ee;border-radius:16px;background:#fff;color:#28475e;box-shadow:0 18px 60px #0c233f40;font:13px/1.6 "Malgun Gothic",sans-serif;text-align:left}
 .portal-weather-dialog::backdrop{background:#122b4655}.portal-weather-dialog header{display:flex;justify-content:space-between;align-items:center}.portal-weather-dialog h2{font-size:17px;margin:0}.portal-weather-dialog button{border:1px solid #cbdce9;border-radius:5px;padding:4px 10px;background:white;color:#375b76;cursor:pointer}.portal-weather-big{font-size:28px;font-weight:700;margin:18px 0 4px}.portal-weather-metrics{display:flex;gap:18px;padding:10px 0;color:#647c8f}.portal-weather-day{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #e2eaf1}.portal-weather-day-right{display:inline-flex;align-items:center;gap:12px}.portal-weather-forecast-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;font-size:21px;line-height:1}.portal-weather-dialog footer{font-size:10px;color:#8093a2;margin-top:14px}
 @media(prefers-reduced-motion:reduce){.portal-falling-leaf,.portal-falling-leaf svg{animation:none}.portal-falling-leaf{top:auto;bottom:4px;opacity:.7}}
 `;document.head.append(uiStyle);
+weather.querySelector('.portal-weather-retry').addEventListener('click',()=>refresh());
 weather.querySelector('.portal-weather-open').addEventListener('click',()=>{
  const existing=document.querySelector('.portal-weather-dialog');if(existing){existing.close();return;}
  const dialog=document.createElement('dialog');dialog.className='portal-weather-dialog';dialog.setAttribute('aria-label',areaLabel+' 날씨 상세');
  const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');title.textContent=areaLabel+' 날씨';close.type='button';close.textContent='닫기';header.append(title,close);dialog.append(header);close.onclick=()=>dialog.close();
- const data=saved?.data,c=data?.current_condition?.[0];const big=document.createElement('div');big.className='portal-weather-big';big.textContent=c?weather.querySelector('.portal-weather-icon').textContent+' '+weather.querySelector('.portal-weather-current').textContent:'날씨 연결 대기';dialog.append(big);
+ const data=saved?.data,c=data?.current_condition?.[0];const big=document.createElement('div');big.className='portal-weather-big';big.textContent=c?weather.querySelector('.portal-weather-icon').textContent+' '+weather.querySelector('.portal-weather-current').textContent:lastWeatherError||'날씨 불러오는 중';dialog.append(big);
  if(c){const metrics=document.createElement('div');metrics.className='portal-weather-metrics';metrics.textContent='습도 '+c.humidity+'% · 바람 '+c.windspeedKmph+' km/h';dialog.append(metrics);
  (data.weather||[]).slice(0,3).forEach((day,i)=>dialog.append(forecastDayRow(day,i)));}
- const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||'현재 날씨를 확인 중입니다.');dialog.append(foot);
+ const foot=document.createElement('footer');foot.textContent='제공 wttr.in · '+(c?.localObsDateTime||lastWeatherError||'현재 날씨를 확인 중입니다.');dialog.append(foot);
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
  function centerWeatherDialog(){
   if(!dialog.open)return;
@@ -217,22 +219,26 @@ async function getCityLabel(place){
 }
 function getWeatherLocation(){
  return new Promise(resolve=>{
-  const fallback=()=>resolve({lat:36.991,lon:127.926,fallback:true,key:'chungju-default'});
+  let settled=false;
+  const done=place=>{if(settled)return;settled=true;clearTimeout(deadline);resolve(place);};
+  const fallback=()=>done({lat:36.991,lon:127.926,fallback:true,key:'chungju-default'});
+  const deadline=setTimeout(fallback,7000);
   if(!navigator.geolocation){fallback();return;}
   try{navigator.geolocation.getCurrentPosition(position=>{
    const lat=Number(position.coords.latitude),lon=Number(position.coords.longitude);
    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){fallback();return;}
    // City weather needs only approximate coordinates, never device-level precision.
    const roundedLat=Number(lat.toFixed(2)),roundedLon=Number(lon.toFixed(2));
-   resolve({lat:roundedLat,lon:roundedLon,fallback:false,key:roundedLat+','+roundedLon});
+   done({lat:roundedLat,lon:roundedLon,fallback:false,key:roundedLat+','+roundedLon});
   },fallback,{enableHighAccuracy:false,maximumAge:60000,timeout:6000});}catch(_){fallback();}
  });
 }
 // Location-specific weather state.
-let areaLabel='현재 위치',saved,activeLocationKey='',refreshing=false;
+let areaLabel='현재 위치',saved,activeLocationKey='',refreshing=false,lastWeatherError='',retryTimer;
 function paint(data,cached=false,fallback=false,city=''){
  const c=data.current_condition?.[0],d=data.weather?.[0];
- if(!c||!Number.isFinite(Number(c.temp_C)))throw Error('날씨 정보 없음');
+ if(!c||c.temp_C==null||String(c.temp_C).trim()===''||!Number.isFinite(Number(c.temp_C)))throw Error('날씨 정보 없음');
+ lastWeatherError='';weather.querySelector('.portal-weather-retry').hidden=true;
  const condition=weatherCondition(c.weatherCode);areaLabel=resolveAreaName(data,fallback,city);
  weather.querySelector('b').textContent=areaLabel;
  weather.querySelector('.portal-weather-icon').textContent=condition.icon;
@@ -240,9 +246,25 @@ function paint(data,cached=false,fallback=false,city=''){
  weather.querySelector('.portal-weather-range').textContent=d?'최저 '+d.mintempC+'° / 최고 '+d.maxtempC+'°':'';
  weather.title=areaLabel+' · '+(fallback?'기본 지역 · ':'')+(cached?'최근 조회 정보':'최근 제공 날씨')+' · '+String(c.localObsDateTime||c.observation_time||'');
 }
+async function fetchWeatherJson(url,timeout=7000){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
+ try{const response=await fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer'});
+  if(!response.ok)throw Error('날씨 조회 실패');return await response.json();
+ }finally{clearTimeout(timer);}
+}
+async function loadWeather(place){
+ try{
+  const result=await fetchWeatherJson('/api/qmes-portal-weather?lat='+place.lat+'&lon='+place.lon,7500);
+  if(!result.success||!result.data?.current_condition?.length)throw Error('날씨 응답 없음');
+  return {data:result.data,at:result.at||Date.now(),cached:!!result.cached};
+ }catch(_){
+  const data=await fetchWeatherJson('https://wttr.in/'+place.lat+','+place.lon+'?format=j1&lang=ko',6000);
+  return {data,at:Date.now(),cached:false};
+ }
+}
 async function refresh(){
- if(document.hidden||refreshing)return;refreshing=true;
- let controller,timer;
+ if(document.hidden||refreshing)return;refreshing=true;clearTimeout(retryTimer);
+ weather.querySelector('.portal-weather-retry').disabled=true;
  try{
   const place=await getWeatherLocation(),key='qmes-local-weather-v2:'+place.key;
   const cityPromise=getCityLabel(place);
@@ -255,15 +277,17 @@ async function refresh(){
    weather.title=place.fallback?'위치를 확인할 수 없어 기본 지역인 충주 날씨를 표시합니다.':'현재 위치의 날씨를 확인합니다.';
    try{const cache=JSON.parse(localStorage.getItem(key)||'null');if(cache&&cache.locationKey===place.key&&Date.now()-cache.at<3600000){paint(cache.data,true,place.fallback,cache.city);saved=cache;}}catch(_){}
   }
-  if(saved&&Date.now()-saved.at<1200000){const city=await cityPromise;paint(saved.data,true,place.fallback,city||saved.city);saved.city=city||saved.city;try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}return;}
-  controller=new AbortController();timer=setTimeout(()=>controller.abort(),10000);
-  const r=await fetch('https://wttr.in/'+place.lat+','+place.lon+'?format=j1&lang=ko',{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
-  if(!r.ok)throw Error('날씨 조회 실패');
-  const data=await r.json(),city=await cityPromise;paint(data,false,place.fallback,city);
-  saved={at:Date.now(),locationKey:place.key,city,data};try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}
+  if(saved&&!saved.cached&&Date.now()-saved.at<1200000){const city=await cityPromise;paint(saved.data,true,place.fallback,city||saved.city);saved.city=city||saved.city;try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}return;}
+  const result=await loadWeather(place),data=result.data,city=await cityPromise;paint(data,result.cached,place.fallback,city);
+  if(result.cached){lastWeatherError='최근 조회 날씨 · 연결 재시도 중';weather.querySelector('.portal-weather-retry').hidden=false;retryTimer=setTimeout(refresh,60000);}
+  saved={at:result.at,locationKey:place.key,city,data,cached:result.cached};try{localStorage.setItem(key,JSON.stringify(saved));}catch(_){}
  }catch(_){
-  if(!saved||Date.now()-saved.at>=3600000){saved=null;weather.querySelector('.portal-weather-current').textContent='날씨 연결 대기';weather.querySelector('.portal-weather-range').textContent='';}
- }finally{clearTimeout(timer);refreshing=false;}
+  lastWeatherError='날씨 연결 실패 · 잠시 후 재시도';
+  if(!saved||Date.now()-saved.at>=3600000){saved=null;weather.querySelector('.portal-weather-current').textContent='날씨 연결 실패';weather.querySelector('.portal-weather-range').textContent='';}
+  weather.querySelector('.portal-weather-retry').hidden=false;
+  weather.title=areaLabel+' · '+lastWeatherError;
+  retryTimer=setTimeout(refresh,60000);
+ }finally{weather.querySelector('.portal-weather-retry').disabled=false;refreshing=false;}
 }
 refresh();setInterval(refresh,1200000);document.addEventListener('visibilitychange',refresh);
 })();
