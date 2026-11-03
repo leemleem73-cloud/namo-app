@@ -4441,6 +4441,7 @@ function evaluateIqcItems(items){
     ...(Array.isArray(x?.measurements)?x.measurements:[])
   ]).map(v=>String(v??'').trim().toUpperCase());
   if(values.some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL'))return '불합격';
+  if(values.includes('확인중'))return '대기';
   const judges=rows.map(x=>String(x?.judge||'').trim());
   if(judges.length&&judges.every(v=>v==='합격'))return '합격';
   return '대기';
@@ -7233,7 +7234,7 @@ function showRowDetail(id,row){
 
 function stdMeasureCell(kind,idx){
   if(kind==='qual') return `<select class="std-measure"><option value="">선택</option><option>적합</option><option>부적합</option></select>`;
-  if(kind==='coa') return idx===1?`<select class="std-measure"><option value="">선택</option><option>확인</option><option>미확인</option></select>`:`<div class="dash">-</div>`;
+  if(kind==='coa') return idx===1?`<select class="std-measure"><option value="">선택</option><option>확인</option><option>확인중</option><option>미확인</option></select>`:`<div class="dash">-</div>`;
   return `<input class="std-measure" type="number" step="any" inputmode="decimal" placeholder="측정값">`;
 }
 function standardInspectionRows(type){
