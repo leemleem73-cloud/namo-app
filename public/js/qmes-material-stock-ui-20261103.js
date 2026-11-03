@@ -86,6 +86,7 @@ function editEntry(existing=null,row=null,parent=null){
  const dialog=document.createElement('dialog');dialog.className='ms-dialog ms-entry';
  const id=existing?.id||crypto.randomUUID();
  dialog.innerHTML='<header><strong>재검사·샘플 / 재고 기록</strong><button type="button" data-close>닫기</button></header><form class="ms-dialog-body"><p class="ms-policy">아직 수량을 모르면 “수량 확인 필요”로 보관하세요. “확인 완료”인 수량만 장부재고에 반영합니다.</p><div class="ms-form">'+
+ '<label class="full">재고 대상<select data-stock-kind '+(existing?'disabled':'')+'><option value="raw">원료</option><option value="finished">완제품</option></select></label>'+
  '<label>원료명<input name="material" required value="'+esc(existing?.material||row?.material||'')+'"></label><label>원료 LOT<input name="lot" required value="'+esc(existing?.lot||row?.lot||'')+'"></label><label>공급업체<input name="supplier" value="'+esc(existing?.supplier||row?.supplier||'')+'"></label>'+
  '<label>구분<select name="type">'+Object.entries(typeLabel).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')+'</select></label>'+
  '<label>사용일 / 기초 기준일<input type="date" name="date" value="'+esc(existing?.date||'')+'"></label>'+
@@ -94,6 +95,12 @@ function editEntry(existing=null,row=null,parent=null){
  '<label>조정 방향<select name="direction"><option value="out">차감</option><option value="in">증가 (재고 조정)</option></select></label>'+
  '<label class="full">사용 사유 / 확인 내용<textarea name="note" required placeholder="예: 재검사에 소량 사용, 사용량 확인 필요">'+esc(existing?.note||'')+'</textarea></label></div><p class="ms-foot">기초재고는 기준일 시작 시점의 실사 수량입니다. 기준일 이전 입고·사용 이력은 계산에서 제외합니다. 취소한 기록은 이력에 남습니다.</p><div class="ms-error" data-error hidden></div><footer><button type="button" data-cancel>취소</button><button type="submit" class="primary">기록 저장</button></footer></form>';
  const form=dialog.querySelector('form');form.elements.type.value=existing?.type||'retest';form.elements.status.value=existing?.status||'pending';form.elements.direction.value=existing?.direction||'out';
+ const stockKind=dialog.querySelector('[data-stock-kind]');stockKind.onchange=async()=>{
+  if(stockKind.value!=='finished'||existing)return;const error=dialog.querySelector('[data-error]');error.hidden=true;stockKind.disabled=true;
+  try{if(typeof window.qmesFinishedStock?.openRecord!=='function')throw Error('완제품 기록 화면을 불러오지 못했습니다. 새로고침 후 다시 선택해주세요.');
+   if(await window.qmesFinishedStock.openRecord()){dialog.close();parent?.close();}
+  }catch(e){error.textContent=e.message;error.hidden=false;}finally{stockKind.disabled=false;stockKind.value='raw';}
+ };
  dialog.querySelector('[data-close]').onclick=dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();
  form.onsubmit=async event=>{
   event.preventDefault();const button=form.querySelector('[type="submit"]'),error=dialog.querySelector('[data-error]');error.hidden=true;button.disabled=true;
