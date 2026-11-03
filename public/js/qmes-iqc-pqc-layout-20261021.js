@@ -1,6 +1,30 @@
 /* IQC registration layout parity with PQC. Keep the original field IDs and save wiring. */
 (function () {
   'use strict';
+  function singleIqcChecks(table){
+    if(!table)return;
+    table.dataset.iqcSingleCheck='1';
+    const headers=['NO','검사항목','검사기준','검사방법 / 기기','확인 결과','판정'];
+    const heading=table.querySelector('thead tr');
+    if(heading){
+      const cells=[...heading.children];
+      if(cells.length===8){cells[6].remove();cells[5].remove();}
+      [...heading.children].forEach((cell,index)=>cell.textContent=headers[index]||'');
+    }
+    const columns=[...table.querySelectorAll('colgroup col')];
+    if(columns.length===8){columns[6].remove();columns[5].remove();}
+    [...table.querySelectorAll('colgroup col')].forEach((col,index)=>col.style.setProperty('width',[5,12,26,17,25,15][index]+'%','important'));
+    table.querySelectorAll('tbody tr').forEach(row=>{
+      const cells=[...row.children];
+      if(cells.length===8){cells[6].remove();cells[5].remove();}
+      const label=row.querySelector('.item')?.textContent.trim()||'';
+      const input=row.querySelector('.std-measure');
+      if(input){
+        input.setAttribute('aria-label',label==='중량'?'입고 확인 중량(kg)':label+' 확인 결과');
+        if(label==='중량')input.placeholder='확인 중량 (kg)';
+      }
+    });
+  }
   const original = window.standardInspectionForm;
   if (typeof original !== 'function') return;
   window.standardInspectionForm = function (type) {
@@ -59,9 +83,10 @@
     const table = root.querySelector('.std-result-wrap');
     const section = document.createElement('section');
     section.className = 'am-section iqc-pqc-measure-section';
-    section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div>';
+    section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>외관·라벨·입고 중량·COA 각 1회 확인</span></div>';
     table.before(section);
     section.append(table);
+    singleIqcChecks(root.querySelector('.std-result'));
     return root.outerHTML;
   };
   const style = document.createElement('style');
