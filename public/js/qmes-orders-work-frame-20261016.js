@@ -68,6 +68,9 @@ const style=document.createElement("style");style.textContent=`
 #orders.orders-work-frame .qpf-select input{position:static!important;width:13px!important;height:13px!important;min-width:13px!important;margin:auto!important;accent-color:#2563eb}
 #orders.orders-work-frame .qpf-select span{color:#000!important;font-weight:400!important;text-decoration:none!important;cursor:default}
 #orders.orders-work-frame .module-shell>.module-body tbody td.qpu-order-number{color:#1689ed!important;text-decoration:underline!important;font-weight:600!important;cursor:pointer!important}
+/* The table wrapper owns the final bottom edge on every page. */
+html body #app main.content #orders.orders-work-frame .module-shell>.module-body table tbody tr:last-child,
+html body #app main.content #orders.orders-work-frame .module-shell>.module-body table tbody tr:last-child>:is(td,th){border-bottom:0!important;box-shadow:none!important}
 #orders.orders-work-frame .qof-pager{border:0!important;background:#fff!important;padding:10px 16px 20px!important;border-radius:0 0 10px 10px}
 #orders.orders-work-frame .qof-pager>span{display:none}
 @media(max-width:1100px){#orders.orders-work-frame .qpf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
