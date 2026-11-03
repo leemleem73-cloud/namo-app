@@ -39,19 +39,11 @@ test('failed shared DB save keeps the entry dialog and typed values available fo
 });
 test('stock UI script compiles',()=>new vm.Script(source));
 test('ledger explanations identify real receipt and work documents instead of showing internal UUIDs',()=>{
- const ctx={fmt:value=>String(value)};vm.runInNewContext(source.slice(source.indexOf('function sourceInfo'),source.indexOf('async function openSource')),ctx);
+ const ctx={fmt:value=>String(value)};vm.runInNewContext(source.slice(source.indexOf('function sourceInfo'),source.indexOf('function usageOrder')),ctx);
  const receipt=ctx.sourceInfo({source:'수입검사',date:'2025-11-10',id:'3457cab5-c80a-489e-bb06-7ddedec1c540',qty:90000000,judge:'대기'});
  assert.equal(receipt.title,'수입검사 · 2025-11-10');assert.ok(receipt.detail.includes('90 kg'));assert.ok(!JSON.stringify(receipt).includes('3457cab5'));
  const work=ctx.sourceInfo({source:'작업지시',id:'internal',documentNo:'WO-20261103-001',output:'FIN-1',product:'제품'});assert.ok(work.title.includes('WO-20261103-001'));assert.ok(work.detail.includes('FIN-1'));
  const manual=ctx.sourceInfo({source:'수불기록',kind:'재검사 사용',note:'재검사 25 g'});assert.equal(manual.detail,'재검사 25 g');
-});
-test('receipt references open IQC and production references open the matching work order',async()=>{
- const calls=[],section={_iqcRows:[]},record={id:'iqc-1'},order={id:'work-1'};
- const ctx={snapshot:{iqc:[record],orders:[order]},entries:[],document:{getElementById:()=>section,querySelector:selector=>({click:()=>calls.push(selector)})},window:{loadIncomingFromDb:async()=>{section._iqcRows=[record];},editIncomingRecord:(_section,row)=>calls.push(row.id),openNewForm:(type,row)=>calls.push(type+':'+row.id),toast:message=>{throw Error(message);}}};
- vm.runInNewContext(source.slice(source.indexOf('async function openSource'),source.indexOf('function showDetails')),ctx);
- let closed=0;const dialog={close(){closed++;}};
- await ctx.openSource({source:'수입검사',id:'iqc-1'},{},dialog);assert.ok(calls.includes('iqc-1'));
- await ctx.openSource({source:'작업지시',id:'work-1'},{},dialog);assert.ok(calls.includes('work:work-1'));assert.equal(closed,2);
 });
 test('stock pager follows previous-number-next format and disables boundary navigation',()=>{
  const context={};vm.runInNewContext(source.slice(source.indexOf('function pagerMarkup'),source.indexOf('function paint')),context);
@@ -62,4 +54,34 @@ test('stock pager follows previous-number-next format and disables boundary navi
  assert.ok(last.includes('data-ms-page="1">‹'));
  assert.ok(last.includes('data-ms-page="2" disabled>›'));
  assert.equal((single.match(/ disabled/g)||[]).length,2);
+});
+
+function summaryFixture(over={}){
+ const iqc=[{id:'i1',item:'NMP',lot:'L',supplier:'공급업체A',date:'2026-11-01',incoming_qty:100,inspector:'검사담당',judge:'합격'}];
+ const orders=[{id:'w1',workDate:'2026-11-02',fields:{'생산 LOT NO':'F1','작업지시번호':'WO-20261102-001','제품명':'제품A','작업자':'생산담당','진행상태':'완료'},materials:[{name:'NMP',lot:'L',plan:50,actual:40}]}];
+ const snapshot={iqc,orders,actuals:[],entries:[{id:'e1',material:'NMP',lot:'L',supplier:'공급업체A',type:'retest',quantity:null,status:'pending',date:'',note:'재검사량 확인 중'}],...over};
+ const model=core.build(snapshot),row=model.rows[0],ctx={core,snapshot,model,entries:snapshot.entries,selected:'',fmt:v=>v==null?'미확인':String(v),esc:v=>String(v??'').replace(/</g,'&lt;').replace(/>/g,'&gt;'),typeLabel:{retest:'재검사 사용'}};
+ vm.runInNewContext(source.slice(source.indexOf('function sourceInfo'),source.indexOf('function editEntry')),ctx);
+ return {ctx,row,html:ctx.ledgerSections(row)};
+}
+test('inline usage summary shows IQC receipt and work-order input separately without document navigation',()=>{
+ const {html}=summaryFixture(),receipt=html.slice(html.indexOf('data-ledger-section="receipts"'),html.indexOf('data-ledger-section="production"')),use=html.slice(html.indexOf('data-ledger-section="production"'));
+ assert.ok(html.indexOf('입고·사용 기록')<html.indexOf('<h3>사용 내역</h3>'));
+ for(const value of ['공급업체A','검사담당','100','합격'])assert.ok(receipt.includes(value));
+ for(const value of ['WO-20261102-001','제품A','F1','50','40','생산담당','완료'])assert.ok(use.includes(value));
+ assert.ok(!html.includes('data-source-index'));assert.ok(!html.includes('<button'));assert.ok(!html.includes('openSource'));
+ assert.ok(!use.includes('재검사량 확인 중'));assert.ok(use.includes('합계 40 kg'));
+});
+test('usage summary resolves legacy actuals only to a unique matching work order and retains measured quantity',()=>{
+ const {ctx,row}=summaryFixture();const legacy={source:'작업실적',output:'F1',qty:35000000,date:'2026-11-02',delta:-35000000};row.ledger=[legacy];row.used=35;
+ let html=ctx.ledgerSections(row);assert.ok(html.includes('WO-20261102-001'));assert.ok(html.includes('<td>35</td>'));assert.ok(html.includes('저장된 작업실적 기준'));
+ ctx.snapshot.orders.push({...ctx.snapshot.orders[0],id:'another'});html=ctx.ledgerSections(row);assert.ok(!html.includes('WO-20261102-001'));assert.ok(html.includes('<td>미확인</td>'));
+});
+test('dialog keeps both summaries above separate manual-use entry controls and handles no production use',()=>{
+ const {ctx,row}=summaryFixture({orders:[]});let d;
+ ctx.document={createElement(){return d={innerHTML:'',querySelector:()=>({}),querySelectorAll:()=>[],addEventListener(){},showModal(){},remove(){}};},body:{append(){}}};ctx.editEntry=()=>{};
+ ctx.showDetails(row.key);
+ assert.ok(d.innerHTML.includes('연결된 생산 투입 내역이 없습니다.'));assert.ok(d.innerHTML.includes('data-new>+ 사용 기록 추가'));
+ assert.ok(d.innerHTML.indexOf('<h3>사용 내역</h3>')<d.innerHTML.indexOf('재검사·샘플 사용 / 재고 조정'));
+ assert.ok(d.innerHTML.includes('재검사량 확인 중'));assert.ok(d.innerHTML.includes('data-edit="e1"'));assert.ok(!d.innerHTML.includes('data-source-index'));
 });
