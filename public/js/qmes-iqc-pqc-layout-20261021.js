@@ -94,6 +94,11 @@
     section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>외관·라벨·입고 중량·COA 각 1회 확인</span></div>';
     table.before(section);
     section.append(table);
+    info.querySelectorAll('.am-inline-cell').forEach(cell=>{
+      const name=cell.querySelector('label')?.textContent.trim();
+      if(!['원료명','공급업체','검사합부','검사상태'].includes(name))return;
+      const select=cell.querySelector('select');if(select)select.dataset.iqcTextStart='1';
+    });
     singleIqcChecks(root.querySelector('.std-result'));
     return root.outerHTML;
   };
@@ -105,6 +110,7 @@
   .iqc-pqc-layout .std-info .am-inline-cell{min-width:0;grid-template-columns:128px minmax(0,1fr)!important}
   .iqc-pqc-layout .std-info .am-inline-cell>.v{padding:0!important;min-height:0!important;border:0!important;min-width:0!important}
   .iqc-pqc-layout .std-info input,.iqc-pqc-layout .std-info select{height:29px!important;min-height:29px!important;border-radius:2px!important;background:#fff!important;font-size:11px!important}
+  html body #mainWorkspace #workspaceBody .iqc-pqc-layout .std-info select[data-iqc-text-start="1"]{text-align:left!important;text-align-last:left!important;text-indent:0!important;padding-left:8px!important}
   .iqc-pqc-layout .std-info textarea{height:68px!important;resize:vertical!important}
   .iqc-pqc-layout .iqc-pqc-measure-section{margin-top:16px!important}
   .iqc-pqc-layout .std-result{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;border:1px solid #dce3ec!important;font-size:13px!important}
