@@ -80,7 +80,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
    const g=resolve(name,code);if(!g){unallocated.push({source:'작업지시',id,material:name,lot:code,note:'여러 원료/공급업체와 일치 · 수량 미차감'});continue;}
    if(actual!==null&&actual<0){g.issues.push('실투입량 음수 확인 필요');continue;}
    const key=JSON.stringify([output,code]);
-   if(actual!==null){g.uses.push({kind:'생산 투입',date,qty:micro(actual),source:'작업지시',id,output,index});tracedKeys.add(key);}
+   if(actual!==null){g.uses.push({kind:'생산 투입',date,qty:micro(actual),source:'작업지시',id,documentNo:text(order.fields?.['작업지시번호'])||id,product:text(order.fields?.['제품명']),output,index});tracedKeys.add(key);}
    if(plan!==null&&plan>0&&!/완료/.test(text(order.fields?.['진행상태'])))plans.push({g,date,qty:micro(Math.max(0,plan-(actual??0))),key});
    if(actual===null&&plan>0&&/완료/.test(text(order.fields?.['진행상태'])))g.issues.push('완료 작업지시 실투입량 미입력');
   }
