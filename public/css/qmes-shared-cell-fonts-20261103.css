@@ -45,3 +45,12 @@ html body #mainWorkspace .am-split[data-am-screen="orders"] :is(.form-item,.am-i
 html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]{text-align:left!important;cursor:pointer}
 html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]::-webkit-datetime-edit{text-align:left!important}
 }
+
+/* Chromium/Edge date text lives in a native internal flex wrapper. */
+@media screen{
+html body #mainWorkspace #workspaceBody .am-split[data-am-screen="orders"] input[type="date"]{text-align:left!important;justify-content:flex-start!important}
+html body #mainWorkspace #workspaceBody .am-split[data-am-screen="orders"] input[type="date"]::-webkit-date-and-time-value{text-align:left!important;margin:0!important}
+html body #mainWorkspace #workspaceBody .am-split[data-am-screen="orders"] input[type="date"]::-webkit-datetime-edit{display:inline-flex!important;flex:0 1 auto!important;width:auto!important;text-align:left!important;padding:0!important}
+html body #mainWorkspace #workspaceBody .am-split[data-am-screen="orders"] input[type="date"]::-webkit-datetime-edit-fields-wrapper{display:inline-flex!important;justify-content:flex-start!important;text-align:left!important;padding:0!important}
+html body #mainWorkspace #workspaceBody .am-split[data-am-screen="orders"] input[type="date"]::-webkit-calendar-picker-indicator{margin-left:auto!important}
+}
