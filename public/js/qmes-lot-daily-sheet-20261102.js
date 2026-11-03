@@ -95,12 +95,12 @@
   .lot-day-table .lot-key{font-weight:700;color:#1768ad}
   .lot-day-table .record-title{white-space:normal;overflow-wrap:anywhere}
   .lot-day-table>table>tbody>tr>td.record-detail{padding:7px 9px;text-align:left}
-  .lot-day-facts{font-size:11px;line-height:1.55;white-space:normal}
-  .lot-day-fact{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px;align-items:baseline;padding:3px 0}
-  .lot-day-fact.has-judge{grid-template-columns:90px minmax(0,1fr) auto}
-  .lot-day-fact+.lot-day-fact{border:0}
-  .lot-day-facts .fact-label{color:#52677e;font-weight:600;white-space:normal}
-  .lot-day-facts .fact-value{white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+  .lot-day-facts{font-size:11px;line-height:1.55;white-space:normal;padding:2px 6px}
+  .lot-day-fact{display:grid;grid-template-columns:minmax(88px,1fr) minmax(0,2.2fr);gap:10px;align-items:center;padding:6px 5px}
+  .lot-day-fact.has-judge{grid-template-columns:minmax(88px,1fr) minmax(0,2.2fr) 48px}
+  .lot-day-fact+.lot-day-fact{border-top:1px solid #e8edf3}
+  .lot-day-facts .fact-label{color:#52677e;font-weight:600;white-space:normal;text-align:center}
+  .lot-day-facts .fact-value{white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;text-align:center}
   .lot-day-facts .fact-judge{text-align:center;white-space:nowrap}
   .lot-day-badge{display:inline-block;max-width:100%;box-sizing:border-box;padding:2px 6px;border-radius:3px;white-space:normal;word-break:keep-all;line-height:1.5;font-size:11px;font-weight:600}
   .lot-day-badge.pass{background:#edf8f1;color:#23754b}.lot-day-badge.fail{background:#fff1f0;color:#b42318}.lot-day-badge.neutral{background:#f1f5f9;color:#52677e}
