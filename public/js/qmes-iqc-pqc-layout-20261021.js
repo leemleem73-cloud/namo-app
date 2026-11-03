@@ -18,6 +18,14 @@
       const cells=[...row.children];
       if(cells.length===8){cells[6].remove();cells[5].remove();}
       const label=row.querySelector('.item')?.textContent.trim()||'';
+      const judge=row.querySelector('.std-row-judge');
+      if(judge?.tagName==='SELECT'&&!judge.querySelector('option[value=""]')){
+        const initial=judge.value;
+        const option=document.createElement('option');option.value='';option.textContent='선택';
+        judge.insertBefore(option,judge.firstChild);
+        if(!initial||initial==='대기')judge.value='';
+        judge.setAttribute('aria-label',label+' 판정 선택');
+      }
       const input=row.querySelector('.std-measure');
       if(input){
         input.setAttribute('aria-label',label==='중량'?'입고 확인 중량(kg)':label+' 확인 결과');
