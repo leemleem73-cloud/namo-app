@@ -7,7 +7,16 @@ function material(v){const s=text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'
 const supplierKey=v=>text(v).toUpperCase().replace(/주식회사|\(주\)|㈜|\s|[.,-]/g,'');
 const displayMaterial=v=>material(v)==='BYK180'?'BYK180 (분산제)':text(v);
 function items(row){try{const x=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(x)?x:[];}catch(_){return [];}}
-function judgment(row){const checks=items(row),values=checks.flatMap(x=>[x?.judge,x?.value,...(Array.isArray(x?.values)?x.values:[]),...(Array.isArray(x?.measurements)?x.measurements:[])]).map(text);if(values.some(v=>/불합격|부적합|미확인|이상있음/.test(v)))return '불합격';if(values.includes('확인중'))return '대기';return text(row.judge)||'대기';}
+function judgment(row){
+ const checks=items(row);
+ const values=checks.flatMap(x=>[x?.judge,x?.result,x?.status,x?.value,...(Array.isArray(x?.values)?x.values:[]),...(Array.isArray(x?.measurements)?x.measurements:[])]).map(v=>text(v).toUpperCase());
+ if(values.some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL'))return '불합격';
+ if(values.includes('확인중'))return '대기';
+ if(checks.length&&checks.every(x=>text(x?.judge)==='합격'))return '합격';
+ const explicit=text(row.judge);if(explicit)return explicit;
+ const master=checks.find(x=>text(x?.name).includes('판정'));
+ return text(master?.judge||master?.value)||'대기';
+}
 function readEntries(records){const map=new Map();for(const r of records||[]){if(!text(r.record_key).startsWith(PREFIX))continue;let p=r.payload;if(typeof p==='string')try{p=JSON.parse(p);}catch(_){continue;}const e=p?.entry;if(e?.id&&!map.has(e.id))map.set(e.id,{...e,updatedBy:r.updated_by||e.updatedBy||'',updatedAt:r.updated_at||e.updatedAt||''});}return [...map.values()];}
 function validateEntry(input){
  const e={...input,id:text(input.id),material:text(input.material),lot:lot(input.lot),supplier:text(input.supplier),date:day(input.date),note:text(input.note),type:text(input.type),status:text(input.status)};
@@ -49,7 +58,10 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   if(!receipts.has(key))receipts.set(key,{g,date,rows:[]});receipts.get(key).rows.push(row);
  }
  for(const {g,date,rows} of receipts.values()){
-  const ordered=[...rows].sort((a,b)=>text(b.updated_at||b.created_at||b.id).localeCompare(text(a.updated_at||a.created_at||a.id),undefined,{numeric:true}));
+  const ordered=[...rows].sort((a,b)=>{
+   const at=Date.parse(a.updated_at||a.updatedAt||a.created_at||a.createdAt||''),bt=Date.parse(b.updated_at||b.updatedAt||b.created_at||b.createdAt||'');
+   return Number.isFinite(at)&&Number.isFinite(bt)?bt-at:0;
+  });
   const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>=0).map(micro))];
   const ambiguous=masses.length!==1;
   const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null}))};
@@ -120,5 +132,5 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
  }
  return {rows:results.sort((a,b)=>a.material.localeCompare(b.material)||a.lot.localeCompare(b.lot)),warnings:[...new Set(warnings)],unallocated};
 }
-return {PREFIX,text,lot,day,number,material,supplierKey,readEntries,validateEntry,build};
+return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build};
 });
