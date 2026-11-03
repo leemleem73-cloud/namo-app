@@ -4,9 +4,9 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function harness(){
  const records=[],writes=[],dialogs=[],handlers={};let fail=false;
  const search={addEventListener(){}};
- const root={html:'',classList:{contains:()=>false},set innerHTML(v){this.html=v;},get innerHTML(){return this.html;},querySelector:()=>search,addEventListener:(event,fn)=>handlers[event]=fn};
+ const root={append(){},html:'',classList:{contains:()=>false},set innerHTML(v){this.html=v;},get innerHTML(){return this.html;},querySelector:()=>search,addEventListener:(event,fn)=>handlers[event]=fn};
  const doc={hidden:false,getElementById:()=>root,querySelectorAll:()=>dialogs,head:{append(){}},body:{append(d){dialogs.push(d);}},addEventListener(){},createElement(tag){
-  if(tag==='style')return {};
+  if(tag==='style')return {};if(tag==='div')return root;
   const controls={},nodes={},values={};for(const name of ['material','lot','supplier','type','date','status','amount','unit','direction','note']){values[name]='';controls[name]={get value(){return values[name];},set value(v){values[name]=v;}};}
   controls.unit.value='kg';
   const submit={disabled:false};const form={elements:controls,values,querySelector:()=>submit};
