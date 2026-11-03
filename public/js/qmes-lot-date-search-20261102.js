@@ -18,6 +18,17 @@
   return new Set(records.filter(row=>!row.deleted&&norm(row.fields?.['생산 LOT NO'])&&!['-','NULL','UNDEFINED'].includes(norm(row.fields?.['생산 LOT NO']))).map(row=>dayOf(row.workDate||row.fields?.['작업일자'])).filter(Boolean));
  }
  function sheetDatesFor(records){return [...recordDates(records)].sort((a,b)=>b.localeCompare(a));}
+ function sheetDatesFromSources(sources){
+  const dates=new Set(sheetDatesFor(sources[1]?.rows||[]));
+  const add=value=>{const d=dayOf(value);if(d)dates.add(d);};
+  const unpack=value=>{if(typeof value==='string')try{value=JSON.parse(value);}catch(_){return [];}return Array.isArray(value)?value:Array.isArray(value?.rows)?value.rows:[];};
+  (sources[0]?.rows||[]).filter(r=>!r.deleted).forEach(r=>add(r.workDate));
+  for(const index of [2,3,4])(sources[index]?.rows||[]).filter(r=>!r.deleted).forEach(r=>add(r.date));
+  for(const index of [5,6])for(const record of sources[index]?.rows||[]){let payload=record.payload;if(typeof payload==='string')try{payload=JSON.parse(payload);}catch(_){continue;}if(payload?.deleted)continue;unpack(payload).filter(r=>!r.deleted).forEach(r=>add(r.date));}
+  for(const record of sources[7]?.rows||[]){if(record.record_key!=='erp:shipping')continue;unpack(record.payload).filter(r=>!r.deleted).forEach(r=>add(r.actualShipDate||r.shipDate||r.date));}
+  (sources[8]?.rows||[]).filter(r=>!r.deleted).forEach(r=>add(r.occurred_on));
+  return [...dates].sort((a,b)=>b.localeCompare(a));
+ }
  function calendarCells(month,today,selected,recorded){
   const date=new Date(dayOf(month)+'T12:00:00Z');if(!Number.isFinite(date.getTime()))return [];
   const year=date.getUTCFullYear(),index=date.getUTCMonth(),leading=new Date(Date.UTC(year,index,1)).getUTCDay(),count=new Date(Date.UTC(year,index+1,0)).getUTCDate();
@@ -82,17 +93,22 @@
    drawCalendar();void loadCalendarDays();
   }
   function renderSheetDates(){
-   const dates=sheetDatesFor(calendarCache.get('work')?.rows||[]),previous=$('[data-sheet-date]')?.value;
-   $('.lot-date-daily').innerHTML=dates.length?'<label>통합시트 일자 (전체) <select data-sheet-date>'+dates.map(date=>'<option value="'+date+'">'+date+'</option>').join('')+'</select></label><button type="button" class="primary" data-date-sheet>일자 통합시트 보기</button><span class="lot-sheet-date-count">전체 등록일 '+dates.length+'일</span>':'<span>등록된 작업일이 없습니다.</span>';
+   const dates=calendarCache.get('all')?.dates||sheetDatesFor(calendarCache.get('work')?.rows||[]),previous=$('[data-sheet-date]')?.value;
+   $('.lot-date-daily').innerHTML=dates.length?'<label>통합시트 일자 (생산·입고·검사 전체) <select data-sheet-date>'+dates.map(date=>'<option value="'+date+'">'+date+'</option>').join('')+'</select></label><button type="button" class="primary" data-date-sheet>일자 통합시트 보기</button><span class="lot-sheet-date-count">전체 기록일 '+dates.length+'일</span>':'<span>조회된 생산·입고·검사 기록일이 없습니다.</span>';
    if(dates.length)$('[data-sheet-date]').value=dates.includes(previous)?previous:dates[0];
   }
   async function loadSheetDates(){
-   const cache=calendarCache.get('work');if(cache&&Date.now()-cache.at<300000){renderSheetDates();return;}
+   const cache=calendarCache.get('all');if(cache&&Date.now()-cache.at<300000){renderSheetDates();return;}
    sheetController?.abort();const active=new AbortController(),request=++sheetSequence;sheetController=active;
    const timer=win.setTimeout(()=>active.abort(),15000);$('.lot-date-daily').textContent='전체 통합시트 일자를 불러오는 중입니다.';
    try{
-    const orders=await read('/api/qmes/work-orders',active.signal);if(request!==sheetSequence)return;
-    calendarCache.set('work',{at:Date.now(),rows:orders});renderSheetDates();
+    if(!win.qmesLotTrace?.readSources)throw Error('통합 조회를 준비 중입니다.');
+    const sources=await win.qmesLotTrace.readSources('',active.signal);if(request!==sheetSequence)return;
+    const dates=sheetDatesFromSources(sources);
+    calendarCache.set('all',{at:Date.now(),dates});
+    if(!sources[1]?.error)calendarCache.set('work',{at:Date.now(),rows:sources[1]?.rows||[]});renderSheetDates();
+    const errors=sources.filter(s=>s.error).map(s=>s.label);
+    if(errors.length){const note=doc.createElement('span');note.className='lot-sheet-date-count';note.textContent='일부 자료 조회 실패: '+errors.join(', ');$('.lot-date-daily').append(note);}
    }catch(_){if(request===sheetSequence)$('.lot-date-daily').innerHTML='<span>통합시트 일자를 불러오지 못했습니다.</span><button type="button" data-sheet-load>다시 조회</button>';}
    finally{win.clearTimeout(timer);if(request===sheetSequence)sheetController=null;}
   }
@@ -114,7 +130,7 @@
     const orders=await read('/api/qmes/work-orders',active.signal);
     if(request!==sequence||kind.value!==selected||start.value!==from||end.value!==to)return;
     sheetSequence++;sheetController?.abort();sheetController=null;calendarCache.set('work',{at:Date.now(),rows:orders});
-    rows=rowsFor(orders,from,to);page=1;draw();
+    rows=rowsFor(orders,from,to);page=1;draw();void loadSheetDates();
    }catch(_){if(request===sequence){$('.lot-date-message').textContent=active.signal.aborted?'조회 시간이 초과되었습니다. 다시 조회해 주세요.':'자료 조회에 실패했습니다. 다시 조회해 주세요.';$('.lot-date-results').replaceChildren();}}
    finally{win.clearTimeout(timer);if(request===sequence){controller=null;$('[data-date-search]').disabled=false;}}
   }
@@ -175,5 +191,5 @@
   .lot-date-daily{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px}.lot-date-daily:empty{display:none}.lot-sheet-date-count{color:#718397;font-size:11px}.lot-date-daily label{display:flex;align-items:center;gap:8px;font-size:12px;color:#52677e}.lot-date-daily select{height:30px;padding:0 8px;border:1px solid #cfd9e5;border-radius:4px;background:#fff;color:#244260;font:inherit}
   `;doc.head.append(style);setPeriod('month');$('.lot-date-message').textContent='기간을 선택하고 날짜 조회를 눌러주세요.';win.qmesLotDateSearch={clear:clearPrivate};
  }
- return {dayOf,rangeError,period,rowsFor,recordDates,sheetDatesFor,calendarCells,install};
+ return {dayOf,rangeError,period,rowsFor,recordDates,sheetDatesFor,sheetDatesFromSources,calendarCells,install};
 });
