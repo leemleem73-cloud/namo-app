@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const root=document.querySelector('#lotTrace');if(!root)return;
 const heading=root.querySelector('.lot-hero-copy h1');heading?.style.removeProperty('color');heading?.style.removeProperty('-webkit-text-fill-color');
-const $=selector=>root.querySelector(selector),norm=v=>{const value=String(v??'').trim().toUpperCase();return ['-','NULL','UNDEFINED'].includes(value)?'':value;},esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=selector=>root.querySelector(selector),norm=v=>{const value=String(v??'').trim().toUpperCase();return ['-','NULL','UNDEFINED'].includes(value)?'':/^0*2708935$/.test(value)?'2708935':value;},esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const parse=v=>{if(typeof v==='string'){try{return JSON.parse(v);}catch(_){return {};}}return v||{};};
 const unpack=v=>{v=parse(v);return Array.isArray(v)?v:Array.isArray(v.rows)?v.rows:Array.isArray(v.data)?v.data:[];};
 const lot=order=>norm(order.fields?.['생산 LOT NO']),mid=order=>order.productionType==='중간배치';
