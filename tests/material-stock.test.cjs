@@ -80,3 +80,22 @@ test('mixed raw materials do not collapse into a pure ingredient family',()=>{
  assert.notEqual(core.material('SBS+PVdF'),core.material('SBS'));
  assert.notEqual(core.material('NMP+SBR'),core.material('NMP'));
 });
+test('stock reads passed IQC items and saved overall judgment instead of defaulting to pending',()=>{
+ const passedItems=[{name:'외관',judge:'합격'},{name:'중량',judge:'합격'}];
+ assert.equal(core.judgment({judge:'대기',items_json:passedItems}),'합격');
+ assert.equal(core.judgment({items_json:JSON.stringify([{name:'종합판정',value:'합격'}])}),'합격');
+ const row=core.build({iqc:[receipt({judge:'',items_json:[{name:'종합판정',value:'합격'}]})]}).rows[0];
+ assert.equal(row.receipts[0].judge,'합격');assert.equal(row.quality,'사용가능');assert.equal(row.available,100);
+});
+test('unconfirmed and failed inspections never become passes just to change the ledger label',()=>{
+ assert.equal(core.judgment({items_json:[]}), '대기');
+ assert.equal(core.judgment({judge:'합격',items_json:[{name:'COA 확인',values:['미확인']}]}),'불합격');
+ assert.equal(core.judgment({judge:'합격',items_json:[{name:'COA 확인',values:['확인중']}]}),'대기');
+ assert.equal(core.judgment({judge:'보류',items_json:[]}),'보류');
+});
+test('latest saved IQC timestamp is used instead of alphabetically sorting UUID record IDs',()=>{
+ const records=[receipt({id:'zz-old',createdAt:'2025-11-10T00:00:00Z',judge:'대기'}),receipt({id:'aa-new',createdAt:'2025-11-11T00:00:00Z',judge:'합격'})];
+ assert.equal(core.build({iqc:records}).rows[0].receipts[0].judge,'합격');
+ const apiOrder=[receipt({id:'aa-new',judge:'합격'}),receipt({id:'zz-old',judge:'대기'})];
+ assert.equal(core.build({iqc:apiOrder}).rows[0].receipts[0].judge,'합격');
+});
