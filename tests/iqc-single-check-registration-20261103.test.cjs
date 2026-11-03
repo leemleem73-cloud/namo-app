@@ -32,4 +32,16 @@ test('PQC and OQC markup passes through unchanged',()=>{
  assert.equal(context.window.standardInspectionForm('process'),'original:process');assert.equal(context.window.standardInspectionForm('outgoing'),'original:outgoing');
 });
 test('complete layout script compiles',()=>new vm.Script(source));
+test('all four IQC judgment controls show 선택 initially without losing an existing judgment',()=>{
+ const {table,rows}=fixture();ctx.document={createElement:()=>({})};
+ rows.forEach((row,index)=>{
+  const original=row.querySelector;
+  row.judge={tagName:'SELECT',value:index===3?'합격':'대기',options:[],querySelector(){return this.options.find(option=>option.value==='')||null;},insertBefore(option){this.options.unshift(option);},setAttribute(){}};
+  row.querySelector=selector=>selector==='.std-row-judge'?row.judge:original(selector);
+ });
+ ctx.singleIqcChecks(table);
+ rows.forEach((row,index)=>{assert.equal(row.judge.options[0].textContent,'선택');assert.equal(row.judge.options[0].value,'');assert.equal(row.judge.value,index===3?'합격':'');});
+ ctx.singleIqcChecks(table);rows.forEach(row=>assert.equal(row.judge.options.length,1));
+ assert.equal(ctx.evaluateIqcItems(rows.map(row=>({name:row.name,judge:row.judge.value,values:['적합']}))),'대기');
+});
 
