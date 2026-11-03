@@ -49,21 +49,23 @@ function sourceInfo(event){
  if(event.source==='작업실적')return {title:'작업실적 · '+(event.date||'일자 미확인'),detail:'생산 LOT '+(event.output||'미입력')};
  return {title:event.kind+' 기록',detail:event.note||'직접 등록한 사용·조정 기록'};
 }
-async function openSource(event,row,dialog){
- try{
-  if(event.source==='수입검사'){
-   const section=document.getElementById('incoming');if(!section||typeof window.editIncomingRecord!=='function')throw Error('수입검사 화면을 준비 중입니다.');
-   document.querySelector('.menu[data-page="incoming"]')?.click();
-   if(typeof window.loadIncomingFromDb==='function')await window.loadIncomingFromDb(section);
-   const record=(section._iqcRows||snapshot?.iqc||[]).find(r=>String(r.id)===String(event.id));if(!record)throw Error('연결된 수입검사 기록을 찾지 못했습니다. 재고를 새로고침해 주세요.');
-   dialog.close();window.editIncomingRecord(section,record);return;
-  }
-  if(event.source==='작업지시'){
-   const record=snapshot?.orders.find(r=>String(r.id)===String(event.id));if(!record||typeof window.openNewForm!=='function')throw Error('연결된 작업지시서를 찾지 못했습니다.');
-   dialog.close();document.querySelector('.menu[data-page="work"]')?.click();window.openNewForm('work',record);return;
-  }
-  const record=entries.find(r=>r.id===event.id);if(record)editEntry(record,row,dialog);
- }catch(error){if(typeof window.toast==='function')window.toast(error.message);}
+function usageOrder(event,row){
+ const matches=(snapshot?.orders||[]).filter(order=>!order.deleted&&!/취소/.test(String(order.fields?.['진행상태']||''))).filter(order=>event.source==='작업지시'?String(order.id)===String(event.id):event.output&&core.lot(order.fields?.['생산 LOT NO'])===core.lot(event.output)&&order.materials?.some(m=>core.lot(m.lot)===core.lot(row.lot)&&core.material(m.sourceName||m.name)===core.material(row.material)));
+ if(matches.length!==1)return {order:null,material:null};
+ const order=matches[0],materials=(order.materials||[]).filter(m=>core.lot(m.lot)===core.lot(row.lot)&&core.material(m.sourceName||m.name)===core.material(row.material));
+ const indexed=event.source==='작업지시'?order.materials?.[event.index]:null;
+ return {order,material:indexed&&materials.includes(indexed)?indexed:materials.length===1?materials[0]:null};
+}
+function ledgerSections(row){
+ const receipts=row.ledger.map((event,index)=>({event,index})).filter(({event})=>event.source==='수입검사');
+ const uses=row.ledger.map((event,index)=>({event,index})).filter(({event})=>['작업지시','작업실적'].includes(event.source));
+ const head=(title,count,total)=>'<div class="ms-ledger-section-head"><h4>'+title+'</h4><span class="ms-ledger-total">'+count+'건 · 합계 '+fmt(total)+' kg</span></div>';
+ const table=(widths,headers,body,empty)=>'<div class="ms-table-wrap"><table class="ms-table ms-ledger-table"><colgroup>'+widths.map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+headers.length+'">'+empty+'</td></tr>')+'</tbody></table></div>';
+ const receiptRows=receipts.map(({event:e,index})=>{const original=snapshot?.iqc.find(r=>String(r.id)===String(e.id));return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(row.material)+'</td><td>'+esc(row.lot)+'</td><td>'+esc(row.supplier||'미확인')+'</td><td>'+fmt(e.qty==null?null:e.qty/1e6)+'</td><td>'+esc(e.judge||'대기')+'</td><td>'+esc(original?.inspector||'—')+'</td><td class="ms-source-cell">수입검사'+(e.note?'<small>'+esc(e.note)+'</small>':'')+'</td></tr>';}).join('');
+ const useRows=uses.map(({event:e,index})=>{const {order,material}=usageOrder(e,row),fields=order?.fields||{},plan=core.number(material?.plan),documentNo=fields['작업지시번호']||e.documentNo;return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td class="ms-source-cell">'+esc(documentNo||'작업실적')+(e.source==='작업실적'?'<small>저장된 작업실적 기준</small>':'')+'</td><td>'+esc(fields['제품명']||e.product||'미확인')+'</td><td>'+esc(e.output||'미입력')+'</td><td>'+fmt(plan)+'</td><td>'+fmt(e.qty==null?null:e.qty/1e6)+'</td><td>'+esc(fields['작업자']||'—')+'</td><td>'+esc(fields['진행상태']||'미확인')+'</td></tr>';}).join('');
+ const journal=row.ledger.map(e=>{const info=sourceInfo(e);return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(e.kind)+'</td><td>'+(e.delta==null?'미확인':e.delta>0?fmt(e.delta/1e6):'—')+'</td><td>'+(e.delta==null?'미확인':e.delta<0?fmt(-e.delta/1e6):'—')+'</td><td class="ms-source-cell">'+esc(info.title)+'<small>'+esc(info.detail)+'</small></td></tr>';}).join('');
+ return '<section class="ms-ledger-section" data-ledger-section="journal"><h3>입고·사용 기록</h3>'+table([13,13,15,15,44],['일자','구분','입고·증가(kg)','사용·차감(kg)','입고·사용 근거'],journal,'표시할 입고·사용 기록이 없습니다.')+'</section><section class="ms-ledger-section ms-usage-summary"><h3>사용 내역</h3><p class="ms-ledger-note">수입검사 입고 내용과 작업지시서 생산 투입 내용을 아래에서 바로 확인할 수 있습니다.</p><section class="ms-ledger-section" data-ledger-section="receipts">'+head('입고 내역 · 수입검사',receipts.length,row.incoming)+table([10,13,14,16,11,9,11,16],['입고일','원료명','원료 LOT','공급업체','입고량(kg)','검사 판정','검사자','입고 근거'],receiptRows,'연결된 수입검사 입고 내역이 없습니다.')+'</section>'+
+ '<section class="ms-ledger-section" data-ledger-section="production">'+head('생산 사용 내역 · 작업지시서 투입',uses.length,row.used)+'<p class="ms-ledger-note">계획투입량은 참고값이며, 재고는 실투입량만 차감합니다.</p>'+table([10,18,15,14,11,11,12,9],['작업일','작업지시번호 / 사용 근거','제품명','생산 LOT','계획투입량(kg)','실투입량(kg)','작업자','진행상태'],useRows,'연결된 생산 투입 내역이 없습니다. 재검사·샘플 사용은 아래에서 별도로 추가하세요.')+'</section></section>';
 }
 function showDetails(key){
  const row=model.rows.find(r=>r.key===key);if(!row)return;selected=key;
@@ -72,11 +74,10 @@ function showDetails(key){
  dialog.innerHTML='<header><strong>입고·사용 내역</strong><button type="button" data-close>닫기</button></header><div class="ms-dialog-body">'+
  '<div class="ms-material-info">'+[['원료명',row.material],['원료 LOT',row.lot],['공급업체',row.supplier||'미확인 (수입검사 원본 확인 필요)']].map(([label,value])=>'<div><b>'+label+'</b><span>'+esc(value)+'</span></div>').join('')+'</div>'+
  '<div class="ms-policy">입고는 수입검사, 생산 사용은 작업지시서의 실투입량을 기준으로 표시합니다.<br>기초재고 '+fmt(row.opening)+' kg'+(row.start?' · '+esc(row.start)+' 시작 기준':' · 전체 저장 이력 기준')+' / 현재 장부재고 <b>'+fmt(row.balance)+' kg</b> · 미확인 사용량은 반영 전입니다.</div>'+[...row.issues,...(row.notices||[])].map(s=>'<p class="ms-ledger-note">'+esc(s)+'</p>').join('')+
- '<section class="ms-ledger-section"><h3>입고·사용 기록</h3><div class="ms-table-wrap"><table class="ms-table ms-ledger-table"><colgroup>'+[11,10,14,14,10,10,31].map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+['일자','구분','원료 LOT','공급업체','입고·증가(kg)','사용·차감(kg)','입고·사용 근거'].map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
- (row.ledger.map((e,index)=>{const info=sourceInfo(e),canOpen=['수입검사','작업지시','수불기록'].includes(e.source);return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(e.kind)+'</td><td>'+esc(row.lot)+'</td><td>'+esc(row.supplier||'미확인')+'</td><td>'+(e.delta==null?'미확인':e.delta>0?fmt(e.delta/1e6):'—')+'</td><td>'+(e.delta==null?'미확인':e.delta<0?fmt(-e.delta/1e6):'—')+'</td><td class="ms-source-cell">'+(canOpen?'<button type="button" class="ms-source-link" data-source-index="'+index+'">'+esc(info.title)+'</button>':'<span>'+esc(info.title)+'</span>')+'<small>'+esc(info.detail)+'</small></td></tr>';}).join('')||'<tr><td colspan="7">표시할 입고·사용 기록이 없습니다.</td></tr>')+'</tbody></table></div></section>'+
+ ledgerSections(row)+
  '<section class="ms-ledger-section"><div class="ms-ledger-section-head"><h3>재검사·샘플 사용 / 재고 조정</h3><button type="button" class="primary" data-new>+ 사용 기록 추가</button></div><div class="ms-table-wrap"><table class="ms-table ms-manual-table"><colgroup>'+[14,14,14,14,34,10].map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+['일자','구분','수량(kg)','확인 상태','사용 사유 / 확인 내용','처리'].map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
  (manual.map(e=>'<tr><td>'+esc(e.date||'미확인')+'</td><td>'+esc(typeLabel[e.type])+'</td><td>'+fmt(e.quantity)+'</td><td>'+esc({pending:'수량 확인 필요',confirmed:'확인 완료',cancelled:'취소'}[e.status])+'</td><td>'+esc(e.note)+'</td><td><button type="button" data-edit="'+esc(e.id)+'">수정/확정</button></td></tr>').join('')||'<tr><td colspan="6">등록된 재검사·샘플 사용 기록이 없습니다. 사용한 양을 확인하면 위 버튼으로 추가하세요.</td></tr>')+'</tbody></table></div></section></div>';
- dialog.querySelectorAll('[data-source-index]').forEach(button=>button.onclick=()=>openSource(row.ledger[Number(button.dataset.sourceIndex)],row,dialog));
+ 
  dialog.querySelector('[data-close]').onclick=()=>dialog.close();dialog.querySelector('[data-new]').onclick=()=>editEntry(null,row,dialog);
  dialog.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editEntry(entries.find(e=>e.id===b.dataset.edit),row,dialog));
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
@@ -152,6 +153,8 @@ html body #app #materialStock table.ms-audit-table td,html body .ms-dialog table
 .ms-ledger-section{margin-top:18px}
 .ms-ledger-section h3{margin:0;font-size:13px;font-weight:600}
 .ms-ledger-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ms-usage-summary h4{margin:0;font-size:12px;font-weight:600}.ms-usage-summary>.ms-ledger-section{margin-top:14px}
+.ms-ledger-total{font-size:12px;color:#526d88;font-weight:400}
 .ms-ledger-dialog .ms-table-wrap{margin:8px 0 0}
 .ms-ledger-note{margin:6px 0;color:#95601a;font-size:11px}
 html body .ms-ledger-dialog table.ms-ledger-table{min-width:1120px!important}
