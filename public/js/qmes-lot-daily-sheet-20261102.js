@@ -67,40 +67,23 @@
   const warning=model.errors.length?'<p class="lot-day-warning">일부 자료 조회 실패: '+model.errors.map(esc).join(', ')+' · 아래 내용은 조회된 자료만 포함합니다.</p>':'';
   return warning+'<div class="lot-day-summary"><span>생산 LOT <b>'+model.lotCount+'</b>건</span><span>작업지시 <b>'+model.orders.length+'</b>건</span><span>검사 <b>'+model.inspectionCount+'</b>건</span><span>부적합 <b>'+model.ncrCount+'</b>건</span><span>출하 <b>'+model.shippingCount+'</b>건</span></div><p class="lot-day-note">기준일은 작업지시서의 작업일입니다. 연결된 검사·출하가 다른 날에 진행됐으면 실제 이력 날짜를 표시합니다. 계획수량과 실투입량은 구분해 확인하세요.</p><h3><span class="lot-day-section-no">01.</span><span>해당 날짜의 생산 LOT</span></h3>'+table(['작업일','작업지시번호','생산 LOT','제품명','계획수량 (kg)','작업자','진행상태'],model.orders.map(row=>{const f=row.fields||{};return [model.date,f['작업지시번호']||row.id,f['생산 LOT NO'],f['제품명'],formatValue(f['계획수량']),f['작업자'],f['진행상태']];}))+'<h3><span class="lot-day-section-no">02.</span><span>LOT별 통합 이력</span></h3>'+historyTable(model.entries);
  }
- function printDocument(date,body,screenStyle){
-  const printStyle='@page{size:A4 landscape;margin:10mm}html,body{margin:0;padding:0;background:#fff;color:#244260;font:11px/1.45 Arial,"Malgun Gothic",sans-serif}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}.lot-day-sheet{display:block!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;overflow:visible!important}.lot-day-sheet>header{position:static!important;padding:0 0 10px!important}.lot-day-body{padding:10px 0!important}.lot-day-table{overflow:visible!important;break-inside:auto}.lot-day-table>table{width:100%!important;min-width:0!important;table-layout:fixed!important;font-size:10px!important}.lot-day-table thead{display:table-header-group}.lot-day-table tbody{display:table-row-group}.lot-day-table tr{break-inside:avoid;page-break-inside:avoid}.lot-day-table :is(th,td),.lot-day-table>table>tbody>tr>td{font-size:10px!important;padding:6px!important;white-space:normal!important;overflow-wrap:anywhere!important}.lot-day-facts{padding:0!important;font-size:10px!important}.lot-day-fact{grid-template-columns:65px minmax(0,1fr)!important;gap:5px!important;padding:4px 0!important}.lot-day-fact.has-judge{grid-template-columns:65px minmax(0,1fr) 35px!important}.lot-day-badge{font-size:9px!important}.lot-day-body h3{break-after:avoid;page-break-after:avoid}.lot-day-summary{gap:8px 18px!important}';
-  return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+esc(date)+' 일자별 LOT 통합 이력</title><style>'+screenStyle+'\\n'+printStyle+'</style></head><body><article class="lot-day-sheet"><header><div><strong>일자별 LOT 통합 이력</strong><span>'+esc(date)+' · 해당 날짜의 생산 LOT 전체</span></div></header><div class="lot-day-body">'+body+'</div></article></body></html>';
- }
  function install(win){
   if(win.qmesLotDaily)return;const doc=win.document;let viewer=null,controller=null,serial=0;
   function close(){serial++;controller?.abort();controller=null;const old=viewer;viewer=null;if(old){old.close();old.remove();}}
   async function open(date){
    close();if(!validDate(date))return;
    const request=serial,dialog=doc.createElement('dialog');viewer=dialog;dialog.className='lot-day-sheet';dialog.setAttribute('aria-label',date+' 일자 통합 이력');
-   dialog.innerHTML='<header><div><strong>일자별 LOT 통합 이력</strong><span>'+esc(date)+' · 해당 날짜의 생산 LOT 전체</span></div><div class="lot-day-actions"><button type="button" data-day-print disabled>인쇄</button><button type="button" data-day-close>닫기</button></div></header><div class="lot-day-body" role="status">통합 이력을 불러오는 중입니다.</div>';
-   const printButton=dialog.querySelector('[data-day-print]');
-   printButton.onclick=()=>{
-    if(printButton.disabled)return;
-    printButton.disabled=true;
-    const frame=doc.createElement('iframe');frame.setAttribute('title','일자별 LOT 통합 이력 인쇄');frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;left:-20000px;top:0;width:1100px;height:800px;border:0';
-    const cleanup=()=>{frame.remove();if(printButton.isConnected)printButton.disabled=false;};
-    frame.onload=async()=>{
-     try{await frame.contentDocument.fonts?.ready;frame.contentWindow.addEventListener('afterprint',cleanup,{once:true});frame.contentWindow.focus();frame.contentWindow.print();}catch(_){cleanup();if(typeof win.toast==='function')win.toast('인쇄창을 열지 못했습니다. 다시 시도해 주세요.');}
-    };
-    frame.srcdoc=printDocument(date,dialog.querySelector('.lot-day-body').innerHTML,style.textContent);doc.body.append(frame);
-    win.setTimeout(cleanup,120000);
-   };
+   dialog.innerHTML='<header><div><strong>일자별 LOT 통합 이력</strong><span>'+esc(date)+' · 해당 날짜의 생산 LOT 전체</span></div><button type="button" data-day-close>닫기</button></header><div class="lot-day-body" role="status">통합 이력을 불러오는 중입니다.</div>';
    const previous=doc.activeElement;dialog.querySelector('[data-day-close]').onclick=close;dialog.addEventListener('close',()=>{if(viewer===dialog){controller?.abort();viewer=null;serial++;}dialog.remove();if(previous?.isConnected)previous.focus();},{once:true});
    doc.body.append(dialog);dialog.showModal();dialog.querySelector('[data-day-close]').focus();
    if(!win.qmesLotTrace?.readSources||!win.qmesLotTrace?.buildGraph){dialog.querySelector('.lot-day-body').textContent='통합 조회 기능을 준비 중입니다. 새로고침 후 다시 시도해 주세요.';return;}
    const active=new AbortController();controller=active;const timer=win.setTimeout(()=>active.abort(),25000);
-   try{const sources=await win.qmesLotTrace.readSources('',active.signal);if(request!==serial||viewer!==dialog||!dialog.open)return;const model=buildDay(sources,date,win.qmesLotTrace.buildGraph);dialog.querySelector('.lot-day-body').innerHTML=markup(model);printButton.disabled=!model.orders.length;}
+   try{const sources=await win.qmesLotTrace.readSources('',active.signal);if(request!==serial||viewer!==dialog||!dialog.open)return;const model=buildDay(sources,date,win.qmesLotTrace.buildGraph);dialog.querySelector('.lot-day-body').innerHTML=markup(model);}
    catch(error){if(request===serial&&viewer===dialog)dialog.querySelector('.lot-day-body').textContent=active.signal.aborted?'조회 시간이 초과되었습니다. 다시 열어주세요.':error.message||'통합 이력을 불러오지 못했습니다.';}
    finally{win.clearTimeout(timer);if(request===serial)controller=null;}
   }
   doc.addEventListener('qmes-lot-date-invalidated',close);doc.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))close();},true);win.addEventListener('qmes-authenticated',close);
   const style=doc.createElement('style');style.textContent=`
-  .lot-day-actions{display:flex;align-items:center;gap:8px}.lot-day-sheet button:disabled{opacity:.5;cursor:default}
   .lot-day-sheet{box-sizing:border-box;width:min(1320px,calc(100vw - 32px));max-height:92dvh;margin:auto;padding:0;overflow:auto;border:1px solid #d5dce5;border-radius:6px;background:#fff;color:#244260;font:12px/1.6 Pretendard,"Noto Sans KR",Arial,sans-serif}.lot-day-sheet::backdrop{background:rgba(24,49,75,.4)}.lot-day-sheet>header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid #d5dce5;background:#fff}.lot-day-sheet header strong{display:block;font-size:18px;font-weight:800;color:#173b61}.lot-day-sheet header span{display:block;margin-top:4px;font-size:12px;color:#64748b}.lot-day-sheet button{height:30px;padding:0 12px;border:1px solid #cfd7e1;border-radius:4px;background:#fff;color:#415267;font:600 12px Pretendard,"Noto Sans KR",Arial,sans-serif;cursor:pointer}.lot-day-sheet button:focus-visible{outline:2px solid #2f8de4;outline-offset:2px}.lot-day-body{padding:16px 18px}.lot-day-summary{display:flex;flex-wrap:wrap;gap:10px 24px;padding:10px 12px;border:1px solid #d5dce5;border-radius:4px;background:#f8fafc}.lot-day-summary b{color:#1768ad}.lot-day-note{color:#64748b;font-size:11px}.lot-day-body h3{margin:18px 0 8px;font-size:13px;font-weight:700}.lot-day-table{overflow:auto;border:1px solid #d5dce5;border-radius:4px}.lot-day-table table{width:100%;min-width:900px;border:0;border-collapse:separate;border-spacing:0;font-size:12px}.lot-day-table :is(thead,tbody,tr){border:0}.lot-day-table :is(th,td){padding:8px 9px;border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;vertical-align:middle;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:500}.lot-day-table th{background:#edf3f9;font-weight:600;white-space:nowrap}.lot-day-table tr>:last-child{border-right:0}.lot-day-table tbody tr:last-child>td{border-bottom:0}.lot-day-warning{padding:10px 12px;border:1px solid #f0d9b2;background:#fff8e9;color:#885c18;border-radius:4px}.lot-day-empty{padding:24px;text-align:center;color:#718397}
 
   .lot-day-sheet{width:min(1440px,calc(100vw - 32px))}
@@ -129,5 +112,5 @@
   .lot-day-history>table>tbody>tr>td:not(.record-detail){text-align:center;vertical-align:middle}
   `;doc.head.append(style);win.qmesLotDaily={open,close};
  }
- return {validDate,formatValue,inspectionFacts,buildDay,markup,printDocument,install};
+ return {validDate,formatValue,inspectionFacts,buildDay,markup,install};
 });
