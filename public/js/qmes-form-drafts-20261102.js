@@ -21,7 +21,7 @@
         if(value.version!==1||value.actor!==actor||!Array.isArray(value.fields)||!Number.isFinite(value.at)||now()-value.at>TTL){if(value.actor===actor)storage.removeItem(key);return null;}
         return value;
       },
-      write(key,value){const text=JSON.stringify(value);if(text.length>1500000)throw Error('임시저장 용량을 초과했습니다.');storage.setItem(key,text);},
+      write(key,value){const text=JSON.stringify(value);if(text.length>1500000)throw Error('임시저장 용량을 초과했습니다.');storage.setItem(key,text);if(storage.getItem(key)!==text)throw Error('임시저장 확인에 실패했습니다.');},
       remove(key){storage.removeItem(key);},
       finish(key,actor,revision){if(!storage.getItem(key))return true;const value=this.read(key,actor);if(!value||value.revision!==revision)return false;this.remove(key);return true;}
     };
@@ -129,18 +129,32 @@
       addClass(save,'qmes-registration-save');save.textContent='저장';
       return actions;
     }
+    function draftFeedback(ctx,actions,button){
+      let status=ctx.feedbackNode;
+      if(!status){status=doc.createElement('span');ctx.feedbackNode=status;status.className='qmes-draft-feedback';status.setAttribute('role','status');status.setAttribute('aria-live','polite');}
+      const message=ctx.feedbackMessage||'';
+      const failed=/실패|부족/.test(message),saved=/^임시저장 완료|^임시저장됨/.test(message);
+      const label=failed?'임시저장 실패':saved?message.split(' · ').slice(0,2).join(' · '):/^작성 중 임시저장/.test(message)?'불러올 임시저장 있음':'';
+      if(status.textContent!==label)status.textContent=label;
+      const state=failed?'error':saved?'saved':'pending';
+      if(status.dataset.state!==state)status.dataset.state=state;
+      status.title=message;status.hidden=!label;
+      if(status.parentElement!==actions||status.nextElementSibling!==button)actions.insertBefore(status,button);
+    }
     function placeSaveButton(ctx,button=ctx.saveButton){
       if(!button)return;
-      if(ctx.mode==='new'){
+      if(ctx.mode==='new'||ctx.module==='incoming'){
         ctx.root.dataset.qmesRegistration='1';
         const save=ctx.root.querySelector('[data-am-save],#npo-save,.qce-modal [data-save],#ncr-editor-save,.eq-wo-form button[type="submit"]')
           ||ctx.root.querySelector('.am-detail-actions')?.querySelector('[data-am-save]')
+          ||ctx.root.querySelector('#iqcEditSave')
           ||doc.getElementById('workspaceFoot')?.querySelector('[data-am-save]');
         if(save){
           const actions=registrationActions(ctx,save);
           if(actions){
             button.className='am-top-btn primary qmes-registration-draft';
             if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);
+            draftFeedback(ctx,actions,button);
             return;
           }
         }
@@ -150,6 +164,7 @@
     }
     function show(ctx,message,recover){
       if(!allowed()||!ctx.root.isConnected)return;
+      ctx.feedbackMessage=message;
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
       node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
@@ -169,8 +184,9 @@
       try{
         repo.write(ctx.key,value);
         ctx.pending=null;ctx.dirty=true;ctx.revision=nextRevision;ctx.last=signature(data.fields,data.rows);
-        show(ctx,'임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' · 같은 브라우저에서 30일간 보관됩니다.'+(data.files.length?' 첨부파일은 다시 선택해 주세요.':''),false);
-      }catch(_){show(ctx,'임시저장 실패 · 브라우저 저장 공간을 확인해 주세요. 현재 입력 내용은 유지됩니다.',!!ctx.pending);}
+        show(ctx,'임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · 같은 브라우저에서 30일간 보관됩니다.'+(data.files.length?' 첨부파일은 다시 선택해 주세요.':''),false);
+        if(typeof win.toast==='function')win.toast('임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR')+' · 이 브라우저에 보관됩니다.');
+      }catch(_){if(typeof win.toast==='function')win.toast('임시저장에 실패했습니다. 입력 내용은 유지됩니다.');show(ctx,'임시저장 실패 · 브라우저 저장 공간을 확인해 주세요. 현재 입력 내용은 유지됩니다.',!!ctx.pending);}
     }
     function flush(ctx=active){
       if(!ctx||!ctx.dirty||ctx.pending||restoring||!allowed()||ctx.actor!==authorized)return;
@@ -258,7 +274,7 @@
       return promise;
     };
     function authorize(){const gate=win.qmesAuthDataReady;Promise.resolve(gate?.wait()).then(()=>{authorized=actor();schedule();});}
-    const style=doc.createElement('style');style.textContent='.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.qmes-draft-confirm{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;padding:20px;border:1px solid #cbd8e5;border-radius:12px;background:#fff;color:#244260;box-shadow:0 18px 50px rgba(24,49,75,.22);font-family:inherit}.qmes-draft-confirm::backdrop{background:rgba(24,49,75,.35)}.qmes-draft-confirm h3{margin:0 0 12px;font-size:15px;font-weight:800;color:#244260}.qmes-draft-confirm p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#244260}.qmes-draft-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.qmes-draft-confirm-actions button{height:32px;min-width:62px;padding:0 12px;border:1px solid #cbd8e5;border-radius:6px;background:#fff;color:#244260;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmes-draft-confirm-actions button.primary{background:#e8f0f8}.qmes-draft-confirm-actions button:hover{filter:brightness(.97)}.qmes-draft-confirm-actions button:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.am-split[data-am-screen="incoming"] [data-qmes-draft-bar]{display:none!important}[data-qmes-registration="1"] [data-qmes-draft-bar]{display:none!important}.qmes-registration-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}.qmes-registration-header>h3{margin:0!important}.qmes-registration-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;margin-left:auto!important;flex-wrap:wrap!important}.qmes-registration-actions>.qmes-registration-draft,.qmes-registration-actions>.qmes-registration-save{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;flex:none!important;width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 11px!important;border:1px solid #2f8de4!important;border-radius:3px!important;background:#2f8de4!important;background-image:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important;line-height:normal!important;letter-spacing:normal!important;box-shadow:none!important;text-shadow:none!important;cursor:pointer!important}.qmes-registration-actions>.qmes-registration-back{height:28px!important;padding:0 11px!important;margin:0!important;border:1px solid #cfd7e1!important;border-radius:3px!important;background:#fff!important;color:#415267!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important}.qmes-registration-actions>button:focus-visible{outline:2px solid #173d6f!important;outline-offset:2px!important}';doc.head.append(style);
+    const style=doc.createElement('style');style.textContent='.qmes-registration-actions>.qmes-draft-feedback{display:inline-flex!important;align-items:center;flex:0 1 auto;max-width:300px;gap:4px;margin-right:6px;font-family:inherit;font-size:12px;font-weight:600;line-height:1.4;color:#23754b;white-space:nowrap}.qmes-registration-actions>.qmes-draft-feedback[hidden]{display:none!important}.qmes-draft-feedback[data-state="error"]{color:#b42318!important}.qmes-draft-feedback[data-state="pending"]{color:#64748b!important}.qmes-draft-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;padding:7px 10px;border:1px solid #d8e0e9;border-radius:3px;background:#f8fafc;color:#415267;font-family:inherit;font-size:12px;line-height:1.5}.qmes-draft-bar>span{flex:1;min-width:160px}.qmes-draft-bar>button.am-top-btn{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;height:28px;padding:0 11px;border:1px solid #cfd7e1;border-radius:3px;background:#fff;color:#415267;font-family:inherit;font-size:10px;font-weight:800;line-height:normal;letter-spacing:normal;box-shadow:none;cursor:pointer}.qmes-draft-bar>button.am-top-btn.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}.qmes-draft-bar>button.am-top-btn:hover{filter:brightness(.96)}.qmes-draft-bar>button.am-top-btn:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.qmes-draft-confirm{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(360px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;padding:20px;border:1px solid #cbd8e5;border-radius:12px;background:#fff;color:#244260;box-shadow:0 18px 50px rgba(24,49,75,.22);font-family:inherit}.qmes-draft-confirm::backdrop{background:rgba(24,49,75,.35)}.qmes-draft-confirm h3{margin:0 0 12px;font-size:15px;font-weight:800;color:#244260}.qmes-draft-confirm p{margin:0 0 20px;font-size:13px;line-height:1.6;color:#244260}.qmes-draft-confirm-actions{display:flex;justify-content:flex-end;gap:8px}.qmes-draft-confirm-actions button{height:32px;min-width:62px;padding:0 12px;border:1px solid #cbd8e5;border-radius:6px;background:#fff;color:#244260;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmes-draft-confirm-actions button.primary{background:#e8f0f8}.qmes-draft-confirm-actions button:hover{filter:brightness(.97)}.qmes-draft-confirm-actions button:focus-visible{outline:2px solid #173d6f;outline-offset:2px}.am-split[data-am-screen="incoming"] [data-qmes-draft-bar]{display:none!important}[data-qmes-registration="1"] [data-qmes-draft-bar]{display:none!important}.qmes-registration-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}.qmes-registration-header>h3{margin:0!important}.qmes-registration-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;margin-left:auto!important;flex-wrap:wrap!important}.qmes-registration-actions>.qmes-registration-draft,.qmes-registration-actions>.qmes-registration-save{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;flex:none!important;width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 11px!important;border:1px solid #2f8de4!important;border-radius:3px!important;background:#2f8de4!important;background-image:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important;line-height:normal!important;letter-spacing:normal!important;box-shadow:none!important;text-shadow:none!important;cursor:pointer!important}.qmes-registration-actions>.qmes-registration-back{height:28px!important;padding:0 11px!important;margin:0!important;border:1px solid #cfd7e1!important;border-radius:3px!important;background:#fff!important;color:#415267!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif!important;font-size:10px!important;font-weight:800!important}.qmes-registration-actions>button:focus-visible{outline:2px solid #173d6f!important;outline-offset:2px!important}';doc.head.append(style);
     let replayingSave=false;
     async function confirmRegistrationSave(event){
       const button=event.target.closest?.('.qmes-registration-save,[data-am-save],#modalSave,#iqcEditSave,#npo-save,.qce-modal [data-save],#ncr-editor-save,.eq-wo-form button[type="submit"]');
