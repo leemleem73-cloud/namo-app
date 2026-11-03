@@ -59,3 +59,24 @@ test('source data stays unchanged and unrelated shared records are ignored',()=>
  const source={iqc:[receipt()],orders:[order()],entries:[entry()]},before=JSON.stringify(source);core.build(source);assert.equal(JSON.stringify(source),before);
  assert.equal(core.readEntries([{record_key:'erp:sales',payload:{entry:entry()}}]).length,0);
 });
+test('분산제 and BYK180 share the approved 2708935 LOT without changing any other leading zeros',()=>{
+ const iqc=[receipt({item:'분산제',lot:'0002708935'})],orders=[order({materials:[{name:'BYK-180',lot:'002708935',plan:50,actual:40}]})];
+ const row=core.build({iqc,orders}).rows[0];assert.equal(row.material,'BYK180 (분산제)');assert.equal(row.lot,'2708935');assert.equal(row.used,40);assert.equal(row.balance,60);assert.equal(row.receipts[0].originals[0].lot,'0002708935');assert.equal(core.lot('00012345'),'00012345');
+});
+test('a unique LOT cannot charge an unrelated material; unmatched production cannot create receipt stock',()=>{
+ const result=core.build({iqc:[receipt()],orders:[order({materials:[{name:'PVDF',lot:'RAW-1',actual:30}]})]});
+ assert.equal(result.rows[0].used,0);assert.equal(result.unallocated.length,1);assert.equal(result.rows[0].available,0);
+ const onlyWork=core.build({orders:[order()]});assert.equal(onlyWork.rows.length,0);assert.equal(onlyWork.unallocated.length,1);
+});
+test('supplier authority is IQC only: same-material LOT evidence is usable, purchases are never substituted',()=>{
+ let result=core.build({iqc:[receipt({supplier:''})],purchases:[{id:'p1',item:'NMP',lot:'RAW-1',supplier:'발주 업체'}]});assert.equal(result.rows[0].supplier,'');assert.equal(result.rows[0].available,0);
+ result=core.build({iqc:[receipt({supplier:''}),receipt({id:'i2'})]});assert.equal(result.rows.length,1);assert.equal(result.rows[0].supplier,'공급사');assert.ok(result.rows[0].notices.some(s=>s.includes('동일 원료/LOT')));
+ const result2=core.build({iqc:[receipt({supplier:''}),receipt({id:'i2',item:'PVDF',supplier:'다른 원료 업체'})]});assert.equal(result2.rows.find(r=>r.material==='NMP').supplier,'');
+});
+test('worklog supplier spelling never overwrites the IQC supplier',()=>{
+ const actual={workDate:'2026-11-02',finishedLot:'F',lotNo:'RAW-1',material:'NMP',supName:'투입 시 잘못 적은 업체',inputQty:5};const row=core.build({iqc:[receipt()],actuals:[actual]}).rows[0];assert.equal(row.supplier,'공급사');assert.equal(row.used,5);assert.ok(row.notices.some(s=>s.includes('수입검사 원본 기준')));
+});
+test('mixed raw materials do not collapse into a pure ingredient family',()=>{
+ assert.notEqual(core.material('SBS+PVdF'),core.material('SBS'));
+ assert.notEqual(core.material('NMP+SBR'),core.material('NMP'));
+});
