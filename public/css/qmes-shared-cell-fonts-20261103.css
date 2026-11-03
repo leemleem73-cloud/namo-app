@@ -42,6 +42,6 @@ html body .eq-wo-overlay .eq-wo-form :is(input,select,textarea){font-weight:400!
 
 @media screen{
 html body #mainWorkspace .am-split[data-am-screen="orders"] :is(.form-item,.am-inline-cell)>label{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]{text-align:center!important;cursor:pointer}
-html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]::-webkit-datetime-edit{text-align:center}
+html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]{text-align:left!important;cursor:pointer}
+html body #mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]::-webkit-datetime-edit{text-align:left!important}
 }
