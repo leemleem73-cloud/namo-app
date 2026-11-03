@@ -14,6 +14,10 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'){close();return;}if(e.
 window.addEventListener('resize',place);window.addEventListener('qmes-notification-moved',place);window.addEventListener('scroll',()=>{if(popup)place();},true);
 
 function markProcessDates(){
+ document.querySelectorAll('#mainWorkspace .am-split[data-am-screen="orders"] input[type="date"]').forEach(input=>{
+  input.style.setProperty('text-align','left','important');
+  input.style.setProperty('justify-content','flex-start','important');
+ });
  document.querySelectorAll('#mainWorkspace .am-split[data-am-screen="process"] .am-inline-cell').forEach(cell=>{
   if(cell.querySelector('label')?.textContent.trim()!=='검사일자')return;
   const input=cell.querySelector('input');if(!input||input.dataset.qisDate)return;
