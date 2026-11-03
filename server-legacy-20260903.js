@@ -984,7 +984,7 @@ function requireCommercialErp(req, res, next) {
   next();
 }
 function isRestrictedCommercialSync(type, key) {
-  return type === 'inventory' && (key === 'erp:sales' || key === 'erp:purchase');
+  return type === 'inventory' && (key === 'erp:sales' || key === 'erp:purchase' || String(key).startsWith('sales-order:'));
 }
 
 function buildSessionUser(user) {
