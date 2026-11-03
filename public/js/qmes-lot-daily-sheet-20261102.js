@@ -54,7 +54,7 @@
  function badge(value){return '<span class="lot-day-badge '+statusClass(String(value||''))+'">'+esc(value||'-')+'</span>';}
  function factsMarkup(entry){
   const facts=entry.facts?.length?entry.facts:String(entry.detail||'').split('\n').filter(Boolean).map(value=>({label:'내용',value}));
-  return '<div class="lot-day-facts"><div class="lot-day-fact-head"><span>항목</span><span>값 / 내용</span><span>판정</span></div>'+facts.map(fact=>'<div class="lot-day-fact"><span class="fact-label">'+esc(fact.label)+'</span><span class="fact-value">'+esc(text(fact.value))+'</span><span class="fact-judge">'+(fact.judge?badge(fact.judge):'—')+'</span></div>').join('')+'</div>';
+  return '<div class="lot-day-facts">'+facts.map(fact=>'<div class="lot-day-fact'+(fact.judge?' has-judge':'')+'"><span class="fact-label">'+esc(fact.label)+'</span><span class="fact-value">'+esc(text(fact.value))+'</span>'+(fact.judge?'<span class="fact-judge">'+badge(fact.judge)+'</span>':'')+'</div>').join('')+'</div>';
  }
  function table(headers,rows){
   return '<div class="lot-day-table lot-day-overview"><table><colgroup>'+[10,18,13,20,11,19,9].map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map((value,index)=>'<td'+([0,1,2].includes(index)?' class="keep-line"':index===4?' class="numeric"':'')+'>'+esc(text(value))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
@@ -96,9 +96,9 @@
   .lot-day-table .record-title{white-space:normal;overflow-wrap:anywhere}
   .lot-day-table>table>tbody>tr>td.record-detail{padding:7px 9px;text-align:left}
   .lot-day-facts{font-size:11px;line-height:1.55;white-space:normal}
-  .lot-day-fact,.lot-day-fact-head{display:grid;grid-template-columns:90px minmax(0,1fr) 56px;gap:8px;align-items:start;padding:5px 0}
-  .lot-day-fact-head{padding:3px 0 5px;border-bottom:1px solid #e1e7ee;color:#718397;font-size:10px;font-weight:600}
-  .lot-day-fact+.lot-day-fact{border-top:1px dashed #e9edf2}
+  .lot-day-fact{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px;align-items:baseline;padding:3px 0}
+  .lot-day-fact.has-judge{grid-template-columns:90px minmax(0,1fr) auto}
+  .lot-day-fact+.lot-day-fact{border:0}
   .lot-day-facts .fact-label{color:#52677e;font-weight:600;white-space:normal}
   .lot-day-facts .fact-value{white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
   .lot-day-facts .fact-judge{text-align:center;white-space:nowrap}
