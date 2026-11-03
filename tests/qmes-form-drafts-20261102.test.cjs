@@ -72,6 +72,8 @@ async function run(){
  assert.equal(core.isRecordWrite('work','/api/qmes/work-orders/delete-selected','POST'),false);
  assert.equal(core.isRecordWrite('standard','/api/qmes/standard-documents/12/attachments','POST'),false);
  assert.equal(core.successful({ok:false},{success:true}),false);assert.equal(core.successful({ok:true},{success:false}),false);
+ const silentStorage={getItem:()=>null,setItem(){},removeItem(){}};
+ assert.throws(()=>core.repository(silentStorage).write('x',{version:1,actor:'A',fields:[],at:1000}),/확인에 실패/);
  const manualStorage=new Storage(),manual=environment(manualStorage);await tick();
  const manualKey=core.keyOf('user-A','work','new','new');
  const saveButton=()=>manual.editor.root.actions.children.find(n=>n.textContent==='임시저장');
@@ -82,6 +84,9 @@ async function run(){
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');
  assert.equal(manual.editor.root.fields[1].value,'');assert.equal(manual.editor.root.fields[2].value,'');
  assert.match(manual.editor.root.querySelector('[data-qmes-draft-bar]').dataset.message,/임시저장 완료/);
+ const visibleStatus=manual.editor.root.actions.children.find(node=>node.className==='qmes-draft-feedback');
+ assert.ok(visibleStatus);assert.equal(visibleStatus.hidden,false);assert.equal(visibleStatus.dataset.state,'saved');assert.match(visibleStatus.textContent,/임시저장 완료.*\d/);
+ assert.equal(visibleStatus.nextElementSibling,saveButton());
  assert.equal(global.lastDraftDialog.children[1].textContent,'임시저장 하시겠습니까?');
  global.draftDialogAnswer=false;manual.editor.root.fields[0].value='취소한 내용';await saveButton().onclick();
  assert.equal(JSON.parse(manualStorage.getItem(manualKey)).fields.find(f=>f.key.includes('customer')).value,'미완성 고객사');global.draftDialogAnswer=true;
