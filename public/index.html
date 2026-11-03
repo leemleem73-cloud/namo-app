@@ -2763,6 +2763,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
       
       <div class="menu" data-page="work"><div class="ico">🛠</div><div class="label">작업지시서</div></div>
+      <div class="menu" data-page="materialStock"><div class="ico">📦</div><div class="label">재고관리</div></div>
 
       <div class="menu" data-page="incoming"><div class="ico">🔬</div><div class="label">수입검사 IQC</div></div>
       <div class="menu" data-page="process"><div class="ico">🧫</div><div class="label">공정검사 PQC</div></div>
@@ -2854,6 +2855,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
     <section class="module-page" id="purchase"></section>
     <section class="module-page" id="work"></section>
     <section class="module-page" id="inventory"></section>
+    <section class="module-page" id="materialStock" aria-label="원료 재고관리"></section>
     <section class="module-page" id="incoming"></section>
     <section class="module-page" id="process"></section>
     <section class="module-page" id="outgoing"></section>
@@ -7964,7 +7966,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
   const frame=document.getElementById('namoPortal20261014');
   const dash=document.getElementById('main');
   if(!frame||!dash)return;
-  const allowed=new Set(['main','dashboard','orders','purchase','work','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval','inventory','quality','adminEmployees']);
+  const allowed=new Set(['main','dashboard','orders','purchase','work','materialStock','incoming','process','outgoing','ncr','spcTrend','changeControl','lotTrace','equipment','instrumentMgmt','calibrationMgmt','standard','approval','inventory','quality','adminEmployees']);
   function sendProfile(){
     if(!frame.isConnected||!frame.contentWindow)return;
     const user=document.querySelector('#currentUser .user-meta b');
@@ -8247,6 +8249,8 @@ document.addEventListener('transitionend',follow,true);
 
 
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
+<script defer src="./js/qmes-material-stock-core-20261103.js?v=1"></script>
+<script defer src="./js/qmes-material-stock-ui-20261103.js?v=1"></script>
 
 <!-- Inventory management navigation and dashboard shortcut retired; inventory records stay intact. -->
 <style>#sidebar .menu[data-page="inventory"],#inventory{display:none!important}</style>
