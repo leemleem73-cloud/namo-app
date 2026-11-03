@@ -23,7 +23,7 @@ function harness(){
  class Data{constructor(form){this.values=form.values;}[Symbol.iterator](){return Object.entries(this.values)[Symbol.iterator]();}}
  vm.runInNewContext(source,{window:win,document:doc,fetch:fetcher,AbortController,setTimeout,clearTimeout,crypto:{randomUUID:()=> 'manual-1'},FormData:Data,MutationObserver:class{observe(){}},Date,console});
  const click=dataset=>handlers.click({target:{closest:()=>({dataset})}});
- return {root,dialogs,writes,records,iqc,orders,fixture,click,setFail:v=>fail=v};
+ return {win,root,dialogs,writes,records,iqc,orders,fixture,click,setFail:v=>fail=v};
 }
 test('stock page loads connected IQC/work quantities and saves unknown then confirmed retest without changing sources',async()=>{
  const h=harness();h.click({ms:'refresh'});await flush();assert.ok(h.root.html.includes('NMP'));assert.ok(h.root.html.includes('60'));
@@ -38,6 +38,16 @@ test('failed shared DB save keeps the entry dialog and typed values available fo
  await d.form.onsubmit({preventDefault(){}});assert.equal(d.closed,false);assert.equal(e.note.value,'확인 전 기록');assert.equal(d.querySelector('[data-error]').textContent,'DB 저장 실패');assert.equal(d.form.querySelector().disabled,false);
 });
 test('stock UI script compiles',()=>new vm.Script(source));
+test('raw record target selector opens finished record without saving or carrying raw identity',async()=>{
+ const h=harness();h.click({ms:'new'});const d=h.dialogs.at(-1),select=d.querySelector('[data-stock-kind]');let called=0;
+ h.win.qmesFinishedStock={openRecord:async(...args)=>{called++;assert.equal(args.length,0);return true;}};
+ select.value='finished';await select.onchange();assert.equal(called,1);assert.equal(d.closed,true);assert.equal(h.writes.length,0);
+ assert.ok(d.innerHTML.includes('재고 대상'));assert.ok(d.innerHTML.includes('value="finished">완제품'));
+});
+test('unavailable finished module keeps raw dialog open with a readable retry message',async()=>{
+ const h=harness();h.click({ms:'new'});const d=h.dialogs.at(-1),select=d.querySelector('[data-stock-kind]');select.value='finished';await select.onchange();
+ assert.equal(d.closed,false);assert.equal(select.value,'raw');assert.equal(select.disabled,false);assert.ok(d.querySelector('[data-error]').textContent.includes('완제품 기록 화면'));assert.equal(h.writes.length,0);
+});
 test('ledger explanations identify real receipt and work documents instead of showing internal UUIDs',()=>{
  const ctx={fmt:value=>String(value)};vm.runInNewContext(source.slice(source.indexOf('function sourceInfo'),source.indexOf('function usageOrder')),ctx);
  const receipt=ctx.sourceInfo({source:'수입검사',date:'2025-11-10',id:'3457cab5-c80a-489e-bb06-7ddedec1c540',qty:90000000,judge:'대기'});
