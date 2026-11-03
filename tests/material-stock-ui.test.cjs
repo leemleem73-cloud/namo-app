@@ -38,6 +38,21 @@ test('failed shared DB save keeps the entry dialog and typed values available fo
  await d.form.onsubmit({preventDefault(){}});assert.equal(d.closed,false);assert.equal(e.note.value,'확인 전 기록');assert.equal(d.querySelector('[data-error]').textContent,'DB 저장 실패');assert.equal(d.form.querySelector().disabled,false);
 });
 test('stock UI script compiles',()=>new vm.Script(source));
+test('ledger explanations identify real receipt and work documents instead of showing internal UUIDs',()=>{
+ const ctx={fmt:value=>String(value)};vm.runInNewContext(source.slice(source.indexOf('function sourceInfo'),source.indexOf('async function openSource')),ctx);
+ const receipt=ctx.sourceInfo({source:'수입검사',date:'2025-11-10',id:'3457cab5-c80a-489e-bb06-7ddedec1c540',qty:90000000,judge:'대기'});
+ assert.equal(receipt.title,'수입검사 · 2025-11-10');assert.ok(receipt.detail.includes('90 kg'));assert.ok(!JSON.stringify(receipt).includes('3457cab5'));
+ const work=ctx.sourceInfo({source:'작업지시',id:'internal',documentNo:'WO-20261103-001',output:'FIN-1',product:'제품'});assert.ok(work.title.includes('WO-20261103-001'));assert.ok(work.detail.includes('FIN-1'));
+ const manual=ctx.sourceInfo({source:'수불기록',kind:'재검사 사용',note:'재검사 25 g'});assert.equal(manual.detail,'재검사 25 g');
+});
+test('receipt references open IQC and production references open the matching work order',async()=>{
+ const calls=[],section={_iqcRows:[]},record={id:'iqc-1'},order={id:'work-1'};
+ const ctx={snapshot:{iqc:[record],orders:[order]},entries:[],document:{getElementById:()=>section,querySelector:selector=>({click:()=>calls.push(selector)})},window:{loadIncomingFromDb:async()=>{section._iqcRows=[record];},editIncomingRecord:(_section,row)=>calls.push(row.id),openNewForm:(type,row)=>calls.push(type+':'+row.id),toast:message=>{throw Error(message);}}};
+ vm.runInNewContext(source.slice(source.indexOf('async function openSource'),source.indexOf('function showDetails')),ctx);
+ let closed=0;const dialog={close(){closed++;}};
+ await ctx.openSource({source:'수입검사',id:'iqc-1'},{},dialog);assert.ok(calls.includes('iqc-1'));
+ await ctx.openSource({source:'작업지시',id:'work-1'},{},dialog);assert.ok(calls.includes('work:work-1'));assert.equal(closed,2);
+});
 test('stock pager follows previous-number-next format and disables boundary navigation',()=>{
  const context={};vm.runInNewContext(source.slice(source.indexOf('function pagerMarkup'),source.indexOf('function paint')),context);
  const first=context.pagerMarkup(1,2),last=context.pagerMarkup(2,2),single=context.pagerMarkup(1,1);
