@@ -65,7 +65,7 @@
  function markup(model){
   if(!model.orders.length)return '<p class="lot-day-empty">'+esc(model.date)+'에 해당하는 작업지시서와 생산 LOT가 없습니다.</p>';
   const warning=model.errors.length?'<p class="lot-day-warning">일부 자료 조회 실패: '+model.errors.map(esc).join(', ')+' · 아래 내용은 조회된 자료만 포함합니다.</p>':'';
-  return warning+'<div class="lot-day-summary"><span>생산 LOT <b>'+model.lotCount+'</b>건</span><span>작업지시 <b>'+model.orders.length+'</b>건</span><span>검사 <b>'+model.inspectionCount+'</b>건</span><span>부적합 <b>'+model.ncrCount+'</b>건</span><span>출하 <b>'+model.shippingCount+'</b>건</span></div><p class="lot-day-note">기준일은 작업지시서의 작업일입니다. 연결된 검사·출하가 다른 날에 진행됐으면 실제 이력 날짜를 표시합니다. 계획수량과 실투입량은 구분해 확인하세요.</p><h3>01 · 해당 날짜의 생산 LOT</h3>'+table(['작업일','작업지시번호','생산 LOT','제품명','계획수량 (kg)','작업자','진행상태'],model.orders.map(row=>{const f=row.fields||{};return [model.date,f['작업지시번호']||row.id,f['생산 LOT NO'],f['제품명'],formatValue(f['계획수량']),f['작업자'],f['진행상태']];}))+'<h3>02 · LOT별 통합 이력</h3>'+historyTable(model.entries);
+  return warning+'<div class="lot-day-summary"><span>생산 LOT <b>'+model.lotCount+'</b>건</span><span>작업지시 <b>'+model.orders.length+'</b>건</span><span>검사 <b>'+model.inspectionCount+'</b>건</span><span>부적합 <b>'+model.ncrCount+'</b>건</span><span>출하 <b>'+model.shippingCount+'</b>건</span></div><p class="lot-day-note">기준일은 작업지시서의 작업일입니다. 연결된 검사·출하가 다른 날에 진행됐으면 실제 이력 날짜를 표시합니다. 계획수량과 실투입량은 구분해 확인하세요.</p><h3><span class="lot-day-section-no">01.</span><span>해당 날짜의 생산 LOT</span></h3>'+table(['작업일','작업지시번호','생산 LOT','제품명','계획수량 (kg)','작업자','진행상태'],model.orders.map(row=>{const f=row.fields||{};return [model.date,f['작업지시번호']||row.id,f['생산 LOT NO'],f['제품명'],formatValue(f['계획수량']),f['작업자'],f['진행상태']];}))+'<h3><span class="lot-day-section-no">02.</span><span>LOT별 통합 이력</span></h3>'+historyTable(model.entries);
  }
  function install(win){
   if(win.qmesLotDaily)return;const doc=win.document;let viewer=null,controller=null,serial=0;
@@ -105,6 +105,11 @@
   .lot-day-badge{display:inline-block;max-width:100%;box-sizing:border-box;padding:2px 6px;border-radius:3px;white-space:normal;word-break:keep-all;line-height:1.5;font-size:11px;font-weight:600}
   .lot-day-badge.pass{background:#edf8f1;color:#23754b}.lot-day-badge.fail{background:#fff1f0;color:#b42318}.lot-day-badge.neutral{background:#f1f5f9;color:#52677e}
   .lot-day-fact .lot-day-badge{padding:1px 4px;font-size:10px}
+  .lot-day-body h3{display:flex;align-items:baseline;gap:6px}
+  .lot-day-body h3 .lot-day-section-no{display:inline-block;flex:none;font-variant-numeric:tabular-nums}
+  .lot-day-overview>table>tbody>tr>td.numeric{text-align:center}
+  .lot-day-history>table>thead>tr>th{text-align:center;vertical-align:middle}
+  .lot-day-history>table>tbody>tr>td:not(.record-detail){text-align:center;vertical-align:middle}
   `;doc.head.append(style);win.qmesLotDaily={open,close};
  }
  return {validDate,formatValue,inspectionFacts,buildDay,markup,install};
