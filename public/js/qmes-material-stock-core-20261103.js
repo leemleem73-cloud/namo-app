@@ -1,9 +1,11 @@
 (function(factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else window.qmesMaterialStockCore=api;})(function(){'use strict';
 const PREFIX='material-stock:v1:';
-const text=v=>String(v??'').trim(),lot=v=>text(v).toUpperCase().replace(/\s+/g,''),day=v=>text(v).slice(0,10);
+const text=v=>String(v??'').trim(),lot=v=>{const s=text(v).toUpperCase().replace(/\s+/g,'');return /^0*2708935$/.test(s)?'2708935':s;},day=v=>text(v).slice(0,10);
 function number(v){const s=text(v).replace(/,/g,'');if(!s||!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s))return null;const n=Number(s);return Number.isFinite(n)?n:null;}
 const micro=v=>Math.round(v*1e6),kg=v=>v/1e6;
-function material(v){const s=text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'');if(/BYK180/.test(s))return 'BYK180';if(/BOEHMITE|AOH30/.test(s))return 'AOH30';if(/NMP/.test(s))return 'NMP';if(/ADC30|SBR/.test(s))return 'SBR';if(/PVDF/.test(s)&&!/SBS/.test(s))return 'PVDF';if(/SBS/.test(s))return 'SBS';return s;}
+function material(v){const s=text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'');if(/[+＋]/.test(text(v)))return 'MIX:'+s;if(s==='분산제'||/BYK180/.test(s))return 'BYK180';if(/BOEHMITE|AOH30/.test(s))return 'AOH30';if(/NMP/.test(s))return 'NMP';if(/ADC30|SBR/.test(s))return 'SBR';if(/PVDF/.test(s)&&!/SBS/.test(s))return 'PVDF';if(/SBS/.test(s))return 'SBS';return s;}
+const supplierKey=v=>text(v).toUpperCase().replace(/주식회사|\(주\)|㈜|\s|[.,-]/g,'');
+const displayMaterial=v=>material(v)==='BYK180'?'BYK180 (분산제)':text(v);
 function items(row){try{const x=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(x)?x:[];}catch(_){return [];}}
 function judgment(row){const checks=items(row),values=checks.flatMap(x=>[x?.judge,x?.value,...(Array.isArray(x?.values)?x.values:[]),...(Array.isArray(x?.measurements)?x.measurements:[])]).map(text);if(values.some(v=>/불합격|부적합|미확인|이상있음/.test(v)))return '불합격';if(values.includes('확인중'))return '대기';return text(row.judge)||'대기';}
 function readEntries(records){const map=new Map();for(const r of records||[]){if(!text(r.record_key).startsWith(PREFIX))continue;let p=r.payload;if(typeof p==='string')try{p=JSON.parse(p);}catch(_){continue;}const e=p?.entry;if(e?.id&&!map.has(e.id))map.set(e.id,{...e,updatedBy:r.updated_by||e.updatedBy||'',updatedAt:r.updated_at||e.updatedAt||''});}return [...map.values()];}
@@ -23,14 +25,25 @@ function validateEntry(input){
 function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}={}){
  const groups=new Map(),warnings=[...sourceErrors],unallocated=[];
  function group(name,rawLot,supplier=''){
-  const key=JSON.stringify([material(name),lot(rawLot),text(supplier)]);
-  if(!groups.has(key))groups.set(key,{key,material:text(name)||'원료 미입력',lot:lot(rawLot),supplier:text(supplier),receipts:[],uses:[],manual:[],issues:[],pending:0});
+  const key=JSON.stringify([material(name),lot(rawLot),supplierKey(supplier)]);
+  if(!groups.has(key))groups.set(key,{key,material:displayMaterial(name)||'원료 미입력',lot:lot(rawLot),supplier:text(supplier),receipts:[],uses:[],manual:[],issues:[],notices:[],pending:0});
   return groups.get(key);
  }
- const receipts=new Map();
+ const receipts=new Map(),knownSuppliers=new Map();
+ for(const row of iqc){if(row.deleted||!row.item||!row.lot||!text(row.supplier)||/^(미확인|확인필요|알수없음|-|UNKNOWN)$/i.test(text(row.supplier).replace(/\s/g,'')))continue;const key=JSON.stringify([material(row.item),lot(row.lot),text(row.purchase_receipt_id||row.receipt_id||row.receiptNo||row.receipt_no)||day(row.receipt_date||row.receiptDate||row.date)]);if(!knownSuppliers.has(key))knownSuppliers.set(key,new Map());knownSuppliers.get(key).set(supplierKey(row.supplier),text(row.supplier));}
+ function supplierFor(row){
+  const original=text(row.supplier);if(original&&!/^(미확인|확인필요|알수없음|-|UNKNOWN)$/i.test(original.replace(/\s/g,'')))return {name:original,note:''};
+  const known=knownSuppliers.get(JSON.stringify([material(row.item),lot(row.lot),text(row.purchase_receipt_id||row.receipt_id||row.receiptNo||row.receipt_no)||day(row.receipt_date||row.receiptDate||row.date)]));
+  if(known?.size===1)return {name:[...known.values()][0],note:'공급업체 원본 미입력 · 동일 원료/LOT/입고일 기록의 공급업체 후보'};
+  return {name:'',note:known?.size>1?'공급업체 후보 여러 곳 · 원본 확인 필요':'공급업체 원본 미입력 · 연결 근거 없음'};
+ }
  for(const row of iqc){if(row.deleted)continue;const name=row.item||row.material||row.name,code=row.lot;
   if(!name||!code){warnings.push('원료명 또는 LOT가 없는 수입검사 '+text(row.id));continue;}
-  const g=group(name,code,row.supplier),date=day(row.receipt_date||row.receiptDate||row.date);
+  const supplier=supplierFor(row),g=group(name,code,supplier.name),date=day(row.receipt_date||row.receiptDate||row.date);
+  if(supplier.note){g.notices.push(supplier.note);g.issues.push('공급업체 원본 확인 필요');}
+  if(!supplier.name)g.issues.push(supplier.note);
+  if(text(name)!==g.material)g.notices.push('원료명 표준화: '+text(name)+' → '+g.material);
+  if(text(code)!==g.lot)g.notices.push('LOT 표준화: '+text(code)+' → '+g.lot);
   const receiptId=row.purchase_receipt_id||row.receipt_id||row.receiptNo||row.receipt_no;
   const key=JSON.stringify([g.key,receiptId||date]);
   if(!receipts.has(key))receipts.set(key,{g,date,rows:[]});receipts.get(key).rows.push(row);
@@ -39,17 +52,21 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   const ordered=[...rows].sort((a,b)=>text(b.updated_at||b.created_at||b.id).localeCompare(text(a.updated_at||a.created_at||a.id),undefined,{numeric:true}));
   const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>=0).map(micro))];
   const ambiguous=masses.length!==1;
-  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':''};
+  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null}))};
   if(ambiguous)g.issues.push('입고 중량 미확정/검사별 불일치');
   if(rows.length>1)g.issues.push('동일 입고일 중복검사/분할입고 확인 필요');
   g.receipts.push(event);
  }
+ const lotFamilies=new Map();for(const g of groups.values()){if(!lotFamilies.has(g.lot))lotFamilies.set(g.lot,new Set());lotFamilies.get(g.lot).add(material(g.material));}
+ for(const g of groups.values())if(lotFamilies.get(g.lot)?.size>1)g.issues.push('같은 LOT에 여러 원료명 존재 · 입고 원본 대조 필요');
  function resolve(name,rawLot,supplier=''){
   const code=lot(rawLot),all=[...groups.values()].filter(g=>g.lot===code),matching=all.filter(g=>material(g.material)===material(name));
-  const candidates=matching.length?matching:all;
-  const scoped=supplier?candidates.filter(g=>g.supplier===text(supplier)):candidates;
+  if(all.length&&!matching.length){for(const g of all)g.issues.push('동일 LOT의 다른 원료명 연결 거부: '+text(name));return null;}
+  const candidates=matching;
+  if(candidates.length===1){if(supplier&&supplierKey(candidates[0].supplier)!==supplierKey(supplier))candidates[0].notices.push('투입/수불 업체 표기 '+text(supplier)+' · 공급업체는 수입검사 원본 기준');return candidates[0];}
+  const scoped=supplier?candidates.filter(g=>supplierKey(g.supplier)===supplierKey(supplier)):candidates;
   if(scoped.length===1)return scoped[0];
-  if(!scoped.length&&!candidates.length)return group(name,code,supplier);
+  if(!scoped.length&&!candidates.length)return null;
   return null;
  }
  const tracedKeys=new Set(),plans=[];
@@ -99,9 +116,9 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   if(!g.receipts.length&&!baseline)g.issues.push('입고 또는 기초재고 미연결');
   if(balance<0)g.issues.push('장부재고 음수 · 입고/사용량 대조 필요');
   const uncertain=g.pending>0||g.issues.length>0||sourceErrors.length>0||unallocated.some(e=>lot(e.lot)===g.lot);
-  results.push({...g,opening:baseline?kg(micro(number(baseline.quantity))):0,start,incoming:kg(incoming),used:kg(used),sample:kg(sample),adjust:kg(adjust),balance:kg(balance),reserved:kg(reserved),available:quality==='사용가능'&&!uncertain?kg(Math.max(0,balance)):0,quality,uncertain,issues:[...new Set(g.issues)],ledger:ledger.sort((a,b)=>text(a.date).localeCompare(text(b.date)))});
+  results.push({...g,opening:baseline?kg(micro(number(baseline.quantity))):0,start,incoming:kg(incoming),used:kg(used),sample:kg(sample),adjust:kg(adjust),balance:kg(balance),reserved:kg(reserved),available:quality==='사용가능'&&!uncertain?kg(Math.max(0,balance)):0,quality,uncertain,issues:[...new Set(g.issues)],notices:[...new Set(g.notices)],ledger:ledger.sort((a,b)=>text(a.date).localeCompare(text(b.date)))});
  }
  return {rows:results.sort((a,b)=>a.material.localeCompare(b.material)||a.lot.localeCompare(b.lot)),warnings:[...new Set(warnings)],unallocated};
 }
-return {PREFIX,text,lot,day,number,material,readEntries,validateEntry,build};
+return {PREFIX,text,lot,day,number,material,supplierKey,readEntries,validateEntry,build};
 });
