@@ -38,3 +38,13 @@ test('failed shared DB save keeps the entry dialog and typed values available fo
  await d.form.onsubmit({preventDefault(){}});assert.equal(d.closed,false);assert.equal(e.note.value,'확인 전 기록');assert.equal(d.querySelector('[data-error]').textContent,'DB 저장 실패');assert.equal(d.form.querySelector().disabled,false);
 });
 test('stock UI script compiles',()=>new vm.Script(source));
+test('stock pager follows previous-number-next format and disables boundary navigation',()=>{
+ const context={};vm.runInNewContext(source.slice(source.indexOf('function pagerMarkup'),source.indexOf('function paint')),context);
+ const first=context.pagerMarkup(1,2),last=context.pagerMarkup(2,2),single=context.pagerMarkup(1,1);
+ assert.ok(first.includes('data-ms-page="1" disabled>‹'));
+ assert.ok(first.includes('data-ms-page="2">›'));
+ assert.ok(first.includes('aria-current="page">1'));
+ assert.ok(last.includes('data-ms-page="1">‹'));
+ assert.ok(last.includes('data-ms-page="2" disabled>›'));
+ assert.equal((single.match(/ disabled/g)||[]).length,2);
+});
