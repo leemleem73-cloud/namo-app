@@ -2598,6 +2598,7 @@ app.post('/api/qmes-sync/pqc/save-row',requireLogin,async(req,res)=>{
 
 // Update an existing OQC inspection group atomically; never create or replace unrelated rows.
 const oqcAutoRules=require('./public/js/qmes-oqc-rules-20261019.js');
+const oqcRevision=require('./public/js/qmes-oqc-revision-core-20261104.js');
 const {autoCreateNcr}=require('./qmes-ncr-safe-20261020.js');
 app.get('/api/qmes-sync/oqc/save-detail',requireLogin,(req,res)=>ok(res,{operation:'oqc-save-detail',version:'20261019-v1'}));
 app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
@@ -2627,10 +2628,10 @@ app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
     const keys=[...new Set(targets.map(t=>txt(t.recordKey)))].sort();
     const before=await client.query("SELECT record_key,payload FROM qmes_sync_records WHERE record_type='oqc' AND record_key=ANY($1::text[]) ORDER BY record_key FOR UPDATE",[keys]);
     if(before.rows.length!==keys.length)throw Object.assign(Error('원본 기록이 변경되었습니다. 목록에서 다시 열어 주세요.'),{status:409});
-    const auditBefore=[],auditAfter=[];
+    const auditBefore=[],auditAfter=[],updates=[];
     for(const record of before.rows){
       const payload=jsonObj(record.payload);if(payload.deleted||!Array.isArray(payload.rows))throw Object.assign(Error('원본 기록을 확인해 주세요.'),{status:409});
-      const rows=payload.rows.slice();
+      const rows=payload.rows.slice(),selected=[];
       for(const target of targets.filter(t=>txt(t.recordKey)===String(record.record_key))){
         const matches=rows.map((r,i)=>String(r.id??'')===txt(target.rowId)?i:-1).filter(i=>i>=0);
         if(matches.length!==1||stable(rows[matches[0]])!==stable(target.expected))throw Object.assign(Error('다른 화면에서 이 기록이 변경되었습니다. 다시 열어 주세요.'),{status:409});
@@ -2646,10 +2647,10 @@ const measurements=patch.measurements??(Array.isArray(old.measurements)&&old.mea
 patch.judge=oqcAutoRules.evaluateItem(old.check,measurements);
 }
 rows[index]={...old,...clean,...patch};
+        selected.push({index,auditIndex:auditAfter.length});
         auditBefore.push({recordKey:record.record_key,row:old});auditAfter.push({recordKey:record.record_key,row:rows[index]});
       }
-      await client.query("UPDATE qmes_sync_records SET payload=$2::jsonb,updated_by=$3,updated_at=NOW() WHERE record_type='oqc' AND record_key=$1",
-        [record.record_key,JSON.stringify({...payload,rows}),txt(req.session.user.name)]);
+      updates.push({key:record.record_key,payload,rows,selected});
     }
     const groupMeasurements={};
     for(const name of oqcAutoRules.items){const row=auditAfter.map(entry=>entry.row).find(row=>oqcAutoRules.canonical(row.check)===name);groupMeasurements[name]=Array.isArray(row?.measurements)&&row.measurements.length?row.measurements:(row?.value?String(row.value).split(/\s*\/\s*/):[]);}
@@ -2657,6 +2658,13 @@ rows[index]={...old,...clean,...patch};
     if(clean.inspectionDecision==='합격'&&computed!=='합격')throw Object.assign(Error('측정값이 모두 합격인 경우에만 합격으로 저장할 수 있습니다.'),{status:400});
     const effective=clean.inspectionDecision==='불합격'?'불합격':computed;
     if(clean.shippingStatus==='출하완료'&&effective!=='합격')throw Object.assign(Error('검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.'),{status:400});
+    const revision=oqcRevision.applyGroup(auditBefore.map(entry=>entry.row),auditAfter.map(entry=>entry.row),txt(req.session.user.name),new Date().toISOString());
+    if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:false,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
+    revision.rows.forEach((row,index)=>{auditAfter[index].row=row;});
+    for(const update of updates){
+      for(const selected of update.selected)update.rows[selected.index]=auditAfter[selected.auditIndex].row;
+      await client.query("UPDATE qmes_sync_records SET payload=$2::jsonb,updated_by=$3,updated_at=NOW() WHERE record_type='oqc' AND record_key=$1",[update.key,JSON.stringify({...update.payload,rows:update.rows}),txt(req.session.user.name)]);
+    }
     await client.query('COMMIT');committed=true;
     await auditLog(req,'UPDATE','qmes_sync_records','oqc:detail',{rows:auditBefore},{rows:auditAfter}).catch(e=>console.warn('OQC edit audit:',e.message));
     if(effective==='불합격'){
@@ -2677,7 +2685,7 @@ rows[index]={...old,...clean,...patch};
         details:{process:'출하검사',actual_result:'불합격',reporter:txt(req.session?.user?.name)}
       }).catch(error=>console.error('[AUTO NCR OQC]',error));
     }
-    return ok(res,{updated:targets.length},'출하검사 수정 저장 완료');
+    return ok(res,{updated:targets.length,changed:true,revision:revision.revision,modifiedAt:revision.modifiedAt,modifiedBy:revision.modifiedBy},'출하검사 수정 저장 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
     return fail(res,error.status||500,error.status?error.message:'출하검사 저장에 실패했습니다. 입력 내용을 유지합니다.');
