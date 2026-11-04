@@ -65,7 +65,7 @@
     const fields = Object.fromEntries([...root.querySelectorAll('[data-oqc-registration-field]')]
       .map(input => [input.dataset.oqcRegistrationField, input.value.trim()]));
     const directCustomer = root.querySelector('[data-oqc-customer-direct]');
-    if (directCustomer && !directCustomer.hidden) fields.customer = directCustomer.value.trim();
+    if (directCustomer && directCustomer.value.trim()) fields.customer = directCustomer.value.trim();
     if (!fields.date || !fields.lot || !fields.inspector) {
       showError(root, '검사일자, 완제품 LOT, 검사자를 입력해 주세요.');
       return;
@@ -221,14 +221,12 @@ function setup(root){
  const existing=clean(customerInput.value);
  customer.add(new Option('고객사 선택',''));
  if(existing)customer.add(new Option(existing,existing));
- customer.add(new Option('직접입력','__DIRECT__'));
  customer.value=existing;customerInput.replaceWith(customer);
  const directCustomer=document.createElement('input');
  directCustomer.type='text';
- directCustomer.placeholder='고객사 직접입력';
+ directCustomer.placeholder='직접입력';
  directCustomer.setAttribute('aria-label','고객사 직접입력');
  directCustomer.setAttribute('data-oqc-customer-direct','1');
- directCustomer.hidden=true;
  directCustomer.className=customer.className;
  customer.after(directCustomer);
  const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
@@ -246,8 +244,7 @@ function setup(root){
   const names=[...new Set([...orders.map(o=>orderInfo(o).customer),...checks.map(r=>clean(r.customer)),...history.map(r=>clean(r.customer)),selected].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
   customer.replaceChildren(new Option('고객사 선택',''));
   for(const name of names)customer.add(new Option(name,name));
-  customer.add(new Option('직접입력','__DIRECT__'));
-  customer.value=selected==='__DIRECT__'?'__DIRECT__':selected;
+  customer.value=selected;
  }
  function clearAuto(){
   if(!autoValues)return;
@@ -301,13 +298,13 @@ function setup(root){
   product.addEventListener(event,()=>link('product',product));
  }
  customer.addEventListener('change',()=>{
-  const direct=customer.value==='__DIRECT__';
-  directCustomer.hidden=!direct;
-  if(direct){directCustomer.focus();message.textContent='고객사명을 직접 입력하세요.';return;}
-  directCustomer.value='';
+  if(customer.value) directCustomer.value='';
   if(loaded)render(true);
  });
- directCustomer.addEventListener('input',()=>{message.textContent=clean(directCustomer.value)?'직접입력 고객사: '+clean(directCustomer.value):'고객사명을 직접 입력하세요.';});
+ directCustomer.addEventListener('input',()=>{
+  if(clean(directCustomer.value)) customer.value='';
+  message.textContent='';
+ });
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true,true);else if(!loading)void load();
