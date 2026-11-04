@@ -70,7 +70,8 @@ const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
 fields.inspectionDecision='자동판정';
 if(!dateValue(fields.date)||!fields.lot||!fields.inspector){warning.hidden=false;warning.textContent='검사일자, LOT, 검사자를 확인해 주세요.';return;}
-if(fields.shippingStatus==='출하완료'&&(calculated.overall!=='합격'||fields.inspectionDecision==='불합격')){warning.hidden=false;warning.textContent='검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.';return;}
+const shipmentHeld=fields.shippingStatus==='출하완료'&&calculated.overall!=='합격';
+if(shipmentHeld){fields.shippingStatus='출하보류';const shipping=pane.querySelector('[data-oqc-field="shippingStatus"]');if(shipping)shipping.value='출하보류';}
 const targets=records.map(source=>{
 const index=items.findIndex(([name])=>canonical(source.check)===name),patch={};
 if(index>=0){const tr=pane.querySelector('[data-oqc-item="'+index+'"]'),entered=[...tr.querySelectorAll('[data-oqc-value]')].map(el=>el.value.trim()),before=values(source),oldValues=[0,1,2].map(i=>String(before[i]??''));
@@ -85,7 +86,7 @@ const attachment=await window.qmesOqcFiles.read(pane);
 const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment})});
 const result=await response.json().catch(()=>({}));
 if(!response.ok||result.success===false)throw Error(result.message||'출하검사 저장에 실패했습니다.');
-closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast(result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
+closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast((shipmentHeld||result.data?.shipmentHeld)?'검사 결과 저장 완료 · 출하보류로 전환되었습니다.':result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
 }catch(error){warning.hidden=false;warning.textContent=error.message;}finally{save.disabled=false;}
 });
 };
