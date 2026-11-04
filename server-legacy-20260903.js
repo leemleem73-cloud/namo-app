@@ -2658,10 +2658,11 @@ rows[index]={...old,...clean,...patch};
     const computed=oqcAutoRules.evaluateMeasurements(groupMeasurements).overall;
     if(clean.inspectionDecision==='합격'&&computed!=='합격')throw Object.assign(Error('측정값이 모두 합격인 경우에만 합격으로 저장할 수 있습니다.'),{status:400});
     const effective=clean.inspectionDecision==='불합격'?'불합격':computed;
-    if(clean.shippingStatus==='출하완료'&&effective!=='합격')throw Object.assign(Error('검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.'),{status:400});
+    const shipmentHeld=effective!=='합격'&&(clean.shippingStatus==='출하완료'||auditAfter.some(entry=>entry.row.shippingStatus==='출하완료'));
+    if(shipmentHeld){clean.shippingStatus='출하보류';for(const entry of auditAfter)entry.row.shippingStatus='출하보류';}
     const revision=oqcRevision.applyGroup(auditBefore.map(entry=>entry.row),auditAfter.map(entry=>entry.row),txt(req.session.user.name),new Date().toISOString());
     const coaAttachment=await require('./qmes-oqc-attachments-20261104.cjs').save(client,targets,req.body.attachment,txt(req.session.user.name));
-    if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:!!coaAttachment,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
+    if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:!!coaAttachment,shipmentHeld,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
     revision.rows.forEach((row,index)=>{auditAfter[index].row=row;});
     for(const update of updates){
       for(const selected of update.selected)update.rows[selected.index]=auditAfter[selected.auditIndex].row;
@@ -2687,7 +2688,7 @@ rows[index]={...old,...clean,...patch};
         details:{process:'출하검사',actual_result:'불합격',reporter:txt(req.session?.user?.name)}
       }).catch(error=>console.error('[AUTO NCR OQC]',error));
     }
-    return ok(res,{updated:targets.length,changed:true,revision:revision.revision,modifiedAt:revision.modifiedAt,modifiedBy:revision.modifiedBy},'출하검사 수정 저장 완료');
+    return ok(res,{updated:targets.length,changed:true,shipmentHeld,revision:revision.revision,modifiedAt:revision.modifiedAt,modifiedBy:revision.modifiedBy},'출하검사 수정 저장 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
     return fail(res,error.status||500,error.status?error.message:'출하검사 저장에 실패했습니다. 입력 내용을 유지합니다.');
