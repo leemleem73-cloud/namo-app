@@ -4,6 +4,7 @@
 // Browser labels are advisory: shared measurement rules determine every saved result.
 const { createHash } = require('node:crypto');
 const rules = require('./public/js/qmes-oqc-rules-20261019.js');
+const revision = require('./public/js/qmes-oqc-revision-core-20261104.js');
 const endpoint = '/api/qmes-sync/oqc/register';
 const version = '20261021-1';
 const invalid = message => Object.assign(new Error(message), { status: 400 });
@@ -66,7 +67,7 @@ function makePayload(normalized, user, now) {
     const values = measurements[check];
     const numbers = values.map(rules.parseNumber);
     return {
-      id: groupId + '-' + (index + 1), groupId,
+      id: groupId + '-' + (index + 1), groupId, ...revision.initial(),
       date: fields.date, shipDate: '', time: '',
       lot: fields.lot, product: fields.product, customer: fields.customer,
       inspector: fields.inspector, remarks: fields.remarks,
