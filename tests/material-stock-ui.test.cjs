@@ -1,8 +1,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const core=require('../public/js/qmes-material-stock-core-20261103.js'),source=fs.readFileSync(__dirname+'/../public/js/qmes-material-stock-ui-20261103.js','utf8');
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
-function harness(){
- const records=[],writes=[],dialogs=[],handlers={};let fail=false;
+function harness(withGrid=false){
+ const records=[],writes=[],dialogs=[],handlers={},authEvents={};let fail=false,gridOptions;
  const search={addEventListener(){}};
  const root={append(){},html:'',classList:{contains:()=>false},set innerHTML(v){this.html=v;},get innerHTML(){return this.html;},querySelector:()=>search,addEventListener:(event,fn)=>handlers[event]=fn};
  const doc={hidden:false,getElementById:()=>root,querySelectorAll:()=>dialogs,head:{append(){}},body:{append(d){dialogs.push(d);}},addEventListener(){},createElement(tag){
@@ -19,11 +19,12 @@ function harness(){
   const data=url==='/api/iqc'?iqc:url==='/api/qmes/work-orders'?orders:url.includes('/qmes-sync/')?records:url.includes('quality-gate')?{holds:[]}:[];
   return {ok:true,json:async()=>({success:true,data})};
  };
- const win={qmesMaterialStockCore:core,qmesAuthDataReady:{wait:()=>Promise.resolve()},qmesConfirm:async()=>true,toast(){},addEventListener(){}};
+ const win={qmesMaterialStockCore:core,qmesAuthDataReady:{wait:()=>Promise.resolve()},qmesConfirm:async()=>true,toast(){},addEventListener:(name,fn)=>authEvents[name]=fn};
+ if(withGrid)win.qmesStockGrid={...require('../public/js/qmes-stock-grid-20261104.js'),capture(){},clear(){},mount(_root,options){gridOptions=options;}};
  class Data{constructor(form){this.values=form.values;}[Symbol.iterator](){return Object.entries(this.values)[Symbol.iterator]();}}
  vm.runInNewContext(source,{window:win,document:doc,fetch:fetcher,AbortController,setTimeout,clearTimeout,crypto:{randomUUID:()=> 'manual-1'},FormData:Data,MutationObserver:class{observe(){}},Date,console});
  const click=dataset=>handlers.click({target:{closest:()=>({dataset})}});
- return {win,root,dialogs,writes,records,iqc,orders,fixture,click,setFail:v=>fail=v};
+ return {getGrid:()=>gridOptions,authEvents,win,root,dialogs,writes,records,iqc,orders,fixture,click,setFail:v=>fail=v};
 }
 test('stock page loads connected IQC/work quantities and saves unknown then confirmed retest without changing sources',async()=>{
  const h=harness();h.click({ms:'refresh'});await flush();assert.ok(h.root.html.includes('NMP'));assert.ok(h.root.html.includes('60'));
@@ -38,6 +39,17 @@ test('failed shared DB save keeps the entry dialog and typed values available fo
  await d.form.onsubmit({preventDefault(){}});assert.equal(d.closed,false);assert.equal(e.note.value,'확인 전 기록');assert.equal(d.querySelector('[data-error]').textContent,'DB 저장 실패');assert.equal(d.form.querySelector().disabled,false);
 });
 test('stock UI script compiles',()=>new vm.Script(source));
+test('raw table quick input persists an audited additive movement and reloads balance',async()=>{
+ const h=harness(true);h.click({ms:'refresh'});await flush();const g=h.getGrid(),row=g.rows[0];assert.ok(h.root.html.includes('data-sg-filter="material"'));assert.ok(h.root.html.includes('빠른 입력'));
+ assert.equal(await g.onSave(row,{type:'retest',date:'2026-11-04',amount:'25',unit:'g',status:'confirmed',note:'표에서 재검사 사용',direction:'decrease'},'inline-raw'),true);
+ assert.equal(h.writes[0].key,core.PREFIX+'inline-raw');assert.equal(h.writes[0].payload.entry.quantity,.025);assert.equal(h.writes[0].payload.entry.recordedFrom,'inventory-grid');assert.equal(h.writes[0].payload.entry.beforeBalance,60);await g.onSaved();assert.ok(h.root.html.includes('59.975'));assert.equal(JSON.stringify({iqc:h.iqc,orders:h.orders}),h.fixture);
+});
+test('raw quick input cancellation, failed saves and account changes do not fabricate movements',async()=>{
+ const h=harness(true);h.click({ms:'refresh'});await flush();const g=h.getGrid(),row=g.rows[0],values={type:'adjustment',date:'2026-11-04',amount:'5',unit:'kg',status:'confirmed',note:'실사 차이',direction:'increase'};
+ h.win.qmesConfirm=async()=>false;assert.equal(await g.onSave(row,values,'cancel'),false);assert.equal(h.writes.length,0);
+ h.win.qmesConfirm=async()=>true;h.setFail(true);await assert.rejects(()=>g.onSave(row,values,'retry-id'),/DB 저장 실패/);h.setFail(false);assert.equal(await g.onSave(row,values,'retry-id'),true);assert.equal(h.records.length,1);assert.equal(h.writes[0].key,h.writes[1].key);
+ const prior=h.writes.length;h.win.qmesConfirm=async()=>{h.authEvents['qmes-authenticated']();return true;};await assert.rejects(()=>g.onSave(row,values,'old-account'),/계정이 변경/);assert.equal(h.writes.length,prior);
+});
 test('raw record target selector opens finished record without saving or carrying raw identity',async()=>{
  const h=harness();h.click({ms:'new'});const d=h.dialogs.at(-1),select=d.querySelector('[data-stock-kind]');let called=0;
  h.win.qmesFinishedStock={openRecord:async(...args)=>{called++;assert.equal(args.length,0);return true;}};
