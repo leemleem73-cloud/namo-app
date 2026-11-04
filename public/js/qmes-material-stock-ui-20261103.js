@@ -84,6 +84,11 @@ function showDetails(key){
 }
 function attachStockSuggestions(form,specs){
  if(!form.querySelectorAll)return;
+ const controllers=[];
+ const outside=event=>controllers.forEach(c=>{if(!c.wrap.contains(event.target))c.close();});
+ const release=()=>controllers.forEach(c=>c.release());
+ document.addEventListener?.('pointerdown',outside,true);document.addEventListener?.('pointerup',release,true);document.addEventListener?.('pointercancel',release,true);
+ form.closest?.('dialog')?.addEventListener('close',()=>{controllers.forEach(c=>c.close());document.removeEventListener?.('pointerdown',outside,true);document.removeEventListener?.('pointerup',release,true);document.removeEventListener?.('pointercancel',release,true);},{once:true});
  form.setAttribute('autocomplete','off');
  form.querySelectorAll('input,textarea').forEach(field=>{field.setAttribute('autocomplete','off');field.setAttribute('autocorrect','off');field.setAttribute('spellcheck','false');});
  for(const [name,suggestions] of Object.entries(specs)){
@@ -91,8 +96,11 @@ function attachStockSuggestions(form,specs){
   const wrap=document.createElement('div'),list=document.createElement('div'),id='stock-options-'+crypto.randomUUID();
   wrap.className='ms-stock-input';list.className='ms-stock-options';list.id=id;list.hidden=true;list.setAttribute('role','listbox');list.setAttribute('aria-label','입력값 선택');
   field.parentNode.insertBefore(wrap,field);wrap.append(field,list);field.setAttribute('role','combobox');field.setAttribute('aria-autocomplete','list');field.setAttribute('aria-controls',id);field.setAttribute('aria-expanded','false');
-  let options=[],index=-1;
-  const close=()=>{list.hidden=true;index=-1;field.setAttribute('aria-expanded','false');field.removeAttribute('aria-activedescendant');};
+  let options=[],index=-1,interacting=false,closeTimer=null;
+  const cancelClose=()=>{if(closeTimer!==null){clearTimeout(closeTimer);closeTimer=null;}};
+  const close=()=>{cancelClose();interacting=false;list.hidden=true;index=-1;field.setAttribute('aria-expanded','false');field.removeAttribute('aria-activedescendant');};
+  controllers.push({wrap,close,release:()=>{const wasInteracting=interacting;interacting=false;if(wasInteracting&&!list.hidden&&!wrap.contains(document.activeElement))field.focus({preventScroll:true});}});
+  list.addEventListener('pointerdown',()=>{interacting=true;cancelClose();});
   const select=i=>{const item=options[i];if(!item)return;if(item.apply)item.apply(form);else field.value=item.value;close();field.dispatchEvent(new Event('change',{bubbles:true}));};
   const highlight=()=>{list.querySelectorAll('[role="option"]').forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));});if(index>=0){const option=list.children[index];field.setAttribute('aria-activedescendant',option.id);option.scrollIntoView?.({block:'nearest'});}else field.removeAttribute('aria-activedescendant');};
   const open=()=>{
@@ -101,7 +109,7 @@ function attachStockSuggestions(form,specs){
    options.forEach((item,i)=>{const button=document.createElement('button'),title=document.createElement('span');button.type='button';button.id=id+'-'+i;button.setAttribute('role','option');button.setAttribute('aria-selected','false');title.textContent=item.value;button.append(title);if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;button.append(detail);}button.onmousedown=e=>e.preventDefault();button.onclick=()=>select(i);list.append(button);});
    list.hidden=false;field.setAttribute('aria-expanded','true');field.removeAttribute('aria-activedescendant');
   };
-  field.addEventListener('focus',open);field.addEventListener('input',open);field.addEventListener('blur',()=>setTimeout(close,120));
+  field.addEventListener('focus',()=>{cancelClose();if(list.hidden)open();});field.addEventListener('input',open);field.addEventListener('blur',()=>{cancelClose();if(list.hidden)return;closeTimer=setTimeout(()=>{closeTimer=null;if(!interacting&&!wrap.contains(document.activeElement))close();},120);});
   field.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();return;}if(!['ArrowDown','ArrowUp','Enter'].includes(event.key))return;if(list.hidden){if(event.key==='Enter')return;open();}if(list.hidden)return;event.preventDefault();if(event.key==='Enter'){if(index>=0)select(index);return;}index=(index+(event.key==='ArrowDown'?1:-1)+options.length)%options.length;highlight();});
  }
 }
