@@ -82,10 +82,33 @@ function showDetails(key){
  dialog.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editEntry(entries.find(e=>e.id===b.dataset.edit),row,dialog));
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
 }
+function attachStockSuggestions(form,specs){
+ if(!form.querySelectorAll)return;
+ form.setAttribute('autocomplete','off');
+ form.querySelectorAll('input,textarea').forEach(field=>{field.setAttribute('autocomplete','off');field.setAttribute('autocorrect','off');field.setAttribute('spellcheck','false');});
+ for(const [name,suggestions] of Object.entries(specs)){
+  const field=form.elements[name];if(!field)continue;
+  const wrap=document.createElement('div'),list=document.createElement('div'),id='stock-options-'+crypto.randomUUID();
+  wrap.className='ms-stock-input';list.className='ms-stock-options';list.id=id;list.hidden=true;list.setAttribute('role','listbox');list.setAttribute('aria-label','입력값 선택');
+  field.parentNode.insertBefore(wrap,field);wrap.append(field,list);field.setAttribute('role','combobox');field.setAttribute('aria-autocomplete','list');field.setAttribute('aria-controls',id);field.setAttribute('aria-expanded','false');
+  let options=[],index=-1;
+  const close=()=>{list.hidden=true;index=-1;field.setAttribute('aria-expanded','false');field.removeAttribute('aria-activedescendant');};
+  const select=i=>{const item=options[i];if(!item)return;if(item.apply)item.apply(form);else field.value=item.value;close();field.dispatchEvent(new Event('change',{bubbles:true}));};
+  const highlight=()=>{list.querySelectorAll('[role="option"]').forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));});if(index>=0){const option=list.children[index];field.setAttribute('aria-activedescendant',option.id);option.scrollIntoView?.({block:'nearest'});}else field.removeAttribute('aria-activedescendant');};
+  const open=()=>{
+   const query=field.value.trim().toLowerCase();options=suggestions(form).filter(item=>!query||[item.value,item.detail].join(' ').toLowerCase().includes(query)).slice(0,30);index=-1;list.replaceChildren();
+   if(!options.length){close();return;}
+   options.forEach((item,i)=>{const button=document.createElement('button'),title=document.createElement('span');button.type='button';button.id=id+'-'+i;button.setAttribute('role','option');button.setAttribute('aria-selected','false');title.textContent=item.value;button.append(title);if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;button.append(detail);}button.onmousedown=e=>e.preventDefault();button.onclick=()=>select(i);list.append(button);});
+   list.hidden=false;field.setAttribute('aria-expanded','true');field.removeAttribute('aria-activedescendant');
+  };
+  field.addEventListener('focus',open);field.addEventListener('input',open);field.addEventListener('blur',()=>setTimeout(close,120));
+  field.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();return;}if(!['ArrowDown','ArrowUp','Enter'].includes(event.key))return;if(list.hidden){if(event.key==='Enter')return;open();}if(list.hidden)return;event.preventDefault();if(event.key==='Enter'){if(index>=0)select(index);return;}index=(index+(event.key==='ArrowDown'?1:-1)+options.length)%options.length;highlight();});
+ }
+}
 function editEntry(existing=null,row=null,parent=null){
  const dialog=document.createElement('dialog');dialog.className='ms-dialog ms-entry';
  const id=existing?.id||crypto.randomUUID();
- dialog.innerHTML='<header><strong>재검사·샘플 / 재고 기록</strong><button type="button" data-close>닫기</button></header><form class="ms-dialog-body"><p class="ms-policy">아직 수량을 모르면 “수량 확인 필요”로 보관하세요. “확인 완료”인 수량만 장부재고에 반영합니다.</p><div class="ms-form">'+
+ dialog.innerHTML='<header><strong>재검사·샘플 / 재고 기록</strong><button type="button" data-close>닫기</button></header><form class="ms-dialog-body" autocomplete="off"><p class="ms-policy">아직 수량을 모르면 “수량 확인 필요”로 보관하세요. “확인 완료”인 수량만 장부재고에 반영합니다.</p><div class="ms-form">'+
  '<label class="full">재고 대상<select data-stock-kind '+(existing?'disabled':'')+'><option value="raw">원료</option><option value="finished">완제품</option></select></label>'+
  '<label>원료명<input name="material" required value="'+esc(existing?.material||row?.material||'')+'"></label><label>원료 LOT<input name="lot" required value="'+esc(existing?.lot||row?.lot||'')+'"></label><label>공급업체<input name="supplier" value="'+esc(existing?.supplier||row?.supplier||'')+'"></label>'+
  '<label>구분<select name="type">'+Object.entries(typeLabel).map(([value,label])=>'<option value="'+value+'">'+label+'</option>').join('')+'</select></label>'+
@@ -95,6 +118,12 @@ function editEntry(existing=null,row=null,parent=null){
  '<label>조정 방향<select name="direction"><option value="out">차감</option><option value="in">증가 (재고 조정)</option></select></label>'+
  '<label class="full">사용 사유 / 확인 내용<textarea name="note" required placeholder="예: 재검사에 소량 사용, 사용량 확인 필요">'+esc(existing?.note||'')+'</textarea></label></div><p class="ms-foot">기초재고는 기준일 시작 시점의 실사 수량입니다. 기준일 이전 입고·사용 이력은 계산에서 제외합니다. 취소한 기록은 이력에 남습니다.</p><div class="ms-error" data-error hidden></div><footer><button type="button" data-cancel>취소</button><button type="submit" class="primary">기록 저장</button></footer></form>';
  const form=dialog.querySelector('form');form.elements.type.value=existing?.type||'retest';form.elements.status.value=existing?.status||'pending';form.elements.direction.value=existing?.direction||'out';
+ const candidates=()=>model.rows.map(r=>({value:r.material,detail:r.lot+' · '+(r.supplier||'공급업체 미확인'),apply:f=>{f.elements.material.value=r.material;f.elements.lot.value=r.lot;f.elements.supplier.value=r.supplier||'';},row:r}));
+ attachStockSuggestions(form,{
+  material:()=>candidates(),
+  lot:f=>candidates().filter(c=>!f.elements.material.value||core.material(c.row.material)===core.material(f.elements.material.value)).map(c=>({...c,value:c.row.lot,detail:c.row.material+' · '+(c.row.supplier||'공급업체 미확인')})),
+  supplier:f=>[...new Set(model.rows.filter(r=>(!f.elements.material.value||core.material(r.material)===core.material(f.elements.material.value))&&(!f.elements.lot.value||core.lot(r.lot)===core.lot(f.elements.lot.value))).map(r=>r.supplier).filter(Boolean))].map(value=>({value,detail:'수입검사 공급업체'}))
+ });
  const stockKind=dialog.querySelector('[data-stock-kind]');stockKind.onchange=async()=>{
   if(stockKind.value!=='finished'||existing)return;const error=dialog.querySelector('[data-error]');error.hidden=true;stockKind.disabled=true;
   try{if(typeof window.qmesFinishedStock?.openRecord!=='function')throw Error('완제품 기록 화면을 불러오지 못했습니다. 새로고침 후 다시 선택해주세요.');
@@ -116,12 +145,14 @@ function editEntry(existing=null,row=null,parent=null){
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
 }
 root.addEventListener('click',event=>{const button=event.target.closest('button');if(!button||button.disabled)return;if(button.dataset.ms==='refresh')load();if(button.dataset.ms==='new')editEntry();if(button.dataset.msDetail)showDetails(button.dataset.msDetail);if(button.dataset.msPage){page=Number(button.dataset.msPage);paint();}});
+window.qmesStockInputStyle={attach:attachStockSuggestions};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
 function clearAccount(){epoch++;loading=false;snapshot=null;loadedAt='';query='';page=1;model={rows:[],warnings:[],unallocated:[]};entries=[];document.querySelectorAll('.ms-dialog').forEach(dialog=>dialog.close());paint();}
 window.addEventListener('qmes-authenticated',()=>{clearAccount();if(pageRoot.classList.contains('active'))load();});
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))clearAccount();},true);
-const style=document.createElement('style');style.textContent=`
+ const style=document.createElement('style');style.textContent=`
+.ms-stock-input{position:relative;min-width:0}.ms-stock-input>input{width:100%}.ms-stock-options[hidden]{display:none!important}.ms-stock-options{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:30;max-height:220px;overflow:auto;background:#fff;border:1px solid #c7d6e5;border-radius:4px;box-shadow:0 4px 12px #2442601f;padding:3px}html body .ms-dialog .ms-stock-options button,html body .fg-dialog .ms-stock-options button{display:block;width:100%;padding:8px 10px;border:0;border-bottom:1px solid #e7edf4;border-radius:0;background:#fff;color:#244260;text-align:left;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;font-size:12px;font-weight:400;line-height:1.5;white-space:normal}html body .ms-dialog .ms-stock-options button:last-child,html body .fg-dialog .ms-stock-options button:last-child{border-bottom:0}html body .ms-dialog .ms-stock-options button:hover,html body .fg-dialog .ms-stock-options button:hover,html body .ms-dialog .ms-stock-options button[aria-selected=true],html body .fg-dialog .ms-stock-options button[aria-selected=true]{background:#e8f0f8;color:#166fbb}.ms-stock-options small{display:block;font-size:11px;color:#708297;font-weight:400}.ms-stock-input>input:focus-visible{outline:2px solid #72afe9;outline-offset:1px;border-color:#72afe9}
 #materialStock,.ms-dialog{font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;font-size:12px;color:#244260}.ms-shell{background:#fff;border:1px solid #d5dce5;border-radius:8px;overflow:hidden}.ms-head,.ms-dialog>header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid #d5dce5}.ms-head strong,.ms-dialog>header strong{font-size:18px;font-weight:800}.ms-head>div{display:flex;gap:7px}#materialStock button,.ms-dialog button{font:600 12px Pretendard,"Noto Sans KR",Arial,sans-serif;color:#244260;border:1px solid #c7d6e5;border-radius:4px;background:#fff;padding:6px 10px;cursor:pointer}#materialStock button.primary,.ms-dialog button.primary{background:#2f8de4;border-color:#2f8de4;color:#fff}#materialStock button:disabled,.ms-dialog button:disabled{opacity:.5;cursor:default}.ms-policy{margin:14px 16px;padding:10px 12px;background:#f6f9fc;border:1px solid #dce5ee;line-height:1.7;color:#536b83}.ms-policy b{color:#95601a}.ms-toolbar,.ms-totals{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 16px}.ms-toolbar>span{margin-left:auto;color:#708297}.ms-toolbar input{margin-left:8px;width:230px;padding:7px 9px;border:1px solid #c7d6e5;border-radius:4px;font:inherit}.ms-table-wrap{margin:8px 16px;overflow:auto;border:1px solid #d5dce5}.ms-table{width:100%;min-width:1100px;border-collapse:separate;border-spacing:0}.ms-table th,.ms-table td{padding:9px 8px;border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;text-align:center;vertical-align:middle;font-size:12px;white-space:nowrap}.ms-table th{background:#e8f0f8;font-weight:600}.ms-table td{font-weight:400}.ms-table tr>:last-child{border-right:0}.ms-table tbody tr:last-child>td{border-bottom:0}.ms-state{color:#23754b}.ms-state.warn,.ms-negative{color:#b45309!important}.ms-pager{display:flex;justify-content:center;gap:5px;padding:12px}.ms-foot{margin:12px 16px;font-size:11px;color:#708297;line-height:1.6}.ms-error{padding:10px 12px;background:#fff1f2;color:#a02040;margin:10px 16px;border:1px solid #efc8ce}.ms-unallocated{margin:14px 16px;line-height:1.6}.ms-dialog{width:min(1150px,calc(100vw - 36px));max-height:90dvh;overflow:auto;border:1px solid #d5dce5;border-radius:8px;padding:0;background:#fff}.ms-dialog::backdrop{background:#17314c66}.ms-dialog-body{padding:12px}.ms-dialog .ms-table{min-width:760px}.ms-dialog .ms-table td:last-child{white-space:normal;min-width:180px}.ms-entry{width:min(850px,calc(100vw - 36px))}.ms-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:10px 16px}.ms-form label{display:grid;gap:5px;font-weight:600}.ms-form input,.ms-form select,.ms-form textarea{min-width:0;width:100%;box-sizing:border-box;padding:8px;border:1px solid #c7d6e5;border-radius:4px;font:400 12px Pretendard,"Noto Sans KR",Arial,sans-serif}.ms-form .full{grid-column:1/-1}.ms-form textarea{min-height:70px}.ms-entry footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #d5dce5}@media(max-width:750px){.ms-form{grid-template-columns:1fr}.ms-head{align-items:flex-start;flex-direction:column}}
 
 /* Match work-order / sales list typography and single-owner neutral grid. */
