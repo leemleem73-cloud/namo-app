@@ -17,7 +17,7 @@ function judgment(row){
  const master=checks.find(x=>text(x?.name).includes('판정'));
  return text(master?.judge||master?.value)||'대기';
 }
-function readEntries(records){const map=new Map();for(const r of records||[]){if(!text(r.record_key).startsWith(PREFIX))continue;let p=r.payload;if(typeof p==='string')try{p=JSON.parse(p);}catch(_){continue;}const e=p?.entry;if(e?.id&&!map.has(e.id))map.set(e.id,{...e,updatedBy:r.updated_by||e.updatedBy||'',updatedAt:r.updated_at||e.updatedAt||''});}return [...map.values()];}
+function readEntries(records){const map=new Map();for(const r of records||[]){if(!text(r.record_key).startsWith(PREFIX))continue;let p=r.payload;if(typeof p==='string')try{p=JSON.parse(p);}catch(_){continue;}const e=p?.entry;if(e?.id&&!e.deletedAt&&!map.has(e.id))map.set(e.id,{...e,updatedBy:r.updated_by||e.updatedBy||'',updatedAt:r.updated_at||e.updatedAt||''});}return [...map.values()];}
 function validateEntry(input){
  const e={...input,id:text(input.id),material:text(input.material),lot:lot(input.lot),supplier:text(input.supplier),date:day(input.date),note:text(input.note),type:text(input.type),status:text(input.status)};
  if(!e.id||!e.material||!e.lot)throw Error('원료명과 LOT를 입력해 주세요.');
@@ -105,7 +105,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   g.uses.push({kind:'생산 투입',date:day(row.workDate),qty:micro(qty),source:'작업실적',id:identity,output});
   let applied=micro(qty);for(const planned of plans.filter(p=>p.g===g&&p.key===key)){const amount=Math.min(planned.qty,applied);planned.qty-=amount;applied-=amount;if(!applied)break;}
  }
- for(const e of entries){if(e.status==='cancelled')continue;const g=resolve(e.material,e.lot,e.supplier);if(!g){unallocated.push({source:'수불기록',id:e.id,lot:e.lot,note:'원료 연결 확인 필요'});continue;}g.manual.push(e);}
+ for(const e of entries){if(e.status==='cancelled'||e.deletedAt)continue;const g=resolve(e.material,e.lot,e.supplier);if(!g){unallocated.push({source:'수불기록',id:e.id,lot:e.lot,note:'원료 연결 확인 필요'});continue;}g.manual.push(e);}
  const blocked=new Set(holds.filter(h=>!h.released_at&&!h.releasedAt).map(h=>lot(h.lot)));
  const results=[];
  for(const g of groups.values()){
