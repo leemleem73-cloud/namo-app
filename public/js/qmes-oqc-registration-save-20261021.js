@@ -213,17 +213,13 @@ function setup(root){
  const date=field('date'),customerInput=field('customer'),lot=field('lot'),product=field('product');
  if(!date||!customerInput||!lot||!product)return;
  bound.add(root);
- const customer=document.createElement('input');
+ const customer=document.createElement('select');
  for(const attr of customerInput.attributes)if(!['type','placeholder','value'].includes(attr.name))customer.setAttribute(attr.name,attr.value);
- customer.type='text';
- customer.placeholder='고객사 선택 또는 직접입력';
- customer.setAttribute('aria-label','고객사 선택 또는 직접입력');
+ customer.setAttribute('aria-label','고객사 선택');
  const existing=clean(customerInput.value);
+ customer.add(new Option('고객사 선택',''));
+ if(existing)customer.add(new Option(existing,existing));
  customer.value=existing;customerInput.replaceWith(customer);
- const customerSuggestions=document.createElement('datalist');
- customerSuggestions.id='oqc-customer-options-'+crypto.randomUUID();
- customer.setAttribute('list',customerSuggestions.id);
- customer.after(customerSuggestions);
  const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
  lot.setAttribute('list',suggestions.id);
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
@@ -233,13 +229,12 @@ function setup(root){
  product.setAttribute('list',productSuggestions.id);product.after(productSuggestions);
  let orders=[],checks=[],history=[],allChoices=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
- function ensureCustomer(value){
-  if(value&&![...customerSuggestions.options].some(o=>o.value===value))customerSuggestions.appendChild(new Option(value,value));
- }
+ function ensureCustomer(value){if(value&&![...customer.options].some(o=>o.value===value))customer.add(new Option(value,value));}
  function customers(){
   const selected=customer.value;
   const names=[...new Set([...orders.map(o=>orderInfo(o).customer),...checks.map(r=>clean(r.customer)),...history.map(r=>clean(r.customer)),selected].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
-  customerSuggestions.replaceChildren(...names.map(name=>new Option(name,name)));
+  customer.replaceChildren(new Option('고객사 선택',''));
+  for(const name of names)customer.add(new Option(name,name));
   customer.value=selected;
  }
  function clearAuto(){
@@ -293,7 +288,7 @@ function setup(root){
   lot.addEventListener(event,()=>link('lot',lot));
   product.addEventListener(event,()=>link('product',product));
  }
- for(const event of ['input','change']) customer.addEventListener(event,()=>{if(loaded)render(true);});
+ customer.addEventListener('change',()=>{if(loaded)render(true);});
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true,true);else if(!loading)void load();
