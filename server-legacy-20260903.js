@@ -2660,7 +2660,8 @@ rows[index]={...old,...clean,...patch};
     const effective=clean.inspectionDecision==='불합격'?'불합격':computed;
     if(clean.shippingStatus==='출하완료'&&effective!=='합격')throw Object.assign(Error('검사합부가 합격인 기록만 출하완료로 저장할 수 있습니다.'),{status:400});
     const revision=oqcRevision.applyGroup(auditBefore.map(entry=>entry.row),auditAfter.map(entry=>entry.row),txt(req.session.user.name),new Date().toISOString());
-    if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:false,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
+    const coaAttachment=await require('./qmes-oqc-attachments-20261104.cjs').save(client,targets,req.body.attachment,txt(req.session.user.name));
+    if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:!!coaAttachment,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
     revision.rows.forEach((row,index)=>{auditAfter[index].row=row;});
     for(const update of updates){
       for(const selected of update.selected)update.rows[selected.index]=auditAfter[selected.auditIndex].row;
@@ -2693,6 +2694,7 @@ rows[index]={...old,...clean,...patch};
   }finally{if(client)client.release();}
 });
 
+require('./qmes-oqc-attachments-20261104.cjs').install(app,{pool,requireLogin});
 require('./qmes-oqc-coa-20261020.js')({app,pool,requireLogin,ok,fail,auditLog});
 
 // One atomic request for selected IQC/PQC/OQC records.
