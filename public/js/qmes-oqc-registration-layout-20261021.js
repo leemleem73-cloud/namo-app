@@ -36,6 +36,11 @@
       fields[index].remove();
       info.append(cell);
     }
+    if(window.qmesOqcRevision){
+      window.qmesOqcRevision.installStyle();
+      const dateCell=[...info.querySelectorAll('.am-inline-cell')].find(cell=>cell.querySelector('label')?.textContent.trim()==='검사일자');
+      if(dateCell){const row=document.createElement('div');row.className='oqc-revision-date-row';dateCell.before(row);row.append(dateCell);const meta=document.createElement('template');meta.innerHTML=window.qmesOqcRevision.formFields([]);row.append(...meta.content.children);}
+    }
     const summary = root.querySelector('.std-summary-grid');
     [...summary.querySelectorAll('.std-summary-card')].slice(0, 2).forEach((card, index) => {
       const cell = document.createElement('div');
