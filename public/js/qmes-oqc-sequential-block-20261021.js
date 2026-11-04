@@ -66,7 +66,7 @@
       if (firstFail >= 0) {
         if (!warning) {
           warning = document.createElement('div'); warning.className = 'oqc-sequential-warning'; warning.setAttribute('role', 'alert');
-          warning.innerHTML = '<strong>부적합 항목 확인 · 출하 보류</strong><span></span>'; table.parentNode.insertBefore(warning, table);
+          warning.innerHTML = '<strong>후속 공정 차단</strong><span></span>'; table.parentNode.insertBefore(warning, table);
         }
         const message = names[firstFail] + ' 불합격 — 나머지 검사항목도 모두 입력하고 저장할 수 있습니다. 검사 결과는 불합격으로 기록되며 LOT 보류·출하 차단은 유지됩니다. 별도 승인 제품은 적용 규격과 승인 근거를 비고에 기록해 주세요.';
         if (warning.lastElementChild.textContent !== message) warning.lastElementChild.textContent = message;
