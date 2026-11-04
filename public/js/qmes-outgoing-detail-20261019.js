@@ -64,6 +64,7 @@ return result;
 };
 pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('input',refreshOverall);el.addEventListener('change',refreshOverall);});refreshOverall();
 pane.querySelector('.am-detail-note')?.remove();
+window.qmesOqcFiles.mount(pane,records.map(source=>({recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId})));
 save.addEventListener('click',async()=>{
 const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
@@ -80,7 +81,8 @@ return{recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId,expected:or
 });
 try{
 save.disabled=true;warning.hidden=true;
-const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets})});
+const attachment=await window.qmesOqcFiles.read(pane);
+const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment})});
 const result=await response.json().catch(()=>({}));
 if(!response.ok||result.success===false)throw Error(result.message||'출하검사 저장에 실패했습니다.');
 closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast(result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
