@@ -80,12 +80,13 @@
     const previousError = root.querySelector('.oqc-registration-save-error');
     if (previousError) previousError.hidden = true;
     try {
+      const attachment=await window.qmesOqcFiles.read(root);
       const signal = typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
         ? AbortSignal.timeout(20000) : undefined;
       const response = await fetch('/api/qmes-sync/oqc/register', {
         method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
         signal,
-        body: JSON.stringify({ requestId: state.requestId, fields, measurements })
+        body: JSON.stringify({ requestId: state.requestId, fields, measurements, attachment })
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.success !== true) throw Error(result.message || '출하검사 저장에 실패했습니다.');
