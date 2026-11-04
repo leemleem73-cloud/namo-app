@@ -21,6 +21,13 @@ test('finished UI compiles independently',()=>new vm.Script(source));
 test('raw-dialog entry point selects finished stock and opens a product/LOT record form',async()=>{
  const h=harness();assert.equal(await h.win.qmesFinishedStock.openRecord(),true);
  assert.equal(h.raw.hidden,true);assert.equal(h.root.hidden,false);const d=h.dialogs.at(-1);
- for(const label of ['재고 대상: 완제품','제품명','완제품 LOT','연구 사용','고객 샘플','재검사'])assert.ok(d.innerHTML.includes(label));
+ for(const label of ['재고 대상','제품명','완제품 LOT','연구 사용','고객 샘플','재검사'])assert.ok(d.innerHTML.includes(label));
  assert.ok(!d.innerHTML.includes('name="material"'));assert.equal(h.writes.length,0);
+});
+test('finished record can return to raw record entry without saving in either ledger',async()=>{
+ const h=harness();await h.win.qmesFinishedStock.openRecord();const d=h.dialogs.at(-1);let opened=0;h.win.qmesRawStock={openRecord:()=>{opened++;return true;}};
+ const selector=d.querySelector('[data-stock-kind]');selector.value='raw';selector.onchange();assert.equal(opened,1);assert.equal(d.closed,true);assert.equal(h.raw.hidden,false);assert.equal(h.root.hidden,true);assert.equal(h.writes.length,0);
+});
+test('finished record cancel closes the form without saving a movement',async()=>{
+ const h=harness();await h.win.qmesFinishedStock.openRecord();const d=h.dialogs.at(-1);assert.ok(d.className.includes('stock-entry'));d.querySelector('[data-cancel]').onclick();assert.equal(d.closed,true);assert.equal(h.writes.length,0);
 });
