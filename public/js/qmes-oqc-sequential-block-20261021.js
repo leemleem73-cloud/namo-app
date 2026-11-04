@@ -1,4 +1,4 @@
-/* OQC sequential entry interlock; preserve saved measurements and original controls. */
+/* OQC evidence capture stays editable on NG; durable LOT movement interlocks remain server-owned. */
 (function () {
   'use strict';
   if (window.__qmesOqcSequentialBlock20261021) return;
@@ -38,7 +38,8 @@
       });
       const firstFail = results.indexOf('불합격');
       rows.forEach((row, index) => {
-        const locked = firstFail >= 0 && index > firstFail;
+        // A failed measurement blocks LOT movements, never collection of the remaining evidence.
+        const locked = false;
         row.classList.toggle('oqc-sequential-locked', locked);
         row.querySelectorAll('[data-oqc-value],.std-measure,.std-row-judge').forEach(input => {
           if (locked && !input.dataset.oqcSequentialLock) {
@@ -65,9 +66,9 @@
       if (firstFail >= 0) {
         if (!warning) {
           warning = document.createElement('div'); warning.className = 'oqc-sequential-warning'; warning.setAttribute('role', 'alert');
-          warning.innerHTML = '<strong>후속 공정 차단</strong><span></span>'; table.parentNode.insertBefore(warning, table);
+          warning.innerHTML = '<strong>부적합 항목 확인 · 출하 보류</strong><span></span>'; table.parentNode.insertBefore(warning, table);
         }
-        const message = names[firstFail] + ' 불합격 — 이후 검사항목은 입력할 수 없습니다. 불합격 결과를 저장하고 원인 조치 후 재검사하세요. 저장된 LOT 보류는 별도 해제 승인이 필요합니다.';
+        const message = names[firstFail] + ' 불합격 — 나머지 검사항목도 모두 입력하고 저장할 수 있습니다. 검사 결과는 불합격으로 기록되며 LOT 보류·출하 차단은 유지됩니다. 별도 승인 제품은 적용 규격과 승인 근거를 비고에 기록해 주세요.';
         if (warning.lastElementChild.textContent !== message) warning.lastElementChild.textContent = message;
       } else if (warning) warning.remove();
     });
