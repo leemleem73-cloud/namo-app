@@ -90,6 +90,7 @@ require('./qmes-work-dispatch-20261014.js').installWorkDispatchRoutes(app);
 
 // New OQC registration stores a measured certificate without replacing existing records.
 require('./qmes-oqc-registration-20261021.js').install(app, { pool, requireLogin, auditLog });
+require('./qmes-stock-record-delete-20261104.cjs').install(app, { pool, requireLogin, auditLog });
 require('./qmes-standard-documents-20261027.js').install(app, { pool, requireLogin, auditLog });
 
 // Register PostgreSQL inventory APIs even when production starts with `node server.js` directly.
@@ -2850,9 +2851,13 @@ app.post('/api/qmes-sync/:type', requireLogin, async (req, res) => {
        VALUES ($1, $2, $3::jsonb, $4, NOW())
        ON CONFLICT (record_type, record_key)
        DO UPDATE SET payload = EXCLUDED.payload, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+       WHERE NOT (qmes_sync_records.record_type = 'inventory'
+         AND (qmes_sync_records.record_key LIKE 'material-stock:v1:%' OR qmes_sync_records.record_key LIKE 'finished-stock:v1:%')
+         AND coalesce(qmes_sync_records.payload->'entry'->>'deletedAt','') <> '')
        RETURNING record_type, record_key, payload, updated_by, updated_at`,
       [type, key, JSON.stringify(payload), userName]
     );
+    if (!result.rows.length) return fail(res, 409, '이미 삭제된 사용 기록입니다. 새로고침 후 확인해주세요.');
     await auditLog(
       req,
       before.rowCount ? 'UPDATE' : 'CREATE',
