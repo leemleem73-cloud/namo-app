@@ -4,6 +4,7 @@ const text=v=>String(v??''),valueKey=v=>v==null?'':String(v),fmt=v=>v==null?'미
 function number(v){if(v==null||text(v).trim()==='')return null;const s=text(v).trim().replace(/,/g,'');return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)&&Number.isFinite(Number(s))?Number(s):null;}
 function measure(v){return Array.from(text(v)).reduce((n,c)=>n+(/[^\x00-\xff]/.test(c)?12:7),0);}
 function create(columns,{kind='raw',storage=null,account=()=>''}={}){
+ columns=columns.map(column=>({...column,label:text(column.label).replace(/장부재고/g,'재고')}));
  let filters={},sort=null,widths={};
  const get=(row,column)=>column.get?column.get(row):row[column.id];
  const storageKey=()=>'qmes:stock-grid-widths:v1:'+kind+':'+(account()||'session');
