@@ -6,7 +6,7 @@ function setup(width=900,left=100,viewport=1400,kind="orders"){
  const doc={createElement:()=>{const node=create();nodes.push(node);return node;},getElementById:()=>null,querySelectorAll:()=>[],body:{append(){}},head:{append(){}}};
  const context={window:win,document:doc,MutationObserver:class{observe(){}},Date,Event,innerWidth:viewport,innerHeight:900};
  vm.runInNewContext(source,context);
- const input={value:'',isConnected:true,disabled:false,readOnly:false,attrs:{},dispatched:[],setAttribute(k,v){this.attrs[k]=v;},getBoundingClientRect:()=>({width,left,top:50,bottom:82}),closest:selector=>kind==='stock'?selector==='.ms-entry,.fg-dialog'?{}:null:selector.includes('data-am-screen="orders"')?{}:null,focus(){},dispatchEvent(event){this.dispatched.push(event.type);}};
+ const input={value:'',isConnected:true,disabled:false,readOnly:false,attrs:{},dispatched:[],setAttribute(k,v){this.attrs[k]=v;},getBoundingClientRect:()=>({width,left,top:50,bottom:82}),closest:selector=>kind==='stock'?selector==='.ms-entry,.fg-dialog,.sg-inline'?{}:null:selector.includes('data-am-screen="orders"')?{}:null,focus(){},dispatchEvent(event){this.dispatched.push(event.type);}};
  function open(){events.pointerdown[0]({target:{closest:scope=>scope.includes('data-am-screen="orders"')?input:null},preventDefault(){},stopImmediatePropagation(){}});return nodes.find(node=>node.className?.includes(kind==='stock'?'qis-calendar-stock':'qis-calendar-orders'));}
  return {open,input,nodes};
 }
