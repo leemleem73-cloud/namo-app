@@ -3094,7 +3094,7 @@ const pageInfo = {
   inventory:['재고현황','원료 및 완제품의 현재 재고현황을 확인합니다.', ['구분','품목코드','품목명','LOT NO','현재고','단위','상태']],
   incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','입고 중량 (kg)','검사항목','검사합부','결재상태','검사자','성적서','비고']],
   process:['공정검사','생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.', ['검사일자','작업지시번호','제품명','생산 LOT NO','공정명','검사항목','검사합부','검사자','성적서','비고']],
-  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','성적서','비고']],
+  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','최종 수정일','리비전','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','성적서','비고']],
   lotTrace:['LOT 추적','원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향 추적합니다.', ['원료 LOT','작업지시번호','생산 LOT NO','완제품 LOT','고객사','출하일','추적상태']],
   equipment:['설비관리','관리계획서 기준으로 생산설비·검사설비의 조건, 점검, 교정 및 이력을 관리합니다.', ['설비번호','설비명','구분','최근점검일','차기점검일','상태','담당자']],
   quality:['품질관리','IQC, 공정검사, 완제품 검사 및 CoA 관리 화면입니다.', ['검사구분','LOT NO','검사일','검사항목','판정','검사자','성적서']],
@@ -3641,9 +3641,9 @@ function wireOutgoingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,120,120,200,200,200,120,120,120,120,120];
-  const minimums=[86,100,100,110,110,110,100,100,100,100,100];
-  const storageKey='namo-outgoing-column-widths-v2-equal';
+  const defaults=[86,120,160,90,120,200,200,200,120,120,120,120,120];
+  const minimums=[86,100,140,80,100,110,110,110,100,100,100,100,100];
+  const storageKey='namo-outgoing-column-widths-v3-revision';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3675,7 +3675,7 @@ function wireOutgoingColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();
-    for(const indexes of [[1,2,6,7,8,9,10],[3,4,5]]){
+    for(const indexes of [[1,4,8,9,10,11,12],[5,6,7]]){
       const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
       indexes.forEach(i=>effective[i]=equal);
     }
@@ -5497,6 +5497,7 @@ async function loadHistoricalInspectionRows(section,id){
       }
       displayRows=[...grouped.entries()].map(([key,row])=>({...row,__deleteTargets:sources.get(key)||[]}));
     }
+    if(id==='outgoing')window.qmesOqcRevision?.installStyle();
     if(id==='outgoing')section._oqcRecords=new Map(displayRows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -5514,8 +5515,10 @@ async function loadHistoricalInspectionRows(section,id){
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','',''];
+        :[row.date,window.qmesOqcRevision?.formatModifiedAt(window.qmesOqcRevision.metadata(row.__groupChecks||[row]).modifiedAt)||'—','Rev.'+(window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
+        if(id==='outgoing'&&cols[index]==='최종 수정일'){const author=window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).modifiedBy||'';return '<td class="oqc-revision-list-cell" title="'+safe(author?'수정자: '+author:'수정 이력 없음')+'">'+safe(v)+'</td>';}
+        if(id==='outgoing'&&cols[index]==='리비전')return '<td class="oqc-revision-list-cell"><span class="oqc-revision-badge">'+safe(v)+'</span></td>';
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
@@ -8233,7 +8236,8 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261019-1"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261027-company-footer7"></script>
+<script src="./js/qmes-oqc-revision-core-20261104.js?v=1"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261104-revision1"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
@@ -8321,7 +8325,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-iqc-pqc-layout-20261021.js?v=20261103-iqc-select-text-start3"></script>
 <script src="./js/qmes-iqc-approval-parity-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-parity-20261021.js?v=20261027-single-border2"></script>
-<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261027-aligned-edges4"></script>
+<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261104-revision1"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
