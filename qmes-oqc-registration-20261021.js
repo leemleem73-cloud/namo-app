@@ -4,6 +4,7 @@
 // Browser labels are advisory: shared measurement rules determine every saved result.
 const { createHash } = require('node:crypto');
 const rules = require('./public/js/qmes-oqc-rules-20261019.js');
+const attachments = require('./qmes-oqc-attachments-20261104.cjs');
 const revision = require('./public/js/qmes-oqc-revision-core-20261104.js');
 const endpoint = '/api/qmes-sync/oqc/register';
 const version = '20261021-1';
@@ -54,8 +55,9 @@ function normalizeRegistration(body) {
     });
   }
   const measurements = Object.fromEntries(rules.items.map(item => [item, entered[item] || ['', '', '']]));
-  const requestHash = createHash('sha256').update(JSON.stringify({ fields, measurements })).digest('hex');
-  return { requestId, recordKey: 'oqc-registration:' + requestId, requestHash, fields, measurements };
+  const attachment = attachments.validate(body.attachment);
+  const requestHash = createHash('sha256').update(JSON.stringify(attachment?{ fields, measurements, attachmentHash:attachment.hash }:{fields,measurements})).digest('hex');
+  return { requestId, recordKey: 'oqc-registration:' + requestId, requestHash, fields, measurements, attachment:body.attachment };
 }
 
 function makePayload(normalized, user, now) {
@@ -145,6 +147,7 @@ function createHandler({ pool, auditLog } = {}) {
         VALUES('oqc',$1,$2::jsonb,$3,NOW()) ON CONFLICT(record_type,record_key) DO NOTHING RETURNING record_key`,
       [normalized.recordKey, JSON.stringify(payload), String(user.name || '')]);
       if (!inserted.rows.length) throw conflict('이미 저장된 등록 요청입니다. 목록에서 기존 기록을 확인해 주세요.');
+      await attachments.save(client,payload.rows.map(row=>({recordKey:normalized.recordKey,rowId:row.id})),normalized.attachment,user.name);
       await client.query('COMMIT'); transaction = false;
       if (typeof auditLog === 'function') {
         try { await auditLog(req, 'CREATE', 'qmes_sync_records', 'oqc:' + normalized.recordKey, null, payload); }
