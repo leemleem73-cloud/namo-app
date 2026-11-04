@@ -64,9 +64,6 @@
     }
     const fields = Object.fromEntries([...root.querySelectorAll('[data-oqc-registration-field]')]
       .map(input => [input.dataset.oqcRegistrationField, input.value.trim()]));
-    const directCustomer = root.querySelector('[data-oqc-customer-direct]');
-    const customerSelect = root.querySelector('[data-oqc-customer-select]');
-    if (customerSelect?.value === '__DIRECT__') fields.customer = directCustomer?.value.trim() || '';
     if (!fields.date || !fields.lot || !fields.inspector) {
       showError(root, '검사일자, 완제품 LOT, 검사자를 입력해 주세요.');
       return;
@@ -216,23 +213,17 @@ function setup(root){
  const date=field('date'),customerInput=field('customer'),lot=field('lot'),product=field('product');
  if(!date||!customerInput||!lot||!product)return;
  bound.add(root);
- const customer=document.createElement('select');
+ const customer=document.createElement('input');
  for(const attr of customerInput.attributes)if(!['type','placeholder','value'].includes(attr.name))customer.setAttribute(attr.name,attr.value);
- customer.setAttribute('aria-label','고객사 선택');
- customer.setAttribute('data-oqc-customer-select','1');
+ customer.type='text';
+ customer.placeholder='고객사 선택 또는 직접입력';
+ customer.setAttribute('aria-label','고객사 선택 또는 직접입력');
  const existing=clean(customerInput.value);
- customer.add(new Option('고객사 선택',''));
- if(existing)customer.add(new Option(existing,existing));
- customer.add(new Option('직접입력','__DIRECT__'));
  customer.value=existing;customerInput.replaceWith(customer);
- const directCustomer=document.createElement('input');
- directCustomer.type='text';
- directCustomer.placeholder='고객사명 직접입력';
- directCustomer.setAttribute('aria-label','고객사 직접입력');
- directCustomer.setAttribute('data-oqc-customer-direct','1');
- directCustomer.className=customer.className;
- directCustomer.hidden=true;
- customer.after(directCustomer);
+ const customerSuggestions=document.createElement('datalist');
+ customerSuggestions.id='oqc-customer-options-'+crypto.randomUUID();
+ customer.setAttribute('list',customerSuggestions.id);
+ customer.after(customerSuggestions);
  const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
  lot.setAttribute('list',suggestions.id);
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
@@ -242,13 +233,13 @@ function setup(root){
  product.setAttribute('list',productSuggestions.id);product.after(productSuggestions);
  let orders=[],checks=[],history=[],allChoices=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
- function ensureCustomer(value){if(value&&![...customer.options].some(o=>o.value===value))customer.add(new Option(value,value));}
+ function ensureCustomer(value){
+  if(value&&![...customerSuggestions.options].some(o=>o.value===value))customerSuggestions.appendChild(new Option(value,value));
+ }
  function customers(){
   const selected=customer.value;
   const names=[...new Set([...orders.map(o=>orderInfo(o).customer),...checks.map(r=>clean(r.customer)),...history.map(r=>clean(r.customer)),selected].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
-  customer.replaceChildren(new Option('고객사 선택',''));
-  for(const name of names)customer.add(new Option(name,name));
-  customer.add(new Option('직접입력','__DIRECT__'));
+  customerSuggestions.replaceChildren(...names.map(name=>new Option(name,name)));
   customer.value=selected;
  }
  function clearAuto(){
@@ -302,19 +293,7 @@ function setup(root){
   lot.addEventListener(event,()=>link('lot',lot));
   product.addEventListener(event,()=>link('product',product));
  }
- customer.addEventListener('change',()=>{
-  const direct=customer.value==='__DIRECT__';
-  directCustomer.hidden=!direct;
-  if(direct){
-    directCustomer.value='';
-    directCustomer.focus();
-    message.textContent='';
-    return;
-  }
-  directCustomer.value='';
-  if(loaded)render(true);
- });
- directCustomer.addEventListener('input',()=>{message.textContent='';});
+ for(const event of ['input','change']) customer.addEventListener(event,()=>{if(loaded)render(true);});
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true,true);else if(!loading)void load();
@@ -325,6 +304,6 @@ function setup(root){
 let pending=false;
 function scan(){document.querySelectorAll(scope).forEach(setup);}
 new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;scan();});}}).observe(document.body,{childList:true,subtree:true});
-const style=document.createElement('style');style.textContent='.oqc-lot-link-status{display:block;color:#637b93;font-size:11px;line-height:1.5}.oqc-lot-link-status:empty{display:none}.oqc-pqc-layout select option{background:#fff;color:#35435b}[data-oqc-customer-direct]{display:block;width:100%!important;height:29px!important;border:1px solid #d7e0e9!important;border-radius:2px!important;padding:0 8px!important;background:#fff!important;color:#35435b!important;font-size:11px!important}[data-oqc-customer-direct][hidden]{display:none!important}';document.head.append(style);
+const style=document.createElement('style');style.textContent='.oqc-lot-link-status{display:block;color:#637b93;font-size:11px;line-height:1.5}.oqc-lot-link-status:empty{display:none}.oqc-pqc-layout select option{background:#fff;color:#35435b}';document.head.append(style);
 scan();
 })();
