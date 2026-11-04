@@ -3672,18 +3672,14 @@ function wireOutgoingColumnResize(section){
   let containerWidth=0;
   function apply(){
     widths[0]=86; // Reserve separate checkbox and number areas.
-    // Distribute unused space over other columns, preserving their relative sizes.
-    // Do not overwrite saved user widths or force the table beyond the viewport.
+    // Keep inspection-item and selection widths; make every other data column equal.
     const effective=widths.slice();
-    for(const indexes of [[1,4,8,9,10,11,12],[5,6,7]]){
-      const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
-      indexes.forEach(i=>effective[i]=equal);
-    }
+    const itemIndex=labels.indexOf('검사항목');
+    const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex);
+    const equal=equalIndexes.reduce((sum,index)=>sum+effective[index],0)/equalIndexes.length;
+    equalIndexes.forEach(index=>effective[index]=equal);
     const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
-    if(free>0){
-      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
-      for(let j=1;j<effective.length;j++)effective[j]+=free*effective[j]/total;
-    }
+    if(free>0)equalIndexes.forEach(index=>effective[index]+=free/equalIndexes.length);
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
