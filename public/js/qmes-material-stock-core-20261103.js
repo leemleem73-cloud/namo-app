@@ -126,7 +126,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   const reserved=plans.filter(p=>p.g===g&&included(p)).reduce((s,p)=>s+p.qty,0);
   const quality=rs.some(r=>r.judge!=='합격')?'검사대기/불합격':blocked.has(g.lot)?'품질보류':'사용가능';
   if(!g.receipts.length&&!baseline)g.issues.push('입고 또는 기초재고 미연결');
-  if(balance<0)g.issues.push('장부재고 음수 · 입고/사용량 대조 필요');
+  if(balance<0)g.issues.push('재고 음수 · 입고/사용량 대조 필요');
   const uncertain=g.pending>0||g.issues.length>0||sourceErrors.length>0||unallocated.some(e=>lot(e.lot)===g.lot);
   results.push({...g,opening:baseline?kg(micro(number(baseline.quantity))):0,start,incoming:kg(incoming),used:kg(used),sample:kg(sample),adjust:kg(adjust),balance:kg(balance),reserved:kg(reserved),available:quality==='사용가능'&&!uncertain?kg(Math.max(0,balance)):0,quality,uncertain,issues:[...new Set(g.issues)],notices:[...new Set(g.notices)],ledger:ledger.sort((a,b)=>text(a.date).localeCompare(text(b.date)))});
  }
