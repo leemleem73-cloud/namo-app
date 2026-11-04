@@ -64,6 +64,8 @@
     }
     const fields = Object.fromEntries([...root.querySelectorAll('[data-oqc-registration-field]')]
       .map(input => [input.dataset.oqcRegistrationField, input.value.trim()]));
+    const directCustomer = root.querySelector('[data-oqc-customer-direct]');
+    if (directCustomer && !directCustomer.hidden) fields.customer = directCustomer.value.trim();
     if (!fields.date || !fields.lot || !fields.inspector) {
       showError(root, '검사일자, 완제품 LOT, 검사자를 입력해 주세요.');
       return;
@@ -219,7 +221,16 @@ function setup(root){
  const existing=clean(customerInput.value);
  customer.add(new Option('고객사 선택',''));
  if(existing)customer.add(new Option(existing,existing));
+ customer.add(new Option('직접입력','__DIRECT__'));
  customer.value=existing;customerInput.replaceWith(customer);
+ const directCustomer=document.createElement('input');
+ directCustomer.type='text';
+ directCustomer.placeholder='고객사 직접입력';
+ directCustomer.setAttribute('aria-label','고객사 직접입력');
+ directCustomer.setAttribute('data-oqc-customer-direct','1');
+ directCustomer.hidden=true;
+ directCustomer.className=customer.className;
+ customer.after(directCustomer);
  const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
  lot.setAttribute('list',suggestions.id);
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
@@ -235,7 +246,8 @@ function setup(root){
   const names=[...new Set([...orders.map(o=>orderInfo(o).customer),...checks.map(r=>clean(r.customer)),...history.map(r=>clean(r.customer)),selected].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
   customer.replaceChildren(new Option('고객사 선택',''));
   for(const name of names)customer.add(new Option(name,name));
-  customer.value=selected;
+  customer.add(new Option('직접입력','__DIRECT__'));
+  customer.value=selected==='__DIRECT__'?'__DIRECT__':selected;
  }
  function clearAuto(){
   if(!autoValues)return;
@@ -288,7 +300,14 @@ function setup(root){
   lot.addEventListener(event,()=>link('lot',lot));
   product.addEventListener(event,()=>link('product',product));
  }
- customer.addEventListener('change',()=>{if(loaded)render(true);});
+ customer.addEventListener('change',()=>{
+  const direct=customer.value==='__DIRECT__';
+  directCustomer.hidden=!direct;
+  if(direct){directCustomer.focus();message.textContent='고객사명을 직접 입력하세요.';return;}
+  directCustomer.value='';
+  if(loaded)render(true);
+ });
+ directCustomer.addEventListener('input',()=>{message.textContent=clean(directCustomer.value)?'직접입력 고객사: '+clean(directCustomer.value):'고객사명을 직접 입력하세요.';});
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true,true);else if(!loading)void load();
@@ -299,6 +318,6 @@ function setup(root){
 let pending=false;
 function scan(){document.querySelectorAll(scope).forEach(setup);}
 new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;scan();});}}).observe(document.body,{childList:true,subtree:true});
-const style=document.createElement('style');style.textContent='.oqc-lot-link-status{display:block;color:#637b93;font-size:11px;line-height:1.5}.oqc-lot-link-status:empty{display:none}.oqc-pqc-layout select option{background:#fff;color:#35435b}';document.head.append(style);
+const style=document.createElement('style');style.textContent='.oqc-lot-link-status{display:block;color:#637b93;font-size:11px;line-height:1.5}.oqc-lot-link-status:empty{display:none}.oqc-pqc-layout select option{background:#fff;color:#35435b}[data-oqc-customer-direct]{margin-top:4px!important;width:100%!important;height:29px!important;border:1px solid #d7e0e9!important;border-radius:2px!important;padding:0 8px!important;background:#fff!important;color:#35435b!important;font-size:11px!important}';document.head.append(style);
 scan();
 })();
