@@ -3643,7 +3643,7 @@ function wireOutgoingColumnResize(section){
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,120,160,90,120,200,200,200,120,120,120,120,120];
   const minimums=[86,100,140,80,100,110,110,110,100,100,100,100,100];
-  const storageKey='namo-outgoing-column-widths-v3-revision';
+  const storageKey='namo-outgoing-column-widths-v4-wide-items';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3675,11 +3675,12 @@ function wireOutgoingColumnResize(section){
     // Keep inspection-item and selection widths; make every other data column equal.
     const effective=widths.slice();
     const itemIndex=labels.indexOf('검사항목');
+    const viewport=wrap.clientWidth||available;
+    if(itemIndex>=0)effective[itemIndex]=customized?Math.max(300,Math.min(720,widths[itemIndex])):Math.max(300,Math.min(600,viewport*0.25));
     const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex);
-    const equal=equalIndexes.reduce((sum,index)=>sum+effective[index],0)/equalIndexes.length;
+    const equal=Math.max(90,(viewport-effective[0]-(itemIndex>=0?effective[itemIndex]:0))/equalIndexes.length);
     equalIndexes.forEach(index=>effective[index]=equal);
-    const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
-    if(free>0)equalIndexes.forEach(index=>effective[index]+=free/equalIndexes.length);
+    widths=effective.slice();
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
       handles[i]?.setAttribute('aria-valuenow',String(width));
@@ -8249,7 +8250,7 @@ document.addEventListener('transitionend',follow,true);
 
 
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
-<script defer src="./js/qmes-stock-grid-20261104.js?v=2-fit-clean"></script>
+<script defer src="./js/qmes-stock-grid-20261104.js?v=3-header-parity"></script>
 <script defer src="./js/qmes-material-stock-core-20261103.js?v=4-iqc-judgment-parity"></script>
 <script defer src="./js/qmes-material-stock-ui-20261103.js?v=12-grid-controls"></script>
 <script defer src="./js/qmes-finished-stock-core-20261103.js?v=1"></script>
