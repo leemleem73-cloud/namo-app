@@ -1,90 +1,59 @@
-/* Movable home cards; only layout coordinates are stored per account in this browser. */
+/* Phone-style card ordering: stable slots, account-scoped browser preferences. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else api.mount(root);})(typeof globalThis==='undefined'?this:globalThis,function(){
 'use strict';
 const names=['memo','work','guide'];
-function bounded(base,stage,size,offset){
- const clamp=(v,low,high)=>Math.max(low,Math.min(Math.max(low,high),v));
- return {x:clamp(offset.x,8-base.left,stage.width-size.width-8-base.left),y:clamp(offset.y,8-base.top,stage.height-size.height-8-base.top)};
-}
-function decode(value){
- let data;try{data=JSON.parse(value);}catch(_){return {};}
- if(data?.version!==1||!data.cards||typeof data.cards!=='object')return {};
- const result={};for(const name of names){const p=data.cards[name];if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))result[name]={x:Math.max(-1,Math.min(1,p.x)),y:Math.max(-1,Math.min(1,p.y))};}return result;
-}
+function decode(value){let data;try{data=JSON.parse(value);}catch(_){return names.slice();}const order=data?.version===2&&Array.isArray(data.order)?data.order:[];return [...new Set(order.filter(name=>names.includes(name))),...names.filter(name=>!order.includes(name))];}
+function reorder(order,name,target){const next=order.filter(v=>v!==name),index=next.indexOf(target);next.splice(index<0?next.length:index,0,name);return next;}
 function mount(root){
- const document=root.document,stage=document.getElementById('stage'),side=document.querySelector('.right-side');
- if(!stage||!side)return;
- const selected=[
- ['memo',document.getElementById('personal-memo-card'),'.pm-head','개인 메모'],
- ['work',side.querySelector('.side-card'),'.card-heading','나의 업무 현황'],
- ['guide',side.querySelector('.notice-card'),'.head','QMES 이용가이드']
- ].filter(row=>row[1]);
- let key='',saved={},drag=null,z=10,resizeFrame=0;
- const items=selected.map(([name,card,selector,label])=>{
-  const handle=card.querySelector(selector),meta={name,card,handle,label,offset:{x:0,y:0},originalTransform:card.style.transform,originalPosition:card.style.position,originalZ:card.style.zIndex};
-  card.classList.add('portal-movable-card');
-  if(handle){handle.classList.add('portal-card-handle');handle.tabIndex=0;handle.setAttribute('aria-label',label+' 위치 이동. 방향키로 이동, Home 키 또는 더블클릭으로 기본 위치.');handle.title='제목을 잡고 이동 · 더블클릭하면 기본 위치';}
-  return meta;
- });
- const reset=document.createElement('button');reset.type='button';reset.className='portal-layout-reset';reset.textContent='카드 배치 초기화';reset.title='개인 메모 · 나의 업무 현황 · 이용가이드의 기본 위치로 되돌립니다.';stage.append(reset);
- const enabled=()=>root.innerWidth>1080;
- function paint(meta,offset){meta.offset=offset;meta.card.style.position='relative';meta.card.style.transform='translate('+Math.round(offset.x)+'px,'+Math.round(offset.y)+'px)';}
- function geometry(meta){
-  const sr=stage.getBoundingClientRect(),cr=meta.card.getBoundingClientRect();
-  return {base:{left:cr.left-sr.left-meta.offset.x,top:cr.top-sr.top-meta.offset.y},stage:{width:sr.width,height:sr.height},size:{width:cr.width,height:cr.height}};
+ const document=root.document,side=document.querySelector('.right-side');if(!side)return;
+ const found=[['memo',document.getElementById('personal-memo-card'),'.pm-head','개인 메모'],['work',side.querySelector('.side-card'),'.card-heading','나의 업무 현황'],['guide',side.querySelector('.notice-card'),'.head','QMES 이용가이드']].filter(row=>row[1]);
+ const cards=found.map(([name,card,selector,label])=>({name,card,handle:card.querySelector(selector),label}));
+ let key='',order=names.slice(),editing=false,drag=null;
+ const bar=document.createElement('div');bar.className='portal-arrange-bar';
+ const button=document.createElement('button');button.type='button';button.textContent='카드 배열';button.setAttribute('aria-pressed','false');
+ const hint=document.createElement('span');hint.textContent='제목을 끌어 순서 변경';hint.hidden=true;bar.append(hint,button);side.append(bar);
+ function apply(){for(const name of order){const item=cards.find(v=>v.name===name);if(item)side.append(item.card);}}
+ function save(){if(key)try{root.localStorage.setItem(key,JSON.stringify({version:2,order}));}catch(_){}}
+ function mode(value){editing=value;side.classList.toggle('portal-arranging',editing);button.textContent=editing?'완료':'카드 배열';button.setAttribute('aria-pressed',String(editing));hint.hidden=!editing;for(const item of cards)if(item.handle){item.handle.tabIndex=editing?0:-1;item.handle.title=editing?'드래그 또는 위·아래 방향키로 순서 변경':'';}}
+ function stop(commit){
+  if(!drag)return;
+  const current=drag;drag=null;
+  if(commit){side.insertBefore(current.item.card,current.placeholder);order=[...side.children].map(node=>cards.find(v=>v.card===node)?.name).filter(Boolean);}else order=current.before;
+  current.placeholder.remove();current.item.card.style.cssText=current.css;current.item.card.classList.remove('portal-card-lifted');apply();
+  if(current.item.handle.hasPointerCapture(current.id))current.item.handle.releasePointerCapture(current.id);
+  if(commit)save();
  }
- function apply(meta,wanted){const g=geometry(meta);paint(meta,bounded(g.base,g.stage,g.size,wanted));}
- function restore(){
-  for(const meta of items){
-   meta.card.style.transform=meta.originalTransform;meta.card.style.position=meta.originalPosition;meta.card.style.zIndex=meta.originalZ;meta.offset={x:0,y:0};
-  }
- }
- function layout(){
-  if(!enabled()){restore();return;}
-  restore();const r=stage.getBoundingClientRect();
-  for(const meta of items){const pos=saved[meta.name]||{x:0,y:0};apply(meta,{x:pos.x*r.width,y:pos.y*r.height});}
- }
- function persist(meta){
-  const r=stage.getBoundingClientRect();saved[meta.name]={x:meta.offset.x/Math.max(1,r.width),y:meta.offset.y/Math.max(1,r.height)};
-  if(key)try{root.localStorage.setItem(key,JSON.stringify({version:1,cards:saved}));}catch(_){}
- }
- function account(userId){
-  const next=userId?'namo-portal-card-layout-v1:'+String(userId):'';
-  if(next===key)return;key=next;saved={};
-  if(key)try{saved=decode(root.localStorage.getItem(key));}catch(_){}
-  layout();
- }
- function resetOne(meta){delete saved[meta.name];meta.card.style.transform=meta.originalTransform;meta.offset={x:0,y:0};apply(meta,{x:0,y:0});persist(meta);}
- reset.onclick=()=>{saved={};if(key)try{root.localStorage.removeItem(key);}catch(_){}layout();};
- for(const meta of items){
-  const handle=meta.handle;if(!handle)continue;
+ function account(id){const next=id?'namo-portal-card-order-v2:'+String(id):'';if(next===key)return;stop(false);key=next;order=names.slice();if(key)try{order=decode(root.localStorage.getItem(key));}catch(_){}apply();}
+ button.onclick=()=>{stop(true);mode(!editing);};
+ for(const item of cards){
+  item.card.classList.add('portal-order-card');const handle=item.handle;if(!handle)continue;
+  handle.classList.add('portal-order-handle');handle.setAttribute('aria-label',item.label+' 카드. 배열 모드에서 위아래 방향키 또는 드래그로 순서를 변경합니다.');
   handle.addEventListener('pointerdown',event=>{
-   if(!enabled()||event.button!==0||drag||event.target.closest('button,a,input,textarea,select,[contenteditable="true"]'))return;
-   event.preventDefault();const g=geometry(meta);drag={meta,id:event.pointerId,x:event.clientX,y:event.clientY,offset:{...meta.offset},g};
-   meta.card.style.zIndex=String(++z);handle.classList.add('moving');handle.setPointerCapture(event.pointerId);
+   if(!editing||root.innerWidth<=1080||drag||event.button!==0||event.target.closest('button,a,input,textarea,select,[contenteditable="true"]'))return;
+   event.preventDefault();const rect=item.card.getBoundingClientRect(),placeholder=document.createElement('div');placeholder.className='portal-card-slot';placeholder.style.height=rect.height+'px';placeholder.setAttribute('aria-label','카드를 놓을 자리');side.insertBefore(placeholder,item.card);
+   drag={item,id:event.pointerId,before:order.slice(),placeholder,css:item.card.style.cssText,dx:event.clientX-rect.left,dy:event.clientY-rect.top,width:rect.width,height:rect.height};
+   Object.assign(item.card.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',margin:'0',zIndex:'30',pointerEvents:'none'});item.card.classList.add('portal-card-lifted');handle.setPointerCapture(event.pointerId);
   });
   handle.addEventListener('pointermove',event=>{
-   if(!drag||drag.meta!==meta||drag.id!==event.pointerId)return;event.preventDefault();
-   paint(meta,bounded(drag.g.base,drag.g.stage,drag.g.size,{x:drag.offset.x+event.clientX-drag.x,y:drag.offset.y+event.clientY-drag.y}));
+   if(!drag||drag.item!==item||drag.id!==event.pointerId)return;event.preventDefault();
+   item.card.style.left=Math.max(4,Math.min(root.innerWidth-drag.width-4,event.clientX-drag.dx))+'px';item.card.style.top=Math.max(4,Math.min(root.innerHeight-40,event.clientY-drag.dy))+'px';
+   const others=[...side.children].map(node=>cards.find(v=>v.card===node)).filter(v=>v&&v!==item);
+   const target=others.find(v=>{const r=v.card.getBoundingClientRect();return event.clientY<r.top+r.height/2;});
+   let next=drag.placeholder.nextElementSibling;while(next===item.card)next=next.nextElementSibling;
+   if(target){if(next!==target.card)side.insertBefore(drag.placeholder,target.card);}else if(next)side.append(drag.placeholder);
   });
-  const finish=event=>{
-   if(!drag||drag.meta!==meta||drag.id!==event.pointerId)return;drag=null;handle.classList.remove('moving');persist(meta);
-   if(handle.hasPointerCapture(event.pointerId))handle.releasePointerCapture(event.pointerId);
-  };
-  for(const event of ['pointerup','pointercancel','lostpointercapture'])handle.addEventListener(event,finish);
-  handle.addEventListener('dblclick',event=>{if(!enabled()||event.target.closest('button,a,input,textarea,select'))return;event.preventDefault();resetOne(meta);});
+  handle.addEventListener('pointerup',event=>{if(drag?.item===item&&drag.id===event.pointerId)stop(true);});
+  for(const type of ['pointercancel','lostpointercapture'])handle.addEventListener(type,event=>{if(drag?.item===item&&drag.id===event.pointerId)stop(false);});
   handle.addEventListener('keydown',event=>{
-   if(!enabled()||event.target!==handle)return;
-   if(event.key==='Home'){event.preventDefault();resetOne(meta);return;}
-   const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]},direction=directions[event.key];if(!direction)return;
-   event.preventDefault();const step=event.shiftKey?30:10;apply(meta,{x:meta.offset.x+direction[0]*step,y:meta.offset.y+direction[1]*step});persist(meta);
+   if(!editing||event.target!==handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
+   event.preventDefault();const index=order.indexOf(item.name),next=index+(event.key==='ArrowUp'?-1:1);if(next<0||next>=order.length)return;[order[index],order[next]]=[order[next],order[index]];apply();save();handle.focus();
   });
  }
- root.addEventListener('resize',()=>{if(!resizeFrame)resizeFrame=root.requestAnimationFrame(()=>{resizeFrame=0;layout();});});
+ root.addEventListener('resize',()=>{stop(false);if(root.innerWidth<=1080)mode(false);});
  root.addEventListener('message',event=>{if(event.origin!==root.location.origin||event.source!==root.parent||event.data?.channel!=='NAMO_QMES_PORTAL_20261014'||event.data.type!=='profile')return;account(event.data.userId||'');});
  try{account(root.parent.__QMES_CURRENT_USER__?.id||'');}catch(_){}
- layout();root.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'ready'},root.location.origin);
- const style=document.createElement('style');style.textContent='.right-side{overflow:visible!important}.portal-card-handle{cursor:grab;touch-action:none;user-select:none}.portal-card-handle:focus-visible{outline:2px solid #2f8de4;outline-offset:4px;border-radius:4px}.portal-card-handle.moving{cursor:grabbing}.portal-movable-card{will-change:auto}.portal-layout-reset{position:absolute;right:30px;top:18px;z-index:6;padding:6px 10px;border:1px solid #d5e1ed;border-radius:5px;background:rgba(255,255,255,.94);color:#31516f;font:11px Pretendard,"Malgun Gothic",sans-serif;cursor:pointer}@media(max-width:1080px){.portal-layout-reset{display:none}.portal-card-handle{cursor:default;touch-action:auto}}';document.head.append(style);
+ apply();mode(false);root.parent.postMessage({channel:'NAMO_QMES_PORTAL_20261014',type:'ready'},root.location.origin);
+ const style=document.createElement('style');style.textContent='.portal-arrange-bar{position:absolute;right:0;top:-32px;display:flex;align-items:center;gap:8px;white-space:nowrap}.portal-arrange-bar span{color:#fff;font:11px Pretendard,"Malgun Gothic",sans-serif;text-shadow:0 1px 2px #173b61}.portal-arrange-bar span[hidden]{display:none}.portal-arrange-bar button{border:1px solid #cbd9e7;border-radius:5px;background:rgba(255,255,255,.95);padding:5px 10px;color:#244260;font:12px Pretendard,"Malgun Gothic",sans-serif;cursor:pointer}.portal-arrange-bar button[aria-pressed="true"]{background:#2f8de4;border-color:#2f8de4;color:#fff}.portal-arranging .portal-order-handle{cursor:grab;touch-action:none;user-select:none}.portal-arranging .portal-order-card{outline:1px dashed #75b1ed;outline-offset:3px;animation:portal-card-wiggle .7s ease-in-out infinite alternate}.portal-card-lifted{animation:none!important;box-shadow:0 12px 35px #173b6155!important;opacity:.94;transform:scale(1.015)}.portal-card-slot{flex:none;border:2px dashed #2f8de4;border-radius:9px;background:rgba(224,242,255,.65);box-sizing:border-box}.portal-order-handle:focus-visible{outline:2px solid #2f8de4;outline-offset:3px}@keyframes portal-card-wiggle{from{transform:rotate(-.35deg)}to{transform:rotate(.35deg)}}@media(prefers-reduced-motion:reduce){.portal-arranging .portal-order-card{animation:none}}@media(max-width:1080px){.portal-arrange-bar{display:none}}';document.head.append(style);
 }
-return {bounded,decode,mount};
+return {decode,reorder,mount};
 });
