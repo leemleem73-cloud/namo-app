@@ -312,6 +312,22 @@ try {
       .replace("})).filter(r=>r.name||r.lot||r.plan||r.actual);", "})).filter(r=>r.name||r.lot||r.plan||r.actual||r.remark);");
   }
 
+  if (!normalized.includes('<input class="material-remark-input"')) {
+    normalized = normalized.replace(
+      /(<td><input class="ratio-input"[^>]*><\/td>)/,
+      '$1<td class="material-remark-cell"><input class="material-remark-input" type="text" aria-label="원료 비고" placeholder="비고 입력"></td>'
+    );
+  }
+  if (!normalized.includes('remarkInput.value=row.dataset.materialRemark')) {
+    normalized = normalized.replace(
+      "        row.dataset.materialRemark=String(m.remark??'');",
+      "        row.dataset.materialRemark=String(m.remark??'');\n        const remarkInput=row.querySelector('.material-remark-input');\n        if(remarkInput) remarkInput.value=row.dataset.materialRemark;"
+    );
+  }
+  normalized = normalized
+    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-native-remarks')
+    .replace(/namo-qmes-work-inquiry-20261013\.js\?v=[^"']+/g, 'namo-qmes-work-inquiry-20261013.js?v=20261106-remarks-detail');
+
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
   normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
   normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n  ${QMES_SCROLL_FIX_SCRIPT}\n</head>`);
