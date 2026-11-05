@@ -91,6 +91,7 @@ require('./qmes-work-dispatch-20261014.js').installWorkDispatchRoutes(app);
 // New OQC registration stores a measured certificate without replacing existing records.
 require('./qmes-oqc-registration-20261021.js').install(app, { pool, requireLogin, auditLog });
 require('./qmes-stock-record-delete-20261104.cjs').install(app, { pool, requireLogin, auditLog });
+require('./qmes-personal-memos-20261105.cjs').install(app,{pool,requireLogin});
 require('./qmes-standard-documents-20261027.js').install(app, { pool, requireLogin, auditLog });
 
 // Register PostgreSQL inventory APIs even when production starts with `node server.js` directly.
