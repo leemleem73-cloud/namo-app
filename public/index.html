@@ -2515,6 +2515,7 @@ html body #mainWorkspace .work-form .nwp-range-value,
 html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea){font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-style:normal!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:0!important}
 </style>
 
+<style id="oqc-visible-remarks-20261105">#outgoing .oqc-list-remarks{background:#fff!important;text-align:left!important}#outgoing .oqc-remarks-line{display:flex;align-items:center;gap:10px;min-width:0}#outgoing .oqc-remarks-edit{flex:none}#outgoing .oqc-remarks-text{border-left:1px solid #d5dce5;padding:3px 0 3px 10px;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
 html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-view){color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
@@ -3643,7 +3644,7 @@ function wireOutgoingColumnResize(section){
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,120,160,90,120,200,200,200,120,120,120,120,120,120];
   const minimums=[86,100,140,80,100,110,110,110,100,100,100,100,100,100];
-  const storageKey='namo-outgoing-column-widths-v5-coa-attachment';
+  const storageKey='namo-outgoing-column-widths-v6-visible-remarks';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3674,11 +3675,12 @@ function wireOutgoingColumnResize(section){
     widths[0]=86; // Reserve separate checkbox and number areas.
     // Keep inspection-item and selection widths; make every other data column equal.
     const effective=widths.slice();
-    const itemIndex=labels.indexOf('검사항목');
+    const itemIndex=labels.indexOf('검사항목'),remarksIndex=labels.indexOf('비고');
     const viewport=wrap.clientWidth||available;
-    if(itemIndex>=0)effective[itemIndex]=customized?Math.max(300,Math.min(720,widths[itemIndex])):Math.max(300,Math.min(600,viewport*0.25));
-    const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex);
-    const equal=Math.max(90,(viewport-effective[0]-(itemIndex>=0?effective[itemIndex]:0))/equalIndexes.length);
+    if(itemIndex>=0)effective[itemIndex]=customized?Math.max(220,Math.min(500,widths[itemIndex])):Math.max(220,Math.min(400,viewport*0.17));
+    if(remarksIndex>=0)effective[remarksIndex]=customized?Math.max(250,Math.min(600,widths[remarksIndex])):Math.max(250,Math.min(460,viewport*0.20));
+    const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex&&index!==remarksIndex);
+    const equal=Math.max(90,(viewport-effective[0]-(itemIndex>=0?effective[itemIndex]:0)-(remarksIndex>=0?effective[remarksIndex]:0))/equalIndexes.length);
     equalIndexes.forEach(index=>effective[index]=equal);
     widths=effective.slice();
     widths.forEach((width,i)=>{
@@ -5484,6 +5486,7 @@ async function loadHistoricalInspectionRows(section,id){
         if(!grouped.has(key))grouped.set(key,{...row,__groupChecks:[]});
         const item=grouped.get(key);item.__groupChecks.push(row);
         if(!item.customer&&row.customer)item.customer=row.customer;
+        if(!String(item.remarks||'').trim()&&String(row.remarks||'').trim())item.remarks=row.remarks;
         if(!item.inspector||item.inspector==='-'){
           const inspector=row.inspector||row.detailFields?.['검사자']||row.fields?.['검사자']||row.inspectorName||row.createdByName;
           if(inspector&&inspector!=='-')item.inspector=inspector;
@@ -5515,7 +5518,7 @@ async function loadHistoricalInspectionRows(section,id){
         if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
-        if(id==='outgoing'&&cols[index]==='비고')return '<td><button type="button" class="btn mini-report oqc-remarks-edit">수정</button></td>';
+        if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><button type="button" class="btn mini-report oqc-remarks-edit">수정</button><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
