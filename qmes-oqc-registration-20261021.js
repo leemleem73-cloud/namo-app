@@ -69,7 +69,7 @@ function makePayload(normalized, user, now) {
     const values = measurements[check];
     const numbers = values.map(rules.parseNumber);
     return {
-      id: groupId + '-' + (index + 1), groupId, ...revision.initial(),
+      id: groupId + '-' + (index + 1), groupId, ...revision.initial(now),
       date: fields.date, shipDate: '', time: '',
       lot: fields.lot, product: fields.product, customer: fields.customer,
       inspector: fields.inspector, remarks: fields.remarks,
