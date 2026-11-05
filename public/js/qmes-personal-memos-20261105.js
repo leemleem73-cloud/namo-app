@@ -5,15 +5,18 @@ const side=document.querySelector('.right-side');if(!side)return;
 const card=document.createElement('section');card.id='personal-memo-card';card.className='pm-card';card.innerHTML='<div class="pm-head"><h2>개인 메모</h2><button type="button" data-pm-open>전체보기</button></div><p class="pm-private">나만 볼 수 있는 메모 <span data-pm-count></span></p><div class="pm-preview" aria-live="polite">불러오는 중…</div><button type="button" class="pm-add" data-pm-new>+ 메모 작성</button>';side.prepend(card);
 const mobile=document.createElement('button');mobile.type='button';mobile.className='pm-mobile';mobile.textContent='개인 메모';document.body.append(mobile);
 const dialog=document.createElement('dialog');dialog.className='pm-dialog';dialog.setAttribute('aria-labelledby','pm-title');
-dialog.innerHTML='<header><div class="pm-dialog-title"><span class="pm-dialog-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v18M12 8h4m-4 4h4m-4 4h3"/></svg></span><div><span class="pm-eyebrow">나만의 기록</span><h2 id="pm-title">개인 메모</h2><p>본인 계정에서만 보입니다 · 입력 후 자동저장</p></div></div><button type="button" data-close>닫기</button></header><div class="pm-main"><nav aria-label="내 메모"><div class="pm-list-caption">메모 목록</div><button type="button" class="pm-primary" data-new>+ 메모 작성</button><div class="pm-list"></div></nav><section class="pm-editor"><label>제목<input data-title maxlength="100" placeholder="메모 제목"></label><div class="pm-format"><label>메모 색상<select data-paper><option value="yellow">노랑</option><option value="white">흰색</option><option value="blue">하늘</option><option value="pink">분홍</option><option value="green">연두</option></select></label><label>글씨체<select data-font><option value="default">기본</option><option value="gothic">맑은 고딕</option><option value="serif">명조</option></select></label><label>크기<select data-size><option value="12">12</option><option value="14">14</option><option value="16">16</option><option value="18">18</option></select></label><button type="button" data-bold aria-pressed="false">굵게</button></div><label class="pm-content">내용<textarea data-content maxlength="5000" placeholder="기억할 내용을 적어 두세요."></textarea></label><div class="pm-tools"><button type="button" data-pin aria-pressed="false">상단 고정</button><button type="button" data-remove>삭제</button><span data-status role="status" aria-live="polite"></span><button type="button" data-save>저장</button></div><div class="pm-confirm" hidden><span>이 메모를 삭제할까요?</span><button type="button" data-delete-yes>삭제</button><button type="button" data-delete-no>취소</button></div></section></div>';
+dialog.innerHTML='<header><div class="pm-dialog-title"><span class="pm-dialog-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 3v18M12 8h4m-4 4h4m-4 4h3"/></svg></span><div><span class="pm-eyebrow">나만의 기록</span><h2 id="pm-title">개인 메모</h2><p>본인 계정에서만 보입니다 · 입력 후 자동저장</p></div></div><button type="button" data-close>닫기</button></header><div class="pm-main"><nav aria-label="내 메모"><div class="pm-list-caption">메모 목록</div><button type="button" class="pm-primary" data-new>+ 메모 작성</button><div class="pm-list"></div></nav><section class="pm-editor"><label>제목<input data-title maxlength="100" placeholder="메모 제목"></label><div class="pm-dates" aria-live="polite"><span data-created></span><span data-updated></span></div><div class="pm-format"><label>메모 색상<select data-paper><option value="white">흰색</option><option value="yellow">버터 노랑</option><option value="sand">샌드 베이지</option><option value="peach">살구</option><option value="pink">로즈 분홍</option><option value="lilac">라일락</option><option value="lavender">라벤더</option><option value="blue">하늘</option><option value="teal">아쿠아</option><option value="mint">민트</option><option value="green">연두</option><option value="gray">연회색</option></select></label><label>글씨체<select data-font><option value="default">기본</option><option value="gothic">맑은 고딕</option><option value="serif">명조</option></select></label><label>크기<select data-size><option value="14">14</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="24">24</option></select></label><label>정렬<select data-align><option value="left">왼쪽 정렬</option><option value="center">가운데 정렬</option><option value="right">오른쪽 정렬</option></select></label><label>모양<select data-shape><option value="rounded">둥근 모서리</option><option value="square">반듯한 모서리</option></select></label><button type="button" data-bold aria-pressed="false">굵게</button></div><label class="pm-content">내용<textarea data-content maxlength="5000" placeholder="기억할 내용을 적어 두세요."></textarea></label><div class="pm-tools"><button type="button" data-pin aria-pressed="false">상단 고정</button><button type="button" data-remove>삭제</button><button type="button" data-today>오늘 날짜 넣기</button><span data-status role="status" aria-live="polite"></span><button type="button" data-save>저장</button></div><div class="pm-confirm" hidden><span>이 메모를 삭제할까요?</span><button type="button" data-delete-yes>삭제</button><button type="button" data-delete-no>취소</button></div></section></div>';
 document.body.append(dialog);
 const title=dialog.querySelector('[data-title]'),content=dialog.querySelector('[data-content]'),pin=dialog.querySelector('[data-pin]'),status=dialog.querySelector('[data-status]'),list=dialog.querySelector('.pm-list'),preview=card.querySelector('.pm-preview'),confirm=dialog.querySelector('.pm-confirm');
 const paper=dialog.querySelector('[data-paper]'),font=dialog.querySelector('[data-font]'),size=dialog.querySelector('[data-size]'),bold=dialog.querySelector('[data-bold]');
-const defaults={paper:'white',font:'default',size:14,bold:false};
-const colors={yellow:'#faf6e9',white:'#ffffff',blue:'#f0f6fc',pink:'#fcf2f5',green:'#f2f7ee'},fonts={default:'Pretendard,"Malgun Gothic",sans-serif',gothic:'"Malgun Gothic",sans-serif',serif:'Georgia,"Batang",serif'};
-const format=value=>({...defaults,...(value||{})});
+const align=dialog.querySelector('[data-align]'),shape=dialog.querySelector('[data-shape]'),today=dialog.querySelector('[data-today]');
+const defaults={paper:'white',font:'default',size:16,bold:false,align:'left',shape:'rounded'};
+const colors={white:'#ffffff',yellow:'#fff4bf',sand:'#f1e6d8',peach:'#ffead8',pink:'#ffe8ef',lilac:'#f4e5fa',lavender:'#eee9fb',blue:'#e6f0ff',teal:'#def1f3',mint:'#ddf4e9',green:'#eaf3d5',gray:'#edf0f4'},fonts={default:'Pretendard,"Malgun Gothic",sans-serif',gothic:'"Malgun Gothic",sans-serif',serif:'Georgia,"Batang",serif'};
+const format=value=>{const result={...defaults,...(value||{})};if(result.size<14)result.size=14;return result;};
+function dateTime(value){if(!value||!Number.isFinite(Date.parse(value)))return '—';return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(value));}
+function renderDates(){dialog.querySelector('[data-created]').textContent='작성일 '+(active?.created_at?dateTime(active.created_at):'저장 후 표시');dialog.querySelector('[data-updated]').textContent='최종 수정 '+(active?.updated_at?dateTime(active.updated_at):'저장 후 표시');}
 let appearance={...defaults};
-function paintFormat(){const editor=dialog.querySelector('.pm-editor');editor.style.setProperty('--pm-paper',colors[appearance.paper]||colors.yellow);editor.style.setProperty('--pm-font',fonts[appearance.font]||fonts.default);editor.style.setProperty('--pm-size',appearance.size+'px');editor.style.setProperty('--pm-weight',appearance.bold?'700':'400');bold.setAttribute('aria-pressed',String(appearance.bold));}
+function paintFormat(){const editor=dialog.querySelector('.pm-editor');editor.style.setProperty('--pm-paper',colors[appearance.paper]||colors.yellow);editor.style.setProperty('--pm-font',fonts[appearance.font]||fonts.default);editor.style.setProperty('--pm-size',appearance.size+'px');editor.style.setProperty('--pm-weight',appearance.bold?'700':'400');editor.style.setProperty('--pm-align',appearance.align);editor.style.setProperty('--pm-radius',appearance.shape==='square'?'3px':'12px');bold.setAttribute('aria-pressed',String(appearance.bold));}
 let generation=0;
 let owner='',notes=[],active=null,pinned=false,timer=0,inFlight=null,switching=false,loading=null;
 const sorted=()=>notes.slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updated_at).localeCompare(String(a.updated_at)));
@@ -25,9 +28,9 @@ async function request(path='',body){
 }
 function resetPrivate(){owner='';notes=[];active=null;title.value='';content.value='';pinned=false;render();fill();}
 function makeItem(note){
- const button=document.createElement('button');button.type='button';button.className='pm-note';button.classList.toggle('selected',active?.id===note.id);button.dataset.noteId=note.id;const style=format(note.appearance);button.style.setProperty('--pm-paper',colors[style.paper]||colors.yellow);button.style.setProperty('--pm-font',fonts[style.font]||fonts.default);button.style.setProperty('--pm-size',style.size+'px');button.style.setProperty('--pm-weight',style.bold?'700':'400');
+ const button=document.createElement('button');button.type='button';button.className='pm-note';button.classList.toggle('selected',active?.id===note.id);button.dataset.noteId=note.id;const style=format(note.appearance);button.style.setProperty('--pm-paper',colors[style.paper]||colors.yellow);button.style.setProperty('--pm-font',fonts[style.font]||fonts.default);button.style.setProperty('--pm-size',style.size+'px');button.style.setProperty('--pm-weight',style.bold?'700':'400');button.style.setProperty('--pm-align',style.align);button.style.setProperty('--pm-radius',style.shape==='square'?'3px':'12px');
  const heading=document.createElement('b');heading.textContent=(note.pinned?'고정 · ':'')+(note.title||'제목 없는 메모');
- const snippet=document.createElement('span');snippet.textContent=note.content||'내용 없음';button.append(heading,snippet);button.onclick=()=>activate(note);return button;
+ const snippet=document.createElement('span');snippet.textContent=note.content||'내용 없음';const stamp=document.createElement('small');stamp.className='pm-note-date';stamp.textContent=dateTime(note.updated_at||note.created_at);button.append(heading,snippet,stamp);button.onclick=()=>activate(note);return button;
 }
 function render(){
  list.replaceChildren();preview.replaceChildren();
@@ -40,7 +43,7 @@ function render(){
 function fill(){
  const enabled=!!active&&!!owner;title.disabled=content.disabled=!enabled;pin.disabled=dialog.querySelector('[data-remove]').disabled=dialog.querySelector('[data-save]').disabled=!enabled;
  title.value=active?.title||'';content.value=active?.content||'';pinned=active?.pinned||false;pin.setAttribute('aria-pressed',String(pinned));pin.textContent=pinned?'고정됨':'상단 고정';confirm.hidden=true;
- appearance=format(active?.appearance);paper.value=appearance.paper;font.value=appearance.font;size.value=String(appearance.size);paintFormat();for(const field of [paper,font,size,bold])field.disabled=!enabled;
+ appearance=format(active?.appearance);paper.value=appearance.paper;font.value=appearance.font;size.value=String(appearance.size);align.value=appearance.align;shape.value=appearance.shape;paintFormat();renderDates();for(const field of [paper,font,size,bold,align,shape,today])field.disabled=!enabled;
  message(active?.version?'저장 완료':active?'입력하면 자동저장됩니다.':'메모를 선택하거나 작성해 주세요.');
 }
 function flush(){
@@ -54,7 +57,7 @@ function flush(){
     message('저장 중…');const saved=await request('',payload);
     if(!saved?.appearance||JSON.stringify(format(saved.appearance))!==JSON.stringify(payload.appearance))throw Error('메모 양식을 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.');
     if(active?.id!==current.id)return false;
-    generation++;active=saved;const index=notes.findIndex(n=>n.id===saved.id);if(index<0)notes.push(saved);else notes[index]=saved;
+    generation++;active=saved;renderDates();const index=notes.findIndex(n=>n.id===saved.id);if(index<0)notes.push(saved);else notes[index]=saved;
     render();message('저장 완료');
    }
    return true;
@@ -65,7 +68,13 @@ function flush(){
 }
 function schedule(){generation++;message('저장 대기');clearTimeout(timer);timer=setTimeout(()=>void flush(),650);}
 title.addEventListener('input',schedule);content.addEventListener('input',schedule);
-for(const select of [paper,font,size])select.addEventListener('change',()=>{appearance={...appearance,paper:paper.value,font:font.value,size:Number(size.value)};paintFormat();schedule();});
+for(const select of [paper,font,size,align,shape])select.addEventListener('change',()=>{appearance={...appearance,paper:paper.value,font:font.value,size:Number(size.value),align:align.value,shape:shape.value};paintFormat();schedule();});
+today.onclick=()=>{
+ const text=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}),start=Number.isInteger(content.selectionStart)?content.selectionStart:content.value.length,end=Number.isInteger(content.selectionEnd)?content.selectionEnd:start;
+ if(content.value.length-(end-start)+text.length>5000){message('메모 내용은 5,000자까지 입력할 수 있습니다.',true);return;}
+ if(typeof content.setRangeText==='function')content.setRangeText(text,start,end,'end');else content.value=content.value.slice(0,start)+text+content.value.slice(end);
+ content.focus();schedule();
+};
 bold.onclick=()=>{appearance={...appearance,bold:!appearance.bold};paintFormat();schedule();};
 pin.onclick=()=>{pinned=!pinned;pin.setAttribute('aria-pressed',String(pinned));pin.textContent=pinned?'고정됨':'상단 고정';schedule();};
 async function activate(note){
@@ -154,6 +163,29 @@ const style=document.createElement('style');style.textContent=`
 .pm-tools{padding-top:0;gap:8px}.pm-tools button{font-size:11px;border-color:#e1e7ed;border-radius:7px;padding:7px 10px;color:#6b7f91;background:#fff}.pm-tools [data-save]{padding:8px 20px;border:1px solid #344f68;background:#344f68;color:#fff;box-shadow:0 3px 9px #203b5418}.pm-tools [data-remove]{color:#a47772;border-color:#eadfdc}.pm-tools [data-status]{font-size:10px;color:#8b9aa8}.pm-tools [data-error="1"]{color:#b42318}
 #personal-memo-card{box-shadow:0 10px 30px rgba(23,48,72,.09)!important}.pm-head h2{color:#2b4359!important}.pm-head button:hover,.pm-tools button:hover{filter:brightness(.98)}
 @media(max-width:600px){.pm-dialog{width:calc(100vw - 20px);border-radius:12px}.pm-dialog header{padding:15px}.pm-dialog-symbol{width:34px;height:38px}.pm-dialog h2{font-size:17px}.pm-main{grid-template-columns:1fr;min-height:0}.pm-main nav{padding:12px}.pm-list-caption{display:none}.pm-editor{padding:15px;gap:13px}.pm-content textarea{min-height:165px}.pm-format{gap:8px}}
+
+
+/* Readable controls and persistent note formatting. */
+#personal-memo-card .pm-preview,.pm-list{font-size:13px;color:#526a80}
+#personal-memo-card .pm-head h2{font-size:16px!important;font-weight:600!important;color:#243c53!important}
+#personal-memo-card .pm-head button,#personal-memo-card .pm-add{font-size:13px!important;font-weight:500!important;color:#315573!important}
+#personal-memo-card .pm-private{font-size:12px!important;color:#5b7085!important;line-height:1.6}
+#personal-memo-card .pm-note,.pm-dialog .pm-note{border-radius:var(--pm-radius,12px)!important;text-align:var(--pm-align,left)!important}
+.pm-note b,.pm-note span{text-align:var(--pm-align,left)!important}
+.pm-note-date{display:block;font:12px Pretendard,"Malgun Gothic",sans-serif!important;color:#4f6579;margin-top:7px;line-height:1.5;text-align:var(--pm-align,left)}
+.pm-dialog{width:min(900px,calc(100vw - 28px));max-height:92dvh}.pm-dialog h2{font-size:21px;color:#243c53}.pm-dialog header p,.pm-eyebrow,.pm-list-caption{font-size:12px!important;color:#5b7085!important;line-height:1.6}
+.pm-dialog [data-close],.pm-primary{font-size:13px!important;font-weight:500!important}.pm-main{grid-template-columns:210px minmax(0,1fr)}
+.pm-editor label{font-size:12px!important;font-weight:600!important;color:#486177!important;line-height:1.5}
+.pm-format{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:10px 12px;padding:12px}
+.pm-format select{width:100%;max-width:none;min-width:0;height:33px;font-size:13px!important;color:#314d65!important;border-color:#cfdbe6}
+.pm-format [data-bold]{height:33px;font-size:13px!important;font-weight:600;color:#314d65;align-self:end}
+.pm-dates{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12px;line-height:1.6;color:#536c82}
+.pm-content{border-radius:var(--pm-radius,12px)!important}
+.pm-editor [data-title],.pm-editor [data-content]{text-align:var(--pm-align,left)!important;color:#233c53!important}
+.pm-editor [data-title]::placeholder,.pm-editor [data-content]::placeholder{color:#5a7086!important}
+.pm-tools button{font-size:13px!important;min-height:34px;padding:7px 11px!important;font-weight:500}.pm-tools [data-save]{font-weight:600}.pm-tools [data-status]{font-size:12px!important;color:#526c80!important}.pm-tools [data-error="1"]{color:#b42318!important}
+.pm-list .pm-note span{font-size:13px!important;color:#526a80!important}.pm-note b{color:#283f55}.pm-confirm{font-size:13px}
+@media(max-width:600px){.pm-main{grid-template-columns:1fr}.pm-format{grid-template-columns:repeat(2,minmax(0,1fr))}.pm-editor{padding:14px}.pm-tools [data-status]{flex-basis:100%;order:5}}
 
 `;document.head.append(style);
 void load();
