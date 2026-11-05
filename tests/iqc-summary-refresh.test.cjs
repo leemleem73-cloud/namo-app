@@ -16,3 +16,5 @@ test('summary installs even when prior function is absent and escapes HTML witho
  assert.equal(ctx.window.iqcItemSummary({items_json:[{name:'외관'}]}),'외관');
  assert.equal(ctx.window.iqcItemSummary({items_json:'broken'}),'미등록');
 });
+
+test('inspection summary uses one stable packaging-first order regardless of original storage order',()=>{const ctx={window:{}};vm.runInNewContext(addon,ctx);for(const names of [['외관','라벨','중량','COA 확인','포장상태'],['포장상태','외관','라벨','中量','중량','COA 확인']]){const result=ctx.window.iqcItemSummary({items_json:names.filter(n=>n!=='中量').map(name=>({name}))});assert.equal(result,'포장상태 / 외관 / 라벨 / 중량 / COA 확인');}});

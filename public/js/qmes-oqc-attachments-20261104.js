@@ -50,3 +50,19 @@ window.qmesOqcFiles={mount,read};
 new MutationObserver(()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;scan();});}).observe(document.body,{childList:true,subtree:true});
 scan();
 })();
+
+/* Compact outgoing list: reserve room for the complete inspection item names and use CoA as file heading. */
+(function(){
+ const root=document.getElementById('outgoing');if(!root)return;
+ const weights=[3,6,7,4,6,7,6,23,5,5,6,5,5,10,12],sum=weights.reduce((a,b)=>a+b,0);
+ const style=document.createElement('style');style.textContent='html body #outgoing .ip-table{width:100%!important;min-width:0!important;table-layout:fixed!important}'+weights.map((n,i)=>'html body #outgoing .ip-table col:nth-child('+(i+1)+'){width:'+(n/sum*100).toFixed(4)+'%!important}').join('')+'html body #outgoing .ip-table tbody td[data-oqc-check-summary]{word-break:keep-all!important;overflow-wrap:normal!important;white-space:normal!important;padding-left:5px!important;padding-right:5px!important}#outgoing [data-oqc-check-summary] span{display:inline-block;white-space:nowrap}';document.head.append(style);
+ let queued=false;function scan(){queued=false;
+  root.querySelectorAll('.ip-table').forEach(table=>{const ths=[...table.querySelectorAll('thead th')];
+   const file=ths.find(th=>['첨부파일','CoA'].includes((th.querySelector('.iqc-column-label')?.textContent||th.textContent).trim()));if(file){const label=file.querySelector('.iqc-column-label')||file;if(label.textContent!=='CoA')label.textContent='CoA';}
+   const i=ths.findIndex(th=>(th.querySelector('.iqc-column-label')?.textContent||th.textContent).trim()==='검사항목');if(i<0)return;
+   table.querySelectorAll('tbody tr').forEach(tr=>{const td=tr.children[i];if(!td||tr.children.length!==ths.length||td.dataset.oqcCheckSummary)return;td.dataset.oqcCheckSummary='1';const values=td.textContent.split('/').map(value=>value.trim());td.replaceChildren();values.forEach((value,index)=>{if(index)td.append(document.createTextNode(' / '));const span=document.createElement('span');span.textContent=value;td.append(span);});});
+  });
+ }
+ function schedule(){if(!queued){queued=true;queueMicrotask(scan);}}
+ new MutationObserver(schedule).observe(root,{subtree:true,childList:true});scan();
+})();

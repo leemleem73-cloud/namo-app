@@ -38,3 +38,19 @@ test('registration and edit COA file input forwards bytes only to matching IQC w
  await window.fetch('/api/pqc',{method:'POST',body:'{}'});assert.equal(calls[1].options.body,'{}');
  state.input.files=[{name:'bad.svg',size:15}];await assert.rejects(()=>window.fetch('/api/iqc',{method:'PUT',body:'{}'}),/COA/);assert.equal(calls.length,2);
 });
+
+test('IQC CoA column is inserted between report and remarks, linked, and stays singular after rescanning',async()=>{
+ const fs=require('node:fs'),vm=require('node:vm'),src=fs.readFileSync(__dirname+'/../public/js/qmes-iqc-pqc-layout-20261021.js','utf8'),start=src.indexOf('function scan(){',src.indexOf('/* IQC COA uploads')),code=src.slice(start,src.indexOf('let queued=false;',start));
+ const head={children:[]},tr={dataset:{iqcId:'i1'},children:[]},group={children:[],insertBefore(col,ref){const i=this.children.indexOf(ref);this.children.splice(i<0?this.children.length:i,0,col);}};
+ function el(label,parent){const e={textContent:label||'',dataset:{},style:{},isConnected:true,querySelector:()=>null,replaceChildren(...a){this.content=a;},append(...a){this.content=(this.content||[]).concat(a);},after(next){const p=parent||tr.children;p.splice(p.indexOf(e)+1,0,next);}};return e;}
+ head.children=['검사항목','성적서','비고'].map(x=>el(x,head.children));
+ // Reset after closures point at the live header array.
+ const h=head.children;h.forEach(e=>e.after=n=>h.splice(h.indexOf(e)+1,0,n));
+ const report=el('성적서');report.cellIndex=1;tr.children=[el('외관'),report,el('수정')];
+ tr.querySelector=s=>s==='.report-issue'?{closest:()=>report}:tr.children.find(e=>e.dataset.iqcCoaCell);
+ const table={querySelector:s=>s==='thead tr'?head:s==='colgroup'?group:s==='th[data-iqc-coa-header]'?h.find(e=>e.dataset.iqcCoaHeader):null,querySelectorAll:()=>[tr]};
+ const root={querySelectorAll:()=>[table]},pageInfo={incoming:['','',['검사항목','성적서','비고']]};
+ const ctx={document:{querySelectorAll:()=>[],getElementById:()=>root,createElement:()=>el('')},pageInfo,mount(){},refresh:async()=>[{id:'f1',iqc_id:'i1',name:'COA.pdf'}],link:f=>({href:'/api/qmes/iqc/attachments/'+f.id,name:f.name})};
+ vm.runInNewContext(code,ctx);ctx.scan();await new Promise(setImmediate);ctx.scan();await new Promise(setImmediate);
+ assert.deepEqual(h.map(e=>e.textContent),['검사항목','성적서','CoA','비고']);assert.equal(tr.children[2].content[0].name,'COA.pdf');assert.equal(pageInfo.incoming[2].filter(x=>/^coa$/i.test(x)).length,1);
+});

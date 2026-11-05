@@ -221,7 +221,8 @@ const style=document.createElement('style');style.textContent='.iqc-edit-checks{
 (function(){
  function labels(row){
   let items;try{items=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;}catch{items=[];}
-  return [...new Set((Array.isArray(items)?items:[]).map(x=>String(x?.name||'').trim()).filter(n=>n&&!['비고','원본시트'].includes(n)&&!n.includes('판정')).map(n=>['COA','COA확인'].includes(n.replace(/\s/g,'').toUpperCase())?'COA 확인':n))].join(' / ')||'미등록';
+  const order=['포장상태','외관','라벨','중량','COA 확인'];
+  return [...new Set((Array.isArray(items)?items:[]).map(x=>String(x?.name||'').trim()).filter(n=>n&&!['비고','원본시트'].includes(n)&&!n.includes('판정')).map(n=>['COA','COA확인'].includes(n.replace(/\s/g,'').toUpperCase())?'COA 확인':n))].sort((a,b)=>(order.includes(a)?order.indexOf(a):99)-(order.includes(b)?order.indexOf(b):99)).join(' / ')||'미등록';
  }
  window.iqcItemSummary=row=>labels(row).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  if(typeof document==='undefined')return;
@@ -283,10 +284,12 @@ function scan(){
  document.querySelectorAll('.am-split[data-am-screen="incoming"] .std-inspection[data-inspection-type="incoming"]').forEach(root=>mount(root));
  document.querySelectorAll('.am-split[data-am-screen="incoming"] .iqc-edit-settings-frame').forEach(root=>mount(root,root.parentElement.querySelector('.iqc-edit-checks')?.dataset.recordId));
  const root=document.getElementById('incoming');if(!root)return;
- if(typeof pageInfo!=='undefined'&&pageInfo.incoming?.[2]&&!pageInfo.incoming[2].includes('COA')){const cols=pageInfo.incoming[2],i=cols.indexOf('성적서');if(i>=0)cols.splice(i+1,0,'COA');}
+ if(typeof pageInfo!=='undefined'&&pageInfo.incoming?.[2]&&!pageInfo.incoming[2].some(n=>String(n).toUpperCase()==='COA')){const cols=pageInfo.incoming[2],i=cols.indexOf('성적서');if(i>=0)cols.splice(i+1,0,'CoA');}
  root.querySelectorAll('table').forEach(table=>{
-  const report=[...table.querySelectorAll('thead th')].find(th=>th.textContent.trim()==='성적서');if(!report)return;
-  if(!table.querySelector('th[data-iqc-coa-header]')){const th=document.createElement('th');th.dataset.iqcCoaHeader='1';th.textContent='COA';report.after(th);const cols=table.querySelector('colgroup');if(cols){const col=document.createElement('col');col.style.width='10%';cols.insertBefore(col,cols.children[report.cellIndex+1]||null);}}
+  const head=table.querySelector('thead tr');if(!head)return;
+  const report=[...head.children].find(th=>(th.querySelector('.iqc-column-label')?.textContent||th.textContent).trim()==='성적서')||head.children[table.querySelector('tbody .report-issue')?.closest('td')?.cellIndex];if(!report)return;
+  const existing=[...head.children].find(th=>/^(coa)$/i.test((th.querySelector('.iqc-column-label')?.textContent||th.textContent).trim()));if(existing)existing.dataset.iqcCoaHeader='1';
+  if(!table.querySelector('th[data-iqc-coa-header]')){const th=document.createElement('th');th.dataset.iqcCoaHeader='1';th.textContent='CoA';report.after(th);const cols=table.querySelector('colgroup');if(cols){const col=document.createElement('col');col.style.width='10%';cols.insertBefore(col,cols.children[report.cellIndex+1]||null);}}
   table.querySelectorAll('tbody tr[data-iqc-id]').forEach(tr=>{
    const reportCell=tr.querySelector('.report-issue')?.closest('td');if(!reportCell||tr.querySelector('[data-iqc-coa-cell]'))return;
    const cell=document.createElement('td');cell.dataset.iqcCoaCell='1';cell.textContent='조회 중';reportCell.after(cell);
@@ -298,4 +301,10 @@ let queued=false;function schedule(){if(!queued){queued=true;queueMicrotask(()=>
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});scan();
 const style=document.createElement('style');style.textContent='.iqc-coa-field{display:grid;grid-template-columns:128px minmax(160px,1fr) minmax(120px,1fr);align-items:center;gap:10px;margin:10px 0;padding:10px;border:1px solid #d7e0e9;background:#f7faff;color:#244260;font:12px Pretendard,"Malgun Gothic",sans-serif}.iqc-coa-field label{text-align:center;font-weight:600}.iqc-coa-field input{width:100%;min-width:0;font:inherit}.iqc-coa-field span{overflow-wrap:anywhere}#incoming [data-iqc-coa-cell]{white-space:normal!important;text-align:center!important;padding:8px!important}#incoming [data-iqc-coa-cell] a{display:block;color:#245b9e;white-space:normal;overflow-wrap:anywhere;line-height:1.4}@media(max-width:760px){.iqc-coa-field{grid-template-columns:100px minmax(0,1fr)}.iqc-coa-field span{grid-column:2}}';document.head.append(style);
 window.qmesIqcFiles={mount,attachment};
+})();
+
+/* Keep the IQC COA column visible between report and remarks across native table rebuilds. */
+(function(){
+ const style=document.createElement('style');const weights=[4,8,10,11,10,7,20,6,7,7,6,11,9],sum=weights.reduce((a,b)=>a+b,0);
+ style.textContent='html body #incoming .ip-table{width:100%!important;min-width:0!important;table-layout:fixed!important}'+weights.map((n,i)=>'html body #incoming .ip-table col:nth-child('+(i+1)+'){width:'+(n/sum*100).toFixed(4)+'%!important}').join('')+'#incoming th[data-iqc-coa-header]{display:table-cell!important}#incoming td[data-iqc-coa-cell]{display:table-cell!important}';document.head.append(style);
 })();
