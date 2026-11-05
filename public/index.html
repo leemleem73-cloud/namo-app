@@ -5498,16 +5498,7 @@ async function loadHistoricalInspectionRows(section,id){
     if(id==='outgoing')section._oqcRecords=new Map(displayRows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
     displayRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
     const safe=value=>String(value??'-').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    const oqcListJudge=row=>{
-      const checks=row.__groupChecks||[row],rules=window.qmesOqcRules;
-      const explicitFail=checks.some(check=>check.inspectionDecision==='불합격'||['불합격','NG','FAIL'].includes(String(check.judge||check.result||'').trim().toUpperCase()));
-      if(explicitFail)return '불합격';
-      if(!rules)return '대기';
-      const groups=rules.items.map(name=>checks.filter(check=>rules.canonical(check.check)===name));
-      const results=groups.map((group,index)=>group.length?group.map(check=>rules.evaluateItem(rules.items[index],Array.isArray(check.measurements)&&check.measurements.length?check.measurements:String(check.value||'').split(/\s*\/\s*/))):['대기']);
-      if(results.some(group=>group.includes('불합격')))return '불합격';
-      return results.every(group=>group.every(result=>result==='합격'))?'합격':'대기';
-    };
+    const oqcListJudge=row=>window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]).overall||'대기';
     const cols=pageInfo[id][2];
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
@@ -5519,7 +5510,7 @@ async function loadHistoricalInspectionRows(section,id){
         if(id==='process'&&cols[index]==='작업지시번호'&&v&&v!=='-'){
           return '<td><button type="button" class="pqc-work-order-link" data-work-order="'+safe(v)+'" style="border:0;background:none;padding:0;color:#0070c0;text-decoration:underline;font:inherit;font-weight:700;cursor:pointer">'+safe(v)+'</button></td>';
         }
-        if(id==='outgoing'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
+        if(id==='outgoing'&&cols[index]==='검사합부'){const summary=window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]);const reason=(summary?.pending||[]).join(' / ');return '<td title="'+safe(v==='대기'?reason:'')+'"><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span>'+(v==='대기'&&reason?'<small style="display:block;font-size:10px;line-height:1.4;color:#64748b;white-space:normal">'+safe(reason)+'</small>':'')+'</td>';}
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
@@ -8233,10 +8224,10 @@ document.addEventListener('transitionend',follow,true);
 </script>
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
-<script defer src="./js/qmes-oqc-rules-20261019.js?v=20261019-1"></script>
-<script src="./js/qmes-oqc-revision-core-20261104.js?v=1"></script>
+<script defer src="./js/qmes-oqc-rules-20261019.js?v=20261105-item-names"></script>
+<script src="./js/qmes-oqc-revision-core-20261104.js?v=20261105-daily"></script>
 <script src="./js/qmes-oqc-attachments-20261104.js?v=1"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261104-ng-save-hold"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261105-smooth-overflow"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
@@ -8333,9 +8324,9 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261102-centered-table4"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261021-1"></script>
-<script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261104-block-warning"></script>
+<script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261105-frame"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261021-1"></script>
-<script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261021-2"></script>
+<script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261105-select-frame"></script>
 <script src="./js/qmes-oqc-registration-save-20261021.js?v=20261104-coa-file"></script>
 <link rel="stylesheet" href="./css/qmes-pqc-basic-compact-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
