@@ -308,3 +308,18 @@ window.qmesIqcFiles={mount,attachment};
  const style=document.createElement('style');const weights=[4,8,10,11,10,7,20,6,7,7,6,11,9],sum=weights.reduce((a,b)=>a+b,0);
  style.textContent='html body #incoming .ip-table{width:100%!important;min-width:0!important;table-layout:fixed!important}'+weights.map((n,i)=>'html body #incoming .ip-table col:nth-child('+(i+1)+'){width:'+(n/sum*100).toFixed(4)+'%!important}').join('')+'#incoming th[data-iqc-coa-header]{display:table-cell!important}#incoming td[data-iqc-coa-cell]{display:table-cell!important}';document.head.append(style);
 })();
+
+/* IQC remarks match PQC/OQC: compact edit action | centered saved remark. */
+(function(){
+ const root=document.getElementById('incoming');if(!root)return;
+ const style=document.createElement('style');style.textContent='html body #incoming .iqc-work-frame .ip-table td.iqc-remark{padding:0!important;vertical-align:middle!important}html body #incoming .iqc-work-frame .ip-table td.iqc-remark .iqc-remark-actions{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important}html body #incoming .iqc-work-frame .ip-table td.iqc-remark .iqc-remark-actions>[data-iqc-edit]{flex:0 0 auto!important;margin:0 7px!important;height:24px!important;padding:0 8px!important}html body #incoming .iqc-work-frame .ip-table td.iqc-remark .iqc-remark-text{display:flex!important;align-items:center!important;justify-content:center!important;flex:1 1 0!important;min-width:0!important;max-width:none!important;align-self:stretch!important;min-height:32px!important;padding:4px 7px!important;border-left:1px solid #d7e0e9!important;text-align:center!important;white-space:normal!important;overflow-wrap:anywhere!important;box-sizing:border-box!important;font:inherit!important;color:inherit!important}';document.head.append(style);
+ let queued=false;
+ function scan(){queued=false;root.querySelectorAll('td.iqc-remark').forEach(cell=>{
+  const button=cell.querySelector('[data-iqc-edit]'),text=cell.querySelector('.iqc-remark-text');if(!button||!text)return;
+  const actions=button.closest('.iqc-remark-actions');if(!actions)return;
+  // Move the original nodes so existing edit listeners and saved text are preserved.
+  if(text.parentElement!==actions||actions.firstElementChild!==button)actions.replaceChildren(button,text);
+ });}
+ function schedule(){if(!queued){queued=true;queueMicrotask(scan);}}
+ new MutationObserver(schedule).observe(root,{childList:true,subtree:true});scan();
+})();
