@@ -326,14 +326,14 @@ try {
   }
   normalized = normalized.replace(
     '<table class="work-material-table" id="workMaterialTable"><thead>',
-    '<table class="work-material-table" id="workMaterialTable"><colgroup><col style="width:3.4%"><col style="width:13.8%"><col style="width:13.8%"><col style="width:13.8%"><col style="width:13.8%"><col style="width:13.8%"><col style="width:13.8%"><col style="width:13.8%"></colgroup><thead>'
+    '<table class="work-material-table" id="workMaterialTable"><colgroup><col style="width:3.4%"><col style="width:15.533333%"><col style="width:15.533333%"><col style="width:15.533333%"><col style="width:15.533333%"><col style="width:15.533333%"><col style="width:15.533333%"><col style="width:3.4%"></colgroup><thead>'
   );
   if (!normalized.includes('id="qmes-work-material-equal-width"')) {
     normalized = normalized.replace('</head>', '<style id="qmes-work-material-equal-width">html body #mainWorkspace #workMaterialTable{width:100%!important;table-layout:fixed!important}html body #mainWorkspace #workMaterialTable thead th{width:auto!important}html body #mainWorkspace #workMaterialTable input.material-remark-input{display:block!important;visibility:visible!important;width:100%;min-width:0;box-sizing:border-box;text-align:left}</style></head>');
   }
 
   normalized = normalized
-    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-equal-material-columns')
+    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-balanced-material-columns')
     .replace(/namo-qmes-work-inquiry-20261013\.js\?v=[^"']+/g, 'namo-qmes-work-inquiry-20261013.js?v=20261106-remarks-detail');
 
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
