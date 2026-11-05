@@ -213,12 +213,29 @@ window.updateIqcRemarkItems=function(row,remark,date,result){
 const style=document.createElement('style');style.textContent='.iqc-edit-checks{margin-top:16px!important}.iqc-edit-checks>.std-result-wrap{padding-top:8px!important}.iqc-edit-checks .std-result td{font-weight:400!important}.iqc-edit-checks .std-result :is(input,select){font:inherit!important;color:#35435b!important}';document.head.append(style);
 })();
 
-/* Summarize actual saved inspection items, including label, mass and COA. */
+/* Summarize actual saved inspection items and refresh rows rendered before this script. */
 (function(){
- if(typeof window.iqcItemSummary!=='function')return;
- window.iqcItemSummary=function(row){
+ function labels(row){
   let items;try{items=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;}catch{items=[];}
-  const labels=[...new Set((Array.isArray(items)?items:[]).map(x=>String(x?.name||'').trim()).filter(n=>n&&!['비고','원본시트'].includes(n)&&!n.includes('판정')).map(n=>n.replace(/\s/g,'').toUpperCase()==='COA'?'COA 확인':n))];
-  return (labels.join(' / ')||'미등록').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- };
+  return [...new Set((Array.isArray(items)?items:[]).map(x=>String(x?.name||'').trim()).filter(n=>n&&!['비고','원본시트'].includes(n)&&!n.includes('판정')).map(n=>['COA','COA확인'].includes(n.replace(/\s/g,'').toUpperCase())?'COA 확인':n))].join(' / ')||'미등록';
+ }
+ window.iqcItemSummary=row=>labels(row).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ if(typeof document==='undefined')return;
+ const root=document.getElementById('incoming');if(!root)return;
+ let scheduled=false,reloaded=false;
+ function paint(){
+  scheduled=false;
+  const records=Array.isArray(root._iqcRows)?root._iqcRows:[],byId=new Map(records.map(row=>[String(row.id),row]));
+  root.querySelectorAll('table').forEach(table=>{
+   const headers=[...table.querySelectorAll('thead th')],index=headers.findIndex(th=>th.textContent.trim()==='검사항목');if(index<0)return;
+   table.querySelectorAll('tbody tr[data-iqc-id]').forEach(tr=>{const row=byId.get(String(tr.dataset.iqcId)),cell=tr.children[index];if(!row||!cell)return;const value=labels(row);if(cell.textContent!==value)cell.textContent=value;});
+  });
+  // The first native read can finish before this parser-blocking script loads.
+  // Re-read once using the same native query so the audited completion also reaches the visible rows.
+  if(!reloaded&&records.length&&typeof window.loadIncomingFromDb==='function'){
+   reloaded=true;Promise.resolve(window.qmesAuthDataReady?.wait()).then(()=>window.loadIncomingFromDb(root,root._iqcPage||1)).then(schedule).catch(error=>console.warn('[IQC summary refresh]',error));
+  }
+ }
+ function schedule(){if(!scheduled){scheduled=true;queueMicrotask(paint);}}
+ new MutationObserver(schedule).observe(root,{childList:true,subtree:true});schedule();
 })();
