@@ -2794,7 +2794,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   </aside>
 
   <main class="content">
-    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" allow="geolocation" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261105-personal-memos2" loading="eager"></iframe></section>
+    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" allow="geolocation" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261105-movable-cards" loading="eager"></iframe></section>
     <section class="module-page namo-dashboard-shell" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
@@ -7134,7 +7134,7 @@ function showRowDetail(id,row){
       const measurements={};
       document.querySelectorAll('[data-pqc-measure]').forEach(el=>(measurements[el.dataset.pqcMeasure]??=[])[Number(el.dataset.measureIndex)]=el.value);
       const result=evaluatePqcMeasurements(measurements);
-      document.querySelectorAll('[data-pqc-item-judge]').forEach(el=>{const value=result.items[el.dataset.pqcItemJudge]||'대기';el.textContent=value;el.dataset.pqcJudge=value;});
+      document.querySelectorAll('[data-pqc-item-judge]').forEach(el=>{const value=result.items[el.dataset.pqcItemJudge]||'대기';if(el.textContent!==value)el.textContent=value;if(el.dataset.pqcJudge!==value)el.dataset.pqcJudge=value;});
       const overall=document.querySelector('[data-pqc-field="검사합부"]');
       if(overall){overall.value=result.overall;overall.disabled=true;overall.dataset.pqcJudge=result.overall;}
       return result;
@@ -7968,7 +7968,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
     const authenticated=window.__QMES_CURRENT_USER__;
     const role=String(authenticated?.role||'').trim().toLowerCase();
     const isAdmin=Boolean(authenticated && (role==='admin'||role==='관리자'));
-    frame.contentWindow.postMessage({channel:channel,type:'profile',name:name,isAdmin:isAdmin},location.origin);
+    frame.contentWindow.postMessage({channel:channel,type:'profile',name:name,isAdmin:isAdmin,userId:String(authenticated?.id||'')},location.origin);
   }
   function failOpen(){
     // Keep the main portal mounted. A transient load delay must never reveal the legacy dashboard.
@@ -8325,7 +8325,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261103-spc-precision1"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261102-centered-table4"></script>
-<script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261021-1"></script>
+<script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261105-evidence"></script>
 <script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261105-frame"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261021-1"></script>
 <script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261105-select-frame"></script>
