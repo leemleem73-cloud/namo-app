@@ -49,13 +49,6 @@
   font-weight:800!important;text-align:center!important;line-height:1.25!important;white-space:nowrap
 }
 #mainWorkspace .work-form .nwm-material #workMaterialTable thead th:last-child {border-right:0!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.no {width:5%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.name {width:20%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.lot {width:24%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.plan {width:16%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.actual {width:16%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.ratio {width:13%!important}
-#mainWorkspace .work-form .nwm-material #workMaterialTable th.act {width:6%!important}
 #mainWorkspace .work-form .nwm-material #workMaterialTable th .nwm-unit {color:#698095;font-weight:600;font-size:11px}
 #mainWorkspace .work-form .nwm-material #workMaterialTable tbody td {
   border:0!important;border-right:1px solid #ecf1f7!important;
@@ -124,9 +117,9 @@
 #mainWorkspace .work-form .nwm-material #workMaterialTable .nwm-mid-row .nwm-mid-tag {display:inline-flex!important}
 #mainWorkspace .work-form .nwm-material #workMaterialTable button.row-del {
   display:inline-flex!important;align-items:center!important;justify-content:center!important;
-  width:auto!important;min-width:43px!important;height:29px!important;
+  width:auto!important;min-width:0!important;max-width:100%!important;height:29px!important;
   border:1px solid #e8cccc!important;border-radius:5px!important;
-  background:#fff!important;color:#b15d5f!important;padding:0 7px!important;margin:0!important;
+  background:#fff!important;color:#b15d5f!important;padding:0 3px!important;margin:0!important;
   font-size:11px!important;font-weight:700!important;box-shadow:none!important
 }
 #mainWorkspace .work-form .nwm-material #workMaterialTable button.row-del:hover {background:#fff2f2!important;border-color:#dca3a3!important}
@@ -191,3 +184,5 @@ html body #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-s
 html body #mainWorkspace .work-form .nwm-material #workMaterialTable tfoot.nwm-summary td:last-child{
  border-right:0!important;
 }
+
+#mainWorkspace .work-form .nwm-material #workMaterialTable tbody td:last-child {padding-inline:2px!important}

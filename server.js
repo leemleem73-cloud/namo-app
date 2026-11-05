@@ -332,6 +332,8 @@ try {
     normalized = normalized.replace('</head>', '<style id="qmes-work-material-equal-width">html body #mainWorkspace #workMaterialTable{width:100%!important;table-layout:fixed!important}html body #mainWorkspace #workMaterialTable thead th{width:auto!important}html body #mainWorkspace #workMaterialTable input.material-remark-input{display:block!important;visibility:visible!important;width:100%;min-width:0;box-sizing:border-box;text-align:left}</style></head>');
   }
 
+  normalized = normalized.replace(/namo-workorder-material-enterprise-20261014\.css\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.css?v=20261106-colgroup-widths');
+
   normalized = normalized
     .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-balanced-material-columns')
     .replace(/namo-qmes-work-inquiry-20261013\.js\?v=[^"']+/g, 'namo-qmes-work-inquiry-20261013.js?v=20261106-remarks-detail');
