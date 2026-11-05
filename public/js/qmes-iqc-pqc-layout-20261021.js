@@ -14,7 +14,11 @@
     const columns=[...table.querySelectorAll('colgroup col')];
     if(columns.length===8){columns[6].remove();columns[5].remove();}
     [...table.querySelectorAll('colgroup col')].forEach((col,index)=>col.style.setProperty('width',[5,12,26,17,25,15][index]+'%','important'));
-    table.querySelectorAll('tbody tr').forEach(row=>{
+    const body=table.querySelector('tbody');
+    if(body&&![...body.querySelectorAll('.item')].some(x=>x.textContent.trim()==='포장상태')){
+      const tr=document.createElement('tr');tr.dataset.kind='qual';tr.innerHTML='<td></td><td class="item">포장상태</td><td class="spec">용기·포장 파손 및 누출 없을 것</td><td class="method">육안</td><td><select class="std-measure"><option value="">선택</option><option>적합</option><option>부적합</option></select></td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td>';body.prepend(tr);
+    }
+    table.querySelectorAll('tbody tr').forEach((row,index)=>{row.firstElementChild.textContent=String(index+1);
       const cells=[...row.children];
       if(cells.length===8){cells[6].remove();cells[5].remove();}
       const label=row.querySelector('.item')?.textContent.trim()||'';
@@ -91,7 +95,7 @@
     const table = root.querySelector('.std-result-wrap');
     const section = document.createElement('section');
     section.className = 'am-section iqc-pqc-measure-section';
-    section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>외관·라벨·입고 중량·COA 각 1회 확인</span></div>';
+    section.innerHTML = '<div class="am-section-head"><b>검사항목</b><span>포장상태·외관·라벨·입고 중량·COA 각 1회 확인</span></div>';
     table.before(section);
     section.append(table);
     info.querySelectorAll('.am-inline-cell').forEach(cell=>{
@@ -180,7 +184,7 @@
 /* IQC edit checks parity: show and persist saved item results in the existing editor. */
 (function(){
 'use strict';
-const specs=[['외관','이물질 혼입 및 외관 이상 없을 것','육안'],['라벨','품명·LOT·표기사항 일치할 것','육안'],['중량','표시중량 및 입고기준 만족','저울'],['COA 확인','공급사 COA 및 LOT 일치 확인','문서확인']];
+const specs=[['포장상태','용기·포장 파손 및 누출 없을 것','육안'],['외관','이물질 혼입 및 외관 이상 없을 것','육안'],['라벨','품명·LOT·표기사항 일치할 것','육안'],['중량','표시중량 및 입고기준 만족','저울'],['COA 확인','공급사 COA 및 LOT 일치 확인','문서확인']];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function items(row){try{const a=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(a)?a:[];}catch{return [];}}
 function canonical(name){return ['COA','COA확인'].includes(String(name||'').trim().replace(/\s+/g,'').toUpperCase())?'COA 확인':String(name||'').trim();}
@@ -195,12 +199,12 @@ window.editIncomingRecord=function(section,row){
  originalOpen.apply(this,arguments);
  const pane=document.querySelector('.am-split[data-am-screen="incoming"]'),frame=pane?.querySelector('.iqc-edit-settings-frame');if(!frame)return;
  const checks=read(row),box=document.createElement('section');box.className='iqc-edit-checks iqc-pqc-layout am-section';box.dataset.recordId=String(row.id);
- box.innerHTML='<div class="am-section-head"><b>검사항목</b><span>외관·라벨·입고 중량·COA 각 1회 확인</span></div><div class="std-result-wrap"><table class="std-result"><colgroup>'+[5,12,26,17,25,15].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['NO','검사항목','검사기준','검사방법 / 기기','확인 결과','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+checks.map((c,i)=>'<tr data-iqc-check="'+i+'"><td>'+(i+1)+'</td><td>'+esc(c.name)+'</td><td>'+esc(specs[i][1])+'</td><td>'+esc(specs[i][2])+'</td><td>'+(i===2?'<input data-check-value type="text" inputmode="decimal" placeholder="확인 중량 (kg)" value="'+esc(c.value)+'">':'<select data-check-value>'+options(i===3?['확인','확인중','미확인']:['적합','부적합'],c.value)+'</select>')+'</td><td><select data-check-judge>'+options(['대기','합격','불합격'],c.judge)+'</select></td></tr>').join('')+'</tbody></table></div>';
+ box.innerHTML='<div class="am-section-head"><b>검사항목</b><span>포장상태·외관·라벨·입고 중량·COA 각 1회 확인</span></div><div class="std-result-wrap"><table class="std-result"><colgroup>'+[5,12,26,17,25,15].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['NO','검사항목','검사기준','검사방법 / 기기','확인 결과','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+checks.map((c,i)=>'<tr data-iqc-check="'+i+'"><td>'+(i+1)+'</td><td>'+esc(c.name)+'</td><td>'+esc(specs[i][1])+'</td><td>'+esc(specs[i][2])+'</td><td>'+(c.name==='중량'?'<input data-check-value type="text" inputmode="decimal" placeholder="확인 중량 (kg)" value="'+esc(c.value)+'">':'<select data-check-value>'+options(c.name==='COA 확인'?['확인','확인중','미확인']:['적합','부적합'],c.value)+'</select>')+'</td><td><select data-check-judge>'+options(['대기','합격','불합격'],c.judge)+'</select></td></tr>').join('')+'</tbody></table></div>';
  frame.after(box);
  box._checks=checks;box._dirty=false;
  const summary=pane.querySelector('#iqcEditResult');if(summary){summary.disabled=true;summary.title='검사항목 판정으로 자동 계산됩니다.';}
  function changed(event){const tr=event.target.closest('[data-iqc-check]');if(!tr)return;const i=Number(tr.dataset.iqcCheck),check=checks[i];check.value=tr.querySelector('[data-check-value]').value;check.judge=tr.querySelector('[data-check-judge]').value;
- if(event.target.matches('[data-check-value]')&&i!==2){check.judge=['부적합','이상있음','미확인'].includes(check.value)?'불합격':['적합','이상없음','정상','확인','확인완료'].includes(check.value)?'합격':'대기';tr.querySelector('[data-check-judge]').value=check.judge;}
+ if(event.target.matches('[data-check-value]')&&check.name!=='중량'){check.judge=['부적합','이상있음','미확인'].includes(check.value)?'불합격':['적합','이상없음','정상','확인','확인완료'].includes(check.value)?'합격':'대기';tr.querySelector('[data-check-judge]').value=check.judge;}
  box._dirty=true;if(summary)summary.value=overall(checks);
  }
  box.addEventListener('input',changed);box.addEventListener('change',changed);
@@ -238,4 +242,60 @@ const style=document.createElement('style');style.textContent='.iqc-edit-checks{
  }
  function schedule(){if(!scheduled){scheduled=true;queueMicrotask(paint);}}
  new MutationObserver(schedule).observe(root,{childList:true,subtree:true});schedule();
+})();
+
+/* IQC COA uploads belong to the inspection record and are separate from issued reports. */
+(function(){
+'use strict';
+const base='/api/qmes/iqc/attachments',states=new WeakMap();let cached=null,pending=null;
+async function refresh(){if(cached)return cached;if(pending)return pending;pending=(async()=>{const r=await fetch(base,{credentials:'same-origin',cache:'no-store'}),j=await r.json();if(!r.ok||!j.success)throw Error(j.message||'COA 조회 실패');return cached=j.data;})().finally(()=>pending=null);return pending;}
+function link(file){const a=document.createElement('a');a.href=base+'/'+encodeURIComponent(file.id);a.target='_blank';a.rel='noopener';a.textContent=file.name;a.title=file.name;a.addEventListener('click',e=>e.stopPropagation());return a;}
+function mount(root,id){
+ if(states.has(root))return states.get(root);
+ const box=document.createElement('div');box.className='iqc-coa-field';
+ const label=document.createElement('label');label.textContent='COA 첨부파일';
+ const input=document.createElement('input');input.type='file';input.accept='.pdf,.jpg,.jpeg,.png';input.setAttribute('aria-label','수입검사 COA 첨부파일');
+ const info=document.createElement('span');info.textContent='PDF · JPG · PNG / 최대 5MB';box.append(label,input,info);
+ (root.querySelector('.std-info')||root).after(box);const state={input,info};states.set(root,state);
+ input.addEventListener('change',()=>{info.textContent=input.files[0]?input.files[0].name+' · 저장 시 첨부됩니다.':'PDF · JPG · PNG / 최대 5MB';});
+ if(id)refresh().then(rows=>{if(!box.isConnected||input.files.length)return;const f=rows.find(f=>String(f.iqc_id)===String(id));if(f)info.replaceChildren(link(f));else info.textContent='첨부파일 없음';}).catch(()=>{info.textContent='기존 COA 조회 실패';});
+ return state;
+}
+async function attachment(root){
+ const file=states.get(root)?.input.files[0];if(!file)return undefined;
+ if(!file.size||file.size>5*1024*1024||!/\.(pdf|jpe?g|png)$/i.test(file.name))throw Error('COA는 5MB 이하 PDF, JPG, PNG 파일을 선택해 주세요.');
+ const base64=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('COA 파일 읽기 실패'));reader.readAsDataURL(file);});
+ return {name:file.name,base64};
+}
+const originalFetch=window.fetch;
+window.fetch=async function(input,options){
+ let url;try{url=new URL(typeof input==='string'||input instanceof URL?String(input):input.url,location.href);}catch{return originalFetch.apply(this,arguments);}
+ const method=String(options?.method||input?.method||'GET').toUpperCase();
+ if(url.origin===location.origin&&/^\/api\/iqc(?:\/[^/]+)?$/.test(url.pathname)&&['POST','PUT'].includes(method)&&typeof options?.body==='string'){
+  const root=document.querySelector('.am-split[data-am-screen="incoming"] .std-inspection[data-inspection-type="incoming"],.am-split[data-am-screen="incoming"] .iqc-edit-settings-frame');
+  const file=root?await attachment(root):undefined;
+  if(file){const body=JSON.parse(options.body);options={...options,body:JSON.stringify({...body,attachment:file})};}
+  const response=await originalFetch.call(this,input,options);if(response.ok){cached=null;}return response;
+ }
+ return originalFetch.apply(this,arguments);
+};
+function scan(){
+ document.querySelectorAll('.am-split[data-am-screen="incoming"] .std-inspection[data-inspection-type="incoming"]').forEach(root=>mount(root));
+ document.querySelectorAll('.am-split[data-am-screen="incoming"] .iqc-edit-settings-frame').forEach(root=>mount(root,root.parentElement.querySelector('.iqc-edit-checks')?.dataset.recordId));
+ const root=document.getElementById('incoming');if(!root)return;
+ if(typeof pageInfo!=='undefined'&&pageInfo.incoming?.[2]&&!pageInfo.incoming[2].includes('COA')){const cols=pageInfo.incoming[2],i=cols.indexOf('성적서');if(i>=0)cols.splice(i+1,0,'COA');}
+ root.querySelectorAll('table').forEach(table=>{
+  const report=[...table.querySelectorAll('thead th')].find(th=>th.textContent.trim()==='성적서');if(!report)return;
+  if(!table.querySelector('th[data-iqc-coa-header]')){const th=document.createElement('th');th.dataset.iqcCoaHeader='1';th.textContent='COA';report.after(th);const cols=table.querySelector('colgroup');if(cols){const col=document.createElement('col');col.style.width='10%';cols.insertBefore(col,cols.children[report.cellIndex+1]||null);}}
+  table.querySelectorAll('tbody tr[data-iqc-id]').forEach(tr=>{
+   const reportCell=tr.querySelector('.report-issue')?.closest('td');if(!reportCell||tr.querySelector('[data-iqc-coa-cell]'))return;
+   const cell=document.createElement('td');cell.dataset.iqcCoaCell='1';cell.textContent='조회 중';reportCell.after(cell);
+   refresh().then(rows=>{if(!cell.isConnected)return;const f=rows.find(f=>String(f.iqc_id)===String(tr.dataset.iqcId));cell.replaceChildren();if(f)cell.append(link(f));else cell.textContent='—';}).catch(()=>{if(cell.isConnected)cell.textContent='조회 실패';});
+  });
+ });
+}
+let queued=false;function schedule(){if(!queued){queued=true;queueMicrotask(()=>{queued=false;scan();});}}
+new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});scan();
+const style=document.createElement('style');style.textContent='.iqc-coa-field{display:grid;grid-template-columns:128px minmax(160px,1fr) minmax(120px,1fr);align-items:center;gap:10px;margin:10px 0;padding:10px;border:1px solid #d7e0e9;background:#f7faff;color:#244260;font:12px Pretendard,"Malgun Gothic",sans-serif}.iqc-coa-field label{text-align:center;font-weight:600}.iqc-coa-field input{width:100%;min-width:0;font:inherit}.iqc-coa-field span{overflow-wrap:anywhere}#incoming [data-iqc-coa-cell]{white-space:normal!important;text-align:center!important;padding:8px!important}#incoming [data-iqc-coa-cell] a{display:block;color:#245b9e;white-space:normal;overflow-wrap:anywhere;line-height:1.4}@media(max-width:760px){.iqc-coa-field{grid-template-columns:100px minmax(0,1fr)}.iqc-coa-field span{grid-column:2}}';document.head.append(style);
+window.qmesIqcFiles={mount,attachment};
 })();

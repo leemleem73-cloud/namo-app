@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const source=fs.readFileSync(__dirname+'/../public/js/qmes-iqc-pqc-layout-20261021.js','utf8'),addon=source.slice(source.indexOf('/* Summarize actual saved inspection items and refresh'));
+const source=fs.readFileSync(__dirname+'/../public/js/qmes-iqc-pqc-layout-20261021.js','utf8'),addon=source.slice(source.indexOf('/* Summarize actual saved inspection items and refresh'),source.indexOf('/* IQC COA uploads'));
 test('pre-rendered old rows refresh immediately and audited native reload happens once',async()=>{
  const td={textContent:'외관'},tr={dataset:{iqcId:'1'},children:[{},td]},table={querySelectorAll:s=>s==='thead th'?[{textContent:'No.'},{textContent:'검사항목'}]:[tr]};
  const root={_iqcRows:[{id:'1',items_json:[{name:'외관'}]}],_iqcPage:2,querySelectorAll:()=>[table]};

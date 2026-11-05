@@ -23,13 +23,13 @@ test('one-time database run is audited and idempotent; future records and NG rem
  await db.query("INSERT INTO iqc VALUES('bad','2026-10-15',10,'불합격',1,'[]'),('future','2026-12-01',10,'대기',0,'[]')");
  const pool={connect:async()=>({query:(sql,args)=>args?db.query(sql,args):db.exec(sql).then(results=>({rows:results.at(-1)?.rows||[]})),release(){}})};
  await run(pool,{session:{user:{name:'사용자'}}});await run(pool,{session:{user:{name:'사용자'}}});
- const result=await db.query('SELECT * FROM iqc ORDER BY id');assert.equal(result.rows.find(x=>x.id==='1').judge,'합격');assert.equal(result.rows.find(x=>x.id==='bad').items_json.length,0);assert.equal(result.rows.find(x=>x.id==='future').items_json.length,0);
- const audit=await db.query('SELECT * FROM qmes_iqc_completion_audit');assert.equal(audit.rows.length,1);assert.equal(audit.rows[0].before_record.items_json.length,3);assert.ok(audit.rows[0].reason.includes('사용자 요청'));assert.equal((await db.query('SELECT key FROM qmes_iqc_completion_runs')).rows[0].key,KEY);
+ const result=await db.query('SELECT * FROM iqc ORDER BY id');assert.equal(result.rows.find(x=>x.id==='1').judge,'합격');assert.equal(result.rows.find(x=>x.id==='bad').judge,'불합격');assert.equal(result.rows.find(x=>x.id==='bad').items_json[0].judge,'대기');assert.equal(result.rows.find(x=>x.id==='future').items_json.length,0);
+ const audit=await db.query('SELECT * FROM qmes_iqc_completion_audit');assert.equal(audit.rows.length,2);assert.equal(audit.rows[0].before_record.items_json.length,3);assert.ok(audit.rows[0].reason.includes('사용자 요청'));assert.equal((await db.query('SELECT key FROM qmes_iqc_completion_runs')).rows[0].key,KEY);
  }finally{await db.close();}
 });
 
 test('summary lists all saved checks rather than filtering to packaging and appearance',()=>{
- const vm=require('node:vm'),fs=require('node:fs'),src=(()=>{const s=fs.readFileSync(__dirname+'/../public/js/qmes-iqc-pqc-layout-20261021.js','utf8');return s.slice(s.indexOf('/* Summarize actual saved'));})(),ctx={window:{iqcItemSummary(){}}};vm.runInNewContext(src,ctx);
+ const vm=require('node:vm'),fs=require('node:fs'),src=(()=>{const s=fs.readFileSync(__dirname+'/../public/js/qmes-iqc-pqc-layout-20261021.js','utf8');return s.slice(s.indexOf('/* Summarize actual saved'),s.indexOf('/* IQC COA uploads'));})(),ctx={window:{iqcItemSummary(){}}};vm.runInNewContext(src,ctx);
  const s=ctx.window.iqcItemSummary({items_json:[{name:'외관'},{name:'라벨'},{name:'중량'},{name:'COA 확인'},{name:'비고'},{name:'종합판정'}]});assert.equal(s,'외관 / 라벨 / 중량 / COA 확인');
  assert.equal(ctx.window.iqcItemSummary({items_json:[{name:'<bad>'}]}),'&lt;bad&gt;');
 });

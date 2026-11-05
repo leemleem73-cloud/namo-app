@@ -1,15 +1,20 @@
 'use strict';
 // One-time operator-attested completion of missing historical IQC fields.
 // Receipt weight is copied with provenance; existing contrary results and holds remain intact.
-const KEY='iqc-missing-checks-operator-request-20261105-v1';
-const names=['외관','라벨','중량','COA 확인'];
+const KEY='iqc-missing-checks-operator-request-20261105-packaging-v2';
+const names=['포장상태','외관','라벨','중량','COA 확인'];
 const text=v=>String(v??'').trim();
 const canonical=n=>['COA','COA확인'].includes(text(n).replace(/\s/g,'').toUpperCase())?'COA 확인':text(n);
 function unpack(v){if(typeof v==='string')try{v=JSON.parse(v);}catch{return null;}return Array.isArray(v)?v:null;}
 function values(x){return [x.judge,x.result,x.status,x.value,...(Array.isArray(x.values)?x.values:[]),...(Array.isArray(x.measurements)?x.measurements:[])].map(text).filter(Boolean);}
 function contrary(v){return /불합격|부적합|미확인|확인중|보류/.test(v)||['NG','FAIL','HOLD'].includes(v.toUpperCase());}
 function plan(row){
- const original=unpack(row.items_json);if(!original||Number(row.fail)>0||contrary(text(row.judge))||original.filter(x=>x.name!=='비고').some(x=>values(x).some(contrary)))return null;
+ const original=unpack(row.items_json);if(!original)return null;
+ const blocked=Number(row.fail)>0||contrary(text(row.judge))||original.filter(x=>x.name!=='비고').some(x=>values(x).some(contrary));
+ if(blocked){
+  if(original.some(x=>canonical(x.name)==='포장상태'))return null;
+  return {items:[{name:'포장상태',values:[''],judge:'대기',completionSource:'항목 양식 추가 · 기존 불합격/미확인 결과 유지'},...original.map(x=>({...x}))],judge:text(row.judge),changes:['포장상태 항목 추가(결과 미입력)']};
+ }
  const items=original.map(x=>({...x})),changes=[];
  const raw=text(row.incoming_qty).replace(/,/g,''),weight=/^\d+(?:\.\d+)?$/.test(raw)&&Number(raw)>0?raw:'';
  for(const name of names){
@@ -36,7 +41,7 @@ async function run(pool,req){
  await client.query(`CREATE TABLE IF NOT EXISTS qmes_iqc_completion_runs(key text PRIMARY KEY,completed_at timestamptz NOT NULL DEFAULT clock_timestamp(),actor text NOT NULL,count integer NOT NULL);
  CREATE TABLE IF NOT EXISTS qmes_iqc_completion_audit(id bigserial PRIMARY KEY,run_key text NOT NULL,record_id text NOT NULL,actor text NOT NULL,changed_at timestamptz NOT NULL DEFAULT clock_timestamp(),before_record jsonb NOT NULL,after_record jsonb NOT NULL,reason text NOT NULL);`);
  const done=await client.query('SELECT key FROM qmes_iqc_completion_runs WHERE key=$1',[KEY]);if(done.rows.length){await client.query('COMMIT');return;}
- const rows=await client.query("SELECT * FROM iqc WHERE date<='2026-11-05' ORDER BY id FOR UPDATE"),actor=text(req.session?.user?.name||req.session?.user?.id)||'사용자 요청',reason='2026-11-05 사용자 요청: 기존 빈 검사항목 결과 및 판정을 OK로 보완. 중량은 기본설정 입고 중량에서 이관. 실제 측정·승인 일자를 새로 생성하지 않음.';
+ const rows=await client.query("SELECT * FROM iqc WHERE date<='2026-11-05' ORDER BY id FOR UPDATE"),actor=text(req.session?.user?.name||req.session?.user?.id)||'사용자 요청',reason='2026-11-05 사용자 요청: 포장상태를 포함한 기존 빈 검사항목 결과 및 판정을 OK로 보완. 중량은 기본설정 입고 중량에서 이관. 실제 측정·승인 일자를 새로 생성하지 않음.';
  let count=0;
  for(const row of rows.rows){const next=plan(row);if(!next)continue;
  await client.query('UPDATE iqc SET items_json=$2::jsonb,judge=$3 WHERE id=$1',[row.id,JSON.stringify(next.items),next.judge]);

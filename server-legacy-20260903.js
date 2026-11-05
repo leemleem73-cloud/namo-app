@@ -3299,6 +3299,8 @@ app.delete('/api/purchase-orders/:id', requireAdmin, async (req, res) => {
   ok(res, null, '구매 발주가 삭제되었습니다.');
 });
 
+require('./qmes-iqc-attachments-20261105.cjs').install(app,{pool,requireLogin});
+
 function bindCrud(table, mapper) {
   app.get(`/api/${table}`, requireLogin, async (_req, res) => {
     try {
@@ -3317,7 +3319,7 @@ function bindCrud(table, mapper) {
       const vals = Object.values(body);
       const marks = keys.map((_, i) => `$${i + 1}`).join(',');
 
-      const r = await db(
+      const r = table==='iqc'?await require('./qmes-iqc-attachments-20261105.cjs').write(pool,{data:body,attachment:req.body.attachment,user:txt(req.session?.user?.name)}):await db(
         `INSERT INTO ${table} (${keys.join(',')})
          VALUES (${marks})
          RETURNING *`,
@@ -3357,7 +3359,7 @@ function bindCrud(table, mapper) {
       const vals = Object.values(body);
       const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
 
-      const r = await db(
+      const r = table==='iqc'?await require('./qmes-iqc-attachments-20261105.cjs').write(pool,{id:req.params.id,data:body,attachment:req.body.attachment,user:txt(req.session?.user?.name)}):await db(
         `UPDATE ${table} SET ${sets} WHERE id = $${keys.length + 1} RETURNING *`,
         [...vals, req.params.id]
       );
