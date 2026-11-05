@@ -293,6 +293,12 @@ try {
     .replace(/qmes-enterprise-header-polish-20260910\.js\?v=[^"']+/g, `qmes-enterprise-header-polish-20260910.js?v=${ACCOUNT_ASSET_BUILD}`)
     .replace(/qmes-ui-recovery-20260910\.js\?v=[^"']+/g, `qmes-ui-recovery-20260910.js?v=${ACCOUNT_ASSET_BUILD}`);
 
+  normalized = normalized.replace(/<script id="qmes-new-work-material-input-colors-20261030">[\s\S]*?<\/script>/, '');
+  normalized = normalized.replace(
+    /^    lot:\(row\.querySelector\('\.material-name-select'\).*,$/m,
+    line => '    lot:window.namoReadWorkMaterialLot?.(row) ?? (' + line.slice('    lot:'.length, -1) + '),'
+  );
+
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
   normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
   normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n  ${QMES_SCROLL_FIX_SCRIPT}\n</head>`);
