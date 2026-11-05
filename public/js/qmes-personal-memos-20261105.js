@@ -8,6 +8,7 @@ const dialog=document.createElement('dialog');dialog.className='pm-dialog';dialo
 dialog.innerHTML='<header><div><h2 id="pm-title">개인 메모</h2><p>본인 계정에서만 보입니다 · 입력 후 자동저장</p></div><button type="button" data-close>닫기</button></header><div class="pm-main"><nav aria-label="내 메모"><button type="button" class="pm-primary" data-new>+ 메모 작성</button><div class="pm-list"></div></nav><section class="pm-editor"><label>제목<input data-title maxlength="100" placeholder="메모 제목"></label><label class="pm-content">내용<textarea data-content maxlength="5000" placeholder="기억할 내용을 적어 두세요."></textarea></label><div class="pm-tools"><button type="button" data-pin aria-pressed="false">상단 고정</button><button type="button" data-remove>삭제</button><span data-status role="status" aria-live="polite"></span><button type="button" data-save>저장</button></div><div class="pm-confirm" hidden><span>이 메모를 삭제할까요?</span><button type="button" data-delete-yes>삭제</button><button type="button" data-delete-no>취소</button></div></section></div>';
 document.body.append(dialog);
 const title=dialog.querySelector('[data-title]'),content=dialog.querySelector('[data-content]'),pin=dialog.querySelector('[data-pin]'),status=dialog.querySelector('[data-status]'),list=dialog.querySelector('.pm-list'),preview=card.querySelector('.pm-preview'),confirm=dialog.querySelector('.pm-confirm');
+let generation=0;
 let owner='',notes=[],active=null,pinned=false,timer=0,inFlight=null,switching=false,loading=null;
 const sorted=()=>notes.slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updated_at).localeCompare(String(a.updated_at)));
 const dirty=()=>!!active&&(title.value.trim()!==active.title||content.value!==active.content||pinned!==active.pinned);
@@ -44,7 +45,7 @@ function flush(){
     const current=active,payload={ownerId:owner,id:current.id,version:current.version,title:title.value.trim(),content:content.value,pinned};
     message('저장 중…');const saved=await request('',payload);
     if(active?.id!==current.id)return false;
-    active=saved;const index=notes.findIndex(n=>n.id===saved.id);if(index<0)notes.push(saved);else notes[index]=saved;
+    generation++;active=saved;const index=notes.findIndex(n=>n.id===saved.id);if(index<0)notes.push(saved);else notes[index]=saved;
     render();message('저장 완료');
    }
    return true;
@@ -53,23 +54,23 @@ function flush(){
  })();
  return inFlight;
 }
-function schedule(){message('저장 대기');clearTimeout(timer);timer=setTimeout(()=>void flush(),650);}
+function schedule(){generation++;message('저장 대기');clearTimeout(timer);timer=setTimeout(()=>void flush(),650);}
 title.addEventListener('input',schedule);content.addEventListener('input',schedule);
 pin.onclick=()=>{pinned=!pinned;pin.setAttribute('aria-pressed',String(pinned));pin.textContent=pinned?'고정됨':'상단 고정';schedule();};
 async function activate(note){
  if(switching)return;switching=true;
- try{if(!await flush())return;active=notes.find(n=>n.id===note.id)||note;fill();render();if(!dialog.open)dialog.showModal();}
+ try{if(!await flush())return;generation++;active=notes.find(n=>n.id===note.id)||note;fill();render();if(!dialog.open)dialog.showModal();}
  finally{switching=false;}
 }
 async function newNote(){
  if(switching||!owner)return;switching=true;
- try{if(!await flush())return;active={id:crypto.randomUUID(),title:'',content:'',pinned:false,version:0};fill();render();if(!dialog.open)dialog.showModal();title.focus();}
+ try{if(!await flush())return;generation++;active={id:crypto.randomUUID(),title:'',content:'',pinned:false,version:0};fill();render();if(!dialog.open)dialog.showModal();title.focus();}
  finally{switching=false;}
 }
 async function load(){
  if(loading)return loading;
- loading=(async()=>{try{const data=await request();if(owner&&owner!==data.ownerId)resetPrivate();owner=data.ownerId;notes=data.notes;if(active&&!dirty()){active=notes.find(n=>n.id===active.id)||null;fill();}render();if(!active&&notes.length){active=sorted()[0];fill();}else if(!active)fill();}
- catch(e){resetPrivate();preview.textContent=e.message;const retry=document.createElement('button');retry.type='button';retry.textContent='다시 조회';retry.onclick=()=>void load();preview.append(retry);message(e.message,true);}
+ loading=(async()=>{const requestedAt=generation;try{const data=await request();if(owner&&owner!==data.ownerId)resetPrivate();else if(owner&&requestedAt!==generation)return;owner=data.ownerId;notes=data.notes;if(active&&!dirty()){active=notes.find(n=>n.id===active.id)||null;fill();}render();if(!active&&notes.length){active=sorted()[0];fill();}else if(!active)fill();}
+ catch(e){if(e.status===401||e.status===403)resetPrivate();if(!owner){preview.textContent=e.message;const retry=document.createElement('button');retry.type='button';retry.textContent='다시 조회';retry.onclick=()=>void load();preview.append(retry);}message(e.message,true);}
  finally{loading=null;}})();return loading;
 }
 async function open(){if(!owner)await load();if(!dialog.open)dialog.showModal();if(!active&&owner)void newNote();}
@@ -81,7 +82,7 @@ dialog.querySelector('[data-remove]').onclick=()=>{confirm.hidden=false;};
 dialog.querySelector('[data-delete-no]').onclick=()=>{confirm.hidden=true;};
 dialog.querySelector('[data-delete-yes]').onclick=async()=>{
  if(switching||!active)return;switching=true;
- try{clearTimeout(timer);if(!await flush())return;const current=active;if(current.version)await request('/delete',{ownerId:owner,id:current.id,version:current.version});notes=notes.filter(n=>n.id!==current.id);active=sorted()[0]||null;fill();render();message('삭제 완료');}
+ try{clearTimeout(timer);if(!await flush())return;const current=active;if(current.version)await request('/delete',{ownerId:owner,id:current.id,version:current.version});generation++;notes=notes.filter(n=>n.id!==current.id);active=sorted()[0]||null;fill();render();message('삭제 완료');}
  catch(e){if(e.status===401||e.status===403)resetPrivate();message(e.message,true);}
  finally{switching=false;}
 };
