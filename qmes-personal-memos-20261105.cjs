@@ -3,7 +3,7 @@ const uuid=/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 const palettes=['yellow','white','blue','pink','green'],fonts=['default','gothic','serif'],sizes=[12,14,16,18];
 function appearance(value={}){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Object.assign(Error('메모 양식을 확인해 주세요.'),{status:400});
- const result={paper:value.paper||'yellow',font:value.font||'default',size:value.size??14,bold:value.bold??false};
+ const result={paper:value.paper||'white',font:value.font||'default',size:value.size??14,bold:value.bold??false};
  if(!palettes.includes(result.paper)||!fonts.includes(result.font)||!sizes.includes(result.size)||typeof result.bold!=='boolean')throw Object.assign(Error('메모 색상과 글자 양식을 확인해 주세요.'),{status:400});
  return result;
 }
