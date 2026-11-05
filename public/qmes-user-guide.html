@@ -266,7 +266,7 @@ body{background:#f7f9fc;color:var(--ink)}
 <div class="videoGuide" id="videoGuide">
   <div class="videoGuideHead"><h3>▶ 동영상 사용가이드</h3><span>메뉴별 핵심 기능을 짧은 영상으로 확인하세요.</span></div>
   <div class="videoGuideGrid">
-    <button class="videoCard" type="button" data-video-title="작업지시서 사용방법" data-video-src="" data-video-sim="workorder"><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>작업지시서</b><small>등록 · 원료투입 · 저장 · 인쇄</small></div></button>
+    <button class="videoCard" type="button" data-video-title="작업지시서 사용방법" data-video-src="" data-video-sim="workorder"><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>작업지시서</b><small>조회 · 신규등록 · 원료 LOT · 저장/발송 · 인쇄</small></div></button>
     <button class="videoCard" type="button" data-video-title="수입검사 IQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>수입검사 IQC</b><small>검사등록 · 판정 · 전자결재</small></div></button>
     <button class="videoCard" type="button" data-video-title="공정검사 PQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>공정검사 PQC</b><small>측정값 · 판정 · 후속공정 차단</small></div></button>
     <button class="videoCard" type="button" data-video-title="출하검사 OQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>출하검사 OQC</b><small>출하검사 · CoA · 출하상태</small></div></button>
@@ -329,7 +329,7 @@ const titles={
 'SPC / Trend':['SPC / Trend 조회 방법','품질관리 > SPC / Trend','검사항목을 선택하고 SPC / Trend 결과를 조회하는 방법만 간단하게 안내합니다.'],
 '계측기관리':['계측기관리','설비관리 > 계측기관리','현재 업데이트 준비 중입니다.'],
 '검교정관리':['검교정관리','설비관리 > 검교정관리','현재 업데이트 준비 중입니다.'],
-'작업지시서':['작업지시서 실무 사용법','생산관리 > 작업지시서 > 조회 · 신규등록','작업지시서 조회부터 신규등록, 원료 투입계획, 저장·발송·인쇄까지 실제 업무 순서대로 안내합니다.'],
+'작업지시서':['작업지시서 실무 사용법','생산관리 > 작업지시서 > 조회 · 신규등록','현재 QMES 화면과 동일한 순서로 조회, 신규등록, 원료 LOT 선택, 계획투입량, 비고, 발송대상, 저장·인쇄까지 초보자도 따라 할 수 있게 안내합니다.'],
 '수입검사 IQC':['수입검사 IQC 실무 사용법','품질관리 > 수입검사 IQC > 조회 · 신규등록','수입검사 조회부터 신규 성적서 등록, 검사결과 판정, 부적합 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
 '공정검사 PQC':['공정검사 PQC 실무 사용법','품질관리 > 공정검사 PQC > 조회 · 신규등록','공정검사 조회부터 신규 검사 등록, 측정값 입력, 불합격 후속 공정 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
 '출하검사 OQC':['출하검사 OQC 실무 사용법','품질관리 > 출하검사 OQC > 조회 · 신규등록','출하검사 조회부터 신규 검사 등록, 측정값 입력, 출하상태·CoA 확인, 불합격 차단, 저장·전자결재까지 실제 업무 순서대로 안내합니다.'],
@@ -350,26 +350,36 @@ function workListGuideHtml(){return '<div class="workActual">'+
 '<div class="waField"><span>진행상태</span><div class="waInput">전체</div></div>'+
 '<div class="waField"><span>작업기간</span><div class="waInput">기간 선택</div></div>'+
 '</div>'+
-'<div class="waToolbar"><strong>▸ 작업지시 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button>조회</button><button>⌃</button></div></div>'+
-'<table><thead><tr><th style="width:34px">□</th><th style="width:42px">No.</th><th>작업일자</th><th>작업지시번호</th><th>고객사</th><th>제품명</th><th>생산 LOT</th><th>계획수량</th><th>진행상태</th></tr></thead><tbody><tr><td colspan="9" class="empty">조회된 작업지시 내역이 없습니다.</td></tr></tbody></table>'+
-'<div class="waDetail"><div class="waDetailHead">작업지시 상세내역</div><div class="waDetailBody">상단 작업지시 목록에서 항목을 선택하세요.</div></div>'+
-'<span class="call" style="right:24px;top:15px">1</span><span class="call" style="left:22px;top:73px">2</span><span class="call" style="right:116px;top:134px">3</span><span class="call" style="left:18px;bottom:64px">4</span>'+
+'<div class="waToolbar"><strong>▸ 작업지시 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button>⌕</button><button>⌃</button></div></div>'+
+'<table><thead><tr><th style="width:34px">□</th><th style="width:42px">No.</th><th>고객사</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT NO</th><th>설비명</th><th>작업자</th><th>계획수량(kg)</th><th>작업기간</th><th>진행상태</th><th>비고</th></tr></thead><tbody>'+
+'<tr><td>□</td><td>1</td><td>현대자동차</td><td style="color:#1769c2;font-weight:800">WO-20261021-001</td><td>NBA20HM05</td><td>DBJ2101</td><td>HSM</td><td>대리 박도훈, 주임 문지훈</td><td>160</td><td>2026-10-21 ~ 2026-10-21</td><td>완료</td><td>인쇄 · 수정</td></tr>'+
+'<tr><td>□</td><td>2</td><td>현대자동차</td><td style="color:#1769c2;font-weight:800">WO-20261015-001</td><td>NBA20HM05</td><td>DBJ1501</td><td>HSM</td><td>대리 박도훈, 주임 문지훈</td><td>50</td><td>2026-10-15 ~ 2026-10-15</td><td>완료</td><td>인쇄 · 수정</td></tr>'+
+'</tbody></table>'+
+'<div class="waDetail"><div class="waDetailHead">작업지시 상세내역</div><div class="waDetailBody">작업지시번호를 클릭하면 상세내용을 확인할 수 있습니다.</div></div>'+
+'<span class="call" style="right:24px;top:15px">1</span><span class="call" style="left:22px;top:73px">2</span><span class="call" style="right:92px;top:134px">3</span><span class="call" style="left:330px;top:190px">4</span>'+
 '</div>'}
 
 function workRegGuideHtml(){return '<div class="workActual"><div class="regShell">'+
-'<aside class="regList"><div class="regListTitle">작업지시서 목록</div><div class="regListTools"><div>전체</div><div>작업지시서 검색</div></div><div class="regListEmpty">등록된 데이터가 없습니다.</div><div class="regAdd">⊕ 추가</div></aside>'+
-'<section class="regMain"><div class="regTop"><div><b>신규 작업지시서 등록</b><small>새 항목을 직접 입력합니다.</small></div><div class="waActions"><button>목록</button><button class="primary">저장</button></div></div>'+
+'<aside class="regList"><div class="regListTitle">작업지시서 목록</div><div class="regListTools"><div>전체</div><div>작업지시서 검색</div></div><div style="padding:8px 10px;font-size:10px;line-height:1.8;color:#52677b">2026-10-21&nbsp;&nbsp;WO-20261021-001<br>2026-10-15&nbsp;&nbsp;WO-20261015-001<br>2026-10-06&nbsp;&nbsp;WO-20261006-001<br>2026-08-19&nbsp;&nbsp;WO-20260819-001</div><div class="regAdd">⊕ 추가</div></aside>'+
+'<section class="regMain"><div class="regTop"><div><b>신규 작업지시서 등록</b><small>새 항목을 직접 입력합니다.</small></div><div class="waActions"><button>목록</button><button>임시저장</button><button class="primary">저장</button></div></div>'+
 '<div class="regSection"><div class="regSectionTitle">작업 기본정보</div><div class="regGrid">'+
 '<span>작업지시번호</span><b>자동생성</b><span>작업일자</span><b>연도-월-일</b>'+
-'<span>고객사명</span><b>고객사명 직접 입력</b><span>제품명</span><b>제품명 직접 입력</b>'+
+'<span>고객사명</span><b>고객사명 직접 입력</b><span>제품명</span><b>제품명 선택 또는 직접 입력</b>'+
 '<span>생산 LOT NO</span><b>생산 LOT NO 입력</b><span>설비명</span><b>HSM</b>'+
-'<span>작업자</span><b>작업자 입력</b><span>계획수량</span><b>숫자만 입력</b>'+
+'<span>작업자</span><b>작업자 선택 또는 직접 입력</b><span>계획수량</span><b>숫자만 입력</b>'+
 '<span>작업 시작일</span><b>연도-월-일</b><span>작업 종료일</span><b>연도-월-일</b>'+
-'<span>진행상태</span><b>대기 / 진행 / 완료</b><span>생산구분</span><b>양산 / 파일럿 / 시험 / 샘플</b>'+
+'<span>진행상태</span><b>대기 / 진행 / 완료</b><span>생산구분</span><b>양산 / 파일럿 생산 / 시험생산 / 샘플생산</b>'+
 '</div></div>'+
-'<div class="regSection"><div class="regSectionTitle">원료 투입계획</div><div class="matWrap"><div class="matTools"><button>+ 행 추가</button></div><table><thead><tr><th>NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율(%)(자동계산)</th><th>관리</th></tr></thead><tbody><tr><td>1</td><td>원료명 선택</td><td>원료 LOT NO 입력</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr></tbody></table><div class="note">※ 원료 LOT NO는 수입검사에 등록된 LOT와 일치하도록 입력합니다. 계획투입량 입력 시 투입비율이 자동 계산됩니다.</div></div></div>'+
-'<div class="regSection"><div class="regSectionTitle">작업지시사항</div><div class="dispatch">작업 시 주의사항 및 특이사항을 입력합니다.</div></div>'+
-'<div class="regSection"><div class="regSectionTitle">발송 대상 및 수신부서</div><div class="dispatch">QMES 내부 알림으로 작업지시를 전달합니다. 수신부서는 복수 선택할 수 있고, 수신 담당자는 개별 선택·해제할 수 있습니다.<br><b>선택 초기화</b> / <b>저장 후 발송</b></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">원료 투입계획</div><div class="matWrap"><div class="matTools"><button>+ 행 추가</button></div><table><thead><tr><th>NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율(%)(자동계산)</th><th>관리</th></tr></thead><tbody>'+
+'<tr><td>1</td><td style="background:#fff0b3">NMP</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>2</td><td style="background:#ffe3a0">BYK180</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>3</td><td style="background:#d9ecff">AOH30</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>4</td><td style="background:#e8ddff">중간배치</td><td>배치 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>5</td><td style="background:#dff5d6">SBS</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>6</td><td>SBR</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'</tbody></table><div class="note">※ 원료 LOT NO는 수입검사 내역에서 선택하거나 직접 입력할 수 있습니다. 계획투입량 입력 시 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div></div></div>'+
+'<div class="regSection"><div class="regSectionTitle">비고</div><div class="dispatch">작업 시 주의사항 또는 특이사항을 입력합니다.</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">발송 대상 및 수신부서</div><div class="dispatch"><b>수신부서</b>를 선택하면 해당 직원이 표시됩니다. 필요한 담당자를 선택한 후 <b>저장 후 발송</b>을 사용합니다.<br>발송 경로: QMES 내부 알림 → 작업지시 · 직원등록현황의 승인 직원</div></div>'+
 '<div class="regBottom"><button>목록으로</button><button>저장 후 인쇄</button><button class="primary">저장</button></div>'+
 '</section></div>'+
 '<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:74px">6</span><span class="call" style="left:205px;top:330px">7</span><span class="call" style="left:205px;bottom:132px">8</span><span class="call" style="right:21px;bottom:17px">9</span>'+
@@ -716,15 +726,15 @@ function preparingGuideHtml(name){return '<div style="min-height:420px;display:f
 function renderGuide(name){
  if(name==='작업지시서'){
    guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 작업지시서 등록 및 조회</div>'+workListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 신규 작업지시서 등록</div>'+workRegGuideHtml()+'</div></div>';
-   steps.innerHTML='<div class="step"><b>1</b><b>신규 작업지시서 등록</b> 버튼을 클릭하면 실제 등록 화면으로 이동합니다.</div>'+
-   '<div class="step"><b>2</b>고객사, 작업지시번호, 제품명, 생산 LOT, 진행상태, 작업기간을 조건으로 작업지시를 조회합니다.</div>'+
-   '<div class="step"><b>3</b><b>조회</b>를 클릭해 작업지시 현황을 확인하고, 필요하면 <b>조건 지우기</b>로 조회조건을 초기화합니다.</div>'+
-   '<div class="step"><b>4</b>목록의 작업지시를 선택하면 하단 <b>작업지시 상세내역</b>에서 세부내용을 확인합니다.</div>'+
-   '<div class="step"><b>5</b>신규등록 화면 상단의 <b>저장</b>으로 입력내용을 저장합니다.</div>'+
-   '<div class="step"><b>6</b><b>작업 기본정보</b>에서 작업일자, 고객사명, 제품명, 생산 LOT NO, 설비명, 작업자, 계획수량, 작업기간, 진행상태, 생산구분을 입력합니다. 작업지시번호는 자동 생성됩니다.</div>'+
-   '<div class="step"><b>7</b><b>원료 투입계획</b>에서 원료명, 원료 LOT NO, 계획투입량을 등록합니다. 계획투입량에 따라 투입비율이 자동 계산됩니다.</div>'+
-   '<div class="step"><b>8</b><b>작업지시사항</b>과 <b>발송 대상 및 수신부서</b>를 확인합니다. 필요한 부서와 담당자를 선택해 QMES 내부 알림으로 전달할 수 있습니다.</div>'+
-   '<div class="step"><b>9</b>하단에서 <b>목록으로</b>, <b>저장 후 인쇄</b>, <b>저장</b>을 목적에 맞게 사용합니다.</div>';
+   steps.innerHTML='<div class="step"><b>1</b>새 작업을 만들 때 오른쪽 위 <b>+ 신규 작업지시서 등록</b>을 클릭합니다.</div>'+
+   '<div class="step"><b>2</b>기존 작업을 찾을 때 <b>고객사 → 작업지시번호 → 제품명 → 생산 LOT → 진행상태 → 작업기간</b> 중 필요한 조건만 선택합니다.</div>'+
+   '<div class="step"><b>3</b><b>조회</b> 버튼을 누르면 조건에 맞는 작업지시가 표시됩니다. 다시 전체를 보려면 <b>조건 지우기</b>를 누릅니다.</div>'+
+   '<div class="step"><b>4</b>파란색 <b>작업지시번호</b>를 클릭하면 상세내용을 확인할 수 있습니다. 오른쪽에서는 <b>인쇄 / 수정</b>을 사용할 수 있습니다.</div>'+
+   '<div class="step"><b>5</b>신규등록 화면 상단의 <b>목록 / 임시저장 / 저장</b>을 상황에 맞게 사용합니다. 입력 중에는 임시저장, 완료 후에는 저장을 사용합니다.</div>'+
+   '<div class="step"><b>6</b><b>작업 기본정보</b>를 위에서 아래 순서대로 입력합니다: 작업일자 → 고객사명 → 제품명 → 생산 LOT NO → 설비명 → 작업자 → 계획수량 → 작업 시작/종료일 → 진행상태 → 생산구분. 작업지시번호는 자동 생성됩니다.</div>'+
+   '<div class="step"><b>7</b><b>원료 투입계획</b>에서 NMP, BYK180, AOH30, 중간배치, SBS, SBR 순으로 원료 LOT를 선택하고 계획투입량을 입력합니다. 투입비율은 자동 계산되며 실투입량은 생산실적 입력 단계에서 작성합니다.</div>'+
+   '<div class="step"><b>8</b><b>비고</b>에는 주의사항이나 특이사항을 입력합니다. 아래 <b>발송 대상 및 수신부서</b>에서 부서를 선택한 뒤 필요한 담당자를 선택하여 QMES 내부 알림으로 전달합니다.</div>'+
+   '<div class="step"><b>9</b>모든 내용을 다시 확인한 후 <b>저장</b>합니다. 종이 작업지시서가 필요하면 <b>저장 후 인쇄</b>를 사용하고, 이전 화면으로 돌아갈 때는 <b>목록으로</b>를 누릅니다.</div>';
  }else if(name==='수입검사 IQC'){
    guideShot.innerHTML='<div class="workGuideStack"><div><div class="guideScreenTitle">1. 수입검사 등록 및 조회</div>'+iqcListGuideHtml()+'</div><div><div class="guideScreenTitle">2. 수입검사 성적서 신규등록</div>'+iqcRegGuideHtml()+'</div></div>';
    steps.innerHTML='<div class="step"><b>1</b><b>+ 신규 수입검사 등록</b>을 클릭하면 수입검사 성적서 등록 화면으로 이동합니다.</div>'+
@@ -976,15 +986,15 @@ function startWorkorderVideoSim(){
   videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">1 / 9</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
   const canvas=document.getElementById('workVideoCanvas'),cursor=document.getElementById('workVideoCursor'),pulse=document.getElementById('workVideoPulse'),caption=document.getElementById('workVideoCaption'),badge=document.getElementById('workVideoStepBadge'),bar=document.getElementById('workVideoProgressBar');
   const steps=[
-    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'마우스가 1번으로 이동한 뒤 + 신규 작업지시서 등록 버튼을 안내합니다.',click:true},
-    {view:'list',no:'2',cap:'2. 조회조건 설정',sub:'마우스가 2번으로 이동해 고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간을 안내합니다.'},
-    {view:'list',no:'3',cap:'3. 작업지시 현황 조회',sub:'마우스가 3번으로 이동해 조건 지우기 · 조회 · 접기 버튼을 안내합니다.',click:true},
-    {view:'list',no:'4',cap:'4. 작업지시 상세내역 확인',sub:'마우스가 4번으로 이동해 작업지시 상세내역 확인 영역을 안내합니다.'},
-    {view:'reg',no:'5',cap:'5. 저장 / 목록',sub:'마우스가 5번으로 이동해 신규등록 화면의 목록 · 저장 버튼을 안내합니다.',click:true},
-    {view:'reg',no:'6',cap:'6. 작업 기본정보',sub:'마우스가 6번으로 이동해 작업지시번호 · 작업일자 · 고객사 · 제품명 등 기본정보를 안내합니다.'},
-    {view:'reg',no:'7',cap:'7. 원료 투입계획',sub:'마우스가 7번으로 이동해 원료명 · 원료 LOT · 계획투입량 · 투입비율 영역을 안내합니다.'},
-    {view:'reg',no:'8',cap:'8. 작업지시사항 / 발송대상',sub:'마우스가 8번으로 이동해 작업지시사항과 수신부서 · 담당자 선택 영역을 안내합니다.'},
-    {view:'reg',no:'9',cap:'9. 목록으로 · 저장 후 인쇄 · 저장',sub:'마우스가 9번으로 이동해 최종 업무 버튼을 안내합니다.',click:true}
+    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'+ 신규 작업지시서 등록 버튼으로 새 작업을 시작합니다.',click:true},
+    {view:'list',no:'2',cap:'2. 조회조건 설정',sub:'고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간에서 필요한 조건만 선택합니다.'},
+    {view:'list',no:'3',cap:'3. 작업지시 현황 조회',sub:'조회로 검색하고 조건 지우기로 전체 목록을 다시 표시합니다.',click:true},
+    {view:'list',no:'4',cap:'4. 작업지시번호 / 인쇄 / 수정',sub:'파란 작업지시번호를 눌러 상세내용을 확인하고 필요 시 인쇄 또는 수정합니다.'},
+    {view:'reg',no:'5',cap:'5. 목록 · 임시저장 · 저장',sub:'입력 중에는 임시저장, 완료 후에는 저장을 사용합니다.',click:true},
+    {view:'reg',no:'6',cap:'6. 작업 기본정보 입력',sub:'작업일자부터 생산구분까지 위에서 아래 순서로 입력합니다.'},
+    {view:'reg',no:'7',cap:'7. 원료 LOT / 계획투입량',sub:'NMP · BYK180 · AOH30 · 중간배치 · SBS · SBR의 LOT와 계획투입량을 입력합니다.'},
+    {view:'reg',no:'8',cap:'8. 비고 / 발송대상',sub:'특이사항을 기록하고 수신부서와 담당자를 선택합니다.'},
+    {view:'reg',no:'9',cap:'9. 저장 · 저장 후 인쇄',sub:'최종 확인 후 저장하고 출력이 필요하면 저장 후 인쇄를 사용합니다.',click:true}
   ];
   let index=0;
   const moveCursorToCall=(no,click)=>{
