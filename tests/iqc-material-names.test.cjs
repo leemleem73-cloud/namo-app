@@ -44,7 +44,7 @@ test('photographed aliases deduplicate across unit case, supplier annotations an
  const f=fixture('',aliases.map(item=>({item})));await new Promise(setImmediate);
  const labels=f.control.options.map(o=>o.textContent);
  for(const canonical of ['바인더 (PAI)','NMP','Boehmite (AOH30)','SBR (ADC30-G)','PVdF (Solef5130)','PVdF (Solef5140)','SBS (KTR201)','BYK180 (분산제)'])assert.equal(labels.filter(s=>s===canonical).length,1,canonical);
- assert.equal(labels.filter(s=>/NMP/.test(s)).length,1);assert.ok(!labels.some(s=>/\[kg\]/i.test(s)));assert.ok(labels.includes('스피클러(a부, b부)'));
+ assert.equal(labels.filter(s=>/NMP/.test(s)).length,1);assert.ok(!labels.some(s=>/\[kg\]/i.test(s)));assert.ok(!labels.some(s=>/^스피[롤클]/.test(s)));
 });
 test('editing an alias uses one standard display label and preserves its exact saved value',async()=>{
  const current='NMP(SNET) [KG]',f=fixture(current,[{item:current},{item:'NMP(PUYANG GUANGMING CHEMICAL) [KG]'}]);await new Promise(setImmediate);
