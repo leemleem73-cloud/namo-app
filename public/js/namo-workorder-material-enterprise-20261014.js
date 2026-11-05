@@ -137,6 +137,7 @@
       totalRow.appendChild(totalCell('계획투입량','nwm-plan-total','kg'));
       totalRow.appendChild(totalCell('실투입량','nwm-actual-total','kg'));
       totalRow.appendChild(totalCell('투입비율','nwm-ratio-total','%'));
+      if (table.querySelector('th.material-remark')) totalRow.appendChild(el('td','nwm-summary-remark'));
       totalRow.appendChild(el('td','nwm-summary-actions'));
       footer.appendChild(totalRow);
       table.appendChild(footer);

@@ -299,6 +299,15 @@ try {
     line => '    lot:window.namoReadWorkMaterialLot?.(row) ?? (' + line.slice('    lot:'.length, -1) + '),'
   );
 
+  if (!normalized.includes('class="material-remark-input"')) {
+    normalized = normalized
+      .replace('<th class="act">관리</th></tr></thead><tbody></tbody></table>\n        <div class="work-note">', '<th class="material-remark">비고</th><th class="act">관리</th></tr></thead><tbody></tbody></table>\n        <div class="work-note">')
+      .replace('<td><button class="btn row-del" type="button">삭제</button></td>', '<td><input class="material-remark-input" type="text" aria-label="원료 비고" placeholder="비고 입력"></td><td><button class="btn row-del" type="button">삭제</button></td>')
+      .replace("        row.dataset.sourceMaterialName=m.sourceName||'';", "        row.dataset.sourceMaterialName=m.sourceName||'';\n        row.querySelector('.material-remark-input').value=String(m.remark??'');")
+      .replace("    sourceName:row.dataset.sourceMaterialName||'',", "    sourceName:row.dataset.sourceMaterialName||'',\n    remark:row.querySelector('.material-remark-input')?.value.trim()||'',")
+      .replace("})).filter(r=>r.name||r.lot||r.plan||r.actual);", "})).filter(r=>r.name||r.lot||r.plan||r.actual||r.remark);");
+  }
+
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');
   normalized = normalized.replace(/\n\s*<script id="qmes-scroll-wheel-fix-20260910">[\s\S]*?<\/script>/g, '');
   normalized = normalized.replace('</head>', `  ${QMES_SCROLL_FIX_STYLE}\n  ${QMES_SCROLL_FIX_SCRIPT}\n</head>`);
