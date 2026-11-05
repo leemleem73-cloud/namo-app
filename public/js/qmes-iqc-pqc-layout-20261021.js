@@ -212,3 +212,13 @@ window.updateIqcRemarkItems=function(row,remark,date,result){
 };
 const style=document.createElement('style');style.textContent='.iqc-edit-checks{margin-top:16px!important}.iqc-edit-checks>.std-result-wrap{padding-top:8px!important}.iqc-edit-checks .std-result td{font-weight:400!important}.iqc-edit-checks .std-result :is(input,select){font:inherit!important;color:#35435b!important}';document.head.append(style);
 })();
+
+/* Summarize actual saved inspection items, including label, mass and COA. */
+(function(){
+ if(typeof window.iqcItemSummary!=='function')return;
+ window.iqcItemSummary=function(row){
+  let items;try{items=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;}catch{items=[];}
+  const labels=[...new Set((Array.isArray(items)?items:[]).map(x=>String(x?.name||'').trim()).filter(n=>n&&!['비고','원본시트'].includes(n)&&!n.includes('판정')).map(n=>n.replace(/\s/g,'').toUpperCase()==='COA'?'COA 확인':n))];
+  return (labels.join(' / ')||'미등록').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ };
+})();

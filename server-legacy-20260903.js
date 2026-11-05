@@ -3302,6 +3302,7 @@ app.delete('/api/purchase-orders/:id', requireAdmin, async (req, res) => {
 function bindCrud(table, mapper) {
   app.get(`/api/${table}`, requireLogin, async (_req, res) => {
     try {
+      if(table==='iqc')await require('./qmes-iqc-missing-checks-20261105.cjs').run(pool,_req);
       const r = await db(`SELECT * FROM ${table} ORDER BY created_at DESC`);
       ok(res, r.rows);
     } catch (err) {
