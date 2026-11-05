@@ -31,3 +31,10 @@ test('note appearance persists with content, survives old-client updates and is 
  const updated=await f.call('POST','/api/personal-memos',memo({version:1,content:'양식 유지'}));assert.deepEqual(updated.body.data.appearance,style);
  assert.throws(()=>appearance({font:'injected'}));assert.throws(()=>appearance({size:999}));assert.throws(()=>appearance({paper:'invalid'}));
 });
+
+test('extended appearance options round-trip while legacy appearance remains compatible',async()=>{
+ const f=fixture(),style={paper:'mint',font:'gothic',size:24,bold:true,align:'right',shape:'square'};
+ const saved=await f.call('POST','/api/personal-memos',memo({appearance:style}));assert.deepEqual(saved.body.data.appearance,style);assert.deepEqual((await f.call('GET','/api/personal-memos')).body.data.notes[0].appearance,style);
+ for(const paper of ['yellow','white','blue','pink','green','lavender','peach','mint','teal','lilac','gray','sand'])assert.equal(appearance({paper}).paper,paper);
+ assert.throws(()=>appearance({align:'invalid'}));assert.throws(()=>appearance({shape:'invalid'}));assert(!Object.hasOwn(appearance({paper:'white',font:'default',size:14,bold:false}),'align'));
+});
