@@ -6,6 +6,7 @@ const { createHash } = require('node:crypto');
 const rules = require('./public/js/qmes-oqc-rules-20261019.js');
 const attachments = require('./qmes-oqc-attachments-20261104.cjs');
 const revision = require('./public/js/qmes-oqc-revision-core-20261104.js');
+const shipQtyRules=require('./public/js/qmes-oqc-shipqty-20261105.js');
 const endpoint = '/api/qmes-sync/oqc/register';
 const version = '20261021-1';
 const invalid = message => Object.assign(new Error(message), { status: 400 });
@@ -34,6 +35,7 @@ function normalizeRegistration(body) {
     customer: text(source.customer, '고객사', 200),
     inspector: text(source.inspector, '검사자', 120, true),
     remarks: text(source.remarks, '비고', 2000),
+    shipQty:shipQtyRules.normalize(source.shipQty),
     // Included in retry identity, but never used to issue a CoA or decide a result.
     coaStatus: text(source.coaStatus, 'CoA 상태', 40),
     inspectionStatus: text(source.inspectionStatus, '검사상태', 40),
@@ -56,7 +58,8 @@ function normalizeRegistration(body) {
   }
   const measurements = Object.fromEntries(rules.items.map(item => [item, entered[item] || ['', '', '']]));
   const attachment = attachments.validate(body.attachment);
-  const requestHash = createHash('sha256').update(JSON.stringify(attachment?{ fields, measurements, attachmentHash:attachment.hash }:{fields,measurements})).digest('hex');
+  const identityFields={...fields};if(identityFields.shipQty==='')delete identityFields.shipQty;
+  const requestHash = createHash('sha256').update(JSON.stringify(attachment?{ fields:identityFields, measurements, attachmentHash:attachment.hash }:{fields:identityFields,measurements})).digest('hex');
   return { requestId, recordKey: 'oqc-registration:' + requestId, requestHash, fields, measurements, attachment:body.attachment };
 }
 
@@ -79,7 +82,7 @@ function makePayload(normalized, user, now) {
       judge: result.items[check], inspectionDecision: '자동판정', inspectionStatus,
       // Inspection save does not confirm shipment or create a second manual hold on every row.
       // Failed measurements themselves create durable holds through the existing database trigger.
-      shippingStatus: '', coaStatus: '대기', shipQty: '', destination: '',
+      shippingStatus: '', coaStatus: '대기', shipQty: fields.shipQty, destination: '',
       note: '출하검사',
     };
   });

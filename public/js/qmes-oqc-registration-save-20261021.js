@@ -8,7 +8,7 @@
   const fieldsByLabel = {
     '검사일자': 'date', '검사자': 'inspector', '고객사': 'customer',
     '제품명': 'product', '완제품 LOT': 'lot', '비고': 'remarks',
-    'CoA 상태': 'coaStatus', '검사상태': 'inspectionStatus'
+    'CoA 상태': 'coaStatus', '검사상태': 'inspectionStatus', '출하수량 (kg)':'shipQty'
   };
   const tell = message => { if (typeof window.toast === 'function') window.toast(message); };
 
@@ -68,6 +68,7 @@
       showError(root, '검사일자, 완제품 LOT, 검사자를 입력해 주세요.');
       return;
     }
+    try{fields.shipQty=window.qmesOqcShipQty.normalize(fields.shipQty);}catch(error){showError(root,error.message);return;}
     const measurements = {};
     root.querySelectorAll('.std-result tbody tr').forEach(row => {
       const name = window.qmesOqcRules.canonical(row.querySelector('.item')?.textContent.trim());

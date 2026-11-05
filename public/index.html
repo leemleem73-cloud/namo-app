@@ -3096,7 +3096,7 @@ const pageInfo = {
   inventory:['재고현황','원료 및 완제품의 현재 재고현황을 확인합니다.', ['구분','품목코드','품목명','LOT NO','현재고','단위','상태']],
   incoming:['수입검사','입고 원료 및 부자재의 LOT별 수입검사(IQC) 결과를 관리합니다.', ['입고일자','공급업체','품목명','원료 LOT','입고 중량 (kg)','검사항목','검사합부','결재상태','검사자','성적서','비고']],
   process:['공정검사','생산 공정 중 LOT별 공정검사 결과와 이상유무를 관리합니다.', ['검사일자','작업지시번호','제품명','생산 LOT NO','공정명','검사항목','검사합부','검사자','성적서','비고']],
-  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','최종 수정일','리비전','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','성적서','첨부파일','비고']],
+  outgoing:['출하검사','출하 전 완제품의 LOT별 최종검사와 CoA 발행상태를 관리합니다.', ['검사일자','최종 수정일','리비전','고객사','제품명','완제품 LOT','검사항목','검사합부','검사자','출하상태','출하수량(kg)','성적서','첨부파일','비고']],
   lotTrace:['LOT 추적','원재료 LOT에서 작업지시, 생산 LOT, 완제품 LOT, 출하까지 정방향·역방향 추적합니다.', ['원료 LOT','작업지시번호','생산 LOT NO','완제품 LOT','고객사','출하일','추적상태']],
   equipment:['설비관리','관리계획서 기준으로 생산설비·검사설비의 조건, 점검, 교정 및 이력을 관리합니다.', ['설비번호','설비명','구분','최근점검일','차기점검일','상태','담당자']],
   quality:['품질관리','IQC, 공정검사, 완제품 검사 및 CoA 관리 화면입니다.', ['검사구분','LOT NO','검사일','검사항목','판정','검사자','성적서']],
@@ -3644,9 +3644,9 @@ function wireOutgoingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,110,150,70,120,130,120,340,85,85,90,80,250,280];
-  const minimums=[86,100,135,65,100,110,105,220,75,75,80,70,200,220];
-  const storageKey='namo-outgoing-column-widths-v9-balanced-content-widths';
+  const defaults=[86,110,150,70,120,130,120,340,85,85,90,100,80,250,280];
+  const minimums=[86,100,135,65,100,110,105,220,75,75,80,90,70,200,220];
+  const storageKey='namo-outgoing-column-widths-v10-shipment-qty';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3675,7 +3675,7 @@ function wireOutgoingColumnResize(section){
   let containerWidth=0;
   function apply(){
     const viewport=wrap.clientWidth||available;
-    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'성적서':80,'첨부파일':225,'비고':250};
+    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'출하수량(kg)':100,'성적서':80,'첨부파일':225,'비고':250};
     const effective=labels.map((label,index)=>customized?Math.max(minimums[index]||65,Math.min(720,widths[index])):(index===0?86:preferred[label]||100));
     if(!customized){
       const total=effective.reduce((sum,width)=>sum+width,0);
@@ -5507,7 +5507,7 @@ async function loadHistoricalInspectionRows(section,id){
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),row.inspector,'',row.remarks||'-']
-        :[row.date,window.qmesOqcRevision?.formatModifiedAt(window.qmesOqcRevision.metadata(row.__groupChecks||[row]).modifiedAt)||'—','Rev.'+(window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정','','',''];
+        :[row.date,window.qmesOqcRevision?.formatModifiedAt(window.qmesOqcRevision.metadata(row.__groupChecks||[row]).modifiedAt)||'—','Rev.'+(window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),row.inspector||'-',row.shippingStatus||'미지정',String(row.shipQty??'').trim()||'—','','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='outgoing'&&cols[index]==='최종 수정일'){const author=window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).modifiedBy||'';return '<td class="oqc-revision-list-cell" title="'+safe(author?'수정자: '+author:'수정 이력 없음')+'">'+safe(v)+'</td>';}
         if(id==='outgoing'&&cols[index]==='리비전')return '<td class="oqc-revision-list-cell"><span class="oqc-revision-badge">'+safe(v)+'</span></td>';
@@ -8229,9 +8229,10 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261105-item-names"></script>
-<script src="./js/qmes-oqc-revision-core-20261104.js?v=20261105-daily"></script>
+<script src="./js/qmes-oqc-shipqty-20261105.js?v=1"></script>
+<script src="./js/qmes-oqc-revision-core-20261104.js?v=20261105-qty"></script>
 <script src="./js/qmes-oqc-attachments-20261104.js?v=20261105-full-filename"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261105-smooth-overflow"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261105-ship-qty"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
@@ -8250,8 +8251,8 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-stock-grid-20261104.js?v=7-stock-status"></script>
 <script defer src="./js/qmes-material-stock-core-20261103.js?v=6-delete-usage"></script>
 <script defer src="./js/qmes-material-stock-ui-20261103.js?v=16-delete-usage"></script>
-<script defer src="./js/qmes-finished-stock-core-20261103.js?v=2-delete-usage"></script>
-<script defer src="./js/qmes-finished-stock-ui-20261103.js?v=11-delete-usage"></script>
+<script defer src="./js/qmes-finished-stock-core-20261103.js?v=20261105-ship-qty"></script>
+<script defer src="./js/qmes-finished-stock-ui-20261103.js?v=20261105-ship-qty"></script>
 
 <!-- Inventory management navigation and dashboard shortcut retired; inventory records stay intact. -->
 <style>#sidebar .menu[data-page="inventory"],#inventory{display:none!important}</style>
@@ -8319,7 +8320,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-iqc-pqc-layout-20261021.js?v=20261103-iqc-select-text-start3"></script>
 <script src="./js/qmes-iqc-approval-parity-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-parity-20261021.js?v=20261027-single-border2"></script>
-<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261104-revision1"></script>
+<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261105-ship-qty"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
@@ -8331,7 +8332,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261105-frame"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261021-1"></script>
 <script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261105-select-frame"></script>
-<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261104-coa-file"></script>
+<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261105-ship-qty"></script>
 <link rel="stylesheet" href="./css/qmes-pqc-basic-compact-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">

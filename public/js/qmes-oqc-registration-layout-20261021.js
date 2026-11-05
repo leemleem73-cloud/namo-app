@@ -36,6 +36,7 @@
       fields[index].remove();
       info.append(cell);
     }
+    const shipCell=document.createElement('div');shipCell.className='am-inline-cell';shipCell.innerHTML='<label for="oqcRegistrationShipQty">출하수량 (kg)</label><div class="v"><input id="oqcRegistrationShipQty" data-oqc-registration-field="shipQty" type="number" min="0" step="0.000001" placeholder="실제 출하수량 입력"></div>';info.append(shipCell);
     if(window.qmesOqcRevision){
       window.qmesOqcRevision.installStyle();
       const dateCell=[...info.querySelectorAll('.am-inline-cell')].find(cell=>cell.querySelector('label')?.textContent.trim()==='검사일자');

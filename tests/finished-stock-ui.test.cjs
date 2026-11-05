@@ -1,12 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const core=require('../public/js/qmes-finished-stock-core-20261103.js'),source=fs.readFileSync(__dirname+'/../public/js/qmes-finished-stock-ui-20261103.js','utf8');
 const flush=()=>new Promise(r=>setImmediate(r));
-function harness(withGrid=false){let gridOptions;const writes=[],records=[],dialogs=[],requests=[];let fail=false;const winEvents={},search={value:'',addEventListener(){}};
+function harness(withGrid=false,overrides={}){let gridOptions;const writes=[],records=[],dialogs=[],requests=[];let fail=false;const winEvents={},search={value:'',addEventListener(){}};
  function node(){return {hidden:false,html:'',handlers:{},set innerHTML(v){this.html=v;},get innerHTML(){return this.html;},setAttribute(){},classList:{contains:()=>true},addEventListener(n,fn){this.handlers[n]=fn;},querySelector(){return search;},querySelectorAll(){return [];},append(){},prepend(){}};}
  const pageRoot=node(),raw=node(),tabs=node(),root=node();let divCount=0;
  const doc={hidden:false,head:{append(){}},body:{append(d){dialogs.push(d);}},getElementById:id=>id==='materialStock'?pageRoot:raw,addEventListener(){},querySelectorAll:()=>dialogs,createElement(tag){if(tag==='nav')return tabs;if(tag==='div'){divCount++;return root;}if(tag==='style')return {};const values={},form={values,querySelector:()=>submit},submit={disabled:false},error={hidden:true,textContent:''},close={};const d={closed:false,listeners:{},innerHTML:'',form,querySelector(s){return s==='form'?form:s==='[data-error]'?error:close;},addEventListener(n,fn){this.listeners[n]=fn;},showModal(){},close(){this.closed=true;this.listeners.close?.();},remove(){}};return d;}};
  const orders=[{id:'w1',fields:{'생산 LOT NO':'F1','제품명':'제품A','계획수량':160},materials:[{actual:170}]}],worklogs=[{id:'wl1',finishedLot:'F1',prodQty:150,workDate:'2026-10-06'}];const original=JSON.stringify({orders,worklogs});
- const fetcher=async(url,opt)=>{requests.push(url);if(opt.method==='POST'){writes.push(JSON.parse(opt.body));if(fail)return {ok:false,json:async()=>({success:false,message:'DB 저장 실패'})};const {key,payload}=writes.at(-1);records.push({record_key:key,payload});return {ok:true,json:async()=>({success:true,data:{record_key:key}})};}const data=url==='/api/qmes/work-orders'?orders:url==='/api/worklog'?worklogs:url==='/api/qmes-sync/inventory'?[{record_key:'erp:shipping',payload:{rows:[{shipNo:'S1',lot:'F1',qty:20,actualShipment:true}]}},...records]:url==='/api/oqc'?[{lot:'F1',date:'2026-10-06',product:'제품A',judge:'합격'}]:url.includes('quality-gate')?{holds:[]}:[];return {ok:true,json:async()=>({success:true,data})};};
+ const fetcher=async(url,opt)=>{requests.push(url);if(opt.method==='POST'){writes.push(JSON.parse(opt.body));if(fail)return {ok:false,json:async()=>({success:false,message:'DB 저장 실패'})};const {key,payload}=writes.at(-1);records.push({record_key:key,payload});return {ok:true,json:async()=>({success:true,data:{record_key:key}})};}const data=Object.prototype.hasOwnProperty.call(overrides,url)?overrides[url]:url==='/api/qmes/work-orders'?orders:url==='/api/worklog'?worklogs:url==='/api/qmes-sync/inventory'?[{record_key:'erp:shipping',payload:{rows:[{shipNo:'S1',lot:'F1',qty:20,actualShipment:true}]}},...records]:url==='/api/oqc'?[{lot:'F1',date:'2026-10-06',product:'제품A',judge:'합격'}]:url.includes('quality-gate')?{holds:[]}:[];return {ok:true,json:async()=>({success:true,data})};};
  const win={qmesFinishedStockCore:core,qmesConfirm:async()=>true,toast(){},qmesAuthDataReady:{wait:async()=>{}},addEventListener(n,fn){winEvents[n]=fn;}};
  if(withGrid)win.qmesStockGrid={...require('../public/js/qmes-stock-grid-20261104.js'),capture(){},clear(){},mount(_root,options){gridOptions=options;}};
  class Data{constructor(f){this.v=f.values;}[Symbol.iterator](){return Object.entries(this.v)[Symbol.iterator]();}}
@@ -42,4 +42,10 @@ test('finished record can return to raw record entry without saving in either le
 });
 test('finished record cancel closes the form without saving a movement',async()=>{
  const h=harness();await h.win.qmesFinishedStock.openRecord();const d=h.dialogs.at(-1);assert.ok(d.className.includes('stock-entry'));d.querySelector('[data-cancel]').onclick();assert.equal(d.closed,true);assert.equal(h.writes.length,0);
+});
+
+test('finished stock calls it production quantity and favors current synchronized OQC shipment data',async()=>{
+ const row={lot:'F1',product:'제품A',date:'2026-10-06',judge:'합격',inspectionDecision:'자동판정',shippingStatus:'출하완료',shipQty:'15'};
+ const h=harness(false,{'/api/qmes-sync/inventory':[],'/api/oqc':[{...row,shipQty:'999'}],'/api/qmes-sync/oqc':[{record_key:'new',payload:{rows:Array.from({length:8},(_,i)=>({...row,id:'r'+i}))}},{record_key:'deleted',payload:{deleted:true,rows:[{...row,shipQty:'800'}]}}]});
+ h.tabs.handlers.click({target:{closest:()=>({dataset:{stockTab:'finished'}})}});await flush();assert(h.root.html.includes('생산량(kg)'));assert(!h.root.html.includes('생산 입고'));assert(h.root.html.includes('135'));
 });
