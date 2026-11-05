@@ -3644,7 +3644,7 @@ function wireOutgoingColumnResize(section){
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,110,150,70,120,130,120,340,85,85,90,80,250,280];
   const minimums=[86,100,135,65,100,110,105,220,75,75,80,70,200,220];
-  const storageKey='namo-outgoing-column-widths-v8-compact-content-widths';
+  const storageKey='namo-outgoing-column-widths-v9-balanced-content-widths';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3673,13 +3673,13 @@ function wireOutgoingColumnResize(section){
   let containerWidth=0;
   function apply(){
     const viewport=wrap.clientWidth||available;
-    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'성적서':80,'첨부파일':250,'비고':280};
+    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'성적서':80,'첨부파일':225,'비고':250};
     const effective=labels.map((label,index)=>customized?Math.max(minimums[index]||65,Math.min(720,widths[index])):(index===0?86:preferred[label]||100));
     if(!customized){
       const total=effective.reduce((sum,width)=>sum+width,0);
       if(total>viewport){const flexible=labels.map((label,index)=>['검사항목','첨부파일','비고'].includes(label)?index:-1).filter(index=>index>=0);let excess=total-viewport;
         for(const index of flexible){const reduction=Math.min(excess,Math.max(0,effective[index]-minimums[index]));effective[index]-=reduction;excess-=reduction;}
-      }else{const extra=viewport-total;const items=labels.indexOf('검사항목'),notes=labels.indexOf('비고'),files=labels.indexOf('첨부파일');if(items>=0)effective[items]+=extra*.35;if(notes>=0)effective[notes]+=extra*.35;if(files>=0)effective[files]+=extra*.30;}
+      }else{const extra=viewport-total;const others=labels.map((label,index)=>index>0&&!['비고','첨부파일'].includes(label)?index:-1).filter(index=>index>=0);const share=others.length?extra/others.length:0;others.forEach(index=>effective[index]+=share);}
     }
     widths=effective.slice();
     widths.forEach((width,i)=>{
