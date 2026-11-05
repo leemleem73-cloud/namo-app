@@ -45,10 +45,12 @@
             input.value = value;
             input.dataset.oqcAutoOptions = '1';
           }
-          if (name === '절연저항' && input.type === 'number') {
-            input.type = 'text';
-            input.removeAttribute('inputmode');
-            input.placeholder = '측정값 또는 Overflow';
+          if (name === '절연저항' && input.tagName !== 'SELECT') {
+            const select=document.createElement('select');
+            for(const attr of input.attributes)if(!['type','inputmode','placeholder'].includes(attr.name))select.setAttribute(attr.name,attr.value);
+            const value=input.value;select.disabled=input.disabled;
+            for(const v of [...new Set(['','Overflow',...(value?[value]:[])])]){const option=document.createElement('option');option.value=v;option.textContent=v||'선택';select.appendChild(option);}
+            select.value=value;input.replaceWith(select);controls[index]=select;
           }
         });
         measurements[name] = controls.map(input => input.value);
@@ -91,14 +93,15 @@
     return result;
   };
   // Recalculate before the existing change/save and sequential-lock listeners read the values.
-  for (const event of ['input', 'change', 'click']) document.addEventListener(event, e => {
-    if (e.target.closest(scope) || e.target.closest('#modalSave,[data-am-save]')) refresh();
+  let frame=0;function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;refresh();});}
+  for (const event of ['input', 'change']) document.addEventListener(event, e => {
+    if (e.target.closest(scope) || e.target.closest('#modalSave,[data-am-save]')) schedule();
   }, true);
   let pending = false;
   new MutationObserver(() => {
     if (pending) return;
     pending = true;
-    queueMicrotask(() => { pending = false; refresh(); });
+    requestAnimationFrame(() => { pending = false; refresh(); });
   }).observe(document.body, { childList: true, subtree: true });
   refresh();
 })();
