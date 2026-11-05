@@ -232,7 +232,8 @@
     select.dataset.choiceKey=key;
     select.replaceChildren();
     select.add(new Option('LOT 선택',''));
-    const seen=new Set();
+    select.add(new Option('- (LOT 미부여 · 연구 샘플)','-'));
+    const seen=new Set(['-']);
     choices.forEach(record=>{
       const lot=text(record.lot);if(seen.has(lot))return;seen.add(lot);
       select.add(new Option(lot,lot));

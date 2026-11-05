@@ -88,6 +88,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   for(const [index,m] of (order.materials||[]).entries()){
    if(m.name==='중간배치')continue;
    const name=m.sourceName||m.name,code=lot(m.lot),actual=number(m.actual),plan=number(m.plan);
+   if(code==='-'){if(actual>0||actual===null&&plan>0)unallocated.push({source:'작업지시',id,material:name,lot:'-',date,output,quantity:actual,note:'LOT 미부여 연구 샘플 · 생산 LOT '+output+' · 실투입 '+(actual===null?'미입력':actual+' kg')+' · 수입검사 입고 근거 없음 · 일반 원료 재고 미차감'});continue;}
    if(!code){if((actual||plan)>0)unallocated.push({source:'작업지시',id,material:name,note:'원료 LOT 미입력 · 수량 미차감'});continue;}
    const g=resolve(name,code);if(!g){unallocated.push({source:'작업지시',id,material:name,lot:code,note:'여러 원료/공급업체와 일치 · 수량 미차감'});continue;}
    if(actual!==null&&actual<0){g.issues.push('실투입량 음수 확인 필요');continue;}
@@ -101,6 +102,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
  for(const row of actuals){if(row.deleted)continue;const code=lot(row.lotNo),output=lot(row.finishedLot),key=JSON.stringify([output,code]);if(tracedKeys.has(key))continue;
   const identity=text(row.id)||JSON.stringify([day(row.workDate),code,output,row.material,row.inputQty,row.seq,row.inputTime]);if(seenActuals.has(identity))continue;seenActuals.add(identity);
   const qty=number(row.inputQty);if(qty===null||qty<0||!code)continue;
+  if(code==='-'){if(qty>0)unallocated.push({source:'작업실적',id:identity,material:row.material,lot:'-',output,quantity:qty,note:'LOT 미부여 연구 샘플 · 실투입 '+qty+' kg · 일반 원료 재고 미차감'});continue;}
   const g=resolve(row.material,code,row.supName);if(!g){unallocated.push({source:'작업실적',id:identity,lot:code,note:'입고 원료 연결 확인 필요 · 미차감'});continue;}
   g.uses.push({kind:'생산 투입',date:day(row.workDate),qty:micro(qty),source:'작업실적',id:identity,output});
   let applied=micro(qty);for(const planned of plans.filter(p=>p.g===g&&p.key===key)){const amount=Math.min(planned.qty,applied);planned.qty-=amount;applied-=amount;if(!applied)break;}
