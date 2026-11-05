@@ -18,7 +18,7 @@ function materialChoices(current){
  const values=[],seen=new Set();
  for(const input of [...MATERIAL_NAMES,...history.map(row=>row.material),current]){
   const label=normalizeMaterialName(input),key=label.toLocaleUpperCase().replace(/\s+/g,'');
-  if(!label||seen.has(key))continue;seen.add(key);values.push(label);
+  if(!label||/^스피[롤클]/.test(label)||seen.has(key))continue;seen.add(key);values.push(label);
  }
  return values;
 }
