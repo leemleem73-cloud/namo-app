@@ -74,10 +74,11 @@
     });
   }
   const matches = event => event.target.matches('[data-oqc-value],.std-measure,.std-row-judge');
-  document.addEventListener('input', event => { if (matches(event)) refresh(); });
-  document.addEventListener('change', event => { if (matches(event)) refresh(); });
+  let frame=0;function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;refresh();});}
+  document.addEventListener('input', event => { if (matches(event)) schedule(); });
+  document.addEventListener('change', event => { if (matches(event)) schedule(); });
   let pending = false;
-  new MutationObserver(() => { if (pending) return; pending = true; queueMicrotask(() => { pending = false; refresh(); }); })
+  new MutationObserver(() => { if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; refresh(); }); })
     .observe(document.body, { childList: true, subtree: true });
   refresh();
 })();
