@@ -2070,6 +2070,8 @@ app.get('/api/qmes-sync/:type', requireLogin, async (req, res) => {
   const type = qmesSyncType(req, res);
   if (!type) return;
   try {
+
+    if(type==='oqc')await require('./qmes-oqc-revision-correction-20261105.cjs').ensure(pool,req,auditLog);
     const result = await db(
       `SELECT record_type, record_key, payload, updated_by, updated_at
        FROM qmes_sync_records
