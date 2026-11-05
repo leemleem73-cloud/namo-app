@@ -3,21 +3,23 @@ const mounted=new WeakSet();let history=[],pending=null,loadedAt=0;
 const clean=v=>String(v??'').trim();
 const MATERIAL_NAMES=['바인더 (PAI)','NMP','Boehmite (AOH30)','SBR (ADC30-G)','PVdF (Solef5130)','PVdF (Solef5140)','SBS (KTR201)','BYK180 (분산제)'];
 function normalizeMaterialName(value){
- const original=clean(value),key=original.toUpperCase().replace(/[\s()_-]/g,'');
+ const original=clean(value).replace(/\s*\[\s*kg\s*\]\s*$/i,'').trim(),key=original.toUpperCase().replace(/[\s()_-]/g,'');
  if(['PAI','바인더PAI','바인더'].includes(key))return '바인더 (PAI)';
- if(key==='NMP')return 'NMP';
+ if(key==='NMP'||/^NMP\([^+]*\)$/i.test(original))return 'NMP';
  if(['AOH30','BOEHMITE','BOEHMITEAOH30','AOH30BOEHMITE'].includes(key))return 'Boehmite (AOH30)';
  if(['ADC30G','SBRADC30G','ADC30GSBR'].includes(key))return 'SBR (ADC30-G)';
  if(['SOLEF5130','PVDFSOLEF5130','SOLEF5130PVDF'].includes(key))return 'PVdF (Solef5130)';
  if(['SOLEF5140','PVDFSOLEF5140','SOLEF5140PVDF'].includes(key))return 'PVdF (Solef5140)';
  if(['KTR201','SBSKTR201','KTR201SBS'].includes(key))return 'SBS (KTR201)';
- if(['BYK180','분산제','BYK180분산제','분산제BYK180'].includes(key))return 'BYK180 (분산제)';
+ if(['BYK180','분산제','BYK180분산제','분산제BYK180','BYK180DISPERSANT'].includes(key))return 'BYK180 (분산제)';
  return original;
 }
 function materialChoices(current){
- const values=[...new Set([...MATERIAL_NAMES,...history.map(row=>normalizeMaterialName(row.material)).filter(Boolean)])];
- // Preserve the exact saved value when editing; never silently rewrite historical names.
- if(current&&!values.includes(current))values.unshift(current);
+ const values=[],seen=new Set();
+ for(const input of [...MATERIAL_NAMES,...history.map(row=>row.material),current]){
+  const label=normalizeMaterialName(input),key=label.toLocaleUpperCase().replace(/\s+/g,'');
+  if(!label||seen.has(key))continue;seen.add(key);values.push(label);
+ }
  return values;
 }
 
@@ -53,9 +55,9 @@ function install(control,kind){
  back.onclick=()=>{setManual(false);select.focus();};
  function populate(){
   const current=select.value==='__manual__'?'':select.value;
-  const values=kind==='material'?materialChoices(current):[...new Set(history.map(row=>row[kind]).filter(Boolean))];if(current&&!values.includes(current))values.unshift(current);
+  const values=kind==='material'?materialChoices(current):[...new Set(history.map(row=>row[kind]).filter(Boolean))];if(kind!=='material'&&current&&!values.includes(current))values.unshift(current);
   select.replaceChildren(new Option(kind==='material'?'원료명 선택':kind==='supplier'?'공급업체 선택':'원료 LOT 선택',''));
-  values.forEach(value=>select.append(new Option(value,value)));
+  values.forEach(value=>select.append(new Option(value,kind==='material'&&current&&normalizeMaterialName(current).toLocaleUpperCase().replace(/\s+/g,'')===value.toLocaleUpperCase().replace(/\s+/g,'')?current:value)));
   select.append(new Option('직접입력','__manual__'));select.value=current;
  }
  populate();

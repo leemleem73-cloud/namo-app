@@ -38,3 +38,16 @@ test('history aliases share proposed names while existing saved spelling and unk
  assert.ok(names.includes('PVDF (Solef9999)'));assert.ok(names.includes('연구 샘플 B'));
  f.control.value='PVdF (Solef5140)';f.control.dispatchEvent(new f.Event('change'));assert.equal(f.control.value,'PVdF (Solef5140)');assert.equal(f.manual.hidden,true);
 });
+
+test('photographed aliases deduplicate across unit case, supplier annotations and reversed English names',async()=>{
+ const aliases=['BYK180(Dispersant) [KG]','ADC30G(sbr) [kg]','NMP(SNET) [kg]','PAI [KG]','Solef5130(PVdF) [KG]','AOH30(Boehmite) [kg]','NMP(PUYANG GUANGMING CHEMICAL) [KG]','NMP(SNET) [KG]','AOH30(Boehmite) [KG]','ADC30G(SBR) [KG]','SBS(KTR-201) [KG]','Solef5140 [KG]','스피클러(a부, b부) [KG]'];
+ const f=fixture('',aliases.map(item=>({item})));await new Promise(setImmediate);
+ const labels=f.control.options.map(o=>o.textContent);
+ for(const canonical of ['바인더 (PAI)','NMP','Boehmite (AOH30)','SBR (ADC30-G)','PVdF (Solef5130)','PVdF (Solef5140)','SBS (KTR201)','BYK180 (분산제)'])assert.equal(labels.filter(s=>s===canonical).length,1,canonical);
+ assert.equal(labels.filter(s=>/NMP/.test(s)).length,1);assert.ok(!labels.some(s=>/\[kg\]/i.test(s)));assert.ok(labels.includes('스피클러(a부, b부)'));
+});
+test('editing an alias uses one standard display label and preserves its exact saved value',async()=>{
+ const current='NMP(SNET) [KG]',f=fixture(current,[{item:current},{item:'NMP(PUYANG GUANGMING CHEMICAL) [KG]'}]);await new Promise(setImmediate);
+ assert.equal(f.control.value,current);assert.equal(f.control.options.filter(o=>o.textContent==='NMP').length,1);
+ assert.equal(f.control.options.find(o=>o.value===current).textContent,'NMP');
+});
