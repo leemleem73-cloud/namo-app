@@ -35,6 +35,13 @@ async function api(req, res) {
     const events = await pool.query(`SELECT * FROM qmes_lot_gate_events WHERE ($1='' OR lot=$1) ORDER BY id DESC LIMIT 100`, [lot]);
     return res.json({ success: true, data: { holds: result.rows, events: events.rows, canRelease: authorized(u) } });
   }
+  if (req.method === 'GET' && route === '/historical') {
+    const u=await user(pool,req);
+    if(u?.status!=='APPROVED')return reject(res,403,'승인된 사용자만 조회할 수 있습니다.');
+    const lot=str(req.query.lot).toUpperCase(),date=str(req.query.date);
+    const result=await pool.query('SELECT qmes_gate_historical_eligible($1,$2) AS eligible',[lot,date]);
+    return res.json({success:true,data:{eligible:result.rows[0]?.eligible===true}});
+  }
   if (req.method === 'GET' && route === '/status') {
     const lot = str(req.query.lot).toUpperCase();
     if (!lot) return reject(res, 400, 'LOT를 입력하세요.');
@@ -108,7 +115,7 @@ async function middleware(req, res, next) {
   try {
     await schema();
     // Add triggers if another addon lazily created a table after startup.
-    await pool.query('SELECT qmes_gate_install()');
+    await pool.query('SELECT qmes_gate_install(); SELECT qmes_gate_historical_seed()');
     if (own) return await api(req, res);
     const expected = req.path.startsWith('/api/qmes/oqc/coa/') ? 'qmes_oqc_coa_issues'
       : req.path.startsWith('/api/qmes/work-orders') ? 'qmes_work_order_documents'

@@ -159,6 +159,72 @@ BEGIN
  RETURN true;
 END $$;
 
+
+
+-- Historical record correction requested by the operator for one already approved and shipped LOT.
+-- This does not release LOT holds or authorize new work orders, production, inventory or shipments.
+CREATE TABLE IF NOT EXISTS qmes_historical_corrections (
+ lot TEXT NOT NULL, inspection_date TEXT NOT NULL, statement TEXT NOT NULL,
+ basis JSONB NOT NULL, hold_ids BIGINT[] NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+ PRIMARY KEY(lot,inspection_date)
+);
+CREATE OR REPLACE FUNCTION qmes_gate_historical_basis(j JSONB) RETURNS JSONB LANGUAGE SQL IMMUTABLE AS $$
+ SELECT jsonb_build_object('id',coalesce(j->>'id',''),'lot',qmes_gate_lot(j),
+ 'date',left(coalesce(j->>'date',j->>'inspectionDate',j->>'inspectedAt',''),10),
+ 'check',CASE j->>'check' WHEN '수분' THEN '수분율' WHEN '입도' THEN '입도(Dmax)' ELSE coalesce(j->>'check','') END,
+ 'measurements',CASE WHEN j ? 'measurements' THEN j->'measurements' ELSE coalesce(j->'value','null'::jsonb) END)
+$$;
+CREATE OR REPLACE FUNCTION qmes_gate_historical_seed() RETURNS VOID LANGUAGE plpgsql AS $$
+DECLARE evidence JSONB; held BIGINT[]; inserted TEXT;
+BEGIN
+ IF EXISTS(SELECT 1 FROM qmes_historical_corrections WHERE lot='DBJ1501' AND inspection_date='2026-10-15') THEN RETURN; END IF;
+ IF NOT EXISTS(SELECT 1 FROM qmes_lot_observations WHERE lot='DBJ1501' AND inspection_date='2026-10-15' AND kind='pqc')
+ OR NOT EXISTS(SELECT 1 FROM qmes_lot_observations WHERE lot='DBJ1501' AND inspection_date='2026-10-15' AND kind='oqc') THEN RETURN; END IF;
+ SELECT jsonb_agg(jsonb_build_object('source',source,'entry',entry,'kind',kind,'basis',qmes_gate_historical_basis(payload)) ORDER BY source,entry)
+ INTO evidence FROM qmes_lot_observations WHERE lot='DBJ1501' AND inspection_date='2026-10-15' AND kind IN ('pqc','oqc');
+ SELECT coalesce(array_agg(id),'{}'::bigint[]) INTO held FROM qmes_lot_holds
+ WHERE lot='DBJ1501' AND released_at IS NULL AND kind IN ('pqc','oqc','ncr');
+ INSERT INTO qmes_historical_corrections(lot,inspection_date,statement,basis,hold_ids)
+ VALUES('DBJ1501','2026-10-15','2026-11-05 사용자 요청: 사내 기준 이탈이나 검토·승인 후 공정 진행 및 출하가 완료된 과거 기록을 정정함. 실제 승인자·승인일을 임의 생성하지 않음.',evidence,held)
+ ON CONFLICT DO NOTHING RETURNING lot INTO inserted;
+ IF inserted IS NOT NULL THEN INSERT INTO qmes_lot_gate_events(action,lot,actor,detail)
+ VALUES('HISTORICAL_CORRECTION','DBJ1501','사용자 요청에 따른 과거 이력 정정',jsonb_build_object('inspectionDate','2026-10-15','workOrder','WO-20261015-001','scope','existing-completed-records-only','holdsRemainActive',true)); END IF;
+END $$;
+CREATE OR REPLACE FUNCTION qmes_gate_historical_eligible(l TEXT,d TEXT) RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+ SELECT EXISTS(SELECT 1 FROM qmes_historical_corrections c WHERE c.lot=upper(btrim(l)) AND c.inspection_date=d
+ AND NOT EXISTS(SELECT 1 FROM qmes_lot_holds h WHERE h.lot=c.lot AND h.released_at IS NULL AND NOT(h.id=ANY(c.hold_ids)))
+ AND c.basis=(SELECT jsonb_agg(jsonb_build_object('source',o.source,'entry',o.entry,'kind',o.kind,'basis',qmes_gate_historical_basis(o.payload)) ORDER BY o.source,o.entry)
+ FROM qmes_lot_observations o WHERE o.lot=c.lot AND o.inspection_date=c.inspection_date AND o.kind IN ('pqc','oqc')))
+$$;
+CREATE OR REPLACE FUNCTION qmes_gate_historical_row(oldj JSONB,newj JSONB) RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+ SELECT qmes_gate_lot(oldj)='DBJ1501' AND qmes_gate_lot(newj)='DBJ1501'
+ AND left(coalesce(newj->>'date',newj->>'inspectionDate',''),10)='2026-10-15'
+ AND qmes_gate_historical_basis(oldj)=qmes_gate_historical_basis(newj)
+ AND qmes_gate_historical_eligible('DBJ1501','2026-10-15')
+ AND EXISTS(SELECT 1 FROM qmes_historical_corrections c CROSS JOIN LATERAL jsonb_array_elements(c.basis) item
+ WHERE c.lot='DBJ1501' AND c.inspection_date='2026-10-15' AND item->>'kind'='oqc'
+ AND item->'basis'=qmes_gate_historical_basis(newj))
+$$;
+CREATE OR REPLACE FUNCTION qmes_gate_historical_oqc(before_rows JSONB,after_rows JSONB) RETURNS BOOLEAN LANGUAGE plpgsql STABLE AS $$
+DECLARE oldrow JSONB; newrow JSONB; n INT;
+BEGIN
+ IF jsonb_typeof(before_rows)<>'array' OR jsonb_typeof(after_rows)<>'array' THEN RETURN false; END IF;
+ n:=jsonb_array_length(before_rows);IF n=0 OR n<>jsonb_array_length(after_rows) THEN RETURN false; END IF;
+ FOR i IN 0..n-1 LOOP
+  oldrow:=before_rows->i;newrow:=after_rows->i;
+  IF NOT coalesce(qmes_gate_historical_row(oldrow,newrow),false) THEN RETURN false; END IF;
+ END LOOP;
+ RETURN true;
+END $$;
+CREATE OR REPLACE FUNCTION qmes_gate_historical_document(newj JSONB,oldj JSONB) RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+ SELECT qmes_gate_lot(newj)='DBJ1501' AND qmes_gate_lot(oldj)='DBJ1501'
+ AND coalesce(newj#>>'{fields,작업지시번호}',newj->>'workOrderNo','')='WO-20261015-001'
+ AND coalesce(oldj#>>'{fields,작업지시번호}',oldj->>'workOrderNo','')='WO-20261015-001'
+ AND coalesce(oldj#>>'{fields,진행상태}',oldj->>'manualStatus',oldj->>'status','') IN ('완료','공정완료','생산완료','COMPLETED')
+ AND coalesce(newj#>>'{fields,진행상태}',newj->>'manualStatus',newj->>'status','') IN ('완료','공정완료','생산완료','COMPLETED')
+ AND qmes_gate_historical_eligible('DBJ1501','2026-10-15')
+$$;
+
 CREATE OR REPLACE FUNCTION qmes_gate_assert(l TEXT, action TEXT, shipping BOOLEAN DEFAULT false, visited TEXT[] DEFAULT '{}') RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE h RECORD; d RECORD; m JSONB; raw_lot TEXT;
 BEGIN
@@ -210,7 +276,7 @@ BEGIN
  l:=qmes_gate_lot(j); status:=coalesce(j#>>'{fields,진행상태}',j->>'manualStatus',j->>'status','');
  IF status IN ('완료','공정완료','생산완료','COMPLETED')
  AND (status IS DISTINCT FROM coalesce(oldj#>>'{fields,진행상태}',oldj->>'manualStatus',oldj->>'status','') OR j->'materials' IS DISTINCT FROM oldj->'materials' OR j->'productionActual' IS DISTINCT FROM oldj->'productionActual' OR l<>qmes_gate_lot(oldj)) THEN
-  PERFORM qmes_gate_assert(l,'공정 완료');
+  IF NOT coalesce(qmes_gate_historical_document(j,oldj),false) THEN PERFORM qmes_gate_assert(l,'공정 완료'); END IF;
  END IF;
  IF j->'materials' IS DISTINCT FROM oldj->'materials' OR l<>qmes_gate_lot(oldj) THEN
   FOR m IN SELECT value FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j->'materials')='array' THEN j->'materials' ELSE '[]'::jsonb END) LOOP
@@ -227,7 +293,9 @@ BEGIN
   FOR v IN SELECT value FROM jsonb_array_elements(j) LOOP
    -- unchanged historical shipments may remain in a full-list sync.
    IF jsonb_typeof(oldj)='array' AND oldj @> jsonb_build_array(v) THEN CONTINUE; END IF;
-   PERFORM qmes_gate_shipping(v);
+   previous:=NULL;
+   IF jsonb_typeof(oldj)='array' AND coalesce(v->>'id','')<>'' THEN SELECT value INTO previous FROM jsonb_array_elements(oldj) WHERE value->>'id'=v->>'id' LIMIT 1; END IF;
+   PERFORM qmes_gate_shipping(v,coalesce(previous,'{}'::jsonb));
   END LOOP; RETURN;
  END IF;
  IF jsonb_typeof(j)<>'object' THEN RETURN; END IF;
@@ -235,7 +303,9 @@ BEGIN
  IF coalesce(j->>'shippingStatus','') IN ('출하완료','출하확정','납품완료','SHIPPED','완료')
  OR coalesce(j->>'status','') IN ('출하완료','출하확정','납품완료','SHIPPED','완료')
  OR coalesce(j->>'delivery','') IN ('납품완료','출하완료')
- OR j->>'actualShipment'='true' THEN PERFORM qmes_gate_assert(qmes_gate_lot(j),'출하 확정',true); END IF;
+ OR j->>'actualShipment'='true' THEN
+  IF NOT coalesce(qmes_gate_historical_row(oldj,j),false) THEN PERFORM qmes_gate_assert(qmes_gate_lot(j),'출하 확정',true); END IF;
+ END IF;
 END $$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_source(j JSONB, tab TEXT, remove BOOLEAN DEFAULT false) RETURNS VOID LANGUAGE plpgsql AS $$
@@ -269,7 +339,7 @@ BEGIN
  IF TG_OP='DELETE' THEN RETURN OLD; END IF; RETURN NEW;
 END $$;
 CREATE OR REPLACE FUNCTION qmes_gate_trigger() RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE j JSONB; o JSONB:='{}'; k TEXT; v JSONB; typ TEXT;
+DECLARE j JSONB; o JSONB:='{}'; k TEXT; v JSONB; typ TEXT; previous JSONB;
 BEGIN
  IF TG_OP<>'INSERT' THEN o:=to_jsonb(OLD); END IF;
  IF TG_OP='DELETE' THEN PERFORM qmes_gate_source(o,TG_TABLE_NAME,true); RETURN OLD; END IF;
@@ -296,7 +366,9 @@ BEGIN
    IF jsonb_typeof(j#>'{payload,rows}')='array' THEN
     FOR v IN SELECT value FROM jsonb_array_elements(j#>'{payload,rows}') LOOP
      IF coalesce(o#>'{payload,rows}','[]') @> jsonb_build_array(v) THEN CONTINUE; END IF;
-     PERFORM qmes_gate_document(v);
+     previous:=NULL;
+     IF coalesce(v->>'id','')<>'' THEN SELECT value INTO previous FROM jsonb_array_elements(coalesce(o#>'{payload,rows}','[]')) WHERE value->>'id'=v->>'id' LIMIT 1; END IF;
+     PERFORM qmes_gate_document(v,coalesce(previous,'{}'::jsonb));
     END LOOP;
    ELSE PERFORM qmes_gate_document(j->'payload',coalesce(o->'payload','{}')); END IF;
    IF jsonb_typeof(j#>'{payload,lotRecord,ship}')='object' AND j#>'{payload,lotRecord,ship}' IS DISTINCT FROM o#>'{payload,lotRecord,ship}' THEN
@@ -329,3 +401,4 @@ BEGIN
  END LOOP;
 END $$;
 SELECT qmes_gate_install();
+SELECT qmes_gate_historical_seed();

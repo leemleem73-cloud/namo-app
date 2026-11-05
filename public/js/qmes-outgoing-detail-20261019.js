@@ -72,7 +72,16 @@ const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].m
 fields.inspectionDecision='자동판정';
 if(!dateValue(fields.date)||!fields.lot||!fields.inspector){warning.hidden=false;warning.textContent='검사일자, LOT, 검사자를 확인해 주세요.';return;}
 try{fields.shipQty=window.qmesOqcShipQty.normalize(fields.shipQty);}catch(error){warning.hidden=false;warning.textContent=error.message;return;}
-const shipmentHeld=fields.shippingStatus==='출하완료'&&calculated.overall!=='합격';
+let historicalCorrection=false;
+if(fields.lot.toUpperCase()==='DBJ1501'&&fields.date==='2026-10-15'&&fields.shippingStatus==='출하완료'&&calculated.overall!=='합격'){
+ try{
+  const response=await fetch('/api/qmes-quality-gate/historical?lot=DBJ1501&date=2026-10-15',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
+  const data=await response.json();
+  if(!response.ok||data.success!==true)throw Error('기승인 출하 이력 확인에 실패했습니다. 입력 내용은 유지됩니다.');
+  historicalCorrection=data.data?.eligible===true;
+ }catch(error){warning.hidden=false;warning.textContent=error.message;return;}
+}
+const shipmentHeld=!historicalCorrection&&fields.shippingStatus==='출하완료'&&calculated.overall!=='합격';
 if(shipmentHeld){fields.shippingStatus='출하보류';const shipping=pane.querySelector('[data-oqc-field="shippingStatus"]');if(shipping)shipping.value='출하보류';}
 if(fields.shippingStatus==='출하완료'){try{window.qmesOqcShipQty.validateCompletion(fields.shipQty,records);}catch(error){warning.hidden=false;warning.textContent=error.message;return;}}
 const targets=records.map(source=>{
@@ -89,7 +98,7 @@ const attachment=await window.qmesOqcFiles.read(pane);
 const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment})});
 const result=await response.json().catch(()=>({}));
 if(!response.ok||result.success===false)throw Error(result.message||'출하검사 저장에 실패했습니다.');
-closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast((shipmentHeld||result.data?.shipmentHeld)?'검사 결과 저장 완료 · 출하보류로 전환되었습니다.':result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
+closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast(result.data?.historicalCorrection?'불합격 판정 유지 · 기승인 출하 이력 저장 완료':(shipmentHeld||result.data?.shipmentHeld)?'검사 결과 저장 완료 · 출하보류로 전환되었습니다.':result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
 }catch(error){warning.hidden=false;warning.textContent=error.message;}finally{save.disabled=false;}
 });
 };

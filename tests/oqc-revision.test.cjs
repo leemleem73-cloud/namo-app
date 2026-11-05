@@ -10,9 +10,9 @@ test('unchanged saves and client-provided revision metadata do not advance revis
 test('the next revision follows saved group state and server metadata wins on real changes',()=>{const before=rows().map((r,i)=>({...r,revision:i===0?4:2,modifiedAt:'2026-11-01T00:00:00Z'})),after=before.map(r=>({...r,remarks:'비고 수정',revision:100,modifiedBy:'위조'}));const result=core.applyGroup(before,after,'서버 사용자','2026-11-04T01:00:00Z');assert.equal(result.revision,5);assert.ok(result.rows.every(r=>r.revision===5&&r.modifiedBy==='서버 사용자'));});
 test('modified date formatting uses Korea time and missing history stays empty',()=>{assert.equal(core.formatModifiedAt('2026-11-03T16:05:00Z'),'2026-11-04 01:05');assert.equal(core.formatModifiedAt(null),'—');assert.equal(core.metadata([{createdAt:'2026-11-04',updated_at:'2026-11-04'}]).modifiedAt,null);const html=core.formFields([{revision:2,modifiedAt:'2026-11-03T16:05:00Z'}]);assert.ok(html.includes('Rev.2'));assert.ok(html.includes('2026-11-04 01:05'));assert.equal((html.match(/readonly/g)||[]).length,4);assert.ok(!html.includes('data-oqc-field='));assert.ok(!html.includes('data-oqc-registration-field='));});
 
-function routeFixture(records={a:{rows:rows()}},failUpdate=false){
+function routeFixture(records={a:{rows:rows()}},failUpdate=false,historicalAllowed=false){
  let database=clone(records),working=null,handler;const audits=[],ncr=[],calls=[];
- const client={release(){},async query(sql,args=[]){calls.push(sql);if(sql==='BEGIN'){working=clone(database);return {rows:[]};}if(sql==='COMMIT'){database=working;working=null;return {rows:[]};}if(sql==='ROLLBACK'){working=null;return {rows:[]};}if(sql.startsWith('SET '))return {rows:[]};if(sql.startsWith('SELECT record_key,payload'))return {rows:args[0].filter(key=>working[key]).sort().map(key=>({record_key:key,payload:clone(working[key])}))};if(sql.startsWith('UPDATE qmes_sync_records')){if(failUpdate)throw Error('DB unavailable');working[args[0]]=JSON.parse(args[1]);return {rows:[]};}throw Error('Unexpected SQL: '+sql);}};
+ const client={release(){},async query(sql,args=[]){calls.push(sql);if(sql==='BEGIN'){working=clone(database);return {rows:[]};}if(sql==='COMMIT'){database=working;working=null;return {rows:[]};}if(sql==='ROLLBACK'){working=null;return {rows:[]};}if(sql.startsWith('SELECT qmes_gate_historical_oqc'))return {rows:[{allowed:historicalAllowed}]};if(sql.startsWith('SET '))return {rows:[]};if(sql.startsWith('SELECT record_key,payload'))return {rows:args[0].filter(key=>working[key]).sort().map(key=>({record_key:key,payload:clone(working[key])}))};if(sql.startsWith('UPDATE qmes_sync_records')){if(failUpdate)throw Error('DB unavailable');working[args[0]]=JSON.parse(args[1]);return {rows:[]};}throw Error('Unexpected SQL: '+sql);}};
  const source=fs.readFileSync(__dirname+'/../server-legacy-20260903.js','utf8'),start=source.indexOf("app.post('/api/qmes-sync/oqc/save-detail'"),end=source.indexOf("require('./qmes-oqc-attachments-20261104.cjs').install",start);
  const ctx={require:name=>{if(name==='node:crypto')return require(name);assert.ok(['./qmes-oqc-attachments-20261104.cjs','./public/js/qmes-oqc-shipqty-20261105.js'].includes(name));return require('../'+name.slice(2));},app:{post(path,...handlers){assert.equal(path,'/api/qmes-sync/oqc/save-detail');handler=handlers.at(-1);}},requireLogin(){},pool:{connect:async()=>client},txt:v=>String(v??'').trim(),jsonObj:v=>typeof v==='string'?JSON.parse(v):v,oqcAutoRules:rules,oqcRevision:core,auditLog:async(...args)=>audits.push(args),autoCreateNcr:async data=>ncr.push(data),ok:(res,data,message)=>res.json({success:true,data,message}),fail:(res,status,message)=>res.status(status).json({success:false,message}),console,Date};
  vm.runInNewContext(source.slice(start,end),ctx);
@@ -48,4 +48,20 @@ test('a new completed shipment requires positive quantity while NG still saves w
 test('shipment quantity validates and updates as a group without replacing source identifiers',async()=>{
  const f=routeFixture(),input=f.body();input.fields.shipQty='-2';assert.equal((await f.call(input)).statusCode,400);
  input.fields.shipQty='2.123456';assert.equal((await f.call(input)).statusCode,200);assert.ok(f.get().a.rows.every((r,i)=>r.id==='r'+i&&r.shipQty==='2.123456'));
+});
+
+test('attested historical NG shipment can retain completion and quantity without new NCR or a pass override',async()=>{
+ const historical=rows().map(r=>({...r,lot:'DBJ1501',date:'2026-10-15',shippingStatus:'출하보류'}));historical[2].measurements=['1140','1500','1500'];historical[2].judge='불합격';
+ const f=routeFixture({a:{rows:historical}},false,true),b=f.body();b.fields.date='2026-10-15';b.fields.lot='DBJ1501';b.fields.shippingStatus='출하완료';b.fields.shipQty='50';b.fields.remarks='검토 및 승인하에 출하함';
+ const r=await f.call(b);assert.equal(r.statusCode,200);assert.equal(r.body.data.historicalCorrection,true);assert.equal(r.body.data.shipmentHeld,false);assert.ok(f.get().a.rows.every(x=>x.shippingStatus==='출하완료'&&x.stockShipment.quantity===50));assert.equal(f.get().a.rows[2].judge,'불합격');assert.equal(f.ncr.length,0);
+});
+test('historical lookup refusal keeps normal NG hold and never authorizes shipment',async()=>{
+ const historical=rows().map(r=>({...r,lot:'DBJ1501',date:'2026-10-15'}));historical[2].measurements=['1140','1500','1500'];
+ const f=routeFixture({a:{rows:historical}},false,false),b=f.body();b.fields.date='2026-10-15';b.fields.lot='DBJ1501';b.fields.shippingStatus='출하완료';b.fields.shipQty='50';
+ const r=await f.call(b);assert.equal(r.statusCode,200);assert.equal(r.body.data.historicalCorrection,false);assert.ok(f.get().a.rows.every(x=>x.shippingStatus==='출하보류'&&!x.stockShipment));
+});
+test('historical completion still requires actual quantity',async()=>{
+ const historical=rows().map(r=>({...r,lot:'DBJ1501',date:'2026-10-15'}));historical[2].measurements=['1140','1500','1500'];
+ const f=routeFixture({a:{rows:historical}},false,true),b=f.body();b.fields.date='2026-10-15';b.fields.lot='DBJ1501';b.fields.shippingStatus='출하완료';
+ assert.equal((await f.call(b)).statusCode,400);assert.ok(f.calls.includes('ROLLBACK'));
 });
