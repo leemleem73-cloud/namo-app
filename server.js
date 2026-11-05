@@ -299,12 +299,16 @@ try {
     line => '    lot:window.namoReadWorkMaterialLot?.(row) ?? (' + line.slice('    lot:'.length, -1) + '),'
   );
 
-  if (!normalized.includes('class="material-remark-input"')) {
+  if (!normalized.includes('<th class="material-remark">')) {
+    normalized = normalized.replace('<th class="ratio">투입비율(%)(자동계산)</th><th class="act">', '<th class="ratio">투입비율(%)(자동계산)</th><th class="material-remark">비고</th><th class="act">');
+  }
+  if (!normalized.includes('row.dataset.materialRemark=String(m.remark')) {
     normalized = normalized
-      .replace('<th class="act">관리</th></tr></thead><tbody></tbody></table>\n        <div class="work-note">', '<th class="material-remark">비고</th><th class="act">관리</th></tr></thead><tbody></tbody></table>\n        <div class="work-note">')
-      .replace('<td><button class="btn row-del" type="button">삭제</button></td>', '<td><input class="material-remark-input" type="text" aria-label="원료 비고" placeholder="비고 입력"></td><td><button class="btn row-del" type="button">삭제</button></td>')
-      .replace("        row.dataset.sourceMaterialName=m.sourceName||'';", "        row.dataset.sourceMaterialName=m.sourceName||'';\n        row.querySelector('.material-remark-input').value=String(m.remark??'');")
-      .replace("    sourceName:row.dataset.sourceMaterialName||'',", "    sourceName:row.dataset.sourceMaterialName||'',\n    remark:row.querySelector('.material-remark-input')?.value.trim()||'',")
+      .replace('<td><input class="material-remark-input" type="text" aria-label="원료 비고" placeholder="비고 입력"></td>', '')
+      .replace(/\n        row\.querySelector\('\.material-remark-input'\)\.value=String\(m\.remark\?\?''\);/, '')
+      .replace(/\n    remark:row\.querySelector\('\.material-remark-input'\)\?\.value\.trim\(\)\|\|'',/, '')
+      .replace("        row.dataset.sourceMaterialName=m.sourceName||'';", "        row.dataset.sourceMaterialName=m.sourceName||'';\n        row.dataset.materialRemark=String(m.remark??'');")
+      .replace("    sourceName:row.dataset.sourceMaterialName||'',", "    sourceName:row.dataset.sourceMaterialName||'',\n    remark:(row.querySelector('.material-remark-input')?.value ?? row.dataset.materialRemark ?? '').trim(),")
       .replace("})).filter(r=>r.name||r.lot||r.plan||r.actual);", "})).filter(r=>r.name||r.lot||r.plan||r.actual||r.remark);");
   }
 

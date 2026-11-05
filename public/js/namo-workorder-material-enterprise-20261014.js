@@ -91,6 +91,17 @@
     if(ratio&&ratio.textContent!==fmt(totalRatio))ratio.textContent=fmt(totalRatio);
   }
   function prepareRow(row){
+    const actionCell = row.querySelector('.row-del')?.closest('td');
+    if (actionCell && !row.querySelector('.material-remark-input')) {
+      const cell = el('td', 'material-remark-cell');
+      const input = el('input', 'material-remark-input');
+      input.type = 'text';
+      input.placeholder = '비고 입력';
+      input.setAttribute('aria-label', '원료 비고');
+      input.value = row.dataset.materialRemark || '';
+      cell.appendChild(input);
+      actionCell.before(cell);
+    }
     if(!row.dataset.nwmListeners){
       row.dataset.nwmListeners='1';
       var choice=row.querySelector('.material-name-select');
