@@ -2515,7 +2515,7 @@ html body #mainWorkspace .work-form .nwp-range-value,
 html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea){font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-style:normal!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:0!important}
 </style>
 
-<style id="oqc-visible-remarks-20261105">#outgoing .oqc-list-remarks{background:#fff!important;text-align:left!important}#outgoing .oqc-remarks-line{display:flex;align-items:center;gap:10px;min-width:0}#outgoing .oqc-remarks-edit{flex:none}#outgoing .oqc-remarks-text{border-left:1px solid #d5dce5;padding:3px 0 3px 10px;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5}</style>
+<style id="oqc-visible-remarks-20261105">#outgoing .oqc-list-remarks{background:#fff!important;text-align:center!important;padding:8px 14px!important}#outgoing .oqc-remarks-line{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:0;max-width:100%;margin:0 auto}#outgoing .oqc-remarks-edit{flex:none}#outgoing .oqc-remarks-text{border-left:1px solid #d5dce5;padding:3px 0 3px 10px;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5;text-align:left}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
 html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-view){color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
@@ -3644,7 +3644,7 @@ function wireOutgoingColumnResize(section){
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,120,160,90,120,200,200,200,120,120,120,120,120,120];
   const minimums=[86,100,140,80,100,110,110,110,100,100,100,100,100,100];
-  const storageKey='namo-outgoing-column-widths-v6-visible-remarks';
+  const storageKey='namo-outgoing-column-widths-v7-attachment-remarks-center';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3675,12 +3675,13 @@ function wireOutgoingColumnResize(section){
     widths[0]=86; // Reserve separate checkbox and number areas.
     // Keep inspection-item and selection widths; make every other data column equal.
     const effective=widths.slice();
-    const itemIndex=labels.indexOf('검사항목'),remarksIndex=labels.indexOf('비고');
+    const itemIndex=labels.indexOf('검사항목'),remarksIndex=labels.indexOf('비고'),attachmentIndex=labels.indexOf('첨부파일');
     const viewport=wrap.clientWidth||available;
     if(itemIndex>=0)effective[itemIndex]=customized?Math.max(220,Math.min(500,widths[itemIndex])):Math.max(220,Math.min(400,viewport*0.17));
     if(remarksIndex>=0)effective[remarksIndex]=customized?Math.max(250,Math.min(600,widths[remarksIndex])):Math.max(250,Math.min(460,viewport*0.20));
-    const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex&&index!==remarksIndex);
-    const equal=Math.max(90,(viewport-effective[0]-(itemIndex>=0?effective[itemIndex]:0)-(remarksIndex>=0?effective[remarksIndex]:0))/equalIndexes.length);
+    if(attachmentIndex>=0)effective[attachmentIndex]=customized?Math.max(190,Math.min(400,widths[attachmentIndex])):Math.max(190,Math.min(280,viewport*0.12));
+    const equalIndexes=effective.map((_,index)=>index).filter(index=>index>0&&index!==itemIndex&&index!==remarksIndex&&index!==attachmentIndex);
+    const equal=Math.max(90,(viewport-effective[0]-(itemIndex>=0?effective[itemIndex]:0)-(remarksIndex>=0?effective[remarksIndex]:0)-(attachmentIndex>=0?effective[attachmentIndex]:0))/equalIndexes.length);
     equalIndexes.forEach(index=>effective[index]=equal);
     widths=effective.slice();
     widths.forEach((width,i)=>{
@@ -8229,7 +8230,7 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261105-item-names"></script>
 <script src="./js/qmes-oqc-revision-core-20261104.js?v=20261105-daily"></script>
-<script src="./js/qmes-oqc-attachments-20261104.js?v=1"></script>
+<script src="./js/qmes-oqc-attachments-20261104.js?v=20261105-full-filename"></script>
 <script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261105-smooth-overflow"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
