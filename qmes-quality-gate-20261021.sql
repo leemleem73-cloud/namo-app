@@ -255,6 +255,16 @@ BEGIN
  END IF;
 END $$;
 
+-- Explicit zero actual input is an unused recipe row, not a material movement.
+CREATE OR REPLACE FUNCTION qmes_gate_unused_material(j JSONB) RETURNS BOOLEAN LANGUAGE SQL IMMUTABLE AS $$
+ SELECT CASE
+ WHEN btrim(coalesce(j->>'actual',j->>'act',''))<>'' THEN
+   btrim(coalesce(j->>'actual',j->>'act','')) ~ '^[+]?0+([.]0+)?$'
+ ELSE btrim(coalesce(j->>'plan',j->>'planned',''))='' OR
+   btrim(coalesce(j->>'plan',j->>'planned','')) ~ '^[+]?0+([.]0+)?$'
+ END
+$$;
+
 CREATE OR REPLACE FUNCTION qmes_gate_document_body(j JSONB) RETURNS JSONB LANGUAGE SQL IMMUTABLE AS $$
  SELECT CASE WHEN jsonb_typeof(j->'doc')='object' THEN (j->'doc')||jsonb_build_object('lot',qmes_gate_lot(j),'materials',coalesce(j#>'{doc,inputs}','[]')) ELSE j END
 $$;
@@ -263,7 +273,7 @@ DECLARE m JSONB; l TEXT;
 BEGIN
  j:=qmes_gate_document_body(j); l:=qmes_gate_lot(j); IF l='' THEN RETURN; END IF;
  FOR m IN SELECT value FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j->'materials')='array' THEN j->'materials' ELSE '[]'::jsonb END) LOOP
-  IF qmes_gate_lot(m)<>'' AND qmes_gate_lot(m)<>l THEN
+  IF NOT qmes_gate_unused_material(m) AND qmes_gate_lot(m)<>'' AND qmes_gate_lot(m)<>l THEN
    INSERT INTO qmes_lot_genealogy(parent_lot,child_lot,source) VALUES(qmes_gate_lot(m),l,s) ON CONFLICT DO NOTHING;
   END IF;
  END LOOP;
@@ -280,6 +290,7 @@ BEGIN
  END IF;
  IF j->'materials' IS DISTINCT FROM oldj->'materials' OR l<>qmes_gate_lot(oldj) THEN
   FOR m IN SELECT value FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j->'materials')='array' THEN j->'materials' ELSE '[]'::jsonb END) LOOP
+   IF qmes_gate_unused_material(m) THEN CONTINUE; END IF;
    IF qmes_gate_lot(m)<>'' THEN PERFORM qmes_gate_assert(qmes_gate_lot(m),'원료 투입 / 배정');
    ELSIF coalesce(m->>'actual',m->>'act','') NOT IN ('','0') THEN RAISE EXCEPTION '[QUALITY_GATE] 원료 투입 차단: 원료 LOT 번호가 필요합니다.'; END IF;
   END LOOP;
