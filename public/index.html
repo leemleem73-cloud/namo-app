@@ -2515,6 +2515,7 @@ html body #mainWorkspace .work-form .nwp-range-value,
 html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea){font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-style:normal!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:0!important}
 </style>
 
+<style id="pqc-visible-remarks-20261105">html body #process .inspection-premium .ip-table td.pqc-list-remarks{padding:0!important;text-align:center!important;vertical-align:middle!important}html body #process .inspection-premium .ip-table .pqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;gap:0!important;min-height:32px;width:100%}html body #process .inspection-premium .ip-table .pqc-remarks-edit{align-self:center;justify-self:center;margin:4px!important}html body #process .inspection-premium .ip-table .pqc-remarks-text{display:flex;align-items:center;justify-content:center;border-left:1px solid #d5dce5;padding:4px 8px;min-width:0;white-space:pre-wrap!important;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5;text-align:center}</style>
 <style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
 html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-view){color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
@@ -3497,7 +3498,7 @@ function wireProcessColumnResize(section){
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,120,180,180,180,0,180,120,120,120,120];
   const minimums=[86,100,110,110,110,0,110,100,100,100,100];
-  const storageKey='namo-process-column-widths-v4-list-no-process-name';
+  const storageKey='namo-process-column-widths-v5-visible-remarks';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
@@ -3529,14 +3530,15 @@ function wireProcessColumnResize(section){
     // Distribute unused space over other columns, preserving their relative sizes.
     // Do not overwrite saved user widths or force the table beyond the viewport.
     const effective=widths.slice();effective[5]=0;
-    for(const indexes of [[1,7,8,9,10],[2,3,4,6]]){
+    for(const indexes of [[1,7,8,9],[2,3,4,6]]){
       const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
       indexes.forEach(i=>effective[i]=equal);
     }
-    const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
-    if(free>0){
-      const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
-      for(let j=1;j<effective.length;j++)effective[j]+=free*effective[j]/total;
+    const remarksIndex=labels.indexOf('비고'),viewport=wrap.clientWidth||available;
+    if(remarksIndex>=0){
+      effective[remarksIndex]=customized?Math.max(160,widths[remarksIndex]):Math.max(250,Math.min(360,viewport*.17));
+      const others=effective.map((_,i)=>i).filter(i=>i>0&&i!==5&&i!==remarksIndex),total=others.reduce((sum,i)=>sum+effective[i],0),room=Math.max(0,viewport-effective[0]-effective[remarksIndex]);
+      if(total)others.forEach(i=>effective[i]=Math.max(minimums[i],effective[i]*room/total));
     }
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
@@ -5522,7 +5524,7 @@ async function loadHistoricalInspectionRows(section,id){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
         if(id==='process'&&cols[index]==='비고'){
-          return '<td><button type="button" class="btn mini-report pqc-remarks-edit">수정</button></td>';
+          const remarks=String(row.remarks||row.detailFields?.['비고']||'').trim();return '<td class="pqc-list-remarks"><div class="pqc-remarks-line"><button type="button" class="btn mini-report pqc-remarks-edit">수정</button><span class="pqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';
         }
         return '<td>'+safe(v)+'</td>';
       }).join('');
