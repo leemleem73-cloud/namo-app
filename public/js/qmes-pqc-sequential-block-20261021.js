@@ -1,4 +1,4 @@
-/* PQC: stop later measurement rows immediately when an earlier item fails. */
+/* PQC: keep all evidence editable while server-owned LOT holds block downstream movements. */
 (function () {
   'use strict';
   if (window.__qmesPqcSequentialBlock20261021) return;
@@ -31,7 +31,7 @@
       cells.forEach((cell, index) => {
         const row = cell.closest('tr');
         if (!row) return;
-        const locked = firstFail >= 0 && index > firstFail;
+        const locked = false;
         row.classList.toggle('pqc-sequential-locked', locked);
         row.querySelectorAll('[data-pqc-measure]').forEach(input => {
           if (locked && !input.dataset.pqcSequentialLock) {
@@ -54,17 +54,18 @@
           warning.innerHTML = '<strong>후속 공정 차단</strong><span></span>';
           const table = cells[0].closest('table'); table.parentNode.insertBefore(warning, table);
         }
-        const message = cells[firstFail].dataset.pqcItemJudge + ' 불합격 — 이후 검사항목은 입력할 수 없습니다. 불합격 결과를 저장하고 원인 조치 후 재검사하세요. 저장된 LOT 보류는 별도 해제 승인이 필요합니다.';
+        const message = cells[firstFail].dataset.pqcItemJudge + ' 불합격 — 나머지 검사항목도 모두 입력하고 저장할 수 있습니다. 불합격 결과와 LOT 보류는 유지되며 후속 공정은 차단됩니다. 보류 해제는 별도 승인이 필요합니다.';
         if (warning.lastElementChild.textContent !== message) warning.lastElementChild.textContent = message;
       } else if (warning) warning.remove();
     });
   }
-  document.addEventListener('input', event => { if (event.target.matches('[data-pqc-measure]')) refresh(); });
-  document.addEventListener('change', event => { if (event.target.matches('[data-pqc-measure]')) refresh(); });
+  let frame=0;function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;refresh();});}
+  document.addEventListener('input', event => { if (event.target.matches('[data-pqc-measure]')) schedule(); });
+  document.addEventListener('change', event => { if (event.target.matches('[data-pqc-measure]')) schedule(); });
   let pending = false;
   new MutationObserver(() => {
     if (pending) return; pending = true;
-    queueMicrotask(() => { pending = false; refresh(); });
+    requestAnimationFrame(() => { pending = false; refresh(); });
   }).observe(document.body, { childList: true, subtree: true });
   refresh();
 })();
