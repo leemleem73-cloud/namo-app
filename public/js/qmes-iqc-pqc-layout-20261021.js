@@ -176,3 +176,39 @@
  let pending=false;new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(()=>{pending=false;clean();});}}).observe(document.body,{childList:true,subtree:true});
  clean();
 })();
+
+/* IQC edit checks parity: show and persist saved item results in the existing editor. */
+(function(){
+'use strict';
+const specs=[['외관','이물질 혼입 및 외관 이상 없을 것','육안'],['라벨','품명·LOT·표기사항 일치할 것','육안'],['중량','표시중량 및 입고기준 만족','저울'],['COA 확인','공급사 COA 및 LOT 일치 확인','문서확인']];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function items(row){try{const a=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(a)?a:[];}catch{return [];}}
+function canonical(name){return ['COA','COA확인'].includes(String(name||'').trim().replace(/\s+/g,'').toUpperCase())?'COA 확인':String(name||'').trim();}
+function read(row){const saved=items(row);return specs.map(([name])=>{const old=saved.find(x=>canonical(x.name)===name);return {name,value:String(old?.values?.[0]??old?.value??''),judge:String(old?.judge||'')};});}
+function overall(checks){if(checks.some(c=>c.judge==='불합격'||['부적합','이상있음','미확인'].includes(c.value)))return '불합격';if(checks.some(c=>!c.value.trim()||c.judge!=='합격'||c.value==='확인중'))return '대기';return '합격';}
+function merge(row,checks){const saved=items(row).map(x=>({...x}));for(const check of checks){const i=saved.findIndex(x=>canonical(x.name)===check.name),old=i>=0?saved[i]:{};const next={...old,name:check.name,values:[check.value],value:check.value,judge:check.judge||'대기'};if(Array.isArray(old.values)&&old.values.length>1&&!old.legacyValues)next.legacyValues=old.values.slice();if(i>=0)saved[i]=next;else saved.push(next);}return saved;}
+const api={read,overall,merge};window.qmesIqcEditChecks=api;
+const originalOpen=window.editIncomingRecord,originalItems=window.updateIqcRemarkItems;
+if(typeof originalOpen!=='function'||typeof originalItems!=='function')return;
+function options(values,current){return [...new Set(['',...values,...(current?[current]:[])])].map(v=>'<option value="'+esc(v)+'"'+(v===current?' selected':'')+'>'+esc(v||'선택')+'</option>').join('');}
+window.editIncomingRecord=function(section,row){
+ originalOpen.apply(this,arguments);
+ const pane=document.querySelector('.am-split[data-am-screen="incoming"]'),frame=pane?.querySelector('.iqc-edit-settings-frame');if(!frame)return;
+ const checks=read(row),box=document.createElement('section');box.className='iqc-edit-checks iqc-pqc-layout am-section';box.dataset.recordId=String(row.id);
+ box.innerHTML='<div class="am-section-head"><b>검사항목</b><span>외관·라벨·입고 중량·COA 각 1회 확인</span></div><div class="std-result-wrap"><table class="std-result"><colgroup>'+[5,12,26,17,25,15].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['NO','검사항목','검사기준','검사방법 / 기기','확인 결과','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>'+checks.map((c,i)=>'<tr data-iqc-check="'+i+'"><td>'+(i+1)+'</td><td>'+esc(c.name)+'</td><td>'+esc(specs[i][1])+'</td><td>'+esc(specs[i][2])+'</td><td>'+(i===2?'<input data-check-value type="text" inputmode="decimal" placeholder="확인 중량 (kg)" value="'+esc(c.value)+'">':'<select data-check-value>'+options(i===3?['확인','확인중','미확인']:['적합','부적합'],c.value)+'</select>')+'</td><td><select data-check-judge>'+options(['대기','합격','불합격'],c.judge)+'</select></td></tr>').join('')+'</tbody></table></div>';
+ frame.after(box);
+ box._checks=checks;box._dirty=false;
+ const summary=pane.querySelector('#iqcEditResult');if(summary){summary.disabled=true;summary.title='검사항목 판정으로 자동 계산됩니다.';}
+ function changed(event){const tr=event.target.closest('[data-iqc-check]');if(!tr)return;const i=Number(tr.dataset.iqcCheck),check=checks[i];check.value=tr.querySelector('[data-check-value]').value;check.judge=tr.querySelector('[data-check-judge]').value;
+ if(event.target.matches('[data-check-value]')&&i!==2){check.judge=['부적합','이상있음','미확인'].includes(check.value)?'불합격':['적합','이상없음','정상','확인','확인완료'].includes(check.value)?'합격':'대기';tr.querySelector('[data-check-judge]').value=check.judge;}
+ box._dirty=true;if(summary)summary.value=overall(checks);
+ }
+ box.addEventListener('input',changed);box.addEventListener('change',changed);
+};
+window.updateIqcRemarkItems=function(row,remark,date,result){
+ const box=document.querySelector('.am-split[data-am-screen="incoming"] .iqc-edit-checks');
+ if(box?.dataset.recordId===String(row.id)&&box._dirty)return originalItems.call(this,{...row,items_json:merge(row,box._checks)},remark,date,overall(box._checks));
+ return originalItems.apply(this,arguments);
+};
+const style=document.createElement('style');style.textContent='.iqc-edit-checks{margin-top:16px!important}.iqc-edit-checks>.std-result-wrap{padding-top:8px!important}.iqc-edit-checks .std-result td{font-weight:400!important}.iqc-edit-checks .std-result :is(input,select){font:inherit!important;color:#35435b!important}';document.head.append(style);
+})();
