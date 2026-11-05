@@ -17,25 +17,28 @@ function fixture(account='alice',storage=new Map()){
  side.append(...cards.map(v=>v.card));side.querySelector=s=>s==='.side-card'?cards[1].card:cards[2].card;
  const document={head,querySelector:()=>side,getElementById:id=>id==='stage'?stage:id==='personal-memo-card'?cards[0].card:null,createElement:()=>node()};
  const root={document,innerWidth:1400,innerHeight:800,location:{origin:'https://example.test'},parent:{__QMES_CURRENT_USER__:{id:account},postMessage(){}},events:{},addEventListener(n,f){this.events[n]=f;},requestAnimationFrame:f=>{f();return 1;},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}};
- mount(root);return {root,stage,cards,storage,button:stage.children.find(v=>v.className==='portal-free-toolbar').children[1]};
+ mount(root);return {root,stage,cards,storage,button:null};
 }
 
 test('pointer drag reaches any pixel and account positions restore without affecting other accounts',()=>{
- const f=fixture();f.button.onclick();const item=f.cards[1],rect=item.card.getBoundingClientRect(),event={button:0,pointerId:1,clientX:rect.left+20,clientY:rect.top+20,target:item.handle,preventDefault(){}};
- item.handle.events.pointerdown(event);item.handle.events.pointermove({...event,clientX:20,clientY:20});item.handle.events.pointerup(event);
+ const f=fixture();const item=f.cards[1],rect=item.card.getBoundingClientRect(),event={button:0,pointerId:1,clientX:rect.left+20,clientY:rect.top+20,target:item.handle,preventDefault(){}};
+ item.card.events.pointerdown(event);f.root.events.pointermove({...event,clientX:20,clientY:20});f.root.events.pointerup(event);
  assert.equal(item.card.style.left,'0px');assert.equal(item.card.style.top,'0px');const saved=decode(f.storage.get('namo-portal-card-free-v4:alice'));assert.deepEqual(saved.work,{x:0,y:0});
  const restored=fixture('alice',f.storage);assert.equal(restored.cards[1].card.style.left,'0px');assert.equal(restored.cards[1].card.style.top,'0px');
  assert.notEqual(fixture('bob',f.storage).cards[1].card.style.left,'0px');
- item.handle.events.pointerdown({...event,clientX:20,clientY:20});item.handle.events.pointermove({...event,clientX:203,clientY:137,altKey:true});item.handle.events.pointerup(event);assert.equal(item.card.style.left,'183px');assert.equal(item.card.style.top,'117px');
+ item.card.events.pointerdown({...event,clientX:20,clientY:20});f.root.events.pointermove({...event,clientX:203,clientY:137,altKey:true});f.root.events.pointerup(event);assert.equal(item.card.style.left,'183px');assert.equal(item.card.style.top,'117px');
 });
-test('keyboard reaches corners and buttons never start a drag',()=>{
- const f=fixture(),item=f.cards[0],event={button:0,pointerId:1,clientX:0,clientY:0,target:item.handle,preventDefault(){throw Error('unexpected');}};item.handle.events.pointerdown(event);assert(!item.handle.captured);f.button.onclick();item.handle.events.pointerdown({...event,target:{closest:()=>({})}});assert(!item.handle.captured);
- item.handle.events.keydown({key:'Home',target:item.handle,preventDefault(){}});assert.equal(item.card.style.left,'0px');assert.equal(item.card.style.top,'0px');
- item.handle.events.keydown({key:'End',target:item.handle,preventDefault(){}});assert.equal(item.card.style.left,'913px');assert.equal(item.card.style.top,'670px');
+test('direct keyboard movement works and editable fields do not begin dragging',()=>{
+ const f=fixture(),item=f.cards[0],before=item.card.style.left;
+ item.card.events.pointerdown({button:0,pointerId:1,clientX:0,clientY:0,target:{closest:()=>({})},preventDefault(){throw Error('unexpected')}});
+ f.root.events.pointermove({pointerId:1,clientX:300,clientY:300,preventDefault(){}});assert.equal(item.card.style.left,before);
+ item.card.events.keydown({key:'Home',target:item.card,preventDefault(){}});assert.equal(item.card.style.left,'0px');assert.equal(item.card.style.top,'0px');
+ item.card.events.keydown({key:'End',target:item.card,preventDefault(){}});assert.equal(item.card.style.left,'913px');assert.equal(item.card.style.top,'670px');
 });
+
 test('cancelled movement restores original placement',()=>{
- const f=fixture();f.button.onclick();const item=f.cards[0],rect=item.card.getBoundingClientRect(),oldLeft=item.card.style.left,oldTop=item.card.style.top,event={button:0,pointerId:2,clientX:rect.left+10,clientY:rect.top+10,target:item.handle,preventDefault(){}};
- item.handle.events.pointerdown(event);item.handle.events.pointermove({...event,clientX:650,clientY:500});item.handle.events.pointercancel(event);assert.equal(item.card.style.left,oldLeft);assert.equal(item.card.style.top,oldTop);
+ const f=fixture();const item=f.cards[0],rect=item.card.getBoundingClientRect(),oldLeft=item.card.style.left,oldTop=item.card.style.top,event={button:0,pointerId:2,clientX:rect.left+10,clientY:rect.top+10,target:item.handle,preventDefault(){}};
+ item.card.events.pointerdown(event);f.root.events.pointermove({...event,clientX:650,clientY:500});f.root.events.pointercancel(event);assert.equal(item.card.style.left,oldLeft);assert.equal(item.card.style.top,oldTop);
 });
 
 test('nearby card edges and centers snap to exact matching lines',()=>{
@@ -58,9 +61,20 @@ test('alignment stays steady near a line and releases when dragged farther away'
 });
 
 test('drag displays alignment guides and clears them after dropping',()=>{
- const f=fixture();f.button.onclick();const item=f.cards[1],rect=item.card.getBoundingClientRect(),event={button:0,pointerId:7,clientX:rect.left+20,clientY:rect.top+20,target:item.handle,preventDefault(){}};
- item.handle.events.pointerdown(event);item.handle.events.pointermove({...event,clientX:23,clientY:123});
+ const f=fixture();const item=f.cards[1],rect=item.card.getBoundingClientRect(),event={button:0,pointerId:7,clientX:rect.left+20,clientY:rect.top+20,target:item.handle,preventDefault(){}};
+ item.card.events.pointerdown(event);f.root.events.pointermove({...event,clientX:23,clientY:123});
  const x=f.stage.children.find(node=>node.className==='portal-align-guide portal-align-x'),y=f.stage.children.find(node=>node.className==='portal-align-guide portal-align-y');
  assert.equal(x.hidden,false);assert.equal(y.hidden,false);assert.equal(x.style.left,'0px');
- item.handle.events.pointerup(event);assert.equal(x.hidden,true);assert.equal(y.hidden,true);assert.equal(item.card.style.left,'0px');
+ f.root.events.pointerup(event);assert.equal(x.hidden,true);assert.equal(y.hidden,true);assert.equal(item.card.style.left,'0px');
+});
+
+test('clicking a memo preview stays a click; dragging from the same area moves the card without opening it',()=>{
+ const f=fixture(),item=f.cards[0],rect=item.card.getBoundingClientRect(),button={closest:()=>null};
+ const down={button:0,pointerId:4,clientX:rect.left+40,clientY:rect.top+95,target:button,preventDefault(){throw Error('pointerdown must preserve native click');}};
+ let blocked=0;const click={detail:1,preventDefault(){blocked++;},stopImmediatePropagation(){}};
+ item.card.events.pointerdown(down);f.root.events.pointermove({...down,clientX:down.clientX+2});f.root.events.pointerup(down);item.card.events.click(click);
+ assert.equal(blocked,0);assert.equal(f.storage.size,0);assert.ok(!f.stage.children.some(e=>e.className==='portal-free-toolbar'));
+ item.card.events.pointerdown(down);f.root.events.pointermove({...down,clientX:down.clientX+230,clientY:down.clientY+55,altKey:true,preventDefault(){}});f.root.events.pointerup(down);item.card.events.click(click);
+ assert.equal(item.card.style.left,'230px');assert.equal(blocked,1);assert.ok(f.storage.has('namo-portal-card-free-v4:alice'));
+ item.card.events.pointerdown(down);f.root.events.pointerup(down);item.card.events.click(click);assert.equal(blocked,1);
 });
