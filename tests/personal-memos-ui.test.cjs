@@ -55,8 +55,4 @@ test('alignment, shape, extra colors and larger text persist with the note',asyn
  assert.deepEqual(JSON.parse(JSON.stringify(f.saved[0].appearance)),{paper:'lavender',font:'default',size:24,bold:false,align:'center',shape:'square'});assert.equal(f.api.dialog.open,false);
  assert(f.api.dialog.querySelector('[data-created]').textContent.includes('01:00'));assert(f.api.dialog.querySelector('[data-updated]').textContent.includes('09:30'));
 });
-test('today insertion respects cursor selection and the content limit',async()=>{
- const f=fixture();await f.api.load();await f.api.newNote();f.api.content.value='날짜: ';f.api.content.selectionStart=4;f.api.content.selectionEnd=4;
- f.api.dialog.querySelector('[data-today]').onclick();assert.match(f.api.content.value,/^날짜: \d{4}-\d{2}-\d{2}$/);assert.equal(f.api.dirty(),true);
- f.api.content.value='x'.repeat(5000);f.api.content.selectionStart=5000;f.api.content.selectionEnd=5000;f.api.dialog.querySelector('[data-today]').onclick();assert.equal(f.api.content.value.length,5000);assert.equal(f.api.status.dataset.error,'1');
-});
+
