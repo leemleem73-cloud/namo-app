@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-function element(){return {value:'',textContent:'',disabled:false,open:false,hidden:false,dataset:{},children:[],map:new Map(),events:{},attributes:{},classList:{toggle(){}},setAttribute(k,v){this.attributes[k]=v;},querySelector(s){if(!this.map.has(s))this.map.set(s,element());return this.map.get(s);},querySelectorAll(){return [];},append(...e){this.children.push(...e);},prepend(e){this.children.unshift(e);},replaceChildren(...e){this.children=e;},addEventListener(k,f){this.events[k]=f;},showModal(){this.open=true;},close(){this.open=false;},focus(){}};}
+function element(){return {style:{setProperty(){}},value:'',textContent:'',disabled:false,open:false,hidden:false,dataset:{},children:[],map:new Map(),events:{},attributes:{},classList:{toggle(){}},setAttribute(k,v){this.attributes[k]=v;},querySelector(s){if(!this.map.has(s))this.map.set(s,element());return this.map.get(s);},querySelectorAll(){return [];},append(...e){this.children.push(...e);},prepend(e){this.children.unshift(e);},replaceChildren(...e){this.children=e;},addEventListener(k,f){this.events[k]=f;},showModal(){this.open=true;},close(){this.open=false;},focus(){}};}
 function fixture(){
  const side=element(),body=element(),head=element(),document={body,head,hidden:false,querySelector:()=>side,createElement:()=>element(),addEventListener(){}};
  const pending=[],saved=[],timers=[];let fail=false,getFail=false,holdGet=false;const gets=[];
@@ -7,7 +7,7 @@ function fixture(){
   if(!options.method){if(getFail)return {ok:false,status:500,json:async()=>({success:false,message:'조회 실패'})};const response={ok:true,status:200,json:async()=>({success:true,data:{ownerId:'alice',notes:[]}})};if(holdGet)return new Promise(resolve=>gets.push(()=>resolve(response)));return response;}
   const payload=JSON.parse(options.body);
   if(fail)return {ok:false,status:500,json:async()=>({success:false,message:'저장 실패'})};
-  return new Promise(resolve=>pending.push(()=>{saved.push(payload);resolve({ok:true,status:200,json:async()=>({success:true,data:{id:payload.id,title:payload.title,content:payload.content,pinned:payload.pinned,version:payload.version+1,updated_at:'2026-11-05'}})});}));
+  return new Promise(resolve=>pending.push(()=>{saved.push(payload);resolve({ok:true,status:200,json:async()=>({success:true,data:{id:payload.id,title:payload.title,content:payload.content,pinned:payload.pinned,appearance:payload.appearance,version:payload.version+1,updated_at:'2026-11-05'}})});}));
  };
  const context={document,window:{addEventListener(){}},fetch,AbortSignal,crypto:require('node:crypto').webcrypto,console,setTimeout:f=>{timers.push(f);return timers.length;},clearTimeout(){}};
  let source=fs.readFileSync(__dirname+'/../public/js/qmes-personal-memos-20261105.js','utf8');
@@ -31,3 +31,19 @@ test('pinning is included in a new private memo save',async()=>{
 
 test('temporary reload failure preserves the current private draft',async()=>{const f=fixture();await f.api.load();await f.api.newNote();f.api.content.value='초안 유지';f.api.content.events.input();f.setGetFail(true);await f.api.load();assert.equal(f.api.content.value,'초안 유지');assert.equal(f.api.dirty(),true);});
 test('an older GET response cannot erase a draft typed while it was loading',async()=>{const f=fixture();await f.api.load();await f.api.newNote();f.setHoldGet(true);const loading=f.api.load();f.api.content.value='늦은 조회보다 최신 입력';f.api.content.events.input();f.gets.shift()();await loading;assert.equal(f.api.content.value,'늦은 조회보다 최신 입력');assert.equal(f.api.dirty(),true);});
+
+test('Save closes only after persisted success and exposes the saved note on home',async()=>{
+ const f=fixture();await f.api.load();await f.api.newNote();f.api.content.value='메인에 표시할 메모';f.api.content.events.input();
+ const saving=f.api.dialog.querySelector('[data-save]').onclick();assert.equal(f.api.dialog.open,true);f.pending.shift()();await saving;assert.equal(f.api.dialog.open,false);assert.equal(f.api.dirty(),false);
+ const preview=f.side.children[0].querySelector('.pm-preview');assert.equal(preview.children[0].children[1].textContent,'메인에 표시할 메모');
+});
+test('failed manual Save leaves editor open and retains all input',async()=>{
+ const f=fixture();await f.api.load();await f.api.newNote();f.api.content.value='저장 실패해도 유지';f.setFail(true);await f.api.dialog.querySelector('[data-save]').onclick();assert.equal(f.api.dialog.open,true);assert.equal(f.api.content.value,'저장 실패해도 유지');assert.equal(f.api.status.dataset.error,'1');
+});
+test('paper, font, size and weight save with the note',async()=>{
+ const f=fixture();await f.api.load();await f.api.newNote();f.api.content.value='양식 메모';
+ f.api.dialog.querySelector('[data-paper]').value='pink';f.api.dialog.querySelector('[data-font]').value='serif';f.api.dialog.querySelector('[data-size]').value='18';
+ f.api.dialog.querySelector('[data-paper]').events.change();f.api.dialog.querySelector('[data-bold]').onclick();
+ const saving=f.api.dialog.querySelector('[data-save]').onclick();f.pending.shift()();await saving;
+ assert.deepEqual(JSON.parse(JSON.stringify(f.saved[0].appearance)),{paper:'pink',font:'serif',size:18,bold:true});assert.equal(f.api.dialog.open,false);
+});
