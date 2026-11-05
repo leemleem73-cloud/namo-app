@@ -4,7 +4,7 @@
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dateValue=value=>{const m=String(value??'').trim().match(/(\d{4})[.\/년-]\s*(\d{1,2})[.\/월-]\s*(\d{1,2})/);if(!m)return '';const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));return d.getFullYear()===Number(m[1])&&d.getMonth()+1===Number(m[2])&&d.getDate()===Number(m[3])?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):'';};
 const items=[['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','<10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['수분율','<2,000 ppm','수분측정기'],['고형분','20.0±1.0 wt%','Drying Oven'],['접착력','≥400 gf/12.7mm','인장시험기'],['절연저항','≥200 MΩ (Overflow)','절연저항계'],['전해액 안정성','미탈리','육안']];
-const canonical=name=>String(name||'').trim()==='수분'?'수분율':String(name||'').trim();
+const canonical=name=>window.qmesOqcRules.canonical(name);
 const original=row=>Object.fromEntries(Object.entries(row).filter(([k])=>!k.startsWith('__')));
 function values(row){if(Array.isArray(row?.measurements)&&row.measurements.length)return row.measurements.map(v=>String(v??''));return row?.value?String(row.value).split(/\s*\/\s*/):[];}
 const style=document.createElement('style');style.textContent='.oqc-detail-measure-wrap{overflow:auto;margin-top:18px;border:1px solid #d5dce5}.oqc-detail-items{width:100%;min-width:880px;border-collapse:separate;border-spacing:0;table-layout:fixed;font:12px Pretendard,"Noto Sans KR",Arial,sans-serif}.oqc-detail-items th,.oqc-detail-items td{padding:8px;border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;vertical-align:middle;text-align:center;color:#344054}.oqc-detail-items thead th{background:#e8f0f8;color:#244260;font-weight:600}.oqc-detail-items :is(th,td):last-child{border-right:0}.oqc-detail-items tbody tr:last-child td{border-bottom:0}.oqc-detail-items :is(input,select){width:100%;min-width:0;box-sizing:border-box;height:30px;border:1px solid #c7d6e5;border-radius:4px;padding:4px 6px;background:#fff;font:12px Pretendard,"Noto Sans KR",Arial,sans-serif;color:#243e5d}.oqc-detail-note{font-size:12px;color:#61768b;margin:10px 0}.oqc-save-error{color:#a02040;background:#fff1f3;border:1px solid #efb8c4;padding:10px;margin-top:12px}.oqc-detail-items caption{text-align:left;font-size:14px;font-weight:700;padding:10px;background:#fff;color:#173b61}';document.head.append(style);
@@ -15,7 +15,7 @@ const polish=document.createElement('style');polish.textContent=tableScope+'{wid
 const focusStyle=document.createElement('style');focusStyle.textContent='html body #mainWorkspace .am-split[data-am-screen="outgoing"] :is([data-oqc-value],[data-oqc-field]):focus{background:#edf5ff!important;border-color:#448de0!important;outline:2px solid rgba(68,141,224,.22)!important;outline-offset:0!important;box-shadow:0 0 0 2px rgba(68,141,224,.1)!important}';document.head.append(focusStyle);
 function measurementCell(name,index,value,disabled){
 const attributes=' data-oqc-value="'+index+'" aria-label="'+esc(name)+' '+(index+1)+'차 측정값"'+(disabled?' disabled':'');
-if(name==='외관'||name==='전해액 안정성'){const options=[...new Set(['',...(name==='외관'?['이상없음','이상있음']:['미탈리','탈리']),...(value?[value]:[])])];return '<select'+attributes+'>'+options.map(v=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(v||'선택')+'</option>').join('')+'</select>';}
+if(name==='외관'||name==='전해액 안정성'||name==='절연저항'){const options=[...new Set(['',...(name==='외관'?['이상없음','이상있음']:name==='절연저항'?['Overflow']:['미탈리','탈리']),...(value?[value]:[])])];return '<select'+attributes+'>'+options.map(v=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(v||'선택')+'</option>').join('')+'</select>';}
 return '<input type="text"'+attributes+' value="'+esc(value)+'">';
 }
 
@@ -58,11 +58,12 @@ const topActions=pane.querySelector('.am-detail-actions');if(topActions)topActio
 const refreshOverall=()=>{
 const measurements={};items.forEach(([name],index)=>{const tr=pane.querySelector('[data-oqc-item="'+index+'"]');measurements[name]=[...tr.querySelectorAll('[data-oqc-value]')].map(el=>el.value);});
 const result=window.qmesOqcRules.evaluateMeasurements(measurements);
-items.forEach(([name],index)=>{const el=pane.querySelector('[data-oqc-item-judge="'+index+'"]');el.textContent=result.items[name];el.dataset.result=result.items[name];});
-const overall=pane.querySelector('[data-oqc-overall]');overall.value=result.overall;overall.dataset.result=result.overall;
+items.forEach(([name],index)=>{const el=pane.querySelector('[data-oqc-item-judge="'+index+'"]');if(el.textContent!==result.items[name])el.textContent=result.items[name];if(el.dataset.result!==result.items[name])el.dataset.result=result.items[name];});
+const overall=pane.querySelector('[data-oqc-overall]');if(overall.value!==result.overall)overall.value=result.overall;if(overall.dataset.result!==result.overall)overall.dataset.result=result.overall;
 return result;
 };
-pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('input',refreshOverall);el.addEventListener('change',refreshOverall);});refreshOverall();
+let resultFrame=0;const scheduleOverall=()=>{if(!resultFrame)resultFrame=requestAnimationFrame(()=>{resultFrame=0;if(pane.isConnected)refreshOverall();});};
+pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('input',scheduleOverall);el.addEventListener('change',scheduleOverall);});refreshOverall();
 pane.querySelector('.am-detail-note')?.remove();
 window.qmesOqcFiles.mount(pane,records.map(source=>({recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId})));
 save.addEventListener('click',async()=>{
