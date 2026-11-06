@@ -29,21 +29,26 @@ CREATE OR REPLACE FUNCTION qmes_gate_lot(j JSONB) RETURNS TEXT LANGUAGE SQL IMMU
  nullif(j->>'finishedLot',''),nullif(j->>'finished_lot',''),nullif(j->>'productionLot',''),
  nullif(j->>'productionLotNo',''),nullif(j->>'materialLot',''),j#>>'{fields,생산 LOT NO}',j#>>'{detailFields,생산 LOT NO}','')))
 $$;
-CREATE OR REPLACE FUNCTION qmes_gate_bad(j JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+CREATE OR REPLACE FUNCTION qmes_gate_bad(j JSONB, include_shipping_status BOOLEAN) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE k TEXT; v JSONB;
 BEGIN
  IF jsonb_typeof(j)='array' THEN
-  FOR v IN SELECT value FROM jsonb_array_elements(j) LOOP IF qmes_gate_bad(v) THEN RETURN true; END IF; END LOOP;
+  FOR v IN SELECT value FROM jsonb_array_elements(j) LOOP IF qmes_gate_bad(v, include_shipping_status) THEN RETURN true; END IF; END LOOP;
  ELSIF jsonb_typeof(j)='object' THEN
   FOR k,v IN SELECT * FROM jsonb_each(j) LOOP
    IF k IN ('judge','inspectionDecision','검사합부','검사판정','quality_status','qualityStatus','shippingStatus','판정')
+    AND (k <> 'shippingStatus' OR include_shipping_status)
     AND upper(btrim(v#>>'{}')) IN ('불합격','부적합','보류','출하보류','HOLD','NONCONFORM','FAIL','NG','REJECTED') THEN RETURN true; END IF;
    IF k IN ('fail','failQty','fail_qty') AND coalesce(v#>>'{}','') ~ '^[0-9]+([.][0-9]+)?$' AND (v#>>'{}')::numeric>0 THEN RETURN true; END IF;
-   IF k IN ('items','items_json','detailFields') AND qmes_gate_bad(v) THEN RETURN true; END IF;
+   IF k IN ('items','items_json','detailFields') AND qmes_gate_bad(v, include_shipping_status) THEN RETURN true; END IF;
   END LOOP;
  END IF;
  RETURN false;
 END $$;
+
+CREATE OR REPLACE FUNCTION qmes_gate_bad(j JSONB) RETURNS BOOLEAN LANGUAGE SQL IMMUTABLE AS $$
+ SELECT qmes_gate_bad(j, true)
+$$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_value_ok(item TEXT, val TEXT) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE n NUMERIC; t TEXT:=btrim(coalesce(val,''));
@@ -118,7 +123,8 @@ BEGIN
  INSERT INTO qmes_lot_observations(source,entry,kind,lot,inspection_date,payload)
  VALUES(s,p_entry,k,l,left(coalesce(j->>'date',j->>'inspectedAt',j->>'recv',j->>'occurred_on',''),10),j)
  ON CONFLICT(source,entry) DO UPDATE SET kind=k,lot=l,inspection_date=EXCLUDED.inspection_date,payload=j,observed_at=clock_timestamp();
- IF qmes_gate_bad(j) OR qmes_gate_measure_bad(j,k)
+ -- A shipping workflow status alone does not create an inspection hold.
+ IF qmes_gate_bad(j, k NOT IN ('iqc','pqc','oqc')) OR qmes_gate_measure_bad(j,k)
  OR (k='ncr' AND upper(coalesce(j->>'status','OPEN')) NOT IN ('CLOSED','종결','완료','해제')) THEN
   PERFORM qmes_gate_hold(l,s||'/'||p_entry,k,upper(k)||' 부적합 / 보류',j);
  END IF;
