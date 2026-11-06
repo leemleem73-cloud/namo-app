@@ -39,12 +39,12 @@
   const entries=[],inspectionKeys=new Set(),ncrKeys=new Set(),shippingKeys=new Set();
   for(const [lot,dayOrders] of lots){
    const graph=buildGraph(sources,lot,dayOrders.length&&dayOrders.every(o=>o.productionType==='중간배치')?'intermediate':'finished');
-   const add=(type,date,eventLot,title,detail,status,facts=[],sourceId='')=>entries.push({lot,type,sourceId,date:day(date),eventLot:eventLot||lot,title,detail,status:status||'미확인',facts});
+   const add=(type,date,eventLot,title,detail,status,facts=[],sourceIds=[])=>entries.push({lot,type,sourceIds,date:day(date),eventLot:eventLot||lot,title,detail,status:status||'미확인',facts});
    for(const row of dayOrders){const f=row.fields||{};add('작업지시',date,lot,f['작업지시번호']||row.id,[f['제품명']||'-','계획수량 '+text(f['계획수량'])+' kg','작업자 '+text(f['작업자'])].join(' · '),f['진행상태'],[{label:'제품명',value:f['제품명']||'-'},{label:'계획수량',value:formatValue(f['계획수량'])+' kg'},{label:'작업자',value:f['작업자']||'-'}]);
     for(const material of row.materials||[])add('원료 투입',date,material.lot,material.sourceName||material.name,'계획 '+text(material.plan)+' kg · 실투입 '+text(material.actual)+' kg',(String(material.lot||'').trim()==='-'?'LOT 미부여 샘플':'투입내역'),[{label:'계획투입량',value:formatValue(material.plan)+' kg'},{label:'실투입량',value:formatValue(material.actual)+' kg'}]);
    }
    for(const row of graph.actual.filter(r=>norm(r.finishedLot)===lot))add('작업실적',row.workDate,row.lotNo,row.material,'실투입 '+text(row.inputQty)+' · 공급업체 '+text(row.supName),'실적 등록',[{label:'실투입량',value:formatValue(row.inputQty)},{label:'공급업체',value:row.supName||'-'}]);
-   for(const group of graph.groups)for(const row of group.rows){const key=JSON.stringify([group.type,row.id||'',row.lot,row.date,row.check||'']);inspectionKeys.add(key);add({iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[group.type],row.date,row.lot,row.item||row.product||row.check||group.title,inspectionDetail(row),row.judge||row.inspectionDecision||'검사내용 확인',inspectionFacts(row),String(row.id||''));}
+   for(const group of graph.groups)for(const row of group.rows){const key=JSON.stringify([group.type,row.id||'',row.lot,row.date,row.check||'']);inspectionKeys.add(key);add({iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[group.type],row.date,row.lot,row.item||row.product||row.check||group.title,inspectionDetail(row),row.judge||row.inspectionDecision||'검사내용 확인',inspectionFacts(row),(row.__groupChecks||[row]).filter(check=>check.id).map(check=>String(check.id)));}
    for(const row of graph.ncr||[]){ncrKeys.add(String(row.id||row.report_no));add('부적합',row.occurred_on,row.lot,row.report_no||'부적합보고서',[row.description,row.containment&&'긴급조치: '+row.containment,row.corrective_action&&'시정조치: '+row.corrective_action].filter(Boolean).join('\n'),{OPEN:'발행',IN_PROGRESS:'조치중',CLOSED:'완료'}[row.status]||row.status);}
    for(const row of graph.shipping){shippingKeys.add(JSON.stringify([row.id||row.shipmentNo||row.no,row.lot||row.finishedLot,row.shipDate||row.date]));add('출하',row.actualShipDate||row.shipDate||row.date,row.lot||row.finishedLot||row.productionLot,row.shipmentNo||row.no||row.id,[row.customer,row.product||row.item,'출하수량 '+text(row.shipmentQty??row.qty??row.quantity)].filter(Boolean).join(' · '),row.deliveryStatus||row.delivery||row.status||row.shipping);}
   }
@@ -55,7 +55,7 @@
    if(row.deleted||day(row.date)!==date)continue;
    const key=JSON.stringify([type,row.id||'',row.lot,row.date,row.check||'']);if(inspectionKeys.has(key))continue;inspectionKeys.add(key);
    const code=type==='iqc'?'-':norm(row.lot)||'-';
-   entries.push({lot:code,type:{iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[type],date,eventLot:norm(row.lot)||'-',title:row.item||row.product||row.check||'검사기록',detail:inspectionDetail(row),status:row.judge||row.inspectionDecision||'검사내용 확인',facts:inspectionFacts(row),sourceId:String(row.id||'')});
+   entries.push({lot:code,type:{iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[type],date,eventLot:norm(row.lot)||'-',title:row.item||row.product||row.check||'검사기록',detail:inspectionDetail(row),status:row.judge||row.inspectionDecision||'검사내용 확인',facts:inspectionFacts(row),sourceIds:row.id?[String(row.id)]:[]});
   }
   for(const row of sources[8]?.rows||[]){if(row.deleted||day(row.occurred_on)!==date||ncrKeys.has(String(row.id||row.report_no)))continue;ncrKeys.add(String(row.id||row.report_no));entries.push({lot:norm(row.lot)||'-',type:'부적합',date,eventLot:norm(row.lot)||'-',title:row.report_no||'부적합보고서',detail:row.description||'',status:row.status||'미확인'});}
   for(const record of sources[7]?.rows||[]){if(record.record_key!=='erp:shipping')continue;for(const row of unpack(record.payload)){if(row.deleted||day(row.actualShipDate||row.shipDate||row.date)!==date)continue;const key=JSON.stringify([row.id||row.shipmentNo||row.no,row.lot||row.finishedLot,row.shipDate||row.date]);if(shippingKeys.has(key))continue;shippingKeys.add(key);entries.push({lot:norm(row.lot||row.finishedLot)||'-',type:'출하',date,eventLot:norm(row.lot||row.finishedLot)||'-',title:row.shipmentNo||row.no||row.id,detail:[row.customer,row.product,'출하수량 '+text(row.shipmentQty??row.qty)].filter(Boolean).join(' · '),status:row.deliveryStatus||row.status||'미확인'});}}
@@ -83,7 +83,7 @@
    if(entry.type!=='출하검사'||!entry.eventLot||entry.eventLot==='-')continue;
    const id=key(entry.eventLot,entry.date);
    if(!groups.has(id))groups.set(id,{lot:entry.eventLot,date:entry.date,ids:new Set(),files:[]});
-   if(entry.sourceId)groups.get(id).ids.add(entry.sourceId);
+   for(const sourceId of entry.sourceIds||[])groups.get(id).ids.add(sourceId);
   }
   const targets=new Map();
   for(const record of sources[6]?.rows||[]){
@@ -91,7 +91,7 @@
    if(payload.deleted||!record.record_key)continue;
    for(const row of Array.isArray(payload)?payload:payload.rows||[]){
     if(row.deleted||!row.id)continue;
-    const group=groups.get(key(row.lot,row.date));
+    const group=groups.get(key(row.lot,row.date||row.shipDate));
     if(group?.ids.has(String(row.id)))targets.set(JSON.stringify([record.record_key,String(row.id)]),group);
    }
   }
