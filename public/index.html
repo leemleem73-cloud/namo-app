@@ -5402,7 +5402,7 @@ function pqcWorkOrderNumber(order){
   return String(order?.fields?.['작업지시번호']||order?.workOrderNo||order?.id||'').trim();
 }
 
-async function loadHistoricalInspectionRows(section,id){
+async function loadHistoricalInspectionRows(section,id,savedPqc=null){
   await window.qmesAuthDataReady.wait();
   if(!section||!['process','outgoing'].includes(id))return;
   const tbody=section.querySelector('tbody');
@@ -5469,7 +5469,9 @@ async function loadHistoricalInspectionRows(section,id){
         const date=norm(row.date),order=norm(row.workOrderNo||row.orderNo),lot=norm(row.lot);
         // Without a usable date/LOT, do not collapse unrelated records.
         const valid=date&&date!=='-'&&lot&&lot!=='-';
-        const key=valid?[date,order,lot].join('||'):'unique:'+String(row.id||grouped.size);
+        const key=row.__sourceRecordKey.startsWith('detail:')&&row.__sourceRowId
+          ?JSON.stringify([row.__sourceRecordKey,row.__sourceRowId])
+          :valid?[date,order,lot].join('||'):'unique:'+String(row.id||grouped.size);
         const list=groupSources.get(key)||[];if(row.__sourceRecordKey&&row.__sourceRowId)list.push({recordKey:row.__sourceRecordKey,rowIndex:row.__sourceRowIndex,rowId:row.__sourceRowId});groupSources.set(key,list);
         const existing=grouped.get(key);
         if(!existing){grouped.set(key,row);continue;}
@@ -5595,8 +5597,9 @@ async function loadHistoricalInspectionRows(section,id){
     }
     section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
     // Bind actions to all records before pagination detaches later pages.
-    section._inspectionBulkRefresh?.();
+    section._inspectionBulkRefresh?.(savedPqc);
     section._fitProcessColumns?.();section._fitOutgoingColumns?.();
+    if(savedPqc)return [...tbody.querySelectorAll('tr.data-row')].some(row=>row.dataset.sourceKey===savedPqc.key&&row.dataset.sourceId===savedPqc.id);
   }catch(error){
     if(section._historicalRequest!==request||!section.isConnected)return;
     tbody.innerHTML='<tr><td colspan="'+(pageInfo[id][2].length+1)+'" style="text-align:center;padding:24px">기존 검사 기록 조회 실패: '+String(error.message||'연결 오류').replace(/[&<>]/g,'')+'</td></tr>';
@@ -5701,7 +5704,18 @@ function wireProcessInquiry(section,id='process'){
     update();observer.observe(tbody,{childList:true});rendering=false;
   }
   const observer=new MutationObserver(()=>{if(rendering)return;const fresh=[...tbody.querySelectorAll('tr.data-row')];if(fresh.some(row=>!rows.includes(row))){rows=fresh;render();}});
-  section._inspectionBulkRefresh=()=>{rows=[...tbody.querySelectorAll('tr.data-row')];render();};
+  section._inspectionBulkRefresh=(savedPqc)=>{
+    rows=[...tbody.querySelectorAll('tr.data-row')];
+    if(!outgoing&&savedPqc){
+      const index=rows.findIndex(row=>row.dataset.sourceKey===savedPqc.key&&row.dataset.sourceId===savedPqc.id);
+      if(index>=0){
+        section.querySelectorAll('[data-iqc-filter],.search-input,.ip-start-date,.ip-end-date').forEach(input=>input.value='');
+        section.querySelector('.ip-status-filter').value='전체';
+        page=Math.floor(index/10)+1;
+      }
+    }
+    render();
+  };
   tbody.addEventListener('change',event=>{if(event.target.matches('.iqc-select-row'))update()});
   head.onchange=()=>{[...tbody.querySelectorAll('tr.data-row')].forEach(row=>{const box=row.querySelector('.iqc-select-row');if(box&&!box.disabled)box.checked=head.checked});update();};
   const search=()=>{page=1;render()};section.querySelectorAll('[data-iqc-filter],.search-input').forEach(input=>input.addEventListener('input',search));section.querySelectorAll('.ip-start-date,.ip-end-date,.ip-status-filter').forEach(input=>input.addEventListener('change',search));section.querySelector('.iqc-query-search').onclick=search;
@@ -7200,18 +7214,19 @@ function showRowDetail(id,row){
               body:JSON.stringify({key:recordKey,source:persisted?{rowIndex:persisted.__sourceRowIndex,rowId:persisted.__sourceRowId}:null,record})
             });
             const result=await response.json().catch(()=>({}));
-            if(!response.ok||result.success===false)throw Error(result.message||('서버 응답 '+response.status));
+            if(!response.ok||result.success!==true||!result.data?.id)throw Error(result.message||('서버 저장 응답을 확인하지 못했습니다 · '+response.status));
             // Return explicitly to the PQC data list, regardless of the prior workspace route.
             closeModal();
             const section=document.getElementById('process');
+            let visible=false;
             if(section){
               document.querySelectorAll('.module-page').forEach(page=>page.classList.remove('active'));
               section.classList.add('active');
               workspacePreviousPage='process';
-              try{await loadHistoricalInspectionRows(section,'process');}
+              try{visible=await loadHistoricalInspectionRows(section,'process',{key:recordKey,id:String(result.data.id)});}
               catch(refreshError){console.warn('[PQC] list refresh after save',refreshError);}
             }
-            toast('공정검사 저장 완료 · 목록에 반영되었습니다.');
+            toast(visible?'공정검사 저장 완료 · 저장한 기록을 표시했습니다.':'공정검사는 저장됐습니다. 목록 반영을 확인하지 못했으니 조회를 다시 눌러 주세요.');
           }catch(error){
             console.error('[PQC] save failed',error);
             const message='공정검사 저장 실패: '+String(error.message||error);
