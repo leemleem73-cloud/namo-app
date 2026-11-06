@@ -7079,23 +7079,23 @@ function showRowDetail(id,row){
     '<div class="am-section pqc-detail-measure-section" style="margin-top:16px"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body" style="overflow-x:auto"><table class="pqc-detail-measure-table" style="width:100%;border-collapse:separate;border-spacing:0;text-align:center"><thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 기기</th><th>1차</th><th>2차</th><th>3차</th><th>판정</th></tr></thead><tbody>'+
     [['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','&lt;10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['고형분','20.0±1.0 wt%','Drying Oven']].map(([item,spec,method],idx)=>'<tr><td>'+(idx+1)+'</td><th>'+item+'</th><td>'+spec+'</td><td>'+method+'</td>'+Array.from({length:3},(_,i)=>'<td>'+(item==='외관'?'<select data-pqc-measure="'+item+'" data-measure-index="'+i+'"><option value="">선택</option><option>이상없음</option><option>이상있음</option></select>':'<input type="number" step="any" inputmode="decimal" data-pqc-measure="'+item+'" data-measure-index="'+i+'" placeholder="측정값">')+'</td>').join('')+'<td data-pqc-item-judge="'+item+'">대기</td></tr>').join('')+
     '</tbody></table></div></div>'+window.qmesPqcApprovalGrid(row);
-    openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">수정 저장</button>');
+    openModal('공정검사 상세',amaranthScreen(id,html,'detail','공정검사 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록으로</button>');
+    const pqcSaveButton=document.createElement('button');
+    pqcSaveButton.type='button';pqcSaveButton.className='am-top-btn primary';pqcSaveButton.setAttribute('data-am-save','');pqcSaveButton.textContent='저장';
     // PQC detail: relocate existing wired top actions to the footer; keep save behavior intact.
     {
       const pane=workspaceBody.querySelector('.am-split[data-am-screen="process"] .am-detail-pane');
       const topActions=pane?.querySelector('.am-detail-actions');
       const backButton=topActions?.querySelector('[data-am-back]');
-      const saveButton=topActions?.querySelector('[data-am-save]');
-      if(topActions && backButton && saveButton){
+      if(topActions && backButton){
         const printButton=document.createElement('button');
         printButton.type='button';
         printButton.className='am-top-btn';
         printButton.textContent='인쇄';
         printButton.addEventListener('click',printPqcCertificateOnly);
         topActions.replaceChildren(printButton);
-        workspaceFoot.replaceChildren(backButton,saveButton);
+        workspaceFoot.replaceChildren(backButton);
         backButton.textContent='목록';
-        saveButton.textContent='저장';
       }
     }
     const judge=document.querySelector('[data-pqc-field="검사합부"]');
@@ -7175,7 +7175,8 @@ function showRowDetail(id,row){
     refreshPqcJudges();
     // Attach directly to the real footer button: the old #modalSave was removed
     // by workspaceFoot.replaceChildren() when the detail actions were relocated.
-    const saveButton=workspaceFoot.querySelector('[data-am-save]');
+    const saveButton=pqcSaveButton;
+    workspaceFoot.append(saveButton);
     if(saveButton){
       saveButton.textContent='저장';
       saveButton.onclick=null;
@@ -7186,7 +7187,7 @@ function showRowDetail(id,row){
         const fields={};
         document.querySelectorAll('[data-pqc-field]').forEach(el=>{fields[el.dataset.pqcField]=el.value;});
         const key=String(fields['생산 LOT NO']||lot).trim().toUpperCase();
-        if(!key){toast('생산 LOT NO를 입력해 주세요.');return;}
+        if(!key||key==='-'){toast('생산 LOT NO를 입력해 주세요.');return;}
         const chosenInspector=fields['검사자']==='__manual__'?String(inspectorManual?.value||'').trim():fields['검사자'];
         if(fields['검사자']==='__manual__'&&!chosenInspector){toast('검사자 이름을 입력해 주세요.');return;}
         const measurements={};
