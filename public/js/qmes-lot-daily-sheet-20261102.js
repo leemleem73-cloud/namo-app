@@ -39,12 +39,12 @@
   const entries=[],inspectionKeys=new Set(),ncrKeys=new Set(),shippingKeys=new Set();
   for(const [lot,dayOrders] of lots){
    const graph=buildGraph(sources,lot,dayOrders.length&&dayOrders.every(o=>o.productionType==='중간배치')?'intermediate':'finished');
-   const add=(type,date,eventLot,title,detail,status,facts=[])=>entries.push({lot,type,date:day(date),eventLot:eventLot||lot,title,detail,status:status||'미확인',facts});
+   const add=(type,date,eventLot,title,detail,status,facts=[],sourceId='')=>entries.push({lot,type,sourceId,date:day(date),eventLot:eventLot||lot,title,detail,status:status||'미확인',facts});
    for(const row of dayOrders){const f=row.fields||{};add('작업지시',date,lot,f['작업지시번호']||row.id,[f['제품명']||'-','계획수량 '+text(f['계획수량'])+' kg','작업자 '+text(f['작업자'])].join(' · '),f['진행상태'],[{label:'제품명',value:f['제품명']||'-'},{label:'계획수량',value:formatValue(f['계획수량'])+' kg'},{label:'작업자',value:f['작업자']||'-'}]);
     for(const material of row.materials||[])add('원료 투입',date,material.lot,material.sourceName||material.name,'계획 '+text(material.plan)+' kg · 실투입 '+text(material.actual)+' kg',(String(material.lot||'').trim()==='-'?'LOT 미부여 샘플':'투입내역'),[{label:'계획투입량',value:formatValue(material.plan)+' kg'},{label:'실투입량',value:formatValue(material.actual)+' kg'}]);
    }
    for(const row of graph.actual.filter(r=>norm(r.finishedLot)===lot))add('작업실적',row.workDate,row.lotNo,row.material,'실투입 '+text(row.inputQty)+' · 공급업체 '+text(row.supName),'실적 등록',[{label:'실투입량',value:formatValue(row.inputQty)},{label:'공급업체',value:row.supName||'-'}]);
-   for(const group of graph.groups)for(const row of group.rows){const key=JSON.stringify([group.type,row.id||'',row.lot,row.date,row.check||'']);inspectionKeys.add(key);add({iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[group.type],row.date,row.lot,row.item||row.product||row.check||group.title,inspectionDetail(row),row.judge||row.inspectionDecision||'검사내용 확인',inspectionFacts(row));}
+   for(const group of graph.groups)for(const row of group.rows){const key=JSON.stringify([group.type,row.id||'',row.lot,row.date,row.check||'']);inspectionKeys.add(key);add({iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[group.type],row.date,row.lot,row.item||row.product||row.check||group.title,inspectionDetail(row),row.judge||row.inspectionDecision||'검사내용 확인',inspectionFacts(row),String(row.id||''));}
    for(const row of graph.ncr||[]){ncrKeys.add(String(row.id||row.report_no));add('부적합',row.occurred_on,row.lot,row.report_no||'부적합보고서',[row.description,row.containment&&'긴급조치: '+row.containment,row.corrective_action&&'시정조치: '+row.corrective_action].filter(Boolean).join('\n'),{OPEN:'발행',IN_PROGRESS:'조치중',CLOSED:'완료'}[row.status]||row.status);}
    for(const row of graph.shipping){shippingKeys.add(JSON.stringify([row.id||row.shipmentNo||row.no,row.lot||row.finishedLot,row.shipDate||row.date]));add('출하',row.actualShipDate||row.shipDate||row.date,row.lot||row.finishedLot||row.productionLot,row.shipmentNo||row.no||row.id,[row.customer,row.product||row.item,'출하수량 '+text(row.shipmentQty??row.qty??row.quantity)].filter(Boolean).join(' · '),row.deliveryStatus||row.delivery||row.status||row.shipping);}
   }
@@ -55,7 +55,7 @@
    if(row.deleted||day(row.date)!==date)continue;
    const key=JSON.stringify([type,row.id||'',row.lot,row.date,row.check||'']);if(inspectionKeys.has(key))continue;inspectionKeys.add(key);
    const code=type==='iqc'?'-':norm(row.lot)||'-';
-   entries.push({lot:code,type:{iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[type],date,eventLot:norm(row.lot)||'-',title:row.item||row.product||row.check||'검사기록',detail:inspectionDetail(row),status:row.judge||row.inspectionDecision||'검사내용 확인',facts:inspectionFacts(row)});
+   entries.push({lot:code,type:{iqc:'수입검사',pqc:'공정검사',oqc:'출하검사'}[type],date,eventLot:norm(row.lot)||'-',title:row.item||row.product||row.check||'검사기록',detail:inspectionDetail(row),status:row.judge||row.inspectionDecision||'검사내용 확인',facts:inspectionFacts(row),sourceId:String(row.id||'')});
   }
   for(const row of sources[8]?.rows||[]){if(row.deleted||day(row.occurred_on)!==date||ncrKeys.has(String(row.id||row.report_no)))continue;ncrKeys.add(String(row.id||row.report_no));entries.push({lot:norm(row.lot)||'-',type:'부적합',date,eventLot:norm(row.lot)||'-',title:row.report_no||'부적합보고서',detail:row.description||'',status:row.status||'미확인'});}
   for(const record of sources[7]?.rows||[]){if(record.record_key!=='erp:shipping')continue;for(const row of unpack(record.payload)){if(row.deleted||day(row.actualShipDate||row.shipDate||row.date)!==date)continue;const key=JSON.stringify([row.id||row.shipmentNo||row.no,row.lot||row.finishedLot,row.shipDate||row.date]);if(shippingKeys.has(key))continue;shippingKeys.add(key);entries.push({lot:norm(row.lot||row.finishedLot)||'-',type:'출하',date,eventLot:norm(row.lot||row.finishedLot)||'-',title:row.shipmentNo||row.no||row.id,detail:[row.customer,row.product,'출하수량 '+text(row.shipmentQty??row.qty)].filter(Boolean).join(' · '),status:row.deliveryStatus||row.status||'미확인'});}}
@@ -76,10 +76,42 @@
  function historyTable(entries){
   return '<div class="lot-day-table lot-day-history"><table><colgroup>'+[8,7,10,14,15,34,12].map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+['생산 LOT','구분','이력일자','관련 LOT','문서 / 항목','세부 기록','상태'].map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+entries.map(entry=>'<tr><td class="keep-line lot-key">'+esc(entry.lot)+'</td><td class="keep-line">'+esc(entry.type)+'</td><td class="keep-line">'+esc(entry.date||'-')+'</td><td class="keep-line">'+esc(entry.eventLot)+'</td><td class="record-title">'+esc(text(entry.title))+'</td><td class="record-detail">'+factsMarkup(entry)+'</td><td>'+badge(entry.status)+'</td></tr>').join('')+'</tbody></table></div>';
  }
+ function coaEvidence(model,sources,files){
+  const groups=new Map();
+  const key=(lot,date)=>JSON.stringify([norm(lot),day(date)]);
+  for(const entry of model.entries){
+   if(entry.type!=='출하검사'||!entry.eventLot||entry.eventLot==='-')continue;
+   const id=key(entry.eventLot,entry.date);
+   if(!groups.has(id))groups.set(id,{lot:entry.eventLot,date:entry.date,ids:new Set(),files:[]});
+   if(entry.sourceId)groups.get(id).ids.add(entry.sourceId);
+  }
+  const targets=new Map();
+  for(const record of sources[6]?.rows||[]){
+   const payload=parse(record.payload);
+   if(payload.deleted||!record.record_key)continue;
+   for(const row of Array.isArray(payload)?payload:payload.rows||[]){
+    if(row.deleted||!row.id)continue;
+    const group=groups.get(key(row.lot,row.date));
+    if(group?.ids.has(String(row.id)))targets.set(JSON.stringify([record.record_key,String(row.id)]),group);
+   }
+  }
+  for(const file of files){
+   if(!file.id||!Array.isArray(file.sources))continue;
+   const matched=new Set(file.sources.map(source=>targets.get(JSON.stringify([source.recordKey,String(source.rowId)]))).filter(Boolean));
+   for(const group of matched)group.files.push(file);
+  }
+  return [...groups.values()];
+ }
+ function coaMarkup(groups,error){
+  if(!groups.length)return '';
+  const rows=groups.map(group=>'<tr><td>'+esc(group.date)+'</td><td>'+esc(group.lot)+'</td><td>'+
+   (error?'첨부 조회 실패':group.files.length?group.files.map(file=>'<a target="_blank" rel="noopener" href="/api/qmes/oqc/attachments/'+encodeURIComponent(file.id)+'">'+esc(file.name||'COA 열기')+'</a>').join('<br>'):'연결된 COA 없음')+'</td></tr>').join('');
+  return '<h3><span class="lot-day-section-no">03.</span><span>출하검사 첨부 COA</span></h3><div class="lot-day-table lot-day-coa"><table><thead><tr><th>검사일</th><th>완제품 LOT</th><th>첨부 COA</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+ }
  function markup(model){
   if(!model.orders.length&&!model.entries.length)return '<p class="lot-day-empty">'+esc(model.date)+'에 해당하는 생산·입고·검사 기록이 없습니다.</p>';
   const warning=model.errors.length?'<p class="lot-day-warning">일부 자료 조회 실패: '+model.errors.map(esc).join(', ')+' · 아래 내용은 조회된 자료만 포함합니다.</p>':'';
-  return warning+'<div class="lot-day-summary"><span>생산 LOT <b>'+model.lotCount+'</b>건</span><span>작업지시 <b>'+model.orders.length+'</b>건</span><span>검사 <b>'+model.inspectionCount+'</b>건</span><span>부적합 <b>'+model.ncrCount+'</b>건</span><span>출하 <b>'+model.shippingCount+'</b>건</span></div><p class="lot-day-note">선택한 날짜의 입고·검사·생산 기록과 연결된 이력을 표시합니다. 작업지시서가 없는 수입검사는 생산 LOT를 만들지 않고 관련 원료 LOT로 표시합니다. 계획수량과 실투입량은 구분해 확인하세요.</p><h3><span class="lot-day-section-no">01.</span><span>해당 날짜의 생산 LOT</span></h3>'+table(['작업일','작업지시번호','생산 LOT','제품명','계획수량 (kg)','작업자','진행상태'],model.overviewRecords||model.orders.map(row=>{const f=row.fields||{};return [model.date,f['작업지시번호']||row.id,f['생산 LOT NO'],f['제품명'],formatValue(f['계획수량']),f['작업자'],f['진행상태']];}))+'<h3><span class="lot-day-section-no">02.</span><span>LOT별 통합 이력</span></h3>'+historyTable(model.entries);
+  return warning+'<div class="lot-day-summary"><span>생산 LOT <b>'+model.lotCount+'</b>건</span><span>작업지시 <b>'+model.orders.length+'</b>건</span><span>검사 <b>'+model.inspectionCount+'</b>건</span><span>부적합 <b>'+model.ncrCount+'</b>건</span><span>출하 <b>'+model.shippingCount+'</b>건</span></div><p class="lot-day-note">선택한 날짜의 입고·검사·생산 기록과 연결된 이력을 표시합니다. 작업지시서가 없는 수입검사는 생산 LOT를 만들지 않고 관련 원료 LOT로 표시합니다. 계획수량과 실투입량은 구분해 확인하세요.</p><h3><span class="lot-day-section-no">01.</span><span>해당 날짜의 생산 LOT</span></h3>'+table(['작업일','작업지시번호','생산 LOT','제품명','계획수량 (kg)','작업자','진행상태'],model.overviewRecords||model.orders.map(row=>{const f=row.fields||{};return [model.date,f['작업지시번호']||row.id,f['생산 LOT NO'],f['제품명'],formatValue(f['계획수량']),f['작업자'],f['진행상태']];}))+'<h3><span class="lot-day-section-no">02.</span><span>LOT별 통합 이력</span></h3>'+historyTable(model.entries)+coaMarkup(model.coa||[],model.coaError);
  }
  function install(win){
   if(win.qmesLotDaily)return;const doc=win.document;let viewer=null,controller=null,serial=0;
@@ -92,7 +124,19 @@
    doc.body.append(dialog);dialog.showModal();dialog.querySelector('[data-day-close]').focus();
    if(!win.qmesLotTrace?.readSources||!win.qmesLotTrace?.buildGraph){dialog.querySelector('.lot-day-body').textContent='통합 조회 기능을 준비 중입니다. 새로고침 후 다시 시도해 주세요.';return;}
    const active=new AbortController();controller=active;const timer=win.setTimeout(()=>active.abort(),25000);
-   try{const sources=await win.qmesLotTrace.readSources('',active.signal);if(request!==serial||viewer!==dialog||!dialog.open)return;const model=buildDay(sources,date,win.qmesLotTrace.buildGraph);dialog.querySelector('.lot-day-body').innerHTML=markup(model);}
+   try{
+    const [sources,attachments]=await Promise.all([
+     win.qmesLotTrace.readSources('',active.signal),
+     win.fetch('/api/qmes/oqc/attachments',{credentials:'same-origin',cache:'no-store',signal:active.signal})
+      .then(async response=>{const result=await response.json();if(!response.ok||!result.success||!Array.isArray(result.data))throw Error('첨부 조회 실패');return {files:result.data};})
+      .catch(()=>({files:[],error:true}))
+    ]);
+    if(request!==serial||viewer!==dialog||!dialog.open)return;
+    const model=buildDay(sources,date,win.qmesLotTrace.buildGraph);
+    model.coa=coaEvidence(model,sources,attachments.files);
+    model.coaError=attachments.error||Boolean(sources[6]?.error);
+    dialog.querySelector('.lot-day-body').innerHTML=markup(model);
+   }
    catch(error){if(request===serial&&viewer===dialog)dialog.querySelector('.lot-day-body').textContent=active.signal.aborted?'조회 시간이 초과되었습니다. 다시 열어주세요.':error.message||'통합 이력을 불러오지 못했습니다.';}
    finally{win.clearTimeout(timer);if(request===serial)controller=null;}
   }
@@ -119,12 +163,12 @@
   .lot-day-badge{display:inline-block;max-width:100%;box-sizing:border-box;padding:2px 6px;border-radius:3px;white-space:normal;word-break:keep-all;line-height:1.5;font-size:11px;font-weight:600}
   .lot-day-badge.pass{background:#edf8f1;color:#23754b}.lot-day-badge.fail{background:#fff1f0;color:#b42318}.lot-day-badge.neutral{background:#f1f5f9;color:#52677e}
   .lot-day-fact .lot-day-badge{padding:1px 4px;font-size:10px}
-  .lot-day-body h3{display:flex;align-items:baseline;gap:6px}
+  .lot-day-coa>table{min-width:0}.lot-day-coa th,.lot-day-coa td{text-align:center}.lot-day-coa a{color:#1768ad}\n  .lot-day-body h3{display:flex;align-items:baseline;gap:6px}
   .lot-day-body h3 .lot-day-section-no{display:inline-block;flex:none;font-variant-numeric:tabular-nums}
   .lot-day-overview>table>tbody>tr>td.numeric{text-align:center}
   .lot-day-history>table>thead>tr>th{text-align:center;vertical-align:middle}
   .lot-day-history>table>tbody>tr>td:not(.record-detail){text-align:center;vertical-align:middle}
   `;doc.head.append(style);win.qmesLotDaily={open,close};
  }
- return {validDate,formatValue,inspectionFacts,buildDay,markup,install};
+ return {validDate,formatValue,inspectionFacts,buildDay,coaEvidence,markup,install};
 });
