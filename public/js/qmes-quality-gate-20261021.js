@@ -29,7 +29,7 @@ function render(data) {
   const status=h.released_at ? '<span class="qgate-status released">해제</span> · '+esc(h.released_by)+'<br>'+esc(h.release_reason) : '<span class="qgate-status blocked">보류 · 차단 중</span>';
   return '<tr><td title="보류번호 '+id+'">'+(index+1)+'</td><td><strong class="qgate-lot">'+esc(h.lot)+'</strong></td><td>'+esc(h.reason)+'</td><td>'+esc(new Date(h.created_at).toLocaleString('ko-KR'))+'</td><td>'+status+'</td><td><div class="qgate-row-actions">'+button('hold','품질 보류',h.released_at&&!activeLots.has(h.lot))+button('release','품질 보류 해제',!h.released_at&&data.canRelease)+'</div></td><td>'+(h.released_at&&data.canRelease?button('hide-released','삭제',true):'—')+'</td></tr>';
  }).join('') || '<tr><td colspan="7" class="qgate-empty">보류 내역이 없습니다.</td></tr>';
- dialog.querySelector('.qgate-history').textContent = data.events.map(e => new Date(e.occurred_at).toLocaleString('ko-KR')+' · '+({HOLD:'자동 보류',MANUAL_HOLD:'수동 보류',BLOCK:'처리 차단',RELEASE:'해제 승인',HIDE_RELEASED_HOLD:'목록에서 삭제'}[e.action]||e.action)+' · '+(e.lot||'')+' · '+(e.actor||'시스템')+' · '+(e.detail?.reason||'')).join('\n') || '이력이 없습니다.';
+ dialog.querySelector('.qgate-history').textContent = data.events.map(e => new Date(e.occurred_at).toLocaleString('ko-KR')+' · '+({HOLD:'자동 보류',MANUAL_HOLD:'수동 보류',BLOCK:'처리 차단',RELEASE:'해제 승인',HIDE_RELEASED_HOLD:'목록에서 삭제'}[e.action]||e.action)+' · '+(e.lot||'')+' · '+(e.actor||'시스템')+' · '+(e.detail?.reason||'')+(e.detail?.retestAt?' · 재검사 '+e.detail.retestAt.replace('T',' ')+' · '+e.detail.retestInspector+' · 보류번호 '+e.detail.holdId:'')).join('\n') || '이력이 없습니다.';
  dialog.querySelector('.qgate-permission').textContent = data.canRelease ? '해제 권한: 관리자 또는 품질부 부장 이상' : '현재 계정에는 해제 권한이 없습니다. 관리자 또는 품질부 부장 이상이 해제할 수 있습니다.';
 }
 function stopLoading(){
@@ -67,7 +67,7 @@ function ensureDialog() {
  if (!dialog) {
   dialog = document.createElement('dialog'); dialog.className='qgate-dialog';
   dialog.setAttribute('aria-labelledby','qgate-title');
-  dialog.innerHTML="<div class=\"qgate-header\"><h2 id=\"qgate-title\">품질 보류 / 해제</h2><button type=\"button\" class=\"qgate-close\">닫기</button></div><div class=\"qgate-content\"><p class=\"qgate-note qgate-policy\">보류 LOT는 원료 투입·공정 완료·출하 확정이 차단되며, 연결된 완제품에도 적용됩니다.<br>검사 결과를 합격으로 수정하거나 NCR을 종결해도 자동 해제되지 않습니다. 최신 재검사 합격 후 별도 승인이 필요합니다.</p><div class=\"qgate-toolbar\"><label class=\"qgate-filter\">LOT 번호<input name=\"lot\" aria-label=\"LOT 번호\" placeholder=\"전체 또는 LOT 번호 입력\" autocomplete=\"off\"></label><div class=\"qgate-toolbar-actions\"><button type=\"button\" data-load>조회</button><button type=\"button\" class=\"primary\" data-hold>+ 보류 등록</button></div></div><div class=\"qgate-meta\"><span class=\"qgate-count\" role=\"status\" aria-live=\"polite\">조회 대기</span><p class=\"qgate-permission qgate-note\"></p></div><div class=\"qgate-error\" role=\"alert\"></div><div class=\"qgate-release\" hidden><strong class=\"qgate-release-title\"></strong><div class=\"qgate-release-fields\"><label>재검사 종류 <select name=\"kind\"><option value=\"iqc\">수입검사 IQC</option><option value=\"pqc\">공정검사 PQC</option><option value=\"oqc\">출하검사 OQC</option></select></label><textarea name=\"reason\" maxlength=\"2000\" aria-label=\"처리 사유\" placeholder=\"보류 사유 또는 조치 내용과 해제 승인 사유\"></textarea><div class=\"qgate-tools\"><button type=\"button\" data-cancel>취소</button><button type=\"button\" class=\"primary\" data-submit>처리</button></div></div></div><div class=\"qgate-scroll\" aria-busy=\"false\"><table><thead><tr><th>번호</th><th>LOT 번호</th><th>차단 사유</th><th>등록일시</th><th>상태 / 승인 사유</th><th>처리</th><th>비고</th></tr></thead><tbody><tr><td colspan=\"7\" class=\"qgate-empty\">조회 대기</td></tr></tbody></table></div><details class=\"qgate-history-panel\"><summary>보류·차단·해제 이력 (최근 100건)</summary><pre class=\"qgate-history\"></pre></details></div>";
+  dialog.innerHTML="<div class=\"qgate-header\"><h2 id=\"qgate-title\">품질 보류 / 해제</h2><button type=\"button\" class=\"qgate-close\">닫기</button></div><div class=\"qgate-content\"><p class=\"qgate-note qgate-policy\">보류 LOT는 원료 투입·공정 완료·출하 확정이 차단되며, 연결된 완제품에도 적용됩니다.<br>검사 결과를 합격으로 수정하거나 NCR을 종결해도 자동 해제되지 않습니다. 최신 재검사 합격 후 별도 승인이 필요합니다.</p><div class=\"qgate-toolbar\"><label class=\"qgate-filter\">LOT 번호<input name=\"lot\" aria-label=\"LOT 번호\" placeholder=\"전체 또는 LOT 번호 입력\" autocomplete=\"off\"></label><div class=\"qgate-toolbar-actions\"><button type=\"button\" data-load>조회</button><button type=\"button\" class=\"primary\" data-hold>+ 보류 등록</button></div></div><div class=\"qgate-meta\"><span class=\"qgate-count\" role=\"status\" aria-live=\"polite\">조회 대기</span><p class=\"qgate-permission qgate-note\"></p></div><div class=\"qgate-error\" role=\"alert\"></div><div class=\"qgate-release\" hidden><strong class=\"qgate-release-title\"></strong><div class=\"qgate-release-fields\"><label>재검사 종류 <select name=\"kind\"><option value=\"iqc\">수입검사 IQC</option><option value=\"pqc\">공정검사 PQC</option><option value=\"oqc\">출하검사 OQC</option></select></label><div class=\"qgate-retest-fields\" hidden><label>실제 재검사 일시 (한국 시간) <input type=\"datetime-local\" name=\"retestAt\"></label><label>재검사 검사자 <input name=\"retestInspector\" maxlength=\"120\" autocomplete=\"off\"></label></div><textarea name=\"reason\" maxlength=\"2000\" aria-label=\"처리 사유\" placeholder=\"보류 사유 또는 조치 내용과 해제 승인 사유\"></textarea><div class=\"qgate-tools\"><button type=\"button\" data-cancel>취소</button><button type=\"button\" class=\"primary\" data-submit>처리</button></div></div></div><div class=\"qgate-scroll\" aria-busy=\"false\"><table><thead><tr><th>번호</th><th>LOT 번호</th><th>차단 사유</th><th>등록일시</th><th>상태 / 승인 사유</th><th>처리</th><th>비고</th></tr></thead><tbody><tr><td colspan=\"7\" class=\"qgate-empty\">조회 대기</td></tr></tbody></table></div><details class=\"qgate-history-panel\"><summary>보류·차단·해제 이력 (최근 100건)</summary><pre class=\"qgate-history\"></pre></details></div>";
   document.body.appendChild(dialog);
   dialog.querySelector('.qgate-close').onclick=()=>dialog.close();
   dialog.addEventListener('close',()=>{stopLoading();state=null;selected=null;});
@@ -93,9 +93,12 @@ function ensureDialog() {
    if(!selected)return;
    const reason=dialog.querySelector('[name="reason"]').value.trim();
    if(!reason)return error('처리 사유를 입력하세요.');
+   const retestAt=dialog.querySelector('[name="retestAt"]').value;
+   const retestInspector=dialog.querySelector('[name="retestInspector"]').value.trim();
+   if(selected.action==='release'&&(!retestAt||!retestInspector))return error('실제 재검사 일시와 검사자를 입력하세요.');
    this.disabled=true;error('');
    try{
-    await request('/'+selected.action,{id:selected.id,lot:selected.lot,reason,retestKind:dialog.querySelector('[name="kind"]').value});
+    await request('/'+selected.action,{id:selected.id,lot:selected.lot,reason,retestAt,retestInspector,retestKind:dialog.querySelector('[name="kind"]').value});
     dialog.querySelector('.qgate-release').hidden=true;await load();
    }catch(e){error(e.message);}finally{this.disabled=false;}
   };
@@ -114,6 +117,10 @@ function showForm(title, action){
  error('');dialog.querySelector('.qgate-release').hidden=false;dialog.querySelector('.qgate-release-title').textContent=title;
  const reason=dialog.querySelector('[name="reason"]');
  reason.value='';reason.placeholder=action==='hide-released'?'삭제 사유를 입력하세요. 처리 이력은 보존됩니다.':'처리 사유를 입력하세요.';
+ const retestFields=dialog.querySelector('.qgate-retest-fields');
+ retestFields.hidden=action!=='release';
+ retestFields.querySelector('[name="retestAt"]').value='';
+ retestFields.querySelector('[name="retestInspector"]').value='';
  const kind=dialog.querySelector('[name="kind"]');kind.value='iqc';kind.disabled=false;kind.parentElement.hidden=action!=='release';
  dialog.querySelector('[data-submit]').textContent=action==='release'?'재검사 확인 및 해제 승인':actionLabels[action];
  reason.focus();
