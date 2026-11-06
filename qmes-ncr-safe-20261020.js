@@ -299,12 +299,25 @@ function install(app,options={}){
   }catch(e){console.error('[NCR signature]',e);bad(res,500,'전자결재 처리 실패');}
  });
  app.delete('/api/qmes-ncr/reports/:id',auth,async(req,res)=>{
-  const id=Number(req.params.id);
-  if(!Number.isSafeInteger(id)||id<1)return bad(res,400,'문서번호가 올바르지 않습니다.');
+  const rawId=req.params.id;
+  const legacyId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId);
+  const id=Number(rawId);
+  if(!legacyId&&(!Number.isSafeInteger(id)||id<1))return bad(res,400,'문서번호가 올바르지 않습니다.');
   try{
    await schema();
    const u=req.session.user||{};
    const isAdmin=String(u.role||'').toLowerCase()==='admin'||String(u.role||'')==='관리자';
+   if(legacyId){
+    if(!isAdmin)return bad(res,403,'이 부적합 기록은 관리자 계정에서 삭제할 수 있습니다.');
+    const removed=await pool.query(`WITH removed AS (
+      DELETE FROM nonconform WHERE id=$1::uuid RETURNING *
+    )
+    INSERT INTO qmes_lot_gate_events(action,lot,actor,detail)
+    SELECT 'NCR_DELETE',coalesce(lot,''),$2,jsonb_build_object('userId',$3::text,'report',to_jsonb(removed))
+    FROM removed RETURNING id`,[rawId,str(u.name||u.id,150),str(u.id,100)]);
+    if(!removed.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
+    return res.json({success:true,data:{id:rawId}});
+   }
    const result=await pool.query('SELECT id,created_by_id FROM qmes_ncr_reports WHERE id=$1',[id]);
    if(!result.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
    if(!isAdmin&&String(result.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 관리자만 삭제할 수 있습니다.');
