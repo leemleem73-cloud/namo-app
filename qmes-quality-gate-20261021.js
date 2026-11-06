@@ -98,17 +98,28 @@ async function api(req, res) {
       if (!hold || hold.released_at) { await client.query('ROLLBACK'); return reject(res, 409, '이미 해제되었거나 보류 내역이 없습니다.'); }
       const kind = ['iqc', 'pqc', 'oqc'].includes(hold.kind) ? hold.kind : str(req.body.retestKind).toLowerCase();
       if (!['iqc', 'pqc', 'oqc'].includes(kind)) { await client.query('ROLLBACK'); return reject(res, 400, '재검사 종류를 선택하세요.'); }
+      const retestAt = str(req.body?.retestAt);
+      const retestInspector = str(req.body?.retestInspector);
+      const localTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(retestAt) ? Date.parse(retestAt + 'Z') : NaN;
+      const retestTime = localTime - 9 * 60 * 60 * 1000;
+      if (!retestInspector || retestInspector.length > 120 || !Number.isFinite(localTime) ||
+          new Date(localTime).toISOString().slice(0, 16) !== retestAt ||
+          retestTime <= new Date(hold.created_at).getTime() || retestTime > Date.now()) {
+        await client.query('ROLLBACK');
+        return reject(res, 400, '보류 등록 이후의 실제 재검사 일시와 검사자를 입력하세요.');
+      }
+      const retestDate = retestAt.slice(0, 10);
       const pass = await client.query(`SELECT qmes_gate_inspection_pass($1,$2) AND EXISTS(
-        SELECT 1 FROM qmes_lot_observations WHERE lot=$1 AND kind=$2 AND observed_at>$3
+        SELECT 1 FROM qmes_lot_observations WHERE lot=$1 AND kind=$2 AND observed_at>$3 AND observed_at>=$4 AND inspection_date=$5
         AND inspection_date=(SELECT max(inspection_date) FROM qmes_lot_observations WHERE lot=$1 AND kind=$2)) AS passed`,
-      [hold.lot, kind, hold.created_at]);
-      if (!pass.rows[0]?.passed) { await client.query('ROLLBACK'); return reject(res, 409, '보류 등록 이후 저장된 최신 재검사 합격이 필요합니다. 측정값과 검사 판정을 확인하세요.'); }
+      [hold.lot, kind, hold.created_at, new Date(retestTime), retestDate]);
+      if (!pass.rows[0]?.passed) { await client.query('ROLLBACK'); return reject(res, 409, '보류 등록 이후 저장된 최신 재검사 합격이 필요합니다. 입력한 재검사 날짜의 측정값과 검사 판정을 확인하세요.'); }
       const open = await client.query(`SELECT 1 FROM qmes_lot_observations WHERE lot=$1 AND kind='ncr'
         AND upper(coalesce(payload->>'status','OPEN')) NOT IN ('CLOSED','종결','완료','해제') LIMIT 1`, [hold.lot]);
       if (open.rowCount) { await client.query('ROLLBACK'); return reject(res, 409, '해당 LOT의 미종결 NCR을 먼저 처리하세요.'); }
       const retest = await client.query(`SELECT source,entry,kind,inspection_date,payload,observed_at FROM qmes_lot_observations
         WHERE lot=$1 AND kind=$2 AND inspection_date=(SELECT max(inspection_date) FROM qmes_lot_observations WHERE lot=$1 AND kind=$2)`, [hold.lot, kind]);
-      const evidence = { userId: u.id, name: u.name, department: u.department, title: u.title, retest: retest.rows };
+      const evidence = { userId: u.id, name: u.name, department: u.department, title: u.title, retestAt, retestTimeZone: 'Asia/Seoul', retestInspector, retest: retest.rows };
       await client.query(`UPDATE qmes_lot_holds SET released_at=clock_timestamp(),released_by=$2,release_reason=$3,release_evidence=$4::jsonb WHERE id=$1`,
         [id, u.name, reason, JSON.stringify(evidence)]);
       await client.query('INSERT INTO qmes_lot_gate_events(action,lot,actor,detail) VALUES($1,$2,$3,$4::jsonb)',
