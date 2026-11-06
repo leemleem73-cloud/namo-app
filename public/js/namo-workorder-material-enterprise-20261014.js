@@ -143,6 +143,26 @@
       window.namoSortWorkMaterialRows(form);
       section.classList.add('nwm-material');
       form.dataset.nwmMaterialInstalled='1';
+      const screen=form.closest('.am-split[data-am-screen="work"]');
+      const number=form.querySelector('#workOrderNo');
+      if(screen?.dataset.amMode==='new'&&number&&typeof nextWorkOrderDisplayNumber==='function'){
+        const dateFields=new Map(Array.from(form.querySelectorAll('.work-basic-grid .form-item')).map(item=>[
+          item.querySelector('label')?.textContent.trim(),item.querySelector('input[type="date"]')
+        ]));
+        const workDate=dateFields.get('작업일자');
+        const startDate=dateFields.get('작업 시작일');
+        const updateNumber=()=>{
+          if(!form.isConnected||form.dataset.workDispatchSavedId)return;
+          const date=workDate?.value||startDate?.value||'';
+          number.value=date?nextWorkOrderDisplayNumber(date,readWorkOrders()):'작업일자 선택 시 자동생성';
+        };
+        for(const field of [workDate,startDate]){
+          field?.addEventListener('input',updateNumber);
+          field?.addEventListener('change',updateNumber);
+        }
+        updateNumber();
+        Promise.resolve(refreshSharedWorkOrders()).then(updateNumber);
+      }
       var header=section.querySelector('.work-section-title');
       if(header)header.textContent='원료 투입계획';
       var body=table.parentElement;
