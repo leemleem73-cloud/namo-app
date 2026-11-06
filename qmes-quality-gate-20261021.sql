@@ -106,29 +106,40 @@ BEGIN
  IF hid IS NOT NULL THEN INSERT INTO qmes_lot_gate_events(action,lot,detail) VALUES('HOLD',l,jsonb_build_object('holdId',hid,'source',s,'reason',r)); END IF;
 END $$;
 
+CREATE OR REPLACE FUNCTION qmes_gate_inspection_evidence_key(k TEXT, j JSONB) RETURNS TEXT LANGUAGE SQL IMMUTABLE AS $$
+ SELECT jsonb_build_array(k,qmes_gate_lot(j),j->'id',j->'date',j->'inspectedAt',j->'recv',
+  j->'check',j->'measurements',j->'value',j->'items',j->'items_json',j->'judge',j->'inspectionDecision',
+  j#>'{detailFields,검사합부}',j->'fail',j->'failQty',j->'fail_qty')::text
+$$;
+
 -- Flatten only known record containers; arbitrary notes never become a LOT or judgement.
-CREATE OR REPLACE FUNCTION qmes_gate_observe(j JSONB, s TEXT, k TEXT, p_entry TEXT DEFAULT '0') RETURNS VOID LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION qmes_gate_observe(j JSONB, s TEXT, k TEXT, p_entry TEXT, prior JSONB) RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE v JSONB; n INT:=0; l TEXT;
 BEGIN
  IF jsonb_typeof(j)='array' THEN
   FOR v IN SELECT value FROM jsonb_array_elements(j) LOOP
-   PERFORM qmes_gate_observe(v,s,k,p_entry||'/'||n); n:=n+1;
+   PERFORM qmes_gate_observe(v,s,k,p_entry||'/'||n,prior); n:=n+1;
   END LOOP; RETURN;
  END IF;
  IF jsonb_typeof(j)<>'object' THEN RETURN; END IF;
- IF j ? 'rows' THEN PERFORM qmes_gate_observe(j->'rows',s,k,p_entry||'/rows'); RETURN; END IF;
- IF k='inventory' AND j ? 'holds' THEN PERFORM qmes_gate_observe(j->'holds',s,'ncr',p_entry||'/holds'); END IF;
+ IF j ? 'rows' THEN PERFORM qmes_gate_observe(j->'rows',s,k,p_entry||'/rows',prior); RETURN; END IF;
+ IF k='inventory' AND j ? 'holds' THEN PERFORM qmes_gate_observe(j->'holds',s,'ncr',p_entry||'/holds',prior); END IF;
  IF k='ncr' AND j ? 'target' AND qmes_gate_lot(j)='' THEN j:=j||jsonb_build_object('lot',j->>'target'); END IF;
  l:=qmes_gate_lot(j); IF l='' THEN RETURN; END IF;
- INSERT INTO qmes_lot_observations(source,entry,kind,lot,inspection_date,payload)
- VALUES(s,p_entry,k,l,left(coalesce(j->>'date',j->>'inspectedAt',j->>'recv',j->>'occurred_on',''),10),j)
- ON CONFLICT(source,entry) DO UPDATE SET kind=k,lot=l,inspection_date=EXCLUDED.inspection_date,payload=j,observed_at=clock_timestamp();
+ INSERT INTO qmes_lot_observations(source,entry,kind,lot,inspection_date,payload,observed_at)
+ VALUES(s,p_entry,k,l,left(coalesce(j->>'date',j->>'inspectedAt',j->>'recv',j->>'occurred_on',''),10),j,
+   coalesce((prior->>qmes_gate_inspection_evidence_key(k,j))::timestamptz,clock_timestamp()))
+ ON CONFLICT(source,entry) DO UPDATE SET kind=k,lot=l,inspection_date=EXCLUDED.inspection_date,payload=j,observed_at=EXCLUDED.observed_at;
  -- A shipping workflow status alone does not create an inspection hold.
  IF qmes_gate_bad(j, k NOT IN ('iqc','pqc','oqc')) OR qmes_gate_measure_bad(j,k)
  OR (k='ncr' AND upper(coalesce(j->>'status','OPEN')) NOT IN ('CLOSED','종결','완료','해제')) THEN
   PERFORM qmes_gate_hold(l,s||'/'||p_entry,k,upper(k)||' 부적합 / 보류',j);
  END IF;
 END $$;
+
+CREATE OR REPLACE FUNCTION qmes_gate_observe(j JSONB, s TEXT, k TEXT, p_entry TEXT DEFAULT '0') RETURNS VOID LANGUAGE SQL AS $$
+ SELECT qmes_gate_observe(j,s,k,p_entry,'{}'::jsonb)
+$$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT) RETURNS BOOLEAN LANGUAGE plpgsql AS $$
 DECLARE latest TEXT; item TEXT; vals JSONB; j JSONB; found_item BOOLEAN; required TEXT[];
@@ -333,7 +344,7 @@ BEGIN
 END $$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_source(j JSONB, tab TEXT, remove BOOLEAN DEFAULT false) RETURNS VOID LANGUAGE plpgsql AS $$
-DECLARE s TEXT; k TEXT; p JSONB;
+DECLARE s TEXT; k TEXT; p JSONB; prior JSONB;
 BEGIN
  IF tab='qmes_sync_records' THEN
   k:=j->>'record_type'; s:='sync:'||k||':'||(j->>'record_key'); p:=j->'payload';
@@ -353,8 +364,14 @@ BEGIN
  END IF;
  IF k NOT IN ('iqc','pqc','oqc','ncr','nonconform','inventory') THEN RETURN; END IF;
  IF k='nonconform' THEN k:='ncr'; END IF;
+ IF NOT remove AND k IN ('iqc','pqc','oqc') THEN
+  SELECT jsonb_object_agg(evidence_key, first_seen) INTO prior FROM (
+   SELECT qmes_gate_inspection_evidence_key(kind,payload) AS evidence_key, min(observed_at) AS first_seen
+   FROM qmes_lot_observations WHERE source=s GROUP BY 1
+  ) saved;
+ END IF;
  DELETE FROM qmes_lot_observations WHERE source=s;
- IF NOT remove THEN PERFORM qmes_gate_observe(p,s,k); END IF;
+ IF NOT remove THEN PERFORM qmes_gate_observe(p,s,k,'0',coalesce(prior,'{}'::jsonb)); END IF;
 END $$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_lock_trigger() RETURNS TRIGGER LANGUAGE plpgsql AS $$
