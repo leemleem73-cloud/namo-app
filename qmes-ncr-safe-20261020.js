@@ -308,7 +308,13 @@ function install(app,options={}){
    const u=req.session.user||{};
    const isAdmin=String(u.role||'').toLowerCase()==='admin'||String(u.role||'')==='관리자';
    if(legacyId){
-    if(!isAdmin)return bad(res,403,'이 부적합 기록은 관리자 계정에서 삭제할 수 있습니다.');
+    // Sessions can retain an earlier role after an administrator updates the account.
+    const account=await pool.query('SELECT role,status FROM users WHERE id::text=$1',[str(u.id,100)]);
+    const current=account.rows[0];
+    const currentRole=str(current?.role,30).toLowerCase();
+    if(current?.status!=='APPROVED'||!['admin','관리자'].includes(currentRole)){
+     return bad(res,403,'현재 로그인한 계정은 승인된 관리자가 아니어서 이 부적합 기록을 삭제할 수 없습니다.');
+    }
     const removed=await pool.query(`WITH removed AS (
       DELETE FROM nonconform WHERE id=$1::uuid RETURNING *
     )
