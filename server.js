@@ -334,7 +334,16 @@ try {
 
   normalized = normalized.replace(/namo-workorder-material-enterprise-20261014\.css\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.css?v=20261106-colgroup-widths');
 
-  normalized = normalized.replace("+NAMO_WORK_RAW_MATERIALS.map(x=>`<option ${x===selected?", "+[...NAMO_WORK_RAW_MATERIALS,'PVdF'].map(x=>`<option ${x===selected?");
+  normalized = normalized
+    .replace("const NAMO_WORK_RAW_MATERIALS=['NMP','BYK180','AOH30','중간배치','SBS','SBR'];", "const NAMO_WORK_RAW_MATERIALS=['NMP','BYK180','AOH30','SBS','PVdF','SBR'];")
+    .replace("+NAMO_WORK_RAW_MATERIALS.map(x=>`<option ${x===selected?", "+[...NAMO_WORK_RAW_MATERIALS,'중간배치'].map(x=>`<option ${x===selected?")
+    .replace("+[...NAMO_WORK_RAW_MATERIALS,'PVdF'].map(x=>`<option ${x===selected?", "+[...NAMO_WORK_RAW_MATERIALS,'중간배치'].map(x=>`<option ${x===selected?")
+    .replace("        // A manually named material still belongs to its original editor row.\n        if(index<0)index=remaining.findIndex(m=>!NAMO_WORK_RAW_MATERIALS.includes(m.name)&&(m._workSlot===slot||m.sourceName===name));\n", '')
+    .replace('.map((m,index)=>({...m,_workSlot:index,sourceName:', '.map(m=>({...m,sourceName:')
+    .replace('NAMO_WORK_RAW_MATERIALS.map((name,slot)=>{', 'NAMO_WORK_RAW_MATERIALS.map(name=>{')
+    .replace('let index=remaining.findIndex(m=>m.name===name);', 'const index=remaining.findIndex(m=>m.name===name);')
+    .replace('editMaterials.push(...remaining.filter(m=>m.lot||m.plan||m.actual));', 'editMaterials.push(...remaining.filter(m=>m.name||m.lot||m.plan||m.actual||m.remark));');
+  normalized = normalized.replace(/qmes-form-drafts-20261102\.js\?v=[^"']+/g, 'qmes-form-drafts-20261102.js?v=20261106-stable-draft-controls');
 
   normalized = normalized
     .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-pvdf-material')

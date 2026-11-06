@@ -101,7 +101,7 @@
     }
     function registrationLabels(ctx){return ctx.mode==='new'||ctx.module==='incoming';}
     function addClass(node,name){
-      const classes=new Set(String(node.className||'').split(/\s+/).filter(Boolean));classes.add(name);node.className=[...classes].join(' ');
+      const classes=new Set(String(node.className||'').split(/\s+/).filter(Boolean));if(!classes.has(name)){classes.add(name);node.className=[...classes].join(' ');}
     }
     function registrationActions(ctx,save){
       let actions=ctx.root.querySelector('.am-detail-actions');
@@ -126,7 +126,7 @@
       if(!actions)return null;
       addClass(actions,'qmes-registration-actions');
       if(save.parentElement!==actions)actions.append(save);
-      addClass(save,'qmes-registration-save');save.textContent='저장';
+      addClass(save,'qmes-registration-save');if(save.textContent!=='저장')save.textContent='저장';
       return actions;
     }
     function draftFeedback(ctx,actions,button){
@@ -138,7 +138,8 @@
       if(status.textContent!==label)status.textContent=label;
       const state=failed?'error':saved?'saved':'pending';
       if(status.dataset.state!==state)status.dataset.state=state;
-      status.title=message;status.hidden=!label;
+      if(status.title!==message)status.title=message;
+      if(status.hidden!==!label)status.hidden=!label;
       if(status.parentElement!==actions||status.nextElementSibling!==button)actions.insertBefore(status,button);
     }
     function placeSaveButton(ctx,button=ctx.saveButton){
@@ -152,14 +153,14 @@
         if(save){
           const actions=registrationActions(ctx,save);
           if(actions){
-            button.className='am-top-btn primary qmes-registration-draft';
+            if(button.className!=='am-top-btn primary qmes-registration-draft')button.className='am-top-btn primary qmes-registration-draft';
             if(button.parentElement!==actions||button.nextElementSibling!==save)actions.insertBefore(button,save);
             draftFeedback(ctx,actions,button);
             return;
           }
         }
       }
-      button.className='am-top-btn primary';
+      if(button.className!=='am-top-btn primary')button.className='am-top-btn primary';
       const node=bar(ctx);if(button.parentElement!==node)node.append(button);
     }
     function show(ctx,message,recover){
