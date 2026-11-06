@@ -343,10 +343,10 @@ try {
     .replace('NAMO_WORK_RAW_MATERIALS.map((name,slot)=>{', 'NAMO_WORK_RAW_MATERIALS.map(name=>{')
     .replace('let index=remaining.findIndex(m=>m.name===name);', 'const index=remaining.findIndex(m=>m.name===name);')
     .replace('editMaterials.push(...remaining.filter(m=>m.lot||m.plan||m.actual));', 'editMaterials.push(...remaining.filter(m=>m.name||m.lot||m.plan||m.actual||m.remark));');
-  normalized = normalized.replace(/qmes-form-drafts-20261102\.js\?v=[^"']+/g, 'qmes-form-drafts-20261102.js?v=20261106-stable-draft-controls');
+  normalized = normalized.replace(/qmes-form-drafts-20261102\.js\?v=[^"']+/g, 'qmes-form-drafts-20261102.js?v=20261106-material-draft-order');
 
   normalized = normalized
-    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-pvdf-material')
+    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-material-order')
     .replace(/namo-qmes-work-inquiry-20261013\.js\?v=[^"']+/g, 'namo-qmes-work-inquiry-20261013.js?v=20261106-detail-material-totals');
 
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');

@@ -241,7 +241,9 @@
         await new Promise(resolve=>win.requestAnimationFrame(()=>win.requestAnimationFrame(resolve)));
         if(!allowed()||active!==ctx)return;
         // Material selections can replace dependent LOT controls on the next frame.
-        applyFields(ctx,prior);ctx.pending=null;ctx.dirty=true;ctx.revision=revision();ctx.last='';
+        applyFields(ctx,prior);
+        if(ctx.module==='work')win.namoSortWorkMaterialRows?.(ctx.root);
+        ctx.pending=null;ctx.dirty=true;ctx.revision=revision();ctx.last='';
         show(ctx,(registrationLabels(ctx)?'임시저장한 내용을 불러왔습니다.':'임시저장을 복구했습니다.')+(prior.files?.length?' 첨부파일은 다시 선택해 주세요.':''),false);
       }finally{restoring--;}
       flush(ctx);

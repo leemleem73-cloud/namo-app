@@ -116,11 +116,31 @@
     }
     rowMode(row);
   }
+  const materialOrder = ['NMP', 'BYK180', 'AOH30', 'SBS', 'PVDF', 'SBR'];
+  window.namoSortWorkMaterialRows = function(root){
+    const body = root.querySelector('#workMaterialTable tbody');
+    if (!body) return;
+    const rows = [...body.rows];
+    const rank = row => {
+      const value = row.querySelector('.material-name-select')?.value;
+      const name = value === '__manual__' ? row.querySelector('.material-name-manual')?.value : value;
+      const index = materialOrder.indexOf(String(name || '').trim().toUpperCase());
+      return index < 0 ? materialOrder.length : index;
+    };
+    const sorted = rows.slice().sort((a,b)=>rank(a)-rank(b));
+    if (sorted.every((row,index)=>row===rows[index])) return;
+    sorted.forEach((row,index)=>{
+      body.appendChild(row);
+      const number = String(index+1);
+      if (row.cells[0].textContent !== number) row.cells[0].textContent = number;
+    });
+  };
   function install(form){
     var table=form.querySelector('#workMaterialTable');
     var section=table&&table.closest('.work-section');
     if(!section)return;
     if(form.dataset.nwmMaterialInstalled!=='1'){
+      window.namoSortWorkMaterialRows(form);
       section.classList.add('nwm-material');
       form.dataset.nwmMaterialInstalled='1';
       var header=section.querySelector('.work-section-title');
