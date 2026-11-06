@@ -334,8 +334,10 @@ try {
 
   normalized = normalized.replace(/namo-workorder-material-enterprise-20261014\.css\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.css?v=20261106-colgroup-widths');
 
+  normalized = normalized.replace("+NAMO_WORK_RAW_MATERIALS.map(x=>`<option ${x===selected?", "+[...NAMO_WORK_RAW_MATERIALS,'PVdF'].map(x=>`<option ${x===selected?");
+
   normalized = normalized
-    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-balanced-material-columns')
+    .replace(/namo-workorder-material-enterprise-20261014\.js\?v=[^"']+/g, 'namo-workorder-material-enterprise-20261014.js?v=20261106-pvdf-material')
     .replace(/namo-qmes-work-inquiry-20261013\.js\?v=[^"']+/g, 'namo-qmes-work-inquiry-20261013.js?v=20261106-detail-material-totals');
 
   normalized = normalized.replace(/\n\s*<style id="qmes-scroll-fix-20260910">[\s\S]*?<\/style>/g, '');

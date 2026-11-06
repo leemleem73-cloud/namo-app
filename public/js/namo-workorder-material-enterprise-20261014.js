@@ -28,7 +28,7 @@
   };
   function materialColor(value){
     const name = String(value || '').trim().toUpperCase();
-    if (name === '__MANUAL__' || /^(PAI|바인더)(?:$|[ (])/.test(name)) return materialColors.manual;
+    if (name === '__MANUAL__' || /^(PAI|바인더|PVDF)(?:$|[ (])/.test(name)) return materialColors.manual;
     if (/^NMP(?:$|[ (])/.test(name)) return materialColors.nmp;
     if (/^(BYK[- ]?180|분산제)(?:$|[ (])/.test(name)) return materialColors.byk;
     if (/^(AOH30|BOEHMITE|세라믹)(?:$|[ (])/.test(name)) return materialColors.aoh;
@@ -105,7 +105,14 @@
     if(!row.dataset.nwmListeners){
       row.dataset.nwmListeners='1';
       var choice=row.querySelector('.material-name-select');
-      if(choice)choice.addEventListener('change',function(){rowMode(row);});
+      if(choice){
+        for(const option of choice.options){
+          const [fill] = materialColor(option.value);
+          option.style.backgroundColor = fill;
+          option.style.color = '#24445f';
+        }
+        choice.addEventListener('change',function(){rowMode(row);});
+      }
     }
     rowMode(row);
   }
