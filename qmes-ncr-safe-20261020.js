@@ -24,6 +24,8 @@ function schema(){
  ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
  ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS approved_by TEXT NOT NULL DEFAULT '';
  ALTER TABLE qmes_ncr_reports ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+ ALTER TABLE IF EXISTS nonconform ADD COLUMN IF NOT EXISTS qmes_details JSONB NOT NULL DEFAULT '{}'::jsonb;
+ ALTER TABLE IF EXISTS nonconform ADD COLUMN IF NOT EXISTS qmes_updated_at TIMESTAMPTZ;
  CREATE INDEX IF NOT EXISTS qmes_ncr_created_idx ON qmes_ncr_reports(id DESC);
  `).catch(e=>{schemaPromise=null;throw e;});
  return schemaPromise;
@@ -82,6 +84,41 @@ async function autoCreateNcr(input={}){
  console.log('[AUTO NCR NONCONFORM]',JSON.stringify({source,nc_no:ncNo,id:q.rows[0]?.id}));
  return q.rows[0];
 }
+function legacyReport(r){return {
+    id:r.id,
+    report_no:r.nc_no||'',
+    occurred_on:r.date,
+    source:r.type||'',
+    product:r.item||'',
+    lot:r.lot||'',
+    customer:'',
+    description:r.issue||'',
+    containment:r.containment||'',
+    root_cause:r.cause||'',
+    corrective_action:r.action||'',
+    effectiveness:r.verification_result||'',
+    owner:r.owner||'',
+    due_on:r.due_date||null,
+    status:r.capa_status||r.status||'OPEN',
+    created_by:'',
+    created_by_id:'',
+    created_at:r.created_at,
+    updated_at:r.qmes_updated_at||r.created_at,
+    reviewed_by:r.sign_reviewer?.name||'',
+    reviewed_at:r.sign_reviewer?.at||null,
+    approved_by:r.sign_approver?.name||'',
+    approved_at:r.sign_approver?.at||null,
+    details:{
+      department:r.dept||'',
+      affected_qty:r.qty||0,
+      severity:r.severity||'',
+      process:r.type||'',
+      actual_result:'불합격',
+      ...r.qmes_details,
+      auto_created:(r.nc_no||'').startsWith('NCR-')?'Y':''
+    }
+};}
+const uuidReportId=id=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 function install(app,options={}){
  if(options.pool)pool=options.pool;
  if(app.__qmesNcrInstalled)return;
@@ -168,40 +205,11 @@ function install(app,options={}){
 
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
   try{
+   await schema();
    const q=await pool.query(`SELECT * FROM nonconform ORDER BY created_at DESC LIMIT 500`);
-   const rows=q.rows.map(r=>({
-    id:r.id,
-    report_no:r.nc_no||'',
-    occurred_on:r.date,
-    source:r.type||'',
-    product:r.item||'',
-    lot:r.lot||'',
-    customer:'',
-    description:r.issue||'',
-    containment:r.containment||'',
-    root_cause:r.cause||'',
-    corrective_action:r.action||'',
-    effectiveness:r.verification_result||'',
-    owner:r.owner||'',
-    due_on:r.due_date||null,
-    status:r.capa_status||r.status||'OPEN',
-    created_by:'',
-    created_by_id:'',
-    created_at:r.created_at,
-    updated_at:r.created_at,
-    reviewed_by:'',
-    reviewed_at:null,
-    approved_by:'',
-    approved_at:null,
-    details:{
-      department:r.dept||'',
-      affected_qty:r.qty||0,
-      severity:r.severity||'',
-      process:r.type||'',
-      actual_result:'불합격',
-      auto_created:(r.nc_no||'').startsWith('NCR-')?'Y':''
-    }
-   }));
+   const reports=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY created_at DESC LIMIT 500');
+   const rows=q.rows.map(legacyReport).concat(reports.rows)
+     .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,500);
    console.log('[NCR list/nonconform]',JSON.stringify({count:rows.length}));
    res.set('Cache-Control','no-store, no-cache, must-revalidate, max-age=0');
    res.set('Pragma','no-cache');
@@ -231,10 +239,27 @@ function install(app,options={}){
   }catch(e){console.error('[NCR create]',e);bad(res,500,'NCR 저장 실패');}
  });
  app.patch('/api/qmes-ncr/reports/:id',auth,async(req,res)=>{
-  const id=Number(req.params.id),b=req.body||{},status=str(b.status,30);
-  if(!Number.isSafeInteger(id)||id<1||!['OPEN','IN_PROGRESS','CLOSED'].includes(status))return bad(res,400,'처리상태를 확인하세요.');
+  const rawId=req.params.id,legacy=uuidReportId(rawId),id=Number(rawId),b=req.body||{},status=str(b.status,30);
+  if((!legacy&&(!Number.isSafeInteger(id)||id<1))||!['OPEN','IN_PROGRESS','CLOSED'].includes(status))return bad(res,400,'처리상태를 확인하세요.');
   try{
    await schema();
+   if(legacy){
+    const due=b.due_on===undefined?null:(validDate(str(b.due_on,10))?str(b.due_on,10):null);
+    const fields=['containment','root_cause','corrective_action','effectiveness','owner'];
+    const values=fields.map(key=>b[key]===undefined?null:str(b[key],key==='owner'?120:3000));
+    const q=await pool.query(`UPDATE nonconform SET status=$1,capa_status=$1,
+      containment=coalesce($2,containment),cause=coalesce($3,cause),action=coalesce($4,action),
+      verification_result=coalesce($5,verification_result),owner=coalesce($6,owner),
+      due_date=CASE WHEN $7 THEN $8::date ELSE due_date END,qmes_details=qmes_details||$9::jsonb,qmes_updated_at=now()
+      WHERE id=$10::uuid AND ($1<>'CLOSED' OR coalesce(nullif(capa_status,''),status)='CLOSED'
+        OR nullif(sign_approver->>'at','') IS NOT NULL) RETURNING *`,
+    [status,...values,b.due_on!==undefined,due,JSON.stringify(cleanDetails(b.details)),rawId]);
+    if(!q.rowCount){
+     const exists=await pool.query('SELECT 1 FROM nonconform WHERE id=$1::uuid',[rawId]);
+     return exists.rowCount?bad(res,409,'검토 및 최종 승인 후 완료 처리할 수 있습니다.'):bad(res,404,'NCR을 찾을 수 없습니다.');
+    }
+    return res.json({success:true,data:legacyReport(q.rows[0])});
+   }
    const current=await pool.query('SELECT * FROM qmes_ncr_reports WHERE id=$1',[id]);
    if(!current.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
    const old=current.rows[0];
@@ -283,14 +308,22 @@ function install(app,options={}){
  });
 
  app.post('/api/qmes-ncr/reports/:id/sign',auth,async(req,res)=>{
-  const id=Number(req.params.id),action=str(req.body?.action,20),u=req.session.user||{};
-  if(!Number.isSafeInteger(id)||id<1||!['review','approve'].includes(action))return bad(res,400,'잘못된 결재 요청입니다.');
+  const rawId=req.params.id,legacy=uuidReportId(rawId),id=Number(rawId),action=str(req.body?.action,20),u=req.session.user||{};
+  if((!legacy&&(!Number.isSafeInteger(id)||id<1))||!['review','approve'].includes(action))return bad(res,400,'잘못된 결재 요청입니다.');
   const role=String(u.role||'').toLowerCase(),title=String(u.title||u.position||'');
   const allowed=role==='admin'||role==='관리자'||['부장','이사','상무','전무','부사장','대표이사','대표','사장','회장'].some(v=>title.includes(v));
   if(!allowed)return bad(res,403,'검토 및 승인 권한은 이사 이상 또는 관리자에게 있습니다.');
   try{
    await schema();
    const name=str(u.name||u.email||'담당자',120);
+   if(legacy){
+    const column=action==='review'?'sign_reviewer':'sign_approver';
+    const reviewerRequired=action==='approve'?"AND nullif(sign_reviewer->>'at','') IS NOT NULL":"";
+    const q=await pool.query(`UPDATE nonconform SET ${column}=jsonb_build_object('name',$1::text,'userId',$2::text,'at',now()),qmes_updated_at=now()
+     WHERE id=$3::uuid AND nullif(sign_approver->>'at','') IS NULL ${reviewerRequired} RETURNING *`,[name,str(u.id,100),rawId]);
+    if(!q.rowCount)return bad(res,409,'문서 상태와 검토·승인 이력을 확인하세요.');
+    return res.json({success:true,data:legacyReport(q.rows[0])});
+   }
    const q=action==='review'
     ?await pool.query("UPDATE qmes_ncr_reports SET reviewed_by=$1,reviewed_at=NOW(),approved_by='',approved_at=NULL,updated_at=NOW() WHERE id=$2 AND approved_at IS NULL RETURNING *",[name,id])
     :await pool.query("UPDATE qmes_ncr_reports SET approved_by=$1,approved_at=NOW(),updated_at=NOW() WHERE id=$2 AND reviewed_at IS NOT NULL AND approved_at IS NULL RETURNING *",[name,id]);
@@ -300,7 +333,7 @@ function install(app,options={}){
  });
  app.delete('/api/qmes-ncr/reports/:id',auth,async(req,res)=>{
   const rawId=req.params.id;
-  const legacyId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId);
+  const legacyId=uuidReportId(rawId);
   const id=Number(rawId);
   if(!legacyId&&(!Number.isSafeInteger(id)||id<1))return bad(res,400,'문서번호가 올바르지 않습니다.');
   try{
