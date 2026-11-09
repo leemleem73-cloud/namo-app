@@ -98,14 +98,32 @@ dialog.querySelector('[data-save]').onclick=async()=>{
 };
 const close=async()=>{if(await flush())dialog.close();};
 dialog.querySelector('[data-close]').onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();void close();});
-dialog.querySelector('[data-remove]').onclick=()=>{confirm.hidden=false;};
-dialog.querySelector('[data-delete-no]').onclick=()=>{confirm.hidden=true;};
-dialog.querySelector('[data-delete-yes]').onclick=async()=>{
- if(switching||!active)return;switching=true;
- try{clearTimeout(timer);if(!await flush())return;const current=active;if(current.version)await request('/delete',{ownerId:owner,id:current.id,version:current.version});generation++;notes=notes.filter(n=>n.id!==current.id);active=sorted()[0]||null;fill();render();message('삭제 완료');}
- catch(e){if(e.status===401||e.status===403)resetPrivate();message(e.message,true);}
- finally{switching=false;}
+dialog.querySelector('[data-remove]').onclick=async()=>{
+ if(switching||!active)return;
+ const current=active;
+ const label=(current.title||title.value.trim()||'제목 없는 메모');
+ if(!window.confirm('“'+label+'” 메모를 삭제하시겠습니까?'))return;
+ switching=true;
+ try{
+  clearTimeout(timer);
+  if(!await flush())return;
+  const target=active&&active.id===current.id?active:current;
+  if(target.version)await request('/delete',{ownerId:owner,id:target.id,version:target.version});
+  generation++;
+  notes=notes.filter(n=>n.id!==target.id);
+  active=sorted()[0]||null;
+  fill();
+  render();
+  message('삭제 완료');
+ }catch(e){
+  if(e.status===401||e.status===403)resetPrivate();
+  message(e.message||'삭제하지 못했습니다. 다시 시도해 주세요.',true);
+ }finally{
+  switching=false;
+ }
 };
+dialog.querySelector('[data-delete-no]').onclick=()=>{confirm.hidden=true;};
+dialog.querySelector('[data-delete-yes]').onclick=()=>{};
 window.addEventListener('beforeunload',event=>{if(dirty()||inFlight){event.preventDefault();event.returnValue='';}});
 window.addEventListener('focus',()=>void load());
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&dirty())void flush();});
