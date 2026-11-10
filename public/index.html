@@ -4840,6 +4840,10 @@ function qualityApprovalShell(){
       #approval .quality-approval-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       #approval .quality-approval-table td:nth-child(4){text-align:left}
       #approval .quality-approve-btn,#approval .quality-delete-btn{height:24px!important;padding:0 7px!important;font-size:10px!important;margin-left:4px}
+      #approval .quality-approval-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-right:auto}
+      #approval .quality-approval-tab{height:30px;padding:0 12px;border:1px solid #cfd9e5;border-radius:4px;background:#fff;color:#40566d;font-size:11.5px;font-weight:700;cursor:pointer}
+      #approval .quality-approval-tab:hover{background:#f3f7fb;border-color:#aac0d8}
+      #approval .quality-approval-tab.active{background:#2f73d9;color:#fff;border-color:#2f73d9}
       #approval .quality-approval-pager{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0 2px}
       #approval .quality-page-btn{min-width:24px;height:24px;padding:0 6px;border:1px solid #dbe3ec;background:#fff;color:#536177;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
       #approval .quality-page-btn:hover{background:#f2f7fd;border-color:#b8cbe2}
@@ -4849,6 +4853,14 @@ function qualityApprovalShell(){
     <div class="page-head"><div><h1>전자결재</h1><p>품질문서 검토·승인 요청과 처리상태를 관리합니다.</p></div><div class="date-badge">QMES</div></div>
     <div class="module-shell">
       <div class="module-toolbar">
+        <div class="quality-approval-tabs" role="tablist" aria-label="전자결재 문서구분">
+          <button class="quality-approval-tab active" type="button" data-quality-type="ALL">전체</button>
+          <button class="quality-approval-tab" type="button" data-quality-type="IQC">수입검사 IQC</button>
+          <button class="quality-approval-tab" type="button" data-quality-type="IPQC">공정검사 PQC</button>
+          <button class="quality-approval-tab" type="button" data-quality-type="OQC">출하검사 OQC</button>
+          <button class="quality-approval-tab" type="button" data-quality-type="NCR">NCR</button>
+          <button class="quality-approval-tab" type="button" data-quality-type="OTHER">기타</button>
+        </div>
         <div class="filters"><input class="input quality-approval-search" placeholder="문서번호 / 제목 / 작성자 검색"></div>
         <div class="table-tools"><button class="btn quality-approval-refresh" type="button">새로고침</button></div>
       </div>
@@ -4896,10 +4908,17 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
     assignQualityApprovalDocNumbers(rows);
     section._qualityApprovals=rows;
     let currentPage=1;
+    let activeType='ALL';
 
     const render=()=>{
       const q=(section.querySelector('.quality-approval-search')?.value||'').trim().toLowerCase();
-      const filtered=rows.filter(a=>[a.doc_type,a.title,a.writer_name,a.approver_name,qualityApprovalDocNo(a)].join(' ').toLowerCase().includes(q));
+      const typeFiltered=rows.filter(a=>{
+        const type=String(a.doc_type||'').toUpperCase();
+        if(activeType==='ALL')return true;
+        if(activeType==='OTHER')return !['IQC','IPQC','OQC','NCR'].includes(type);
+        return type===activeType;
+      });
+      const filtered=typeFiltered.filter(a=>[a.doc_type,a.title,a.writer_name,a.approver_name,qualityApprovalDocNo(a)].join(' ').toLowerCase().includes(q));
       const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
       if(currentPage>totalPages) currentPage=totalPages;
       const from=(currentPage-1)*PAGE_SIZE;
@@ -4932,6 +4951,16 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
     if(search && !search.dataset.qualityPagerWired){
       search.dataset.qualityPagerWired='1';
       search.addEventListener('input',()=>{currentPage=1;render();});
+    }
+    const tabs=[...section.querySelectorAll('.quality-approval-tab')];
+    if(tabs.length && !section.dataset.qualityTabsWired){
+      section.dataset.qualityTabsWired='1';
+      tabs.forEach(tab=>tab.addEventListener('click',()=>{
+        activeType=String(tab.dataset.qualityType||'ALL');
+        tabs.forEach(btn=>btn.classList.toggle('active',btn===tab));
+        currentPage=1;
+        render();
+      }));
     }
     if(pager && !pager.dataset.qualityPagerWired){
       pager.dataset.qualityPagerWired='1';
