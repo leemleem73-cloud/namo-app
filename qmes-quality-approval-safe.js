@@ -122,7 +122,12 @@ async function signQualityStage(docType, recordId, field, actor, action) {
     [signature(actor,action),String(recordId)]);
 }
 function hasSeniorApprovalRole(user) {
-  return ['부장','이사','상무','전무','대표이사','사장','부사장','회장'].includes(String(user?.title||'').trim());
+  const title = String(user?.title || '').replace(/\s+/g, '').trim();
+  const role = String(user?.role || '').toLowerCase().trim();
+  if (role === 'admin') return true;
+  if (!title) return false;
+  return ['부장','이사','상무','전무','대표이사','사장','부사장','회장']
+    .some(rank => title === rank || title.includes(rank));
 }
 async function notify(userId, title, message, page, approvalId) {
   if (!userId) return;
