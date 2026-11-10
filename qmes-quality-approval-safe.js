@@ -141,12 +141,16 @@ async function departmentServerPermission(key,user,defaults=['품질부']) {
     await pool.query(`CREATE TABLE IF NOT EXISTS qmes_server_permissions(
       permission_key TEXT PRIMARY KEY,
       allowed_departments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb,
       updated_by TEXT NOT NULL DEFAULT '',
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`);
-    const q=await pool.query('SELECT allowed_departments FROM qmes_server_permissions WHERE permission_key=$1',[key]);
-    const allowed=q.rowCount&&Array.isArray(q.rows[0].allowed_departments)?q.rows[0].allowed_departments:defaults;
-    return allowed.map(v=>String(v||'').trim()).includes(String(user.department||'').trim());
+    await pool.query("ALTER TABLE qmes_server_permissions ADD COLUMN IF NOT EXISTS allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb");
+    const q=await pool.query('SELECT allowed_departments,allowed_users FROM qmes_server_permissions WHERE permission_key=$1',[key]);
+    const allowedDepartments=q.rowCount&&Array.isArray(q.rows[0].allowed_departments)?q.rows[0].allowed_departments:defaults;
+    const allowedUsers=q.rowCount&&Array.isArray(q.rows[0].allowed_users)?q.rows[0].allowed_users:[];
+    return allowedDepartments.map(v=>String(v||'').trim()).includes(String(user.department||'').trim())||
+      allowedUsers.map(v=>String(v||'').trim()).includes(String(user.name||'').trim());
   } catch(error) {
     console.error('[QMES approval server permission]',key,error);
     return defaults.includes(String(user.department||'').trim());
