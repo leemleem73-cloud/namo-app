@@ -30,7 +30,7 @@ function render(data) {
   return '<tr><td title="보류번호 '+id+'">'+(index+1)+'</td><td><strong class="qgate-lot">'+esc(h.lot)+'</strong></td><td>'+esc(h.reason)+'</td><td>'+esc(new Date(h.created_at).toLocaleString('ko-KR'))+'</td><td>'+status+'</td><td><div class="qgate-row-actions">'+button('hold','공정 차단',h.released_at&&!activeLots.has(h.lot))+button('release','차단 해제',!h.released_at&&data.canRelease)+'</div></td><td>'+(h.released_at&&data.canRelease?button('hide-released','삭제',true):'—')+'</td></tr>';
  }).join('') || '<tr><td colspan="7" class="qgate-empty">보류 내역이 없습니다.</td></tr>';
  dialog.querySelector('.qgate-history').textContent = data.events.map(e => new Date(e.occurred_at).toLocaleString('ko-KR')+' · '+({HOLD:'자동 보류',MANUAL_HOLD:'수동 보류',BLOCK:'처리 차단',RELEASE:'해제 승인',HIDE_RELEASED_HOLD:'목록에서 삭제'}[e.action]||e.action)+' · '+(e.lot||'')+' · '+(e.actor||'시스템')+' · '+(e.detail?.reason||'')+(e.detail?.retestAt?' · 재검사 '+e.detail.retestAt.replace('T',' ')+' · '+e.detail.retestInspector+' · 보류번호 '+e.detail.holdId:'')).join('\n') || '이력이 없습니다.';
- dialog.querySelector('.qgate-permission').textContent = data.canRelease ? '차단 해제 권한: 관리자 또는 품질부 부장 이상' : '현재 계정에는 차단 해제 권한이 없습니다. 관리자 또는 품질부 부장 이상이 승인 후 해제할 수 있습니다.';
+ dialog.querySelector('.qgate-permission').textContent = data.canRelease ? '차단 해제 권한: 품질부 전용' : '현재 계정에는 차단 해제 권한이 없습니다. 품질부만 차단 해제할 수 있습니다.';
 }
 function stopLoading(){
  loadSerial++;loadController?.abort();loadController=null;
