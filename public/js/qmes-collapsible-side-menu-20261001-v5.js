@@ -21,7 +21,7 @@ const menu=[
   {label:"설비관리",icon:"▧",tab:"eq"},
   {label:"기준서",icon:"⚙",tab:"standards",openMenu:"qualityMenu"},
   {label:"회원관리",icon:"●",tab:"members",adminOnly:true},
-  {label:"서버 권한관리",icon:"⚿",tab:"serverPermissions",adminOnly:true}
+  {label:"서버관리",icon:"⚿",tab:"serverPermissions",adminOnly:true}
 ];
 
 function ensureStyle(){
