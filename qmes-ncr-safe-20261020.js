@@ -235,6 +235,19 @@ function install(app,options={}){
    ]);
    const row=q.rows[0],no='NCR-'+date.replace(/-/g,'')+'-'+String(row.id).padStart(3,'0');
    const saved=await pool.query('UPDATE qmes_ncr_reports SET report_no=$1 WHERE id=$2 RETURNING *',[no,row.id]);
+   try{
+    const approval=require('./qmes-quality-approval-safe.js');
+    if(typeof approval.ensureGenericApproval==='function'){
+      await approval.ensureGenericApproval({
+        docType:'NCR',
+        recordId:String(saved.rows[0].id),
+        title:'부적합 NCR 검토·승인 · '+(saved.rows[0].report_no||'NCR')+' / LOT '+(saved.rows[0].lot||'-'),
+        page:'ncr',
+        writerUserId:user.id||null,
+        writerName:user.name||user.email||'작성자'
+      });
+    }
+   }catch(error){console.error('[NCR central approval link]',error);}
    res.status(201).json({success:true,data:saved.rows[0]});
   }catch(e){console.error('[NCR create]',e);bad(res,500,'NCR 저장 실패');}
  });
