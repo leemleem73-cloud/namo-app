@@ -2802,6 +2802,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
       <div class="menu-title" data-admin-only>ADMIN</div>
       <div class="menu" data-page="adminEmployees" data-admin-only><div class="ico">👥</div><div class="label">직원등록현황</div></div>
+      <div class="menu" data-page="serverAdmin" data-admin-only><div class="ico">⚙️</div><div class="label">서버관리</div></div>
       <button class="nav-toggle" id="navToggle" type="button" aria-label="메뉴 펼치기" title="메뉴 펼치기"><svg class="nav-toggle-icon" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h10c4 0 6 2 6 5s-2 5-6 5h-3"/><path d="m9 4-4 4 4 4"/></svg></button>
     </div>
   </aside>
@@ -2884,6 +2885,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
     <section class="module-page" id="instrumentMgmt"></section>
     <section class="module-page" id="calibrationMgmt"></section>
     <section class="module-page" id="adminEmployees" data-admin-only></section>
+    <section class="module-page" id="serverAdmin" data-admin-only></section>
     <section class="module-page main-workspace" id="mainWorkspace">
       <div class="workspace-shell">
         <div class="workspace-head">
@@ -2957,7 +2959,7 @@ function restoreQmesPage(){
   let pageId='';
   try{pageId=sessionStorage.getItem(QMES_LAST_PAGE_KEY)||'';}catch(e){}
   if(!pageId) return false;
-  if(pageId==='adminEmployees' && !isAdminUser()){
+  if((pageId==='adminEmployees'||pageId==='serverAdmin') && !isAdminUser()){
     try{sessionStorage.removeItem(QMES_LAST_PAGE_KEY);}catch(e){}
     return false;
   }
@@ -7972,6 +7974,63 @@ function initOutgoingForm(){
   select.addEventListener('change',()=>renderOutgoingJudgePanel(select.value));
 }
 
+async function buildServerAdmin(){
+  const root=document.getElementById('serverAdmin');
+  if(!root)return;
+  if(!isAdminUser()){root.replaceChildren();return;}
+  const departments=['대표','관리부','경영지원부','연구소','생산부','영업부','품질부'];
+  const catalog=[
+    ['qualityGateReleaseDepartments','공정 차단 해제','불합격 LOT 보류/차단 해제 및 해제기록 삭제'],
+    ['approvalReviewDepartments','전자결재 검토','전자결재 검토 완료 처리'],
+    ['approvalFinalDepartments','전자결재 최종승인','전자결재 최종 승인 처리'],
+    ['ncrCloseDepartments','NCR 종결','부적합 NCR 종결/해제 권한'],
+    ['inspectionEditDepartments','검사결과 수정·삭제','IQC/PQC/OQC 결과 수정 및 삭제'],
+    ['inventoryAdjustDepartments','재고 강제조정','재고 수량 강제 조정 및 초기화'],
+    ['documentDeleteDepartments','문서 삭제·폐기','기준서/관리문서 삭제 및 폐기']
+  ];
+  root.innerHTML='<div class="erp-admin-page" style="margin:0"><div class="erp-admin-bluebar"><div class="left"><span class="hamb">☰</span><span>관리자</span><span class="sub">서버관리</span></div><div class="right"><button class="bar-btn" id="serverAdminSaveBtn" type="button">권한 저장</button></div></div><div style="padding:18px 20px"><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px"><div><h2 style="margin:0;font-size:18px;color:#202733">서버 권한관리</h2><p style="margin:6px 0 0;font-size:12px;color:#667987">SYSTEM · 중요 업무행위 권한을 부서 기준으로 관리합니다.</p></div><span style="font-size:11px;font-weight:850;color:#0b74a5;background:#eef8fc;border:1px solid #b9ddea;padding:6px 9px;border-radius:999px">ADMIN ONLY</span></div><div id="serverAdminNotice" style="display:none;margin-bottom:12px;padding:10px 12px;border:1px solid #bcd5e2;background:#f3f9fc;color:#24536c;border-radius:6px;font-size:12px;font-weight:700"></div><div style="border:1px solid #cfd9e2;border-radius:4px;overflow:hidden;background:#fff"><div style="display:grid;grid-template-columns:220px 1fr;background:#eef3f7;border-bottom:1px solid #cfd9e2"><div style="padding:10px 12px;font-size:12px;font-weight:900;color:#334b5b">서버 권한</div><div style="padding:10px 12px;font-size:12px;font-weight:900;color:#334b5b">허용 부서</div></div><div id="serverAdminRows"><div style="padding:28px;text-align:center;color:#748693">권한 정보를 불러오는 중입니다.</div></div></div><div style="margin-top:12px;padding:10px 12px;border-left:3px solid #d49b2f;background:#fff8e9;color:#6f5421;font-size:11.5px;line-height:1.65">권한 변경은 관리자 전용입니다. 공정 차단 해제와 전자결재 검토/최종승인은 실제 서버 판정에 직접 반영됩니다.</div></div></div>';
+  const rowsEl=root.querySelector('#serverAdminRows');
+  const notice=root.querySelector('#serverAdminNotice');
+  const saveBtn=root.querySelector('#serverAdminSaveBtn');
+  const api=async(url,options={})=>{
+    const headers={...(options.headers||{})};
+    if(options.body&&!headers['Content-Type'])headers['Content-Type']='application/json';
+    const res=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers});
+    const payload=await res.json().catch(()=>({success:false,message:'서버 응답 오류'}));
+    if(!res.ok||!payload?.success)throw new Error(payload?.message||'요청 처리에 실패했습니다.');
+    return payload.data;
+  };
+  try{
+    const data=await api('/api/admin/server-permissions');
+    const state={};
+    catalog.forEach(([key])=>state[key]=data?.[key]?.allowedDepartments||['품질부']);
+    const render=()=>{
+      rowsEl.innerHTML=catalog.map(([key,label,desc])=>'<div style="display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid #dde5eb"><div style="padding:14px 12px"><b style="display:block;font-size:12.5px;color:#213847">'+label+'</b><span style="display:block;margin-top:4px;font-size:10.5px;line-height:1.45;color:#7a8a96">'+desc+'</span></div><div style="padding:12px;display:flex;gap:7px;flex-wrap:wrap">'+departments.map(d=>'<label style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 9px;border:1px solid #cbd8e0;border-radius:5px;background:'+(state[key].includes(d)?'#eaf7fd':'#fff')+';color:#304b5d;font-size:11.5px;font-weight:800;cursor:pointer"><input type="checkbox" data-server-key="'+key+'" value="'+d+'" '+(state[key].includes(d)?'checked':'')+'>'+d+'</label>').join('')+'</div></div>').join('');
+      rowsEl.querySelectorAll('input[data-server-key]').forEach(input=>input.addEventListener('change',()=>{
+        const key=input.dataset.serverKey;
+        state[key]=[...rowsEl.querySelectorAll('input[data-server-key="'+key+'"]:checked')].map(x=>x.value);
+        render();
+      }));
+    };
+    render();
+    saveBtn.onclick=async()=>{
+      for(const [key,label] of catalog){
+        if(!(state[key]||[]).length){notice.style.display='block';notice.textContent=label+' 허용 부서를 최소 1개 선택하세요.';return;}
+      }
+      saveBtn.disabled=true;saveBtn.textContent='저장 중...';notice.style.display='none';
+      try{
+        for(const [key] of catalog){
+          await api('/api/admin/server-permissions/'+encodeURIComponent(key),{method:'PUT',body:JSON.stringify({allowedDepartments:state[key]})});
+        }
+        notice.style.display='block';notice.textContent='서버 권한 설정을 저장했습니다. 실제 서버 판정에 즉시 반영됩니다.';
+      }catch(error){notice.style.display='block';notice.textContent=error.message||'저장에 실패했습니다.';}
+      finally{saveBtn.disabled=false;saveBtn.textContent='권한 저장';}
+    };
+  }catch(error){
+    rowsEl.innerHTML='<div style="padding:28px;text-align:center;color:#b42318;font-weight:700">'+String(error.message||'서버 권한을 불러오지 못했습니다.')+'</div>';
+  }
+}
+
 function exportTable(section,title){
   const rows=[...section.querySelectorAll('table tr')].filter(r=>r.style.display!=='none').map(r=>[...r.children].map(c=>'"'+c.innerText.replace(/"/g,'""')+'"').join(','));
   const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
@@ -7981,6 +8040,7 @@ function exportTable(section,title){
 
 Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
+void buildServerAdmin();
 applyAdminVisibility();
 // Recheck administrator-only menu visibility when asynchronous login restores the role.
 // The existing administrator authorization check remains unchanged.
@@ -7988,8 +8048,8 @@ if (currentUserEl && typeof MutationObserver !== 'undefined') {
   new MutationObserver(() => {
     applyAdminVisibility();
     // Employee table was initially cleared before login completed; restore it for admins.
-    if (isAdminUser()) buildAdminEmployees();
-    else document.getElementById('adminEmployees')?.replaceChildren();
+    if (isAdminUser()) { buildAdminEmployees(); void buildServerAdmin(); }
+    else { document.getElementById('adminEmployees')?.replaceChildren(); document.getElementById('serverAdmin')?.replaceChildren(); }
   }).observe(currentUserEl, {
     attributes: true,
     attributeFilter: ['data-role', 'data-qauth-ready']
@@ -8021,6 +8081,7 @@ document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
   // Refresh persisted approval state when reopening either tab; F5 is not required.
   if(m.dataset.page==='approval') void loadQualityApprovals(page);
   if(m.dataset.page==='incoming') void loadIncomingFromDb(page);
+  if(m.dataset.page==='serverAdmin') void buildServerAdmin();
   content.scrollTop=0;
 }));
 
