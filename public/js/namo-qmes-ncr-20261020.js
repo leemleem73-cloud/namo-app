@@ -337,9 +337,11 @@ draw=function(){
  var pageRows=matched.slice((page-1)*pageSize,page*pageSize);
  root.querySelector('#ncr-count').textContent='총 '+matched.length+'건';
  root.querySelector('#ncr-rows').innerHTML=pageRows.length?pageRows.map(function(r,i){
-  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String((page-1)*pageSize+i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button></div></td></tr>';
- }).join(''):'<tr><td colspan="11" class="ncr-empty">'+(loadError?'조회 실패: '+esc(loadError):!hasLoaded?'조회 중입니다.':'등록된 부적합보고서가 없습니다.')+'</td></tr>';
+  var gate=gateStatus(r.lot);
+  return '<tr><td><input class="ncr-row-select" type="checkbox" value="'+esc(r.id)+'" '+(selectedIds.has(String(r.id))?'checked':'')+'></td><td>'+String((page-1)*pageSize+i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><button class="ncr-gate '+gate.cls+'" type="button" data-gate-lot="'+esc(r.lot||'')+'">'+esc(gate.label)+'</button></td><td><div class="ncr-row-actions"><button class="ncr-btn" data-ncr-id="'+r.id+'">수정</button></div></td></tr>';
+ }).join(''):'<tr class="ncr-empty-row"><td></td><td></td><td></td><td></td><td></td><td></td><td class="ncr-empty">'+(loadError?'조회 실패: '+esc(loadError):!hasLoaded?'조회 중입니다.':'등록된 부적합보고서가 없습니다.')+'</td><td></td><td></td><td></td><td></td><td></td></tr>';
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
+ root.querySelectorAll('[data-gate-lot]').forEach(function(btn){btn.onclick=function(){if(window.qmesOpenQualityGate)window.qmesOpenQualityGate(btn.dataset.gateLot||'');};});
  root.querySelectorAll('.ncr-row-select').forEach(function(el){el.onchange=function(){if(el.checked)selectedIds.add(el.value);else selectedIds.delete(el.value);updateBulk();};});
  var pager=root.querySelector('#ncr-pages');if(pager){
   pager.setAttribute('aria-label','부적합보고서 페이지');
@@ -423,9 +425,9 @@ draw=function(){
   var table=card.querySelector('.ncr-table-wrap table');
   if(table){
    var group=document.createElement('colgroup');
-   [null,null,14,10,7,14,13,22,7,7,6].forEach(function(weight,index){
+   [null,null,14,10,7,14,13,22,7,7,7,6].forEach(function(weight,index){
     var col=document.createElement('col');
-    col.style.width=index===0?'34px':index===1?'50px':index===2?'260px':'calc((100% - 344px) * '+weight+' / 86)';
+    col.style.width=index===0?'34px':index===1?'50px':index===2?'260px':'calc((100% - 344px) * '+weight+' / 93)';
     group.appendChild(col);
    });
    table.prepend(group);
