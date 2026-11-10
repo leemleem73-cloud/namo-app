@@ -73,7 +73,7 @@ async function api(req, res) {
       return res.json({ success: true, data: { lot, shippable: false, reason: e.message } });
     }
   }
-  if (req.method !== 'POST' || !['/hold', '/release', '/hide-released'].includes(route)) return reject(res, 404, '지원하지 않는 품질 통제 요청입니다.');
+  if (req.method !== 'POST' || !['/hold', '/release', '/hide-released', '/cancel-hold'].includes(route)) return reject(res, 404, '지원하지 않는 품질 통제 요청입니다.');
   const reason = str(req.body?.reason);
   if (!reason || reason.length > 2000) return reject(res, 400, '사유를 1~2,000자로 입력하세요.');
   const client = await pool.connect();
@@ -96,6 +96,32 @@ async function api(req, res) {
         [lot, reason, JSON.stringify({ actor: u.id, name: u.name, reason })]);
       await client.query('INSERT INTO qmes_lot_gate_events(action,lot,actor,detail) VALUES($1,$2,$3,$4::jsonb)',
         ['MANUAL_HOLD', lot, u.name, JSON.stringify({ userId: u.id, reason })]);
+    } else if (route === '/cancel-hold') {
+      if (!(await authorized(client,u))) { await client.query('ROLLBACK'); return reject(res,403,'보류 취소 권한이 없습니다.'); }
+      const id = str(req.body?.id);
+      const reference = str(req.body?.reference);
+      if (!/^[1-9][0-9]*$/.test(id) || !reference || reference.length > 500) {
+        await client.query('ROLLBACK'); return reject(res,400,'보류번호와 확인 근거를 입력하세요. 확인 근거는 500자까지 입력할 수 있습니다.');
+      }
+      const result = await client.query('SELECT id,lot,kind,source,released_at FROM qmes_lot_holds WHERE id=$1 FOR UPDATE',[id]);
+      const hold = result.rows[0];
+      if (!hold || hold.released_at || hold.lot !== str(req.body?.lot).toUpperCase()) {
+        await client.query('ROLLBACK'); return reject(res,409,'취소할 활성 보류를 다시 조회하세요.');
+      }
+      const activeEvidence = await client.query(`SELECT 1 FROM qmes_lot_observations
+        WHERE lot=$1 AND (kind=$2 OR (kind='ncr' AND source||'/'||entry=$3))
+        AND (qmes_gate_bad(payload,kind NOT IN ('iqc','pqc','oqc'))
+          OR qmes_gate_measure_bad(payload,kind)
+          OR (kind='ncr' AND upper(coalesce(payload->>'status','OPEN')) NOT IN ('CLOSED','종결','완료','해제')))
+        LIMIT 1`,[hold.lot,hold.kind,hold.source]);
+      if (activeEvidence.rowCount) {
+        await client.query('ROLLBACK'); return reject(res,409,'이 LOT에 해당 검사 종류의 불합격 또는 미종결 부적합 기록이 있습니다. 원본 기록을 먼저 확인하세요.');
+      }
+      const evidence = { type:'CANCEL_HOLD', holdId:id, source:hold.source, userId:u.id, name:u.name, reason, reference };
+      await client.query(`UPDATE qmes_lot_holds SET released_at=clock_timestamp(),released_by=$2,release_reason=$3,release_evidence=$4::jsonb WHERE id=$1`,
+        [id,u.name,reason,JSON.stringify(evidence)]);
+      await client.query('INSERT INTO qmes_lot_gate_events(action,lot,actor,detail) VALUES($1,$2,$3,$4::jsonb)',
+        ['CANCEL_HOLD',hold.lot,u.name,JSON.stringify(evidence)]);
     } else if (route === '/hide-released') {
       if (!(await authorized(client,u))) { await client.query('ROLLBACK'); return reject(res, 403, '현재 서버 권한 설정상 차단 해제 권한이 없습니다.'); }
       const id = str(req.body?.id);
@@ -155,6 +181,7 @@ async function api(req, res) {
         ['RELEASE', hold.lot, u.name, JSON.stringify({ holdId: id, reason, ...evidence })]);
     }
     await client.query('COMMIT');
+    if (route === '/cancel-hold') return res.json({ success:true, message:'선택한 보류를 취소했습니다.' });
     if (route === '/hide-released') return res.json({ success: true, message: '목록에서 삭제했습니다. 처리 이력은 보존됩니다.' });
     return res.json({ success: true, message: route === '/hold' ? 'LOT가 보류되었습니다.' : '해제 승인이 기록되었습니다. 다른 보류가 남아 있으면 차단이 유지됩니다.' });
   } catch (e) { await client.query('ROLLBACK'); throw e; }
