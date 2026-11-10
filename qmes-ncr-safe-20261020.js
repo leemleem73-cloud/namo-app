@@ -65,24 +65,20 @@ async function autoCreateNcr(input={}){
 
  const details=input.details||{};
  const prefix='NCR-'+date.replace(/-/g,'')+'-'+source+'-';
- const seqResult=await pool.query(
-  `SELECT COALESCE(MAX(substring(nc_no from char_length($2)+1)::int),0)+1 AS seq
-   FROM nonconform
-   WHERE nc_no LIKE $1
-     AND substring(nc_no from char_length($2)+1) ~ '^[0-9]{3}$'`,
-  [prefix+'%',prefix]
- );
- const seq=Math.max(1,Number(seqResult.rows[0]?.seq||1));
- const ncNo=prefix+String(seq).padStart(3,'0');
- const qmesDetails={
-  ...details,
-  inspection_record_id:recordId,
-  inspection_stage:source,
-  auto_created:'Y'
- };
+ const usedRows=await pool.query("SELECT nc_no FROM nonconform WHERE nc_no LIKE $1",[prefix+'%']);
+ const used=new Set(
+  usedRows.rows
+   .map(row=>String(row.nc_no||''))
+   .filter(value=>new RegExp('^'+prefix.replace(/[.*+?^$(){}|\\[\\]\\\\]/g,'\\\\ const safeId=recordId.replace(/[^A-Za-z0-9]/g,'').slice(-12)||String(Date.now());
+ const ncNo='NCR-'+date.replace(/-/g,'')+'-'+source+'-'+safeId;
+
+ const existing=await pool.query("SELECT * FROM nonconform WHERE nc_no=$1 ORDER BY created_at DESC LIMIT 1",[ncNo]);
+ if(existing.rowCount)return existing.rows[0];
+
+ const details=input.details||{};
  const q=await pool.query(`INSERT INTO nonconform
-  (date,type,lot,item,issue,cause,action,owner,status,nc_no,dept,qty,severity,priority,capa_status,containment,impact_scope,correction,preventive_action,verification_result,progress,qmes_details)
-  VALUES($1,$2,$3,$4,$5,'','',$6,'OPEN',$7,$8,$9,$10,$11,'OPEN',$12,$13,'','', '',0,$14::jsonb)
+  (date,type,lot,item,issue,cause,action,owner,status,nc_no,dept,qty,severity,priority,capa_status,containment,impact_scope,correction,preventive_action,verification_result,progress)
+  VALUES($1,$2,$3,$4,$5,'','',$6,'OPEN',$7,$8,$9,$10,$11,'OPEN',$12,$13,'','', '',0)
   RETURNING *`,[
    date,
    source,
@@ -96,9 +92,8 @@ async function autoCreateNcr(input={}){
    str(details.severity||'중',40),
    str(details.priority||'높음',40),
    str(input.containment)||'해당 LOT 보류 및 후속 공정/출하 차단',
-   str(details.process||source,200),
-   JSON.stringify(qmesDetails)
-  ]);
+   str(details.process||source,200)
+  ]);')+'[0-9]{3}
  console.log('[AUTO NCR NONCONFORM]',JSON.stringify({source,nc_no:ncNo,id:q.rows[0]?.id}));
  try{
   const approval=require('./qmes-quality-approval-safe.js');
@@ -121,19 +116,12 @@ async function renumberLegacyAutoNcrs(){
  if(autoNcrRenumberPromise)return autoNcrRenumberPromise;
  autoNcrRenumberPromise=(async()=>{
   try{
-   const result=await pool.query(`
-    SELECT id,date,type,nc_no,created_at
-    FROM nonconform
-    WHERE type IN ('IQC','PQC','OQC')
-      AND nc_no LIKE 'NCR-%'
-    ORDER BY date,type,created_at,id`);
-   const rows=result.rows.filter(row=>{
-    const value=String(row.nc_no||'');
-    return /^NCR-[0-9]{8}-(IQC|PQC|OQC)-/.test(value)
-      && !/^NCR-[0-9]{8}-(IQC|PQC|OQC)-[0-9]{3}$/.test(value);
-   });
+   const result=await pool.query("SELECT id,date,type,nc_no,created_at FROM nonconform WHERE type IN ('IQC','PQC','OQC') AND nc_no LIKE 'NCR-%' ORDER BY date,type,created_at,id");
    const groups=new Map();
-   for(const row of rows){
+   for(const row of result.rows){
+    const value=String(row.nc_no||'');
+    if(!/^NCR-[0-9]{8}-(IQC|PQC|OQC)-/.test(value))continue;
+    if(/^NCR-[0-9]{8}-(IQC|PQC|OQC)-[0-9]{3}$/.test(value))continue;
     const date=String(row.date||'').slice(0,10);
     const key=date+'|'+String(row.type||'');
     if(!groups.has(key))groups.set(key,[]);
@@ -143,10 +131,28 @@ async function renumberLegacyAutoNcrs(){
    for(const [key,list] of groups){
     const parts=key.split('|'),date=parts[0],type=parts[1];
     const prefix='NCR-'+date.replace(/-/g,'')+'-'+type+'-';
-    const current=await pool.query(
-     `SELECT nc_no FROM nonconform
-       WHERE nc_no LIKE $1
-         AND substring(nc_no from char_length($2)+1) ~ '^[0-9]{3}
+    const current=await pool.query("SELECT nc_no FROM nonconform WHERE nc_no LIKE $1",[prefix+'%']);
+    const used=new Set(current.rows.map(r=>String(r.nc_no||'')).filter(v=>/^NCR-[0-9]{8}-(IQC|PQC|OQC)-[0-9]{3}$/.test(v)).map(v=>Number(v.slice(-3))));
+    let seq=1;
+    for(const row of list){
+     while(used.has(seq))seq++;
+     const next=prefix+String(seq).padStart(3,'0');
+     await pool.query('UPDATE nonconform SET nc_no=$1,qmes_updated_at=NOW() WHERE id=$2',[next,row.id]);
+     used.add(seq);seq++;changed++;
+    }
+   }
+   if(changed)console.log('[AUTO NCR RENUMBER]',JSON.stringify({changed}));
+   return changed;
+  }catch(error){
+   console.error('[AUTO NCR RENUMBER]',error);
+   autoNcrRenumberPromise=null;
+   return 0;
+  }
+ })();
+ return autoNcrRenumberPromise;
+}
+
+let failedInspectionBackfillPromise=null;
 async function backfillFailedSyncInspections(){
  if(failedInspectionBackfillPromise)return failedInspectionBackfillPromise;
  failedInspectionBackfillPromise=(async()=>{
@@ -531,27 +537,46 @@ function install(app,options={}){
 
 }
 module.exports={install,autoCreateNcr};
-`,
-     [prefix+'%',prefix]
-    );
-    const used=new Set(current.rows.map(row=>Number(String(row.nc_no||'').slice(-3))).filter(Number.isFinite));
-    let seq=1;
-    for(const row of list){
-     while(used.has(seq))seq++;
-     const next=prefix+String(seq).padStart(3,'0');
-     await pool.query('UPDATE nonconform SET nc_no=$1,qmes_updated_at=NOW() WHERE id=$2',[next,row.id]);
-     used.add(seq);seq++;changed++;
-    }
-   }
-   if(changed)console.log('[AUTO NCR RENUMBER]',JSON.stringify({changed}));
-   return changed;
-  }catch(error){
-   console.error('[AUTO NCR RENUMBER]',error);
-   autoNcrRenumberPromise=null;
-   return 0;
+).test(value))
+   .map(value=>Number(value.slice(-3)))
+ );
+ let seq=1;while(used.has(seq))seq++;
+ const ncNo=prefix+String(seq).padStart(3,'0');
+ const qmesDetails={...details,inspection_record_id:recordId,inspection_stage:source,auto_created:'Y'};
+ const q=await pool.query(`INSERT INTO nonconform
+  (date,type,lot,item,issue,cause,action,owner,status,nc_no,dept,qty,severity,priority,capa_status,containment,impact_scope,correction,preventive_action,verification_result,progress,qmes_details)
+  VALUES($1,$2,$3,$4,$5,'','',$6,'OPEN',$7,$8,$9,$10,$11,'OPEN',$12,$13,'','', '',0,$14::jsonb)
+  RETURNING *`,[
+   date,
+   source,
+   str(input.lot,120),
+   str(input.product,200),
+   str(input.description)||source+' 검사 불합격 자동 발생',
+   str(input.owner,120),
+   ncNo,
+   str(details.department||details.dept||'',120),
+   Number(details.affected_qty||0)||0,
+   str(details.severity||'중',40),
+   str(details.priority||'높음',40),
+   str(input.containment)||'해당 LOT 보류 및 후속 공정/출하 차단',
+   str(details.process||source,200),
+   JSON.stringify(qmesDetails)
+  ]);
+ console.log('[AUTO NCR NONCONFORM]',JSON.stringify({source,nc_no:ncNo,id:q.rows[0]?.id}));
+ try{
+  const approval=require('./qmes-quality-approval-safe.js');
+  if(typeof approval.ensureGenericApproval==='function'){
+   await approval.ensureGenericApproval({
+    docType:'NCR',
+    recordId:String(q.rows[0]?.id||''),
+    title:'부적합 NCR 검토·승인 · '+ncNo+' / LOT '+(q.rows[0]?.lot||'-'),
+    page:'ncr',
+    writerUserId:validUuidLike(input.created_by_id)?String(input.created_by_id):null,
+    writerName:str(input.created_by||input.owner||'QMES 자동생성',150)
+   });
   }
- })();
- return autoNcrRenumberPromise;
+ }catch(error){console.error('[AUTO NCR CENTRAL APPROVAL]',error);}
+ return q.rows[0];
 }
 
 let failedInspectionBackfillPromise=null;
