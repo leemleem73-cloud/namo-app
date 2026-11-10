@@ -149,27 +149,34 @@ function warehouseInfo(row){
 function fifoCheck(model, scannedLot, warehouse){
  const code=text(warehouse).toUpperCase(), target=lot(scannedLot);
  if(!target||target==='-'||!code)return {state:'unavailable',reason:'창고코드와 원료 LOT를 입력해 주세요.'};
- if(model.warnings.length)return {state:'unavailable',reason:'재고 자료 조회 실패'};
+ if(model.warnings.length)return {state:'unavailable',reason:'재고 조회 실패 · '+model.warnings.slice(0,2).join(' / ')};
  const matches=model.rows.filter(row=>lot(row.lot)===target);
  if(matches.length!==1)return {state:'unavailable',reason:matches.length?'같은 LOT의 원료 또는 공급업체가 여러 건입니다.':'재고에서 원료 LOT를 찾지 못했습니다.'};
  const selected=matches[0],info=warehouseInfo(selected);
- if(info.code!==code||!info.item||!info.first||selected.start||selected.uncertain)
-  return {state:'unavailable',reason:'선택 LOT의 창고, 입고일 또는 잔량 근거를 확인해 주세요.'};
+ const missing=(row,location)=>[
+  !location.code?'창고 미지정 또는 혼재':location.code!==code?'등록 창고 '+location.code:null,
+  !location.item?'원료 규격 확인':null,
+  !location.first?'입고일 확인':null,
+  row.start?'기초재고의 입고 이력 확인':null,
+  row.uncertain?'잔량 확인':null
+ ].filter(Boolean);
+ const selectedIssues=missing(selected,info);
+ if(selectedIssues.length)return {state:'unavailable',reason:selected.lot+' · '+selectedIssues.join(', ')};
  const candidates=model.rows.filter(row=>row!==selected&&lot(row.lot)!==target&&material(row.material)===material(selected.material));
  const alternatives=[];
- let unresolved=false;
+ const unresolved=[];
  for(const row of candidates){
   const candidate=warehouseInfo(row);
   if(candidate.code&&candidate.code!==code)continue;
   if(row.available>0&&candidate.code===code&&candidate.item===info.item&&candidate.first&&candidate.last<info.first&&!row.start){
    alternatives.push({lot:row.lot,supplier:row.supplier,available:row.available,received:candidate.last});
   }else if((row.available>0||row.uncertain)&&(!candidate.item||candidate.item===info.item)&&(!candidate.first||candidate.first<info.first)&&(!candidate.code||!candidate.first||row.start||row.uncertain)){
-   unresolved=true;
+   unresolved.push(row.lot+' · '+missing(row,candidate).join(', '));
   }
  }
  alternatives.sort((a,b)=>a.received.localeCompare(b.received)||a.lot.localeCompare(b.lot));
  if(alternatives.length)return {state:'warning',alternatives};
- return unresolved?{state:'unavailable',reason:'다른 LOT의 창고, 입고일 또는 잔량이 미확인입니다.'}:{state:'clear'};
+ return unresolved.length?{state:'unavailable',reason:'확인할 LOT '+unresolved.slice(0,3).join(' / ')+(unresolved.length>3?' 외 '+(unresolved.length-3)+'건':'')}:{state:'clear'};
 }
 return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build,warehouseInfo,fifoCheck};
 });
