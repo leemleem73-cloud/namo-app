@@ -98,6 +98,85 @@ async function autoCreateNcr(input={}){
  }catch(error){console.error('[AUTO NCR CENTRAL APPROVAL]',error);}
  return q.rows[0];
 }
+
+let failedInspectionBackfillPromise=null;
+async function backfillFailedSyncInspections(){
+ if(failedInspectionBackfillPromise)return failedInspectionBackfillPromise;
+ failedInspectionBackfillPromise=(async()=>{
+  let created=0,failed=0;
+  try{
+   const result=await pool.query(`
+    SELECT record_type,record_key,payload,updated_at
+    FROM qmes_sync_records
+    WHERE record_type IN ('pqc','oqc')
+    ORDER BY updated_at DESC
+    LIMIT 3000`);
+   const seen=new Set();
+   for(const source of result.rows){
+    const payload=source.payload||{};
+    const rows=Array.isArray(payload.rows)?payload.rows:[];
+    if(source.record_type==='pqc'){
+     for(const row of rows){
+      if(String(row?.judge||row?.detailFields?.['검사합부']||'').trim()!=='불합격')continue;
+      failed++;
+      const inspectionId='PQC:'+String(source.record_key)+':'+String(row?.id||row?.lot||'');
+      if(seen.has(inspectionId))continue; seen.add(inspectionId);
+      const before=await pool.query("SELECT id FROM nonconform WHERE nc_no=$1 LIMIT 1",[
+       'NCR-'+String(row?.date||'').slice(0,10).replace(/-/g,'')+'-PQC-'+inspectionId.replace(/[^A-Za-z0-9]/g,'').slice(-12)
+      ]).catch(()=>({rowCount:0}));
+      const ncr=await autoCreateNcr({
+       source:'PQC',
+       occurred_on:String(row?.date||'').slice(0,10),
+       lot:row?.lot||'',
+       product:row?.product||row?.detailFields?.['제품명']||'',
+       description:'PQC 공정검사 불합격 자동 발생',
+       containment:'해당 생산 LOT 보류 및 후속 공정 차단',
+       owner:row?.inspector||'',
+       created_by:row?.inspector||'QMES 자동생성',
+       created_by_id:'SYSTEM',
+       inspection_record_id:inspectionId,
+       details:{process:'공정검사',work_order:row?.workOrderNo||'',actual_result:'불합격',reporter:row?.inspector||''}
+      });
+      if(ncr&&!before.rowCount)created++;
+     }
+    }else if(source.record_type==='oqc'){
+     const failedRows=rows.filter(row=>String(row?.judge||row?.result||'').trim()==='불합격');
+     if(!failedRows.length)continue;
+     failed++;
+     const sample=failedRows[0]||rows[0]||{};
+     const lot=sample?.lot||payload?.lotNo||'';
+     const inspectionId='OQC:'+String(source.record_key)+':'+String(lot||'');
+     if(seen.has(inspectionId))continue; seen.add(inspectionId);
+     const before=await pool.query("SELECT id FROM nonconform WHERE nc_no=$1 LIMIT 1",[
+      'NCR-'+String(sample?.date||sample?.shipDate||'').slice(0,10).replace(/-/g,'')+'-OQC-'+inspectionId.replace(/[^A-Za-z0-9]/g,'').slice(-12)
+     ]).catch(()=>({rowCount:0}));
+     const ncr=await autoCreateNcr({
+      source:'OQC',
+      occurred_on:String(sample?.date||sample?.shipDate||'').slice(0,10),
+      lot,
+      product:sample?.product||'',
+      customer:sample?.customer||'',
+      description:'OQC 출하검사 불합격 자동 발생',
+      containment:'해당 완제품 LOT 출하보류 및 출하 차단',
+      owner:sample?.inspector||'',
+      created_by:sample?.inspector||'QMES 자동생성',
+      created_by_id:'SYSTEM',
+      inspection_record_id:inspectionId,
+      details:{process:'출하검사',actual_result:'불합격',reporter:sample?.inspector||''}
+     });
+     if(ncr&&!before.rowCount)created++;
+    }
+   }
+   console.log('[AUTO NCR PQC/OQC BACKFILL]',JSON.stringify({failed,created}));
+  }catch(e){
+   console.error('[AUTO NCR PQC/OQC BACKFILL]',e);
+   failedInspectionBackfillPromise=null;
+  }
+  return {failed,created};
+ })();
+ return failedInspectionBackfillPromise;
+}
+
 function legacyReport(r){return {
     id:r.id,
     report_no:r.nc_no||'',
@@ -225,6 +304,7 @@ function install(app,options={}){
  app.get('/api/qmes-ncr/reports',auth,async(req,res)=>{
   try{
    await schema();
+   await backfillFailedSyncInspections();
    const q=await pool.query(`SELECT * FROM nonconform ORDER BY created_at DESC LIMIT 500`);
    const reports=await pool.query('SELECT * FROM qmes_ncr_reports ORDER BY created_at DESC LIMIT 500');
    const rows=q.rows.map(legacyReport).concat(reports.rows)
