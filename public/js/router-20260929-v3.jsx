@@ -38,6 +38,79 @@ function QMESInventoryRoute(){
   return <div id="qmes-inventory-host" data-qmes-inventory-section={section}>{typeof Component==="function"?<Component section={section}/>:<div className="inv-loading">재고관리 화면을 불러오는 중입니다.</div>}</div>;
 }
 
+
+function ServerPermissionsTab(){
+  const departments=["대표","관리부","경영지원부","연구소","생산부","영업부","품질부"];
+  const catalog=[
+    ["qualityGateReleaseDepartments","공정 차단 해제","불합격 LOT 보류/차단 해제 및 해제기록 삭제"],
+    ["approvalReviewDepartments","전자결재 검토","전자결재 검토 완료 처리"],
+    ["approvalFinalDepartments","전자결재 최종승인","전자결재 최종 승인 처리"],
+    ["ncrCloseDepartments","NCR 종결","부적합 NCR 종결/해제 권한"],
+    ["inspectionEditDepartments","검사결과 수정·삭제","IQC/PQC/OQC 결과 수정 및 삭제"],
+    ["inventoryAdjustDepartments","재고 강제조정","재고 수량 강제 조정 및 초기화"],
+    ["documentDeleteDepartments","문서 삭제·폐기","기준서/관리문서 삭제 및 폐기"]
+  ];
+  const [settings,setSettings]=useState({});
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [message,setMessage]=useState("");
+  const api=async(url,options={})=>{
+    const headers={...(options.headers||{})};
+    if(options.body&&!headers["Content-Type"])headers["Content-Type"]="application/json";
+    const res=await fetch(url,{credentials:"same-origin",cache:"no-store",...options,headers});
+    const payload=await res.json().catch(()=>({success:false,message:"서버 응답 오류"}));
+    if(!res.ok||!payload.success)throw new Error(payload.message||"요청 처리에 실패했습니다.");
+    return payload.data;
+  };
+  const load=async()=>{
+    setLoading(true);setMessage("");
+    try{
+      const data=await api("/api/admin/server-permissions");
+      const next={};
+      catalog.forEach(([key])=>next[key]=data?.[key]?.allowedDepartments||["품질부"]);
+      setSettings(next);
+    }catch(error){setMessage(error.message);}
+    finally{setLoading(false);}
+  };
+  useEffect(()=>{load();},[]);
+  const toggle=(key,department)=>{
+    const current=new Set(settings[key]||[]);
+    current.has(department)?current.delete(department):current.add(department);
+    setSettings({...settings,[key]:Array.from(current)});
+  };
+  const save=async()=>{
+    for(const [key,label] of catalog){
+      if(!(settings[key]||[]).length){setMessage(label+" 허용 부서를 최소 1개 선택하세요.");return;}
+    }
+    setSaving(true);setMessage("");
+    try{
+      for(const [key] of catalog){
+        await api("/api/admin/server-permissions/"+encodeURIComponent(key),{
+          method:"PUT",body:JSON.stringify({allowedDepartments:settings[key]})
+        });
+      }
+      setMessage("서버 권한 설정을 저장했습니다. 실제 서버 권한 판정에 즉시 반영됩니다.");
+      await load();
+    }catch(error){setMessage(error.message);}
+    finally{setSaving(false);}
+  };
+  return <div style={{maxWidth:1280,margin:"0 auto"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <div><h1 style={{fontSize:22,fontWeight:900,color:"#1f3443",margin:0}}>서버 권한관리</h1><p style={{fontSize:13,color:"#657887",margin:"6px 0 0"}}>SYSTEM · 중요 업무행위 권한을 부서 기준으로 관리합니다.</p></div>
+      <button type="button" onClick={save} disabled={saving||loading} style={{height:38,padding:"0 16px",border:0,borderRadius:7,background:"#0b8fc7",color:"#fff",fontWeight:850,cursor:"pointer"}}>{saving?"저장 중...":"서버 권한 저장"}</button>
+    </div>
+    {message&&<div style={{marginBottom:14,padding:"11px 13px",border:"1px solid #bcd5e2",borderRadius:8,background:"#f3f9fc",color:"#24536c",fontWeight:750,fontSize:13}}>{message}</div>}
+    <div style={{border:"1px solid #d5e0e7",borderRadius:10,background:"#fff",overflow:"hidden"}}>
+      <div style={{display:"grid",gridTemplateColumns:"220px 1fr",padding:"12px 16px",background:"#f5f8fa",borderBottom:"1px solid #d5e0e7",fontWeight:900,color:"#3b5262",fontSize:13}}><div>서버 권한</div><div>허용 부서</div></div>
+      {loading?<div style={{padding:28,textAlign:"center",color:"#657887"}}>권한 정보를 불러오는 중입니다.</div>:catalog.map(([key,label,desc])=><div key={key} style={{display:"grid",gridTemplateColumns:"220px 1fr",padding:"16px",borderBottom:"1px solid #e2e9ee",alignItems:"start"}}>
+        <div><div style={{fontWeight:900,color:"#213847",fontSize:14}}>{label}</div><div style={{marginTop:5,fontSize:11.5,lineHeight:1.5,color:"#748693"}}>{desc}</div></div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{departments.map(department=><label key={department} style={{display:"inline-flex",alignItems:"center",gap:6,minHeight:34,padding:"6px 10px",border:"1px solid #cbd8e0",borderRadius:7,background:(settings[key]||[]).includes(department)?"#eaf7fd":"#fff",color:"#304b5d",fontSize:12.5,fontWeight:800,cursor:"pointer"}}><input type="checkbox" checked={(settings[key]||[]).includes(department)} onChange={()=>toggle(key,department)}/>{department}</label>)}</div>
+      </div>)}
+    </div>
+    <div style={{marginTop:12,padding:"12px 14px",borderRadius:8,background:"#fff7e8",color:"#77551a",fontSize:12.5,fontWeight:700,lineHeight:1.7}}>권한 변경은 관리자 전용입니다. 공정 차단 해제와 전자결재 검토/최종승인은 현재 서버 판정과 직접 연결되어 있으며, 나머지 항목도 동일한 중앙 권한 테이블을 사용합니다.</div>
+  </div>;
+}
+
 const TABS = [
   { id:"dash", label:"종합 대시보드", icon:LayoutDashboard, comp:DashboardTab },
   { id:"pop", label:"현장 입력 (iPad)", icon:Tablet, comp:FieldInputTab },
@@ -62,6 +135,7 @@ const TABS = [
   { id:"calibration", label:"계측기 교정관리", icon:Wrench, comp:window.QMESCalibrationTab },
   { id:"standards", label:"기준서 / 매뉴얼", icon:FileText, comp:window.QMESStandardsTab },
   { id:"members", label:"회원 관리", icon:Users, comp:MembersTab, adminOnly:true },
+  { id:"serverPermissions", label:"서버 권한관리", icon:Lock, comp:ServerPermissionsTab, adminOnly:true },
 ];
 
 const TOP_MENUS = [
