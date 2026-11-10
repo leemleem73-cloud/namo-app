@@ -120,11 +120,22 @@ async function api(req, res) {
       const retestInspector = str(req.body?.retestInspector);
       const localTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(retestAt) ? Date.parse(retestAt + 'Z') : NaN;
       const retestTime = localTime - 9 * 60 * 60 * 1000;
-      if (!retestInspector || retestInspector.length > 120 || !Number.isFinite(localTime) ||
-          new Date(localTime).toISOString().slice(0, retestAt.length) !== retestAt ||
-          retestTime <= new Date(hold.created_at).getTime() || retestTime > Date.now()) {
+      let retestError;
+      if (!retestInspector || retestInspector.length > 120) {
+        retestError = '실제 재검사 검사자를 입력하세요. 검사자 이름은 120자까지 입력할 수 있습니다.';
+      } else if (!Number.isFinite(localTime) || new Date(localTime).toISOString().slice(0, retestAt.length) !== retestAt) {
+        retestError = '실제 재검사 날짜와 시간을 확인하세요.';
+      } else if (retestTime <= new Date(hold.created_at).getTime()) {
+        const holdTime = new Date(hold.created_at).toLocaleString('ko-KR', {
+          timeZone: 'Asia/Seoul', dateStyle: 'medium', timeStyle: 'medium'
+        });
+        retestError = '재검사 일시가 보류 등록 시각(' + holdTime + ', 한국 시간)과 같거나 이전입니다. 등록 이후 실제 재검사 일시를 입력하세요.';
+      } else if (retestTime > Date.now()) {
+        retestError = '재검사 일시가 현재 시각보다 늦습니다. 실제 재검사 일시를 확인하세요.';
+      }
+      if (retestError) {
         await client.query('ROLLBACK');
-        return reject(res, 400, '보류 등록 이후의 실제 재검사 일시와 검사자를 입력하세요.');
+        return reject(res, 400, retestError);
       }
       const retestDate = retestAt.slice(0, 10);
       const pass = await client.query(`SELECT qmes_gate_inspection_pass($1,$2) AND EXISTS(
