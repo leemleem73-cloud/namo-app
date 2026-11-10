@@ -27,7 +27,7 @@ async function saveGridMovement(row,values,id){
 }
 function stockTableMarkup(matches){
  const headers=stockGrid?.headers()||stockColumns.map(c=>'<th>'+esc(c.label)+'</th>').join(''),cols=stockGrid?.cols(model.rows)||'';
- return '<div class="ms-table-wrap"><table class="ms-table ms-stock-table">'+cols+'<thead><tr>'+headers+'</tr></thead><tbody>'+(matches.slice((page-1)*10,page*10).map((r,i)=>'<tr data-sg-row="'+esc(r.key)+'"><td>'+((page-1)*10+i+1)+'</td><td>'+esc(r.material)+'</td><td>'+esc(r.lot)+'</td><td>'+esc(r.supplier||'-')+'</td>'+[r.incoming,r.used].map((n,i)=>'<td title="'+(i===0?'수입검사 입고에서 자동 집계':'작업지시서 실투입량에서 자동 집계')+'">'+fmt(n)+'</td>').join('')+'<td>'+gridCell(r,'sample',r.sample)+'</td><td title="실사 차이 등을 정정한 증감 수량입니다.">'+fmt(r.adjust)+'</td><td>'+gridCell(r,'adjustment',r.balance)+'</td><td title="검사·보류·수량 연결 확인 상태를 반영한 참고 수량입니다. 0이 실제 재고가 없다는 뜻은 아닙니다.">'+fmt(r.available)+'</td><td><span class="ms-state '+(r.uncertain||r.quality!=='사용가능'?'warn':'')+'" title="'+esc([...r.issues,...(r.notices||[])].join(' · '))+'">'+esc(r.uncertain?'수량/연결 확인 필요':r.quality)+'</span></td><td><div class="sg-row-actions"><button type="button" data-ms-detail="'+esc(r.key)+'">입고·사용 내역</button><button type="button" data-sg-quick="'+esc(r.key)+'" '+(loading?'disabled':'')+'>빠른 입력</button></div></td></tr>').join('')||'<tr><td colspan="12">'+(loading?'조회 중입니다.':'조건에 맞는 재고 기록이 없습니다.')+'</td></tr>')+'</tbody></table></div>';
+ return '<div class="ms-table-wrap"><table class="ms-table ms-stock-table">'+cols+'<thead><tr>'+headers+'</tr></thead><tbody>'+(matches.slice((page-1)*10,page*10).map((r,i)=>'<tr data-sg-row="'+esc(r.key)+'"><td>'+((page-1)*10+i+1)+'</td><td>'+esc(r.material)+'</td><td>'+esc(r.lot)+'<small style="display:block;color:#64748b">'+esc(core.warehouseInfo(r).code||'창고 미지정/혼재')+'</small></td><td>'+esc(r.supplier||'-')+'</td>'+[r.incoming,r.used].map((n,i)=>'<td title="'+(i===0?'수입검사 입고에서 자동 집계':'작업지시서 실투입량에서 자동 집계')+'">'+fmt(n)+'</td>').join('')+'<td>'+gridCell(r,'sample',r.sample)+'</td><td title="실사 차이 등을 정정한 증감 수량입니다.">'+fmt(r.adjust)+'</td><td>'+gridCell(r,'adjustment',r.balance)+'</td><td title="검사·보류·수량 연결 확인 상태를 반영한 참고 수량입니다. 0이 실제 재고가 없다는 뜻은 아닙니다.">'+fmt(r.available)+'</td><td><span class="ms-state '+(r.uncertain||r.quality!=='사용가능'?'warn':'')+'" title="'+esc([...r.issues,...(r.notices||[])].join(' · '))+'">'+esc(r.uncertain?'수량/연결 확인 필요':r.quality)+'</span></td><td><div class="sg-row-actions"><button type="button" data-ms-detail="'+esc(r.key)+'">입고·사용 내역</button><button type="button" data-sg-quick="'+esc(r.key)+'" '+(loading?'disabled':'')+'>빠른 입력</button></div></td></tr>').join('')||'<tr><td colspan="12">'+(loading?'조회 중입니다.':'조건에 맞는 재고 기록이 없습니다.')+'</td></tr>')+'</tbody></table></div>';
 }
 
 
@@ -46,15 +46,18 @@ async function deleteUsageEntry(entry,row,parent,button){
  finally{deletingUsageEntries.delete(entry.id);controls.forEach(([b,disabled])=>b.disabled=disabled);}
 }
 
+async function readStockSnapshot(signal){
+  const paths=[['/api/iqc','수입검사'],['/api/qmes/work-orders','작업지시'],['/api/trace?keyword=','작업실적'],['/api/qmes-sync/inventory','수불기록'],['/api/qmes-quality-gate/holds?lot=','품질보류']];
+  const results=await Promise.all(paths.map(async([url,name])=>{try{return {data:await request(url,{signal}),name};}catch(error){return {error:name+': '+error.message,data:[],name};}}));
+  return {iqc:Array.isArray(results[0].data)?results[0].data:[],orders:Array.isArray(results[1].data)?results[1].data:[],actuals:Array.isArray(results[2].data)?results[2].data:[],entries:core.readEntries(Array.isArray(results[3].data)?results[3].data:[]),holds:results[4].data?.holds||[],sourceErrors:results.filter(r=>r.error).map(r=>r.error)};
+}
 async function load(){
  if(loading)return;loading=true;const version=epoch,readVersion=++dataVersion;paint();
  try{
   if(window.qmesAuthDataReady?.wait)await window.qmesAuthDataReady.wait();
-  const paths=[['/api/iqc','수입검사'],['/api/qmes/work-orders','작업지시'],['/api/trace?keyword=','작업실적'],['/api/qmes-sync/inventory','수불기록'],['/api/qmes-quality-gate/holds?lot=','품질보류']];
-  const results=await Promise.all(paths.map(async([url,name])=>{try{return {data:await request(url),name};}catch(error){return {error:name+': '+error.message,data:[],name};}}));
+  const fresh=await readStockSnapshot();
   if(version!==epoch||readVersion!==dataVersion)return;
-  entries=core.readEntries(Array.isArray(results[3].data)?results[3].data:[]);
-  snapshot={iqc:Array.isArray(results[0].data)?results[0].data:[],orders:Array.isArray(results[1].data)?results[1].data:[],actuals:Array.isArray(results[2].data)?results[2].data:[],entries,holds:results[4].data?.holds||[],sourceErrors:results.filter(r=>r.error).map(r=>r.error)};
+  snapshot=fresh;entries=fresh.entries;
   model=core.build(snapshot);loadedAt=new Date().toLocaleString('ko-KR');
  }catch(error){if(version===epoch)model={rows:[],warnings:[error.message],unallocated:[]};}
  finally{if(version===epoch){loading=false;paint();}}
@@ -65,11 +68,11 @@ function pagerMarkup(current,total){
 }
 function paint(){
  window.qmesStockGrid?.capture(root);
- const searched=model.rows.filter(r=>!query||[r.material,r.lot,r.supplier].join(' ').toLowerCase().includes(query.toLowerCase())),matches=stockGrid?.apply(searched)||searched,pages=Math.max(1,Math.ceil(matches.length/10));page=Math.min(page,pages);
+ const searched=model.rows.filter(r=>!query||[r.material,r.lot,r.supplier,core.warehouseInfo(r).code].join(' ').toLowerCase().includes(query.toLowerCase())),matches=stockGrid?.apply(searched)||searched,pages=Math.max(1,Math.ceil(matches.length/10));page=Math.min(page,pages);
  root.innerHTML='<div class="ms-shell"><header class="ms-head"><strong>재고관리</strong><div><button type="button" data-ms="refresh" '+(loading?'disabled':'')+'>새로고침</button><button type="button" class="primary" data-ms="new" '+(loading||!snapshot?'disabled':'')+'>+ 재검사·샘플 / 재고 기록</button></div></header>'+
  '<div class="ms-policy">수입검사 입고와 생산 투입·재검사·샘플 사용 기록을 반영한 재고입니다.<br><b>과거 재검사·샘플 사용량을 확인해 주세요.</b> 미확인 사용 기록은 수량을 확인한 뒤 재고에 반영합니다.</div>'+
  (model.warnings.length?'<div class="ms-error" role="alert">일부 자료 조회 실패 · 입고·사용 연결 정보를 확인해주세요.<br>'+model.warnings.map(esc).join('<br>')+'</div>':'')+
- '<div class="ms-toolbar"><label>원료 / LOT / 공급업체 <input data-ms-search value="'+esc(query)+'" placeholder="전체"></label><span>'+ (loading?'연결된 입고·투입 자료 조회 중':esc(loadedAt))+'</span></div>'+
+ '<div class="ms-toolbar"><label>원료 / LOT / 공급업체 / 창고 <input data-ms-search value="'+esc(query)+'" placeholder="전체"></label><span>'+ (loading?'연결된 입고·투입 자료 조회 중':esc(loadedAt))+'</span></div>'+
  '<div class="ms-totals"><span>LOT <b>'+matches.length+'</b>건</span><span>재고 <b>'+fmt(matches.reduce((s,r)=>s+r.balance,0))+'</b> kg</span><span>수량 미확인 기록 <b>'+entries.filter(e=>e.status==='pending').length+'</b>건</span><span>입고·투입 연결 확인 <b>'+model.unallocated.length+'</b>건</span></div>'+
  (stockGrid?.tools()||'')+stockTableMarkup(matches)+
  pagerMarkup(page,pages)+
@@ -191,7 +194,10 @@ function editEntry(existing=null,row=null,parent=null){
 }
 root.addEventListener('click',event=>{const button=event.target.closest('button');if(!button||button.disabled)return;if(button.dataset.ms==='refresh')load();if(button.dataset.ms==='new')editEntry();if(button.dataset.msDetail)showDetails(button.dataset.msDetail);if(button.dataset.msPage){page=Number(button.dataset.msPage);paint();}});
 window.qmesStockInputStyle={attach:attachStockSuggestions};
-window.qmesRawStock={openRecord:()=>{editEntry();return true;}};
+window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(lot,warehouse,signal){
+ await window.qmesAuthDataReady?.wait();
+ return core.fifoCheck(core.build(await readStockSnapshot(signal)),lot,warehouse);
+}};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
 function clearAccount(){window.qmesStockGrid?.clear(root);stockGrid?.resetAccount();epoch++;loading=false;snapshot=null;loadedAt='';query='';page=1;model={rows:[],warnings:[],unallocated:[]};entries=[];document.querySelectorAll('.ms-dialog').forEach(dialog=>dialog.close());paint();}
