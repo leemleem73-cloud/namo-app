@@ -136,11 +136,19 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
 }
 function warehouseInfo(row){
  const originals=(row.receipts||[]).flatMap(receipt=>receipt.originals||[]);
- const codes=new Set(originals.map(receipt=>text(receipt.warehouse).toUpperCase()));
+ const receipts=row.receipts||[];
+ const codes=new Set(),unassigned=[];
+ for(const receipt of receipts){
+  const reported=new Set((receipt.originals||[]).map(record=>text(record.warehouse).toUpperCase()).filter(Boolean));
+  if(reported.size!==1)unassigned.push(receipt.date||'입고일 미확인');
+  for(const code of reported)codes.add(code);
+ }
  const names=new Set(originals.map(receipt=>text(receipt.material).toUpperCase().replace(/\s+/g,' ')));
  const dates=(row.receipts||[]).map(receipt=>receipt.date).sort();
  return {
-  code:codes.size===1&&/^[A-Z0-9][A-Z0-9_-]{0,29}$/.test([...codes][0])?[...codes][0]:'',
+  unassigned,
+  conflicting:codes.size>1,
+  code:!unassigned.length&&codes.size===1&&/^[A-Z0-9][A-Z0-9_-]{0,29}$/.test([...codes][0])?[...codes][0]:'',
   item:names.size===1?[...names][0]:'',
   first:dates.length&&dates.every(date=>/^\d{4}-\d{2}-\d{2}$/.test(date))?dates[0]:'',
   last:dates.at(-1)||''
@@ -154,7 +162,7 @@ function fifoCheck(model, scannedLot, warehouse){
  if(matches.length!==1)return {state:'unavailable',reason:matches.length?'같은 LOT의 원료 또는 공급업체가 여러 건입니다.':'재고에서 원료 LOT를 찾지 못했습니다.'};
  const selected=matches[0],info=warehouseInfo(selected);
  const missing=(row,location)=>[
-  !location.code?'창고 미지정 또는 혼재':location.code!==code?'등록 창고 '+location.code:null,
+  !location.code?(location.conflicting?'입고 기록의 창고코드가 서로 다름':location.unassigned.length?'창고 미지정 입고일 '+[...new Set(location.unassigned)].slice(0,3).join(', '):'입고 창고 확인'):location.code!==code?'등록 창고 '+location.code:null,
   !location.item?'원료 규격 확인':null,
   !location.first?'입고일 확인':null,
   row.start?'기초재고의 입고 이력 확인':null,
