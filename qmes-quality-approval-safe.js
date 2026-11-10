@@ -582,6 +582,19 @@ function install(app) {
         .then(manager => require('./qmes-iqc-2025-recovery').recoverIqc2025Approvals(pool, manager))
         .catch(error => console.error('[QMES IQC 2025 recovery startup]', error));
     });
+    setImmediate(async () => {
+      const jobs = [
+        ['IQC', ensureMissingIqcApprovals],
+        ['PQC', ensureMissingPqcSyncApprovals],
+        ['OQC', ensureMissingOqcSyncApprovals],
+        ['NCR', ensureMissingNcrApprovals],
+        ['STANDARD', ensureMissingStandardApprovals]
+      ];
+      for (const [name, job] of jobs) {
+        try { await job(); }
+        catch (error) { console.error('[QMES approval startup backfill '+name+']', error); }
+      }
+    });
   }
 
   app.get('/api/qmes-quality/health', (_req, res) => ok(res, { service: 'quality-approval', status: 'ready' }));
@@ -653,11 +666,8 @@ function install(app) {
     res.set('Expires', '0');
     try {
       await ensureSchema();
-      await ensureMissingIqcApprovals();
-      await ensureMissingPqcSyncApprovals();
-      await ensureMissingOqcSyncApprovals();
-      await ensureMissingNcrApprovals();
-      await ensureMissingStandardApprovals();
+      // Keep approval-list reads fast and reliable. Historical backfill runs at startup
+      // and must never make the user's approval inbox fail with HTTP 500.
       const u = req.session.user || {};
       const admin = isAdmin(req);
       const q = await pool.query(
@@ -670,6 +680,7 @@ function install(app) {
       );
       return ok(res, q.rows);
     } catch (e) {
+      console.error('[QMES quality approval list]', e);
       return fail(res, 500, '전자결재 목록을 불러오지 못했습니다.');
     }
   });
