@@ -118,10 +118,10 @@ async function api(req, res) {
       if (!['iqc', 'pqc', 'oqc'].includes(kind)) { await client.query('ROLLBACK'); return reject(res, 400, '재검사 종류를 선택하세요.'); }
       const retestAt = str(req.body?.retestAt);
       const retestInspector = str(req.body?.retestInspector);
-      const localTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(retestAt) ? Date.parse(retestAt + 'Z') : NaN;
+      const localTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(retestAt) ? Date.parse(retestAt + 'Z') : NaN;
       const retestTime = localTime - 9 * 60 * 60 * 1000;
       if (!retestInspector || retestInspector.length > 120 || !Number.isFinite(localTime) ||
-          new Date(localTime).toISOString().slice(0, 16) !== retestAt ||
+          new Date(localTime).toISOString().slice(0, retestAt.length) !== retestAt ||
           retestTime <= new Date(hold.created_at).getTime() || retestTime > Date.now()) {
         await client.query('ROLLBACK');
         return reject(res, 400, '보류 등록 이후의 실제 재검사 일시와 검사자를 입력하세요.');
