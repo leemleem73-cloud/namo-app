@@ -7529,7 +7529,7 @@ function standardInspectionForm(type){
       <div class="std-inspection-title"><b>${conf.title}</b></div>
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
-        <div class="k">Rev.</div><div class="v">${type==='outgoing'?'1':'0'}</div>
+        <div class="k">Rev.</div><div class="v" data-standard-report-revision>${type==='outgoing'?'1':'0'}</div>
         <div class="k">작성부서</div><div class="v">품질부</div>
         <div class="k">상태</div><div class="v">신규작성</div>
       </div>
@@ -7569,6 +7569,24 @@ function initStandardInspectionForm(type){
     else overall.value='대기';
   };
   judges.forEach(x=>x.addEventListener('change',syncOverall));
+  if(type==='outgoing'){
+    const dateInput=root.querySelector('.std-info input[type="date"]');
+    const revEl=root.querySelector('[data-standard-report-revision]');
+    const syncReportRevision=()=>{
+      if(!revEl)return;
+      const date=String(dateInput?.value||'').trim();
+      revEl.textContent=date&&date<'2026-11-10'?'0':'1';
+    };
+    dateInput?.addEventListener('input',syncReportRevision);
+    dateInput?.addEventListener('change',syncReportRevision);
+    syncReportRevision();
+    let lastDate=String(dateInput?.value||'');
+    const timer=setInterval(()=>{
+      if(!root.isConnected){clearInterval(timer);return;}
+      const next=String(dateInput?.value||'');
+      if(next!==lastDate){lastDate=next;syncReportRevision();}
+    },250);
+  }
   if(type==='process'){
     const inputs=[...root.querySelectorAll('.std-info .v input,.std-info .v select')].filter(el=>!el.classList.contains('pqc-inspector-manual'));
     const lotInput=inputs[4];
