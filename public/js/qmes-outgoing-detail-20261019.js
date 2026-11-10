@@ -3,7 +3,7 @@
 'use strict';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dateValue=value=>{const m=String(value??'').trim().match(/(\d{4})[.\/년-]\s*(\d{1,2})[.\/월-]\s*(\d{1,2})/);if(!m)return '';const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));return d.getFullYear()===Number(m[1])&&d.getMonth()+1===Number(m[2])&&d.getDate()===Number(m[3])?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):'';};
-const items=[['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','<10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['수분율','<2,000 ppm','수분측정기'],['고형분','20.0±1.0 wt%','Drying Oven'],['접착력','≥400 gf/12.7mm','인장시험기'],['절연저항','≥200 MΩ (Overflow)','절연저항계'],['전해액 안정성','미탈리','육안']];
+const items=[['외관','이물질 혼입 없을 것','육안'],['입도(Dmax)','<10 μm','입도분석기'],['점도','1,500±300 cP','점도계'],['수분율','<2,000 ppm','수분측정기'],['고형분','20.0±1.0 wt%','Drying Oven'],['접착력','≥400 gf/12.7mm','인장시험기'],['절연저항','≥200 MΩ (Overflow)','절연저항계'],['전해액 안정성','팽창률 < 150%','두께 측정']];
 const canonical=name=>window.qmesOqcRules.canonical(name);
 const original=row=>Object.fromEntries(Object.entries(row).filter(([k])=>!k.startsWith('__')));
 function values(row){if(Array.isArray(row?.measurements)&&row.measurements.length)return row.measurements.map(v=>String(v??''));return row?.value?String(row.value).split(/\s*\/\s*/):[];}
@@ -15,7 +15,7 @@ const polish=document.createElement('style');polish.textContent=tableScope+'{wid
 const focusStyle=document.createElement('style');focusStyle.textContent='html body #mainWorkspace .am-split[data-am-screen="outgoing"] :is([data-oqc-value],[data-oqc-field]):focus{background:#edf5ff!important;border-color:#448de0!important;outline:2px solid rgba(68,141,224,.22)!important;outline-offset:0!important;box-shadow:0 0 0 2px rgba(68,141,224,.1)!important}';document.head.append(focusStyle);
 function measurementCell(name,index,value,disabled){
 const attributes=' data-oqc-value="'+index+'" aria-label="'+esc(name)+' '+(index+1)+'차 측정값"'+(disabled?' disabled':'');
-if(name==='외관'||name==='전해액 안정성'||name==='절연저항'){const options=[...new Set(['',...(name==='외관'?['이상없음','이상있음']:name==='절연저항'?['Overflow']:['미탈리','탈리']),...(value?[value]:[])])];return '<select'+attributes+'>'+options.map(v=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(v||'선택')+'</option>').join('')+'</select>';}
+if(name==='외관'||name==='절연저항'){const options=[...new Set(['',...(name==='외관'?['이상없음','이상있음']:['Overflow']),...(value?[value]:[])])];return '<select'+attributes+'>'+options.map(v=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(v||'선택')+'</option>').join('')+'</select>';}
 return '<input type="text"'+attributes+' value="'+esc(value)+'">';
 }
 

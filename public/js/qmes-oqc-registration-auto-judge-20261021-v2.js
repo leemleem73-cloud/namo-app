@@ -30,9 +30,9 @@
         const controls = [...row.querySelectorAll('.std-measure')];
         controls.forEach((input, index) => {
           input.setAttribute('aria-label', name + ' ' + (index + 1) + '차 측정값');
-          if ((name === '외관' || name === '전해액 안정성') && input.tagName === 'SELECT' && !input.dataset.oqcAutoOptions) {
-            const good = name === '외관' ? '이상없음' : '미탈리';
-            const bad = name === '외관' ? '이상있음' : '탈리';
+          if (name === '외관' && input.tagName === 'SELECT' && !input.dataset.oqcAutoOptions) {
+            const good = '이상없음';
+            const bad = '이상있음';
             const old = input.value;
             const value = old === '적합' ? good : old === '부적합' ? bad : old;
             input.replaceChildren();
