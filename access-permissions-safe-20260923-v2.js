@@ -23,7 +23,13 @@ const DEPARTMENT_DEFAULTS={
   '대표':['dashboard']
 };
 const SERVER_PERMISSION_DEFAULTS={
-  qualityGateReleaseDepartments:['품질부']
+  qualityGateReleaseDepartments:['품질부'],
+  approvalReviewDepartments:['품질부'],
+  approvalFinalDepartments:['품질부'],
+  ncrCloseDepartments:['품질부'],
+  inspectionEditDepartments:['품질부'],
+  inventoryAdjustDepartments:['품질부'],
+  documentDeleteDepartments:['품질부']
 };
 let serverPermReady=null;
 function ensureServerPermissionTable(){
