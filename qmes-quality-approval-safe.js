@@ -135,6 +135,23 @@ function hasSeniorApprovalRole(user) {
   return ['부장','이사','상무','전무','대표이사','사장','부사장','회장']
     .some(rank => title === rank || title.includes(rank));
 }
+async function departmentServerPermission(key,user,defaults=['품질부']) {
+  if(!user) return false;
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS qmes_server_permissions(
+      permission_key TEXT PRIMARY KEY,
+      allowed_departments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      updated_by TEXT NOT NULL DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    const q=await pool.query('SELECT allowed_departments FROM qmes_server_permissions WHERE permission_key=$1',[key]);
+    const allowed=q.rowCount&&Array.isArray(q.rows[0].allowed_departments)?q.rows[0].allowed_departments:defaults;
+    return allowed.map(v=>String(v||'').trim()).includes(String(user.department||'').trim());
+  } catch(error) {
+    console.error('[QMES approval server permission]',key,error);
+    return defaults.includes(String(user.department||'').trim());
+  }
+}
 async function notify(userId, title, message, page, approvalId) {
   if (!userId) return;
   await pool.query(
@@ -650,7 +667,7 @@ function install(app) {
       const user=req.session.user||{};
       const profile=await pool.query('SELECT id,name,department,title FROM users WHERE id=$1 LIMIT 1',[user.id]);
       const actor=profile.rows[0];
-      if(!actor||!hasSeniorApprovalRole(actor)) return fail(res,403,'검토는 부장 이상만 가능합니다.');
+      if(!actor||!hasSeniorApprovalRole(actor)||!(await departmentServerPermission('approvalReviewDepartments',actor))) return fail(res,403,'현재 서버 권한 설정상 전자결재 검토 권한이 없습니다.');
       const result=await pool.query(`UPDATE qmes_quality_approvals
         SET status='REVIEWED',reviewer_user_id=$1,reviewer_name=$2,reviewed_at=COALESCE(reviewed_at,NOW()),updated_at=NOW()
         WHERE id=$3
@@ -684,7 +701,7 @@ function install(app) {
       const user=req.session.user||{};
       const profile=await pool.query('SELECT id,name,department,title FROM users WHERE id=$1 LIMIT 1',[user.id]);
       const actor=profile.rows[0];
-      if(!actor||!hasSeniorApprovalRole(actor))return fail(res,403,'최종 승인은 부장 이상만 가능합니다.');
+      if(!actor||!hasSeniorApprovalRole(actor)||!(await departmentServerPermission('approvalFinalDepartments',actor)))return fail(res,403,'현재 서버 권한 설정상 최종 승인 권한이 없습니다.');
       const result=await pool.query(`UPDATE qmes_quality_approvals
         SET status='APPROVED',approver_user_id=$1,approver_name=$2,approved_at=COALESCE(approved_at,NOW()),updated_at=NOW()
         WHERE id=$3
