@@ -36,7 +36,17 @@ function summarizeRows(rows){
 const pending=[],failed=[];
 for(const item of items){const matches=rows.filter(row=>canonical(row.check)===item);
 if(!matches.length){pending.push(item+' 항목 없음');continue;}
-for(const row of matches){const values=rowValues(row),judge=evaluateItem(item,values);if(judge==='불합격')failed.push(item);else if(judge==='대기'){const missing=[0,1,2].filter(i=>String(values[i]??'').trim()==='').map(i=>(i+1)+'차');pending.push(item+' '+missing.join('·')+' 미입력');}}
+for(const row of matches){
+ const values=rowValues(row);
+ const standardRevision=Number.isFinite(Number(row?.standardRevision))?Number(row.standardRevision):0;
+ let judge;
+ if(item==='전해액 안정성'&&standardRevision===0){
+   const legacy=Array.from({length:3},(_,i)=>String(values?.[i]??'').trim());
+   judge=legacy.some(v=>v!==''&&v.replace(/\s/g,'')!=='미탈리')?'불합격':legacy.every(v=>v!==''&&v.replace(/\s/g,'')==='미탈리')?'합격':'대기';
+ }else judge=evaluateItem(item,values);
+ if(judge==='불합격')failed.push(item);
+ else if(judge==='대기'){const missing=[0,1,2].filter(i=>String(values[i]??'').trim()==='').map(i=>(i+1)+'차');pending.push(item+' '+missing.join('·')+' 미입력');}
+}
 }
 if(rows.some(row=>row.inspectionDecision==='불합격'||['불합격','NG','FAIL'].includes(String(row.judge||row.result||'').trim().toUpperCase())))failed.push('저장된 불합격 판정');
 return {overall:failed.length?'불합격':pending.length?'대기':'합격',pending:[...new Set(pending)],failed:[...new Set(failed)]};
