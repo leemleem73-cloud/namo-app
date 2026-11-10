@@ -55,15 +55,21 @@ module.exports.install=function(app,{pool,requireLogin,auditLog}){
  async function save(req,res){
   try{
    const record=normalize(req.body);await schema();
-   const id=req.params.id||randomUUID();let before=null;
-   if(req.params.id){const found=await pool.query('SELECT document FROM qmes_standard_documents WHERE id=$1 AND deleted_at IS NULL',[id]);if(!found.rows.length)return res.status(404).json({success:false,message:'수정할 문서를 찾을 수 없습니다.'});before=found.rows[0].document;}
+   let id=req.params.id||randomUUID();let before=null;let createRevision=false;
+   if(req.params.id){
+    const found=await pool.query('SELECT document FROM qmes_standard_documents WHERE id=$1 AND deleted_at IS NULL',[id]);
+    if(!found.rows.length)return res.status(404).json({success:false,message:'수정할 문서를 찾을 수 없습니다.'});
+    before=found.rows[0].document;
+    createRevision=String(before?.revision||'').trim()!==String(record.revision||'').trim();
+    if(createRevision)id=randomUUID();
+   }
    record.attachments=attachmentList(req.body?.attachments,before?.attachments||[]);
    const duplicate=await pool.query("SELECT id FROM qmes_standard_documents WHERE document->>'documentNo'=$1 AND document->>'revision'=$2 AND id<>$3 AND deleted_at IS NULL",[record.documentNo,record.revision,id]);
    if(duplicate.rows.length)return res.status(409).json({success:false,message:'같은 문서번호와 Rev.가 이미 등록되어 있습니다.'});
-   const saved={...record,id,updatedBy:req.session.user.name||''};
-   if(req.params.id)await pool.query('UPDATE qmes_standard_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1',[id,JSON.stringify(saved)]);
+   const saved={...record,id,updatedBy:req.session.user.name||'',...(createRevision?{previousRevisionId:String(req.params.id),revisionCreatedAt:new Date().toISOString()}: {})};
+   if(req.params.id&&!createRevision)await pool.query('UPDATE qmes_standard_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1',[id,JSON.stringify(saved)]);
    else await pool.query('INSERT INTO qmes_standard_documents(id,document) VALUES($1,$2::jsonb)',[id,JSON.stringify(saved)]);
-   await auditLog(req,req.params.id?'UPDATE':'CREATE','qmes_standard_documents',id,publicDocument(before),publicDocument(saved));
+   await auditLog(req,req.params.id&&!createRevision?'UPDATE':'CREATE','qmes_standard_documents',id,publicDocument(createRevision?null:before),publicDocument(saved));
    try{
     const approval=require('./qmes-quality-approval-safe.js');
     if(typeof approval.ensureGenericApproval==='function'){
@@ -74,7 +80,7 @@ module.exports.install=function(app,{pool,requireLogin,auditLog}){
         page:'standard',
         writerUserId:req.session.user.id||null,
         writerName:req.session.user.name||'작성자',
-        resetExisting:Boolean(req.params.id)
+        resetExisting:Boolean(req.params.id&&!createRevision)
       });
       if(central){
         saved.approvalStatus=central.status;
