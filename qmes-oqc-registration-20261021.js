@@ -156,6 +156,25 @@ function createHandler({ pool, auditLog } = {}) {
         try { await auditLog(req, 'CREATE', 'qmes_sync_records', 'oqc:' + normalized.recordKey, null, payload); }
         catch (error) { console.warn('[OQC registration audit]', error.message); }
       }
+      try {
+        const approval = require('./qmes-quality-approval-safe.js');
+        if (typeof approval.ensureGenericApproval === 'function') {
+          for (const row of payload.rows || []) {
+            const judge = String(row.judge || row.result || '').trim();
+            if (!row.id || !judge || /대기|미검사|미입력/.test(judge)) continue;
+            await approval.ensureGenericApproval({
+              docType:'OQC',
+              recordId:String(row.id),
+              title:'출하검사 성적서 검토·승인 · '+(row.product||normalized.fields.product||'-')+' / LOT '+(row.lot||normalized.fields.lot||'-'),
+              page:'outgoing',
+              writerUserId:user.id||null,
+              writerName:user.name||normalized.fields.inspector||'작성자'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[OQC central approval link]', error);
+      }
       return res.json({ success: true, data: dataFor(normalized.recordKey, payload), created: true, message: '출하검사 저장 완료' });
     } catch (error) {
       if (transaction) await client.query('ROLLBACK').catch(() => {});
