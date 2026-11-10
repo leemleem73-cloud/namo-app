@@ -5,6 +5,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const fmt=v=>v==null?'미확인':Number(v).toLocaleString('ko-KR',{maximumFractionDigits:6});
 const today=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
 let snapshot=null,model={rows:[],warnings:[],unallocated:[]},entries=[],page=1,loading=false,loadedAt='',query='',selected='',epoch=0;
+let receiptOrder='';
 async function request(url,options={}){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
  try{const r=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal,...options});const p=await r.json().catch(()=>null);if(!r.ok||p?.success!==true)throw Error(p?.message||(r.status===401?'로그인이 필요합니다.':'조회 또는 저장에 실패했습니다.'));return p.data;}
@@ -66,21 +67,45 @@ function pagerMarkup(current,total){
  const button=(target,label,disabled=false)=>'<button type="button" data-ms-page="'+target+'"'+(disabled?' disabled':'')+'>'+label+'</button>';
  return '<nav class="ms-pager" aria-label="재고관리 페이지">'+button(Math.max(1,current-1),'‹',current===1)+Array.from({length:total},(_,i)=>'<button type="button" data-ms-page="'+(i+1)+'" class="'+(current===i+1?'primary':'')+'"'+(current===i+1?' aria-current="page"':'')+'>'+(i+1)+'</button>').join('')+button(Math.min(total,current+1),'›',current===total)+'</nav>';
 }
+function lastReceiptDate(row){
+ return (row.receipts||[]).map(receipt=>receipt.date).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)).sort().at(-1)||'';
+}
+function sortedByReceipt(rows,direction){
+ return [...rows].sort((a,b)=>{
+  const first=lastReceiptDate(a),second=lastReceiptDate(b);
+  if(!first||!second)return Number(!first)-Number(!second);
+  return direction==='newest'?second.localeCompare(first):first.localeCompare(second);
+ });
+}
+function quickSortMarkup(){
+ const sort=stockGrid?.sort;
+ const active=receiptOrder||(sort?.id==='material'?'name-'+sort.direction:'');
+ return '<label style="display:inline-flex;align-items:center;gap:5px;margin-right:8px">정렬 <select data-ms-sort aria-label="원료 재고 정렬">'+
+ [['','기본 정렬'],['name-asc','원료명 오름차순 ↑'],['name-desc','원료명 내림차순 ↓'],['newest','최근 입고순 ↓'],['oldest','오래된 입고순 ↑']]
+ .map(([value,label])=>'<option value="'+value+'"'+(value===active?' selected':'')+'>'+label+'</option>').join('')+'</select></label>';
+}
 function paint(){
  window.qmesStockGrid?.capture(root);
- const searched=model.rows.filter(r=>!query||[r.material,r.lot,r.supplier,core.warehouseInfo(r).code].join(' ').toLowerCase().includes(query.toLowerCase())),matches=stockGrid?.apply(searched)||searched,pages=Math.max(1,Math.ceil(matches.length/10));page=Math.min(page,pages);
+ const searched=model.rows.filter(r=>!query||[r.material,r.lot,r.supplier,core.warehouseInfo(r).code].join(' ').toLowerCase().includes(query.toLowerCase())),filtered=stockGrid?.apply(searched)||searched,matches=receiptOrder?sortedByReceipt(filtered,receiptOrder):filtered,pages=Math.max(1,Math.ceil(matches.length/10));page=Math.min(page,pages);
  root.innerHTML='<div class="ms-shell"><header class="ms-head"><strong>재고관리</strong><div><button type="button" data-ms="refresh" '+(loading?'disabled':'')+'>새로고침</button><button type="button" class="primary" data-ms="new" '+(loading||!snapshot?'disabled':'')+'>+ 재검사·샘플 / 재고 기록</button></div></header>'+
  '<div class="ms-policy">수입검사 입고와 생산 투입·재검사·샘플 사용 기록을 반영한 재고입니다.<br><b>과거 재검사·샘플 사용량을 확인해 주세요.</b> 미확인 사용 기록은 수량을 확인한 뒤 재고에 반영합니다.</div>'+
  (model.warnings.length?'<div class="ms-error" role="alert">일부 자료 조회 실패 · 입고·사용 연결 정보를 확인해주세요.<br>'+model.warnings.map(esc).join('<br>')+'</div>':'')+
  '<div class="ms-toolbar"><label>원료 / LOT / 공급업체 / 창고 <input data-ms-search value="'+esc(query)+'" placeholder="전체"></label><span>'+ (loading?'연결된 입고·투입 자료 조회 중':esc(loadedAt))+'</span></div>'+
  '<div class="ms-totals"><span>LOT <b>'+matches.length+'</b>건</span><span>재고 <b>'+fmt(matches.reduce((s,r)=>s+r.balance,0))+'</b> kg</span><span>수량 미확인 기록 <b>'+entries.filter(e=>e.status==='pending').length+'</b>건</span><span>입고·투입 연결 확인 <b>'+model.unallocated.length+'</b>건</span></div>'+
- (stockGrid?.tools()||'')+stockTableMarkup(matches)+
+ (stockGrid?.tools().replace('<button type="button" data-sg-clear>',()=>quickSortMarkup()+'<button type="button" data-sg-clear>')||quickSortMarkup())+stockTableMarkup(matches)+
  pagerMarkup(page,pages)+
  '<p class="ms-foot">단위 kg · 계획량은 차감하지 않습니다. 품질보류·검사대기·불합격 및 연결 확인 사항은 확인 상태에서 확인하세요. 기초재고를 등록하면 기준일 시작 시점부터 계산합니다.</p>'+
  '<details class="ms-unallocated"><summary>원료·LOT·공급업체 연결 점검</summary>'+'<div class="ms-table-wrap"><table class="ms-table ms-audit-table"><colgroup><col style="width:10%"><col style="width:12%"><col style="width:13%"><col style="width:13%"><col style="width:12%"><col style="width:10%"><col style="width:13%"><col style="width:17%"></colgroup><thead><tr>'+['수입검사 원본','원본 원료명','원본 LOT','원본 공급업체','표시 원료명','표시 LOT','연결 공급업체','연결 근거/확인 내용'].map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+model.rows.flatMap(r=>r.receipts.flatMap(e=>(e.originals||[]).map(o=>'<tr>'+[o.id,o.material,o.lot,o.supplier,r.material,r.lot,r.supplier||'미확인',[...r.issues,...(r.notices||[])].join(' · ')||'원본 일치'].map(value=>'<td>'+esc(value)+'</td>').join('')+'</tr>'))).join('')+'</tbody></table></div></details>'+
  (model.unallocated.length?'<details class="ms-unallocated"><summary>연결 확인이 필요한 기록 '+model.unallocated.length+'건</summary>'+model.unallocated.map(e=>'<p>'+esc([e.source,e.id,e.material,e.lot,e.note].filter(Boolean).join(' · '))+'</p>').join('')+'</details>':'')+'</div>';
  root.querySelector('[data-ms-search]').addEventListener('keydown',event=>{if(event.key==='Enter'){query=event.target.value.trim();page=1;paint();}});
- if(stockGrid)window.qmesStockGrid.mount(root,{grid:stockGrid,kind:'raw',rows:model.rows,tableSelector:'.ms-stock-table',onChange:()=>{page=1;paint();},onSave:saveGridMovement,onSaved:async()=>{window.toast?.('재고 기록을 저장했습니다.');await load();}});
+ const sortSelect=root.querySelector('[data-ms-sort]');
+ sortSelect.onchange=()=>{
+  const value=sortSelect.value;
+  receiptOrder=['newest','oldest'].includes(value)?value:'';
+  stockGrid?.setSort('material',value.startsWith('name-')?value.slice(5):null);
+  page=1;paint();root.querySelector('[data-ms-sort]')?.focus();
+ };
+ if(stockGrid)window.qmesStockGrid.mount(root,{grid:stockGrid,kind:'raw',rows:model.rows,tableSelector:'.ms-stock-table',onChange:()=>{if(stockGrid.sort)receiptOrder='';page=1;paint();},onSave:saveGridMovement,onSaved:async()=>{window.toast?.('재고 기록을 저장했습니다.');await load();}});
 }
 function sourceInfo(event){
  if(event.source==='수입검사')return {title:'수입검사 · '+(event.date||'입고일 미확인'),detail:'입고량 '+(event.qty==null?'미확인':fmt(event.qty/1e6)+' kg')+' · 검사 '+(event.judge||'대기')+(event.note?' · '+event.note:'')};
@@ -100,7 +125,7 @@ function ledgerSections(row){
  const uses=row.ledger.map((event,index)=>({event,index})).filter(({event})=>['작업지시','작업실적'].includes(event.source));
  const head=(title,count,total)=>'<div class="ms-ledger-section-head"><h4>'+title+'</h4><span class="ms-ledger-total">'+count+'건 · 합계 '+fmt(total)+' kg</span></div>';
  const table=(widths,headers,body,empty)=>'<div class="ms-table-wrap"><table class="ms-table ms-ledger-table"><colgroup>'+widths.map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+headers.length+'">'+empty+'</td></tr>')+'</tbody></table></div>';
- const receiptRows=receipts.map(({event:e,index})=>{const original=snapshot?.iqc.find(r=>String(r.id)===String(e.id));return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(row.material)+'</td><td>'+esc(row.lot)+'</td><td>'+esc(row.supplier||'미확인')+'</td><td>'+fmt(e.qty==null?null:e.qty/1e6)+'</td><td>'+esc(e.judge||'대기')+'</td><td>'+esc(original?.inspector||'—')+'</td><td class="ms-source-cell">수입검사'+(e.note?'<small>'+esc(e.note)+'</small>':'')+'</td></tr>';}).join('');
+ const receiptRows=receipts.map(({event:e,index})=>{const original=snapshot?.iqc.find(r=>String(r.id)===String(e.id));const weights=e.qty==null?(e.originals||[]).map(r=>core.number(r.quantity)).filter(n=>n>0).map(fmt):[];return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(row.material)+'</td><td>'+esc(row.lot)+'</td><td>'+esc(row.supplier||'미확인')+'</td><td>'+fmt(e.qty==null?null:e.qty/1e6)+'</td><td>'+esc(e.judge||'대기')+'</td><td>'+esc(original?.inspector||'—')+'</td><td class="ms-source-cell">수입검사'+(e.note?'<small>'+esc(e.note)+'</small>':'')+(weights.length?'<small>원본 입고 중량 '+weights.map(esc).join(' / ')+' kg</small>':'')+'</td></tr>';}).join('');
  const useRows=uses.map(({event:e,index})=>{const {order,material}=usageOrder(e,row),fields=order?.fields||{},plan=core.number(material?.plan),documentNo=fields['작업지시번호']||e.documentNo;return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td class="ms-source-cell">'+esc(documentNo||'작업실적')+(e.source==='작업실적'?'<small>저장된 작업실적 기준</small>':'')+'</td><td>'+esc(fields['제품명']||e.product||'미확인')+'</td><td>'+esc(e.output||'미입력')+'</td><td>'+fmt(plan)+'</td><td>'+fmt(e.qty==null?null:e.qty/1e6)+'</td><td>'+esc(fields['작업자']||'—')+'</td><td>'+esc(fields['진행상태']||'미확인')+'</td></tr>';}).join('');
  const journal=row.ledger.map(e=>{const info=sourceInfo(e);return '<tr><td>'+esc(e.date||'일자 미확인')+'</td><td>'+esc(e.kind)+'</td><td>'+(e.delta==null?'미확인':e.delta>0?fmt(e.delta/1e6):'—')+'</td><td>'+(e.delta==null?'미확인':e.delta<0?fmt(-e.delta/1e6):'—')+'</td><td class="ms-source-cell">'+esc(info.title)+'<small>'+esc(info.detail)+'</small></td></tr>';}).join('');
  return '<section class="ms-ledger-section" data-ledger-section="journal"><h3>입고·사용 기록</h3>'+table([13,13,15,15,44],['일자','구분','입고·증가(kg)','사용·차감(kg)','입고·사용 근거'],journal,'표시할 입고·사용 기록이 없습니다.')+'</section><section class="ms-ledger-section ms-usage-summary"><h3>사용 내역</h3><p class="ms-ledger-note">수입검사 입고 내용과 작업지시서 생산 투입 내용을 아래에서 바로 확인할 수 있습니다.</p><section class="ms-ledger-section" data-ledger-section="receipts">'+head('입고 내역 · 수입검사',receipts.length,row.incoming)+table([10,13,14,16,11,9,11,16],['입고일','원료명','원료 LOT','공급업체','입고량(kg)','검사 판정','검사자','입고 근거'],receiptRows,'연결된 수입검사 입고 내역이 없습니다.')+'</section>'+
@@ -200,7 +225,8 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
-function clearAccount(){window.qmesStockGrid?.clear(root);stockGrid?.resetAccount();epoch++;loading=false;snapshot=null;loadedAt='';query='';page=1;model={rows:[],warnings:[],unallocated:[]};entries=[];document.querySelectorAll('.ms-dialog').forEach(dialog=>dialog.close());paint();}
+root.addEventListener('click',event=>{if(event.target.closest('[data-sg-clear]'))receiptOrder='';},true);
+function clearAccount(){receiptOrder='';window.qmesStockGrid?.clear(root);stockGrid?.resetAccount();epoch++;loading=false;snapshot=null;loadedAt='';query='';page=1;model={rows:[],warnings:[],unallocated:[]};entries=[];document.querySelectorAll('.ms-dialog').forEach(dialog=>dialog.close());paint();}
 window.addEventListener('qmes-authenticated',()=>{clearAccount();if(pageRoot.classList.contains('active'))load();});
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-auth="logout"]'))clearAccount();},true);
  const style=document.createElement('style');style.textContent=`
