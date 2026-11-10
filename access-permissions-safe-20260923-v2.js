@@ -37,9 +37,10 @@ function ensureServerPermissionTable(){
     serverPermReady=pool.query(`CREATE TABLE IF NOT EXISTS qmes_server_permissions(
       permission_key TEXT PRIMARY KEY,
       allowed_departments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb,
       updated_by TEXT NOT NULL DEFAULT '',
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`).catch(error=>{serverPermReady=null;throw error;});
+    )`).then(()=>pool.query("ALTER TABLE qmes_server_permissions ADD COLUMN IF NOT EXISTS allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb")).catch(error=>{serverPermReady=null;throw error;});
   }
   return serverPermReady;
 }
@@ -47,13 +48,16 @@ function sanitizeDepartments(value){
   const allowed=new Set(['대표','관리부','경영지원부','연구소','생산부','영업부','품질부']);
   return [...new Set((Array.isArray(value)?value:[]).map(v=>String(v||'').trim()).filter(v=>allowed.has(v)))];
 }
+function sanitizeUsers(value){
+  return [...new Set((Array.isArray(value)?value:[]).map(v=>String(v||'').trim()).filter(Boolean))];
+}
 async function readServerPermissions(){
   await ensureServerPermissionTable();
-  const result=await pool.query('SELECT permission_key,allowed_departments,updated_by,updated_at FROM qmes_server_permissions');
+  const result=await pool.query('SELECT permission_key,allowed_departments,allowed_users,updated_by,updated_at FROM qmes_server_permissions');
   const map={};
-  for(const row of result.rows)map[row.permission_key]={allowedDepartments:sanitizeDepartments(row.allowed_departments),updatedBy:row.updated_by||'',updatedAt:row.updated_at||null};
+  for(const row of result.rows)map[row.permission_key]={allowedDepartments:sanitizeDepartments(row.allowed_departments),allowedUsers:sanitizeUsers(row.allowed_users),updatedBy:row.updated_by||'',updatedAt:row.updated_at||null};
   for(const [key,defaults] of Object.entries(SERVER_PERMISSION_DEFAULTS)){
-    if(!map[key])map[key]={allowedDepartments:[...defaults],updatedBy:'SYSTEM DEFAULT',updatedAt:null};
+    if(!map[key])map[key]={allowedDepartments:[...defaults],allowedUsers:[],updatedBy:'SYSTEM DEFAULT',updatedAt:null};
   }
   return map;
 }
@@ -174,13 +178,14 @@ function install(app){
       const key=String(req.params.key||'').trim();
       if(!Object.prototype.hasOwnProperty.call(SERVER_PERMISSION_DEFAULTS,key))return fail(res,400,'지원하지 않는 서버 권한입니다.');
       const allowedDepartments=sanitizeDepartments(req.body?.allowedDepartments);
-      if(!allowedDepartments.length)return fail(res,400,'최소 1개 부서를 선택하세요.');
+      const allowedUsers=sanitizeUsers(req.body?.allowedUsers);
+      if(!allowedDepartments.length&&!allowedUsers.length)return fail(res,400,'최소 1개 부서 또는 직원을 선택하세요.');
       await ensureServerPermissionTable();
       const actorName=String(req.session?.user?.name||req.session?.user?.id||'관리자');
-      await pool.query(`INSERT INTO qmes_server_permissions(permission_key,allowed_departments,updated_by,updated_at)
-        VALUES($1,$2::jsonb,$3,NOW())
-        ON CONFLICT(permission_key) DO UPDATE SET allowed_departments=EXCLUDED.allowed_departments,updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
-        [key,JSON.stringify(allowedDepartments),actorName]);
+      await pool.query(`INSERT INTO qmes_server_permissions(permission_key,allowed_departments,allowed_users,updated_by,updated_at)
+        VALUES($1,$2::jsonb,$3::jsonb,$4,NOW())
+        ON CONFLICT(permission_key) DO UPDATE SET allowed_departments=EXCLUDED.allowed_departments,allowed_users=EXCLUDED.allowed_users,updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
+        [key,JSON.stringify(allowedDepartments),JSON.stringify(allowedUsers),actorName]);
       return ok(res,(await readServerPermissions())[key],'서버 권한이 저장되었습니다.');
     }catch(error){console.error('[QMES server permissions] save',error);return fail(res,500,'서버 권한 저장에 실패했습니다.');}
   });
