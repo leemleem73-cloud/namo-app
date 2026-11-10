@@ -88,8 +88,35 @@ function install(app) {
           updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
         [key,JSON.stringify({rows:[record]}),String(req.session.user.name||req.session.user.email||'')]);
 
-      // 완료된 공정검사만 전자결재에 자동 등록한다. 자동발행 '대기' 건은 제외.
-      if (record.inspector && record.judge && !/대기|미검사|미입력/.test(record.judge)) {
+      // PQC 불합격은 일반 결재가 아니라 즉시 NCR로 전환한다.
+      let ncr=null;
+      if(record.judge==='불합격'){
+        try{
+          const ncrModule=require('./qmes-ncr-safe-20261020.js');
+          if(typeof ncrModule.autoCreateNcr==='function'){
+            ncr=await ncrModule.autoCreateNcr({
+              source:'PQC',
+              occurred_on:record.date,
+              lot:record.lot,
+              product:record.product,
+              description:'PQC 공정검사 불합격 자동 발생',
+              containment:'해당 생산 LOT 공정 차단 및 NCR 조치 완료 전 후속 공정 진행 금지',
+              owner:req.session.user.name||record.inspector||'',
+              created_by:req.session.user.name||record.inspector||'QMES 자동생성',
+              created_by_id:req.session.user.id||'SYSTEM',
+              inspection_record_id:'PQC:'+record.id,
+              details:{
+                process:'공정검사',
+                work_order:record.workOrderNo,
+                actual_result:'불합격',
+                reporter:req.session.user.name||record.inspector||''
+              }
+            });
+          }
+        }catch(ncrError){
+          console.error('PQC NCR auto-create failed',ncrError);
+        }
+      }else if (record.inspector && record.judge && !/대기|미검사|미입력/.test(record.judge)) {
         try {
           const approval = require('./qmes-quality-approval-safe.js');
           if (typeof approval.ensurePqcApprovalForSyncRecord === 'function') {
@@ -106,7 +133,7 @@ function install(app) {
         }
       }
 
-      return res.json({success:true,data:record});
+      return res.json({success:true,data:record,ncr:ncr?{id:ncr.id,nc_no:ncr.nc_no||'',lot:ncr.lot||record.lot}:null});
     }catch(error){console.error('PQC detail save failed',error);
       return res.status(500).json({success:false,message:'공정검사 저장에 실패했습니다.'});}
   });
