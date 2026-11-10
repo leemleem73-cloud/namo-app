@@ -3261,8 +3261,8 @@ function outgoingStepMarkup(step){
       <div>${[1,2,3].map(n=>`<div class="overflow-row" data-row="${n}"><span class="round-label">${n}회</span><button class="overflow-btn" type="button">Overflow</button><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}</div>`;
   }
   if(step===8){
-    return `<div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">탈리 / 미탈리</span></div><div class="process-device">육안</div></div>
-      <div class="outgoing-choice-grid">${[1,2,3].map(n=>`<div class="outgoing-choice-row" data-row="${n}"><span class="round-label">${n}회</span><button class="outgoing-choice" type="button" data-value="미탈리">미탈리</button><button class="outgoing-choice" type="button" data-value="탈리">탈리</button></div>`).join('')}</div>`;
+    return `<div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">두께 측정</div></div>
+      <div class="measure-grid">${measure3('팽창률 (%)')}</div>`;
   }
   const data={
     2:{title:'입도(Dmax)',spec:'<10 μm',device:'입도분석기'},
@@ -6146,7 +6146,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
       ['고형분','20.0±1.0 wt%','Drying Oven','20.0','20.1','20.2','합격'],
       ['접착력','≥400 gf/12.7mm','인장시험기','435','428','441','합격'],
       ['절연저항','≥200 MΩ (Overflow)','절연저항계','Overflow','Overflow','Overflow','합격'],
-      ['전해액 안정성','미탈리','육안','미탈리','미탈리','미탈리','합격']
+      ['전해액 안정성','팽창률 < 150%','두께 측정','120','118','121','합격']
     ]
   };
   // PQC report reads the measurements saved in the detail/edit screen, not demo figures.
@@ -7427,7 +7427,7 @@ function standardInspectionRows(type){
       ['고형분','20.0±1.0 wt%','Drying Oven','num'],
       ['접착력','≥400 gf/12.7mm','인장시험기','num'],
       ['절연저항','≥200 MΩ (Overflow)','절연저항계','num'],
-      ['전해액 안정성','미탈리','육안','qual']
+      ['전해액 안정성','팽창률 < 150%','두께 측정','num']
     ]
   }[type]||[];
   return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
@@ -7983,7 +7983,7 @@ function renderOutgoingJudgePanel(item){
   const wrap=document.getElementById('outgoingJudgeField');
   if(!wrap) return;
   const overflowRows=[1,2,3].map(n=>`<div class="overflow-row"><div class="overflow-no">${n}회</div><button class="judge-btn selected" type="button">Overflow</button><input type="text" placeholder="측정값"></div>`).join('');
-  const stabilityRows=[1,2,3].map(n=>`<div class="overflow-row"><div class="overflow-no">${n}회</div><button class="judge-btn selected" type="button">미탈리</button><button class="judge-btn" type="button">탈리</button></div>`).join('');
+  const stabilityRows=[1,2,3].map(n=>`<div class="overflow-row"><div class="overflow-no">${n}회</div><input class="std-measure" type="number" min="0" step="0.1" placeholder="팽창률 (%)"></div>`).join('');
   const measure3=(label)=>`${[1,2,3].map(n=>`<div class="measure-item"><label>${n}회 ${label}</label><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}`;
   const map={
     '외관':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>외관</b><span class="spec">이물질 혼입 없을 것</span></div><div class="process-device">육안</div></div><div class="process-judge"><button class="judge-btn" type="button">이상없음</button><button class="judge-btn" type="button">이상있음</button></div></div>`,
@@ -7993,7 +7993,7 @@ function renderOutgoingJudgePanel(item){
     '고형분':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>고형분</b><span class="spec">20.0±1.0 wt%</span></div><div class="process-device">Drying Oven</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
     '접착력':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>접착력</b><span class="spec">≥400 gf/12.7mm</span></div><div class="process-device">인장시험기</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
     '절연저항':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>절연저항</b><span class="spec">≥200 MΩ (Overflow)</span></div><div class="process-device">절연저항계</div></div><div class="process-judge process-judge-top"><button class="judge-btn" type="button">3회 모두 Overflow</button></div><div class="overflow-grid">${overflowRows}</div></div>`,
-    '전해액 안정성':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">탈리 / 미탈리</span></div><div class="process-device">육안</div></div><div class="overflow-grid">${stabilityRows}</div></div>`,
+    '전해액 안정성':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">두께 측정</div></div><div class="overflow-grid">${stabilityRows}</div></div>`,
     'COA 확인':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>COA 확인</b><span class="spec">COA 문서 확인</span></div><div class="process-device">문서확인</div></div><div class="process-judge"><button class="judge-btn" type="button">확인완료</button><button class="judge-btn" type="button">미확인</button></div></div>`
   };
   wrap.innerHTML=`${map[item]||''}`;

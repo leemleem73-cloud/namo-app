@@ -19,7 +19,7 @@ case '수분율':return n!==null&&n>=0&&n<2000;
 case '고형분':return n!==null&&n>=19&&n<=21;
 case '접착력':return n!==null&&n>=400;
 case '절연저항':return /^overflow$/i.test(text)||(n!==null&&n>=200);
-case '전해액 안정성':return text.replace(/\s/g,'')==='미탈리';
+case '전해액 안정성':{const n=Number(text.replace(/%/g,'').trim());return Number.isFinite(n)&&n<150;}
 default:return false;
 }}
 function evaluateItem(item,measurements){
