@@ -267,6 +267,56 @@
       return true;
     }catch(_error){return false;}
   }
+
+  async function hydrateActualShipmentsFromShared(){
+    const db=getDb();
+    if(!db)return false;
+    try{
+      const response=await fetch('/api/qmes-sync/'+SYNC_TYPE+'?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+      if(!response.ok)return false;
+      const result=await response.json();
+      const records=Array.isArray(result?.data)?result.data:[];
+      const shared=records.find(record=>text(record?.record_key)===SHIPPING_RECORD_KEY);
+      let payload=shared?.payload||{};
+      if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch(_error){payload={}}}
+      const rows=Array.isArray(payload?.rows)?payload.rows:[];
+      if(!rows.length)return false;
+      writeShippingLocal(rows);
+      db.lots=db.lots&&typeof db.lots==='object'?db.lots:{};
+      let changed=false;
+      rows.forEach(row=>{
+        const lot=exactLot(row?.lot);
+        if(!lot)return;
+        const delivery=text(row?.delivery||row?.status);
+        if(!/출하완료|납품완료|배송완료|출고완료/.test(delivery))return;
+        const lotRow=db.lots[lot];
+        if(!lotRow)return;
+        if(actualShipment(lotRow.ship))return;
+        const shipDate=isoDate(row?.date||row?.shipDate);
+        const qty=number(row?.shipQty??row?.qty);
+        lotRow.ship={
+          shipNo:text(row?.shipNo||row?.no),
+          no:text(row?.shipNo||row?.no),
+          customer:text(row?.customer),
+          qty,shipQty:qty,
+          shipDate,date:shipDate,
+          source:"SHIPPING_MODULE",actualShipment:true,
+          confirmedAt:text(row?.confirmedAt),
+          confirmedBy:text(row?.confirmedBy)
+        };
+        lotRow.stage="출하";
+        lotRow.status="출하완료";
+        const batch=(Array.isArray(db.batches)?db.batches:[]).find(item=>exactLot(item?.no)===lot);
+        if(batch){batch.status="출하완료";batch.ship=lotRow.ship;}
+        changed=true;
+      });
+      if(changed)persistDb();
+      return changed;
+    }catch(error){
+      console.warn("[QMES] shared shipping hydrate failed",error);
+      return false;
+    }
+  }
   function scheduleSharedShipping(rows){
     if(sharedTimer)clearTimeout(sharedTimer);
     sharedTimer=setTimeout(async()=>{
@@ -406,11 +456,13 @@
     attempts+=1;
     if(getDb()){
       clearInterval(boot);
-      reconcile();
-      decorateShippingUi();
-      setInterval(()=>{reconcile();decorateShippingUi();},2000);
+      hydrateActualShipmentsFromShared().finally(()=>{
+        reconcile();
+        decorateShippingUi();
+        setInterval(()=>{reconcile();decorateShippingUi();},2000);
+      });
     }else if(attempts>=100)clearInterval(boot);
   },100);
 
-  window.qmesLotQualityLinkage={reconcile,confirmActualShipment,inspectionState};
+  window.qmesLotQualityLinkage={reconcile,confirmActualShipment,inspectionState,hydrateActualShipmentsFromShared};
 })();
