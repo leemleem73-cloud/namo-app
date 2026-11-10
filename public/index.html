@@ -4953,14 +4953,28 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
             const pp=await rr.json();
             if(!rr.ok||!pp.success)throw new Error(pp.message||'검토 실패');
             toast('검토가 완료되어 승인대기로 전환됐습니다.');
-            const tr=reviewBtn.closest('tr');
-            if(tr){
-              const cells=tr.querySelectorAll('td');
-              if(cells[6]) cells[6].innerHTML='<span class="badge b-yellow">승인대기</span>';
-              if(cells[8]) cells[8].textContent='검토완료 · 최종 승인대기';
+            const approvalId=String(reviewBtn.dataset.approvalId||'');
+            const target=rows.find(item=>String(item.id)===approvalId);
+            if(target){
+              Object.assign(target,pp.data||{});
+              target.status='REVIEWED';
+              target.reviewed_at=pp.data?.reviewed_at||target.reviewed_at||new Date().toISOString();
+              target.reviewer_name=pp.data?.reviewer_name||target.reviewer_name||String(window.__QMES_CURRENT_USER__?.name||'');
+              render();
+            }else{
+              const tr=reviewBtn.closest('tr');
+              if(tr){
+                const cells=tr.querySelectorAll('td');
+                if(cells[6]) cells[6].innerHTML='<span class="badge b-yellow">승인대기</span>';
+                if(cells[7]){
+                  const name=pp.data?.approver_name||pp.data?.reviewer_name||String(window.__QMES_CURRENT_USER__?.name||'');
+                  cells[7].innerHTML=(name||'-')+' <button class="btn primary quality-approve-btn" type="button" data-approval-id="'+approvalId+'">최종 승인</button>';
+                }
+                if(cells[8]) cells[8].textContent='검토완료 · 최종 승인대기';
+              }
             }
-            await loadQualityApprovals(section);
-            await loadQualityNotifications();
+            loadQualityNotifications().catch(()=>{});
+            setTimeout(()=>loadQualityApprovals(section).catch(()=>{}),150);
           }catch(err){toast(err.message||'검토에 실패했습니다.');reviewBtn.disabled=false;}
           return;
         }
@@ -4972,16 +4986,26 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
             const pp=await rr.json();
             if(!rr.ok||!pp.success) throw new Error(pp.message||'승인 실패');
             toast('최종 승인이 완료되었습니다.');
-            const tr=approveBtn.closest('tr');
-            if(tr){
-              const cells=tr.querySelectorAll('td');
-              if(cells[6]) cells[6].innerHTML='<span class="badge b-green">승인완료</span>';
-              if(cells[7]) cells[7].textContent=pp.data?.approver_name||cells[7].textContent.replace('최종 승인','').trim()||'-';
-              if(cells[8]) cells[8].textContent='최종 승인완료';
-              approveBtn.remove();
+            const approvalId=String(approveBtn.dataset.approvalId||'');
+            const target=rows.find(item=>String(item.id)===approvalId);
+            if(target){
+              Object.assign(target,pp.data||{});
+              target.status='APPROVED';
+              target.approved_at=pp.data?.approved_at||target.approved_at||new Date().toISOString();
+              target.approver_name=pp.data?.approver_name||target.approver_name||String(window.__QMES_CURRENT_USER__?.name||'');
+              render();
+            }else{
+              const tr=approveBtn.closest('tr');
+              if(tr){
+                const cells=tr.querySelectorAll('td');
+                if(cells[6]) cells[6].innerHTML='<span class="badge b-green">승인완료</span>';
+                if(cells[7]) cells[7].textContent=pp.data?.approver_name||String(window.__QMES_CURRENT_USER__?.name||'')||'-';
+                if(cells[8]) cells[8].textContent='최종 승인완료';
+                approveBtn.remove();
+              }
             }
-            await loadQualityApprovals(section);
-            await loadQualityNotifications();
+            loadQualityNotifications().catch(()=>{});
+            setTimeout(()=>loadQualityApprovals(section).catch(()=>{}),150);
           }catch(err){toast(err.message||'검토·승인에 실패했습니다.');approveBtn.disabled=false;}
           return;
         }
