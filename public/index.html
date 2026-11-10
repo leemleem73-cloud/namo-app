@@ -2515,6 +2515,9 @@ html body #mainWorkspace .work-form .nwp-range-value,
 html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea){font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif!important;font-style:normal!important;font-variant-numeric:lining-nums tabular-nums!important;letter-spacing:0!important}
 </style>
 
+<style id="pqc-approval-state-20261110">
+html body #process .inspection-premium .ip-table td.pqc-list-remarks>.pqc-approval-state{width:max-content;max-width:90%;font-size:10px;line-height:18px;padding:0 7px}
+</style>
 <style id="pqc-visible-remarks-20261105">html body #process .inspection-premium .ip-table td.pqc-list-remarks{padding:0!important;text-align:center!important;vertical-align:middle!important}html body #process .inspection-premium .ip-table .pqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;gap:0!important;min-height:32px;width:100%}html body #process .inspection-premium .ip-table .pqc-remarks-edit{align-self:center;justify-self:center;margin:4px!important}html body #process .inspection-premium .ip-table .pqc-remarks-text{display:flex;align-items:center;justify-content:center;border-left:1px solid #d5dce5;padding:4px 8px;min-width:0;white-space:pre-wrap!important;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5;text-align:center}</style>
 <style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
@@ -5563,6 +5566,45 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       tbody.querySelectorAll('.oqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)showRowDetail('outgoing',tr);}));
     }
     section._inspectionRowsLoaded=displayRows.length;
+
+    // PQC list approval state must come from the electronic-approval DB for the exact
+    // completed inspection record. Auto-issued pending rows are not approval documents.
+    if(id==='process'){
+      const judgeColumn=pageInfo.process[2].indexOf('검사합부')+1;
+      const syncPqcApprovalState=async tr=>{
+        const recordId=String(tr?.dataset?.sourceId||'').trim();
+        const judge=String(tr?.cells?.[judgeColumn]?.textContent||'').trim();
+        const cell=tr?.querySelector('.pqc-list-remarks');
+        if(!cell)return;
+        cell.querySelector('.pqc-approval-state')?.remove();
+        if(!recordId||judge==='대기'||!judge)return;
+        const badge=document.createElement('span');
+        badge.className='badge b-yellow pqc-approval-state';
+        badge.textContent='결재조회중';
+        badge.style.cssText='display:inline-flex;margin:3px auto 2px;justify-content:center';
+        cell.prepend(badge);
+        try{
+          const res=await fetch('/api/qmes-quality/approvals/record?docType=IPQC&recordId='+encodeURIComponent(recordId)+'&ts='+Date.now(),{credentials:'same-origin',cache:'no-store'});
+          const json=await res.json();
+          if(!res.ok||!json.success)throw new Error(json.message||'결재 조회 실패');
+          const approval=json.data;
+          if(!approval){
+            badge.textContent='결재 미등록';
+            badge.className='badge b-yellow pqc-approval-state';
+            return;
+          }
+          const state=approval.status==='APPROVED'?'승인완료':approval.status==='REVIEWED'?'승인대기':approval.status==='PENDING'?'검토대기':'결재대기';
+          badge.textContent=state;
+          badge.className='badge '+(state==='승인완료'?'b-green':'b-yellow')+' pqc-approval-state';
+        }catch(error){
+          badge.textContent='결재 확인 필요';
+          badge.className='badge b-yellow pqc-approval-state';
+          console.warn('[PQC list approval state]',recordId,error);
+        }
+      };
+      tbody.querySelectorAll('tr.data-row').forEach(tr=>syncPqcApprovalState(tr));
+    }
+
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
     const total=section.querySelector('[data-iqc-metric="total"] .v');if(total)total.textContent=displayRows.length;
     if(id==='process'){
