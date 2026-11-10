@@ -118,8 +118,14 @@ async function updateSourceSignatures(docType, recordId, writer, approver, appro
 async function signQualityStage(docType, recordId, field, actor, action) {
   const table={IQC:'iqc',IPQC:'pqc',OQC:'oqc'}[String(docType||'').toUpperCase()];
   if(!table||!recordId||!['sign_reviewer','sign_approver'].includes(field)) return;
-  await pool.query(`UPDATE ${table} SET ${field}=$1::jsonb WHERE id::text=$2`,
-    [signature(actor,action),String(recordId)]);
+  try {
+    await pool.query(`UPDATE ${table} SET ${field}=$1::jsonb WHERE id::text=$2`,
+      [signature(actor,action),String(recordId)]);
+  } catch (error) {
+    // Approval state is authoritative. A legacy/source-table signature sync failure
+    // must not make a successful review/approval look failed to the user.
+    console.error('[QMES quality approval source stage sync]', {docType,recordId,field,error:error?.message||error});
+  }
 }
 function hasSeniorApprovalRole(user) {
   const title = String(user?.title || '').replace(/\s+/g, '').trim();
@@ -478,7 +484,13 @@ function install(app) {
       }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_reviewer',actor,'검토');
-      if(approval.approver_user_id)await notify(approval.approver_user_id,'최종 승인대기',approval.title+' 최종 승인을 요청합니다.',approval.page,approval.id);
+      if(approval.approver_user_id){
+        try {
+          await notify(approval.approver_user_id,'최종 승인대기',approval.title+' 최종 승인을 요청합니다.',approval.page,approval.id);
+        } catch (error) {
+          console.error('[QMES review notification]', error);
+        }
+      }
       return ok(res,approval,'검토가 완료되어 승인대기로 변경됐습니다.');
     }catch(e){console.error('[QMES review]',e);return fail(res,500,'검토 처리에 실패했습니다.');}
   });
@@ -505,7 +517,13 @@ function install(app) {
       }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_approver',actor,'승인');
-      if(approval.writer_user_id)await notify(approval.writer_user_id,'최종 승인완료',approval.title+' 최종 승인이 완료됐습니다.',approval.page,approval.id);
+      if(approval.writer_user_id){
+        try {
+          await notify(approval.writer_user_id,'최종 승인완료',approval.title+' 최종 승인이 완료됐습니다.',approval.page,approval.id);
+        } catch (error) {
+          console.error('[QMES approve notification]', error);
+        }
+      }
       return ok(res,approval,'최종 승인이 완료됐습니다.');
     }catch(e){console.error('[QMES approve]',e);return fail(res,500,'최종 승인에 실패했습니다.');}
   });
