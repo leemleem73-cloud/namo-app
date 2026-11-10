@@ -2,14 +2,14 @@
 'use strict';
 var root=document.getElementById('ncr'),nav=document.querySelector('.menu[data-page="ncr"]');
 if(!root||!nav)return;
-var rows=[],selected=null,view='list',loadPromise=null,hasLoaded=false,loadError='';
+var rows=[],selected=null,view='list',loadPromise=null,hasLoaded=false,loadError='',gateHolds=[];
 var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
 var dateOnly=function(v){return v?String(v).slice(0,10):'';};
 var today=function(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());};
 var stateName=function(v){return {OPEN:'발행',IN_PROGRESS:'조치중',CLOSED:'완료'}[v]||v||'-';};
 var style=document.createElement('style');
 style.id='qmes-ncr-style-20261020';
-style.textContent='#ncr{padding:22px 24px 40px;color:#172b44}#ncr *{box-sizing:border-box}#ncr .ncr-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:16px}#ncr .ncr-head h1{font-size:23px;margin:0 0 5px;font-weight:750}#ncr .ncr-head p{margin:0;color:#64748b;font-size:13px}#ncr button{cursor:pointer;font:inherit}#ncr .ncr-btn{border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:9px 14px;color:#1e293b;font-size:13px;font-weight:650}#ncr .ncr-btn.primary{background:#1768ad;border-color:#1768ad;color:#fff}#ncr .ncr-btn:disabled{opacity:.5;cursor:wait}#ncr .ncr-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 14px}#ncr .ncr-tools input,#ncr .ncr-tools select{height:36px;border:1px solid #d6e0e9;border-radius:6px;background:#fff;padding:0 11px;color:#1f2937;font-size:13px}#ncr .ncr-table-wrap{overflow:auto;border:1px solid #dbe3eb;border-radius:6px;background:#fff}#ncr table{border-collapse:collapse;width:100%;min-width:940px;font-size:13px}#ncr th{background:#f4f8fb;color:#334155;text-align:center;font-weight:700;white-space:nowrap}#ncr th,#ncr td{border-right:1px solid #e9eef4;border-bottom:1px solid #e9eef4;padding:11px 9px}#ncr td{text-align:center}#ncr tr:last-child td{border-bottom:0}#ncr td:last-child,#ncr th:last-child{border-right:0}#ncr .ncr-link{background:none;border:0;color:#0b62ad;font-weight:700;text-decoration:underline}#ncr .ncr-empty{padding:40px 10px;color:#64748b;text-align:center}#ncr .ncr-form{background:#fff;border:1px solid #dce5ee;border-radius:8px;padding:21px}#ncr .ncr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}#ncr label{display:flex;flex-direction:column;gap:6px;color:#334155;font-size:12px;font-weight:700}#ncr label input,#ncr label select,#ncr label textarea{width:100%;border:1px solid #cfdbe7;border-radius:6px;padding:10px;color:#0f172a;background:#fff;font-size:13px;font-weight:400}#ncr label textarea{min-height:78px;resize:vertical}#ncr .ncr-wide{grid-column:1/-1}#ncr .ncr-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}#ncr .ncr-message{color:#b42318;margin:12px 0;font-size:13px}#ncr .ncr-status{border-radius:10px;padding:3px 8px;background:#eff6ff;color:#1d4d83;font-weight:650;white-space:nowrap}@media(max-width:800px){#ncr{padding:12px}#ncr .ncr-grid{grid-template-columns:1fr}#ncr .ncr-head{align-items:flex-start;flex-direction:column}}';
+style.textContent='#ncr{padding:22px 24px 40px;color:#172b44}#ncr *{box-sizing:border-box}#ncr .ncr-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:16px}#ncr .ncr-head h1{font-size:23px;margin:0 0 5px;font-weight:750}#ncr .ncr-head p{margin:0;color:#64748b;font-size:13px}#ncr button{cursor:pointer;font:inherit}#ncr .ncr-btn{border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:9px 14px;color:#1e293b;font-size:13px;font-weight:650}#ncr .ncr-btn.primary{background:#1768ad;border-color:#1768ad;color:#fff}#ncr .ncr-btn:disabled{opacity:.5;cursor:wait}#ncr .ncr-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 14px}#ncr .ncr-tools input,#ncr .ncr-tools select{height:36px;border:1px solid #d6e0e9;border-radius:6px;background:#fff;padding:0 11px;color:#1f2937;font-size:13px}#ncr .ncr-table-wrap{overflow:auto;border:1px solid #dbe3eb;border-radius:6px;background:#fff}#ncr table{border-collapse:collapse;width:100%;min-width:940px;font-size:13px}#ncr th{background:#f4f8fb;color:#334155;text-align:center;font-weight:700;white-space:nowrap}#ncr th,#ncr td{border-right:1px solid #e9eef4;border-bottom:1px solid #e9eef4;padding:11px 9px}#ncr td{text-align:center}#ncr tr:last-child td{border-bottom:0}#ncr td:last-child,#ncr th:last-child{border-right:0}#ncr .ncr-link{background:none;border:0;color:#0b62ad;font-weight:700;text-decoration:underline}#ncr .ncr-empty{padding:40px 10px;color:#64748b;text-align:center}#ncr .ncr-form{background:#fff;border:1px solid #dce5ee;border-radius:8px;padding:21px}#ncr .ncr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}#ncr label{display:flex;flex-direction:column;gap:6px;color:#334155;font-size:12px;font-weight:700}#ncr label input,#ncr label select,#ncr label textarea{width:100%;border:1px solid #cfdbe7;border-radius:6px;padding:10px;color:#0f172a;background:#fff;font-size:13px;font-weight:400}#ncr label textarea{min-height:78px;resize:vertical}#ncr .ncr-wide{grid-column:1/-1}#ncr .ncr-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}#ncr .ncr-message{color:#b42318;margin:12px 0;font-size:13px}#ncr .ncr-status{border-radius:10px;padding:3px 8px;background:#eff6ff;color:#1d4d83;font-weight:650;white-space:nowrap}#ncr .ncr-gate{display:inline-block;border:0;border-radius:10px;padding:3px 8px;font-weight:700;white-space:nowrap;cursor:pointer}#ncr .ncr-gate.blocked{background:#fff1f0;color:#b42318}#ncr .ncr-gate.released{background:#edf8f1;color:#23754b}#ncr .ncr-gate.clear{background:#f1f5f9;color:#64748b}@media(max-width:800px){#ncr{padding:12px}#ncr .ncr-grid{grid-template-columns:1fr}#ncr .ncr-head{align-items:flex-start;flex-direction:column}}';
 document.head.appendChild(style);
 function notice(msg){var el=root.querySelector('.ncr-message');if(el)el.textContent=msg||'';}
 function field(label,name,type,value,required,wide){
@@ -166,12 +166,19 @@ function render(){
 function renderList(){
  root.innerHTML='<div class="ncr-head"><div><h1>부적합보고서 등록 및 조회</h1><p>IQC · PQC · OQC · 생산 · 고객 부적합 통합관리</p></div><button class="ncr-btn primary" id="ncr-new">+ 신규 NCR 발행</button></div>'+
  '<div class="ncr-tools"><input id="ncr-search" type="search" placeholder="문서번호 / 제품명 / LOT 검색" aria-label="NCR 검색"><select id="ncr-filter"><option value="">전체 상태</option><option value="OPEN">발행</option><option value="IN_PROGRESS">조치중</option><option value="CLOSED">완료</option></select><button class="ncr-btn" id="ncr-refresh">조회</button><span id="ncr-count" style="margin-left:auto;font-size:13px;color:#64748b"></span></div>'+
- '<div class="ncr-table-wrap"><table><thead><tr><th>No.</th><th>NCR 번호</th><th>발생일자</th><th>구분</th><th>제품명</th><th>LOT 번호</th><th>부적합 내용</th><th>담당자</th><th>진행상태</th><th>비고</th></tr></thead><tbody id="ncr-rows"><tr><td colspan="10" class="ncr-empty">조회 중입니다.</td></tr></tbody></table></div><div class="ncr-message" role="status"></div>';
+ '<div class="ncr-table-wrap"><table><thead><tr><th>No.</th><th>NCR 번호</th><th>발생일자</th><th>구분</th><th>제품명</th><th>LOT 번호</th><th>부적합 내용</th><th>담당자</th><th>진행상태</th><th>차단상태</th><th>비고</th></tr></thead><tbody id="ncr-rows"><tr><td colspan="11" class="ncr-empty">조회 중입니다.</td></tr></tbody></table></div><div class="ncr-message" role="status"></div>';
  root.querySelector('#ncr-new').onclick=function(){selected=null;view='new';render();};
  root.querySelector('#ncr-refresh').onclick=load;
  root.querySelector('#ncr-search').oninput=draw;
  root.querySelector('#ncr-filter').onchange=draw;
  draw();
+}
+function gateStatus(lot){
+ var key=String(lot||'').trim().toUpperCase();if(!key)return {label:'미차단',cls:'clear'};
+ var list=gateHolds.filter(function(h){return String(h.lot||'').trim().toUpperCase()===key;});
+ if(list.some(function(h){return !h.released_at;}))return {label:'차단 중',cls:'blocked'};
+ if(list.some(function(h){return !!h.released_at;}))return {label:'해제 승인',cls:'released'};
+ return {label:'미차단',cls:'clear'};
 }
 function draw(){
  if(view!=='list')return;
@@ -179,9 +186,11 @@ function draw(){
  var filtered=rows.filter(function(r){return (!status||r.status===status)&&[r.report_no,r.product,r.lot,r.description,r.customer].join(' ').toLowerCase().includes(query);});
  root.querySelector('#ncr-count').textContent='총 '+filtered.length+'건';
  root.querySelector('#ncr-rows').innerHTML=filtered.length?filtered.map(function(r,i){
-  return '<tr><td>'+String(i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left;max-width:240px">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><button class="ncr-btn" type="button" data-ncr-id="'+r.id+'">조회</button></td></tr>';
- }).join(''):'<tr><td colspan="10" class="ncr-empty">등록된 부적합보고서가 없습니다.</td></tr>';
+  var gate=gateStatus(r.lot);
+  return '<tr><td>'+String(i+1)+'</td><td><button class="ncr-link" type="button" data-ncr-id="'+r.id+'">'+esc(r.report_no)+'</button></td><td>'+esc(dateOnly(r.occurred_on))+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.product||'-')+'</td><td>'+esc(r.lot||'-')+'</td><td style="text-align:left;max-width:240px">'+esc((r.description||'').slice(0,65))+'</td><td>'+esc(r.owner||'-')+'</td><td><span class="ncr-status">'+esc(stateName(r.status))+'</span></td><td><button class="ncr-gate '+gate.cls+'" type="button" data-gate-lot="'+esc(r.lot||'')+'">'+esc(gate.label)+'</button></td><td><button class="ncr-btn" type="button" data-ncr-id="'+r.id+'">조회</button></td></tr>';
+ }).join(''):'<tr><td colspan="11" class="ncr-empty">등록된 부적합보고서가 없습니다.</td></tr>';
  root.querySelectorAll('[data-ncr-id]').forEach(function(btn){btn.onclick=function(){selected=rows.find(function(r){return String(r.id)===btn.dataset.ncrId;});view='edit';render();};});
+ root.querySelectorAll('[data-gate-lot]').forEach(function(btn){btn.onclick=function(){if(window.qmesOpenQualityGate)window.qmesOpenQualityGate(btn.dataset.gateLot||'');};});
 }
 async function request(path,options){
  var opts=Object.assign({credentials:'same-origin'},options||{});
@@ -195,8 +204,8 @@ function load(){
  // Prefetch and menu navigation share one request; keep existing rows visible on refresh.
  if(loadPromise)return loadPromise;
  loadError='';
- loadPromise=request('/api/qmes-ncr/reports?_qmesFresh='+Date.now()).then(function(data){
-  rows=data;hasLoaded=true;
+ loadPromise=Promise.all([request('/api/qmes-ncr/reports?_qmesFresh='+Date.now()),request('/api/qmes-quality-gate/holds')]).then(function(all){
+  rows=all[0];gateHolds=(all[1]&&all[1].holds)||[];hasLoaded=true;
   if(view==='list'){draw();notice('');}
  }).catch(function(e){
   loadError=e.message;
