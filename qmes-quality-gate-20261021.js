@@ -18,8 +18,7 @@ const schema = () => {
 const str = v => String(v == null ? '' : v).trim();
 const actor = req => str(req.session?.user?.id);
 const reject = (res, status, message) => res.status(status).json({ success: false, message });
-const authorized = u => u?.status === 'APPROVED' && (u.role === 'admin' ||
-  u.department === '품질부' && ['부장', '이사', '상무', '전무', '대표이사'].includes(u.title));
+const authorized = u => u?.status === 'APPROVED' && str(u.department) === '품질부';
 async function user(client, req) {
   const result = await client.query('SELECT id,name,department,title,role,status FROM users WHERE id::text=$1', [actor(req)]);
   return result.rows[0];
@@ -79,7 +78,7 @@ async function api(req, res) {
       await client.query('INSERT INTO qmes_lot_gate_events(action,lot,actor,detail) VALUES($1,$2,$3,$4::jsonb)',
         ['MANUAL_HOLD', lot, u.name, JSON.stringify({ userId: u.id, reason })]);
     } else if (route === '/hide-released') {
-      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '관리자 또는 품질부 부장 이상만 목록에서 삭제할 수 있습니다.'); }
+      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '품질부만 목록에서 삭제할 수 있습니다.'); }
       const id = str(req.body?.id);
       if (!/^[1-9][0-9]*$/.test(id)) { await client.query('ROLLBACK'); return reject(res, 400, '보류번호를 확인하세요.'); }
       const result = await client.query('SELECT lot, released_at FROM qmes_lot_holds WHERE id::text=$1 FOR UPDATE', [id]);
@@ -90,7 +89,7 @@ async function api(req, res) {
           SELECT 1 FROM qmes_lot_gate_events WHERE lot=$1 AND action='HIDE_RELEASED_HOLD' AND detail->>'holdId'=$4)`,
       [hold.lot, u.name, JSON.stringify({ holdId: id, userId: u.id, reason }), id]);
     } else {
-      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '관리자 또는 품질부 부장 이상만 해제 승인할 수 있습니다.'); }
+      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '품질부만 차단 해제할 수 있습니다.'); }
       const id = str(req.body.id);
       if (!/^[1-9][0-9]*$/.test(id)) { await client.query('ROLLBACK'); return reject(res, 400, '보류번호를 확인하세요.'); }
       const result = await client.query('SELECT * FROM qmes_lot_holds WHERE id=$1 FOR UPDATE', [id]);
