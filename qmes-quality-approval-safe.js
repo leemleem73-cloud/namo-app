@@ -195,6 +195,119 @@ async function ensureMissingIqcApprovals() {
   return created;
 }
 
+
+async function ensurePqcApprovalForSyncRecord(input = {}) {
+  await ensureSchema();
+  const recordId = String(input.recordId || '').trim();
+  if (!recordId) return null;
+
+  const judge = String(input.judge || '').trim();
+  if (!judge || /대기|미검사|미입력/.test(judge)) return null;
+
+  const manager = await getQualityManager();
+  if (!manager) return null;
+
+  const existing = await pool.query(
+    'SELECT * FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 LIMIT 1',
+    ['IPQC', recordId]
+  );
+  if (existing.rowCount && existing.rows[0].status !== 'DELETED') return existing.rows[0];
+
+  const writerUserId = input.writerUserId || null;
+  const writerName = String(input.writerName || '작성자').trim() || '작성자';
+  const title = String(input.title || '공정검사 성적서 검토·승인').trim();
+  const createdAt = input.createdAt || null;
+
+  let approval;
+  if (existing.rowCount) {
+    const q = await pool.query(
+      `UPDATE qmes_quality_approvals
+       SET title=$1,page='approval',writer_user_id=$2,writer_name=$3,
+           reviewer_user_id=$4,reviewer_name=$5,approver_user_id=$4,approver_name=$5,
+           status='PENDING',reviewed_at=NULL,approved_at=NULL,
+           created_at=COALESCE($6,created_at,NOW()),updated_at=NOW()
+       WHERE id=$7 RETURNING *`,
+      [title, writerUserId, writerName, manager.id, manager.name || '', createdAt, existing.rows[0].id]
+    );
+    approval = q.rows[0];
+  } else {
+    const q = await pool.query(
+      `INSERT INTO qmes_quality_approvals
+       (doc_type,record_id,title,page,writer_user_id,writer_name,
+        reviewer_user_id,reviewer_name,approver_user_id,approver_name,status,created_at,updated_at)
+       VALUES('IPQC',$1,$2,'approval',$3,$4,$5,$6,$5,$6,'PENDING',COALESCE($7,NOW()),NOW())
+       RETURNING *`,
+      [recordId, title, writerUserId, writerName, manager.id, manager.name || '', createdAt]
+    );
+    approval = q.rows[0];
+  }
+
+  if (input.notifyReviewer !== false) {
+    await notify(
+      manager.id,
+      'IPQC 검토·승인 요청',
+      `${writerName}님이 ${title} 검토·승인을 요청했습니다.`,
+      'approval',
+      approval.id
+    );
+  }
+  return approval;
+}
+
+async function ensureMissingPqcSyncApprovals() {
+  await ensureSchema();
+  let rows;
+  try {
+    const q = await pool.query(
+      `SELECT payload, updated_at
+       FROM qmes_sync_records
+       WHERE record_type='pqc'
+       ORDER BY updated_at DESC
+       LIMIT 2000`
+    );
+    rows = q.rows;
+  } catch (error) {
+    console.error('[QMES PQC approval backfill source]', error);
+    return 0;
+  }
+
+  let created = 0;
+  for (const source of rows) {
+    const payload = source.payload || {};
+    const records = Array.isArray(payload.rows) ? payload.rows : [];
+    for (const record of records) {
+      const recordId = String(record?.id || '').trim();
+      const judge = String(record?.judge || record?.detailFields?.['검사합부'] || '').trim();
+      const inspector = String(record?.inspector || '').trim();
+      if (!recordId || !inspector || !judge || /대기|미검사|미입력/.test(judge)) continue;
+
+      const prior = await pool.query(
+        'SELECT id FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 AND status <> \'DELETED\' LIMIT 1',
+        ['IPQC', recordId]
+      );
+      if (prior.rowCount) continue;
+
+      const userQ = await pool.query(
+        'SELECT id,name FROM users WHERE name=$1 ORDER BY status=\'APPROVED\' DESC LIMIT 1',
+        [inspector]
+      );
+      const product = String(record.product || record.detailFields?.['제품명'] || '-').trim() || '-';
+      const lot = String(record.lot || record.detailFields?.['생산 LOT NO'] || '-').trim() || '-';
+      const approval = await ensurePqcApprovalForSyncRecord({
+        recordId,
+        judge,
+        writerUserId: userQ.rows[0]?.id || null,
+        writerName: userQ.rows[0]?.name || inspector,
+        title: `공정검사 성적서 검토·승인 · ${product} / LOT ${lot}`,
+        createdAt: source.updated_at,
+        notifyReviewer: false
+      });
+      if (approval) created++;
+    }
+  }
+  return created;
+}
+
 function install(app) {
   if (app.__qmesQualityApprovalSafeInstalled) return;
   app.__qmesQualityApprovalSafeInstalled = true;
@@ -280,6 +393,7 @@ function install(app) {
     try {
       await ensureSchema();
       await ensureMissingIqcApprovals();
+      await ensureMissingPqcSyncApprovals();
       const u = req.session.user || {};
       const admin = isAdmin(req);
       const q = await pool.query(
@@ -453,4 +567,4 @@ express.application.use = function qmesQualityApprovalUse(...args) {
   return result;
 };
 
-module.exports = { installQmesQualityApprovalSafe: install };
+module.exports = { installQmesQualityApprovalSafe: install, ensurePqcApprovalForSyncRecord };
