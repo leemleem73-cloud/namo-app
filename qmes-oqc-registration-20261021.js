@@ -156,26 +156,49 @@ function createHandler({ pool, auditLog } = {}) {
         try { await auditLog(req, 'CREATE', 'qmes_sync_records', 'oqc:' + normalized.recordKey, null, payload); }
         catch (error) { console.warn('[OQC registration audit]', error.message); }
       }
-      try {
-        const approval = require('./qmes-quality-approval-safe.js');
-        if (typeof approval.ensureGenericApproval === 'function') {
-          for (const row of payload.rows || []) {
-            const judge = String(row.judge || row.result || '').trim();
-            if (!row.id || !judge || /대기|미검사|미입력/.test(judge)) continue;
-            await approval.ensureGenericApproval({
-              docType:'OQC',
-              recordId:String(row.id),
-              title:'출하검사 성적서 검토·승인 · '+(row.product||normalized.fields.product||'-')+' / LOT '+(row.lot||normalized.fields.lot||'-'),
-              page:'outgoing',
-              writerUserId:user.id||null,
-              writerName:user.name||normalized.fields.inspector||'작성자'
+      let ncr=null;
+      if(payload.overall==='불합격'){
+        try{
+          const ncrModule=require('./qmes-ncr-safe-20261020.js');
+          if(typeof ncrModule.autoCreateNcr==='function'){
+            ncr=await ncrModule.autoCreateNcr({
+              source:'OQC',
+              occurred_on:normalized.fields.date,
+              lot:normalized.fields.lot,
+              product:normalized.fields.product,
+              customer:normalized.fields.customer,
+              description:'OQC 출하검사 불합격 자동 발생',
+              containment:'해당 완제품 LOT 출하보류 및 출하 차단',
+              owner:user.name||normalized.fields.inspector||'',
+              created_by:user.name||normalized.fields.inspector||'QMES 자동생성',
+              created_by_id:user.id||'SYSTEM',
+              inspection_record_id:'OQC:'+normalized.recordKey+':'+normalized.fields.lot,
+              details:{process:'출하검사',actual_result:'불합격',reporter:user.name||normalized.fields.inspector||''}
             });
           }
+        }catch(error){console.error('[AUTO NCR OQC REGISTER]',error);}
+      }else{
+        try {
+          const approval = require('./qmes-quality-approval-safe.js');
+          if (typeof approval.ensureGenericApproval === 'function') {
+            for (const row of payload.rows || []) {
+              const judge = String(row.judge || row.result || '').trim();
+              if (!row.id || !judge || /대기|미검사|미입력/.test(judge)) continue;
+              await approval.ensureGenericApproval({
+                docType:'OQC',
+                recordId:String(row.id),
+                title:'출하검사 성적서 검토·승인 · '+(row.product||normalized.fields.product||'-')+' / LOT '+(row.lot||normalized.fields.lot||'-'),
+                page:'outgoing',
+                writerUserId:user.id||null,
+                writerName:user.name||normalized.fields.inspector||'작성자'
+              });
+            }
+          }
+        } catch (error) {
+          console.error('[OQC central approval link]', error);
         }
-      } catch (error) {
-        console.error('[OQC central approval link]', error);
       }
-      return res.json({ success: true, data: dataFor(normalized.recordKey, payload), created: true, message: '출하검사 저장 완료' });
+      return res.json({ success: true, data: dataFor(normalized.recordKey, payload), ncr:ncr?{id:ncr.id,nc_no:ncr.nc_no||'',lot:ncr.lot||normalized.fields.lot}:null, created: true, message: payload.overall==='불합격'?'출하검사 불합격 · NCR 자동등록 완료':'출하검사 저장 완료' });
     } catch (error) {
       if (transaction) await client.query('ROLLBACK').catch(() => {});
       if (error.status) return reject(error.status, error.message);
