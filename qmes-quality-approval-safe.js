@@ -462,6 +462,62 @@ async function ensurePqcApprovalForSyncRecord(input = {}) {
   return approval;
 }
 
+async function ensureMissingOqcSyncApprovals() {
+  await ensureSchema();
+  let rows;
+  try {
+    const result = await pool.query(
+      `SELECT payload, updated_at
+       FROM qmes_sync_records
+       WHERE record_type='oqc'
+       ORDER BY updated_at DESC
+       LIMIT 2000`
+    );
+    rows = result.rows;
+  } catch (error) {
+    console.error('[QMES OQC approval backfill source]', error);
+    return 0;
+  }
+
+  let created = 0;
+  for (const source of rows) {
+    const payload = source.payload || {};
+    if (payload.deleted) continue;
+    const records = Array.isArray(payload.rows) ? payload.rows : [];
+    for (const record of records) {
+      const recordId = String(record?.id || '').trim();
+      const judge = String(record?.judge || record?.result || '').trim();
+      const inspector = String(record?.writerName || record?.inspector || '').trim();
+      if (!recordId || !inspector || !judge || /대기|미검사|미입력/.test(judge)) continue;
+
+      const prior = await pool.query(
+        "SELECT id FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 AND status <> 'DELETED' LIMIT 1",
+        ['OQC', recordId]
+      );
+      if (prior.rowCount) continue;
+
+      const userQ = await pool.query(
+        "SELECT id,name FROM users WHERE name=$1 ORDER BY status='APPROVED' DESC LIMIT 1",
+        [inspector]
+      );
+      const product = String(record.product || '-').trim() || '-';
+      const lot = String(record.lot || '-').trim() || '-';
+      const approval = await ensureGenericApproval({
+        docType:'OQC',
+        recordId,
+        title:`출하검사 성적서 검토·승인 · ${product} / LOT ${lot}`,
+        page:'outgoing',
+        writerUserId:userQ.rows[0]?.id || null,
+        writerName:userQ.rows[0]?.name || inspector,
+        createdAt:source.updated_at,
+        notifyReviewer:false
+      });
+      if (approval) created++;
+    }
+  }
+  return created;
+}
+
 async function ensureMissingPqcSyncApprovals() {
   await ensureSchema();
   let rows;
@@ -602,6 +658,7 @@ function install(app) {
       await ensureSchema();
       await ensureMissingIqcApprovals();
       await ensureMissingPqcSyncApprovals();
+      await ensureMissingOqcSyncApprovals();
       await ensureMissingNcrApprovals();
       await ensureMissingStandardApprovals();
       const u = req.session.user || {};
