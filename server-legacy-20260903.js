@@ -3579,6 +3579,56 @@ app.put('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
     ok(res,{id});
   } catch(e) { fail(res,500,e.message); }
 });
+app.patch('/api/qmes/work-orders/:id/identifiers', requireLogin, async (req,res) => {
+  const id=String(req.params.id||'').trim();
+  const number=String(req.body?.number||'').trim().toUpperCase();
+  const lot=String(req.body?.lot||'').trim().toUpperCase();
+  if(!/^WO-\d{8}-\d{3,}$/.test(number)||!/^[A-Z0-9][A-Z0-9_()-]{0,59}$/.test(lot)){
+    return fail(res,400,'작업지시번호와 생산 LOT 형식을 확인하세요.');
+  }
+  let client;
+  try {
+    await ensureQmesWorkOrderStore();
+    client=await pool.connect();
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(20261021,731)');
+    const current=await client.query('SELECT document FROM qmes_work_order_documents WHERE id=$1 FOR UPDATE',[id]);
+    const document=current.rows[0]?.document;
+    if(!document){await client.query('ROLLBACK');return fail(res,404,'정정할 작업지시서가 없습니다.');}
+    const before=document.fields||{};
+    const oldNumber=String(before['작업지시번호']||id).trim();
+    const oldLot=String(before['생산 LOT NO']||'').trim();
+    if(number===oldNumber&&lot===oldLot){await client.query('COMMIT');return ok(res,document);}
+    if(req.body?.oldNumber!==oldNumber||req.body?.oldLot!==oldLot){
+      await client.query('ROLLBACK');return fail(res,409,'다른 곳에서 번호가 변경되었습니다. 목록을 새로 열어 확인하세요.');
+    }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(document.workDate||'')||!number.startsWith('WO-'+document.workDate.replace(/-/g,'')+'-')){
+      await client.query('ROLLBACK');return fail(res,400,'저장된 작업일자와 일치하는 작업지시번호를 입력하세요.');
+    }
+    const duplicate=await client.query(`SELECT 1 FROM qmes_work_order_documents WHERE id<>$1 AND
+      (upper(btrim(document->'fields'->>'작업지시번호'))=$2 OR upper(btrim(document->'fields'->>'생산 LOT NO'))=$3) LIMIT 1`,[id,number,lot]);
+    if(duplicate.rowCount){await client.query('ROLLBACK');return fail(res,409,'이미 등록된 작업지시번호 또는 생산 LOT입니다.');}
+    const linked=await client.query(`SELECT 1 FROM qmes_lot_observations
+      WHERE kind IN ('pqc','oqc','ncr') AND (lot=upper($1) OR payload->>'workOrderNo'=$2 OR payload->>'orderNo'=$2)
+      UNION ALL SELECT 1 FROM qmes_lot_genealogy WHERE parent_lot=upper($1)
+      UNION ALL SELECT 1 FROM qmes_lot_holds WHERE lot=upper($1) AND released_at IS NULL LIMIT 1`,[oldLot,oldNumber]);
+    if(linked.rowCount){await client.query('ROLLBACK');return fail(res,409,'기존 번호에 검사·품질 또는 후속 LOT 이력이 연결되어 있습니다. 연결 기록을 먼저 확인하세요.');}
+    const corrected={...document,fields:{...before,'작업지시번호':number,'생산 LOT NO':lot}};
+    await client.query('UPDATE qmes_work_order_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1',[id,JSON.stringify(corrected)]);
+    if(lot!==oldLot){
+      await client.query('DELETE FROM qmes_lot_genealogy WHERE child_lot=upper($1) AND source=$2',[oldLot,'qmes_work_order_documents:'+id]);
+    }
+    const user=req.session.user;
+    await client.query(`INSERT INTO audit_logs (user_id,user_name,user_email,action,target_table,target_id,before_data,after_data)
+      VALUES ($1,$2,$3,'UPDATE','qmes_work_order_documents',$4,$5,$6)`,
+    [user.id||null,user.name||'',user.email||'',id,JSON.stringify(document),JSON.stringify(corrected)]);
+    await client.query('COMMIT');
+    ok(res,corrected,'작업지시번호와 생산 LOT를 정정했습니다.');
+  } catch(error){
+    if(client)await client.query('ROLLBACK').catch(()=>{});
+    fail(res,String(error.message).includes('[QUALITY_GATE]')?409:500,error.message);
+  } finally {if(client)client.release();}
+});
 app.delete('/api/qmes/work-orders/:id', requireLogin, async (req,res) => {
   try {
     await ensureQmesWorkOrderStore();
