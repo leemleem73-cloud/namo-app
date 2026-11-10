@@ -1379,6 +1379,7 @@ async function ensureSchema() {
     CREATE UNIQUE INDEX IF NOT EXISTS users_uid_unique_idx
       ON users (uid) WHERE uid IS NOT NULL AND uid <> '';
 
+    ALTER TABLE iqc ADD COLUMN IF NOT EXISTS warehouse_code TEXT NOT NULL DEFAULT '';
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS items_json JSONB NOT NULL DEFAULT '[]'::jsonb;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_writer JSONB DEFAULT '{}'::jsonb;
     ALTER TABLE iqc ADD COLUMN IF NOT EXISTS sign_reviewer JSONB DEFAULT '{}'::jsonb;
@@ -3315,6 +3316,8 @@ function bindCrud(table, mapper) {
   app.post(`/api/${table}`, requireLogin, async (req, res) => {
     try {
       const body = mapper(req.body);
+      if (table==='iqc' && body.warehouse_code && !/^[A-Z0-9][A-Z0-9_-]{0,29}$/.test(body.warehouse_code))
+        return fail(res,400,'창고코드는 영문·숫자와 하이픈 또는 밑줄로 입력해 주세요.');
       const keys = Object.keys(body);
       const vals = Object.values(body);
       const marks = keys.map((_, i) => `$${i + 1}`).join(',');
@@ -3355,6 +3358,8 @@ function bindCrud(table, mapper) {
       if (!before.rowCount) return fail(res, 404, '데이터를 찾을 수 없습니다.');
 
       const body = mapper(req.body);
+      if (table==='iqc' && body.warehouse_code && !/^[A-Z0-9][A-Z0-9_-]{0,29}$/.test(body.warehouse_code))
+        return fail(res,400,'창고코드는 영문·숫자와 하이픈 또는 밑줄로 입력해 주세요.');
       const keys = Object.keys(body);
       const vals = Object.values(body);
       const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
@@ -3393,6 +3398,7 @@ bindCrud('iqc', (b) => {
     supplier: txt(b.supplier),
     item: txt(b.item),
     inspector: txt(b.inspector),
+    ...(Object.hasOwn(b,'warehouseCode') ? {warehouse_code:txt(b.warehouseCode).toUpperCase()} : {}),
     incoming_qty: num(b.incomingQty),
     qty: num(b.qty ?? b.checkQty),
     fail: num(b.fail ?? b.failQty) ?? 0,
