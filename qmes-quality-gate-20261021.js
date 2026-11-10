@@ -24,12 +24,15 @@ async function authorized(client,u){
     await client.query(`CREATE TABLE IF NOT EXISTS qmes_server_permissions(
       permission_key TEXT PRIMARY KEY,
       allowed_departments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb,
       updated_by TEXT NOT NULL DEFAULT '',
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`);
-    const result=await client.query("SELECT allowed_departments FROM qmes_server_permissions WHERE permission_key='qualityGateReleaseDepartments'");
-    const allowed=result.rowCount&&Array.isArray(result.rows[0].allowed_departments)?result.rows[0].allowed_departments:['품질부'];
-    return allowed.map(str).includes(str(u.department));
+    await client.query("ALTER TABLE qmes_server_permissions ADD COLUMN IF NOT EXISTS allowed_users JSONB NOT NULL DEFAULT '[]'::jsonb");
+    const result=await client.query("SELECT allowed_departments,allowed_users FROM qmes_server_permissions WHERE permission_key='qualityGateReleaseDepartments'");
+    const allowedDepartments=result.rowCount&&Array.isArray(result.rows[0].allowed_departments)?result.rows[0].allowed_departments:['품질부'];
+    const allowedUsers=result.rowCount&&Array.isArray(result.rows[0].allowed_users)?result.rows[0].allowed_users:[];
+    return allowedDepartments.map(str).includes(str(u.department))||allowedUsers.map(str).includes(str(u.name));
   }catch(error){
     console.error('[QUALITY GATE permission read]',error);
     return str(u.department)==='품질부';
