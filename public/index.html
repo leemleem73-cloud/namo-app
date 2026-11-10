@@ -3261,7 +3261,7 @@ function outgoingStepMarkup(step){
       <div>${[1,2,3].map(n=>`<div class="overflow-row" data-row="${n}"><span class="round-label">${n}회</span><button class="overflow-btn" type="button">Overflow</button><input type="number" step="any" inputmode="decimal" placeholder="측정값"></div>`).join('')}</div>`;
   }
   if(step===8){
-    return `<div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">두께 측정</div></div>
+    return `<div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">마이크로미터</div></div>
       <div class="measure-grid">${measure3('팽창률 (%)')}</div>`;
   }
   const data={
@@ -6146,7 +6146,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
       ['고형분','20.0±1.0 wt%','Drying Oven','20.0','20.1','20.2','합격'],
       ['접착력','≥400 gf/12.7mm','인장시험기','435','428','441','합격'],
       ['절연저항','≥200 MΩ (Overflow)','절연저항계','Overflow','Overflow','Overflow','합격'],
-      ['전해액 안정성','팽창률 < 150%','두께 측정','120','118','121','합격']
+      ['전해액 안정성','팽창률 < 150%','마이크로미터','120','118','121','합격']
     ]
   };
   // PQC report reads the measurements saved in the detail/edit screen, not demo figures.
@@ -6232,7 +6232,7 @@ function qmesIqcBarcodeSvg(value){
       <div class="report-meta">
         <div class="label">문서번호</div><div class="value">${reportNo}</div>
         <div class="label">문서구분</div><div class="value">${docType}</div>
-        <div class="label">Rev.</div><div class="value">0</div>
+        <div class="label">Rev.</div><div class="value">${id==='outgoing'?'1':'0'}</div>
         
       </div>
       <table class="report-basic">
@@ -6479,7 +6479,7 @@ function printInspectionReport(title,batchSheets,previewOnly=false){
   }
   const printSheet=preparePrintSheet(sheet);
   // Rev. and Page belong below the report's outer border, not inside a cell.
-  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. 0</span><span>1 / 1 Page</span></div>';
+  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. '+(sheet.matches('.report-outgoing')?'1':'0')+'</span><span>1 / 1 Page</span></div>';
     const isPqcPrint=sheet.matches('.report-process,.report-pqc-print');
     const isOqcPrint=sheet.matches('.report-outgoing');
   // PQC uses one isolated stylesheet in both screen preview and print media.
@@ -7427,7 +7427,7 @@ function standardInspectionRows(type){
       ['고형분','20.0±1.0 wt%','Drying Oven','num'],
       ['접착력','≥400 gf/12.7mm','인장시험기','num'],
       ['절연저항','≥200 MΩ (Overflow)','절연저항계','num'],
-      ['전해액 안정성','팽창률 < 150%','두께 측정','num']
+      ['전해액 안정성','팽창률 < 150%','마이크로미터','num']
     ]
   }[type]||[];
   return rows.map((r,i)=>`<tr data-kind="${r[3]}"><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td class="method">${r[2]}</td><td>${stdMeasureCell(r[3],1)}</td><td>${stdMeasureCell(r[3],2)}</td><td>${stdMeasureCell(r[3],3)}</td><td><select class="std-row-judge"><option>대기</option><option>합격</option><option>불합격</option></select></td></tr>`).join('');
@@ -7517,7 +7517,7 @@ function standardInspectionForm(type){
       <div class="std-inspection-title"><b>${conf.title}</b></div>
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
-        <div class="k">Rev.</div><div class="v">0</div>
+        <div class="k">Rev.</div><div class="v">${type==='outgoing'?'1':'0'}</div>
         <div class="k">작성부서</div><div class="v">품질부</div>
         <div class="k">상태</div><div class="v">신규작성</div>
       </div>
@@ -7993,7 +7993,7 @@ function renderOutgoingJudgePanel(item){
     '고형분':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>고형분</b><span class="spec">20.0±1.0 wt%</span></div><div class="process-device">Drying Oven</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
     '접착력':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>접착력</b><span class="spec">≥400 gf/12.7mm</span></div><div class="process-device">인장시험기</div></div><div class="measure-grid">${measure3('측정')}</div></div>`,
     '절연저항':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>절연저항</b><span class="spec">≥200 MΩ (Overflow)</span></div><div class="process-device">절연저항계</div></div><div class="process-judge process-judge-top"><button class="judge-btn" type="button">3회 모두 Overflow</button></div><div class="overflow-grid">${overflowRows}</div></div>`,
-    '전해액 안정성':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">두께 측정</div></div><div class="overflow-grid">${stabilityRows}</div></div>`,
+    '전해액 안정성':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>전해액 안정성</b><span class="spec">팽창률 &lt; 150%</span></div><div class="process-device">마이크로미터</div></div><div class="overflow-grid">${stabilityRows}</div></div>`,
     'COA 확인':`<div class="process-detail" style="margin-top:0"><div class="process-detail-head"><div class="process-detail-title"><b>COA 확인</b><span class="spec">COA 문서 확인</span></div><div class="process-device">문서확인</div></div><div class="process-judge"><button class="judge-btn" type="button">확인완료</button><button class="judge-btn" type="button">미확인</button></div></div>`
   };
   wrap.innerHTML=`${map[item]||''}`;
