@@ -2932,7 +2932,30 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .module-body .work-list-table td:last-child {border-right:0!important;}
 #work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
 </style>
-<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261102-single-customer-picker"></script>
+<script id="qmes-work-material-palette">
+(function(){
+ const colors={
+  nmp:['#926100','#704900','#ffffff'],
+  byk:['#ac4815','#8b360e','#ffffff'],
+  aoh:['#2363a5','#184c84','#ffffff'],
+  pvdf:['#6a43a3','#523080','#ffffff'],
+  sbs:['#307045','#245936','#ffffff'],
+  sbr:['#4c596b','#374456','#ffffff'],
+  neutral:['#ffffff','#cbd9e5','#24445f']
+ };
+ window.namoWorkMaterialColors=function(value){
+  const name=String(value||'').trim().toUpperCase();
+  if(/^NMP(?:$|[ (])/.test(name))return colors.nmp;
+  if(/^(BYK[- ]?180|분산제)(?:$|[ (])/.test(name))return colors.byk;
+  if(/^(AOH[- ]?30|BOEHMITE|세라믹)(?:$|[ (])/.test(name))return colors.aoh;
+  if(/^(SBS|KTR[- ]?201)(?:$|[ (])/.test(name))return colors.sbs;
+  if(/^(SBR|ADC30-?G)(?:$|[ (])/.test(name))return colors.sbr;
+  if(name==='__MANUAL__'||/^(PAI|바인더|PVDF)(?:$|[ (])/.test(name))return colors.pvdf;
+  return colors.neutral;
+ };
+})();
+</script>
+<script src="./js/namo-qmes-work-inquiry-20261013.js?v=20261111-material-colors"></script>
 <link rel="stylesheet" href="./css/qmes-workorder-period-iqc-parity-20261022.css?v=13-iqc-compact-groups">
 <script defer src="./js/qmes-workorder-period-iqc-parity-20261022.js?v=9-stable-filter-order"></script>
 <script>
@@ -8351,7 +8374,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
-<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261030-select-only12"></script>
+<script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261111-material-colors"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=3-larger"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261029-history4"></script>
 <script defer src="./js/namo-workorder-unified-period-20261014.js?v=20261028-single-month8"></script>
@@ -8964,33 +8987,6 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
 <script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=3"></script>
 
 
-<script id="qmes-new-work-material-input-colors-20261030">
-(function(){
- 'use strict';
- const fills=['#fff0a6','#ffdab0','#cfe4ff','#e4d3ff','#d2edcf','#ffffff'];
- const edges=['#c59b25','#cf813a','#568cc4','#9671c4','#6eaa6a','#cbd9e5'];
- function paint(){
-  document.querySelectorAll('table#workMaterialTable').forEach(table=>{
-   Array.from(table.querySelectorAll('tbody tr')).slice(0,6).forEach((row,index)=>{
-    const cell=row.querySelector('.material-name-select')?.closest('td')||row.cells[1];if(!cell)return;
-    cell.style.setProperty('background','#ffffff','important');
-    cell.style.setProperty('background-color','#ffffff','important');
-    cell.style.setProperty('border-left','1px solid #d6e1ed','important');
-    cell.querySelectorAll('input').forEach(input=>{input.style.setProperty('background','#ffffff','important');input.style.setProperty('background-color','#ffffff','important');});
-    [...cell.querySelectorAll('select')].forEach(node=>{
-     node.style.setProperty('background',fills[index],'important');
-     node.style.setProperty('background-color',fills[index],'important');
-     node.style.setProperty('color','#24445f','important');
-     if(node!==cell)node.style.setProperty('border-color',edges[index],'important');
-    });
-   });
-  });
- }
- let pending=false;const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;paint();});};
- function boot(){paint();new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true});document.addEventListener('change',event=>{if(event.target.closest('#workMaterialTable'))schedule();});}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
-</script>
 <script defer src="./js/qmes-form-drafts-20261102.js?v=10-visible-completion"></script>
 <style id="qmes-work-customer-picker-width-20261102">html body #work #namo-work-inquiry input[data-filter="0"]{cursor:pointer!important}.qc-holder>.qc-popup{width:195px!important;max-width:calc(100vw - 12px)!important}</style>
 <style id="qmes-lot-query-lift-20261102">
