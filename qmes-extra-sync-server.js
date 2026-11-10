@@ -87,6 +87,25 @@ function install(app) {
         ON CONFLICT(record_type,record_key) DO UPDATE SET payload=EXCLUDED.payload,
           updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
         [key,JSON.stringify({rows:[record]}),String(req.session.user.name||req.session.user.email||'')]);
+
+      // 완료된 공정검사만 전자결재에 자동 등록한다. 자동발행 '대기' 건은 제외.
+      if (record.inspector && record.judge && !/대기|미검사|미입력/.test(record.judge)) {
+        try {
+          const approval = require('./qmes-quality-approval-safe.js');
+          if (typeof approval.ensurePqcApprovalForSyncRecord === 'function') {
+            await approval.ensurePqcApprovalForSyncRecord({
+              recordId: record.id,
+              judge: record.judge,
+              writerUserId: req.session.user.id || null,
+              writerName: req.session.user.name || record.inspector || '작성자',
+              title: `공정검사 성적서 검토·승인 · ${record.product || '-'} / LOT ${record.lot || '-'}`
+            });
+          }
+        } catch (approvalError) {
+          console.error('PQC electronic approval create failed', approvalError);
+        }
+      }
+
       return res.json({success:true,data:record});
     }catch(error){console.error('PQC detail save failed',error);
       return res.status(500).json({success:false,message:'공정검사 저장에 실패했습니다.'});}
