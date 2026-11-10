@@ -62,7 +62,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
    const at=Date.parse(a.updated_at||a.updatedAt||a.created_at||a.createdAt||''),bt=Date.parse(b.updated_at||b.updatedAt||b.created_at||b.createdAt||'');
    return Number.isFinite(at)&&Number.isFinite(bt)?bt-at:0;
   });
-  const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>=0).map(micro))];
+  const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>0).map(micro))];
   const ambiguous=masses.length!==1;
   const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null,warehouse:text(r.warehouse_code)}))};
   if(ambiguous)g.issues.push('입고 중량 미확정/검사별 불일치');
