@@ -38,6 +38,7 @@ const allowedMime=new Set(['application/pdf','image/jpeg','image/png','image/web
 const detailKeys=['reporter','department','process','work_order','specification','actual_result','inspected_qty','affected_qty','severity','isolation_location','disposition','disposition_approved_by','cause_method','action_owner','action_completed_on','verification_method','verification_date','verification_result','verified_by','closure_approved_by','closed_on','repeat_issue','related_lots','customer_notified','improvement_completed','before_condition','after_condition','improvement_comparison','inspection_record_id','inspection_stage','auto_created'];
 function cleanDetails(input){const out={};if(input&&typeof input==='object'&&!Array.isArray(input))for(const k of detailKeys)if(Object.prototype.hasOwnProperty.call(input,k))out[k]=str(input[k],1500);return out;}
 
+function validUuidLike(value){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||'').trim());}
 function normalizeDateOnly(value){
  if(!value)return '';
  const raw=String(value).trim();
@@ -82,6 +83,19 @@ async function autoCreateNcr(input={}){
    str(details.process||source,200)
   ]);
  console.log('[AUTO NCR NONCONFORM]',JSON.stringify({source,nc_no:ncNo,id:q.rows[0]?.id}));
+ try{
+  const approval=require('./qmes-quality-approval-safe.js');
+  if(typeof approval.ensureGenericApproval==='function'){
+   await approval.ensureGenericApproval({
+    docType:'NCR',
+    recordId:String(q.rows[0]?.id||''),
+    title:'부적합 NCR 검토·승인 · '+ncNo+' / LOT '+(q.rows[0]?.lot||'-'),
+    page:'ncr',
+    writerUserId:validUuidLike(input.created_by_id)?String(input.created_by_id):null,
+    writerName:str(input.created_by||input.owner||'QMES 자동생성',150)
+   });
+  }
+ }catch(error){console.error('[AUTO NCR CENTRAL APPROVAL]',error);}
  return q.rows[0];
 }
 function legacyReport(r){return {
@@ -129,12 +143,17 @@ function install(app,options={}){
  // Runs before the legacy /api/iqc route and observes its successful JSON response,
  // so automatic NCR creation works even if another IQC handler is registered first.
  app.use((req,res,next)=>{
-  if(req.method!=='POST'||req.path!=='/api/iqc')return next();
+  const isCreate=req.method==='POST'&&req.path==='/api/iqc';
+  const isUpdate=req.method==='PUT'&&/^\/api\/iqc\/[^/]+$/.test(req.path);
+  if(!isCreate&&!isUpdate)return next();
   const originalJson=res.json.bind(res);
   res.json=function(payload){
    try{
     const row=payload?.data||payload;
-    if(res.statusCode<400&&String(row?.judge||'').trim()==='불합격'&&row?.id){
+    const postedJudge=String(req.body?.judge||req.body?.result||'').trim();
+    const itemJudges=Array.isArray(req.body?.items)?req.body.items.map(item=>String(item?.judge||item?.result||item?.value||'').trim()):[];
+    const failed=String(row?.judge||'').trim()==='불합격'||postedJudge==='불합격'||itemJudges.some(v=>v==='불합격'||v==='부적합'||v==='NG'||v==='FAIL');
+    if(res.statusCode<400&&failed&&(row?.id||isUpdate)){
      const user=req.session?.user||{};
      autoCreateNcr({
       source:'IQC',
@@ -147,7 +166,7 @@ function install(app,options={}){
       owner:str(user.name||user.email||'',120),
       created_by:str(user.name||user.email||'QMES 자동생성',150),
       created_by_id:str(user.id||'SYSTEM',100),
-      inspection_record_id:'IQC:'+String(row.id),
+      inspection_record_id:'IQC:'+String(row?.id||req.params?.id||req.path.split('/').pop()),
       details:{
        process:'수입검사',
        actual_result:'불합격',
