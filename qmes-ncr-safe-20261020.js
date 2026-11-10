@@ -339,14 +339,18 @@ function install(app,options={}){
   try{
    await schema();
    const u=req.session.user||{};
-   const isAdmin=String(u.role||'').toLowerCase()==='admin'||String(u.role||'')==='관리자';
+   // Always re-check the current DB account because session role/title may be stale.
+   const account=await pool.query('SELECT role,status,department,title FROM users WHERE id::text=$1',[str(u.id,100)]);
+   const current=account.rows[0]||{};
+   const currentRole=str(current.role,30).toLowerCase();
+   const currentDept=str(current.department,60);
+   const currentTitle=str(current.title,60);
+   const isAdmin=['admin','관리자'].includes(currentRole);
+   const isQualitySenior=currentDept==='품질부'&&['부장','이사','상무','전무','부사장','대표이사','대표','사장','회장'].includes(currentTitle);
+   const canDelete=current.status==='APPROVED'&&(isAdmin||isQualitySenior);
    if(legacyId){
-    // Sessions can retain an earlier role after an administrator updates the account.
-    const account=await pool.query('SELECT role,status FROM users WHERE id::text=$1',[str(u.id,100)]);
-    const current=account.rows[0];
-    const currentRole=str(current?.role,30).toLowerCase();
-    if(current?.status!=='APPROVED'||!['admin','관리자'].includes(currentRole)){
-     return bad(res,403,'현재 로그인한 계정은 승인된 관리자가 아니어서 이 부적합 기록을 삭제할 수 없습니다.');
+    if(!canDelete){
+     return bad(res,403,'NCR 삭제는 승인된 관리자 또는 품질부 부장 이상만 가능합니다.');
     }
     const removed=await pool.query(`WITH removed AS (
       DELETE FROM nonconform WHERE id=$1::uuid RETURNING *
@@ -359,7 +363,7 @@ function install(app,options={}){
    }
    const result=await pool.query('SELECT id,created_by_id FROM qmes_ncr_reports WHERE id=$1',[id]);
    if(!result.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
-   if(!isAdmin&&String(result.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 관리자만 삭제할 수 있습니다.');
+   if(!canDelete&&String(result.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 승인된 관리자·품질부 부장 이상만 삭제할 수 있습니다.');
    await pool.query('DELETE FROM qmes_ncr_reports WHERE id=$1',[id]);
    res.json({success:true,data:{id}});
   }catch(e){console.error('[NCR delete]',e);bad(res,500,'NCR 삭제 실패');}
