@@ -18,7 +18,23 @@ const schema = () => {
 const str = v => String(v == null ? '' : v).trim();
 const actor = req => str(req.session?.user?.id);
 const reject = (res, status, message) => res.status(status).json({ success: false, message });
-const authorized = u => u?.status === 'APPROVED' && str(u.department) === '품질부';
+async function authorized(client,u){
+  if(u?.status!=='APPROVED')return false;
+  try{
+    await client.query(`CREATE TABLE IF NOT EXISTS qmes_server_permissions(
+      permission_key TEXT PRIMARY KEY,
+      allowed_departments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      updated_by TEXT NOT NULL DEFAULT '',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    const result=await client.query("SELECT allowed_departments FROM qmes_server_permissions WHERE permission_key='qualityGateReleaseDepartments'");
+    const allowed=result.rowCount&&Array.isArray(result.rows[0].allowed_departments)?result.rows[0].allowed_departments:['품질부'];
+    return allowed.map(str).includes(str(u.department));
+  }catch(error){
+    console.error('[QUALITY GATE permission read]',error);
+    return str(u.department)==='품질부';
+  }
+}
 async function user(client, req) {
   const result = await client.query('SELECT id,name,department,title,role,status FROM users WHERE id::text=$1', [actor(req)]);
   return result.rows[0];
@@ -34,7 +50,7 @@ async function api(req, res) {
         WHERE e.lot=h.lot AND e.action='HIDE_RELEASED_HOLD' AND e.detail->>'holdId'=h.id::text)
       ORDER BY (h.released_at IS NULL) DESC,h.id DESC LIMIT 300`, [lot]);
     const events = await pool.query(`SELECT * FROM qmes_lot_gate_events WHERE ($1='' OR lot=$1) ORDER BY id DESC LIMIT 100`, [lot]);
-    return res.json({ success: true, data: { holds: result.rows, events: events.rows, canRelease: authorized(u) } });
+    return res.json({ success: true, data: { holds: result.rows, events: events.rows, canRelease: await authorized(pool,u) } });
   }
   if (req.method === 'GET' && route === '/historical') {
     const u=await user(pool,req);
@@ -78,7 +94,7 @@ async function api(req, res) {
       await client.query('INSERT INTO qmes_lot_gate_events(action,lot,actor,detail) VALUES($1,$2,$3,$4::jsonb)',
         ['MANUAL_HOLD', lot, u.name, JSON.stringify({ userId: u.id, reason })]);
     } else if (route === '/hide-released') {
-      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '품질부만 목록에서 삭제할 수 있습니다.'); }
+      if (!(await authorized(client,u))) { await client.query('ROLLBACK'); return reject(res, 403, '현재 서버 권한 설정상 차단 해제 권한이 없습니다.'); }
       const id = str(req.body?.id);
       if (!/^[1-9][0-9]*$/.test(id)) { await client.query('ROLLBACK'); return reject(res, 400, '보류번호를 확인하세요.'); }
       const result = await client.query('SELECT lot, released_at FROM qmes_lot_holds WHERE id::text=$1 FOR UPDATE', [id]);
@@ -89,7 +105,7 @@ async function api(req, res) {
           SELECT 1 FROM qmes_lot_gate_events WHERE lot=$1 AND action='HIDE_RELEASED_HOLD' AND detail->>'holdId'=$4)`,
       [hold.lot, u.name, JSON.stringify({ holdId: id, userId: u.id, reason }), id]);
     } else {
-      if (!authorized(u)) { await client.query('ROLLBACK'); return reject(res, 403, '품질부만 차단 해제할 수 있습니다.'); }
+      if (!(await authorized(client,u))) { await client.query('ROLLBACK'); return reject(res, 403, '현재 서버 권한 설정상 차단 해제 권한이 없습니다.'); }
       const id = str(req.body.id);
       if (!/^[1-9][0-9]*$/.test(id)) { await client.query('ROLLBACK'); return reject(res, 400, '보류번호를 확인하세요.'); }
       const result = await client.query('SELECT * FROM qmes_lot_holds WHERE id=$1 FOR UPDATE', [id]);
