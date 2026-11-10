@@ -6174,6 +6174,11 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     const rules=window.qmesOqcRules;
     if(!record||!rules){if(!bulkRenderOnly)toast('출하검사 기록을 새로 조회한 뒤 성적서를 열어 주세요.');return null;}
     const records=record.__groupChecks?.length?record.__groupChecks:[record];
+    oqcStandardRevision=Math.max(0,...records.map(r=>Number.isFinite(Number(r.standardRevision))?Number(r.standardRevision):0));
+    if(oqcStandardRevision===0){
+      const legacy=itemSets.outgoing.find(item=>item[0]==='전해액 안정성');
+      if(legacy){legacy[1]='미탈리';legacy[2]='육안';}
+    }
     const measurements={};
     itemSets.outgoing.forEach(item=>{
       const frozen=row._coaIssue?.snapshot?.items?.find(saved=>saved.name===item[0]);
@@ -6182,12 +6187,18 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
       const values=Array.isArray(source?.measurements)&&source.measurements.length?source.measurements:source?.value?String(source.value).split(/\s*\/\s*/):[];
       measurements[item[0]]=[0,1,2].map(index=>String(values[index]??'').trim());
       for(let index=0;index<3;index++)item[index+3]=measurements[item[0]][index]||'-';
-      item[6]=rules.evaluateItem(item[0],measurements[item[0]]);
+      item[6]=(item[0]==='전해액 안정성'&&oqcStandardRevision===0)
+        ? (measurements[item[0]].filter(Boolean).length===3&&measurements[item[0]].every(v=>String(v).replace(/\s/g,'')==='미탈리')?'합격':'불합격')
+        : rules.evaluateItem(item[0],measurements[item[0]]);
     });
-    oqcReportOverall=records.some(row=>row.inspectionDecision==='불합격')?'불합격':rules.evaluateMeasurements(measurements).overall;
+    if(records.some(row=>row.inspectionDecision==='불합격'))oqcReportOverall='불합격';
+    else if(oqcStandardRevision===0){
+      const itemResults=itemSets.outgoing.map(item=>item[6]);
+      oqcReportOverall=itemResults.some(v=>v==='불합격')?'불합격':itemResults.every(v=>v==='합격')?'합격':'대기';
+    }else oqcReportOverall=rules.evaluateMeasurements(measurements).overall;
     const escapeValue=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     itemSets.outgoing.forEach(item=>{for(let index=3;index<6;index++)item[index]=escapeValue(item[index]);});
-    oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');oqcStandardRevision=Math.max(0,...records.map(r=>Number.isFinite(Number(r.standardRevision))?Number(r.standardRevision):0));
+    oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');
   }
   const items=itemSets[id]||[];
   const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
