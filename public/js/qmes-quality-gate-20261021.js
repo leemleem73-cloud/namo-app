@@ -130,7 +130,8 @@ const actionLabels={hold:'공정 차단',release:'차단 해제','hide-released'
 function showForm(title, action){
  error('');dialog.querySelector('.qgate-release').hidden=false;dialog.querySelector('.qgate-release-title').textContent=title;
  const reason=dialog.querySelector('[name="reason"]');
- reason.value='';reason.placeholder=action==='hide-released'?'삭제 사유를 입력하세요. 처리 이력은 보존됩니다.':'처리 사유를 입력하세요.';
+ reason.value=action==='cancel-hold'?'테스트 중 생성된 보류로 확인되어 취소함.':'';
+ reason.placeholder=action==='hide-released'?'삭제 사유를 입력하세요. 처리 이력은 보존됩니다.':'처리 사유를 입력하세요.';
  const reference=dialog.querySelector('.qgate-cancel-reference');
  reference.hidden=action!=='cancel-hold';
  reference.querySelector('input').value='';
