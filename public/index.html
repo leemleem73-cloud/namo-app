@@ -4886,7 +4886,7 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
   const pager=section.querySelector('.quality-approval-pager');
   const PAGE_SIZE=10;
   try{
-    const r=await fetch('/api/qmes-quality/approvals',{credentials:'same-origin'});
+    const r=await fetch('/api/qmes-quality/approvals?ts='+Date.now(),{credentials:'same-origin',cache:'no-store'});
     const p=await r.json();
     if(!r.ok||!p.success) throw new Error(p.message||'결재 목록 조회 실패');
     const rows=Array.isArray(p.data)?p.data:[];
@@ -4950,6 +4950,12 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
             const pp=await rr.json();
             if(!rr.ok||!pp.success)throw new Error(pp.message||'검토 실패');
             toast('검토가 완료되어 승인대기로 전환됐습니다.');
+            const tr=reviewBtn.closest('tr');
+            if(tr){
+              const cells=tr.querySelectorAll('td');
+              if(cells[6]) cells[6].innerHTML='<span class="badge b-yellow">승인대기</span>';
+              if(cells[8]) cells[8].textContent='검토완료 · 최종 승인대기';
+            }
             await loadQualityApprovals(section);
             await loadQualityNotifications();
           }catch(err){toast(err.message||'검토에 실패했습니다.');reviewBtn.disabled=false;}
@@ -4963,6 +4969,14 @@ async function loadQualityApprovals(section=document.getElementById('approval'))
             const pp=await rr.json();
             if(!rr.ok||!pp.success) throw new Error(pp.message||'승인 실패');
             toast('최종 승인이 완료되었습니다.');
+            const tr=approveBtn.closest('tr');
+            if(tr){
+              const cells=tr.querySelectorAll('td');
+              if(cells[6]) cells[6].innerHTML='<span class="badge b-green">승인완료</span>';
+              if(cells[7]) cells[7].textContent=pp.data?.approver_name||cells[7].textContent.replace('최종 승인','').trim()||'-';
+              if(cells[8]) cells[8].textContent='최종 승인완료';
+              approveBtn.remove();
+            }
             await loadQualityApprovals(section);
             await loadQualityNotifications();
           }catch(err){toast(err.message||'검토·승인에 실패했습니다.');approveBtn.disabled=false;}
