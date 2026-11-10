@@ -9,6 +9,8 @@ function MembersManagementTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [info, setInfo] = useState(null);
+  const [serverPerms, setServerPerms] = useState({ qualityGateReleaseDepartments:["품질부"] });
+  const [serverPermSaving, setServerPermSaving] = useState(false);
 
   const knownUid = {
     "관리자": "U-0001", "김종혁": "U-0002", "김세희": "U-0003", "정영기": "U-0004",
@@ -85,6 +87,41 @@ function MembersManagementTab() {
       });
     }
     writeLocalUsers(updated);
+  };
+
+  const loadServerPermissions = async () => {
+    try {
+      const payload = await api("/api/admin/server-permissions");
+      setServerPerms({
+        qualityGateReleaseDepartments: payload.data?.qualityGateReleaseDepartments?.allowedDepartments || ["품질부"]
+      });
+    } catch (error) {
+      console.warn("서버 권한 조회 실패", error);
+    }
+  };
+
+  const toggleServerDepartment = (department) => {
+    const current = new Set(serverPerms.qualityGateReleaseDepartments || []);
+    current.has(department) ? current.delete(department) : current.add(department);
+    setServerPerms({ ...serverPerms, qualityGateReleaseDepartments: Array.from(current) });
+  };
+
+  const saveServerPermissions = async () => {
+    const allowed = serverPerms.qualityGateReleaseDepartments || [];
+    if (!allowed.length) return setInfo({ tone: "red", text: "차단 해제 허용 부서를 최소 1개 선택하세요." });
+    setServerPermSaving(true);
+    try {
+      await api("/api/admin/server-permissions/qualityGateReleaseDepartments", {
+        method: "PUT",
+        body: JSON.stringify({ allowedDepartments: allowed })
+      });
+      setInfo({ tone: "green", text: "서버 권한 설정을 저장했습니다. 공정 차단 해제 권한에 즉시 반영됩니다." });
+      await loadServerPermissions();
+    } catch (error) {
+      setInfo({ tone: "red", text: error.message || "서버 권한 저장에 실패했습니다." });
+    } finally {
+      setServerPermSaving(false);
+    }
   };
 
   const loadMembers = async (quiet = false) => {
@@ -244,12 +281,28 @@ function MembersManagementTab() {
         .qmes-db-member-input{width:100%;height:42px;padding:0 11px!important;border:1px solid #b8c7d2!important;border-radius:7px!important;background:#fff!important;color:#243746!important;font-size:14px!important;font-weight:650!important;outline:none!important}.qmes-db-member-input:focus{border-color:#1b8dc5!important;box-shadow:0 0 0 3px rgba(27,141,197,.12)!important}
         .qmes-db-member-actions-top{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.qmes-db-member-btn{height:34px;min-width:48px;padding:0 11px!important;border-radius:6px!important;font-size:12px!important;font-weight:850!important;line-height:1!important;cursor:pointer!important;white-space:nowrap!important;opacity:1!important;visibility:visible!important}.qmes-db-member-btn:disabled{opacity:.55!important;cursor:not-allowed!important}
         .qmes-db-member-btn.primary{border:1px solid #0b8fc7!important;background:#0b8fc7!important;color:#fff!important}.qmes-db-member-btn.cancel{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.edit{border:1px solid #39a9d8!important;background:#eaf8fd!important;color:#056b96!important}.qmes-db-member-btn.reset{border:1px solid #b7c5cf!important;background:#fff!important;color:#344b5a!important}.qmes-db-member-btn.delete{border:1px solid #efaaaa!important;background:#fff!important;color:#c43c3c!important}
-        .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eaf7fd!important}
+        .qmes-server-perm-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.qmes-server-perm-check{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid #c8d5dd;border-radius:7px;background:#fff;color:#314b5c;font-size:13px;font-weight:800}.qmes-server-perm-check input{width:16px;height:16px}.qmes-server-perm-note{margin:10px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-server-perm-actions{display:flex;justify-content:flex-end;margin-top:12px}
+                .qmes-db-member-help{margin:9px 0 0;color:#667987;font-size:12.5px;font-weight:600}.qmes-db-member-table-wrap{width:100%;overflow:auto}.qmes-db-member-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}.qmes-db-member-table th{height:42px;padding:9px 10px!important;border-bottom:1px solid #cad7df!important;background:#f7f9fb!important;color:#4c6272!important;text-align:left!important;font-size:13px!important;font-weight:850!important;white-space:nowrap}.qmes-db-member-table td{height:48px;padding:10px!important;border-bottom:1px solid #dbe4ea!important;background:#fff!important;color:#293f4e!important;font-size:14px!important;font-weight:600!important;vertical-align:middle!important;white-space:nowrap}.qmes-db-member-table tbody tr:hover td{background:#f5f9fb!important}.qmes-db-member-table tbody tr.is-editing td{background:#eaf7fd!important}
         .qmes-db-member-uid{color:#1587b7!important;font-size:13px!important;font-weight:850!important}.qmes-db-member-name{color:#1e3443!important;font-weight:850!important}.qmes-db-member-phone{font-variant-numeric:tabular-nums}.qmes-db-member-row-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}.qmes-db-member-badge{display:inline-flex;align-items:center;justify-content:center;min-height:25px;padding:3px 8px;border:1px solid #ccd7de;border-radius:6px;background:#f4f7f9;color:#526575;font-size:12px;font-weight:850}.qmes-db-member-badge.admin{border-color:#c7b8ff;background:#f2efff;color:#6546c7}.qmes-db-member-badge.approved{border-color:#a8d9bf;background:#effaf4;color:#197247}.qmes-db-member-loading{padding:28px;text-align:center;color:#607483;font-weight:700}
         @media(max-width:1100px){.qmes-db-member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.qmes-db-member-grid{grid-template-columns:1fr}}
       `}</style>
 
       {info && <div className={`qmes-db-member-notice ${info.tone === "red" ? "error" : info.tone === "blue" ? "editing" : ""}`}>{info.text}</div>}
+
+      <section className="qmes-db-member-card">
+        <div className="qmes-db-member-head"><h2>서버 권한 관리</h2><span className="qmes-db-member-count">SYSTEM 권한</span></div>
+        <div className="qmes-db-member-body">
+          <div style={{marginBottom:10,fontWeight:900,color:"#203746"}}>공정 차단 해제 허용 부서</div>
+          <div className="qmes-server-perm-grid">
+            {departments.map((department) => <label key={department} className="qmes-server-perm-check">
+              <input type="checkbox" checked={(serverPerms.qualityGateReleaseDepartments || []).includes(department)} onChange={() => toggleServerDepartment(department)} />
+              {department}
+            </label>)}
+          </div>
+          <p className="qmes-server-perm-note">선택한 부서의 승인된 사용자만 공정 차단 해제 및 해제기록 삭제를 할 수 있습니다. 기본값은 품질부입니다.</p>
+          <div className="qmes-server-perm-actions"><button type="button" className="qmes-db-member-btn primary" disabled={serverPermSaving} onClick={saveServerPermissions}>{serverPermSaving ? "저장 중..." : "서버 권한 저장"}</button></div>
+        </div>
+      </section>
 
       <section id="qmes-member-editor" className={`qmes-db-member-card ${editingId ? "is-edit-mode" : ""}`}>
         <div className="qmes-db-member-head">
