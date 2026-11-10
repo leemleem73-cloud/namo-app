@@ -18,31 +18,15 @@
   function fmt(v){
     return new Intl.NumberFormat('ko-KR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
   }
-  const materialColors = {
-    nmp: ['#fff0a6', '#c59b25'],
-    byk: ['#ffdab0', '#cf813a'],
-    aoh: ['#cfe4ff', '#568cc4'],
-    manual: ['#e4d3ff', '#9671c4'],
-    sbs: ['#d2edcf', '#6eaa6a'],
-    default: ['#ffffff', '#cbd9e5']
-  };
-  function materialColor(value){
-    const name = String(value || '').trim().toUpperCase();
-    if (name === '__MANUAL__' || /^(PAI|바인더|PVDF)(?:$|[ (])/.test(name)) return materialColors.manual;
-    if (/^NMP(?:$|[ (])/.test(name)) return materialColors.nmp;
-    if (/^(BYK[- ]?180|분산제)(?:$|[ (])/.test(name)) return materialColors.byk;
-    if (/^(AOH30|BOEHMITE|세라믹)(?:$|[ (])/.test(name)) return materialColors.aoh;
-    if (/^(SBS|KTR[- ]?201)(?:$|[ (])/.test(name)) return materialColors.sbs;
-    return materialColors.default;
-  }
+  const materialColor = window.namoWorkMaterialColors;
   function rowMode(row){
     var select=row.querySelector('.material-name-select');
     var lot=row.querySelector('.material-lot-manual');
     if(!select||!lot)return;
-    const [fill, border] = materialColor(select.value);
+    const [fill, border, ink] = materialColor(select.value);
     select.style.setProperty('background-color', fill, 'important');
     select.style.setProperty('border-color', border, 'important');
-    select.style.setProperty('color', '#24445f', 'important');
+    select.style.setProperty('color', ink, 'important');
     var isMiddle=select.value==='중간배치';
     row.classList.toggle('nwm-mid-row',isMiddle);
 
@@ -107,9 +91,9 @@
       var choice=row.querySelector('.material-name-select');
       if(choice){
         for(const option of choice.options){
-          const [fill] = materialColor(option.value);
+          const [fill, , ink] = materialColor(option.value);
           option.style.backgroundColor = fill;
-          option.style.color = '#24445f';
+          option.style.color = ink;
         }
         choice.addEventListener('change',function(){rowMode(row);});
       }
