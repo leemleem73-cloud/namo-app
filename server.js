@@ -131,7 +131,7 @@ try {
   process.exit(1);
 }
 
-const SHELL_BUILD = '20260910-account-stable4';
+const SHELL_BUILD = '20261110-system-server-permissions1';
 const ACCOUNT_ASSET_BUILD = '20260910-account-stable4';
 const MEMBERS_ASSET_BUILD = '20260910-access-permissions1';
 const MEMBER_FALLBACK_BUILD = '20260904-pc-edit-hard5';
@@ -289,7 +289,7 @@ try {
     .replace(/member-management-patch\.jsx\?v=[^"']+/g, `member-management-patch.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members-bootstrap\.jsx\?v=[^"']+/g, `admin/members-bootstrap.jsx?v=${MEMBERS_ASSET_BUILD}`)
     .replace(/admin\/members\.jsx\?v=[^"']+/g, `admin/members.jsx?v=${MEMBERS_ASSET_BUILD}`)
-    .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu-20260921-v2.js?v=${SHELL_BUILD}`)
+    .replace(/qmes-collapsible-side-menu\.js\?v=[^"']+/g, `qmes-collapsible-side-menu-20261001-v5.js?v=${SHELL_BUILD}`)
     .replace(/qmes-enterprise-header-polish-20260910\.js\?v=[^"']+/g, `qmes-enterprise-header-polish-20260910.js?v=${ACCOUNT_ASSET_BUILD}`)
     .replace(/qmes-ui-recovery-20260910\.js\?v=[^"']+/g, `qmes-ui-recovery-20260910.js?v=${ACCOUNT_ASSET_BUILD}`);
 
