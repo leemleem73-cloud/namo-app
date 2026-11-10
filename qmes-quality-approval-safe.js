@@ -144,6 +144,186 @@ async function notify(userId, title, message, page, approvalId) {
   );
 }
 
+
+const QMES_APPROVAL_DOC_TYPES = new Set(['IQC','IPQC','OQC','NCR','STANDARD','CHANGE','TRAINING','WORK']);
+
+function validUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+}
+
+async function ensureGenericApproval(input = {}) {
+  await ensureSchema();
+  const docType = String(input.docType || '').trim().toUpperCase();
+  const recordId = String(input.recordId || '').trim();
+  if (!QMES_APPROVAL_DOC_TYPES.has(docType) || !recordId) return null;
+
+  const manager = await getQualityManager();
+  if (!manager) return null;
+
+  let writerUserId = validUuid(input.writerUserId) ? String(input.writerUserId) : null;
+  let writerName = String(input.writerName || '작성자').trim() || '작성자';
+  if (!writerUserId && writerName) {
+    const u = await pool.query(
+      "SELECT id,name FROM users WHERE name=$1 AND status='APPROVED' ORDER BY created_at DESC NULLS LAST LIMIT 1",
+      [writerName]
+    ).catch(() => ({rows:[]}));
+    if (u.rows[0]) {
+      writerUserId = u.rows[0].id;
+      writerName = u.rows[0].name || writerName;
+    }
+  }
+
+  const title = String(input.title || docType + ' 문서 검토·승인').trim();
+  const page = String(input.page || 'approval').trim() || 'approval';
+  const desiredStatus = ['PENDING','REVIEWED','APPROVED'].includes(input.status) ? input.status : 'PENDING';
+  const existing = await pool.query(
+    "SELECT * FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=$2 LIMIT 1",
+    [docType, recordId]
+  );
+
+  let approval;
+  if (existing.rowCount) {
+    const old = existing.rows[0];
+    if (old.status !== 'DELETED' && !input.resetExisting) return old;
+    const q = await pool.query(
+      `UPDATE qmes_quality_approvals
+       SET title=$1,page=$2,writer_user_id=$3,writer_name=$4,
+           reviewer_user_id=$5,reviewer_name=$6,approver_user_id=$5,approver_name=$6,
+           status=$7,
+           reviewed_at=CASE WHEN $7='PENDING' THEN NULL ELSE COALESCE($8::timestamptz,reviewed_at,NOW()) END,
+           approved_at=CASE WHEN $7='APPROVED' THEN COALESCE($9::timestamptz,approved_at,NOW()) ELSE NULL END,
+           created_at=COALESCE($10::timestamptz,created_at,NOW()),updated_at=NOW()
+       WHERE id=$11 RETURNING *`,
+      [title,page,writerUserId,writerName,manager.id,manager.name||'',desiredStatus,
+       input.reviewedAt||null,input.approvedAt||null,input.createdAt||null,old.id]
+    );
+    approval=q.rows[0];
+    await pool.query('DELETE FROM qmes_quality_notifications WHERE approval_id=$1',[approval.id]).catch(()=>{});
+  } else {
+    const q = await pool.query(
+      `INSERT INTO qmes_quality_approvals
+       (doc_type,record_id,title,page,writer_user_id,writer_name,
+        reviewer_user_id,reviewer_name,approver_user_id,approver_name,status,reviewed_at,approved_at,created_at,updated_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$7,$8,$9,
+         CASE WHEN $9='PENDING' THEN NULL ELSE COALESCE($10::timestamptz,NOW()) END,
+         CASE WHEN $9='APPROVED' THEN COALESCE($11::timestamptz,NOW()) ELSE NULL END,
+         COALESCE($12::timestamptz,NOW()),NOW())
+       RETURNING *`,
+      [docType,recordId,title,page,writerUserId,writerName,manager.id,manager.name||'',desiredStatus,
+       input.reviewedAt||null,input.approvedAt||null,input.createdAt||null]
+    );
+    approval=q.rows[0];
+  }
+
+  if (desiredStatus === 'PENDING' && input.notifyReviewer !== false) {
+    await notify(manager.id, docType+' 검토·승인 요청',
+      writerName+'님이 '+title+' 검토·승인을 요청했습니다.', page, approval.id).catch(()=>{});
+  }
+  return approval;
+}
+
+async function syncGenericSourceStage(docType, recordId, stage, actor) {
+  const type=String(docType||'').toUpperCase();
+  const id=String(recordId||'').trim();
+  if(!id)return;
+  try{
+    if(type==='NCR'){
+      if(/^[0-9]+$/.test(id)){
+        if(stage==='review'){
+          await pool.query("UPDATE qmes_ncr_reports SET reviewed_by=$1,reviewed_at=COALESCE(reviewed_at,NOW()),approved_by='',approved_at=NULL,updated_at=NOW() WHERE id=$2",
+            [actor.name,id]);
+        }else{
+          await pool.query("UPDATE qmes_ncr_reports SET approved_by=$1,approved_at=COALESCE(approved_at,NOW()),updated_at=NOW() WHERE id=$2",
+            [actor.name,id]);
+        }
+      }else if(/^[0-9a-f-]{36}$/i.test(id)){
+        const field=stage==='review'?'sign_reviewer':'sign_approver';
+        await pool.query(`UPDATE nonconform SET ${field}=jsonb_build_object('name',$1::text,'userId',$2::text,'at',now()),qmes_updated_at=now() WHERE id=$3::uuid`,
+          [actor.name,String(actor.id||''),id]);
+      }
+      return;
+    }
+    if(type==='STANDARD'){
+      const patch=stage==='review'
+        ? {approvalStatus:'REVIEWED',reviewerName:actor.name,reviewedAt:new Date().toISOString(),approverName:'',approvedAt:null}
+        : {approvalStatus:'APPROVED',approverName:actor.name,approvedAt:new Date().toISOString()};
+      await pool.query("UPDATE qmes_standard_documents SET document=document||$2::jsonb,updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL",
+        [id,JSON.stringify(patch)]);
+    }
+  }catch(error){
+    console.error('[QMES generic source approval sync]',{type,id,stage,error:error?.message||error});
+  }
+}
+
+async function ensureMissingNcrApprovals() {
+  await ensureSchema();
+  let created=0;
+  try{
+    const modern=await pool.query(`
+      SELECT r.id::text record_id,r.report_no,r.source,r.product,r.lot,r.created_by writer_name,r.created_by_id writer_user_id,
+             r.created_at,r.reviewed_by,r.reviewed_at,r.approved_by,r.approved_at
+      FROM qmes_ncr_reports r
+      LEFT JOIN qmes_quality_approvals a ON a.doc_type='NCR' AND a.record_id=r.id::text AND a.status<>'DELETED'
+      WHERE a.id IS NULL ORDER BY r.created_at DESC LIMIT 300`);
+    for(const row of modern.rows){
+      const status=row.approved_at?'APPROVED':row.reviewed_at?'REVIEWED':'PENDING';
+      const a=await ensureGenericApproval({
+        docType:'NCR',recordId:row.record_id,
+        title:'부적합 NCR 검토·승인 · '+(row.report_no||row.source||'NCR')+' / LOT '+(row.lot||'-'),
+        page:'ncr',writerUserId:row.writer_user_id,writerName:row.writer_name||'작성자',
+        status,reviewedAt:row.reviewed_at,approvedAt:row.approved_at,createdAt:row.created_at,notifyReviewer:false
+      });
+      if(a)created++;
+    }
+    const legacy=await pool.query(`
+      SELECT n.id::text record_id,n.nc_no,n.type,n.item,n.lot,n.owner writer_name,n.created_at,
+             n.sign_reviewer,n.sign_approver
+      FROM nonconform n
+      LEFT JOIN qmes_quality_approvals a ON a.doc_type='NCR' AND a.record_id=n.id::text AND a.status<>'DELETED'
+      WHERE a.id IS NULL ORDER BY n.created_at DESC LIMIT 300`);
+    for(const row of legacy.rows){
+      const reviewedAt=row.sign_reviewer?.at||null,approvedAt=row.sign_approver?.at||null;
+      const status=approvedAt?'APPROVED':reviewedAt?'REVIEWED':'PENDING';
+      const a=await ensureGenericApproval({
+        docType:'NCR',recordId:row.record_id,
+        title:'부적합 NCR 검토·승인 · '+(row.nc_no||row.type||'NCR')+' / LOT '+(row.lot||'-'),
+        page:'ncr',writerName:row.writer_name||'QMES 자동생성',
+        status,reviewedAt,approvedAt,createdAt:row.created_at,notifyReviewer:false
+      });
+      if(a)created++;
+    }
+  }catch(error){console.error('[QMES NCR approval backfill]',error);}
+  return created;
+}
+
+async function ensureMissingStandardApprovals() {
+  await ensureSchema();
+  let created=0;
+  try{
+    const q=await pool.query(`
+      SELECT d.id,d.document,d.created_at,d.updated_at
+      FROM qmes_standard_documents d
+      LEFT JOIN qmes_quality_approvals a ON a.doc_type='STANDARD' AND a.record_id=d.id AND a.status<>'DELETED'
+      WHERE d.deleted_at IS NULL AND a.id IS NULL
+      ORDER BY d.updated_at DESC LIMIT 300`);
+    for(const row of q.rows){
+      const doc=row.document||{};
+      const status=doc.approvalStatus==='APPROVED'?'APPROVED':doc.approvalStatus==='REVIEWED'?'REVIEWED':'PENDING';
+      const a=await ensureGenericApproval({
+        docType:'STANDARD',recordId:row.id,
+        title:'기준서/문서 검토·승인 · '+(doc.documentNo||'-')+' '+(doc.name||''),
+        page:'standard',writerName:doc.updatedBy||'작성자',status,
+        reviewedAt:doc.reviewedAt||null,approvedAt:doc.approvedAt||null,createdAt:row.created_at,notifyReviewer:false
+      });
+      if(a)created++;
+    }
+  }catch(error){
+    // Module table may not exist on older deployments; fail open.
+    if(!/does not exist/i.test(String(error?.message||'')))console.error('[QMES standard approval backfill]',error);
+  }
+  return created;
+}
+
 async function ensureMissingIqcApprovals() {
   await ensureSchema();
   const manager = await getQualityManager();
@@ -348,7 +528,7 @@ function install(app) {
       const title = String(req.body?.title || '품질문서 검토·승인 요청').trim();
       const page = String(req.body?.page || 'approval').trim() || 'approval';
 
-      if (!['IQC','IPQC','OQC'].includes(docType)) return fail(res, 400, '품질문서 구분이 올바르지 않습니다.');
+      if (!QMES_APPROVAL_DOC_TYPES.has(docType)) return fail(res, 400, '전자결재 문서구분이 올바르지 않습니다.');
 
       let approval = null;
       if (recordId) {
@@ -405,6 +585,8 @@ function install(app) {
       await ensureSchema();
       await ensureMissingIqcApprovals();
       await ensureMissingPqcSyncApprovals();
+      await ensureMissingNcrApprovals();
+      await ensureMissingStandardApprovals();
       const u = req.session.user || {};
       const admin = isAdmin(req);
       const q = await pool.query(
@@ -484,6 +666,7 @@ function install(app) {
       }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_reviewer',actor,'검토');
+      await syncGenericSourceStage(approval.doc_type,approval.record_id,'review',actor);
       if(approval.approver_user_id){
         try {
           await notify(approval.approver_user_id,'최종 승인대기',approval.title+' 최종 승인을 요청합니다.',approval.page,approval.id);
@@ -517,6 +700,7 @@ function install(app) {
       }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_approver',actor,'승인');
+      await syncGenericSourceStage(approval.doc_type,approval.record_id,'approve',actor);
       if(approval.writer_user_id){
         try {
           await notify(approval.writer_user_id,'최종 승인완료',approval.title+' 최종 승인이 완료됐습니다.',approval.page,approval.id);
@@ -608,4 +792,4 @@ express.application.use = function qmesQualityApprovalUse(...args) {
   return result;
 };
 
-module.exports = { installQmesQualityApprovalSafe: install, ensurePqcApprovalForSyncRecord };
+module.exports = { installQmesQualityApprovalSafe: install, ensurePqcApprovalForSyncRecord, ensureGenericApproval };
