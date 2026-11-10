@@ -64,7 +64,7 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   });
   const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>=0).map(micro))];
   const ambiguous=masses.length!==1;
-  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null}))};
+  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null,warehouse:text(r.warehouse_code)}))};
   if(ambiguous)g.issues.push('입고 중량 미확정/검사별 불일치');
   if(rows.length>1)g.issues.push('동일 입고일 중복검사/분할입고 확인 필요');
   g.receipts.push(event);
@@ -134,5 +134,42 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
  }
  return {rows:results.sort((a,b)=>a.material.localeCompare(b.material)||a.lot.localeCompare(b.lot)),warnings:[...new Set(warnings)],unallocated};
 }
-return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build};
+function warehouseInfo(row){
+ const originals=(row.receipts||[]).flatMap(receipt=>receipt.originals||[]);
+ const codes=new Set(originals.map(receipt=>text(receipt.warehouse).toUpperCase()));
+ const names=new Set(originals.map(receipt=>text(receipt.material).toUpperCase().replace(/\s+/g,' ')));
+ const dates=(row.receipts||[]).map(receipt=>receipt.date).sort();
+ return {
+  code:codes.size===1&&/^[A-Z0-9][A-Z0-9_-]{0,29}$/.test([...codes][0])?[...codes][0]:'',
+  item:names.size===1?[...names][0]:'',
+  first:dates.length&&dates.every(date=>/^\d{4}-\d{2}-\d{2}$/.test(date))?dates[0]:'',
+  last:dates.at(-1)||''
+ };
+}
+function fifoCheck(model, scannedLot, warehouse){
+ const code=text(warehouse).toUpperCase(), target=lot(scannedLot);
+ if(!target||target==='-'||!code)return {state:'unavailable',reason:'창고코드와 원료 LOT를 입력해 주세요.'};
+ if(model.warnings.length)return {state:'unavailable',reason:'재고 자료 조회 실패'};
+ const matches=model.rows.filter(row=>lot(row.lot)===target);
+ if(matches.length!==1)return {state:'unavailable',reason:matches.length?'같은 LOT의 원료 또는 공급업체가 여러 건입니다.':'재고에서 원료 LOT를 찾지 못했습니다.'};
+ const selected=matches[0],info=warehouseInfo(selected);
+ if(info.code!==code||!info.item||!info.first||selected.start||selected.uncertain)
+  return {state:'unavailable',reason:'선택 LOT의 창고, 입고일 또는 잔량 근거를 확인해 주세요.'};
+ const candidates=model.rows.filter(row=>row!==selected&&lot(row.lot)!==target&&material(row.material)===material(selected.material));
+ const alternatives=[];
+ let unresolved=false;
+ for(const row of candidates){
+  const candidate=warehouseInfo(row);
+  if(candidate.code&&candidate.code!==code)continue;
+  if(row.available>0&&candidate.code===code&&candidate.item===info.item&&candidate.first&&candidate.last<info.first&&!row.start){
+   alternatives.push({lot:row.lot,supplier:row.supplier,available:row.available,received:candidate.last});
+  }else if((row.available>0||row.uncertain)&&(!candidate.item||candidate.item===info.item)&&(!candidate.first||candidate.first<info.first)&&(!candidate.code||!candidate.first||row.start||row.uncertain)){
+   unresolved=true;
+  }
+ }
+ alternatives.sort((a,b)=>a.received.localeCompare(b.received)||a.lot.localeCompare(b.lot));
+ if(alternatives.length)return {state:'warning',alternatives};
+ return unresolved?{state:'unavailable',reason:'다른 LOT의 창고, 입고일 또는 잔량이 미확인입니다.'}:{state:'clear'};
+}
+return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build,warehouseInfo,fifoCheck};
 });

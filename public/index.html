@@ -4550,6 +4550,7 @@ function editIncomingRecord(section,row){
     <div class="form-item"><label>공급업체</label><input id="iqcEditSupplier" type="text" value="${String(row.supplier||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>품목명</label><input id="iqcEditItem" type="text" value="${String(row.item||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label>원료 LOT</label><input id="iqcEditLot" type="text" value="${String(row.lot||'').replace(/"/g,'&quot;')}"></div>
+    <div class="form-item"><label for="iqcEditWarehouse">입고 창고코드</label><input id="iqcEditWarehouse" maxlength="30" value="${amEsc(row.warehouse_code||'')}" placeholder="창고 미지정"></div>
     <div class="form-item"><label>입고 중량 (kg)</label><input id="iqcEditIncomingQty" type="number" min="0" step="any" inputmode="decimal" value="${iqcIncomingWeight(row.incoming_qty)??''}" placeholder="입고 중량 입력"></div>
     <div class="form-item"><label>검사자</label><input id="iqcEditInspector" type="text" value="${String(row.inspector||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-item"><label for="iqcEditResult">검사결과</label><select id="iqcEditResult">${[...new Set(['합격','불합격','보류','대기',iqcJudge(row)])].map(result=>`<option value="${String(result).replace(/"/g,'&quot;')}"${result===iqcJudge(row)?' selected':''}>${String(result).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</option>`).join('')}</select></div>
@@ -4586,6 +4587,7 @@ function editIncomingRecord(section,row){
       supplier:document.getElementById('iqcEditSupplier')?.value.trim()||'',
       item:document.getElementById('iqcEditItem')?.value.trim()||'',
       inspector:document.getElementById('iqcEditInspector')?.value.trim()||'',
+      warehouseCode:document.getElementById('iqcEditWarehouse')?.value.trim()||'',
       incomingQty:iqcIncomingWeight(document.getElementById('iqcEditIncomingQty')?.value),
       qty:row.qty,
       failQty:row.fail,
@@ -7350,6 +7352,7 @@ function standardInspectionForm(type){
     <div class="k">공급업체</div><div class="v"><select id="incomingSupplier"><option value="">공급업체 선택</option><option value="__manual__">직접입력</option></select></div>
     <div class="k">원료명</div><div class="v"><select id="incomingMaterialName"><option value="">원료명 선택</option>${NAMO_RAW_MATERIALS.map(x=>`<option>${x}</option>`).join('')}</select></div>
     <div class="k">원료 LOT</div><div class="v"><select id="incomingMaterialLot"><option value="">원료 LOT 선택</option><option value="__manual__">직접입력</option></select></div>
+    <div class="k">입고 창고코드</div><div class="v"><input id="incomingWarehouse" maxlength="30" placeholder="창고 미지정"></div>
     <div class="k">입고 중량 (kg)</div><div class="v"><input id="incomingWeightKg" type="number" min="0" step="any" inputmode="decimal" placeholder="입고 중량 입력"></div>`;
   if(type==='process') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
@@ -7521,7 +7524,8 @@ function initStandardInspectionForm(type){
           const iqcFinalJudge=evaluateIqcItems(items);
           if(overall)overall.value=iqcFinalJudge;
           const r=await fetch('/api/iqc',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-            date,lot,supplier,item:name,inspector,incomingQty,qty:null,failQty:0,judge:iqcFinalJudge,items
+            date,lot,supplier,item:name,inspector,incomingQty,qty:null,failQty:0,judge:iqcFinalJudge,items,
+            warehouseCode:document.getElementById('incomingWarehouse')?.value.trim()||''
           })});
           const p=await r.json().catch(()=>({success:false}));
           if(!r.ok||!p.success)throw new Error(p.message||'저장 실패');
@@ -7560,6 +7564,12 @@ function openNewForm(id,editOrder=null){
 
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
         <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
+        <div class="work-note" id="workFifoCheck">
+          <label>사용 창고코드 <input data-fifo-warehouse maxlength="30" autocomplete="off"></label>
+          <label>원료 LOT 스캔 <input data-fifo-lot maxlength="120" autocomplete="off" placeholder="스캔 또는 직접 입력"></label>
+          <button type="button" class="btn" data-fifo-check>선입선출 확인</button>
+          <span role="status" aria-live="polite" data-fifo-status></span>
+        </div>
         <table class="work-material-table" id="workMaterialTable"><thead><tr><th class="no">NO</th><th class="name">원료명</th><th class="lot">원료 LOT NO</th><th class="plan">계획투입량(kg)</th><th class="actual">실투입량(kg)</th><th class="ratio">투입비율(%)(자동계산)</th><th class="act">관리</th></tr></thead><tbody></tbody></table>
         <div class="work-note">※ 원료 LOT NO는 수입검사 내역에서 선택하거나 직접 입력할 수 있습니다. 계획투입량을 입력하면 원료별 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div>
       </div></div>
@@ -7581,6 +7591,28 @@ function openNewForm(id,editOrder=null){
     document.querySelector('.modal')?.classList.add('work-mode');
     modalBackdrop.classList.add('work-backdrop');
     initNamochemicalWorkForm();
+    const fifo=workspaceBody.querySelector('#workFifoCheck');
+    if(fifo){
+      const warehouse=fifo.querySelector('[data-fifo-warehouse]'),lotInput=fifo.querySelector('[data-fifo-lot]');
+      const button=fifo.querySelector('[data-fifo-check]'),status=fifo.querySelector('[data-fifo-status]');
+      let generation=0;
+      const clear=()=>{generation++;status.textContent='';button.disabled=false;};
+      warehouse.addEventListener('input',clear);lotInput.addEventListener('input',clear);
+      button.onclick=async()=>{
+        const id=++generation;button.disabled=true;status.textContent='재고 확인 중…';
+        try{
+          if(!window.qmesRawStock?.checkFifo)throw Error('재고 조회를 준비 중입니다.');
+          const result=await window.qmesRawStock.checkFifo(lotInput.value,warehouse.value,AbortSignal.timeout(15000));
+          if(id!==generation||!fifo.isConnected)return;
+          if(result.state==='warning'){
+            const older=result.alternatives[0];
+            status.textContent='선입선출 주의 · 선입 LOT '+older.lot+' · 사용 가능 '+older.available.toLocaleString('ko-KR')+' kg · 먼저 사용해 주세요.';
+          }else status.textContent=result.state==='clear'?'확인된 재고 기준으로 더 먼저 입고된 사용 가능 LOT가 없습니다.':'FIFO 확인 불가 · '+result.reason;
+        }catch(error){if(id===generation&&fifo.isConnected)status.textContent='FIFO 확인 불가 · '+error.message;}
+        finally{if(id===generation)button.disabled=false;}
+      };
+      lotInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();button.click();}});
+    }
     const draftScreen=document.querySelector('.am-split[data-am-screen="work"]');if(draftScreen){draftScreen.dataset.amRecord=String(editOrder?.id||'new');draftScreen.dataset.amMode=editOrder?'edit':'new';}
     window.namoWorkDispatchInit?.(editOrder?.id||'');
     if(editOrder){
@@ -8274,8 +8306,8 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
 <script defer src="./js/qmes-stock-grid-20261104.js?v=7-stock-status"></script>
-<script defer src="./js/qmes-material-stock-core-20261103.js?v=6-delete-usage"></script>
-<script defer src="./js/qmes-material-stock-ui-20261103.js?v=16-delete-usage"></script>
+<script defer src="./js/qmes-material-stock-core-20261103.js?v=20261110-warehouse1"></script>
+<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261110-warehouse1"></script>
 <script defer src="./js/qmes-finished-stock-core-20261103.js?v=20261105-ship-qty"></script>
 <script defer src="./js/qmes-finished-stock-ui-20261103.js?v=20261105-ship-qty"></script>
 
