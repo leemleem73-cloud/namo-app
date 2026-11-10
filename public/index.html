@@ -6067,6 +6067,11 @@ function hydrateOqcStandardCertificate(body){
  const notes=source.querySelectorAll('.report-support-row');
  const remarks=root.querySelector('.std-premium-remarks textarea');
  if(remarks){remarks.value=notes[2]?.querySelector('.value')?.childNodes[0]?.textContent?.trim()||'-';remarks.readOnly=true;}
+ const reportRev=text('.report-meta .label:nth-of-type(3) + .value');
+ const docCells=[...root.querySelectorAll('.std-inspection-doc .k')];
+ const revLabel=docCells.find(cell=>cell.textContent.trim()==='Rev.');
+ const revValue=revLabel?.nextElementSibling;
+ if(revValue)revValue.textContent=reportRev;
  const status=root.querySelector('.std-inspection-doc .v:last-child');if(status)status.textContent='저장된 검사값 반영';
  const pane=root.closest('.am-detail-pane');
  const hint=pane?.querySelector('.am-detail-top small');if(hint)hint.textContent='저장된 출하검사 기록을 표시합니다.';
