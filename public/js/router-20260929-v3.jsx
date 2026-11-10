@@ -148,6 +148,7 @@ const TOP_MENUS = [
   { id:"eq", label:"설비관리", icon:Cpu },
   { id:"trace", label:"LOT 추적", icon:GitBranch },
   { id:"nonconformityMenu", label:"부적합관리", icon:ShieldAlert, children:["ncr","cc","4m"] },
+  { id:"systemMenu", label:"SYSTEM", icon:Lock, children:["members","serverPermissions"], adminOnly:true },
 ];
 
 function safeStorageGet(key, fallback=null){
@@ -310,7 +311,7 @@ function QMESChemical({user,onLogout}){
         </div>
         <div className="qmes-top-menu-bar">
           <nav className="qmes-top-menu">
-            {TOP_MENUS.map(menu=>{const MenuIcon=menu.icon;const children=(menu.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);const direct=!menu.children;const active=direct?tab===menu.id:children.some(item=>item.id===tab);const opened=openMenu===menu.id;return <div key={menu.id} className="qmes-top-menu-item"><button type="button" onClick={()=>{if(direct){setTab(menu.id);setOpenMenu(null);}else{setOpenMenu(opened?null:menu.id);if(!active&&children.length)setTab(children[0].id);}}} className={"qmes-top-menu-button "+(active?"is-active":"")}><MenuIcon size={15}/><span>{menu.label}</span>{!direct&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}</button></div>;})}
+            {TOP_MENUS.filter(menu=>!menu.adminOnly||user.role==="admin").map(menu=>{const MenuIcon=menu.icon;const children=(menu.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);const direct=!menu.children;const active=direct?tab===menu.id:children.some(item=>item.id===tab);const opened=openMenu===menu.id;return <div key={menu.id} className="qmes-top-menu-item"><button type="button" onClick={()=>{if(direct){setTab(menu.id);setOpenMenu(null);}else{setOpenMenu(opened?null:menu.id);if(!active&&children.length)setTab(children[0].id);}}} className={"qmes-top-menu-button "+(active?"is-active":"")}><MenuIcon size={15}/><span>{menu.label}</span>{!direct&&<ChevronRight size={12} className="qmes-menu-arrow" style={{transform:opened?"rotate(90deg)":"rotate(0deg)"}}/>}</button></div>;})}
           </nav>
           {openMenu&&(()=>{const selected=TOP_MENUS.find(menu=>menu.id===openMenu);const items=(selected?.children||[]).map(id=>visibleTabs.find(tabItem=>tabItem.id===id)).filter(Boolean);if(!items.length)return null;return <div className={"qmes-submenu-row qmes-submenu-"+selected.id} role="menu"><div className="qmes-submenu-title">{selected.label}</div>{items.map(item=>{const ItemIcon=item.icon;return <button type="button" key={item.id} onClick={()=>setTab(item.id)} className={"qmes-submenu-button "+(tab===item.id?"is-active":"")}><ItemIcon size={14}/><span>{item.label}</span></button>;})}</div>;})()}
         </div>
