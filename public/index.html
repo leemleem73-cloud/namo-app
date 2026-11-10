@@ -6168,7 +6168,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     }catch(error){console.warn('[QMES] PQC report measurements:',error);}
   }
   // OQC certificates use exactly the persisted group opened by the edit screen.
-  let oqcReportOverall=null,oqcReportRemarks='',oqcShippingStatus='';
+  let oqcReportOverall=null,oqcReportRemarks='',oqcShippingStatus='',oqcStandardRevision=0;
   if(id==='outgoing'){
     const record=document.getElementById('outgoing')?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
     const rules=window.qmesOqcRules;
@@ -6187,7 +6187,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     oqcReportOverall=records.some(row=>row.inspectionDecision==='불합격')?'불합격':rules.evaluateMeasurements(measurements).overall;
     const escapeValue=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     itemSets.outgoing.forEach(item=>{for(let index=3;index<6;index++)item[index]=escapeValue(item[index]);});
-    oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');
+    oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');oqcStandardRevision=Math.max(0,...records.map(r=>Number.isFinite(Number(r.standardRevision))?Number(r.standardRevision):0));
   }
   const items=itemSets[id]||[];
   const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
@@ -6232,7 +6232,7 @@ function qmesIqcBarcodeSvg(value){
       <div class="report-meta">
         <div class="label">문서번호</div><div class="value">${reportNo}</div>
         <div class="label">문서구분</div><div class="value">${docType}</div>
-        <div class="label">Rev.</div><div class="value">${id==='outgoing'?'1':'0'}</div>
+        <div class="label">Rev.</div><div class="value">${id==='outgoing'?oqcStandardRevision:'0'}</div>
         
       </div>
       <table class="report-basic">
@@ -6479,7 +6479,8 @@ function printInspectionReport(title,batchSheets,previewOnly=false){
   }
   const printSheet=preparePrintSheet(sheet);
   // Rev. and Page belong below the report's outer border, not inside a cell.
-  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. '+(sheet.matches('.report-outgoing')?'1':'0')+'</span><span>1 / 1 Page</span></div>';
+  const renderedRevision=sheet.querySelector('.report-meta .label:nth-of-type(3) + .value')?.textContent?.trim()||'0';
+  const printOutsideMeta='<div class="print-outside-meta"><span>Rev. '+renderedRevision+'</span><span>1 / 1 Page</span></div>';
     const isPqcPrint=sheet.matches('.report-process,.report-pqc-print');
     const isOqcPrint=sheet.matches('.report-outgoing');
   // PQC uses one isolated stylesheet in both screen preview and print media.
