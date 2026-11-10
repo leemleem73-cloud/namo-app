@@ -5217,6 +5217,32 @@ function nextWorkOrderDisplayNumber(date,orders){
   return prefix+String(Math.max(0,...used)+1).padStart(3,'0');
 }
 
+function wireWorkIdentifierCorrection(form, order){
+  const panel=form?.querySelector('[data-work-id-correction]');
+  if(!panel||!order)return;
+  const oldNumber=String(order.fields?.['작업지시번호']||order.id).trim();
+  const oldLot=String(order.fields?.['생산 LOT NO']||'').trim();
+  const number=panel.querySelector('[name="correctedWorkNumber"]');
+  const lot=panel.querySelector('[name="correctedProductionLot"]');
+  const button=panel.querySelector('button');
+  const status=panel.querySelector('[role="status"]');
+  number.value=oldNumber;
+  lot.value=oldLot;
+  button.addEventListener('click',async()=>{
+    const nextNumber=number.value.trim().toUpperCase(),nextLot=lot.value.trim().toUpperCase();
+    if(!number.reportValidity()||!lot.reportValidity())return;
+    if(nextNumber===oldNumber&&nextLot===oldLot){status.textContent='변경된 번호가 없습니다.';return;}
+    button.disabled=true;
+    try{
+      await workApi('PATCH','/'+encodeURIComponent(order.id)+'/identifiers',{number:nextNumber,lot:nextLot,oldNumber,oldLot});
+      await refreshSharedWorkOrders();
+      closeModal();
+      toast('작업지시번호와 생산 LOT를 정정했습니다.');
+    }catch(error){status.textContent=error.message;}
+    finally{button.disabled=false;}
+  });
+}
+
 async function saveWorkOrderForm(editId='',options={}){
   const form=document.querySelector('.work-form');
   if(!form)return null;
@@ -7722,6 +7748,16 @@ function openNewForm(id,editOrder=null){
         <div class="form-item"><label>생산구분</label><select><option>양산</option><option>파일럿 생산</option><option>시험생산</option><option>샘플생산</option></select></div>
       </div></div></div>
 
+      ${editOrder?`<details class="work-note" data-work-id-correction>
+        <summary>작업지시번호 · 생산 LOT 정정</summary>
+        <p>이미 저장된 작업지시서의 두 번호만 정정합니다. 다른 입력값은 별도로 저장하세요.</p>
+        <div class="work-basic-grid">
+          <label>정정할 작업지시번호 <input name="correctedWorkNumber" type="text" required maxlength="64" autocomplete="off"></label>
+          <label>정정할 생산 LOT <input name="correctedProductionLot" type="text" required maxlength="60" autocomplete="off"></label>
+        </div>
+        <button type="button" class="btn primary">번호 정정 저장</button>
+        <span role="status" aria-live="polite"></span>
+      </details>`:''}
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
         <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
         <div class="work-note" id="workFifoCheck">
@@ -7847,6 +7883,7 @@ function openNewForm(id,editOrder=null){
       });
       document.querySelector('#namoWorkInstructions').value=editOrder.note||'';const wf=document.querySelector('.work-form');if(wf){wf.dataset.recipeId=editOrder.recipeId||'';wf.dataset.recipeRevision=editOrder.recipeRevision||'';wf.dataset.recipeProduct=editOrder.recipeProduct||'';}
     }
+    wireWorkIdentifierCorrection(document.querySelector('.work-form'),editOrder);
     const workSave=document.getElementById('modalSave');
     if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
     document.getElementById('workSavePrint')?.addEventListener('click',()=>{
