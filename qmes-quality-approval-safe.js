@@ -459,9 +459,18 @@ function install(app) {
       const actor=profile.rows[0];
       if(!actor||!hasSeniorApprovalRole(actor)) return fail(res,403,'검토는 부장 이상만 가능합니다.');
       const result=await pool.query(`UPDATE qmes_quality_approvals
-        SET status='REVIEWED',reviewer_user_id=$1,reviewer_name=$2,reviewed_at=NOW(),updated_at=NOW()
-        WHERE id=$3 AND status='PENDING' RETURNING *`,[actor.id,actor.name,req.params.id]);
-      if(!result.rowCount)return fail(res,409,'검토대기 상태의 문서만 검토할 수 있습니다.');
+        SET status='REVIEWED',reviewer_user_id=$1,reviewer_name=$2,reviewed_at=COALESCE(reviewed_at,NOW()),updated_at=NOW()
+        WHERE id=$3
+          AND COALESCE(status,'PENDING') NOT IN ('APPROVED','DELETED')
+          AND reviewed_at IS NULL
+        RETURNING *`,[actor.id,actor.name,req.params.id]);
+      if(!result.rowCount){
+        const current=await pool.query('SELECT * FROM qmes_quality_approvals WHERE id=$1 LIMIT 1',[req.params.id]);
+        if(current.rowCount && current.rows[0].status==='REVIEWED' && current.rows[0].reviewed_at){
+          return ok(res,current.rows[0],'이미 검토가 완료되어 승인대기 상태입니다.');
+        }
+        return fail(res,409,'현재 상태에서는 검토 처리할 수 없습니다.');
+      }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_reviewer',actor,'검토');
       if(approval.approver_user_id)await notify(approval.approver_user_id,'최종 승인대기',approval.title+' 최종 승인을 요청합니다.',approval.page,approval.id);
@@ -477,9 +486,18 @@ function install(app) {
       const actor=profile.rows[0];
       if(!actor||!hasSeniorApprovalRole(actor))return fail(res,403,'최종 승인은 부장 이상만 가능합니다.');
       const result=await pool.query(`UPDATE qmes_quality_approvals
-        SET status='APPROVED',approver_user_id=$1,approver_name=$2,approved_at=NOW(),updated_at=NOW()
-        WHERE id=$3 AND status='REVIEWED' AND reviewed_at IS NOT NULL RETURNING *`,[actor.id,actor.name,req.params.id]);
-      if(!result.rowCount)return fail(res,409,'검토 완료 후에만 최종 승인할 수 있습니다.');
+        SET status='APPROVED',approver_user_id=$1,approver_name=$2,approved_at=COALESCE(approved_at,NOW()),updated_at=NOW()
+        WHERE id=$3
+          AND reviewed_at IS NOT NULL
+          AND COALESCE(status,'REVIEWED') NOT IN ('APPROVED','DELETED')
+        RETURNING *`,[actor.id,actor.name,req.params.id]);
+      if(!result.rowCount){
+        const current=await pool.query('SELECT * FROM qmes_quality_approvals WHERE id=$1 LIMIT 1',[req.params.id]);
+        if(current.rowCount && current.rows[0].status==='APPROVED' && current.rows[0].approved_at){
+          return ok(res,current.rows[0],'이미 최종 승인 완료된 문서입니다.');
+        }
+        return fail(res,409,'검토 완료 후에만 최종 승인할 수 있습니다.');
+      }
       const approval=result.rows[0];
       await signQualityStage(approval.doc_type,approval.record_id,'sign_approver',actor,'승인');
       if(approval.writer_user_id)await notify(approval.writer_user_id,'최종 승인완료',approval.title+' 최종 승인이 완료됐습니다.',approval.page,approval.id);
