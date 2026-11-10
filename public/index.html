@@ -7579,8 +7579,9 @@ function openNewForm(id,editOrder=null){
       <div class="work-section"><div class="work-section-title">원료 투입계획</div><div class="work-section-body">
         <div class="work-material-tools"><button class="btn" id="workRowAdd" type="button">+ 행 추가</button></div>
         <div class="work-note" id="workFifoCheck">
-          <label>사용 창고코드 <input data-fifo-warehouse maxlength="30" autocomplete="off"></label>
-          <label>원료 LOT 스캔 <input data-fifo-lot maxlength="120" autocomplete="off" placeholder="스캔 또는 직접 입력"></label>
+          <label>사용 창고코드 <select data-fifo-warehouse class="nwm-iqc-lot-select" style="min-width:120px"><option value="">창고 선택</option></select></label>
+          <label>원료 LOT 선택 <select data-fifo-lot-choice class="nwm-iqc-lot-select" style="max-width:340px"><option value="">수입검사 LOT 선택</option></select></label>
+          <label>원료 LOT 스캔 <input data-fifo-lot maxlength="120" autocomplete="off" placeholder="선택 또는 스캔"></label>
           <button type="button" class="btn" data-fifo-check>선입선출 확인</button>
           <span role="status" aria-live="polite" data-fifo-status></span>
         </div>
@@ -7611,7 +7612,42 @@ function openNewForm(id,editOrder=null){
       const button=fifo.querySelector('[data-fifo-check]'),status=fifo.querySelector('[data-fifo-status]');
       let generation=0;
       const clear=()=>{generation++;status.textContent='';button.disabled=false;};
-      warehouse.addEventListener('input',clear);lotInput.addEventListener('input',clear);
+      const lotChoice=fifo.querySelector('[data-fifo-lot-choice]');
+      const receipts=new Map();
+      warehouse.addEventListener('change',clear);
+      lotInput.addEventListener('input',()=>{lotChoice.value='';clear();});
+      lotChoice.addEventListener('change',()=>{
+        const selected=receipts.get(lotChoice.value);
+        if(!selected){lotInput.value='';clear();return;}
+        lotInput.value=selected.lot;
+        if(selected.warehouse)warehouse.value=selected.warehouse;
+        else warehouse.value='';
+        clear();
+      });
+      const loadChoices=async()=>{
+        lotChoice.options[0].textContent='수입검사 LOT 불러오는 중…';
+        try{
+          await window.qmesAuthDataReady?.wait();
+          const response=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
+          const result=await response.json();
+          if(!response.ok||result.success!==true||!Array.isArray(result.data))throw Error('수입검사 목록 조회 실패');
+          if(!fifo.isConnected)return;
+          for(const row of result.data){
+            const lot=String(row.lot??'').trim(),item=String(row.item??'').trim(),supplier=String(row.supplier??'').trim();
+            const warehouse=String(row.warehouse_code??'').trim().toUpperCase();
+            if(!lot||lot==='-'||row.deleted)continue;
+            const key=JSON.stringify([lot,item,supplier,warehouse]);
+            if(!receipts.has(key))receipts.set(key,{lot,item,supplier,warehouse});
+          }
+          const warehouses=[...new Set([...receipts.values()].map(row=>row.warehouse).filter(Boolean))].sort();
+          warehouse.replaceChildren(new Option(warehouses.length?'창고 선택':'등록된 창고 없음',''),...warehouses.map(code=>new Option(code,code)));
+          lotChoice.replaceChildren(new Option(receipts.size?'수입검사 LOT 선택':'등록된 LOT 없음',''));
+          for(const [key,row] of receipts)lotChoice.add(new Option([row.lot,row.item,row.supplier,row.warehouse||'창고 미지정'].filter(Boolean).join(' · '),key));
+        }catch(error){
+          if(fifo.isConnected)lotChoice.options[0].textContent='LOT 조회 실패 · 다시 열어 주세요';
+        }
+      };
+      void loadChoices();
       button.onclick=async()=>{
         const id=++generation;button.disabled=true;status.textContent='재고 확인 중…';
         try{
