@@ -64,6 +64,28 @@ module.exports.install=function(app,{pool,requireLogin,auditLog}){
    if(req.params.id)await pool.query('UPDATE qmes_standard_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1',[id,JSON.stringify(saved)]);
    else await pool.query('INSERT INTO qmes_standard_documents(id,document) VALUES($1,$2::jsonb)',[id,JSON.stringify(saved)]);
    await auditLog(req,req.params.id?'UPDATE':'CREATE','qmes_standard_documents',id,publicDocument(before),publicDocument(saved));
+   try{
+    const approval=require('./qmes-quality-approval-safe.js');
+    if(typeof approval.ensureGenericApproval==='function'){
+      const central=await approval.ensureGenericApproval({
+        docType:'STANDARD',
+        recordId:String(id),
+        title:'기준서/문서 검토·승인 · '+(saved.documentNo||'-')+' '+(saved.name||''),
+        page:'standard',
+        writerUserId:req.session.user.id||null,
+        writerName:req.session.user.name||'작성자',
+        resetExisting:Boolean(req.params.id)
+      });
+      if(central){
+        saved.approvalStatus=central.status;
+        saved.reviewerName=central.reviewer_name||'';
+        saved.reviewedAt=central.reviewed_at||null;
+        saved.approverName=central.approver_name||'';
+        saved.approvedAt=central.approved_at||null;
+        await pool.query('UPDATE qmes_standard_documents SET document=$2::jsonb,updated_at=NOW() WHERE id=$1',[id,JSON.stringify(saved)]);
+      }
+    }
+   }catch(error){console.error('[STANDARD central approval link]',error);}
    res.json({success:true,data:publicDocument(saved)});
   }catch(e){res.status(e.status||500).json({success:false,message:e.message||'문서 저장 실패'});}
  }
