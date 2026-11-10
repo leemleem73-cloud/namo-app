@@ -14,7 +14,12 @@ let dialog, state, selected, loadController, loadSerial=0, lastMessage = '';
 async function request(url, body, signal) {
  const response = await fetch('/api/qmes-quality-gate' + url, { credentials:'same-origin', cache:'no-store', signal,
   ...(body ? { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body) } : {}) });
- const result = await response.json();
+ const result = await response.json().catch(()=>null);
+ if(!result||typeof result.success!=='boolean'){
+  if(response.status===401||response.redirected)throw Error('로그인 상태를 확인한 뒤 다시 조회해 주세요.');
+  const detail=response.status>=500?'서버 응답 지연 또는 장애':'예상과 다른 서버 응답';
+  throw Error(detail+' (HTTP '+response.status+'). 보류 내역을 다시 조회해 처리 여부를 확인해 주세요.');
+ }
  if (!response.ok || !result.success) throw Error(result.message || '품질 통제 요청에 실패했습니다.');
  return result.data || result;
 }
