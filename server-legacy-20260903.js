@@ -2663,6 +2663,19 @@ rows[index]={...old,...clean,...patch};
       }
       updates.push({key:record.record_key,payload,rows,selected});
     }
+    const labelDateKeys=new Set(['manufactureDate','actualShipDate']);
+    const sameField=(row,key,value)=>{
+      if(key==='inspectionDecision')return (row[key]||'자동판정')===value;
+      if(key==='shipQty')return require('./public/js/qmes-oqc-shipqty-20261105.js').normalize(row[key])===value;
+      return txt(row[key])===txt(value);
+    };
+    const labelDatesOnly=[...labelDateKeys].some(key=>Object.hasOwn(clean,key)&&auditBefore.some(({row})=>!sameField(row,key,clean[key])))
+      &&targets.every(target=>Object.keys(target.patch).length===0)
+      &&auditBefore.every(({row})=>Object.entries(clean).every(([key,value])=>labelDateKeys.has(key)||sameField(row,key,value)));
+    if(labelDatesOnly){
+      const dates=Object.fromEntries(Object.entries(clean).filter(([key])=>labelDateKeys.has(key)));
+      auditAfter.forEach((entry,index)=>{entry.row={...auditBefore[index].row,...dates};});
+    }
     const computed=oqcAutoRules.summarizeRows(auditAfter.map(({row})=>({...row,inspectionDecision:'자동판정'}))).overall;
     if(clean.inspectionDecision==='합격'&&computed!=='합격')throw Object.assign(Error('측정값이 모두 합격인 경우에만 합격으로 저장할 수 있습니다.'),{status:400});
     const effective=clean.inspectionDecision==='불합격'?'불합격':computed;
@@ -2671,11 +2684,11 @@ rows[index]={...old,...clean,...patch};
       const eligibility=await client.query('SELECT qmes_gate_historical_oqc($1::jsonb,$2::jsonb) AS allowed',[JSON.stringify(auditBefore.map(e=>e.row)),JSON.stringify(auditAfter.map(e=>e.row))]);
       historicalCorrection=eligibility.rows[0]?.allowed===true;
     }
-    const shipmentHeld=!historicalCorrection&&effective!=='합격'&&(clean.shippingStatus==='출하완료'||auditAfter.some(entry=>entry.row.shippingStatus==='출하완료'));
+    const shipmentHeld=!labelDatesOnly&&!historicalCorrection&&effective!=='합격'&&(clean.shippingStatus==='출하완료'||auditAfter.some(entry=>entry.row.shippingStatus==='출하완료'));
     if(shipmentHeld){clean.shippingStatus='출하보류';for(const entry of auditAfter)entry.row.shippingStatus='출하보류';}
-    if(auditAfter.some(entry=>entry.row.shippingStatus==='출하완료')){try{const qty=require('./public/js/qmes-oqc-shipqty-20261105.js');const values=[...new Set(auditAfter.map(entry=>qty.normalize(entry.row.shipQty)))];if(values.length!==1)throw Error('검사항목별 출하수량이 다릅니다. 출하수량을 다시 입력해 주세요.');qty.validateCompletion(values[0],auditBefore.map(entry=>entry.row));}catch(error){throw Object.assign(error,{status:400});}}
+    if(!labelDatesOnly&&auditAfter.some(entry=>entry.row.shippingStatus==='출하완료')){try{const qty=require('./public/js/qmes-oqc-shipqty-20261105.js');const values=[...new Set(auditAfter.map(entry=>qty.normalize(entry.row.shipQty)))];if(values.length!==1)throw Error('검사항목별 출하수량이 다릅니다. 출하수량을 다시 입력해 주세요.');qty.validateCompletion(values[0],auditBefore.map(entry=>entry.row));}catch(error){throw Object.assign(error,{status:400});}}
     const shipRules=require('./public/js/qmes-oqc-shipqty-20261105.js'),shipInput=clean.shipQty??shipRules.normalize(auditAfter[0]?.row.shipQty),movementId='OQC:'+require('node:crypto').createHash('sha256').update(targets.map(t=>t.recordKey+'|'+t.rowId).sort().join('\n')).digest('hex').slice(0,24);
-    try{const captured=shipRules.capture(auditBefore.map(e=>e.row),auditAfter.map(e=>e.row),shipInput,new Date().toISOString(),movementId);captured.forEach((row,i)=>auditAfter[i].row=row);}catch(error){throw Object.assign(error,{status:400});}
+    try{if(!labelDatesOnly){const captured=shipRules.capture(auditBefore.map(e=>e.row),auditAfter.map(e=>e.row),shipInput,new Date().toISOString(),movementId);captured.forEach((row,i)=>auditAfter[i].row=row);}}catch(error){throw Object.assign(error,{status:400});}
     const revision=oqcRevision.applyGroup(auditBefore.map(entry=>entry.row),auditAfter.map(entry=>entry.row),txt(req.session.user.name),new Date().toISOString());
     const coaAttachment=await require('./qmes-oqc-attachments-20261104.cjs').save(client,targets,req.body.attachment,txt(req.session.user.name));
     if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:!!coaAttachment,shipmentHeld,historicalCorrection,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
@@ -2686,7 +2699,7 @@ rows[index]={...old,...clean,...patch};
     }
     await client.query('COMMIT');committed=true;
     await auditLog(req,'UPDATE','qmes_sync_records','oqc:detail',{rows:auditBefore},{rows:auditAfter}).catch(e=>console.warn('OQC edit audit:',e.message));
-    if(effective==='불합격'&&!historicalCorrection){
+    if(!labelDatesOnly&&effective==='불합격'&&!historicalCorrection){
       const sample=auditAfter[0]?.row||{};
       const recordKey=targets[0]?.recordKey||sample.lot||'';
       await autoCreateNcr({
@@ -2707,6 +2720,8 @@ rows[index]={...old,...clean,...patch};
     return ok(res,{updated:targets.length,changed:true,shipmentHeld,historicalCorrection,revision:revision.revision,modifiedAt:revision.modifiedAt,modifiedBy:revision.modifiedBy},'출하검사 수정 저장 완료');
   }catch(error){
     if(client&&!committed)await client.query('ROLLBACK').catch(()=>{});
+    if(String(error.message||'').startsWith('[QUALITY_GATE]'))return fail(res,409,error.message);
+    if(!error.status)console.error('[OQC detail save]',error);
     return fail(res,error.status||500,error.status?error.message:'출하검사 저장에 실패했습니다. 입력 내용을 유지합니다.');
   }finally{if(client)client.release();}
 });

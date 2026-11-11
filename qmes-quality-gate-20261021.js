@@ -195,7 +195,7 @@ async function api(req, res) {
 const guardedPath = /^\/api\/(qmes-quality-gate(?:\/|$)|qmes-sync(?:\/|$)|qmes-extra-sync(?:\/|$)|qmes\/|qmes-ncr(?:\/|$)|iqc(?:\/|$)|pqc(?:\/|$)|oqc(?:\/|$)|worklog(?:\/|$)|inventory(?:\/|$)|certificate(?:\/|$)|nonconform(?:\/|$))/;
 async function middleware(req, res, next) {
   if (req.method === 'GET' && req.path === '/api/qmes-quality-gate/health') {
-    return res.status(initialized ? 200 : 503).json({ success: initialized, version: '20261021-1' });
+    return res.status(initialized ? 200 : 503).json({ success: initialized, version: '20261111-oqc-label-dates' });
   }
   const own = req.path.startsWith('/api/qmes-quality-gate/');
   if (!own && (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || !guardedPath.test(req.path))) return next();
