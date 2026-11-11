@@ -224,7 +224,8 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
  return core.fifoCheck(core.build(await readStockSnapshot(signal)),lot,warehouse);
 },async checkMaterialFifo(lot,material,signal){
  await window.qmesAuthDataReady?.wait();
- return core.materialFifoCheck(core.build(await readStockSnapshot(signal)),lot,material);
+ const snapshot=await readStockSnapshot(signal);
+ return core.materialFifoCheck(core.build({...snapshot,iqc:snapshot.iqc.filter(core.isFifoReceipt)}),lot,material);
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
