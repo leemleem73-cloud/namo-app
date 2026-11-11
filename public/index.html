@@ -2698,15 +2698,14 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #namoDashboard20261026{display:block!important;width:100%!important;height:var(--qmes-dashboard-height,1200px)!important;min-height:0!important;border:0!important;background:#f4f8fc!important}
 </style>
 <style id="qmes-work-fifo-query">
-#work .work-fifo-query{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:14px 18px;background:#f3f7fb;border-bottom:1px solid #d6e1ed;color:#244260;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;font-size:12px}
-#work .work-fifo-query label{display:flex;align-items:center;gap:8px;min-width:0;font-weight:600}
-#work .work-fifo-query :is(input,select){box-sizing:border-box;height:32px;border:1px solid #cbd9e7;border-radius:4px;background:#fff;color:#244260;font:inherit;padding:0 9px}
-#work .work-fifo-query [data-fifo-warehouse]{width:150px}
-#work .work-fifo-query [data-fifo-lot-choice]{width:330px;max-width:100%}
-#work .work-fifo-query [data-fifo-lot]{width:210px}
-#work .work-fifo-query [data-fifo-status]{flex-basis:100%;line-height:1.5;font-weight:500}
+#work .work-fifo-query{display:flex;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:12px 16px;background:#f3f7fb;border-bottom:1px solid #d6e1ed;color:#244260;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}
+#work .work-fifo-query label{display:flex;align-items:center;gap:8px;min-width:0;margin:0;font-size:11.5px;font-weight:600;line-height:30px}
+#work .work-fifo-query :is(input,select){box-sizing:border-box;flex:0 0 144px;width:144px;height:30px;min-height:30px;border:1px solid #cbd9e7;border-radius:4px;background:#fff;color:#294763;font-family:Arial,sans-serif;font-size:12px;font-weight:600;padding:0 9px}
+#work .work-fifo-query [data-fifo-check]{height:30px;min-height:30px;padding:4px 10px;border:1px solid #cbd9e7;border-radius:4px;background:#fff!important;color:#111!important;box-shadow:none;font:600 11.5px/20px Arial,sans-serif;white-space:nowrap}
+#work .work-fifo-query [data-fifo-check]:hover:not(:disabled){background:#f7f9fc!important}
+#work .work-fifo-query [data-fifo-status]{flex-basis:100%;font-size:12px;line-height:1.5;font-weight:500}
 #work .work-fifo-query [data-fifo-status]:empty{display:none}
-@media(max-width:800px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){width:65%;max-width:65%}}
+@media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
 </head>
 <body>
@@ -5482,7 +5481,7 @@ function buildModule(id){
  <label>사용 창고코드<select data-fifo-warehouse aria-label="사용 창고코드"><option value="">창고 선택</option></select></label>
  <label>원료 LOT 선택<select data-fifo-lot-choice aria-label="수입검사 원료 LOT 선택"><option value="">수입검사 LOT 선택</option></select></label>
  <label>원료 LOT 스캔<input data-fifo-lot aria-label="원료 LOT 스캔" maxlength="120" autocomplete="off" placeholder="선택 또는 스캔"></label>
- <button type="button" class="btn primary" data-fifo-check>선입선출 확인</button>
+ <button type="button" class="btn" data-fifo-check>선입선출 확인</button>
  <span role="status" aria-live="polite" data-fifo-status></span>
 </div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th class="wo-select-col"></th><th>No.</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
