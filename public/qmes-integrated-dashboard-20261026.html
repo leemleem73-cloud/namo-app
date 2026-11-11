@@ -437,6 +437,60 @@ function annualCombo(months,max){
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&pinnedMonth!==null)closePinned();});
 
 })();
+var DASH_SNAPSHOT_KEY='qmes-dashboard-snapshot-20261111-v1';
+function dashboardYearRowsFromWorkOrders(wo){
+  var year='2026';
+  var rows=(wo||[]).map(function(o){
+    var work=getWork(o),lot=getLot(o),status=getStatus(o);
+    return {raw:o,work:work,lot:lot,product:getProduct(o),customer:getCustomer(o),equipment:getEquipment(o),material:getMaterial(o),status:status,plan:getPlan(o),actual:getActual(o),date:getDate(o)};
+  });
+  var yearRows=rows.filter(function(r){return r.date&&r.date.slice(0,4)===year});
+  return yearRows.length?yearRows:rows;
+}
+function renderProductionRowFromWorkOrders(wo){
+  var yearRows=dashboardYearRowsFromWorkOrders(wo);
+  var months=Array.from({length:12},function(_,i){return {name:(i+1)+'월',plan:0,actual:0,details:[]}});
+  yearRows.forEach(function(r){
+    var m=parseInt((r.date||'').slice(5,7),10);
+    if(m>=1&&m<=12){
+      months[m-1].plan+=r.plan;months[m-1].actual+=r.actual;
+      months[m-1].details.push({date:r.date||'-',work:r.work||'-',product:r.product||'-',lot:r.lot||'-',material:r.material||'미등록',ratio:getMaterialRatio(r.raw),plan:r.plan,actual:r.actual,status:r.status||'-'});
+    }
+  });
+  window.__qmesAnnualMonthDetails=months;
+  var maxMonth=Math.max.apply(null,[1].concat(months.map(function(m){return Math.max(m.plan,m.actual)})));
+  document.getElementById('dashRow2').innerHTML=
+    '<div class="card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div>'+annualCombo(months,maxMonth)+'</div>';
+}
+function saveDashboardSnapshot(){
+  try{
+    var snap={at:Date.now()};
+    ['dashKpis','dashRow2','dashRow3','dashRow4'].forEach(function(id){
+      var el=document.getElementById(id);if(el)snap[id]=el.innerHTML;
+    });
+    sessionStorage.setItem(DASH_SNAPSHOT_KEY,JSON.stringify(snap));
+  }catch(_){}
+}
+function restoreDashboardSnapshot(){
+  try{
+    var snap=JSON.parse(sessionStorage.getItem(DASH_SNAPSHOT_KEY)||'null');
+    if(!snap||!snap.at||Date.now()-snap.at>12*60*60*1000)return false;
+    var restored=false;
+    ['dashKpis','dashRow2','dashRow3','dashRow4'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el&&typeof snap[id]==='string'&&snap[id]){el.innerHTML=snap[id];restored=true;}
+    });
+    return restored;
+  }catch(_){return false;}
+}
+async function loadProductionPreview(){
+  try{
+    var wo=await read('/api/qmes/work-orders?_qmesFast='+Date.now());
+    renderProductionRowFromWorkOrders(wo);
+  }catch(error){
+    console.warn('[QMES dashboard production preview]',error);
+  }
+}
 async function loadDashboard(){
   var all=await Promise.all([
     read('/api/qmes/work-orders'),
@@ -726,6 +780,7 @@ async function loadDashboard(){
     if(!b)return;
     renderEquipmentUtil(b.getAttribute('data-eq-month'));
   };
+  saveDashboardSnapshot();
 }
 var dashboardRefreshRunning=false,dashboardRefreshWanted=false;
 function dashboardStatus(message,failed){
@@ -744,7 +799,9 @@ async function refreshDashboard(){
   try{
     while(dashboardRefreshWanted){
       dashboardRefreshWanted=false;
-      dashboardStatus('대시보드 데이터를 불러오는 중입니다.',false);
+      var hasSnapshot=restoreDashboardSnapshot();
+      dashboardStatus(hasSnapshot?'':'대시보드 데이터를 불러오는 중입니다.',false);
+      void loadProductionPreview();
       try{
         var gate=dashboardAuthGate();
         if(gate)await gate.wait();
