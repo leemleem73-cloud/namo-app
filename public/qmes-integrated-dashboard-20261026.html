@@ -434,10 +434,27 @@ async function loadDashboard(){
     var d=clean(r&&r.date).slice(0,4);
     return (!d||d===year)&&inspect(r)==='불합격';
   });
-  var oqcYearRows=oqc.filter(function(r){
+  var oqcNgRawRows=oqc.filter(function(r){
     var d=clean((r&&r.date)||(r&&r.shipDate)).slice(0,4);
     return (!d||d===year)&&inspect(r)==='불합격';
   });
+  // OQC dashboard counts inspection reports, not duplicated item/sync rows.
+  // One outgoing inspection = one event by inspection date + work order + finished LOT.
+  var oqcNgByInspection=new Map();
+  oqcNgRawRows.forEach(function(r,index){
+    var date=clean((r&&r.date)||(r&&r.shipDate)).slice(0,10);
+    var work=norm(r&&((r.workOrderNo)||(r.workOrder)||(r.workNo)||(r.orderNo)));
+    var lot=norm(r&&((r.lot)||(r.lotNo)||(r.productionLot)||(r.productionLotNo)||(r.finishedLot)));
+    var product=norm(r&&r.product);
+    var customer=norm(r&&r.customer);
+    var key=(date&&(work||lot))
+      ?[date,work,lot].join('||')
+      :(date&&(product||customer))
+        ?[date,product,customer].join('||')
+        :'OQC_UNIQUE||'+index;
+    if(!oqcNgByInspection.has(key))oqcNgByInspection.set(key,r);
+  });
+  var oqcYearRows=Array.from(oqcNgByInspection.values());
   var iqcNg=iqcYearRows.length;
   var pqcNg=pqcYearRows.length;
   var oqcNg=oqcYearRows.length;
