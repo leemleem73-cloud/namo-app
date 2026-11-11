@@ -2718,21 +2718,26 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 @media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
 <style id="qmes-work-lot-label-layout">
-.work-lot-label-preview{box-sizing:border-box;width:50mm;height:40mm;padding:1.3mm;margin:0 auto;border:.25mm solid #253c63;border-radius:2mm;background:#fff;color:#172b40;font:6pt/1.12 Arial,"Malgun Gothic",sans-serif;display:grid;grid-template-rows:5mm minmax(0,1fr) 7mm;gap:.6mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.work-lot-label-preview{box-sizing:border-box;width:60mm;height:45mm;padding:1.6mm;margin:0 auto;border:.25mm solid #253c63;border-radius:2mm;background:#fff;color:#172b40;font:7pt/1.16 Arial,"Malgun Gothic",sans-serif;display:grid;grid-template-rows:6mm minmax(0,1fr) 8mm;gap:.8mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 .work-label-heading{display:flex;justify-content:space-between;align-items:center;gap:.8mm;min-width:0}
-.work-label-heading img{display:block;width:23mm;max-height:4mm;object-fit:contain;object-position:left center;font-size:5.5pt}
-.work-label-heading span{border-radius:.8mm;padding:.6mm .8mm;background:#304d87;color:#fff;font-size:5.6pt;font-weight:700;white-space:nowrap}
-.work-label-content{display:grid;grid-template-columns:minmax(0,1fr) 16mm;overflow:hidden;border:.18mm solid #7890a7;border-radius:.8mm}
-.work-label-content dl{display:grid;grid-template-columns:14mm minmax(0,1fr);grid-template-rows:repeat(6,minmax(0,1fr));margin:0;min-width:0}
-.work-label-content :is(dt,dd){box-sizing:border-box;margin:0;min-width:0;padding:0 .55mm;border-bottom:.18mm solid #7890a7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-content:center}
-.work-label-content dt{background:#edf3f8;border-right:.18mm solid #7890a7;font-weight:600;font-size:5.5pt}
+.work-label-brand{display:flex;align-items:center;gap:1mm;color:#17233a}
+.work-label-mark{width:5.2mm;height:4.6mm;overflow:hidden;display:grid;align-items:center;flex:none}
+.work-label-mark img{display:block;width:27mm;max-width:none;max-height:4.6mm;object-fit:contain;object-position:left center}
+.work-label-company{display:grid;line-height:1.02;white-space:nowrap}
+.work-label-company b{font-size:8pt}
+.work-label-company small{font-size:4.6pt;font-weight:700}
+.work-label-badge{border-radius:.8mm;padding:.65mm 1mm;background:#304d87;color:#fff;font-size:6.5pt;font-weight:700;white-space:nowrap}
+.work-label-content{display:grid;grid-template-columns:minmax(0,1fr) 18mm;overflow:hidden;border:.18mm solid #7890a7;border-radius:.8mm}
+.work-label-content dl{display:grid;grid-template-columns:19mm minmax(0,1fr);grid-template-rows:repeat(6,minmax(0,1fr));margin:0;min-width:0}
+.work-label-content :is(dt,dd){box-sizing:border-box;margin:0;min-width:0;padding:0 .55mm;border-bottom:.18mm solid #7890a7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-content:center;text-align:center}
+.work-label-content dt{background:#edf3f8;border-right:.18mm solid #7890a7;font-weight:700;font-size:6.5pt;white-space:normal;overflow-wrap:anywhere}
 .work-label-content dd{font-weight:700}
 .work-label-content :is(dt,dd):nth-last-child(-n+2){border-bottom:0}
 .work-label-qr{display:grid;align-content:center;justify-items:center;border-left:.18mm solid #7890a7;font-weight:700;font-size:5pt}
-.work-label-qr [data-qr]{padding:2.2mm;background:#fff}
-.work-label-qr :is(canvas,img){width:11.3mm!important;height:11.3mm!important;image-rendering:pixelated}
-.work-label-barcode{display:grid;grid-template-rows:5mm 1fr;justify-items:center;align-items:center;font:700 6pt/1 monospace;overflow:hidden}
-.work-label-barcode svg{display:block;width:100%;height:5mm;fill:#111;shape-rendering:crispEdges}
+.work-label-qr [data-qr]{padding:2.48mm;background:#fff}
+.work-label-qr :is(canvas,img){width:13mm!important;height:13mm!important;image-rendering:pixelated}
+.work-label-barcode{display:grid;grid-template-rows:6mm 1fr;justify-items:center;align-items:center;font:700 6pt/1 monospace;overflow:hidden}
+.work-label-barcode svg{display:block;width:100%;height:6mm;fill:#111;shape-rendering:crispEdges}
 .work-label-barcode span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 <style id="qmes-work-lot-label">
@@ -2742,13 +2747,12 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-dialog footer{justify-content:flex-end;border-top:1px solid #d6e1ed;border-bottom:0}
 .work-lot-label-dialog button{height:30px;padding:0 12px;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:4px;font:inherit;cursor:pointer}
 .work-lot-label-body{padding:18px}
-.work-lot-label-dialog .work-lot-label-preview{zoom:2;margin-bottom:16px}
-@media(max-width:480px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.4}}
-.work-label-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.work-lot-label-dialog label{display:grid;gap:5px;font-weight:600}
-.work-lot-label-dialog input{box-sizing:border-box;height:32px;width:100%;min-width:0;border:1px solid #cbd9e7;border-radius:4px;padding:0 8px;font:inherit}
+.work-lot-label-dialog .work-lot-label-preview{zoom:2}
+@media(max-width:540px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.6}}
+@media(max-width:440px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.3}}
+@media(max-width:365px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.05}}
+.work-lot-label-body [role=status]:not(:empty){margin-top:10px}
 .work-lot-label-dialog [data-print]{background:#2676bf;color:#fff;border-color:#2676bf}
-.work-lot-label-dialog p{font-size:11px;color:#5a7188;line-height:1.5}
 #work .work-fifo-query [data-lot-label]{height:30px;min-height:30px;padding:4px 10px;border:1px solid #cbd9e7;background:#fff;color:#111;box-shadow:none;font-size:11.5px;white-space:nowrap}
 </style>
 </head>
@@ -5317,24 +5321,17 @@ function openWorkLotLabel(receipt){
   const dialog=document.createElement('dialog');
   dialog.className='work-lot-label-dialog';
   dialog.innerHTML='<header><strong>원료 LOT QR 라벨</strong><button type="button" data-close>닫기</button></header>'+
-    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><img src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="나모케미칼(주)"><span>원료 (입고용)</span></div>'+
+    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><div class="work-label-brand"><span class="work-label-mark" aria-hidden="true"><img src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt=""></span><div class="work-label-company"><b>나모케미칼(주)</b><small>NAMO Chemical Co., Ltd.</small></div></div><span class="work-label-badge">원료 (입고용)</span></div>'+
     '<div class="work-label-content"><dl>'+
     '<dt>원료명</dt><dd data-material></dd><dt>원료코드</dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd>'+
     '<dt>사용 가능 재고(kg)</dt><dd data-quantity></dd><dt>최근 입고일</dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd>'+
-    '</dl><div class="work-label-qr"><div data-qr></div><span>QMES Traceability</span></div></div><div class="work-label-barcode"><span data-barcode-lot></span></div></div><div class="work-label-fields">'+
-    '<label>품번<input name="labelCode" maxlength="40" placeholder="수입검사 품번 확인"></label></div>'+
-    '<p>50 × 40 mm · QR과 바코드에는 원료 LOT 번호가 담깁니다.</p><div role="status"></div></div>'+
+    '</dl><div class="work-label-qr"><div data-qr></div><span>QMES Traceability</span></div></div><div class="work-label-barcode"><span data-barcode-lot></span></div></div><div role="status"></div></div>'+
     '<footer><button type="button" class="btn primary" data-print>라벨 인쇄</button></footer>';
   document.body.appendChild(dialog);
   const preview=dialog.querySelector('.work-lot-label-preview');
   const set=(name,value)=>{const cell=preview.querySelector('[data-'+name+']');cell.textContent=value||'—';cell.title=value||'';};
-  const code=dialog.querySelector('[name="labelCode"]');
-  const issueDate=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
-  const update=()=>{
-    set('code',code.value.trim());
-    set('date',issueDate());
-  };
-  code.value=receipt.itemCode||'';
+  set('code',receipt.itemCode);
+  set('date',new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}));
   set('material',receipt.item);
   set('lot',receipt.lot);
   set('quantity','조회 중');
@@ -5342,8 +5339,6 @@ function openWorkLotLabel(receipt){
   set('barcode-lot',receipt.lot);
   const barcode=workLotBarcode(receipt.lot);
   if(barcode)preview.querySelector('.work-label-barcode').insertAdjacentHTML('afterbegin',barcode);
-  update();
-  code.addEventListener('input',update);
   dialog.querySelector('[data-close]').onclick=()=>dialog.close();
   dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   dialog.showModal();
@@ -5379,7 +5374,6 @@ function openWorkLotLabel(receipt){
     printButton.disabled=true;
   }
   printButton.onclick=()=>{
-    update();
     const image=preview.querySelector('[data-qr] canvas')?.toDataURL('image/png')||preview.querySelector('[data-qr] img')?.src;
     if(!image){status.textContent='QR 생성을 기다린 뒤 다시 눌러 주세요.';return;}
     const frame=document.createElement('iframe');
@@ -5389,7 +5383,7 @@ function openWorkLotLabel(receipt){
     const doc=frame.contentDocument;
     doc.open();
     const layout=document.getElementById('qmes-work-lot-label-layout').textContent;
-    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:50mm 40mm;margin:0}body{margin:0}'+layout+'</style></head><body></body></html>');
+    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 45mm;margin:0}body{margin:0}'+layout+'</style></head><body></body></html>');
     doc.close();
     const label=doc.importNode(preview,true),qr=doc.createElement('img');
     qr.alt='원료 LOT QR';
