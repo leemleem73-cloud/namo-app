@@ -6052,7 +6052,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       (Array.isArray(payload.rows)?payload.rows:[]).forEach((row,rowIndex)=>{
         const key=String(record.record_key||'')+'|'+String(row.id||row.groupId+'|'+row.check);
         if(seen.has(key))return;seen.add(key);
-        rows.push({...row,__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
+        rows.push({...row,...(id==='outgoing'?{__oqcExpected:row}:{}),__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
       });
     });
     if(id==='process')section._pqcRecords=new Map(rows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
