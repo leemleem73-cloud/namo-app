@@ -257,6 +257,35 @@ function evaluatePqcMeasurements(measurements){
   var all=Object.keys(items).map(function(k){return items[k]});
   return {items:items,overall:all.indexOf('불합격')>=0?'불합격':all.every(function(v){return v==='합격'})?'합격':'대기'};
 }
+function normalizeOqcRows(rows){
+  var grouped=new Map();
+  (rows||[]).forEach(function(row,index){
+    var normalized=Object.assign({},row);
+    var groupId=clean(normalized.groupId);
+    var date=clean(normalized.date||normalized.shipDate).slice(0,10);
+    var lot=norm(normalized.lot||normalized.lotNo||normalized.productionLot||normalized.productionLotNo||normalized.finishedLot);
+    var product=norm(normalized.product);
+    var customer=norm(normalized.customer);
+    var key=groupId
+      ?'GROUP||'+groupId
+      :(date&&lot)
+        ?['OQC',date,lot,product,customer].join('||')
+        :'OQC_UNIQUE||'+clean(normalized.id||index);
+    var current=grouped.get(key);
+    if(!current){
+      grouped.set(key,normalized);
+      return;
+    }
+    // Keep one row per OQC inspection group and preserve the worst judgement.
+    if(inspect(normalized)==='불합격')current.judge='불합격';
+    else if(inspect(current)!=='불합격'&&inspect(normalized)==='합격')current.judge='합격';
+    if(!clean(current.workOrderNo||current.workOrder||current.workNo||current.orderNo)){
+      current.workOrderNo=clean(normalized.workOrderNo||normalized.workOrder||normalized.workNo||normalized.orderNo);
+    }
+    if(!clean(current.shipQty)&&clean(normalized.shipQty))current.shipQty=normalized.shipQty;
+  });
+  return Array.from(grouped.values());
+}
 function normalizePqcRows(rows){
   var grouped=new Map();
   (rows||[]).forEach(function(row){
@@ -414,7 +443,7 @@ async function loadDashboard(){
     read('/api/qmes-sync/pqc'),
     read('/api/qmes-sync/oqc')
   ]);
-  var wo=all[0],iqc=all[1],pqc=normalizePqcRows(flattenSyncRecords(all[2])),oqc=flattenSyncRecords(all[3]);
+  var wo=all[0],iqc=all[1],pqc=normalizePqcRows(flattenSyncRecords(all[2])),oqc=normalizeOqcRows(flattenSyncRecords(all[3]));
   var year='2026';
   var rows=wo.map(function(o){
     var work=getWork(o),lot=getLot(o),status=getStatus(o);
