@@ -2524,7 +2524,7 @@ html body #process .inspection-premium .ip-table td.pqc-list-remarks>.pqc-approv
 <style id="qmes-inspection-qr-list-buttons">
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:108px minmax(0,1fr)!important}
 html body #outgoing .inspection-premium .ip-table .inspection-qr-actions{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px}
-html body #outgoing .inspection-premium .ip-table .inspection-qr-actions .oqc-remarks-edit{margin:0!important}
+html body #outgoing .inspection-premium .ip-table .inspection-qr-actions .oqc-remarks-edit{margin:0!important;position:relative;z-index:1;pointer-events:auto;cursor:pointer}
 html body :is(#incoming,#outgoing) .ip-table .inspection-qr-btn{min-width:0;padding-inline:6px;opacity:1;color:#536c87;background:#f1f6fb;border:1px solid #cbd8e7;cursor:pointer}
 </style><style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
@@ -5908,7 +5908,10 @@ function buildModule(id){
     if(id==='process')wireProcessColumnResize(section);
     if(id==='process'||id==='outgoing')wireInspectionBulkSelect(section,id);
     if(id==='process'||id==='outgoing')setTimeout(()=>loadHistoricalInspectionRows(section,id),0);
-    if(id==='outgoing')wireOutgoingColumnResize(section);
+    if(id==='outgoing'){
+      wireOutgoingColumnResize(section);
+      wireOutgoingEditAction(section);
+    }
     if(id==='incoming'){
       wireIncomingColumnResize(section);
       restoreIncomingPageCache(section);
@@ -6184,7 +6187,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
-        if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn mini-report oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" aria-label="출하검사 QR 라벨 열기">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
+        if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn iqc-edit-btn oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" aria-label="출하검사 QR 라벨 열기">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
@@ -6208,7 +6211,6 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       });
       tbody.querySelectorAll('.oqc-report-view').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)issueInspectionReport('outgoing',tr);}));
       tbody.querySelectorAll('.oqc-coa-view').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)issueInspectionReport('outgoing',tr);}));
-      tbody.querySelectorAll('.oqc-remarks-edit').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)showRowDetail('outgoing',tr);}));
     }
     section._inspectionRowsLoaded=displayRows.length;
 
@@ -7721,10 +7723,32 @@ function arrangePqcWorkspaceActions(){
   back.textContent='목록';save.textContent='저장';
   workspaceFoot.replaceChildren(back,save);
 }
+function wireOutgoingEditAction(section){
+  section.addEventListener('click',event=>{
+    const button=event.target.closest?.('button.oqc-remarks-edit');
+    const row=button?.closest('tr.data-row');
+    if(!row||!section.contains(row))return;
+    event.preventDefault();
+    event.stopPropagation();
+    showRowDetail('outgoing',row);
+  },true);
+}
+
 function showRowDetail(id,row){
   if(id==='standard'&&window.qmesStandardDocuments)return window.qmesStandardDocuments.openRow(row);
   if(id==='work'&&typeof window.namoOpenWorkInquiryDetail==='function')return window.namoOpenWorkInquiryDetail(row);
-  if(id==='outgoing')return window.qmesOpenOutgoingDetail(row);
+  if(id==='outgoing'){
+    if(typeof window.qmesOpenOutgoingDetail!=='function'){
+      toast('출하검사 수정 화면을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
+      return;
+    }
+    try{return window.qmesOpenOutgoingDetail(row);}
+    catch(error){
+      console.error('[QMES OQC edit]',error);
+      toast('출하검사 수정 화면을 여는 중 오류가 발생했습니다.');
+      return;
+    }
+  }
   if(id==='incoming'){
     const section=document.getElementById('incoming');
     const record=section?._iqcRows?.find(record=>String(record.id)===String(row.dataset.iqcId));
