@@ -2653,8 +2653,9 @@ app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
         if(target.patch.judge!==undefined)patch.judge=target.patch.judge;
         if(oqcAutoRules.items.includes(oqcAutoRules.canonical(old.check))){
 const measurements=patch.measurements??(Array.isArray(old.measurements)&&old.measurements.length?old.measurements:(old.value?String(old.value).split(/\s*\/\s*/):[]));
-const standardRevision=Number(old.standardRevision??0);
-patch.judge=oqcAutoRules.evaluateItem(old.check,measurements,Number.isFinite(standardRevision)?standardRevision:0);
+const standardRevision=oqcAutoRules.standardRevisionForDate(clean.date||old.date,old.standardRevision);
+patch.judge=oqcAutoRules.evaluateItem(old.check,measurements,standardRevision);
+if(old.standardRevision!==undefined||standardRevision!==0)patch.standardRevision=standardRevision;
 }
 rows[index]={...old,...clean,...patch};
         selected.push({index,auditIndex:auditAfter.length});
