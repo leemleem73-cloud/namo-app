@@ -93,7 +93,7 @@ if(index>=0){const tr=pane.querySelector('[data-oqc-item="'+index+'"]'),entered=
 if(JSON.stringify(entered)!==JSON.stringify(oldValues))patch.measurements=entered;
 
 }
-return{recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId,expected:original(source),patch};
+return{recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId,expected:source.__oqcExpected||original(source),patch};
 });
 try{
 save.disabled=true;warning.hidden=true;
