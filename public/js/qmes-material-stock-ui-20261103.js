@@ -226,7 +226,10 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
  await window.qmesAuthDataReady?.wait();
  const snapshot=await readStockSnapshot(signal);
  const iqc=snapshot.iqc.filter(core.isFifoReceipt);
- const result=core.materialFifoCheck(core.build({...snapshot,iqc}),lot,material);
+ const stock=core.build({...snapshot,iqc});
+ const result=core.materialFifoCheck(stock,lot,material);
+ const stockByKey=new Map(stock.rows.map(row=>[row.key,row]));
+ const shown=new Set();
  const target=core.lot(lot);
  const matches=new Set([target,...(result.alternatives||[]).map(entry=>core.lot(entry.lot))]);
  const receipts=iqc.filter(row=>!row.deleted&&matches.has(core.lot(row.lot))&&core.fifoMaterial(row.item)===core.fifoMaterial(material))
@@ -235,9 +238,15 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
    supplier:core.text(row.supplier),
    item:core.text(row.item),
    lot:core.text(row.lot),
-   weight:core.number(row.incoming_qty??row.incomingQty)
   }))
-  .sort((a,b)=>Number(core.lot(b.lot)===target)-Number(core.lot(a.lot)===target)||a.date.localeCompare(b.date));
+  .sort((a,b)=>Number(core.lot(b.lot)===target)-Number(core.lot(a.lot)===target)||a.date.localeCompare(b.date))
+  .map(receipt=>{
+   const key=JSON.stringify([core.material(receipt.item),core.lot(receipt.lot),core.supplierKey(receipt.supplier)]);
+   const row=stockByKey.get(key);
+   const available=row&&!row.uncertain&&!stock.warnings.length&&!shown.has(key)?row.available:null;
+   shown.add(key);
+   return {...receipt,available};
+  });
  return {...result,receipts};
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
