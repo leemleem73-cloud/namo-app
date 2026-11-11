@@ -62,7 +62,7 @@ if (!express.__NAMO_ATTENDANCE_HUMAN_ART_20260917__) {
         res.setHeader('Expires', '0');
         return res.send('(function(){document.querySelectorAll("#namo-production-result-menu,#namo-production-result-panel").forEach(function(el){el.remove();});})();\\n');
       }
-      if (pathname === '/' || pathname === '/index.html' || pathname === '/js/qmes-production-status-20261026.js') {
+      if (pathname === '/' || pathname === '/index.html' || pathname === '/qmes-integrated-dashboard-20261026.html' || pathname === '/js/qmes-production-status-20261026.js') {
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
