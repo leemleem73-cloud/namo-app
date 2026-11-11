@@ -2521,7 +2521,15 @@ html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea
 html body #process .inspection-premium .ip-table td.pqc-list-remarks>.pqc-approval-state{width:max-content;max-width:90%;font-size:10px;line-height:18px;padding:0 7px}
 </style>
 <style id="pqc-visible-remarks-20261105">html body #process .inspection-premium .ip-table td.pqc-list-remarks{padding:0!important;text-align:center!important;vertical-align:middle!important}html body #process .inspection-premium .ip-table .pqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;gap:0!important;min-height:32px;width:100%}html body #process .inspection-premium .ip-table .pqc-remarks-edit{align-self:center;justify-self:center;margin:4px!important}html body #process .inspection-premium .ip-table .pqc-remarks-text{display:flex;align-items:center;justify-content:center;border-left:1px solid #d5dce5;padding:4px 8px;min-width:0;white-space:pre-wrap!important;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5;text-align:center}</style>
-<style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
+<style id="qmes-inspection-qr-list-buttons">
+html body #incoming .iqc-work-frame .ip-table td.iqc-remark{position:relative;padding-left:88px!important}
+html body #incoming .iqc-work-frame .ip-table .iqc-remark-text{display:block;max-width:100%;padding:4px 2px}
+html body #incoming .iqc-work-frame .ip-table .iqc-remark-actions{position:absolute;inset:0 auto 0 0;width:84px;margin:0;display:flex;align-items:center;justify-content:center;border-right:1px solid #d5dce5}
+html body #outgoing .inspection-premium .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:84px minmax(0,1fr)!important}
+html body #outgoing .inspection-premium .ip-table .inspection-qr-actions{display:flex;align-items:center;justify-content:center;gap:4px}
+html body #outgoing .inspection-premium .ip-table .inspection-qr-actions .oqc-remarks-edit{margin:0!important}
+html body :is(#incoming,#outgoing) .ip-table .inspection-qr-btn{min-width:0;padding-inline:6px;opacity:1;color:#536c87;background:#f1f6fb;border:1px solid #cbd8e7;cursor:default}
+</style><style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
 <style id="qmes-outgoing-blue-action-buttons-20261020">
 html body #outgoing .inspection-premium .ip-table :is(.oqc-report-view,.oqc-coa-view){color:#245b9e!important;border-color:#cbdaf0!important;background:#f5f9ff!important}
 html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{color:#315f94!important;border-color:#cbd8e7!important;background:#f7faff!important}
@@ -3484,6 +3492,10 @@ function wireIncomingColumnResize(section){
       const equal=indexes.reduce((sum,i)=>sum+effective[i],0)/indexes.length;
       indexes.forEach(i=>effective[i]=equal);
     }
+    if(!customized){
+      const items=labels.indexOf('검사항목'),remarks=labels.indexOf('비고');
+      if(items>=0&&remarks>=0){effective[items]-=32;effective[remarks]+=32;}
+    }
     const free=Math.max(0,(wrap.clientWidth||0)-effective.reduce((sum,width)=>sum+width,0));
     if(free>0){
       const total=effective.slice(1).reduce((sum,width)=>sum+width,0);
@@ -3751,7 +3763,7 @@ function wireOutgoingColumnResize(section){
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
   const defaults=[86,110,150,70,120,130,120,340,85,85,90,100,80,250,280];
-  const minimums=[86,100,135,65,100,110,105,220,75,75,80,90,70,200,220];
+  const minimums=[86,100,135,65,100,110,105,220,75,75,80,90,60,200,220];
   const storageKey='namo-outgoing-column-widths-v10-shipment-qty';
   const labels=headers.map(th=>th.textContent.trim());
   let saved;
@@ -3781,7 +3793,7 @@ function wireOutgoingColumnResize(section){
   let containerWidth=0;
   function apply(){
     const viewport=wrap.clientWidth||available;
-    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'출하수량(kg)':100,'성적서':80,'첨부파일':225,'비고':250};
+    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'출하수량(kg)':100,'성적서':60,'첨부파일':225,'비고':270};
     const effective=labels.map((label,index)=>customized?Math.max(minimums[index]||65,Math.min(720,widths[index])):(index===0?86:preferred[label]||100));
     if(!customized){
       const total=effective.reduce((sum,width)=>sum+width,0);
@@ -4616,7 +4628,7 @@ function iqcRowHtml(row,index){
   const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
   const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'—';
   const approvalBadge='<span class="badge '+(state==='승인완료'?'b-green':state==='—'?'':'b-yellow')+'">'+state+'</span>';
-  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcWeightText(row.incoming_qty)}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button></div></td></tr>`;
+  return `<tr class="data-row clickable" tabindex="0" data-iqc-id="${row.id||''}"><td><label class="iqc-select-number"><input type="checkbox" class="iqc-select-row" aria-label="${index+1}번 검사 선택"><span>${index+1}</span></label></td><td>${iqcDateText(row.date)}</td><td>${row.supplier||'-'}</td><td>${row.item||'-'}</td><td>${row.lot||'-'}</td><td>${iqcWeightText(row.incoming_qty)}</td><td>${iqcItemSummary(row)}</td><td>${badge}</td><td>${approvalBadge}</td><td>${row.inspector||'-'}</td><td><button class="btn report-issue" type="button">성적서</button></td><td class="iqc-remark"><div class="iqc-remark-text" title="${remark.replace(/"/g,'&quot;')}">${remark||'-'}</div><div class="iqc-remark-actions"><button class="iqc-edit-btn" type="button" data-iqc-edit>수정</button><button class="btn mini-report inspection-qr-btn" type="button" disabled aria-label="수입검사 QR 라벨 준비 중">QR</button></div></td></tr>`;
 }
 function updateIncomingMaterialsFromDb(rows){
   const list=(rows||[]).map(r=>({name:r.item||'',lot:r.lot||'',supplier:r.supplier||'',date:r.date||'',judge:iqcJudge(r)})).filter(x=>x.name&&x.lot);
@@ -6090,7 +6102,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
-        if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><button type="button" class="btn mini-report oqc-remarks-edit">수정</button><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
+        if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn mini-report oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" disabled aria-label="출하검사 QR 라벨 준비 중">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
         if(id==='process'&&cols[index]==='성적서'){
           return '<td><button type="button" class="btn mini-report pqc-report-view" data-lot="'+safe(row.lot)+'">성적서</button></td>';
         }
