@@ -5,7 +5,7 @@ function koreanDay(value){const ms=Date.parse(value);return Number.isFinite(ms)?
 function initial(now){return {revision:0,modifiedAt:null,modifiedBy:'',...(now?{revisionDay:koreanDay(now)}:{})};}
 function metadata(rows=[]){const list=Array.isArray(rows)?rows:[rows],latest=list.filter(r=>r?.modifiedAt&&Number.isFinite(Date.parse(r.modifiedAt))).sort((a,b)=>Date.parse(b.modifiedAt)-Date.parse(a.modifiedAt))[0];return {revision:Math.max(0,...list.map(revision)),modifiedAt:latest?.modifiedAt||null,modifiedBy:text(latest?.modifiedBy)};}
 function stable(value){return value===null||typeof value!=='object'?JSON.stringify(value):Array.isArray(value)?'['+value.map(stable).join(',')+']':'{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';}
-function business(row){const result={...row};for(const k of ['revision','modifiedAt','modifiedBy','revisionDay'])delete result[k];for(const k of ['date','customer','product','lot','inspector','remarks','shippingStatus','shipQty'])result[k]=text(result[k]);result.inspectionDecision=result.inspectionDecision||'자동판정';return result;}
+function business(row){const result={...row};for(const k of ['revision','modifiedAt','modifiedBy','revisionDay'])delete result[k];for(const k of ['date','customer','product','lot','inspector','remarks','shippingStatus','shipQty','manufactureDate','actualShipDate'])result[k]=text(result[k]);result.inspectionDecision=result.inspectionDecision||'자동판정';return result;}
 function applyGroup(before,after,user,now){
  if(!Array.isArray(before)||!before.length||before.length!==after.length)throw Error('출하검사 수정 대상이 일치하지 않습니다.');
  const current=metadata(before),changed=before.some((row,index)=>stable(business(row))!==stable(business(after[index])));
