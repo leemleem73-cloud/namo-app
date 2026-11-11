@@ -9249,6 +9249,39 @@ window.qmesPqcApprovalGrid=function(row){
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">
   <script src="./js/qmes-mobile-20261023.js?v=20261023-3"></script>
 
+<script id="qmes-dashboard-live-sync-20261111">
+(function(){
+  if(window.__qmesDashboardLiveSync20261111)return;
+  window.__qmesDashboardLiveSync20261111=true;
+  var originalFetch=window.fetch.bind(window);
+  var relevant=/^\/api\/(?:qmes\/work-orders(?:\/|$)|iqc(?:\/|$)|qmes-sync\/(?:pqc|oqc)(?:\/|$)|qmes\/inspections\/(?:iqc|pqc|oqc)(?:\/|$))/i;
+  var mutating=/^(?:POST|PUT|PATCH|DELETE)$/i;
+  var notifyTimer=0;
+  function notify(detail){
+    clearTimeout(notifyTimer);
+    notifyTimer=setTimeout(function(){
+      window.dispatchEvent(new CustomEvent('qmes-data-changed',{detail:detail||{}}));
+      var frame=document.getElementById('namoDashboard20261026');
+      try{
+        if(frame&&frame.contentWindow)frame.contentWindow.postMessage({channel:'QMES_DATA_CHANGED_20261111',detail:detail||{}},location.origin);
+      }catch(_){}
+    },120);
+  }
+  window.qmesNotifyDashboardChanged=notify;
+  window.fetch=async function(input,init){
+    var response=await originalFetch(input,init);
+    try{
+      var url=typeof input==='string'?input:(input&&input.url)||'';
+      var method=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
+      var path=new URL(url,location.href).pathname;
+      if(response.ok&&mutating.test(method)&&relevant.test(path)){
+        notify({method:method,path:path,at:Date.now()});
+      }
+    }catch(_){}
+    return response;
+  };
+})();
+</script>
 <script id="dashboard-outer-scroll-20261026">
 (function(){
  const frame=document.getElementById('namoDashboard20261026');
