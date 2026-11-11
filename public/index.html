@@ -3991,7 +3991,7 @@ function incomingWorkOrderFrame(cols,id='incoming'){
   const process=id==='process',outgoing=id==='outgoing',name=process?'공정검사':outgoing?'출하검사':'수입검사';
   const field=(name,key)=>`<label class="ip-filter"><span>${name}</span><input class="input" data-iqc-filter="${key}" placeholder="전체"></label>`;
   return `<div class="inspection-premium iqc-work-frame"><div class="ip-panel">
-    <div class="iqc-register-header"><strong>${name} 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn export-btn" type="button">엑셀 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 ${name} 등록</button></div></div>
+    <div class="iqc-register-header"><strong>${name} 등록 및 조회</strong><div class="iqc-header-tools"><button class="btn export-btn" type="button">${id==='incoming'?'다운로드':'엑셀 내보내기'}</button><button class="btn primary new-btn" type="button">+ 신규 ${name} 등록</button></div></div>
     <div class="ip-toolbar">
       <div class="ip-filter-row">
         ${process?field('작업지시번호','workOrder')+field('제품명','product')+field('생산 LOT','lot'):outgoing?field('고객사','customer')+field('제품명','product')+field('완제품 LOT','lot'):field('공급업체','supplier')+field('품목명','item')+field('원료 LOT','lot')}
@@ -4806,6 +4806,7 @@ function renderIncomingPage(section,page=1){
     if(dateDiff!==0)return dateDiff;
     return String(b.created_at||'').localeCompare(String(a.created_at||''));
   });
+  section._iqcFilteredRows=filtered;
   const pageSize=10;
   const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const current=Math.min(Math.max(1,Number(page)||1),totalPages);
@@ -6478,7 +6479,7 @@ function wireModule(section,id){
       section.querySelectorAll('tbody tr').forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none');
     });
   }
-  section.querySelector('.export-btn').addEventListener('click',()=>exportTable(section,title));
+  section.querySelector('.export-btn').addEventListener('click',()=>{if(id==='incoming')downloadIqcBundle(section).catch(error=>{console.error('[IQC download]',error);toast(error.message||'수입검사 다운로드에 실패했습니다.');});else exportTable(section,title);});
   section.querySelector('.new-btn').addEventListener('click',()=>openNewForm(id));
   if(id!=='incoming'){
     section.querySelectorAll('.data-row').forEach(row=>{
@@ -8550,6 +8551,25 @@ function exportTable(section,title){
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=title+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500);
   toast('엑셀용 CSV 파일을 생성했습니다.');
 }
+
+function qmesZipCrc32(bytes){let crc=-1;for(const byte of bytes){crc^=byte;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xEDB88320:0);}return (crc^-1)>>>0;}
+function qmesZipU16(n){return new Uint8Array([n&255,(n>>>8)&255]);}
+function qmesZipU32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
+function qmesZipConcat(parts){const size=parts.reduce((s,p)=>s+p.length,0),out=new Uint8Array(size);let o=0;for(const p of parts){out.set(p,o);o+=p.length;}return out;}
+function qmesZipDateTime(){const d=new Date(),y=Math.max(1980,d.getFullYear());return {time:(d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2),date:((y-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate()};}
+function qmesBuildZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;const dt=qmesZipDateTime();for(const file of files){const name=enc.encode(file.name.replace(/\\/g,'/')),data=file.data instanceof Uint8Array?file.data:new Uint8Array(file.data),crc=qmesZipCrc32(data);const local=qmesZipConcat([qmesZipU32(0x04034b50),qmesZipU16(20),qmesZipU16(0x0800),qmesZipU16(0),qmesZipU16(dt.time),qmesZipU16(dt.date),qmesZipU32(crc),qmesZipU32(data.length),qmesZipU32(data.length),qmesZipU16(name.length),qmesZipU16(0),name,data]);locals.push(local);centrals.push(qmesZipConcat([qmesZipU32(0x02014b50),qmesZipU16(20),qmesZipU16(20),qmesZipU16(0x0800),qmesZipU16(0),qmesZipU16(dt.time),qmesZipU16(dt.date),qmesZipU32(crc),qmesZipU32(data.length),qmesZipU32(data.length),qmesZipU16(name.length),qmesZipU16(0),qmesZipU16(0),qmesZipU16(0),qmesZipU16(0),qmesZipU32(0),qmesZipU32(offset),name]));offset+=local.length;}const centralSize=centrals.reduce((s,p)=>s+p.length,0);return new Blob([...locals,...centrals,qmesZipConcat([qmesZipU32(0x06054b50),qmesZipU16(0),qmesZipU16(0),qmesZipU16(files.length),qmesZipU16(files.length),qmesZipU32(centralSize),qmesZipU32(offset),qmesZipU16(0)])],{type:'application/zip'});}
+function qmesSafeFileName(v){return String(v||'파일').replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,' ').trim();}
+async function downloadIqcBundle(section){
+ const rows=Array.isArray(section?._iqcFilteredRows)?section._iqcFilteredRows:(section?._iqcRows||[]);if(!rows.length){toast('다운로드할 수입검사 데이터가 없습니다.');return;}
+ const ar=await fetch('/api/qmes/iqc/attachments',{credentials:'same-origin',cache:'no-store'}),aj=await ar.json().catch(()=>({}));if(!ar.ok||aj.success===false||!Array.isArray(aj.data))throw new Error(aj.message||'CoA 첨부파일 목록을 불러오지 못했습니다.');
+ const by=new Map();for(const file of aj.data){const k=String(file.iqc_id||'');if(!by.has(k))by.set(k,[]);by.get(k).push(file);}
+ const headers=['입고일자','공급업체','품목명','원재료 LOT','입고수량(kg)','검사항목','검사 합/부','결재상태','검사자','성적서','CoA 첨부파일','비고'],esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const csvRows=rows.map(row=>{const items=iqcItems(row).filter(x=>String(x?.name||'').trim()!=='비고').map(x=>String(x?.name||'').trim()).filter(Boolean).join(' / ')||iqcItemSummary(row),ap=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null,state=ap?.status==='APPROVED'?'승인완료':ap?.status==='REVIEWED'?'승인대기':ap?.status==='DRAFT'?'작성중':ap?.status==='PENDING'?'검토대기':'—',files=(by.get(String(row.id))||[]).map(x=>x.name).join(' / ')||'미첨부';return [iqcDateText(row.date),row.supplier||'-',row.item||'-',row.lot||'-',iqcWeightText(row.incoming_qty),items,iqcJudge(row),state,row.inspector||'-','QMES 성적서',files,iqcRemark(row)||'-'];});
+ const csv='\ufeff'+[headers,...csvRows].map(r=>r.map(esc).join(',')).join('\r\n'),files=[{name:'수입검사_현황.csv',data:new TextEncoder().encode(csv)}];
+ for(const row of rows)for(const a of (by.get(String(row.id))||[])){const res=await fetch('/api/qmes/iqc/attachments/'+encodeURIComponent(a.id),{credentials:'same-origin',cache:'no-store'});if(!res.ok)throw new Error((a.name||'CoA')+' 파일 다운로드 실패');files.push({name:'CoA/'+qmesSafeFileName(row.item||'원재료')+'_'+qmesSafeFileName(row.lot||row.id)+'_'+qmesSafeFileName(a.name),data:new Uint8Array(await res.arrayBuffer())});}
+ const blob=qmesBuildZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='수입검사_'+new Date().toISOString().slice(0,10)+'.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('수입검사 엑셀과 CoA 첨부파일을 함께 다운로드했습니다.');
+}
+
 
 Object.keys(pageInfo).forEach(buildModule);
 buildAdminEmployees();
