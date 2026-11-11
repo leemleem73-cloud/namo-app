@@ -5350,7 +5350,7 @@ function wireWorkFifoQuery(fifo){
       fifo.querySelector('[data-lot-label]').onclick=()=>openWorkLotLabel(receipts.get(lotChoice.value));
       const renderLotChoices=()=>{
         const material=materialChoice.value;
-        const normalize=window.qmesMaterialStockCore?.material;
+        const normalize=window.qmesMaterialStockCore?.fifoMaterial;
         const matching=material&&normalize?[...receipts].filter(([,receipt])=>normalize(receipt.item)===material):[];
         const prompt=!material?'원재료명을 먼저 선택':'해당 원료에 등록된 LOT 없음';
         lotChoice.disabled=!material;
@@ -5381,7 +5381,7 @@ function wireWorkFifoQuery(fifo){
           for(const row of result.data){
             const lot=String(row.lot??'').trim(),item=String(row.item??'').trim(),supplier=String(row.supplier??'').trim();
             const warehouse=String(row.warehouse_code??'').trim().toUpperCase();
-            if(!lot||lot==='-'||row.deleted)continue;
+            if(!lot||lot==='-'||row.deleted||!window.qmesMaterialStockCore.isFifoReceipt(row))continue;
             const key=JSON.stringify([lot,item,supplier,warehouse]);
             const receipt=receipts.get(key)||{lot,item,supplier,warehouse,itemCodes:new Set(),unitWeights:new Set()};
             const itemCode=String(row.item_code??row.itemCode??row.material_code??row.materialCode??'').trim();
@@ -5588,7 +5588,7 @@ function buildModule(id){
       <div class="nwi-header"><div class="nwi-title"><strong>작업지시서 등록 및 조회</strong></div>
       <div class="module-toolbar"><div class="table-tools"><button class="btn export-btn" type="button">엑셀 내보내기</button><button class="btn primary new-btn" type="button">+ 신규 작업지시서 등록</button></div></div></div>
 <div class="work-fifo-query" id="workFifoCheck" aria-label="원료 LOT 선입선출 확인">
- <label>원재료명<select data-fifo-material aria-label="원재료명"><option value="">원재료명 선택</option><option>NMP</option><option>BYK180</option><option>AOH30</option><option>SBS</option><option value="PVDF">PVdF</option><option>SBR</option></select></label>
+ <label>원재료명<select data-fifo-material aria-label="원재료명"><option value="">원재료명 선택</option><option>NMP</option><option>BYK180</option><option>AOH30</option><option>SBS</option><option value="PVDF">PVdF</option><option>SBR</option><option>PAI</option></select></label>
  <label>원료 LOT 선택<select data-fifo-lot-choice aria-label="수입검사 원료 LOT 선택" disabled><option value="">수입검사 LOT 선택</option></select></label>
  <label>원료 LOT 스캔<input data-fifo-lot aria-label="원료 LOT 스캔" maxlength="120" autocomplete="off" placeholder="선택 또는 스캔"></label>
  <button type="button" class="btn" data-fifo-check>선입선출 확인</button>
@@ -8800,8 +8800,8 @@ document.addEventListener('transitionend',follow,true);
 
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
 <script defer src="./js/qmes-stock-grid-20261104.js?v=7-stock-status"></script>
-<script defer src="./js/qmes-material-stock-core-20261103.js?v=20261111-material-fifo"></script>
-<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-material-fifo"></script>
+<script defer src="./js/qmes-material-stock-core-20261103.js?v=20261111-material-fifo-pai"></script>
+<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-material-fifo-pai"></script>
 <script defer src="./js/qmes-finished-stock-core-20261103.js?v=20261105-ship-qty"></script>
 <script defer src="./js/qmes-finished-stock-ui-20261103.js?v=20261105-ship-qty"></script>
 
