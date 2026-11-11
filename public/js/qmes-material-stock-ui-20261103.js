@@ -229,24 +229,25 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
  const stock=core.build({...snapshot,iqc});
  const result=core.materialFifoCheck(stock,lot,material);
  const stockByKey=new Map(stock.rows.map(row=>[row.key,row]));
- const shown=new Set();
  const target=core.lot(lot);
  const matches=new Set([target,...(result.alternatives||[]).map(entry=>core.lot(entry.lot))]);
- const receipts=iqc.filter(row=>!row.deleted&&matches.has(core.lot(row.lot))&&core.fifoMaterial(row.item)===core.fifoMaterial(material))
-  .map(row=>({
-   date:core.day(row.receipt_date||row.receiptDate||row.date),
+ const receiptGroups=new Map();
+ for(const row of iqc){
+  if(row.deleted||!matches.has(core.lot(row.lot))||core.fifoMaterial(row.item)!==core.fifoMaterial(material))continue;
+  const key=JSON.stringify([core.material(row.item),core.lot(row.lot),core.supplierKey(row.supplier)]);
+  const stockRow=stockByKey.get(key);
+  if(!receiptGroups.has(key))receiptGroups.set(key,{
+   dates:new Set(),
    supplier:core.text(row.supplier),
    item:core.text(row.item),
-   lot:core.text(row.lot),
-  }))
-  .sort((a,b)=>Number(core.lot(b.lot)===target)-Number(core.lot(a.lot)===target)||a.date.localeCompare(b.date))
-  .map(receipt=>{
-   const key=JSON.stringify([core.material(receipt.item),core.lot(receipt.lot),core.supplierKey(receipt.supplier)]);
-   const row=stockByKey.get(key);
-   const available=row&&!row.uncertain&&!stock.warnings.length&&!shown.has(key)?row.available:null;
-   shown.add(key);
-   return {...receipt,available};
+   lot:core.lot(row.lot),
+   available:stockRow&&!stockRow.uncertain&&!stock.warnings.length?stockRow.available:null
   });
+  const date=core.day(row.receipt_date||row.receiptDate||row.date);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(date))receiptGroups.get(key).dates.add(date);
+ }
+ const receipts=Array.from(receiptGroups.values(),receipt=>({...receipt,dates:[...receipt.dates].sort()}))
+  .sort((a,b)=>Number(b.lot===target)-Number(a.lot===target)||(a.dates[0]||'').localeCompare(b.dates[0]||''));
  return {...result,receipts};
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
