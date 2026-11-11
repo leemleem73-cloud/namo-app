@@ -8559,15 +8559,67 @@ function qmesZipConcat(parts){const size=parts.reduce((s,p)=>s+p.length,0),out=n
 function qmesZipDateTime(){const d=new Date(),y=Math.max(1980,d.getFullYear());return {time:(d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2),date:((y-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate()};}
 function qmesBuildZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;const dt=qmesZipDateTime();for(const file of files){const name=enc.encode(file.name.replace(/\\/g,'/')),data=file.data instanceof Uint8Array?file.data:new Uint8Array(file.data),crc=qmesZipCrc32(data);const local=qmesZipConcat([qmesZipU32(0x04034b50),qmesZipU16(20),qmesZipU16(0x0800),qmesZipU16(0),qmesZipU16(dt.time),qmesZipU16(dt.date),qmesZipU32(crc),qmesZipU32(data.length),qmesZipU32(data.length),qmesZipU16(name.length),qmesZipU16(0),name,data]);locals.push(local);centrals.push(qmesZipConcat([qmesZipU32(0x02014b50),qmesZipU16(20),qmesZipU16(20),qmesZipU16(0x0800),qmesZipU16(0),qmesZipU16(dt.time),qmesZipU16(dt.date),qmesZipU32(crc),qmesZipU32(data.length),qmesZipU32(data.length),qmesZipU16(name.length),qmesZipU16(0),qmesZipU16(0),qmesZipU16(0),qmesZipU16(0),qmesZipU32(0),qmesZipU32(offset),name]));offset+=local.length;}const centralSize=centrals.reduce((s,p)=>s+p.length,0);return new Blob([...locals,...centrals,qmesZipConcat([qmesZipU32(0x06054b50),qmesZipU16(0),qmesZipU16(0),qmesZipU16(files.length),qmesZipU16(files.length),qmesZipU32(centralSize),qmesZipU32(offset),qmesZipU16(0)])],{type:'application/zip'});}
 function qmesSafeFileName(v){return String(v||'파일').replace(/[\\/:*?"<>|]+/g,'_').replace(/\s+/g,' ').trim();}
+function qmesXmlEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));}
+function qmesExcelCol(index){let s='';for(let n=index+1;n>0;n=Math.floor((n-1)/26))s=String.fromCharCode(65+((n-1)%26))+s;return s;}
+function qmesBuildIqcXlsx(tableRows){
+  const headers=['No.','입고일자','공급업체','품목명','원료 LOT','입고 중량','검사항목','검사합부','결재상태','검사자','성적서','CoA','비고'];
+  const widths=[7,14,20,22,20,14,38,12,14,12,12,36,30];
+  const all=[headers,...tableRows];
+  const rowXml=all.map((row,r)=>{
+    const cells=row.map((value,col)=>{
+      const ref=qmesExcelCol(col)+(r+1),style=r===0?1:2;
+      return '<c r="'+ref+'" t="inlineStr" s="'+style+'"><is><t xml:space="preserve">'+qmesXmlEscape(value)+'</t></is></c>';
+    }).join('');
+    return '<row r="'+(r+1)+'" ht="'+(r===0?24:21)+'" customHeight="1">'+cells+'</row>';
+  }).join('');
+  const cols=widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('');
+  const last='M'+all.length;
+  const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="수입검사" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const workbookRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><name val="Malgun Gothic"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Malgun Gothic"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2F75B5"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E1F2"/></left><right style="thin"><color rgb="FFD9E1F2"/></right><top style="thin"><color rgb="FFD9E1F2"/></top><bottom style="thin"><color rgb="FFD9E1F2"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf></cellXfs></styleSheet>';
+  const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+cols+'</cols><sheetData>'+rowXml+'</sheetData><autoFilter ref="A1:'+last+'"/><pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/></worksheet>';
+  const enc=new TextEncoder();
+  const blob=qmesBuildZip([
+    {name:'[Content_Types].xml',data:enc.encode(contentTypes)},
+    {name:'_rels/.rels',data:enc.encode(rels)},
+    {name:'xl/workbook.xml',data:enc.encode(workbook)},
+    {name:'xl/_rels/workbook.xml.rels',data:enc.encode(workbookRels)},
+    {name:'xl/styles.xml',data:enc.encode(styles)},
+    {name:'xl/worksheets/sheet1.xml',data:enc.encode(sheet)}
+  ]);
+  return blob.arrayBuffer();
+}
 async function downloadIqcBundle(section){
- const rows=Array.isArray(section?._iqcFilteredRows)?section._iqcFilteredRows:(section?._iqcRows||[]);if(!rows.length){toast('다운로드할 수입검사 데이터가 없습니다.');return;}
- const ar=await fetch('/api/qmes/iqc/attachments',{credentials:'same-origin',cache:'no-store'}),aj=await ar.json().catch(()=>({}));if(!ar.ok||aj.success===false||!Array.isArray(aj.data))throw new Error(aj.message||'CoA 첨부파일 목록을 불러오지 못했습니다.');
- const by=new Map();for(const file of aj.data){const k=String(file.iqc_id||'');if(!by.has(k))by.set(k,[]);by.get(k).push(file);}
- const headers=['입고일자','공급업체','품목명','원재료 LOT','입고수량(kg)','검사항목','검사 합/부','결재상태','검사자','성적서','CoA 첨부파일','비고'],esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
- const csvRows=rows.map(row=>{const items=iqcItems(row).filter(x=>String(x?.name||'').trim()!=='비고').map(x=>String(x?.name||'').trim()).filter(Boolean).join(' / ')||iqcItemSummary(row),ap=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null,state=ap?.status==='APPROVED'?'승인완료':ap?.status==='REVIEWED'?'승인대기':ap?.status==='DRAFT'?'작성중':ap?.status==='PENDING'?'검토대기':'—',files=(by.get(String(row.id))||[]).map(x=>x.name).join(' / ')||'미첨부';return [iqcDateText(row.date),row.supplier||'-',row.item||'-',row.lot||'-',iqcWeightText(row.incoming_qty),items,iqcJudge(row),state,row.inspector||'-','QMES 성적서',files,iqcRemark(row)||'-'];});
- const csv='\ufeff'+[headers,...csvRows].map(r=>r.map(esc).join(',')).join('\r\n'),files=[{name:'수입검사_현황.csv',data:new TextEncoder().encode(csv)}];
- for(const row of rows)for(const a of (by.get(String(row.id))||[])){const res=await fetch('/api/qmes/iqc/attachments/'+encodeURIComponent(a.id),{credentials:'same-origin',cache:'no-store'});if(!res.ok)throw new Error((a.name||'CoA')+' 파일 다운로드 실패');files.push({name:'CoA/'+qmesSafeFileName(row.item||'원재료')+'_'+qmesSafeFileName(row.lot||row.id)+'_'+qmesSafeFileName(a.name),data:new Uint8Array(await res.arrayBuffer())});}
- const blob=qmesBuildZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='수입검사_'+new Date().toISOString().slice(0,10)+'.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('수입검사 엑셀과 CoA 첨부파일을 함께 다운로드했습니다.');
+  const rows=Array.isArray(section?._iqcFilteredRows)?section._iqcFilteredRows:(section?._iqcRows||[]);
+  if(!rows.length){toast('다운로드할 수입검사 데이터가 없습니다.');return;}
+  const ar=await fetch('/api/qmes/iqc/attachments',{credentials:'same-origin',cache:'no-store'});
+  const aj=await ar.json().catch(()=>({}));
+  if(!ar.ok||aj.success===false||!Array.isArray(aj.data))throw new Error(aj.message||'CoA 첨부파일 목록을 불러오지 못했습니다.');
+  const by=new Map();
+  for(const file of aj.data){const key=String(file.iqc_id||'');if(!by.has(key))by.set(key,[]);by.get(key).push(file);}
+  const tableRows=rows.map((row,index)=>{
+    const itemNames=iqcItems(row).filter(x=>{const n=String(x?.name||'').trim();return n&&n!=='비고'&&!n.includes('판정');}).map(x=>String(x.name).trim());
+    const items=[...new Set(itemNames)].join(' / ')||iqcItemSummary(row);
+    const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
+    const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'—';
+    const coaFiles=(by.get(String(row.id))||[]).map(x=>x.name).join(' / ')||'미첨부';
+    return [index+1,iqcDateText(row.date),row.supplier||'-',row.item||'-',row.lot||'-',iqcWeightText(row.incoming_qty,true),items,iqcJudge(row),state,row.inspector||'-','성적서',coaFiles,iqcRemark(row)||'-'];
+  });
+  const xlsxBytes=new Uint8Array(await qmesBuildIqcXlsx(tableRows));
+  const files=[{name:'수입검사_현황.xlsx',data:xlsxBytes}];
+  for(const row of rows){
+    for(const attachment of (by.get(String(row.id))||[])){
+      const response=await fetch('/api/qmes/iqc/attachments/'+encodeURIComponent(attachment.id),{credentials:'same-origin',cache:'no-store'});
+      if(!response.ok)throw new Error((attachment.name||'CoA')+' 파일 다운로드 실패');
+      files.push({name:'CoA/'+qmesSafeFileName(row.item||'원재료')+'_'+qmesSafeFileName(row.lot||row.id)+'_'+qmesSafeFileName(attachment.name),data:new Uint8Array(await response.arrayBuffer())});
+    }
+  }
+  const blob=qmesBuildZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='수입검사_'+new Date().toISOString().slice(0,10)+'.zip';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('수입검사 전체 항목과 CoA 첨부파일을 다운로드했습니다.');
 }
 
 
