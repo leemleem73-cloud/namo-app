@@ -320,6 +320,24 @@ BEGIN
   END LOOP;
  END IF;
 END $$;
+-- Dates printed on an existing OQC label do not create a new shipment.
+CREATE OR REPLACE FUNCTION qmes_gate_oqc_label_dates_only(oldp JSONB,newp JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE oldrow JSONB; newrow JSONB; changed BOOLEAN:=false;
+        meta TEXT[]:=ARRAY['manufactureDate','actualShipDate','revision','modifiedAt','modifiedBy','revisionDay'];
+BEGIN
+ IF jsonb_typeof(oldp->'rows') IS DISTINCT FROM 'array' OR jsonb_typeof(newp->'rows') IS DISTINCT FROM 'array' THEN RETURN false; END IF;
+ IF oldp-'rows' IS DISTINCT FROM newp-'rows' OR jsonb_array_length(oldp->'rows')<>jsonb_array_length(newp->'rows') THEN RETURN false; END IF;
+ FOR i IN 0..jsonb_array_length(oldp->'rows')-1 LOOP
+  oldrow:=oldp->'rows'->i;newrow:=newp->'rows'->i;
+  IF oldrow=newrow THEN CONTINUE; END IF;
+  IF jsonb_typeof(oldrow) IS DISTINCT FROM 'object' OR jsonb_typeof(newrow) IS DISTINCT FROM 'object'
+    OR coalesce(oldrow->>'id','')='' OR oldrow-meta IS DISTINCT FROM newrow-meta THEN RETURN false; END IF;
+  IF oldrow->'manufactureDate' IS DISTINCT FROM newrow->'manufactureDate'
+    OR oldrow->'actualShipDate' IS DISTINCT FROM newrow->'actualShipDate' THEN changed:=true; END IF;
+ END LOOP;
+ RETURN changed;
+END $$;
+
 CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB DEFAULT '{}') RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE v JSONB; previous JSONB; identity TEXT;
 BEGIN
@@ -415,7 +433,11 @@ BEGIN
    IF jsonb_typeof(j#>'{payload,lotRecord,ship}')='object' AND j#>'{payload,lotRecord,ship}' IS DISTINCT FROM o#>'{payload,lotRecord,ship}' THEN
     PERFORM qmes_gate_assert(qmes_gate_lot(j->'payload'),'출하 확정',true);
    END IF;
-  ELSIF k IN ('oqc','inventory') THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
+  ELSIF k='oqc' THEN
+   IF NOT qmes_gate_oqc_label_dates_only(o->'payload',j->'payload') THEN
+    PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
+   END IF;
+  ELSIF k='inventory' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
   ELSIF k='coa' THEN RAISE EXCEPTION '[QUALITY_GATE] CoA는 출하검사 성적서의 정식 발행 기능을 사용하세요.';
   END IF;
  WHEN 'oqc' THEN PERFORM qmes_gate_shipping(j,o);
