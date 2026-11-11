@@ -2700,11 +2700,19 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 <style id="qmes-work-fifo-query">
 #work .work-fifo-query{display:flex;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:12px 16px;background:#f3f7fb;border-bottom:1px solid #d6e1ed;color:#244260;font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}
 #work .work-fifo-query label{display:flex;align-items:center;gap:8px;min-width:0;margin:0;font-size:11.5px;font-weight:600;line-height:30px}
-#work .work-fifo-query :is(input,select){box-sizing:border-box;flex:0 0 144px;width:144px;height:30px;min-height:30px;border:1px solid #cbd9e7;border-radius:4px;background:#fff;color:#294763;font-family:Arial,sans-serif;font-size:12px;font-weight:600;padding:0 9px}
+#work .work-fifo-query :is(input,select){box-sizing:border-box;flex:0 0 var(--fifo-field-width,194px);width:var(--fifo-field-width,194px);height:var(--fifo-field-height,30px);min-height:var(--fifo-field-height,30px);border:1px solid #cbd9e7;border-radius:4px;background:#fff;color:var(--fifo-field-color,#294763);font-family:var(--fifo-field-font-family,Arial,sans-serif);font-size:var(--fifo-field-font-size,12px);font-weight:var(--fifo-field-font-weight,600);padding:0 9px}
 #work .work-fifo-query [data-fifo-check]{height:30px;min-height:30px;padding:4px 10px;border:1px solid #cbd9e7;border-radius:4px;background:#fff!important;color:#111!important;box-shadow:none;font:600 11.5px/20px Arial,sans-serif;white-space:nowrap}
 #work .work-fifo-query [data-fifo-check]:hover:not(:disabled){background:#f7f9fc!important}
 #work .work-fifo-query [data-fifo-status]{flex-basis:100%;font-size:12px;line-height:1.5;font-weight:500}
 #work .work-fifo-query [data-fifo-status]:empty{display:none}
+#work .work-fifo-details{flex:1 1 100%;min-width:0;font-size:12px}
+#work .work-fifo-details[hidden]{display:none}
+#work .work-fifo-table-wrap{margin-top:6px;overflow:auto;border:1px solid #d6e1ed;border-radius:4px}
+#work .work-fifo-details table{width:100%;min-width:540px;border-collapse:collapse;background:#fff}
+#work .work-fifo-details :is(th,td){padding:6px 10px;text-align:left;border-bottom:1px solid #e2eaf2;overflow-wrap:anywhere}
+#work .work-fifo-details th{background:#e8f0f8;font-weight:700}
+#work .work-fifo-details tr:last-child td{border-bottom:0}
+#work .work-fifo-details :is(th,td):last-child{text-align:right}
 @media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
 <style id="qmes-work-lot-label">
@@ -5339,12 +5347,42 @@ function openWorkLotLabel(receipt){
   };
 }
 
+function renderWorkFifoReceipts(panel, receipts){
+  const body=panel.querySelector('tbody');
+  body.replaceChildren();
+  for(const receipt of receipts){
+    const row=body.insertRow();
+    const weight=receipt.weight==null?'—':receipt.weight.toLocaleString('ko-KR',{maximumFractionDigits:6});
+    for(const value of [receipt.date,receipt.supplier,receipt.item,receipt.lot,weight])row.insertCell().textContent=value||'—';
+  }
+  panel.hidden=!receipts.length;
+}
+
 function wireWorkFifoQuery(fifo){
     if(fifo){
       const materialChoice=fifo.querySelector('[data-fifo-material]'),lotInput=fifo.querySelector('[data-fifo-lot]');
       const button=fifo.querySelector('[data-fifo-check]'),status=fifo.querySelector('[data-fifo-status]');
+      const details=fifo.querySelector('[data-fifo-details]');
+      const reference=fifo.parentElement.querySelector('#namo-work-inquiry .nwi-grid input[data-filter="0"]');
+      if(reference){
+        const syncFieldStyle=()=>{
+          const style=getComputedStyle(reference);
+          fifo.style.setProperty('--fifo-field-width',style.width);
+          fifo.style.setProperty('--fifo-field-height',style.height);
+          fifo.style.setProperty('--fifo-field-font-size',style.fontSize);
+          fifo.style.setProperty('--fifo-field-font-family',style.fontFamily);
+          fifo.style.setProperty('--fifo-field-font-weight',style.fontWeight);
+          fifo.style.setProperty('--fifo-field-color',style.color);
+        };
+        syncFieldStyle();
+        const observer=new ResizeObserver(()=>{
+          if(!fifo.isConnected){observer.disconnect();return;}
+          syncFieldStyle();
+        });
+        observer.observe(reference);
+      }
       let generation=0;
-      const clear=()=>{generation++;status.textContent='';button.disabled=false;};
+      const clear=()=>{generation++;status.textContent='';details.hidden=true;button.disabled=false;};
       const lotChoice=fifo.querySelector('[data-fifo-lot-choice]');
       const receipts=new Map();
       fifo.querySelector('[data-lot-label]').onclick=()=>openWorkLotLabel(receipts.get(lotChoice.value));
@@ -5399,11 +5437,12 @@ function wireWorkFifoQuery(fifo){
       };
       void loadChoices();
       button.onclick=async()=>{
-        const id=++generation;button.disabled=true;status.textContent='재고 확인 중…';
+        const id=++generation;button.disabled=true;details.hidden=true;status.textContent='재고 확인 중…';
         try{
           if(!window.qmesRawStock?.checkMaterialFifo)throw Error('재고 조회를 준비 중입니다.');
           const result=await window.qmesRawStock.checkMaterialFifo(lotInput.value,materialChoice.value,AbortSignal.timeout(15000));
           if(id!==generation||!fifo.isConnected)return;
+          renderWorkFifoReceipts(details,result.receipts||[]);
           if(result.state==='warning'){
             const older=result.alternatives[0];
             status.textContent='선입선출 주의 · 선입 LOT '+older.lot+' · 사용 가능 '+older.available.toLocaleString('ko-KR')+' kg · 먼저 사용해 주세요.';
@@ -5594,6 +5633,12 @@ function buildModule(id){
  <button type="button" class="btn" data-fifo-check>선입선출 확인</button>
  <button type="button" class="btn" data-lot-label>QR 라벨</button>
  <span role="status" aria-live="polite" data-fifo-status></span>
+ <div class="work-fifo-details" data-fifo-details hidden>
+   <strong>수입검사 입고 내역</strong>
+   <div class="work-fifo-table-wrap"><table aria-label="수입검사 입고 내역">
+     <thead><tr><th scope="col">입고일자</th><th scope="col">공급업체</th><th scope="col">품목명</th><th scope="col">LOT</th><th scope="col">입고 중량 (kg)</th></tr></thead><tbody></tbody>
+   </table></div>
+ </div>
 </div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th class="wo-select-col"></th><th>No.</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
@@ -8801,7 +8846,7 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
 <script defer src="./js/qmes-stock-grid-20261104.js?v=7-stock-status"></script>
 <script defer src="./js/qmes-material-stock-core-20261103.js?v=20261111-material-fifo-pai"></script>
-<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-material-fifo-pai"></script>
+<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-fifo-receipts"></script>
 <script defer src="./js/qmes-finished-stock-core-20261103.js?v=20261105-ship-qty"></script>
 <script defer src="./js/qmes-finished-stock-ui-20261103.js?v=20261105-ship-qty"></script>
 
