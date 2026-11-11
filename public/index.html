@@ -5320,8 +5320,8 @@ function openWorkLotLabel(receipt){
   if(typeof window.QRCode!=='function'){toast('QR 모듈을 불러오고 있습니다. 잠시 후 다시 눌러 주세요.');return;}
   const dialog=document.createElement('dialog');
   dialog.className='work-lot-label-dialog';
-  dialog.innerHTML='<header><strong>원료 LOT QR 라벨</strong><button type="button" data-close>닫기</button></header>'+
-    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><div class="work-label-brand"><span class="work-label-mark" aria-hidden="true"><img src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt=""></span><div class="work-label-company"><b>나모케미칼(주)</b><small>NAMO Chemical Co., Ltd.</small></div></div><span class="work-label-badge">원료 (입고용)</span></div>'+
+  dialog.innerHTML='<header><strong>원료 재고 LOT 라벨</strong><button type="button" data-close>닫기</button></header>'+
+    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><div class="work-label-brand"><span class="work-label-mark" aria-hidden="true"><img src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt=""></span><div class="work-label-company"><b>나모케미칼(주)</b><small>NAMO Chemical Co., Ltd.</small></div></div><span class="work-label-badge">원료 재고용</span></div>'+
     '<div class="work-label-content"><dl>'+
     '<dt>원료명</dt><dd data-material></dd><dt>원료코드</dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd>'+
     '<dt>사용 가능 재고(kg)</dt><dd data-quantity></dd><dt>최근 입고일</dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd>'+
@@ -5377,13 +5377,13 @@ function openWorkLotLabel(receipt){
     const image=preview.querySelector('[data-qr] canvas')?.toDataURL('image/png')||preview.querySelector('[data-qr] img')?.src;
     if(!image){status.textContent='QR 생성을 기다린 뒤 다시 눌러 주세요.';return;}
     const frame=document.createElement('iframe');
-    frame.title='원료 LOT QR 라벨 인쇄';
+    frame.title='원료 재고 LOT 라벨 인쇄';
     frame.style.cssText='position:fixed;width:1px;height:1px;border:0;left:-9999px;top:0';
     document.body.appendChild(frame);
     const doc=frame.contentDocument;
     doc.open();
     const layout=document.getElementById('qmes-work-lot-label-layout').textContent;
-    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 45mm;margin:0}body{margin:0}'+layout+'</style></head><body></body></html>');
+    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 재고 LOT 라벨</title><style>@page{size:60mm 45mm;margin:0}body{margin:0}'+layout+'</style></head><body></body></html>');
     doc.close();
     const label=doc.importNode(preview,true),qr=doc.createElement('img');
     qr.alt='원료 LOT QR';
