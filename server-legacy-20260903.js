@@ -2653,7 +2653,8 @@ app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
         if(target.patch.judge!==undefined)patch.judge=target.patch.judge;
         if(oqcAutoRules.items.includes(oqcAutoRules.canonical(old.check))){
 const measurements=patch.measurements??(Array.isArray(old.measurements)&&old.measurements.length?old.measurements:(old.value?String(old.value).split(/\s*\/\s*/):[]));
-patch.judge=oqcAutoRules.evaluateItem(old.check,measurements);
+const standardRevision=Number(old.standardRevision??0);
+patch.judge=oqcAutoRules.evaluateItem(old.check,measurements,Number.isFinite(standardRevision)?standardRevision:0);
 }
 rows[index]={...old,...clean,...patch};
         selected.push({index,auditIndex:auditAfter.length});
@@ -2661,9 +2662,7 @@ rows[index]={...old,...clean,...patch};
       }
       updates.push({key:record.record_key,payload,rows,selected});
     }
-    const groupMeasurements={};
-    for(const name of oqcAutoRules.items){const row=auditAfter.map(entry=>entry.row).find(row=>oqcAutoRules.canonical(row.check)===name);groupMeasurements[name]=Array.isArray(row?.measurements)&&row.measurements.length?row.measurements:(row?.value?String(row.value).split(/\s*\/\s*/):[]);}
-    const computed=oqcAutoRules.evaluateMeasurements(groupMeasurements).overall;
+    const computed=oqcAutoRules.summarizeRows(auditAfter.map(({row})=>({...row,inspectionDecision:'자동판정'}))).overall;
     if(clean.inspectionDecision==='합격'&&computed!=='합격')throw Object.assign(Error('측정값이 모두 합격인 경우에만 합격으로 저장할 수 있습니다.'),{status:400});
     const effective=clean.inspectionDecision==='불합격'?'불합격':computed;
     let historicalCorrection=false;
