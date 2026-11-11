@@ -6052,7 +6052,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       (Array.isArray(payload.rows)?payload.rows:[]).forEach((row,rowIndex)=>{
         const key=String(record.record_key||'')+'|'+String(row.id||row.groupId+'|'+row.check);
         if(seen.has(key))return;seen.add(key);
-        rows.push({...row,__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
+        rows.push({...row,...(id==='outgoing'?{__oqcExpected:row}:{}),__sourceRecordKey:String(record.record_key||''),__sourceRowIndex:rowIndex,__sourceRowId:String(row.id??'')});
       });
     });
     if(id==='process')section._pqcRecords=new Map(rows.map(row=>[row.__sourceRecordKey+'|'+row.__sourceRowId,row]));
@@ -9211,9 +9211,9 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-calendar-holidays-20261019.js?v=20261019-2"></script>
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261105-item-names"></script>
 <script src="./js/qmes-oqc-shipqty-20261105.js?v=1"></script>
-<script src="./js/qmes-oqc-revision-core-20261104.js?v=20261105-qty"></script>
+<script src="./js/qmes-oqc-revision-core-20261104.js?v=20261111-label-dates"></script>
 <script src="./js/qmes-oqc-attachments-20261104.js?v=20261105-full-filename"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261111-revision-scope"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261111-label-dates"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
@@ -9301,7 +9301,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-iqc-pqc-layout-20261021.js?v=20261111-iqc-qr-actions"></script>
 <script src="./js/qmes-iqc-approval-parity-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-parity-20261021.js?v=20261027-single-border2"></script>
-<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261105-ship-qty"></script>
+<script src="./js/qmes-oqc-registration-layout-20261021.js?v=20261111-label-dates"></script>
 <script src="./js/qmes-pqc-top-actions-20261021.js?v=1"></script>
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>

@@ -2609,13 +2609,16 @@ app.get('/api/qmes-sync/oqc/save-detail',requireLogin,(req,res)=>ok(res,{operati
 app.post('/api/qmes-sync/oqc/save-detail',requireLogin,async(req,res)=>{
   const targets=req.body?.targets,fields=req.body?.fields;
   const validDate=v=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(v||''))return false;const d=new Date(v+'T12:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===v;};
-  const allowed=['date','customer','product','lot','inspector','remarks','inspectionDecision','shippingStatus','shipQty'];
+  const allowed=['date','customer','product','lot','inspector','remarks','inspectionDecision','shippingStatus','shipQty','manufactureDate','actualShipDate'];
   if(!Array.isArray(targets)||!targets.length||targets.length>16||!fields||!validDate(fields.date)||!txt(fields.lot)||!txt(fields.inspector)||
     allowed.some(k=>fields[k]!=null&&(typeof fields[k]!=='string'||fields[k].length>2000)))
     return fail(res,400,'검사일자, LOT, 검사자와 검사 항목을 확인해 주세요.');
   if(fields.inspectionDecision!==undefined&&!['자동판정','합격','불합격'].includes(fields.inspectionDecision))return fail(res,400,'검사합부를 확인해 주세요.');
   if(fields.shippingStatus!==undefined&&!['','출하보류','출하대기','출하완료'].includes(fields.shippingStatus))return fail(res,400,'출하상태를 확인해 주세요.');
   const clean={};for(const key of allowed)if(Object.prototype.hasOwnProperty.call(fields,key))clean[key]=fields[key];
+  for(const [key,label] of [['manufactureDate','제조일자'],['actualShipDate','출하일자']]){
+    if(clean[key]!=null&&clean[key]!==''&&!validDate(clean[key]))return fail(res,400,'올바른 '+label+'를 입력해 주세요.');
+  }
   if(Object.prototype.hasOwnProperty.call(clean,'shipQty')){try{clean.shipQty=require('./public/js/qmes-oqc-shipqty-20261105.js').normalize(clean.shipQty);}catch(error){return fail(res,400,error.message);}}
   const signatures=new Set();
   for(const t of targets){

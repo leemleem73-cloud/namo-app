@@ -36,6 +36,8 @@ function normalizeRegistration(body) {
     inspector: text(source.inspector, '검사자', 120, true),
     remarks: text(source.remarks, '비고', 2000),
     shipQty:shipQtyRules.normalize(source.shipQty),
+    manufactureDate:text(source.manufactureDate,'제조일자',10),
+    actualShipDate:text(source.actualShipDate,'출하일자',10),
     // Included in retry identity, but never used to issue a CoA or decide a result.
     coaStatus: text(source.coaStatus, 'CoA 상태', 40),
     inspectionStatus: text(source.inspectionStatus, '검사상태', 40),
@@ -43,6 +45,12 @@ function normalizeRegistration(body) {
   const date = new Date(fields.date + 'T12:00:00Z');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.date) || !Number.isFinite(+date) || date.toISOString().slice(0, 10) !== fields.date) {
     throw invalid('올바른 검사일자를 입력해 주세요.');
+  }
+  for(const [key,label] of [['manufactureDate','제조일자'],['actualShipDate','출하일자']]){
+    const value=fields[key];
+    if(!value)continue;
+    const date=new Date(value+'T12:00:00Z');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(value)||!Number.isFinite(+date)||date.toISOString().slice(0,10)!==value)throw invalid('올바른 '+label+'를 입력해 주세요.');
   }
   const entered = {};
   for (const [name, values] of Object.entries(body.measurements)) {
@@ -58,7 +66,7 @@ function normalizeRegistration(body) {
   }
   const measurements = Object.fromEntries(rules.items.map(item => [item, entered[item] || ['', '', '']]));
   const attachment = attachments.validate(body.attachment);
-  const identityFields={...fields};if(identityFields.shipQty==='')delete identityFields.shipQty;
+  const identityFields={...fields};for(const key of ['shipQty','manufactureDate','actualShipDate'])if(identityFields[key]==='')delete identityFields[key];
   const requestHash = createHash('sha256').update(JSON.stringify(attachment?{ fields:identityFields, measurements, attachmentHash:attachment.hash }:{fields:identityFields,measurements})).digest('hex');
   return { requestId, recordKey: 'oqc-registration:' + requestId, requestHash, fields, measurements, attachment:body.attachment };
 }
@@ -82,7 +90,7 @@ function makePayload(normalized, user, now) {
       judge: result.items[check], inspectionDecision: '자동판정', inspectionStatus,
       // Inspection save does not confirm shipment or create a second manual hold on every row.
       // Failed measurements themselves create durable holds through the existing database trigger.
-      shippingStatus: '', coaStatus: '대기', shipQty: fields.shipQty, destination: '',
+      shippingStatus: '', coaStatus: '대기', shipQty: fields.shipQty, manufactureDate:fields.manufactureDate, actualShipDate:fields.actualShipDate, destination: '',
       note: '출하검사',
     };
   });
