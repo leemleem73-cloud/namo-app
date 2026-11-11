@@ -73,14 +73,15 @@ function normalizeRegistration(body) {
 
 function makePayload(normalized, user, now) {
   const { requestId, requestHash, fields, measurements } = normalized;
-  const result = rules.evaluateMeasurements(measurements);
+  const standardRevision=rules.standardRevisionForDate(fields.date);
+  const result = rules.evaluateMeasurements(measurements,standardRevision);
   const groupId = 'OQC-' + fields.date.replace(/-/g, '') + '-' + requestId;
   const inspectionStatus = result.overall === '대기' ? '검사중' : '검사완료';
   const rows = rules.items.map((check, index) => {
     const values = measurements[check];
     const numbers = values.map(rules.parseNumber);
     return {
-      id: groupId + '-' + (index + 1), groupId, ...revision.initial(now), standardRevision:(fields.date>='2026-11-10'?1:0),
+      id: groupId + '-' + (index + 1), groupId, ...revision.initial(now), standardRevision,
       date: fields.date, shipDate: '', time: '',
       lot: fields.lot, product: fields.product, customer: fields.customer,
       inspector: fields.inspector, remarks: fields.remarks,
