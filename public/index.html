@@ -2716,12 +2716,14 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-body{padding:18px}
 .work-lot-label-preview{overflow:hidden;border:1px solid #cad9e8;border-radius:6px;margin-bottom:16px;color:#17324d;background:#fff}
 .work-label-heading{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;background:#edf4fa;border-bottom:1px solid #cad9e8;font-size:11px;letter-spacing:.15px}
-.work-label-content{display:grid;grid-template-columns:clamp(88px,30vw,160px) minmax(0,1fr);align-items:center;gap:14px;padding:14px}
-.work-label-content [data-qr]{padding:8px}
+.work-label-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.work-label-content [data-qr]{display:grid;place-items:center;padding:14px;border-right:1px solid #cad9e8}
 .work-label-content [data-qr] :is(canvas,img){max-width:100%;height:auto}
-.work-label-content dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;margin:0;line-height:1.35}
-.work-label-content dt{color:#536c83}.work-label-content dd{margin:0;font-weight:700;overflow-wrap:anywhere}
-.work-label-content [data-lot]{font-size:14px}
+.work-label-content dl{display:grid;grid-template-columns:minmax(64px,40%) minmax(0,1fr);margin:0;font-size:12px;line-height:1.35;color:#244260}
+.work-label-content :is(dt,dd){margin:0;padding:7px 8px;border-bottom:1px solid #d6e1ed;display:flex;align-items:center;overflow-wrap:anywhere}
+.work-label-content dt{background:#f1f6fa;border-right:1px solid #d6e1ed;font-weight:600}
+.work-label-content dd{font-weight:700}
+.work-label-content :is(dt,dd):nth-last-child(-n+2){border-bottom:0}
 .work-label-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .work-lot-label-dialog label{display:grid;gap:5px;font-weight:600}
 .work-lot-label-dialog input{box-sizing:border-box;height:32px;width:100%;min-width:0;border:1px solid #cbd9e7;border-radius:4px;padding:0 8px;font:inherit}
@@ -5325,7 +5327,7 @@ function openWorkLotLabel(receipt){
     document.body.appendChild(frame);
     const doc=frame.contentDocument;
     doc.open();
-    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}body{margin:0;color:#111;font-family:Arial,"Malgun Gothic",sans-serif}.work-lot-label-preview{width:60mm;height:40mm;padding:2mm}.work-label-heading{display:flex;justify-content:space-between;border-bottom:1px solid;padding-bottom:1mm;font-size:7pt}.work-label-content{display:grid;grid-template-columns:23mm 1fr;align-items:center;gap:1mm;margin-top:1mm}[data-qr] img{display:block;width:23mm;height:23mm;padding:2mm}dl{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:.5mm 1mm;margin:0;font-size:6.5pt;line-height:1.15}dt,dd{margin:0}dd{font-weight:bold;overflow-wrap:anywhere}[data-lot]{font-size:7.5pt}</style></head><body></body></html>');
+    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}body{margin:0;color:#111;font-family:Arial,"Malgun Gothic",sans-serif}.work-lot-label-preview{width:60mm;height:40mm;padding:2mm}.work-label-heading{display:flex;justify-content:space-between;border-bottom:1px solid;padding-bottom:1mm;font-size:7pt}.work-label-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;border:1px solid #777;margin-top:1mm}[data-qr]{display:grid;place-items:center;border-right:1px solid #777}[data-qr] img{display:block;width:25mm;height:25mm;padding:2mm}dl{display:grid;grid-template-columns:10mm minmax(0,1fr);margin:0;font-size:6.5pt;line-height:1.12;color:#172b40}dt,dd{margin:0;padding:.45mm .65mm;display:flex;align-items:center;border-bottom:1px solid #aaa;overflow-wrap:anywhere}dt{font-weight:600;border-right:1px solid #aaa}dd{font-weight:700}dt:nth-last-child(-n+2),dd:last-child{border-bottom:0}</style></head><body></body></html>');
     doc.close();
     const label=doc.importNode(preview,true),qr=doc.createElement('img');
     qr.alt='원료 LOT QR';
