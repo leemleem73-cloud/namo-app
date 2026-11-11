@@ -188,11 +188,19 @@ function fifoCheck(model, scannedLot, warehouse){
  if(alternatives.length)return {state:'warning',alternatives};
  return unresolved.length?{state:'unavailable',reason:'확인할 LOT '+unresolved.slice(0,3).join(' / ')+(unresolved.length>3?' 외 '+(unresolved.length-3)+'건':'')}:{state:'clear'};
 }
+function fifoMaterial(value){
+ const name=text(value).toUpperCase();
+ if(/^PAI(?=$|[\s#(0-9-])|^바인더\s*\(\s*PAI\s*\)/.test(name))return 'PAI';
+ return material(value);
+}
+function isFifoReceipt(row){
+ return text(row.warehouse_code).toUpperCase()!=='TEST-1';
+}
 function materialFifoCheck(model, scannedLot, rawMaterial){
- const target=lot(scannedLot), selectedMaterial=material(rawMaterial);
+ const target=lot(scannedLot), selectedMaterial=fifoMaterial(rawMaterial);
  if(!target||target==='-'||!selectedMaterial)return {state:'unavailable',reason:'원재료명과 원료 LOT를 선택해 주세요.'};
  if(model.warnings.length)return {state:'unavailable',reason:'재고 조회 실패 · '+model.warnings.slice(0,2).join(' / ')};
- const rows=model.rows.filter(row=>material(row.material)===selectedMaterial);
+ const rows=model.rows.filter(row=>fifoMaterial(row.material)===selectedMaterial);
  const matches=rows.filter(row=>lot(row.lot)===target);
  if(matches.length!==1)return {state:'unavailable',reason:matches.length?'같은 원료 LOT에 공급업체가 여러 곳입니다.':'선택한 원료에서 LOT를 찾지 못했습니다.'};
  const selected=matches[0], info=warehouseInfo(selected);
@@ -213,5 +221,5 @@ function materialFifoCheck(model, scannedLot, rawMaterial){
  if(alternatives.length)return {state:'warning',alternatives};
  return unresolved.length?{state:'unavailable',reason:'입고일 또는 재고 이력을 확인할 LOT '+unresolved.slice(0,3).join(' / ')+(unresolved.length>3?' 외 '+(unresolved.length-3)+'건':'')}:{state:'clear'};
 }
-return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build,warehouseInfo,fifoCheck,materialFifoCheck};
+return {PREFIX,text,lot,day,number,material,supplierKey,judgment,readEntries,validateEntry,build,warehouseInfo,fifoCheck,materialFifoCheck,fifoMaterial,isFifoReceipt};
 });
