@@ -101,7 +101,7 @@ save.disabled=true;warning.hidden=true;
 const attachment=await window.qmesOqcFiles.read(pane);
 const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment})});
 const result=await response.json().catch(()=>({}));
-if(!response.ok||result.success===false)throw Error(result.message||'출하검사 저장에 실패했습니다.');
+if(!response.ok||result.success!==true)throw Error(result.message||'출하검사 저장을 확인하지 못했습니다. (응답 '+response.status+')');
 closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast(result.data?.historicalCorrection?'불합격 판정 유지 · 기승인 출하 이력 저장 완료':(shipmentHeld||result.data?.shipmentHeld)?'검사 결과 저장 완료 · 출하보류로 전환되었습니다.':result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
 }catch(error){warning.hidden=false;warning.textContent=error.message;}finally{save.disabled=false;}
 });
