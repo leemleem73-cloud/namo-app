@@ -8592,34 +8592,57 @@ function qmesBuildIqcXlsx(tableRows){
   return blob.arrayBuffer();
 }
 async function downloadIqcBundle(section){
+  const button=section?.querySelector('.export-btn');
+  if(button?.dataset.downloading==='1')return;
   const rows=Array.isArray(section?._iqcFilteredRows)?section._iqcFilteredRows:(section?._iqcRows||[]);
   if(!rows.length){toast('다운로드할 수입검사 데이터가 없습니다.');return;}
-  const ar=await fetch('/api/qmes/iqc/attachments',{credentials:'same-origin',cache:'no-store'});
-  const aj=await ar.json().catch(()=>({}));
-  if(!ar.ok||aj.success===false||!Array.isArray(aj.data))throw new Error(aj.message||'CoA 첨부파일 목록을 불러오지 못했습니다.');
-  const by=new Map();
-  for(const file of aj.data){const key=String(file.iqc_id||'');if(!by.has(key))by.set(key,[]);by.get(key).push(file);}
-  const tableRows=rows.map((row,index)=>{
-    const itemNames=iqcItems(row).filter(x=>{const n=String(x?.name||'').trim();return n&&n!=='비고'&&!n.includes('판정');}).map(x=>String(x.name).trim());
-    const items=[...new Set(itemNames)].join(' / ')||iqcItemSummary(row);
-    const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
-    const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'—';
-    const coaFiles=(by.get(String(row.id))||[]).map(x=>x.name).join(' / ')||'미첨부';
-    return [index+1,iqcDateText(row.date),row.supplier||'-',row.item||'-',row.lot||'-',iqcWeightText(row.incoming_qty,true),items,iqcJudge(row),state,row.inspector||'-','성적서',coaFiles,iqcRemark(row)||'-'];
-  });
-  const xlsxBytes=new Uint8Array(await qmesBuildIqcXlsx(tableRows));
-  const files=[{name:'수입검사_현황.xlsx',data:xlsxBytes}];
-  for(const row of rows){
-    for(const attachment of (by.get(String(row.id))||[])){
-      const response=await fetch('/api/qmes/iqc/attachments/'+encodeURIComponent(attachment.id),{credentials:'same-origin',cache:'no-store'});
-      if(!response.ok)throw new Error((attachment.name||'CoA')+' 파일 다운로드 실패');
-      files.push({name:'CoA/'+qmesSafeFileName(row.item||'원재료')+'_'+qmesSafeFileName(row.lot||row.id)+'_'+qmesSafeFileName(attachment.name),data:new Uint8Array(await response.arrayBuffer())});
+  const originalText=button?.textContent||'다운로드';
+  if(button){button.dataset.downloading='1';button.disabled=true;button.textContent='다운로드 준비 중...';}
+  try{
+    const ar=await fetch('/api/qmes/iqc/attachments',{credentials:'same-origin',cache:'no-store'});
+    const aj=await ar.json().catch(()=>({}));
+    if(!ar.ok||aj.success===false||!Array.isArray(aj.data))throw new Error(aj.message||'CoA 첨부파일 목록을 불러오지 못했습니다.');
+    const by=new Map();
+    for(const file of aj.data){const key=String(file.iqc_id||'');if(!by.has(key))by.set(key,[]);by.get(key).push(file);}
+    const tableRows=rows.map((row,index)=>{
+      const itemNames=iqcItems(row).filter(x=>{const n=String(x?.name||'').trim();return n&&n!=='비고'&&!n.includes('판정');}).map(x=>String(x.name).trim());
+      const items=[...new Set(itemNames)].join(' / ')||iqcItemSummary(row);
+      const approval=window.__QMES_IQC_APPROVALS__?.[String(row.id)]||null;
+      const state=approval?.status==='APPROVED'?'승인완료':approval?.status==='REVIEWED'?'승인대기':approval?.status==='DRAFT'?'작성중':approval?.status==='PENDING'?'검토대기':'—';
+      const coaFiles=(by.get(String(row.id))||[]).map(x=>x.name).join(' / ')||'미첨부';
+      return [index+1,iqcDateText(row.date),row.supplier||'-',row.item||'-',row.lot||'-',iqcWeightText(row.incoming_qty,true),items,iqcJudge(row),state,row.inspector||'-','성적서',coaFiles,iqcRemark(row)||'-'];
+    });
+    const xlsxBytes=new Uint8Array(await qmesBuildIqcXlsx(tableRows));
+    const files=[{name:'수입검사_현황.xlsx',data:xlsxBytes}];
+    const jobs=[];
+    for(const row of rows){
+      for(const attachment of (by.get(String(row.id))||[])){
+        jobs.push({row,attachment});
+      }
     }
+    let completed=0;
+    const downloaded=await Promise.all(jobs.map(async job=>{
+      const response=await fetch('/api/qmes/iqc/attachments/'+encodeURIComponent(job.attachment.id),{credentials:'same-origin',cache:'no-store'});
+      if(!response.ok)throw new Error((job.attachment.name||'CoA')+' 파일 다운로드 실패');
+      completed+=1;
+      if(button)button.textContent='CoA '+completed+'/'+jobs.length+' 받는 중...';
+      return {name:'CoA/'+qmesSafeFileName(job.row.item||'원재료')+'_'+qmesSafeFileName(job.row.lot||job.row.id)+'_'+qmesSafeFileName(job.attachment.name),data:new Uint8Array(await response.arrayBuffer())};
+    }));
+    files.push(...downloaded);
+    if(button)button.textContent='ZIP 생성 중...';
+    const blob=qmesBuildZip(files);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='수입검사_'+new Date().toISOString().slice(0,10)+'.zip';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},2000);
+    toast('수입검사 전체 항목과 CoA 첨부파일 다운로드를 시작했습니다.');
+  } finally {
+    if(button){button.dataset.downloading='0';button.disabled=false;button.textContent=originalText;}
   }
-  const blob=qmesBuildZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='수입검사_'+new Date().toISOString().slice(0,10)+'.zip';
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  toast('수입검사 전체 항목과 CoA 첨부파일을 다운로드했습니다.');
 }
 
 
