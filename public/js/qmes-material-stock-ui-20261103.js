@@ -225,7 +225,20 @@ window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(l
 },async checkMaterialFifo(lot,material,signal){
  await window.qmesAuthDataReady?.wait();
  const snapshot=await readStockSnapshot(signal);
- return core.materialFifoCheck(core.build({...snapshot,iqc:snapshot.iqc.filter(core.isFifoReceipt)}),lot,material);
+ const iqc=snapshot.iqc.filter(core.isFifoReceipt);
+ const result=core.materialFifoCheck(core.build({...snapshot,iqc}),lot,material);
+ const target=core.lot(lot);
+ const matches=new Set([target,...(result.alternatives||[]).map(entry=>core.lot(entry.lot))]);
+ const receipts=iqc.filter(row=>!row.deleted&&matches.has(core.lot(row.lot))&&core.fifoMaterial(row.item)===core.fifoMaterial(material))
+  .map(row=>({
+   date:core.day(row.receipt_date||row.receiptDate||row.date),
+   supplier:core.text(row.supplier),
+   item:core.text(row.item),
+   lot:core.text(row.lot),
+   weight:core.number(row.incoming_qty??row.incomingQty)
+  }))
+  .sort((a,b)=>Number(core.lot(b.lot)===target)-Number(core.lot(a.lot)===target)||a.date.localeCompare(b.date));
+ return {...result,receipts};
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
