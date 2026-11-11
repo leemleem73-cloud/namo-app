@@ -5321,14 +5321,28 @@ function wireWorkFifoQuery(fifo){
       const lotChoice=fifo.querySelector('[data-fifo-lot-choice]');
       const receipts=new Map();
       fifo.querySelector('[data-lot-label]').onclick=()=>openWorkLotLabel(receipts.get(lotChoice.value));
-      warehouse.addEventListener('change',clear);
+      const renderLotChoices=()=>{
+        const warehouseCode=warehouse.value;
+        const matching=[...receipts].filter(([,receipt])=>!warehouseCode||receipt.warehouse===warehouseCode);
+        const prompt=matching.length?'수입검사 LOT 선택':warehouseCode?'해당 창고에 등록된 LOT 없음':'등록된 LOT 없음';
+        lotChoice.replaceChildren(new Option(prompt,''),...matching.map(([key,receipt])=>new Option(receipt.lot,key)));
+      };
+      warehouse.addEventListener('change',()=>{
+        lotInput.value='';
+        renderLotChoices();
+        clear();
+      });
       lotInput.addEventListener('input',()=>{lotChoice.value='';clear();});
       lotChoice.addEventListener('change',()=>{
-        const selected=receipts.get(lotChoice.value);
+        const selectedKey=lotChoice.value;
+        const selected=receipts.get(selectedKey);
         if(!selected){lotInput.value='';clear();return;}
         lotInput.value=selected.lot;
-        if(selected.warehouse)warehouse.value=selected.warehouse;
-        else warehouse.value='';
+        if(!warehouse.value&&selected.warehouse){
+          warehouse.value=selected.warehouse;
+          renderLotChoices();
+          lotChoice.value=selectedKey;
+        }
         clear();
       });
       const loadChoices=async()=>{
@@ -5348,8 +5362,7 @@ function wireWorkFifoQuery(fifo){
           }
           const warehouses=[...new Set([...receipts.values()].map(row=>row.warehouse).filter(Boolean))].sort();
           warehouse.replaceChildren(new Option(warehouses.length?'창고 선택':'등록된 창고 없음',''),...warehouses.map(code=>new Option(code,code)));
-          lotChoice.replaceChildren(new Option(receipts.size?'수입검사 LOT 선택':'등록된 LOT 없음',''));
-          for(const [key,row] of receipts)lotChoice.add(new Option(row.lot,key));
+          renderLotChoices();
         }catch(error){
           if(fifo.isConnected)lotChoice.options[0].textContent='LOT 조회 실패 · 다시 열어 주세요';
         }
