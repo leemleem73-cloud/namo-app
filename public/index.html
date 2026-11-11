@@ -2713,11 +2713,19 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-dialog header,.work-lot-label-dialog footer{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d6e1ed}
 .work-lot-label-dialog footer{justify-content:flex-end;border-top:1px solid #d6e1ed;border-bottom:0}
 .work-lot-label-dialog button{height:30px;padding:0 12px;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:4px;font:inherit;cursor:pointer}
-.work-lot-label-body{padding:18px}.work-lot-label-preview{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid #d6e1ed;margin-bottom:16px;color:#111}
-.work-lot-label-preview [data-qr]{flex:none;width:150px;height:150px}.work-lot-label-preview [data-qr] img{width:150px;height:150px}
-.work-lot-label-preview>div:last-child{display:flex;flex-direction:column;gap:5px;min-width:0;overflow-wrap:anywhere}
-.work-lot-label-dialog label{display:flex;align-items:center;gap:12px;font-weight:600}
-.work-lot-label-dialog input{height:32px;min-width:0;flex:1;border:1px solid #cbd9e7;border-radius:4px;padding:0 8px;font:inherit}
+.work-lot-label-body{padding:18px}
+.work-lot-label-preview{overflow:hidden;border:1px solid #cad9e8;border-radius:6px;margin-bottom:16px;color:#17324d;background:#fff}
+.work-label-heading{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;background:#edf4fa;border-bottom:1px solid #cad9e8;font-size:11px;letter-spacing:.15px}
+.work-label-content{display:grid;grid-template-columns:clamp(88px,30vw,160px) minmax(0,1fr);align-items:center;gap:14px;padding:14px}
+.work-label-content [data-qr]{padding:8px}
+.work-label-content [data-qr] :is(canvas,img){max-width:100%;height:auto}
+.work-label-content dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;margin:0;line-height:1.35}
+.work-label-content dt{color:#536c83}.work-label-content dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.work-label-content [data-lot]{font-size:14px}
+.work-label-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.work-lot-label-dialog label{display:grid;gap:5px;font-weight:600}
+.work-lot-label-dialog input{box-sizing:border-box;height:32px;width:100%;min-width:0;border:1px solid #cbd9e7;border-radius:4px;padding:0 8px;font:inherit}
+.work-lot-label-dialog [data-print]{background:#2676bf;color:#fff;border-color:#2676bf}
 .work-lot-label-dialog p{font-size:11px;color:#5a7188;line-height:1.5}
 #work .work-fifo-query [data-lot-label]{height:30px;min-height:30px;padding:4px 10px;border:1px solid #cbd9e7;background:#fff;color:#111;box-shadow:none;font-size:11.5px;white-space:nowrap}
 </style>
@@ -5267,48 +5275,65 @@ function openWorkLotLabel(receipt){
   const dialog=document.createElement('dialog');
   dialog.className='work-lot-label-dialog';
   dialog.innerHTML='<header><strong>원료 LOT QR 라벨</strong><button type="button" data-close>닫기</button></header>'+
-    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div data-qr></div><div><strong data-material></strong><b data-lot></b><span data-supplier></span><span data-warehouse></span><span data-quantity></span></div></div>'+
-    '<label>라벨 수량 (kg)<input name="labelQuantity" type="number" min="0.000001" step="any" required placeholder="포장 한 개의 수량"></label>'+
-    '<p>라벨 크기 60 × 40 mm · QR에는 원료 LOT가 담깁니다.</p><div role="status"></div></div>'+
-    '<footer><button type="button" data-print>인쇄</button></footer>';
+    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><b>NAMO CHEMICAL</b><span>원료 입고 라벨</span></div>'+
+    '<div class="work-label-content"><div data-qr></div><dl>'+
+    '<dt>품번</dt><dd data-code></dd><dt>품명</dt><dd data-material></dd><dt>LOT</dt><dd data-lot></dd>'+
+    '<dt>수량</dt><dd data-quantity></dd><dt>발행일자</dt><dd data-date></dd><dt>창고코드</dt><dd data-warehouse></dd>'+
+    '</dl></div></div><div class="work-label-fields">'+
+    '<label>품번<input name="labelCode" maxlength="40" placeholder="수입검사 품번 확인"></label>'+
+    '<label>포장당 수량 (kg)<input name="labelQuantity" type="number" min="0.000001" step="any" required placeholder="포장 한 개의 수량"></label></div>'+
+    '<p>60 × 40 mm · QR에는 원료 LOT 번호가 담깁니다.</p><div role="status"></div></div>'+
+    '<footer><button type="button" class="btn primary" data-print>라벨 인쇄</button></footer>';
   document.body.appendChild(dialog);
-  const set=(name,value)=>{dialog.querySelector('[data-'+name+']').textContent=value;};
+  const preview=dialog.querySelector('.work-lot-label-preview');
+  const set=(name,value)=>{preview.querySelector('[data-'+name+']').textContent=value||'—';};
+  const code=dialog.querySelector('[name="labelCode"]');
+  const quantity=dialog.querySelector('[name="labelQuantity"]');
+  const issueDate=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+  const update=()=>{
+    set('code',code.value.trim());
+    set('quantity',quantity.value?quantity.value+' kg':'');
+    set('date',issueDate());
+  };
+  code.value=receipt.itemCode||'';
+  quantity.value=receipt.unitWeight||'';
   set('material',receipt.item);
   set('lot',receipt.lot);
-  set('supplier',receipt.supplier);
-  set('warehouse',receipt.warehouse?'창고 '+receipt.warehouse:'창고 미지정');
-  const quantity=dialog.querySelector('[name="labelQuantity"]');
-  quantity.addEventListener('input',()=>set('quantity',quantity.value?quantity.value+' kg':''));
+  set('warehouse',receipt.warehouse);
+  update();
+  code.addEventListener('input',update);
+  quantity.addEventListener('input',update);
   dialog.querySelector('[data-close]').onclick=()=>dialog.close();
   dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   dialog.showModal();
+  const status=dialog.querySelector('[role="status"]');
+  const printButton=dialog.querySelector('[data-print]');
   try{
-    new window.QRCode(dialog.querySelector('[data-qr]'),{text:receipt.lot,width:150,height:150,correctLevel:window.QRCode.CorrectLevel.M});
+    new window.QRCode(preview.querySelector('[data-qr]'),{text:receipt.lot,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
   }catch(error){
-    dialog.querySelector('[role="status"]').textContent='QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
-    dialog.querySelector('[data-print]').disabled=true;
+    status.textContent='QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
+    printButton.disabled=true;
   }
-  dialog.querySelector('[data-print]').onclick=()=>{
+  printButton.onclick=()=>{
     if(!quantity.reportValidity())return;
-    const image=dialog.querySelector('[data-qr] canvas')?.toDataURL('image/png')||dialog.querySelector('[data-qr] img')?.src;
-    if(!image){dialog.querySelector('[role="status"]').textContent='QR 생성을 기다린 뒤 다시 눌러 주세요.';return;}
+    update();
+    const image=preview.querySelector('[data-qr] canvas')?.toDataURL('image/png')||preview.querySelector('[data-qr] img')?.src;
+    if(!image){status.textContent='QR 생성을 기다린 뒤 다시 눌러 주세요.';return;}
     const frame=document.createElement('iframe');
     frame.title='원료 LOT QR 라벨 인쇄';
     frame.style.cssText='position:fixed;width:1px;height:1px;border:0;left:-9999px;top:0';
     document.body.appendChild(frame);
     const doc=frame.contentDocument;
     doc.open();
-    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}body{margin:0;color:#111;background:#fff;font-family:Arial,"Malgun Gothic",sans-serif}.label{width:60mm;height:40mm;padding:3mm;display:flex;align-items:center;gap:3mm;overflow:hidden}img{width:25mm;height:25mm;flex:none}.info{min-width:0;font-size:8pt;line-height:1.4;overflow-wrap:anywhere}.info>*{display:block}.lot{font-size:10pt}</style></head><body><div class="label"></div></body></html>');
+    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}body{margin:0;color:#111;font-family:Arial,"Malgun Gothic",sans-serif}.work-lot-label-preview{width:60mm;height:40mm;padding:2mm}.work-label-heading{display:flex;justify-content:space-between;border-bottom:1px solid;padding-bottom:1mm;font-size:7pt}.work-label-content{display:grid;grid-template-columns:23mm 1fr;align-items:center;gap:1mm;margin-top:1mm}[data-qr] img{display:block;width:23mm;height:23mm;padding:2mm}dl{display:grid;grid-template-columns:10mm minmax(0,1fr);gap:.5mm 1mm;margin:0;font-size:6.5pt;line-height:1.15}dt,dd{margin:0}dd{font-weight:bold;overflow-wrap:anywhere}[data-lot]{font-size:7.5pt}</style></head><body></body></html>');
     doc.close();
-    const label=doc.querySelector('.label'),qr=doc.createElement('img'),info=doc.createElement('div');
-    qr.alt='원료 LOT QR';qr.src=image;info.className='info';
-    for(const [tag,value,cls] of [['strong',receipt.item,''],['b',receipt.lot,'lot'],['span',receipt.supplier,''],['span',receipt.warehouse?'창고 '+receipt.warehouse:'창고 미지정',''],['strong',quantity.value+' kg','']]){
-      const element=doc.createElement(tag);element.textContent=value;element.className=cls;info.appendChild(element);
-    }
-    label.append(qr,info);
-    const print=()=>{frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
-    if(qr.complete)print();else qr.onload=print;
-    qr.onerror=()=>{frame.remove();dialog.querySelector('[role="status"]').textContent='QR 이미지를 인쇄할 수 없습니다.';};
+    const label=doc.importNode(preview,true),qr=doc.createElement('img');
+    qr.alt='원료 LOT QR';
+    label.querySelector('[data-qr]').replaceChildren(qr);
+    doc.body.appendChild(label);
+    qr.onload=()=>{frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
+    qr.onerror=()=>{frame.remove();status.textContent='QR 이미지를 인쇄할 수 없습니다.';};
+    qr.src=image;
   };
 }
 
@@ -5358,7 +5383,14 @@ function wireWorkFifoQuery(fifo){
             const warehouse=String(row.warehouse_code??'').trim().toUpperCase();
             if(!lot||lot==='-'||row.deleted)continue;
             const key=JSON.stringify([lot,item,supplier,warehouse]);
-            if(!receipts.has(key))receipts.set(key,{lot,item,supplier,warehouse});
+            const receipt=receipts.get(key)||{lot,item,supplier,warehouse,itemCodes:new Set(),unitWeights:new Set()};
+            const itemCode=String(row.item_code??row.itemCode??row.material_code??row.materialCode??'').trim();
+            const unitWeight=Number(row.unit_weight??row.unitWeight);
+            if(itemCode)receipt.itemCodes.add(itemCode);
+            if(Number.isFinite(unitWeight)&&unitWeight>=0.000001)receipt.unitWeights.add(unitWeight);
+            receipt.itemCode=receipt.itemCodes.size===1?[...receipt.itemCodes][0]:'';
+            receipt.unitWeight=receipt.unitWeights.size===1?[...receipt.unitWeights][0]:'';
+            receipts.set(key,receipt);
           }
           const warehouses=[...new Set([...receipts.values()].map(row=>row.warehouse).filter(Boolean))].sort();
           warehouse.replaceChildren(new Option(warehouses.length?'창고 선택':'등록된 창고 없음',''),...warehouses.map(code=>new Option(code,code)));
