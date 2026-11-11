@@ -146,15 +146,6 @@ function showForm(title, action){
  reason.focus();
 }
 function attach(){
- for(const form of document.querySelectorAll('#mainWorkspace .work-form')){
-  const toolbar=form.querySelector('.work-material-tools');
-  const lotField=form.querySelector('.work-basic-grid input[placeholder="생산 LOT NO 입력"]');
-  if(!toolbar||!lotField||toolbar.querySelector('.qgate-work-view'))continue;
-  const button=document.createElement('button');
-  button.type='button';button.className='btn qgate-work-view';button.textContent='품질 보류 조회';
-  button.onclick=()=>open(lotField.value.trim());
-  toolbar.appendChild(button);
- }
  for(const id of ['ncr','iqc','pqc','oqc']){
   const root=document.getElementById(id);if(!root)continue;
   const target=id==='ncr'?root.querySelector('.ncr-head-actions, .ncr-editor-toolbar > span, .ncr-editor-top'):root;
@@ -183,4 +174,5 @@ window.fetch=async function(...args){
 };
 let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;attach();});}).observe(document.body,{childList:true,subtree:true});
 ensureDialog();attach();window.qmesOpenQualityGate=open;
+document.getElementById('qmesQualityHoldMenu')?.addEventListener('click',()=>open(''));
 })();

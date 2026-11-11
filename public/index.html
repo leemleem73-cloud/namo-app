@@ -410,6 +410,8 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
   .nav-wrap::-webkit-scrollbar{display:none;width:0;height:0}
   .menu-title{font-size:10px;color:#8291a8;text-transform:uppercase;margin:12px 10px 6px;white-space:nowrap}
   .menu{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s ease;margin-bottom:3px}
+#qmesQualityHoldMenu{width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left}
+  #qmesQualityHoldMenu:hover{background:var(--nav2);color:#fff}
   .menu:hover{background:var(--nav2);color:#fff}.menu.active{background:#2457a8;color:#fff}
   .ico{width:26px;text-align:center;font-size:18px;flex:0 0 26px}.label{font-size:13px;font-weight:600;opacity:0;transition:.12s}.app.nav-open .label{opacity:1}
   .nav-toggle{position:absolute;bottom:12px;left:14px;width:48px;height:34px;border-radius:8px;background:#22314b;border:1px solid #30415f;color:#cdd6e3;display:grid;place-items:center;cursor:pointer}
@@ -2783,6 +2785,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
       <div class="menu" data-page="process"><div class="ico">🧫</div><div class="label">공정검사 PQC</div></div>
       <div class="menu" data-page="outgoing"><div class="ico">📋</div><div class="label">출하검사 OQC</div></div>
       <div class="menu" data-page="ncr"><div class="ico">📑</div><div class="label">부적합 NCR</div></div>
+      <button type="button" class="menu" id="qmesQualityHoldMenu" aria-haspopup="dialog"><span class="ico" aria-hidden="true">🛡</span><span class="label">품질 보류 관리</span></button>
       <div class="menu" data-page="spcTrend"><div class="ico">📈</div><div class="label">SPC / Trend</div></div>
 
       
@@ -8228,7 +8231,7 @@ if(!restoreQmesPage()){
 document.documentElement.setAttribute('data-qmes-menu-ready','1');
 document.documentElement.removeAttribute('data-qmes-pending-page');
 
-document.querySelectorAll('.menu').forEach(m=>m.addEventListener('click',()=>{
+document.querySelectorAll('.menu[data-page]').forEach(m=>m.addEventListener('click',()=>{
   if(m.hasAttribute('data-admin-only') && !isAdminUser()){toast('관리자 권한이 필요합니다.');return;}
   window.qmesMenuHistory?.beforeMenu();
   window.qmesSelectionLifecycle?.clearInactive(m.dataset.page);
@@ -8750,7 +8753,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34"></script>
 <script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261103-spc-precision1"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
-<script src="./js/qmes-quality-gate-20261021.js?v=20261111-cancel-default-reason"></script>
+<script src="./js/qmes-quality-gate-20261021.js?v=20261111-sidebar"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261105-evidence"></script>
 <script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261105-frame"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261021-1"></script>
