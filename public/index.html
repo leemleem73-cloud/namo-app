@@ -2719,8 +2719,13 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work #workFifoCheck .work-fifo-details tbody tr.work-fifo-selected:hover>td{background:#aecdef!important}
 }
 @media(prefers-reduced-motion:reduce){#work #workFifoCheck .work-fifo-details tbody td{transition:none}}
-#work #workFifoCheck .work-fifo-details :is(th,td):last-child{border-right:0!important;white-space:nowrap}
-#work #workFifoCheck .work-fifo-details :is(th,td):first-child{white-space:pre;line-height:1.45}
+#work #workFifoCheck .work-fifo-details :is(th,td):last-child{border-right:0!important}
+#work #workFifoCheck .work-fifo-details [data-column="date"]{white-space:pre;line-height:1.45}
+#work #workFifoCheck .work-fifo-details th{position:relative;cursor:grab;user-select:none;padding-inline:12px}
+#work #workFifoCheck .work-fifo-details th[data-drop]{background:#d5e6fa;box-shadow:inset 0 -2px #3979bd}
+#work #workFifoCheck .fifo-column-grip{position:absolute;inset:0 0 0 auto;width:10px;border:0;padding:0;background:transparent;cursor:col-resize;touch-action:none}
+#work #workFifoCheck th:last-child .fifo-column-grip{display:none}
+#work #workFifoCheck .fifo-column-grip:is(:hover,:focus-visible){background:#3979bd33}
 #work #workFifoCheck .work-fifo-details tbody tr:last-child td{border-bottom:0!important}
 @media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
@@ -5403,16 +5408,109 @@ function openWorkLotLabel(receipt){
   printButtons.forEach(button=>{button.onclick=printLabel;});
 }
 
+const workFifoColumns=['date','supplier','item','lot','available'];
+
+function wireWorkFifoColumns(panel){
+  const table=panel.querySelector('table');
+  const head=table.tHead.rows[0], colgroup=table.querySelector('colgroup');
+  const headers=Array.from(head.cells);
+  const cols=Array.from(colgroup.children);
+  let dragged=null, resize=null;
+  function moveColumn(from,to){
+    if(from===to||to<0||to>=head.cells.length)return;
+    const order=Array.from(head.cells).map((_,index)=>index);
+    order.splice(to,0,order.splice(from,1)[0]);
+    for(const parent of [head,colgroup,...table.tBodies[0].rows]){
+      const cells=Array.from(parent.children);
+      parent.append(...order.map(index=>cells[index]));
+    }
+  }
+  function resizePair(index,widths,delta){
+    const left=widths[index],right=widths[index+1];
+    const total=widths.reduce((sum,width)=>sum+width,0);
+    const change=Math.max(Math.min(90,left)-left,Math.min(right-Math.min(90,right),delta));
+    widths.forEach((width,i)=>{
+      const offset=i===index?change:i===index+1?-change:0;
+      colgroup.children[i].style.width=(width+offset)/total*100+'%';
+    });
+  }
+  const getWidths=()=>Array.from(head.cells,cell=>cell.getBoundingClientRect().width);
+  headers.forEach((header,index)=>{
+    header.dataset.column=workFifoColumns[index];
+    cols[index].dataset.column=workFifoColumns[index];
+    header.draggable=true;
+    header.tabIndex=0;
+    header.title='끌어서 열 순서 변경 · Alt+방향키로 이동';
+    header.onkeydown=event=>{
+      if(event.target!==header||!event.altKey||!['ArrowLeft','ArrowRight'].includes(event.key))return;
+      event.preventDefault();
+      moveColumn(header.cellIndex,header.cellIndex+(event.key==='ArrowLeft'?-1:1));
+      header.focus();
+    };
+    header.ondragstart=event=>{
+      if(resize){event.preventDefault();return;}
+      dragged=header;
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('text/plain',header.dataset.column);
+    };
+    header.ondragover=event=>{
+      if(!dragged||dragged===header)return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect='move';
+      header.dataset.drop='';
+    };
+    header.ondragleave=event=>{if(!header.contains(event.relatedTarget))delete header.dataset.drop;};
+    header.ondrop=event=>{
+      if(!dragged)return;
+      event.preventDefault();
+      delete header.dataset.drop;
+      moveColumn(dragged.cellIndex,header.cellIndex);
+      dragged=null;
+    };
+    header.ondragend=()=>{
+      dragged=null;
+      headers.forEach(cell=>{delete cell.dataset.drop;});
+    };
+    const grip=document.createElement('button');
+    grip.type='button';
+    grip.className='fifo-column-grip';
+    grip.setAttribute('aria-label',header.textContent.trim()+' 열 너비 조절');
+    grip.title='끌어서 너비 조절';
+    grip.onpointerdown=event=>{
+      if(event.button!==0)return;
+      resize={start:event.clientX,widths:getWidths()};
+      header.draggable=false;
+      grip.setPointerCapture(event.pointerId);
+    };
+    grip.onpointermove=event=>{
+      if(resize&&grip.hasPointerCapture(event.pointerId))resizePair(header.cellIndex,resize.widths,event.clientX-resize.start);
+    };
+    grip.onlostpointercapture=()=>{resize=null;header.draggable=true;};
+    grip.onkeydown=event=>{
+      if(!['ArrowLeft','ArrowRight'].includes(event.key))return;
+      event.preventDefault();
+      resizePair(header.cellIndex,getWidths(),event.key==='ArrowLeft'?-10:10);
+    };
+    header.appendChild(grip);
+  });
+}
+
 function renderWorkFifoReceipts(panel, receipts, selectedLot){
   const normalizeLot=window.qmesMaterialStockCore.lot;
   const target=normalizeLot(selectedLot);
   const body=panel.querySelector('tbody');
   body.replaceChildren();
+  const columns=Array.from(body.parentElement.tHead.rows[0].cells,cell=>cell.dataset.column);
   for(const receipt of receipts){
     const row=body.insertRow();
     row.classList.toggle('work-fifo-selected',!!target&&normalizeLot(receipt.lot)===target);
     const available=receipt.available==null?'—':receipt.available.toLocaleString('ko-KR',{maximumFractionDigits:6});
-    for(const value of [receipt.dates.join('\n'),receipt.supplier,receipt.item,receipt.lot,available])row.insertCell().textContent=value||'—';
+    const values={...receipt,date:receipt.dates.join('\n'),available};
+    for(const column of columns){
+      const cell=row.insertCell();
+      cell.dataset.column=column;
+      cell.textContent=values[column]||'—';
+    }
   }
   panel.hidden=!receipts.length;
 }
@@ -5422,6 +5520,7 @@ function wireWorkFifoQuery(fifo){
       const materialChoice=fifo.querySelector('[data-fifo-material]'),lotInput=fifo.querySelector('[data-fifo-lot]');
       const button=fifo.querySelector('[data-fifo-check]'),status=fifo.querySelector('[data-fifo-status]');
       const details=fifo.querySelector('[data-fifo-details]');
+      wireWorkFifoColumns(details);
       const reference=fifo.parentElement.querySelector('#namo-work-inquiry .nwi-grid input[data-filter="0"]');
       if(reference){
         const syncFieldStyle=()=>{
