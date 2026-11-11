@@ -31,6 +31,12 @@ function evaluateMeasurements(measurements,standardRevision){
 const results={};for(const item of items)results[item]=evaluateItem(item,measurements?.[item]??(item==='수분율'?measurements?.['수분']:undefined),standardRevision);
 const all=Object.values(results);return {items:results,overall:all.includes('불합격')?'불합격':all.every(v=>v==='합격')?'합격':'대기'};
 }
+function standardRevisionForDate(date,fallback=0){
+ const day=String(date??'').slice(0,10);
+ if(/^\d{4}-\d{2}-\d{2}$/.test(day))return day>='2026-11-01'?1:0;
+ const revision=Number(fallback);
+ return Number.isFinite(revision)?revision:0;
+}
 function rowValues(row){if(Array.isArray(row?.measurements)&&row.measurements.length)return row.measurements;return String(row?.value??'').split(/\s*\/\s*/);}
 function summarizeRows(rows){
 const pending=[],failed=[];
@@ -38,7 +44,7 @@ for(const item of items){const matches=rows.filter(row=>canonical(row.check)===i
 if(!matches.length){pending.push(item+' 항목 없음');continue;}
 for(const row of matches){
  const values=rowValues(row);
- const standardRevision=Number.isFinite(Number(row?.standardRevision))?Number(row.standardRevision):0;
+ const standardRevision=standardRevisionForDate(row.date,row.standardRevision);
  const judge=evaluateItem(item,values,standardRevision);
  if(judge==='불합격')failed.push(item);
  else if(judge==='대기'){const missing=[0,1,2].filter(i=>String(values[i]??'').trim()==='').map(i=>(i+1)+'차');pending.push(item+' '+missing.join('·')+' 미입력');}
@@ -47,5 +53,5 @@ for(const row of matches){
 if(rows.some(row=>row.inspectionDecision==='불합격'||['불합격','NG','FAIL'].includes(String(row.judge||row.result||'').trim().toUpperCase())))failed.push('저장된 불합격 판정');
 return {overall:failed.length?'불합격':pending.length?'대기':'합격',pending:[...new Set(pending)],failed:[...new Set(failed)]};
 }
-return Object.freeze({items,canonical,parseNumber:number,evaluateItem,evaluateMeasurements,rowValues,summarizeRows});
+return Object.freeze({items,canonical,parseNumber:number,evaluateItem,evaluateMeasurements,rowValues,summarizeRows,standardRevisionForDate});
 });
