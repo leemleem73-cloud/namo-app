@@ -403,6 +403,12 @@ BEGIN
  IF TG_OP<>'INSERT' THEN o:=to_jsonb(OLD); END IF;
  IF TG_OP='DELETE' THEN PERFORM qmes_gate_source(o,TG_TABLE_NAME,true); RETURN OLD; END IF;
  j:=to_jsonb(NEW);
+ IF TG_OP='UPDATE' AND TG_TABLE_NAME='qmes_sync_records'
+   AND o->>'record_type'='oqc' AND j->>'record_type'='oqc'
+   AND o->>'record_key'=j->>'record_key'
+   AND qmes_gate_oqc_label_dates_only(o->'payload',j->'payload') THEN
+  RETURN NEW;
+ END IF;
  PERFORM qmes_gate_source(j,TG_TABLE_NAME);
  CASE TG_TABLE_NAME
  WHEN 'qmes_work_order_documents' THEN PERFORM qmes_gate_document(j->'document',coalesce(o->'document','{}'));
@@ -433,11 +439,7 @@ BEGIN
    IF jsonb_typeof(j#>'{payload,lotRecord,ship}')='object' AND j#>'{payload,lotRecord,ship}' IS DISTINCT FROM o#>'{payload,lotRecord,ship}' THEN
     PERFORM qmes_gate_assert(qmes_gate_lot(j->'payload'),'출하 확정',true);
    END IF;
-  ELSIF k='oqc' THEN
-   IF NOT qmes_gate_oqc_label_dates_only(o->'payload',j->'payload') THEN
-    PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
-   END IF;
-  ELSIF k='inventory' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
+  ELSIF k IN ('oqc','inventory') THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
   ELSIF k='coa' THEN RAISE EXCEPTION '[QUALITY_GATE] CoA는 출하검사 성적서의 정식 발행 기능을 사용하세요.';
   END IF;
  WHEN 'oqc' THEN PERFORM qmes_gate_shipping(j,o);
