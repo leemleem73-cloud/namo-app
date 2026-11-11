@@ -2717,6 +2717,24 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work #workFifoCheck .work-fifo-details tbody tr:last-child td{border-bottom:0!important}
 @media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
+<style id="qmes-work-lot-label-layout">
+.work-lot-label-preview{box-sizing:border-box;width:50mm;height:40mm;padding:1.3mm;margin:0 auto;border:.25mm solid #253c63;border-radius:2mm;background:#fff;color:#172b40;font:6pt/1.12 Arial,"Malgun Gothic",sans-serif;display:grid;grid-template-rows:5mm minmax(0,1fr) 7mm;gap:.6mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.work-label-heading{display:flex;justify-content:space-between;align-items:center;gap:.8mm;min-width:0}
+.work-label-heading img{display:block;width:23mm;max-height:4mm;object-fit:contain;object-position:left center;font-size:5.5pt}
+.work-label-heading span{border-radius:.8mm;padding:.6mm .8mm;background:#304d87;color:#fff;font-size:5.6pt;font-weight:700;white-space:nowrap}
+.work-label-content{display:grid;grid-template-columns:minmax(0,1fr) 16mm;overflow:hidden;border:.18mm solid #7890a7;border-radius:.8mm}
+.work-label-content dl{display:grid;grid-template-columns:10mm minmax(0,1fr);grid-template-rows:repeat(7,minmax(0,1fr));margin:0;min-width:0}
+.work-label-content :is(dt,dd){box-sizing:border-box;margin:0;min-width:0;padding:0 .55mm;border-bottom:.18mm solid #7890a7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-content:center}
+.work-label-content dt{background:#edf3f8;border-right:.18mm solid #7890a7;font-weight:600;font-size:5.5pt}
+.work-label-content dd{font-weight:700}
+.work-label-content :is(dt,dd):nth-last-child(-n+2){border-bottom:0}
+.work-label-qr{display:grid;align-content:center;justify-items:center;border-left:.18mm solid #7890a7;font-weight:700;font-size:5pt}
+.work-label-qr [data-qr]{padding:2.2mm;background:#fff}
+.work-label-qr :is(canvas,img){width:11.3mm!important;height:11.3mm!important;image-rendering:pixelated}
+.work-label-barcode{display:grid;grid-template-rows:5mm 1fr;justify-items:center;align-items:center;font:700 6pt/1 monospace;overflow:hidden}
+.work-label-barcode svg{display:block;width:100%;height:5mm;fill:#111;shape-rendering:crispEdges}
+.work-label-barcode span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
 <style id="qmes-work-lot-label">
 .work-lot-label-dialog{width:min(520px,calc(100vw - 32px));max-height:90vh;overflow:auto;padding:0;border:1px solid #cbd9e7;border-radius:7px;background:#fff;color:#244260;font:12px Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}
 .work-lot-label-dialog::backdrop{background:#18314b66}
@@ -2724,16 +2742,8 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-dialog footer{justify-content:flex-end;border-top:1px solid #d6e1ed;border-bottom:0}
 .work-lot-label-dialog button{height:30px;padding:0 12px;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:4px;font:inherit;cursor:pointer}
 .work-lot-label-body{padding:18px}
-.work-lot-label-preview{overflow:hidden;border:1px solid #cad9e8;border-radius:6px;margin-bottom:16px;color:#17324d;background:#fff}
-.work-label-heading{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;background:#edf4fa;border-bottom:1px solid #cad9e8;font-size:11px;letter-spacing:.15px}
-.work-label-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
-.work-label-content [data-qr]{display:grid;place-items:center;padding:14px;border-right:1px solid #cad9e8}
-.work-label-content [data-qr] :is(canvas,img){max-width:100%;height:auto}
-.work-label-content dl{display:grid;grid-template-columns:minmax(64px,40%) minmax(0,1fr);margin:0;font-size:12px;line-height:1.35;color:#244260}
-.work-label-content :is(dt,dd){margin:0;padding:7px 8px;border-bottom:1px solid #d6e1ed;display:flex;align-items:center;overflow-wrap:anywhere}
-.work-label-content dt{background:#f1f6fa;border-right:1px solid #d6e1ed;font-weight:600}
-.work-label-content dd{font-weight:700}
-.work-label-content :is(dt,dd):nth-last-child(-n+2){border-bottom:0}
+.work-lot-label-dialog .work-lot-label-preview{zoom:2;margin-bottom:16px}
+@media(max-width:480px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.4}}
 .work-label-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .work-lot-label-dialog label{display:grid;gap:5px;font-weight:600}
 .work-lot-label-dialog input{box-sizing:border-box;height:32px;width:100%;min-width:0;border:1px solid #cbd9e7;border-radius:4px;padding:0 8px;font:inherit}
@@ -5281,24 +5291,44 @@ function renderSavedWorkOrders(){
   }
   tbody.style.visibility=priorVisibility;
 }
+function workLotBarcode(value){
+  // Code 128 uses set C for even-length numeric LOTs and set B for printable ASCII.
+  const patterns='212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112'.split(' ');
+  if(!/^[ -~]+$/.test(value))return '';
+  const numeric=/^(?:\d{2})+$/.test(value);
+  const start=numeric?105:104;
+  const codes=numeric?value.match(/../g).map(Number):Array.from(value,ch=>ch.charCodeAt(0)-32);
+  const checksum=codes.reduce((sum,code,index)=>sum+code*(index+1),start)%103;
+  let x=10,bars='';
+  for(const symbol of [start,...codes,checksum,106]){
+    Array.from(patterns[symbol],Number).forEach((width,index)=>{
+      if(index%2===0)bars+='<rect x="'+x+'" width="'+width+'" height="20"/>';
+      x+=width;
+    });
+  }
+  const total=x+10;
+  if(total>235)return '';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+total+' 20" preserveAspectRatio="none" role="img" aria-label="원료 LOT 바코드">'+bars+'</svg>';
+}
+
 function openWorkLotLabel(receipt){
   if(!receipt){toast('수입검사 LOT를 먼저 선택하세요.');return;}
   if(typeof window.QRCode!=='function'){toast('QR 모듈을 불러오고 있습니다. 잠시 후 다시 눌러 주세요.');return;}
   const dialog=document.createElement('dialog');
   dialog.className='work-lot-label-dialog';
   dialog.innerHTML='<header><strong>원료 LOT QR 라벨</strong><button type="button" data-close>닫기</button></header>'+
-    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><b>NAMO CHEMICAL</b><span>원료 입고 라벨</span></div>'+
-    '<div class="work-label-content"><div data-qr></div><dl>'+
-    '<dt>품번</dt><dd data-code></dd><dt>품명</dt><dd data-material></dd><dt>LOT</dt><dd data-lot></dd>'+
-    '<dt>수량</dt><dd data-quantity></dd><dt>발행일자</dt><dd data-date></dd><dt>창고코드</dt><dd data-warehouse></dd>'+
-    '</dl></div></div><div class="work-label-fields">'+
+    '<div class="work-lot-label-body"><div class="work-lot-label-preview"><div class="work-label-heading"><img src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="나모케미칼(주)"><span>원료 (입고용)</span></div>'+
+    '<div class="work-label-content"><dl>'+
+    '<dt>원료명</dt><dd data-material></dd><dt>원료코드</dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd>'+
+    '<dt>수량</dt><dd data-quantity></dd><dt>입고일자</dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd><dt>창고코드</dt><dd data-warehouse></dd>'+
+    '</dl><div class="work-label-qr"><div data-qr></div><span>QMES Traceability</span></div></div><div class="work-label-barcode"><span data-barcode-lot></span></div></div><div class="work-label-fields">'+
     '<label>품번<input name="labelCode" maxlength="40" placeholder="수입검사 품번 확인"></label>'+
     '<label>포장당 수량 (kg)<input name="labelQuantity" type="number" min="0.000001" step="any" required placeholder="포장 한 개의 수량"></label></div>'+
-    '<p>60 × 40 mm · QR에는 원료 LOT 번호가 담깁니다.</p><div role="status"></div></div>'+
+    '<p>50 × 40 mm · QR과 바코드에는 원료 LOT 번호가 담깁니다.</p><div role="status"></div></div>'+
     '<footer><button type="button" class="btn primary" data-print>라벨 인쇄</button></footer>';
   document.body.appendChild(dialog);
   const preview=dialog.querySelector('.work-lot-label-preview');
-  const set=(name,value)=>{preview.querySelector('[data-'+name+']').textContent=value||'—';};
+  const set=(name,value)=>{const cell=preview.querySelector('[data-'+name+']');cell.textContent=value||'—';cell.title=value||'';};
   const code=dialog.querySelector('[name="labelCode"]');
   const quantity=dialog.querySelector('[name="labelQuantity"]');
   const issueDate=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
@@ -5312,6 +5342,10 @@ function openWorkLotLabel(receipt){
   set('material',receipt.item);
   set('lot',receipt.lot);
   set('warehouse',receipt.warehouse);
+  set('received',receipt.receiptDates.size===1?[...receipt.receiptDates][0]:'');
+  set('barcode-lot',receipt.lot);
+  const barcode=workLotBarcode(receipt.lot);
+  if(barcode)preview.querySelector('.work-label-barcode').insertAdjacentHTML('afterbegin',barcode);
   update();
   code.addEventListener('input',update);
   quantity.addEventListener('input',update);
@@ -5319,6 +5353,7 @@ function openWorkLotLabel(receipt){
   dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   dialog.showModal();
   const status=dialog.querySelector('[role="status"]');
+  if(!barcode)status.textContent='이 LOT는 QR로 스캔해 주세요.';
   const printButton=dialog.querySelector('[data-print]');
   try{
     new window.QRCode(preview.querySelector('[data-qr]'),{text:receipt.lot,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
@@ -5337,13 +5372,14 @@ function openWorkLotLabel(receipt){
     document.body.appendChild(frame);
     const doc=frame.contentDocument;
     doc.open();
-    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:60mm 40mm;margin:0}*{box-sizing:border-box}body{margin:0;color:#111;font-family:Arial,"Malgun Gothic",sans-serif}.work-lot-label-preview{width:60mm;height:40mm;padding:2mm}.work-label-heading{display:flex;justify-content:space-between;border-bottom:1px solid;padding-bottom:1mm;font-size:7pt}.work-label-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;border:1px solid #777;margin-top:1mm}[data-qr]{display:grid;place-items:center;border-right:1px solid #777}[data-qr] img{display:block;width:25mm;height:25mm;padding:2mm}dl{display:grid;grid-template-columns:10mm minmax(0,1fr);margin:0;font-size:6.5pt;line-height:1.12;color:#172b40}dt,dd{margin:0;padding:.45mm .65mm;display:flex;align-items:center;border-bottom:1px solid #aaa;overflow-wrap:anywhere}dt{font-weight:600;border-right:1px solid #aaa}dd{font-weight:700}dt:nth-last-child(-n+2),dd:last-child{border-bottom:0}</style></head><body></body></html>');
+    const layout=document.getElementById('qmes-work-lot-label-layout').textContent;
+    doc.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>원료 LOT 라벨</title><style>@page{size:50mm 40mm;margin:0}body{margin:0}'+layout+'</style></head><body></body></html>');
     doc.close();
     const label=doc.importNode(preview,true),qr=doc.createElement('img');
     qr.alt='원료 LOT QR';
     label.querySelector('[data-qr]').replaceChildren(qr);
     doc.body.appendChild(label);
-    qr.onload=()=>{frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
+    qr.onload=async()=>{await label.querySelector('.work-label-heading img').decode().catch(()=>{});frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
     qr.onerror=()=>{frame.remove();status.textContent='QR 이미지를 인쇄할 수 없습니다.';};
     qr.src=image;
   };
@@ -5423,9 +5459,11 @@ function wireWorkFifoQuery(fifo){
             const warehouse=String(row.warehouse_code??'').trim().toUpperCase();
             if(!lot||lot==='-'||row.deleted||!window.qmesMaterialStockCore.isFifoReceipt(row))continue;
             const key=JSON.stringify([lot,item,supplier,warehouse]);
-            const receipt=receipts.get(key)||{lot,item,supplier,warehouse,itemCodes:new Set(),unitWeights:new Set()};
+            const receipt=receipts.get(key)||{lot,item,supplier,warehouse,itemCodes:new Set(),unitWeights:new Set(),receiptDates:new Set()};
             const itemCode=String(row.item_code??row.itemCode??row.material_code??row.materialCode??'').trim();
             const unitWeight=Number(row.unit_weight??row.unitWeight);
+            const received=String(row.receipt_date||row.receiptDate||row.date||'').slice(0,10);
+            if(/^\d{4}-\d{2}-\d{2}$/.test(received))receipt.receiptDates.add(received);
             if(itemCode)receipt.itemCodes.add(itemCode);
             if(Number.isFinite(unitWeight)&&unitWeight>=0.000001)receipt.unitWeights.add(unitWeight);
             receipt.itemCode=receipt.itemCodes.size===1?[...receipt.itemCodes][0]:'';
