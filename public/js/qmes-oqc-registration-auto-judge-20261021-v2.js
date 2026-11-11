@@ -24,11 +24,34 @@
     document.querySelectorAll(scope).forEach(root => {
       const rows = [...root.querySelectorAll('.std-result tbody tr')].filter(row => row.querySelector('.std-measure'));
       if (!rows.length) return;
+      const revision=rules.standardRevisionForDate(root.querySelector('[data-oqc-registration-field="date"]')?.value,1);
       const measurements = {};
       rows.forEach(row => {
         const name = rules.canonical(row.querySelector('.item')?.textContent.trim());
         const controls = [...row.querySelectorAll('.std-measure')];
+        if(name==='전해액 안정성'){
+          const spec=row.querySelector('.spec'),method=row.querySelector('.method');
+          const specText=revision===0?'미탈리':'팽창률 < 150%';
+          const methodText=revision===0?'육안':'마이크로미터';
+          if(spec&&spec.textContent!==specText)spec.textContent=specText;
+          if(method&&method.textContent!==methodText)method.textContent=methodText;
+        }
         controls.forEach((input, index) => {
+          if(name==='전해액 안정성'&&((revision===0)!==(input.tagName==='SELECT'))){
+            const control=document.createElement(revision===0?'select':'input');
+            control.className=input.className;
+            control.disabled=input.disabled;
+            if(revision===0){
+              for(const value of new Set(['','미탈리','탈리',input.value]))control.add(new Option(value||'선택',value));
+            }else{
+              control.type='text';
+              control.inputMode='decimal';
+              control.placeholder='팽창률 (%)';
+            }
+            control.value=input.value;
+            input.replaceWith(control);
+            input=controls[index]=control;
+          }
           input.setAttribute('aria-label', name + ' ' + (index + 1) + '차 측정값');
           if (name === '외관' && input.tagName === 'SELECT' && !input.dataset.oqcAutoOptions) {
             const good = '이상없음';
@@ -55,7 +78,7 @@
         });
         measurements[name] = controls.map(input => input.value);
       });
-      const result = rules.evaluateMeasurements(measurements);
+      const result = rules.evaluateMeasurements(measurements,revision);
       rows.forEach(row => {
         const name = rules.canonical(row.querySelector('.item')?.textContent.trim());
         const judge = row.querySelector('.std-row-judge');
