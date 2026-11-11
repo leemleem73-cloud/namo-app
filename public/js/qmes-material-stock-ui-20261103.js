@@ -222,6 +222,9 @@ window.qmesStockInputStyle={attach:attachStockSuggestions};
 window.qmesRawStock={openRecord:()=>{editEntry();return true;},async checkFifo(lot,warehouse,signal){
  await window.qmesAuthDataReady?.wait();
  return core.fifoCheck(core.build(await readStockSnapshot(signal)),lot,warehouse);
+},async checkMaterialFifo(lot,material,signal){
+ await window.qmesAuthDataReady?.wait();
+ return core.materialFifoCheck(core.build(await readStockSnapshot(signal)),lot,material);
 }};
 new MutationObserver(()=>{if(pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&pageRoot.classList.contains('active'))load();});
