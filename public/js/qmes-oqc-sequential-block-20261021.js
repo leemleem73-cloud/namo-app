@@ -34,7 +34,10 @@
           }
           return input.value;
         });
-        return row.querySelector('.std-row-judge')?.value === '불합격' ? '불합격' : rules.evaluateItem(names[index], values);
+        const revision=table.hasAttribute('data-standard-revision')
+          ?Number(table.dataset.standardRevision)
+          :rules.standardRevisionForDate(table.closest('.std-inspection')?.querySelector('[data-oqc-registration-field="date"]')?.value,1);
+        return row.querySelector('.std-row-judge')?.value === '불합격' ? '불합격' : rules.evaluateItem(names[index], values, revision);
       });
       const firstFail = results.indexOf('불합격');
       rows.forEach((row, index) => {
