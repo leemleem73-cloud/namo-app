@@ -759,6 +759,12 @@ async function refreshDashboard(){
   }finally{dashboardRefreshRunning=false;}
 }
 try{if(window.parent!==window)window.parent.addEventListener('qmes-authenticated',refreshDashboard);else window.addEventListener('qmes-authenticated',refreshDashboard);}catch(_){}
+try{
+  window.addEventListener('message',function(event){
+    if(event.origin!==location.origin||event.data?.channel!=='QMES_DATA_CHANGED_20261111')return;
+    refreshDashboard();
+  });
+}catch(_){}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refreshDashboard,{once:true});else refreshDashboard();
 })();
 </script>
