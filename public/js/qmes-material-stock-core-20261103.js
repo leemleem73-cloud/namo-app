@@ -54,7 +54,9 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   if(text(name)!==g.material)g.notices.push('원료명 표준화: '+text(name)+' → '+g.material);
   if(text(code)!==g.lot)g.notices.push('LOT 표준화: '+text(code)+' → '+g.lot);
   const receiptId=row.purchase_receipt_id||row.receipt_id||row.receiptNo||row.receipt_no;
-  const key=JSON.stringify([g.key,receiptId||date]);
+  const inspectionId=text(row.id);
+  const identity=receiptId?['receipt',text(receiptId)]:inspectionId?['inspection',inspectionId]:['legacy-date',date];
+  const key=JSON.stringify([g.key,...identity]);
   if(!receipts.has(key))receipts.set(key,{g,date,rows:[]});receipts.get(key).rows.push(row);
  }
  for(const {g,date,rows} of receipts.values()){
@@ -64,9 +66,9 @@ function build({iqc=[],orders=[],actuals=[],entries=[],holds=[],sourceErrors=[]}
   });
   const masses=[...new Set(rows.map(r=>number(r.incoming_qty??r.incomingQty)).filter(n=>n!==null&&n>0).map(micro))];
   const ambiguous=masses.length!==1;
-  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'동일 입고일 검사 '+rows.length+'건 · 중복 입고 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null,warehouse:text(r.warehouse_code)}))};
+  const event={kind:'입고',date,qty:ambiguous?null:masses[0],source:'수입검사',id:text(ordered[0].id),judge:judgment(ordered[0]),note:rows.length>1?'같은 입고 기록 '+rows.length+'건 · 수량 중복 합산 제외':'',originals:rows.map(r=>({id:text(r.id),material:text(r.item||r.material),lot:text(r.lot),supplier:text(r.supplier)||'미입력',quantity:r.incoming_qty??r.incomingQty??null,warehouse:text(r.warehouse_code)}))};
   if(ambiguous)g.issues.push('입고 중량 미확정/검사별 불일치');
-  if(rows.length>1)g.issues.push('동일 입고일 중복검사/분할입고 확인 필요');
+  if(rows.length>1&&ambiguous)g.issues.push('같은 입고 기록의 수량 확인 필요');
   g.receipts.push(event);
  }
  const lotFamilies=new Map();for(const g of groups.values()){if(!lotFamilies.has(g.lot))lotFamilies.set(g.lot,new Set());lotFamilies.get(g.lot).add(material(g.material));}
