@@ -2705,14 +2705,16 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #work .work-fifo-query [data-fifo-check]:hover:not(:disabled){background:#f7f9fc!important}
 #work .work-fifo-query [data-fifo-status]{flex-basis:100%;font-size:12px;line-height:1.5;font-weight:500}
 #work .work-fifo-query [data-fifo-status]:empty{display:none}
+#work .work-fifo-query [data-fifo-state="warning"]{box-sizing:border-box;padding:9px 12px;border:1px solid #edc26f;border-left-width:4px;border-radius:4px;background:#fff5df;color:#78430a;font-size:13px;font-weight:700}
 #work .work-fifo-details{flex:1 1 100%;min-width:0;font-size:12px}
 #work .work-fifo-details[hidden]{display:none}
-#work .work-fifo-table-wrap{margin-top:6px;overflow:auto;border:1px solid #d6e1ed;border-radius:4px}
-#work .work-fifo-details table{width:100%;min-width:540px;border-collapse:collapse;background:#fff}
-#work .work-fifo-details :is(th,td){padding:6px 10px;text-align:left;border-bottom:1px solid #e2eaf2;overflow-wrap:anywhere}
-#work .work-fifo-details th{background:#e8f0f8;font-weight:700}
-#work .work-fifo-details tr:last-child td{border-bottom:0}
-#work .work-fifo-details :is(th,td):last-child{text-align:right}
+#work #workFifoCheck .work-fifo-table-wrap{margin-top:6px;overflow:auto;border:1px solid #d6e1ed;border-radius:4px}
+#work #workFifoCheck .work-fifo-details table{width:100%;min-width:580px;table-layout:fixed!important;border:0!important;border-collapse:separate!important;border-spacing:0;background:#fff}
+#work #workFifoCheck .work-fifo-details :is(th,td){width:auto!important;min-width:0!important;max-width:none!important;padding:8px 10px;text-align:center!important;border:0!important;border-right:1px solid #d6e1ed!important;border-bottom:1px solid #d6e1ed!important;overflow-wrap:anywhere;color:#284760}
+#work #workFifoCheck .work-fifo-details th{background:#e8f0f8;font-weight:700}
+#work #workFifoCheck .work-fifo-details :is(th,td):last-child{border-right:0!important;white-space:nowrap}
+#work #workFifoCheck .work-fifo-details :is(th,td):first-child{white-space:nowrap}
+#work #workFifoCheck .work-fifo-details tbody tr:last-child td{border-bottom:0!important}
 @media(max-width:650px){#work .work-fifo-query label{flex:1 1 100%;justify-content:space-between}#work .work-fifo-query :is(input,select){flex:0 1 65%;width:65%;max-width:65%}}
 </style>
 <style id="qmes-work-lot-label">
@@ -5352,8 +5354,8 @@ function renderWorkFifoReceipts(panel, receipts){
   body.replaceChildren();
   for(const receipt of receipts){
     const row=body.insertRow();
-    const weight=receipt.weight==null?'—':receipt.weight.toLocaleString('ko-KR',{maximumFractionDigits:6});
-    for(const value of [receipt.date,receipt.supplier,receipt.item,receipt.lot,weight])row.insertCell().textContent=value||'—';
+    const available=receipt.available==null?'—':receipt.available.toLocaleString('ko-KR',{maximumFractionDigits:6});
+    for(const value of [receipt.date,receipt.supplier,receipt.item,receipt.lot,available])row.insertCell().textContent=value||'—';
   }
   panel.hidden=!receipts.length;
 }
@@ -5382,7 +5384,7 @@ function wireWorkFifoQuery(fifo){
         observer.observe(reference);
       }
       let generation=0;
-      const clear=()=>{generation++;status.textContent='';details.hidden=true;button.disabled=false;};
+      const clear=()=>{generation++;delete status.dataset.fifoState;status.textContent='';details.hidden=true;button.disabled=false;};
       const lotChoice=fifo.querySelector('[data-fifo-lot-choice]');
       const receipts=new Map();
       fifo.querySelector('[data-lot-label]').onclick=()=>openWorkLotLabel(receipts.get(lotChoice.value));
@@ -5437,7 +5439,7 @@ function wireWorkFifoQuery(fifo){
       };
       void loadChoices();
       button.onclick=async()=>{
-        const id=++generation;button.disabled=true;details.hidden=true;status.textContent='재고 확인 중…';
+        const id=++generation;button.disabled=true;details.hidden=true;delete status.dataset.fifoState;status.textContent='재고 확인 중…';
         try{
           if(!window.qmesRawStock?.checkMaterialFifo)throw Error('재고 조회를 준비 중입니다.');
           const result=await window.qmesRawStock.checkMaterialFifo(lotInput.value,materialChoice.value,AbortSignal.timeout(15000));
@@ -5445,6 +5447,7 @@ function wireWorkFifoQuery(fifo){
           renderWorkFifoReceipts(details,result.receipts||[]);
           if(result.state==='warning'){
             const older=result.alternatives[0];
+            status.dataset.fifoState='warning';
             status.textContent='선입선출 주의 · 선입 LOT '+older.lot+' · 사용 가능 '+older.available.toLocaleString('ko-KR')+' kg · 먼저 사용해 주세요.';
           }else status.textContent=result.state==='clear'?'확인된 재고 기준으로 더 먼저 입고된 사용 가능 LOT가 없습니다.':'FIFO 확인 불가 · '+result.reason;
         }catch(error){if(id===generation&&fifo.isConnected)status.textContent='FIFO 확인 불가 · '+error.message;}
@@ -5635,8 +5638,9 @@ function buildModule(id){
  <span role="status" aria-live="polite" data-fifo-status></span>
  <div class="work-fifo-details" data-fifo-details hidden>
    <strong>수입검사 입고 내역</strong>
-   <div class="work-fifo-table-wrap"><table aria-label="수입검사 입고 내역">
-     <thead><tr><th scope="col">입고일자</th><th scope="col">공급업체</th><th scope="col">품목명</th><th scope="col">LOT</th><th scope="col">입고 중량 (kg)</th></tr></thead><tbody></tbody>
+   <div class="work-fifo-table-wrap"><table aria-label="수입검사 입고 내역 및 LOT별 사용 가능 재고">
+     <colgroup><col style="width:120px"><col style="width:30%"><col style="width:20%"><col><col style="width:160px"></colgroup>
+     <thead><tr><th scope="col">입고일자</th><th scope="col">공급업체</th><th scope="col">품목명</th><th scope="col">LOT</th><th scope="col">사용 가능 재고 (kg)</th></tr></thead><tbody></tbody>
    </table></div>
  </div>
 </div>
@@ -8846,7 +8850,7 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-inventory-menu-screen-remove-20261020.js?v=1"></script>
 <script defer src="./js/qmes-stock-grid-20261104.js?v=7-stock-status"></script>
 <script defer src="./js/qmes-material-stock-core-20261103.js?v=20261111-material-fifo-pai"></script>
-<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-fifo-receipts"></script>
+<script defer src="./js/qmes-material-stock-ui-20261103.js?v=20261111-fifo-available"></script>
 <script defer src="./js/qmes-finished-stock-core-20261103.js?v=20261105-ship-qty"></script>
 <script defer src="./js/qmes-finished-stock-ui-20261103.js?v=20261105-ship-qty"></script>
 
