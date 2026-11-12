@@ -23,7 +23,11 @@ function reportPage(body){
 function mobileReport(row,files,token){
  const items=Array.isArray(row.items_json)?row.items_json:[];
  const metadata=items.find(item=>item?.name==='비고');
- const checks=items.filter(item=>item?.name&&!/비고|판정|^__/.test(item.name));
+ const key=name=>String(name??'').replace(/\s/g,'').toUpperCase();
+ const checks=['포장상태','외관','라벨','중량','COA 확인'].map(name=>{
+  const saved=items.find(item=>key(item?.name)===key(name));
+  return {...saved,name};
+ });
  const dates=value=>value instanceof Date?value.toISOString().slice(0,10):String(value??'').slice(0,10)||'—';
  const resultClass=value=>value==='합격'?'pass':value==='불합격'?'fail':'';
  const info=[['원료명',row.item],['공급업체',row.supplier],['원료 LOT',row.lot],
@@ -33,7 +37,7 @@ function mobileReport(row,files,token){
   const values=item.values||item.measurements;
   const recorded=Array.isArray(values)?values.filter(value=>value!=null&&value!=='').join(' / '):'';
   const result=item.judge||item.result||'—';
-  return `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(recorded||(item.value??'—'))}</td><td class="${resultClass(result)}">${escapeHtml(result)}</td></tr>`;
+  return `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(String(item.value??'').trim()||recorded||'—')}</td><td class="${resultClass(result)}">${escapeHtml(result)}</td></tr>`;
  }).join('');
  const links=files.map(file=>`<a href="/iqc-label/${token}/coa/${encodeURIComponent(file.id)}">${escapeHtml(file.name)}</a>`).join('');
  return reportPage(`<section><h2>입고 및 검사 정보</h2><dl>${info.map(([label,value])=>`<dt>${label}</dt><dd class="${label==='검사합부'?resultClass(value):''}">${escapeHtml(value||'—')}</dd>`).join('')}</dl></section>
