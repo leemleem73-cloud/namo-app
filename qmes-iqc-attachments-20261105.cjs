@@ -12,7 +12,89 @@ async function write(pool,{data,id,attachment,user}){
   await client.query('COMMIT');return result;
  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}finally{client.release();}
 }
+
+const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const escapeHtml=value=>String(value??'—').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function reportPage(body){
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나모 수입검사 성적서</title><style>
+ *{box-sizing:border-box}body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.55 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px 14px 32px}section{margin-top:14px;background:#fff;border:1px solid #d7e2ee;border-radius:8px;overflow:hidden}header small{color:#506a82;font-weight:700}h1{font-size:23px;margin:3px 0}h2{font-size:16px;margin:0;padding:11px 14px;background:#eaf1f8;border-bottom:1px solid #d7e2ee}dl{display:grid;grid-template-columns:minmax(96px,1fr) minmax(0,2fr);margin:0}dt,dd{margin:0;padding:9px 12px;border-bottom:1px solid #e4ebf2;overflow-wrap:anywhere}dt{font-weight:650}dl>:nth-last-child(-n+2){border-bottom:0}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{padding:9px 8px;text-align:center;overflow-wrap:anywhere;border-bottom:1px solid #e4ebf2}th{font-size:13px;background:#f6f9fc}tbody tr:last-child td{border-bottom:0}.files{display:grid;gap:8px;padding:12px 14px}.files a{color:#135997;text-decoration:underline;overflow-wrap:anywhere}.pass{color:#08653f;font-weight:700}.fail{color:#a32424;font-weight:700}@media print{body{background:#fff}main{max-width:none;padding:0}tr{break-inside:avoid}}
+ </style></head><body><main><header><small>나모케미칼(주)</small><h1>수입검사 성적서</h1></header>${body}</main></body></html>`;
+}
+function mobileReport(row,files,token){
+ const items=Array.isArray(row.items_json)?row.items_json:[];
+ const metadata=items.find(item=>item?.name==='비고');
+ const checks=items.filter(item=>item?.name&&!/비고|판정|^__/.test(item.name));
+ const dates=value=>value instanceof Date?value.toISOString().slice(0,10):String(value??'').slice(0,10)||'—';
+ const resultClass=value=>value==='합격'?'pass':value==='불합격'?'fail':'';
+ const info=[['원료명',row.item],['공급업체',row.supplier],['원료 LOT',row.lot],
+  ['입고 중량',row.incoming_qty==null?'—':row.incoming_qty+' kg'],['입고일자',dates(row.date)],
+  ['검사일자',dates(metadata?.inspectionDate||row.date)],['검사자',row.inspector],['검사합부',row.judge||'대기']];
+ const rows=checks.map(item=>{
+  const values=item.values||item.measurements;
+  const recorded=Array.isArray(values)?values.filter(value=>value!=null&&value!=='').join(' / '):'';
+  const result=item.judge||item.result||'—';
+  return `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(recorded||(item.value??'—'))}</td><td class="${resultClass(result)}">${escapeHtml(result)}</td></tr>`;
+ }).join('');
+ const links=files.map(file=>`<a href="/iqc-label/${token}/coa/${encodeURIComponent(file.id)}">${escapeHtml(file.name)}</a>`).join('');
+ return reportPage(`<section><h2>입고 및 검사 정보</h2><dl>${info.map(([label,value])=>`<dt>${label}</dt><dd class="${label==='검사합부'?resultClass(value):''}">${escapeHtml(value||'—')}</dd>`).join('')}</dl></section>
+ <section><h2>검사 결과</h2><table><thead><tr><th scope="col">검사항목</th><th scope="col">확인 결과</th><th scope="col">판정</th></tr></thead><tbody>${rows||'<tr><td colspan="3">등록된 검사항목이 없습니다.</td></tr>'}</tbody></table></section>
+ <section><h2>공급업체 CoA</h2><div class="files">${links||'첨부된 CoA가 없습니다.'}</div></section>`);
+}
+function installMobileReport(app,{pool,requireLogin}){
+ let ready;
+ const ensureLinks=()=>ready||(ready=pool.query('CREATE TABLE IF NOT EXISTS qmes_iqc_label_links(iqc_id uuid PRIMARY KEY REFERENCES iqc(id) ON DELETE CASCADE, token uuid UNIQUE NOT NULL)').catch(error=>{ready=null;throw error;}));
+ const headers=res=>{
+  res.set('Cache-Control','private, no-store');
+  res.set('Referrer-Policy','no-referrer');
+  res.set('X-Robots-Tag','noindex, nofollow');
+  res.set('X-Content-Type-Options','nosniff');
+  res.set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'");
+ };
+ app.post('/api/qmes/iqc/label-links',requireLogin,async(req,res)=>{
+  headers(res);
+  const id=String(req.body?.recordId??'');
+  if(!uuidPattern.test(id))return res.status(400).json({success:false,message:'수입검사 기록 번호를 확인해 주세요.'});
+  try{
+   await ensureLinks();
+   const result=await pool.query('INSERT INTO qmes_iqc_label_links(iqc_id,token) SELECT id,$2 FROM iqc WHERE id=$1 ON CONFLICT(iqc_id) DO UPDATE SET token=qmes_iqc_label_links.token RETURNING token',[id,randomUUID()]);
+   const token=result.rows[0]?.token;
+   if(!token)return res.status(404).json({success:false,message:'수입검사 기록이 없습니다.'});
+   res.json({success:true,path:'/iqc-label/'+token});
+  }catch(error){console.error('[IQC label issue]',error);res.status(500).json({success:false,message:'QR 열람 링크를 발행하지 못했습니다.'});}
+ });
+ app.get('/iqc-label/:token',async(req,res)=>{
+  headers(res);
+  const token=req.params.token;
+  const missing=()=>res.status(404).send(reportPage('<p>QR에 연결된 수입검사 기록이 없습니다.</p>'));
+  if(!uuidPattern.test(token))return missing();
+  try{
+   await ensureLinks();
+   const result=await pool.query('SELECT i.id,i.item,i.supplier,i.lot,i.date::text AS date,i.incoming_qty,i.inspector,i.judge,i.items_json FROM qmes_iqc_label_links l JOIN iqc i ON i.id=l.iqc_id WHERE l.token=$1',[token]);
+   const row=result.rows[0];
+   if(!row)return missing();
+   await ensure(pool);
+   const files=await pool.query('SELECT id,name FROM qmes_iqc_attachments WHERE iqc_id=$1 ORDER BY created_at DESC,id',[row.id]);
+   res.send(mobileReport(row,files.rows,token));
+  }catch(error){console.error('[IQC label view]',error);res.status(500).send(reportPage('<p>수입검사 성적서를 불러오지 못했습니다. 다시 열어 주세요.</p>'));}
+ });
+ app.get('/iqc-label/:token/coa/:id',async(req,res)=>{
+  headers(res);
+  const {token,id}=req.params;
+  if(!uuidPattern.test(token)||!uuidPattern.test(id))return res.status(404).send('첨부파일이 없습니다.');
+  try{
+   await ensureLinks();
+   await ensure(pool);
+   const result=await pool.query('SELECT a.name,a.mime,a.content FROM qmes_iqc_label_links l JOIN qmes_iqc_attachments a ON a.iqc_id=l.iqc_id WHERE l.token=$1 AND a.id=$2',[token,id]);
+   const file=result.rows[0];
+   if(!file)return res.status(404).send('첨부파일이 없습니다.');
+   res.set('Content-Security-Policy',"default-src 'none'; sandbox");
+   res.set('Content-Disposition',"inline; filename*=UTF-8''"+encodeURIComponent(file.name).replace(/['()]/g,ch=>'%'+ch.charCodeAt(0).toString(16)));
+   res.type(file.mime).send(file.content);
+  }catch(error){console.error('[IQC label CoA]',error);res.status(500).send('CoA 파일을 열지 못했습니다.');}
+ });
+}
 function install(app,{pool,requireLogin}){
+ installMobileReport(app,{pool,requireLogin});
  app.get('/api/qmes/iqc/attachments',requireLogin,async(req,res)=>{try{await ensure(pool);const r=await pool.query('SELECT a.id,a.iqc_id,a.name,a.created_at FROM qmes_iqc_attachments a JOIN iqc i ON i.id=a.iqc_id ORDER BY a.created_at DESC,a.id DESC');res.json({success:true,data:r.rows});}catch(e){res.status(500).json({success:false,message:'수입검사 COA 조회 실패'});}});
  app.get('/api/qmes/iqc/attachments/:id',requireLogin,async(req,res)=>{try{
   await ensure(pool);const r=await pool.query('SELECT a.* FROM qmes_iqc_attachments a JOIN iqc i ON i.id=a.iqc_id WHERE a.id=$1',[req.params.id]),f=r.rows[0];if(!f)return res.status(404).json({success:false,message:'COA 첨부파일이 없습니다.'});
