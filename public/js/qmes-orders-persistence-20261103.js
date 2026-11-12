@@ -11,16 +11,21 @@ function normalize(row,index=0){
  status:text(row.status||row.salesStatus||fields['진행상태'])||'대기',remarks:text(row.remarks||row.note||fields['비고'])};
 }
 function recordsFromSync(records){
- const legacy=new Map(),current=new Map();
+ const legacy=new Map(),current=new Map(),deleted=new Set();
  for(const record of records){
   const key=text(record.record_key);if(key!=='erp:sales'&&!key.startsWith(PREFIX))continue;
   let payload=record.payload;if(typeof payload==='string'){try{payload=JSON.parse(payload);}catch(_){continue;}}
-  if(!payload||payload.deleted)continue;
+  if(!payload)continue;
+  if(payload.deleted){
+   if(key.startsWith(PREFIX))deleted.add(key.slice(PREFIX.length));
+   continue;
+  }
   (Array.isArray(payload.rows)?payload.rows:[]).forEach((value,index)=>{if(value.deleted)return;const row=normalize(value,index),map=key==='erp:sales'?legacy:current;
    if(!map.has(row.id))map.set(row.id,row);
   });
  }
  for(const [key,row] of current)legacy.set(key,row);
+ for(const id of deleted)legacy.delete(id);
  return [...legacy.values()].sort((a,b)=>b.orderDate.localeCompare(a.orderDate)||a.id.localeCompare(b.id));
 }
 function validate(row){
@@ -44,6 +49,13 @@ async function persist(fetcher,row){
  const data=await request(fetcher,'/api/qmes-sync/inventory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:PREFIX+record.id,payload:{module:'sales',schema:1,rows:[record]}})});
  if(data?.record_key!==PREFIX+record.id)throw Error('저장 확인 응답이 올바르지 않습니다. 입력 내용은 유지됩니다.');
  return record;
+}
+async function remove(fetcher,id){
+ if(!id||id.startsWith('legacy:'))throw Error('기존 수주의 고유번호를 확인할 수 없습니다.');
+ const key=PREFIX+id;
+ const data=await request(fetcher,'/api/qmes-sync/inventory',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({key,payload:{module:'sales',schema:1,deleted:true,deletedAt:new Date().toISOString(),rows:[]}})});
+ if(data?.record_key!==key)throw Error('서버의 삭제 확인 응답이 올바르지 않습니다.');
 }
 function install(win){
  const doc=win.document,section=doc.getElementById('orders');if(!section||section.dataset.ordersPersistence)return;section.dataset.ordersPersistence='1';
@@ -79,6 +91,28 @@ function install(win){
    if(typeof win.closeModal==='function')win.closeModal();notify('수주납기가 저장되었습니다.');
   }catch(error){notice(error.message,pane.querySelector('.am-detail-pane')||pane);notify(error.message);}finally{buttons.forEach(b=>b.disabled=false);busy=false;}
  }
+ async function deleteSelected(ids){
+  if(busy||!ids.length)return;
+  const selected=rows.filter(row=>ids.includes(row.id));
+  if(!selected.length)return;
+  busy=true;section._salesOrdersDeleting=true;section._qofUpdateSelection?.();
+  try{
+   const confirmed=typeof win.confirmIqcBulkDelete==='function'
+    ?await win.confirmIqcBulkDelete(selected.length,'수주납기')
+    :win.confirm('선택한 수주납기 '+selected.length+'건을 삭제하시겠습니까?');
+   if(!confirmed)return;
+   const deleted=new Set(),failures=[];
+   for(const row of selected){
+    try{await remove(win.fetch.bind(win),row.id);deleted.add(row.id);}
+    catch(error){failures.push([row.customer,row.product,error.message].join(' · '));}
+   }
+   if(deleted.size){generation++;rows=rows.filter(row=>!deleted.has(row.id));render();notify('수주납기 '+deleted.size+'건을 삭제했습니다.');}
+   if(failures.length)notice('삭제 실패 '+failures.length+'건 · '+failures.join(' / '));
+   else section.querySelector('[data-orders-notice]')?.remove();
+  }finally{section._salesOrdersDeleting=false;busy=false;section._qofUpdateSelection?.();}
+ }
+ section._deleteSelectedSalesOrders=deleteSelected;
+ section._qofUpdateSelection?.();
  function openRecord(id){const record=rows.find(row=>row.id===id);if(!record||typeof win.openNewForm!=='function')return;
   win.openNewForm('orders');const pane=doc.querySelector('#mainWorkspace .am-split[data-am-screen="orders"]');if(!pane)return;
   pane.dataset.amMode='edit';pane.dataset.amRecord=record.id;pane.dataset.ordersEditId=record.id;
@@ -94,5 +128,5 @@ function install(win){
  doc.addEventListener('visibilitychange',()=>{if(!doc.hidden&&section.classList.contains('active'))load();});
  section._loadSalesOrders=load;load();
 }
-return {PREFIX,normalize,recordsFromSync,validate,request,persist,install};
+return {PREFIX,normalize,recordsFromSync,validate,request,persist,remove,install};
 });
