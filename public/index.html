@@ -31,7 +31,7 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 (function(){
   try{
     var p=new URLSearchParams(location.search);
-    var forceDesktop=p.get('desktop')==='1'||p.has('mobileWork')||p.get('pc')==='1';
+    var forceDesktop=p.get('desktop')==='1'||p.has('iqcReport')||p.has('mobileWork')||p.get('pc')==='1';
     var mobile=p.get('mobile')==='1'||Math.min(screen.width||9999,window.innerWidth||9999)<=768;
     if(mobile&&!forceDesktop&&location.pathname!='/mobile.html'){
       location.replace('/mobile.html');
@@ -2777,6 +2777,15 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-dialog [data-print=a4]{background:#2676bf;color:#fff;border-color:#2676bf}
 #work .work-fifo-query [data-lot-label]{height:30px;min-height:30px;padding:4px 10px;border:1px solid #cbd9e7;background:#fff;color:#111;box-shadow:none;font-size:11.5px;white-space:nowrap}
 </style>
+<style>
+.iqc-scanned-report{position:fixed;inset:0;z-index:90000;overflow:auto;background:#edf3f9;color:#193450;padding:16px}
+.iqc-scanned-report>header,.iqc-scanned-report>footer,.iqc-scanned-content{max-width:860px;margin:0 auto 12px;background:white;border:1px solid #d1deeb;border-radius:6px;padding:14px;box-sizing:border-box}
+.iqc-scanned-report>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.iqc-scanned-report a{color:#245d9b;overflow-wrap:anywhere}
+.iqc-scanned-content{overflow:auto}
+.iqc-scanned-report .report-sheet{margin:0 auto}
+.iqc-scanned-report [data-coa]{display:grid;gap:8px;margin-top:8px}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -5394,6 +5403,7 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
     date:'입고일자',
     weight,
     incoming:incoming?{
+      recordId:String(row.id??''),
       supplier:row.supplier,
       received:iqcDateText(row.receipt_date||row.receiptDate||row.date),
       inspected:iqcInspectionDate(row),
@@ -5490,7 +5500,9 @@ function openWorkLotLabel(receipt,inspection){
     }
   })();
   try{
-    new window.QRCode(preview.querySelector('[data-qr]'),{text:receipt.lot,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
+    const qrUrl=new URL('/',location.origin);
+    if(incoming?.recordId)qrUrl.searchParams.set('iqcReport',incoming.recordId);
+    new window.QRCode(preview.querySelector('[data-qr]'),{text:incoming?.recordId?qrUrl.href:receipt.lot,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
     qrReady=true;
     if(inspection){
       setPrintDisabled(false);
@@ -6677,6 +6689,69 @@ function hydrateOqcStandardCertificate(body){
  },true));
 }
 
+async function openScannedIqcReport(recordId){
+  const panel=document.createElement('section');
+  panel.className='iqc-scanned-report';
+  panel.setAttribute('aria-label','수입검사 성적서');
+  panel.innerHTML='<header><strong>나모 수입검사 성적서</strong><a href="/">메인으로</a></header><div class="iqc-scanned-content" data-certificate></div><footer><strong>공급업체 CoA</strong><div data-coa role="status"></div></footer>';
+  document.body.append(panel);
+  const certificate=panel.querySelector('[data-certificate]');
+  const attachments=panel.querySelector('[data-coa]');
+  const get=async url=>{
+    const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
+    if(!response.ok)throw Error(String(response.status));
+    const result=await response.json();
+    if(!result.success||!Array.isArray(result.data))throw Error('response');
+    return result.data;
+  };
+  const refresh=async()=>{
+    certificate.textContent='수입검사 기록을 불러오는 중입니다.';
+    attachments.textContent='';
+    try{
+      const records=await get('/api/iqc');
+      const record=records.find(row=>!row.deleted&&String(row.id)===recordId);
+      if(!record){certificate.textContent='이 QR에 연결된 수입검사 기록을 찾을 수 없습니다.';return;}
+      const row=document.createElement('tr');
+      row.dataset.iqcId=recordId;
+      row._iqcReportRecord=record;
+      const cells={'NO':records.indexOf(record)+1,'입고일자':iqcDateText(record.receipt_date||record.receiptDate||record.date),
+        '공급업체':record.supplier,'품목명':record.item,'원료 LOT':record.lot,'입고 중량 (kg)':record.incoming_qty,
+        '검사자':record.inspector,'검사합부':iqcJudge(record),'비고':iqcRemark(record)};
+      for(const name of ['NO',...pageInfo.incoming[2]])row.insertCell().textContent=cells[name]??'';
+      try{
+        const approvals=await get('/api/qmes-quality/iqc-statuses');
+        row._iqcReportApproval=approvals.find(entry=>String(entry.record_id)===recordId);
+      }catch(error){console.warn('[IQC QR approval]',error);}
+      certificate.innerHTML=issueInspectionReport('incoming',row,true);
+      attachments.textContent='CoA를 확인하는 중입니다.';
+      try{
+        const files=(await get('/api/qmes/iqc/attachments')).filter(file=>String(file.iqc_id)===recordId&&file.id);
+        attachments.replaceChildren();
+        for(const file of files){
+          const link=document.createElement('a');
+          link.href='/api/qmes/iqc/attachments/'+encodeURIComponent(file.id);
+          link.target='_blank';
+          link.rel='noopener';
+          link.textContent=file.name||'공급업체 CoA 보기';
+          attachments.append(link);
+        }
+        if(!files.length)attachments.textContent='첨부된 CoA가 없습니다.';
+      }catch(error){attachments.textContent='CoA를 불러오지 못했습니다. 페이지를 다시 열어 주세요.';}
+    }catch(error){
+      certificate.textContent=error.message==='403'?'수입검사 열람 권한이 없습니다.':'수입검사 기록을 불러오지 못했습니다. 페이지를 다시 열어 주세요.';
+    }
+  };
+  window.addEventListener('qmes-authenticated',event=>{
+    if(event.detail?.reauthenticated)refresh();
+  });
+  await window.qmesAuthDataReady.wait();
+  await refresh();
+}
+{
+  const recordId=new URLSearchParams(location.search).get('iqcReport');
+  if(recordId)document.addEventListener('DOMContentLoaded',()=>openScannedIqcReport(recordId),{once:true});
+}
+
 function issueInspectionReport(id,row,bulkRenderOnly=false){
   const cols=['NO',...pageInfo[id][2]];
   const vals=[...row.children].map(td=>{
@@ -6696,9 +6771,10 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   }
   const val=(name)=>{
     const idx=cols.indexOf(name);
-    return idx>=0 && vals[idx] ? vals[idx] : '-';
+    return idx>=0 && vals[idx] ? (id==='incoming'?amEsc(vals[idx]):vals[idx]) : '-';
   };
-  const inspectionDate=id==='incoming'?val('입고일자'):(val('검사일자')!=='-'?val('검사일자'):val('검사일'));
+  const iqcSource=id==='incoming'?(row._iqcReportRecord||document.getElementById('incoming')?._iqcRows?.find(record=>String(record.id)===String(row.dataset.iqcId||''))):null;
+  const inspectionDate=id==='incoming'?(iqcSource?iqcInspectionDate(iqcSource)||'-':val('입고일자')):(val('검사일자')!=='-'?val('검사일자'):val('검사일'));
   const inspector=val('검사자');
   const reportNoPrefix=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
   const dateDigits=(inspectionDate||'').replace(/\D/g,'') || new Date().toISOString().slice(0,10).replace(/-/g,'');
@@ -6708,7 +6784,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     row1:['검사일자',inspectionDate,'공급업체',val('공급업체')],
     row2:['품목명',val('품목명'),'원료 LOT',val('원료 LOT')],
     row3:['검사자',inspector,'입고 중량',iqcWeightText(val('입고 중량 (kg)'),true)],
-    sampling:'LOT당 1회 / n=3', trace:`원료 LOT ${val('원료 LOT')} 기준 입고검사 추적`, standard:'수입검사 기준서 / 공급사 COA'
+    sampling:'항목별 1회 확인', trace:`원료 LOT ${val('원료 LOT')} 기준 입고검사 추적`, standard:'수입검사 기준서 / 공급사 COA'
   } : id==='process' ? {
     row1:['검사일자',inspectionDate,'작업지시번호',val('작업지시번호')],
     row2:['제품명',val('제품명'),'생산 LOT NO',val('생산 LOT NO')],
@@ -6721,12 +6797,14 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     sampling:'출하 전 최종검사 / n=3', trace:`완제품 LOT ${val('완제품 LOT')} 기준 출하 추적`, standard:'출하검사 기준서 / 고객 요구사항'
   };
   const itemSets={
-    incoming:[
-      ['외관','이물질·파손·오염 없을 것','육안','이상없음','이상없음','이상없음','합격'],
-      ['라벨','품명 / LOT / 표기사항 일치','육안','정상','정상','정상','합격'],
-      ['중량','발주 및 입고 규격 중량 적합','전자저울','적합','적합','적합','합격'],
-      ['COA 확인','공급사 COA 및 규격 일치','문서확인','확인완료','확인완료','확인완료','합격']
-    ],
+    incoming:iqcItems(iqcSource||{}).filter(item=>{
+      const name=String(item?.name||'').trim();
+      return name&&name!=='비고'&&!name.includes('판정')&&!name.startsWith('__');
+    }).map(item=>{
+      const values=item.values||item.measurements;
+      return [item.name,item.standard||item.spec,item.method,item.value??values?.[0],values?.[1],values?.[2],item.judge||item.result]
+        .map(value=>amEsc(String(value??'').trim()||'-'));
+    }),
     process:[
       ['외관','이물질 혼입 없을 것','육안','이상없음','-','-','합격'],
       ['입도(Dmax)','<10 μm','입도분석기','8.6','8.4','8.7','합격'],
@@ -6796,7 +6874,7 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     oqcReportRemarks=escapeValue(record.remarks||'-');oqcShippingStatus=escapeValue(record.shippingStatus||'');
   }
   const items=itemSets[id]||[];
-  const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):'합격'));
+  const finalJudge=oqcReportOverall??(val('검사합부')!=='-'?val('검사합부'):(val('판정')!=='-'?val('판정'):(id==='incoming'?'대기':'합격')));
   const issueDate=new Date(row._coaIssue?.issuedAt||Date.now()).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'});
   const docType=id==='incoming'?'IQC':id==='process'?'IPQC':'OQC';
 function qmesIqcBarcodeSvg(value){
@@ -6818,11 +6896,10 @@ function qmesIqcBarcodeSvg(value){
 }
   const approval=qmesQualityApprovalPeople();
   if(id==='incoming'){
-    const stage=window.__QMES_IQC_APPROVALS__?.[String(row.dataset.iqcId||row.dataset.recordId||row.dataset.id||'')];
-    const source=document.getElementById('incoming')?._iqcRows?.find(record=>String(record.id)===String(row.dataset.iqcId||''));
-    approval.writer=stage?.writer_name||source?.inspector||approval.writer;
-    approval.reviewer=stage?.reviewed_at?String(stage.reviewer_name||'임흥배'):'';
-    approval.approver=stage?.status==='APPROVED'&&stage?.approved_at?String(stage.approver_name||'임흥배'):'';
+    const stage=row._iqcReportApproval||window.__QMES_IQC_APPROVALS__?.[String(row.dataset.iqcId||row.dataset.recordId||row.dataset.id||'')];
+    approval.writer=amEsc(stage?.writer_name||iqcSource?.inspector||'—');
+    approval.reviewer=stage?.reviewed_at?amEsc(stage.reviewer_name||''):'';
+    approval.approver=stage?.status==='APPROVED'&&stage?.approved_at?amEsc(stage.approver_name||''):'';
   }
   const body=`
     <div class="report-sheet report-${id}" id="reportSheet">${id==='outgoing'?'<span data-report-shipping-status hidden>'+oqcShippingStatus+'</span>':''}
@@ -6853,7 +6930,7 @@ function qmesIqcBarcodeSvg(value){
       <table class="report-inspection">
         <colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"><col class="measure"><col class="measure"><col class="judge"></colgroup>
         <thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th><th>1회</th><th>2회</th><th>3회</th><th>판정</th></tr></thead>
-        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="${id==='outgoing'?(r[6]==='불합격'?'fail':r[6]==='대기'?'pending':'pass'):'pass'}">${r[6]}</td></tr>`).join('')}</tbody>
+        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="${r[6]==='불합격'?'fail':r[6]==='합격'?'pass':'pending'}">${r[6]}</td></tr>`).join('')}</tbody>
       </table>
       <div class="report-summary">
         <div class="label">검사일자</div><div>${inspectionDate}</div>
