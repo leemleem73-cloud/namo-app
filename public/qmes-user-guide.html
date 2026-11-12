@@ -116,32 +116,25 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 @media(max-width:900px){.videoGuideGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.videoGuideGrid{grid-template-columns:1fr}}
 
-.workVideoSim{width:100%;height:100%;background:radial-gradient(circle at 18% 10%,#1b4f87 0,#102b4c 34%,#0a1729 76%);position:relative;overflow:hidden;color:#233b55}
-.workVideoSim:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(72,168,255,.13),transparent 42%),repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 54px);pointer-events:none}
-.workVideoCanvas{position:absolute;inset:34px 26px 82px;padding:0;transform-origin:center;transition:opacity .34s ease,transform .34s ease;filter:drop-shadow(0 22px 42px rgba(0,0,0,.26))}
-.workVideoCanvas .workActual{height:100%;overflow:hidden;border:1px solid rgba(204,220,238,.92);border-radius:14px;box-shadow:0 20px 55px rgba(4,15,30,.30);background:#fff}
-.workVideoCanvas .workActual .call{background:#2f8cf0!important;color:#fff!important;border:0!important;width:24px!important;height:24px!important;box-shadow:0 0 0 3px #fff,0 5px 15px rgba(47,140,240,.3)!important}
-.workVideoCanvas .workActual .call:after{display:none!important}
-.workVideoCaption{position:absolute;left:30px;right:150px;bottom:24px;z-index:8;padding:13px 18px 14px 20px;border-radius:12px;background:rgba(8,24,43,.90);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(129,196,255,.22);color:#fff;font-size:15px;font-weight:900;letter-spacing:-.2px;box-shadow:0 12px 34px rgba(0,0,0,.24)}
-.workVideoCaption:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:linear-gradient(#5bb9ff,#4d7cff)}
-.workVideoCaption small{display:block;margin-top:5px;font-size:11px;font-weight:600;line-height:1.5;color:#c7d8e9}
-.workVideoCursor{position:absolute;z-index:10;width:24px;height:30px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.42));transition:left .7s cubic-bezier(.2,.8,.2,1),top .7s cubic-bezier(.2,.8,.2,1),transform .18s ease}
-.workVideoCursor:before{content:"";position:absolute;left:2px;top:1px;width:0;height:0;border-left:10px solid #10233a;border-top:16px solid transparent;border-bottom:4px solid transparent;transform:rotate(-35deg);filter:drop-shadow(0 0 1px #fff)}
-.workVideoPulse{position:absolute;z-index:9;width:48px;height:48px;border:2px solid rgba(91,185,255,.95);border-radius:50%;opacity:0;transform:scale(.45)}
-.workVideoPulse.on{animation:workPulsePremium .75s ease}
-@keyframes workPulsePremium{0%{opacity:1;transform:scale(.4);box-shadow:0 0 0 0 rgba(91,185,255,.28)}100%{opacity:0;transform:scale(1.7);box-shadow:0 0 0 20px rgba(91,185,255,0)}}
-.workVideoProgress{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.13);z-index:12}
-.workVideoProgress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f8cf0,#6cc9ff);box-shadow:0 0 12px rgba(82,183,255,.65)}
+.workVideoSim{width:100%;height:100%;background:linear-gradient(180deg,#f8fbff 0%,#eef5fb 100%);position:relative;overflow:hidden;color:#233b55}
+.workVideoSim:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 86% 8%,rgba(74,164,235,.13),transparent 34%),linear-gradient(90deg,rgba(255,255,255,.9),rgba(255,255,255,.25));pointer-events:none}
+.workVideoCanvas{position:absolute;inset:38px 28px 88px;padding:0;transform-origin:center;transition:opacity .32s ease,transform .32s ease;filter:drop-shadow(0 18px 30px rgba(45,79,115,.13))}
+.workVideoCanvas .workActual{height:100%;overflow:hidden;border:1px solid #d8e4ef;border-radius:14px;box-shadow:0 16px 36px rgba(36,70,106,.12);background:#fff}
+.workVideoCaption{position:absolute;left:30px;right:138px;bottom:24px;z-index:8;padding:13px 18px 14px 20px;border-radius:12px;background:rgba(255,255,255,.97);border:1px solid #dbe7f2;color:#1f3550;font-size:15px;font-weight:900;letter-spacing:-.2px;box-shadow:0 10px 28px rgba(38,73,111,.13)}
+.workVideoCaption:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:linear-gradient(#2f8cf0,#68b8ef)}
+.workVideoCaption small{display:block;margin-top:5px;font-size:11px;font-weight:650;line-height:1.5;color:#6b8096}
+.workVideoCursor{position:absolute;z-index:10;width:24px;height:30px;filter:drop-shadow(0 2px 4px rgba(40,67,94,.24));transition:left .7s cubic-bezier(.2,.8,.2,1),top .7s cubic-bezier(.2,.8,.2,1),transform .18s ease}
+.workVideoCursor:before{content:"";position:absolute;left:2px;top:1px;width:0;height:0;border-left:10px solid #24496c;border-top:16px solid transparent;border-bottom:4px solid transparent;transform:rotate(-35deg)}
+.workVideoPulse{position:absolute;z-index:9;width:48px;height:48px;border:2px solid #2f8cf0;border-radius:50%;opacity:0;transform:scale(.45)}
+.workVideoPulse.on{animation:workPulseBright .75s ease}
+@keyframes workPulseBright{0%{opacity:.95;transform:scale(.4);box-shadow:0 0 0 0 rgba(47,140,240,.22)}100%{opacity:0;transform:scale(1.65);box-shadow:0 0 0 20px rgba(47,140,240,0)}}
+.workVideoProgress{position:absolute;left:0;right:0;bottom:0;height:4px;background:#dce8f2;z-index:12}
+.workVideoProgress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f8cf0,#78c7ef);box-shadow:0 0 10px rgba(47,140,240,.28)}
 .workVideoSim .call{z-index:11;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
-.workVideoSim .call.activeStep{transform:scale(1.18);box-shadow:0 0 0 8px rgba(47,140,240,.17),0 6px 18px rgba(47,140,240,.32)!important;background:#247dd1!important}
-.workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 13px;border-radius:999px;background:rgba(9,29,51,.84);backdrop-filter:blur(10px);border:1px solid rgba(145,203,255,.24);color:#d9ebfb;font-size:11px;font-weight:900;letter-spacing:.5px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
-.workVideoBrand{position:absolute;left:30px;top:24px;z-index:9;display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:999px;background:rgba(9,29,51,.78);border:1px solid rgba(145,203,255,.20);color:#fff;font-size:10px;font-weight:900;letter-spacing:.7px;backdrop-filter:blur(10px)}
-.workVideoBrand:before{content:"";width:8px;height:8px;border-radius:50%;background:#5bb9ff;box-shadow:0 0 12px rgba(91,185,255,.9)}
-.workorderPremiumThumb{background:linear-gradient(145deg,#0f2948,#1d5688)!important;overflow:hidden}
-.workorderPremiumThumb:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(92,185,255,.25),transparent 48%)}
-.workorderPremiumTag{position:absolute;left:10px;top:9px;color:#d8ecff;font-size:8px;font-weight:900;letter-spacing:.8px}
-.workorderPremiumLine{position:absolute;left:10px;bottom:8px;color:rgba(222,239,255,.78);font-size:7px;font-weight:800;letter-spacing:1px}
-.workorderPremiumThumb .videoPlay{position:relative;background:#fff!important;color:#257ec8!important;box-shadow:0 8px 22px rgba(0,0,0,.28)!important}
+.workVideoSim .call.activeStep{transform:scale(1.15);box-shadow:0 0 0 8px rgba(47,140,240,.14),0 5px 16px rgba(47,140,240,.22)!important;background:#2f8cf0!important}
+.workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 13px;border-radius:999px;background:#fff;border:1px solid #d8e5f0;color:#315f88;font-size:11px;font-weight:900;letter-spacing:.5px;box-shadow:0 7px 18px rgba(42,79,113,.08)}
+.workVideoBrand{position:absolute;left:30px;top:24px;z-index:9;display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:999px;background:#fff;border:1px solid #d8e5f0;color:#24496c;font-size:10px;font-weight:900;letter-spacing:.7px;box-shadow:0 7px 18px rgba(42,79,113,.08)}
+.workVideoBrand:before{content:"";width:8px;height:8px;border-radius:50%;background:#2f8cf0;box-shadow:0 0 9px rgba(47,140,240,.42)}
 </style>
 
 <style id="premium-guide-v1">
@@ -353,47 +346,44 @@ function iqcGuideHtml(){return '<div class="qmesMock"><div class="qhead">NAMO QM
 
 function workListGuideHtml(){return '<div class="workActual">'+
 '<div class="waHead"><strong>작업지시서 등록 및 조회</strong><div class="waActions"><button>엑셀 내보내기</button><button class="primary">+ 신규 작업지시서 등록</button></div></div>'+
-'<div class="waFilters">'+
+'<div class="waFilters" style="grid-template-columns:repeat(6,minmax(0,1fr))">'+
 '<div class="waField"><span>고객사</span><div class="waInput">전체</div></div>'+
-'<div class="waField"><span>작업지시번호</span><div class="waInput">전체</div></div>'+
 '<div class="waField"><span>제품명</span><div class="waInput">전체</div></div>'+
 '<div class="waField"><span>생산 LOT</span><div class="waInput">전체</div></div>'+
 '<div class="waField"><span>진행상태</span><div class="waInput">전체</div></div>'+
 '<div class="waField"><span>작업기간</span><div class="waInput">기간 선택</div></div>'+
+'<div class="waField"><span>작업지시번호</span><div class="waInput">전체</div></div>'+
 '</div>'+
-'<div class="waToolbar"><strong>▸ 작업지시 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button>⌕</button><button>⌃</button></div></div>'+
-'<table><thead><tr><th style="width:34px">□</th><th style="width:42px">No.</th><th>고객사</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT NO</th><th>설비명</th><th>작업자</th><th>계획수량(kg)</th><th>작업기간</th><th>진행상태</th><th>비고</th></tr></thead><tbody>'+
-'<tr><td>□</td><td>1</td><td>현대자동차</td><td style="color:#1769c2;font-weight:800">WO-20261021-001</td><td>NBA20HM05</td><td>DBJ2101</td><td>HSM</td><td>대리 박도훈, 주임 문지훈</td><td>160</td><td>2026-10-21 ~ 2026-10-21</td><td>완료</td><td>인쇄 · 수정</td></tr>'+
-'<tr><td>□</td><td>2</td><td>현대자동차</td><td style="color:#1769c2;font-weight:800">WO-20261015-001</td><td>NBA20HM05</td><td>DBJ1501</td><td>HSM</td><td>대리 박도훈, 주임 문지훈</td><td>50</td><td>2026-10-15 ~ 2026-10-15</td><td>완료</td><td>인쇄 · 수정</td></tr>'+
+'<div class="waToolbar"><strong>▸ 작업지시 현황</strong><div class="waToolBtns"><button>조건 지우기</button><button class="primary">조회</button></div></div>'+
+'<table><thead><tr><th style="width:34px">□</th><th style="width:42px">No.</th><th>고객사</th><th>작업지시번호</th><th>제품명</th><th>생산 LOT NO</th><th>설비명</th><th>작업자</th><th>계획수량</th><th>작업기간</th><th>진행상태</th><th>비고</th></tr></thead><tbody>'+
+'<tr><td>□</td><td>1</td><td>현대자동차</td><td style="color:#1769c2;font-weight:800">WO-20261112-001</td><td>NBA20HM05</td><td>LOT-261112-01</td><td>HSM</td><td>문지훈</td><td>160</td><td>2026-11-12 ~ 2026-11-12</td><td>대기</td><td>인쇄 · 수정</td></tr>'+
 '</tbody></table>'+
-'<div class="waDetail"><div class="waDetailHead">작업지시 상세내역</div><div class="waDetailBody">작업지시번호를 클릭하면 상세내용을 확인할 수 있습니다.</div></div>'+
-'<span class="call" style="right:24px;top:15px">1</span><span class="call" style="left:22px;top:73px">2</span><span class="call" style="right:92px;top:134px">3</span><span class="call" style="left:330px;top:190px">4</span>'+
+'<div class="waDetail"><div class="waDetailHead">작업지시 상세내역</div><div class="waDetailBody">작업지시번호를 선택하면 상세내용을 확인할 수 있습니다.</div></div>'+
+'<span class="call" style="right:24px;top:15px">1</span>'+
 '</div>'}
 
 function workRegGuideHtml(){return '<div class="workActual"><div class="regShell">'+
-'<aside class="regList"><div class="regListTitle">작업지시서 목록</div><div class="regListTools"><div>전체</div><div>작업지시서 검색</div></div><div style="padding:8px 10px;font-size:10px;line-height:1.8;color:#52677b">2026-10-21&nbsp;&nbsp;WO-20261021-001<br>2026-10-15&nbsp;&nbsp;WO-20261015-001<br>2026-10-06&nbsp;&nbsp;WO-20261006-001<br>2026-08-19&nbsp;&nbsp;WO-20260819-001</div><div class="regAdd">⊕ 추가</div></aside>'+
-'<section class="regMain"><div class="regTop"><div><b>신규 작업지시서 등록</b><small>새 항목을 직접 입력합니다.</small></div><div class="waActions"><button>목록</button><button>임시저장</button><button class="primary">저장</button></div></div>'+
+'<aside class="regList"><div class="regListTitle">작업지시서 목록</div><div class="regListTools"><div>전체</div><div>작업지시서 검색</div></div><div style="padding:9px 10px;font-size:10px;line-height:1.9;color:#52677b">2026-11-12&nbsp;&nbsp;WO-20261112-001<br>2026-11-10&nbsp;&nbsp;WO-20261110-001<br>2026-11-09&nbsp;&nbsp;WO-20261109-001</div></aside>'+
+'<section class="regMain"><div class="regTop"><div><b>신규 작업지시서 등록</b><small>현재 QMES 작업지시 등록 화면</small></div></div>'+
 '<div class="regSection"><div class="regSectionTitle">작업 기본정보</div><div class="regGrid">'+
-'<span>작업지시번호</span><b>자동생성</b><span>작업일자</span><b>연도-월-일</b>'+
-'<span>고객사명</span><b>고객사명 직접 입력</b><span>제품명</span><b>제품명 선택 또는 직접 입력</b>'+
-'<span>생산 LOT NO</span><b>생산 LOT NO 입력</b><span>설비명</span><b>HSM</b>'+
-'<span>작업자</span><b>작업자 선택 또는 직접 입력</b><span>계획수량</span><b>숫자만 입력</b>'+
-'<span>작업 시작일</span><b>연도-월-일</b><span>작업 종료일</span><b>연도-월-일</b>'+
-'<span>진행상태</span><b>대기 / 진행 / 완료</b><span>생산구분</span><b>양산 / 파일럿 생산 / 시험생산 / 샘플생산</b>'+
+'<span>작업지시번호</span><b>자동생성</b><span>작업일자</span><b>2026-11-12</b>'+
+'<span>고객사명</span><b>현대자동차</b><span>제품명</span><b>NBA20HM05</b>'+
+'<span>생산 LOT NO</span><b>LOT-261112-01</b><span>설비명</span><b>HSM</b>'+
+'<span>작업자</span><b>문지훈</b><span>계획수량</span><b>160</b>'+
+'<span>작업 시작일</span><b>2026-11-12</b><span>작업 종료일</span><b>2026-11-12</b>'+
+'<span>진행상태</span><b>대기</b><span>생산구분</span><b>양산</b>'+
 '</div></div>'+
 '<div class="regSection"><div class="regSectionTitle">원료 투입계획</div><div class="matWrap"><div class="matTools"><button>+ 행 추가</button></div><table><thead><tr><th>NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율(%)(자동계산)</th><th>관리</th></tr></thead><tbody>'+
-'<tr><td>1</td><td style="background:#fff0b3">NMP</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
-'<tr><td>2</td><td style="background:#ffe3a0">BYK180</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
-'<tr><td>3</td><td style="background:#d9ecff">AOH30</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
-'<tr><td>4</td><td style="background:#e8ddff">중간배치</td><td>배치 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
-'<tr><td>5</td><td style="background:#dff5d6">SBS</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
-'<tr><td>6</td><td>SBR</td><td>LOT 선택</td><td>계획투입량 입력</td><td>실투입량 입력</td><td>자동계산</td><td>삭제</td></tr>'+
+'<tr><td>1</td><td>NMP</td><td>NMP-261112-A</td><td>120</td><td></td><td>75.00</td><td>삭제</td></tr>'+
+'<tr><td>2</td><td>BYK180</td><td>BYK-261111-B</td><td>8</td><td></td><td>5.00</td><td>삭제</td></tr>'+
+'<tr><td>3</td><td>AOH30</td><td>AOH-261110-C</td><td>24</td><td></td><td>15.00</td><td>삭제</td></tr>'+
+'<tr><td>4</td><td>중간배치</td><td>MB-261112-01</td><td>8</td><td></td><td>5.00</td><td>삭제</td></tr>'+
 '</tbody></table><div class="note">※ 원료 LOT NO는 수입검사 내역에서 선택하거나 직접 입력할 수 있습니다. 계획투입량 입력 시 투입비율이 자동 계산되며, 실투입량은 생산실적 입력 단계에서 작성합니다.</div></div></div>'+
 '<div class="regSection"><div class="regSectionTitle">비고</div><div class="dispatch">작업 시 주의사항 또는 특이사항을 입력합니다.</div></div>'+
-'<div class="regSection"><div class="regSectionTitle">발송 대상 및 수신부서</div><div class="dispatch"><b>수신부서</b>를 선택하면 해당 직원이 표시됩니다. 필요한 담당자를 선택한 후 <b>저장 후 발송</b>을 사용합니다.<br>발송 경로: QMES 내부 알림 → 작업지시 · 직원등록현황의 승인 직원</div></div>'+
+'<div class="regSection"><div class="regSectionTitle">발송 대상 및 수신부서</div><div class="dispatch"><b>수신부서</b> 생산부 · 품질부&nbsp;&nbsp;&nbsp; <b>수신 담당자</b> 문지훈 · 박현아<br><span style="display:inline-block;margin-top:7px;padding:5px 9px;border:1px solid #c9d8e8;border-radius:5px;background:#fff;color:#2f6fae;font-weight:800">이메일 발송</span></div></div>'+
 '<div class="regBottom"><button>목록으로</button><button>저장 후 인쇄</button><button class="primary">저장</button></div>'+
 '</section></div>'+
-'<span class="call" style="right:22px;top:15px">5</span><span class="call" style="left:205px;top:74px">6</span><span class="call" style="left:205px;top:330px">7</span><span class="call" style="left:205px;bottom:132px">8</span><span class="call" style="right:21px;bottom:17px">9</span>'+
+'<span class="call" style="left:205px;top:73px">2</span><span class="call" style="left:205px;top:330px">3</span><span class="call" style="left:205px;bottom:186px">4</span><span class="call" style="left:205px;bottom:112px">5</span><span class="call" style="left:520px;bottom:88px">6</span><span class="call" style="right:21px;bottom:17px">7</span>'+
 '</div>'}
 
 function iqcListGuideHtml(){return '<div class="workActual">'+
@@ -994,18 +984,16 @@ function stopWorkVideoSim(){if(workVideoTimer){clearInterval(workVideoTimer);wor
 function startWorkorderVideoSim(){
   stopWorkVideoSim();
   if(!videoStage)return;
-  videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoBrand">NAMO QMES · WORK ORDER</div><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">STEP 01 / 09</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
+  videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoBrand">NAMO QMES · WORK ORDER</div><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">STEP 01 / 07</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
   const canvas=document.getElementById('workVideoCanvas'),cursor=document.getElementById('workVideoCursor'),pulse=document.getElementById('workVideoPulse'),caption=document.getElementById('workVideoCaption'),badge=document.getElementById('workVideoStepBadge'),bar=document.getElementById('workVideoProgressBar');
   const steps=[
-    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'+ 신규 작업지시서 등록 버튼으로 새 작업을 시작합니다.',click:true},
-    {view:'list',no:'2',cap:'2. 조회조건 설정',sub:'고객사 · 작업지시번호 · 제품명 · 생산 LOT · 진행상태 · 작업기간에서 필요한 조건만 선택합니다.'},
-    {view:'list',no:'3',cap:'3. 작업지시 현황 조회',sub:'조회로 검색하고 조건 지우기로 전체 목록을 다시 표시합니다.',click:true},
-    {view:'list',no:'4',cap:'4. 작업지시번호 / 인쇄 / 수정',sub:'파란 작업지시번호를 눌러 상세내용을 확인하고 필요 시 인쇄 또는 수정합니다.'},
-    {view:'reg',no:'5',cap:'5. 목록 · 임시저장 · 저장',sub:'입력 중에는 임시저장, 완료 후에는 저장을 사용합니다.',click:true},
-    {view:'reg',no:'6',cap:'6. 작업 기본정보 입력',sub:'작업일자부터 생산구분까지 위에서 아래 순서로 입력합니다.'},
-    {view:'reg',no:'7',cap:'7. 원료 LOT / 계획투입량',sub:'NMP · BYK180 · AOH30 · 중간배치 · SBS · SBR의 LOT와 계획투입량을 입력합니다.'},
-    {view:'reg',no:'8',cap:'8. 비고 / 발송대상',sub:'특이사항을 기록하고 수신부서와 담당자를 선택합니다.'},
-    {view:'reg',no:'9',cap:'9. 저장 · 저장 후 인쇄',sub:'최종 확인 후 저장하고 출력이 필요하면 저장 후 인쇄를 사용합니다.',click:true}
+    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'작업지시서 화면 우측 상단의 + 신규 작업지시서 등록 버튼을 선택합니다.',click:true},
+    {view:'reg',no:'2',cap:'2. 작업 기본정보 입력',sub:'작업일자 → 고객사명 → 제품명 → 생산 LOT NO → 설비명 → 작업자 → 계획수량 → 작업기간 → 진행상태 → 생산구분 순서로 입력합니다.'},
+    {view:'reg',no:'3',cap:'3. 원료 투입계획 입력',sub:'원료명 → 원료 LOT NO → 계획투입량 순서로 입력합니다. 투입비율은 자동 계산됩니다.'},
+    {view:'reg',no:'4',cap:'4. 비고 입력',sub:'작업 시 주의사항과 현장 전달사항을 비고란에 입력합니다.'},
+    {view:'reg',no:'5',cap:'5. 발송 대상 선택',sub:'수신부서를 선택하고 작업지시를 받을 담당자를 지정합니다.'},
+    {view:'reg',no:'6',cap:'6. 이메일 발송',sub:'선택한 담당자에게 작업지시 내용을 이메일로 발송합니다.',click:true},
+    {view:'reg',no:'7',cap:'7. 저장',sub:'최종 내용을 확인한 뒤 저장합니다. 출력이 필요한 경우 저장 후 인쇄를 사용합니다.',click:true}
   ];
   let index=0;
   const moveCursorToCall=(no,click)=>{
