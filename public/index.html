@@ -6754,12 +6754,19 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
     sampling:'출하 전 최종검사 / n=3', trace:`완제품 LOT ${val('완제품 LOT')} 기준 출하 추적`, standard:'출하검사 기준서 / 고객 요구사항'
   };
   const itemSets={
-    incoming:iqcItems(iqcSource||{}).filter(item=>{
-      const name=String(item?.name||'').trim();
-      return name&&name!=='비고'&&!name.includes('판정')&&!name.startsWith('__');
-    }).map(item=>{
-      const values=item.values||item.measurements;
-      return [item.name,item.standard||item.spec,item.method,item.value??values?.[0],values?.[1],values?.[2],item.judge||item.result]
+    incoming:[
+      ['포장상태','용기·포장 파손 및 누출 없을 것','육안'],
+      ['외관','이물질 혼입 및 외관 이상 없을 것','육안'],
+      ['라벨','품명·LOT·표기사항 일치할 것','육안'],
+      ['중량','표시중량 및 입고기준 만족','저울'],
+      ['COA 확인','공급사 COA 및 LOT 일치 확인','문서확인']
+    ].map(([name,standard,method])=>{
+      const saved=iqcItems(iqcSource||{}).find(item=>
+        String(item?.name||'').replace(/\s/g,'').toUpperCase()===name.replace(/\s/g,'').toUpperCase());
+      const values=saved?.values||saved?.measurements;
+      const recorded=Array.isArray(values)?values.filter(value=>value!=null&&String(value).trim()).join(' / '):'';
+      const result=String(saved?.value??'').trim()||recorded;
+      return [name,saved?.standard||saved?.spec||standard,saved?.method||method,result,'','',saved?.judge||saved?.result]
         .map(value=>amEsc(String(value??'').trim()||'-'));
     }),
     process:[
@@ -6885,9 +6892,9 @@ function qmesIqcBarcodeSvg(value){
       </table>
       <div class="report-section-title">검사 결과</div>
       <table class="report-inspection">
-        <colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"><col class="measure"><col class="measure"><col class="judge"></colgroup>
-        <thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th><th>1회</th><th>2회</th><th>3회</th><th>판정</th></tr></thead>
-        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="${r[6]==='불합격'?'fail':r[6]==='합격'?'pass':'pending'}">${r[6]}</td></tr>`).join('')}</tbody>
+        <colgroup><col class="no"><col class="item"><col class="spec"><col class="method"><col class="measure"${id==='incoming'?' style="width:24%"':''}>${id==='incoming'?'':'<col class="measure"><col class="measure">'}<col class="judge"></colgroup>
+        <thead><tr><th>NO</th><th>검사항목</th><th>검사기준</th><th>검사방법 / 설비</th>${id==='incoming'?'<th>확인 결과</th>':'<th>1회</th><th>2회</th><th>3회</th>'}<th>판정</th></tr></thead>
+        <tbody>${items.map((r,i)=>`<tr><td>${i+1}</td><td class="item">${r[0]}</td><td class="spec">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>${id==='incoming'?'':`<td>${r[4]}</td><td>${r[5]}</td>`}<td class="${r[6]==='불합격'?'fail':r[6]==='합격'?'pass':'pending'}">${r[6]}</td></tr>`).join('')}</tbody>
       </table>
       <div class="report-summary">
         <div class="label">검사일자</div><div>${inspectionDate}</div>
@@ -6895,13 +6902,14 @@ function qmesIqcBarcodeSvg(value){
         <div class="label">종합판정</div><div class="final" data-report-result="${finalJudge}">${finalJudge}</div>
         ${id==='outgoing'?'<div class="label">출하상태</div><div class="value">'+(oqcShippingStatus||'미지정')+'</div>':''}
       </div>
-      <div class="report-section-title">검사 관리정보</div>
+      ${id==='incoming'?'':`<div class="report-section-title">검사 관리정보</div>
       <div class="report-support">
         <div class="report-support-row"><div class="label">검사조건</div><div class="value"><div class="support-text"><b>샘플링:</b> ${info.sampling} &nbsp;&nbsp; <b>검사장소:</b> 품질검사실 &nbsp;&nbsp; <b>적용기준:</b> ${info.standard}</div></div></div>
         <div class="report-support-row"><div class="label">추적성</div><div class="value">${info.trace}<br><span class="muted">원자재/작업지시/생산 LOT/완제품 LOT 간 추적 가능 여부 확인</span></div></div>
         <div class="report-support-row"><div class="label">특이사항</div><div class="value">${id==='outgoing'?oqcReportRemarks:'특이사항 없음'}<br><span class="muted">부적합 발생 시 NCR/시정조치 번호를 기록합니다.</span></div></div>
       </div>
       
+      `}
       ${id==='incoming'?qmesIqcBarcodeSvg(reportNo):''}
       <div class="report-footer"><span>${row._coaIssue?'CoA 발행일자 '+issueDate:'미리보기 · '+issueDate}</span><span><b>(주)나모케미칼 품질부</b></span><span>${row._coaIssue?'발행자 '+String(row._coaIssue.issuedBy||'').replace(/[&<>"\']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"\'":'&#39;'}[ch])):'QMES ELECTRONIC RECORD'}</span></div>
     </div>`;
