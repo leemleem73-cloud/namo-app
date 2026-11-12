@@ -2476,8 +2476,8 @@ html body #mainWorkspace .work-form #workMaterialTable :is(input,select,textarea
 
 <style id="pqc-visible-remarks-20261105">html body #process .inspection-premium .ip-table td.pqc-list-remarks{padding:0!important;text-align:center!important;vertical-align:middle!important}html body #process .inspection-premium .ip-table .pqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;gap:0!important;min-height:32px;width:100%}html body #process .inspection-premium .ip-table .pqc-remarks-edit{align-self:center;justify-self:center;margin:4px!important}html body #process .inspection-premium .ip-table .pqc-remarks-text{display:flex;align-items:center;justify-content:center;border-left:1px solid #d5dce5;padding:4px 8px;min-width:0;white-space:pre-wrap!important;overflow-wrap:anywhere;color:#244260;font:inherit;line-height:1.5;text-align:center}</style>
 <style id="qmes-inspection-qr-list-buttons">
-html body #outgoing .inspection-premium .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:108px minmax(0,1fr)!important}
-html body #outgoing .inspection-premium .ip-table .inspection-qr-actions{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px}
+html body #outgoing .inspection-premium .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:94px minmax(0,1fr)!important}
+html body #outgoing .inspection-premium .ip-table .inspection-qr-actions{display:flex;align-items:center;justify-content:center;gap:5px;padding:0 5px}
 html body #outgoing .inspection-premium .ip-table .inspection-qr-actions .oqc-remarks-edit{margin:0!important;position:relative;z-index:1;pointer-events:auto;cursor:pointer}
 html body :is(#incoming,#outgoing) .ip-table .inspection-qr-btn{min-width:0;padding-inline:6px;opacity:1;color:#536c87;background:#f1f6fb;border:1px solid #cbd8e7;cursor:pointer}
 </style><style id="oqc-visible-remarks-20261105">html body #outgoing .inspection-premium .ip-table tbody td{height:34px!important;padding-top:4px!important;padding-bottom:4px!important;line-height:1.4!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table tbody td[data-coa-file-cell]{padding-top:4px!important;padding-bottom:4px!important}html body #outgoing .inspection-premium .ip-table td.oqc-list-remarks{padding:0!important;background:#fff!important;text-align:center!important;vertical-align:middle!important}html body #outgoing .inspection-premium .ip-table .oqc-remarks-line{display:grid!important;grid-template-columns:60px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;gap:0!important;margin:0!important;min-height:42px}html body #outgoing .inspection-premium .ip-table .oqc-remarks-edit{justify-self:center!important;align-self:center!important;margin:4px!important;flex:none}html body #outgoing .inspection-premium .ip-table .oqc-remarks-text{display:flex!important;align-items:center!important;justify-content:center!important;border-left:1px solid #d5dce5!important;padding:4px 8px!important;min-width:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;color:#244260!important;font:inherit!important;line-height:1.5!important;text-align:center!important}</style>
@@ -2587,7 +2587,7 @@ html body #outgoing .iqc-work-frame table.ip-table thead th{white-space:normal!i
 @container (max-width:1320px){
  html body #outgoing .iqc-work-frame .ip-table tbody td{padding-inline:4px!important;white-space:normal!important;overflow-wrap:anywhere}
  html body #outgoing .iqc-work-frame .ip-table tbody td.oqc-list-remarks{padding:0!important}
- html body #outgoing .iqc-work-frame .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:minmax(0,46%) minmax(0,1fr)!important}
+ html body #outgoing .iqc-work-frame .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:minmax(0, min(92px,42%)) minmax(0,1fr)!important}
  html body #outgoing .iqc-work-frame .ip-table .inspection-qr-actions{flex-wrap:wrap;gap:3px;padding:3px}
  html body #outgoing .iqc-work-frame .ip-table .inspection-qr-actions .btn{padding-inline:4px!important}
  html body #outgoing .iqc-work-frame .ip-table .oqc-remarks-text{padding-inline:4px!important}
@@ -3750,7 +3750,7 @@ function wireOutgoingColumnResize(section){
     '고객사':[120,78],'제품명':[130,86],'완제품 LOT':[120,92],
     '검사항목':[340,140],'검사합부':[85,68],'결재상태':[100,78],
     '검사자':[85,64],'출하상태':[90,74],'출하수량(kg)':[100,86],
-    '성적서':[70,60],'첨부파일':[205,105],'CoA':[205,105],'비고':[270,190]
+    '성적서':[65,60],'첨부파일':[205,105],'CoA':[205,105],'비고':[325,230]
   };
   const defaults=labels.map((label,index)=>index===0?86:(sizes[label]?.[0]??100));
   const minimums=labels.map((label,index)=>index===0?72:(sizes[label]?.[1]??65));
@@ -9502,7 +9502,7 @@ document.addEventListener('transitionend',follow,true);
 <script defer src="./js/qmes-oqc-rules-20261019.js?v=20261111-november-standard"></script>
 <script src="./js/qmes-oqc-shipqty-20261105.js?v=1"></script>
 <script src="./js/qmes-oqc-revision-core-20261104.js?v=20261111-label-dates"></script>
-<script src="./js/qmes-oqc-attachments-20261104.js?v=20261105-full-filename"></script>
+<script src="./js/qmes-oqc-attachments-20261104.js?v=20261112-single-column-sizing"></script>
 <script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261111-label-metadata"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
