@@ -50,8 +50,14 @@ async function labelRows(pool,sources){
   (norm(row.customer)&&norm(first.customer)&&norm(row.customer)!==norm(first.customer))))return null;
  return rows;
 }
+const judgeClass=value=>value==='합격'?'pass':value==='불합격'?'fail':'';
+function inspectionResults(rows){
+ const body=rows.map(([item,values,judge])=>`<tr><td>${html(item)}</td><td><span class="measurement-values">${html(values)}</span></td><td class="${judgeClass(judge)}">${html(judge)}</td></tr>`).join('');
+ return `<table class="oqc-results"><colgroup><col class="result-item"><col><col class="result-judgment"></colgroup><thead><tr>
+  <th scope="col">검사항목</th><th scope="col">측정 결과</th><th scope="col">판정</th></tr></thead><tbody>${body}</tbody></table>`;
+}
 function pairs(entries){
- return '<dl>'+entries.map(([key,value])=>'<dt>'+html(key)+'</dt><dd>'+html(value==null||value===''?'—':value)+'</dd>').join('')+'</dl>';
+ return '<dl>'+entries.map(([key,value])=>'<dt>'+html(key)+'</dt><dd class="'+(key==='검사 판정'?judgeClass(value):'')+'">'+html(value==null||value===''?'—':value)+'</dd>').join('')+'</dl>';
 }
 function panel(title,entries){
  return '<details class="history"><summary>'+title+'</summary>'+entries+'</details>';
@@ -119,7 +125,7 @@ function renderLabelReport(rows,files,token,history){
  return require('./qmes-iqc-attachments-20261105.cjs').reportPage(`<div class="report-grid">
   <section class="receipt"><h2>출하검사 정보</h2>${pairs([['제품명',record.product],['완제품 LOT',record.lot],
    ['검사일자',dateOf(record.date)],['검사 판정',overall]])}</section>
-  <div class="documents">${panel('검사이력 · 출하검사 성적서',table(['검사항목','측정 결과','판정'],checks))}
+  <div class="documents">${panel('검사이력 · 출하검사 성적서',inspectionResults(checks))}
   ${panel('출하 CoA','<div class="files">'+(links||'첨부된 CoA가 없습니다.')+'</div>')}
   ${history}
   ${panel('출하이력',completed?pairs([['출하일',dateOf(completed.shipDate)],['수량',completed.quantity+' kg'],['고객사',completed.customer||record.customer]]):'<div class="files">연결된 출하완료 기록이 없습니다.</div>')}
