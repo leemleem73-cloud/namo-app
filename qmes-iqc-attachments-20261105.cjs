@@ -46,7 +46,6 @@ function reportPage(body){
  .files a{color:#135997;text-decoration:underline;overflow-wrap:anywhere}
  .pass{color:#08653f;font-weight:700}
  .fail{color:#a32424;font-weight:700}
- @media(min-width:760px){.report-grid{grid-template-columns:minmax(270px,1fr) minmax(0,1.75fr)}}
  @media(max-width:420px){main{padding:14px 10px 24px}.report-header{padding:12px 14px}.company-logo{width:145px}h1{font-size:18px}}
  @media print{body{background:#fff}main{max-width:none;padding:0}.report-grid{grid-template-columns:1fr}tr{break-inside:avoid}}
  </style></head><body><main><header class="report-header"><img class="company-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주)"><h1>수입검사 조회</h1></header>${body}</main></body></html>`;
