@@ -4727,11 +4727,13 @@ function wireIncomingPageRows(section){
     const row=(section._iqcRows||[]).find(x=>String(x.id)===String(id));
     if(row)editIncomingRecord(section,row);
   }));
-  section.querySelectorAll('.inspection-qr-btn').forEach(button=>button.onclick=event=>{
+  section.querySelectorAll('.inspection-qr-btn').forEach(button=>button.onclick=async event=>{
     event.stopPropagation();
     const id=button.closest('tr')?.dataset.iqcId;
     const row=section._iqcRows?.find(record=>String(record.id)===String(id));
-    if(row)openInspectionLotLabel('incoming',row);
+    if(!row)return;
+    button.disabled=true;
+    try{await openInspectionLotLabel('incoming',row,button);}finally{button.disabled=false;}
   });
   section.querySelectorAll('[data-iqc-delete]').forEach(btn=>btn.addEventListener('click',e=>{
     e.stopPropagation();
@@ -5345,12 +5347,47 @@ async function outgoingLabelManufactureDate(row){
   }catch(error){return '';}
 }
 
-function openInspectionLotLabel(type,row,manufactureDate=''){
+const inspectionQrLinks=new Map();
+async function inspectionQrLink(type,request){
+  const key=type+':'+JSON.stringify(request);
+  const existing=inspectionQrLinks.get(key);
+  if(existing&&existing.expires>Date.now())return existing.promise;
+  const incoming=type==='incoming';
+  const entry={expires:Date.now()+300000};
+  entry.promise=(async()=>{
+    const response=await fetch(incoming?'/api/qmes/iqc/label-links':'/api/qmes/oqc/label-links',{
+      method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(request),signal:AbortSignal.timeout(10000)
+    });
+    const result=await response.json().catch(()=>null);
+    const path=incoming?/^\/iqc-label\/[a-f0-9-]{36}$/i:/^\/oqc-label\/[a-f0-9-]{36}$/i;
+    if(!response.ok||!result?.success||!path.test(result.path))throw Error(result?.message||'모바일 열람 링크를 발행하지 못했습니다.');
+    return new URL(result.path,location.origin).href;
+  })().catch(error=>{
+    if(inspectionQrLinks.get(key)===entry)inspectionQrLinks.delete(key);
+    throw error;
+  });
+  if(inspectionQrLinks.size>=100)inspectionQrLinks.delete(inspectionQrLinks.keys().next().value);
+  inspectionQrLinks.set(key,entry);
+  return entry.promise;
+}
+async function openInspectionLotLabel(type,row,button){
   const incoming=type==='incoming';
   const weight=String((incoming?row.incoming_qty:row.shipQty)??'').trim();
   const judge=incoming?iqcJudge(row):window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]).overall;
   const shipmentDate=row.actualShipDate||row.stockShipment?.shipDate||row.shipDate;
-  openWorkLotLabel({
+  const lot=String(row.lot??'').trim();
+  if(!lot||lot==='-'){toast('라벨을 만들 LOT 번호를 확인해 주세요.');return;}
+  const sources=(row.__deleteTargets||[]).map(({recordKey,rowId})=>({recordKey,rowId}));
+  let qrUrl,manufactureDate;
+  try{
+    [qrUrl,manufactureDate]=await Promise.all([
+      inspectionQrLink(type,incoming?{recordId:String(row.id??'')}:{sources}),
+      incoming?'':outgoingLabelManufactureDate(row)
+    ]);
+  }catch(error){toast(error.message||'검사 QR 발행에 실패했습니다. 다시 눌러 주세요.');return;}
+  if(button&&!button.isConnected)return;
+  return openWorkLotLabel({
     lot:String(row.lot??'').trim(),
     item:incoming?row.item:row.product,
     itemCode:incoming?(row.item_code??row.itemCode??row.material_code??row.materialCode):(row.productCode??row.product_code),
@@ -5363,8 +5400,8 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
     quantity:incoming?'입고 중량(kg)':'출하수량(kg)',
     date:'입고일자',
     weight,
+    qrUrl,
     incoming:incoming?{
-      recordId:String(row.id??''),
       supplier:row.supplier,
       received:iqcDateText(row.receipt_date||row.receiptDate||row.date),
       inspected:iqcInspectionDate(row),
@@ -5372,7 +5409,6 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
       state:judge==='합격'?'pass':judge==='불합격'?'fail':'pending'
     }:null,
     shipping:incoming?null:{
-      sources:(row.__deleteTargets||[]).map(({recordKey,rowId})=>({recordKey,rowId})),
       manufactureDate,
       shipmentDate:String(shipmentDate??'').slice(0,10),
       judgment:judge==='합격'?'OQC PASS':judge==='불합격'?'OQC FAIL':'OQC 대기',
@@ -5435,7 +5471,6 @@ async function openWorkLotLabel(receipt,inspection){
   if(barcode)preview.querySelector('.work-label-barcode').insertAdjacentHTML('afterbegin',barcode);
   dialog.querySelector('[data-close]').onclick=()=>dialog.close();
   dialog.addEventListener('close',()=>dialog.remove(),{once:true});
-  dialog.showModal();
   const status=dialog.querySelector('[role="status"]');
   const printButtons=[...dialog.querySelectorAll('[data-print]')];
   const setPrintDisabled=disabled=>printButtons.forEach(button=>{button.disabled=disabled;});
@@ -5462,22 +5497,7 @@ async function openWorkLotLabel(receipt,inspection){
     }
   })();
   try{
-    let qrText=receipt.lot;
-    if(incoming||shipping){
-      status.textContent='모바일 열람용 QR을 준비하고 있습니다.';
-      const response=await fetch(incoming?'/api/qmes/iqc/label-links':'/api/qmes/oqc/label-links',{
-        method:'POST',credentials:'same-origin',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(incoming?{recordId:incoming.recordId}:{sources:shipping.sources}),
-        signal:AbortSignal.any([stockRequest.signal,AbortSignal.timeout(10000)])
-      });
-      const result=await response.json().catch(()=>null);
-      if(!response.ok||!result?.success||!(incoming?/^\/iqc-label\/[a-f0-9-]{36}$/i:/^\/oqc-label\/[a-f0-9-]{36}$/i).test(result.path)){
-        throw Error(result?.message||'모바일 열람 링크를 발행하지 못했습니다.');
-      }
-      qrText=new URL(result.path,location.origin).href;
-    }
-    if(!dialog.open)return;
+    const qrText=inspection?.qrUrl||receipt.lot;
     new window.QRCode(preview.querySelector('[data-qr]'),{text:qrText,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
     qrReady=true;
     if(inspection){
@@ -5493,7 +5513,6 @@ async function openWorkLotLabel(receipt,inspection){
       }else if(!barcode)status.textContent='이 LOT는 QR로 스캔해 주세요.';
     }
   }catch(error){
-    if(!dialog.open)return;
     status.textContent=inspection?'검사 QR 발행에 실패했습니다. 창을 닫고 다시 열어 주세요.':'QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
     setPrintDisabled(true);
   }
@@ -5522,6 +5541,7 @@ async function openWorkLotLabel(receipt,inspection){
     qr.src=image;
   };
   printButtons.forEach(button=>{button.onclick=printLabel;});
+  dialog.showModal();
 }
 
 const workFifoColumns=['date','supplier','item','lot','available'];
@@ -6237,8 +6257,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(!row)return;
         button.disabled=true;
         try{
-          const manufactureDate=await outgoingLabelManufactureDate(row);
-          if(button.isConnected)openInspectionLotLabel('outgoing',row,manufactureDate);
+          await openInspectionLotLabel('outgoing',row,button);
         }finally{button.disabled=false;}
       });
       tbody.querySelectorAll('.oqc-report-view').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const tr=button.closest('tr');if(tr)issueInspectionReport('outgoing',tr);}));
