@@ -5365,6 +5365,7 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
       state:judge==='합격'?'pass':judge==='불합격'?'fail':'pending'
     }:null,
     shipping:incoming?null:{
+      sources:(row.__deleteTargets||[]).map(({recordKey,rowId})=>({recordKey,rowId})),
       manufactureDate,
       shipmentDate:String(shipmentDate??'').slice(0,10),
       judgment:judge==='합격'?'OQC PASS':judge==='불합격'?'OQC FAIL':'OQC 대기',
@@ -5455,16 +5456,16 @@ async function openWorkLotLabel(receipt,inspection){
   })();
   try{
     let qrText=receipt.lot;
-    if(incoming){
+    if(incoming||shipping){
       status.textContent='모바일 열람용 QR을 준비하고 있습니다.';
-      const response=await fetch('/api/qmes/iqc/label-links',{
+      const response=await fetch(incoming?'/api/qmes/iqc/label-links':'/api/qmes/oqc/label-links',{
         method:'POST',credentials:'same-origin',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({recordId:incoming.recordId}),
+        body:JSON.stringify(incoming?{recordId:incoming.recordId}:{sources:shipping.sources}),
         signal:AbortSignal.any([stockRequest.signal,AbortSignal.timeout(10000)])
       });
       const result=await response.json().catch(()=>null);
-      if(!response.ok||!result?.success||!/^\/iqc-label\/[a-f0-9-]{36}$/i.test(result.path)){
+      if(!response.ok||!result?.success||!(incoming?/^\/iqc-label\/[a-f0-9-]{36}$/i:/^\/oqc-label\/[a-f0-9-]{36}$/i).test(result.path)){
         throw Error(result?.message||'모바일 열람 링크를 발행하지 못했습니다.');
       }
       qrText=new URL(result.path,location.origin).href;
@@ -5474,7 +5475,7 @@ async function openWorkLotLabel(receipt,inspection){
     qrReady=true;
     if(inspection){
       setPrintDisabled(false);
-      if(incoming){
+      if(incoming||shipping){
         status.replaceChildren();
         const link=document.createElement('a');
         link.href=qrText;
@@ -5486,7 +5487,7 @@ async function openWorkLotLabel(receipt,inspection){
     }
   }catch(error){
     if(!dialog.open)return;
-    status.textContent=incoming?'수입검사 QR 발행에 실패했습니다. 창을 닫고 다시 열어 주세요.':'QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
+    status.textContent=inspection?'검사 QR 발행에 실패했습니다. 창을 닫고 다시 열어 주세요.':'QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
     setPrintDisabled(true);
   }
   const printLabel=event=>{
