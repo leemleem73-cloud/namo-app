@@ -2580,8 +2580,18 @@ html body :is(#incoming:not(.incoming-current-work),#process:not(.process-curren
 html body #process .iqc-work-frame .ip-table-wrap{border-bottom:1px solid #d5dce5!important}
 html body #process .iqc-work-frame table.ip-table{border-bottom:0!important}
 html body #process .iqc-work-frame table.ip-table tbody tr:last-child>td{border-bottom:0!important}
-html body #outgoing .iqc-work-frame .ip-table-wrap{scrollbar-width:thin}
-html body #outgoing .iqc-work-frame .ip-table-wrap::-webkit-scrollbar{display:block;height:8px}
+html body #outgoing .iqc-work-frame .ip-table-wrap{overflow-x:clip!important;container-type:inline-size}
+html body #outgoing .iqc-work-frame table.ip-table{width:100%!important;min-width:0!important;max-width:100%!important}
+html body #outgoing .iqc-work-frame table.ip-table tr>:first-child{width:auto!important;min-width:0!important;max-width:none!important}
+html body #outgoing .iqc-work-frame table.ip-table thead th{white-space:normal!important;overflow-wrap:anywhere;padding-inline:4px!important}
+@container (max-width:1320px){
+ html body #outgoing .iqc-work-frame .ip-table tbody td{padding-inline:4px!important;white-space:normal!important;overflow-wrap:anywhere}
+ html body #outgoing .iqc-work-frame .ip-table tbody td.oqc-list-remarks{padding:0!important}
+ html body #outgoing .iqc-work-frame .ip-table .oqc-remarks-line:has(.inspection-qr-actions){grid-template-columns:minmax(0,46%) minmax(0,1fr)!important}
+ html body #outgoing .iqc-work-frame .ip-table .inspection-qr-actions{flex-wrap:wrap;gap:3px;padding:3px}
+ html body #outgoing .iqc-work-frame .ip-table .inspection-qr-actions .btn{padding-inline:4px!important}
+ html body #outgoing .iqc-work-frame .ip-table .oqc-remarks-text{padding-inline:4px!important}
+}
 </style>
 <style id="qmes-process-list-hide-process-name-20261020">
 html body #process .ip-table>thead>tr>th:nth-child(6),html body #process .ip-table>tbody>tr.data-row>td:nth-child(6),html body #process .ip-table>colgroup>col:nth-child(6){display:none!important}
@@ -3734,7 +3744,7 @@ function wireOutgoingColumnResize(section){
     '성적서':[70,60],'첨부파일':[205,105],'CoA':[205,105],'비고':[270,190]
   };
   const defaults=labels.map((label,index)=>index===0?86:(sizes[label]?.[0]??100));
-  const minimums=labels.map((label,index)=>index===0?86:(sizes[label]?.[1]??65));
+  const minimums=labels.map((label,index)=>index===0?72:(sizes[label]?.[1]??65));
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
   const available=wrap.clientWidth||section.parentElement?.clientWidth||Math.max(320,window.innerWidth-120);
@@ -3765,15 +3775,16 @@ function wireOutgoingColumnResize(section){
   function apply(){
     const viewport=wrap.clientWidth||available;
     const effective=customized?fitWidths(customWidths,viewport):defaultWidths(viewport);
-    widths=effective.slice();
+    const total=effective.reduce((sum,width)=>sum+width,0);
+    widths=effective.map(width=>width*viewport/total);
     widths.forEach((width,i)=>{
-      columns[i].style.width=effective[i]+'px';
+      columns[i].style.width=(effective[i]*100/total)+'%';
       handles[i]?.setAttribute('aria-valuenow',String(width));
       const reference=baseline?.[i]??initial[i];
       handles[i]?.setAttribute('aria-valuetext',width+'px'+(width===reference?' · 기준 너비':''));
       if(handles[i])handles[i].title='드래그: 너비 조절 · 기준 '+reference+'px에서 맞춤 · 두 번 클릭: 기준 너비';
     });
-    table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
+    table.style.setProperty('width','100%','important');
   }
   function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths:customized?customWidths:widths,baseline,customized}));}catch(_){}
   }
