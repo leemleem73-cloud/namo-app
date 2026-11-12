@@ -1525,8 +1525,11 @@ thead{background:#f4f7fa}
 #reportSheet.report-incoming table.report-basic tr>:is(th,td):not(:last-child){
  border-right:1px solid #e2e9f1!important;
 }
-#reportSheet.report-incoming table.report-basic tbody tr:not(:last-child)>:is(th,td){
+#reportSheet.report-incoming table.report-basic tbody tr:not(:last-child)>td{
  border-bottom:1px solid #e2e9f1!important;
+}
+#reportSheet.report-incoming table.report-basic tbody tr:not(:last-child)>th{
+ border-bottom:1px solid #becbd8!important;
 }
 #reportSheet.report-incoming :is(.report-doc-head,.report-meta,.report-basic,.report-summary,.report-support-row,.report-section-title,.report-approval,.report-sign,.report-footer){border-color:var(--iqc-line)!important}
 </style>
