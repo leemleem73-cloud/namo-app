@@ -713,12 +713,13 @@ function install(app) {
 
   app.get('/api/qmes-quality/approvals/oqc-statuses', requireLogin, async (req,res) => {
     res.set('Cache-Control','private, no-store');
+    const docType=req.query.docType==='IPQC'?'IPQC':'OQC';
     const ids=[...new Set([req.query.id].flat().filter(id=>typeof id==='string'&&id.trim()))];
     if(!ids.length||ids.length>40||ids.some(id=>id.length>250))return fail(res,400,'조회할 출하검사 기록을 확인해 주세요.');
     try{
       await ensureSchema();
       const result=await pool.query(
-        "SELECT record_id,status FROM qmes_quality_approvals WHERE doc_type='OQC' AND record_id=ANY($1::text[])",[ids]);
+        "SELECT record_id,status FROM qmes_quality_approvals WHERE doc_type=$1 AND record_id=ANY($2::text[])",[docType,ids]);
       return ok(res,result.rows);
     }catch(error){return fail(res,500,'결재 상태를 불러오지 못했습니다.');}
   });
