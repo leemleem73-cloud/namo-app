@@ -6243,25 +6243,48 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
     if(id==='process'||id==='outgoing'){
       const judgeColumn=pageInfo[id][2].indexOf('검사합부')+1;
       const docType=id==='process'?'IPQC':'OQC';
-      const outgoingIds=id==='outgoing'?[...new Set(displayRows.map(row=>String(row.__sourceRowId||'')).filter(Boolean))]:[];
+      const approvalRows=[...tbody.querySelectorAll('tr.data-row')];
+      const outgoingIds=id==='outgoing'?[...new Set(approvalRows.filter(tr=>{
+        const judge=tr.cells[judgeColumn]?.querySelector('[data-pqc-judge]')?.dataset.pqcJudge;
+        return judge&&judge!=='대기';
+      }).map(tr=>tr.dataset.sourceId).filter(Boolean))]:[];
       const outgoingStates=(async()=>{
         const statuses=new Map(),failed=new Set();
-        for(let offset=0;offset<outgoingIds.length;offset+=40){
+        const fallback=[];
+        for(let offset=0;offset<outgoingIds.length;offset+=20){
           if(section._historicalRequest!==request)break;
-          const ids=outgoingIds.slice(offset,offset+40),params=new URLSearchParams();
+          const ids=outgoingIds.slice(offset,offset+20),params=new URLSearchParams();
           ids.forEach(id=>params.append('id',id));
           try{
-            const res=await fetch('/api/qmes-quality/approvals/oqc-statuses?'+params,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(10000)});
+            const res=await fetch('/api/qmes-quality/approvals/oqc-statuses?'+params,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(3500)});
+            if(!res.ok)throw Error('결재 조회 실패');
             const json=await res.json();
-            if(!res.ok||!json.success||!Array.isArray(json.data))throw Error('결재 조회 실패');
+            if(!json.success||!Array.isArray(json.data))throw Error('결재 조회 실패');
             json.data.forEach(row=>statuses.set(String(row.record_id),row));
-          }catch(error){ids.forEach(id=>failed.add(id));}
+          }catch(error){
+            fallback.push(...outgoingIds.slice(offset));
+            break;
+          }
         }
+        let next=0;
+        await Promise.all(Array.from({length:Math.min(4,fallback.length)},async()=>{
+          while(next<fallback.length&&section._historicalRequest===request){
+            const recordId=fallback[next++];
+            try{
+              const params=new URLSearchParams({docType:'OQC',recordId});
+              const res=await fetch('/api/qmes-quality/approvals/record?'+params,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(6000)});
+              if(!res.ok)throw Error('결재 조회 실패');
+              const json=await res.json();
+              if(!json.success)throw Error('결재 조회 실패');
+              if(json.data)statuses.set(recordId,json.data);
+            }catch(error){failed.add(recordId);}
+          }
+        }));
         return {statuses,failed};
       })();
       const syncInspectionApprovalState=async tr=>{
         const recordId=String(tr?.dataset?.sourceId||'').trim();
-        const judge=String(tr?.cells?.[judgeColumn]?.textContent||'').trim();
+        const judge=String(tr?.cells?.[judgeColumn]?.querySelector('[data-pqc-judge]')?.dataset.pqcJudge||'').trim();
         const cell=tr?.querySelector(id==='process'?'.pqc-approval-cell':'.oqc-approval-cell');
         const badge=cell?.querySelector('.quality-list-approval-state');
         if(!cell||!badge)return;
@@ -6292,7 +6315,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
           console.warn('['+docType+' list approval state]',recordId,error);
         }
       };
-      tbody.querySelectorAll('tr.data-row').forEach(tr=>syncInspectionApprovalState(tr));
+      approvalRows.forEach(syncInspectionApprovalState);
     }
 
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+displayRows.length+'건 표시';
