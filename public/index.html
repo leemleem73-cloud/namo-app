@@ -2744,6 +2744,8 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-label-content :is(dt,dd){box-sizing:border-box;margin:0;min-width:0;min-height:0;padding:0 .45mm;line-height:1.12;border-bottom:.18mm solid #7890a7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;align-content:center;text-align:center}
 .work-label-content dt{background:#edf3f8;border-right:.18mm solid #7890a7;font-weight:700;font-size:5.7pt;white-space:normal;overflow-wrap:anywhere}
 .work-label-content dd{font-size:6.4pt;font-weight:700}
+.inspection-lot-label .work-label-content dl{grid-template-columns:14mm minmax(0,1fr);grid-template-rows:minmax(0,1.6fr) repeat(5,minmax(0,1fr))}
+.inspection-lot-label .work-label-content dd[data-material]{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;padding:.35mm .65mm}
 .work-label-content [data-judgment][data-state="pass"]{background:#d9efe1;color:#155632}
 .work-label-content [data-judgment][data-state="fail"]{background:#f9e0e1;color:#8e252b}
 .work-label-content [data-judgment][data-state="pending"]{background:#fff1cf;color:#714b0d}
@@ -2763,6 +2765,8 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-lot-label-dialog button{height:30px;padding:0 12px;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:4px;font:inherit;cursor:pointer}
 .work-lot-label-body{padding:18px}
 .work-lot-label-dialog .work-lot-label-preview{zoom:2}
+.work-lot-label-dialog:has(.inspection-lot-label){width:min(580px,calc(100vw - 32px))}
+@media(min-width:590px){.work-lot-label-dialog .inspection-lot-label{zoom:2.2}}
 @media(max-width:540px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.6}}
 @media(max-width:440px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.3}}
 @media(max-width:365px){.work-lot-label-dialog .work-lot-label-preview{zoom:1.05}}
@@ -5413,6 +5417,7 @@ function openWorkLotLabel(receipt,inspection){
     '<footer><button type="button" class="btn" data-print="label">라벨지 실물 크기</button><button type="button" class="btn primary" data-print="a4">A4 크게 인쇄</button></footer>';
   document.body.appendChild(dialog);
   const preview=dialog.querySelector('.work-lot-label-preview');
+  if(inspection)preview.classList.add('inspection-lot-label');
   const set=(name,value)=>{const cell=preview.querySelector('[data-'+name+']');cell.textContent=value||'—';cell.title=value||'';};
   dialog.querySelector('[data-label-title]').textContent=title;
   set('label-badge',inspection?.badge||'원료 (재고용)');
