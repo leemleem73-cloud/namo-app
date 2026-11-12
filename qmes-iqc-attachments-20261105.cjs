@@ -40,6 +40,10 @@ function reportPage(body,{title='수입검사 조회'}={}){
  dl>:nth-last-child(-n+2){border-bottom:0}
  table{width:100%;border-collapse:collapse;table-layout:fixed}
  .inspection-edge{width:30%}
+ .oqc-results .result-item{width:25%}
+ .oqc-results .result-judgment{width:18%}
+ .oqc-results .measurement-values{display:block;overflow-x:auto;white-space:nowrap;font-variant-numeric:tabular-nums}
+ @media(max-width:520px){.oqc-results :is(th,td){padding-inline:4px}.oqc-results .measurement-values{font-size:12px}}
  th,td{padding:10px 6px;text-align:center;overflow-wrap:anywhere;border-bottom:1px solid #e4ebf2}
  thead th{background:#f6f9fc}
  .inspection-date>*{background:#fff}
