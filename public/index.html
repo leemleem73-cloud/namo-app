@@ -6195,10 +6195,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(id==='outgoing'&&cols[index]==='검사합부'){const summary=window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]);const reason=(summary?.pending||[]).join(' / ');return '<td title="'+safe(v==='대기'?reason:'')+'"><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span>'+(v==='대기'&&reason?'<small style="display:block;font-size:10px;line-height:1.4;color:#64748b;white-space:normal">'+safe(reason)+'</small>':'')+'</td>';}
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if((id==='process'||id==='outgoing')&&cols[index]==='결재상태')return '<td class="'+(id==='process'?'pqc-approval-cell':'oqc-approval-cell')+'"><span class="badge b-yellow quality-list-approval-state">결재조회중</span></td>';
-        if(id==='outgoing'&&cols[index]==='출하상태'){
-          const held=recordedShipment&&row.shippingStatus==='출하보류';
-          return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span>'+(held?'<small style="display:block;color:#9a481f">품질 보류</small>':'')+'</td>';
-        }
+        if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
         if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn iqc-edit-btn oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" aria-label="출하검사 QR 라벨 열기">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
