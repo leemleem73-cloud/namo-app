@@ -5422,7 +5422,7 @@ function openWorkLotLabel(receipt,inspection){
     '<div class="work-label-content"><dl>'+
     '<dt data-item-label></dt><dd data-material></dd>'+
     (shipping
-      ?'<dt>LOT No.</dt><dd data-lot></dd><dt>수량(kg)</dt><dd data-quantity></dd><dt>제조일자</dt><dd data-manufactured></dd><dt>출하일자</dt><dd data-shipped></dd><dt>검사상태</dt><dd data-judgment></dd>'
+      ?'<dt>LOT No.</dt><dd data-lot></dd><dt>수량</dt><dd data-quantity></dd><dt>제조일자</dt><dd data-manufactured></dd><dt>출하일자</dt><dd data-shipped></dd><dt>검사상태</dt><dd data-judgment></dd>'
       :incoming
         ?'<dt>공급업체</dt><dd data-supplier></dd><dt>LOT No.</dt><dd data-lot></dd><dt>입고 중량</dt><dd data-quantity></dd><dt>입고일자</dt><dd data-received></dd><dt>검사일자</dt><dd data-inspected></dd><dt>검사상태</dt><dd data-judgment></dd>'
         :'<dt data-code-label></dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd><dt data-quantity-label></dt><dd data-quantity></dd><dt data-received-label></dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd>')+
@@ -5457,7 +5457,7 @@ function openWorkLotLabel(receipt,inspection){
   }
   set('material',receipt.item);
   set('lot',receipt.lot);
-  set('quantity',incoming&&inspection.weight?inspection.weight+' kg':inspection?inspection.weight:'조회 중');
+  set('quantity',inspection?.weight?inspection.weight+' kg':inspection?inspection.weight:'조회 중');
   set('barcode-lot',receipt.lot);
   const barcode=workLotBarcode(receipt.lot);
   if(barcode)preview.querySelector('.work-label-barcode').insertAdjacentHTML('afterbegin',barcode);
