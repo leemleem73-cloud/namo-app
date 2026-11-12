@@ -15,8 +15,8 @@ async function write(pool,{data,id,attachment,user}){
 
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const escapeHtml=value=>String(value??'—').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-function reportPage(body){
- return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나모 수입검사 성적서</title><style>
+function reportPage(body,{title='수입검사 조회'}={}){
+ return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나모 ${escapeHtml(title)}</title><style>
  *{box-sizing:border-box}
  body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.5 'Malgun Gothic','맑은 고딕',system-ui,sans-serif}
  main{max-width:1100px;margin:auto;padding:28px 16px 36px}
@@ -51,7 +51,7 @@ function reportPage(body){
  .fail{color:#a32424;font-weight:700}
  @media(max-width:420px){main{padding:14px 10px 24px}.report-header{padding:12px 14px}.company-logo{width:145px}h1{font-size:18px}}
  @media print{body{background:#fff}main{max-width:none;padding:0}.report-grid{grid-template-columns:1fr}tr{break-inside:avoid}}
- </style></head><body><main><header class="report-header"><img class="company-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주)"><h1>수입검사 조회</h1></header>${body}</main></body></html>`;
+ </style></head><body><main><header class="report-header"><img class="company-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주)"><h1>${escapeHtml(title)}</h1></header>${body}</main></body></html>`;
 }
 
 function mobileReport(row,files,token){
@@ -143,4 +143,4 @@ function install(app,{pool,requireLogin}){
   res.setHeader('Content-Type',f.mime);res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','private, no-store');res.setHeader('Content-Security-Policy',"default-src 'none'; sandbox");res.setHeader('Content-Disposition',"inline; filename=COA."+({'application/pdf':'pdf','image/png':'png','image/jpeg':'jpg'}[f.mime]||'bin')+"; filename*=UTF-8''"+encodeURIComponent(f.name));res.send(f.content);
  }catch(e){res.status(500).json({success:false,message:'COA 파일을 열지 못했습니다.'});}});
 }
-module.exports={write,install};
+module.exports={write,install,reportPage};
