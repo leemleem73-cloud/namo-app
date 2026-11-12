@@ -270,7 +270,7 @@ body{background:#f7f9fc;color:var(--ink)}
 <div class="videoGuide" id="videoGuide">
   <div class="videoGuideHead"><h3>▶ 동영상 사용가이드</h3><span>메뉴별 핵심 기능을 짧은 영상으로 확인하세요.</span></div>
   <div class="videoGuideGrid">
-    <button class="videoCard" type="button" data-video-title="작업지시서 실무 사용방법" data-video-src="" data-video-sim="workorder"><div class="videoThumb workorderPremiumThumb"><span class="workorderPremiumTag">NAMO QMES</span><span class="videoPlay">▶</span><span class="workorderPremiumLine">WORK ORDER GUIDE</span></div><div class="videoCardBody"><b>작업지시서</b><small>신규등록 · 기본정보 · 원료투입 · 발송 · 저장 · 목록확인 · 이메일 전송</small></div></button>
+    <button class="videoCard" type="button" data-video-title="작업지시서 실무 사용방법" data-video-src="" data-video-sim="workorder"><div class="videoThumb workorderPremiumThumb"><span class="workorderPremiumTag">NAMO QMES</span><span class="videoPlay">▶</span><span class="workorderPremiumLine">WORK ORDER GUIDE</span></div><div class="videoCardBody"><b>작업지시서</b><small>작업지시서 → 기본정보 → 원료투입 → 비고 → 수신부서 → 이메일 → 저장</small></div></button>
     <button class="videoCard" type="button" data-video-title="수입검사 IQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>수입검사 IQC</b><small>검사등록 · 판정 · 전자결재</small></div></button>
     <button class="videoCard" type="button" data-video-title="공정검사 PQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>공정검사 PQC</b><small>측정값 · 판정 · 후속공정 차단</small></div></button>
     <button class="videoCard" type="button" data-video-title="출하검사 OQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>출하검사 OQC</b><small>출하검사 · CoA · 출하상태</small></div></button>
@@ -388,7 +388,7 @@ function workRegGuideHtml(){return '<div class="workActual"><div class="regShell
 '<div class="regSection"><div class="regSectionTitle">발송 대상 및 수신부서</div><div class="dispatch"><b>수신부서</b>를 선택하면 해당 부서의 승인 직원이 표시됩니다. 필요한 <b>수신 담당자</b>를 선택합니다.<br><span style="display:inline-block;margin-top:7px;padding:5px 9px;border:1px solid #c9d8e8;border-radius:5px;background:#fff;color:#2f6fae;font-weight:800">저장 후 발송</span> &nbsp; QMES 내부 알림으로 전달</div></div>'+
 '<div class="regBottom"><button>목록으로</button><button>저장 후 인쇄</button><button class="primary">저장</button></div>'+
 '</section></div>'+
-'<span class="call" style="left:205px;top:73px">2</span><span class="call" style="left:205px;top:330px">3</span><span class="call" style="left:205px;bottom:186px">4</span><span class="call" style="left:205px;bottom:112px">5</span><span class="call" style="left:520px;bottom:88px">6</span><span class="call" style="left:434px;top:15px">7</span>'+
+'<span class="call" style="left:205px;top:73px">2</span><span class="call" style="left:205px;top:330px">3</span><span class="call" style="left:205px;bottom:186px">4</span><span class="call" style="left:205px;bottom:112px">5</span><span class="call" style="right:21px;bottom:17px">6</span>'+
 '</div>'}
 
 function iqcListGuideHtml(){return '<div class="workActual">'+
@@ -989,18 +989,16 @@ function stopWorkVideoSim(){if(workVideoTimer){clearInterval(workVideoTimer);wor
 function startWorkorderVideoSim(){
   stopWorkVideoSim();
   if(!videoStage)return;
-  videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoBrand">NAMO QMES · WORK ORDER</div><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">STEP 01 / 09</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
+  videoStage.innerHTML='<div class="workVideoSim"><div class="workVideoBrand">NAMO QMES · WORK ORDER</div><div class="workVideoCanvas" id="workVideoCanvas"></div><div class="workVideoCursor" id="workVideoCursor"></div><div class="workVideoPulse" id="workVideoPulse"></div><div class="workVideoStepBadge" id="workVideoStepBadge">STEP 01 / 07</div><div class="workVideoCaption" id="workVideoCaption"></div><div class="workVideoProgress"><span id="workVideoProgressBar"></span></div></div>';
   const canvas=document.getElementById('workVideoCanvas'),cursor=document.getElementById('workVideoCursor'),pulse=document.getElementById('workVideoPulse'),caption=document.getElementById('workVideoCaption'),badge=document.getElementById('workVideoStepBadge'),bar=document.getElementById('workVideoProgressBar');
   const steps=[
-    {view:'list',no:'1',cap:'1. 신규 작업지시서 등록',sub:'작업지시서 화면 우측 상단의 + 신규 작업지시서 등록 버튼을 선택합니다.',click:true},
-    {view:'reg',no:'2',cap:'2. 작업 기본정보 입력',sub:'작업일자 → 고객사명 → 제품명 → 생산 LOT NO → 설비명 → 작업자 → 계획수량 → 작업기간 → 진행상태 → 생산구분 순서로 입력합니다.'},
-    {view:'reg',no:'3',cap:'3. 원료 투입계획 입력',sub:'원료명 → 원료 LOT NO → 계획투입량 순서로 입력합니다. LOT는 수입검사 이력과 확인하고 투입비율은 자동 계산됩니다.'},
-    {view:'reg',no:'4',cap:'4. 비고 입력',sub:'작업 시 주의사항과 현장 전달사항을 비고란에 입력합니다.'},
-    {view:'reg',no:'5',cap:'5. 발송 대상 선택',sub:'수신부서를 먼저 선택하고 표시된 승인 직원 중 실제 작업지시를 받을 담당자를 선택합니다.'},
-    {view:'reg',no:'6',cap:'6. 저장 후 발송 / 저장',sub:'QMES 내부 알림이 필요한 경우 저장 후 발송을 사용합니다. 일반 등록은 저장, 출력이 필요하면 저장 후 인쇄를 사용합니다.',click:true},
-    {view:'reg',no:'7',cap:'7. 목록으로 복귀',sub:'저장이 완료되면 작업지시서 목록으로 돌아가 저장된 작업지시를 확인합니다.',click:true},
-    {view:'list',no:'8',cap:'8. 저장된 작업지시 선택',sub:'이메일로 전달할 작업지시서를 목록에서 체크합니다.',click:true},
-    {view:'list',no:'9',cap:'9. 이메일 전송',sub:'선택 메일 전송을 눌러 저장된 작업지시서를 회사 이메일로 전달합니다.',click:true}
+    {view:'list',no:'1',cap:'1. 작업지시서 클릭',sub:'왼쪽 메뉴에서 작업지시서를 클릭하고 신규 작업지시서 등록 화면을 엽니다.',click:true},
+    {view:'reg',no:'2',cap:'2. 작업 기본정보 입력',sub:'일자 → 고객사명 → 제품명 → 작업자 → 작업기간 순서로 입력합니다.'},
+    {view:'reg',no:'3',cap:'3. 원료 투입계획 입력',sub:'원료 투입 순서대로 계획투입량을 입력합니다.'},
+    {view:'reg',no:'4',cap:'4. 비고 입력',sub:'비고란에 전달사항이나 특이사항이 있으면 입력합니다.'},
+    {view:'reg',no:'5',cap:'5. 수신부서 선택',sub:'작업지시를 받을 수신부서를 선택합니다.'},
+    {view:'list',no:'9',cap:'6. 이메일 발송',sub:'선택한 작업지시서를 이메일로 발송합니다.',click:true},
+    {view:'reg',no:'6',cap:'7. 저장',sub:'최종 확인 후 저장 버튼을 눌러 작업지시서를 저장합니다.',click:true}
   ];
   let index=0;
   const moveCursorToCall=(no,click)=>{
