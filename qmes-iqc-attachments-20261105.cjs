@@ -18,15 +18,16 @@ const escapeHtml=value=>String(value??'—').replace(/[&<>"']/g,ch=>({'&':'&amp;
 function reportPage(body){
  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나모 수입검사 성적서</title><style>
  *{box-sizing:border-box}
- body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.5 system-ui,sans-serif}
+ body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.5 'Malgun Gothic','맑은 고딕',system-ui,sans-serif}
  main{max-width:1100px;margin:auto;padding:28px 16px 36px}
  .report-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;background:#fff;border:1px solid #dbe5ef;border-top:3px solid #254c79;border-radius:10px}
  .company-logo{display:block;width:180px;max-width:100%;height:auto}
  h1{margin:0;color:#173d66;font-size:22px}
+ .report-grid :is(h2,summary,dt,dd,table,th,td,time,a){font-family:inherit;font-size:inherit;line-height:inherit}
  .report-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
  .documents{display:grid;gap:12px;min-width:0}
  .receipt,.history{min-width:0;background:#fff;border:1px solid #dbe5ef;border-radius:8px;overflow:hidden}
- h2,.history summary{margin:0;padding:12px 16px;color:#173d66;font-size:15px;font-weight:700}
+ h2,.history summary{margin:0;padding:12px 16px;color:#173d66;font-weight:700}
  h2,.history[open] summary{background:#edf3f9;border-bottom:1px solid #dbe5ef}
  .history summary{cursor:pointer}
  .history summary:hover{background:#edf3f9}
@@ -38,9 +39,9 @@ function reportPage(body){
  table{width:100%;border-collapse:collapse;table-layout:fixed}
  .inspection-edge{width:30%}
  th,td{padding:10px 6px;text-align:center;overflow-wrap:anywhere;border-bottom:1px solid #e4ebf2}
- thead th{font-size:13px;background:#f6f9fc}
+ thead th{background:#f6f9fc}
  .inspection-date>*{background:#fff}
- .inspection-date td{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+ .inspection-date time{font-variant-numeric:tabular-nums;white-space:nowrap}
  tbody tr:last-child td{border-bottom:0}
  .files{display:grid;gap:8px;padding:12px 16px}
  .files a{color:#135997;text-decoration:underline;overflow-wrap:anywhere}
