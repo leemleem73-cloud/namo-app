@@ -5353,7 +5353,7 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
   });
 }
 
-function openWorkLotLabel(receipt,inspection){
+async function openWorkLotLabel(receipt,inspection){
   if(!receipt?.lot||receipt.lot==='-'){toast('라벨을 만들 LOT 번호를 확인해 주세요.');return;}
   const title=inspection?.title||'원료 재고 LOT 라벨';
   const shipping=inspection?.shipping;
@@ -5434,16 +5434,39 @@ function openWorkLotLabel(receipt,inspection){
     }
   })();
   try{
-    const qrUrl=new URL('/',location.origin);
-    if(incoming?.recordId)qrUrl.searchParams.set('iqcReport',incoming.recordId);
-    new window.QRCode(preview.querySelector('[data-qr]'),{text:incoming?.recordId?qrUrl.href:receipt.lot,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
+    let qrText=receipt.lot;
+    if(incoming){
+      status.textContent='모바일 열람용 QR을 준비하고 있습니다.';
+      const response=await fetch('/api/qmes/iqc/label-links',{
+        method:'POST',credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({recordId:incoming.recordId}),
+        signal:AbortSignal.any([stockRequest.signal,AbortSignal.timeout(10000)])
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||!result?.success||!/^\/iqc-label\/[a-f0-9-]{36}$/i.test(result.path)){
+        throw Error(result?.message||'모바일 열람 링크를 발행하지 못했습니다.');
+      }
+      qrText=new URL(result.path,location.origin).href;
+    }
+    if(!dialog.open)return;
+    new window.QRCode(preview.querySelector('[data-qr]'),{text:qrText,width:160,height:160,correctLevel:window.QRCode.CorrectLevel.M});
     qrReady=true;
     if(inspection){
       setPrintDisabled(false);
-      if(!barcode)status.textContent='이 LOT는 QR로 스캔해 주세요.';
+      if(incoming){
+        status.replaceChildren();
+        const link=document.createElement('a');
+        link.href=qrText;
+        link.target='_blank';
+        link.rel='noopener';
+        link.textContent='모바일 성적서 열기';
+        status.append(link);
+      }else if(!barcode)status.textContent='이 LOT는 QR로 스캔해 주세요.';
     }
   }catch(error){
-    status.textContent='QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
+    if(!dialog.open)return;
+    status.textContent=incoming?'수입검사 QR 발행에 실패했습니다. 창을 닫고 다시 열어 주세요.':'QR 생성에 실패했습니다. LOT 번호를 확인하세요.';
     setPrintDisabled(true);
   }
   const printLabel=event=>{
