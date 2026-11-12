@@ -6030,6 +6030,16 @@ function pqcWorkOrderNumber(order){
   return String(order?.fields?.['작업지시번호']||order?.workOrderNo||order?.id||'').trim();
 }
 
+function oqcRecordedShipment(row){
+  const normalize=value=>String(value??'').trim().toUpperCase();
+  const date=String(row.date??'').slice(0,10);
+  return (row.__groupChecks||[row]).map(record=>record.stockShipment).find(shipment=>
+    shipment?.id&&shipment.completed===true&&Number(shipment.quantity)>0
+    &&normalize(shipment.lot)===normalize(row.lot)
+    &&normalize(shipment.product)===normalize(row.product)
+    &&String(shipment.inspectionDate??'').slice(0,10)===date);
+}
+
 async function loadHistoricalInspectionRows(section,id,savedPqc=null){
   await window.qmesAuthDataReady.wait();
   if(!section||!['process','outgoing'].includes(id))return;
@@ -6172,9 +6182,10 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
     const oqcListJudge=row=>window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]).overall||'대기';
     const cols=pageInfo[id][2];
     tbody.innerHTML=displayRows.length?displayRows.map((row,i)=>{
+      const recordedShipment=id==='outgoing'?oqcRecordedShipment(row):null;
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),'',row.inspector,'',row.remarks||'-']
-        :[row.date,window.qmesOqcRevision?.formatModifiedAt(window.qmesOqcRevision.metadata(row.__groupChecks||[row]).modifiedAt)||'—','Rev.'+(window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),'',row.inspector||'-',row.shippingStatus||'미지정',String(row.shipQty??'').trim()||'—','','',''];
+        :[row.date,window.qmesOqcRevision?.formatModifiedAt(window.qmesOqcRevision.metadata(row.__groupChecks||[row]).modifiedAt)||'—','Rev.'+(window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcListJudge(row),'',row.inspector||'-',recordedShipment?'출하완료':row.shippingStatus||'미지정',String(recordedShipment?.quantity??row.shipQty??'').trim()||'—','','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='outgoing'&&cols[index]==='최종 수정일'){const author=window.qmesOqcRevision?.metadata(row.__groupChecks||[row]).modifiedBy||'';return '<td class="oqc-revision-list-cell" title="'+safe(author?'수정자: '+author:'수정 이력 없음')+'">'+safe(v)+'</td>';}
         if(id==='outgoing'&&cols[index]==='리비전')return '<td class="oqc-revision-list-cell"><span class="oqc-revision-badge">'+safe(v)+'</span></td>';
@@ -6184,7 +6195,10 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(id==='outgoing'&&cols[index]==='검사합부'){const summary=window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]);const reason=(summary?.pending||[]).join(' / ');return '<td title="'+safe(v==='대기'?reason:'')+'"><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span>'+(v==='대기'&&reason?'<small style="display:block;font-size:10px;line-height:1.4;color:#64748b;white-space:normal">'+safe(reason)+'</small>':'')+'</td>';}
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if((id==='process'||id==='outgoing')&&cols[index]==='결재상태')return '<td class="'+(id==='process'?'pqc-approval-cell':'oqc-approval-cell')+'"><span class="badge b-yellow quality-list-approval-state">결재조회중</span></td>';
-        if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
+        if(id==='outgoing'&&cols[index]==='출하상태'){
+          const held=recordedShipment&&row.shippingStatus==='출하보류';
+          return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span>'+(held?'<small style="display:block;color:#9a481f">품질 보류</small>':'')+'</td>';
+        }
         if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
         if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn iqc-edit-btn oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" aria-label="출하검사 QR 라벨 열기">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
