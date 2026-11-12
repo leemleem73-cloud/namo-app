@@ -6222,7 +6222,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         return '<td>'+safe(v)+'</td>';
       }).join('');
       return '<tr class="data-row" tabindex="0" data-delete-targets="'+safe(JSON.stringify(row.__deleteTargets||[]))+'" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
-    }).join(''):'<tr><td colspan="'+(cols.length+1)+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
+    }).join(''):'<tr><td colspan="'+(cols.length+(id==='process'?0:1))+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
     if(id==='outgoing'){
       tbody.querySelectorAll('.inspection-qr-btn').forEach(button=>button.onclick=async event=>{
         event.stopPropagation();
@@ -6476,7 +6476,7 @@ function wireProcessInquiry(section,id='process'){
     if(typeof section._inspectionRowsLoaded==='number'||rows.length){page=Math.min(Math.max(1,page),pages);try{sessionStorage.setItem('namo-inspection-page:'+id,String(page));}catch(_){}}
     const start=(page-1)*10,visible=filtered.slice(start,start+10);tbody.replaceChildren(...visible);
     visible.forEach((row,index)=>{const number=row.querySelector('.iqc-select-number span');if(number)number.textContent=String(start+index+1);row.querySelector('.iqc-select-row')?.setAttribute('aria-label',(start+index+1)+'번 검사 선택');});
-    if(!visible.length){const row=document.createElement('tr'),cell=document.createElement('td');cell.colSpan=pageInfo[id][2].length+1;cell.textContent='조회된 '+name+' 내역이 없습니다.';cell.style.padding='28px';row.append(cell);tbody.append(row);}
+    if(!visible.length){const row=document.createElement('tr'),cell=document.createElement('td');cell.colSpan=pageInfo[id][2].length+(outgoing?1:0);cell.textContent='조회된 '+name+' 내역이 없습니다.';cell.style.padding='28px';row.append(cell);tbody.append(row);}
     const count=section.querySelector('.ip-count');if(count)count.textContent='총 '+filtered.length+'건 · '+(filtered.length?start+1:0)+'-'+Math.min(start+10,filtered.length)+' 표시';
     section.querySelector('.iqc-query-count').textContent='조회 '+filtered.length+'건';section.querySelector('.iqc-list-total').textContent='총 '+filtered.length+'건';
     pager.replaceChildren();const button=(label,value,disabled=false)=>{const element=document.createElement('button');element.type='button';element.className='ip-page-btn'+(value===page&&/^\d+$/.test(label)?' active':'');element.textContent=label;element.disabled=disabled;element.dataset.page=String(value);element.onclick=()=>{page=value;render()};pager.append(element)};
