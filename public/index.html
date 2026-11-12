@@ -2746,7 +2746,8 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .work-label-content dd{font-size:6.4pt;font-weight:700}
 .inspection-lot-label .work-label-content :is(dt,dd){font:700 6pt/1.16 "Malgun Gothic",Arial,sans-serif}
 .inspection-lot-label .work-label-content dl{grid-template-columns:14mm minmax(0,1fr);grid-template-rows:minmax(0,1.6fr) repeat(5,minmax(0,1fr))}
-.inspection-lot-label .work-label-content dd[data-material]{white-space:normal;overflow-wrap:anywhere;text-overflow:clip;padding:.35mm .65mm}
+.incoming-lot-label.inspection-lot-label .work-label-content dl{grid-template-rows:minmax(0,1.5fr) minmax(0,1.35fr) repeat(5,minmax(0,1fr))}
+.inspection-lot-label .work-label-content :is(dd[data-material],dd[data-supplier]){white-space:normal;overflow-wrap:anywhere;text-overflow:clip;padding:.35mm .65mm}
 .work-label-content [data-judgment][data-state="pass"]{background:#d9efe1;color:#155632}
 .work-label-content [data-judgment][data-state="fail"]{background:#f9e0e1;color:#8e252b}
 .work-label-content [data-judgment][data-state="pending"]{background:#fff1cf;color:#714b0d}
@@ -5376,7 +5377,7 @@ async function outgoingLabelManufactureDate(row){
 function openInspectionLotLabel(type,row,manufactureDate=''){
   const incoming=type==='incoming';
   const weight=String((incoming?row.incoming_qty:row.shipQty)??'').trim();
-  const judge=incoming?'':window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]).overall;
+  const judge=incoming?iqcJudge(row):window.qmesOqcRules?.summarizeRows(row.__groupChecks||[row]).overall;
   const shipmentDate=row.actualShipDate||row.stockShipment?.shipDate||row.shipDate;
   openWorkLotLabel({
     lot:String(row.lot??'').trim(),
@@ -5391,6 +5392,13 @@ function openInspectionLotLabel(type,row,manufactureDate=''){
     quantity:incoming?'입고 중량(kg)':'출하수량(kg)',
     date:'입고일자',
     weight,
+    incoming:incoming?{
+      supplier:row.supplier,
+      received:iqcDateText(row.receipt_date||row.receiptDate||row.date),
+      inspected:iqcInspectionDate(row),
+      judgment:judge==='합격'||judge==='불합격'?judge:'대기',
+      state:judge==='합격'?'pass':judge==='불합격'?'fail':'pending'
+    }:null,
     shipping:incoming?null:{
       manufactureDate,
       shipmentDate:String(shipmentDate??'').slice(0,10),
@@ -5404,6 +5412,7 @@ function openWorkLotLabel(receipt,inspection){
   if(!receipt?.lot||receipt.lot==='-'){toast('라벨을 만들 LOT 번호를 확인해 주세요.');return;}
   const title=inspection?.title||'원료 재고 LOT 라벨';
   const shipping=inspection?.shipping;
+  const incoming=inspection?.incoming;
   if(typeof window.QRCode!=='function'){toast('QR 모듈을 불러오고 있습니다. 잠시 후 다시 눌러 주세요.');return;}
   const dialog=document.createElement('dialog');
   dialog.className='work-lot-label-dialog';
@@ -5413,12 +5422,15 @@ function openWorkLotLabel(receipt,inspection){
     '<dt data-item-label></dt><dd data-material></dd>'+
     (shipping
       ?'<dt>LOT No.</dt><dd data-lot></dd><dt>수량(kg)</dt><dd data-quantity></dd><dt>제조일자</dt><dd data-manufactured></dd><dt>출하일자</dt><dd data-shipped></dd><dt>검사상태</dt><dd data-judgment></dd>'
-      :'<dt data-code-label></dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd><dt data-quantity-label></dt><dd data-quantity></dd><dt data-received-label></dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd>')+
+      :incoming
+        ?'<dt>공급업체</dt><dd data-supplier></dd><dt>LOT No.</dt><dd data-lot></dd><dt>입고 중량(kg)</dt><dd data-quantity></dd><dt>입고일자</dt><dd data-received></dd><dt>검사일자</dt><dd data-inspected></dd><dt>검사상태</dt><dd data-judgment></dd>'
+        :'<dt data-code-label></dt><dd data-code></dd><dt>LOT No.</dt><dd data-lot></dd><dt data-quantity-label></dt><dd data-quantity></dd><dt data-received-label></dt><dd data-received></dd><dt>발행일자</dt><dd data-date></dd>')+
     '</dl><div class="work-label-qr"><div data-qr></div><span>QMES Traceability</span></div></div><div class="work-label-barcode"><span data-barcode-lot></span></div></div><div role="status"></div></div>'+
     '<footer><button type="button" class="btn" data-print="label">라벨지 실물 크기</button><button type="button" class="btn primary" data-print="a4">A4 크게 인쇄</button></footer>';
   document.body.appendChild(dialog);
   const preview=dialog.querySelector('.work-lot-label-preview');
   if(inspection)preview.classList.add('inspection-lot-label');
+  if(incoming)preview.classList.add('incoming-lot-label');
   const set=(name,value)=>{const cell=preview.querySelector('[data-'+name+']');cell.textContent=value||'—';cell.title=value||'';};
   dialog.querySelector('[data-label-title]').textContent=title;
   set('label-badge',inspection?.badge||'원료 (재고용)');
@@ -5428,6 +5440,12 @@ function openWorkLotLabel(receipt,inspection){
     set('shipped',shipping.shipmentDate);
     set('judgment',shipping.judgment);
     preview.querySelector('[data-judgment]').dataset.state=shipping.state;
+  }else if(incoming){
+    set('supplier',incoming.supplier);
+    set('received',incoming.received==='-'?'':incoming.received);
+    set('inspected',incoming.inspected);
+    set('judgment',incoming.judgment);
+    preview.querySelector('[data-judgment]').dataset.state=incoming.state;
   }else{
     set('code-label',inspection?.code||'원료코드');
     set('quantity-label',inspection?.quantity||'사용 가능 재고(kg)');
