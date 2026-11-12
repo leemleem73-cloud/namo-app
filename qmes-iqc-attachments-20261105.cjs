@@ -35,6 +35,8 @@ function reportPage(body){
  dl{display:grid;grid-template-columns:minmax(90px,2fr) minmax(0,3fr);margin:0}
  dt,dd{margin:0;padding:10px 12px;border-bottom:1px solid #e4ebf2;overflow-wrap:anywhere}
  dt{background:#f6f9fc;font-weight:650}
+ .receipt :is(dt,dd){display:grid;place-content:center;text-align:center}
+ .receipt dt{border-right:1px solid #dbe5ef}
  dl>:nth-last-child(-n+2){border-bottom:0}
  table{width:100%;border-collapse:collapse;table-layout:fixed}
  .inspection-edge{width:30%}
