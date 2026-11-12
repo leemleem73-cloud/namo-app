@@ -17,8 +17,39 @@ const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 const escapeHtml=value=>String(value??'—').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function reportPage(body){
  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>나모 수입검사 성적서</title><style>
- *{box-sizing:border-box}body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.55 system-ui,sans-serif}main{max-width:680px;margin:auto;padding:20px 14px 32px}section{margin-top:14px;background:#fff;border:1px solid #d7e2ee;border-radius:8px;overflow:hidden}header small{color:#506a82;font-weight:700}h1{font-size:23px;margin:3px 0}h2{font-size:16px;margin:0;padding:11px 14px;background:#eaf1f8;border-bottom:1px solid #d7e2ee}dl{display:grid;grid-template-columns:minmax(96px,1fr) minmax(0,2fr);margin:0}dt,dd{margin:0;padding:9px 12px;border-bottom:1px solid #e4ebf2;overflow-wrap:anywhere}dt{font-weight:650}dl>:nth-last-child(-n+2){border-bottom:0}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{padding:9px 8px;text-align:center;overflow-wrap:anywhere;border-bottom:1px solid #e4ebf2}th{font-size:13px;background:#f6f9fc}tbody tr:last-child td{border-bottom:0}.files{display:grid;gap:8px;padding:12px 14px}.files a{color:#135997;text-decoration:underline;overflow-wrap:anywhere}.pass{color:#08653f;font-weight:700}.fail{color:#a32424;font-weight:700}.company-logo{display:block;width:172px;max-width:70%;height:auto}.history{margin-top:10px;background:#fff;border:1px solid #e3eaf2;border-radius:8px;overflow:hidden}.history summary{cursor:pointer;padding:12px 14px;color:#173d66;font-weight:700}.history[open] summary{background:#edf3f9;border-bottom:1px solid #e3eaf2}@media print{body{background:#fff}main{max-width:none;padding:0}tr{break-inside:avoid}}
- </style></head><body><main><header><img class="company-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주)"><h1>수입검사 조회</h1></header>${body}</main></body></html>`;
+ *{box-sizing:border-box}
+ body{margin:0;background:#f1f5f9;color:#172f48;font:15px/1.5 system-ui,sans-serif}
+ main{max-width:1100px;margin:auto;padding:28px 16px 36px}
+ .report-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;background:#fff;border:1px solid #dbe5ef;border-top:3px solid #254c79;border-radius:10px}
+ .company-logo{display:block;width:180px;max-width:100%;height:auto}
+ h1{margin:0;color:#173d66;font-size:22px}
+ .report-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
+ .documents{display:grid;gap:12px;min-width:0}
+ .receipt,.history{min-width:0;background:#fff;border:1px solid #dbe5ef;border-radius:8px;overflow:hidden}
+ h2,.history summary{margin:0;padding:12px 16px;color:#173d66;font-size:15px;font-weight:700}
+ h2,.history[open] summary{background:#edf3f9;border-bottom:1px solid #dbe5ef}
+ .history summary{cursor:pointer}
+ .history summary:hover{background:#edf3f9}
+ .history summary:focus-visible,.files a:focus-visible{outline:2px solid #2474be;outline-offset:-2px}
+ dl{display:grid;grid-template-columns:minmax(90px,2fr) minmax(0,3fr);margin:0}
+ dt,dd{margin:0;padding:10px 12px;border-bottom:1px solid #e4ebf2;overflow-wrap:anywhere}
+ dt{background:#f6f9fc;font-weight:650}
+ dl>:nth-last-child(-n+2){border-bottom:0}
+ table{width:100%;border-collapse:collapse;table-layout:fixed}
+ .inspection-edge{width:30%}
+ th,td{padding:10px 6px;text-align:center;overflow-wrap:anywhere;border-bottom:1px solid #e4ebf2}
+ thead th{font-size:13px;background:#f6f9fc}
+ .inspection-date>*{background:#fff}
+ .inspection-date td{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+ tbody tr:last-child td{border-bottom:0}
+ .files{display:grid;gap:8px;padding:12px 16px}
+ .files a{color:#135997;text-decoration:underline;overflow-wrap:anywhere}
+ .pass{color:#08653f;font-weight:700}
+ .fail{color:#a32424;font-weight:700}
+ @media(min-width:760px){.report-grid{grid-template-columns:minmax(270px,1fr) minmax(0,1.75fr)}}
+ @media(max-width:420px){main{padding:14px 10px 24px}.report-header{padding:12px 14px}.company-logo{width:145px}h1{font-size:18px}}
+ @media print{body{background:#fff}main{max-width:none;padding:0}.report-grid{grid-template-columns:1fr}tr{break-inside:avoid}}
+ </style></head><body><main><header class="report-header"><img class="company-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="나모케미칼(주)"><h1>수입검사 조회</h1></header>${body}</main></body></html>`;
 }
 
 function mobileReport(row,files,token){
@@ -40,12 +71,14 @@ function mobileReport(row,files,token){
  const links=files.map(file=>`<a href="/iqc-label/${token}/coa/${encodeURIComponent(file.id)}">${escapeHtml(file.name)}</a>`).join('');
  const info=[['입고일자',dates(row.date)],['공급업체',row.supplier],['원재료명',row.item],
   ['원료 LOT',row.lot],['입고 중량',row.incoming_qty==null?'—':row.incoming_qty+' kg']];
- return reportPage(`<section><h2>입고정보</h2><dl>${info.map(([label,value])=>
+ return reportPage(`<div class="report-grid"><section class="receipt"><h2>입고정보</h2><dl>${info.map(([label,value])=>
   '<dt>'+label+'</dt><dd>'+escapeHtml(value||'—')+'</dd>').join('')}</dl></section>
- <details class="history"><summary>IQC 성적서</summary><dl><dt>검사일</dt><dd>${escapeHtml(dates(metadata?.inspectionDate||row.date))}</dd></dl>
- <table><thead><tr><th scope="col">검사항목</th><th scope="col">확인 결과</th><th scope="col">판정</th></tr></thead><tbody>${rows}</tbody></table>
+ <div class="documents"><details class="history"><summary>IQC 성적서</summary>
+ <table><colgroup><col class="inspection-edge"><col><col class="inspection-edge"></colgroup><thead>
+ <tr class="inspection-date"><th scope="row">검사일</th><td></td><td><time>${escapeHtml(dates(metadata?.inspectionDate||row.date))}</time></td></tr>
+ <tr><th scope="col">검사항목</th><th scope="col">확인 결과</th><th scope="col">판정</th></tr></thead><tbody>${rows}</tbody></table>
  </details>
- <details class="history"><summary>공급업체 CoA</summary><div class="files">${links||'첨부된 CoA가 없습니다.'}</div></details>`);
+ <details class="history"><summary>공급업체 CoA</summary><div class="files">${links||'첨부된 CoA가 없습니다.'}</div></details></div></div>`);
 }
 function installMobileReport(app,{pool,requireLogin}){
  let ready;
