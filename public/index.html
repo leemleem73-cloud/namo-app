@@ -2571,6 +2571,15 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
 </style>
 
+<style id="inspection-list-stable-layout">
+#process:not(.process-current-work) .iqc-work-frame .ip-panel{visibility:hidden;animation:pqc-layout-fallback 0s 2s forwards}
+@keyframes pqc-layout-fallback{to{visibility:visible}}
+html body #process .iqc-work-frame .ip-table-wrap{border-bottom:1px solid #d5dce5!important}
+html body #process .iqc-work-frame table.ip-table{border-bottom:0!important}
+html body #process .iqc-work-frame table.ip-table tbody tr:last-child>td{border-bottom:0!important}
+html body #outgoing .iqc-work-frame .ip-table-wrap{scrollbar-width:thin}
+html body #outgoing .iqc-work-frame .ip-table-wrap::-webkit-scrollbar{display:block;height:8px}
+</style>
 <style id="qmes-process-list-hide-process-name-20261020">
 html body #process .ip-table>thead>tr>th:nth-child(6),html body #process .ip-table>tbody>tr.data-row>td:nth-child(6),html body #process .ip-table>colgroup>col:nth-child(6){display:none!important}
 </style>
@@ -3537,7 +3546,7 @@ function wireIncomingColumnResize(section){
       if(raw<minimums[i]||raw>720)active.snapped=false;
       else if(active.snapped){active.snapped=Math.abs(raw-reference)<=14;}
       else active.snapped=Math.abs(raw-reference)<=8||(previous<reference&&raw>=reference)||(previous>reference&&raw<=reference);
-      widths[i]=active.snapped?reference:Math.max(minimums[i],Math.min(720,raw));
+      customWidths[i]=active.snapped?reference:Math.max(minimums[i],Math.min(720,raw));
       handle.setAttribute('data-snapped',String(active.snapped));
       apply();
     });
@@ -3545,7 +3554,7 @@ function wireIncomingColumnResize(section){
     handle.addEventListener('pointercancel',finish);
     handle.addEventListener('lostpointercapture',finish);
     handle.addEventListener('dblclick',event=>{
-      event.preventDefault();event.stopPropagation();customized=true;widths[i]=baseline?.[i]??initial[i];apply();save();
+      event.preventDefault();event.stopPropagation();customized=true;customWidths[i]=baseline?.[i]??initial[i];apply();save();
     });
     handle.addEventListener('keydown',event=>{
       const step=event.shiftKey?30:10;
@@ -3729,22 +3738,30 @@ function wireOutgoingColumnResize(section){
   if(!table||!wrap||table.dataset.columnsWired)return;
   table.dataset.columnsWired='1';
   const headers=[...table.querySelectorAll('thead th')];
-  const defaults=[86,110,150,70,120,130,120,340,85,85,90,100,80,250,280];
-  const minimums=[86,100,135,65,100,110,105,220,75,75,80,90,60,200,220];
-  const storageKey='namo-outgoing-column-widths-v11-qr-actions';
+  const storageKey='namo-outgoing-column-widths-v12-fit';
   const labels=headers.map(th=>th.textContent.trim());
+  const sizes={
+    '검사일자':[110,88],'최종 수정일':[150,112],'리비전':[70,58],
+    '고객사':[120,78],'제품명':[130,86],'완제품 LOT':[120,92],
+    '검사항목':[340,140],'검사합부':[85,68],'결재상태':[100,78],
+    '검사자':[85,64],'출하상태':[90,74],'출하수량(kg)':[100,86],
+    '성적서':[70,60],'첨부파일':[205,105],'CoA':[205,105],'비고':[270,190]
+  };
+  const defaults=labels.map((label,index)=>index===0?86:(sizes[label]?.[0]??100));
+  const minimums=labels.map((label,index)=>index===0?86:(sizes[label]?.[1]??65));
   let saved;
   try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');}catch(_){}
   const available=wrap.clientWidth||section.parentElement?.clientWidth||Math.max(320,window.innerWidth-120);
-  function defaultWidths(available){
-    const scale=available/defaults.reduce((sum,width)=>sum+width,0);
-    const fitted=defaults.map((width,i)=>Math.max(minimums[i],Math.min(720,Math.floor(width*scale))));
-    let spare=Math.max(0,available-fitted.reduce((sum,width)=>sum+width,0));
-    for(let i=fitted.length-1;i>=0&&spare>0;i--){
-      const grow=Math.min(720-fitted[i],spare);fitted[i]+=grow;spare-=grow;
+  function fitWidths(preferred,viewport){
+    const total=preferred.reduce((sum,width)=>sum+width,0);
+    const minimum=minimums.reduce((sum,width)=>sum+width,0);
+    if(total>viewport){
+      const ratio=Math.min(1,(total-viewport)/(total-minimum||1));
+      return preferred.map((width,index)=>Math.max(minimums[index],Math.floor(width-(width-minimums[index])*ratio)));
     }
-    return fitted;
+    return preferred.map((width,index)=>index===0?width:Math.min(720,width+(viewport-total)/Math.max(1,preferred.length-1)));
   }
+  function defaultWidths(viewport){return fitWidths(defaults,viewport);}
   let initial=defaultWidths(available);
   let widths=initial.slice();
   const validSaved=!!(saved&&JSON.stringify(saved.labels)===JSON.stringify(labels)&&Array.isArray(saved.widths)&&saved.widths.length===headers.length);
@@ -3758,23 +3775,10 @@ function wireOutgoingColumnResize(section){
   table.insertBefore(group,table.firstChild);
   const handles=[];
   let containerWidth=0;
+  let customWidths=widths.slice();
   function apply(){
     const viewport=wrap.clientWidth||available;
-    const preferred={'검사일자':110,'최종 수정일':150,'리비전':70,'고객사':120,'제품명':130,'완제품 LOT':120,'검사항목':340,'검사합부':85,'검사자':85,'출하상태':90,'출하수량(kg)':100,'성적서':60,'첨부파일':225,'비고':270};
-    const effective=labels.map((label,index)=>customized?Math.max(minimums[index]||65,Math.min(720,widths[index])):(index===0?86:preferred[label]||100));
-    if(!customized){
-      const total=effective.reduce((sum,width)=>sum+width,0);
-      if(total>viewport){const flexible=labels.map((label,index)=>['검사항목','첨부파일','비고'].includes(label)?index:-1).filter(index=>index>=0);let excess=total-viewport;
-        for(const index of flexible){const reduction=Math.min(excess,Math.max(0,effective[index]-minimums[index]));effective[index]-=reduction;excess-=reduction;}
-      }else{const extra=viewport-total;const others=labels.map((label,index)=>index>0&&!['비고','첨부파일'].includes(label)?index:-1).filter(index=>index>=0);const share=others.length?extra/others.length:0;others.forEach(index=>effective[index]+=share);}
-    }
-    if(!customized){
-      const report=labels.indexOf('성적서'),remarks=labels.indexOf('비고');
-      if(report>=0&&remarks>=0&&effective[report]>60){
-        effective[remarks]+=effective[report]-60;
-        effective[report]=60;
-      }
-    }
+    const effective=customized?fitWidths(customWidths,viewport):defaultWidths(viewport);
     widths=effective.slice();
     widths.forEach((width,i)=>{
       columns[i].style.width=effective[i]+'px';
@@ -3785,7 +3789,7 @@ function wireOutgoingColumnResize(section){
     });
     table.style.setProperty('width',Math.max(wrap.clientWidth||0,effective.reduce((sum,width)=>sum+width,0))+'px','important');
   }
-  function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths,baseline,customized}));}catch(_){}
+  function save(){try{localStorage.setItem(storageKey,JSON.stringify({labels,widths:customized?customWidths:widths,baseline,customized}));}catch(_){}
   }
   function fitContainer(){
     const available=wrap.clientWidth;
@@ -3822,7 +3826,7 @@ function wireOutgoingColumnResize(section){
     handle.addEventListener('pointerdown',event=>{
       if(event.button!==0)return;
       event.preventDefault();event.stopPropagation();
-      fitContainer();customized=true;
+      fitContainer();if(!customized)customWidths=widths.slice();customized=true;
       active={id:event.pointerId,x:event.clientX,width:widths[i],raw:widths[i],snapped:false};
       handle.setPointerCapture(event.pointerId);wrap.classList.add('iqc-resizing');
     });
@@ -3844,7 +3848,7 @@ function wireOutgoingColumnResize(section){
     handle.addEventListener('pointercancel',finish);
     handle.addEventListener('lostpointercapture',finish);
     handle.addEventListener('dblclick',event=>{
-      event.preventDefault();event.stopPropagation();customized=true;widths[i]=baseline?.[i]??initial[i];apply();save();
+      event.preventDefault();event.stopPropagation();if(!customized)customWidths=widths.slice();customized=true;widths[i]=baseline?.[i]??initial[i];apply();save();
     });
     handle.addEventListener('keydown',event=>{
       const step=event.shiftKey?30:10;
@@ -3854,10 +3858,10 @@ function wireOutgoingColumnResize(section){
       else if(event.key==='Home')next=minimums[i];
       else if(event.key==='End')next=720;
       else return;
-      event.preventDefault();event.stopPropagation();customized=true;
+      event.preventDefault();event.stopPropagation();if(!customized)customWidths=widths.slice();customized=true;
       const reference=baseline?.[i]??initial[i];
       if((event.key==='ArrowLeft'||event.key==='ArrowRight')&&((widths[i]<reference&&next>=reference)||(widths[i]>reference&&next<=reference)))next=reference;
-      widths[i]=Math.max(minimums[i],Math.min(720,next));apply();save();
+      customWidths[i]=Math.max(minimums[i],Math.min(720,next));apply();save();
     });
   });
   apply();
