@@ -2584,6 +2584,8 @@ html body #outgoing .iqc-work-frame .ip-table-wrap{overflow-x:clip!important;con
 html body #outgoing .iqc-work-frame table.ip-table{width:100%!important;min-width:0!important;max-width:100%!important}
 html body #outgoing .iqc-work-frame table.ip-table tr>:first-child{width:auto!important;min-width:0!important;max-width:none!important}
 html body #outgoing .iqc-work-frame table.ip-table thead th{white-space:normal!important;overflow-wrap:anywhere;padding-inline:4px!important}
+html body #outgoing .iqc-work-frame table.ip-table tbody td.oqc-report-cell{padding-inline:3px!important}
+html body #outgoing .iqc-work-frame table.ip-table .oqc-report-view{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;line-height:1!important;padding-inline:6px!important}
 @container (max-width:1320px){
  html body #outgoing .iqc-work-frame .ip-table tbody td{padding-inline:4px!important;white-space:normal!important;overflow-wrap:anywhere}
  html body #outgoing .iqc-work-frame .ip-table tbody td.oqc-list-remarks{padding:0!important}
@@ -3750,7 +3752,7 @@ function wireOutgoingColumnResize(section){
     '고객사':[120,78],'제품명':[130,86],'완제품 LOT':[120,92],
     '검사항목':[340,140],'검사합부':[85,68],'결재상태':[100,78],
     '검사자':[85,64],'출하상태':[90,74],'출하수량(kg)':[100,86],
-    '성적서':[65,60],'첨부파일':[205,105],'CoA':[205,105],'비고':[325,230]
+    '성적서':[86,76],'첨부파일':[198,105],'CoA':[198,105],'비고':[325,230]
   };
   const defaults=labels.map((label,index)=>index===0?86:(sizes[label]?.[0]??100));
   const minimums=labels.map((label,index)=>index===0?72:(sizes[label]?.[1]??65));
@@ -6351,7 +6353,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(id==='process'&&cols[index]==='검사합부')return '<td><span data-pqc-judge="'+safe(v)+'">'+safe(v)+'</span></td>';
         if((id==='process'||id==='outgoing')&&cols[index]==='결재상태')return '<td class="'+(id==='process'?'pqc-approval-cell':'oqc-approval-cell')+'"><span class="badge b-yellow quality-list-approval-state">결재조회중</span></td>';
         if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
-        if(id==='outgoing'&&cols[index]==='성적서')return '<td><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
+        if(id==='outgoing'&&cols[index]==='성적서')return '<td class="oqc-report-cell"><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
         if(id==='outgoing'&&cols[index]==='비고'){const remarks=String(row.remarks||'').replace(/임시기록\s*[:：]\s*출하일자\s*[·ㆍ•,]\s*수량\s*[·ㆍ•,]\s*검사자\s*[·ㆍ•,]\s*판정\s*확인\s*필요[.!。]?/g,'').trim();return '<td class="oqc-list-remarks"><div class="oqc-remarks-line"><div class="inspection-qr-actions"><button type="button" class="btn iqc-edit-btn oqc-remarks-edit">수정</button><button class="btn mini-report inspection-qr-btn" type="button" aria-label="출하검사 QR 라벨 열기">QR</button></div><span class="oqc-remarks-text">'+safe(remarks||'—')+'</span></div></td>';}
         if(id==='process'&&cols[index]==='성적서'){
