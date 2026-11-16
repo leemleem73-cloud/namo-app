@@ -10026,19 +10026,29 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       tx.onabort = () => { db.close(); reject(tx.error); };
     };
   });
-  let busy = false;
+  let busy = false, pickingFolder = false;
+  function updateBackupButtons(){
+    document.querySelectorAll('[data-backup-folder],[data-backup-now],[data-backup-stop]').forEach(button=>{
+      button.disabled=busy||pickingFolder;
+    });
+  }
   function status(message) {
     const label = document.querySelector('#qmesPcBackupStatus');
     if (label) label.textContent = message;
   }
-  async function save(force=false) {
+  async function save(force=false, selectedFolder=null) {
     const id = account();
-    if (!id || busy) return;
+    if (!id || busy || (pickingFolder && !selectedFolder)) return;
     busy = true;
+    updateBackupButtons();
     const job = async () => {
       const day = localDay(), lastKey = key+':last:'+id;
-      const folder = await storeFolder(id);
-      if (!folder || (!force && (hour()<17 || localStorage.getItem(lastKey)===day))) return;
+      const folder = selectedFolder || await storeFolder(id);
+      if (!folder) {
+        if(force)status('먼저 저장 폴더를 선택해 주세요.');
+        return;
+      }
+      if (!force && (hour()<17 || localStorage.getItem(lastKey)===day))return;
       if (await folder.queryPermission({mode:'readwrite'})!=='granted') {
         status('자동 저장을 계속하려면 저장 폴더를 다시 선택해 주세요.');
         return;
@@ -10046,10 +10056,12 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       if (account()!==id) return;
       status('백업 파일을 만드는 중입니다.');
       const response = await fetch('/api/admin/pc-backup',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(120000)});
+      if(response.status===401 || response.status===403)throw Error('로그인 또는 백업 권한을 확인해 주세요.');
       if (!response.ok || !response.headers.get('content-type')?.includes('application/json') ||
-          !response.headers.get('content-disposition')?.includes('namo-qmes-data.json')) throw Error('서버에서 백업 파일을 받지 못했습니다.');
+          !response.headers.get('content-disposition')?.includes('namo-qmes-data.json')) throw Error('서버에서 백업 파일을 받지 못했습니다. (응답 '+response.status+')');
       const data = await response.blob();
       if (!data.size || account()!==id) return;
+      status('선택한 PC 폴더에 백업을 저장하는 중입니다.');
       const file = await folder.getFileHandle('namo-qmes-'+day+'.json',{create:true});
       const stream = await file.createWritable();
       try { await stream.write(data); await stream.close(); }
@@ -10060,8 +10072,12 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     try {
       if (navigator.locks) await navigator.locks.request(key+':'+id,job);
       else await job();
-    } catch (error) { status(error.message || '백업에 실패했습니다.'); }
-    finally { busy=false; }
+    } catch (error) {
+      const message=error.name==='TimeoutError'?'서버에서 백업을 만드는 시간이 초과되었습니다.':
+        error.name==='NotAllowedError'?'폴더에 저장할 권한이 필요합니다. 저장 폴더를 다시 선택해 주세요.':error.message;
+      status(message || '백업에 실패했습니다.');
+    }
+    finally { busy=false; updateBackupButtons(); }
   }
   window.qmesPcBackup = {mount(root) {
     if (root.querySelector('#qmesPcBackupStatus')) return;
@@ -10069,20 +10085,30 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     panel.style.cssText='margin:16px 20px;padding:14px;border:1px solid #d5dfe9;border-radius:6px;background:#f3f7fb';
     panel.innerHTML='<h3 style="margin:0 0 8px">이 PC에 업무 데이터 백업</h3><p>백업 권한이 있는 계정으로 로그인한 나모 웹이 열려 있으면 매일 오후 5시 이후 한 번 저장합니다.</p><button type="button" class="btn" data-backup-folder>저장 폴더 선택 및 첫 백업</button> <button type="button" class="btn" data-backup-now>지금 백업</button> <button type="button" class="btn" data-backup-stop>자동 백업 끄기</button><p id="qmesPcBackupStatus" role="status"></p>';
     root.append(panel);
+    updateBackupButtons();
     const id=account();
     if (!id) return;
     storeFolder(id).then(folder=>{
-      status(folder?'저장 폴더 · '+folder.name:'저장 폴더를 선택해 주세요.');
+      if(!busy&&!pickingFolder)status(folder?'저장 폴더 · '+folder.name:'저장 폴더를 선택해 주세요.');
       if (folder) void save();
     }).catch(()=>status('저장 폴더 설정을 읽지 못했습니다.'));
     panel.querySelector('[data-backup-folder]').onclick=async()=>{
+      if(busy||pickingFolder)return;
+      pickingFolder=true;
+      updateBackupButtons();
+      status('PC에서 저장할 폴더를 선택해 주세요.');
       try {
         if (!window.showDirectoryPicker) throw Error('PC의 Edge 또는 Chrome에서 저장 폴더를 선택해 주세요.');
         const folder=await window.showDirectoryPicker({mode:'readwrite',id:'namo-qmes-backup'});
         if (id!==account()) return;
         await storeFolder(id,folder);
-        await save(true);
-      } catch (error) { if (error.name!=='AbortError') status(error.message); }
+        await save(true,folder);
+      } catch (error) {
+        status(error.name==='AbortError'?'폴더 선택을 취소했습니다.':error.message);
+      } finally {
+        pickingFolder=false;
+        updateBackupButtons();
+      }
     };
     panel.querySelector('[data-backup-now]').onclick=()=>void save(true);
     panel.querySelector('[data-backup-stop]').onclick=async()=>{
