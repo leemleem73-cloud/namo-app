@@ -4395,6 +4395,45 @@ bindCrud('equipments', (b) => ({
   remark: txt(b.remark),
 }));
 
+// Business-data export for administrators. Database-level recovery uses pg_dump.
+app.get('/api/admin/pc-backup', requireAdmin, async (_req, res) => {
+  const tables = [
+    'iqc','pqc','oqc','suppliers','nonconform','worklog','worklog_materials',
+    'certificates','training_reports','instruments','supplier_scores','equipments',
+    'purchase_orders','purchase_receipts','audit_logs','qmes_sync_records',
+    'qmes_work_order_documents','qmes_work_order_deletions',
+    'qmes_iqc_attachments','qmes_oqc_attachments'
+  ];
+  let client;
+  try {
+    client = await pool.connect();
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const data = {};
+    const missingTables = [];
+    for (const table of tables) {
+      const qualified = 'public.' + table;
+      const found = await client.query('SELECT to_regclass($1) AS relation', [qualified]);
+      if (!found.rows[0]?.relation) {
+        missingTables.push(table);
+        continue;
+      }
+      // Names are selected exclusively from the static table list above.
+      const result = await client.query('SELECT * FROM ' + qualified);
+      data[table] = result.rows;
+    }
+    await client.query('COMMIT');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.attachment('namo-qmes-data.json');
+    res.json({format:'namo-qmes-pc-backup',version:1,createdAt:new Date().toISOString(),missingTables,data});
+  } catch (error) {
+    if (client) await client.query('ROLLBACK').catch(()=>{});
+    console.error('[QMES PC backup]', error.message);
+    fail(res, 500, '백업 파일을 만들지 못했습니다.');
+  } finally {
+    client?.release();
+  }
+});
+
 app.get('/api/backup', requireLogin, async (_req, res) => {
   try {
     const [iqc, pqc, oqc, suppliers, nonconform, worklog, certificates, training, instruments, supplierScores, equipments, purchaseOrders, purchaseReceipts, auditLogs] = await Promise.all([
