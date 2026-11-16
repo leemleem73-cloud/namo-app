@@ -6083,7 +6083,7 @@ function buildModule(id){
           <div class="filters"><input class="input search-input" placeholder="검색어 입력"><input class="input" type="date"><input class="input" type="date"></div>
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
         </div>
-        <div class="module-body"><table class="${id==='work'?'work-list-table':''}"><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th>비고</th>':''}</tr></thead>
+        <div class="module-body"><table${id==='purchase'?' id="qmesPurchaseListTable"':''}><thead><tr><th>NO</th>${cols.map(c=>`<th>${c}</th>`).join('')}${id==='work'?'<th>비고</th>':''}</tr></thead>
         <tbody></tbody></table></div>
       </div>`;
   }
@@ -9811,23 +9811,24 @@ html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-
 <style id="purchase-list-header-parity">
 @media screen {
   html body #app main.content #purchase>.module-shell>.module-toolbar {
-    background:#f2f6fa!important;
+    background:#fff!important;
     border-bottom:1px solid #d5dfe9!important;
   }
   html body #app main.content #purchase>.module-shell>.module-body {
     border-bottom:0!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table {
+  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable {
     border:0!important;
     border-collapse:separate!important;
     border-spacing:0!important;
     box-shadow:none!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table>thead>tr>th {
+  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable>thead>tr>th {
     box-sizing:border-box!important;
     height:34px!important;
     padding-block:6px!important;
     background:#e8f0f8!important;
+    -webkit-text-fill-color:#244260!important;
     color:#244260!important;
     font:600 12px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;
     text-align:center!important;
@@ -9837,13 +9838,13 @@ html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-
     border-bottom:1px solid #cbd8e5!important;
     box-shadow:none!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table>tbody>tr>td {
+  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable>tbody>tr>td {
     border:0!important;
     border-right:1px solid #d5dfe9!important;
     border-bottom:1px solid #d5dfe9!important;
     box-shadow:none!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table tr>:is(th,td):last-child {
+  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable tr>:is(th,td):last-child {
     border-right:0!important;
   }
 }
