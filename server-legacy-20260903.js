@@ -4566,6 +4566,14 @@ ensureSchema()
     await db("UPDATE users SET name = '임흥배' WHERE uid = 'U-0009' AND name = '임임흥배'");
     await db("UPDATE qmes_sessions SET sess = jsonb_set(sess, '{user,name}', to_jsonb('임흥배'::text), false) WHERE sess #>> '{user,name}' = '임임흥배'");
 
+    await db("UPDATE users SET department = '품질부' WHERE uid = 'U-0010' AND name = '박현아' AND department = '영업부'");
+    await db(`UPDATE qmes_sessions AS sessions
+      SET sess = jsonb_set(sessions.sess, '{user,department}', to_jsonb(users.department), true)
+      FROM users
+      WHERE users.uid = 'U-0010' AND users.name = '박현아' AND users.department = '품질부'
+        AND sessions.sess #>> '{user,id}' = users.id::text
+        AND sessions.sess #>> '{user,department}' = '영업부'`);
+
     app.listen(port, () => {
       console.log(`QMS server listening on ${port} (Asia/Seoul)`);
     });
