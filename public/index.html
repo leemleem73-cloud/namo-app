@@ -10032,7 +10032,9 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       button.disabled=busy||pickingFolder;
     });
   }
+  let lastStatus = '';
   function status(message) {
+    lastStatus = message;
     const label = document.querySelector('#qmesPcBackupStatus');
     if (label) label.textContent = message;
   }
@@ -10059,8 +10061,30 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       if(response.status===401 || response.status===403)throw Error('로그인 또는 백업 권한을 확인해 주세요.');
       if (!response.ok || !response.headers.get('content-type')?.includes('application/json') ||
           !response.headers.get('content-disposition')?.includes('namo-qmes-data.json')) throw Error('서버에서 백업 파일을 받지 못했습니다. (응답 '+response.status+')');
-      const data = await response.blob();
-      if (!data.size || account()!==id) return;
+      let data;
+      if(response.body){
+        const reader=response.body.getReader();
+        const chunks=[];
+        let bytes=0, lastUpdate=0;
+        try {
+          for(;;){
+            const {done,value}=await reader.read();
+            if(done)break;
+            if(account()!==id){await reader.cancel();return;}
+            chunks.push(value);
+            bytes+=value.byteLength;
+            if(Date.now()-lastUpdate>=500){
+              lastUpdate=Date.now();
+              status('서버에서 백업을 받는 중입니다. · '+(bytes/1048576).toFixed(1)+' MB');
+            }
+          }
+        } finally { reader.releaseLock(); }
+        data=new Blob(chunks,{type:'application/json'});
+      }else{
+        data=await response.blob();
+      }
+      if(!data.size)throw Error('서버에서 빈 백업 파일을 받았습니다.');
+      if(account()!==id)return;
       status('선택한 PC 폴더에 백업을 저장하는 중입니다.');
       const file = await folder.getFileHandle('namo-qmes-'+day+'.json',{create:true});
       const stream = await file.createWritable();
@@ -10086,6 +10110,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     panel.innerHTML='<h3 style="margin:0 0 8px">이 PC에 업무 데이터 백업</h3><p>백업 권한이 있는 계정으로 로그인한 나모 웹이 열려 있으면 매일 오후 5시 이후 한 번 저장합니다.</p><button type="button" class="btn" data-backup-folder>저장 폴더 선택 및 첫 백업</button> <button type="button" class="btn" data-backup-now>지금 백업</button> <button type="button" class="btn" data-backup-stop>자동 백업 끄기</button><p id="qmesPcBackupStatus" role="status"></p>';
     root.append(panel);
     updateBackupButtons();
+    if(lastStatus)status(lastStatus);
     const id=account();
     if (!id) return;
     storeFolder(id).then(folder=>{
