@@ -2608,6 +2608,33 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 </style>
 
 <style id="inspection-list-stable-layout">
+@media screen {
+  /* The CoA enhancement adds its column immediately before the remarks column. */
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>colgroup>col:nth-child(11),
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>thead>tr>th:nth-child(11) {
+    width:5.5%!important;
+    min-width:0!important;
+  }
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>colgroup>col:nth-child(12),
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>thead>tr>th:nth-child(12) {
+    width:10%!important;
+    min-width:0!important;
+  }
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>tbody>tr>td:nth-child(12) {
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body #app main.content #incoming .ip-table:has(>thead>tr>th:nth-child(13))>tbody>tr>td:nth-child(12) a {
+    display:inline-block!important;
+    max-width:100%!important;
+    vertical-align:middle;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+}
+
 @media screen { html body #app main.content:has(> #incoming.active){scrollbar-gutter:stable} }
 html body :is(#incoming:not(.incoming-current-work),#process:not(.process-current-work),#outgoing:not(.outgoing-current-work)) .iqc-work-frame .ip-panel{visibility:hidden;animation:pqc-layout-fallback 0s 2s forwards}
 @keyframes pqc-layout-fallback{to{visibility:visible}}
