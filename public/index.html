@@ -99,17 +99,17 @@ html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #work .modul
 html:not([data-qmes-order-lists-ready]) :is(#orders,#purchase)>.module-shell,
 html:is([data-qmes-pending-page="orders"],[data-qmes-pending-page="purchase"]):not([data-qmes-menu-ready="1"]) :is(#main,#dashboard){visibility:hidden!important}
 @media screen {
-  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th {
+  html body #app main.content .module-page:is(#orders.orders-work-frame,#purchase.purchase-work-frame)>.module-shell>.module-body>table>thead>tr>th {
     box-sizing:border-box!important;
     height:34px!important;
     min-height:0!important;
     padding:0 8px!important;
     line-height:20px!important;
   }
-  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th:first-child {
+  html body #app main.content .module-page:is(#orders.orders-work-frame,#purchase.purchase-work-frame)>.module-shell>.module-body>table>thead>tr>th:first-child {
     padding:0!important;
   }
-  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th .qpf-select {
+  html body #app main.content .module-page:is(#orders.orders-work-frame,#purchase.purchase-work-frame)>.module-shell>.module-body>table>thead>tr>th .qpf-select {
     min-height:0!important;
     height:33px!important;
     padding:0!important;
@@ -2793,7 +2793,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 <style id="qmes-order-purchase-work-list-grid">
 @media screen {
   html body #app main.content #purchase>.module-shell>.module-toolbar {
-    background:#fff!important;
+    background:#f2f6fa!important;
     border-bottom:1px solid #d5dfe9!important;
   }
   html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body {
