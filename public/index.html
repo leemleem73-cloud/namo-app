@@ -4960,10 +4960,14 @@ async function loadIncomingFromDb(section){
       const rows=p.data;
       section._iqcRows=rows;
       if(section._iqcSelectedIds instanceof Set){const validIds=new Set(rows.map(row=>String(row.id)));for(const id of section._iqcSelectedIds)if(!validIds.has(String(id)))section._iqcSelectedIds.delete(id);}
-      updateIncomingMaterialsFromDb(rows);
-      applyIncomingMetrics(section,rows);
       renderIncomingPage(section,section._iqcPage||1);
       wireModule(section,'incoming');
+      // Let the browser paint the list before processing the whole IQC dataset.
+      requestAnimationFrame(()=>setTimeout(()=>{
+        if(section._iqcRequestId!==requestId||!section.isConnected)return;
+        updateIncomingMaterialsFromDb(rows);
+        applyIncomingMetrics(section,rows);
+      },0));
       void approvals.then(states=>{
         if(!states||section._iqcRequestId!==requestId||!section.isConnected)return;
         window.__QMES_IQC_APPROVALS__=states;
@@ -6263,6 +6267,13 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
   if(!tbody)return;
   const request=(section._historicalRequest||0)+1;section._historicalRequest=request;
   const kind=id==='process'?'pqc':'oqc';
+  const relatedModule=id==='process'?'/api/qmes/work-orders':'/api/qmes-sync/inventory';
+  const related=fetch(relatedModule+'?_qmesFresh='+Date.now(),{
+    credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)
+  }).then(response=>response.ok?response.json():null).catch(error=>{
+    console.warn('[QMES inspection related data]',error);
+    return null;
+  });
   try{
     const response=await fetch('/api/qmes-sync/'+kind+'?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
     if(!response.ok)throw Error('서버 응답 '+response.status);
@@ -6288,9 +6299,8 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
     // completed delivery record changes the OQC shipment state to 출하완료.
     if(id==='outgoing'){
       try{
-        const shippingResponse=await fetch('/api/qmes-sync/inventory?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
-        if(shippingResponse.ok){
-          const shippingJson=await shippingResponse.json();
+        const shippingJson=await related;
+        if(shippingJson){
           const records=Array.isArray(shippingJson?.data)?shippingJson.data:[];
           const shared=records.find(record=>String(record?.record_key||'')==='erp:shipping');
           let payload=shared?.payload||{};
@@ -6325,11 +6335,8 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       const sources=[];
       let authoritativeOrders=false;
       try{
-        const response=await fetch('/api/qmes/work-orders?_qmesFresh='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
-        if(response.ok){
-          const json=await response.json();
-          if(json.success!==false&&Array.isArray(json.data)){sources.push(...json.data);authoritativeOrders=true;}
-        }
+        const json=await related;
+        if(json&&json.success!==false&&Array.isArray(json.data)){sources.push(...json.data);authoritativeOrders=true;}
       }catch(error){console.warn('[QMES] PQC work-order fetch',error);}
       if(!authoritativeOrders){
         try{const cached=JSON.parse(localStorage.getItem(WORK_LOCAL_KEY)||'[]');if(Array.isArray(cached))sources.push(...cached);}catch(_){}
