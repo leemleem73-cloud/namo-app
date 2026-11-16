@@ -14,6 +14,22 @@
     @media(max-width:700px){.pqc-sequential-warning strong{font-size:24px!important}}
   `;
   document.head.appendChild(style);
+  const warningScope = '.am-split[data-am-screen="process"]';
+  const submitted = new WeakSet();
+  document.addEventListener('input',event=>{
+    const form=event.target.closest?.(warningScope);
+    if(form)submitted.delete(form);
+  },true);
+  document.addEventListener('click', event => {
+    const button=event.target.closest?.('#modalSave,[data-am-save]');
+    if(!button)return;
+    const workspace=button.closest('#mainWorkspace')||document.getElementById('mainWorkspace');
+    if(!workspace)return;
+    const forms=workspace.querySelectorAll(warningScope);
+    if(!forms.length)return;
+    forms.forEach(form=>submitted.add(form));
+    refresh();
+  },true);
   function refresh() {
     document.querySelectorAll('.am-split[data-am-screen="process"]').forEach(pane => {
       const cells = [...pane.querySelectorAll('[data-pqc-item-judge]')];
@@ -47,7 +63,7 @@
         if (cell.textContent !== label) cell.textContent = label;
       });
       let warning = pane.querySelector('.pqc-sequential-warning');
-      if (firstFail >= 0) {
+      if (firstFail >= 0 && submitted.has(pane)) {
         if (!warning) {
           warning = document.createElement('div');
           warning.className = 'pqc-sequential-warning'; warning.setAttribute('role', 'alert');
