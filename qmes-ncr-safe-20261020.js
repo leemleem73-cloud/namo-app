@@ -524,10 +524,19 @@ function install(app,options={}){
    const currentTitle=str(current.title,60);
    const isAdmin=['admin','관리자'].includes(currentRole);
    const isQualitySenior=currentDept==='품질부'&&['부장','이사','상무','전무','부사장','대표이사','대표','사장','회장'].includes(currentTitle);
-   const canDelete=current.status==='APPROVED'&&(isAdmin||isQualitySenior);
+   // Server-management NCR deletion permission: department or individually selected user.
+   // Administrators retain emergency access; disabled/unapproved accounts may not delete.
+   let configuredNcrDelete=false;
+   if(current.status==='APPROVED'){
+    const permission=await pool.query("SELECT allowed_departments,allowed_users FROM qmes_server_permissions WHERE permission_key='ncrDeleteDepartments' LIMIT 1");
+    const allowedDepartments=permission.rows[0]?.allowed_departments||['품질부'];
+    const allowedUsers=permission.rows[0]?.allowed_users||[];
+    configuredNcrDelete=allowedDepartments.includes(currentDept)||allowedUsers.includes(str(u.name,120));
+   }
+   const canDelete=current.status==='APPROVED'&&(isAdmin||configuredNcrDelete);
    if(legacyId){
     if(!canDelete){
-     return bad(res,403,'NCR 삭제는 승인된 관리자 또는 품질부 부장 이상만 가능합니다.');
+     return bad(res,403,'서버관리에서 부적합 삭제 권한이 부여된 사용자만 삭제할 수 있습니다.');
     }
     const removed=await pool.query(`WITH removed AS (
       DELETE FROM nonconform WHERE id=$1::uuid RETURNING *
@@ -540,7 +549,7 @@ function install(app,options={}){
    }
    const result=await pool.query('SELECT id,created_by_id FROM qmes_ncr_reports WHERE id=$1',[id]);
    if(!result.rowCount)return bad(res,404,'NCR을 찾을 수 없습니다.');
-   if(!canDelete&&String(result.rows[0].created_by_id)!==String(u.id))return bad(res,403,'작성자 또는 승인된 관리자·품질부 부장 이상만 삭제할 수 있습니다.');
+   if(!canDelete)return bad(res,403,'서버관리에서 부적합 삭제 권한이 부여된 사용자만 삭제할 수 있습니다.');
    await pool.query('DELETE FROM qmes_ncr_reports WHERE id=$1',[id]);
    res.json({success:true,data:{id}});
   }catch(e){console.error('[NCR delete]',e);bad(res,500,'NCR 삭제 실패');}
