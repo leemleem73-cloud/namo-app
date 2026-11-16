@@ -18,6 +18,22 @@
     @media(max-width:700px){.oqc-sequential-warning strong{font-size:24px!important}}
   `;
   document.head.appendChild(style);
+  const warningScope = '.am-split[data-am-screen="outgoing"] .oqc-detail-items, .std-inspection[data-inspection-type="outgoing"] .std-result';
+  const submitted = new WeakSet();
+  document.addEventListener('input',event=>{
+    const form=event.target.closest?.(warningScope);
+    if(form)submitted.delete(form);
+  },true);
+  document.addEventListener('click', event => {
+    const button=event.target.closest?.('#modalSave,[data-am-save]');
+    if(!button)return;
+    const workspace=button.closest('#mainWorkspace')||document.getElementById('mainWorkspace');
+    if(!workspace)return;
+    const forms=workspace.querySelectorAll(warningScope);
+    if(!forms.length)return;
+    forms.forEach(form=>submitted.add(form));
+    refresh();
+  },true);
   function refresh() {
     const rules = window.qmesOqcRules;
     if (!rules) return;
@@ -66,7 +82,7 @@
         }
       });
       let warning = table.parentElement.querySelector('.oqc-sequential-warning');
-      if (firstFail >= 0) {
+      if (firstFail >= 0 && submitted.has(table)) {
         if (!warning) {
           warning = document.createElement('div'); warning.className = 'oqc-sequential-warning'; warning.setAttribute('role', 'alert');
           warning.innerHTML = '<strong>후속 공정 차단</strong><span></span>'; table.parentNode.insertBefore(warning, table);
