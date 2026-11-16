@@ -95,6 +95,26 @@ html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #dashboard{v
 html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #dashboard.namo-dashboard-shell>:not(#namoDashboard20261026){display:none!important}
 html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #namoDashboard20261026{display:block!important;visibility:visible!important;background:#f4f8fc!important}
 html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
+/* Orders gets its final filter and list layout from deferred scripts. */
+html:not([data-qmes-orders-view-ready]) #orders>.module-shell,
+html[data-qmes-pending-page="orders"]:not([data-qmes-menu-ready="1"]) :is(#main,#dashboard){visibility:hidden!important}
+@media screen {
+  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th {
+    box-sizing:border-box!important;
+    height:34px!important;
+    min-height:0!important;
+    padding:0 8px!important;
+    line-height:20px!important;
+  }
+  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th:first-child {
+    padding:0!important;
+  }
+  html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th .qpf-select {
+    min-height:0!important;
+    height:33px!important;
+    padding:0!important;
+  }
+}
 /* Hide the default active dashboard immediately when another saved menu is pending. */
 html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.active{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
 
@@ -332,6 +352,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
     if(saved)root.setAttribute('data-qmes-pending-page',saved);
   }catch(_){};
   document.addEventListener('DOMContentLoaded',()=>{
+    root.setAttribute('data-qmes-orders-view-ready','');
     requestAnimationFrame(()=>{
       try{
         document.querySelector('.module-page.active')?._fitIncomingColumns?.();
