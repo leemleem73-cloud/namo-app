@@ -2607,7 +2607,6 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
 </style>
 
-<style>#qmesPcBackupTop{width:auto}#qmesPcBackupTop[hidden]{display:none!important}</style>
 <style id="inspection-list-stable-layout">
 @media screen {
   /* The CoA enhancement adds its column immediately before the remarks column. */
@@ -2898,7 +2897,6 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 
       <span class="top-divider" aria-hidden="true"></span>
       <a id="qmesMobileSwitchBtn" href="/mobile-app-20261031.html" title="모바일 버전으로 이동" aria-label="모바일 버전으로 이동" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 11px;border:1px solid #c8e0ed;border-radius:10px;background:#eef8fd;color:#14668a;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>모바일 버전</a>
-      <button class="top-chip" id="qmesPcBackupTop" type="button" hidden style="padding-inline:10px;white-space:nowrap">백업</button>
       <button class="top-chip hide-sm" id="notifyBtn" type="button" title="통합알림" aria-label="통합알림">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
       </button>
@@ -10065,17 +10063,32 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       catch(error){status(error.message);}
     };
   }};
-  const topButton = document.getElementById('qmesPcBackupTop');
   const userPanel = document.getElementById('currentUser');
   let sessionConfirmed = false;
-  const updateTopButton = () => { if(topButton) topButton.hidden = !sessionConfirmed || !account(); };
-  if (topButton) topButton.onclick = () => {
-    if (!account()) return;
-    document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
-    const panel = document.querySelector('#qmesPcBackupStatus')?.closest('section');
-    panel?.scrollIntoView({block:'nearest'});
-    panel?.querySelector('[data-backup-folder]')?.focus({preventScroll:true});
-  };
+  let topButton;
+  function updateTopButton() {
+    if (!sessionConfirmed || !account()) {
+      topButton?.remove();
+      topButton = undefined;
+      return;
+    }
+    const anchor = document.getElementById('qmesMobileSwitchBtn');
+    if (topButton?.isConnected || !anchor) return;
+    topButton = document.createElement('button');
+    topButton.id = 'qmesPcBackupTop';
+    topButton.className = 'top-chip';
+    topButton.type = 'button';
+    topButton.textContent = '백업';
+    topButton.style.cssText = 'width:auto;padding-inline:10px;white-space:nowrap';
+    topButton.onclick = () => {
+      if (!account()) return;
+      document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
+      const panel = document.querySelector('#qmesPcBackupStatus')?.closest('section');
+      panel?.scrollIntoView({block:'nearest'});
+      panel?.querySelector('[data-backup-folder]')?.focus({preventScroll:true});
+    };
+    anchor.after(topButton);
+  }
   if (userPanel) new MutationObserver(updateTopButton).observe(userPanel,{
     attributes:true,attributeFilter:['data-role','data-qauth-ready']
   });
