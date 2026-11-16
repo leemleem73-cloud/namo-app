@@ -4413,7 +4413,9 @@ async function writePcBackup(write, signal, onProgress) {
   ];
   let client, currentTable='';
   try {
+    signal.throwIfAborted();
     client = await pool.connect();
+    signal.throwIfAborted();
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
     await client.query("SET LOCAL statement_timeout = '30s'");
     const result = await client.query(
@@ -4436,7 +4438,8 @@ async function writePcBackup(write, signal, onProgress) {
       firstTable = false;
       let firstRow = true;
       const batchSize = table.endsWith('_attachments') ? 2 : 50;
-      while (!signal.aborted) {
+      for (;;) {
+        signal.throwIfAborted();
         const batch = await client.query('FETCH FORWARD '+batchSize+' FROM qmes_backup_cursor');
         if (!batch.rows.length) break;
         await write((firstRow?'':',')+batch.rows.map(row=>row.entry).join(','));
@@ -4446,7 +4449,9 @@ async function writePcBackup(write, signal, onProgress) {
       await client.query('CLOSE qmes_backup_cursor');
       onProgress?.(++completed,available.size);
     }
+    signal.throwIfAborted();
     await client.query('COMMIT');
+    signal.throwIfAborted();
     await write('},"complete":true}');
   } catch (error) {
     if (client) await client.query('ROLLBACK').catch(()=>{});
@@ -4477,15 +4482,19 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
 const pcBackupJobs = new Map();
 const pcBackupJobPath = '/api/admin/pc-backup/jobs/:id';
 const backupJobLifetime = 60*60*1000;
+function pcBackupJobStatus({state, stage, completed, total, bytes}) {
+  return {state, stage, completed, total, bytes};
+}
 app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
   const id=req.params.id;
   const owner=String(req.session.user.id||'');
   if(!owner||!/^[a-f0-9-]{36}$/i.test(id)||!req.is('application/json'))return fail(res,400,'잘못된 백업 요청입니다.');
   res.setHeader('Cache-Control','private, no-store');
   const existing=pcBackupJobs.get(id);
-  if(existing)return existing.owner===owner?ok(res,{state:existing.state}):fail(res,404,'백업 작업을 찾을 수 없습니다.');
+  if(existing)return existing.owner===owner?ok(res,pcBackupJobStatus(existing)):fail(res,404,'백업 작업을 찾을 수 없습니다.');
   if(pcBackupJobs.size>=6)return fail(res,429,'백업 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
-  const job={owner,state:'running'};
+  const job={owner,state:'running',stage:'database',completed:0,total:null,bytes:0};
+  const signal=AbortSignal.timeout(10*60*1000);
   pcBackupJobs.set(id,job);
   void (async()=>{
     try{
@@ -4493,11 +4502,11 @@ app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
       job.file=path.join(job.dir,'backup.json');
       const file=await fs.promises.open(job.file,'wx',0o600);
       try{
-        job.bytes=0;
         await writePcBackup(async chunk=>{
           await file.writeFile(chunk);
           job.bytes+=Buffer.byteLength(chunk);
-        },AbortSignal.timeout(10*60*1000),(completed,total)=>{
+        },signal,(completed,total)=>{
+          job.stage='export';
           job.completed=completed;
           job.total=total;
         });
@@ -4516,7 +4525,7 @@ app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
       },backupJobLifetime).unref();
     }
   })();
-  return ok(res,{state:'running'});
+  return ok(res,pcBackupJobStatus(job));
 });
 function findPcBackupJob(req,res,next){
   res.setHeader('Cache-Control','private, no-store');
@@ -4526,8 +4535,7 @@ function findPcBackupJob(req,res,next){
   next();
 }
 app.get(pcBackupJobPath,requirePcBackupAccess,findPcBackupJob,(req,res)=>{
-  const {state,stage,completed,total,bytes}=req.pcBackupJob;
-  ok(res,{state,stage,completed,total,bytes});
+  ok(res,pcBackupJobStatus(req.pcBackupJob));
 });
 app.get(pcBackupJobPath+'/file',requirePcBackupAccess,findPcBackupJob,(req,res)=>{
   if(req.pcBackupJob.state!=='ready')return fail(res,409,'백업 파일이 아직 준비되지 않았습니다.');
