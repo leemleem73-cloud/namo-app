@@ -4412,30 +4412,58 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     'qmes_iqc_attachments','qmes_oqc_attachments'
   ];
   let client;
+  const connection = new AbortController();
+  res.once('close', () => connection.abort());
+  async function write(chunk) {
+    if (connection.signal.aborted) throw Error('Backup connection closed');
+    if (!res.write(chunk)) {
+      await require('node:events').once(res, 'drain', {signal:connection.signal});
+    }
+  }
   try {
     client = await pool.connect();
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-    const data = {};
-    const missingTables = [];
-    for (const table of tables) {
-      const qualified = 'public.' + table;
-      const found = await client.query('SELECT to_regclass($1) AS relation', [qualified]);
-      if (!found.rows[0]?.relation) {
-        missingTables.push(table);
-        continue;
-      }
-      // Names are selected exclusively from the static table list above.
-      const result = await client.query('SELECT * FROM ' + qualified);
-      data[table] = result.rows;
-    }
-    await client.query('COMMIT');
+    await client.query("SET LOCAL statement_timeout = '30s'");
+    const result = await client.query(
+      "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[])", [tables]
+    );
+    const available = new Set(result.rows.map(row => row.tablename));
+    const missingTables = tables.filter(table => !available.has(table));
+    const metadata = {format:'namo-qmes-pc-backup',version:1,createdAt:new Date().toISOString(),missingTables};
     res.setHeader('Cache-Control', 'private, no-store');
     res.attachment('namo-qmes-data.json');
-    res.json({format:'namo-qmes-pc-backup',version:1,createdAt:new Date().toISOString(),missingTables,data});
+    res.type('application/json');
+    await write(JSON.stringify(metadata).slice(0,-1)+',"data":{');
+    let firstTable = true;
+    for (const table of tables) {
+      if (!available.has(table)) continue;
+      // The identifier comes exclusively from the static table list above.
+      if (connection.signal.aborted) throw Error('Backup connection closed');
+      await client.query('DECLARE qmes_backup_cursor NO SCROLL CURSOR FOR SELECT row_to_json(source)::text AS entry FROM public.'+table+' AS source');
+      await write((firstTable?'':',')+JSON.stringify(table)+':[');
+      firstTable = false;
+      let firstRow = true;
+      const batchSize = table.endsWith('_attachments') ? 2 : 50;
+      while (!connection.signal.aborted) {
+        const batch = await client.query('FETCH FORWARD '+batchSize+' FROM qmes_backup_cursor');
+        if (!batch.rows.length) break;
+        await write((firstRow?'':',')+batch.rows.map(row=>row.entry).join(','));
+        firstRow = false;
+      }
+      await write(']');
+      await client.query('CLOSE qmes_backup_cursor');
+    }
+    await client.query('COMMIT');
+    res.end('}}');
   } catch (error) {
     if (client) await client.query('ROLLBACK').catch(()=>{});
+    if (connection.signal.aborted) return;
     console.error('[QMES PC backup]', error.message);
-    fail(res, 500, '백업 파일을 만들지 못했습니다.');
+    if (res.headersSent) res.destroy();
+    else {
+      res.removeHeader('Content-Disposition');
+      fail(res, 500, '백업 파일을 만들지 못했습니다.');
+    }
   } finally {
     client?.release();
   }
