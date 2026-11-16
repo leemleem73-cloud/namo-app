@@ -23,8 +23,21 @@ async function load(force=false){const page=document.querySelector('#purchase'),
   const inspectionRequest=fetch('/api/iqc',{credentials:'include',cache:'no-store'}).then(async res=>{
     return res.ok?rows(await res.json()).map(unwrap):[];
   }).catch(err=>{console.warn('[QMES] IQC lookup unavailable',err);return [];});
-  const [data,iqc]=await Promise.all([purchaseRequest,inspectionRequest]);
-  all=displayRows(data,iqc);pageNo=1;render();info.textContent=data.length?'총 '+data.length+'건':'등록된 구매발주 내역이 없습니다.'}catch(e){info.textContent='구매발주 DB 조회 불가: '+e.message}finally{busy=false}}
+  const data=await purchaseRequest;
+  all=displayRows(data,[]);
+  pageNo=1;
+  render();
+  info.textContent=data.length?'총 '+data.length+'건':'등록된 구매발주 내역이 없습니다.';
+
+  if(!data.some(record=>!receipt(record)))return;
+  const iqc=await inspectionRequest;
+  if(!iqc.length)return;
+  const enriched=displayRows(data,iqc);
+  if(enriched.some((record,index)=>record.displayPurchaseNo!==all[index].displayPurchaseNo||
+    record.orderDate!==all[index].orderDate||record.requestedDueDate!==all[index].requestedDueDate)){
+    all=enriched;
+    render();
+  }}catch(e){info.textContent='구매발주 DB 조회 불가: '+e.message}finally{busy=false}}
 document.addEventListener('click',e=>{if(e.target.closest?.('#qpu-import-dialog .qpi-save'))setTimeout(()=>load(true),1500);if(e.target.closest?.('#purchase .qpu-search,#purchase .qpu-clear'))setTimeout(()=>load(true),300)},true);
 const css=document.createElement('style');css.textContent='#purchase .module-shell>.module-body tbody tr td:nth-child(3),#purchase .module-shell>.module-body tbody tr td:nth-child(3) *{color:#334155!important;text-decoration:none!important;cursor:default!important}#purchase .module-body tbody td:nth-child(2){color:#0875cf!important;text-decoration:underline!important;text-underline-offset:2px;font-weight:700!important;cursor:pointer}#purchase .module-body tbody td:nth-child(3){color:#334155!important;text-decoration:none!important;cursor:default}#purchase .module-body tbody td.qpu-po-link-style{color:#0875cf!important;text-decoration:underline!important;text-underline-offset:2px;font-weight:700!important;cursor:pointer}#purchase .qpu-pager{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border:1px solid #d0dcea;border-top:0;background:#fff}#purchase .qpu-pager span{margin-right:12px;font-size:12px;color:#526a83}#purchase .qpu-pager button{border:1px solid #d1dce8;background:#fff;border-radius:5px;min-width:30px;height:28px;cursor:pointer}#purchase .qpu-pager button.active{background:#2563eb;color:#fff;border-color:#2563eb}';document.head.append(css);function matchingRows(){
  const root=document.querySelector('#purchase');if(!root)return all;
