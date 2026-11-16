@@ -2379,6 +2379,19 @@ html body :is(#orders,#purchase).module-page .module-shell>.module-body table th
 </style>
 
 <style id="qmes-purchase-detail-frame-20261019">
+@media screen {
+  /* Show the detail panel once the selected order has line items. */
+  html body #app main.content #purchase>.qpu-detail:not(:has(tbody>tr>td:not([colspan]))) {
+    display:none!important;
+  }
+  html body #app main.content #purchase.module-page>.module-shell>.module-body:not(:has(tbody>tr)) {
+    min-height:0!important;
+  }
+  html body #app main.content #purchase.module-page>.module-shell>.module-body>table:not(:has(tbody>tr))>thead>tr>th {
+    border-bottom:0!important;
+  }
+}
+
 html body #purchase>.qpu-detail{margin:12px 0 0!important;background:#fff!important;border:1px solid #d2dfed!important;border-radius:10px!important;box-shadow:none!important;overflow:hidden!important}
 html body #purchase>.qpu-detail>header{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important;box-sizing:border-box!important;min-height:52px!important;padding:11px 16px!important;background:#fff!important;color:#1e3f64!important;font:700 13.5px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;border:0!important}
 html body #purchase>.qpu-detail>header small{margin:0 0 0 8px!important;font-size:12px!important;font-weight:400!important}
