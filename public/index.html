@@ -23,6 +23,9 @@ var saved='factory';try{saved=localStorage.getItem('qmes-portal-wallpaper-v1')||
 window.qmesApplyWallpaper(saved);
 })();
 </script>
+<style id="qmes-top-actions-first-paint">
+#app > header.topbar .top-actions:not([data-qmes-top-ready]) { opacity:0; visibility:hidden; pointer-events:none; }
+</style>
 <style id="qmes-initial-factory-fallback-20261026">
 html,body,#app,main.content{background-color:#edf3f9!important}
 html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.content:has(> #main.active.namo-portal-shell){background-color:#edf3f9!important;background-image:var(--qmes-initial-wallpaper,none)!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
@@ -10064,6 +10067,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     };
   }};
   const userPanel = document.getElementById('currentUser');
+  const topActions = userPanel?.closest('.top-actions');
   let sessionConfirmed = false;
   let topButton;
   function updateTopButton() {
@@ -10098,6 +10102,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   window.qmesAuthDataReady?.wait().then(()=>{
     sessionConfirmed = true;
     updateTopButton();
+    topActions?.setAttribute('data-qmes-top-ready','');
     const panel=document.getElementById('serverAdmin');
     if (panel?.querySelector('#serverAdminRows') && account()) window.qmesPcBackup.mount(panel);
     void save();
