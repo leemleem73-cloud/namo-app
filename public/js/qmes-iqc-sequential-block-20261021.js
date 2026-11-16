@@ -22,8 +22,6 @@
       ${formSelector} .iqc-sequential-locked .std-row-judge{display:none!important}
       html body #mainWorkspace ${formSelector} table.std-result .iqc-sequential-label,
       ${formSelector} table.std-result .iqc-sequential-label{display:inline-block!important;font-size:20px!important;line-height:1.35!important;font-weight:900!important;color:#dc2626!important;white-space:nowrap!important;word-break:keep-all!important}
-      ${formSelector} table.std-result.iqc-sequential-active col.judge{width:160px!important}
-      ${formSelector} table.std-result.iqc-sequential-active col.m{width:auto!important}
     }
     @media screen and (max-width:700px){${formSelector} .iqc-sequential-warning strong{font-size:24px!important}}
     @media print{${formSelector} .iqc-sequential-warning,${formSelector} .iqc-sequential-label{display:none!important}}
@@ -87,7 +85,6 @@
         return judgments[index] === '불합격' || measureValues.includes('부적합') || measureValues.includes('미확인');
       });
       const firstFail = rowFailed.findIndex(Boolean);
-      table.classList.toggle('iqc-sequential-active', firstFail >= 0);
       rows.forEach((row,index)=>{
         const judge=row.querySelector('.std-row-judge');
         if(judge) judge.dataset.iqcFail=(judgments[index]==='불합격' || rowFailed[index])?'1':'0';
