@@ -2607,6 +2607,7 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"] .std-summary-card:nth-child(2)>.value>span{display:block!important;align-self:center!important;width:auto!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;line-height:1.4!important}
 </style>
 
+<style>#qmesPcBackupTop{width:auto}#qmesPcBackupTop[hidden]{display:none!important}</style>
 <style id="inspection-list-stable-layout">
 @media screen {
   /* The CoA enhancement adds its column immediately before the remarks column. */
@@ -9300,7 +9301,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261026-separated-main1"></script>
 <script src="./js/qmes-menu-history-20261021.js?v=20261029-all-keyboard6"></script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261116-session-start1"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261116-profile-department"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
@@ -9981,7 +9982,6 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
 @media(max-width:899px){html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:static!important;margin-left:auto!important}}
 @media(max-width:700px){html body #lotTrace.module-page .lot-shell .lot-date-search .lot-date-filters input{width:190px!important}}
 </style>
-<style>#qmesPcBackupTop{width:auto}#qmesPcBackupTop[hidden]{display:none!important}</style>
 <script id="qmes-pc-backup">(() => {
   const key = 'namo-pc-backup-v1';
   const user = () => window.__QMES_CURRENT_USER__;
@@ -10067,7 +10067,8 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   }};
   const topButton = document.getElementById('qmesPcBackupTop');
   const userPanel = document.getElementById('currentUser');
-  const updateTopButton = () => { if(topButton) topButton.hidden = !account(); };
+  let sessionConfirmed = false;
+  const updateTopButton = () => { if(topButton) topButton.hidden = !sessionConfirmed || !account(); };
   if (topButton) topButton.onclick = () => {
     if (!account()) return;
     document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
@@ -10079,6 +10080,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     attributes:true,attributeFilter:['data-role','data-qauth-ready']
   });
   window.qmesAuthDataReady?.wait().then(()=>{
+    sessionConfirmed = true;
     updateTopButton();
     const panel=document.getElementById('serverAdmin');
     if (panel?.querySelector('#serverAdminRows') && account()) window.qmesPcBackup.mount(panel);
