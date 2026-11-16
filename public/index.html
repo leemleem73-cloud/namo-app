@@ -59,6 +59,9 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 
 <script id="qmes-auth-data-ready-20261020">
 (function(){
+  const sessionRequest=fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
+  sessionRequest.catch(()=>{}); // The auth bridge handles failure when it consumes the request.
+  window.qmesInitialSessionRequest=sessionRequest;
   let ready=false,resolveReady,pending;
   function reset(){ready=false;pending=new Promise(resolve=>{resolveReady=resolve;});}
   reset();
@@ -2884,7 +2887,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   </aside>
 
   <main class="content">
-    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" allow="geolocation" title="나모케미칼 QMES 메인 바탕화면" src="./qmes-portal-home-20261014.html?v=20261105-memo-tools" loading="eager"></iframe></section>
+    <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" allow="geolocation" title="나모케미칼 QMES 메인 바탕화면" data-qmes-src="./qmes-portal-home-20261014.html?v=20261105-memo-tools"></iframe></section>
     <section class="module-page namo-dashboard-shell" id="dashboard">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
@@ -2938,7 +2941,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
       </div>
-    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" src="./qmes-integrated-dashboard-20261026.html?v=20261111-oqc-group-fix2" loading="eager"></iframe>
+    <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" data-qmes-src="./qmes-integrated-dashboard-20261026.html?v=20261111-oqc-group-fix2"></iframe>
     </section>
 
     <section class="module-page" id="processMap"></section>
@@ -9220,7 +9223,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script defer src="./js/iqc-mini-calendar-20261013.js?v=20261013-all-inspections-1"></script>
 <script src="./js/namo-qmes-work-tabs-20261012.js?v=20261026-separated-main1"></script>
 <script src="./js/qmes-menu-history-20261021.js?v=20261029-all-keyboard6"></script>
-<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261029-no-login-reload3"></script>
+<script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261116-session-start1"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
 <script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
@@ -9642,6 +9645,25 @@ window.qmesPqcApprovalGrid=function(row){
     }catch(_){}
     return response;
   };
+})();
+</script>
+<script id="qmes-authenticated-home-frames">
+(function(){
+  'use strict';
+  for(const frame of document.querySelectorAll('iframe[data-qmes-src]')){
+    const page=frame.closest('.module-page');
+    function loadWhenActive(){
+      if(!page.classList.contains('active'))return;
+      observer.disconnect();
+      frame.src=frame.dataset.qmesSrc;
+      delete frame.dataset.qmesSrc;
+    }
+    const observer=new MutationObserver(loadWhenActive);
+    window.qmesAuthDataReady.wait().then(()=>{
+      observer.observe(page,{attributes:true,attributeFilter:['class']});
+      loadWhenActive();
+    });
+  }
 })();
 </script>
 <script id="dashboard-outer-scroll-20261026">
