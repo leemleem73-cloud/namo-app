@@ -10035,6 +10035,18 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     };
   });
   let busy = false, pickingFolder = false;
+  let progressText = '';
+  function showBackupProgress(text){
+    progressText=text;
+    const label=document.querySelector('#qmesPcBackupTop .qmes-backup-progress');
+    if(label)label.textContent=text;
+  }
+  function backupProgressText(bytes,total){
+    const mb=value=>(value/1048576).toFixed(1)+' MB';
+    return total>0&&bytes<=total
+      ? Math.floor(bytes/total*100)+'% · '+mb(bytes)+' / '+mb(total)
+      : mb(bytes);
+  }
   function updateBackupButtons(){
     document.querySelectorAll('[data-backup-folder],[data-backup-now],[data-backup-stop]').forEach(button=>{
       button.disabled=busy||pickingFolder;
@@ -10042,7 +10054,8 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     const button=document.getElementById('qmesPcBackupTop');
     if(button && button.dataset.backupRunning!==String(busy)){
       button.dataset.backupRunning=String(busy);
-      button.innerHTML=busy?'<svg class="qmes-backup-motion" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v4h16v-4"/><path class="qmes-backup-arrow" d="M12 3v10m-4-4 4 4 4-4"/></svg> 백업 중':'백업';
+      button.innerHTML=busy?'<svg class="qmes-backup-motion" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v4h16v-4"/><path class="qmes-backup-arrow" d="M12 3v10m-4-4 4 4 4-4"/></svg><span class="qmes-backup-progress"></span>':'백업';
+      if(busy)showBackupProgress(progressText);
     }
   }
   let lastStatus = '';
@@ -10057,6 +10070,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     const id = account();
     if (!id || busy || (pickingFolder && !selectedFolder)) return;
     busy = true;
+    progressText='백업 확인 중';
     updateBackupButtons();
     const job = async () => {
       const today=localDay(), lastKey=key+':last:'+id, pendingKey=key+':pending:'+id;
@@ -10080,6 +10094,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       const day=pending.day;
       const jobUrl='/api/admin/pc-backup/jobs/'+encodeURIComponent(pending.id);
       const request={credentials:'same-origin',cache:'no-store'};
+      showBackupProgress('백업 준비 중');
       status('서버에서 백업을 준비하고 있습니다. 새로고침해도 작업이 이어집니다.');
       async function getJob(options={}){
         const response=await fetch(jobUrl,{...request,...options,signal:AbortSignal.timeout(20000)});
@@ -10111,6 +10126,10 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         if(response.status===401 || response.status===403)throw Error('로그인 또는 백업 권한을 확인해 주세요.');
         if (!response.ok || !response.headers.get('content-type')?.includes('application/json') ||
             !response.headers.get('content-disposition')?.includes('namo-qmes-data.json')) throw Error('서버에서 백업 파일을 받지 못했습니다. (응답 '+response.status+')');
+        const encoding=response.headers.get('content-encoding');
+        const size=Number(response.headers.get('content-length'));
+        const total=(!encoding||encoding==='identity')&&Number.isSafeInteger(size)&&size>0?size:0;
+        showBackupProgress(backupProgressText(0,total));
         if(response.body){
           const reader=response.body.getReader();
           const chunks=[];
@@ -10125,7 +10144,9 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
               bytes+=value.byteLength;
               if(Date.now()-lastUpdate>=500){
                 lastUpdate=Date.now();
-                status('서버에서 백업을 받는 중입니다. · '+(bytes/1048576).toFixed(1)+' MB');
+                const progress=backupProgressText(bytes,total);
+                showBackupProgress(progress);
+                status('서버에서 백업을 받는 중입니다. · '+progress);
               }
             }
           } finally { reader.releaseLock(); }
@@ -10145,6 +10166,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       if(failedTable)throw Error('서버에서 백업을 중단했습니다. (조회 단계: '+failedTable+')');
       if(!trailer.trimEnd().endsWith(',"complete":true}'))throw Error('백업이 끝까지 도착하지 않았습니다. 다시 시도해 주세요.');
       if(account()!==id)return;
+      showBackupProgress('PC 저장 중');
       status('선택한 PC 폴더에 백업을 저장하는 중입니다.');
       const file = await folder.getFileHandle('namo-qmes-'+day+'.json',{create:true});
       const stream = await file.createWritable();
