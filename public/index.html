@@ -10003,6 +10003,13 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
 @media(max-width:899px){html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:static!important;margin-left:auto!important}}
 @media(max-width:700px){html body #lotTrace.module-page .lot-shell .lot-date-search .lot-date-filters input{width:190px!important}}
 </style>
+<style>
+.qmes-backup-motion{display:inline-block;vertical-align:middle;overflow:hidden;height:1.2em;margin-right:3px}
+.qmes-backup-motion>span{display:block;animation:qmes-backup-drop 1.1s ease-in-out infinite}
+@keyframes qmes-backup-drop{0%{transform:translateY(-90%);opacity:0}35%,60%{transform:translateY(0);opacity:1}100%{transform:translateY(100%);opacity:0}}
+@media(prefers-reduced-motion:reduce){.qmes-backup-motion>span{animation:none}}
+#qmesPcBackupTop[data-backup-running="true"]{display:inline-flex;align-items:center}
+</style>
 <script id="qmes-pc-backup">(() => {
   const key = 'namo-pc-backup-v1';
   const user = () => window.__QMES_CURRENT_USER__;
@@ -10032,7 +10039,10 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       button.disabled=busy||pickingFolder;
     });
     const button=document.getElementById('qmesPcBackupTop');
-    if(button)button.textContent=busy?'↓ 백업 중':'백업';
+    if(button && button.dataset.backupRunning!==String(busy)){
+      button.dataset.backupRunning=String(busy);
+      button.innerHTML=busy?'<span class="qmes-backup-motion" aria-hidden="true"><span>↓</span></span> 백업 중':'백업';
+    }
   }
   let lastStatus = '';
   function status(message) {
@@ -10048,18 +10058,44 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     busy = true;
     updateBackupButtons();
     const job = async () => {
-      const day = localDay(), lastKey = key+':last:'+id;
+      const today=localDay(), lastKey=key+':last:'+id, pendingKey=key+':pending:'+id;
+      let pending;
+      try {pending=JSON.parse(localStorage.getItem(pendingKey)||'null');}catch(_){}
       const folder = selectedFolder || await storeFolder(id);
       if (!folder) {
         if(force)status('먼저 저장 폴더를 선택해 주세요.');
         return;
       }
-      if (!force && (hour()<17 || localStorage.getItem(lastKey)===day))return;
+      if (!pending && !force && (hour()<17 || localStorage.getItem(lastKey)===today))return;
       if (await folder.queryPermission({mode:'readwrite'})!=='granted') {
         status('자동 저장을 계속하려면 저장 폴더를 다시 선택해 주세요.');
         return;
       }
       if (account()!==id) return;
+      if(!pending){
+        pending={id:crypto.randomUUID(),day:today};
+        localStorage.setItem(pendingKey,JSON.stringify(pending));
+      }
+      const day=pending.day;
+      const jobUrl='/api/admin/pc-backup/jobs/'+encodeURIComponent(pending.id);
+      const request={credentials:'same-origin',cache:'no-store'};
+      status('서버에서 백업을 준비하고 있습니다. 새로고침해도 작업이 이어집니다.');
+      async function getJob(options={}){
+        const response=await fetch(jobUrl,{...request,...options,signal:AbortSignal.timeout(20000)});
+        const payload=await response.json().catch(()=>null);
+        if(!response.ok||!payload?.data)throw Error(payload?.message||'백업 작업 조회 실패 ('+response.status+')');
+        return payload.data;
+      }
+      let job=await getJob({method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      while(job.state==='running'){
+        await new Promise(resolve=>setTimeout(resolve,2500));
+        if(account()!==id)return;
+        job=await getJob();
+      }
+      if(job.state!=='ready'){
+        localStorage.removeItem(pendingKey);
+        throw Error('서버가 백업을 완료하지 못했습니다. ('+(job.stage||'서버')+')');
+      }
       const controller=new AbortController();
       let timer, data;
       function waitForData(ms,message){
@@ -10069,7 +10105,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       waitForData(120000,'서버가 2분 안에 백업을 시작하지 못했습니다.');
       try{
         status('백업 파일을 만드는 중입니다.');
-        const response = await fetch('/api/admin/pc-backup',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+        const response = await fetch(jobUrl+'/file',{...request,signal:controller.signal});
         waitForData(90000,'백업 전송이 90초 동안 멈췄습니다.');
         if(response.status===401 || response.status===403)throw Error('로그인 또는 백업 권한을 확인해 주세요.');
         if (!response.ok || !response.headers.get('content-type')?.includes('application/json') ||
@@ -10114,6 +10150,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       try { await stream.write(data); await stream.close(); }
       catch (error) { await stream.abort().catch(()=>{}); throw error; }
       localStorage.setItem(lastKey,day);
+      localStorage.removeItem(pendingKey);
       status(day+' 백업 저장 완료 · '+folder.name);
     };
     try {
