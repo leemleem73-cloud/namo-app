@@ -10006,7 +10006,11 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
 <script id="qmes-pc-backup">(() => {
   const key = 'namo-pc-backup-v1';
   const user = () => window.__QMES_CURRENT_USER__;
-  const account = () => user()?.role === 'admin' ? String(user().id || user().uid || '') : '';
+  const account = () => {
+    const profile = user();
+    if(profile?.role !== 'admin' && !(profile?.uid==='U-0010' && profile?.name==='박현아'))return '';
+    return String(profile.id || profile.uid || '');
+  };
   const localDay = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());
   const hour = () => Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
   const storeFolder = (id, value) => new Promise((resolve,reject) => {
@@ -10063,7 +10067,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     if (root.querySelector('#qmesPcBackupStatus')) return;
     const panel = document.createElement('section');
     panel.style.cssText='margin:16px 20px;padding:14px;border:1px solid #d5dfe9;border-radius:6px;background:#f3f7fb';
-    panel.innerHTML='<h3 style="margin:0 0 8px">이 PC에 업무 데이터 백업</h3><p>관리자로 로그인한 브라우저가 열려 있으면 매일 오후 5시 이후 한 번 저장합니다.</p><button type="button" class="btn" data-backup-folder>저장 폴더 선택 및 첫 백업</button> <button type="button" class="btn" data-backup-now>지금 백업</button> <button type="button" class="btn" data-backup-stop>자동 백업 끄기</button><p id="qmesPcBackupStatus" role="status"></p>';
+    panel.innerHTML='<h3 style="margin:0 0 8px">이 PC에 업무 데이터 백업</h3><p>백업 권한이 있는 계정으로 로그인한 나모 웹이 열려 있으면 매일 오후 5시 이후 한 번 저장합니다.</p><button type="button" class="btn" data-backup-folder>저장 폴더 선택 및 첫 백업</button> <button type="button" class="btn" data-backup-now>지금 백업</button> <button type="button" class="btn" data-backup-stop>자동 백업 끄기</button><p id="qmesPcBackupStatus" role="status"></p>';
     root.append(panel);
     const id=account();
     if (!id) return;
@@ -10094,7 +10098,20 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   }
   if(topButton)topButton.onclick=()=>{
     if(!sessionConfirmed||!user())return;
-    if(!account()){toast('업무 데이터 백업은 관리자 계정에서 설정할 수 있습니다.');return;}
+    if(!account()){toast('업무 데이터 백업 권한이 필요합니다.');return;}
+    if(user().role!=='admin'){
+      const existing=document.getElementById('qmesPcBackupDialog');
+      if(existing?.open)return;
+      const dialog=document.createElement('dialog');
+      dialog.id='qmesPcBackupDialog';
+      dialog.style.cssText='width:min(560px,calc(100% - 32px));padding:0;border:1px solid #cbd8e5;border-radius:10px;background:#fff;color:#244260';
+      dialog.innerHTML='<form method="dialog" style="display:flex;justify-content:flex-end;padding:12px 20px 0"><button class="btn" type="submit">닫기</button></form>';
+      dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+      document.body.append(dialog);
+      window.qmesPcBackup.mount(dialog);
+      dialog.showModal();
+      return;
+    }
     document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
     const panel=document.querySelector('#qmesPcBackupStatus')?.closest('section');
     panel?.scrollIntoView({block:'nearest'});
@@ -10102,6 +10119,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   };
   if(userPanel)new MutationObserver(()=>{
     updateTopButton();
+    if(!account())document.getElementById('qmesPcBackupDialog')?.close();
     if(!user() && document.getElementById('qauth-login'))userPanel.removeAttribute('data-qmes-profile-preview');
   }).observe(userPanel,{attributes:true,attributeFilter:['data-qauth-ready','style']});
   window.qmesAuthDataReady?.wait().then(()=>{
