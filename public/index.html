@@ -1473,8 +1473,8 @@ thead{background:#f4f7fa}
 .module-page .module-shell > .module-body > table,
 .module-page .module-shell > .module-body > div > table,
 #dashboard .table-card > div > table {width:100%!important;border-collapse:collapse!important;border-spacing:0!important;background:#fff!important;border:0!important}
-.module-page .module-shell > .module-body > table > thead > tr > th,
-.module-page .module-shell > .module-body > div > table > thead > tr > th,
+.module-page:not(#purchase) .module-shell > .module-body > table > thead > tr > th,
+.module-page:not(#purchase) .module-shell > .module-body > div > table > thead > tr > th,
 #dashboard .table-card > div > table > thead > tr > th {height:42px!important;background:#f2ecfb!important;color:#30263d!important;font-size:13px!important;font-weight:800!important;text-align:center!important;vertical-align:middle!important;border:1px solid #d6cfdf!important;padding:7px 8px!important}
 .module-page .module-shell > .module-body > table > tbody > tr > td,
 .module-page .module-shell > .module-body > div > table > tbody > tr > td,
@@ -9810,6 +9810,19 @@ html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-
 
 <style id="purchase-list-header-parity">
 @media screen {
+  html body #app main.content #purchase>.module-shell>.module-toolbar {
+    background:#f2f6fa!important;
+    border-bottom:1px solid #d5dfe9!important;
+  }
+  html body #app main.content #purchase>.module-shell>.module-body {
+    border-bottom:0!important;
+  }
+  html body #app main.content #purchase>.module-shell>.module-body>table {
+    border:0!important;
+    border-collapse:separate!important;
+    border-spacing:0!important;
+    box-shadow:none!important;
+  }
   html body #app main.content #purchase>.module-shell>.module-body>table>thead>tr>th {
     box-sizing:border-box!important;
     height:34px!important;
@@ -9819,25 +9832,21 @@ html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-
     font:600 12px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;
     text-align:center!important;
     vertical-align:middle!important;
-    border-top:0!important;
-    border-left:0!important;
+    border:0!important;
     border-right:1px solid #cbd8e5!important;
     border-bottom:1px solid #cbd8e5!important;
     box-shadow:none!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table>thead>tr>th:last-child {
+  html body #app main.content #purchase>.module-shell>.module-body>table>tbody>tr>td {
+    border:0!important;
+    border-right:1px solid #d5dfe9!important;
+    border-bottom:1px solid #d5dfe9!important;
+    box-shadow:none!important;
+  }
+  html body #app main.content #purchase>.module-shell>.module-body>table tr>:is(th,td):last-child {
     border-right:0!important;
   }
-  html body #app main.content #purchase>.module-shell>.module-body>table:has(>tbody:empty) {
-    border-bottom:0!important;
-  }
 }
-</style>
-<style id="purchase-list-single-bottom-border-20261028">
-html body #app main.content #purchase .module-shell>.module-body{border-bottom:0!important}
-html body #app main.content #purchase .module-shell>.module-body table{border-bottom:1px solid #d5dce5!important;border-spacing:0!important;box-shadow:none!important}
-html body #app main.content #purchase .module-shell>.module-body table tbody tr:last-child,
-html body #app main.content #purchase .module-shell>.module-body table tbody tr:last-child>:is(td,th){border-bottom:0!important;box-shadow:none!important}
 </style>
 <script defer src="./js/qmes-inspection-date-calendar-20261028.js?v=20261104-stock-grid"></script>
 
