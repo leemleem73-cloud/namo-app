@@ -75,7 +75,7 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="preload" as="script" href="./js/qmes-incoming-work-frame-20261016.js?v=20261028-centered-calendar2">
+<link rel="preload" as="script" href="./js/qmes-incoming-work-frame-20261016.js?v=20261116-stable-columns">
 <link rel="preload" as="script" href="./js/qmes-process-work-frame-20261016.js?v=20261112-no-duplicate-approval">
 <link rel="preload" as="script" href="./js/qmes-outgoing-work-frame-20261016.js?v=20261028-centered-calendar2">
 <title>NAMO QMES</title>
@@ -2608,6 +2608,7 @@ html body #mainWorkspace .std-inspection.premium[data-inspection-type="process"]
 </style>
 
 <style id="inspection-list-stable-layout">
+@media screen { html body #app main.content:has(> #incoming.active){scrollbar-gutter:stable} }
 html body :is(#incoming:not(.incoming-current-work),#process:not(.process-current-work),#outgoing:not(.outgoing-current-work)) .iqc-work-frame .ip-panel{visibility:hidden;animation:pqc-layout-fallback 0s 2s forwards}
 @keyframes pqc-layout-fallback{to{visibility:visible}}
 html body #process .iqc-work-frame .ip-table-wrap{border-bottom:1px solid #d5dce5!important}
@@ -9116,7 +9117,7 @@ function loadOpenedInspection(page){
   if(page._openingInspection)return page._openingInspection;
   const tbody=page.querySelector('.ip-table tbody');
   if(tbody&&!Array.isArray(page._iqcRows)&&typeof page._inspectionRowsLoaded!=='number'){
-    const span=pageInfo[page.id][2].length+(page.id==='process'?0:1);
+    const span=page.id==='incoming'?(tbody.closest('table')?.tHead?.rows[0]?.cells.length||1):pageInfo[page.id][2].length+(page.id==='process'?0:1);
     tbody.innerHTML='<tr><td colspan="'+span+'" style="text-align:center;padding:24px">검사 기록 조회 중…</td></tr>';
   }
   const load=page.id==='incoming'?loadIncomingFromDb(page):loadHistoricalInspectionRows(page,page.id);
@@ -9478,7 +9479,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <!-- Removed redundant inventory control script: qmes-inventory-excel-import-20261020.js?v=1 -->
 
 <!-- Finished goods reset control intentionally disabled -->
-<script defer src="./js/qmes-incoming-work-frame-20261016.js?v=20261028-centered-calendar2"></script>
+<script defer src="./js/qmes-incoming-work-frame-20261016.js?v=20261116-stable-columns"></script>
 <script defer src="./js/qmes-process-work-frame-20261016.js?v=20261112-no-duplicate-approval"></script>
 <script defer src="./js/qmes-outgoing-work-frame-20261016.js?v=20261028-centered-calendar2"></script>
 <script defer src="./js/qmes-lot-raw-picker-20261016.js?v=3-input-width-font"></script>
