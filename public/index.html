@@ -10104,6 +10104,11 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       }
       let job=await getJob({method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
       while(job.state==='running'){
+        if(Number.isInteger(job.total)&&Number.isInteger(job.completed)){
+          const count=job.completed+'/'+job.total;
+          showBackupProgress('준비 '+count);
+          status('서버에서 백업을 준비하고 있습니다. · '+count+'개 항목 완료 · '+backupProgressText(job.bytes||0,0));
+        }
         await new Promise(resolve=>setTimeout(resolve,2500));
         if(account()!==id)return;
         job=await getJob();
