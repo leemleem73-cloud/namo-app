@@ -95,9 +95,9 @@ html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #dashboard{v
 html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #dashboard.namo-dashboard-shell>:not(#namoDashboard20261026){display:none!important}
 html[data-qmes-pending-page="dashboard"]:not([data-qmes-menu-ready="1"]) #namoDashboard20261026{display:block!important;visibility:visible!important;background:#f4f8fc!important}
 html[data-qmes-pending-page="work"]:not([data-qmes-menu-ready="1"]) #work .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
-/* Orders gets its final filter and list layout from deferred scripts. */
-html:not([data-qmes-orders-view-ready]) #orders>.module-shell,
-html[data-qmes-pending-page="orders"]:not([data-qmes-menu-ready="1"]) :is(#main,#dashboard){visibility:hidden!important}
+/* Wait for the deferred list layout before showing either module. */
+html:not([data-qmes-order-lists-ready]) :is(#orders,#purchase)>.module-shell,
+html:is([data-qmes-pending-page="orders"],[data-qmes-pending-page="purchase"]):not([data-qmes-menu-ready="1"]) :is(#main,#dashboard){visibility:hidden!important}
 @media screen {
   html body #app main.content #orders.module-page.orders-work-frame>.module-shell>.module-body>table>thead>tr>th {
     box-sizing:border-box!important;
@@ -352,7 +352,7 @@ html[data-qmes-pending-page]:not([data-qmes-menu-ready="1"]) .sidebar .menu.acti
     if(saved)root.setAttribute('data-qmes-pending-page',saved);
   }catch(_){};
   document.addEventListener('DOMContentLoaded',()=>{
-    root.setAttribute('data-qmes-orders-view-ready','');
+    root.setAttribute('data-qmes-order-lists-ready','');
     requestAnimationFrame(()=>{
       try{
         document.querySelector('.module-page.active')?._fitIncomingColumns?.();
@@ -6116,14 +6116,14 @@ function buildModule(id){
       wireIncomingColumnResize(section);
     }
   }else{
-    const orders = id === 'orders';
-    const pageHeading = orders
-      ? '<div class="page-head"><div><h1>수주납기 등록 및 조회</h1></div></div>'
+    const listTitle = {orders:'수주납기 등록 및 조회',purchase:'구매발주 등록 및 조회'}[id];
+    const pageHeading = listTitle
+      ? `<div class="page-head"><div><h1>${listTitle}</h1></div></div>`
       : `<div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div><div class="date-badge">QMES</div></div>`;
     section.innerHTML=`
-      ${orders ? '' : pageHeading}
+      ${listTitle ? '' : pageHeading}
       <div class="module-shell">
-        ${orders ? pageHeading : ''}
+        ${listTitle ? pageHeading : ''}
         <div class="module-toolbar">
           <div class="filters"><input class="input search-input" placeholder="검색어 입력"><input class="input" type="date"><input class="input" type="date"></div>
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
