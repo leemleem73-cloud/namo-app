@@ -91,6 +91,8 @@ const style=document.createElement('style');
 style.id='iqc-viewport-fit-20261023';
 style.textContent='#incoming.incoming-current-work .iqc-work-frame .ip-table{min-width:0!important;max-width:100%!important;table-layout:fixed!important;box-sizing:border-box!important}#incoming.incoming-current-work .iqc-work-frame .ip-table-wrap{min-width:0!important;max-width:100%!important}';
 document.head.appendChild(style);
+// The current desktop table already fits its columns using ResizeObserver.
+if(typeof root._fitIncomingColumns==='function')return;
 let scheduled=false;
 function fit(){
  scheduled=false;
