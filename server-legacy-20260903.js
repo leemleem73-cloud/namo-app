@@ -4429,7 +4429,7 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     );
     const available = new Set(result.rows.map(row => row.tablename));
     const missingTables = tables.filter(table => !available.has(table));
-    const metadata = {format:'namo-qmes-pc-backup',version:1,createdAt:new Date().toISOString(),missingTables};
+    const metadata = {format:'namo-qmes-pc-backup',version:2,binaryEncoding:'postgres-bytea-hex',createdAt:new Date().toISOString(),missingTables};
     res.setHeader('Cache-Control', 'private, no-store');
     res.attachment('namo-qmes-data.json');
     res.type('application/json');
