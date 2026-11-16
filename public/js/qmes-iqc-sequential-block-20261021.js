@@ -57,6 +57,22 @@
     }
   }
 
+  const warningScope = '.std-inspection[data-inspection-type="incoming"]';
+  const submitted = new WeakSet();
+  document.addEventListener('input',event=>{
+    const form=event.target.closest?.(formSelector + ' .std-result');
+    if(form)submitted.delete(form);
+  },true);
+  document.addEventListener('click', event => {
+    const button=event.target.closest?.('#modalSave,[data-am-save]');
+    if(!button)return;
+    const workspace=button.closest('#mainWorkspace')||document.getElementById('mainWorkspace');
+    if(!workspace)return;
+    const forms=workspace.querySelectorAll(warningScope + ' .std-result');
+    if(!forms.length)return;
+    forms.forEach(form=>submitted.add(form));
+    refresh();
+  },true);
   function refresh() {
     document.querySelectorAll(formSelector + ' .std-result').forEach(table => {
       const rows = [...table.querySelectorAll('tbody tr')].filter(row =>
@@ -77,7 +93,7 @@
         if(judge) judge.dataset.iqcFail=(judgments[index]==='불합격' || rowFailed[index])?'1':'0';
       });
       rows.forEach((row, index) => {
-        const locked = firstFail >= 0 && index > firstFail;
+        const locked = false;
         row.classList.toggle('iqc-sequential-locked', locked);
         row.querySelectorAll(controlSelector).forEach(input => setLocked(input, locked));
         let label = row.querySelector('.iqc-sequential-label');
@@ -97,7 +113,7 @@
         overall.dataset.iqcFail = value === '불합격' ? '1' : '0';
       }
       let warning = table.parentElement.querySelector('.iqc-sequential-warning');
-      if (firstFail >= 0) {
+      if (firstFail >= 0 && submitted.has(table)) {
         if (!warning) {
           warning = document.createElement('div');
           warning.className = 'iqc-sequential-warning';
@@ -108,19 +124,17 @@
           table.before(warning);
         }
         const name = rows[firstFail].querySelector('.item')?.textContent.trim() || '검사항목';
-        const message = name + ' 불합격 — 이후 검사항목은 입력할 수 없습니다. 불합격 결과를 저장하고 원인 조치 후 재검사하세요. 저장된 LOT 보류는 별도 해제 승인이 필요합니다.';
+        const message = name + ' 불합격 — 검사 결과는 불합격으로 저장되며, LOT 보류 해제는 별도 승인이 필요합니다.';
         if (warning.lastElementChild.textContent !== message) warning.lastElementChild.textContent = message;
       } else if (warning) warning.remove();
     });
   }
 
   for (const type of ['input', 'change']) document.addEventListener(type, event => {
-    if (event.target.closest?.(formSelector)) refresh();
+    if (event.target.matches?.(controlSelector) && event.target.closest?.(formSelector)) schedule();
   });
-  // Refresh before the existing save handler gathers the original controls.
-  document.addEventListener('click', event => {
-    if (event.target.closest?.('#modalSave,[data-am-save]') && document.querySelector(formSelector)) refresh();
-  }, true);
+  let frame=0;
+  function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;refresh();});}
   let queued = false;
   new MutationObserver(() => {
     if (queued) return;
