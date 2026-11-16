@@ -10099,11 +10099,16 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       async function getJob(options={}){
         const response=await fetch(jobUrl,{...request,...options,signal:AbortSignal.timeout(20000)});
         const payload=await response.json().catch(()=>null);
-        if(!response.ok||!payload?.data)throw Error(payload?.message||'백업 작업 조회 실패 ('+response.status+')');
+        if(!response.ok||!payload?.data){
+          throw Object.assign(Error(payload?.message||'백업 작업 조회 실패 ('+response.status+')'),{httpStatus:response.status});
+        }
         return payload.data;
       }
-      let job=await getJob({method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const startJob=()=>getJob({method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      let job=await startJob(), retries=0, restarted=false;
+      const deadline=Date.now()+11*60*1000;
       while(job.state==='running'){
+        if(Date.now()>=deadline)throw Error('서버 백업 준비가 11분 안에 끝나지 않았습니다. 잠시 후 지금 백업을 눌러 상태를 다시 확인해 주세요.');
         if(Number.isInteger(job.total)&&Number.isInteger(job.completed)){
           const count=job.completed+'/'+job.total;
           showBackupProgress('준비 '+count);
@@ -10111,7 +10116,23 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         }
         await new Promise(resolve=>setTimeout(resolve,2500));
         if(account()!==id)return;
-        job=await getJob();
+        try{
+          job=await getJob();
+          retries=0;
+        }catch(error){
+          if(error.httpStatus===404&&!restarted){
+            restarted=true;
+            status('서버에서 작업을 찾지 못해 백업을 다시 시작합니다.');
+            job=await startJob();
+            continue;
+          }
+          const temporary=error.name==='TimeoutError'||error instanceof TypeError||
+            [429,502,503,504].includes(error.httpStatus);
+          if(!temporary||++retries>3)throw error;
+          showBackupProgress('연결 재확인 중');
+          status('서버 연결을 다시 확인하고 있습니다. ('+retries+'/3)');
+          await new Promise(resolve=>setTimeout(resolve,2500*retries));
+        }
       }
       if(job.state!=='ready'){
         localStorage.removeItem(pendingKey);
@@ -10133,7 +10154,9 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
             !response.headers.get('content-disposition')?.includes('namo-qmes-data.json')) throw Error('서버에서 백업 파일을 받지 못했습니다. (응답 '+response.status+')');
         const encoding=response.headers.get('content-encoding');
         const size=Number(response.headers.get('content-length'));
-        const total=(!encoding||encoding==='identity')&&Number.isSafeInteger(size)&&size>0?size:0;
+        const total=Number.isSafeInteger(job.bytes)&&job.bytes>0
+          ? job.bytes
+          : (!encoding||encoding==='identity')&&Number.isSafeInteger(size)&&size>0?size:0;
         showBackupProgress(backupProgressText(0,total));
         if(response.body){
           const reader=response.body.getReader();
@@ -10166,6 +10189,9 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         clearTimeout(timer);
       }
       if(!data.size)throw Error('서버에서 빈 백업 파일을 받았습니다.');
+      if(Number.isSafeInteger(job.bytes)&&job.bytes>0&&data.size!==job.bytes){
+        throw Error('서버가 만든 파일과 받은 파일의 크기가 다릅니다. 지금 백업을 눌러 다시 받아 주세요.');
+      }
       const trailer=await data.slice(-256).text();
       const failedTable=trailer.match(/QMES_BACKUP_FAILED:([a-z_]+)/i)?.[1];
       if(failedTable)throw Error('서버에서 백업을 중단했습니다. (조회 단계: '+failedTable+')');
