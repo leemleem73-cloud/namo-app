@@ -9808,6 +9808,31 @@ html body #mainWorkspace .orders-status-button:focus-visible{outline:2px solid #
 html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-cell="1"]{grid-column:1!important;width:100%!important}
 </style>
 
+<style id="purchase-list-header-parity">
+@media screen {
+  html body #app main.content #purchase>.module-shell>.module-body>table>thead>tr>th {
+    box-sizing:border-box!important;
+    height:34px!important;
+    padding-block:6px!important;
+    background:#e8f0f8!important;
+    color:#244260!important;
+    font:600 12px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;
+    text-align:center!important;
+    vertical-align:middle!important;
+    border-top:0!important;
+    border-left:0!important;
+    border-right:1px solid #cbd8e5!important;
+    border-bottom:1px solid #cbd8e5!important;
+    box-shadow:none!important;
+  }
+  html body #app main.content #purchase>.module-shell>.module-body>table>thead>tr>th:last-child {
+    border-right:0!important;
+  }
+  html body #app main.content #purchase>.module-shell>.module-body>table:has(>tbody:empty) {
+    border-bottom:0!important;
+  }
+}
+</style>
 <style id="purchase-list-single-bottom-border-20261028">
 html body #app main.content #purchase .module-shell>.module-body{border-bottom:0!important}
 html body #app main.content #purchase .module-shell>.module-body table{border-bottom:1px solid #d5dce5!important;border-spacing:0!important;box-shadow:none!important}
