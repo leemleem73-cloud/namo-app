@@ -10099,6 +10099,10 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         clearTimeout(timer);
       }
       if(!data.size)throw Error('서버에서 빈 백업 파일을 받았습니다.');
+      const trailer=await data.slice(-256).text();
+      const failedTable=trailer.match(/QMES_BACKUP_FAILED:([a-z_]+)/i)?.[1];
+      if(failedTable)throw Error('서버에서 백업을 중단했습니다. (조회 단계: '+failedTable+')');
+      if(!trailer.trimEnd().endsWith(',"complete":true}'))throw Error('백업이 끝까지 도착하지 않았습니다. 다시 시도해 주세요.');
       if(account()!==id)return;
       status('선택한 PC 폴더에 백업을 저장하는 중입니다.');
       const file = await folder.getFileHandle('namo-qmes-'+day+'.json',{create:true});
@@ -10113,7 +10117,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       else await job();
     } catch (error) {
       const message=error.name==='NotAllowedError'?'폴더에 저장할 권한이 필요합니다. 저장 폴더를 다시 선택해 주세요.':error.message;
-      status(message || '백업에 실패했습니다.');
+      status(error instanceof TypeError && /network|fetch|load failed/i.test(error.message) ? '백업 파일을 받는 중 서버 연결이 끊겼습니다. 잠시 후 지금 백업을 다시 눌러 주세요.' : message || '백업에 실패했습니다.');
     }
     finally { busy=false; updateBackupButtons(); }
   }
