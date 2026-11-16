@@ -27,6 +27,7 @@ const SERVER_PERMISSION_DEFAULTS={
   approvalReviewDepartments:['품질부'],
   approvalFinalDepartments:['품질부'],
   ncrCloseDepartments:['품질부'],
+  ncrDeleteDepartments:['품질부'],
   inspectionEditDepartments:['품질부'],
   inventoryAdjustDepartments:['품질부'],
   documentDeleteDepartments:['품질부']
