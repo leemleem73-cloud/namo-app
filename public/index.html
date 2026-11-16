@@ -6116,9 +6116,14 @@ function buildModule(id){
       wireIncomingColumnResize(section);
     }
   }else{
+    const orders = id === 'orders';
+    const pageHeading = orders
+      ? '<div class="page-head"><div><h1>수주납기 등록 및 조회</h1></div></div>'
+      : `<div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div><div class="date-badge">QMES</div></div>`;
     section.innerHTML=`
-      <div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div><div class="date-badge">QMES</div></div>
+      ${orders ? '' : pageHeading}
       <div class="module-shell">
+        ${orders ? pageHeading : ''}
         <div class="module-toolbar">
           <div class="filters"><input class="input search-input" placeholder="검색어 입력"><input class="input" type="date"><input class="input" type="date"></div>
           <div class="table-tools"><button class="btn export-btn" type="button">엑셀</button><button class="btn primary new-btn" type="button">+ 신규등록</button></div>
