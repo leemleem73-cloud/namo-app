@@ -10067,7 +10067,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   let sessionConfirmed = false;
   let topButton;
   function updateTopButton() {
-    if (!sessionConfirmed || !account()) {
+    if (!sessionConfirmed || !user()) {
       topButton?.remove();
       topButton = undefined;
       return;
@@ -10081,7 +10081,10 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     topButton.textContent = '백업';
     topButton.style.cssText = 'width:auto;padding-inline:10px;white-space:nowrap';
     topButton.onclick = () => {
-      if (!account()) return;
+      if (!account()) {
+        toast('업무 데이터 백업은 관리자 계정에서 설정할 수 있습니다.');
+        return;
+      }
       document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
       const panel = document.querySelector('#qmesPcBackupStatus')?.closest('section');
       panel?.scrollIntoView({block:'nearest'});
