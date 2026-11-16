@@ -266,7 +266,8 @@
     const cached=load();
     if(cached) apply(cached);
     try{
-      const r=await fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"});
+      const r=await (window.qmesInitialSessionRequest || fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"}));
+      delete window.qmesInitialSessionRequest;
       const p=await r.json().catch(()=>({success:false}));
       if(!r.ok||!p.success||!p.data)throw 0;
       const u=norm(p.data);
