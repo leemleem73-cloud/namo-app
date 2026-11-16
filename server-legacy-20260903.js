@@ -4403,7 +4403,7 @@ function requirePcBackupAccess(req, res, next) {
   }
   return fail(res, 403, '업무 데이터 백업 권한이 필요합니다.');
 }
-async function writePcBackup(write, signal) {
+async function writePcBackup(write, signal, onProgress) {
   const tables = [
     'iqc','pqc','oqc','suppliers','nonconform','worklog','worklog_materials',
     'certificates','training_reports','instruments','supplier_scores','equipments',
@@ -4421,6 +4421,8 @@ async function writePcBackup(write, signal) {
     );
     const available = new Set(result.rows.map(row => row.tablename));
     const missingTables = tables.filter(table => !available.has(table));
+    let completed=0;
+    onProgress?.(completed,available.size);
     const metadata = {format:'namo-qmes-pc-backup',version:2,binaryEncoding:'postgres-bytea-hex',createdAt:new Date().toISOString(),missingTables};
     await write(JSON.stringify(metadata).slice(0,-1)+',"data":{');
     let firstTable = true;
@@ -4442,6 +4444,7 @@ async function writePcBackup(write, signal) {
       }
       await write(']');
       await client.query('CLOSE qmes_backup_cursor');
+      onProgress?.(++completed,available.size);
     }
     await client.query('COMMIT');
     await write('},"complete":true}');
@@ -4489,7 +4492,16 @@ app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
       job.dir=await fs.promises.mkdtemp(path.join(require('node:os').tmpdir(),'qmes-backup-'));
       job.file=path.join(job.dir,'backup.json');
       const file=await fs.promises.open(job.file,'wx',0o600);
-      try{await writePcBackup(chunk=>file.writeFile(chunk),AbortSignal.timeout(10*60*1000));}
+      try{
+        job.bytes=0;
+        await writePcBackup(async chunk=>{
+          await file.writeFile(chunk);
+          job.bytes+=Buffer.byteLength(chunk);
+        },AbortSignal.timeout(10*60*1000),(completed,total)=>{
+          job.completed=completed;
+          job.total=total;
+        });
+      }
       finally{await file.close();}
       job.state='ready';
     }catch(error){
@@ -4514,8 +4526,8 @@ function findPcBackupJob(req,res,next){
   next();
 }
 app.get(pcBackupJobPath,requirePcBackupAccess,findPcBackupJob,(req,res)=>{
-  const {state,stage}=req.pcBackupJob;
-  ok(res,{state,stage});
+  const {state,stage,completed,total,bytes}=req.pcBackupJob;
+  ok(res,{state,stage,completed,total,bytes});
 });
 app.get(pcBackupJobPath+'/file',requirePcBackupAccess,findPcBackupJob,(req,res)=>{
   if(req.pcBackupJob.state!=='ready')return fail(res,409,'백업 파일이 아직 준비되지 않았습니다.');
