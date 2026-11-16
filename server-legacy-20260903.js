@@ -4403,7 +4403,7 @@ function requirePcBackupAccess(req, res, next) {
   }
   return fail(res, 403, '업무 데이터 백업 권한이 필요합니다.');
 }
-app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
+async function writePcBackup(write, signal) {
   const tables = [
     'iqc','pqc','oqc','suppliers','nonconform','worklog','worklog_materials',
     'certificates','training_reports','instruments','supplier_scores','equipments',
@@ -4412,14 +4412,6 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     'qmes_iqc_attachments','qmes_oqc_attachments'
   ];
   let client, currentTable='';
-  const connection = new AbortController();
-  res.once('close', () => connection.abort());
-  async function write(chunk) {
-    if (connection.signal.aborted) throw Error('Backup connection closed');
-    if (!res.write(chunk)) {
-      await require('node:events').once(res, 'drain', {signal:connection.signal});
-    }
-  }
   try {
     client = await pool.connect();
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
@@ -4430,22 +4422,19 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     const available = new Set(result.rows.map(row => row.tablename));
     const missingTables = tables.filter(table => !available.has(table));
     const metadata = {format:'namo-qmes-pc-backup',version:2,binaryEncoding:'postgres-bytea-hex',createdAt:new Date().toISOString(),missingTables};
-    res.setHeader('Cache-Control', 'private, no-store');
-    res.attachment('namo-qmes-data.json');
-    res.type('application/json');
     await write(JSON.stringify(metadata).slice(0,-1)+',"data":{');
     let firstTable = true;
     for (const table of tables) {
       if (!available.has(table)) continue;
       currentTable=table;
       // The identifier comes exclusively from the static table list above.
-      if (connection.signal.aborted) throw Error('Backup connection closed');
+      if (signal.aborted) throw Error('Backup connection closed');
       await client.query('DECLARE qmes_backup_cursor NO SCROLL CURSOR FOR SELECT row_to_json(source)::text AS entry FROM public.'+table+' AS source');
       await write((firstTable?'':',')+JSON.stringify(table)+':[');
       firstTable = false;
       let firstRow = true;
       const batchSize = table.endsWith('_attachments') ? 2 : 50;
-      while (!connection.signal.aborted) {
+      while (!signal.aborted) {
         const batch = await client.query('FETCH FORWARD '+batchSize+' FROM qmes_backup_cursor');
         if (!batch.rows.length) break;
         await write((firstRow?'':',')+batch.rows.map(row=>row.entry).join(','));
@@ -4455,19 +4444,82 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
       await client.query('CLOSE qmes_backup_cursor');
     }
     await client.query('COMMIT');
-    res.end('},"complete":true}');
+    await write('},"complete":true}');
   } catch (error) {
     if (client) await client.query('ROLLBACK').catch(()=>{});
-    if (connection.signal.aborted) return;
-    console.error('[QMES PC backup]', currentTable, error.code, error.message);
-    if (res.headersSent) res.end('\nQMES_BACKUP_FAILED:'+ (currentTable || 'database') + '\n');
-    else {
-      res.removeHeader('Content-Disposition');
-      fail(res, 500, '백업 파일을 만들지 못했습니다. ('+(currentTable||'데이터베이스 연결')+')');
-    }
-  } finally {
-    client?.release();
+    error.backupTable=currentTable;
+    throw error;
+  } finally { client?.release(); }
+}
+
+app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
+  const connection = new AbortController();
+  res.once('close',()=>connection.abort());
+  res.setHeader('Cache-Control','private, no-store');
+  res.attachment('namo-qmes-data.json').type('application/json');
+  try {
+    await writePcBackup(async chunk=>{
+      if(connection.signal.aborted)throw Error('Backup connection closed');
+      if(!res.write(chunk))await require('node:events').once(res,'drain',{signal:connection.signal});
+    },connection.signal);
+    res.end();
+  } catch(error) {
+    if(connection.signal.aborted)return;
+    console.error('[QMES PC backup]',error.backupTable,error.message);
+    if(res.headersSent)res.end('\nQMES_BACKUP_FAILED:'+(error.backupTable||'database')+'\n');
+    else {res.removeHeader('Content-Disposition');fail(res,500,'백업 파일을 만들지 못했습니다.');}
   }
+});
+
+const pcBackupJobs = new Map();
+const pcBackupJobPath = '/api/admin/pc-backup/jobs/:id';
+const backupJobLifetime = 60*60*1000;
+app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
+  const id=req.params.id;
+  const owner=String(req.session.user.id||'');
+  if(!owner||!/^[a-f0-9-]{36}$/i.test(id)||!req.is('application/json'))return fail(res,400,'잘못된 백업 요청입니다.');
+  res.setHeader('Cache-Control','private, no-store');
+  const existing=pcBackupJobs.get(id);
+  if(existing)return existing.owner===owner?ok(res,{state:existing.state}):fail(res,404,'백업 작업을 찾을 수 없습니다.');
+  if(pcBackupJobs.size>=6)return fail(res,429,'백업 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
+  const job={owner,state:'running'};
+  pcBackupJobs.set(id,job);
+  void (async()=>{
+    try{
+      job.dir=await fs.promises.mkdtemp(path.join(require('node:os').tmpdir(),'qmes-backup-'));
+      job.file=path.join(job.dir,'backup.json');
+      const file=await fs.promises.open(job.file,'wx',0o600);
+      try{await writePcBackup(chunk=>file.writeFile(chunk),AbortSignal.timeout(10*60*1000));}
+      finally{await file.close();}
+      job.state='ready';
+    }catch(error){
+      console.error('[QMES PC backup job]',error.backupTable,error.message);
+      job.state='failed';
+      job.stage=error.backupTable||'database';
+      if(job.dir)await fs.promises.rm(job.dir,{recursive:true,force:true}).catch(()=>{});
+    }finally{
+      setTimeout(()=>{
+        pcBackupJobs.delete(id);
+        if(job.dir)void fs.promises.rm(job.dir,{recursive:true,force:true}).catch(()=>{});
+      },backupJobLifetime).unref();
+    }
+  })();
+  return ok(res,{state:'running'});
+});
+function findPcBackupJob(req,res,next){
+  res.setHeader('Cache-Control','private, no-store');
+  const job=pcBackupJobs.get(req.params.id);
+  if(!job||job.owner!==String(req.session.user.id||''))return fail(res,404,'백업 작업을 찾을 수 없습니다.');
+  req.pcBackupJob=job;
+  next();
+}
+app.get(pcBackupJobPath,requirePcBackupAccess,findPcBackupJob,(req,res)=>{
+  const {state,stage}=req.pcBackupJob;
+  ok(res,{state,stage});
+});
+app.get(pcBackupJobPath+'/file',requirePcBackupAccess,findPcBackupJob,(req,res)=>{
+  if(req.pcBackupJob.state!=='ready')return fail(res,409,'백업 파일이 아직 준비되지 않았습니다.');
+  res.download(req.pcBackupJob.file,'namo-qmes-data.json');
 });
 
 app.get('/api/backup', requireLogin, async (_req, res) => {
