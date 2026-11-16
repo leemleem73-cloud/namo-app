@@ -4411,7 +4411,7 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     'qmes_work_order_documents','qmes_work_order_deletions',
     'qmes_iqc_attachments','qmes_oqc_attachments'
   ];
-  let client;
+  let client, currentTable='';
   const connection = new AbortController();
   res.once('close', () => connection.abort());
   async function write(chunk) {
@@ -4437,6 +4437,7 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
     let firstTable = true;
     for (const table of tables) {
       if (!available.has(table)) continue;
+      currentTable=table;
       // The identifier comes exclusively from the static table list above.
       if (connection.signal.aborted) throw Error('Backup connection closed');
       await client.query('DECLARE qmes_backup_cursor NO SCROLL CURSOR FOR SELECT row_to_json(source)::text AS entry FROM public.'+table+' AS source');
@@ -4454,15 +4455,15 @@ app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
       await client.query('CLOSE qmes_backup_cursor');
     }
     await client.query('COMMIT');
-    res.end('}}');
+    res.end('},"complete":true}');
   } catch (error) {
     if (client) await client.query('ROLLBACK').catch(()=>{});
     if (connection.signal.aborted) return;
-    console.error('[QMES PC backup]', error.message);
-    if (res.headersSent) res.destroy();
+    console.error('[QMES PC backup]', currentTable, error.code, error.message);
+    if (res.headersSent) res.end('\nQMES_BACKUP_FAILED:'+ (currentTable || 'database') + '\n');
     else {
       res.removeHeader('Content-Disposition');
-      fail(res, 500, '백업 파일을 만들지 못했습니다.');
+      fail(res, 500, '백업 파일을 만들지 못했습니다. ('+(currentTable||'데이터베이스 연결')+')');
     }
   } finally {
     client?.release();
