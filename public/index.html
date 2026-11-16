@@ -24,7 +24,10 @@ window.qmesApplyWallpaper(saved);
 })();
 </script>
 <style id="qmes-top-actions-first-paint">
-#app > header.topbar .top-actions:not([data-qmes-top-ready]) { opacity:0; visibility:hidden; pointer-events:none; }
+#app > header.topbar #qmesPcBackupTop{width:auto;padding-inline:10px;white-space:nowrap}
+#app > header.topbar #currentUser{min-width:98px}
+#app > header.topbar #currentUser[data-qmes-profile-preview]:not([data-qauth-ready="1"]){visibility:visible!important;pointer-events:none}
+@media(max-width:820px){#app > header.topbar #currentUser{min-width:42px}}
 </style>
 <style id="qmes-initial-factory-fallback-20261026">
 html,body,#app,main.content{background-color:#edf3f9!important}
@@ -2896,10 +2899,13 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
         <div class="user-meta"><b></b><br><small></small></div>
         <span class="qauth-arrow" aria-hidden="true">▼</span>
       </div>
-      <!-- The auth bridge owns profile rendering; do not pre-render cached identity. -->
+      <!-- The cached profile preview is display-only until the server confirms login. -->
 
       <span class="top-divider" aria-hidden="true"></span>
       <a id="qmesMobileSwitchBtn" href="/mobile-app-20261031.html" title="모바일 버전으로 이동" aria-label="모바일 버전으로 이동" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 11px;border:1px solid #c8e0ed;border-radius:10px;background:#eef8fd;color:#14668a;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>모바일 버전</a>
+      <button class="top-chip" id="qmesPcBackupTop" type="button" disabled>백업</button>
+      <span id="namoPortalTopDate" aria-label="오늘 날짜"></span>
+      <span id="namoPortalTopDivider" aria-hidden="true"></span>
       <button class="top-chip hide-sm" id="notifyBtn" type="button" title="통합알림" aria-label="통합알림">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
       </button>
@@ -2950,6 +2956,30 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
       </div>
     </div>
   </header>
+<script id="qmes-toolbar-initial-content">
+(()=>{
+  const date = document.getElementById('namoPortalTopDate');
+  const format = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'long'});
+  function updateDate(){
+    const parts = Object.fromEntries(format.formatToParts(new Date()).map(p=>[p.type,p.value]));
+    date.textContent = parts.year+'년 '+parts.month+'월 '+parts.day+'일 '+parts.weekday;
+  }
+  updateDate();
+  window.addEventListener('focus',updateDate);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateDate();});
+  try {
+    const profile = JSON.parse(sessionStorage.getItem('qmes-current-user-v1')||'null');
+    const user = document.getElementById('currentUser');
+    if (typeof profile?.name==='string' && profile.name.trim() && user) {
+      user.querySelector('.avatar').textContent='♙';
+      user.querySelector('.user-meta b').textContent=profile.name;
+      user.querySelector('.user-meta small').textContent=typeof profile.dept==='string'?profile.dept:'';
+      user.setAttribute('data-qmes-profile-preview','');
+      window.qmesAuthDataReady.wait().then(()=>user.removeAttribute('data-qmes-profile-preview'));
+    }
+  } catch (_) {}
+})();
+</script>
 
   <aside class="sidebar" id="sidebar">
     <div class="nav-wrap">
@@ -9375,16 +9405,6 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
  const user=document.getElementById('currentUser');
  const frame=document.getElementById('namoPortal20261014');
  if(!bar||!notify||!user||!frame)return;
- const date=document.createElement('span');date.id='namoPortalTopDate';date.setAttribute('aria-label','오늘 날짜');
- const divider=document.createElement('span');divider.id='namoPortalTopDivider';divider.setAttribute('aria-hidden','true');
- function updateDate(){
-   const d=new Date(),week=['일','월','화','수','목','금','토'];
-   date.textContent=d.getFullYear()+'년 '+String(d.getMonth()+1).padStart(2,'0')+'월 '+String(d.getDate()).padStart(2,'0')+'일 '+week[d.getDay()]+'요일';
- }
- updateDate();
- window.addEventListener('focus',updateDate);
- document.addEventListener('visibilitychange',function(){if(!document.hidden)updateDate();});
- [date,divider].forEach(function(el){bar.insertBefore(el,notify)});
  // Original QMES notification button retains API, filters, read-all and work alerts.
  // Original QMES user node retains login, account menu and logout.
  const list=document.getElementById('notifyList');
@@ -10067,42 +10087,26 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
     };
   }};
   const userPanel = document.getElementById('currentUser');
-  const topActions = userPanel?.closest('.top-actions');
+  const topButton = document.getElementById('qmesPcBackupTop');
   let sessionConfirmed = false;
-  let topButton;
-  function updateTopButton() {
-    if (!sessionConfirmed || !user()) {
-      topButton?.remove();
-      topButton = undefined;
-      return;
-    }
-    const anchor = document.getElementById('qmesMobileSwitchBtn');
-    if (topButton?.isConnected || !anchor) return;
-    topButton = document.createElement('button');
-    topButton.id = 'qmesPcBackupTop';
-    topButton.className = 'top-chip';
-    topButton.type = 'button';
-    topButton.textContent = '백업';
-    topButton.style.cssText = 'width:auto;padding-inline:10px;white-space:nowrap';
-    topButton.onclick = () => {
-      if (!account()) {
-        toast('업무 데이터 백업은 관리자 계정에서 설정할 수 있습니다.');
-        return;
-      }
-      document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
-      const panel = document.querySelector('#qmesPcBackupStatus')?.closest('section');
-      panel?.scrollIntoView({block:'nearest'});
-      panel?.querySelector('[data-backup-folder]')?.focus({preventScroll:true});
-    };
-    anchor.after(topButton);
+  function updateTopButton(){
+    if(topButton)topButton.disabled=!sessionConfirmed||!user();
   }
-  if (userPanel) new MutationObserver(updateTopButton).observe(userPanel,{
-    attributes:true,attributeFilter:['data-role','data-qauth-ready']
-  });
-  window.qmesAuthDataReady?.wait().then(()=>{
-    sessionConfirmed = true;
+  if(topButton)topButton.onclick=()=>{
+    if(!sessionConfirmed||!user())return;
+    if(!account()){toast('업무 데이터 백업은 관리자 계정에서 설정할 수 있습니다.');return;}
+    document.querySelector('.sidebar .menu[data-page="serverAdmin"]')?.click();
+    const panel=document.querySelector('#qmesPcBackupStatus')?.closest('section');
+    panel?.scrollIntoView({block:'nearest'});
+    panel?.querySelector('[data-backup-folder]')?.focus({preventScroll:true});
+  };
+  if(userPanel)new MutationObserver(()=>{
     updateTopButton();
-    topActions?.setAttribute('data-qmes-top-ready','');
+    if(!user() && document.getElementById('qauth-login'))userPanel.removeAttribute('data-qmes-profile-preview');
+  }).observe(userPanel,{attributes:true,attributeFilter:['data-qauth-ready','style']});
+  window.qmesAuthDataReady?.wait().then(()=>{
+    sessionConfirmed=true;
+    updateTopButton();
     const panel=document.getElementById('serverAdmin');
     if (panel?.querySelector('#serverAdminRows') && account()) window.qmesPcBackup.mount(panel);
     void save();
