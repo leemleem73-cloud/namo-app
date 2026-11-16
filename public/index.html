@@ -1469,18 +1469,18 @@ thead{background:#f4f7fa}
 /* Shared list-frame geometry based on IQC. Exclude report, modal, and nested detail tables. */
 .module-page .module-shell {border:1px solid #d7dfe8!important;border-radius:6px!important;box-shadow:none!important;background:#fff!important;overflow:hidden}
 .module-page .module-shell > .module-toolbar {min-height:51px;border-bottom:1px solid #d7dfe8!important;background:#fbfcfe!important;gap:12px}
-.module-page .module-shell > .module-body {padding:0!important;min-height:132px;background:#fff!important}
-.module-page .module-shell > .module-body > table,
-.module-page .module-shell > .module-body > div > table,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body {padding:0!important;min-height:132px;background:#fff!important}
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > table,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > div > table,
 #dashboard .table-card > div > table {width:100%!important;border-collapse:collapse!important;border-spacing:0!important;background:#fff!important;border:0!important}
-.module-page:not(#purchase) .module-shell > .module-body > table > thead > tr > th,
-.module-page:not(#purchase) .module-shell > .module-body > div > table > thead > tr > th,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > table > thead > tr > th,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > div > table > thead > tr > th,
 #dashboard .table-card > div > table > thead > tr > th {height:42px!important;background:#f2ecfb!important;color:#30263d!important;font-size:13px!important;font-weight:800!important;text-align:center!important;vertical-align:middle!important;border:1px solid #d6cfdf!important;padding:7px 8px!important}
-.module-page .module-shell > .module-body > table > tbody > tr > td,
-.module-page .module-shell > .module-body > div > table > tbody > tr > td,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > table > tbody > tr > td,
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > div > table > tbody > tr > td,
 #dashboard .table-card > div > table > tbody > tr > td {height:44px!important;background:#fff!important;color:#263347!important;font-size:13px!important;text-align:center!important;vertical-align:middle!important;border:1px solid #e1e5eb!important;padding:7px 8px!important}
-.module-page .module-shell > .module-body > table > tbody > tr:only-child > td[colspan],
-.module-page .module-shell > .module-body > div > table > tbody > tr:only-child > td[colspan],
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > table > tbody > tr:only-child > td[colspan],
+.module-page:not(:is(#orders,#purchase,#work)) .module-shell > .module-body > div > table > tbody > tr:only-child > td[colspan],
 #dashboard .table-card > div > table > tbody > tr:only-child > td[colspan] {height:90px!important;color:#344054!important;font-size:13px!important}
 #dashboard .table-card {border:1px solid #d7dfe8!important;border-radius:6px!important;box-shadow:none!important;overflow:hidden}
 #dashboard .table-card > .card-head {min-height:48px;background:#fbfcfe!important;border-bottom:1px solid #d7dfe8!important}
@@ -2394,10 +2394,6 @@ html body #purchase>.qpu-detail th .qpd-number::after{border-right-color:#cbd8e5
 html body #work>#namo-work-detail{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
 </style>
 
-<style id="qmes-orders-purchase-single-right-edge-20261019">
-/* The list frame owns the outer right border; the last cells draw no second line. */
-html body :is(#orders,#purchase).module-page>.module-shell>.module-body>table :is(thead,tbody) tr>:last-child{border-right:0!important;box-shadow:none!important}
-</style>
 
 <style id="qmes-calendar-weekends-unified-20261019">
 html body :is(.namo-orders-mini-calendar,.namo-purchase-mini-calendar,.namo-work-mini-calendar,.namo-inventory-mini-calendar,.namo-incoming-mini-calendar,.namo-process-mini-calendar,.namo-outgoing-mini-calendar,.eq-date-popup) .nwm-days>span:nth-child(1),
@@ -2773,6 +2769,54 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 .inspection-barcode-dialog ul{display:grid;gap:6px;padding:0;list-style:none}
 .inspection-barcode-dialog li .btn{width:100%;white-space:normal;text-align:left}
 </style>
+<style id="qmes-order-purchase-work-list-grid">
+@media screen {
+  html body #app main.content #purchase>.module-shell>.module-toolbar {
+    background:#fff!important;
+    border-bottom:1px solid #d5dfe9!important;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body {
+    box-sizing:border-box!important;
+    min-width:0!important;
+    border:1px solid #d5dfe9!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body>table {
+    width:100%!important;
+    min-width:100%!important;
+    table-layout:fixed!important;
+    border:0!important;
+    border-collapse:separate!important;
+    border-spacing:0!important;
+    box-shadow:none!important;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body>table :is(thead,tbody)>tr>:is(th,td) {
+    box-sizing:border-box!important;
+    border:0!important;
+    border-right:1px solid #d5dfe9!important;
+    border-bottom:1px solid #d5dfe9!important;
+    box-shadow:none!important;
+    text-align:center!important;
+    vertical-align:middle!important;
+    overflow-wrap:anywhere;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body>table>thead>tr>th {
+    height:34px!important;
+    padding-block:6px!important;
+    background:#e8f0f8!important;
+    color:#244260!important;
+    -webkit-text-fill-color:#244260!important;
+    font:600 12px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body>table tr>:is(th,td):last-child {
+    border-right:0!important;
+  }
+  html body #app main.content :is(#orders,#purchase,#work).module-page>.module-shell>.module-body>table>tbody>tr:last-child>:is(th,td) {
+    border-bottom:0!important;
+  }
+}
+</style>
 </head>
 <body>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
@@ -2986,31 +3030,6 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 </div>
 <div class="toast" id="toast"></div>
 
-<style id="namo-work-square-grid-20261015">
-/* Work-order list only: square, consistent 1px grid matching incoming inspection. */
-#work .module-body .work-list-table {
-  border-collapse:separate!important;
-  border-spacing:0!important;
-  border:1px solid #dce2e8!important;
-  border-radius:0!important;
-}
-#work .module-body .work-list-table th,
-#work .module-body .work-list-table td {
-  border-radius:0!important;
-  border-top:0!important;
-  border-left:0!important;
-  border-right:1px solid #eef1f4!important;
-  border-bottom:1px solid #e8edf2!important;
-  box-sizing:border-box!important;
-}
-#work .module-body .work-list-table thead th {
-  border-right-color:#e4dcee!important;
-  border-bottom-color:#e4dcee!important;
-}
-#work .module-body .work-list-table th:last-child,
-#work .module-body .work-list-table td:last-child {border-right:0!important;}
-#work .module-body .work-list-table tbody tr:last-child td {border-bottom:0!important;}
-</style>
 <script defer src="/vendor/qrcode.min.js"></script>
 <script id="qmes-work-material-palette">
 (function(){
@@ -9808,47 +9827,6 @@ html body #mainWorkspace .orders-status-button:focus-visible{outline:2px solid #
 html body #mainWorkspace .am-split[data-am-screen="orders"] [data-orders-status-cell="1"]{grid-column:1!important;width:100%!important}
 </style>
 
-<style id="purchase-list-header-parity">
-@media screen {
-  html body #app main.content #purchase>.module-shell>.module-toolbar {
-    background:#fff!important;
-    border-bottom:1px solid #d5dfe9!important;
-  }
-  html body #app main.content #purchase>.module-shell>.module-body {
-    border-bottom:0!important;
-  }
-  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable {
-    border:0!important;
-    border-collapse:separate!important;
-    border-spacing:0!important;
-    box-shadow:none!important;
-  }
-  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable>thead>tr>th {
-    box-sizing:border-box!important;
-    height:34px!important;
-    padding-block:6px!important;
-    background:#e8f0f8!important;
-    -webkit-text-fill-color:#244260!important;
-    color:#244260!important;
-    font:600 12px/20px Pretendard,"Noto Sans KR",Arial,sans-serif!important;
-    text-align:center!important;
-    vertical-align:middle!important;
-    border:0!important;
-    border-right:1px solid #cbd8e5!important;
-    border-bottom:1px solid #cbd8e5!important;
-    box-shadow:none!important;
-  }
-  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable>tbody>tr>td {
-    border:0!important;
-    border-right:1px solid #d5dfe9!important;
-    border-bottom:1px solid #d5dfe9!important;
-    box-shadow:none!important;
-  }
-  html body #app main.content #purchase>.module-shell>.module-body>#qmesPurchaseListTable tr>:is(th,td):last-child {
-    border-right:0!important;
-  }
-}
-</style>
 <script defer src="./js/qmes-inspection-date-calendar-20261028.js?v=20261104-stock-grid"></script>
 
 <style id="qmes-list-actions-white-parity-20261028">
