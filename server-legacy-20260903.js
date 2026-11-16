@@ -4396,7 +4396,14 @@ bindCrud('equipments', (b) => ({
 }));
 
 // Business-data export for administrators. Database-level recovery uses pg_dump.
-app.get('/api/admin/pc-backup', requireAdmin, async (_req, res) => {
+function requirePcBackupAccess(req, res, next) {
+  const user = req.session?.user;
+  if (user?.role === 'admin' || (user?.uid === 'U-0010' && user?.name === '박현아' && user?.status === 'APPROVED')) {
+    return next();
+  }
+  return fail(res, 403, '업무 데이터 백업 권한이 필요합니다.');
+}
+app.get('/api/admin/pc-backup', requirePcBackupAccess, async (_req, res) => {
   const tables = [
     'iqc','pqc','oqc','suppliers','nonconform','worklog','worklog_materials',
     'certificates','training_reports','instruments','supplier_scores','equipments',
