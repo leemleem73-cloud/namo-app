@@ -3,7 +3,7 @@
   'use strict';
   if (window.__qmesOqcRegistrationSave20261021) return;
   window.__qmesOqcRegistrationSave20261021 = true;
-  const scope = '.std-inspection.oqc-pqc-layout[data-inspection-type="outgoing"]';
+  const scope = '.am-split[data-am-screen="outgoing"][data-am-mode="new"] .std-inspection[data-inspection-type="outgoing"],.std-inspection.oqc-pqc-layout[data-inspection-type="outgoing"]';
   const states = new WeakMap();
   const hyundaiCustomers = ['현대자동차','현대자동차(안성)','현대자동차(의왕)'];
   const fieldsByLabel = {
@@ -155,7 +155,7 @@
 /* Link new OQC registration to authoritative production records without copying inspection results. */
 (function(){
 'use strict';
-const scope='.std-inspection.oqc-pqc-layout[data-inspection-type="outgoing"]';
+const scope='.am-split[data-am-screen="outgoing"][data-am-mode="new"] .std-inspection[data-inspection-type="outgoing"],.std-inspection.oqc-pqc-layout[data-inspection-type="outgoing"]';
 const bound=new WeakSet();
 const clean=value=>{const s=String(value??'').trim();return s==='-'?'':s;};
 const day=value=>{const s=clean(value);const m=s.match(/\d{4}[-./]\d{1,2}[-./]\d{1,2}/);if(!m)return '';return m[0].split(/[-./]/).map((x,i)=>i?x.padStart(2,'0'):x).join('-');};
@@ -227,12 +227,15 @@ function createRegistrationPicker(input,label,{selectFirst=false}={}){
  panel.className='oqc-picker-options';
  panel.id=input.id+'-options';
  panel.hidden=true;
+ const usePopover=typeof panel.showPopover==='function';
+ if(usePopover)panel.setAttribute('popover','manual');
  panel.setAttribute('role','group');
  panel.setAttribute('aria-label',label+' 목록');
  toggle.setAttribute('aria-controls',panel.id);
  wrapper.append(toggle,panel);
  let values=[],filter='';
  function close(){
+  if(usePopover&&panel.matches(':popover-open'))panel.hidePopover();
   panel.hidden=true;
   toggle.setAttribute('aria-expanded','false');
  }
@@ -266,8 +269,21 @@ function createRegistrationPicker(input,label,{selectFirst=false}={}){
    });
    panel.append(manual);
   }
-  panel.hidden=!panel.childElementCount;
-  toggle.setAttribute('aria-expanded',String(!panel.hidden));
+  if(!panel.childElementCount){close();return;}
+  panel.hidden=false;
+  if(usePopover){
+   const bounds=wrapper.getBoundingClientRect();
+   const below=window.innerHeight-bounds.bottom;
+   const above=bounds.top;
+   const openAbove=below<140&&above>below;
+   Object.assign(panel.style,{
+    inset:openAbove?'auto auto '+(window.innerHeight-bounds.top+3)+'px '+bounds.left+'px':(bounds.bottom+3)+'px auto auto '+bounds.left+'px',
+    width:bounds.width+'px',
+    maxHeight:Math.min(220,Math.max(48,(openAbove?above:below)-8))+'px'
+   });
+   if(!panel.matches(':popover-open'))panel.showPopover();
+  }
+  toggle.setAttribute('aria-expanded','true');
  }
  toggle.addEventListener('click',()=>panel.hidden?show(''):close());
  input.addEventListener('click',()=>{if(panel.hidden)show('');});
@@ -308,6 +324,7 @@ function setup(root){
  .oqc-pqc-layout .std-info .oqc-registration-picker>.oqc-picker-toggle[hidden],.oqc-pqc-layout .std-info .oqc-lot-link-retry[hidden]{display:none!important}
  .oqc-pqc-layout .std-info .oqc-lot-link-status:empty{display:none}
  .oqc-registration-picker>.oqc-picker-options{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:10;max-height:220px;overflow:auto;padding:4px;border:1px solid #cad9e8;border-radius:5px;background:#fff;box-shadow:0 5px 14px #15365622}
+ .oqc-registration-picker>.oqc-picker-options[popover]{position:fixed;margin:0;box-sizing:border-box}
  .oqc-picker-options>button{display:block;width:100%;padding:7px 9px;border:0;border-radius:3px;background:#fff;color:#173754;text-align:left;font:inherit;cursor:pointer;overflow-wrap:anywhere}
  .oqc-picker-options>button:hover,.oqc-picker-options>button:focus-visible{background:#ebf4ff}
  .oqc-registration-picker>[hidden]{display:none!important}
