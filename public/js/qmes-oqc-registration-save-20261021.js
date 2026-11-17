@@ -5,6 +5,7 @@
   window.__qmesOqcRegistrationSave20261021 = true;
   const scope = '.std-inspection.oqc-pqc-layout[data-inspection-type="outgoing"]';
   const states = new WeakMap();
+  const hyundaiCustomers = ['현대자동차','현대자동차(안성)','현대자동차(의왕)'];
   const fieldsByLabel = {
     '검사일자': 'date', '검사자': 'inspector', '고객사': 'customer',
     '제품명': 'product', '완제품 LOT': 'lot', '비고': 'remarks',
@@ -305,7 +306,7 @@ function setup(root){
   const selected=customer.value;
   const names=[...new Set([...orders.map(o=>orderInfo(o).customer),...checks.map(r=>clean(r.customer)),...history.map(r=>clean(r.customer)),selected].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
   customer.replaceChildren(new Option('고객사 선택',''));
-  for(const name of names)customer.add(new Option(name,name));
+  for(const name of [...new Set([...hyundaiCustomers,...names])])customer.add(new Option(name,name));
   customer.value=selected;
  }
  function clearAuto(){
@@ -315,9 +316,13 @@ function setup(root){
  }
  function apply(choice){
   if(!choice)return;
-  ensureCustomer(choice.customer);
-  lot.value=choice.lot;product.value=choice.product;customer.value=choice.customer;
-  autoValues={lot:choice.lot,product:choice.product,customer:choice.customer};
+  const fillCustomer=!customer.value||customer.value===autoValues?.customer;
+  lot.value=choice.lot;product.value=choice.product;
+  if(fillCustomer){
+   ensureCustomer(choice.customer);
+   customer.value=choice.customer;
+  }
+  autoValues={lot:choice.lot,product:choice.product,customer:fillCustomer?choice.customer:undefined};
   message.textContent='';
  }
  function resolve(source,anchor,value,selectedCustomer){
@@ -359,12 +364,16 @@ function setup(root){
   lot.addEventListener(event,()=>link('lot',lot));
   product.addEventListener(event,()=>link('product',product));
  }
- customer.addEventListener('change',()=>{if(loaded)render(true);});
+ customer.addEventListener('change',()=>{
+  if(autoValues)delete autoValues.customer;
+  if(loaded)render(true);
+ });
  date.addEventListener('change',()=>{
   if(date.value===lastDate)return;lastDate=date.value;clearAuto();
   if(loaded)render(true,true);else if(!loading)void load();
  });
  retry.addEventListener('click',()=>void load());
+ customers();
  void load();
 }
 let pending=false;
