@@ -2598,6 +2598,8 @@ html body #outgoing [data-shipping-state]{font-weight:700;color:#245b9e}
 html body #outgoing [data-shipping-state="출하완료"]{color:#15803d}
 html body #outgoing [data-shipping-state="출하보류"]{color:#b42318}
 html body #outgoing [data-shipping-state="미지정"]{color:#7b8795}
+html body #outgoing select.oqc-list-shipping{color-scheme:light;width:100%;box-sizing:border-box;border:1px solid #cbd9e7;border-radius:4px;background:#fff;padding:2px 1px;font:inherit;text-align:center;cursor:pointer}
+html body #outgoing select.oqc-list-shipping option{background:#fff;color:#244260}
 html body .std-inspection[data-inspection-type="outgoing"] .std-summary-card:nth-child(2){position:relative!important;flex-direction:column!important;gap:6px!important;padding:10px!important;min-height:84px!important}
 html body .std-inspection[data-inspection-type="outgoing"] .std-summary-card:nth-child(2)>.value{position:static!important;width:100%!important;height:auto!important;min-height:0!important;flex:0 0 auto!important}
 html body .std-inspection[data-inspection-type="outgoing"] .oqc-shipping-caption{display:block;font-size:10px;font-weight:600;color:#63758b}
@@ -6337,6 +6339,46 @@ function oqcRecordedShipment(row){
     &&String(shipment.inspectionDate??'').slice(0,10)===date);
 }
 
+async function saveOutgoingListStatus(section,row,select){
+  const previous=select.dataset.shippingState,status=select.value;
+  if(!row||!['출하대기','출하완료','출하보류'].includes(status)||status===previous){
+    select.value=previous;
+    return;
+  }
+  select.disabled=true;
+  try{
+    const targets=(row.__groupChecks||[row]).map(check=>({
+      recordKey:check.__sourceRecordKey,rowId:check.__sourceRowId,expected:check.__oqcExpected,patch:{}
+    }));
+    if(targets.some(target=>!target.recordKey||!target.rowId||!target.expected))throw Error('저장할 검사 원본을 확인하지 못했습니다. 목록을 다시 조회해 주세요.');
+    const fields={date:String(row.date||'').slice(0,10),lot:String(row.lot||''),inspector:String(row.inspector||''),shippingStatus:status};
+    if(status==='출하완료'){
+      const stored=oqcRecordedShipment(row)?.quantity??row.shipQty;
+      let quantity=stored;
+      if(!(Number(stored)>0)){
+        quantity=await window.qmesPrompt('실제 출하수량(kg)을 입력해 주세요.','');
+        if(quantity==null)return;
+      }
+      fields.shipQty=window.qmesOqcShipQty.normalize(quantity);
+      window.qmesOqcShipQty.validateCompletion(fields.shipQty);
+    }
+    const response=await fetch('/api/qmes-sync/oqc/save-detail',{
+      method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({statusOnly:true,fields,targets}),signal:AbortSignal.timeout(20000)
+    });
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||!result?.success)throw Error(result?.message||'출하상태를 저장하지 못했습니다.');
+    select.dataset.shippingState=result.data?.shipmentHeld?'출하보류':status;
+    toast('출하상태 저장 · '+select.dataset.shippingState);
+    await loadHistoricalInspectionRows(section,'outgoing');
+  }catch(error){
+    toast(error.message||'출하상태를 저장하지 못했습니다.');
+  }finally{
+    select.value=select.dataset.shippingState;
+    select.disabled=false;
+  }
+}
+
 async function loadHistoricalInspectionRows(section,id,savedPqc=null){
   await window.qmesAuthDataReady.wait();
   if(!section||!['process','outgoing'].includes(id))return;
@@ -6540,7 +6582,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       const revision=id==='outgoing'?window.qmesOqcRevision?.metadata(checks):null;
       const values=id==='process'
         ?[row.date,row.workOrderNo||row.orderNo||'-',row.product,row.lot,'PQC','외관 / 점도 / 입도 / 고형분',(row.judge==='검사대기'?'대기':row.judge||'대기'),'',row.inspector,'',row.remarks||'-']
-        :[row.date,window.qmesOqcRevision?.formatModifiedAt(revision?.modifiedAt)||'—','Rev.'+(revision?.revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcSummary?.overall||'대기',row.inspector||'-',recordedShipment?'출하완료':row.shippingStatus||'미지정',shippingDate,String(recordedShipment?.quantity??row.shipQty??'').trim()||'—','','',''];
+        :[row.date,window.qmesOqcRevision?.formatModifiedAt(revision?.modifiedAt)||'—','Rev.'+(revision?.revision??0),row.customer||'-',row.product,row.lot,'외관 / 입도 / 점도 / 수분율 / 고형분 / 접착력 / 절연저항 / 전해액 안정성',oqcSummary?.overall||'대기',row.inspector||'-',row.__oqcExpected?.shippingStatus||(recordedShipment?'출하완료':row.shippingStatus||'미지정'),shippingDate,String(recordedShipment?.quantity??row.shipQty??'').trim()||'—','','',''];
       const cells=values.slice(0,cols.length).map((v,index)=>{
         if(id==='outgoing'&&cols[index]==='최종 수정일'){const author=revision?.modifiedBy||'';return '<td class="oqc-revision-list-cell" title="'+safe(author?'수정자: '+author:'수정 이력 없음')+'">'+safe(v)+'</td>';}
         if(id==='outgoing'&&cols[index]==='리비전')return '<td class="oqc-revision-list-cell"><span class="oqc-revision-badge">'+safe(v)+'</span></td>';
@@ -6553,7 +6595,11 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
           const {state,color}=approvalBadge(row,i);
           return '<td class="'+(id==='process'?'pqc-approval-cell':'oqc-approval-cell')+'"><span class="badge'+color+' quality-list-approval-state">'+state+'</span></td>';
         }
-        if(id==='outgoing'&&cols[index]==='출하상태')return '<td><span data-shipping-state="'+safe(v)+'">'+safe(v)+'</span></td>';
+        if(id==='outgoing'&&cols[index]==='출하상태'){
+          const choices=['출하대기','출하완료','출하보류'];
+          if(!choices.includes(v))choices.unshift(v);
+          return '<td><select class="oqc-list-shipping" aria-label="'+safe(row.lot)+' 출하상태" data-shipping-state="'+safe(v)+'">'+choices.map(choice=>'<option'+(choice===v?' selected':'')+'>'+safe(choice)+'</option>').join('')+'</select></td>';
+        }
         if(id==='outgoing'&&cols[index]==='출하일자')return '<td style="white-space:nowrap">'+safe(v)+'</td>';
         if(id==='outgoing'&&cols[index]==='성적서')return '<td class="oqc-report-cell"><button type="button" class="btn mini-report oqc-report-view">성적서</button></td>';
         if(id==='outgoing'&&cols[index]==='첨부파일')return '<td data-coa-file-cell>—</td>';
@@ -6569,6 +6615,9 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
       return '<tr class="data-row" tabindex="0" data-delete-targets="'+safe(JSON.stringify(row.__deleteTargets||[]))+'" data-source-key="'+safe(row.__sourceRecordKey||'')+'" data-source-index="'+(Number.isInteger(row.__sourceRowIndex)?row.__sourceRowIndex:'')+'" data-source-id="'+safe(row.__sourceRowId||'')+'"><td>'+(i+1)+'</td>'+cells+'</tr>';
     }).join(''):'<tr><td colspan="'+(cols.length+(id==='process'?0:1))+'" style="text-align:center;padding:24px">공용 저장소에 표시할 '+(id==='process'?'공정':'출하')+'검사 기록이 없습니다.</td></tr>';
     if(id==='outgoing'){
+      tbody.querySelectorAll('.oqc-list-shipping').forEach((select,index)=>{
+        select.addEventListener('change',()=>saveOutgoingListStatus(section,displayRows[index],select));
+      });
       tbody.querySelectorAll('.inspection-qr-btn').forEach(button=>button.onclick=async event=>{
         event.stopPropagation();
         const row=displayRows[button.closest('tr').sectionRowIndex];
@@ -6640,7 +6689,7 @@ async function loadHistoricalInspectionRows(section,id,savedPqc=null){
         if(status)status.textContent=hasDetail?'상세/수정 입력값 반영':'검사결과 미입력';
       }));
     }
-    section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button'))return;showRowDetail(id,tr);}));
+    section.querySelectorAll('.data-row').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.closest('input,label,button,select'))return;showRowDetail(id,tr);}));
     // Bind actions to all records before pagination detaches later pages.
     section._inspectionBulkRefresh?.(savedPqc);
     section._fitProcessColumns?.();section._fitOutgoingColumns?.();
@@ -7046,6 +7095,8 @@ function issueInspectionReport(id,row,bulkRenderOnly=false){
   const vals=[...row.children].map(td=>{
     // Exclude row action buttons (수정/삭제) from the editable cell value.
     const clone=td.cloneNode(true);
+    const shipping=td.querySelector('.oqc-list-shipping');
+    if(shipping)return shipping.value;
     clone.querySelectorAll('button,.qmes-row-actions,[data-action],[data-act]').forEach(el=>el.remove());
     return clone.textContent.trim();
   });
@@ -7940,7 +7991,7 @@ function amListData(id){
   const rows=section?( ['process','outgoing'].includes(id)&&Array.isArray(section._inspectionAllRows)?section._inspectionAllRows:[...section.querySelectorAll('.data-row')]):[];
   const workOrders=id==='work'&&typeof readWorkOrders==='function'?readWorkOrders():[];
   return rows.map((row,i)=>{
-    const cells=[...row.children].map(td=>td.textContent.trim());
+    const cells=[...row.children].map(td=>td.querySelector('.oqc-list-shipping')?.value??td.textContent.trim());
     if(id==='outgoing'){
       const record=section?._oqcRecords?.get(String(row.dataset.sourceKey||'')+'|'+String(row.dataset.sourceId||''));
       const columns=pageInfo.outgoing[2];
