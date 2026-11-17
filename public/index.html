@@ -10105,7 +10105,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       const day=pending.day;
       const jobUrl='/api/admin/pc-backup/jobs/'+encodeURIComponent(pending.id);
       const request={credentials:'same-origin',cache:'no-store'};
-      showBackupProgress('백업 준비 중');
+      showBackupProgress('백업 파일 생성 중');
       status('서버에서 백업을 준비하고 있습니다. 새로고침해도 작업이 이어집니다.');
       async function getJob(options={}){
         const response=await fetch(jobUrl,{...request,...options,signal:AbortSignal.timeout(20000)});
@@ -10122,8 +10122,8 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         if(Date.now()>=deadline)throw Error('서버 백업 준비가 11분 안에 끝나지 않았습니다. 잠시 후 지금 백업을 눌러 상태를 다시 확인해 주세요.');
         if(Number.isInteger(job.total)&&Number.isInteger(job.completed)){
           const count=job.completed+'/'+job.total;
-          showBackupProgress('준비 '+count);
-          status('서버에서 백업을 준비하고 있습니다. · '+count+'개 항목 완료 · '+backupProgressText(job.bytes||0,0));
+          showBackupProgress('파일 생성 '+count);
+          status('서버에서 백업 파일을 만들고 있습니다. · '+count+'개 항목 완료 · '+backupProgressText(job.bytes||0,0));
         }
         await new Promise(resolve=>setTimeout(resolve,2500));
         if(account()!==id)return;
@@ -10169,7 +10169,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         const total=Number.isSafeInteger(job.bytes)&&job.bytes>0
           ? job.bytes
           : (!encoding||encoding==='identity')&&Number.isSafeInteger(size)&&size>0?size:0;
-        showBackupProgress(backupProgressText(0,total));
+        showBackupProgress('전송 시작 대기 중');
         if(response.body){
           const reader=response.body.getReader();
           const chunks=[];
