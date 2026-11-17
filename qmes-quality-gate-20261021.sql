@@ -147,7 +147,7 @@ BEGIN
  SELECT max(inspection_date) INTO latest FROM qmes_lot_observations WHERE lot=l AND kind=k;
  IF latest IS NULL THEN RETURN false; END IF;
  IF EXISTS(SELECT 1 FROM qmes_lot_observations WHERE lot=l AND kind=k AND inspection_date=latest
-  AND (qmes_gate_bad(payload) OR qmes_gate_measure_bad(payload,k))) THEN RETURN false; END IF;
+  AND (qmes_gate_bad(payload, NOT (allow_pending_electrolyte AND k='oqc')) OR qmes_gate_measure_bad(payload,k))) THEN RETURN false; END IF;
  IF k='iqc' THEN
   RETURN EXISTS(SELECT 1 FROM qmes_lot_observations WHERE lot=l AND kind=k AND inspection_date=latest
    AND (payload->>'judge' IN ('합격','PASS','OK') OR
