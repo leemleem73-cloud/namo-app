@@ -209,16 +209,17 @@ async function get(path){
  if(!response.ok||result.success===false||!Array.isArray(result.data))throw Error(result.message||'연동 자료 조회 실패');
  return result.data;
 }
-function createRegistrationPicker(input,label){
+function createRegistrationPicker(input,label,{selectFirst=false}={}){
  const wrapper=document.createElement('div');
  wrapper.className='oqc-registration-picker';
  input.before(wrapper);
  wrapper.append(input);
  input.autocomplete='off';
+ if(selectFirst)input.readOnly=true;
  const toggle=document.createElement('button');
  toggle.type='button';
  toggle.className='oqc-picker-toggle';
- toggle.hidden=true;
+ toggle.hidden=!selectFirst;
  toggle.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  toggle.setAttribute('aria-label',label+' 목록');
  toggle.setAttribute('aria-expanded','false');
@@ -245,6 +246,7 @@ function createRegistrationPicker(input,label){
    option.textContent=value;
    option.addEventListener('click',()=>{
     close();
+    input.readOnly=selectFirst;
     input.focus();
     input.value=value;
     input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -252,7 +254,19 @@ function createRegistrationPicker(input,label){
    });
    panel.append(option);
   }
-  panel.hidden=!matches.length;
+  if(selectFirst){
+   const manual=document.createElement('button');
+   manual.type='button';
+   manual.textContent='직접 입력';
+   manual.addEventListener('click',()=>{
+    close();
+    input.readOnly=false;
+    input.focus();
+    input.select();
+   });
+   panel.append(manual);
+  }
+  panel.hidden=!panel.childElementCount;
   toggle.setAttribute('aria-expanded',String(!panel.hidden));
  }
  toggle.addEventListener('click',()=>panel.hidden?show(''):close());
@@ -260,7 +274,7 @@ function createRegistrationPicker(input,label){
  input.addEventListener('input',event=>{if(event.isTrusted)show(input.value);});
  wrapper.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopPropagation();close();input.focus();}
-  if(event.key==='ArrowDown'&&event.target===input){
+  if(event.target===input&&(event.key==='ArrowDown'||(input.readOnly&&event.key==='Enter'))){
    show('');
    if(!panel.hidden){event.preventDefault();panel.firstElementChild.focus();}
   }
@@ -268,7 +282,7 @@ function createRegistrationPicker(input,label){
  wrapper.addEventListener('focusout',event=>{if(!wrapper.contains(event.relatedTarget))close();});
  return next=>{
   values=next;
-  toggle.hidden=!values.length;
+  toggle.hidden=!selectFirst&&!values.length;
   if(!panel.hidden)show(filter);
  };
 }
@@ -300,7 +314,7 @@ function setup(root){
  `;
  root.append(css);
  const setLotChoices=createRegistrationPicker(lot,'완제품 LOT');
- const setProductChoices=createRegistrationPicker(product,'제품명');
+ const setProductChoices=createRegistrationPicker(product,'제품명',{selectFirst:true});
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
  const retry=document.createElement('button');retry.type='button';retry.className='btn oqc-lot-link-retry';retry.textContent='다시 조회';retry.hidden=true;
  lot.parentElement.after(message,retry);
