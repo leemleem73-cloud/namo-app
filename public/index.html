@@ -8503,7 +8503,7 @@ function standardInspectionForm(type, {registration=false}={}){
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
     <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
     <div class="k">고객사</div><div class="v">${registration?'<select aria-label="고객사 선택" style="color-scheme:light"><option value="">고객사 선택</option><option>현대자동차</option><option>현대자동차(안성)</option><option>현대자동차(의왕)</option></select>':'<input type="text" placeholder="고객사 입력" autocomplete="off">'}</div>
-    <div class="k">제품명</div><div class="v"><input type="text" placeholder="제품명 입력"></div>
+    <div class="k">제품명</div><div class="v"><input type="${registration?'search':'text'}" placeholder="제품명 입력" autocomplete="off" spellcheck="false"></div>
     <div class="k">완제품 LOT</div><div class="v"><input type="text" placeholder="완제품 LOT 입력" autocomplete="off"></div>
     <div class="k">CoA 상태</div><div class="v"><select><option>대기</option><option>확인완료</option><option>발행완료</option><option>미확인</option></select></div>`;
   return `<div class="std-inspection premium" data-inspection-type="${type}">
@@ -9720,7 +9720,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261116-check-on-save"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261116-check-on-save2"></script>
 <script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261111-november-standard"></script>
-<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261117-clean-pickers"></script>
+<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261117-product-suggestions"></script>
 <link rel="stylesheet" href="./css/qmes-pqc-basic-compact-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">
