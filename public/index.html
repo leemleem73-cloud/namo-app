@@ -3028,6 +3028,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
   <main class="content">
     <section class="module-page namo-portal-shell" id="main"><iframe id="namoPortal20261014" allow="geolocation" title="나모케미칼 QMES 메인 바탕화면" data-qmes-src="./qmes-portal-home-20261014.html?v=20261105-memo-tools"></iframe></section>
     <section class="module-page namo-dashboard-shell" id="dashboard">
+      <div hidden inert style="display:none!important">
       <div class="page-head">
         <div><h1>종합 대시보드</h1><p>생산 · 품질 · 납기 현황을 한 화면에서 확인합니다.</p></div>
         <div class="date-badge">2026.10.06 화요일</div>
@@ -3079,6 +3080,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
         <tbody id="dashboardTodayBody">
           <tr class="dashboard-empty-row"><td colspan="8" style="height:72px;text-align:center;color:#94a3b8;font-size:11px">등록된 금일 주요 진행사항이 없습니다.</td></tr>
         </tbody></table></div>
+      </div>
       </div>
     <iframe id="namoDashboard20261026" title="종합 대시보드 통계 및 생산현황" data-qmes-src="./qmes-integrated-dashboard-20261026.html?v=20261111-oqc-group-fix2"></iframe>
     </section>
@@ -10007,9 +10009,9 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
 <style>
 .qmes-backup-motion{display:none;flex:none;width:18px;height:18px;margin-right:4px;color:#14668a}
 #qmesPcBackupTop[data-backup-transfer="true"] .qmes-backup-motion{display:inline-block}
-#qmesPcBackupTop[data-backup-receiving="true"] .qmes-backup-arrow{animation:qmes-backup-drop 1.2s ease-in-out infinite}
+#qmesPcBackupTop[data-backup-transfer="true"] .qmes-backup-arrow{animation:qmes-backup-drop 1.2s ease-in-out infinite}
 @keyframes qmes-backup-drop{0%{transform:translateY(-4px);opacity:.2}45%,65%{transform:translateY(2px);opacity:1}90%,100%{transform:translateY(3px);opacity:0}}
-@media(prefers-reduced-motion:reduce){#qmesPcBackupTop[data-backup-receiving="true"] .qmes-backup-arrow{animation:none}}
+@media(prefers-reduced-motion:reduce){#qmesPcBackupTop[data-backup-transfer="true"] .qmes-backup-arrow{animation:none}}
 #qmesPcBackupTop[data-backup-running="true"]{display:inline-flex;align-items:center}
 </style>
 <script id="qmes-pc-backup">(() => {
@@ -10037,19 +10039,12 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   });
   let busy = false, pickingFolder = false;
   let progressText = '';
-  let transferring = false, receiving = false, motionTimer;
+  let transferring = false;
   function updateBackupMotion(){
     const button=document.getElementById('qmesPcBackupTop');
     if(button){
       button.dataset.backupTransfer=String(transferring);
-      button.dataset.backupReceiving=String(receiving);
     }
-  }
-  function setBackupReceiving(active){
-    clearTimeout(motionTimer);
-    receiving=active;
-    updateBackupMotion();
-    if(active)motionTimer=setTimeout(()=>setBackupReceiving(false),1500);
   }
   function showBackupProgress(text){
     progressText=text;
@@ -10187,14 +10182,14 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
               if(account()!==id){await reader.cancel();return;}
               chunks.push(value);
               bytes+=value.byteLength;
-              if(value.byteLength){
+              if(value.byteLength&&!transferring){
                 transferring=true;
-                setBackupReceiving(true);
+                updateBackupMotion();
               }
               if(Date.now()-lastUpdate>=500){
                 lastUpdate=Date.now();
                 const progress=backupProgressText(bytes,total);
-                showBackupProgress(progress);
+                showBackupProgress('다운로드 '+progress);
                 status('서버에서 백업을 받는 중입니다. · '+progress);
               }
             }
@@ -10209,7 +10204,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       }finally{
         clearTimeout(timer);
         transferring=false;
-        setBackupReceiving(false);
+        updateBackupMotion();
       }
       if(!data.size)throw Error('서버에서 빈 백업 파일을 받았습니다.');
       if(Number.isSafeInteger(job.bytes)&&job.bytes>0&&data.size!==job.bytes){
