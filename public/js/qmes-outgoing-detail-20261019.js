@@ -85,7 +85,7 @@ if(fields.lot.toUpperCase()==='DBJ1501'&&fields.date==='2026-10-15'&&fields.ship
   historicalCorrection=data.data?.eligible===true;
  }catch(error){warning.hidden=false;warning.textContent=error.message;return;}
 }
-const shipmentHeld=!historicalCorrection&&fields.shippingStatus==='출하완료'&&calculated.overall!=='합격';
+const shipmentHeld=!historicalCorrection&&fields.shippingStatus==='출하완료'&&calculated.overall==='불합격';
 if(shipmentHeld){fields.shippingStatus='출하보류';const shipping=pane.querySelector('[data-oqc-field="shippingStatus"]');if(shipping)shipping.value='출하보류';}
 if(fields.shippingStatus==='출하완료'){try{window.qmesOqcShipQty.validateCompletion(fields.shipQty,records);}catch(error){warning.hidden=false;warning.textContent=error.message;return;}}
 const targets=records.map(source=>{
