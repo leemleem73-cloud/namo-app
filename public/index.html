@@ -8475,7 +8475,7 @@ function qmesQualityApprovalPeople(){
   const managerLabel=manager ? String(manager.name||'').trim() : '담당자 미지정';
   return {writer,reviewer:managerLabel,approver:managerLabel};
 }
-function standardInspectionForm(type){
+function standardInspectionForm(type, {registration=false}={}){
   const approval=type==='incoming' ? {...qmesQualityApprovalPeople(),reviewer:'검토대기',approver:'승인대기'} : qmesQualityApprovalPeople();
   const conf={
     incoming:{title:'수입검사 성적서',sub:'INCOMING INSPECTION REPORT',doc:'IQC',docNo:'IQC-QA-001',section:'입고 / 검사 기본정보',summary:'LOT 단위 수입검사'},
@@ -8502,9 +8502,9 @@ function standardInspectionForm(type){
   if(type==='outgoing') info=`
     <div class="k">검사일자</div><div class="v"><input type="date"></div>
     <div class="k">검사자</div><div class="v"><input type="text" placeholder="검사자 입력"></div>
-    <div class="k">고객사</div><div class="v"><input type="text" placeholder="고객사 입력"></div>
+    <div class="k">고객사</div><div class="v">${registration?'<select aria-label="고객사 선택" style="color-scheme:light"><option value="">고객사 선택</option><option>현대자동차</option><option>현대자동차(안성)</option><option>현대자동차(의왕)</option></select>':'<input type="text" placeholder="고객사 입력" autocomplete="off">'}</div>
     <div class="k">제품명</div><div class="v"><input type="text" placeholder="제품명 입력"></div>
-    <div class="k">완제품 LOT</div><div class="v"><input type="text" placeholder="완제품 LOT 입력"></div>
+    <div class="k">완제품 LOT</div><div class="v"><input type="text" placeholder="완제품 LOT 입력" autocomplete="off"></div>
     <div class="k">CoA 상태</div><div class="v"><select><option>대기</option><option>확인완료</option><option>발행완료</option><option>미확인</option></select></div>`;
   return `<div class="std-inspection premium" data-inspection-type="${type}">
     <div class="std-inspection-head">
@@ -8797,7 +8797,7 @@ function openNewForm(id,editOrder=null){
   }
   if(id==='incoming' || id==='process' || id==='outgoing'){
     const title={incoming:'수입검사 성적서 등록',process:'공정검사 성적서 등록',outgoing:'출하검사 성적서 등록'}[id];
-    const html=standardInspectionForm(id);
+    const html=standardInspectionForm(id,{registration:id==='outgoing'});
     openModal(title,amaranthScreen(id,html,'new',title),'<button class="btn" id="modalCancel" type="button">목록으로</button><button class="btn primary" id="modalSave" type="button">검사 저장</button>');
     if(id==='process')arrangePqcWorkspaceActions();
     initStandardInspectionForm(id);
