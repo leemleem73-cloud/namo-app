@@ -455,7 +455,13 @@ BEGIN
    IF jsonb_typeof(j#>'{payload,lotRecord,ship}')='object' AND j#>'{payload,lotRecord,ship}' IS DISTINCT FROM o#>'{payload,lotRecord,ship}' THEN
     PERFORM qmes_gate_assert(qmes_gate_lot(j->'payload'),'출하 확정',true);
    END IF;
-  ELSIF k='oqc' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'),true);
+  ELSIF k='oqc' THEN
+   IF TG_OP<>'UPDATE' OR NOT (
+    coalesce(nullif(current_setting('qmes.oqc_shipping_status_records',true),''),'[]')::jsonb
+      ? coalesce(j->>'record_key','')
+   ) THEN
+    PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'),true);
+   END IF;
   ELSIF k='inventory' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
   ELSIF k='coa' THEN RAISE EXCEPTION '[QUALITY_GATE] CoA는 출하검사 성적서의 정식 발행 기능을 사용하세요.';
   END IF;
