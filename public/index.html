@@ -6368,7 +6368,7 @@ async function saveOutgoingListStatus(section,row,select){
     });
     const result=await response.json().catch(()=>null);
     if(!response.ok||!result?.success)throw Error(result?.message||'출하상태를 저장하지 못했습니다.');
-    select.dataset.shippingState=result.data?.shipmentHeld?'출하보류':status;
+    select.dataset.shippingState=status;
     toast('출하상태 저장 · '+select.dataset.shippingState);
     await loadHistoricalInspectionRows(section,'outgoing');
   }catch(error){
@@ -9679,7 +9679,7 @@ document.addEventListener('transitionend',follow,true);
 <script src="./js/qmes-oqc-shipqty-20261105.js?v=1"></script>
 <script src="./js/qmes-oqc-revision-core-20261104.js?v=20261111-label-dates"></script>
 <script src="./js/qmes-oqc-attachments-20261104.js?v=20261112-single-column-sizing"></script>
-<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261117-keep-shipment-status"></script>
+<script defer src="./js/qmes-outgoing-detail-20261019.js?v=20261118-manual-shipping-status"></script>
 <!-- Inventory summary cards hidden; inventory records and list remain unchanged (2026-10-20). -->
 <style id="qmes-inventory-remove-summary-cards-20261020">
 #inventory #stockCards,
