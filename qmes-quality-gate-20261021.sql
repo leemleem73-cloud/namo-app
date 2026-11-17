@@ -180,9 +180,9 @@ END $$;
 
 
 
-CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT) RETURNS BOOLEAN LANGUAGE SQL AS $
+CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT) RETURNS BOOLEAN LANGUAGE SQL AS $$
  SELECT qmes_gate_inspection_pass(l,k,false)
-$;
+$$;
 
 -- Historical record correction requested by the operator for one already approved and shipped LOT.
 -- This does not release LOT holds or authorize new work orders, production, inventory or shipments.
@@ -373,9 +373,9 @@ BEGIN
  END IF;
 END $$;
 
-CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB DEFAULT '{}') RETURNS VOID LANGUAGE SQL AS $
+CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB DEFAULT '{}') RETURNS VOID LANGUAGE SQL AS $$
  SELECT qmes_gate_shipping(j,oldj,false)
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_source(j JSONB, tab TEXT, remove BOOLEAN DEFAULT false) RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE s TEXT; k TEXT; p JSONB; prior JSONB;
