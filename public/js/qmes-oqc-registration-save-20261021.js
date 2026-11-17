@@ -256,6 +256,7 @@ function createRegistrationPicker(input,label){
   toggle.setAttribute('aria-expanded',String(!panel.hidden));
  }
  toggle.addEventListener('click',()=>panel.hidden?show(''):close());
+ input.addEventListener('click',()=>{if(panel.hidden)show('');});
  input.addEventListener('input',event=>{if(event.isTrusted)show(input.value);});
  wrapper.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopPropagation();close();input.focus();}
@@ -288,6 +289,7 @@ function setup(root){
  css.textContent=`
  .oqc-pqc-layout .std-info .oqc-registration-picker{position:relative;min-width:0;width:100%;max-width:100%;box-sizing:border-box}
  .oqc-pqc-layout .std-info .oqc-registration-picker>input{display:block;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box;margin:0!important;padding-right:30px!important}
+ .oqc-pqc-layout .std-info .oqc-registration-picker>input::-webkit-search-cancel-button{display:none}
  .oqc-pqc-layout .std-info .oqc-registration-picker>.oqc-picker-toggle{position:absolute!important;inset:1px 2px 1px auto!important;display:grid!important;place-items:center;width:24px!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#254563;cursor:pointer;transform:none!important}
  .oqc-pqc-layout .std-info .oqc-registration-picker>.oqc-picker-toggle[hidden],.oqc-pqc-layout .std-info .oqc-lot-link-retry[hidden]{display:none!important}
  .oqc-pqc-layout .std-info .oqc-lot-link-status:empty{display:none}
