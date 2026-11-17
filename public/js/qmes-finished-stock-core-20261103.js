@@ -16,18 +16,22 @@ function build(input={}){
  const intermediate=new Set((input.orders||[]).filter(o=>o.productionType==='중간배치').map(o=>key(o.fields?.['생산 LOT NO']||o.finishedLot||o.lot)));
  const prodIds=new Set();for(const w of input.worklogs||[]){if(intermediate.has(key(w.finishedLot||w.lot)))continue;const id=text(w.id)||JSON.stringify(w);if(prodIds.has(id))continue;prodIds.add(id);const r=resolve(w.finishedLot||w.lot,w.product||w.productName,'생산실적');if(!r)continue;const actual=number(w.prodQty),bad=number(w.failQty),good=number(w.goodQty);if(actual!==null||good!==null)r.productions.push({id,date:day(w.workDate),quantity:good??actual,bad,source:'생산실적',documentNo:text(w.documentNo),review:(good===null&&bad>0)||(good??actual)<0});}
 
- // The order's recorded finished output supersedes a duplicate production log.
+ // Use work-order planned quantities first and avoid counting the same LOT again from work logs.
  for(const r of rows.values()){
   const outputs=[];
+  let includesPlan=false;
   for(const o of r.orders){
    const result=o.productionResult||{},fields=o.fields||{};
    const good=number(result.goodQty??o.goodQty);
    const actual=[result.actualQty,result.productionQty,result.totalQty,o.actualQty,o.producedQty,o.productionQty,o.productionActual,fields['총 생산량'],fields['총생산량'],fields['실제 생산량']].map(number).find(value=>value!==null)??null;
-   const quantity=good??actual;
-   if(quantity!==null)outputs.push({id:o.id,date:day(result.date||o.workDate||o.date),quantity,source:'작업지시서',documentNo:text(fields['작업지시번호']||o.id),review:quantity<0||(good===null&&number(result.badQty??o.badQty)>0)});
+   const plan=number(fields['계획수량'])??number(o.planQty);
+   const hasPlan=plan!==null&&plan>=0;
+   includesPlan||=hasPlan;
+   const quantity=hasPlan?plan:good??actual;
+   if(quantity!==null)outputs.push({id:o.id,date:day(o.workDate||fields['작업일자']||fields['작업기간']||result.date||o.date),quantity,source:hasPlan?'작업지시서 계획수량':'작업지시서',documentNo:text(fields['작업지시번호']||o.id),review:!hasPlan&&(quantity<0||(good===null&&number(result.badQty??o.badQty)>0))});
   }
   if(outputs.length===r.orders.length&&outputs.length)r.productions=outputs;
-  else if(!r.productions.length){
+  else if(includesPlan||!r.productions.length){
    r.productions=outputs;
    if(outputs.length)r.issues.push('일부 작업지시서의 생산량 확인 필요');
   }
