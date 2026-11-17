@@ -15,10 +15,25 @@ function build(input={}){
  const orderIds=new Set();for(const o of input.orders||[]){if(o.productionType==='중간배치')continue;const f=o.fields||{},lot=o.finishedLot||o.lot||f['생산 LOT NO'],product=o.product||o.productName||f['제품명'];const r=ensure(lot,product);if(!r)continue;const id=text(o.id)||JSON.stringify(o);if(orderIds.has(id))continue;orderIds.add(id);r.orders.push(o);r.customer=text(f['고객사']||o.customer);const p=number(f['계획수량']??o.planQty);if(p!==null)r.plan=(r.plan??0)+p;}
  const intermediate=new Set((input.orders||[]).filter(o=>o.productionType==='중간배치').map(o=>key(o.fields?.['생산 LOT NO']||o.finishedLot||o.lot)));
  const prodIds=new Set();for(const w of input.worklogs||[]){if(intermediate.has(key(w.finishedLot||w.lot)))continue;const id=text(w.id)||JSON.stringify(w);if(prodIds.has(id))continue;prodIds.add(id);const r=resolve(w.finishedLot||w.lot,w.product||w.productName,'생산실적');if(!r)continue;const actual=number(w.prodQty),bad=number(w.failQty),good=number(w.goodQty);if(actual!==null||good!==null)r.productions.push({id,date:day(w.workDate),quantity:good??actual,bad,source:'생산실적',documentNo:text(w.documentNo),review:(good===null&&bad>0)||(good??actual)<0});}
- // Explicit finished output only. Ingredient actuals and planned quantities are never output.
- for(const r of rows.values()){if(r.productions.length)continue;for(const o of r.orders){const result=o.productionResult||{};const actual=number(result.goodQty??o.goodQty??result.actualQty??result.productionQty??o.actualQty??o.producedQty??o.productionQty??o.productionActual);if(actual!==null)r.productions.push({id:o.id,date:day(o.workDate||o.date),quantity:actual,source:'작업지시',documentNo:text(o.fields?.['작업지시번호']),review:number(result.badQty??o.badQty)>0&&number(result.goodQty??o.goodQty)===null});}}
+
+ // The order's recorded finished output supersedes a duplicate production log.
+ for(const r of rows.values()){
+  const outputs=[];
+  for(const o of r.orders){
+   const result=o.productionResult||{},fields=o.fields||{};
+   const good=number(result.goodQty??o.goodQty);
+   const actual=[result.actualQty,result.productionQty,result.totalQty,o.actualQty,o.producedQty,o.productionQty,o.productionActual,fields['총 생산량'],fields['총생산량'],fields['실제 생산량']].map(number).find(value=>value!==null)??null;
+   const quantity=good??actual;
+   if(quantity!==null)outputs.push({id:o.id,date:day(result.date||o.workDate||o.date),quantity,source:'작업지시서',documentNo:text(fields['작업지시번호']||o.id),review:quantity<0||(good===null&&number(result.badQty??o.badQty)>0)});
+  }
+  if(outputs.length===r.orders.length&&outputs.length)r.productions=outputs;
+  else if(!r.productions.length){
+   r.productions=outputs;
+   if(outputs.length)r.issues.push('일부 작업지시서의 생산량 확인 필요');
+  }
+ }
  for(const e of input.entries||[]){if(e.deletedAt)continue;if(validateEntry(e)) {unallocated.push({source:'완제품 사용 기록',lot:e.lot,reason:'입력값 확인 필요',id:e.id});continue;}const r=resolve(e.lot,e.product,'완제품 사용 기록');if(r)r.entries.push(e);}
- const shipIds=new Set();for(const s of input.shipments||[]){const state=text(s.delivery||s.status||s.shipping);if(/취소|반려|cancel|void/i.test(state)||s.cancelled||s.deleted)continue;if(!(s.actualShipment===true||/출하완료|납품완료|배송완료|출고완료/.test(state)))continue;const lot=s.lot||s.finishedLot||s.productionLot||s.workOrder;const r=resolve(lot,s.product||s.productName,'출하');if(!r){if(!lot)unallocated.push({source:'출하',reason:'완제품 LOT가 없습니다.'});continue;}r.erpShipmentCount=(r.erpShipmentCount||0)+1;const id=text(s.shipNo||s.shippingNo||s.id||s.no||s.deliveryNo)||JSON.stringify(s);const identity=id+'|'+key(lot)+'|'+key(r.product);if(shipIds.has(identity))continue;shipIds.add(identity);const q=number(s.actualShipQty??s.shipQty??s.qty??s.actualQty);if(q===null||q<0){r.issues.push('출하 수량 확인 필요');r.shipmentUncertain=true;r.ledger.push({kind:'출하',date:day(s.actualShipDate||s.shipDate||s.date),quantity:null,direction:-1,source:'출하',documentNo:id,customer:text(s.customer),note:'출하완료 · 출하수량 확인 필요',unconfirmed:true});continue;}r.ledger.push({kind:'출하',date:day(s.actualShipDate||s.shipDate||s.date),quantity:q,direction:-1,source:'출하',documentNo:id,customer:text(s.customer),note:text(s.remark)});}
+
  for(const q of input.oqc||[]){if(!q.lot)continue;const r=resolve(q.lot,q.product||q.productName,'출하검사');if(r)(r.inspections??=[]).push(q);}
  const inspectionShipments=new Map();
  for(const q of input.oqc||[]){
@@ -30,14 +45,25 @@ function build(input={}){
  for(const {r,group,records} of inspectionShipments.values()){
   const rawQuantities=records.map(q=>q.stockShipment?.quantity??q.shipQty),badQuantity=rawQuantities.some(v=>text(v)!==''&&(number(v)===null||number(v)<=0)),quantities=[...new Set(rawQuantities.map(number).filter(q=>q!==null&&q>0).map(micro))];
   r.oqcShipmentGroups=(r.oqcShipmentGroups||0)+1;
-  if(quantities.length!==1||badQuantity){if(!r.erpShipmentCount){r.issues.push(badQuantity?'출하검사 출하수량 확인 필요':quantities.length?'출하검사 출하수량 불일치':'출하완료 · 출하수량 미입력');r.shipmentUncertain=true;const sample=records[0];r.ledger.push({kind:'출하',date:day(sample.actualShipDate||sample.shipDate),inspectionDate:day(sample.date||sample.inspectionDate),quantity:null,direction:-1,source:'출하검사',documentNo:'출하검사 '+day(sample.date||sample.inspectionDate),customer:text(sample.customer),note:'출하완료 · 출하수량 확인 필요',unconfirmed:true});}continue;}
-  const quantity=kg(quantities[0]);r.oqcShipmentKnownGroups=(r.oqcShipmentKnownGroups||0)+1;r.oqcShipmentTotal=kg(micro(r.oqcShipmentTotal||0)+quantities[0]);
-  if(r.erpShipmentCount)continue;
+  if(quantities.length!==1||badQuantity){r.issues.push(badQuantity?'출하검사 출하수량 확인 필요':quantities.length?'출하검사 출하수량 불일치':'출하완료 · 출하수량 미입력');r.shipmentUncertain=true;const sample=records[0];r.ledger.push({kind:'출하',date:day(sample.actualShipDate||sample.shipDate),inspectionDate:day(sample.date||sample.inspectionDate),quantity:null,direction:-1,source:'출하검사',documentNo:'출하검사 '+day(sample.date||sample.inspectionDate),customer:text(sample.customer),note:'출하완료 · 출하수량 확인 필요',unconfirmed:true});continue;}
+  const quantity=kg(quantities[0]);
   const sample=records[0],meta=records.map(q=>q.stockShipment).find(Boolean);
   r.ledger.push({kind:'출하',date:day(meta?.shipDate||sample.actualShipDate||sample.shipDate),inspectionDate:day(meta?.inspectionDate||sample.date||sample.inspectionDate),quantity,direction:-1,source:'출하검사',id:group,documentNo:text(sample.inspectionNo||sample.oqcNo)||'출하검사 '+day(meta?.inspectionDate||sample.date||sample.inspectionDate),customer:text(sample.customer),note:'출하완료 · 출하검사 출하수량 연동'});
  }
+
+ // Historical ERP records flag missing certificates without deducting a second shipment.
+ for(const shipment of input.shipments||[]){
+  const state=text(shipment.delivery||shipment.status||shipment.shipping);
+  if(shipment.cancelled||shipment.deleted||/취소|반려|cancel|void/i.test(state))continue;
+  if(shipment.actualShipment!==true&&!/출하완료|납품완료|배송완료|출고완료/.test(state))continue;
+  const lot=shipment.lot||shipment.finishedLot||shipment.productionLot||shipment.workOrder;
+  const row=resolve(lot,shipment.product||shipment.productName,'출하');
+  if(row&&!row.oqcShipmentGroups){
+   row.shipmentUncertain=true;
+   row.issues.push('출하성적서 확인 필요');
+  }
+ }
  for(const r of rows.values()){
-  if(r.erpShipmentCount&&r.oqcShipmentTotal!=null&&r.oqcShipmentKnownGroups===r.oqcShipmentGroups){const recorded=r.ledger.filter(e=>e.kind==='출하').reduce((sum,e)=>sum+micro(e.quantity),0);if(recorded!==micro(r.oqcShipmentTotal)){r.issues.push('출하검사·출하 기록 수량 대조 필요');r.shipmentUncertain=true;}}
   const confirmed=r.entries.filter(e=>e.status==='confirmed'),baselines=confirmed.filter(e=>e.type==='opening').sort((a,b)=>text(b.date).localeCompare(text(a.date))||text(b.updatedAt).localeCompare(text(a.updatedAt)));const base=baselines[0];const after=date=>!base||text(date)>base.date;const corrections=confirmed.filter(e=>e.type==='production');
   if(corrections.length>1)r.issues.push('생산수량 확인 기록 중복');
   const correction=corrections.sort((a,b)=>text(b.updatedAt).localeCompare(text(a.updatedAt)))[0];
@@ -50,7 +76,7 @@ function build(input={}){
   let balance=base?micro(base.quantity):productions.length?0:null;
   for(const e of r.ledger){if(e.kind==='기초재고'||e.unconfirmed)continue;if(base&&!e.date){r.issues.push('기초재고 전후 출하·사용 일자 확인 필요');r.shipmentUncertain=true;e.excluded=true;continue;}if(!after(e.date)){e.excluded=true;continue;}if(balance!==null)balance+=e.direction*micro(e.quantity);if(e.kind==='출하')r.shipped=kg(micro(r.shipped)+micro(e.quantity));if(['retest','sample','research','retain','loss'].includes(e.type))r[e.type]=kg(micro(r[e.type])+micro(e.quantity));if(e.type==='adjustment')r.adjustment=kg(micro(r.adjustment)+e.direction*micro(e.quantity));}
   if(r.shipmentUncertain)r.shipped=null;
-  r.book=balance===null||r.shipmentUncertain||r.issues.includes('불량 수량 포함 여부 확인 필요')?null:kg(balance);if(r.book<0)r.issues.push('사용·출하량이 입고량보다 많습니다.');if(r.pending)r.issues.push('미확인 사용 기록 '+r.pending+'건');
+  r.book=balance===null||r.shipmentUncertain||(r.issues.includes('불량 수량 포함 여부 확인 필요')||(!correction&&!base&&r.issues.includes('일부 작업지시서의 생산량 확인 필요')))?null:kg(balance);if(r.book<0)r.issues.push('사용·출하량이 입고량보다 많습니다.');if(r.pending)r.issues.push('미확인 사용 기록 '+r.pending+'건');
   const checks=r.inspections||[];if(checks.length){const latest=checks.map(q=>day(q.date||q.inspectionDate)).sort().at(-1);const current=checks.filter(q=>day(q.date||q.inspectionDate)===latest);const decisions=current.map(q=>{const items=unpack(q.items_json||q.items||q.checks);const list=Array.isArray(items)?items:[];if(list.some(i=>/불합격|부적합/.test(text(i.judge||i.result))))return '불합격';return text(q.inspectionDecision)==='불합격'?'불합격':text(q.judge||q.result||q.inspectionDecision);});r.quality=decisions.some(v=>/불합격|부적합/.test(v))?'불합격':decisions.every(v=>v==='합격'||v==='PASS')?'합격':'검사 대기';}
   if((input.holds||[]).some(h=>key(h.lot)===key(r.lot)&&!h.released_at))r.quality='품질 보류';
   if(r.quality!=='합격')r.issues.push(r.quality);if(warnings.length)r.issues.push('자료 조회 실패 · 재조회 필요');r.issues=[...new Set(r.issues)];r.available=r.quality==='합격'&&r.issues.length===0&&r.book!==null?Math.max(0,r.book):0;
