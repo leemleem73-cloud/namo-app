@@ -83,7 +83,15 @@ function build(input={}){
   r.ledger.sort((a,b)=>text(a.date).localeCompare(text(b.date))||a.direction-b.direction);
  }
  for(const r of rows.values()){if([...rows.values()].filter(other=>key(other.lot)===key(r.lot)).length>1){r.issues.push('같은 LOT의 제품 연결 확인 필요');r.available=0;}}
- return {rows:[...rows.values()].sort((a,b)=>a.product.localeCompare(b.product,'ko')||a.lot.localeCompare(b.lot)),warnings,unallocated};
+ const latestWorkDate=row=>row.orders.reduce((latest,order)=>{
+  for(const value of [order.workDate,order.fields?.['작업일자'],order.fields?.['작업기간']]){
+   const date=day(value);
+   if(/^\d{4}-\d{2}-\d{2}$/.test(date))return date>latest?date:latest;
+  }
+  return latest;
+ },'');
+ for(const row of rows.values())row.workDate=latestWorkDate(row);
+ return {rows:[...rows.values()].sort((a,b)=>b.workDate.localeCompare(a.workDate)||a.product.localeCompare(b.product,'ko')||a.lot.localeCompare(b.lot)),warnings,unallocated};
 }
 return {PREFIX,labels,text,key,number,readEntries,validateEntry,build};
 });
