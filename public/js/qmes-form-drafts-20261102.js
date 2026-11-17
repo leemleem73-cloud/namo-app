@@ -55,7 +55,7 @@
       if(mode!=='new'&&!record)return null;
       return {host:split,root,module,mode,record:record||'new'};
     }
-    function controls(root){return [...root.querySelectorAll('input,select,textarea')].filter(el=>!el.closest('[data-qmes-draft-bar],.std-document-preview,.am-list-pane')&&(el.type==='hidden'||visible(el))&&!el.disabled&&!el.readOnly&&!['password','file','submit','button','reset'].includes(el.type)&&!(el.type==='hidden'&&!el.matches('[data-standard-field],[data-k],[data-pqc-field],[data-oqc-field],[data-oqc-registration-field]'))&&!/password|token|secret|csrf|auth/i.test([el.id,el.name].join(' ')));}
+    function controls(root){return [...root.querySelectorAll('input,select,textarea')].filter(el=>!el.closest('[data-qmes-draft-bar],.std-document-preview,.am-list-pane')&&(el.type==='hidden'||visible(el))&&!el.disabled&&(!el.readOnly||el.matches('input[data-oqc-registration-field="product"]'))&&!['password','file','submit','button','reset'].includes(el.type)&&!(el.type==='hidden'&&!el.matches('[data-standard-field],[data-k],[data-pqc-field],[data-oqc-field],[data-oqc-registration-field]'))&&!/password|token|secret|csrf|auth/i.test([el.id,el.name].join(' ')));}
     function identifiers(root){
       const counts=new Map();return controls(root).map(el=>{
         const hint=el.dataset.standardField||el.dataset.pqcField||el.dataset.oqcRegistrationField||el.dataset.oqcField||el.dataset.k||el.id||el.name||el.className||el.getAttribute('placeholder')||el.tagName;
