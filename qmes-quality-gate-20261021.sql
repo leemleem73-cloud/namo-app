@@ -141,7 +141,7 @@ CREATE OR REPLACE FUNCTION qmes_gate_observe(j JSONB, s TEXT, k TEXT, p_entry TE
  SELECT qmes_gate_observe(j,s,k,p_entry,'{}'::jsonb)
 $$;
 
-CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT) RETURNS BOOLEAN LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT, allow_pending_electrolyte BOOLEAN) RETURNS BOOLEAN LANGUAGE plpgsql AS $$
 DECLARE latest TEXT; item TEXT; vals JSONB; j JSONB; found_item BOOLEAN; required TEXT[];
 BEGIN
  SELECT max(inspection_date) INTO latest FROM qmes_lot_observations WHERE lot=l AND kind=k;
@@ -167,7 +167,9 @@ BEGIN
    ELSIF (CASE j->>'check' WHEN '수분' THEN '수분율' WHEN '입도' THEN '입도(Dmax)' ELSE j->>'check' END)=item THEN vals:=qmes_gate_values(j);
    END IF;
    IF vals IS NOT NULL THEN
-    IF qmes_gate_measure_judge(item,vals)<>'합격' THEN RETURN false; END IF;
+    IF qmes_gate_measure_judge(item,vals)<>'합격'
+      AND NOT (allow_pending_electrolyte AND k='oqc' AND item='전해액 안정성'
+        AND qmes_gate_measure_judge(item,vals)='대기') THEN RETURN false; END IF;
     found_item:=true;
    END IF;
   END LOOP;
@@ -177,6 +179,10 @@ BEGIN
 END $$;
 
 
+
+CREATE OR REPLACE FUNCTION qmes_gate_inspection_pass(l TEXT, k TEXT) RETURNS BOOLEAN LANGUAGE SQL AS $
+ SELECT qmes_gate_inspection_pass(l,k,false)
+$;
 
 -- Historical record correction requested by the operator for one already approved and shipped LOT.
 -- This does not release LOT holds or authorize new work orders, production, inventory or shipments.
@@ -338,7 +344,7 @@ BEGIN
  RETURN changed;
 END $$;
 
-CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB DEFAULT '{}') RETURNS VOID LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB, allow_pending_electrolyte BOOLEAN) RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE v JSONB; previous JSONB; identity TEXT;
 BEGIN
  IF j=oldj THEN RETURN; END IF;
@@ -348,18 +354,28 @@ BEGIN
    IF jsonb_typeof(oldj)='array' AND oldj @> jsonb_build_array(v) THEN CONTINUE; END IF;
    previous:=NULL;
    IF jsonb_typeof(oldj)='array' AND coalesce(v->>'id','')<>'' THEN SELECT value INTO previous FROM jsonb_array_elements(oldj) WHERE value->>'id'=v->>'id' LIMIT 1; END IF;
-   PERFORM qmes_gate_shipping(v,coalesce(previous,'{}'::jsonb));
+   PERFORM qmes_gate_shipping(v,coalesce(previous,'{}'::jsonb),allow_pending_electrolyte);
   END LOOP; RETURN;
  END IF;
  IF jsonb_typeof(j)<>'object' THEN RETURN; END IF;
- IF j ? 'rows' THEN PERFORM qmes_gate_shipping(j->'rows',oldj->'rows'); RETURN; END IF;
+ IF j ? 'rows' THEN PERFORM qmes_gate_shipping(j->'rows',oldj->'rows',allow_pending_electrolyte); RETURN; END IF;
  IF coalesce(j->>'shippingStatus','') IN ('출하완료','출하확정','납품완료','SHIPPED','완료')
  OR coalesce(j->>'status','') IN ('출하완료','출하확정','납품완료','SHIPPED','완료')
  OR coalesce(j->>'delivery','') IN ('납품완료','출하완료')
  OR j->>'actualShipment'='true' THEN
-  IF NOT coalesce(qmes_gate_historical_row(oldj,j),false) THEN PERFORM qmes_gate_assert(qmes_gate_lot(j),'출하 확정',true); END IF;
+  IF NOT coalesce(qmes_gate_historical_row(oldj,j),false) THEN
+   IF allow_pending_electrolyte AND qmes_gate_inspection_pass(qmes_gate_lot(j),'oqc',true) THEN
+    PERFORM qmes_gate_assert(qmes_gate_lot(j),'출하 확정');
+   ELSE
+    PERFORM qmes_gate_assert(qmes_gate_lot(j),'출하 확정',true);
+   END IF;
+  END IF;
  END IF;
 END $$;
+
+CREATE OR REPLACE FUNCTION qmes_gate_shipping(j JSONB, oldj JSONB DEFAULT '{}') RETURNS VOID LANGUAGE SQL AS $
+ SELECT qmes_gate_shipping(j,oldj,false)
+$;
 
 CREATE OR REPLACE FUNCTION qmes_gate_source(j JSONB, tab TEXT, remove BOOLEAN DEFAULT false) RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE s TEXT; k TEXT; p JSONB; prior JSONB;
@@ -439,10 +455,11 @@ BEGIN
    IF jsonb_typeof(j#>'{payload,lotRecord,ship}')='object' AND j#>'{payload,lotRecord,ship}' IS DISTINCT FROM o#>'{payload,lotRecord,ship}' THEN
     PERFORM qmes_gate_assert(qmes_gate_lot(j->'payload'),'출하 확정',true);
    END IF;
-  ELSIF k IN ('oqc','inventory') THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
+  ELSIF k='oqc' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'),true);
+  ELSIF k='inventory' THEN PERFORM qmes_gate_shipping(j->'payload',coalesce(o->'payload','{}'));
   ELSIF k='coa' THEN RAISE EXCEPTION '[QUALITY_GATE] CoA는 출하검사 성적서의 정식 발행 기능을 사용하세요.';
   END IF;
- WHEN 'oqc' THEN PERFORM qmes_gate_shipping(j,o);
+ WHEN 'oqc' THEN PERFORM qmes_gate_shipping(j,o,true);
  WHEN 'qmes_oqc_coa_issues' THEN IF TG_OP='INSERT' THEN PERFORM qmes_gate_assert(j#>>'{snapshot,fields,lot}','CoA 발행',true); END IF;
  WHEN 'certificates' THEN IF upper(coalesce(j->>'cert_type','')) ~ 'OQC|출하' THEN PERFORM qmes_gate_assert(qmes_gate_lot(j),'성적서 발행',true); END IF;
  ELSE NULL;
