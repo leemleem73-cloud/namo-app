@@ -2220,8 +2220,12 @@ main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:
 #namo-operation-overlay{position:fixed;right:16px;bottom:16px;z-index:9999;pointer-events:none;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:8px;box-shadow:0 4px 16px #173b611f;padding:8px 12px;font-size:12px;font-weight:700}
 #namo-operation-overlay[hidden]{display:none}
 #namo-operation-overlay .namo-operation-card{display:flex;align-items:center;gap:8px}
-#namo-operation-overlay .namo-operation-mascot img{display:block;width:34px;height:32px;object-fit:contain}
-#namo-operation-overlay .namo-operation-orbit{display:none}
+#namo-operation-overlay .namo-operation-mascot,#qmes-first-paint-loader .namo-operation-mascot{position:relative;display:grid;place-items:center;width:var(--mascot-size,66px);aspect-ratio:1}
+.namo-operation-mascot img{display:block;width:76%;height:auto;object-fit:contain}
+.namo-operation-orbit,.namo-operation-orbit svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.namo-operation-orbit{animation:namo-loading-orbit 1.6s linear infinite}
+@keyframes namo-loading-orbit{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.namo-operation-orbit{animation:none}}
 </style>
 <script id="namo-global-operation-loader">
 (function(){
@@ -2895,8 +2899,8 @@ html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-
 </style>
 </head>
 <body>
-<div id="qmes-first-paint-loader" role="status"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt="">나모 웹을 불러오는 중입니다</div>
-<script>setTimeout(function(){document.getElementById("qmes-first-paint-loader")?.remove();},2500);</script>
+<div id="qmes-first-paint-loader" role="status"><span class="namo-operation-mascot" aria-hidden="true" style="--mascot-size:132px"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt=""><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-startup-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-startup-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>나모 웹을 불러오는 중입니다</div>
+<script>setTimeout(function(){document.getElementById("qmes-first-paint-loader")?.remove();},8000);</script>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
 <div class="app" id="app">
   <header class="topbar">
