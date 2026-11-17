@@ -2689,9 +2689,7 @@ rows[index]={...old,...clean,...patch};
       const eligibility=await client.query('SELECT qmes_gate_historical_oqc($1::jsonb,$2::jsonb) AS allowed',[JSON.stringify(auditBefore.map(e=>e.row)),JSON.stringify(auditAfter.map(e=>e.row))]);
       historicalCorrection=eligibility.rows[0]?.allowed===true;
     }
-    const shipmentHeld=!labelDatesOnly&&!historicalCorrection&&effective==='불합격'&&(clean.shippingStatus==='출하완료'||auditAfter.some(entry=>entry.row.shippingStatus==='출하완료'));
-    if(statusOnly&&shipmentHeld)throw Object.assign(Error('검사 결과가 불합격인 건은 출하완료로 저장할 수 없습니다.'),{status:409});
-    if(shipmentHeld){clean.shippingStatus='출하보류';for(const entry of auditAfter)entry.row.shippingStatus='출하보류';}
+    const shipmentHeld=false;
     if(!labelDatesOnly&&auditAfter.some(entry=>entry.row.shippingStatus==='출하완료')){try{const qty=require('./public/js/qmes-oqc-shipqty-20261105.js');const values=[...new Set(auditAfter.map(entry=>qty.normalize(entry.row.shipQty)))];if(values.length!==1)throw Error('검사항목별 출하수량이 다릅니다. 출하수량을 다시 입력해 주세요.');qty.validateCompletion(values[0],auditBefore.map(entry=>entry.row));}catch(error){throw Object.assign(error,{status:400});}}
     const shipRules=require('./public/js/qmes-oqc-shipqty-20261105.js'),shipInput=clean.shipQty??shipRules.normalize(auditAfter[0]?.row.shipQty),movementId='OQC:'+require('node:crypto').createHash('sha256').update(targets.map(t=>t.recordKey+'|'+t.rowId).sort().join('\n')).digest('hex').slice(0,24);
     try{if(!labelDatesOnly){const captured=shipRules.capture(auditBefore.map(e=>e.row),auditAfter.map(e=>e.row),shipInput,new Date().toISOString(),movementId);captured.forEach((row,i)=>auditAfter[i].row=row);}}catch(error){throw Object.assign(error,{status:400});}
@@ -2699,13 +2697,16 @@ rows[index]={...old,...clean,...patch};
     const coaAttachment=await require('./qmes-oqc-attachments-20261104.cjs').save(client,targets,req.body.attachment,txt(req.session.user.name));
     if(!revision.changed){await client.query('COMMIT');committed=true;return ok(res,{updated:0,changed:!!coaAttachment,shipmentHeld,historicalCorrection,revision:revision.revision,modifiedAt:revision.modifiedAt},'변경된 내용이 없습니다.');}
     revision.rows.forEach((row,index)=>{auditAfter[index].row=row;});
+    // This transaction records the operator-selected OQC shipping status.
+    // Scope the workflow exception to these exact records and this transaction.
+    await client.query("SELECT set_config('qmes.oqc_shipping_status_records',$1,true)",[JSON.stringify(updates.map(update=>update.key))]);
     for(const update of updates){
       for(const selected of update.selected)update.rows[selected.index]=auditAfter[selected.auditIndex].row;
       await client.query("UPDATE qmes_sync_records SET payload=$2::jsonb,updated_by=$3,updated_at=NOW() WHERE record_type='oqc' AND record_key=$1",[update.key,JSON.stringify({...update.payload,rows:update.rows}),txt(req.session.user.name)]);
     }
     await client.query('COMMIT');committed=true;
     await auditLog(req,'UPDATE','qmes_sync_records','oqc:detail',{rows:auditBefore},{rows:auditAfter}).catch(e=>console.warn('OQC edit audit:',e.message));
-    if(!labelDatesOnly&&effective==='불합격'&&!historicalCorrection){
+    if(!statusOnly&&!labelDatesOnly&&effective==='불합격'&&!historicalCorrection){
       const sample=auditAfter[0]?.row||{};
       const recordKey=targets[0]?.recordKey||sample.lot||'';
       await autoCreateNcr({
