@@ -218,7 +218,8 @@ function createRegistrationPicker(input,label){
  const toggle=document.createElement('button');
  toggle.type='button';
  toggle.className='oqc-picker-toggle';
- toggle.textContent='▾';
+ toggle.hidden=true;
+ toggle.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  toggle.setAttribute('aria-label',label+' 목록');
  toggle.setAttribute('aria-expanded','false');
  const panel=document.createElement('div');
@@ -281,13 +282,15 @@ function setup(root){
  customer.setAttribute('aria-label','고객사 선택');
  const existing=clean(customerInput.value);
  customer.add(new Option('고객사 선택',''));
- if(existing)customer.add(new Option(existing,existing));
+ for(const name of new Set([...hyundaiCustomers,existing].filter(Boolean)))customer.add(new Option(name,name));
  customer.value=existing;customerInput.replaceWith(customer);
  const css=document.createElement('style');
  css.textContent=`
- .oqc-registration-picker{position:relative;min-width:0;width:100%}
- .oqc-registration-picker>input{width:100%;box-sizing:border-box;padding-right:36px!important}
- .oqc-registration-picker>.oqc-picker-toggle{position:absolute;top:1px;bottom:1px;right:1px;width:30px;border:0;border-radius:3px;background:#fff;color:#254563;cursor:pointer}
+ .oqc-pqc-layout .std-info .oqc-registration-picker{position:relative;min-width:0;width:100%;max-width:100%;box-sizing:border-box}
+ .oqc-pqc-layout .std-info .oqc-registration-picker>input{display:block;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box;margin:0!important;padding-right:30px!important}
+ .oqc-pqc-layout .std-info .oqc-registration-picker>.oqc-picker-toggle{position:absolute!important;inset:1px 2px 1px auto!important;display:grid!important;place-items:center;width:24px!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:#254563;cursor:pointer;transform:none!important}
+ .oqc-pqc-layout .std-info .oqc-registration-picker>.oqc-picker-toggle[hidden],.oqc-pqc-layout .std-info .oqc-lot-link-retry[hidden]{display:none!important}
+ .oqc-pqc-layout .std-info .oqc-lot-link-status:empty{display:none}
  .oqc-registration-picker>.oqc-picker-options{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:10;max-height:220px;overflow:auto;padding:4px;border:1px solid #cad9e8;border-radius:5px;background:#fff;box-shadow:0 5px 14px #15365622}
  .oqc-picker-options>button{display:block;width:100%;padding:7px 9px;border:0;border-radius:3px;background:#fff;color:#173754;text-align:left;font:inherit;cursor:pointer;overflow-wrap:anywhere}
  .oqc-picker-options>button:hover,.oqc-picker-options>button:focus-visible{background:#ebf4ff}
@@ -297,7 +300,7 @@ function setup(root){
  const setLotChoices=createRegistrationPicker(lot,'완제품 LOT');
  const setProductChoices=createRegistrationPicker(product,'제품명');
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
- const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent='다시 조회';retry.hidden=true;
+ const retry=document.createElement('button');retry.type='button';retry.className='btn oqc-lot-link-retry';retry.textContent='다시 조회';retry.hidden=true;
  lot.parentElement.after(message,retry);
  let orders=[],checks=[],history=[],allChoices=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
