@@ -2889,6 +2889,10 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 #qmes-first-paint-loader{position:fixed;inset:0;z-index:200;display:grid;place-content:center;justify-items:center;gap:8px;background:#eaf1f6;color:#173754;font:600 13px system-ui,sans-serif;pointer-events:none}
 html[data-qmes-menu-ready="1"] #qmes-first-paint-loader{display:none}
 </style>
+<style id="qmes-inspection-registration-light-options">
+html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) select{color-scheme:light;background-color:#fff!important;color:#244260!important}
+html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) select option{background-color:#fff;color:#244260}
+</style>
 </head>
 <body>
 <div id="qmes-first-paint-loader" role="status"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt="">나모 웹을 불러오는 중입니다</div>
@@ -9720,7 +9724,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-sequential-block-20261021.js?v=20261116-check-on-save"></script>
 <script src="./js/qmes-iqc-sequential-block-20261021.js?v=20261116-check-on-save2"></script>
 <script src="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261111-november-standard"></script>
-<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261117-product-suggestions"></script>
+<script src="./js/qmes-oqc-registration-save-20261021.js?v=20261117-product-picker-first"></script>
 <link rel="stylesheet" href="./css/qmes-pqc-basic-compact-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-basic-align-20261021.css?v=1">
 <link rel="stylesheet" href="./css/qmes-pqc-blocked-rows-20261021.css?v=1">
@@ -9998,7 +10002,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
 <script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=3"></script>
 
 
-<script defer src="./js/qmes-form-drafts-20261102.js?v=10-visible-completion"></script>
+<script defer src="./js/qmes-form-drafts-20261102.js?v=11-outgoing-product"></script>
 <style id="qmes-work-customer-picker-width-20261102">html body #work #namo-work-inquiry input[data-filter="0"]{cursor:pointer!important}.qc-holder>.qc-popup{width:195px!important;max-width:calc(100vw - 12px)!important}</style>
 <style id="qmes-lot-query-lift-20261102">
 html body #lotTrace.module-page .lot-shell .lot-search-card{position:relative!important}
