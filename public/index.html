@@ -10005,10 +10005,11 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
 @media(max-width:700px){html body #lotTrace.module-page .lot-shell .lot-date-search .lot-date-filters input{width:190px!important}}
 </style>
 <style>
-.qmes-backup-motion{display:inline-block;flex:none;width:18px;height:18px;margin-right:4px;color:#14668a}
-.qmes-backup-motion .qmes-backup-arrow{animation:qmes-backup-drop 1.2s ease-in-out infinite}
+.qmes-backup-motion{display:none;flex:none;width:18px;height:18px;margin-right:4px;color:#14668a}
+#qmesPcBackupTop[data-backup-transfer="true"] .qmes-backup-motion{display:inline-block}
+#qmesPcBackupTop[data-backup-receiving="true"] .qmes-backup-arrow{animation:qmes-backup-drop 1.2s ease-in-out infinite}
 @keyframes qmes-backup-drop{0%{transform:translateY(-4px);opacity:.2}45%,65%{transform:translateY(2px);opacity:1}90%,100%{transform:translateY(3px);opacity:0}}
-@media(prefers-reduced-motion:reduce){.qmes-backup-motion .qmes-backup-arrow{animation:none}}
+@media(prefers-reduced-motion:reduce){#qmesPcBackupTop[data-backup-receiving="true"] .qmes-backup-arrow{animation:none}}
 #qmesPcBackupTop[data-backup-running="true"]{display:inline-flex;align-items:center}
 </style>
 <script id="qmes-pc-backup">(() => {
@@ -10036,6 +10037,20 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
   });
   let busy = false, pickingFolder = false;
   let progressText = '';
+  let transferring = false, receiving = false, motionTimer;
+  function updateBackupMotion(){
+    const button=document.getElementById('qmesPcBackupTop');
+    if(button){
+      button.dataset.backupTransfer=String(transferring);
+      button.dataset.backupReceiving=String(receiving);
+    }
+  }
+  function setBackupReceiving(active){
+    clearTimeout(motionTimer);
+    receiving=active;
+    updateBackupMotion();
+    if(active)motionTimer=setTimeout(()=>setBackupReceiving(false),1500);
+  }
   function showBackupProgress(text){
     progressText=text;
     const label=document.querySelector('#qmesPcBackupTop .qmes-backup-progress');
@@ -10057,6 +10072,7 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       button.innerHTML=busy?'<svg class="qmes-backup-motion" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v4h16v-4"/><path class="qmes-backup-arrow" d="M12 3v10m-4-4 4 4 4-4"/></svg><span class="qmes-backup-progress"></span>':'백업';
       if(busy)showBackupProgress(progressText);
     }
+    updateBackupMotion();
   }
   let lastStatus = '';
   function status(message) {
@@ -10146,7 +10162,8 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
       }
       waitForData(120000,'서버가 2분 안에 백업을 시작하지 못했습니다.');
       try{
-        status('백업 파일을 만드는 중입니다.');
+        showBackupProgress('전송 대기 중');
+        status('서버에서 백업 파일 전송을 기다리고 있습니다.');
         const response = await fetch(jobUrl+'/file',{...request,signal:controller.signal});
         waitForData(90000,'백업 전송이 90초 동안 멈췄습니다.');
         if(response.status===401 || response.status===403)throw Error('로그인 또는 백업 권한을 확인해 주세요.');
@@ -10170,6 +10187,10 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
               if(account()!==id){await reader.cancel();return;}
               chunks.push(value);
               bytes+=value.byteLength;
+              if(value.byteLength){
+                transferring=true;
+                setBackupReceiving(true);
+              }
               if(Date.now()-lastUpdate>=500){
                 lastUpdate=Date.now();
                 const progress=backupProgressText(bytes,total);
@@ -10187,6 +10208,8 @@ html body #lotTrace.module-page .lot-shell .lot-work-buttons{position:absolute!i
         throw error;
       }finally{
         clearTimeout(timer);
+        transferring=false;
+        setBackupReceiving(false);
       }
       if(!data.size)throw Error('서버에서 빈 백업 파일을 받았습니다.');
       if(Number.isSafeInteger(job.bytes)&&job.bytes>0&&data.size!==job.bytes){
