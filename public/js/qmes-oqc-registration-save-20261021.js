@@ -208,6 +208,67 @@ async function get(path){
  if(!response.ok||result.success===false||!Array.isArray(result.data))throw Error(result.message||'연동 자료 조회 실패');
  return result.data;
 }
+function createRegistrationPicker(input,label){
+ const wrapper=document.createElement('div');
+ wrapper.className='oqc-registration-picker';
+ input.before(wrapper);
+ wrapper.append(input);
+ input.autocomplete='off';
+ const toggle=document.createElement('button');
+ toggle.type='button';
+ toggle.className='oqc-picker-toggle';
+ toggle.textContent='▾';
+ toggle.setAttribute('aria-label',label+' 목록');
+ toggle.setAttribute('aria-expanded','false');
+ const panel=document.createElement('div');
+ panel.className='oqc-picker-options';
+ panel.id=input.id+'-options';
+ panel.hidden=true;
+ panel.setAttribute('role','group');
+ panel.setAttribute('aria-label',label+' 목록');
+ toggle.setAttribute('aria-controls',panel.id);
+ wrapper.append(toggle,panel);
+ let values=[],filter='';
+ function close(){
+  panel.hidden=true;
+  toggle.setAttribute('aria-expanded','false');
+ }
+ function show(query){
+  filter=query;
+  const matches=values.filter(value=>norm(value).includes(norm(query)));
+  panel.replaceChildren();
+  for(const value of matches){
+   const option=document.createElement('button');
+   option.type='button';
+   option.textContent=value;
+   option.addEventListener('click',()=>{
+    close();
+    input.focus();
+    input.value=value;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+   });
+   panel.append(option);
+  }
+  panel.hidden=!matches.length;
+  toggle.setAttribute('aria-expanded',String(!panel.hidden));
+ }
+ toggle.addEventListener('click',()=>panel.hidden?show(''):close());
+ input.addEventListener('input',event=>{if(event.isTrusted)show(input.value);});
+ wrapper.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopPropagation();close();input.focus();}
+  if(event.key==='ArrowDown'&&event.target===input){
+   show('');
+   if(!panel.hidden){event.preventDefault();panel.firstElementChild.focus();}
+  }
+ });
+ wrapper.addEventListener('focusout',event=>{if(!wrapper.contains(event.relatedTarget))close();});
+ return next=>{
+  values=next;
+  toggle.hidden=!values.length;
+  if(!panel.hidden)show(filter);
+ };
+}
 function setup(root){
  if(bound.has(root))return;
  const field=name=>root.querySelector('[data-oqc-registration-field="'+name+'"]');
@@ -221,13 +282,22 @@ function setup(root){
  customer.add(new Option('고객사 선택',''));
  if(existing)customer.add(new Option(existing,existing));
  customer.value=existing;customerInput.replaceWith(customer);
- const suggestions=document.createElement('datalist');suggestions.id='oqc-lot-options-'+crypto.randomUUID();
- lot.setAttribute('list',suggestions.id);
+ const css=document.createElement('style');
+ css.textContent=`
+ .oqc-registration-picker{position:relative;min-width:0;width:100%}
+ .oqc-registration-picker>input{width:100%;box-sizing:border-box;padding-right:36px!important}
+ .oqc-registration-picker>.oqc-picker-toggle{position:absolute;top:1px;bottom:1px;right:1px;width:30px;border:0;border-radius:3px;background:#fff;color:#254563;cursor:pointer}
+ .oqc-registration-picker>.oqc-picker-options{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:10;max-height:220px;overflow:auto;padding:4px;border:1px solid #cad9e8;border-radius:5px;background:#fff;box-shadow:0 5px 14px #15365622}
+ .oqc-picker-options>button{display:block;width:100%;padding:7px 9px;border:0;border-radius:3px;background:#fff;color:#173754;text-align:left;font:inherit;cursor:pointer;overflow-wrap:anywhere}
+ .oqc-picker-options>button:hover,.oqc-picker-options>button:focus-visible{background:#ebf4ff}
+ .oqc-registration-picker>[hidden]{display:none!important}
+ `;
+ root.append(css);
+ const setLotChoices=createRegistrationPicker(lot,'완제품 LOT');
+ const setProductChoices=createRegistrationPicker(product,'제품명');
  const message=document.createElement('small');message.className='oqc-lot-link-status';message.setAttribute('role','status');
  const retry=document.createElement('button');retry.type='button';retry.className='btn';retry.textContent='다시 조회';retry.hidden=true;
- lot.after(suggestions,message,retry);
- const productSuggestions=document.createElement('datalist');productSuggestions.id='oqc-product-options-'+crypto.randomUUID();
- product.setAttribute('list',productSuggestions.id);product.after(productSuggestions);
+ lot.parentElement.after(message,retry);
  let orders=[],checks=[],history=[],allChoices=[],choices=[],loaded=false,loading=false,autoValues=null,lastDate=date.value;
  function setValue(input,value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));}
  function ensureCustomer(value){if(value&&![...customer.options].some(o=>o.value===value))customer.add(new Option(value,value));}
@@ -260,8 +330,8 @@ function setup(root){
   if(!root.isConnected)return;
   choices=productionCandidates(orders,checks,day(date.value));
   const available=choices.length?choices:allChoices;
-  suggestions.replaceChildren(...[...new Set(available.map(c=>c.lot).filter(Boolean))].map(value=>new Option(value,value)));
-  productSuggestions.replaceChildren(...[...new Set(available.map(c=>c.product).filter(Boolean))].map(value=>new Option(value,value)));
+  setLotChoices([...new Set(available.map(c=>c.lot).filter(Boolean))]);
+  setProductChoices([...new Set(available.map(c=>c.product).filter(Boolean))]);
   const filtered=choices.filter(c=>!customer.value||norm(c.customer)===norm(customer.value));
   if(allowAuto&&filtered.length===1&&(force||(!lot.value&&!product.value)))apply(filtered[0]);
   else if(allowAuto&&lot.value){const match=resolve(available,'lot',lot.value,customer.value);if(match)apply(match);}
