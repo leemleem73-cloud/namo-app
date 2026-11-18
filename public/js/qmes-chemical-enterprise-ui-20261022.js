@@ -607,19 +607,15 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   function refreshSpc(){
     if(spcLoadPromise)return spcLoadPromise;
     const page=document.getElementById('spcTrend');
-    let loader=page?.querySelector('.qce-spc-loading');
-    if(page&&!loader){
-      loader=document.createElement('div');loader.className='qce-spc-loading';loader.setAttribute('role','status');
-      loader.innerHTML='<img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="80" height="74" alt="">SPC 데이터를 불러오는 중입니다.';
-      page.append(loader);
-    }
+    const loadingIndicator=page?.classList.contains('active')?window.namoOperationLoading:null;
+    loadingIndicator?.start();
     spcLoadPromise=Promise.resolve(window.qmesAuthDataReady?.wait?.()).then(()=>syncRows('oqc')).then(rows=>{
       spcRows=rows;spcLoadedAt=Date.now();spcLoadError='';
       paintSpc(spcRows);
     }).catch(error=>{
       spcLoadError=error.message||'출하검사 데이터를 불러오지 못했습니다.';
       paintSpc(spcRows||[]);
-    }).finally(()=>{spcLoadPromise=null;loader?.remove();});
+    }).finally(()=>{spcLoadPromise=null;loadingIndicator?.stop();});
     return spcLoadPromise;
   }
   function renderSpc(){
