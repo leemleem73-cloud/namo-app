@@ -2262,7 +2262,7 @@ main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:
 (function(){
  if(window.__namoOperationLoaderInstalled)return;
  window.__namoOperationLoaderInstalled=true;
- var pending=0,initial=true,timer=null,hideTimer=null,shownAt=0;
+ var pending=0,initial=true,timer=null,hideTimer=null,shownAt=0,imageReady=false;
  function show(){
   var overlay=document.getElementById('qmes-first-paint-loader');
   if(!overlay||(!initial&&!pending))return;
@@ -2271,12 +2271,12 @@ main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:
  }
  function hide(){
   clearTimeout(timer);clearTimeout(hideTimer);
-  if(initial||pending)return;
+  if(initial||pending||!imageReady)return;
   hideTimer=setTimeout(function(){
    if(initial||pending)return;
    var overlay=document.getElementById('qmes-first-paint-loader');
    if(overlay)overlay.hidden=true;
-  },Math.max(0,400-(Date.now()-shownAt)));
+  },Math.max(0,900-(Date.now()-shownAt)));
  }
  function start(){
   clearTimeout(hideTimer);
@@ -2289,7 +2289,7 @@ main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:
   if(overlay&&pending)show();
   hide();
  }
- window.namoOperationLoading={start:start,stop:stop,finishStartup:finishStartup};
+ window.namoOperationLoading={start:start,stop:stop,finishStartup:finishStartup,markVisible:function(){imageReady=true;shownAt=Date.now();hide();}};
  if(typeof window.fetch==='function'){
   var original=window.fetch;
   window.fetch=function(){
@@ -2969,9 +2969,17 @@ html body #app #approval .quality-approval-table thead th{height:34px!important;
 html body #app #approval .quality-approval-table tbody td{height:44px!important;background:#fff!important}
 
 </style>
+
+<style id="namo-centered-loading-compatibility">
+#qmes-first-paint-loader .namo-character-image{display:block;width:76%;height:auto}
+#namo-operation-overlay{left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;padding:18px 22px!important;z-index:9999!important}
+#namo-operation-overlay .namo-operation-card{display:grid!important;justify-items:center!important;gap:10px!important}
+#namo-operation-overlay .namo-operation-mascot{--mascot-size:132px}
+.qce-spc-loading{left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important}
+</style>
 </head>
 <body>
-<div id="qmes-first-paint-loader" role="status"><span class="namo-operation-mascot" aria-hidden="true" style="--mascot-size:132px"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt="" loading="eager" fetchpriority="high" onload="this.parentElement.dataset.mascotReady='1'"><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-startup-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-startup-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="namo-operation-message">나모 웹을 불러오는 중입니다</span></div>
+<div id="qmes-first-paint-loader" role="status"><span class="namo-operation-mascot" aria-hidden="true" style="--mascot-size:132px"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt="" loading="eager" fetchpriority="high" onload="this.parentElement.dataset.mascotReady='1';window.namoOperationLoading?.markVisible()"><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-startup-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-startup-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="namo-operation-message">나모 웹을 불러오는 중입니다</span></div>
 <script>(()=>{
  const pageReady=()=>{
   const page=document.querySelector('.module-page.active');
