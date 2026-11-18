@@ -13,7 +13,15 @@
 'use strict';
 const el=id=>document.getElementById(id),p=new URLSearchParams(location.search);
 const lot=(p.get('lot')||'').trim(),name=(p.get('material')||'').trim(),wo=(p.get('work')||'').trim(),iqcUrl=(p.get('iqc')||'').trim();
-const normalize=x=>String(x??'').trim().toUpperCase();
+const normalize=x=>String(x??'').normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g,'').trim().toUpperCase();
+const lotKey=x=>normalize(x).replace(/[\s\u00A0]/g,'');
+const materialKey=x=>normalize(x).replace(/[\s()\[\]_-]/g,'');
+const itemMatches=(row,material)=>{
+ const item=normalize(row.item),name=normalize(material);
+ const aliases=[row.item_code,row.itemCode,row.material_code,row.materialCode].map(normalize);
+ const tokens=item.split(/[^A-Z0-9가-힣]+/).filter(Boolean);
+ return item===name||materialKey(item)===materialKey(name)||tokens.includes(name)||tokens.includes(materialKey(name))||aliases.includes(name);
+};
 const show=(status,title,reason,icon)=>{el('state').className='state '+status;el('symbol').textContent=icon;el('verdict').textContent=title;el('reason').textContent=reason;};
 el('lot').textContent=lot||'-';el('name').textContent=name||'-';
 if(iqcUrl){try{const u=new URL(iqcUrl,location.origin);if(u.origin===location.origin&&/^\/iqc-label\/[a-f0-9-]{36}$/i.test(u.pathname)){el('detail').href=u.href;el('detail').hidden=false;}}catch(_){}}
@@ -35,21 +43,21 @@ const matchesJob=job.materials.filter(m=>normalize(m.lot)===normalize(lot)&&norm
 if(!matchesJob.length){
  show('warn','대조 확인 필요','작업지시서의 원료명 또는 LOT가 다릅니다. 투입 전 담당자 확인이 필요합니다.','!');return;
 }
-// LOT is the primary traceability key. A single matching IQC LOT may use a longer item description than the work order.
-const lotRows=iqcRecords.filter(x=>normalize(x.lot)===normalize(lot));
-const exactRows=lotRows.filter(x=>normalize(x.item)===normalize(name));
-let rows=exactRows;
-if(!rows.length&&lotRows.length===1){
- const candidate=lotRows[0];
- const item=normalize(candidate.item);
- const aliases=[candidate.item_code,candidate.itemCode,candidate.material_code,candidate.materialCode].map(normalize);
- const shortName=normalize(name).replace(/[^A-Z0-9가-힣]/g,'');
- const itemTokens=item.split(/[^A-Z0-9가-힣]+/).filter(Boolean);
- if(item===normalize(name)||itemTokens.includes(normalize(name))||aliases.includes(normalize(name))||itemTokens.includes(shortName))rows=[candidate];
-}
+// Verify the original LOT first. Normalize invisible characters and whitespace only.
+const lotRows=iqcRecords.filter(x=>lotKey(x.lot)===lotKey(lot));
+const exact=lotRows.filter(x=>normalize(x.item)===normalize(name));
+let rows=exact.length?exact:lotRows.filter(x=>itemMatches(x,name));
 if(rows.length!==1){
- el('iqc').textContent=lotRows.length?'원료명 대조 필요':'검사기록 미확인';
- show('warn','검사 확인 필요',lotRows.length?'동일 LOT의 IQC 기록은 있지만 원료명 또는 품목코드 대조가 필요합니다.':'해당 LOT의 수입검사 기록이 조회되지 않습니다.','!');return;
+ if(!lotRows.length){
+  el('iqc').textContent='LOT 조회 불일치';
+  show('warn','LOT 확인 필요','IQC 조회는 정상 응답했지만 LOT '+lot+'의 검사기록은 일치하지 않았습니다. 수입검사 원료 LOT 원문과 비교해 주세요.','!');return;
+ }
+ if(lotRows.length===1){
+  el('iqc').textContent='품목 대조 필요';
+  show('warn','원료명 확인 필요','IQC에는 해당 LOT가 존재하지만 등록 품목명은 '+String(lotRows[0].item||'-')+'입니다. 작업지시서 원료명과 동일 품목인지 확인하세요.','!');return;
+ }
+ el('iqc').textContent='중복 기록 확인';
+ show('warn','IQC 중복 확인','동일 LOT의 검사기록 '+lotRows.length+'건이 존재하며 일치 품목을 단일 결정하지 못했습니다.','!');return;
 }
 const row=rows[0];el('code').textContent=row.item_code||row.itemCode||row.material_code||row.materialCode||'-';
 const items=(()=>{try{const v=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(v)?v:[]}catch(_){return []}})();
