@@ -2893,7 +2893,7 @@ html body #ncr #ncr-bulk #ncr-bulk-mail{color:#000!important}
 </style>
 <style>
 #qmes-first-paint-loader{position:fixed;inset:0;z-index:200;display:grid;place-content:center;justify-items:center;gap:8px;background:#eaf1f6;color:#173754;font:600 13px system-ui,sans-serif;pointer-events:none}
-html[data-qmes-menu-ready="1"] #qmes-first-paint-loader{display:none}
+html[data-qmes-first-content="ready"] #qmes-first-paint-loader{display:none}
 </style>
 <style id="qmes-inspection-registration-light-options">
 html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) select{color-scheme:light;background-color:#fff!important;color:#244260!important}
@@ -2938,7 +2938,28 @@ html body #app #approval .quality-approval-table tbody td{height:44px!important;
 </head>
 <body>
 <div id="qmes-first-paint-loader" role="status"><span class="namo-operation-mascot" aria-hidden="true" style="--mascot-size:132px"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt=""><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-startup-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-startup-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>나모 웹을 불러오는 중입니다</div>
-<script>setTimeout(function(){document.getElementById("qmes-first-paint-loader")?.remove();},8000);</script>
+<script>(()=>{
+ const pageReady=()=>{
+  const page=document.querySelector('.module-page.active');
+  return document.documentElement.dataset.qmesMenuReady==='1'&&
+   page&&!!page.querySelector('.qce-page,.module-shell,.namo-portal,#namoPortal20261014,#namoDashboard20261026,.iqc-work-frame,#finishedStock,#materialStockRaw');
+ };
+ let queued=false;
+ const observer=new MutationObserver(()=>{
+  if(queued)return;
+  queued=true;
+  requestAnimationFrame(()=>{queued=false;check();});
+ });
+ function check(){
+  if(!pageReady())return;
+  document.documentElement.dataset.qmesFirstContent='ready';
+  document.getElementById('qmes-first-paint-loader')?.remove();
+  observer.disconnect();
+ }
+ observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-qmes-menu-ready']});
+ document.addEventListener('DOMContentLoaded',check,{once:true});
+ setTimeout(()=>{observer.disconnect();document.getElementById('qmes-first-paint-loader')?.remove();},30000);
+})();</script>
 <!-- Removed destructive client-side localStorage reset; preserve existing inspection and ERP data. -->
 <div class="app" id="app">
   <header class="topbar">
@@ -9784,7 +9805,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
 <script src="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34"></script>
-<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-instrument-card-history"></script>
+<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-stable-spc-mascot"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261111-hold-pagination"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261116-check-on-save"></script>
