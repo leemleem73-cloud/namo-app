@@ -345,7 +345,16 @@ async function ensureMissingStandardApprovals() {
   return created;
 }
 
-async function ensureMissingIqcApprovals() {
+let missingIqcRecovery=null,missingIqcRecoveryAt=0;
+function ensureMissingIqcApprovals(){
+  if(missingIqcRecovery)return missingIqcRecovery;
+  if(Date.now()-missingIqcRecoveryAt<30000)return Promise.resolve(0);
+  missingIqcRecovery=recoverMissingIqcApprovals().then(count=>{
+    missingIqcRecoveryAt=Date.now();return count;
+  }).finally(()=>{missingIqcRecovery=null;});
+  return missingIqcRecovery;
+}
+async function recoverMissingIqcApprovals() {
   await ensureSchema();
   const manager = await getQualityManager();
   await require('./qmes-iqc-2025-recovery').recoverIqc2025Approvals(pool, manager);
