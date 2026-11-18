@@ -10,7 +10,9 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=v=>{const n=Number(v);return Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:3}):'-';};
   const api=async(url,opt={})=>{
-    const r=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});
+    let r;
+    try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt,signal:opt.signal||AbortSignal.timeout(25000)});}
+    catch(error){if(error.name==='TimeoutError'||error.name==='AbortError')throw Error('서버 응답이 지연되어 요청을 중단했습니다. 목록을 재조회해 저장 여부를 확인해 주세요.');throw error;}
     const p=await r.json().catch(()=>({success:false,message:'서버 응답 오류'}));
     if(!r.ok||p.success===false) throw new Error(p.message||'요청 실패');
     return p.data;
@@ -416,8 +418,23 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     if(draftContext){bg.dataset.qmesDraftModule=draftContext.module;bg.dataset.qmesDraftRecord=String(draftContext.record||'new');bg.dataset.qmesDraftMode=draftContext.mode||(draftContext.record&&draftContext.record!=='new'?'edit':'new');bg.dataset.qmesDraftManualCommit='1';}
     document.body.appendChild(bg);
     bg.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>bg.remove());
-    bg.onclick=e=>{if(e.target===bg)bg.remove();};
-    bg.querySelector('[data-save]').onclick=async()=>{try{const draftTicket=window.qmesFormDrafts?.beginSave(bg);await onSave(bg);window.qmesFormDrafts?.completeSave(draftTicket);bg.remove();}catch(e){toast(e.message);}};
+    bg.onclick=e=>{if(e.target===bg&&!bg.querySelector('[data-save]')?.disabled)bg.remove();};
+    const feedback=document.createElement('p');feedback.className='qce-save-feedback';feedback.setAttribute('role','status');feedback.hidden=true;feedback.style.cssText='margin:0;padding:10px 18px;color:#244260;white-space:pre-wrap';
+    bg.querySelector('.qce-modal-foot').before(feedback);
+    let saving=false;
+    bg.querySelector('[data-save]').onclick=async()=>{
+      if(saving)return;
+      saving=true;
+      const button=bg.querySelector('[data-save]'),close=bg.querySelector('[data-close]');
+      button.disabled=true;close.disabled=true;feedback.hidden=false;feedback.style.color='#244260';feedback.textContent='저장 요청 중입니다.';
+      try{
+        const draftTicket=window.qmesFormDrafts?.beginSave(bg);
+        await onSave(bg);window.qmesFormDrafts?.completeSave(draftTicket);bg.remove();
+      }catch(error){
+        feedback.textContent=error.message||'저장하지 못했습니다. 입력 내용을 확인해 주세요.';
+        feedback.style.color='#b42318';feedback.setAttribute('role','alert');toast(feedback.textContent);
+      }finally{saving=false;button.disabled=false;close.disabled=false;}
+    };
     return bg;
   }
   const val=(root,key)=>root.querySelector('[data-k="'+key+'"]')?.value.trim()||'';
@@ -1016,8 +1033,17 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       '<div class="qce-field"><label>검교정주기(개월)</label><input data-k="calibration_cycle_months" type="number" value="12"></div><div class="qce-field"><label>최종 검교정일</label><input data-k="last_calibration_on" type="date"></div>'+
       '<div class="qce-field"><label>차기 검교정일</label><input data-k="next_calibration_on" type="date"></div><div class="qce-field"><label>상태</label><select data-k="status"><option>사용</option><option>사용중지</option></select></div>'+
       '<div class="qce-field"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
-      async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
-        if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
+      async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');bg.querySelector('.qce-save-feedback').textContent='계측기 기본정보를 저장하는 중입니다.';const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
+        if(file){
+          bg.querySelector('.qce-save-feedback').textContent='기본정보 저장 완료 · 사진을 업로드하는 중입니다.';
+          try{
+            const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer(),signal:AbortSignal.timeout(25000)});
+            const result=await response.json().catch(()=>null);
+            if(!response.ok||result?.success!==true)throw Error(result?.message||'사진 저장 실패 ('+response.status+')');
+          }catch(error){
+            throw Error('기본정보는 저장되었습니다. 사진 저장을 확인하지 못했습니다. '+((error.name==='TimeoutError'||error.name==='AbortError')?'서버 응답 시간이 초과되었습니다.':error.message));
+          }
+        }
         toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);
         if(instrumentDialog.dataset.openHistoryAfterSave==='1')setTimeout(()=>showInstrumentHistory(saved),0);
       }, {module:'instrumentMgmt',record:record?.id||'new'}
