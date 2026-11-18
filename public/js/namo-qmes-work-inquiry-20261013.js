@@ -5,10 +5,22 @@ if(window.__namoWorkInquiry20261013)return;
 window.__namoWorkInquiry20261013=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Resolve the saved work-order material row at scan time, even before IQC is linked.
-async function prepareWorkIqcQr(){ /* No label token or IQC write is needed to print a work-order QR. */ }
+const workMaterialLinks=new Map();
+async function prepareWorkIqcQr(records){
+ for(const record of records||[]){
+  const response=await fetch('/api/qmes/work-material-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({workId:record.id}),signal:AbortSignal.timeout(15000)});
+  const result=await response.json();
+  if(!response.ok||!result.success||!Array.isArray(result.data))throw Error(result.message||'원료 QR 연결을 발행하지 못했습니다.');
+  for(const link of result.data)workMaterialLinks.set(String(record.id)+'|'+link.line,link);
+ }
+}
+window.qmesPrepareWorkMaterialQr=prepareWorkIqcQr;
 function printLotQRCode(lot,name,work,line){
  if(!String(lot??'').trim()||!String(name??'').trim())return '<span class="iqc-qr-unlinked">원료명·LOT 확인 필요</span>';
+ const linked=workMaterialLinks.get(String(work)+'|'+line);
+ if(!linked||linked.lot!==String(lot).trim()||linked.name!==String(name).trim())throw Error('저장된 원료 정보와 인쇄 정보가 다릅니다. 작업지시서를 다시 열어 주세요.');
  const url=new URL('/qmes-material-scan.html',location.origin);
+ url.searchParams.set('s',linked.token);
  url.searchParams.set('w',String(work??'').trim());
  url.searchParams.set('i',String(line));
  // Preserve the printed identity so a later row edit cannot silently retarget an old QR.
@@ -468,7 +480,7 @@ async function print(){
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length){alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
  if(!await window.qmesConfirmPrint('작업지시서',docs.length))return;
- await prepareWorkIqcQr(docs);
+ await window.qmesPrepareWorkMaterialQr(docs);
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
  const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length){alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
