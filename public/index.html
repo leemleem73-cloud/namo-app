@@ -5406,9 +5406,9 @@ async function loadQualityNotifications(){
   if(!notifyList) return;
   try{
     const notificationQuery=window.qmesNotificationDates?.query()||'';
-    const r=await fetch('/api/qmes-quality/notifications'+notificationQuery,{credentials:'same-origin'});
-    const p=await r.json();
-    if(!r.ok||!p.success) throw new Error(p.message||'알림 조회 실패');
+    const r=await fetch('/api/qmes-quality/notifications'+notificationQuery,{credentials:'same-origin',signal:AbortSignal.timeout(12000)});
+    const p=await r.json().catch(()=>null);
+    if(!r.ok||!p?.success) throw new Error(p?.message||'알림 서버 응답이 중단되었습니다. 다시 조회해 주세요.');
     if(notificationQuery!==(window.qmesNotificationDates?.query()||''))return;
     if(window.qmesNotificationHistory)return window.qmesNotificationHistory.refresh();
     const rows=Array.isArray(p.data)?p.data:[];
@@ -10148,7 +10148,7 @@ html body :is(#ncr,#changeControl,#equipment,#instrumentMgmt,#standard) .qmes-iq
  roots.forEach(root=>observer.observe(root,{childList:true,subtree:true}));scan();
 })();
 </script>
-<script defer src="./js/qmes-module-notifications-20261029.js?v=6-drag"></script>
+<script defer src="./js/qmes-module-notifications-20261029.js?v=20261118-interrupted-response"></script>
 <script defer src="./js/qmes-iqc-receipt-choices-20261029.js?v=3"></script>
 
 
