@@ -44,13 +44,11 @@ async function prepareWorkIqcQr(records){
 function printLotQRCode(lot,name,work){
  const linked=workIqcQrLinks.get(workIqcKey(lot,name));
  if(!linked?.url||!linked?.recordId)return '<span class="iqc-qr-unlinked" title="해당 LOT의 기존 수입검사 QR 연결 확인 필요">IQC QR 미연결</span>';
- // This work-order view references the very same IQC record/token as the existing IQC QR.
+ // The QR resolves the exact IQC record ID, not a second manually entered LOT.
+ // Keep the printed QR short enough for reliable camera scanning.
  const url=new URL('/qmes-material-scan.html',location.origin);
- url.searchParams.set('iqc',linked.url);
- url.searchParams.set('record',linked.recordId);
- url.searchParams.set('lot',String(lot??'').trim());
- url.searchParams.set('material',String(name??'').trim());
- url.searchParams.set('work',String(work??'').trim());
+ url.searchParams.set('r',linked.recordId);
+ url.searchParams.set('w',String(work??'').trim());
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
  new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
