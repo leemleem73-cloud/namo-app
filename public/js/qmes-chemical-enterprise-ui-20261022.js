@@ -964,7 +964,10 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       setTimeout(()=>frame.remove(),120000);
     };
     new ResizeObserver(syncSelection).observe(root);
-    const paint=rows=>{
+    const paint=records=>{
+        const rows=[...records].sort((a,b)=>
+          String(a.instrument_no||'').localeCompare(String(b.instrument_no||''),'ko',{numeric:true})||
+          Number(a.id)-Number(b.id));
         root._instrumentRows=rows;
         rows.filter(row=>String(row.id)==='1'||row.photo_updated_at).forEach(row=>prepareInstrumentPhoto(row).catch(()=>{}));
         root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:34px"><col style="width:52px"><col><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th><input type="checkbox" class="qce-inst-select-all" aria-label="계측기 전체 선택"></th><th>No.</th><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
