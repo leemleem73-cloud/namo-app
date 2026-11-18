@@ -75,6 +75,17 @@ function ensureSchema() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
       CREATE INDEX IF NOT EXISTS qmes_calibration_instrument_idx ON qmes_calibrations(instrument_id, calibration_on DESC);
+      CREATE TABLE IF NOT EXISTS qmes_instrument_events(
+        id BIGSERIAL PRIMARY KEY,
+        instrument_id BIGINT NOT NULL REFERENCES qmes_instruments(id) ON DELETE RESTRICT,
+        event_on DATE NOT NULL,
+        event_type TEXT NOT NULL CHECK(event_type IN ('점검','수리','기타')),
+        content TEXT NOT NULL,
+        agency TEXT NOT NULL DEFAULT '',
+        created_by TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS qmes_instrument_event_date_idx ON qmes_instrument_events(instrument_id,event_on DESC,id DESC);
       CREATE TABLE IF NOT EXISTS qmes_instrument_photos(
         instrument_id BIGINT PRIMARY KEY REFERENCES qmes_instruments(id) ON DELETE CASCADE,
         content_type TEXT NOT NULL, image_data BYTEA NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -306,6 +317,43 @@ function install(app) {
       const result=await pool.query('INSERT INTO qmes_instrument_photos(instrument_id,content_type,image_data) VALUES($1,$2,$3) ON CONFLICT(instrument_id) DO UPDATE SET content_type=EXCLUDED.content_type,image_data=EXCLUDED.image_data,updated_at=NOW() RETURNING updated_at',[id,type,data]);
       res.json({success:true,data:{updated_at:result.rows[0].updated_at}});
     }catch(error){console.error('[QMES instrument photo save]',error);fail(res,500,'사진 저장 실패');}
+  });
+
+  app.get('/api/qmes-instruments/:id/history',auth,async(req,res)=>{
+    const id=Number(req.params.id);
+    if(!Number.isSafeInteger(id)||id<1)return fail(res,400,'계측기 번호를 확인하세요.');
+    try{
+      await ensureSchema();
+      const exists=await pool.query('SELECT id FROM qmes_instruments WHERE id=$1 AND deleted_at IS NULL',[id]);
+      if(!exists.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
+      const result=await pool.query(`
+        SELECT 'calibration:'||id::text AS id,calibration_on AS event_on,'교정검사' AS event_type,
+          note AS content,agency,certificate_no,result,next_due_on,created_by,created_at
+        FROM qmes_calibrations WHERE instrument_id=$1
+        UNION ALL
+        SELECT 'event:'||id::text,event_on,event_type,content,agency,'' AS certificate_no,
+          '' AS result,NULL::date AS next_due_on,created_by,created_at
+        FROM qmes_instrument_events WHERE instrument_id=$1
+        ORDER BY event_on DESC,created_at DESC,id DESC
+      `,[id]);
+      res.json({success:true,data:result.rows});
+    }catch(error){console.error('[QMES instrument history]',error);fail(res,500,'계측기 이력을 조회하지 못했습니다.');}
+  });
+  app.post('/api/qmes-instruments/:id/history',auth,async(req,res)=>{
+    const id=Number(req.params.id),b=req.body||{};
+    const date=str(b.event_on,10),type=str(b.event_type,20),content=str(b.content,2000);
+    if(!Number.isSafeInteger(id)||id<1||!date||!validDate(date)||!['점검','수리','기타'].includes(type)||!content)
+      return fail(res,400,'처리일자, 이력 구분과 내용을 확인하세요.');
+    try{
+      await ensureSchema();
+      const result=await pool.query(`
+        INSERT INTO qmes_instrument_events(instrument_id,event_on,event_type,content,agency,created_by)
+        SELECT id,$2,$3,$4,$5,$6 FROM qmes_instruments WHERE id=$1 AND deleted_at IS NULL
+        RETURNING *
+      `,[id,date,type,content,str(b.agency,160),actorName(req)]);
+      if(!result.rowCount)return fail(res,404,'계측기를 찾을 수 없습니다.');
+      res.status(201).json({success:true,data:result.rows[0]});
+    }catch(error){console.error('[QMES instrument history save]',error);fail(res,500,'계측기 이력을 저장하지 못했습니다.');}
   });
 
   app.get('/api/qmes-calibrations', auth, async (req,res)=>{
