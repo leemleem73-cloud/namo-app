@@ -32,15 +32,19 @@ async function prepareWorkIqcQr(records){
   workIqcQrLinks.set(key,new URL(path,location.origin).href);
  }));
 }
-function printLotQRCode(lot,name){
- const value=workIqcQrLinks.get(workIqcKey(lot,name));
- if(!value)return '';
+function printLotQRCode(lot,name,work){
+ const url=new URL('/qmes-material-scan.html',location.origin);
+ url.searchParams.set('lot',String(lot??'').trim());
+ url.searchParams.set('material',String(name??'').trim());
+ url.searchParams.set('work',String(work??'').trim());
+ const linked=workIqcQrLinks.get(workIqcKey(lot,name));
+ if(linked)url.searchParams.set('iqc',linked);
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
- new window.QRCode(mount,{text:value,width:160,height:160,correctLevel:window.QRCode.CorrectLevel?.M});
+ new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
  const image=mount.querySelector('canvas')?.toDataURL('image/png')||mount.querySelector('img')?.src;
- if(!image||!image.startsWith('data:image/'))throw Error('IQC QR 생성 실패');
- return '<img src="'+image+'" alt="원료 LOT 수입검사 QR코드" width="160" height="160">';
+ if(!image||!image.startsWith('data:image/'))throw Error('QR 생성 실패');
+ return '<img src="'+image+'" alt="원료명과 LOT 스캔 QR" width="192" height="192">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
@@ -63,9 +67,9 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const qr=printLotQRCode(m.lot,m.name);
-  const lotCell=safe(m.lot)+(qr?'<div class="print-lot-qr">'+qr+'</div>':'');
-  return '<tr><td>'+safe(i+1)+'</td><td>'+safe(name)+'</td><td>'+lotCell+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
+  const qr=printLotQRCode(m.lot,m.name,f['작업지시번호']||record.id);
+  const nameCell='<div class="print-material-with-qr"><span>'+safe(name)+'</span><span class="print-lot-qr">'+qr+'</span></div>';
+  return '<tr><td>'+safe(i+1)+'</td><td>'+nameCell+'</td><td>'+safe(m.lot)+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
  }).join('');
  const steps=[
   ['01','A탱크 원료 투입','NMP / 분산제 / 세라믹 투입'],
@@ -89,14 +93,14 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .material th{background:#edf3f9;color:#31516f;text-align:center;font-size:8.5pt}.material td{text-align:center}
 .material th:nth-child(1){width:6%}.material th:nth-child(2){width:19%}.material th:nth-child(3){width:29%}.material th:nth-child(4){width:17%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:13%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
-.print-lot-qr{margin:2px auto 0;padding:1px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;margin:0 auto;image-rendering:pixelated}
+.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;image-rendering:pixelated}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-qr{margin:1px auto 0;padding:0}.print-lot-qr img{width:38px;height:38px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
+@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-qr{padding:0}.print-lot-qr img{width:40px;height:40px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
 </style></head><body><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
