@@ -26,8 +26,23 @@ function position(){
  Object.entries({position:'fixed',width:width+'px',left:left+'px',right:'auto',top:top+'px',height:'min(700px, calc(100dvh - '+(top+10)+'px))'}).forEach(([key,value])=>{if(panel.style.getPropertyValue(key)!==value)panel.style.setProperty(key,value,'important');});
 }
 async function api(path='',options={}){
- const response=await fetch('/api/qmes/notification-history'+path,{credentials:'same-origin',cache:'no-store',...options}),body=await response.json();
- if(!response.ok||body.success===false)throw Error(body.message||'알림 처리 실패');return body;
+ const read=String(options.method||'GET').toUpperCase()==='GET';
+ for(let attempt=0;attempt<(read?2:1);attempt++){
+  let response;
+  try{
+   response=await fetch('/api/qmes/notification-history'+path,{credentials:'same-origin',cache:'no-store',...options,signal:options.signal||AbortSignal.timeout(12000)});
+   const body=await response.json().catch(()=>null);
+   if(!response.ok||!body||body.success===false){
+    const retry=!body||[429,502,503,504].includes(response.status);
+    throw Object.assign(Error(body?.message||'알림 서버 응답을 완료하지 못했습니다. 잠시 후 다시 조회해 주세요.'),{retry});
+   }
+   return body;
+  }catch(error){
+   const retry=error.retry||error instanceof TypeError||error.name==='TimeoutError';
+   if(!read||attempt||options.signal?.aborted||!retry)throw error;
+   await new Promise(resolve=>setTimeout(resolve,response?.status===429?2000:600));
+  }
+ }
 }
 function render(){
  list.replaceChildren();
