@@ -3328,6 +3328,7 @@ app.delete('/api/purchase-orders/:id', requireAdmin, async (req, res) => {
 });
 
 require('./qmes-iqc-attachments-20261105.cjs').install(app,{pool,requireLogin});
+require('./qmes-work-material-links-20261119.cjs').install(app,{pool,requireLogin});
 
 function bindCrud(table, mapper) {
   app.get(`/api/${table}`, requireLogin, async (_req, res) => {
