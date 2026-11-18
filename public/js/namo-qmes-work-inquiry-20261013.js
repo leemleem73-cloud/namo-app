@@ -4,17 +4,43 @@
 if(window.__namoWorkInquiry20261013)return;
 window.__namoWorkInquiry20261013=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// Generate a QR image locally; scanned value is the original raw material LOT.
-function printLotQRCode(lot){
- const value=String(lot??'').trim();
+// IQC QR and work-order QR use the same existing mobile inspection-label token.
+// Read-only matching, no changes to existing IQC or work-order data.
+const workIqcQrLinks=new Map();
+const workIqcKey=(lot,name)=>String(lot??'').trim().toUpperCase()+'|'+String(name??'').trim().toUpperCase();
+async function prepareWorkIqcQr(records){
+ workIqcQrLinks.clear();
+ const required=new Map();
+ for(const record of records||[])for(const m of Array.isArray(record?.materials)?record.materials:[]){
+  const lot=String(m.lot??'').trim(),name=String(m.name??'').trim();
+  if(lot)required.set(workIqcKey(lot,name),{lot,name});
+ }
+ if(!required.size)return;
+ const response=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(12000)});
+ if(!response.ok)throw Error('IQC 조회 오류: '+response.status);
+ const data=await response.json();
+ if(data?.success!==true||!Array.isArray(data.data))throw Error('IQC 조회 응답 오류');
+ await Promise.all([...required].map(async ([key,{lot,name}])=>{
+  const rows=data.data.filter(r=>String(r.lot??'').trim().toUpperCase()===lot.toUpperCase());
+  const matching=rows.filter(r=>String(r.item??'').trim().toUpperCase()===name.toUpperCase());
+  if(matching.length!==1||!matching[0].id)return;
+  const response=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:String(matching[0].id)}),signal:AbortSignal.timeout(10000)});
+  const result=await response.json().catch(()=>null);
+  if(!response.ok||result?.success!==true)return;
+  const path=String(result.path||'');
+  if(!path.startsWith('/iqc-label/')||!/^[a-f0-9-]{36}$/i.test(path.slice(11)))return;
+  workIqcQrLinks.set(key,new URL(path,location.origin).href);
+ }));
+}
+function printLotQRCode(lot,name){
+ const value=workIqcQrLinks.get(workIqcKey(lot,name));
  if(!value)return '';
- if(typeof window.QRCode!=='function')throw new Error('QR코드 모듈을 불러오지 못했습니다.');
+ if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
  new window.QRCode(mount,{text:value,width:160,height:160,correctLevel:window.QRCode.CorrectLevel?.M});
- const canvas=mount.querySelector('canvas');
- const uri=canvas?.toDataURL('image/png')||mount.querySelector('img')?.src;
- if(!uri||!uri.startsWith('data:image/'))throw new Error('원료 LOT QR코드 생성 실패: '+value);
- return '<img src="'+uri+'" alt="원료 LOT QR코드" width="160" height="160">';
+ const image=mount.querySelector('canvas')?.toDataURL('image/png')||mount.querySelector('img')?.src;
+ if(!image||!image.startsWith('data:image/'))throw Error('IQC QR 생성 실패');
+ return '<img src="'+image+'" alt="원료 LOT 수입검사 QR코드" width="160" height="160">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
@@ -37,7 +63,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const qr=printLotQRCode(m.lot);
+  const qr=printLotQRCode(m.lot,m.name);
   const lotCell=safe(m.lot)+(qr?'<div class="print-lot-qr">'+qr+'</div>':'');
   return '<tr><td>'+safe(i+1)+'</td><td>'+safe(name)+'</td><td>'+lotCell+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
  }).join('');
@@ -237,13 +263,17 @@ function init(){
    print.className='btn work-order-print-btn';
    print.textContent='인쇄';
    print.title='해당 작업지시서 인쇄';
-   print.addEventListener('click',e=>{
+   print.addEventListener('click',async e=>{
     e.preventDefault();e.stopPropagation();
     const id=String(tr.dataset.workSaved||'');
     const record=typeof readWorkOrders==='function'
       ?readWorkOrders().find(x=>String(x?.id||'')===id):null;
     if(!record){window.alert('저장된 작업지시서를 찾을 수 없습니다. 다시 조회해 주세요.');return;}
-    printWorkOrderDocument(record);
+    if(print.disabled)return;
+    print.disabled=true;
+    try{await prepareWorkIqcQr([record]);printWorkOrderDocument(record);}
+    catch(error){console.error('[Work order IQC QR]',error);window.alert(error.message||'QR 연결 실패');}
+    finally{print.disabled=false;}
    });
    group.prepend(print);
   });
@@ -459,6 +489,7 @@ async function print(){
  const docs=[...selected].map(id=>saved.find(r=>String(r?.id)===id)).filter(Boolean);
  if(!docs.length){alert('선택한 작업지시서 데이터를 찾지 못했습니다.');return}
  if(!await window.qmesConfirmPrint('작업지시서',docs.length))return;
+ await prepareWorkIqcQr(docs);
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
  const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length){alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
