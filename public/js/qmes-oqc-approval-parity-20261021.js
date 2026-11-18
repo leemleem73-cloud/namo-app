@@ -99,7 +99,7 @@
 /* Draw each approval edge once in both the certificate and detail view. */
 (function(){
  const style=document.createElement('style');style.id='qmes-oqc-approval-single-border-20261118';
- const base='html body #mainWorkspace .oqc-esign-parity';
+ const base='html body .oqc-esign-parity';
  style.textContent=
  base+'{border:1px solid #d4dce5!important;outline:0!important;box-shadow:none!important;background:#fff!important}'+
  base+'>.pqc-esign-table{border:0!important;outline:0!important;box-shadow:none!important}'+
@@ -108,6 +108,9 @@
  base+'>.pqc-esign-table>div:nth-child(4),'+base+'>.pqc-esign-table>div:last-child{border-right:0!important}'+
  base+'>.pqc-esign-table>.pqc-esign-person>*{border:0!important;outline:0!important;box-shadow:none!important}'+
  base+'>.pqc-esign-note{border:0!important;border-top:1px solid #d4dce5!important;outline:0!important;box-shadow:none!important}'+
- 'html body #mainWorkspace .std-inspection[data-inspection-type="outgoing"] .oqc-esign-parity{border:0!important;border-top:1px solid #d4dce5!important;margin-bottom:0!important}';
+ 'html body .std-inspection[data-inspection-type="outgoing"] .oqc-esign-parity{border:0!important;margin:0!important;padding:0!important;width:100%!important;box-sizing:border-box!important}'+
+ 'html body .std-inspection[data-inspection-type="outgoing"] .oqc-esign-parity>.pqc-esign-table{border-bottom:1px solid #d4dce5!important}'+
+ 'html body .std-inspection[data-inspection-type="outgoing"] .oqc-esign-parity>.pqc-esign-note{border:0!important}'+
+ 'html body .std-inspection[data-inspection-type="outgoing"] .std-premium-remarks{border-top:0!important;border-bottom:1px solid #d4dce5!important}';
  document.head.append(style);
 })();
