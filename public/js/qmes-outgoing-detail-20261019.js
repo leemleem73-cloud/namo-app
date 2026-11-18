@@ -36,7 +36,7 @@ const electrolyte=records.find(r=>canonical(r.check)==='전해액 안정성');
 const standardRevision=window.qmesOqcRules.standardRevisionForDate(record.date,electrolyte?.standardRevision??record.standardRevision);
 const items=baseItems.map(item=>item.slice());
 if(standardRevision===0){const legacy=items.find(item=>item[0]==='전해액 안정성');if(legacy){legacy[1]='미탈리';legacy[2]='육안';}}
-let html='<div class="am-inline-edit-grid">'+'<div class="oqc-revision-date-row">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+(window.qmesOqcRevision?.formFields(records)||'')+'</div>'+field('제조일자','manufactureDate','date',dateValue(record.manufactureDate||record.productionDate))+field('출하일자','actualShipDate','date',dateValue(record.actualShipDate||record.stockShipment?.shipDate||record.shipDate))+choice('고객사','customer',[...new Set(['',record.customer||'',...[...(section._oqcRecords?.values()||[])].map(r=>r.customer||''),...(window.qmesGetWorkOrders?.()||[]).map(o=>o.fields?.['고객사']||o.customer||'')])].filter((v,i)=>!i||String(v).trim()),record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+field('출하수량 (kg)','shipQty','number',records.map(r=>r.shipQty).find(v=>v!=null&&String(v).trim()!=='')??'')+'<div class="am-inline-cell"><label>검사합부</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(cleanOutgoingRemarks(record.remarks))+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items" data-standard-revision="'+standardRevision+'"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
+let html='<div class="am-inline-edit-grid">'+'<div class="oqc-revision-date-row">'+field('검사일자','date','date',dateValue(record.date||record.shipDate))+(window.qmesOqcRevision?.formFields(records)||'')+'</div>'+field('제조일자','manufactureDate','date',dateValue(record.manufactureDate||record.productionDate))+field('출하일자','actualShipDate','date',dateValue(record.actualShipDate||record.stockShipment?.shipDate||record.shipDate))+choice('고객사','customer',[...new Set(['','현대자동차','현대자동차(안성)','현대자동차(의왕)',record.customer||'',...[...(section._oqcRecords?.values()||[])].map(r=>r.customer||''),...(window.qmesGetWorkOrders?.()||[]).map(o=>o.fields?.['고객사']||o.customer||'')])].filter((v,i)=>!i||String(v).trim()),record.customer||'')+field('제품명','product','text',record.product||'')+field('완제품 LOT','lot','text',record.lot||'')+field('검사자','inspector','text',inspector)+choice('출하상태','shippingStatus',['','출하보류','출하대기','출하완료'],record.shippingStatus||'')+field('출하수량 (kg)','shipQty','number',records.map(r=>r.shipQty).find(v=>v!=null&&String(v).trim()!=='')??'')+'<div class="am-inline-cell"><label>검사합부</label><input type="text" data-oqc-overall readonly></div>'+'<div class="am-inline-cell full"><label>비고</label><textarea data-oqc-field="remarks" placeholder="비고 입력">'+esc(cleanOutgoingRemarks(record.remarks))+'</textarea></div>'+'</div><div class="am-section oqc-detail-measure-section"><div class="am-section-head"><b>검사항목</b><span>항목별 측정값 입력</span></div><div class="am-section-body"><table class="oqc-detail-items" data-standard-revision="'+standardRevision+'"><colgroup>'+[5,12,20,14,13,13,13,10].map(n=>'<col style="width:'+n+'%">').join('')+'</colgroup><thead><tr>'+['No.','검사항목','검사기준','검사방법 / 기기','1차','2차','3차','판정'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody>';
 items.forEach(([name,spec,method],index)=>{const source=records.find(r=>canonical(r.check)===name),measurements=values(source);
 html+='<tr data-oqc-item="'+index+'"><td>'+(index+1)+'</td><th>'+esc(name)+'</th><td>'+esc(spec)+'</td><td>'+esc(method)+'</td>'+[0,1,2].map(i=>'<td>'+measurementCell(name,i,String(measurements[i]??''),!source,standardRevision)+'</td>').join('')+'<td><span data-oqc-item-judge="'+index+'" data-result="대기" aria-live="polite">대기</span></td></tr>';});
 html+='</tbody></table></div></div><div class="oqc-save-error" role="alert" hidden></div>';
@@ -45,6 +45,21 @@ const pane=document.querySelector('.am-split[data-am-screen="outgoing"]'),oldSav
 const warning=pane.querySelector('.oqc-save-error');const shipInput=pane.querySelector('[data-oqc-field="shipQty"]');if(shipInput){shipInput.min='0';shipInput.step='0.000001';shipInput.placeholder='실제 출하수량 입력';}
 const customerSelect=pane.querySelector('[data-oqc-field="customer"]');
 customerSelect?.setAttribute('aria-label','고객사 선택');
+const manualCustomer=document.createElement('input');
+manualCustomer.type='text';manualCustomer.name='oqcCustomerManual';
+manualCustomer.placeholder='고객사 직접 입력';manualCustomer.maxLength=2000;
+manualCustomer.autocomplete='off';manualCustomer.hidden=true;
+manualCustomer.setAttribute('aria-label','고객사 직접 입력');
+manualCustomer.style.setProperty('display','none','important');
+customerSelect.add(new Option('직접입력','__manual__'));
+customerSelect.after(manualCustomer);
+function toggleManualCustomer(){
+ const manual=customerSelect.value==='__manual__';
+ manualCustomer.hidden=!manual;
+ manualCustomer.style.setProperty('display',manual?'block':'none','important');
+ if(manual)manualCustomer.focus();
+}
+customerSelect.addEventListener('change',toggleManualCustomer);
 (async()=>{
  try{
   await window.qmesAuthDataReady?.wait();
@@ -52,8 +67,8 @@ customerSelect?.setAttribute('aria-label','고객사 선택');
   const json=await response.json();
   if(!response.ok||json.success===false||!Array.isArray(json.data)||!customerSelect?.isConnected)return;
   const selected=customerSelect.value;
-  const names=[...new Set([...customerSelect.options].map(o=>o.value).concat(json.data.map(o=>String(o.fields?.['고객사']||o.customer||'').trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
-  customerSelect.replaceChildren(new Option('고객사 선택',''),...names.map(name=>new Option(name,name)));
+  const names=[...new Set([...customerSelect.options].map(o=>o.value).concat(json.data.map(o=>String(o.fields?.['고객사']||o.customer||'').trim())).filter(name=>name&&name!=='__manual__'))].sort((a,b)=>a.localeCompare(b,'ko'));
+  customerSelect.replaceChildren(new Option('고객사 선택',''),...names.map(name=>new Option(name,name)),new Option('직접입력','__manual__'));
   customerSelect.value=selected;
  }catch(error){console.warn('[OQC customer lookup]',error);}
 })();
@@ -73,6 +88,10 @@ window.qmesOqcFiles.mount(pane,records.map(source=>({recordKey:source.__sourceRe
 save.addEventListener('click',async()=>{
 const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
+if(fields.customer==='__manual__'){
+ fields.customer=manualCustomer.value.trim();
+ if(!fields.customer){warning.hidden=false;warning.textContent='고객사명을 직접 입력해 주세요.';manualCustomer.focus();return;}
+}
 fields.inspectionDecision='자동판정';
 if(!dateValue(fields.date)||!fields.lot||!fields.inspector){warning.hidden=false;warning.textContent='검사일자, LOT, 검사자를 확인해 주세요.';return;}
 try{fields.shipQty=window.qmesOqcShipQty.normalize(fields.shipQty);}catch(error){warning.hidden=false;warning.textContent=error.message;return;}
