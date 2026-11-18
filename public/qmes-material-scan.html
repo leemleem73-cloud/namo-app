@@ -24,15 +24,37 @@ try{
  [iqcRecords,workRecords]=answers;
 }catch(err){show('warn','확인 필요',err.message||'정보를 불러올 수 없습니다.','!');return;}
 const jobs=workRecords.filter(x=>normalize(x.id)===normalize(wo)||normalize(x.fields?.['작업지시번호'])===normalize(wo));
-if(jobs.length!==1||!Array.isArray(jobs[0].materials)||!jobs[0].materials.some(m=>normalize(m.lot)===normalize(lot)&&normalize(m.name)===normalize(name))){
- show('bad','투입 금지','현재 작업지시서에서 원료명과 LOT 일치를 확인할 수 없습니다.','✕');return;
+if(jobs.length!==1){
+ show('warn','대조 확인 필요','작업지시서 정보를 정확히 조회하지 못했습니다. LOT와 작업지시번호를 확인하세요.','!');return;
+}
+const job=jobs[0];
+if(!Array.isArray(job.materials)){
+ show('warn','대조 확인 필요','작업지시서의 원료 정보가 조회되지 않았습니다.','!');return;
+}
+const matchesJob=job.materials.filter(m=>normalize(m.lot)===normalize(lot)&&normalize(m.name)===normalize(name));
+if(!matchesJob.length){
+ show('warn','대조 확인 필요','작업지시서의 원료명 또는 LOT가 다릅니다. 투입 전 담당자 확인이 필요합니다.','!');return;
 }
 const rows=iqcRecords.filter(x=>normalize(x.lot)===normalize(lot)&&normalize(x.item)===normalize(name));
-if(rows.length!==1){el('iqc').textContent=rows.length?'중복 기록':'검사기록 없음';show('bad','투입 금지','수입검사 기록이 없거나 원료 LOT가 중복되어 정확한 검사 결과를 확인할 수 없습니다.','✕');return;}
+if(rows.length!==1){
+ el('iqc').textContent=rows.length?'중복 기록':'검사기록 미확인';
+ show('warn','검사 확인 필요','동일 원료명·LOT의 IQC 검사기록을 정확히 확인할 수 없습니다.','!');return;
+}
 const row=rows[0];el('code').textContent=row.item_code||row.itemCode||row.material_code||row.materialCode||'-';
-const state=normalize(row.judge||'');el('iqc').textContent=state==='합격'?'합격':state==='불합격'?'불합격':state||'판정 확인 필요';
-el('iqc').className=state==='합격'?'pass':state==='불합격'?'fail':'';
-if(state!=='합격'){show('bad','투입 금지','IQC 합격이 확인되지 않아 원료 투입을 허용할 수 없습니다.','✕');return;}
-show('warn','재고 확인 필요','원료명·LOT와 IQC 합격이 확인됐습니다. 투입 전 사용가능량 및 보류 여부를 확인해야 합니다.','!');
+const items=(()=>{try{const v=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(v)?v:[]}catch(_){return []}})();
+const values=items.flatMap(x=>[x?.judge,x?.result,x?.status,x?.value,...(Array.isArray(x?.values)?x.values:[]),...(Array.isArray(x?.measurements)?x.measurements:[])]).map(normalize);
+const hasFail=values.some(v=>v.includes('불합격')||v.includes('부적합')||v.includes('미확인')||v==='NG'||v==='FAIL');
+const allPass=items.length>0&&items.every(x=>String(x?.judge||'').trim()==='합격');
+const explicit=String(row.judge||'').trim();
+const master=items.find(x=>String(x?.name||'').includes('판정'));
+const state=hasFail?'불합격':allPass?'합격':explicit||String(master?.judge||master?.value||'대기').trim()||'대기';
+el('iqc').textContent=state;el('iqc').className=state==='합격'?'pass':state==='불합격'?'fail':'';
+if(state==='불합격'){
+ show('bad','투입 금지','수입검사 불합격 항목이 확인됐습니다. 해당 원료는 투입하지 마세요.','✕');return;
+}
+if(state!=='합격'){
+ show('warn','IQC 확인 필요','검사 판정이 합격으로 확인되지 않았습니다. 투입 전에 품질부 확인이 필요합니다.','!');return;
+}
+show('warn','재고 확인 필요','원료명·LOT 및 IQC 합격이 확인됐습니다. 사용가능량과 부적합 보류 상태를 확인한 뒤 투입하세요.','!');
 })();
 </script></body></html>
