@@ -382,31 +382,28 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   `;
 
 
+
   style.textContent+=`
-  html body .qce-instrument-redesigned .qce-modal{width:min(1000px,calc(100vw - 32px))!important;max-height:92dvh!important;overflow:auto!important}
-  html body .qce-instrument-redesigned .qce-modal>h3{display:flex!important;align-items:center!important;min-height:58px!important;padding:14px 20px!important;background:#fff!important;position:sticky;top:0;z-index:2}
-  html body .qce-instrument-redesigned .qce-instrument-form{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important;padding:18px 20px 12px!important}
-  html body .qce-instrument-redesigned .qce-instrument-card{min-width:0;border:1px solid #d8e3ee;border-radius:7px;background:#fff;overflow:visible}
-  html body .qce-instrument-redesigned h4{margin:0;font-size:13px;font-weight:600;color:#234563}
-  html body .qce-instrument-redesigned .qce-instrument-card>h4{padding:11px 14px;background:#edf4fa;border-bottom:1px solid #d8e3ee;border-radius:7px 7px 0 0}
-  html body .qce-instrument-redesigned .qce-instrument-card-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
-  html body .qce-instrument-redesigned .qce-instrument-form .qce-field{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-height:0!important;margin:0!important;border:0!important;background:#fff!important;min-width:0}
-  html body .qce-instrument-redesigned .qce-instrument-form .qce-field>label{display:block!important;background:transparent!important;padding:0!important;text-align:left!important;font-size:12px!important;font-weight:600!important;line-height:18px!important}
-  html body .qce-instrument-redesigned .qce-instrument-form .qce-field>input,html body .qce-instrument-redesigned .qce-instrument-form .qce-field>select,html body .qce-instrument-redesigned .qce-instrument-form .qce-field>textarea{width:100%!important;margin:0!important;box-sizing:border-box!important;padding:6px 9px!important;height:34px!important}
-  html body .qce-instrument-redesigned .qce-instrument-form .qce-field>textarea{height:66px!important;min-height:66px!important}
-  html body .qce-instrument-redesigned .qce-date-field{margin:0!important}
-  html body .qce-instrument-redesigned .qce-date-field>input{height:34px!important;min-height:34px!important}
-  html body .qce-instrument-redesigned .qce-department-picker{padding:0!important;margin:0!important;width:100%!important}
-  html body .qce-instrument-redesigned .qce-department-picker summary{box-sizing:border-box;min-height:34px;border-radius:4px;padding:7px 9px!important;border:1px solid #cddbea!important}
-  html body .qce-instrument-redesigned .qce-instrument-extras{grid-column:1/-1;display:grid;grid-template-columns:1fr 2fr;gap:16px;min-width:0;padding:12px 0 0}
-  html body .qce-instrument-redesigned .qce-instrument-extras .qce-field.full{grid-column:auto!important}
-  html body .qce-instrument-redesigned .qce-instrument-form .qce-instrument-photo-file{margin:0!important;width:100%!important;max-height:none!important;height:34px!important}
-  html body .qce-instrument-redesigned .qce-instrument-inline-history{margin:0 20px 18px;padding:12px 14px;border:1px solid #d8e3ee;border-radius:7px;background:#fafcfe;font-size:12px;color:#58728a}
-  html body .qce-instrument-redesigned .qce-instrument-inline-history>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  html body .qce-instrument-redesigned .qce-modal{width:min(980px,calc(100vw - 32px))!important;max-height:92dvh!important;overflow:auto!important;font:12px Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}
+  html body .qce-instrument-redesigned .qmes-registration-header{box-sizing:border-box;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:12px 18px!important;border-bottom:1px solid #d2dfed!important;background:#fff!important;min-height:58px}
+  html body .qce-instrument-redesigned .qce-modal h3{margin:0!important;padding:0 0 0 10px!important;border:0!important;border-left:3px solid #2789dc!important;background:transparent!important;color:#173754!important;font-size:15px!important;min-height:0!important;display:block!important;line-height:24px!important;white-space:nowrap}
+  html body .qce-instrument-redesigned .qce-instrument-form{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;padding:16px 18px 12px!important}
+  html body .qce-instrument-redesigned .qce-instrument-form>.qce-field{display:grid!important;grid-template-columns:116px minmax(0,1fr)!important;align-items:center!important;min-height:44px!important;margin:0!important;min-width:0!important;border:0!important;border-bottom:1px solid #dbe5ef!important;background:#fff!important}
+  html body .qce-instrument-redesigned .qce-instrument-form>.qce-field>label{align-self:stretch;display:flex!important;align-items:center!important;justify-content:center!important;background:#eef4fa!important;padding:8px!important;color:#244260!important;font-size:12px!important;font-weight:600!important;border:0!important}
+  html body .qce-instrument-redesigned .qce-instrument-form>.qce-field>input,html body .qce-instrument-redesigned .qce-instrument-form>.qce-field>select,html body .qce-instrument-redesigned .qce-instrument-form>.qce-field>textarea{width:calc(100% - 16px)!important;margin:6px 8px!important;padding:5px 8px!important;box-sizing:border-box!important;height:32px!important;border:1px solid #cddbea!important;border-radius:4px!important;background:#fff!important}
+  html body .qce-instrument-redesigned .qce-instrument-form>.qce-field>textarea{height:64px!important;min-height:64px!important}
+  html body .qce-instrument-redesigned .qce-instrument-form>.qce-field.full{grid-column:1/-1!important}
+  html body .qce-instrument-redesigned .qce-date-field{margin:6px 8px!important;min-width:0}
+  html body .qce-instrument-redesigned .qce-date-field>input{height:32px!important;min-height:32px!important}
+  html body .qce-instrument-redesigned .qce-department-picker{margin:6px 8px!important;width:auto!important;min-width:0!important}
+  html body .qce-instrument-redesigned .qce-department-picker summary{box-sizing:border-box;height:32px;padding:6px 8px!important;border:1px solid #cddbea!important;border-radius:4px}
+  html body .qce-instrument-redesigned .qce-instrument-inline-history{margin:0 18px 16px;padding:12px 14px;border:1px solid #d8e3ee;border-radius:5px;background:#fafcfe;font-size:12px;color:#58728a}
+  html body .qce-instrument-redesigned .qce-instrument-inline-history>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+  html body .qce-instrument-redesigned h4{margin:0;color:#244260;font-size:12px}
   html body .qce-instrument-redesigned .qce-recent-event{display:grid;grid-template-columns:90px 60px 1fr;gap:10px;padding:8px 0;border-top:1px solid #e1e9f1;color:#244260}
   html body .qce-instrument-redesigned .qce-recent-event span{white-space:pre-wrap;overflow-wrap:anywhere}
-  html body .qce-instrument-redesigned .qce-modal-foot{background:#fff;position:sticky;bottom:0;border-top:1px solid #d8e3ee;padding:12px 20px}
-  @media(max-width:700px){html body .qce-instrument-redesigned .qce-instrument-form{grid-template-columns:1fr!important}html body .qce-instrument-redesigned .qce-instrument-extras{grid-template-columns:1fr}html body .qce-instrument-redesigned .qce-instrument-card-fields{grid-template-columns:1fr}}
+  html body .qce-instrument-redesigned .qce-modal-foot{padding:10px 18px!important;border-top:1px solid #d2dfed;background:#fff}
+  @media(max-width:700px){html body .qce-instrument-redesigned .qce-instrument-form{grid-template-columns:1fr!important}html body .qce-instrument-redesigned .qmes-registration-header{flex-wrap:wrap;gap:10px}}
   `;
 
   style.textContent+='.qce-spc-loading{position:fixed;right:24px;bottom:24px;z-index:180;display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid #d2dfed;border-radius:8px;background:#fff;color:#244260;font:600 12px Arial,sans-serif;box-shadow:0 4px 18px #183b611a;pointer-events:none}#spcTrend:not(.active) .qce-spc-loading{display:none}.qce-spc-loading img{object-fit:contain}';
@@ -1018,36 +1015,23 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       '<div class="qce-field"><label>사진 첨부</label><div><input type="file" class="qce-instrument-photo-file" accept="image/png,image/jpeg,image/webp"></div></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
       async bg=>{const file=bg.querySelector('.qce-instrument-photo-file')?.files[0];if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024))throw Error('5MB 이하의 PNG, JPG, WebP 사진을 선택하세요.');const saved=await api(record?'/api/qmes-instruments/'+record.id:'/api/qmes-instruments',{method:record?'PATCH':'POST',body:JSON.stringify({instrument_name:val(bg,'instrument_name'),use_range:val(bg,'use_range'),maker:val(bg,'maker'),model:val(bg,'model'),serial_no:val(bg,'serial_no'),department:val(bg,'department'),location:val(bg,'location'),calibration_cycle_months:val(bg,'calibration_cycle_months'),status:val(bg,'status'),last_calibration_on:val(bg,'last_calibration_on'),next_calibration_on:val(bg,'next_calibration_on'),note:val(bg,'note')})});const editing=!!record;record=saved;
         if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
-        toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}, {module:'instrumentMgmt',record:record?.id||'new'}
+        toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);
+        if(instrumentDialog.dataset.openHistoryAfterSave==='1')setTimeout(()=>showInstrumentHistory(saved),0);
+      }, {module:'instrumentMgmt',record:record?.id||'new'}
     );
       instrumentDatePickers(instrumentDialog);
       instrumentDialog.classList.add('qce-instrument-redesigned');
       const form=instrumentDialog.querySelector('.qce-instrument-form');
-      const fields=[...form.children];
-      const groups=[
-        {title:'기본정보',keys:['instrument_name','use_range','maker','model','serial_no','location']},
-        {title:'관리·교정',keys:['department','calibration_cycle_months','last_calibration_on','next_calibration_on','status']}
-      ];
-      for(const group of groups){
-        const card=document.createElement('section');card.className='qce-instrument-card';
-        const heading=document.createElement('h4');heading.textContent=group.title;
-        const grid=document.createElement('div');grid.className='qce-instrument-card-fields';
-        card.append(heading,grid);
-        for(const key of group.keys){
-          const field=fields.find(field=>field.querySelector('[data-k="'+key+'"]'));
-          if(field)grid.append(field);
-        }
-        form.append(card);
-      }
-      const extras=document.createElement('section');extras.className='qce-instrument-extras';
-      fields.filter(field=>form.contains(field)&&field.parentElement===form).forEach(field=>extras.append(field));
-      form.append(extras);
       const history=document.createElement('section');history.className='qce-instrument-inline-history';
       history.innerHTML='<header><h4>교정·점검·수리 이력</h4><button type="button" class="qce-btn" data-open-history>이력 보기 / 추가</button></header><div data-recent-history role="status">'+(record?'이력을 불러오는 중입니다.':'계측기를 저장하면 교정검사·점검·수리 이력을 추가할 수 있습니다.')+'</div>';
       form.after(history);
       const historyButton=history.querySelector('[data-open-history]');
-      historyButton.disabled=!record;
-      historyButton.onclick=()=>showInstrumentHistory(record);
+      historyButton.textContent=record?'이력 보기 / 추가':'저장 후 이력 추가';
+      historyButton.onclick=()=>{
+        if(record){showInstrumentHistory(record);return;}
+        instrumentDialog.dataset.openHistoryAfterSave='1';
+        instrumentDialog.querySelector('[data-save]').click();
+      };
       if(record)api('/api/qmes-instruments/'+record.id+'/history').then(rows=>{
         if(!history.isConnected)return;
         history.querySelector('[data-recent-history]').innerHTML=rows.length?
