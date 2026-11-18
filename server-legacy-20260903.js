@@ -4444,13 +4444,17 @@ async function writePcBackup(write, signal, onProgress) {
       await write((firstTable?'':',')+JSON.stringify(table)+':[');
       firstTable = false;
       let firstRow = true;
-      const batchSize = table.endsWith('_attachments') ? 2 : 50;
+      const batchSize = table.endsWith('_attachments') || table==='qmes_sync_records' ? 1 : 25;
       for (;;) {
         signal.throwIfAborted();
         const batch = await client.query('FETCH FORWARD '+batchSize+' FROM qmes_backup_cursor');
         if (!batch.rows.length) break;
-        await write((firstRow?'':',')+batch.rows.map(row=>row.entry).join(','));
-        firstRow = false;
+        for(const row of batch.rows){
+          signal.throwIfAborted();
+          await write((firstRow?'':',')+row.entry);
+          firstRow=false;
+        }
+        await new Promise(resolve=>setImmediate(resolve));
       }
       await write(']');
       await client.query('CLOSE qmes_backup_cursor');
@@ -4499,6 +4503,7 @@ app.post(pcBackupJobPath,requirePcBackupAccess,(req,res)=>{
   res.setHeader('Cache-Control','private, no-store');
   const existing=pcBackupJobs.get(id);
   if(existing)return existing.owner===owner?ok(res,pcBackupJobStatus(existing)):fail(res,404,'백업 작업을 찾을 수 없습니다.');
+  if([...pcBackupJobs.values()].some(job=>job.state==='running'))return fail(res,429,'다른 백업을 만들고 있습니다. 완료 후 다시 시도해 주세요.');
   if(pcBackupJobs.size>=6)return fail(res,429,'백업 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
   const job={owner,state:'running',stage:'database',completed:0,total:null,bytes:0};
   const signal=AbortSignal.timeout(10*60*1000);
