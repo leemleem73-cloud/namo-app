@@ -52,7 +52,7 @@ function show(row){
  panel.querySelector('[data-print]').onclick=()=>{
  const w=window.open('','_blank','width=780,height=520');
  if(!w){alert('인쇄 팝업이 차단되었습니다.');return;}
- w.document.write('<!doctype html><html lang="ko"><meta charset="utf-8"><title>원료 LOT 바코드</title><body style="font-family:sans-serif;padding:22px"><h2>나모케미칼 원료 LOT 라벨 (시범)</h2><p>'+esc(name)+' / '+esc(lot)+'</p>'+svg+'<p>'+esc(value)+'</p><script>window.onload=function(){window.print()}<\\/script></body></html>');
+ w.document.write('<!doctype html><html lang="ko"><meta charset="utf-8"><title>원료 LOT 바코드</title><body style="font-family:sans-serif;padding:22px"><h2>나모케미칼 원료 LOT 라벨 (시범)</h2><p>'+esc(name)+' / '+esc(lot)+'</p>'+svg+'<p>'+esc(value)+'</p></body></html>');
  w.document.close();
  w.onload=()=>w.print();
  };
