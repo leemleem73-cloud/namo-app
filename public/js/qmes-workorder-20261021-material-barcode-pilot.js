@@ -59,26 +59,56 @@ function show(row){
  w.onload=()=>w.print();
  };
 }
+function lotValue(row){
+ const control=row.querySelector('.material-lot-manual');
+ if(control?.value?.trim())return control.value.trim();
+ // Some versions replace the LOT input with an IQC-linked select.
+ const td=row.querySelector('td:nth-child(3)');
+ const alternate=td?.querySelector('select,input');
+ return alternate?.value?.trim()||'';
+}
+function refreshBarcode(row){
+ const preview=row.querySelector('[data-pilot-inline]');
+ if(!preview)return;
+ const name=material(row),lot=lotValue(row);
+ const key=String(name||'')+'|'+String(lot||'');
+ if(preview.dataset.key===key)return;
+ preview.dataset.key=key;
+ preview.replaceChildren();
+ if(!name||!lot){preview.hidden=true;return;}
+ // A scan resolves the raw material LOT; the visible caption identifies the material.
+ const encoded=lot.toUpperCase();
+ const svg=encode(encoded);
+ if(!svg){preview.hidden=true;preview.title='해당 LOT에는 Code39로 표현할 수 없는 문자가 있습니다.';return;}
+ preview.hidden=false;preview.title=name+' / '+lot;
+ const holder=document.createElement('div');
+ holder.innerHTML=svg;const picture=holder.firstElementChild;
+ picture.setAttribute('viewBox','0 0 720 90');
+ picture.style.cssText='display:block;width:100%;height:48px;max-width:240px;background:#fff';
+ preview.append(picture);
+ const label=document.createElement('div');label.textContent=name+' / '+lot;
+ label.style.cssText='font-size:10px;color:#334155;font-weight:600;text-align:center;white-space:normal;overflow-wrap:anywhere';
+ preview.append(label);
+}
 function install(){
- const form=targetForm();
- if(!form)return;
- const table=form.querySelector('#workMaterialTable');
- if(!table)return;
- // Append the button inside the existing LOT cell. Do not shift table columns,
- // because QMES calculations and input handlers rely on the original indices.
+ const form=targetForm();if(!form)return;
+ const table=form.querySelector('#workMaterialTable');if(!table)return;
  table.querySelectorAll('tbody tr').forEach(row=>{
-   if(row.querySelector('[data-pilot-barcode]'))return;
-   const lotCell=row.querySelector('.material-lot-manual')?.closest('td');
-   if(!lotCell)return;
-   const b=document.createElement('button');
-   b.type='button';b.textContent='바코드';b.className='btn';b.dataset.pilotBarcode='1';
-   b.style.cssText='margin-top:4px;padding:4px 9px;white-space:nowrap;font-size:11px;display:inline-block';
-   b.onclick=()=>show(row);
-   lotCell.appendChild(b);
+   const cell=row.querySelector('.material-lot-manual')?.closest('td')||row.querySelector('td:nth-child(3)');
+   if(!cell)return;
+   if(!row.querySelector('[data-pilot-inline]')){
+     const block=document.createElement('div');
+     block.dataset.pilotInline='1';
+     block.style.cssText='width:100%;max-width:245px;margin:5px auto 0;padding:3px 5px;background:#fff;border:1px solid #d7e2ef;border-radius:4px';
+     cell.append(block);
+     row.addEventListener('input',()=>refreshBarcode(row));
+     row.addEventListener('change',()=>refreshBarcode(row));
+   }
+   refreshBarcode(row);
  });
 }
 let busy=false;
 const observer=new MutationObserver(()=>{if(busy)return;busy=true;try{install();}finally{busy=false;}});
-function init(){observer.observe(document.body,{childList:true,subtree:true});install();document.addEventListener('click',()=>queueMicrotask(install),true);}
+function init(){observer.observe(document.body,{childList:true,subtree:true});install();document.addEventListener('click',()=>queueMicrotask(install),true);setInterval(install,1500);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
