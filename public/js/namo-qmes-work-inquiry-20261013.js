@@ -4,55 +4,16 @@
 if(window.__namoWorkInquiry20261013)return;
 window.__namoWorkInquiry20261013=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// IQC QR and work-order QR use the same existing mobile inspection-label token.
-// Read-only matching, no changes to existing IQC or work-order data.
-const workIqcQrLinks=new Map();
-const workIqcKey=(lot,name)=>String(lot??'').trim().toUpperCase()+'|'+String(name??'').trim().toUpperCase();
-async function prepareWorkIqcQr(records){
- workIqcQrLinks.clear();
- const required=new Map();
- for(const record of records||[])for(const m of Array.isArray(record?.materials)?record.materials:[]){
-  const lot=String(m.lot??'').trim(),name=String(m.name??'').trim();
-  if(lot)required.set(workIqcKey(lot,name),{lot,name});
- }
- if(!required.size)return;
- const response=await fetch('/api/iqc',{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(12000)});
- if(!response.ok)throw Error('IQC 조회 오류: '+response.status);
- const data=await response.json();
- if(data?.success!==true||!Array.isArray(data.data))throw Error('IQC 조회 응답 오류');
- await Promise.all([...required].map(async ([key,{lot,name}])=>{
-  const rows=data.data.filter(r=>String(r.lot??'').trim().toUpperCase()===lot.toUpperCase());
-  const norm=v=>String(v??'').trim().toUpperCase();
-  const exact=rows.filter(r=>norm(r.item)===norm(name));
-  let matching=exact;
-  if(!matching.length&&rows.length===1){
-   const candidate=rows[0],item=norm(candidate.item);
-   const aliases=[candidate.item_code,candidate.itemCode,candidate.material_code,candidate.materialCode].map(norm);
-   const tokens=item.split(/[^A-Z0-9가-힣]+/).filter(Boolean);
-   const short=norm(name).replace(/[^A-Z0-9가-힣]/g,'');
-   const core=window.qmesMaterialStockCore;
-   const sameMaterial=core&&core.material(candidate.item)===core.material(name);
-   if(item===norm(name)||tokens.includes(norm(name))||tokens.includes(short)||aliases.includes(norm(name))||sameMaterial)matching=[candidate];
-  }
-  if(matching.length!==1||!matching[0].id)return;
-  const response=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:String(matching[0].id)}),signal:AbortSignal.timeout(10000)});
-  const result=await response.json().catch(()=>null);
-  if(!response.ok||result?.success!==true)return;
-  const path=String(result.path||'');
-  if(!path.startsWith('/iqc-label/')||!/^[a-f0-9-]{36}$/i.test(path.slice(11)))return;
-  workIqcQrLinks.set(key,{url:new URL(path,location.origin).href,recordId:String(matching[0].id)});
- }));
-}
-function printLotQRCode(lot,name,work){
- const linked=workIqcQrLinks.get(workIqcKey(lot,name));
- if(!linked?.url||!linked?.recordId)return '<span class="iqc-qr-unlinked" title="해당 LOT의 기존 수입검사 QR 연결 확인 필요">IQC QR 미연결</span>';
- // The QR resolves the exact IQC record ID, not a second manually entered LOT.
- // Keep the printed QR short enough for reliable camera scanning.
+// Resolve the saved work-order material row at scan time, even before IQC is linked.
+async function prepareWorkIqcQr(){ /* No label token or IQC write is needed to print a work-order QR. */ }
+function printLotQRCode(lot,name,work,line){
+ if(!String(lot??'').trim()||!String(name??'').trim())return '<span class="iqc-qr-unlinked">원료명·LOT 확인 필요</span>';
  const url=new URL('/qmes-material-scan.html',location.origin);
- url.searchParams.set('r',linked.recordId);
- const token=new URL(linked.url).pathname.split('/').pop();
- if(/^[a-f0-9-]{36}$/i.test(token))url.searchParams.set('t',token);
  url.searchParams.set('w',String(work??'').trim());
+ url.searchParams.set('i',String(line));
+ // Preserve the printed identity so a later row edit cannot silently retarget an old QR.
+ url.searchParams.set('lot',String(lot).trim());
+ url.searchParams.set('material',String(name).trim());
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
  new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
@@ -81,7 +42,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const qr=printLotQRCode(m.lot,m.name,record.id);
+  const qr=printLotQRCode(m.lot,m.name,record.id,i);
   const nameCell='<div class="print-material-with-qr"><span>'+safe(name)+'</span><span class="print-lot-qr">'+qr+'</span></div>';
   return '<tr><td>'+safe(i+1)+'</td><td>'+nameCell+'</td><td>'+safe(m.lot)+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
  }).join('');
