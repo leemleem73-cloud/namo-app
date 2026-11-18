@@ -28,8 +28,10 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 function targetForm(){
  const f=document.querySelector('.work-form');
  if(!f)return null;
- const id=f.querySelector('[name="correctedWorkNumber"]');
- return id&&id.value.trim()===TARGET?f:null;
+ // Existing orders show their number in the ordinary work order field.
+ const id=f.querySelector('#workOrderNo')?.value?.trim()||'';
+ const corrected=f.querySelector('[name="correctedWorkNumber"]')?.value?.trim()||'';
+ return (id===TARGET||corrected===TARGET)?f:null;
 }
 function material(row){
  const n=row.querySelector('.material-name-select');
@@ -58,19 +60,21 @@ function show(row){
  };
 }
 function install(){
- const form=targetForm();if(!form)return;
- const table=form.querySelector('#workMaterialTable');if(!table)return;
- const head=table.querySelector('thead tr');
- if(head&&!head.querySelector('[data-pilot-head]')){
-   const th=document.createElement('th');th.textContent='원료 바코드';th.dataset.pilotHead='1';
-   head.insertBefore(th,head.children[3]||null);
- }
+ const form=targetForm();
+ if(!form)return;
+ const table=form.querySelector('#workMaterialTable');
+ if(!table)return;
+ // Append the button inside the existing LOT cell. Do not shift table columns,
+ // because QMES calculations and input handlers rely on the original indices.
  table.querySelectorAll('tbody tr').forEach(row=>{
    if(row.querySelector('[data-pilot-barcode]'))return;
-   const cell=row.insertCell(3);const b=document.createElement('button');
+   const lotCell=row.querySelector('.material-lot-manual')?.closest('td');
+   if(!lotCell)return;
+   const b=document.createElement('button');
    b.type='button';b.textContent='바코드';b.className='btn';b.dataset.pilotBarcode='1';
-   b.style.cssText='padding:5px 8px;white-space:nowrap;font-size:12px';
-   b.onclick=()=>show(row);cell.append(b);
+   b.style.cssText='margin-top:4px;padding:4px 9px;white-space:nowrap;font-size:11px;display:inline-block';
+   b.onclick=()=>show(row);
+   lotCell.appendChild(b);
  });
 }
 let busy=false;
