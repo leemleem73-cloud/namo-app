@@ -4,28 +4,17 @@
 if(window.__namoWorkInquiry20261013)return;
 window.__namoWorkInquiry20261013=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const PRINT_CODE39_MAP={
-'0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn',
-'4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw',
-'8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw',
-'C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn',
-'G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn',
-'K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww',
-'O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn',
-'S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw',
-'W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn',
-'-':'nwnnnnwnw','.':'wwnnnnwnn',' ':'nwwnnnwnn','$':'nwnwnwnnn',
-'/':'nwnwnnnwn','+':'nwnnnwnwn','%':'nnnwnwnwn','*':'nwnnwnwnn'
-};
-function printLotBarcode(lot){
- const value=String(lot??'').trim().toUpperCase();
- if(!value||![...value].every(c=>PRINT_CODE39_MAP[c]&&c!=='*'))return '';
- const widths=[];
- for(const c of '*'+value+'*'){const pattern=PRINT_CODE39_MAP[c];for(let i=0;i<9;i++)widths.push([i%2===0,pattern[i]==='w'?3:1]);widths.push([false,1]);}
- const total=widths.reduce((n,a)=>n+a[1],0),scale=Math.min(2.2,410/total);
- let x=0,rects='';
- for(const [bar,width] of widths){if(bar)rects+='<rect x="'+x.toFixed(2)+'" y="0" width="'+(width*scale).toFixed(2)+'" height="37" fill="#000"/>';x+=width*scale;}
- return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+x.toFixed(2)+' 37" role="img" aria-label="원료 LOT 바코드">'+rects+'</svg>';
+// Generate a QR image locally; scanned value is the original raw material LOT.
+function printLotQRCode(lot){
+ const value=String(lot??'').trim();
+ if(!value)return '';
+ if(typeof window.QRCode!=='function')throw new Error('QR코드 모듈을 불러오지 못했습니다.');
+ const mount=document.createElement('div');
+ new window.QRCode(mount,{text:value,width:160,height:160,correctLevel:window.QRCode.CorrectLevel?.M});
+ const canvas=mount.querySelector('canvas');
+ const uri=canvas?.toDataURL('image/png')||mount.querySelector('img')?.src;
+ if(!uri||!uri.startsWith('data:image/'))throw new Error('원료 LOT QR코드 생성 실패: '+value);
+ return '<img src="'+uri+'" alt="원료 LOT QR코드" width="160" height="160">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
@@ -48,8 +37,8 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const barcode=printLotBarcode(m.lot);
-  const lotCell=safe(m.lot)+(barcode?'<div class="print-lot-barcode">'+barcode+'</div>':'');
+  const qr=printLotQRCode(m.lot);
+  const lotCell=safe(m.lot)+(qr?'<div class="print-lot-qr">'+qr+'</div>':'');
   return '<tr><td>'+safe(i+1)+'</td><td>'+safe(name)+'</td><td>'+lotCell+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
  }).join('');
  const steps=[
@@ -74,14 +63,14 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .material th{background:#edf3f9;color:#31516f;text-align:center;font-size:8.5pt}.material td{text-align:center}
 .material th:nth-child(1){width:6%}.material th:nth-child(2){width:19%}.material th:nth-child(3){width:29%}.material th:nth-child(4){width:17%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:13%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
-.print-lot-barcode{margin:4px auto 0;padding:2px;background:#fff;break-inside:avoid}.print-lot-barcode svg{display:block;width:100%;max-width:145px;height:26px;margin:0 auto}
+.print-lot-qr{margin:2px auto 0;padding:1px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;margin:0 auto;image-rendering:pixelated}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-barcode{margin:2px auto 0;padding:1px}.print-lot-barcode svg{height:22px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
+@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-qr{margin:1px auto 0;padding:0}.print-lot-qr img{width:38px;height:38px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
 </style></head><body><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
