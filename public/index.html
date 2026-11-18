@@ -2899,6 +2899,42 @@ html[data-qmes-menu-ready="1"] #qmes-first-paint-loader{display:none}
 html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) select{color-scheme:light;background-color:#fff!important;color:#244260!important}
 html body .am-split[data-am-mode="new"]:is([data-am-screen="incoming"],[data-am-screen="process"],[data-am-screen="outgoing"]) select option{background-color:#fff;color:#244260}
 </style>
+<style id="qmes-approval-list-style">
+
+      html body #app #approval .quality-approval-table{table-layout:fixed;width:100%!important;border:0!important;border-collapse:separate!important;border-spacing:0!important;box-shadow:none!important}
+      html body #app #approval .quality-approval-table :is(th,td){border:0!important;border-right:1px solid #d2dfed!important;border-bottom:1px solid #d2dfed!important}
+      html body #app #approval .quality-approval-table tr>:last-child{border-right:0!important}
+      html body #app #approval .quality-approval-table tbody tr:last-child>td{border-bottom:0!important}
+      #approval .quality-approval-table th,#approval .quality-approval-table td{padding:7px 6px;font-size:11px;line-height:1.25;vertical-align:middle}
+      #approval .quality-approval-table th:nth-child(1){width:44px}
+      #approval .quality-approval-table th:nth-child(2){width:150px}
+      #approval .quality-approval-table th:nth-child(3){width:82px}
+      #approval .quality-approval-table th:nth-child(4){width:250px}
+      #approval .quality-approval-table th:nth-child(5){width:82px}
+      #approval .quality-approval-table th:nth-child(6){width:170px}
+      #approval .quality-approval-table th:nth-child(7){width:92px}
+      #approval .quality-approval-table th:nth-child(8){width:150px}
+      #approval .quality-approval-table th:nth-child(9){width:150px}
+      #approval .quality-approval-table th:nth-child(10){width:76px}
+      #approval .quality-approval-table .quality-result-cell{font-size:10px;color:#64748b;text-align:center}
+      #approval .quality-approval-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      #approval .quality-approval-table td:nth-child(4){text-align:left}
+      #approval .quality-approve-btn,#approval .quality-delete-btn{height:24px!important;padding:0 7px!important;font-size:10px!important;margin-left:4px}
+      #approval .quality-approval-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-right:auto}
+      #approval .quality-approval-tab{height:30px;padding:0 12px;border:1px solid #cfd9e5;border-radius:4px;background:#fff;color:#40566d;font-size:11.5px;font-weight:700;cursor:pointer}
+      #approval .quality-approval-tab:hover{background:#f3f7fb;border-color:#aac0d8}
+      #approval .quality-approval-tab.active{background:#2f73d9;color:#fff;border-color:#2f73d9}
+      #approval .quality-approval-pager{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0 2px}
+      #approval .quality-page-btn{min-width:24px;height:24px;padding:0 6px;border:1px solid #dbe3ec;background:#fff;color:#536177;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
+      #approval .quality-page-btn:hover{background:#f2f7fd;border-color:#b8cbe2}
+      #approval .quality-page-btn.active{background:#2f73d9;color:#fff;border-color:#2f73d9}
+      #approval .quality-page-btn:disabled{opacity:.35;cursor:default}
+
+html body #app #approval>.module-shell>.module-body{border:1px solid #d2dfed!important;padding:0!important;border-radius:0!important;box-shadow:none!important}
+html body #app #approval .quality-approval-table thead th{height:34px!important;padding:0 8px!important;line-height:20px!important;background:#e8f0f8!important;color:#244260!important}
+html body #app #approval .quality-approval-table tbody td{height:44px!important;background:#fff!important}
+
+</style>
 </head>
 <body>
 <div id="qmes-first-paint-loader" role="status"><span class="namo-operation-mascot" aria-hidden="true" style="--mascot-size:132px"><img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="96" height="90" alt=""><span class="namo-operation-orbit" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="namo-startup-orbit-blue" x1="60" y1="8" x2="8" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#248de0"/><stop offset="1" stop-color="#a9daf9" stop-opacity=".2"/></linearGradient></defs><path d="M60 8A52 52 0 1 1 8 60" stroke="url(#namo-startup-orbit-blue)" stroke-width="2.4" stroke-linecap="round"/><path d="M64 3L56 8L64 13" stroke="#248de0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>나모 웹을 불러오는 중입니다</div>
@@ -5072,36 +5108,7 @@ async function loadIncomingFromDb(section){
 }
 function qualityApprovalShell(){
   return `
-    <style>
-      html body #approval .quality-approval-table{table-layout:fixed;width:100%;border-collapse:separate!important;border-spacing:0!important;border:1px solid #d2dfed!important;box-shadow:none!important}
-      html body #approval .quality-approval-table :is(th,td){border:0!important;border-right:1px solid #d2dfed!important;border-bottom:1px solid #d2dfed!important}
-      html body #approval .quality-approval-table tr>:last-child{border-right:0!important}
-      html body #approval .quality-approval-table tbody tr:last-child>td{border-bottom:0!important}
-      #approval .quality-approval-table th,#approval .quality-approval-table td{padding:7px 6px;font-size:11px;line-height:1.25;vertical-align:middle}
-      #approval .quality-approval-table th:nth-child(1){width:44px}
-      #approval .quality-approval-table th:nth-child(2){width:150px}
-      #approval .quality-approval-table th:nth-child(3){width:82px}
-      #approval .quality-approval-table th:nth-child(4){width:250px}
-      #approval .quality-approval-table th:nth-child(5){width:82px}
-      #approval .quality-approval-table th:nth-child(6){width:170px}
-      #approval .quality-approval-table th:nth-child(7){width:92px}
-      #approval .quality-approval-table th:nth-child(8){width:150px}
-      #approval .quality-approval-table th:nth-child(9){width:150px}
-      #approval .quality-approval-table th:nth-child(10){width:76px}
-      #approval .quality-approval-table .quality-result-cell{font-size:10px;color:#64748b;text-align:center}
-      #approval .quality-approval-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      #approval .quality-approval-table td:nth-child(4){text-align:left}
-      #approval .quality-approve-btn,#approval .quality-delete-btn{height:24px!important;padding:0 7px!important;font-size:10px!important;margin-left:4px}
-      #approval .quality-approval-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-right:auto}
-      #approval .quality-approval-tab{height:30px;padding:0 12px;border:1px solid #cfd9e5;border-radius:4px;background:#fff;color:#40566d;font-size:11.5px;font-weight:700;cursor:pointer}
-      #approval .quality-approval-tab:hover{background:#f3f7fb;border-color:#aac0d8}
-      #approval .quality-approval-tab.active{background:#2f73d9;color:#fff;border-color:#2f73d9}
-      #approval .quality-approval-pager{display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 0 2px}
-      #approval .quality-page-btn{min-width:24px;height:24px;padding:0 6px;border:1px solid #dbe3ec;background:#fff;color:#536177;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
-      #approval .quality-page-btn:hover{background:#f2f7fd;border-color:#b8cbe2}
-      #approval .quality-page-btn.active{background:#2f73d9;color:#fff;border-color:#2f73d9}
-      #approval .quality-page-btn:disabled{opacity:.35;cursor:default}
-    </style>
+
     <div class="page-head"><div><h1>전자결재</h1><p>품질문서 검토·승인 요청과 처리상태를 관리합니다.</p></div><div class="date-badge">QMES</div></div>
     <div class="module-shell">
       <div class="module-toolbar">
