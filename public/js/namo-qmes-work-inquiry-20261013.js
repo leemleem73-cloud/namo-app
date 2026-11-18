@@ -42,18 +42,15 @@ async function prepareWorkIqcQr(records){
  }));
 }
 function printLotQRCode(lot,name,work){
- const url=new URL('/qmes-material-scan.html',location.origin);
- url.searchParams.set('lot',String(lot??'').trim());
- url.searchParams.set('material',String(name??'').trim());
- url.searchParams.set('work',String(work??'').trim());
- const linked=workIqcQrLinks.get(workIqcKey(lot,name));
- if(linked)url.searchParams.set('iqc',linked);
+ // Print the existing IQC-issued mobile QR link, never a second independent status page.
+ const value=workIqcQrLinks.get(workIqcKey(lot,name));
+ if(!value)return '<span class="iqc-qr-unlinked" title="IQC 원료명과 LOT 연결 확인 필요">IQC QR 미연결</span>';
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
- new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
+ new window.QRCode(mount,{text:value,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
  const image=mount.querySelector('canvas')?.toDataURL('image/png')||mount.querySelector('img')?.src;
- if(!image||!image.startsWith('data:image/'))throw Error('QR 생성 실패');
- return '<img src="'+image+'" alt="원료명과 LOT 스캔 QR" width="192" height="192">';
+ if(!image||!image.startsWith('data:image/'))throw Error('IQC QR 생성 실패');
+ return '<img src="'+image+'" alt="기존 수입검사 모바일 QR코드" width="192" height="192">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
@@ -102,7 +99,7 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .material th{background:#edf3f9;color:#31516f;text-align:center;font-size:8.5pt}.material td{text-align:center}
 .material th:nth-child(1){width:6%}.material th:nth-child(2){width:19%}.material th:nth-child(3){width:29%}.material th:nth-child(4){width:17%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:13%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
-.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;image-rendering:pixelated}
+.iqc-qr-unlinked{display:block;font-size:7pt;color:#a34a22;white-space:normal;max-width:47px;line-height:1.2}.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;image-rendering:pixelated}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
