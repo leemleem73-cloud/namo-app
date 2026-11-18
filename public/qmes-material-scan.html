@@ -24,7 +24,7 @@ th{width:37%}td{font-size:16px}#qty{font-size:18px}
 <tr><th>사용가능량</th><td id="qty">확인 필요</td></tr>
 </tbody></table>
 <div hidden aria-hidden="true"><span id="supplier"></span><span id="received"></span><span id="work"></span><span id="expected"></span><span id="plan"></span><span id="match"></span><span id="hold"></span></div><section style="padding:16px;border-bottom:1px solid #d4e0ed"><label for="scan" style="display:block;font-weight:700;margin-bottom:8px">실제 원료 라벨 대조</label><input id="scan" autocomplete="off" placeholder="원료 QR 주소 또는 LOT 입력" style="width:100%;padding:12px;border:1px solid #c6d6e8;border-radius:6px;font:inherit"><button id="camera" type="button" style="margin-top:8px;padding:10px 18px">카메라로 스캔</button> <video id="cameraView" playsinline muted hidden style="width:100%;margin-top:10px"></video><button id="compare" type="button" style="margin-top:8px;padding:10px 18px">원료 확인</button><p id="comparison" role="status" style="line-height:1.6">이 화면은 작업지시 원료 정보입니다. 실제 용기의 QR 또는 LOT를 입력해 대조하세요.</p></section><footer><a class="action" id="retry" href="" style="margin-bottom:10px">다시 조회</a><a class="action" id="detail" href="/" hidden>수입검사 상세보기</a><div class="small">조회 전용 화면입니다. 승인·투입·재고 수량을 변경하지 않습니다.</div></footer></div></main>
-<script src="/js/qmes-material-stock-core-20261103.js"></script>
+<script src="/js/qmes-material-stock-core-20261103.js?v=20261119-pvdf5140"></script>
 <script>
 (async function(){
 'use strict';
@@ -48,40 +48,51 @@ const read=async url=>{
  return result.data;
 };
 if(!core){show('warn','재고 확인 필요','QMES 재고 계산 모듈을 불러올 수 없습니다.','!');return;}
-// Fetch independently: a delayed work-order query must not hide verified IQC fields.
-const orderRequest=read('/api/qmes/work-orders').then(value=>({value}),error=>({error}));
-let iqc,orders;
-try{iqc=await read('/api/iqc');}
-catch(err){show('warn','조회 확인 필요',err.message,'!');el('qty').textContent='미확인';return;}
-if(!Array.isArray(iqc)){show('warn','조회 확인 필요','수입검사 응답 형식을 확인해 주세요.','!');return;}
-const original=ref?iqc.filter(r=>String(r.id)===ref):iqc.filter(r=>norm(r.lot)===norm(legacyLot)&&core.material(r.item)===core.material(legacyName));
-if(original.length!==1){show('warn','검사 확인 필요',original.length?'IQC 기록을 단일 건으로 확정할 수 없습니다.':'해당 수입검사 QR 기록을 찾을 수 없습니다.','!');return;}
-const receipt=original[0];
-const lot=String(receipt.lot||'').trim(),material=String(receipt.item||'').trim(),supplier=String(receipt.supplier||'').trim();
-el('name').textContent=material||'-';el('lot').textContent=lot||'-';el('supplier').textContent=supplier||'미등록';
-const oldLink=params.get('iqc');
-if(oldLink){try{const link=new URL(oldLink,location.origin);if(link.origin===location.origin&&/^\/iqc-label\/[a-f0-9-]{36}$/i.test(link.pathname)){el('detail').href=link.href;el('detail').hidden=false;}}catch(_){}}
-if(ref&& !el('detail').href.includes('/iqc-label/')){
- el('detail').hidden=false;
- el('detail').href='#';
- el('detail').addEventListener('click',async e=>{
-  e.preventDefault();const btn=el('detail');
-  if(btn.dataset.loading)return;btn.dataset.loading='1';btn.textContent='수입검사 불러오는 중';
-  try{
-   const r=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:ref}),signal:AbortSignal.timeout(12000)});
-   const v=await r.json();if(!r.ok||!v.success||!/^\/iqc-label\/[a-f0-9-]{36}$/i.test(v.path))throw Error('IQC 상세 링크 확인 필요');
-   location.href=v.path;
-  }catch(err){show('warn','수입검사 조회 필요',err.message,'!');btn.textContent='수입검사 상세보기';delete btn.dataset.loading;}
- });
+// Read the same live sources as the raw-material inventory screen.
+const sources=[['/api/qmes/work-orders','작업지시서'],['/api/iqc','수입검사'],['/api/trace?keyword=','작업실적'],['/api/qmes-sync/inventory','수불기록'],['/api/qmes-quality-gate/holds?lot=','품질보류']];
+const pending=sources.map(async([url,label])=>{try{return {value:await read(url),label}}catch(error){return {error:label+': '+error.message,label}}});
+const orderResult=await pending[0];
+let iqc=[],orders=[],receipts=[],lot='',material='',supplier='',selected=[];
+const lineParam=params.get('i'),hasLine=lineParam!==null&&/^\d+$/.test(lineParam);
+if(orderResult.error||!Array.isArray(orderResult.value)){show('warn','작업지시 확인 필요',orderResult.error||'작업지시서 응답을 확인해 주세요.','!');return;}
+orders=orderResult.value;
+const exactJobs=orders.filter(row=>norm(row.id)===norm(workRef));
+const jobs=exactJobs.length?exactJobs:orders.filter(row=>norm(row.fields?.['작업지시번호'])===norm(workRef));
+if(!workRef||jobs.length!==1||!Array.isArray(jobs[0].materials)){show('warn','작업지시 확인 필요','연결된 작업지시서를 확인할 수 없습니다.','!');return;}
+const job=jobs[0];
+if(hasLine){
+ const row=job.materials[Number(lineParam)];
+ if(!row){show('warn','원료 확인 필요','작업지시서에서 해당 원료 행을 찾을 수 없습니다. 다시 인쇄해 주세요.','!');return;}
+ lot=String(row.lot??'').trim();material=String(row.name??'').trim();
+ el('name').textContent=material||'-';el('lot').textContent=lot||'-';
+ if((legacyLot&&core.lot(legacyLot)!==core.lot(lot))||(legacyName&&core.material(legacyName)!==core.material(material))){
+  show('bad','투입 차단','인쇄 후 작업지시 원료 또는 LOT가 변경됐습니다. 최신 작업지시서를 확인해 주세요.','✕');return;
+ }
+ selected=[row];
+}else if(legacyLot&&legacyName){
+ lot=legacyLot;material=legacyName;
+ selected=job.materials.filter(row=>core.lot(row.lot)===core.lot(lot)&&core.material(row.name)===core.material(material));
 }
-if(!lot||!material){show('warn','검사 확인 필요','수입검사 기록에 원료명 또는 LOT가 없습니다.','!');return;}
-const iqcState=core.judgment(receipt);
+el('code').textContent='-';el('zone').textContent='-';
+el('work').textContent=job.fields?.['작업지시번호']||job.id;
+if(lot&&material){el('name').textContent=material;el('lot').textContent=lot;}
+const iqcResult=await pending[1];
+if(iqcResult.error||!Array.isArray(iqcResult.value)){el('iqc').textContent='확인 필요';show('warn','수입검사 확인 필요',iqcResult.error||'수입검사 응답을 확인해 주세요.','!');return;}
+iqc=iqcResult.value;
+if(!hasLine&&!selected.length&&ref){
+ const receipt=iqc.find(row=>String(row.id)===ref);
+ if(receipt){lot=String(receipt.lot||'');material=String(receipt.item||'');selected=job.materials.filter(row=>core.lot(row.lot)===core.lot(lot)&&core.material(row.name)===core.material(material));}
+}
+el('name').textContent=material||'-';el('lot').textContent=lot||'-';
+if(!lot||!material||!selected.length){show('bad','투입 차단','작업지시서의 원료명·LOT와 QR이 일치하지 않습니다.','✕');return;}
+receipts=iqc.filter(row=>core.lot(row.lot)===core.lot(lot)&&core.material(row.item)===core.material(material));
+const judgments=receipts.map(core.judgment);
+const iqcState=!receipts.length?'기록 없음':judgments.includes('불합격')?'불합격':judgments.every(value=>value==='합격')?'합격':'확인 필요';
 el('iqc').textContent=iqcState;el('iqc').className=iqcState==='합격'?'pass':iqcState==='불합격'?'fail':'';
-el('code').textContent='-';
-el('zone').textContent='-';
-const incoming=core.number(receipt.incoming_qty);
-el('received').textContent=incoming===null?'미등록':incoming.toLocaleString('ko-KR')+' kg';
-el('work').textContent=workRef||'미지정';
+el('match').textContent='일치';
+const planned=selected.reduce((sum,row)=>sum+(core.number(row.plan)||0),0);
+el('plan').textContent=planned.toLocaleString('ko-KR',{maximumFractionDigits:6})+' kg';
+el('expected').textContent=material+' / '+lot;
 el('compare').onclick=()=>{
  const raw=el('scan').value.trim();if(!raw)return;
  let scannedLot=raw,scannedName='',scannedId='',token='';
@@ -94,7 +105,7 @@ el('compare').onclick=()=>{
   if(!token&&!scannedId&&!scannedLot)throw Error('이 QR에서 원료 또는 LOT 정보를 확인할 수 없습니다.');
  }
  const expectedToken=params.get('t')||'';
- const exactId=scannedId&&scannedId===String(receipt.id);
+ const exactId=scannedId&&receipts.some(row=>scannedId===String(row.id));
  const exactToken=token&&expectedToken&&token===expectedToken;
  const candidates=iqc.filter(row=>core.lot(row.lot)===core.lot(scannedLot));
  const uniqueMaterial=new Set(candidates.map(row=>core.material(row.item)).filter(Boolean));
@@ -117,51 +128,37 @@ el('camera').onclick=async()=>{
  }catch(_){stopCamera();el('comparison').textContent='카메라를 열지 못했습니다. 카메라 권한을 확인하거나 LOT를 입력하세요.';}
 };
 el('scan').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();el('compare').click();}});
-const orderResult=await orderRequest;
-if(orderResult.error||!Array.isArray(orderResult.value)){el('work').textContent=workRef||'미지정';show('warn','작업지시 조회 필요',orderResult.error?.message||'작업지시 응답 형식을 확인해 주세요.','!');el('qty').textContent='미확인';return;}
-orders=orderResult.value;
-const job=orders.filter(w=>norm(w.id)===norm(workRef)||norm(w.fields?.['작업지시번호'])===norm(workRef));
-if(!workRef||job.length!==1||!Array.isArray(job[0].materials)){
- show('warn','작업지시 확인 필요','해당 작업지시서를 단일 건으로 확인할 수 없습니다.','!');return;
-}
-const selected=job[0].materials.filter(m=>core.lot(m.lot)===core.lot(lot)&&core.material(m.name)===core.material(material));
-el('expected').textContent=job[0].materials.map(m=>String(m.name||'')+' / '+String(m.lot||'')).join(', ')||'미등록';
-el('work').textContent=job[0].fields?.['작업지시번호']||job[0].id;
-el('match').textContent=selected.length?'일치':'불일치';
-el('match').className=selected.length?'pass':'fail';
-if(!selected.length){
- show('bad','투입 차단 · 원료 불일치','IQC 기록은 조회됐지만 작업지시서의 원료명·LOT와 일치하지 않습니다.','!');return;
-}
-if(iqcState==='불합격'){show('bad','투입 금지','수입검사 불합격 기록이 확인됐습니다.','✕');return;}
-if(iqcState!=='합격'){show('warn','IQC 확인 필요','수입검사 합격 판정이 확인되지 않았습니다.','!');return;}
-if(!supplier){show('warn','공급업체 확인 필요','IQC는 합격이지만 공급업체가 등록되지 않았습니다.','!');return;}
-el('expected').textContent=selected.map(m=>String(m.name)+' / '+String(m.lot)).join(', ');
-const planned=selected.reduce((sum,m)=>sum+(core.number(m.plan)||0),0);
-el('plan').textContent=planned.toLocaleString('ko-KR',{maximumFractionDigits:3})+' kg';
-show('warn','원료·LOT 일치','수입검사 합격 확인. 사용가능량과 품질보류를 조회하고 있습니다.','…');
-const queries=[['/api/trace?keyword=','작업실적'],['/api/qmes-sync/inventory','수불기록'],['/api/qmes-quality-gate/holds?lot='+encodeURIComponent(lot),'품질보류']];
-const results=await Promise.all(queries.map(async([url,label])=>{try{return {value:await read(url),label}}catch(error){return {error:label+': '+error.message,label}}}));
-if(!results[2].error&&!Array.isArray(results[2].value?.holds))results[2].error='품질보류 응답 형식 확인 필요';
-for(const k of [0,1])if(!results[k].error&&!Array.isArray(results[k].value))results[k].error=results[k].label+' 응답 형식 확인 필요';
-const errors=results.filter(x=>x.error).map(x=>x.error);
-el('hold').textContent=results[2].error?'미확인':Array.isArray(results[2].value?.holds)?(results[2].value.holds.some(h=>!h.released_at&&!h.releasedAt)?'보류 있음':'보류 없음'):'미확인';
-el('qty').textContent='미확인';
-const stock=core.build({
- iqc,orders,actuals:Array.isArray(results[0].value)?results[0].value:[],
- entries:core.readEntries(Array.isArray(results[1].value)?results[1].value:[]),
- holds:Array.isArray(results[2].value?.holds)?results[2].value.holds:[],
- sourceErrors:errors
-});
-const matched=stock.rows.filter(r=>core.lot(r.lot)===core.lot(lot)&&core.material(r.material)===core.material(material)&&core.supplierKey(r.supplier)===core.supplierKey(supplier));
-if(errors.length){show('warn','재고 확인 필요','원료·LOT 일치 및 IQC 합격 확인. '+errors.join(' / ')+'','!');return;}
-if(matched.length!==1){show('warn','재고 확인 필요','일치하는 원료·LOT·공급업체의 가용재고를 단일 건으로 확인하지 못했습니다.','!');return;}
-const entry=matched[0];
-if(!entry.uncertain&&Number.isFinite(entry.available))el('qty').textContent=entry.available.toLocaleString('ko-KR',{maximumFractionDigits:3})+' kg';
-if(entry.quality==='품질보류'){el('hold').textContent='보류 있음';show('bad','투입 금지','해당 LOT는 품질보류 상태입니다. 품질부 해제 승인 후 사용하세요.','✕');return;}
-if(entry.quality!=='사용가능'||entry.uncertain){el('qty').textContent='확인 필요';show('warn','재고 확인 필요','IQC 합격 확인. 재고 계산 또는 수불 이력이 불확실하여 투입을 승인할 수 없습니다.','!');return;}
 
-if(!(entry.available>0)){show('bad','투입 금지','사용가능 재고가 없습니다.','✕');return;}
-if(Number.isFinite(planned)&&planned>entry.available+1e-6){show('warn','투입량 확인 필요','계획투입량이 현재 사용가능량을 초과합니다.','!');return;}
-show('ok','투입 가능','IQC 합격 · 작업지시 LOT 일치 · 품질보류 없음 · 사용가능량 확인','✓');
+if(receipts.length===1){
+ el('detail').hidden=false;el('detail').href='#';
+ el('detail').addEventListener('click',async event=>{
+  event.preventDefault();const button=el('detail');if(button.dataset.loading)return;button.dataset.loading='1';
+  try{const response=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:String(receipts[0].id)}),signal:AbortSignal.timeout(12000)});
+   const result=await response.json();if(!response.ok||!result.success||!/^\/iqc-label\/[a-f0-9-]{36}$/i.test(result.path))throw Error('수입검사 상세 링크를 확인해 주세요.');location.href=result.path;
+  }catch(error){el('comparison').textContent=error.message;}finally{delete button.dataset.loading;}
+ });
+}
+show('warn','재고 확인 중','작업지시 원료·LOT 확인. 재고관리의 사용가능량을 조회합니다.','…');
+const results=await Promise.all(pending.slice(2));
+for(const k of [0,1])if(!results[k].error&&!Array.isArray(results[k].value))results[k].error=results[k].label+' 응답 형식 확인 필요';
+if(!results[2].error&&!Array.isArray(results[2].value?.holds))results[2].error='품질보류 응답 형식 확인 필요';
+const errors=results.filter(row=>row.error).map(row=>row.error);
+const stock=core.build({iqc,orders,actuals:results[0].value||[],entries:core.readEntries(results[1].value||[]),holds:results[2].value?.holds||[],sourceErrors:errors});
+const matches=stock.rows.filter(row=>core.lot(row.lot)===core.lot(lot)&&core.material(row.material)===core.material(material));
+const suppliers=new Set(matches.map(row=>core.supplierKey(row.supplier)));
+const entry=matches.length===1?matches[0]:null;
+el('qty').textContent=entry&&!entry.uncertain&&Number.isFinite(entry.available)?entry.available.toLocaleString('ko-KR',{maximumFractionDigits:6})+' kg':'확인 필요';
+if(iqcState==='불합격'){show('bad','투입 차단','수입검사 불합격입니다. 원료를 재확인하세요.','✕');return;}
+if(!receipts.length){show('warn','수입검사 확인 필요','작업지시 원료명·LOT는 확인됐지만 일치하는 수입검사 기록이 없습니다.','!');return;}
+if(iqcState!=='합격'){show('warn','수입검사 확인 필요','해당 원료 LOT의 수입검사 합격 여부를 확인해 주세요.','!');return;}
+if(errors.length){show('warn','재고 확인 필요',errors.join(' / '),'!');return;}
+if(!entry){show('warn','재고 확인 필요',suppliers.size>1?'동일 원료·LOT의 공급업체가 여러 곳입니다. 재고 내역을 확인해 주세요.':'재고관리에서 해당 원료·LOT의 재고를 확인할 수 없습니다.','!');return;}
+el('supplier').textContent=entry.supplier;
+el('hold').textContent=entry.quality==='품질보류'?'보류 있음':'보류 없음';
+if(entry.quality==='품질보류'){show('bad','투입 차단','해당 LOT는 품질보류 상태입니다.','✕');return;}
+if(entry.uncertain||entry.quality!=='사용가능'){show('warn','재고 확인 필요','재고관리에서 해당 원료 LOT의 수량·연결 상태를 확인해 주세요.','!');return;}
+if(!(entry.available>0)){show('bad','투입 차단','재고관리의 사용가능량이 없습니다.','✕');return;}
+if(planned>entry.available+1e-6){show('warn','투입량 확인 필요','작업지시 계획량이 재고관리의 사용가능량을 초과합니다.','!');return;}
+show('ok','투입 가능','작업지시 원료·LOT 일치 · 수입검사 합격 · 재고 사용가능량 확인','✓');
 })();
 </script></body></html>
