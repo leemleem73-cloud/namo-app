@@ -98,7 +98,7 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 <link rel="preload" as="script" href="./js/qmes-oqc-approval-state-20261021.js?v=1">
 <link rel="preload" as="script" href="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9">
 <link rel="preload" as="script" href="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34">
-<link rel="preload" as="script" href="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-calibration-date-order">
+<link rel="preload" as="script" href="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-thin-divider-lazy-work">
 <link rel="preload" as="script" href="./js/qmes-lot-result-links-20261021.js?v=1">
 <link rel="preload" as="script" href="./js/qmes-quality-gate-20261021.js?v=20261111-hold-pagination">
 <link rel="preload" as="script" href="./js/qmes-pqc-sequential-block-20261021.js?v=20261116-check-on-save">
@@ -6048,7 +6048,15 @@ function wireWorkFifoQuery(fifo){
           if(fifo.isConnected)lotChoice.options[0].textContent='LOT 조회 실패 · 다시 열어 주세요';
         }
       };
-      void loadChoices();
+      const workPage=fifo.closest('.module-page');
+      if(workPage?.classList.contains('active'))void loadChoices();
+      else if(workPage){
+        const observer=new MutationObserver(()=>{
+          if(!workPage.classList.contains('active'))return;
+          observer.disconnect();void loadChoices();
+        });
+        observer.observe(workPage,{attributes:true,attributeFilter:['class']});
+      }
       button.onclick=async()=>{
         const id=++generation;button.disabled=true;details.hidden=true;delete status.dataset.fifoState;status.textContent='재고 확인 중…';
         try{
@@ -6218,6 +6226,17 @@ function wireWorkColumnResize(section){
   section._fitIncomingColumns=fit;fit();
   if(typeof ResizeObserver!=='undefined'){const obs=new ResizeObserver(()=>{if(!table.isConnected){obs.disconnect();return;}fit();});obs.observe(wrap);}
 }
+function refreshWorkWhenOpened(section){
+  if(section.classList.contains('active')){setTimeout(refreshSharedWorkOrders,0);return;}
+  if(section._workRefreshObserver)return;
+  const observer=new MutationObserver(()=>{
+    if(!section.classList.contains('active'))return;
+    observer.disconnect();section._workRefreshObserver=null;
+    void refreshSharedWorkOrders();
+  });
+  section._workRefreshObserver=observer;
+  observer.observe(section,{attributes:true,attributeFilter:['class']});
+}
 function buildModule(id){
   const [title,desc,cols] = pageInfo[id];
   const section=document.getElementById(id);
@@ -6258,7 +6277,7 @@ function buildModule(id){
 </div>
       <div class="module-body"><table class="work-list-table"><thead><tr><th class="wo-select-col"></th><th>No.</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>비고</th></tr></thead><tbody></tbody></table></div>
     </div>`;
-    wireModule(section,id);window.namoWorkInquiryInit?.();renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);
+    wireModule(section,id);window.namoWorkInquiryInit?.();renderSavedWorkOrders();wireWorkColumnResize(section);refreshWorkWhenOpened(section);
     wireWorkFifoQuery(section.querySelector('#workFifoCheck'));
     return;
   }
@@ -6292,7 +6311,7 @@ function buildModule(id){
       </div>`;
   }
   wireModule(section,id);
-  if(id==='work'){renderSavedWorkOrders();wireWorkColumnResize(section);setTimeout(refreshSharedWorkOrders,0);}
+  if(id==='work'){renderSavedWorkOrders();wireWorkColumnResize(section);refreshWorkWhenOpened(section);}
   wireIncomingInspection(section);
 }
 function sample(c,i,id){
@@ -9835,7 +9854,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
 <script src="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34"></script>
-<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-calibration-date-order"></script>
+<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-thin-divider-lazy-work"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261111-hold-pagination"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261116-check-on-save"></script>
