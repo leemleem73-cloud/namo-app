@@ -7346,7 +7346,7 @@ function qmesIqcBarcodeSvg(value){
   const body=`
     <div class="report-sheet report-${id}" id="reportSheet">${id==='outgoing'?'<span data-report-shipping-status hidden>'+oqcShippingStatus+'</span>':''}
       <div class="report-doc-head">
-        <div class="report-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
+        <div class="report-logo"><img class="report-main-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="NAMO Chemical"></div>
         <div class="report-title-box"><h2>${title}</h2></div>
         <div class="report-approval">
           <div class="approval-label">결재</div>
@@ -8251,7 +8251,7 @@ function printPqcCertificateOnly(){
  const holder=document.createElement('div');
  holder.style.cssText='position:fixed;left:-20000px;top:0;width:900px;pointer-events:none';
  holder.innerHTML=`<div class="report-sheet report-incoming report-pqc-print" id="reportSheet">
- <div class="report-doc-head"><div class="report-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div><div class="report-title-box"><h2>공정검사 성적서</h2></div>
+ <div class="report-doc-head"><div class="report-logo"><img class="report-main-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="NAMO Chemical"></div><div class="report-title-box"><h2>공정검사 성적서</h2></div>
  <div class="report-approval"><div class="approval-label">결재</div><div class="approval-head">작성</div><div class="approval-head">검토</div><div class="approval-head">승인</div><div class="approval-cell">${esc(approval[0]||'-')}</div><div class="approval-cell">${esc(approval[1]||'-')}</div><div class="approval-cell">${esc(approval[2]||'-')}</div></div></div>
  <div class="report-meta"><div class="label">문서번호</div><div class="value">PQC-QA-001</div><div class="label">문서구분</div><div class="value">PQC</div></div>
  <table class="report-basic"><tbody><tr><th>${fields[0]}</th><td>${v(0)}</td><th>${fields[1]}</th><td>${v(1)}</td></tr><tr><th>${fields[2]}</th><td>${v(2)}</td><th>${fields[3]}</th><td>${v(3)}</td></tr><tr><th>${fields[4]}</th><td>${v(4)}</td><th>${fields[5]}</th><td>${v(5)}</td></tr></tbody></table>
@@ -8662,7 +8662,7 @@ function standardInspectionForm(type, {registration=false}={}){
     <div class="k">CoA 상태</div><div class="v"><select><option>대기</option><option>확인완료</option><option>발행완료</option><option>미확인</option></select></div>`;
   return `<div class="std-inspection premium" data-inspection-type="${type}">
     <div class="std-inspection-head">
-      <div class="std-inspection-logo"><img class="report-main-logo" src="https://www.namochemical.com/img/svg/img_logo.svg?v=20261007-report-main2" alt="NAMO Chemical"></div>
+      <div class="std-inspection-logo"><img class="report-main-logo" src="/assets/namo-login-company-logo-20261016.svg" alt="NAMO Chemical"></div>
       <div class="std-inspection-title"><b>${conf.title}</b></div>
       <div class="std-inspection-doc">
         <div class="k">문서번호</div><div class="v">${conf.docNo}</div>
