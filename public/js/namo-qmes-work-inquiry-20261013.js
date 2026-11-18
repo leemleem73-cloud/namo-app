@@ -22,7 +22,16 @@ async function prepareWorkIqcQr(records){
  if(data?.success!==true||!Array.isArray(data.data))throw Error('IQC 조회 응답 오류');
  await Promise.all([...required].map(async ([key,{lot,name}])=>{
   const rows=data.data.filter(r=>String(r.lot??'').trim().toUpperCase()===lot.toUpperCase());
-  const matching=rows.filter(r=>String(r.item??'').trim().toUpperCase()===name.toUpperCase());
+  const norm=v=>String(v??'').trim().toUpperCase();
+  const exact=rows.filter(r=>norm(r.item)===norm(name));
+  let matching=exact;
+  if(!matching.length&&rows.length===1){
+   const candidate=rows[0],item=norm(candidate.item);
+   const aliases=[candidate.item_code,candidate.itemCode,candidate.material_code,candidate.materialCode].map(norm);
+   const tokens=item.split(/[^A-Z0-9가-힣]+/).filter(Boolean);
+   const short=norm(name).replace(/[^A-Z0-9가-힣]/g,'');
+   if(item===norm(name)||tokens.includes(norm(name))||tokens.includes(short)||aliases.includes(norm(name)))matching=[candidate];
+  }
   if(matching.length!==1||!matching[0].id)return;
   const response=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:String(matching[0].id)}),signal:AbortSignal.timeout(10000)});
   const result=await response.json().catch(()=>null);
