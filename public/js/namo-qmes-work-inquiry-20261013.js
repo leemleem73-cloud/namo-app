@@ -98,7 +98,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <div class="steps">${steps.map(x=>'<div class="step"><b>STEP '+safe(x[0])+'</b><div><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div></div>').join('')}</div>
 <h2>04. 비고</h2><div class="note">${safe(record.note)}</div>
 <div class="footer"><span>작업지시번호: ${safe(record.fields?.['작업지시번호']||record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
-</main><script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print()},250)});</script></body></html>`;
+</main><script>window.addEventListener('load',function(){window.focus()});</script></body></html>`;
  if(renderOnly)return html;
  try{win.document.open();win.document.write(html);win.document.close();return true;}
  catch(error){console.error('[QMES work print]',error);window.alert('인쇄 화면을 열지 못했습니다. 다시 시도해주세요.');return false;}
