@@ -83,7 +83,7 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none}h2{break-after:avoid}}
+@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-barcode{margin:2px auto 0;padding:1px}.print-lot-barcode svg{height:22px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
 </style></head><body><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
