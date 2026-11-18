@@ -83,7 +83,7 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;min-height:258mm;display:flex;flex-direction:column;zoom:1}h2{break-after:avoid;margin-top:auto;padding:7px 8px}h2:first-of-type{margin-top:12px}.brand{padding:9px 2px}.brand strong{font-size:15pt}h1{font-size:18pt;padding:9px 0 11px}table th,table td{padding:6px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-barcode{margin:3px auto 0;padding:1px}.print-lot-barcode svg{height:23px}.step{min-height:40px;padding:7px}.note{min-height:36px;padding:8px;line-height:1.4}.footer{margin-top:auto;padding-top:7px}}
+@media print{.actions{display:none!important}.paper{max-width:none}h2{break-after:avoid}}
 </style></head><body><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
