@@ -1138,7 +1138,14 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   }
 
   function init(){
-    renderSpc();renderChange();renderInstrument();renderCalibration();
+    const openCurrent=()=>{
+      if(document.getElementById('spcTrend')?.classList.contains('active'))renderSpc();
+      if(document.getElementById('changeControl')?.classList.contains('active'))renderChange();
+      if(document.getElementById('instrumentMgmt')?.classList.contains('active'))renderInstrument();
+      if(document.getElementById('calibrationMgmt')?.classList.contains('active'))renderCalibration();
+    };
+    openCurrent();
+    document.addEventListener('DOMContentLoaded',openCurrent,{once:true});
     document.querySelectorAll('.menu[data-page="spcTrend"]').forEach(m=>{
       m.addEventListener('click',renderSpc);
       m.addEventListener('pointerenter',()=>{if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();});
@@ -1146,7 +1153,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     });
     const authUser=document.getElementById('currentUser');
     if(authUser)new MutationObserver(()=>{
-      if(authUser.dataset.qauthReady==='1'){refreshSpc();changeQueries.clear();document.getElementById('changeControl')?._changeLoad?.(true);instrumentQueries.clear();document.getElementById('instrumentMgmt')?._instrumentLoad?.(true);calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);}
+      if(authUser.dataset.qauthReady==='1'){changeQueries.clear();instrumentQueries.clear();spcRows=null;spcLoadedAt=0;calibrationRows=null;calibrationAt=0;openCurrent();}
     }).observe(authUser,{attributes:true,attributeFilter:['data-qauth-ready']});
     document.querySelectorAll('.menu[data-page="changeControl"]').forEach(m=>{
       m.addEventListener('click',renderChange);
