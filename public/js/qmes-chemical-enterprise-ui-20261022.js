@@ -1022,9 +1022,16 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       instrumentDatePickers(instrumentDialog);
       instrumentDialog.classList.add('qce-instrument-redesigned');
       const form=instrumentDialog.querySelector('.qce-instrument-form');
+      const tableFrame=document.createElement('div');
+      tableFrame.className='qce-instrument-table-frame';
+      tableFrame.style.cssText='margin:16px 18px 12px;border:1px solid #cddbea;box-sizing:border-box';
+      form.before(tableFrame);tableFrame.append(form);
+      for(const [property,value] of Object.entries({margin:'0',padding:'0',gap:'1px',border:'0',background:'#dbe5ef'}))form.style.setProperty(property,value,'important');
+      form.querySelectorAll(':scope>.qce-field>label').forEach(label=>label.style.setProperty('border-right','1px solid #dbe5ef','important'));
+
       const history=document.createElement('section');history.className='qce-instrument-inline-history';
       history.innerHTML='<header><h4>교정·점검·수리 이력</h4><button type="button" class="qce-btn" data-open-history>이력 보기 / 추가</button></header><div data-recent-history role="status">'+(record?'이력을 불러오는 중입니다.':'계측기를 저장하면 교정검사·점검·수리 이력을 추가할 수 있습니다.')+'</div>';
-      form.after(history);
+      tableFrame.after(history);
       const historyButton=history.querySelector('[data-open-history]');
       historyButton.textContent=record?'이력 보기 / 추가':'저장 후 이력 추가';
       historyButton.onclick=()=>{
@@ -1146,6 +1153,13 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     };
     openCurrent();
     document.addEventListener('DOMContentLoaded',openCurrent,{once:true});
+    const moduleObserver=new MutationObserver(changes=>{
+      if(changes.some(change=>change.target.classList.contains('active')))openCurrent();
+    });
+    for(const id of ['spcTrend','changeControl','instrumentMgmt','calibrationMgmt']){
+      const page=document.getElementById(id);
+      if(page)moduleObserver.observe(page,{attributes:true,attributeFilter:['class']});
+    }
     document.querySelectorAll('.menu[data-page="spcTrend"]').forEach(m=>{
       m.addEventListener('click',renderSpc);
       m.addEventListener('pointerenter',()=>{if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();});
