@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
 <title>QMES 원료 QR 스캔 결과</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#eff4fa;color:#16304f;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif}header{background:#153eaa;color:white;padding:18px 18px;font-weight:800;font-size:18px;display:flex;align-items:center;gap:10px}header a{color:white;text-decoration:none}main{max-width:460px;margin:0 auto;padding:18px 14px 36px}.panel{background:white;border:1px solid #d4e0ed;border-radius:13px;overflow:hidden;box-shadow:0 5px 24px #0e28551c}.state{text-align:center;padding:25px 12px 18px}.symbol{font-size:57px;line-height:1.1;color:#64748b}.state h1{margin:10px 0 0;font-size:28px;color:#334155}.state p{margin:9px 12px;color:#52667c;font-size:13px;line-height:1.6}table{width:100%;border-collapse:collapse;font-size:14px}th,td{border:1px solid #d4e0ed;padding:13px 10px;text-align:left;overflow-wrap:anywhere}th{background:#edf4fd;width:36%;color:#294768}td{font-weight:700}footer{padding:16px;text-align:center}.action{display:block;background:#1646be;color:#fff;text-decoration:none;border-radius:7px;padding:13px;font-weight:700;text-align:center}.small{font-size:12px;color:#687c95;line-height:1.6;margin-top:15px;text-align:center}.ok .symbol,.ok h1{color:#13843b}.bad .symbol,.bad h1{color:#c23232}.warn .symbol,.warn h1{color:#b77912}.pass{color:#168343}.fail{color:#c33232}
@@ -31,6 +31,8 @@ th{width:37%}td{font-size:16px}#qty{font-size:18px}
 const el=id=>document.getElementById(id),params=new URLSearchParams(location.search);
 const ref=String(params.get('r')||params.get('record')||'').trim(),workRef=String(params.get('w')||params.get('work')||'').trim();
 const legacyLot=String(params.get('lot')||'').trim(),legacyName=String(params.get('material')||'').trim();
+// Printed work-order identity is visible even before network/login checks.
+el('lot').textContent=legacyLot||'-';el('name').textContent=legacyName||'-';
 const core=window.qmesMaterialStockCore;
 const norm=v=>String(v??'').trim().normalize('NFKC').toUpperCase().replace(/\s+/g,'');
 let baseResult=null,comparisonOverride=null;
@@ -47,6 +49,53 @@ const read=async url=>{
  if(result?.success!==true)throw Error(result?.message||'서버 응답 확인 필요');
  return result.data;
 };
+// Mobile scans use an issued, read-only link scoped to this single material row.
+const scanToken=String(params.get('s')||'').trim();
+if(scanToken){
+ let current=null;
+ const applyData=data=>{
+  current=data;el('name').textContent=data.name||legacyName||'-';el('lot').textContent=data.lot||legacyLot||'-';
+  el('code').textContent='-';el('zone').textContent='-';
+  el('iqc').textContent=data.iqc||'확인 필요';el('iqc').className=data.iqc==='합격'?'pass':data.iqc==='불합격'?'fail':'';
+  el('qty').textContent=Number.isFinite(data.available)?data.available.toLocaleString('ko-KR',{maximumFractionDigits:6})+' kg':'확인 필요';
+  show(data.kind||'warn',data.title||'확인 필요',data.reason||'',data.kind==='ok'?'✓':data.kind==='bad'?'✕':'!');
+ };
+ el('compare').onclick=async()=>{
+  const raw=el('scan').value.trim();if(!raw||!current)return;
+  let scannedLot=raw,scannedName='';
+  try{
+   if(/^https?:|^\//.test(raw)){
+    const link=new URL(raw,location.origin);if(link.origin!==location.origin)throw Error('나모 웹 원료 QR을 사용해 주세요.');
+    const token=link.searchParams.get('s');
+    if(token){const data=await read('/api/qmes/work-material-links/'+encodeURIComponent(token));scannedLot=data.lot;scannedName=data.name;}
+    else {scannedLot=link.searchParams.get('lot')||'';scannedName=link.searchParams.get('material')||'';if(!scannedLot)throw Error('이 QR에서 LOT를 읽을 수 없습니다. LOT 번호로 대조하세요.');}
+   }
+   const sameLot=(core?.lot||norm)(scannedLot)===(core?.lot||norm)(current.lot);
+   const sameName=!scannedName||(core?.material||norm)(scannedName)===(core?.material||norm)(current.name);
+   if(sameLot&&sameName){comparisonOverride=null;paint(baseResult);el('comparison').textContent='✓ '+(scannedName?'원료·LOT':'LOT')+' 일치. 위의 검사·재고 판정을 확인하세요.';el('comparison').style.color='#13843b';}
+   else {comparisonOverride={kind:'bad',title:'투입 차단',message:'작업지시 원료 또는 LOT와 일치하지 않습니다. 원료를 재확인하세요.',symbol:'✕'};paint(comparisonOverride);el('comparison').textContent='✕ 원료·LOT 불일치';el('comparison').style.color='#c23232';}
+  }catch(error){comparisonOverride={kind:'warn',title:'원료 확인 필요',message:error.message,symbol:'!'};paint(comparisonOverride);el('comparison').textContent=error.message;}
+ };
+ let stream=null,cameraTimer=null;
+const stopCamera=()=>{clearTimeout(cameraTimer);stream?.getTracks().forEach(t=>t.stop());stream=null;el('cameraView').hidden=true;el('camera').textContent='카메라로 스캔';};
+window.addEventListener('pagehide',stopCamera);
+el('camera').onclick=async()=>{
+ if(stream){stopCamera();return;}
+ if(!window.BarcodeDetector||!navigator.mediaDevices?.getUserMedia){el('comparison').textContent='이 브라우저는 카메라 QR 읽기를 지원하지 않습니다. QR 주소를 붙여넣거나 LOT를 입력하세요.';return;}
+ try{
+  const detector=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13']});
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  const video=el('cameraView');video.srcObject=stream;video.hidden=false;await video.play();el('camera').textContent='스캔 중지';
+  const scan=async()=>{if(!stream)return;try{const codes=await detector.detect(video);if(codes[0]?.rawValue){el('scan').value=codes[0].rawValue;stopCamera();el('compare').click();return;}}catch(_){}if(stream)cameraTimer=setTimeout(scan,250);};scan();
+ }catch(_){stopCamera();el('comparison').textContent='카메라를 열지 못했습니다. 카메라 권한을 확인하거나 LOT를 입력하세요.';}
+};
+el('scan').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();el('compare').click();}});
+
+
+ try{applyData(await read('/api/qmes/work-material-links/'+encodeURIComponent(scanToken)));}
+ catch(error){el('iqc').textContent='확인 필요';el('qty').textContent='확인 필요';show('warn','조회 확인 필요',error.message,'!');}
+ return;
+}
 if(!core){show('warn','재고 확인 필요','QMES 재고 계산 모듈을 불러올 수 없습니다.','!');return;}
 // Read the same live sources as the raw-material inventory screen.
 const sources=[['/api/qmes/work-orders','작업지시서'],['/api/iqc','수입검사'],['/api/trace?keyword=','작업실적'],['/api/qmes-sync/inventory','수불기록'],['/api/qmes-quality-gate/holds?lot=','품질보류']];
