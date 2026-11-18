@@ -8,7 +8,8 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
   max: 3,
-  connectionTimeoutMillis: 10000
+  connectionTimeoutMillis: 10000,
+  statement_timeout: 20000
 });
 
 let schemaPromise = null;
