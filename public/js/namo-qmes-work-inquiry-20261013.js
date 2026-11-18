@@ -50,6 +50,8 @@ function printLotQRCode(lot,name,work){
  // Keep the printed QR short enough for reliable camera scanning.
  const url=new URL('/qmes-material-scan.html',location.origin);
  url.searchParams.set('r',linked.recordId);
+ const token=new URL(linked.url).pathname.split('/').pop();
+ if(/^[a-f0-9-]{36}$/i.test(token))url.searchParams.set('t',token);
  url.searchParams.set('w',String(work??'').trim());
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
@@ -79,7 +81,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const qr=printLotQRCode(m.lot,m.name,f['작업지시번호']||record.id);
+  const qr=printLotQRCode(m.lot,m.name,record.id);
   const nameCell='<div class="print-material-with-qr"><span>'+safe(name)+'</span><span class="print-lot-qr">'+qr+'</span></div>';
   return '<tr><td>'+safe(i+1)+'</td><td>'+nameCell+'</td><td>'+safe(m.lot)+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
  }).join('');
