@@ -103,16 +103,16 @@ h2{font-size:10pt;color:#1f4366;background:#eaf1f8;border:1px solid #c9d7e5;bord
 table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px solid #cad6e3;font-size:9pt;padding:7px 6px;overflow-wrap:anywhere;vertical-align:middle}
 .meta th{background:#f3f7fb;width:17%;color:#31516f;text-align:center}.meta td{width:33%}
 .material th{background:#edf3f9;color:#31516f;text-align:center;font-size:8.5pt}.material td{text-align:center}
-.material th:nth-child(1){width:6%}.material th:nth-child(2){width:19%}.material th:nth-child(3){width:29%}.material th:nth-child(4){width:17%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:13%}
+.material th:nth-child(1){width:6%}.material th:nth-child(2){width:28%}.material th:nth-child(3){width:20%}.material th:nth-child(4){width:16%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:14%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
-.iqc-qr-unlinked{display:block;font-size:7pt;color:#a34a22;white-space:normal;max-width:47px;line-height:1.2}.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:42px;height:42px;image-rendering:pixelated}
+.iqc-qr-unlinked{display:block;font-size:7pt;color:#a34a22;white-space:normal;max-width:47px;line-height:1.2}.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:72px;height:72px;image-rendering:pixelated}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;zoom:.82}h2{break-after:avoid;margin-top:9px;padding:5px 8px}.brand{padding:7px 2px}h1{padding:7px 0 9px}table th,table td{padding:5px 4px;font-size:8.5pt}.material th{font-size:8pt}.print-lot-qr{padding:0}.print-lot-qr img{width:40px;height:40px}.step{min-height:37px;padding:5px}.note{min-height:34px;padding:7px}.footer{margin-top:9px;padding-top:6px}}
+@media print{.actions{display:none!important}.paper{max-width:none;zoom:1}h2{break-after:avoid;margin-top:12px;padding:7px 9px}.brand{padding:9px 2px}h1{padding:10px 0 12px}table th,table td{padding:6px 5px;font-size:8.5pt}.material th{font-size:8pt}.print-material-with-qr{gap:5px}.print-lot-qr{padding:2px}.print-lot-qr img{width:70px;height:70px;max-width:none;max-height:none}.step{min-height:42px;padding:7px}.note{min-height:46px;padding:9px}.footer{margin-top:12px;padding-top:7px}}
 </style></head><body><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
