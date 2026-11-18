@@ -52,7 +52,12 @@ manualCustomer.autocomplete='off';manualCustomer.hidden=true;
 manualCustomer.setAttribute('aria-label','고객사 직접 입력');
 manualCustomer.style.setProperty('display','none','important');
 customerSelect.add(new Option('직접입력','__manual__'));
-customerSelect.after(manualCustomer);
+const customerFields=document.createElement('div');
+customerFields.style.cssText='display:grid;gap:6px;min-width:0';
+customerSelect.before(customerFields);
+customerFields.append(customerSelect,manualCustomer);
+customerSelect.style.setProperty('width','100%','important');
+manualCustomer.style.setProperty('width','100%','important');
 function toggleManualCustomer(){
  const manual=customerSelect.value==='__manual__';
  manualCustomer.hidden=!manual;
