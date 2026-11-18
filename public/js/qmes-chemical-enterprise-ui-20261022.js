@@ -351,6 +351,36 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   `;
   style.textContent+="html body #changeControl .qce-instrument-selection-dock{position:fixed;bottom:16px;z-index:120;min-height:58px;box-sizing:border-box;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--qmes-nav-background,#315d79);color:#fff;border:1px solid #3c6988;border-radius:8px;box-shadow:0 5px 20px rgba(21,39,64,.18);transform:translateY(calc(100% + 30px));opacity:0;visibility:hidden;pointer-events:none;transition:transform .3s ease-out,opacity .3s ease-out,visibility 0s .3s}\nhtml body #changeControl .qce-instrument-selection-dock.is-visible{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}\nhtml body #changeControl .qce-instrument-selection-count{font-size:13px;font-weight:700;color:#fff}\nhtml body #changeControl .qce-instrument-selection-dock>div{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}\nhtml body #changeControl .qce-instrument-selection-dock button{height:30px;padding:0 12px;border:1px solid #b8cde2;border-radius:4px;background:#f5f9ff;color:#244260;font:700 11px Pretendard,\"Noto Sans KR\",Arial,sans-serif;cursor:pointer}\n@media(prefers-reduced-motion:reduce){html body #changeControl .qce-instrument-selection-dock{transition:none}}\n\nhtml body #changeControl .qce-instrument-selection-dock [data-inst-selected-delete]{color:#dc2626!important}\n\nhtml body #changeControl .qce-change-selected>td{background:#eaf4ff!important}\nhtml body #changeControl .qce-table th{text-align:center!important}\nhtml body .qce-modal-bg .qce-change-form .qce-field>label{justify-content:center!important;text-align:center!important;padding-left:8px!important;padding-right:8px!important}\nhtml body .qce-modal-bg .qce-change-form .qce-field :is(input,select,textarea){box-sizing:border-box!important;text-align:left!important;padding-left:10px!important;padding-right:10px!important;font-family:Pretendard,\"Noto Sans KR\",\"Malgun Gothic\",sans-serif!important;font-size:12px!important;letter-spacing:0!important}\n";
   style.textContent+="html body #changeControl .qce-table td.qce-change-actions{overflow:visible!important;white-space:normal!important;padding:5px 6px!important}html body #changeControl .qce-change-action-buttons{display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex-wrap:wrap!important}html body #changeControl .qce-change-action-buttons .qce-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;min-width:46px!important;height:25px!important;padding:0 6px!important;margin:0!important;font-size:11px!important}";
+
+  style.textContent+=`
+  .qce-instrument-dialog .qce-modal{width:min(1040px,calc(100vw - 32px))!important;border:1px solid #d2dfed!important;border-radius:10px!important;box-shadow:0 14px 42px #1b385c24!important;overflow:visible!important;background:#fff}
+  .qce-instrument-dialog .qce-modal>h3{margin:0!important;padding:16px 20px!important;border-bottom:1px solid #d2dfed!important;background:#fff!important;color:#173754;font-size:15px!important}
+  .qce-instrument-dialog .qce-form{padding:16px!important;gap:0!important;border:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .qce-instrument-dialog .qce-form>.qce-field{display:grid!important;grid-template-columns:124px minmax(0,1fr)!important;align-items:center!important;min-height:46px!important;border:0!important;border-bottom:1px solid #dbe5ef!important}
+  .qce-instrument-dialog .qce-form>.qce-field>label{align-self:stretch;display:flex;align-items:center;justify-content:center!important;background:#f0f5fa!important;border:0!important;color:#244260;font-size:12px!important;font-weight:600!important;padding:8px!important}
+  .qce-instrument-dialog .qce-field>input,.qce-instrument-dialog .qce-field>select,.qce-instrument-dialog .qce-field>textarea{box-sizing:border-box!important;width:calc(100% - 16px)!important;min-width:0!important;margin:6px 8px!important;border:1px solid #cddbea!important;border-radius:4px!important;background:#fff!important;color:#244260;font-size:12px!important;min-height:32px!important}
+  .qce-instrument-dialog .qce-field>textarea{min-height:76px!important;resize:vertical}
+  .qce-instrument-dialog .qce-date-field{position:relative;min-width:0;margin:6px 8px}
+  .qce-instrument-dialog .qce-date-field>input{box-sizing:border-box;width:100%!important;margin:0!important;height:32px!important;min-height:32px!important;border:1px solid #cddbea!important;border-radius:4px!important;background:#fff!important;padding:0 30px 0 8px!important;color:#244260}
+  .qce-date-field>input::-webkit-calendar-picker-indicator{display:none}
+  .qce-date-field>.qce-date-toggle{position:absolute;right:1px;top:1px;bottom:1px;width:28px;padding:0!important;border:0!important;background:#fff!important;color:#456984;border-radius:3px;cursor:pointer}
+  .qce-instrument-calendar{box-sizing:border-box;background:#fff;color:#244260;border:1px solid #cbd9e7;border-radius:8px;padding:10px;margin:0;box-shadow:0 8px 26px #183b6126;font:12px/1.4 Pretendard,"Noto Sans KR",Arial,sans-serif;min-width:230px;max-width:calc(100vw - 24px)}
+  .qce-instrument-calendar[hidden]{display:none!important}
+  .qce-instrument-calendar .qce-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .qce-instrument-calendar .qce-calendar-days,.qce-instrument-calendar .qce-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;text-align:center}
+  .qce-instrument-calendar .qce-calendar-days span{padding:4px 0;color:#71879c}
+  .qce-instrument-calendar button{border:0;background:#fff;color:#244260;border-radius:4px;padding:6px 2px;font:inherit;cursor:pointer}
+  .qce-instrument-calendar button:hover,.qce-instrument-calendar button:focus-visible{background:#e9f2fc;outline:1px solid #82b8e9}
+  .qce-instrument-calendar button[aria-pressed=true]{background:#2f8de4;color:#fff}
+  .qce-instrument-calendar button[aria-current=date]{box-shadow:inset 0 0 0 1px #71a9d9}
+  .qce-instrument-calendar .qce-calendar-foot{display:flex;justify-content:space-between;border-top:1px solid #e2eaf2;margin-top:8px;padding-top:5px}
+  .qce-instrument-history-dialog .qce-modal{width:min(1040px,calc(100vw - 32px))!important}
+  .qce-history-tools{display:flex;gap:8px;padding:12px 0}
+  .qce-instrument-history{padding:0 16px 16px;max-height:65vh;overflow:auto}
+  .qce-instrument-history .qce-history-content{white-space:pre-wrap;text-align:left;overflow-wrap:anywhere;line-height:1.6}
+  @media(max-width:700px){.qce-instrument-dialog .qce-form{grid-template-columns:1fr!important}.qce-instrument-dialog .qce-form>.qce-field{grid-template-columns:110px minmax(0,1fr)!important}}
+  `;
+
   document.head.appendChild(style);
 
   function head(title,desc){return '<div class="qce-head"><div><h1>'+esc(title)+'</h1><p>'+esc(desc)+'</p></div><div class="date-badge">QMES</div></div>';}
@@ -752,6 +782,105 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   }
 
   const instrumentQueries=new Map();
+
+  function instrumentDatePickers(bg){
+    bg.classList.add('qce-instrument-dialog');
+    bg.querySelectorAll('input[type="date"]').forEach(input=>{
+      if(input.closest('.qce-date-field'))return;
+      const wrapper=document.createElement('div');wrapper.className='qce-date-field';
+      input.before(wrapper);wrapper.append(input);
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='qce-date-toggle';toggle.textContent='▦';
+      toggle.setAttribute('aria-label',(input.closest('.qce-field')?.querySelector('label')?.textContent||'날짜')+' 달력');
+      const panel=document.createElement('div');panel.className='qce-instrument-calendar';panel.hidden=true;
+      const popover=typeof panel.showPopover==='function';
+      if(popover)panel.setAttribute('popover','auto');
+      wrapper.append(toggle,panel);
+      let month;
+      const stamp=date=>date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+      function close(){if(popover&&panel.matches(':popover-open'))panel.hidePopover();panel.hidden=true;}
+      function choose(value){
+        input.value=value;
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+        input.dispatchEvent(new Event('change',{bubbles:true}));
+        close();toggle.focus();
+      }
+      function draw(){
+        const start=new Date(month.getFullYear(),month.getMonth(),1,12);
+        const count=new Date(month.getFullYear(),month.getMonth()+1,0,12).getDate();
+        panel.innerHTML='<div class="qce-calendar-head"><button type="button" data-month="-1" aria-label="이전 달">‹</button><strong>'+start.getFullYear()+'년 '+(start.getMonth()+1)+'월</strong><button type="button" data-month="1" aria-label="다음 달">›</button></div><div class="qce-calendar-days">'+['일','월','화','수','목','금','토'].map(day=>'<span>'+day+'</span>').join('')+'</div><div class="qce-calendar-grid"></div><div class="qce-calendar-foot"><button type="button" data-clear>지우기</button><button type="button" data-today>오늘</button><button type="button" data-close-calendar>닫기</button></div>';
+        const grid=panel.querySelector('.qce-calendar-grid');
+        for(let i=0;i<start.getDay();i++)grid.append(document.createElement('span'));
+        for(let day=1;day<=count;day++){
+          const date=new Date(start.getFullYear(),start.getMonth(),day,12);
+          const value=stamp(date),button=document.createElement('button');
+          button.type='button';button.textContent=day;
+          button.setAttribute('aria-label',value);
+          if(value===input.value)button.setAttribute('aria-pressed','true');
+          if(value===stamp(new Date()))button.setAttribute('aria-current','date');
+          button.onclick=()=>choose(value);grid.append(button);
+        }
+        panel.querySelectorAll('[data-month]').forEach(button=>button.onclick=()=>{
+          month=new Date(start.getFullYear(),start.getMonth()+Number(button.dataset.month),1,12);draw();
+        });
+        panel.querySelector('[data-clear]').onclick=()=>choose('');
+        panel.querySelector('[data-today]').onclick=()=>choose(stamp(new Date()));
+        panel.querySelector('[data-close-calendar]').onclick=()=>{close();toggle.focus();};
+      }
+      function open(event){
+        event?.preventDefault();
+        if(popover&&panel.matches(':popover-open')){close();return;}
+        month=input.value?new Date(input.value+'T12:00:00'):new Date();
+        if(!Number.isFinite(month.getTime()))month=new Date();
+        draw();panel.hidden=false;
+        const rect=wrapper.getBoundingClientRect();
+        if(popover){
+          const width=Math.min(rect.width,window.innerWidth-24),height=310;
+          const top=window.innerHeight-rect.bottom>=height?rect.bottom+4:Math.max(8,rect.top-height-4);
+          Object.assign(panel.style,{inset:top+'px auto auto '+Math.max(8,Math.min(rect.left,window.innerWidth-width-8))+'px',width:width+'px'});
+          panel.showPopover();
+        }
+      }
+      toggle.onclick=open;
+      input.addEventListener('click',open);
+      input.addEventListener('keydown',event=>{if(event.key==='ArrowDown'&&event.altKey)open(event);});
+    });
+  }
+  async function showInstrumentHistory(record){
+    const bg=modal('계측기 이력 · '+record.instrument_name,
+      '<div class="qce-instrument-history"><div class="qce-history-tools"><button type="button" class="qce-btn" data-add-calibration>+ 교정검사</button><button type="button" class="qce-btn" data-add-event>+ 점검·수리</button></div><div data-history-body role="status">이력을 불러오는 중입니다.</div></div>',
+      async()=>{}
+    );
+    bg.classList.add('qce-instrument-history-dialog');
+    bg.querySelector('[data-save]').remove();
+    bg.querySelector('[data-close]').textContent='닫기';
+    async function load(){
+      try{
+        const rows=await api('/api/qmes-instruments/'+record.id+'/history');
+        if(!bg.isConnected)return;
+        bg.querySelector('[data-history-body]').innerHTML=rows.length?
+          '<table class="qce-table"><thead><tr><th>일자</th><th>구분</th><th>내용 / 결과</th><th>기관 / 담당</th><th>작성자</th></tr></thead><tbody>'+rows.map(row=>
+          '<tr><td>'+esc(String(row.event_on||'').slice(0,10))+'</td><td>'+esc(row.event_type)+'</td><td class="qce-history-content">'+esc([row.content,row.result&&'결과 '+row.result,row.certificate_no&&'성적서 '+row.certificate_no,row.next_due_on&&'차기 교정 '+String(row.next_due_on).slice(0,10)].filter(Boolean).join(' · ')||'—')+'</td><td>'+esc(row.agency||'—')+'</td><td>'+esc(row.created_by||'—')+'</td></tr>'
+          ).join('')+'</tbody></table>':'등록된 이력이 없습니다.';
+      }catch(error){if(bg.isConnected)bg.querySelector('[data-history-body]').textContent=error.message;}
+    }
+    bg.querySelector('[data-add-calibration]').onclick=()=>openCalibration(record,()=>{
+      instrumentQueries.clear();document.getElementById('instrumentMgmt')?._instrumentLoad?.(true);void load();
+    });
+    bg.querySelector('[data-add-event]').onclick=()=>{
+      const eventDialog=modal('점검·수리 이력 등록 · '+record.instrument_name,
+        '<div class="qce-form qce-instrument-event-form"><div class="qce-field"><label>처리일자</label><input type="date" data-k="event_on"></div><div class="qce-field"><label>구분</label><select data-k="event_type"><option>점검</option><option>수리</option><option>기타</option></select></div><div class="qce-field full"><label>기관 / 담당</label><input data-k="agency" maxlength="160"></div><div class="qce-field full"><label>처리 내용</label><textarea data-k="content" maxlength="2000" placeholder="점검 내용, 수리 부위와 조치 결과를 입력하세요."></textarea></div></div>',
+        async dialog=>{
+          await api('/api/qmes-instruments/'+record.id+'/history',{method:'POST',body:JSON.stringify({
+            event_on:val(dialog,'event_on'),event_type:val(dialog,'event_type'),agency:val(dialog,'agency'),content:val(dialog,'content')
+          })});
+          toast('계측기 이력이 등록되었습니다.');void load();
+        },{module:'instrumentHistory',record:'instrument:'+record.id}
+      );
+      instrumentDatePickers(eventDialog);
+    };
+    void load();
+  }
+
   function renderInstrument(){
     const root=document.getElementById('instrumentMgmt');if(!root)return;
     if(root._instrumentLoad&&root.querySelector('.qce-inst-body')){root._instrumentLoad();return;}
@@ -805,7 +934,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         root._instrumentRows=rows;
         rows.filter(row=>String(row.id)==='1'||row.photo_updated_at).forEach(row=>prepareInstrumentPhoto(row).catch(()=>{}));
         root.querySelector('.qce-inst-body').innerHTML='<div style="overflow:auto"><table class="qce-table"><colgroup><col style="width:34px"><col style="width:52px"><col><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th><input type="checkbox" class="qce-inst-select-all" aria-label="계측기 전체 선택"></th><th>No.</th><th>관리번호</th><th>계측기명</th><th>사용 범위</th><th>제조사 / 모델</th><th>Serial No.</th><th>사용부서</th><th>최종 검교정일</th><th>차기 검교정일</th><th>상태</th><th>검교정</th></tr></thead><tbody>'+(
-          rows.length?rows.map((r,i)=>'<tr><td><input type="checkbox" class="qce-inst-row-select" value="'+esc(r.id)+'" aria-label="'+esc(r.instrument_no||r.instrument_name)+' 선택"></td><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+((String(r.id)==='1'||r.photo_updated_at)?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button></td></tr>').join(''):'<tr><td colspan="12">등록된 계측기가 없습니다.</td></tr>'
+          rows.length?rows.map((r,i)=>'<tr><td><input type="checkbox" class="qce-inst-row-select" value="'+esc(r.id)+'" aria-label="'+esc(r.instrument_no||r.instrument_name)+' 선택"></td><td>'+(i+1)+'</td><td>'+esc(r.instrument_no||'-')+'</td><td>'+((String(r.id)==='1'||r.photo_updated_at)?'<button type="button" class="qce-instrument-photo-link" data-inst-photo="'+r.id+'">'+esc(r.instrument_name)+'</button>':esc(r.instrument_name))+'</td><td>'+esc(r.use_range||'-')+'</td><td>'+esc([r.maker,r.model].filter(Boolean).join(' / ')||'-')+'</td><td>'+esc(r.serial_no||'-')+'</td><td>'+esc(r.department||'-')+'</td><td>'+esc(String(r.last_calibration_on||'').slice(0,10)||'-')+'</td><td>'+esc(String(r.next_calibration_on||'').slice(0,10)||'-')+'</td><td><span class="qce-badge '+(r.status==='사용'?'ok':'bad')+'">'+esc(r.status)+'</span></td><td><button class="qce-btn" data-cal="'+r.id+'">등록</button> <button class="qce-btn" data-inst-edit="'+r.id+'">수정</button> <button class="qce-btn" data-inst-history="'+r.id+'">이력</button></td></tr>').join(''):'<tr><td colspan="12">등록된 계측기가 없습니다.</td></tr>'
         )+'</tbody></table></div>';
         root.querySelector('.qce-inst-select-all').onchange=event=>{
           root.querySelectorAll('.qce-inst-row-select').forEach(box=>{if(event.target.checked)selectedIds.add(box.value);else selectedIds.delete(box.value);});syncSelection();
@@ -813,6 +942,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         root.querySelectorAll('.qce-inst-row-select').forEach(box=>box.onchange=()=>{if(box.checked)selectedIds.add(box.value);else selectedIds.delete(box.value);syncSelection();});
         syncSelection();
         root.querySelectorAll('[data-inst-photo]').forEach(button=>button.onclick=()=>openInstrumentPhoto(rows.find(row=>String(row.id)===button.dataset.instPhoto)));
+        root.querySelectorAll('[data-inst-history]').forEach(button=>button.onclick=()=>showInstrumentHistory(rows.find(row=>String(row.id)===button.dataset.instHistory)));
         root.querySelectorAll('[data-inst-edit]').forEach(button=>button.onclick=()=>root._openInstrument(rows.find(row=>String(row.id)===button.dataset.instEdit)));
         root.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>openCalibration(rows.find(x=>String(x.id)===String(b.dataset.cal)),()=>{instrumentQueries.clear();load(true);}));
 
@@ -842,7 +972,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     root.querySelector('.qce-inst-search').onclick=()=>{root._resetListSelection();load(true);};
     root.querySelector('.qce-inst-q').addEventListener('keydown',e=>{if(e.key==='Enter'){root._resetListSelection();load(true);}});
     const openInstrument=(record=null)=>{
-      modal(record?'계측기 수정':'계측기 등록','<div class="qce-form qce-instrument-form">'+
+      const instrumentDialog=modal(record?'계측기 수정':'계측기 등록','<div class="qce-form qce-instrument-form">'+
       '<div class="qce-field"><label>계측기명</label><input data-k="instrument_name"></div><div class="qce-field"><label>사용 범위</label><input data-k="use_range" placeholder="예: 0~250 ℃"></div><div class="qce-field"><label>제조사</label><input data-k="maker"></div>'+
       '<div class="qce-field"><label>모델</label><input data-k="model"></div><div class="qce-field"><label>Serial No.</label><input data-k="serial_no"></div>'+
       '<div class="qce-field"><label>사용부서</label><div class="qce-department-picker"><input type="hidden" data-k="department"><details><summary>부서 선택</summary><div class="qce-department-options"><label><input type="checkbox" value="연구소"><span>연구소</span></label><label><input type="checkbox" value="품질부"><span>품질부</span></label><label><input type="checkbox" value="생산부"><span>생산부</span></label></div></details></div></div><div class="qce-field"><label>설치위치</label><input data-k="location"></div>'+
@@ -853,6 +983,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
         if(file){const response=await fetch('/api/qmes-instruments/'+saved.id+'/photo',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:await file.arrayBuffer()});const result=await response.json();if(!response.ok||result.success===false)throw Error(result.message||'사진 저장 실패');}
         toast(editing?'계측기가 수정되었습니다.':'계측기가 등록되었습니다.');calibrationRows=null;calibrationAt=0;instrumentQueries.clear();load(true);}, {module:'instrumentMgmt',record:record?.id||'new'}
     );
+      instrumentDatePickers(instrumentDialog);
       if(record){
         const dialog=document.querySelector('.qce-modal-bg:last-of-type');
         if(dialog)dialog.querySelectorAll('[data-k]').forEach(input=>{
@@ -920,9 +1051,10 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
 
   function openCalibration(row,reload){
     if(!row)return;
-    modal('검교정 등록 · '+row.instrument_name,'<div class="qce-form"><div class="qce-field"><label>검교정일</label><input data-k="calibration_on" type="date"></div><div class="qce-field"><label>차기예정일</label><input data-k="next_due_on" type="date"></div><div class="qce-field"><label>교정기관</label><input data-k="agency"></div><div class="qce-field"><label>성적서번호</label><input data-k="certificate_no"></div><div class="qce-field"><label>결과</label><select data-k="result"><option>적합</option><option>부적합</option></select></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
+    const calibrationDialog=modal('검교정 등록 · '+row.instrument_name,'<div class="qce-form"><div class="qce-field"><label>검교정일</label><input data-k="calibration_on" type="date"></div><div class="qce-field"><label>차기예정일</label><input data-k="next_due_on" type="date"></div><div class="qce-field"><label>교정기관</label><input data-k="agency"></div><div class="qce-field"><label>성적서번호</label><input data-k="certificate_no"></div><div class="qce-field"><label>결과</label><select data-k="result"><option>적합</option><option>부적합</option></select></div><div class="qce-field full"><label>비고</label><textarea data-k="note"></textarea></div></div>',
       async bg=>{await api('/api/qmes-calibrations',{method:'POST',body:JSON.stringify({instrument_id:row.id,calibration_on:val(bg,'calibration_on'),next_due_on:val(bg,'next_due_on'),agency:val(bg,'agency'),certificate_no:val(bg,'certificate_no'),result:val(bg,'result'),note:val(bg,'note')})});toast('검교정 이력이 등록되었습니다.');calibrationRows=null;calibrationAt=0;document.getElementById('calibrationMgmt')?._calibrationLoad?.(true);reload();}, {module:'calibrationMgmt',mode:'new',record:'instrument:'+row.id}
     );
+    instrumentDatePickers(calibrationDialog);
   }
 
   let calibrationRows=null,calibrationAt=0,calibrationPromise=null;
