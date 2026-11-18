@@ -281,5 +281,7 @@
       loginScreen();
     }
   }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  // This script follows the application markup. Do not wait for unrelated deferred menu files.
+  if(document.getElementById('currentUser'))void boot();
+  else document.addEventListener("DOMContentLoaded",boot,{once:true});
 })();
