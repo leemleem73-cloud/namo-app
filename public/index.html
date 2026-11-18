@@ -80,6 +80,36 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 </script>
 
 <meta charset="UTF-8" />
+<!-- Fetch ordered application scripts in parallel while preserving their execution order. -->
+<link rel="preload" as="script" href="./js/namo-qmes-work-inquiry-20261013.js?v=20261111-material-colors">
+<link rel="preload" as="script" href="./js/namo-qmes-work-tabs-20261012.js?v=20261026-separated-main1">
+<link rel="preload" as="script" href="./js/qmes-menu-history-20261021.js?v=20261029-all-keyboard6">
+<link rel="preload" as="script" href="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261116-profile-department">
+<link rel="preload" as="script" href="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9">
+<link rel="preload" as="script" href="./js/qmes-oqc-shipqty-20261105.js?v=1">
+<link rel="preload" as="script" href="./js/qmes-oqc-revision-core-20261104.js?v=20261111-label-dates">
+<link rel="preload" as="script" href="./js/qmes-oqc-attachments-20261104.js?v=20261112-single-column-sizing">
+<link rel="preload" as="script" href="./js/namo-qmes-ncr-20261020.js?v=20261112-closure-controls">
+<link rel="preload" as="script" href="./js/qmes-iqc-pqc-layout-20261021.js?v=20261111-iqc-qr-actions">
+<link rel="preload" as="script" href="./js/qmes-iqc-approval-parity-20261021.js?v=1">
+<link rel="preload" as="script" href="./js/qmes-oqc-approval-parity-20261021.js?v=20261027-single-border2">
+<link rel="preload" as="script" href="./js/qmes-oqc-registration-layout-20261021.js?v=20261111-label-dates">
+<link rel="preload" as="script" href="./js/qmes-pqc-top-actions-20261021.js?v=1">
+<link rel="preload" as="script" href="./js/qmes-oqc-approval-state-20261021.js?v=1">
+<link rel="preload" as="script" href="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9">
+<link rel="preload" as="script" href="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34">
+<link rel="preload" as="script" href="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-active-module-loading">
+<link rel="preload" as="script" href="./js/qmes-lot-result-links-20261021.js?v=1">
+<link rel="preload" as="script" href="./js/qmes-quality-gate-20261021.js?v=20261111-hold-pagination">
+<link rel="preload" as="script" href="./js/qmes-pqc-sequential-block-20261021.js?v=20261116-check-on-save">
+<link rel="preload" as="script" href="./js/qmes-oqc-sequential-block-20261021.js?v=20261116-check-on-save">
+<link rel="preload" as="script" href="./js/qmes-iqc-sequential-block-20261021.js?v=20261116-check-on-save2">
+<link rel="preload" as="script" href="./js/qmes-oqc-registration-auto-judge-20261021-v2.js?v=20261111-november-standard">
+<link rel="preload" as="script" href="./js/qmes-oqc-registration-save-20261021.js?v=20261117-visible-product-list">
+<link rel="preload" as="script" href="./js/qmes-mobile-20261023.js?v=20261023-3">
+<link rel="preload" as="script" href="./js/qmes-process-map-20261027.js?v=20261028-incoming-lot11">
+<link rel="preload" as="script" href="./js/qmes-last-view-20261027.js?v=20261102-draft-coordination5">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="preload" as="script" href="./js/qmes-incoming-work-frame-20261016.js?v=20261116-stable-columns">
 <link rel="preload" as="script" href="./js/qmes-process-work-frame-20261016.js?v=20261112-no-duplicate-approval">
@@ -6194,7 +6224,7 @@ function buildModule(id){
   if(id==='approval'){
     section.innerHTML=qualityApprovalShell();
     section.querySelector('.quality-approval-refresh')?.addEventListener('click',()=>loadQualityApprovals(section));
-    loadQualityApprovals(section);
+    if(section.classList.contains('active'))loadQualityApprovals(section);
     return;
   }
   if(id==='lotTrace'){
@@ -9805,7 +9835,7 @@ window.qmesPqcApprovalGrid=function(row){
 <script src="./js/qmes-oqc-approval-state-20261021.js?v=1"></script>
 <script src="./js/qmes-standard-list-layout-20261021-v2.js?v=20261027-doc-semantic9"></script>
 <script src="./js/qmes-standard-documents-20261027.js?v=20261102-blue-underlined34"></script>
-<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-instrument-grid-lines"></script>
+<script src="./js/qmes-chemical-enterprise-ui-20261022.js?v=20261118-active-module-loading"></script>
 <script src="./js/qmes-lot-result-links-20261021.js?v=1"></script>
 <script src="./js/qmes-quality-gate-20261021.js?v=20261111-hold-pagination"></script>
 <script src="./js/qmes-pqc-sequential-block-20261021.js?v=20261116-check-on-save"></script>
