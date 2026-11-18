@@ -30,7 +30,9 @@ async function prepareWorkIqcQr(records){
    const aliases=[candidate.item_code,candidate.itemCode,candidate.material_code,candidate.materialCode].map(norm);
    const tokens=item.split(/[^A-Z0-9가-힣]+/).filter(Boolean);
    const short=norm(name).replace(/[^A-Z0-9가-힣]/g,'');
-   if(item===norm(name)||tokens.includes(norm(name))||tokens.includes(short)||aliases.includes(norm(name)))matching=[candidate];
+   const core=window.qmesMaterialStockCore;
+   const sameMaterial=core&&core.material(candidate.item)===core.material(name);
+   if(item===norm(name)||tokens.includes(norm(name))||tokens.includes(short)||aliases.includes(norm(name))||sameMaterial)matching=[candidate];
   }
   if(matching.length!==1||!matching[0].id)return;
   const response=await fetch('/api/qmes/iqc/label-links',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({recordId:String(matching[0].id)}),signal:AbortSignal.timeout(10000)});
