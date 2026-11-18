@@ -39,7 +39,6 @@ function show(row){
  const name=material(row),lot=row.querySelector('.material-lot-manual')?.value.trim();
  if(!name||!lot){alert('원료명과 실제 원료 LOT를 먼저 확인해 주세요.');return;}
  const value=name.toUpperCase()+'/'+lot.toUpperCase();
- if(value!==name+'/'+lot){alert('바코드에는 대문자만 사용할 수 있습니다. 현재 원료명 또는 LOT의 영문 대소문자를 확인해 주세요.');return;}
  const svg=encode(value);
  if(!svg){alert('현재 시범 바코드는 영문 대문자, 숫자, - . / 기호 등 Code39 지원 문자만 사용할 수 있습니다.');return;}
  const shell=document.createElement('div');shell.className='namo-material-barcode-pilot';
@@ -55,6 +54,7 @@ function show(row){
  if(!w){alert('인쇄 팝업이 차단되었습니다.');return;}
  w.document.write('<!doctype html><html lang="ko"><meta charset="utf-8"><title>원료 LOT 바코드</title><body style="font-family:sans-serif;padding:22px"><h2>나모케미칼 원료 LOT 라벨 (시범)</h2><p>'+esc(name)+' / '+esc(lot)+'</p>'+svg+'<p>'+esc(value)+'</p><script>window.onload=function(){window.print()}<\\/script></body></html>');
  w.document.close();
+ w.onload=()=>w.print();
  };
 }
 function install(){
