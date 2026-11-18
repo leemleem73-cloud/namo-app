@@ -38,19 +38,25 @@ async function prepareWorkIqcQr(records){
   if(!response.ok||result?.success!==true)return;
   const path=String(result.path||'');
   if(!path.startsWith('/iqc-label/')||!/^[a-f0-9-]{36}$/i.test(path.slice(11)))return;
-  workIqcQrLinks.set(key,new URL(path,location.origin).href);
+  workIqcQrLinks.set(key,{url:new URL(path,location.origin).href,recordId:String(matching[0].id)});
  }));
 }
 function printLotQRCode(lot,name,work){
- // Print the existing IQC-issued mobile QR link, never a second independent status page.
- const value=workIqcQrLinks.get(workIqcKey(lot,name));
- if(!value)return '<span class="iqc-qr-unlinked" title="IQC 원료명과 LOT 연결 확인 필요">IQC QR 미연결</span>';
+ const linked=workIqcQrLinks.get(workIqcKey(lot,name));
+ if(!linked?.url||!linked?.recordId)return '<span class="iqc-qr-unlinked" title="해당 LOT의 기존 수입검사 QR 연결 확인 필요">IQC QR 미연결</span>';
+ // This work-order view references the very same IQC record/token as the existing IQC QR.
+ const url=new URL('/qmes-material-scan.html',location.origin);
+ url.searchParams.set('iqc',linked.url);
+ url.searchParams.set('record',linked.recordId);
+ url.searchParams.set('lot',String(lot??'').trim());
+ url.searchParams.set('material',String(name??'').trim());
+ url.searchParams.set('work',String(work??'').trim());
  if(typeof window.QRCode!=='function')throw Error('QR 모듈을 불러오지 못했습니다.');
  const mount=document.createElement('div');
- new window.QRCode(mount,{text:value,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
+ new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
  const image=mount.querySelector('canvas')?.toDataURL('image/png')||mount.querySelector('img')?.src;
- if(!image||!image.startsWith('data:image/'))throw Error('IQC QR 생성 실패');
- return '<img src="'+image+'" alt="기존 수입검사 모바일 QR코드" width="192" height="192">';
+ if(!image||!image.startsWith('data:image/'))throw Error('IQC 연동 QR 생성 실패');
+ return '<img src="'+image+'" alt="수입검사 연동 원료 LOT QR코드" width="192" height="192">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
