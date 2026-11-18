@@ -42,6 +42,13 @@ html+='<tr data-oqc-item="'+index+'"><td>'+(index+1)+'</td><th>'+esc(name)+'</th
 html+='</tbody></table></div></div><div class="oqc-save-error" role="alert" hidden></div>';
 openModal('출하검사 상세',amaranthScreen('outgoing',html,'detail','출하검사 상세 / 수정',row),'<button class="btn" id="modalCancel" type="button">목록</button><button class="btn primary" id="modalSave" type="button">저장</button>');
 const pane=document.querySelector('.am-split[data-am-screen="outgoing"]'),oldSave=document.getElementById('modalSave'),save=oldSave.cloneNode(true);oldSave.replaceWith(save);
+const publish=document.createElement('button');
+publish.type='button';publish.className='btn';publish.textContent='리비전 발행';
+publish.title='내용을 저장하고 리비전을 한 단계 올립니다.';
+save.before(publish);
+let manualRevision=false;
+publish.onclick=()=>{if(save.disabled)return;manualRevision=true;save.click();};
+
 const warning=pane.querySelector('.oqc-save-error');const shipInput=pane.querySelector('[data-oqc-field="shipQty"]');if(shipInput){shipInput.min='0';shipInput.step='0.000001';shipInput.placeholder='실제 출하수량 입력';}
 const customerSelect=pane.querySelector('[data-oqc-field="customer"]');
 customerSelect?.setAttribute('aria-label','고객사 선택');
@@ -91,6 +98,7 @@ pane.querySelectorAll('[data-oqc-value]').forEach(el=>{el.addEventListener('inpu
 pane.querySelector('.am-detail-note')?.remove();
 window.qmesOqcFiles.mount(pane,records.map(source=>({recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId})));
 save.addEventListener('click',async()=>{
+const publishRevision=manualRevision;manualRevision=false;
 const calculated=refreshOverall();
 const fields=Object.fromEntries([...pane.querySelectorAll('[data-oqc-field]')].map(el=>[el.dataset.oqcField,el.value.trim()]));
 if(fields.customer==='__manual__'){
@@ -110,13 +118,13 @@ if(JSON.stringify(entered)!==JSON.stringify(oldValues))patch.measurements=entere
 return{recordKey:source.__sourceRecordKey,rowId:source.__sourceRowId,expected:source.__oqcExpected||original(source),patch};
 });
 try{
-save.disabled=true;warning.hidden=true;
+save.disabled=true;publish.disabled=true;warning.hidden=true;
 const attachment=await window.qmesOqcFiles.read(pane);
-const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment})});
+const response=await fetch('/api/qmes-sync/oqc/save-detail',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields,targets,attachment,publishRevision})});
 const result=await response.json().catch(()=>({}));
 if(!response.ok||result.success!==true)throw Error(result.message||'출하검사 저장을 확인하지 못했습니다. (응답 '+response.status+')');
 closeModal();await loadHistoricalInspectionRows(section,'outgoing');toast(result.data?.changed===false?'변경된 내용이 없습니다.':'출하검사 저장 완료 · Rev.'+(result.data?.revision??0));
-}catch(error){warning.hidden=false;warning.textContent=error.message;}finally{save.disabled=false;}
+}catch(error){warning.hidden=false;warning.textContent=error.message;}finally{save.disabled=false;publish.disabled=false;}
 });
 };
 })();
