@@ -1027,6 +1027,11 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
       tableFrame.style.cssText='margin:16px 18px 12px;border:1px solid #cddbea;box-sizing:border-box';
       form.before(tableFrame);tableFrame.append(form);
       for(const [property,value] of Object.entries({margin:'0',padding:'0',gap:'1px',border:'0',background:'#dbe5ef'}))form.style.setProperty(property,value,'important');
+      form.style.setProperty('column-gap','0','important');
+      [...form.children].forEach((cell,index)=>{
+        cell.style.setProperty('box-sizing','border-box','important');
+        if(index%2===1&&!cell.classList.contains('full'))cell.style.setProperty('border-left','1px solid #dbe5ef','important');
+      });
       form.querySelectorAll(':scope>.qce-field>label').forEach(label=>label.style.setProperty('border-right','1px solid #dbe5ef','important'));
 
       const history=document.createElement('section');history.className='qce-instrument-inline-history';
