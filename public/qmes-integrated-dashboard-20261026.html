@@ -130,28 +130,11 @@ table{width:100%;border-collapse:collapse;font-size:9px}th{background:#edf4fa;co
 <body>
 <div class="wrap">
 <div class="top"><div class="crumb">종합 대시보드</div></div>
-
-<div class="grid kpis" id="dashKpis">
-<div class="card kpi"><div><div class="kt">2026년 작업지시</div><div class="kv ">26 <span style="font-size:10px">건</span></div><div class="ks">전체 38건</div></div><div class="ring" style="--p:68%"><b>68%</b></div></div><div class="card kpi"><div><div class="kt">생산중</div><div class="kv ">12 <span style="font-size:10px">건</span></div><div class="ks">월간 진행 작업</div></div><div class="ring" style="--p:46%"><b>46%</b></div></div><div class="card kpi"><div><div class="kt">생산완료</div><div class="kv ">10 <span style="font-size:10px">건</span></div><div class="ks">실적 32,500 kg</div></div><div class="ring" style="--p:35%"><b>35%</b></div></div><div class="card kpi"><div><div class="kt">품질보류</div><div class="kv red">2 <span style="font-size:10px">건</span></div><div class="ks">23,400 kg</div></div><div class="ring" style="--p:8%"><b>8%</b></div></div><div class="card kpi"><div><div class="kt">PQC 불합격</div><div class="kv red">1 <span style="font-size:10px">건</span></div><div class="ks">1,200 kg</div></div><div class="ring" style="--p:4%"><b>4%</b></div></div><div class="card kpi"><div><div class="kt">OQC 불합격</div><div class="kv red">1 <span style="font-size:10px">건</span></div><div class="ks">800 kg</div></div><div class="ring" style="--p:4%"><b>4%</b></div></div>
+<div class="grid kpis" id="dashKpis"><div class="card kpi"><div><div class="kt">2026년 작업지시</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div><div class="card kpi"><div><div class="kt">생산중</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div><div class="card kpi"><div><div class="kt">생산완료</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div><div class="card kpi"><div><div class="kt">IQC 불합격</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div><div class="card kpi"><div><div class="kt">PQC 불합격</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div><div class="card kpi"><div><div class="kt">OQC 불합격</div><div class="kv" aria-label="조회 중">—</div><div class="ks">조회 중</div></div></div></div>
+<div class="grid row2" id="dashRow2"><div class="card qmes-dashboard-loading-card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong></div><div class="body" style="min-height:190px;display:grid;place-items:center;color:#71879b">데이터를 불러오는 중입니다.</div></div></div>
+<div class="grid row3" id="dashRow3"><div class="card qmes-dashboard-loading-card"><div class="head"><strong>고객사별 건수 현황 (2026년)</strong></div><div class="body" style="min-height:190px;display:grid;place-items:center;color:#71879b">데이터를 불러오는 중입니다.</div></div><div class="card qmes-dashboard-loading-card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body" style="min-height:190px;display:grid;place-items:center;color:#71879b">데이터를 불러오는 중입니다.</div></div></div>
+<div class="grid row4" id="dashRow4"><div class="card qmes-dashboard-loading-card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong></div><div class="body" style="min-height:190px;display:grid;place-items:center;color:#71879b">데이터를 불러오는 중입니다.</div></div></div>
 </div>
-
-<div class="grid row2" id="dashRow2">
-<div class="card qmes-dashboard-loading-card"><div class="head"><strong>생산실적 현황 (2026년 1월~12월)</strong><span>생산계획 / 생산실적</span></div><div class="body" style="height:270px;display:flex;align-items:center;justify-content:center;color:#8a99aa;font-size:11px">생산실적 데이터를 불러오는 중입니다.</div></div>
-<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>kg / %</span></div><div class="body donutwrap"><div class="donut"><div class="dt">총 실적<b>32,500 kg</b></div></div><div class="legend"><span><i style="background:#2e8bf4"></i>HSM　13,650 kg</span><span><i style="background:#25bf83"></i>DBL　9,100 kg</span><span><i style="background:#f4ae2a"></i>DBA　4,900 kg</span><span><i style="background:#7958e7"></i>SBS　3,250 kg</span><span><i style="background:#aab4c0"></i>기타　1,600 kg</span></div></div></div>
-<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>나모케미칼 생산설비</span></div><div class="body"><div class="eqrow"><b>생산설비</b><span class="badge green">가동중</span><div class="bar"><i style="width:85%"></i></div><b>12,500 / 15,000</b></div></div></div>
-</div>
-
-<div class="grid row3" id="dashRow3">
-<div class="card"><div class="head"><strong>고객사별 실적현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"></div></div>
-<div class="card"><div class="head"><strong>생산설비 가동 현황 (2026년)</strong><span>계획 / 실적</span></div><div class="body"></div></div>
-</div>
-
-<div class="grid row4" id="dashRow4">
-<div class="card"><div class="head"><strong>원료별 실적현황 (2026년)</strong><span>■ 계획수량　■ 실적수량</span></div><div class="body"><div class="barChart"><div class="barItem"><div class="barVals"><span>15,000</span><span>13,650</span></div><div class="barCols"><i style="height:100%"></i><i class="actual" style="height:91%"></i></div><div class="barName">HSM</div></div><div class="barItem"><div class="barVals"><span>12,000</span><span>9,100</span></div><div class="barCols"><i style="height:80%"></i><i class="actual" style="height:61%"></i></div><div class="barName">DBL</div></div><div class="barItem"><div class="barVals"><span>8,000</span><span>4,900</span></div><div class="barCols"><i style="height:53%"></i><i class="actual" style="height:33%"></i></div><div class="barName">DBA</div></div><div class="barItem"><div class="barVals"><span>5,000</span><span>3,250</span></div><div class="barCols"><i style="height:33%"></i><i class="actual" style="height:22%"></i></div><div class="barName">SBS</div></div><div class="barItem"><div class="barVals"><span>2,000</span><span>1,600</span></div><div class="barCols"><i style="height:13%"></i><i class="actual" style="height:11%"></i></div><div class="barName">기타</div></div></div></div></div>
-<div class="card"><div class="head"><strong>품질 이상 / 공정 차단 현황 (2026년)</strong></div><div class="body"><div class="ncrtags"><span>품질보류　2</span><span>PQC 불합격　1</span><span>OQC 불합격　1</span></div><table><thead><tr><th>No.</th><th>작업지시번호</th><th>내용</th><th>수량(kg)</th><th>발생시간</th></tr></thead><tbody><tr><td>1</td><td>WO-20261026-005</td><td>원료 투입 품질 기준 이탈</td><td>23,400</td><td>10/26 09:20</td></tr><tr><td>2</td><td>WO-20261026-003</td><td>PQC 외관 불량</td><td>1,200</td><td>10/26 11:40</td></tr></tbody></table></div></div>
-</div>
-</div>
-
 <script>
 (function(){
 'use strict';
@@ -437,7 +420,8 @@ function annualCombo(months,max){
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&pinnedMonth!==null)closePinned();});
 
 })();
-var DASH_SNAPSHOT_KEY='qmes-dashboard-snapshot-20261111-v1';
+var DASH_SNAPSHOT_KEY='qmes-dashboard-snapshot-20261118-v2';
+var dashboardSnapshotRestored=false;
 function dashboardYearRowsFromWorkOrders(wo){
   var year='2026';
   var rows=(wo||[]).map(function(o){
@@ -464,7 +448,7 @@ function renderProductionRowFromWorkOrders(wo){
 }
 function saveDashboardSnapshot(){
   try{
-    var snap={at:Date.now()};
+    var snap={at:Date.now(),layoutVersion:2};
     ['dashKpis','dashRow2','dashRow3','dashRow4'].forEach(function(id){
       var el=document.getElementById(id);if(el)snap[id]=el.innerHTML;
     });
@@ -474,7 +458,7 @@ function saveDashboardSnapshot(){
 function restoreDashboardSnapshot(){
   try{
     var snap=JSON.parse(sessionStorage.getItem(DASH_SNAPSHOT_KEY)||'null');
-    if(!snap||!snap.at||Date.now()-snap.at>12*60*60*1000)return false;
+    if(!snap||snap.layoutVersion!==2||!snap.at||Date.now()-snap.at>12*60*60*1000)return false;
     var restored=false;
     ['dashKpis','dashRow2','dashRow3','dashRow4'].forEach(function(id){
       var el=document.getElementById(id);
@@ -799,9 +783,9 @@ async function refreshDashboard(){
   try{
     while(dashboardRefreshWanted){
       dashboardRefreshWanted=false;
-      var hasSnapshot=restoreDashboardSnapshot();
+      var hasSnapshot=dashboardSnapshotRestored||restoreDashboardSnapshot();
+      dashboardSnapshotRestored=true;
       dashboardStatus(hasSnapshot?'':'대시보드 데이터를 불러오는 중입니다.',false);
-      void loadProductionPreview();
       try{
         var gate=dashboardAuthGate();
         if(gate)await gate.wait();
