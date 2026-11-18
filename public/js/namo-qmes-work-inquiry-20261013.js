@@ -30,8 +30,6 @@ function printLotBarcode(lot){
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  if(!record||!record.id){window.alert('저장된 작업지시서를 선택해 주세요.');return false;}
- const win=renderOnly?null:(reservedWindow||window.open('','_blank','width=980,height=760,scrollbars=yes'));
- if(!win&&!renderOnly){window.alert('인쇄창이 차단됐습니다. 사이트의 팝업을 허용해주세요.');return false;}
  const f=record.fields||{},materials=Array.isArray(record.materials)?record.materials:[];
  const safe=v=>esc(v===undefined||v===null||String(v).trim()===''?'-':v);
  const num=v=>{const t=String(v??'').trim().replace(/,/g,'');const n=Number(t);return t&&Number.isFinite(n)?n:0};
@@ -100,8 +98,33 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <div class="footer"><span>작업지시번호: ${safe(record.fields?.['작업지시번호']||record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
 </main><script>window.addEventListener('load',function(){window.focus()});</script></body></html>`;
  if(renderOnly)return html;
- try{win.document.open();win.document.write(html);win.document.close();return true;}
- catch(error){console.error('[QMES work print]',error);window.alert('인쇄 화면을 열지 못했습니다. 다시 시도해주세요.');return false;}
+ // Direct native print preview. No intermediate about:blank popup window.
+ try{
+  document.getElementById('qmes-single-work-print-frame')?.remove();
+  const frame=document.createElement('iframe');
+  frame.id='qmes-single-work-print-frame';
+  frame.title='작업지시서 인쇄';
+  frame.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';
+  let printed=false;
+  let expiry=null;
+  const cleanup=()=>{if(expiry)clearTimeout(expiry);frame.remove();};
+  frame.addEventListener('load',()=>{
+   if(printed||!frame.contentDocument?.querySelector('.paper'))return;
+   printed=true;
+   const target=frame.contentWindow;
+   target.addEventListener('afterprint',()=>setTimeout(cleanup,500),{once:true});
+   Promise.resolve(frame.contentDocument.fonts?.ready).then(()=>{
+    setTimeout(()=>{
+     try{target.focus();target.print();}
+     catch(error){console.error('[QMES work print]',error);cleanup();window.alert('인쇄 화면을 열지 못했습니다.');}
+    },200);
+   });
+  });
+  document.body.appendChild(frame);
+  frame.srcdoc=html;
+  expiry=setTimeout(cleanup,120000);
+  return true;
+ }catch(error){console.error('[QMES work print]',error);window.alert('인쇄 화면을 열지 못했습니다.');return false;}
 }
 const labels=['고객사','제품명','생산 LOT','진행상태','시작일자','종료일자','작업지시번호','설비명'];
 const indices=[2,4,5,10,9,9,3,6];
