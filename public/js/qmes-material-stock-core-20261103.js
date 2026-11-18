@@ -3,7 +3,7 @@ const PREFIX='material-stock:v1:';
 const text=v=>String(v??'').trim(),lot=v=>{const s=text(v).toUpperCase().replace(/\s+/g,'');return /^0*2708935$/.test(s)?'2708935':s;},day=v=>text(v).slice(0,10);
 function number(v){const s=text(v).replace(/,/g,'');if(!s||!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s))return null;const n=Number(s);return Number.isFinite(n)?n:null;}
 const micro=v=>Math.round(v*1e6),kg=v=>v/1e6;
-function material(v){const s=text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'');if(/[+＋]/.test(text(v)))return 'MIX:'+s;if(s==='분산제'||/BYK180/.test(s))return 'BYK180';if(/BOEHMITE|AOH30/.test(s))return 'AOH30';if(/NMP/.test(s))return 'NMP';if(/ADC30|SBR/.test(s))return 'SBR';if(/PVDF/.test(s)&&!/SBS/.test(s))return 'PVDF';if(/SBS/.test(s))return 'SBS';return s;}
+function material(v){const s=text(v).toUpperCase().replace(/[^A-Z0-9가-힣]/g,'');if(/[+＋]/.test(text(v)))return 'MIX:'+s;if(s==='분산제'||/BYK180/.test(s))return 'BYK180';if(/BOEHMITE|AOH30/.test(s))return 'AOH30';if(/NMP/.test(s))return 'NMP';if(/ADC30|SBR/.test(s))return 'SBR';if((/PVDF/.test(s)||/^(?:SOLEF)?5140(?:PVDF)?$/.test(s))&&!/SBS/.test(s))return 'PVDF';if(/SBS/.test(s)||s==='KTR201')return 'SBS';return s;}
 const supplierKey=v=>text(v).toUpperCase().replace(/주식회사|\(주\)|㈜|\s|[.,-]/g,'');
 const displayMaterial=v=>material(v)==='BYK180'?'BYK180 (분산제)':text(v);
 function items(row){try{const x=typeof row.items_json==='string'?JSON.parse(row.items_json):row.items_json;return Array.isArray(x)?x:[];}catch(_){return [];}}
