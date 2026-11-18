@@ -409,6 +409,7 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   @media(max-width:700px){html body .qce-instrument-redesigned .qce-instrument-form{grid-template-columns:1fr!important}html body .qce-instrument-redesigned .qce-instrument-extras{grid-template-columns:1fr}html body .qce-instrument-redesigned .qce-instrument-card-fields{grid-template-columns:1fr}}
   `;
 
+  style.textContent+='.qce-spc-loading{position:fixed;right:24px;bottom:24px;z-index:180;display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid #d2dfed;border-radius:8px;background:#fff;color:#244260;font:600 12px Arial,sans-serif;box-shadow:0 4px 18px #183b611a;pointer-events:none}#spcTrend:not(.active) .qce-spc-loading{display:none}.qce-spc-loading img{object-fit:contain}';
   document.head.appendChild(style);
 
   function head(title,desc){return '<div class="qce-head"><div><h1>'+esc(title)+'</h1><p>'+esc(desc)+'</p></div><div class="date-badge">QMES</div></div>';}
@@ -591,17 +592,25 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
   let spcRows=null,spcLoadPromise=null,spcLoadedAt=0,spcLoadError='';
   function refreshSpc(){
     if(spcLoadPromise)return spcLoadPromise;
-    spcLoadPromise=syncRows('oqc').then(rows=>{
+    const page=document.getElementById('spcTrend');
+    let loader=page?.querySelector('.qce-spc-loading');
+    if(page&&!loader){
+      loader=document.createElement('div');loader.className='qce-spc-loading';loader.setAttribute('role','status');
+      loader.innerHTML='<img src="./assets/namo-blue-running-20261021.svg?v=run2-feet" width="80" height="74" alt="">SPC 데이터를 불러오는 중입니다.';
+      page.append(loader);
+    }
+    spcLoadPromise=Promise.resolve(window.qmesAuthDataReady?.wait?.()).then(()=>syncRows('oqc')).then(rows=>{
       spcRows=rows;spcLoadedAt=Date.now();spcLoadError='';
       paintSpc(spcRows);
     }).catch(error=>{
       spcLoadError=error.message||'출하검사 데이터를 불러오지 못했습니다.';
       paintSpc(spcRows||[]);
-    }).finally(()=>{spcLoadPromise=null;});
+    }).finally(()=>{spcLoadPromise=null;loader?.remove();});
     return spcLoadPromise;
   }
   function renderSpc(){
-    paintSpc(spcRows||[]);
+    const page=document.getElementById('spcTrend');
+    if(!page?.querySelector('.qce-page'))paintSpc(spcRows||[]);
     if(spcRows===null||Date.now()-spcLoadedAt>30000)refreshSpc();
   }
   function paintSpc(oqc){
