@@ -117,10 +117,10 @@ html body #main.namo-portal-shell,html body #namoPortal20261014,html body main.c
 <link rel="preload" as="script" href="./js/qmes-process-work-frame-20261016.js?v=20261112-no-duplicate-approval">
 <link rel="preload" as="script" href="./js/qmes-outgoing-work-frame-20261016.js?v=20261028-centered-calendar2">
 <title>NAMO QMES</title>
-<link rel="stylesheet" media="print" onload="this.media='all'" href="./css/namo-workorder-premium-20261013.css?v=20261026-detail-label-border2"><noscript><link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261026-detail-label-border2"></noscript>
+<link rel="stylesheet" href="./css/namo-workorder-premium-20261013.css?v=20261026-detail-label-border2">
 <link rel="stylesheet" href="./css/qmes-shared-cell-fonts-20261103.css?v=5-native-date-left">
-<link rel="stylesheet" media="print" onload="this.media='all'" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261026-summary-thin4"><noscript><link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261026-summary-thin4"></noscript>
-<link rel="stylesheet" media="print" onload="this.media='all'" href="./css/namo-work-dispatch-20261014.css?v=20261015-buttons-equal2"><noscript><link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261015-buttons-equal2"></noscript>
+<link rel="stylesheet" href="./css/namo-workorder-material-enterprise-20261014.css?v=20261026-summary-thin4">
+<link rel="stylesheet" href="./css/namo-work-dispatch-20261014.css?v=20261015-buttons-equal2">
 <style id="qmes-initial-view-20261008">
 /* Keep the profile hidden until the auth bridge renders its final state. */
 #currentUser:not([data-qauth-ready="1"]){visibility:hidden!important}
@@ -2320,24 +2320,20 @@ main.content:has(> #main.active.namo-portal-shell){padding:0!important;overflow:
 <style id="pqc-judgment-color-priority">html body #app #mainWorkspace #workspaceBody td[data-pqc-judge="불합격"],html body #process [data-pqc-judge="불합격"]{color:#dc2626!important;font-weight:800!important}html body #app #mainWorkspace #workspaceBody td[data-pqc-judge="합격"],html body #process [data-pqc-judge="합격"]{color:#15803d!important;font-weight:800!important}</style>
 <!-- Workorder first-paint stability: only the workorder module is affected. -->
 <style id="qmes-workorder-first-paint-20261015">
-#work.active .module-shell:not(:has(#namo-work-inquiry)){visibility:hidden!important}
+/* Reveal the work-order module only after its current controls are normalized. */
+#work .module-shell:not(:has(#namo-work-inquiry .nwi-single-row-six)),
+#work .module-shell:not(:has(#namo-work-inquiry .nwi-filter-toggle)),
+#work .module-shell:not(:has(#namo-work-inquiry .nwi-hidden-filter-state)),
+#work .module-shell:not(:has(#namo-work-inquiry .nwi-single-row-six))~#namo-work-detail,
+#work .module-shell:not(:has(#namo-work-inquiry .nwi-filter-toggle))~#namo-work-detail{visibility:hidden!important}
+
 #work .module-body .work-list-table{width:100%!important;min-width:100%!important;max-width:none!important}
 #work .module-body{width:100%!important;max-width:none!important}
 </style>
-<script>
-/* Fail open rather than leave the workorder screen hidden if its inquiry module fails. */
-window.addEventListener('DOMContentLoaded',function(){
-  setTimeout(function(){
-    if(!document.querySelector('#work #namo-work-inquiry')){
-      var guard=document.getElementById('qmes-workorder-first-paint-20261015');
-      if(guard)guard.textContent='#work .module-body .work-list-table{width:100%!important;max-width:none!important}';
-    }
-  },4500);
-},{once:true});
-</script>
+
 <link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-lot-trace-simple-20261016.css?v=1"><noscript><link rel="stylesheet" href="./css/qmes-lot-trace-simple-20261016.css?v=1"></noscript>
-<link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-lot-work-frame-20261016.css?v=4-single-frame-edges"><noscript><link rel="stylesheet" href="./css/qmes-lot-work-frame-20261016.css?v=4-single-frame-edges"></noscript>
-<link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-work-inquiry-compact-fields-20261016.css?v=20261016-icons-2"><noscript><link rel="stylesheet" href="./css/qmes-work-inquiry-compact-fields-20261016.css?v=20261016-icons-2"></noscript>
+<link rel="stylesheet" href="./css/qmes-lot-work-frame-20261016.css?v=4-single-frame-edges">
+<link rel="stylesheet" href="./css/qmes-work-inquiry-compact-fields-20261016.css?v=20261016-icons-2">
 <link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-equipment-inspection-hero-light-20261019.css?v=2-modal"><noscript><link rel="stylesheet" href="./css/qmes-equipment-inspection-hero-light-20261019.css?v=2-modal"></noscript>
 <link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-equipment-inspection-workorder-form-20261019.css?v=1"><noscript><link rel="stylesheet" href="./css/qmes-equipment-inspection-workorder-form-20261019.css?v=1"></noscript>
 <link rel="stylesheet" media="print" onload="this.media='all'" href="./css/qmes-equipment-inspection-compact-all-20261019.css?v=sections-1-4"><noscript><link rel="stylesheet" href="./css/qmes-equipment-inspection-compact-all-20261019.css?v=sections-1-4"></noscript>
