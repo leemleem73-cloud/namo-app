@@ -104,6 +104,7 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .material th:nth-child(1){width:6%}.material th:nth-child(2){width:28%}.material th:nth-child(3){width:20%}.material th:nth-child(4){width:16%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:14%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
 .iqc-qr-unlinked{display:block;font-size:8pt;color:#a34a22;white-space:normal;line-height:1.5}
+h2.process-steps-title{border-bottom:1px solid #c9d7e5;margin-bottom:3mm}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
@@ -121,7 +122,7 @@ ${printHeader}<div class="brand"><img class="print-company-logo" src="${companyL
 <table class="material"><thead><tr><th>NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율</th></tr></thead>
 <tbody>${rows||'<tr><td colspan="6">등록된 원료가 없습니다.</td></tr>'}</tbody>
 <tfoot><tr><td colspan="3">합계</td><td>${qty(planned)}</td><td>${qty(used)}</td><td>${planned>0?'100%':'-'}</td></tr></tfoot></table>
-<h2>03. 기본 공정순서</h2>
+<h2 class="process-steps-title">03. 기본 공정순서</h2>
 <div class="steps">${steps.map(x=>'<div class="step"><b>STEP '+safe(x[0])+'</b><div><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div></div>').join('')}</div>
 <h2>04. 비고</h2><div class="note">${safe(record.note)}</div>
 <div class="footer"><span class="print-page-number">1 / ${pageCount}</span></div>
