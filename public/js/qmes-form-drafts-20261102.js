@@ -21,6 +21,10 @@
         if(value.version!==1||value.actor!==actor||!Array.isArray(value.fields)||!Number.isFinite(value.at)||now()-value.at>TTL){if(value.actor===actor)storage.removeItem(key);return null;}
         return value;
       },
+      list(actor,module){
+        const values=[];const keys=Array.from({length:storage.length},(_,i)=>storage.key(i));for(const key of keys){if(!key?.startsWith(PREFIX))continue;let raw;try{raw=JSON.parse(storage.getItem(key)||'null');}catch(_){continue;}if(raw?.actor!==actor||(module&&raw.module!==module))continue;const value=this.read(key,actor);if(value)values.push({key,...value});}
+        return values.sort((a,b)=>b.at-a.at);
+      },
       write(key,value){const text=JSON.stringify(value);if(text.length>1500000)throw Error('임시저장 용량을 초과했습니다.');storage.setItem(key,text);if(storage.getItem(key)!==text)throw Error('임시저장 확인에 실패했습니다.');},
       remove(key){storage.removeItem(key);},
       finish(key,actor,revision){if(!storage.getItem(key))return true;const value=this.read(key,actor);if(!value||value.revision!==revision)return false;this.remove(key);return true;}
@@ -167,12 +171,14 @@
       if(!allowed()||!ctx.root.isConnected)return;
       ctx.feedbackMessage=message;
       const node=bar(ctx);if(node.dataset.message===message&&node.dataset.recover===String(!!recover))return;
-      node.dataset.message=message;node.dataset.recover=String(!!recover);node.replaceChildren();
+      node.dataset.message=message;node.dataset.recover=String(!!recover);ctx.recoveryButtons?.forEach(button=>button.remove());ctx.recoveryButtons=[];node.replaceChildren();
       const text=doc.createElement('span');text.textContent=message;node.append(text);
       ctx.saveButton?.remove();const save=doc.createElement('button');ctx.saveButton=save;save.type='button';save.className='am-top-btn primary';save.textContent='임시저장';save.dataset.qmesDraftSave='1';save.onclick=event=>{event?.preventDefault();event?.stopPropagation();return saveDraft(ctx);};placeSaveButton(ctx,save);
       if(recover){
         const restore=doc.createElement('button');restore.type='button';restore.className='am-top-btn';restore.textContent=registrationLabels(ctx)?'임시저장 불러오기':'복구';restore.onclick=async()=>{if(await confirmDraft(ctx,registrationLabels(ctx)?'임시저장한 내용을 불러오시겠습니까?':'복구하시겠습니까?'))await restoreDraft(ctx);};node.append(restore);
         const discard=doc.createElement('button');discard.type='button';discard.className='am-top-btn';discard.textContent=registrationLabels(ctx)?'취소':'버리기';discard.onclick=async()=>{if(!await confirmDraft(ctx,registrationLabels(ctx)?'임시저장을 취소하시겠습니까?':'버리시겠습니까?'))return;repo.remove(ctx.key);ctx.pending=null;ctx.dirty=false;ctx.baseline=signature(snapshot(ctx).fields,snapshot(ctx).rows);show(ctx,registrationLabels(ctx)?'임시저장을 취소했습니다.':'임시저장을 버렸습니다.',false);};node.append(discard);
+        ctx.recoveryButtons=[restore,discard];
+        if(registrationLabels(ctx)&&ctx.saveButton?.parentElement!==node)ctx.saveButton.parentElement.append(restore,discard);
       }
     }
     async function saveDraft(ctx){
@@ -183,7 +189,7 @@
       const data=snapshot(ctx),nextRevision=revision();
       const value={version:1,actor:ctx.actor,module:ctx.module,mode:ctx.mode,record:ctx.record,revision:nextRevision,at:Date.now(),...data};
       try{
-        repo.write(ctx.key,value);
+        repo.write(ctx.key,value);workDraftButton();
         ctx.pending=null;ctx.dirty=true;ctx.revision=nextRevision;ctx.last=signature(data.fields,data.rows);
         show(ctx,'임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · 같은 브라우저에서 30일간 보관됩니다.'+(data.files.length?' 첨부파일은 다시 선택해 주세요.':''),false);
         if(typeof win.toast==='function')win.toast('임시저장 완료 · '+new Date(value.at).toLocaleTimeString('ko-KR')+' · 이 브라우저에 보관됩니다.');
@@ -197,8 +203,53 @@
       const value={version:1,actor:ctx.actor,module:ctx.module,mode:ctx.mode,record:ctx.record,revision:ctx.revision,at:Date.now(),...data};
       try{repo.write(ctx.key,value);ctx.last=sig;show(ctx,'임시저장됨 · '+new Date(value.at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+(data.files.length?' · 첨부파일은 복구 시 다시 선택해 주세요.':''),false);}catch(_){show(ctx,'브라우저 임시저장 공간이 부족합니다. 정식 저장을 눌러 주세요.',false);}
     }
+    function workDraftButton(){
+      if(!allowed())return;
+      const host=doc.querySelector('#work .nwi-header .module-toolbar,#work .module-toolbar,#work .nwi-list-head');if(!host)return;
+      let button=doc.getElementById('qmes-work-draft-list');
+      if(!button){button=doc.createElement('button');button.id='qmes-work-draft-list';button.type='button';button.className='btn';button.onclick=openWorkDraftList;host.append(button);}
+      let count=0;try{count=repo.list(authorized,'work').length;}catch(_){}
+      const label='임시저장 목록 ('+count+')';if(button.textContent!==label)button.textContent=label;
+    }
+    async function openWorkDraftList(){
+      if(!allowed())return;flush();
+      const owner=authorized;
+      const dialog=doc.createElement('dialog');dialog.className='qmes-draft-confirm';dialog.style.width='min(520px,calc(100vw - 32px))';
+      const title=doc.createElement('h3');title.textContent='작업지시서 임시저장 목록';
+      const hint=doc.createElement('p');hint.textContent='현재 계정으로 이 브라우저에 임시저장한 내용입니다. 정식 저장 전에는 작업지시 현황에 등록되지 않습니다.';
+      const list=doc.createElement('div'),error=doc.createElement('p');error.setAttribute('role','status');
+      const close=doc.createElement('button');close.type='button';close.className='btn';close.textContent='닫기';close.onclick=()=>{dialog.close();dialog.remove();};
+      dialog.append(title,hint,list,error,close);dialog.addEventListener('close',()=>dialog.remove(),{once:true});doc.body.append(dialog);dialog.showModal();
+      let drafts=[];try{drafts=repo.list(owner,'work');}catch(_){error.textContent='임시저장 목록을 읽지 못했습니다.';}
+      if(!drafts.length)list.textContent='이 브라우저에 보관된 작업지시서 임시저장이 없습니다.';
+      for(const draft of drafts){
+        const row=doc.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #d8e0e9';
+        const label=doc.createElement('span');label.style.flex='1';label.textContent=(draft.mode==='new'?'신규 작성':draft.record+' 수정')+' · '+new Date(draft.at).toLocaleString('ko-KR');
+        const restore=doc.createElement('button');restore.type='button';restore.className='btn';restore.textContent='불러오기';
+        restore.onclick=async()=>{
+          if(!allowed()||authorized!==owner)return;restore.disabled=true;
+          try{
+            let record=null;
+            if(draft.mode!=='new'){
+              record=win.qmesGetWorkOrders?.().find(value=>String(value.id)===String(draft.record));
+              if(!record){const response=await win.fetch('/api/qmes/work-orders',{credentials:'same-origin',cache:'no-store'});const json=await response.json();if(!response.ok||!json.success)throw Error('작업지시서를 조회하지 못했습니다.');record=json.data?.find(value=>String(value.id)===String(draft.record));}
+              if(!record)throw Error('원본 작업지시서가 없습니다. 임시저장은 그대로 보관합니다.');
+            }
+            if(typeof win.openNewForm!=='function')throw Error('등록 화면을 준비 중입니다. 잠시 후 다시 열어 주세요.');
+            flush();win.openNewForm('work',record);
+            await new Promise(resolve=>win.requestAnimationFrame(()=>win.requestAnimationFrame(resolve)));
+            if(!allowed()||authorized!==owner)return;
+            ensure();
+            if(!active||active.key!==draft.key)throw Error('등록 화면과 임시저장 연결을 확인하지 못했습니다. 임시저장은 유지됩니다.');
+            active.pending=repo.read(draft.key,owner);
+            await restoreDraft(active);dialog.close();dialog.remove();workDraftButton();
+          }catch(failure){error.textContent=failure.message;restore.disabled=false;}
+        };
+        row.append(label,restore);list.append(row);
+      }
+    }
     function ensure(){
-      queued=false;if(win.qmesLastView?.isRestoring?.())return;
+      queued=false;workDraftButton();if(win.qmesLastView?.isRestoring?.())return;
       if(!allowed()){if(active?.root.isConnected)active.root.querySelector('[data-qmes-draft-bar]')?.remove();active?.saveButton?.remove();active=null;return;}
       const found=locate();if(!found){if(active)flush(active);active=null;return;}
       const key=keyOf(authorized,found.module,found.mode,found.record);
