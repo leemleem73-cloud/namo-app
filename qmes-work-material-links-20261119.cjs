@@ -6,11 +6,13 @@ const itemCodes=require('./public/js/qmes-item-codes-20261119.js');
 const text=value=>String(value??'').trim();
 const identity=row=>{const values=[core.material(row.name),core.lot(row.lot)];const source=text(row.semiWorkOrderId||row.sourceSemiOrderId);if(source)values.push(source);if(text(row.batchType))values.push('batch:'+text(row.batchType));return createHash('sha256').update(JSON.stringify(values)).digest('hex');};
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(text(value));
-function summarize({row,iqc,orders,actuals,inventory,holds,errors=[]}){
+function summarize(input){
+ // PostgreSQL date values must use the same JSON representation as the inventory APIs.
+ const {row,iqc,orders,actuals,inventory,holds,errors=[]}=JSON.parse(JSON.stringify(input));
  const lot=text(row.lot),expectedName=text(row.name);
  const receipts=iqc.filter(item=>!item.deleted&&core.lot(item.lot)===core.lot(lot)&&core.material(item.item)===core.material(expectedName));
  const names=[...new Set(receipts.map(item=>text(item.item)).filter(Boolean))];
- const data={name:names.length===1?names[0]:expectedName,lot,code:itemCodes.codeFor(row),zone:'-',iqc:'확인 필요',available:null,kind:'warn',title:'확인 필요',reason:'원료 정보를 확인해 주세요.'};
+ const data={name:names.length===1?names[0]:expectedName,lot,code:itemCodes.codeFor(row),zone:'-',iqc:'확인 필요',available:null,stockQuantity:null,kind:'warn',title:'확인 필요',reason:'원료 정보를 확인해 주세요.'};
  const semiErrors=errors.filter(message=>/^(작업지시서|수불기록)/.test(message));
  const semiModel=semi.build({orders,entries:semi.readEntries(inventory),sourceErrors:semiErrors});
  const sourceId=text(row.semiWorkOrderId||row.sourceSemiOrderId);
@@ -38,6 +40,7 @@ function summarize({row,iqc,orders,actuals,inventory,holds,errors=[]}){
  const model=core.build({iqc,orders,actuals,entries:core.readEntries(inventory),holds,sourceErrors:errors});
  const matches=model.rows.filter(item=>core.lot(item.lot)===core.lot(lot)&&core.material(item.material)===core.material(expectedName));
  const entry=matches.length===1?matches[0]:null;
+ if(entry&&!errors.length&&Number.isFinite(entry.balance))data.stockQuantity=entry.balance;
  if(entry&&!entry.uncertain&&Number.isFinite(entry.available))data.available=entry.available;
  if(data.iqc==='불합격')return {...data,kind:'bad',title:'투입 차단',reason:'수입검사 불합격입니다. 원료를 재확인하세요.'};
  if(!receipts.length)return {...data,reason:'작업지시 원료 LOT와 일치하는 수입검사 기록이 없습니다.'};
@@ -45,7 +48,10 @@ function summarize({row,iqc,orders,actuals,inventory,holds,errors=[]}){
  if(errors.length)return {...data,reason:errors.join(' / ')};
  if(!entry)return {...data,reason:matches.length?'동일 원료 LOT에 여러 공급업체가 있습니다. 재고 내역을 확인하세요.':'재고관리에서 해당 원료 LOT의 재고를 찾지 못했습니다.'};
  if(entry.quality==='품질보류')return {...data,kind:'bad',title:'투입 차단',reason:'해당 LOT는 품질보류 상태입니다.'};
- if(entry.uncertain||entry.quality!=='사용가능')return {...data,reason:'재고관리의 수량·연결 상태를 확인해 주세요.'};
+ if(entry.uncertain||entry.quality!=='사용가능'){
+  const details=[...(entry.issues||[]),...(entry.pending>0?['확정되지 않은 수불 기록 '+entry.pending+'건']:[]),...model.unallocated.filter(value=>core.lot(value.lot)===core.lot(lot)).map(value=>value.note||'사용 내역 연결 확인 필요')];
+  return {...data,title:Number.isFinite(data.stockQuantity)?'재고 연동 · 확인사항 있음':'재고 확인 필요',reason:[...new Set(details)].join(' / ')||'재고관리의 수량·연결 상태를 확인해 주세요.'};
+ }
  if(!(entry.available>0))return {...data,kind:'bad',title:'투입 차단',reason:'재고관리의 사용가능량이 없습니다.'};
  const planned=core.number(row.plan);
  if(planned!==null&&planned>entry.available+1e-6)return {...data,reason:'계획 투입량이 재고 사용가능량을 초과합니다.'};
