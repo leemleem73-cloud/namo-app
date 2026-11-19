@@ -1,14 +1,37 @@
 'use strict';
 const {randomUUID,createHash}=require('node:crypto');
 const core=require('./public/js/qmes-material-stock-core-20261103.js');
+const semi=require('./public/js/qmes-semi-stock-core-20261119.js');
 const text=value=>String(value??'').trim();
-const identity=row=>createHash('sha256').update(JSON.stringify([core.material(row.name),core.lot(row.lot)])).digest('hex');
+const identity=row=>{const values=[core.material(row.name),core.lot(row.lot)];const source=text(row.semiWorkOrderId||row.sourceSemiOrderId);if(source)values.push(source);if(text(row.batchType))values.push('batch:'+text(row.batchType));return createHash('sha256').update(JSON.stringify(values)).digest('hex');};
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(text(value));
 function summarize({row,iqc,orders,actuals,inventory,holds,errors=[]}){
  const lot=text(row.lot),expectedName=text(row.name);
  const receipts=iqc.filter(item=>!item.deleted&&core.lot(item.lot)===core.lot(lot)&&core.material(item.item)===core.material(expectedName));
  const names=[...new Set(receipts.map(item=>text(item.item)).filter(Boolean))];
  const data={name:names.length===1?names[0]:expectedName,lot,code:'-',zone:'-',iqc:'확인 필요',available:null,kind:'warn',title:'확인 필요',reason:'원료 정보를 확인해 주세요.'};
+ const semiErrors=errors.filter(message=>/^(작업지시서|수불기록)/.test(message));
+ const semiModel=semi.build({orders,entries:semi.readEntries(inventory),sourceErrors:semiErrors});
+ const sourceId=text(row.semiWorkOrderId||row.sourceSemiOrderId);
+ const name=row.name==='중간배치'?row.batchType:expectedName;
+ const semiFamily=semiModel.rows.filter(item=>semi.material(item.product)===semi.material(name));
+ const semiMatches=sourceId?semiFamily.filter(item=>item.sourceIds.includes(sourceId)):
+  lot&&lot!=='-'?semiFamily.filter(item=>item.assigned&&semi.lot(item.lot)===semi.lot(lot)):[];
+ if(sourceId||semiMatches.length){
+  const value={...data,name:expectedName,stockKind:'semi',iqc:'자체제조 · 수입검사 비대상'};
+  if(semiMatches.length!==1)return {...value,title:'반제품 연결 확인',reason:'반제품 제조 기록을 한 건으로 확인할 수 없습니다.'};
+  if(receipts.length&&!sourceId)return {...value,title:'재고 구분 확인',reason:'같은 원료명·LOT에 원료와 반제품 기록이 함께 있습니다. 사용한 제조 기록을 확인해 주세요.'};
+  const entry=semiMatches[0];
+  if(sourceId&&lot&&lot!=='-'&&entry.assigned&&semi.lot(entry.lot)!==semi.lot(lot))return {...value,kind:'bad',title:'투입 차단',reason:'선택한 반제품 제조 LOT와 작업지시 원료 LOT가 일치하지 않습니다.'};
+  value.name=entry.product;value.available=entry.balance;value.sourceKey=entry.key;
+  if(entry.issues.length||entry.balance===null)return {...value,available:null,title:'반제품 재고 확인',reason:entry.issues.join(' / ')||'반제품 재고 수량을 확인해 주세요.'};
+  if(!(entry.balance>0))return {...value,kind:'bad',title:'투입 차단',reason:'반제품 사용가능량이 없습니다.'};
+  const planned=core.number(row.plan);
+  if(planned!==null&&planned>entry.balance+1e-6)return {...value,title:'투입량 확인 필요',reason:'계획 투입량이 반제품 재고를 초과합니다.'};
+  return {...value,kind:'ok',title:'투입 가능',reason:'반제품 재고 연동 · '+entry.notices.join(' / ')};
+ }
+ if(!lot||lot==='-')return {...data,lot:lot||'-',stockKind:semiFamily.length?'semi':'unassigned',iqc:semiFamily.length?'자체제조 · 수입검사 비대상':'LOT 미부여',title:'사용 기록 연결 필요',reason:semiFamily.length?'LOT가 없어 사용한 반제품 제조 건을 특정할 수 없습니다. 반제품 재고에서 해당 제조 건의 사용 기록을 확인해 주세요.':'LOT 미부여 원료입니다. 연결 가능한 재고 수량이 없어 사용량 확인이 필요합니다.'};
+ data.stockKind='raw';
  const states=receipts.map(core.judgment);
  data.iqc=!receipts.length?'기록 없음':states.includes('불합격')?'불합격':states.every(state=>state==='합격')?'합격':'확인 필요';
  const model=core.build({iqc,orders,actuals,entries:core.readEntries(inventory),holds,sourceErrors:errors});
@@ -43,7 +66,7 @@ function install(app,{pool,requireLogin}){
    await ensure();
    const links=[];
    for(const [index,row]of work.materials.entries()){
-    if(!text(row.name)||!text(row.lot)||text(row.lot)==='-')continue;
+    if(!text(row.name)||!text(row.lot))continue;
     const result=await pool.query(`INSERT INTO qmes_work_material_links(token,work_id,line_no,identity_hash) VALUES($1,$2,$3,$4)
      ON CONFLICT(work_id,line_no,identity_hash) DO UPDATE SET identity_hash=EXCLUDED.identity_hash RETURNING token`,[randomUUID(),id,index,identity(row)]);
     links.push({line:index,token:result.rows[0].token,name:text(row.name),lot:text(row.lot)});
