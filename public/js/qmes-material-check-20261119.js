@@ -32,7 +32,18 @@ async function validate(scan){
  const result=rules.compare(rows,done,scan);if(!result.ok){alarm(result);return;}
  pending={index:result.index,scan};paint(result);
 }
-async function check(){if(busy||!active)return;unlock();busy=true;pending=null;render();try{if(!demo)await fresh();const raw=$('scan').value.trim();if(!raw)throw Error('QR 또는 LOT를 스캔해 주세요.');if(demo)throw Error('시험 화면의 아래 시험 버튼을 눌러 주세요.');await validate(await resolve(raw));}catch(error){alarm({title:'투입 확인 차단',message:error.message});}finally{busy=false;render();}}
+async function runDemo(type){
+ if(!demo)throw Error('시험 QR은 시험 화면에서만 사용할 수 있습니다.');
+ if(!['material','lot','order','duplicate','quality','ok'].includes(type))throw Error('시험 QR 종류를 확인해 주세요.');
+ unlock();reset();let scan={...demoRows[0],kind:'ok'};
+ if(type==='material')scan={name:'SBR',lot:'TEST-SBR-999',kind:'ok'};
+ if(type==='lot')scan.lot='TEST-WRONG-999';
+ if(type==='order')scan={...demoRows[1],kind:'ok'};
+ if(type==='duplicate')done=[0];
+ if(type==='quality')scan={...scan,kind:'bad',reason:'시험용 수입검사 불합격 원료입니다.'};
+ await validate(scan);render();
+}
+async function check(){if(busy||!active)return;unlock();busy=true;pending=null;render();try{if(!demo)await fresh();const raw=$('scan').value.trim();if(!raw)throw Error('QR 또는 LOT를 스캔해 주세요.');if(demo){const url=new URL(raw,location.origin);if(url.origin!==location.origin||url.pathname!=='/qmes-material-check.html'||url.searchParams.get('demo')!=='1')throw Error('시험용 QR을 스캔해 주세요.');await runDemo(url.searchParams.get('sample'));return;}await validate(await resolve(raw));}catch(error){alarm({title:'투입 확인 차단',message:error.message});}finally{busy=false;render();}}
 $('check').onclick=check;$('scan').oninput=()=>{pending=null;render();};$('scan').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();check();}};
 $('confirm').onclick=async()=>{if(!pending||busy)return;unlock();const candidate=pending;pending=null;busy=true;render();try{if(!demo){await fresh();await validate(candidate.scan);if(!pending)return;}done.push(candidate.index);pending=null;$('scan').value='';const next=rows.findIndex((_,i)=>!done.includes(i));paint({ok:true,title:next<0?'전체 원료 확인 완료':'다음 원료를 스캔하세요',message:next<0?'모든 원료의 순서·원료명·LOT 확인을 마쳤습니다. 생산 실적이나 재고는 변경하지 않았습니다.':(next+1)+'번 '+rows[next].name+' / '+rows[next].lot});}catch(error){pending=null;alarm({title:'투입 확인 차단',message:error.message});}finally{busy=false;render();}};
 $('start').onclick=async()=>{unlock();if(busy)return;busy=true;pending=null;stop();render();try{
@@ -45,6 +56,20 @@ $('camera').onclick=async()=>{unlock();if(stream){stop();return;}if(!window.Barc
 window.addEventListener('pagehide',stop);
 $('workChoice').onchange=()=>{active=null;rows=[];done=[];pending=null;stop();render();paint({title:'작업 시작 필요',message:'선택한 작업 시작 버튼을 눌러 주세요.'});};
 if(demo){$('demoBanner').hidden=false;$('demoTools').hidden=false;$('workChoice').replaceChildren(new Option('가상 작업지시서 · NMP → BYK180 → AOH30','TEST'));active={id:'TEST',materials:demoRows};reset();
- document.querySelectorAll('[data-case]').forEach(button=>button.onclick=async()=>{unlock();reset();const type=button.dataset.case;let scan={...demoRows[0],kind:'ok'};if(type==='material')scan={name:'SBR',lot:'TEST-SBR-999',kind:'ok'};if(type==='lot')scan.lot='TEST-WRONG-999';if(type==='order')scan={...demoRows[1],kind:'ok'};if(type==='duplicate')done=[0];if(type==='quality')scan={...scan,kind:'bad',reason:'시험용 수입검사 불합격 원료입니다.'};await validate(scan);render();});
+ document.querySelectorAll('[data-case]').forEach(button=>button.onclick=()=>runDemo(button.dataset.case));
+ const labels={material:'다른 원료 · SBR',lot:'잘못된 LOT · NMP',order:'순서 오류 · BYK180',duplicate:'중복 스캔 · NMP',quality:'불합격 · NMP',ok:'정상 · NMP'};
+ const cards=$('demoQrCards');
+ for(const [type,label] of Object.entries(labels)){
+  const card=document.createElement('article');card.className='demo-qr-card';
+  const title=document.createElement('h3');title.textContent=label;card.append(title);
+  const mount=document.createElement('div');mount.className='demo-qr-code';card.append(mount);
+  const url=new URL('/qmes-material-check.html',location.origin);url.searchParams.set('demo','1');url.searchParams.set('sample',type);
+  if(typeof QRCode==='function')new QRCode(mount,{text:url.href,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  else mount.textContent='QR을 불러오지 못했습니다. 새로고침해 주세요.';
+  const link=document.createElement('a');link.href=url.href;link.textContent='이 QR 시험 열기';card.append(link);cards.append(card);
+ }
+ const selected=params.get('sample');
+ if(labels[selected]){const launch=document.createElement('button');launch.className='primary';launch.textContent='스캔한 시험 QR 확인 · 소리 켜기';launch.onclick=()=>runDemo(selected);$('demoBanner').append(document.createElement('br'),launch);}
+
 }else{try{docs=await read('/api/qmes/work-orders');$('workChoice').replaceChildren(new Option('작업지시서 선택',''),...docs.map(doc=>new Option((doc.fields?.['작업지시번호']||doc.id)+' · '+(doc.fields?.['제품명']||''),doc.id)));if(params.get('work'))$('workChoice').value=params.get('work');}catch(error){$('workChoice').replaceChildren(new Option('로그인 후 다시 열어 주세요',''));alarm({title:'조회할 수 없습니다',message:error.message});}}
 })();
