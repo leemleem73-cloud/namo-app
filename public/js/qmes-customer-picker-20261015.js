@@ -80,7 +80,7 @@ function initCreate(){
    label.append(check,document.createTextNode(' '+name));list.append(label);
   };
   row('전체');
-  names.filter(x=>x.toLowerCase().includes(searchTerm.toLowerCase())).forEach(row);
+  ['-',...names.filter(name=>name!=='-')].filter(x=>x.toLowerCase().includes(searchTerm.toLowerCase())).forEach(row);
   search.oninput=()=>render(search.value);
   const action=(title,fn)=>{const button=document.createElement('button');button.type='button';button.textContent=title;button.onclick=fn;footer.append(button)};
   action('추가',async()=>{const value=prompt('추가할 고객사명')?.trim();if(!value||names.includes(value))return;names.push(value);try{await saveShared();render()}catch(e){names=names.filter(n=>n!==value);alert('공용 DB 저장 실패')}});
