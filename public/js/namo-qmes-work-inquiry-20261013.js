@@ -62,8 +62,9 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const qrPages=Array.from({length:Math.ceil(materials.length/6)},(_,page)=>{
   const cards=materials.slice(page*6,page*6+6).map((m,offset)=>{
    const i=page*6+offset,name=m.name==='중간배치'&&m.batchType?m.name+' ('+m.batchType+')':m.name;
+   const itemCode=window.qmesItemCodes?.codeFor(m)||'-';
    const qr=printLotQRCode(m.lot,m.name,record.id,i);
-   return '<div class="qr-card"><h3>'+safe(i+1)+'. '+safe(name)+'</h3><div class="qr-card-content"><div class="qr-card-code">'+qr+'</div><dl><dt>원료명</dt><dd>'+safe(name)+'</dd><dt>LOT NO</dt><dd>'+safe(m.lot)+'</dd><dt>계획량</dt><dd>'+safe(m.plan)+' kg</dd><dt>실투입량</dt><dd>'+safe(m.actual)+' kg</dd></dl></div></div>';
+   return '<div class="qr-card"><h3>'+safe(i+1)+'. '+safe(name)+'</h3><div class="qr-card-content"><div class="qr-card-code">'+qr+'</div><dl><dt>원료명</dt><dd>'+safe(name)+'</dd><dt>품목코드</dt><dd>'+safe(itemCode)+'</dd><dt>LOT NO</dt><dd>'+safe(m.lot)+'</dd><dt>계획량</dt><dd>'+safe(m.plan)+' kg</dd><dt>실투입량</dt><dd>'+safe(m.actual)+' kg</dd></dl></div></div>';
   }).join('');
   return '<main class="paper qr-paper">'+printHeader+'<div class="brand"><img class="print-company-logo" src="'+companyLogo+'" alt="나모케미칼(주)"><small>(주)나모케미칼<br>원료 QR 확인표</small></div><h1>작업지시서 원료 QR<small>MATERIAL QR CHECK SHEET</small></h1><div class="qr-reference"><div><b>작업지시번호</b><span>'+safe(f['작업지시번호']||record.id)+'</span></div><div><b>제품명</b><span>'+safe(f['제품명'])+'</span></div><div><b>생산 LOT</b><span>'+safe(f['생산 LOT NO'])+'</span></div></div><p class="qr-guide">원료별 QR을 스캔하여 LOT와 현재 재고 정보를 확인하세요.</p><div class="qr-grid">'+cards+'</div><div class="footer"><span class="print-page-number">'+(page+2)+' / '+pageCount+'</span></div></main>';
  }).join('');
