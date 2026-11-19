@@ -301,7 +301,7 @@ $$;
 CREATE OR REPLACE FUNCTION qmes_gate_link_document(j JSONB, s TEXT) RETURNS VOID LANGUAGE plpgsql AS $$
 DECLARE m JSONB; l TEXT;
 BEGIN
- j:=qmes_gate_document_body(j); l:=qmes_gate_lot(j); IF l='' THEN RETURN; END IF;
+ j:=qmes_gate_document_body(j); IF btrim(coalesce(j->>'productionType',''))='용액제조' THEN RETURN; END IF; l:=qmes_gate_lot(j); IF l='' THEN RETURN; END IF;
  FOR m IN SELECT value FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j->'materials')='array' THEN j->'materials' ELSE '[]'::jsonb END) LOOP
   IF NOT qmes_gate_unused_material(m) AND NOT qmes_gate_unlotted_sample(m) AND qmes_gate_lot(m)<>'' AND qmes_gate_lot(m)<>l THEN
    INSERT INTO qmes_lot_genealogy(parent_lot,child_lot,source) VALUES(qmes_gate_lot(m),l,s) ON CONFLICT DO NOTHING;
@@ -313,6 +313,8 @@ DECLARE m JSONB; l TEXT; status TEXT;
 BEGIN
  IF j=oldj THEN RETURN; END IF;
  j:=qmes_gate_document_body(j); oldj:=qmes_gate_document_body(oldj);
+ -- In-house solution manufacturing is outside the work-order process gate.
+ IF btrim(coalesce(j->>'productionType',''))='용액제조' THEN RETURN; END IF;
  l:=qmes_gate_lot(j); status:=coalesce(j#>>'{fields,진행상태}',j->>'manualStatus',j->>'status','');
  IF status IN ('완료','공정완료','생산완료','COMPLETED')
  AND (status IS DISTINCT FROM coalesce(oldj#>>'{fields,진행상태}',oldj->>'manualStatus',oldj->>'status','') OR j->'materials' IS DISTINCT FROM oldj->'materials' OR j->'productionActual' IS DISTINCT FROM oldj->'productionActual' OR l<>qmes_gate_lot(oldj)) THEN
