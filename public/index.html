@@ -6154,7 +6154,16 @@ async function saveWorkOrderForm(editId='',options={}){
     name:row.querySelector('.material-name-select')?.value==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():row.querySelector('.material-name-select')?.value,
     lot:(row.querySelector('.material-name-select')?.value==='중간배치' && /^MB-?$/i.test(row.querySelector('.material-lot-manual')?.value.trim()||''))?'':(row.querySelector('.material-lot-manual')?.value.trim()||''),
     plan:row.querySelector('.plan-input')?.value||'',actual:row.querySelector('.actual-input')?.value||'',
-    sourceName:row.dataset.sourceMaterialName||'',
+    sourceName:(()=>{
+      const selected=row.querySelector('.material-name-select')?.value;
+      const name=selected==='__manual__'?row.querySelector('.material-name-manual')?.value.trim():selected;
+      const original=row.dataset.sourceMaterialName||'';
+      const family=value=>{
+        if(window.qmesMaterialStockCore?.material)return window.qmesMaterialStockCore.material(value);
+        return String(value||'').trim().toUpperCase().replace(/[^A-Z0-9가-힣]/g,'');
+      };
+      return original&&family(original)===family(name)?original:(name||'');
+    })(),
     batchType:row.querySelector('.material-name-select')?.value==='중간배치'?(row.querySelector('.namo-mid-kind')?.value||''):''
   })).filter(r=>r.name||r.lot||r.plan||r.actual);
   const orders=readWorkOrders(),now=new Date(),id='WO-'+now.toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
@@ -8928,22 +8937,15 @@ function openNewForm(id,editOrder=null){
         if(/PAI|바인더/i.test(name))return name;
         return name;
       };
-      const remaining=(editOrder.materials||[]).map((m,index)=>({...m,_workSlot:index,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
-      const editMaterials=NAMO_WORK_RAW_MATERIALS.map((name,slot)=>{
-        let index=remaining.findIndex(m=>m.name===name);
-        // A manually named material still belongs to its original editor row.
-        if(index<0)index=remaining.findIndex(m=>!NAMO_WORK_RAW_MATERIALS.includes(m.name)&&(m._workSlot===slot||m.sourceName===name));
-        return index<0?{name}:remaining.splice(index,1)[0];
-      });
-      // Preserve additional manually entered materials when reopening saved orders.
-      editMaterials.push(...remaining.filter(m=>m.lot||m.plan||m.actual));
+      // Keep each saved material, LOT and quantities together in its original row.
+      const editMaterials=(editOrder.materials||[]).map(m=>({...m,sourceName:m.sourceName||m.name,name:materialCategory(m.name)}));
       editMaterials.forEach(m=>{
         add.click();const row=tbody.lastElementChild;
         row.dataset.sourceMaterialName=m.sourceName||'';
         const name=row.querySelector('.material-name-select');name.value=[...name.options].some(o=>o.value===m.name)?m.name:'__manual__';name.dispatchEvent(new Event('change'));
         if(name.value==='__manual__')row.querySelector('.material-name-manual').value=m.name||'';
         row.querySelector('.material-lot-manual').value=m.lot||'';
-        row.querySelector('.plan-input').value=m.plan||'';row.querySelector('.actual-input').value=m.actual||'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
+        row.querySelector('.plan-input').value=m.plan??'';row.querySelector('.actual-input').value=m.actual??'';row.querySelector('.plan-input').dispatchEvent(new Event('input'));
       });
       document.querySelector('#namoWorkInstructions').value=editOrder.note||'';const wf=document.querySelector('.work-form');if(wf){wf.dataset.recipeId=editOrder.recipeId||'';wf.dataset.recipeRevision=editOrder.recipeRevision||'';wf.dataset.recipeProduct=editOrder.recipeProduct||'';}
     }
