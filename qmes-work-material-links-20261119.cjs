@@ -2,6 +2,7 @@
 const {randomUUID,createHash}=require('node:crypto');
 const core=require('./public/js/qmes-material-stock-core-20261103.js');
 const semi=require('./public/js/qmes-semi-stock-core-20261119.js');
+const itemCodes=require('./public/js/qmes-item-codes-20261119.js');
 const text=value=>String(value??'').trim();
 const identity=row=>{const values=[core.material(row.name),core.lot(row.lot)];const source=text(row.semiWorkOrderId||row.sourceSemiOrderId);if(source)values.push(source);if(text(row.batchType))values.push('batch:'+text(row.batchType));return createHash('sha256').update(JSON.stringify(values)).digest('hex');};
 const uuid=value=>/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(text(value));
@@ -9,7 +10,7 @@ function summarize({row,iqc,orders,actuals,inventory,holds,errors=[]}){
  const lot=text(row.lot),expectedName=text(row.name);
  const receipts=iqc.filter(item=>!item.deleted&&core.lot(item.lot)===core.lot(lot)&&core.material(item.item)===core.material(expectedName));
  const names=[...new Set(receipts.map(item=>text(item.item)).filter(Boolean))];
- const data={name:names.length===1?names[0]:expectedName,lot,code:'-',zone:'-',iqc:'확인 필요',available:null,kind:'warn',title:'확인 필요',reason:'원료 정보를 확인해 주세요.'};
+ const data={name:names.length===1?names[0]:expectedName,lot,code:itemCodes.codeFor(row),zone:'-',iqc:'확인 필요',available:null,kind:'warn',title:'확인 필요',reason:'원료 정보를 확인해 주세요.'};
  const semiErrors=errors.filter(message=>/^(작업지시서|수불기록)/.test(message));
  const semiModel=semi.build({orders,entries:semi.readEntries(inventory),sourceErrors:semiErrors});
  const sourceId=text(row.semiWorkOrderId||row.sourceSemiOrderId);
@@ -69,7 +70,7 @@ function install(app,{pool,requireLogin}){
     if(!text(row.name)||!text(row.lot))continue;
     const result=await pool.query(`INSERT INTO qmes_work_material_links(token,work_id,line_no,identity_hash) VALUES($1,$2,$3,$4)
      ON CONFLICT(work_id,line_no,identity_hash) DO UPDATE SET identity_hash=EXCLUDED.identity_hash RETURNING token`,[randomUUID(),id,index,identity(row)]);
-    links.push({line:index,token:result.rows[0].token,name:text(row.name),lot:text(row.lot)});
+    links.push({line:index,token:result.rows[0].token,name:text(row.name),lot:text(row.lot),code:itemCodes.codeFor(row)});
    }
    res.json({success:true,data:links});
   }catch(error){console.error('[Work material QR issue]',error);res.status(500).json({success:false,message:'원료 QR 연결을 발행하지 못했습니다. 다시 시도해 주세요.'});}
