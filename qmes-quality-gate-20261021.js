@@ -195,7 +195,7 @@ async function api(req, res) {
 const guardedPath = /^\/api\/(qmes-quality-gate(?:\/|$)|qmes-sync(?:\/|$)|qmes-extra-sync(?:\/|$)|qmes\/|qmes-ncr(?:\/|$)|iqc(?:\/|$)|pqc(?:\/|$)|oqc(?:\/|$)|worklog(?:\/|$)|inventory(?:\/|$)|certificate(?:\/|$)|nonconform(?:\/|$))/;
 async function middleware(req, res, next) {
   if (req.method === 'GET' && req.path === '/api/qmes-quality-gate/health') {
-    return res.status(initialized ? 200 : 503).json({ success: initialized, version: '20261118-manual-oqc-status' });
+    return res.status(initialized ? 200 : 503).json({ success: initialized, version: '20261119-solution-work-exempt' });
   }
   const own = req.path.startsWith('/api/qmes-quality-gate/');
   if (!own && (['GET', 'HEAD', 'OPTIONS'].includes(req.method) || !guardedPath.test(req.path))) return next();
@@ -206,6 +206,9 @@ async function middleware(req, res, next) {
   }
   try {
     await schema();
+    // Only the saved solution-manufacturing work document is exempt; auth remains above.
+    if (/^\/api\/qmes\/work-orders(?:\/[^/]+)?$/.test(req.path) &&
+        ['POST','PUT'].includes(req.method) && str(req.body?.productionType)==='용액제조') return next();
     // Add triggers if another addon lazily created a table after startup.
     await pool.query('SELECT qmes_gate_install(); SELECT qmes_gate_historical_seed()');
     if (own) return await api(req, res);
