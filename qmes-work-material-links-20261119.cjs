@@ -49,7 +49,11 @@ function summarize(input){
  if(!entry)return {...data,reason:matches.length?'동일 원료 LOT에 여러 공급업체가 있습니다. 재고 내역을 확인하세요.':'재고관리에서 해당 원료 LOT의 재고를 찾지 못했습니다.'};
  if(entry.quality==='품질보류')return {...data,kind:'bad',title:'투입 차단',reason:'해당 LOT는 품질보류 상태입니다.'};
  if(entry.uncertain||entry.quality!=='사용가능'){
-  const details=[...(entry.issues||[]),...(entry.pending>0?['확정되지 않은 수불 기록 '+entry.pending+'건']:[]),...model.unallocated.filter(value=>core.lot(value.lot)===core.lot(lot)).map(value=>value.note||'사용 내역 연결 확인 필요')];
+  const details=[...(entry.issues||[]),...(entry.pending>0?['확정되지 않은 수불 기록 '+entry.pending+'건']:[]),...model.unallocated.filter(value=>core.lot(value.lot)===core.lot(lot)).map(value=>{
+   const doc=orders.find(order=>text(order.id)===text(value.id));
+   const material=doc?.materials?.find(item=>core.lot(item.lot)===core.lot(lot)&&(!value.material||core.material(item.sourceName||item.name)===core.material(value.material)));
+   return doc?['작업지시 '+text(doc.fields?.['작업지시번호']||doc.id),'선택 원료 '+text(material?.name),'원본 원료 '+text(material?.sourceName||material?.name),value.note].filter(Boolean).join(' · '):value.note||'사용 내역 연결 확인 필요';
+  })];
   return {...data,title:Number.isFinite(data.stockQuantity)?'재고 연동 · 확인사항 있음':'재고 확인 필요',reason:[...new Set(details)].join(' / ')||'재고관리의 수량·연결 상태를 확인해 주세요.'};
  }
  if(!(entry.available>0))return {...data,kind:'bad',title:'투입 차단',reason:'재고관리의 사용가능량이 없습니다.'};
