@@ -8864,7 +8864,7 @@ function openNewForm(id,editOrder=null){
         <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력" autocomplete="off"></div>
         <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 선택 또는 직접 입력" list="workProductChoices"><datalist id="workProductChoices"><option value="NBA20HM05"></datalist></div>
         <div class="form-item"><label>생산 LOT NO</label><input type="text" placeholder="생산 LOT NO 입력"></div>
-        <div class="form-item"><label>설비명</label><select><option>HSM</option><option value="-">-</option></select></div>
+        <div class="form-item"><label>설비명</label><input id="workEquipmentName" type="text" value="HSM" placeholder="설비명 선택 또는 직접 입력" list="workEquipmentChoices" autocomplete="off"><datalist id="workEquipmentChoices"><option value="HSM"></option><option value="-"></option></datalist></div>
         <div class="form-item"><label>작업자</label><input type="text" placeholder="작업자 선택 또는 직접 입력" list="workOperatorChoices"><datalist id="workOperatorChoices"><option value="대리 박도훈"><option value="주임 문지훈"></datalist></div>
         <div class="form-item"><label>계획수량</label><input id="workPlanQty" type="number" min="0" step="0.01" placeholder="숫자만 입력"></div>
         <div class="form-item"><label>작업 시작일</label><input type="date"></div>
