@@ -6161,6 +6161,10 @@ async function saveWorkOrderForm(editId='',options={}){
   const workDay=input('작업일자')||input('작업 시작일');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(workDay)){toast('작업일자를 입력해 주세요.');return;}
   fields['작업지시번호']=persistId?(orders.find(o=>o.id===persistId)?.fields?.['작업지시번호']||persistId):nextWorkOrderDisplayNumber(workDay,orders);
+  if(input('생산구분')==='용액제조'){
+    if(form.querySelector('#workOrderNumberMode')?.value==='none')fields['작업지시번호']='-';
+    else if(fields['작업지시번호']==='-')fields['작업지시번호']=nextWorkOrderDisplayNumber(workDay,orders);
+  }
   const record={id:savedId,fields,materials:rows,workDate:workDay,productionType:input('생산구분'),note:form.querySelector('#namoWorkInstructions')?.value||'',recipeId:form.dataset.recipeId||'',recipeRevision:form.dataset.recipeRevision||'',recipeProduct:form.dataset.recipeProduct||''};
   if(record.productionType==='중간배치')record.intermediateBatch={kind:form.querySelector('#namoMidWorkKind')?.value||'',actualQty:form.querySelector('#namoMidProduced')?.value||''};
   if(typeof window.namoValidateIntermediateWorkorder==='function'){
@@ -8857,7 +8861,7 @@ function openNewForm(id,editOrder=null){
   if(id==='work'){
     const html=`<div class="work-form">
       <div class="work-section"><div class="work-section-title">작업 기본정보</div><div class="work-section-body"><div class="work-basic-grid">
-        <div class="form-item"><label>작업지시번호</label><input id="workOrderNo" type="text" value="자동생성" readonly></div>
+        <div class="form-item"><label>작업지시번호</label><input id="workOrderNo" type="text" value="자동생성" readonly><select id="workOrderNumberMode" aria-label="용액제조 작업지시번호" hidden><option value="auto">자동생성</option><option value="none">-</option></select></div>
         <div class="form-item"><label>작업일자</label><input type="date"></div>
         <div class="form-item"><label>고객사명</label><input type="text" placeholder="고객사명 직접 입력" autocomplete="off"></div>
         <div class="form-item"><label>제품명</label><input type="text" placeholder="제품명 선택 또는 직접 입력" list="workProductChoices"><datalist id="workProductChoices"><option value="NBA20HM05"></datalist></div>
@@ -8943,6 +8947,15 @@ function openNewForm(id,editOrder=null){
       });
       document.querySelector('#namoWorkInstructions').value=editOrder.note||'';const wf=document.querySelector('.work-form');if(wf){wf.dataset.recipeId=editOrder.recipeId||'';wf.dataset.recipeRevision=editOrder.recipeRevision||'';wf.dataset.recipeProduct=editOrder.recipeProduct||'';}
     }
+    (function configureSolutionWorkNumber(){
+      const form=document.querySelector('.work-form'),number=form?.querySelector('#workOrderNo'),mode=form?.querySelector('#workOrderNumberMode');
+      const type=[...form.querySelectorAll('.work-basic-grid .form-item')].find(item=>item.querySelector('label')?.textContent.trim()==='생산구분')?.querySelector('select');
+      if(!number||!mode||!type)return;
+      const autoNumber=number.value==='-'?'자동생성':number.value;
+      if(editOrder?.productionType==='용액제조'&&editOrder.fields?.['작업지시번호']==='-')mode.value='none';
+      const update=()=>{const solution=type.value==='용액제조';mode.hidden=!solution;mode.style.display=solution?'':'none';number.style.display=solution?'none':'';number.value=solution&&mode.value==='none'?'-':autoNumber;};
+      type.addEventListener('change',update);mode.addEventListener('change',update);update();
+    })();
     wireWorkIdentifierCorrection(document.querySelector('.work-form'),editOrder);
     const workSave=document.getElementById('modalSave');
     if(workSave){const clean=workSave.cloneNode(true);workSave.replaceWith(clean);clean.addEventListener('click',()=>saveWorkOrderForm(editOrder?.id||''));}
@@ -9519,7 +9532,7 @@ document.querySelectorAll('#dashboard tbody tr').forEach(row=>{
 <script src="./js/qmes-static-auth-bridge-20261007-v1.js?v=20261118-early-session"></script>
 <script src="./js/qmes-login-ui-patch-20261007-v1.js?v=20261016-login-options9"></script>
 
-<script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261026-PVdF-display2"></script>
+<script defer src="./js/namo-intermediate-batch-workorder-20261013.js?v=20261119-solution-exempt"></script>
 <script defer src="./js/namo-workorder-material-enterprise-20261014.js?v=20261111-material-colors"></script>
 <script defer src="./js/qmes-notification-dates-20261021.js?v=3-larger"></script>
 <script defer src="./js/namo-work-dispatch-20261014.js?v=20261029-history4"></script>
