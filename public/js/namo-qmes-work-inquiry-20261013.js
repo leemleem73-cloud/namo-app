@@ -30,8 +30,8 @@ function printLotQRCode(lot,name,work,line){
  const mount=document.createElement('div');
  new window.QRCode(mount,{text:url.href,width:192,height:192,correctLevel:window.QRCode.CorrectLevel?.M});
  const image=mount.querySelector('canvas')?.toDataURL('image/png')||mount.querySelector('img')?.src;
- if(!image||!image.startsWith('data:image/'))throw Error('IQC 연동 QR 생성 실패');
- return '<img src="'+image+'" alt="수입검사 연동 원료 LOT QR코드" width="192" height="192">';
+ if(!image||!image.startsWith('data:image/'))throw Error('원료·반제품 QR 생성 실패');
+ return '<img src="'+image+'" alt="작업지시 원료·반제품 재고 조회 QR코드" width="192" height="192">';
 }
 window.namoPrintWorkOrder=printWorkOrderDocument;
 function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
