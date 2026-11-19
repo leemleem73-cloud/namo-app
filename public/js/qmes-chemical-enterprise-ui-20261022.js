@@ -758,9 +758,43 @@ html body #instrumentMgmt .qce-instrument-selection-dock [data-inst-selected-del
     new MutationObserver(()=>{if(!root.classList.contains('active'))root._resetListSelection();}).observe(root,{attributes:true,attributeFilter:['class']});
     root.innerHTML='<div class="qce-page">'+head('변경관리','원료·공급사·Recipe·공정조건·설비·Spec 변경을 승인 이력으로 관리합니다.')+'<div class="qce-shell"><div class="qce-toolbar"><div class="left"><input class="qce-input qce-change-q" placeholder="변경번호 / 제목 / 대상 검색"></div><div class="right"><button class="qce-btn qce-change-search">조회</button><button class="qce-btn primary qce-change-new">+ 변경 등록</button></div></div><div class="qce-change-body"><div class="qce-empty">조회 중...</div></div></div></div>';
     const printChangeRecords=async records=>{
-      const frame=document.createElement('iframe');frame.style.cssText='position:fixed;left:-20000px;top:0;width:1000px;height:700px;border:0';frame.setAttribute('aria-hidden','true');
-      frame.onload=async()=>{if(!frame.contentDocument?.querySelector('table'))return;await frame.contentDocument.fonts.ready;frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});frame.contentWindow.focus();frame.contentWindow.print();};
-      frame.srcdoc='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>변경관리</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px "Malgun Gothic",sans-serif;color:#172b44}h1{font-size:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccd8e4;padding:7px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}th{background:#e8f1f9;text-align:center}</style></head><body><h1>변경관리</h1><table><thead><tr>'+['No.','변경번호','구분','제목','대상','담당자','적용예정일','상태','현재 기준','변경 후 기준','변경사유','영향평가'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+records.map((r,i)=>'<tr>'+[i+1,r.change_no,r.change_type,r.title,r.target,r.owner,String(r.planned_on||'').slice(0,10),r.status,r.current_value,r.proposed_value,r.reason,r.impact].map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table></body></html>';document.body.append(frame);
+      if(!records?.length)return;
+      const safe=v=>esc(v==null||v===''?'-':String(v));
+      const field=(label,value)=>'<div class="field"><div class="field-label">'+label+'</div><div class="field-value">'+safe(value)+'</div></div>';
+      const section=(num,label,value)=>'<section class="section"><div class="section-head"><span>'+num+'</span>'+label+'</div><div class="section-value">'+safe(value)+'</div></section>';
+      const docs=records.map(r=>'<article class="sheet">'+
+        '<div class="document-header"><div class="company">나모케미칼(주)<small>NAMO Chemical Co., Ltd.</small></div><div class="title-area"><h1>변경관리 등록서</h1><div class="subtitle">CHANGE CONTROL REQUEST / RECORD</div></div><div class="document-number"><strong>문서번호</strong><span>'+safe(r.change_no)+'</span></div></div>'+
+        '<div class="meta-grid">'+field('변경구분',r.change_type)+field('진행상태',r.status)+field('변경제목',r.title)+field('변경대상',r.target)+field('담당자',r.owner)+field('적용예정일',String(r.planned_on||'').slice(0,10))+'</div>'+
+        section('01','현재 기준 (변경 전)',r.current_value)+
+        section('02','변경 후 기준',r.proposed_value)+
+        section('03','변경사유',r.reason)+
+        section('04','영향평가 및 검증 검토',r.impact)+
+        '<div class="approval-title">검토 및 승인</div><div class="approval-grid">'+
+          '<div class="approval-cell"><b>작성</b><div class="sign-space"></div><small>성명 / 서명 / 일자</small></div>'+
+          '<div class="approval-cell"><b>검토</b><div class="sign-space"></div><small>성명 / 서명 / 일자</small></div>'+
+          '<div class="approval-cell"><b>승인</b><div class="sign-space"></div><small>성명 / 서명 / 일자</small></div></div>'+
+        '<div class="document-foot">※ 본 서식은 QMES 등록정보를 기준으로 출력됩니다. 검토·승인란은 출력용이며 전자결재 완료를 의미하지 않습니다.</div>'+
+        '</article>').join('');
+      const frame=document.createElement('iframe');
+      frame.style.cssText='position:fixed;left:-20000px;top:0;width:900px;height:1100px;border:0';
+      frame.setAttribute('aria-hidden','true');
+      frame.onload=async()=>{
+        if(!frame.contentDocument?.querySelector('.sheet'))return;
+        await frame.contentDocument.fonts.ready;
+        frame.contentWindow.addEventListener('afterprint',()=>frame.remove(),{once:true});
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      };
+      frame.srcdoc='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>변경관리 등록서</title><style>'+
+        '@page{size:A4 portrait;margin:14mm 15mm}*{box-sizing:border-box}body{margin:0;color:#18293b;font:10.5pt/1.55 "Malgun Gothic",Arial,sans-serif;background:#fff}'+
+        '.sheet{width:100%;break-after:page;page-break-after:always}.sheet:last-child{break-after:auto;page-break-after:auto}'+
+        '.document-header{display:grid;grid-template-columns:1fr 2.2fr 1.35fr;align-items:center;border-top:3px solid #1d4263;border-bottom:2px solid #1d4263;min-height:79px;margin-bottom:15px}.company{font-size:12pt;font-weight:800;line-height:1.4}.company small{display:block;font-size:7pt;font-weight:400;color:#506377}.title-area{text-align:center;border-left:1px solid #a9bac9;border-right:1px solid #a9bac9;padding:8px 5px}.title-area h1{font-size:19pt;letter-spacing:1px;margin:0;color:#122e49}.subtitle{font-size:7pt;letter-spacing:.6px;color:#5f7485}.document-number{padding:8px;font-size:8.5pt;overflow-wrap:anywhere}.document-number strong{display:block;color:#526679;font-size:8pt}.document-number span{font-weight:700}'+
+        '.meta-grid{display:grid;grid-template-columns:1fr 1fr;border-left:1px solid #849caf;border-top:1px solid #849caf;margin-bottom:16px}.field{display:grid;grid-template-columns:94px minmax(0,1fr);min-height:35px;border-right:1px solid #849caf;border-bottom:1px solid #849caf}.field-label{padding:7px 8px;background:#edf2f7;border-right:1px solid #b6c5d1;font-weight:700;font-size:9pt}.field-value{padding:7px 9px;overflow-wrap:anywhere;white-space:pre-wrap;font-size:9pt}'+
+        '.section{margin:0 0 11px;break-inside:avoid;page-break-inside:avoid}.section-head{border:1px solid #849caf;background:#e7eef5;color:#183d5d;font-size:10pt;font-weight:700;padding:5px 10px}.section-head span{display:inline-block;min-width:27px;color:#5b7891}.section-value{border:1px solid #849caf;border-top:0;padding:10px 12px;min-height:66px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:9.5pt}'+
+        '.approval-title{font-size:10pt;font-weight:700;margin:17px 0 5px}.approval-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #849caf;border-left:1px solid #849caf}.approval-cell{text-align:center;border-right:1px solid #849caf;border-bottom:1px solid #849caf}.approval-cell b{display:block;background:#edf2f7;border-bottom:1px solid #b6c5d1;padding:4px}.sign-space{height:39px}.approval-cell small{display:block;color:#617182;font-size:7.5pt;padding:3px;border-top:1px dotted #d1dbe2}.document-foot{margin-top:10px;font-size:7.5pt;color:#68798a}'+
+        '@media screen{body{padding:12mm;background:#edf2f7}.sheet{background:#fff;margin:0 auto 12mm;padding:14mm 15mm;width:210mm;min-height:297mm;box-shadow:0 2px 12px #bbc7d0}}'+
+        '</style></head><body>'+docs+'</body></html>';
+      document.body.append(frame);
     };
     const paint=rows=>{
         root._changeRows=rows;
