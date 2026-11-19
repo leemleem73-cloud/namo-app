@@ -43,7 +43,11 @@ function summarize(input){
  if(entry&&!errors.length&&Number.isFinite(entry.balance))data.stockQuantity=entry.balance;
  if(entry&&!entry.uncertain&&Number.isFinite(entry.available))data.available=entry.available;
  if(data.iqc==='불합격')return {...data,kind:'bad',title:'투입 차단',reason:'수입검사 불합격입니다. 원료를 재확인하세요.'};
- if(!receipts.length)return {...data,reason:'작업지시 원료 LOT와 일치하는 수입검사 기록이 없습니다.'};
+ if(!receipts.length){
+  const otherNames=[...new Set(iqc.filter(item=>!item.deleted&&core.lot(item.lot)===core.lot(lot)).map(item=>text(item.item)).filter(Boolean))];
+  if(otherNames.length)return {...data,kind:'bad',title:'투입 차단 · 원료 불일치',iqc:'원료 불일치',reason:'작업지시 원료 '+expectedName+' / LOT '+lot+' · 해당 LOT의 수입검사 원료: '+otherNames.join(', ')+'. 작업지시서의 원료명과 LOT를 확인해 주세요. 다른 원료의 재고는 연결하지 않습니다.'};
+  return {...data,reason:'작업지시 원료 LOT와 일치하는 수입검사 기록이 없습니다.'};
+ }
  if(data.iqc!=='합격')return {...data,reason:'수입검사 합격 여부를 확인해 주세요.'};
  if(errors.length)return {...data,reason:errors.join(' / ')};
  if(!entry)return {...data,reason:matches.length?'동일 원료 LOT에 여러 공급업체가 있습니다. 재고 내역을 확인하세요.':'재고관리에서 해당 원료 LOT의 재고를 찾지 못했습니다.'};
