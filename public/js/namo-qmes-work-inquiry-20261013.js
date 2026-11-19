@@ -65,7 +65,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
    const qr=printLotQRCode(m.lot,m.name,record.id,i);
    return '<div class="qr-card"><h3>'+safe(i+1)+'. '+safe(name)+'</h3><div class="qr-card-content"><div class="qr-card-code">'+qr+'</div><dl><dt>원료명</dt><dd>'+safe(name)+'</dd><dt>LOT NO</dt><dd>'+safe(m.lot)+'</dd><dt>계획량</dt><dd>'+safe(m.plan)+' kg</dd><dt>실투입량</dt><dd>'+safe(m.actual)+' kg</dd></dl></div></div>';
   }).join('');
-  return '<main class="paper qr-paper">'+printHeader+'<div class="brand"><img class="print-company-logo" src="'+companyLogo+'" alt="나모케미칼(주)"><small>(주)나모케미칼<br>원료 QR 확인표</small></div><h1>작업지시서 원료 QR<small>MATERIAL QR CHECK SHEET</small></h1><div class="qr-reference"><b>작업지시번호</b> '+safe(f['작업지시번호']||record.id)+'<span><b>제품명</b> '+safe(f['제품명'])+'</span><span><b>생산 LOT</b> '+safe(f['생산 LOT NO'])+'</span></div><p class="qr-guide">원료별 QR을 스캔하여 LOT와 현재 재고 정보를 확인하세요.</p><div class="qr-grid">'+cards+'</div><div class="footer"><span class="print-page-number">'+(page+2)+' / '+pageCount+'</span></div></main>';
+  return '<main class="paper qr-paper">'+printHeader+'<div class="brand"><img class="print-company-logo" src="'+companyLogo+'" alt="나모케미칼(주)"><small>(주)나모케미칼<br>원료 QR 확인표</small></div><h1>작업지시서 원료 QR<small>MATERIAL QR CHECK SHEET</small></h1><div class="qr-reference"><div><b>작업지시번호</b><span>'+safe(f['작업지시번호']||record.id)+'</span></div><div><b>제품명</b><span>'+safe(f['제품명'])+'</span></div><div><b>생산 LOT</b><span>'+safe(f['생산 LOT NO'])+'</span></div></div><p class="qr-guide">원료별 QR을 스캔하여 LOT와 현재 재고 정보를 확인하세요.</p><div class="qr-grid">'+cards+'</div><div class="footer"><span class="print-page-number">'+(page+2)+' / '+pageCount+'</span></div></main>';
  }).join('');
  const steps=[
   ['01','A탱크 원료 투입','NMP / 분산제 / 세라믹 투입'],
@@ -86,8 +86,8 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
 .qr-card-code img{display:block;width:27mm;height:27mm;image-rendering:pixelated}
 .qr-card dl{display:grid;grid-template-columns:17mm minmax(0,1fr);margin:0;gap:2mm 1mm;flex:1;min-width:0;font-size:9pt;line-height:1.5}
 .qr-card dt{font-weight:700;color:#31516f}.qr-card dd{margin:0;overflow-wrap:anywhere}
-.qr-reference{padding:3mm 0;border-bottom:1px solid #cad6e3;font-size:9pt;line-height:1.8}
-.qr-reference span{display:inline-block;margin-left:4mm}.qr-guide{font-size:8.5pt;color:#667e94;margin:3mm 0}
+.qr-reference{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:3mm 0;border-bottom:1px solid #cad6e3;font-size:9pt;line-height:1.8}
+.qr-reference>div{display:flex;align-items:center;justify-content:center;gap:2mm;min-width:0;padding:0 2mm;text-align:center}.qr-reference>div+div{border-left:1px solid #dce5ed}.qr-reference b{flex:none}.qr-reference span{min-width:0;overflow-wrap:anywhere}.qr-guide{font-size:8.5pt;color:#667e94;margin:3mm 0}
 @media screen{body{background:#edf2f7!important}.paper{width:210mm;max-width:none!important;min-height:297mm;background:#fff;padding:12mm;margin:6mm auto!important;box-shadow:0 1px 8px #203a5220}.qr-paper{margin-top:10mm!important}}
 
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#1d314a;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
