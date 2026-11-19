@@ -245,7 +245,25 @@
             await restoreDraft(active);dialog.close();dialog.remove();workDraftButton();
           }catch(failure){error.textContent=failure.message;restore.disabled=false;}
         };
-        row.append(label,restore);list.append(row);
+        label.style.minWidth='0';
+        const remove=doc.createElement('button');remove.type='button';remove.className='btn';remove.textContent='삭제';remove.style.cssText='flex:none;color:#b42318;border-color:#efc5c1';
+        restore.style.flex='none';
+        remove.onclick=()=>{
+          if(!allowed()||authorized!==owner)return;
+          if(!win.confirm('이 임시저장을 삭제하시겠습니까? 정식 저장된 작업지시서는 삭제되지 않습니다.'))return;
+          if(!allowed()||authorized!==owner)return;
+          try{
+            if(!repo.finish(draft.key,owner,draft.revision)){error.textContent='다른 창에서 임시저장이 변경됐습니다. 목록을 다시 열어 확인해 주세요.';return;}
+            if(active?.key===draft.key){
+              win.clearTimeout(active.timer);active.pending=null;active.dirty=false;active.revision=revision();
+              const current=snapshot(active);active.baseline=active.last=signature(current.fields,current.rows);
+              show(active,'임시저장을 삭제했습니다. 현재 입력 내용은 유지됩니다.',false);
+            }
+            row.remove();if(!list.children.length)list.textContent='보관된 작업지시서 임시저장이 없습니다.';
+            error.textContent='임시저장을 삭제했습니다.';workDraftButton();
+          }catch(_){error.textContent='임시저장을 삭제하지 못했습니다. 다시 시도해 주세요.';}
+        };
+        row.append(label,restore,remove);list.append(row);
       }
     }
     function ensure(){
