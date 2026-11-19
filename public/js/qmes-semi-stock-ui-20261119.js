@@ -8,13 +8,13 @@ let model={rows:[],warnings:[],unallocated:[]},orders=[],entries=[],active=false
 async function request(url,options={}){const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(20000),...options});const result=await response.json();if(!response.ok||!result.success)throw Error(result.message||'반제품 재고를 조회하지 못했습니다.');return result.data;}
 function paint(){
  const matches=model.rows.filter(row=>(row.product+' '+row.lot+' '+row.sourceIds.join(' ')).toLowerCase().includes(query.toLowerCase())),pages=Math.max(1,Math.ceil(matches.length/10));page=Math.min(page,pages);
- root.innerHTML='<section class="semi-panel"><header class="semi-head"><h2>반제품 재고</h2><div><button type="button" data-semi-refresh '+(loading?'disabled':'')+'>새로고침</button></div></header>'+
- '<div class="semi-filter"><label>반제품명 / 자체 LOT<input type="search" data-semi-query value="'+esc(query)+'" placeholder="전체"></label><button type="button" data-semi-search>조회</button><span>총 '+matches.length+'건</span></div>'+
- '<p class="semi-note">용액제조·중간배치 작업지시서의 제조량을 반영합니다. 제조량 입력이 없으면 계획수량 기준입니다. 사용량은 연결된 작업지시서 실투입량과 사용 기록을 차감합니다.</p>'+
+ root.innerHTML='<section class="semi-panel"><header class="semi-head"><h2>반제품 재고관리</h2><div><button type="button" data-semi-refresh '+(loading?'disabled':'')+'>새로고침</button></div></header>'+
+ '<div class="semi-filter"><label>반제품명 / 자체 LOT<input type="search" data-semi-query value="'+esc(query)+'" placeholder="전체"></label></div>'+
+ '<div class="semi-list-head"><strong>▸ 반제품 현황</strong><div><span>총 '+matches.length+'건</span><button type="button" data-semi-reset>조건 지우기</button><button type="button" data-semi-search>조회</button></div></div>'+
  (model.warnings.length?'<p class="semi-warning" role="alert">'+esc(model.warnings.join(' / '))+'</p>':'')+
  '<div class="semi-table-wrap"><table class="semi-table"><colgroup>'+[4,17,14,11,11,11,17,15].map(width=>'<col style="width:'+width+'%">').join('')+'</colgroup><thead><tr>'+['No.','반제품명','자체 LOT NO','생산량(kg)','사용량(kg)','재고(kg)','확인 상태','내역 / 사용 기록'].map(title=>'<th>'+title+'</th>').join('')+'</tr></thead><tbody>'+
  (matches.slice((page-1)*10,page*10).map((row,i)=>'<tr><td>'+((page-1)*10+i+1)+'</td><td>'+esc(row.product)+'</td><td>'+esc(row.lot)+'</td><td>'+fmt(row.produced)+'</td><td>'+fmt(row.used+row.manualUsed)+'</td><td>'+fmt(row.balance)+'</td><td class="'+(row.issues.length?'semi-warning':'')+'">'+esc([...row.issues,...row.notices].join(' / ')||'확인 완료')+'</td><td><div class="semi-actions"><button type="button" data-semi-detail="'+esc(row.key)+'">내역</button><button type="button" data-semi-use="'+esc(row.key)+'" '+(loading?'disabled':'')+'>사용 기록</button></div></td></tr>').join('')||'<tr><td colspan="8">'+(loading?'반제품 재고 조회 중입니다.':'등록된 용액제조·중간배치 작업지시서가 없습니다.')+'</td></tr>')+
- '</tbody></table></div><nav class="semi-pager" aria-label="반제품 재고 페이지">'+Array.from({length:pages},(_,i)=>'<button type="button" data-semi-page="'+(i+1)+'" '+(page===i+1?'aria-current="page"':'')+'>'+(i+1)+'</button>').join('')+'</nav>'+
+ '</tbody></table></div><nav class="semi-pager" aria-label="반제품 재고 페이지">'+Array.from({length:pages},(_,i)=>'<button type="button" data-semi-page="'+(i+1)+'" '+(page===i+1?'aria-current="page"':'')+'>'+(i+1)+'</button>').join('')+'</nav><p class="semi-policy">생산량은 제조량 우선, 미입력 시 계획수량 기준입니다. 재고는 실투입량과 사용 기록을 차감해 표시합니다.</p>'+
  (model.unallocated.length?'<p class="semi-warning">사용 연결 확인 '+model.unallocated.length+'건 · '+esc(model.unallocated.map(row=>(row.lot||'-')+' '+row.reason).join(' / '))+'</p>':'')+'</section>';
  root.querySelector('[data-semi-query]').addEventListener('keydown',event=>{if(event.key==='Enter')search();});
 }
@@ -49,18 +49,60 @@ function edit(key){
   }catch(failure){error.textContent=failure.message;}finally{submit.disabled=false;}
  };
 }
-root.addEventListener('click',event=>{const node=event.target.closest('button');if(!node)return;if(node.hasAttribute('data-semi-refresh'))load();if(node.hasAttribute('data-semi-search'))search();if(node.dataset.semiPage){page=Number(node.dataset.semiPage);paint();}if(node.dataset.semiDetail)details(node.dataset.semiDetail);if(node.dataset.semiUse)edit(node.dataset.semiUse);});
+root.addEventListener('click',event=>{const node=event.target.closest('button');if(!node)return;if(node.hasAttribute('data-semi-refresh'))load();if(node.hasAttribute('data-semi-search'))search();if(node.hasAttribute('data-semi-reset')){query='';page=1;paint();}if(node.dataset.semiPage){page=Number(node.dataset.semiPage);paint();}if(node.dataset.semiDetail)details(node.dataset.semiDetail);if(node.dataset.semiUse)edit(node.dataset.semiUse);});
 window.addEventListener('qmes-stock-tab-changed',event=>{active=event.detail.kind==='semi';root.hidden=!active;if(active&&event.detail.reload!==false)load();});
 function clear(){epoch++;orders=[];entries=[];model={rows:[],warnings:[],unallocated:[]};loading=false;page=1;query='';document.querySelectorAll('.semi-dialog').forEach(node=>node.close());paint();}
 window.addEventListener('qmes-authenticated',()=>{clear();if(active&&pageRoot.classList.contains('active'))load();});
 document.addEventListener('click',event=>{if(event.target.closest?.('#logoutBtn,[data-action="logout"],[data-auth="logout"]'))clear();});
 new MutationObserver(()=>{if(active&&pageRoot.classList.contains('active'))load();}).observe(pageRoot,{attributes:true,attributeFilter:['class']});
-const style=document.createElement('style');style.textContent=`
+const style=document.createElement('style');style.id='qmes-semi-namo-layout-20261119';style.textContent=`
 #semiStock[hidden]{display:none!important}
-#semiStock{padding:16px;background:#fff;color:#244260;font:12px Pretendard,"Noto Sans KR",Arial,sans-serif}
-.semi-head{display:flex;justify-content:space-between;align-items:center}.semi-head h2{margin:4px 0 16px;font-size:18px}.semi-filter{display:flex;gap:12px;align-items:center;padding:12px;background:#f4f8fc;border:1px solid #d5dce5}.semi-filter label{display:flex;align-items:center;gap:10px}.semi-filter input{height:30px;border:1px solid #c7d6e5;border-radius:4px;padding:5px 8px}.semi-note{color:#64748b;line-height:1.7}.semi-warning{color:#b45309!important;line-height:1.5}.semi-table-wrap{overflow:auto;border:1px solid #d5dce5}.semi-table{width:100%;min-width:850px;border-collapse:collapse;table-layout:fixed}.semi-table th,.semi-table td{border:0;border-right:1px solid #d5dce5;border-bottom:1px solid #d5dce5;text-align:center;vertical-align:middle;overflow-wrap:anywhere}.semi-table th{height:34px;padding:0 8px;background:#e8f0f8;font-size:12px;font-weight:600}.semi-table td{height:44px;padding:6px 8px;font-size:12px}.semi-table tr>:last-child{border-right:0}.semi-table tbody tr:last-child>td{border-bottom:0}.semi-actions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.semi-pager{display:flex;gap:5px;justify-content:center;padding:18px}.semi-pager [aria-current]{background:#2f8de4!important;color:#fff!important}
-#semiStock button,.semi-dialog button{height:28px;padding:3px 9px;border:1px solid #c7d6e5;background:#fff;color:#315f94;border-radius:4px;font:600 11px Pretendard,Arial,sans-serif;cursor:pointer}.semi-dialog{width:min(1000px,calc(100vw - 32px));max-height:90dvh;border:1px solid #d5dce5;border-radius:8px;padding:0;color:#244260;font:12px Pretendard,"Noto Sans KR",Arial,sans-serif}.semi-dialog::backdrop{background:#203a5266}.semi-dialog>header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #d5dce5}.semi-dialog-body{padding:18px}.semi-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.semi-form label{display:grid;gap:6px}.semi-form :is(input,select,textarea){box-sizing:border-box;width:100%;min-height:34px;border:1px solid #c7d6e5;background:#fff;color:#244260;border-radius:4px;padding:7px;font:inherit}.semi-form textarea{min-height:70px}.semi-full{grid-column:1/-1}.semi-form footer{display:flex;justify-content:flex-end}
-@media(max-width:700px){.semi-filter{flex-wrap:wrap}.semi-filter label{flex-wrap:wrap}.semi-form{grid-template-columns:1fr}}
+html body #materialStock #semiStock{padding:0 16px 16px;background:#fff;color:#244260;font:400 12px Pretendard,"Noto Sans KR",Arial,sans-serif}
+#semiStock *,.semi-dialog *{box-sizing:border-box}
+#semiStock .semi-panel{border:1px solid #d5dce5;border-radius:8px;overflow:hidden;background:#fff}
+#semiStock .semi-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid #d5dce5}
+#semiStock .semi-head h2{margin:0;padding-left:12px;border-left:3px solid #2689ef;color:#173e66;font-size:18px;line-height:24px;font-weight:700}
+#semiStock .semi-filter{display:flex;align-items:center;gap:20px;padding:12px 16px;background:#f3f7fb;border:0;border-bottom:1px solid #d5dce5}
+#semiStock .semi-filter label{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;white-space:nowrap}
+#semiStock .semi-filter input{width:230px;height:30px;min-height:30px;padding:0 9px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#244260;font:inherit;font-weight:400}
+#semiStock .semi-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px}
+#semiStock .semi-list-head strong{font-size:13px;font-weight:700}
+#semiStock .semi-list-head>div{display:flex;align-items:center;gap:7px}
+#semiStock .semi-list-head span{margin-right:8px;color:#64748b;font-size:12px}
+#semiStock .semi-policy{margin:0;padding:0 16px 14px;color:#718397;font-size:11px;line-height:1.6}
+.semi-note{color:#64748b;font-size:11px;line-height:1.7}
+.semi-warning{color:#a56b22!important;line-height:1.5}
+#semiStock .semi-table-wrap{margin:0 16px}
+html body #materialStock #semiStock .semi-table-wrap,.semi-dialog .semi-table-wrap{overflow:auto;border:1px solid #d5dce5;box-shadow:none;border-radius:0}
+html body #materialStock #semiStock table.semi-table,.semi-dialog table.semi-table{width:100%;min-width:850px;margin:0;border:0!important;border-collapse:separate!important;border-spacing:0!important;table-layout:fixed;box-shadow:none!important}
+html body #materialStock #semiStock .semi-table :is(th,td),.semi-dialog .semi-table :is(th,td){border:0!important;border-right:1px solid #d5dce5!important;border-bottom:1px solid #d5dce5!important;text-align:center!important;vertical-align:middle!important;font-family:inherit!important;font-size:12px!important;box-shadow:none!important}
+html body #materialStock #semiStock .semi-table th,.semi-dialog .semi-table th{height:34px!important;min-height:0!important;padding:0 8px!important;line-height:20px!important;background:#e8f0f8!important;color:#244260!important;font-weight:600!important;white-space:nowrap}
+html body #materialStock #semiStock .semi-table td,.semi-dialog .semi-table td{height:44px!important;padding:6px 8px!important;line-height:18px!important;background:#fff;font-weight:400!important;overflow-wrap:anywhere}
+html body #materialStock #semiStock .semi-table tr>:last-child,.semi-dialog .semi-table tr>:last-child{border-right:0!important}
+html body #materialStock #semiStock .semi-table tbody tr:last-child>td,.semi-dialog .semi-table tbody tr:last-child>td{border-bottom:0!important}
+#semiStock .semi-table tbody tr:nth-child(even)>td{background:#fbfcfe}
+#semiStock .semi-table tbody tr:hover>td{background:#eef6ff}
+.semi-actions{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
+#semiStock button,.semi-dialog button{height:30px;min-height:0;padding:4px 10px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#315f94;font:600 12px Pretendard,"Noto Sans KR",Arial,sans-serif;cursor:pointer;box-shadow:none}
+#semiStock .semi-table button{height:26px;padding:3px 7px;font-size:11px;white-space:nowrap}
+#semiStock button:hover,.semi-dialog button:hover{background:#edf5fd;border-color:#80b6e6}
+#semiStock button:focus-visible,.semi-dialog button:focus-visible{outline:2px solid #2689ef;outline-offset:2px}
+#semiStock .semi-pager{display:flex;justify-content:center;gap:4px;padding:18px 16px}
+#semiStock .semi-pager button{height:25px;min-width:25px;padding:2px 7px}
+#semiStock .semi-pager [aria-current="page"]{background:#2f8de4!important;border-color:#2f8de4!important;color:#fff!important}
+.semi-dialog{width:min(1000px,calc(100vw - 32px));max-height:90dvh;padding:0;border:1px solid #d5dce5;border-radius:8px;background:#fff;color:#244260;font:400 12px Pretendard,"Noto Sans KR",Arial,sans-serif}
+.semi-dialog::backdrop{background:#203a5266}
+.semi-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #d5dce5}
+.semi-dialog>header strong{padding-left:10px;border-left:3px solid #2689ef;font-size:16px;line-height:23px;font-weight:700}
+.semi-dialog-body{padding:18px}
+.semi-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.semi-form label{display:grid;gap:7px;color:#244260;font-weight:600}
+.semi-form :is(input,select,textarea){width:100%;min-width:0;min-height:36px;padding:8px;border:1px solid #c7d6e5;border-radius:4px;background:#fff;color:#244260;font:400 12px Pretendard,"Noto Sans KR",Arial,sans-serif;color-scheme:light}
+.semi-form textarea{min-height:70px;resize:vertical}
+.semi-full{grid-column:1/-1}
+.semi-form footer{display:flex;justify-content:flex-end;margin:4px -18px -18px;padding:12px 18px;border-top:1px solid #d5dce5}
+.semi-form button[type="submit"]{background:#2f8de4;border-color:#2f8de4;color:#fff}
+@media(max-width:700px){#semiStock .semi-head,#semiStock .semi-list-head{flex-wrap:wrap}#semiStock .semi-filter label{flex-wrap:wrap;white-space:normal}#semiStock .semi-filter input{width:min(230px,100%)}#semiStock .semi-list-head>div{flex-wrap:wrap}.semi-form{grid-template-columns:1fr}}
 `;document.head.append(style);
 try{active=sessionStorage.getItem('qmes-stock-tab')==='semi';}catch(_){}
 if(active)window.qmesSelectStockKind?.('semi',false);root.hidden=!active;paint();if(active&&pageRoot.classList.contains('active'))load();
