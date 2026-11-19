@@ -313,20 +313,6 @@ DECLARE m JSONB; l TEXT; status TEXT;
 BEGIN
  IF j=oldj THEN RETURN; END IF;
  j:=qmes_gate_document_body(j); oldj:=qmes_gate_document_body(oldj);
- -- Permit only the user-confirmed name correction, inside its audited transaction.
- -- No LOT, quantity, status, other row or document field may change.
- IF current_setting('qmes.authorized_material_correction',true)='20261119:WO-20260819-001:2708935'
- AND j#>>'{fields,작업지시번호}'='WO-20260819-001'
- AND oldj#>>'{fields,작업지시번호}'='WO-20260819-001'
- AND (j-'materials')=(oldj-'materials')
- AND (SELECT count(*) FROM jsonb_array_elements(coalesce(oldj->'materials','[]')) m
-      WHERE btrim(coalesce(m->>'name',''))='AOH30' AND btrim(coalesce(m->>'lot',''))='2708935')=1
- AND j->'materials'=(SELECT jsonb_agg(CASE
-      WHEN btrim(coalesce(m->>'name',''))='AOH30' AND btrim(coalesce(m->>'lot',''))='2708935'
-      THEN m||jsonb_build_object('name','BYK180','sourceName','BYK180') ELSE m END ORDER BY ord)
-      FROM jsonb_array_elements(coalesce(oldj->'materials','[]')) WITH ORDINALITY AS x(m,ord))
- THEN RETURN; END IF;
-
  -- In-house solution manufacturing is outside the work-order process gate.
  IF btrim(coalesce(j->>'productionType',''))='용액제조' THEN RETURN; END IF;
  l:=qmes_gate_lot(j); status:=coalesce(j#>>'{fields,진행상태}',j->>'manualStatus',j->>'status','');
