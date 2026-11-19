@@ -138,7 +138,11 @@
         const updateNumber=()=>{
           if(!form.isConnected||form.dataset.workDispatchSavedId)return;
           const date=workDate?.value||startDate?.value||'';
-          number.value=date?nextWorkOrderDisplayNumber(date,readWorkOrders()):'작업일자 선택 시 자동생성';
+          const generated=date?nextWorkOrderDisplayNumber(date,readWorkOrders()):'작업일자 선택 시 자동생성';
+          const mode=form.querySelector('#workOrderNumberMode');
+          number.value=mode?.value==='none'?'-':generated;
+          const auto=mode?.querySelector('option[value="auto"]');
+          if(auto&&auto.textContent!==generated)auto.textContent=generated;
         };
         for(const field of [workDate,startDate]){
           field?.addEventListener('input',updateNumber);
