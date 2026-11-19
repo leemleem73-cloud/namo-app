@@ -72,7 +72,7 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  ];
  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>작업지시서 ${safe(record.fields?.['작업지시번호']||record.id)}</title>
 <style>
-@page{size:A4 portrait;margin:12mm 11mm}
+@page{size:A4 portrait;margin:12mm}
 .work-print-document{break-after:page;page-break-after:always}.work-print-document:last-of-type{break-after:auto;page-break-after:auto}
 .qr-paper{break-before:page;page-break-before:always}
 .qr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm;margin-top:4mm}
@@ -85,10 +85,10 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
 .qr-card dt{font-weight:700;color:#31516f}.qr-card dd{margin:0;overflow-wrap:anywhere}
 .qr-reference{padding:3mm 0;border-bottom:1px solid #cad6e3;font-size:9pt;line-height:1.8}
 .qr-reference span{display:inline-block;margin-left:4mm}.qr-guide{font-size:8.5pt;color:#667e94;margin:3mm 0}
-@media screen{body{background:#edf2f7!important}.paper{background:#fff;padding:8mm;margin:6mm auto!important;box-shadow:0 1px 8px #203a5220}.qr-paper{margin-top:10mm!important}}
+@media screen{body{background:#edf2f7!important}.paper{width:210mm;max-width:none!important;min-height:297mm;background:#fff;padding:12mm;margin:6mm auto!important;box-shadow:0 1px 8px #203a5220}.qr-paper{margin-top:10mm!important}}
 
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#1d314a;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{font-size:10pt}.paper{max-width:188mm;margin:auto}
+body{font-size:10pt}.paper{max-width:186mm;margin:auto;display:flex;flex-direction:column}.paper>*{flex-shrink:0}.paper>.footer{margin-top:auto}
 .actions{display:flex;justify-content:flex-end;gap:7px;margin:12px 0}.actions button{padding:9px 14px;border:1px solid #bbcadb;border-radius:5px;background:white;cursor:pointer;font-weight:700}.actions button:first-child{background:#164b7a;color:#fff;border-color:#164b7a}
 .brand{display:flex;justify-content:space-between;align-items:center;border-top:4px solid #174d7c;padding:12px 2px}
 .brand strong{font-size:17pt;color:#174d7c}.brand small{font-size:8pt;color:#6e8398;text-align:right}
@@ -107,7 +107,7 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;zoom:1}h2{break-after:avoid;margin-top:12px;padding:7px 9px}.brand{padding:9px 2px}h1{padding:10px 0 12px}table th,table td{padding:6px 5px;font-size:8.5pt}.material th{font-size:8pt}.step{min-height:42px;padding:7px}.note{min-height:46px;padding:9px}.footer{margin-top:12px;padding-top:7px}}
+@media print{.actions{display:none!important}.paper{width:186mm;max-width:none;min-height:273mm;padding:0;zoom:1}.paper>.footer{margin-top:auto}h2{break-after:avoid;margin-top:12px;padding:7px 9px}.brand{padding:9px 2px}h1{padding:10px 0 12px}table th,table td{padding:6px 5px;font-size:8.5pt}.material th{font-size:8pt}.step{min-height:42px;padding:7px}.note{min-height:46px;padding:9px}.footer{margin-top:12px;padding-top:7px}}
 </style></head><body><article class="work-print-document"><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
