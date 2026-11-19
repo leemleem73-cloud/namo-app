@@ -158,6 +158,7 @@
     target.querySelectorAll(".work-form").forEach(prepForm);
   }
   window.namoValidateIntermediateWorkorder=async function({editId,rows:items,record}){
+    if(str(record?.productionType)==="용액제조")return {ok:true};
     const producer=mid(record);
     const measured=qty(record);
     if(producer&&(!TYPES.includes(str(record?.intermediateBatch?.kind))||status(record)==="완료"&&measured<=0))
