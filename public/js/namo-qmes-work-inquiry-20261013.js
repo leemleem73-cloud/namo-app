@@ -54,9 +54,15 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const rows=materials.map((m,i)=>{
   const name=m.name==='중간배치'&&m.batchType?String(m.name)+' ('+String(m.batchType)+')':m.name;
   const ratio=planned>0?qty(num(m.plan)/planned*100)+'%':'-';
-  const qr=printLotQRCode(m.lot,m.name,record.id,i);
-  const nameCell='<div class="print-material-with-qr"><span>'+safe(name)+'</span><span class="print-lot-qr">'+qr+'</span></div>';
-  return '<tr><td>'+safe(i+1)+'</td><td>'+nameCell+'</td><td>'+safe(m.lot)+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
+  return '<tr><td>'+safe(i+1)+'</td><td>'+safe(name)+'</td><td>'+safe(m.lot)+'</td><td>'+safe(m.plan)+'</td><td>'+safe(m.actual)+'</td><td>'+ratio+'</td></tr>';
+ }).join('');
+ const qrPages=Array.from({length:Math.ceil(materials.length/6)},(_,page)=>{
+  const cards=materials.slice(page*6,page*6+6).map((m,offset)=>{
+   const i=page*6+offset,name=m.name==='중간배치'&&m.batchType?m.name+' ('+m.batchType+')':m.name;
+   const qr=printLotQRCode(m.lot,m.name,record.id,i);
+   return '<div class="qr-card"><h3>'+safe(i+1)+'. '+safe(name)+'</h3><div class="qr-card-content"><div class="qr-card-code">'+qr+'</div><dl><dt>원료명</dt><dd>'+safe(name)+'</dd><dt>LOT NO</dt><dd>'+safe(m.lot)+'</dd><dt>계획량</dt><dd>'+safe(m.plan)+' kg</dd><dt>실투입량</dt><dd>'+safe(m.actual)+' kg</dd></dl></div></div>';
+  }).join('');
+  return '<main class="paper qr-paper"><div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>원료 QR 확인표</small></div><h1>작업지시서 원료 QR<small>MATERIAL QR CHECK SHEET</small></h1><div class="qr-reference"><b>작업지시번호</b> '+safe(f['작업지시번호']||record.id)+'<span><b>제품명</b> '+safe(f['제품명'])+'</span><span><b>생산 LOT</b> '+safe(f['생산 LOT NO'])+'</span></div><p class="qr-guide">원료별 QR을 스캔하여 LOT와 현재 재고 정보를 확인하세요.</p><div class="qr-grid">'+cards+'</div><div class="footer"><span>원료 QR 확인표 '+(page+1)+' / '+Math.ceil(materials.length/6)+'</span><span>작업일자: '+safe(record.workDate)+'</span><span>NAMO QMES</span></div></main>';
  }).join('');
  const steps=[
   ['01','A탱크 원료 투입','NMP / 분산제 / 세라믹 투입'],
@@ -67,6 +73,20 @@ function printWorkOrderDocument(record,reservedWindow,renderOnly=false){
  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>작업지시서 ${safe(record.fields?.['작업지시번호']||record.id)}</title>
 <style>
 @page{size:A4 portrait;margin:12mm 11mm}
+.work-print-document{break-after:page;page-break-after:always}.work-print-document:last-of-type{break-after:auto;page-break-after:auto}
+.qr-paper{break-before:page;page-break-before:always}
+.qr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4mm;margin-top:4mm}
+.qr-card{border:1px solid #cad6e3;min-height:60mm;padding:4mm;break-inside:avoid;page-break-inside:avoid}
+.qr-card h3{font-size:11pt;margin:0 0 3mm;color:#1f4366;border-bottom:1px solid #d4e0eb;padding-bottom:2mm}
+.qr-card-content{display:flex;align-items:center;gap:4mm;min-width:0}
+.qr-card-code{flex:0 0 29mm;background:#fff;padding:1mm}
+.qr-card-code img{display:block;width:27mm;height:27mm;image-rendering:pixelated}
+.qr-card dl{display:grid;grid-template-columns:17mm minmax(0,1fr);margin:0;gap:2mm 1mm;flex:1;min-width:0;font-size:9pt;line-height:1.5}
+.qr-card dt{font-weight:700;color:#31516f}.qr-card dd{margin:0;overflow-wrap:anywhere}
+.qr-reference{padding:3mm 0;border-bottom:1px solid #cad6e3;font-size:9pt;line-height:1.8}
+.qr-reference span{display:inline-block;margin-left:4mm}.qr-guide{font-size:8.5pt;color:#667e94;margin:3mm 0}
+@media screen{body{background:#edf2f7!important}.paper{background:#fff;padding:8mm;margin:6mm auto!important;box-shadow:0 1px 8px #203a5220}.qr-paper{margin-top:10mm!important}}
+
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#1d314a;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{font-size:10pt}.paper{max-width:188mm;margin:auto}
 .actions{display:flex;justify-content:flex-end;gap:7px;margin:12px 0}.actions button{padding:9px 14px;border:1px solid #bbcadb;border-radius:5px;background:white;cursor:pointer;font-weight:700}.actions button:first-child{background:#164b7a;color:#fff;border-color:#164b7a}
@@ -80,15 +100,15 @@ table{border-collapse:collapse;table-layout:fixed;width:100%}th,td{border:1px so
 .material th{background:#edf3f9;color:#31516f;text-align:center;font-size:8.5pt}.material td{text-align:center}
 .material th:nth-child(1){width:6%}.material th:nth-child(2){width:28%}.material th:nth-child(3){width:20%}.material th:nth-child(4){width:16%}.material th:nth-child(5){width:16%}.material th:nth-child(6){width:14%}
 .material tfoot td{background:#f4f8fb;font-weight:800}
-.iqc-qr-unlinked{display:block;font-size:7pt;color:#a34a22;white-space:normal;max-width:47px;line-height:1.2}.print-material-with-qr{display:flex;align-items:center;justify-content:space-between;gap:3px;text-align:left}.print-material-with-qr>span:first-child{min-width:0;overflow-wrap:anywhere}.print-lot-qr{flex:0 0 auto;padding:2px;background:#fff;break-inside:avoid}.print-lot-qr img{display:block;width:72px;height:72px;image-rendering:pixelated}
+.iqc-qr-unlinked{display:block;font-size:8pt;color:#a34a22;white-space:normal;line-height:1.5}
 .steps{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .step{border:1px solid #d4e0eb;display:flex;gap:8px;align-items:center;min-height:49px;padding:8px}
 .step b{font-size:8pt;color:#1a659b}.step strong{display:block;font-size:9pt}.step small{display:block;font-size:8pt;color:#667e94;margin-top:3px}
 .note{min-height:56px;border:1px solid #cad6e3;padding:10px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .footer{display:flex;justify-content:space-between;border-top:1px solid #ccd9e6;margin-top:15px;padding-top:8px;font-size:8pt;color:#688096}
 tr{break-inside:avoid}thead{display:table-header-group}
-@media print{.actions{display:none!important}.paper{max-width:none;zoom:1}h2{break-after:avoid;margin-top:12px;padding:7px 9px}.brand{padding:9px 2px}h1{padding:10px 0 12px}table th,table td{padding:6px 5px;font-size:8.5pt}.material th{font-size:8pt}.print-material-with-qr{gap:5px}.print-lot-qr{padding:2px}.print-lot-qr img{width:70px;height:70px;max-width:none;max-height:none}.step{min-height:42px;padding:7px}.note{min-height:46px;padding:9px}.footer{margin-top:12px;padding-top:7px}}
-</style></head><body><main class="paper">
+@media print{.actions{display:none!important}.paper{max-width:none;zoom:1}h2{break-after:avoid;margin-top:12px;padding:7px 9px}.brand{padding:9px 2px}h1{padding:10px 0 12px}table th,table td{padding:6px 5px;font-size:8.5pt}.material th{font-size:8pt}.step{min-height:42px;padding:7px}.note{min-height:46px;padding:9px}.footer{margin-top:12px;padding-top:7px}}
+</style></head><body><article class="work-print-document"><main class="paper">
 <div class="actions"><button type="button" onclick="window.print()">인쇄하기</button><button type="button" onclick="window.close()">닫기</button></div>
 <div class="brand"><strong>NAMO Chemical</strong><small>(주)나모케미칼<br>QMES · PRODUCTION MANAGEMENT</small></div>
 <h1>작업지시서<small>WORK ORDER</small></h1>
@@ -102,7 +122,7 @@ tr{break-inside:avoid}thead{display:table-header-group}
 <div class="steps">${steps.map(x=>'<div class="step"><b>STEP '+safe(x[0])+'</b><div><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div></div>').join('')}</div>
 <h2>04. 비고</h2><div class="note">${safe(record.note)}</div>
 <div class="footer"><span>작업지시번호: ${safe(record.fields?.['작업지시번호']||record.id)}</span><span>출력일시: ${safe(timestamp)} KST</span><span>NAMO QMES</span></div>
-</main><script>window.addEventListener('load',function(){window.focus()});</script></body></html>`;
+</main>${qrPages}</article><script>window.addEventListener('load',function(){window.focus()});</script></body></html>`;
  if(renderOnly)return html;
  // Direct native print preview. No intermediate about:blank popup window.
  try{
@@ -482,10 +502,10 @@ async function print(){
  if(!await window.qmesConfirmPrint('작업지시서',docs.length))return;
  await window.qmesPrepareWorkMaterialQr(docs);
  const pages=docs.map(r=>window.namoPrintWorkOrder(r,null,true));
- const parts=pages.map(page=>page.match(/<main class="paper">[\s\S]*?<\/main>/)?.[0]).filter(Boolean);
+ const parts=pages.map(page=>page.match(/<article class="work-print-document">[\s\S]*?<\/article>/)?.[0]).filter(Boolean);
  if(parts.length!==docs.length){alert('선택 인쇄 문서를 준비하지 못했습니다.');return}
  let html=pages[0].replace(parts[0],parts.join('\n'));
- html=html.replace('</style>','@media print{.paper{break-after:page;page-break-after:always}.paper:last-of-type{break-after:auto;page-break-after:auto}}\n</style>');
+ // Each complete work-print-document keeps its body and QR appendix together.
  html=html.replace(/<title>[^<]*<\/title>/,'<title>작업지시서 선택 인쇄 ('+docs.length+'건)</title>');
  html=html.replace(/<script>window\.addEventListener\('load'[\s\S]*?<\/script>/,'');
  const old=document.getElementById('qmes-bulk-print-frame');if(old)old.remove();
