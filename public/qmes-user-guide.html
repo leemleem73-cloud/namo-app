@@ -81,6 +81,7 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .qaDetailBody{padding:28px 0 40px;font-size:14px;line-height:2;color:#222;min-height:220px}
 .qaDetailBody strong{display:block;margin-bottom:22px;color:#111}
 .qaDetailBody .path{margin-top:24px;font-weight:800;color:#111}
+.qaVideo{margin-left:auto;color:#5b6570;font-size:12px}
 .qaMetaActions{display:flex;align-items:center;gap:8px}
 .qaRegisterBtn{height:34px;border:1px solid #2f8cf0;background:#2f8cf0;color:#fff;padding:0 15px;font-weight:800;cursor:pointer}
 .qaRegisterBox{display:none;margin:12px 0 18px;border:1px solid #d9e2eb;background:#f8fbfe;padding:16px}
@@ -96,8 +97,89 @@ button,input{font:inherit}.top{height:70px;background:linear-gradient(100deg,#53
 .qaAdminDelete.show{display:inline-flex;align-items:center}
 
 
-@media(max-width:800px){.qaSearch{flex-wrap:wrap}.qaSearch input{max-width:none;min-width:180px}.qaTable th:nth-child(4),.qaTable td:nth-child(4){display:none}.qaBoard{padding:12px}.qaPage{padding:28px 10px 60px}}
+@media(max-width:800px){.qaSearch{flex-wrap:wrap}.qaSearch input{max-width:none;min-width:180px}.qaTable th:nth-child(3),.qaTable td:nth-child(3),.qaTable th:nth-child(5),.qaTable td:nth-child(5){display:none}.qaBoard{padding:12px}.qaPage{padding:28px 10px 60px}}
 
+.videoGuide{max-width:1040px;margin:0 0 24px;border:1px solid #dce5ee;background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(20,35,60,.06)}
+.videoGuideHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.videoGuideHead h3{margin:0;font-size:18px;color:#20374f}.videoGuideHead span{font-size:12px;color:#7b8a99}
+.videoGuideGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.videoCard{border:1px solid #dbe3eb;background:#fbfdff;border-radius:9px;padding:0;overflow:hidden;cursor:pointer;text-align:left;color:#24384f}
+.videoThumb{height:104px;background:linear-gradient(135deg,#eef5ff,#dfefff);display:flex;align-items:center;justify-content:center;position:relative}
+.videoPlay{width:42px;height:42px;border-radius:50%;background:#2f8cf0;color:#fff;display:grid;place-items:center;font-size:18px;box-shadow:0 6px 16px rgba(47,140,240,.25)}
+.videoCardBody{padding:11px 12px}.videoCardBody b{display:block;font-size:13px}.videoCardBody small{display:block;margin-top:5px;color:#7a8998;font-size:11px}
+.videoModal{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;padding:24px}
+.videoModal.open{display:flex}.videoModalBox{width:min(900px,94vw);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.32)}
+.videoModalHead{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #e2e8f0}
+.videoModalHead b{font-size:16px;color:#21384f}.videoModalClose{border:0;background:transparent;font-size:26px;color:#66788a;cursor:pointer}
+.videoStage{aspect-ratio:16/9;background:#0f172a;display:flex;align-items:center;justify-content:center}
+.videoStage video{width:100%;height:100%;background:#000}.videoPreparing{text-align:center;color:#fff}.videoPreparing strong{display:block;font-size:22px;margin-bottom:9px}.videoPreparing span{font-size:13px;color:#cbd5e1}
+@media(max-width:900px){.videoGuideGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.videoGuideGrid{grid-template-columns:1fr}}
+
+.workVideoSim{width:100%;height:100%;background:linear-gradient(180deg,#f8fbff 0%,#eef5fb 100%);position:relative;overflow:hidden;color:#233b55}
+.workVideoSim:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 86% 8%,rgba(74,164,235,.13),transparent 34%),linear-gradient(90deg,rgba(255,255,255,.9),rgba(255,255,255,.25));pointer-events:none}
+.workVideoCanvas{position:absolute;inset:38px 28px 88px;padding:0;transform-origin:center;transition:opacity .32s ease,transform .32s ease;filter:drop-shadow(0 18px 30px rgba(45,79,115,.13))}
+.workVideoCanvas .workActual{height:100%;overflow:hidden;border:1px solid #d8e4ef;border-radius:14px;box-shadow:0 16px 36px rgba(36,70,106,.12);background:#fff}
+.workVideoCaption{position:absolute;left:30px;right:138px;bottom:24px;z-index:8;padding:13px 18px 14px 20px;border-radius:12px;background:rgba(255,255,255,.97);border:1px solid #dbe7f2;color:#1f3550;font-size:15px;font-weight:900;letter-spacing:-.2px;box-shadow:0 10px 28px rgba(38,73,111,.13)}
+.workVideoCaption:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:linear-gradient(#2f8cf0,#68b8ef)}
+.workVideoCaption small{display:block;margin-top:5px;font-size:11px;font-weight:650;line-height:1.5;color:#6b8096}
+.workVideoCursor{position:absolute;z-index:10;width:24px;height:30px;filter:drop-shadow(0 2px 4px rgba(40,67,94,.24));transition:left .7s cubic-bezier(.2,.8,.2,1),top .7s cubic-bezier(.2,.8,.2,1),transform .18s ease}
+.workVideoCursor:before{content:"";position:absolute;left:2px;top:1px;width:0;height:0;border-left:10px solid #24496c;border-top:16px solid transparent;border-bottom:4px solid transparent;transform:rotate(-35deg)}
+.workVideoPulse{position:absolute;z-index:9;width:48px;height:48px;border:2px solid #2f8cf0;border-radius:50%;opacity:0;transform:scale(.45)}
+.workVideoPulse.on{animation:workPulseBright .75s ease}
+@keyframes workPulseBright{0%{opacity:.95;transform:scale(.4);box-shadow:0 0 0 0 rgba(47,140,240,.22)}100%{opacity:0;transform:scale(1.65);box-shadow:0 0 0 20px rgba(47,140,240,0)}}
+.workVideoProgress{position:absolute;left:0;right:0;bottom:0;height:4px;background:#dce8f2;z-index:12}
+.workVideoProgress>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f8cf0,#78c7ef);box-shadow:0 0 10px rgba(47,140,240,.28)}
+.workVideoSim .call{z-index:11;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+.workVideoSim .call.activeStep{transform:scale(1.15);box-shadow:0 0 0 8px rgba(47,140,240,.14),0 5px 16px rgba(47,140,240,.22)!important;background:#2f8cf0!important}
+.workVideoStepBadge{position:absolute;right:28px;top:24px;z-index:8;padding:8px 13px;border-radius:999px;background:#fff;border:1px solid #d8e5f0;color:#315f88;font-size:11px;font-weight:900;letter-spacing:.5px;box-shadow:0 7px 18px rgba(42,79,113,.08)}
+.workVideoBrand{position:absolute;left:30px;top:24px;z-index:9;display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:999px;background:#fff;border:1px solid #d8e5f0;color:#24496c;font-size:10px;font-weight:900;letter-spacing:.7px;box-shadow:0 7px 18px rgba(42,79,113,.08)}
+.workVideoBrand:before{content:"";width:8px;height:8px;border-radius:50%;background:#2f8cf0;box-shadow:0 0 9px rgba(47,140,240,.42)}
+
+/* Work-order moving guide based on QMES work form fields (2026-11-20). */
+.woGuide2026{background:#f3f7fb!important;font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;}
+.woVideoTop{position:absolute;top:0;left:0;right:0;height:40px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;background:#173955;color:#fff;font-size:12px;font-weight:800;z-index:2}
+.woGuideCapture{position:absolute;top:51px;bottom:93px;left:24px;right:24px;background:white;border:1px solid #ccd9e5;border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(16,43,72,.1)}
+.woGuideCapture button{border:1px solid #c8d6e5;background:white;padding:6px 10px;border-radius:4px;font-size:10px;font-weight:800;color:#29445d}
+.woGuideCapture .woDemoBlue{background:#2888db;color:#fff;border-color:#2888db}
+.woDemoFocus{outline:2px solid #2b91ef!important;outline-offset:-2px;background:#e7f5ff!important;box-shadow:0 0 0 4px rgba(42,145,239,.13)!important;color:#154d7d!important}
+.woDemoBlue.woDemoFocus{background:#236eb8!important;color:#fff!important}
+.woDemoMenu{display:flex;gap:18px;padding:9px 16px;background:#f5f8fd;color:#74869b;font-size:11px}.woDemoNavActive{color:#2077c8;font-weight:900}
+.woDemoAppHead{height:33px;background:#2c8bd8;color:white;font-size:11px;font-weight:850;display:flex;align-items:center;gap:20px;padding:0 14px}.woDemoLogo{font-weight:950;letter-spacing:.4px}
+.woDemoBoard{height:100%;background:#fff;overflow:hidden}
+.woDemoListTop{padding:15px 17px;display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.woDemoFakeFilters{margin:2px 17px 14px;background:#f8fafc;border:1px solid #dee7f0;padding:15px;font-size:10px;color:#64758a}
+.woDemoFakeFilters span{border:1px solid #cbd6e3;background:#fff;padding:5px 16px;margin-right:8px}
+.woDemoFakeTable{margin:0 17px;border:1px solid #dce5ee;padding:15px 12px;font-size:10px;font-weight:800;color:#4d6075;line-height:1.7;white-space:nowrap;overflow:hidden}
+.woDemoFakeTable div{padding:12px;background:#f3f7fb;font-weight:500}
+.woDemoSplit{height:calc(100% - 33px);display:grid;grid-template-columns:145px minmax(0,1fr)}
+.woDemoSplit>aside{background:#f9fbfd;border-right:1px solid #dfe7ee;font-size:10px;color:#62748a;padding:12px 9px;display:flex;flex-direction:column;gap:12px}
+.woDemoSplit>aside>b{font-size:11px;color:#273f58}
+.woDemoSplit>aside>div{padding:9px 6px;background:#fff;border:1px solid #e2e8f0}
+.woDemoSplit>main{min-width:0;display:flex;flex-direction:column}
+.woDemoFormTitle{height:42px;padding:12px 15px;border-bottom:1px solid #dce6f0;display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.woDemoFormTitle span{font-size:9px;color:#8798a8}
+.woDemoSection{margin:12px 15px;border:1px solid #dae3ed;min-height:0;flex:1;overflow:hidden}
+.woDemoSection h4{margin:0;padding:9px 12px;background:#f3f7fb;border-bottom:1px solid #dce5ee;font-size:11px;color:#284058;display:flex;justify-content:space-between}
+.woDemoFields{padding:10px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.woDemoField{min-width:0;border:1px solid #d5e0ea;border-radius:3px;overflow:hidden;font-size:9px}
+.woDemoField label{display:block;background:#f6f8fa;padding:5px 7px;font-weight:800;white-space:nowrap}
+.woDemoField div{padding:7px;color:#3a526b;white-space:nowrap;overflow:hidden}
+.woDemoTableWrap{padding:10px;overflow:hidden}.woDemoTableWrap table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px}
+.woDemoTableWrap th,.woDemoTableWrap td{padding:7px 4px;border:1px solid #dbe4ed;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.woDemoTableWrap th{background:#f4f7fa;font-weight:900}.woDemoTableWrap td b{color:#1d65ac}
+.woDemoSection p{font-size:10px;color:#536a7f;line-height:1.65;padding:0 12px;margin:8px 0}
+.woDemoTextarea{margin:15px;padding:15px;border:1px solid #d9e3ed;min-height:65px;font-size:11px;color:#405970}
+.woDemoRecipient{padding:13px;display:flex;gap:10px;align-items:center;font-size:10px;flex-wrap:wrap;color:#40566e}
+.woDemoCheck{background:#f2f8ff;color:#245a90;border:1px solid #bbd7f0;border-radius:5px;padding:8px}
+.woDemoMailAction{margin:10px 13px;padding:13px;border-top:1px solid #dfe7f0;display:flex;align-items:center;gap:12px;font-size:10px;color:#63788a}
+.woDemoBottom{margin-top:auto;border-top:1px solid #d9e3ed;padding:8px 14px;display:flex;justify-content:flex-end;gap:8px}
+.woGuideFooter{position:absolute;bottom:5px;left:24px;right:24px;height:79px;display:flex;justify-content:space-between;gap:14px;align-items:center}
+.woGuideFooter strong{display:block;font-size:15px;color:#1d3b59}
+.woGuideFooter small{display:block;color:#526a83;font-size:10.5px;line-height:1.5;margin-top:5px}
+.woGuideButtons{display:flex;gap:5px;flex-shrink:0}.woGuideButtons button{border:1px solid #bcd0e2;background:white;border-radius:5px;padding:8px 10px;cursor:pointer;font-size:10px;color:#275071;font-weight:800}
+.woGuideProgress{position:absolute;bottom:0;left:0;right:0;height:4px;background:#dce6f2}.woGuideProgress span{height:100%;background:#288ad9;display:block}
+@media(max-width:700px){.woDemoSplit{grid-template-columns:100px minmax(0,1fr)}.woDemoFields{grid-template-columns:repeat(2,minmax(0,1fr))}.woGuideCapture{left:10px;right:10px}.woGuideFooter{left:12px;right:12px}.woGuideFooter strong{font-size:11px}.woGuideFooter small{font-size:9px}.woGuideButtons{flex-direction:column}.woGuideButtons button{padding:3px}.woDemoSection p{font-size:9px}}
 </style>
 
 <style id="premium-guide-v1">
@@ -142,12 +224,40 @@ body{background:#f7f9fc;color:var(--ink)}
   background:linear-gradient(#2f73ff,#29b9e7)
 }
 .article{padding:28px 46px 80px;background:#fff;max-width:none}
+.videoGuide{
+  max-width:1180px;border:1px solid #e3eaf3;border-radius:16px;padding:18px;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+  box-shadow:var(--shadow)
+}
+.videoGuideHead{display:flex;align-items:center;justify-content:space-between;padding:0 2px 14px}
+.videoGuideHead h3{margin:0;color:#22334d;font-size:17px;letter-spacing:-.2px}
+.videoGuideHead span{color:#98a4b6;font-size:12px}
+.videoGuideGrid{gap:12px}
+.videoCard{
+  border:1px solid #e1e8f1!important;border-radius:12px!important;background:#fff!important;
+  overflow:hidden;box-shadow:0 6px 18px rgba(38,65,104,.05)!important;
+  transition:.2s ease!important
+}
+.videoCard:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(38,65,104,.11)!important;border-color:#cfe0f8!important}
+.videoThumb{
+  min-height:96px!important;background:linear-gradient(145deg,#eef5ff 0%,#eaf6ff 55%,#f4fbff 100%)!important;
+  display:grid!important;place-items:center!important
+}
+.videoPlay{
+  width:40px!important;height:40px!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;color:#fff!important;font-size:16px!important;
+  background:linear-gradient(135deg,#2f73ff,#24aee6)!important;
+  box-shadow:0 8px 18px rgba(47,115,255,.28)!important
+}
+.videoCardBody{padding:12px 12px 13px!important;text-align:left!important}
+.videoCardBody b{display:block;color:#24334a;font-size:13px;margin-bottom:4px}
+.videoCardBody small{color:#8e9aad;font-size:11px}
 .article h2{font-size:25px;color:#172033;letter-spacing:-.6px;margin-top:34px}
 .crumb{color:#9ba6b7}.lead{color:#2f3e55}
 .guideShot{border:1px solid #e4eaf2;border-radius:14px;background:#fbfcfe;padding:18px;box-shadow:0 8px 24px rgba(34,58,96,.05)}
 @media(max-width:900px){
   .manual.active{grid-template-columns:220px minmax(0,1fr)}
-  .article{padding:24px}
+  .article{padding:24px}.videoGuideGrid{grid-template-columns:repeat(2,1fr)!important}
 }
 </style>
 </head>
@@ -202,6 +312,19 @@ body{background:#f7f9fc;color:var(--ink)}
 </div>
 </aside>
 <main class="article">
+<div class="videoGuide" id="videoGuide">
+  <div class="videoGuideHead"><h3>▶ 동영상 사용가이드</h3><span>메뉴별 핵심 기능을 짧은 영상으로 확인하세요.</span></div>
+  <div class="videoGuideGrid">
+    <button class="videoCard" type="button" data-video-title="작업지시서 실무 사용방법 (개정 2026.11.20)" data-video-src="" data-video-sim="workorder"><div class="videoThumb workorderPremiumThumb"><span class="workorderPremiumTag">NAMO QMES</span><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>작업지시서</b><small>작업지시서 → 기본정보 → 원료 투입계획 → 비고 → 수신부서 → 이메일 발송 → 저장 확인</small></div></button>
+    <button class="videoCard" type="button" data-video-title="수입검사 IQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>수입검사 IQC</b><small>검사등록 · 판정 · 전자결재</small></div></button>
+    <button class="videoCard" type="button" data-video-title="공정검사 PQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>공정검사 PQC</b><small>측정값 · 판정 · 후속공정 차단</small></div></button>
+    <button class="videoCard" type="button" data-video-title="출하검사 OQC 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>출하검사 OQC</b><small>출하검사 · CoA · 출하상태</small></div></button>
+    <button class="videoCard" type="button" data-video-title="LOT 추적 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>LOT 추적</b><small>원자재 → 생산 → 검사 → 출하</small></div></button>
+    <button class="videoCard" type="button" data-video-title="부적합 NCR 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>부적합 NCR</b><small>발행 · 원인분석 · 시정조치</small></div></button>
+    <button class="videoCard" type="button" data-video-title="설비관리 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>설비관리</b><small>설비등록 · 점검 · 수리이력</small></div></button>
+    <button class="videoCard" type="button" data-video-title="전자결재 사용방법" data-video-src=""><div class="videoThumb"><span class="videoPlay">▶</span></div><div class="videoCardBody"><b>전자결재</b><small>검토 · 승인 · 상태확인</small></div></button>
+  </div>
+</div>
 <h2 id="articleTitle">수입검사 성적서 등록</h2><div id="crumb" class="crumb">품질관리 &gt; 수입검사 IQC &gt; 성적서 등록</div><p id="lead" class="lead">수입 원재료의 LOT별 검사 결과를 등록하고 부적합 발생 시 후속 공정을 차단합니다.</p>
 <div class="guideShot" id="guideShot"></div>
 <div class="steps" id="steps"></div>
@@ -228,18 +351,24 @@ body{background:#f7f9fc;color:var(--ink)}
         <div class="qaRegisterActions"><button id="qaRegisterCancel" type="button">취소</button><button id="qaRegisterSave" class="primary" type="button">등록</button></div>
       </div>
       <table class="qaTable" aria-label="QMES Q&A 목록">
-        <thead><tr><th style="width:70px">No</th><th>제목</th><th style="width:120px">등록일</th><th style="width:100px">조회수</th></tr></thead>
+        <thead><tr><th style="width:70px">No</th><th>제목</th><th style="width:90px">동영상</th><th style="width:120px">등록일</th><th style="width:100px">조회수</th></tr></thead>
         <tbody id="qaRows"></tbody>
       </table>
       <div class="qaPager"><span>«</span><span>‹</span><span class="page">1</span><span>›</span><span>»</span></div>
       <article class="qaDetail" id="qaDetail">
         <h3 id="qaDetailTitle"></h3>
-        <div class="qaDetailMeta"><span id="qaDetailDate"></span><span>◉ <span id="qaDetailViews"></span></span><button id="qaAdminDelete" class="qaAdminDelete" type="button">질문 삭제</button></div>
+        <div class="qaDetailMeta"><span id="qaDetailDate"></span><span>◉ <span id="qaDetailViews"></span></span><span id="qaDetailVideo" class="qaVideo"></span><button id="qaAdminDelete" class="qaAdminDelete" type="button">질문 삭제</button></div>
         <div class="qaDetailBody" id="qaDetailBody"></div>
       </article>
     </div>
   </div>
 </section>
+<div class="videoModal" id="videoModal" aria-hidden="true">
+  <div class="videoModalBox" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle">
+    <div class="videoModalHead"><b id="videoModalTitle">동영상 사용가이드</b><button class="videoModalClose" id="videoModalClose" type="button" aria-label="닫기">×</button></div>
+    <div class="videoStage" id="videoStage"><div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>영상 파일 연결 후 이 화면에서 바로 재생됩니다.</span></div></div>
+  </div>
+</div>
 <script>
 const home=document.getElementById('home'),manual=document.getElementById('manual'),qaPage=document.getElementById('qaPage'),homeTab=document.getElementById('homeTab'),manualTab=document.getElementById('manualTab'),qaTab=document.getElementById('qaTab');
 const titles={
@@ -777,10 +906,10 @@ guideQuickWrap?.querySelector('.guide-dock-more')?.setAttribute('aria-hidden','f
 document.querySelectorAll('[data-page]').forEach(x=>x.addEventListener('click',()=>openPage(x.dataset.page)));
 
 const qaDefaultData=[
- {no:4,title:'수입검사 등록 후 검사결과를 수정하려면 어떻게 하나요?',date:'2026-10-23',views:0,body:'수입검사 목록에서 해당 성적서를 선택한 뒤 수정 버튼으로 검사 결과를 변경할 수 있습니다.<br><br>전자결재가 이미 진행된 문서는 권한에 따라 수정이 제한될 수 있으므로 결재 상태를 먼저 확인하세요.',path:'메뉴경로 : 품질관리 > 수입검사 IQC'},
- {no:3,title:'사용자의 결재문서를 다른 사용자에게 공유할 수 있나요?',date:'2026-10-23',views:0,body:'전자결재 문서는 사용자 권한과 결재선에 따라 조회 범위가 결정됩니다.<br><br>공유가 필요한 경우 관리자 권한 또는 문서 권한 설정을 확인하세요.',path:'메뉴경로 : 전자결재 > 결재함'},
- {no:2,title:'LOT 추적에서 원재료부터 출하까지 어떻게 확인하나요?',date:'2026-10-23',views:0,body:'원재료 LOT 또는 완제품 LOT를 입력하면 작업지시, 공정검사, 출하검사, 출하 이력을 순서대로 연결해 확인할 수 있습니다.',path:'메뉴경로 : LOT 추적'},
- {no:1,title:'결재 완료 후 상태가 바로 반영되지 않을 때는 어떻게 하나요?',date:'2026-10-23',views:0,body:'목록을 다시 조회하면 최신 결재상태가 반영됩니다.<br><br>계속 동일하면 전자결재 동기화 상태와 네트워크 연결을 확인하세요.',path:'메뉴경로 : 전자결재'}
+ {no:4,title:'수입검사 등록 후 검사결과를 수정하려면 어떻게 하나요?',date:'2026-10-23',views:0,video:'',body:'수입검사 목록에서 해당 성적서를 선택한 뒤 수정 버튼으로 검사 결과를 변경할 수 있습니다.<br><br>전자결재가 이미 진행된 문서는 권한에 따라 수정이 제한될 수 있으므로 결재 상태를 먼저 확인하세요.',path:'메뉴경로 : 품질관리 > 수입검사 IQC'},
+ {no:3,title:'사용자의 결재문서를 다른 사용자에게 공유할 수 있나요?',date:'2026-10-23',views:0,video:'',body:'전자결재 문서는 사용자 권한과 결재선에 따라 조회 범위가 결정됩니다.<br><br>공유가 필요한 경우 관리자 권한 또는 문서 권한 설정을 확인하세요.',path:'메뉴경로 : 전자결재 > 결재함'},
+ {no:2,title:'LOT 추적에서 원재료부터 출하까지 어떻게 확인하나요?',date:'2026-10-23',views:0,video:'',body:'원재료 LOT 또는 완제품 LOT를 입력하면 작업지시, 공정검사, 출하검사, 출하 이력을 순서대로 연결해 확인할 수 있습니다.',path:'메뉴경로 : LOT 추적'},
+ {no:1,title:'결재 완료 후 상태가 바로 반영되지 않을 때는 어떻게 하나요?',date:'2026-10-23',views:0,video:'',body:'목록을 다시 조회하면 최신 결재상태가 반영됩니다.<br><br>계속 동일하면 전자결재 동기화 상태와 네트워크 연결을 확인하세요.',path:'메뉴경로 : 전자결재'}
 ];
 const qaStorageKey='namo-qmes-guide-qa-v1';
 function loadQaUserData(){
@@ -824,7 +953,7 @@ const qaAdmin=qaIsAdmin();
 const qaEscape=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function renderQaRows(){
  const body=document.getElementById('qaRows'); if(!body)return;
- body.innerHTML=qaFiltered.map(x=>'<tr data-no="'+x.no+'" class="'+(qaSelected&&qaSelected.no===x.no?'active':'')+'"><td>'+x.no+'</td><td class="title">'+qaEscape(x.title)+'</td><td>'+qaEscape(x.date)+'</td><td>0</td></tr>').join('');
+ body.innerHTML=qaFiltered.map(x=>'<tr data-no="'+x.no+'" class="'+(qaSelected&&qaSelected.no===x.no?'active':'')+'"><td>'+x.no+'</td><td class="title">'+qaEscape(x.title)+'</td><td>'+(x.video?'▶':'')+'</td><td>'+qaEscape(x.date)+'</td><td>0</td></tr>').join('');
  document.getElementById('qaCount').textContent=qaFiltered.length+'건';
  body.querySelectorAll('tr').forEach(tr=>tr.addEventListener('click',()=>{qaSelected=qaData.find(x=>String(x.no)===String(tr.dataset.no));renderQaRows();renderQaDetail();}));
 }
@@ -833,12 +962,14 @@ function renderQaDetail(){
   document.getElementById('qaDetailTitle').textContent='등록된 질문이 없습니다.';
   document.getElementById('qaDetailDate').textContent='';
   document.getElementById('qaDetailViews').textContent='0';
+  document.getElementById('qaDetailVideo').textContent='';
   document.getElementById('qaDetailBody').innerHTML='';
   return;
  }
  document.getElementById('qaDetailTitle').textContent=qaSelected.title;
  document.getElementById('qaDetailDate').textContent='▣ '+qaSelected.date;
  document.getElementById('qaDetailViews').textContent='0';
+ document.getElementById('qaDetailVideo').textContent=qaSelected.video?('▶ '+qaSelected.video):'';
  const deleteBtn=document.getElementById('qaAdminDelete');
  if(deleteBtn) deleteBtn.classList.toggle('show',qaAdmin && !!qaSelected.userCreated);
  document.getElementById('qaDetailBody').innerHTML=qaSelected.userCreated
@@ -873,7 +1004,7 @@ document.getElementById('qaRegisterSave')?.addEventListener('click',()=>{
  if(!title||!body){alert('제목과 질문내용을 입력하세요.');return;}
  const maxNo=qaData.reduce((m,x)=>Math.max(m,Number(x.no)||0),0);
  const now=new Date(), date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
- const row={no:maxNo+1,title,date,views:0,body,path:'',userCreated:true};
+ const row={no:maxNo+1,title,date,views:0,video:'',body,path:'',userCreated:true};
  qaData.unshift(row);qaSelected=row;qaFiltered=[...qaData];saveQaUserData();
  document.getElementById('qaNewTitle').value='';document.getElementById('qaNewBody').value='';qaRegisterBox?.classList.remove('open');
  renderQaRows();renderQaDetail();
@@ -891,6 +1022,83 @@ document.getElementById('qaAdminDelete')?.addEventListener('click',()=>{
 
 renderQaRows();renderQaDetail();
 
+
+const videoModal=document.getElementById('videoModal'),videoStage=document.getElementById('videoStage'),videoModalTitle=document.getElementById('videoModalTitle');
+function closeVideoGuide(){
+  stopWorkVideoSim?.();
+  videoModal?.classList.remove('open');videoModal?.setAttribute('aria-hidden','true');
+  if(videoStage) videoStage.innerHTML='<div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>영상 파일 연결 후 이 화면에서 바로 재생됩니다.</span></div>';
+}
+let workVideoTimer=null,workVideoProgressTimer=null;
+function stopWorkVideoSim(){if(workVideoTimer){clearInterval(workVideoTimer);workVideoTimer=null}if(workVideoProgressTimer){clearInterval(workVideoProgressTimer);workVideoProgressTimer=null}}
+function startWorkorderVideoSim(){
+  stopWorkVideoSim();
+  if(!videoStage)return;
+  videoStage.innerHTML='<div class="workVideoSim woGuide2026" id="woGuide2026"><div class="woVideoTop"><span>● NAMO QMES · 작업지시서 실무 사용방법</span><span id="woStepCount">01 / 07</span></div><div class="woGuideCapture" id="woGuideCapture"></div><div class="woGuideFooter"><div><strong id="woGuideTitle"></strong><small id="woGuideDesc"></small></div><div class="woGuideButtons"><button type="button" id="woGuideToggle">일시정지</button><button type="button" id="woGuideReplay">처음부터</button></div></div><div class="woGuideProgress"><span id="woGuideBar"></span></div></div>';
+  const root=document.getElementById('woGuide2026'),frame=document.getElementById('woGuideCapture');
+  const label=document.getElementById('woGuideTitle'),desc=document.getElementById('woGuideDesc'),count=document.getElementById('woStepCount'),bar=document.getElementById('woGuideBar');
+  const toggle=document.getElementById('woGuideToggle'),replay=document.getElementById('woGuideReplay');
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;'}[c]));
+  const field=(name,value,active=false)=>'<div class="woDemoField '+(active?'woDemoFocus':'')+'"><label>'+esc(name)+'</label><div>'+esc(value||'입력')+'</div></div>';
+  const head='<div class="woDemoAppHead"><span class="woDemoLogo">NAMO QMES</span><span>작업지시서 등록 및 조회</span></div>';
+  const menu='<div class="woDemoMenu"><span class="woDemoNav">생산관리</span><span class="woDemoNav woDemoNavActive">작업지시서</span><span class="woDemoNav">생산대시보드</span></div>';
+  function listing(){
+    return '<div class="woDemoBoard">'+head+'<div class="woDemoListTop"><b>작업지시서 등록 및 조회</b><button type="button" class="woDemoBlue woDemoFocus">+ 신규 작업지시서 등록</button></div><div class="woDemoFakeFilters">고객사 <span>전체</span>　제품명 <span>전체</span>　생산 LOT <span>전체</span>　진행상태 <span>전체</span></div><div class="woDemoFakeTable">작업지시 현황<hr>고객사　　　　　 작업지시번호　　　　 제품명　　　　 생산 LOT NO　　　　 진행상태<div>현대자동차　　　 WO-20261112-001　　 NBA20HM05　　 LOT-261112-01　　　　 대기</div></div></div>';
+  }
+  const materials=[['NMP','NMP-261112-A','120','75.00'],['BYK180','BYK-261111-B','8','5.00'],['AOH30','AOH-261110-C','24','15.00'],['중간배치','MB-261112-01','8','5.00']];
+  function plan(){
+    return '<section class="woDemoSection"><h4>원료 투입계획 <span>+ 행 추가</span></h4><div class="woDemoTableWrap"><table><thead><tr><th>NO</th><th>원료명</th><th>원료 LOT NO</th><th>계획투입량(kg)</th><th>실투입량(kg)</th><th>투입비율(%)(자동계산)</th></tr></thead><tbody>'+materials.map((m,i)=>'<tr class="'+(i===1?'woDemoFocus':'')+'"><td>'+(i+1)+'</td>'+m.map((v,j)=>'<td>'+(j===2?'<b>'+v+'</b>':esc(v))+'</td>').join('') .replace(/<td>75.00<\/td>/,'<td>75.00</td>') .replace(/<td>5.00<\/td>/,'<td>5.00</td>')+'</tr>').join('')+'</tbody></table></div><p>원료 투입 순서대로 원료명, LOT, 계획투입량을 입력합니다. 실투입량은 생산실적에서 작성합니다.</p></section>';
+  }
+  function basic(){
+    return '<section class="woDemoSection"><h4>작업 기본정보</h4><div class="woDemoFields">'+
+       field('작업지시번호','자동생성')+field('작업일자','2026-11-12',true)+field('고객사명','현대자동차',true)+field('제품명','NBA20HM05',true)+
+       field('생산 LOT NO','LOT-261112-01')+field('설비명','HSM')+field('작업자','문지훈',true)+field('계획수량','160')+
+       field('작업 시작일','2026-11-12',true)+field('작업 종료일','2026-11-12',true)+field('진행상태','대기')+field('생산구분','양산')+'</div></section>';
+  }
+  function recipients(){
+    return '<section class="woDemoSection"><h4>발송 대상 및 수신부서</h4><p>수신부서 (복수 선택) → 수신 담당자 (개별 선택·해제)</p><div class="woDemoRecipient"><span class="woDemoCheck">☑ 생산부</span><span class="woDemoCheck">☑ 품질부</span><span>선택 부서 2개 · 수신자 2명</span></div><div class="woDemoMailAction"><button type="button" class="woDemoBlue woDemoFocus">이메일 발송</button><span>클릭 시 작업지시서가 먼저 저장된 후 발송됩니다.</span></div></section>';
+  }
+  function editor(n){
+    let content= n===1?basic():n===2?plan():n===3?'<section class="woDemoSection"><h4>비고</h4><div class="woDemoTextarea woDemoFocus">작업 시 유의사항 및 전달사항 입력 (해당 시)</div></section>':n===4||n===5?recipients():n===6?'<section class="woDemoSection"><h4>작업지시서 저장 확인</h4><p>이메일 발송 시 먼저 저장된 작업지시서를 최종 확인하고, 하단 <b>저장</b> 버튼으로 등록 상태를 확인합니다.</p></section>':basic();
+    return '<div class="woDemoBoard">'+head+'<div class="woDemoSplit"><aside><b>작업지시서 목록</b><div>전체</div><div>작업지시서 검색</div><div>2026-11-12　WO-20261112-001</div></aside><main><div class="woDemoFormTitle"><b>신규 작업지시서 등록</b><span>현재 QMES 화면 구성 기준</span></div>'+content+'<div class="woDemoBottom"><button type="button">목록으로</button><button type="button">저장 후 인쇄</button><button type="button" class="woDemoBlue '+(n===6?'woDemoFocus':'')+'">저장</button></div></main></div></div>';
+  }
+  const storyboard=[
+    {title:'1. 작업지시서 클릭',detail:'생산관리에서 작업지시서를 열고 + 신규 작업지시서 등록 버튼을 선택합니다.',kind:'list'},
+    {title:'2. 작업 기본정보 입력',detail:'작업일자, 고객사명, 제품명, 작업자, 작업기간을 포함한 필수정보를 입력합니다.',kind:'edit'},
+    {title:'3. 원료 투입계획 입력',detail:'원료별 투입 순서, 원료명, 원료 LOT 및 계획투입량(kg)을 입력합니다.',kind:'edit'},
+    {title:'4. 비고 입력',detail:'전달사항이나 주의사항이 있는 경우 비고란에 입력합니다.',kind:'edit'},
+    {title:'5. 수신부서 및 담당자 선택',detail:'발송 대상의 수신부서를 선택하고 수신 담당자를 확인합니다.',kind:'edit'},
+    {title:'6. 이메일 발송',detail:'이메일 발송 버튼을 누르면 작업지시서를 먼저 저장한 뒤 선택된 담당자에게 발송합니다.',kind:'edit'},
+    {title:'7. 저장 및 등록 확인',detail:'작업지시서 저장 결과를 확인합니다. 이메일 발송 중 선저장되므로 중복 등록하지 않습니다.',kind:'edit'}
+  ];
+  let currentIndex=0,paused=false,elapsed=0;
+  function draw(){
+    const step=storyboard[currentIndex];
+    frame.innerHTML=(step.kind==='list'?menu+listing():editor(currentIndex));
+    label.textContent=step.title;desc.textContent=step.detail;
+    count.textContent=String(currentIndex+1).padStart(2,'0')+' / '+String(storyboard.length).padStart(2,'0');
+    bar.style.width=((currentIndex+elapsed/4600)/storyboard.length*100)+'%';
+  }
+  toggle.addEventListener('click',()=>{paused=!paused;toggle.textContent=paused?'계속 재생':'일시정지';});
+  replay.addEventListener('click',()=>{currentIndex=0;elapsed=0;paused=false;toggle.textContent='일시정지';draw();});
+  draw();
+  workVideoTimer=setInterval(()=>{
+    if(paused||!root.isConnected)return;
+    elapsed+=100;
+    if(elapsed>=4600){elapsed=0;currentIndex=(currentIndex+1)%storyboard.length;draw();}
+    else bar.style.width=((currentIndex+elapsed/4600)/storyboard.length*100)+'%';
+  },100);
+}
+document.querySelectorAll('.videoCard').forEach(card=>card.addEventListener('click',()=>{
+  const title=card.dataset.videoTitle||'동영상 사용가이드',src=card.dataset.videoSrc||'',sim=card.dataset.videoSim||'';
+  if(videoModalTitle)videoModalTitle.textContent=title;
+  if(sim==='workorder')startWorkorderVideoSim();
+  else if(videoStage)videoStage.innerHTML=src?'<video controls autoplay muted playsinline src="'+src.replace(/"/g,'&quot;')+'"></video>':'<div class="videoPreparing"><strong>동영상 준비 중입니다.</strong><span>'+title+' 영상 파일을 준비하고 있습니다.</span></div>';
+  videoModal?.classList.add('open');videoModal?.setAttribute('aria-hidden','false');
+}));
+document.getElementById('videoModalClose')?.addEventListener('click',closeVideoGuide);
+videoModal?.addEventListener('click',e=>{if(e.target===videoModal)closeVideoGuide();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&videoModal?.classList.contains('open'))closeVideoGuide();});
 
 function setTopPage(page){
   home.style.display=page==='home'?'block':'none';
